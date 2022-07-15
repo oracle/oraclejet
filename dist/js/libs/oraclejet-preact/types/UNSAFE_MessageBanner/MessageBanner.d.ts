@@ -1,6 +1,6 @@
-import { MessageItem, MessagesManager, MessageTemplateItem } from '@oracle/oraclejet-preact/UNSAFE_Message';
-import { Item } from '@oracle/oraclejet-preact/utils/dataProvider';
-import { ComponentChildren, ComponentProps, h, VNode } from 'preact';
+import { MessageItem, MessagesManager, MessageTemplateItem } from '../UNSAFE_Message';
+import { Item } from '../utils/UNSAFE_dataProvider';
+import { ComponentChildren, ComponentProps, VNode } from 'preact';
 declare type IntrinsicProps = Pick<ComponentProps<typeof MessagesManager>, 'startAnimation'>;
 /**
  * Props for the MessageBanner Component
@@ -38,7 +38,7 @@ declare type Props<Key, Data> = IntrinsicProps & {
      * to use a different template for different messages, they can provide a function that
      * returns a template name instead.
      *
-     * The provided function should accept an ItemContext and return a key to a template for
+     * The provided function should accept an Item and return a key to a template for
      * rendering the corresponding message's detail content. The value returned from this function
      * should be a key to one of the dynamic template slots provided. If the returned value is not
      * one of the keys of the provided dynamic template slots, the component will throw an Error.
@@ -99,6 +99,6 @@ declare type Props<Key, Data> = IntrinsicProps & {
 /**
  * Renders individual messages based on the provided data
  */
-declare function MessageBanner<K extends string | number = string | number, D extends MessageItem = MessageItem>({ closeButtonRenderer, detailRendererKey, data, onClose, renderers, startAnimation, translations, type }: Props<K, D>): h.JSX.Element | null;
+declare function MessageBanner<K extends string | number = string | number, D extends MessageItem = MessageItem>({ closeButtonRenderer, detailRendererKey, data, onClose, renderers, startAnimation, translations, type }: Props<K, D>): import("preact").JSX.Element | null;
 export { MessageBanner };
 export type { MessageItem as MessageBannerItem, MessageTemplateItem as MessageBannerTemplateItem };

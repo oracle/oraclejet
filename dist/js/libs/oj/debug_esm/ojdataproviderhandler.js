@@ -5,7 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Component, h } from 'preact';
+import { jsx } from 'preact/jsx-runtime';
+import { Component } from 'preact';
 
 var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -340,7 +341,7 @@ function withDataProvider(WrappedComponent, dataProp) {
                 const { data, addBusyState } = props, passThroughProps = __rest(props, ["data", "addBusyState"]);
                 const { fetchedData } = state;
                 const childProps = Object.assign({ [dataProp]: fetchedData }, passThroughProps);
-                return h(WrappedComponent, Object.assign({}, childProps));
+                return jsx(WrappedComponent, Object.assign({}, childProps));
             }
             _initDataProviderHandler() {
                 const { data, addBusyState } = this.props;

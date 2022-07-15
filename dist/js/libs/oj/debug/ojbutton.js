@@ -4362,7 +4362,8 @@ var __oj_buttonset_many_metadata =
           // even for refreshes where we'll wind up keeping the same tabstop, must make everything untabbable first, to ensure any new buttons become untabbable.
           var $last = $(this._lastTabStop);
           this._lastTabStop = undefined;
-          this.$buttons.attr('tabindex', '-1');
+          this.$buttons.attr('tabindex', '0');
+
           var $newTabStop; // callee might map this to radio groupmate
 
           // TBD: for refreshes when $last is an effectively disabled radio with a checked enabled groupmate and they are in the buttonset, the groupmate would be
@@ -4456,10 +4457,6 @@ var __oj_buttonset_many_metadata =
           //        last is node X; button is node Y: X is the tabstop; want to clear it and make Y the tabstop.  This logic does that.
           if (button !== last) {
             // console.log("setting tab stop to " + $button.attr("id"));  console.log("$(last).length:");  console.log($(last).length);
-
-            if (last) {
-              last.setAttribute('tabindex', '-1'); // no-op iff $(last) is empty iff (see comment above)
-            }
             if ($button[0]) {
               $button[0].setAttribute('tabindex', '0'); // no-op iff $button is empty iff (see comment above)
             }

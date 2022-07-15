@@ -1,0 +1,165 @@
+<?js 
+var data = obj; 
+var self= this;
+var clasName = "";
+var additional = self.getDeprecatedClass(data);
+if(additional){
+  clasName = clasName + ' '+ additional;
+}
+?>
+<dt class="<?js= clasName ?>">
+    <?js 
+    //[csaba] 12/9/17
+    // it's not sufficient to just remove one #, there could be two
+    //var propName = (name ? (name.indexOf('#') == 0 ? name.substring(1) : name) : name);
+    var propName = data.alias? (data.alias.replace(/^(#)+/g, '')) : (name ? name.replace(/^(#)+/g, '') : '');
+    var attrName = this.isCustomElement && !data.ojchild && !data.ojslot && !data.isSubpropOfArray && data.kind !== 'typedef' ? this.propertyNameToAttribute(propName) : propName;
+    // [jim] add bookmarkable link icon: ?>
+    <h4 id="<?js= id ?>" class="name">
+        <?js
+        if (data.ojexports){
+          attribs = attribs.replace('(static)', '');
+          if(attrName.startsWith('.')){
+            attrName = attrName.substring(1);
+          }
+        }
+        if(!data.tsdepsignature && !data.jssignature){
+          //there is no deprecation. We are just using our default signature everywhere.?>
+          <?js= data.attribs + attrName + (data.signature ? data.signature : '') ?>
+          <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= id ?>"></a>
+        <?js 
+        }
+        else{
+          if(data.jssignature){ ?>
+            <span class="jsdoc-type">
+              <?js= data.attribs + attrName + (data.jssignature ? data.jssignature : '') ?>
+              <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= id ?>"></a>
+            </span>
+            <?js
+          }
+          if(data.tsdepsignature){
+            var depclasses =  'dep-type';
+            if(!data.jssignature){
+              depclasses = depclasses+ ' jsdoc-type';
+            } ?>
+            <span class="<?js= depclasses?>">
+              <?js= data.attribs + attrName + (data.tsdepsignature ? data.tsdepsignature : '') ?>
+              <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= id ?>"></a>
+            </span>
+            <?js
+          }
+          //default for clean signature
+          var cleanclasses =  'clean-only';
+          if(!data.tsdepsignature){
+            cleanclasses = cleanclasses+ ' dep-type';
+          }
+          if(!data.tsdepsignature && !data.jssignature){
+            cleanclasses = cleanclasses+ ' jsdoc-type';
+            }
+          ?>
+            <span class="<?js= cleanclasses?>">
+              <?js= data.attribs + attrName + (data.signature ? data.signature : '') ?>
+              <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= id ?>"></a>
+            </span>
+            <?js
+        }?>
+    </h4>
+
+    <?js 
+    if (data.summary) { ?>
+      <p class="summary"><?js= summary ?></p>
+    <?js 
+    } ?>
+</dt>
+<?js
+// for classes, components his is handled in container.tmpl
+if (data.kind !== 'class' && !data.ojcomponent && data.ojunsupportedthemes && data.ojunsupportedthemes.length > 0){ ?>
+  <dd>
+    <?js= self.partial('themes.tmpl', data) ?>
+  </dd>
+<?js
+}?>
+<dd class="<?js= clasName ?>">
+    <?js 
+    if (data.description) { ?>
+      <div class="description">
+        <?js= data.description ?>
+      </div>
+    <?js 
+    } ?>
+    <?js 
+    if (data.ojdeprecateddescription) { ?>
+      <div class="description deprecated-hidden"><?js= data.ojdeprecateddescription ?></div>
+    <?js 
+    } 
+    if (data.ojjsdescription) { ?>
+      <div class="description jsdeprecated-hidden"><?js= data.ojjsdescription ?></div>
+    <?js 
+    } 
+    if (data.accessortypes) { ?>
+      <div class="details">
+        <h5>Type details</h5>
+        <?js= data.accessortypes ?>
+      </div>
+    <?js 
+    } ?>
+    
+    <?js= this.partial('details.tmpl', data) ?>
+    
+    <?js
+    // For JET components, the attr syntax is used as the doc entry title, so show the other 3 syntaxes in a table.
+    // For top-level attrs, show all 3 syntaxes below.
+    // For subproperties, the prop change ones are skipped below, showing only the property name.
+    // For subproperties of an array-valued attr, skip the prop name too, i.e. skip the entire table,
+    // since the prop name is already the main title in that special case.        
+      
+    if (this.isCustomElement    && 
+        !data.ojchild          && 
+        !data.ojslot           && 
+        !data.ojnodecontext    && 
+        !data.ojsubid          && 
+        !data.isSubpropOfArray && 
+        !this.isBindingElement &&
+        data.kind !== 'typedef') { ?>
+      <h5>Names</h5>
+      <table class="keyboard-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Property</td>
+            <td><code class="prettyprint"><?js= propName ?></code></td>
+          </tr>
+          <?js if (name.indexOf('.') == -1) { ?>
+          <tr>
+            <td>Property change event</td>
+            <td><code class="prettyprint"><?js= propName + "Changed" ?></code></td>
+          </tr>
+          <tr>
+            <td>Property change listener attribute (<span class="important">must be of type function, see <a href="<?js= env.opts.query.apidocLink ?>CustomElementOverview.html#ce-events-section" target="_blank">Events and Listeners</a> for additional information.</span>)</td>
+            <td><code class="pretty-print-noprettify"><?js= "on-" + attrName + "-changed" ?></code></td>
+          </tr>
+          <?js } ?>
+        </tbody>
+      </table>
+    <?js 
+    } 
+
+    if (data.isSubpropOfArray) { ?>
+      <div class="description">
+         <b>Note: </b> This property is a subproperty of an array-valued property. <i>Such properties cannot be set individually 
+         either at init time via HTML attribute syntax or at runtime via JavaScript.</i>  Instead, the outermost array-valued attribute, and its ancestor attributes, 
+         can be set at init time or runtime.
+      </div>
+    <?js 
+    } 
+    if (data.tsexamples && tsexamples.length) { ?>
+      <h5>Example<?js= tsexamples.length > 1? 's':'' ?></h5>
+        <?js= this.partial('tsexamples.tmpl', tsexamples) ?>
+    <?js 
+    } ?>
+</dd>

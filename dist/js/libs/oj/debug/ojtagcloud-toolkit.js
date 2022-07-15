@@ -1570,6 +1570,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         this.render(this.Options, this.Width, this.Height);
       }
+      else if (type === 'selection') {
+        this.getOptions()['selection'] = event['selection'];
+      }
       else if (type === 'categoryHighlight') {
         // If the tag cloud is not the source of the event, perform highlighting.
         if (this !== source)

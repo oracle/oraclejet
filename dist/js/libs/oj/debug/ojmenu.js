@@ -1046,6 +1046,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
          * Triggered when a default animation is about to start, such as when the component is
          * being opened/closed or a child item is being added/removed. The default animation can
          * be cancelled by calling <code class="prettyprint">event.preventDefault</code>.
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
          *
          * @ojshortdesc Triggered when a default animation is about to start, such as when the component is
          * being opened/closed or a child item is being added/removed. The default animation can
@@ -1102,6 +1103,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
          * opened/closed or a child item is being added/removed. This event is not triggered if
          * the application has called preventDefault on the animateStart
          * event.
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
          *
          * @expose
          * @event
@@ -2960,8 +2962,6 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
        *                for: "openOptions",
        *                jsdocOverride: true }
        * @fires oj.ojMenu#ojBeforeOpen
-       * @fires oj.ojMenu#ojAnimationStart
-       * @fires oj.ojMenu#ojAnimationEnd
        * @fires oj.ojMenu#ojOpen
        *
        * @param {Event=} event What triggered the menu launch.  May be <code class="prettyprint">null</code>.  May be omitted if subsequent params are omitted.
@@ -3468,15 +3468,18 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
 
           var animation = this._getDefaultAnimation('submenu', 'open');
 
+          // JET-49108: create a clone of position.my for animation to avoid overwriting the original
+          var myPosition = position.my.slice();
+
           // if space is not enough, submenu will be opened on the opposite side,
           // so we need to change the animation direction
           if (!this.isRtl && parseFloat(submenu[0].style.left) < 0) {
-            position.my = 'right top';
+            myPosition = 'right top';
           } else if (this.isRtl && parseFloat(submenu[0].style.left) > 0) {
-            position.my = 'left top';
+            myPosition = 'left top';
           }
 
-          animation = this._replaceAnimationOptions(animation, { '#myPosition': position.my });
+          animation = this._replaceAnimationOptions(animation, { '#myPosition': myPosition });
           AnimationUtils.startAnimation(submenu[0], 'open', animation, this).then(resolveBusyState);
         }
         this._updateMenuMaxHeight(submenu);

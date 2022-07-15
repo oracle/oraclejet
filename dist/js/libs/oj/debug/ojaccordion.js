@@ -781,9 +781,15 @@ var __oj_accordion_metadata =
          */
         _initEventData: function (fromC, toC) {
           return {
-              /** @expose */
+              /**
+               * @expose
+               * @ignore
+               */
               fromCollapsible: fromC, // the collapsible being collapsed.
-              /** @expose */
+              /**
+               * @expose
+               * @ignore
+               */
               toCollapsible: toC // the collapsible being expanded.
             };
         },

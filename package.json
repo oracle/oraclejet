@@ -1,6 +1,6 @@
 {
   "name": "@oracle/oraclejet",
-  "version": "12.1.0",
+  "version": "13.0.0",
   "license": "UPL-1.0",
   "description": "Oracle JavaScript Extension Toolkit (JET) empowers developers by providing a modular open source toolkit based on modern JavaScript, CSS3 and HTML5 design and development principles.",
   "keywords": [
@@ -14,8 +14,8 @@
     "knockout": "3.5.1",
     "requirejs": "2.3.6",
     "requirejs-text": "2.0.15",
-    "preact": "10.6.4",
-    "proj4": "2.7.5",
+    "preact": "10.7.2",
+    "proj4": "2.8.0",
     "require-css": "0.1.10",
     "@types/signals": "latest",
     "@types/geojson": "latest"

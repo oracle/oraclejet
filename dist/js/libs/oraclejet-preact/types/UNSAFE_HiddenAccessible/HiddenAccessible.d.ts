@@ -1,4 +1,4 @@
-import { h, ComponentChildren } from 'preact';
+import { ComponentChildren } from 'preact';
 declare type HiddenAccessibleProps = {
     /**
      * Specifies the ComponentChildren
@@ -10,5 +10,5 @@ declare type HiddenAccessibleProps = {
  * but keeps them visible to screen readers.
  *
  */
-declare function HiddenAccessible({ children }: HiddenAccessibleProps): h.JSX.Element;
+declare function HiddenAccessible({ children }: HiddenAccessibleProps): import("preact").JSX.Element;
 export { HiddenAccessible };

@@ -6,7 +6,8 @@
  * @ignore
  */
 import { ComponentChildren } from 'preact';
-import { Item } from '@oracle/oraclejet-preact/utils/dataProvider';
+import { Item } from '../utils/UNSAFE_dataProvider';
+import { MessageSeverity, MessageVariant } from './Message.types';
 /**
  * Plays a sound based on the provided argument. Supported keywords:
  * 1. default - plays the default beep sound
@@ -32,4 +33,19 @@ declare function throwError(message: string, type?: string): void;
  * @returns The renderer for rendering the custom content
  */
 declare function getRenderer<K, D, R>(message: Item<K, D>, rendererIdentifier?: string | ((item: Item<K, D>) => string | null), renderers?: Record<string, (data: R) => ComponentChildren>, type?: string): ((data: R) => ComponentChildren) | undefined;
-export { getRenderer, playSound, throwError };
+/**
+ * Generates a root style class based on the severity. For invalid severity and severity=none
+ * no specific style class exists.
+ *
+ * @param severity The message severity
+ * @returns calculated style class based on the severity
+ */
+declare function severityBasedStyleClass(severity: MessageSeverity, variant: MessageVariant): string;
+/**
+ * Determines if a severity icon is needed based on the component severity
+ *
+ * @param severity The component severity
+ * @returns Whether or not to render the severity icon
+ */
+declare function isSeverityIconNeeded(severity: MessageSeverity): severity is Exclude<MessageSeverity, 'none'>;
+export { getRenderer, playSound, throwError, severityBasedStyleClass, isSeverityIconNeeded };

@@ -5,11 +5,12 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojkoshared', 'ojs/ojlogger', 'ojs/ojtemplateengine'], function (oj, ko, ojcustomelement, ojcustomelementUtils, BindingProviderImpl, Logger, TemplateEngine) { 'use strict';
+define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojkoshared', 'ojs/ojlogger', 'ojs/ojtemplateengine-ko', 'ojs/ojtemplateengine-preact-ko'], function (oj, ko, ojcustomelement, ojcustomelementUtils, BindingProviderImpl, Logger, TemplateEngine, PreactTemplateEngine) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   BindingProviderImpl = BindingProviderImpl && Object.prototype.hasOwnProperty.call(BindingProviderImpl, 'default') ? BindingProviderImpl['default'] : BindingProviderImpl;
   TemplateEngine = TemplateEngine && Object.prototype.hasOwnProperty.call(TemplateEngine, 'default') ? TemplateEngine['default'] : TemplateEngine;
+  PreactTemplateEngine = PreactTemplateEngine && Object.prototype.hasOwnProperty.call(PreactTemplateEngine, 'default') ? PreactTemplateEngine['default'] : PreactTemplateEngine;
 
   /**
    * @ignore
@@ -375,6 +376,7 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
         // Get the slot value of this oj-bind-template element so we can assign it to its
         // assigned nodes for downstream slotting
         template.__oj_slots = unwrap(values.slot) || '';
+        const engine = template.render ? PreactTemplateEngine : TemplateEngine;
 
         // Re-execute the template if the oj-bind-template-slot bound attributes change
         ko.computed(function () {
@@ -383,8 +385,9 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
           var as = unwrap(values.as);
 
           // Extend the composite's bindingContext for the default template
-          var nodes = TemplateEngine.execute(isDefaultTemplate ? element : composite,
-                                             template, data, isDefaultTemplate ? as : null);
+          var nodes = engine.execute(isDefaultTemplate ? element : composite,
+              template, data, isDefaultTemplate ? as : null);
+
           ko.virtualElements.setDomNodeChildren(element, nodes);
         });
       } else {

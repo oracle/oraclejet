@@ -172,17 +172,20 @@ import { DataProviderFeatureChecker } from 'ojs/ojcomponentcore';
 
 class DeferredDataProvider {
     constructor(_dataProvider, _capabilityFunc) {
+        var _a;
         this._dataProvider = _dataProvider;
         this._capabilityFunc = _capabilityFunc;
         this._DATAPROVIDER = 'dataProvider';
-        this.AsyncIterable = class {
-            constructor(_asyncIterator) {
-                this._asyncIterator = _asyncIterator;
-                this[Symbol.asyncIterator] = () => {
-                    return this._asyncIterator;
-                };
-            }
-        };
+        this.AsyncIterable = (_a = class {
+                constructor(_asyncIterator) {
+                    this._asyncIterator = _asyncIterator;
+                    this[Symbol.asyncIterator] = () => {
+                        return this._asyncIterator;
+                    };
+                }
+            },
+            Symbol.asyncIterator,
+            _a);
         this.AsyncIterator = class {
             constructor(_asyncIteratorPromise) {
                 this._asyncIteratorPromise = _asyncIteratorPromise;

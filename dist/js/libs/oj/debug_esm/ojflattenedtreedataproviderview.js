@@ -7,10 +7,11 @@
  */
 import oj from 'ojs/ojcore-base';
 import ojSet from 'ojs/ojset';
-import 'ojs/ojeventtarget';
+import { EventTargetMixin } from 'ojs/ojeventtarget';
 import { ExpandedKeySet } from 'ojs/ojkeyset';
 import { BehaviorSubject } from 'ojs/ojobservable';
 import ojMap from 'ojs/ojmap';
+import { SortUtils, DataProviderMutationEvent, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -269,17 +270,20 @@ import ojMap from 'ojs/ojmap';
 
 class FlattenedTreeDataProviderView {
     constructor(dataProvider, options) {
+        var _a;
         this.dataProvider = dataProvider;
         this.options = options;
-        this.AsyncIterable = class {
-            constructor(_parent, _asyncIterator) {
-                this._parent = _parent;
-                this._asyncIterator = _asyncIterator;
-                this[Symbol.asyncIterator] = () => {
-                    return this._asyncIterator;
-                };
-            }
-        };
+        this.AsyncIterable = (_a = class {
+                constructor(_parent, _asyncIterator) {
+                    this._parent = _parent;
+                    this._asyncIterator = _asyncIterator;
+                    this[Symbol.asyncIterator] = () => {
+                        return this._asyncIterator;
+                    };
+                }
+            },
+            Symbol.asyncIterator,
+            _a);
         this.AsyncIterator = class {
             constructor(_parent, _nextFunc, _params) {
                 this._parent = _parent;
@@ -438,6 +442,100 @@ class FlattenedTreeDataProviderView {
         this._iterators = new ojMap();
         this._done = false;
     }
+    _getChildrenFromCacheByParentKey(parentKey) {
+        return this._cache.filter((item) => item.metadata.parentKey === parentKey);
+    }
+    _calculateItemIndex(parentKey, addEvent, index) {
+        var _a, _b;
+        let newIndex;
+        if (this._currentSortCriteria) {
+            const children = this._getChildrenFromCacheByParentKey(parentKey);
+            const sortComparator = SortUtils.getNaturalSortCriteriaComparator(this._currentSortCriteria);
+            const lastChildItem = children[children.length - 1];
+            if (children.length > 0) {
+                if (sortComparator(lastChildItem.data, addEvent.data[index]) >= 0) {
+                    for (let i = 0; i < children.length; i++) {
+                        if (sortComparator(addEvent.data[index], children[i].data) < 0) {
+                            newIndex = this._getItemIndexByKey(children[i].metadata.key) - 1;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    newIndex =
+                        this._getItemIndexByKey(lastChildItem.metadata.key) +
+                            this._getLocalDescendentCount(lastChildItem.metadata.key) +
+                            1;
+                }
+            }
+            else {
+                newIndex = this._getItemIndexByKey(parentKey);
+            }
+        }
+        else {
+            if (((_a = addEvent === null || addEvent === void 0 ? void 0 : addEvent.addBeforeKeys) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+                if (parentKey === null) {
+                    const beforeKey = addEvent.addBeforeKeys[index];
+                    if (beforeKey !== null) {
+                        let beforeIndex = this._getItemIndexByKey(addEvent.addBeforeKeys[index]);
+                        newIndex = beforeIndex - 1;
+                    }
+                    else {
+                        newIndex = this._cache.length;
+                    }
+                }
+                else {
+                    const parentIndex = this._getItemIndexByKey(parentKey);
+                    newIndex = parentIndex + this._getLocalDescendentCount(parentKey);
+                    if (newIndex === this._cache.length - 1) {
+                        newIndex += 1;
+                    }
+                }
+            }
+            else if (((_b = addEvent === null || addEvent === void 0 ? void 0 : addEvent.indexes) === null || _b === void 0 ? void 0 : _b.length) > 0) {
+                const parentIndex = this._getItemIndexByKey(parentKey);
+                newIndex =
+                    parentIndex === -1
+                        ? addEvent.indexes[index] + 1
+                        : parentIndex + this._getLocalDescendentCount(parentKey) + 1;
+            }
+            else {
+                newIndex =
+                    this._getItemIndexByKey(this._getLastItemByParentKey(parentKey).metadata.key) + 1;
+            }
+        }
+        return newIndex;
+    }
+    _incrementIndexFromParent(newIndex, depth) {
+        const lastIndex = this._getLastIndex();
+        for (let j = newIndex; j <= lastIndex; j++) {
+            let newItem = this._getEntry(j);
+            if (newItem != null) {
+                const newDepth = newItem.metadata.treeDepth;
+                if (newDepth === depth) {
+                    newItem.metadata.indexFromParent += 1;
+                }
+                else if (newDepth < depth) {
+                    return;
+                }
+            }
+        }
+    }
+    _decrementIndexFromParent(newIndex, depth) {
+        const lastIndex = this._getLastIndex();
+        for (let j = newIndex; j <= lastIndex; j++) {
+            let newItem = this._getEntry(j);
+            if (newItem != null) {
+                const newDepth = newItem.metadata.treeDepth;
+                if (newDepth === depth) {
+                    newItem.metadata.indexFromParent -= 1;
+                }
+                else if (newDepth < depth) {
+                    return;
+                }
+            }
+        }
+    }
     _handleUnderlyingMutation(mutationEventDetail) {
         let operationAddEventDetail = null;
         let operationRemoveEventDetail = null;
@@ -452,50 +550,27 @@ class FlattenedTreeDataProviderView {
             const addAfterKeySet = new Set();
             const addKeySet = new Set();
             addEvent.parentKeys.forEach((parentKey, index) => {
-                var _a, _b;
                 if (parentKey === null || (this._isExpanded(parentKey) && this._getItemByKey(parentKey))) {
-                    let newIndex;
-                    if (((_a = addEvent === null || addEvent === void 0 ? void 0 : addEvent.addBeforeKeys) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-                        if (parentKey === null) {
-                            const beforeKey = addEvent.addBeforeKeys[index];
-                            if (beforeKey !== null) {
-                                let beforeIndex = this._getItemIndexByKey(addEvent.addBeforeKeys[index]);
-                                newIndex = beforeIndex - 1;
-                            }
-                            else {
-                                newIndex = this._cache.length;
-                            }
-                        }
-                        else {
-                            const parentIndex = this._getItemIndexByKey(parentKey);
-                            newIndex = parentIndex + this._getLocalDescendentCount(parentKey);
-                            if (newIndex === this._cache.length - 1) {
-                                newIndex += 1;
-                            }
-                        }
+                    if (!this._currentFilterCriteria ||
+                        (this._currentFilterCriteria &&
+                            this._currentFilterCriteria.filter(addEvent.data[index]))) {
+                        let newIndex = this._calculateItemIndex(parentKey, addEvent, index);
+                        const item = this._updateItemMetadata(new this.Item(this, addEvent.metadata[index], addEvent.data[index]), parentKey, addEvent.indexes[index]);
+                        this._spliceItemToCache(item, newIndex);
+                        this._incrementIndexFromParent(newIndex + 1, addEvent.metadata[index].treeDepth);
+                        addDataArray.push(item.data);
+                        addMetadataArray.push(item.metadata);
+                        addIndexArray.push(newIndex + 1);
+                        addParentKeys.push(parentKey);
+                        addKeySet.add(addEvent.metadata[index].key);
+                        addBeforeKeys.push(this._getKeyByIndex(newIndex + 2));
+                        this._incrementIteratorOffset(newIndex + 1);
                     }
-                    else if (((_b = addEvent === null || addEvent === void 0 ? void 0 : addEvent.indexes) === null || _b === void 0 ? void 0 : _b.length) > 0) {
-                        const parentIndex = this._getItemIndexByKey(parentKey);
-                        newIndex =
-                            parentIndex === -1
-                                ? addEvent.indexes[index] + 1
-                                : parentIndex + this._getLocalDescendentCount(parentKey) + 1;
-                    }
-                    else {
-                        newIndex =
-                            this._getItemIndexByKey(this._getLastItemByParentKey(parentKey).metadata.key) + 1;
-                    }
-                    const item = this._updateItemMetadata(new this.Item(this, addEvent.metadata[index], addEvent.data[index]), parentKey, addEvent.indexes[index]);
-                    this._spliceItemToCache(item, newIndex);
-                    addDataArray.push(item.data);
-                    addMetadataArray.push(item.metadata);
-                    addIndexArray.push(newIndex + 1);
-                    addParentKeys.push(parentKey);
-                    addKeySet.add(addEvent.metadata[index].key);
-                    this._incrementIteratorOffset(newIndex);
                 }
             });
-            operationAddEventDetail = new this.DataProviderAddOperationEventDetail(this, addKeySet, addAfterKeySet, addBeforeKeys, addMetadataArray, addDataArray, addIndexArray);
+            if (addKeySet.size > 0) {
+                operationAddEventDetail = new this.DataProviderAddOperationEventDetail(this, addKeySet, addAfterKeySet, addBeforeKeys, addMetadataArray, addDataArray, addIndexArray);
+            }
         }
         const removeEvent = mutationEventDetail.detail.remove;
         if (removeEvent && removeEvent.data && removeEvent.data.length) {
@@ -506,19 +581,24 @@ class FlattenedTreeDataProviderView {
             const removeDataArray = [];
             const removeIndexArray = [];
             const removeKeySet = new Set();
-            removeKeys.forEach((key) => {
-                const count = this._getLocalDescendentCount(key) + 1;
+            removeKeys.forEach((key, index) => {
                 const cacheIndex = this._getItemIndexByKey(key);
-                const deletedItems = this._cache.splice(cacheIndex, count);
-                deletedItems.forEach((item, index) => {
-                    removeKeySet.add(item.metadata.key);
-                    removeMetadataArray.push(item.metadata);
-                    removeDataArray.push(item.data);
-                    removeIndexArray.push(cacheIndex + index);
-                    this._decrementIteratorOffset(cacheIndex);
-                });
+                if (cacheIndex != -1) {
+                    const count = this._getLocalDescendentCount(key) + 1;
+                    this._decrementIndexFromParent(cacheIndex, removeEvent.metadata[index].treeDepth);
+                    const deletedItems = this._cache.splice(cacheIndex, count);
+                    deletedItems.forEach((item, index) => {
+                        removeKeySet.add(item.metadata.key);
+                        removeMetadataArray.push(item.metadata);
+                        removeDataArray.push(item.data);
+                        removeIndexArray.push(cacheIndex + index);
+                        this._decrementIteratorOffset(cacheIndex);
+                    });
+                }
             });
-            operationRemoveEventDetail = new this.DataProviderOperationEventDetail(this, removeKeySet, removeMetadataArray, removeDataArray, removeIndexArray);
+            if (removeKeySet.size > 0) {
+                operationRemoveEventDetail = new this.DataProviderOperationEventDetail(this, removeKeySet, removeMetadataArray, removeDataArray, removeIndexArray);
+            }
         }
         const updateEvent = mutationEventDetail.detail.update;
         if (updateEvent && updateEvent.data && updateEvent.data.length) {
@@ -539,10 +619,14 @@ class FlattenedTreeDataProviderView {
                     updateIndexArray.push(itemIndex);
                 }
             });
-            operationUpdateEventDetail = new this.DataProviderOperationEventDetail(this, updateKeySet, updateMetadataArray, updateDataArray, updateIndexArray);
+            if (updateKeySet.size > 0) {
+                operationUpdateEventDetail = new this.DataProviderOperationEventDetail(this, updateKeySet, updateMetadataArray, updateDataArray, updateIndexArray);
+            }
         }
-        const finalMutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
-        this.dispatchEvent(new oj.DataProviderMutationEvent(finalMutationEventDetail));
+        if (operationAddEventDetail || operationRemoveEventDetail || operationUpdateEventDetail) {
+            const finalMutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
+            this.dispatchEvent(new DataProviderMutationEvent(finalMutationEventDetail));
+        }
     }
     _handleUnderlyingRefresh(event) {
         var _a;
@@ -551,7 +635,7 @@ class FlattenedTreeDataProviderView {
             for (let i = 0; i < this._cache.length; i++) {
                 const item = this._cache[i];
                 if (keys.has(item.metadata.key)) {
-                    const refreshEvent = new oj.DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(item.metadata.key));
+                    const refreshEvent = new DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(item.metadata.key));
                     const removedItems = this._cache.splice(i, this._cache.length);
                     removedItems.forEach(() => {
                         this._decrementIteratorOffset(i + 1);
@@ -563,7 +647,7 @@ class FlattenedTreeDataProviderView {
         }
         else {
             this._clearCache();
-            this.dispatchEvent(new oj.DataProviderRefreshEvent());
+            this.dispatchEvent(new DataProviderRefreshEvent());
         }
     }
     _getExpandedObservableValue(expanded, completionPromise) {
@@ -594,11 +678,11 @@ class FlattenedTreeDataProviderView {
         });
     }
     fetchByOffset(params) {
-        const size = params != null ? params.size : -1;
-        const sortCriteria = params != null ? params.sortCriteria : null;
-        const offset = params != null ? (params.offset > 0 ? params.offset : 0) : 0;
-        const filterCriterion = params != null ? params.filterCriterion : null;
-        const fetchAttributes = params != null ? params.attributes : null;
+        const size = (params === null || params === void 0 ? void 0 : params.size) != null ? params.size : -1;
+        const sortCriteria = (params === null || params === void 0 ? void 0 : params.sortCriteria) != null ? params.sortCriteria : null;
+        const offset = (params === null || params === void 0 ? void 0 : params.offset) != null ? (params.offset > 0 ? params.offset : 0) : 0;
+        const filterCriterion = (params === null || params === void 0 ? void 0 : params.filterCriterion) != null ? params.filterCriterion : null;
+        const fetchAttributes = (params === null || params === void 0 ? void 0 : params.attributes) != null ? params.attributes : null;
         params = new this.FetchByOffsetParameters(this, offset, size, sortCriteria, filterCriterion, fetchAttributes);
         if (this._isSameCriteria(sortCriteria, filterCriterion)) {
             if (this._checkCacheByOffset(params)) {
@@ -674,10 +758,20 @@ class FlattenedTreeDataProviderView {
             }
         }
         if (filterCriterion) {
-            if (!this._currentFilterCriteria ||
-                filterCriterion[0].op != this._currentFilterCriteria[0].op ||
-                filterCriterion[0].filter != this._currentFilterCriteria[0].filter) {
+            if (!this._currentFilterCriteria) {
                 return false;
+            }
+            else {
+                for (const prop in this._currentFilterCriteria) {
+                    if (!this._filterCompare(this._currentFilterCriteria, filterCriterion, prop)) {
+                        return false;
+                    }
+                }
+                for (const prop in filterCriterion) {
+                    if (!this._filterCompare(this._currentFilterCriteria, filterCriterion, prop)) {
+                        return false;
+                    }
+                }
             }
         }
         else {
@@ -686,6 +780,12 @@ class FlattenedTreeDataProviderView {
             }
         }
         return true;
+    }
+    _filterCompare(cachedFilter, newFilter, prop) {
+        if (cachedFilter[prop] && newFilter[prop] && cachedFilter[prop] === newFilter[prop]) {
+            return true;
+        }
+        return false;
     }
     _checkCacheByOffset(params, expandKey) {
         if (params.size === -1 && this._done === true) {
@@ -847,7 +947,7 @@ class FlattenedTreeDataProviderView {
         }
         else {
             this._clearCache();
-            this.dispatchEvent(new oj.DataProviderRefreshEvent());
+            this.dispatchEvent(new DataProviderRefreshEvent());
             this.getExpandedObservable().next(this._getExpandedObservableValue(this.options.expanded, Promise.resolve()));
             return;
         }
@@ -880,10 +980,10 @@ class FlattenedTreeDataProviderView {
                 }
                 if (disregardAfterKey === null) {
                     const mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, null);
-                    this.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
+                    this.dispatchEvent(new DataProviderMutationEvent(mutationEventDetail));
                 }
                 if (disregardAfterKey !== null) {
-                    const refreshEvent = new oj.DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(disregardAfterKey));
+                    const refreshEvent = new DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(disregardAfterKey));
                     this.dispatchEvent(refreshEvent);
                 }
                 resolve();
@@ -1000,6 +1100,7 @@ class FlattenedTreeDataProviderView {
         return Promise.all(promises).then((value) => {
             const keySet = this.createOptimizedKeySet();
             const afterKeySet = this.createOptimizedKeySet();
+            const beforeArray = [];
             const metadataArray = [];
             const dataArray = [];
             const indexArray = [];
@@ -1017,7 +1118,7 @@ class FlattenedTreeDataProviderView {
                         }
                     }
                     const insertIndex = this._getItemIndexByKey(key) + 1;
-                    let afterKey = null;
+                    let afterKey = key;
                     const addedItems = this._cache.slice(insertIndex, insertIndex + count);
                     addedItems.forEach((item, index) => {
                         keySet.add(item.metadata.key);
@@ -1025,16 +1126,21 @@ class FlattenedTreeDataProviderView {
                         metadataArray.push(item.metadata);
                         dataArray.push(item.data);
                         indexArray.push(insertIndex + index);
+                        beforeArray.push(this._getKeyByIndex(insertIndex + index + 1));
                         afterKey = item.metadata.key;
                         this._incrementIteratorOffset(insertIndex);
                     });
                 }
             });
             return {
-                operationAddEventDetail: new this.DataProviderAddOperationEventDetail(this, keySet, afterKeySet, [], metadataArray, dataArray, indexArray),
+                operationAddEventDetail: new this.DataProviderAddOperationEventDetail(this, keySet, afterKeySet, beforeArray, metadataArray, dataArray, indexArray),
                 fetchedCountMap: fetchedCountMap
             };
         });
+    }
+    _getKeyByIndex(index) {
+        var _a, _b;
+        return ((_b = (_a = this._cache[index]) === null || _a === void 0 ? void 0 : _a.metadata) === null || _b === void 0 ? void 0 : _b.key) ? this._cache[index].metadata.key : null;
     }
     _collapse(keys) {
         const metadataArray = [];
@@ -1092,6 +1198,6 @@ class FlattenedTreeDataProviderView {
     }
 }
 oj._registerLegacyNamespaceProp('FlattenedTreeDataProviderView', FlattenedTreeDataProviderView);
-oj.EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
+EventTargetMixin.applyMixin(FlattenedTreeDataProviderView);
 
 export default FlattenedTreeDataProviderView;

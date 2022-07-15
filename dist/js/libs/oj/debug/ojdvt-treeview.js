@@ -3796,7 +3796,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         }
 
         var navigables = this.GetNodesAtDepth(root, depth);
-        next = dvt.KeyboardHandler.getNextNavigable(this, event, navigables);
+        next = dvt.KeyboardHandler.getNextNavigable(this, event, navigables, false, null, true);
       }
 
       next.MarkAsLastVisitedChild();
@@ -5732,9 +5732,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var bNewOptions = (options || !this.Options);
       this.SetOptions(options);
 
-      // Process the options object
-      var root = this._processNodes();
-      this.ApplyParsedProps({root: root});
+      if (bNewOptions) {
+        // Process the options object
+        var root = this._processNodes();
+        this.ApplyParsedProps({root: root});
+      }
 
       // Update the width and height if provided
       if (!isNaN(width) && !isNaN(height)) {

@@ -43,6 +43,7 @@
   .oj-listitemlayout-leading {
     grid-area: leading;
     align-self: center;
+    display: flex;
   }
 
   .oj-listitemlayout-textslots {

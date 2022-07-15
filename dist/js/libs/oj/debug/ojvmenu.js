@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojmenu', 'preact'], function (exports, ojmenu, preact) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'ojs/ojmenu', 'preact'], function (exports, jsxRuntime, ojmenu, preact) { 'use strict';
 
     class VMenu extends preact.Component {
         constructor(props) {
@@ -13,7 +13,7 @@ define(['exports', 'ojs/ojmenu', 'preact'], function (exports, ojmenu, preact) {
             this._rootRef = null;
         }
         render(props) {
-            return (preact.h("div", { style: { display: 'none' }, ref: (elem) => (this._rootRef = elem) }, props.children));
+            return (jsxRuntime.jsx("div", Object.assign({ style: { display: 'none' }, ref: (elem) => (this._rootRef = elem) }, { children: props.children })));
         }
         componentDidMount() {
             if (!this._menuElement) {

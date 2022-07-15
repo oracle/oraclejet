@@ -5,8 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { jsx } from 'preact/jsx-runtime';
 import { Root, customElement } from 'ojs/ojvcomponent';
-import { Component, h } from 'preact';
+import { Component } from 'preact';
 import { getTranslatedString } from 'ojs/ojtranslation';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
@@ -31,14 +32,10 @@ let ProgressBar = class ProgressBar extends Component {
             value = 0;
         }
         const percentage = max === 0 ? 0 : value > max ? 1 : value / max;
-        return (h(Root, { class: 'oj-progress-bar', role: 'progressbar', "aria-valuemin": '0', "aria-valuemax": String(max), "aria-valuenow": String(value) },
-            h("div", { class: 'oj-progress-bar-track' },
-                h("div", { class: 'oj-progress-bar-value', style: { width: percentage * 100 + '%' } }))));
+        return (jsx(Root, Object.assign({ class: "oj-progress-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(max), "aria-valuenow": String(value) }, { children: jsx("div", Object.assign({ class: "oj-progress-bar-track" }, { children: jsx("div", { class: "oj-progress-bar-value", style: { width: percentage * 100 + '%' } }) })) })));
     }
     _renderIndeterminateBar(props) {
-        return (h(Root, { class: 'oj-progress-bar', role: 'progressbar', "aria-valuetext": getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText') },
-            h("div", { class: 'oj-progress-bar-track' },
-                h("div", { class: 'oj-progress-bar-value oj-progress-bar-indeterminate' }))));
+        return (jsx(Root, Object.assign({ class: "oj-progress-bar", role: "progressbar", "aria-valuetext": getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText') }, { children: jsx("div", Object.assign({ class: "oj-progress-bar-track" }, { children: jsx("div", { class: "oj-progress-bar-value oj-progress-bar-indeterminate" }) })) })));
     }
 };
 ProgressBar.defaultProps = {

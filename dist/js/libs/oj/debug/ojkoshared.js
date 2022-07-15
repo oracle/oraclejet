@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function (oj, ko, Config, Logger) { 'use strict';
+define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger', 'ojs/ojhtmlutils'], function (oj, ko, Config, Logger, HtmlUtils) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
@@ -341,11 +341,28 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function
     function _patchKoComponentsLoaders() {
       ko.components.loaders.unshift({
         loadTemplate: function (name, templateConfig, callback) {
+          var nodes;
           if (typeof templateConfig === 'string') {
-            var nodes = ko.utils.parseHtmlFragment(templateConfig, document);
+            nodes = ko.utils.parseHtmlFragment(templateConfig, document);
+          } else if (templateConfig.element) {
+            var element = templateConfig.element;
+            if (element instanceof HTMLElement) {
+              nodes = HtmlUtils.getTemplateContent(element);
+            } else if (typeof element === 'string') {
+              var template = document.getElementById(element);
+              if (!template) {
+                throw new Error(`Cannot find element with ID ${element}`);
+              }
+              nodes = HtmlUtils.getTemplateContent(template);
+            } else {
+              throw new Error(`Unknown element type: ${element}`);
+            }
+          }
+
+          if (nodes) {
             ko.components.defaultLoader.loadTemplate(name, nodes, callback);
           } else {
-            // Config type is not a string. Let default loader handle it.
+            // Config type is not a string or an object. Let default loader handle it.
             callback(null);
           }
         }

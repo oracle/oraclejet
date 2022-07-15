@@ -628,6 +628,30 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       return sectionDataArray;
     }
+
+    /**
+     *
+     * @param {string} id The id of legend item corresponding to logical object.
+     * @returns {object | null} obj The logical object corresponding to legend item id.
+     */
+    _getLogicalObject(id) {
+      var peers = this._comp._peers;
+      for (var i = 0; i < peers.length; i++) {
+        if (id === peers[i]._id) {
+          return peers[i];
+        }
+      }
+      return null;
+    }
+
+     /**
+     * Dispatches synthetic drill event from legend item. Used by webdriver.
+     * @param {string} id The id associated with the legend item.
+     */
+    dispatchDrillEvent(id) {
+      var obj = this._getLogicalObject(id);
+      this._comp.getEventManager().processDrillEvent(obj);
+    }
   }
 
   /**
@@ -820,6 +844,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       return true;
     }
 
+    /**
+     * Fires the drill event from the legend object.
+     * @param { Object } obj The logical object coressponding to the displayable from which drill is to be fired.
+     * @returns { boolean } Returns true if drill object is fired. Else returns false.
+     */
+    processDrillEvent(obj) {
+      // Drill support
+      if (obj && obj instanceof DvtLegendObjPeer && obj.isDrillable()) {
+        var id = obj.getId();
+        this.FireEvent(dvt.EventFactory.newDrillEvent(id), this._legend);
+        return true;
+      }
+      return false;
+    }
 
     /**
      * Helper for processing click event. Handles action, drilling and section collapse.  Returns true if click is handled.
@@ -828,10 +866,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {boolean} True if an event was fired.
      */
     handleClick(obj, event) {
-      // Drill support
-      if (obj instanceof DvtLegendObjPeer && obj.isDrillable()) {
-        var id = obj.getId();
-        this.FireEvent(dvt.EventFactory.newDrillEvent(id), this._legend);
+      if (this.processDrillEvent(obj)) {
         return true;
       }
 
@@ -1802,6 +1837,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var hideAndShow = options['hideAndShowBehavior'];
       if (hideAndShow != 'none' && hideAndShow != 'off')
         itemRect.setCursor('pointer');
+
+
       container.addChild(itemRect);
 
       // Associate for interactivity.

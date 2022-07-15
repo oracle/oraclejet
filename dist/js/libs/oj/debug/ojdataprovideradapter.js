@@ -258,7 +258,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
                     params != null && params[TableDataSourceAdapter._SIZE] > 0
                         ? params[TableDataSourceAdapter._SIZE]
                         : null;
-                if (!self._isPagingModelTableDataSource() && params[TableDataSourceAdapter._SILENT]) {
+                if (!self._isPagingModelTableDataSource() && (params === null || params === void 0 ? void 0 : params[TableDataSourceAdapter._SILENT])) {
                     options[TableDataSourceAdapter._SILENT] = params[TableDataSourceAdapter._SILENT];
                 }
                 if (self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA] != null &&

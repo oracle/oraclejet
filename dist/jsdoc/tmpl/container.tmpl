@@ -1,0 +1,1233 @@
+<?js
+    var self = this,
+    elemId;
+    self.moduleName ="";
+    //ccsenter: moved the message declaration outside the loop
+    self.previewMessage = "<strong>PREVIEW:</strong> This is a preview API. Preview APIs are production quality, but can be changed on a major version without a deprecation path."
+    // [jim] use central ivar, not at-version tag on every single component,
+    // so we can update the version in one place when branching.
+    self.jetVersion = env.opts.query.jetVersion;
+    self.typedefs = [];
+    self.decorators = undefined;
+    self.getImportDetails = function(doc){
+        if (doc.meta && doc.meta.filename && doc.meta.filename.indexOf('/') >=0 && !self.isStylingOrOverview) { 
+            var moduleName ='';
+            if (doc.ojmodule) {
+                moduleName = doc.ojmodule.replace(/\"/g,'').replace(/'/g, '');
+            }
+            else{
+                var _tmparr = doc.meta.filename.split('/');
+                // last element is the js file name, the element before that is the src folder which is the module name
+                moduleName = _tmparr[_tmparr.length - 2];
+            }
+            if(!moduleName || moduleName==='none' || moduleName===''){
+                debugger;
+            }
+            var importSample = '';
+            if(self.isCustomElement){ 
+                if(!doc.virtual){//avoid abstract components
+                  importSample = '//To typecheck the element APIs, import as below.<br>';
+                  let custElemName = `${doc.domInterface}`;
+                  if (doc.pack){
+                      moduleName = doc.pack + '/' + moduleName;
+                  }
+                  importSample = importSample + 'import {'+ custElemName + '} from "' + moduleName + '";<br><br>';
+                  importSample = importSample + '//For the transpiled javascript to load the element\'s module, import as below<br>';
+                  importSample = importSample + 'import "' + moduleName + '";';
+                }
+            }
+            else if (doc.kind === 'interface' && doc.ojtsnoexport && doc.ojtsmodule){//interface not exported directly but can be referred as a type through module
+              //eg:- ConventionMethods in ojmodule
+              let exportedParent = doc.memberof;
+              if(exportedParent.startsWith('oj.')){
+                  exportedParent = exportedParent.substring(3);
+              }
+              importSample = '//To use this interface, import as below.<br>';
+              importSample = importSample + 'import '+ exportedParent + '= require("ojs/' + moduleName + '");<br><br>';
+              importSample = importSample + '//To access this interface in your code,<br>';
+              importSample = importSample + 'let myConventionMethod: '+ exportedParent + '.' + doc.id + ';';
+              
+            }
+            else if (doc.kind === 'interface' && doc.ojtsmodule){//interface exported directly to be referred as a type through module
+                //eg:- Converter in ojconverter
+                let exportedType = doc.id;
+                if(exportedType.startsWith('oj.')){
+                    exportedType = exportedType.substring(3);
+                }
+                importSample = '//To use this interface, import as below.<br>';
+                importSample = importSample + 'import '+ exportedType + '= require("ojs/' + moduleName + '");<br><br>';
+                importSample = importSample + '//To access this interface in your code:<br>';
+                importSample = importSample + 'declare class My' + exportedType + ' implements '+ exportedType;
+            }
+            else if (doc.kind === 'interface' && doc.ojtsnamespace){
+                let exportedParent = doc.ojtsnamespace;
+                //this is the case where we pushed a interface into the module's namespace because we cant export multiple things form a module. 
+                //eg:- SortComparators in arraydataprovider module
+                importSample = '//To use this interface, import as below.<br>';
+                importSample = importSample + 'import '+ exportedParent + '= require("ojs/' + moduleName + '");<br><br>';
+                importSample = importSample + '//To access this interface in your code,<br>';
+                importSample = importSample + 'let myVariable: '+ exportedParent + '.' + doc.id + ';';
+            }
+            else if (doc.kind === 'interface' && !doc.ojtsnoexport){ //all other interfaces which are exported
+                importSample = '//To use this interface, import as below.<br>';
+                importSample = importSample + 'import {'+ doc.id + '} from "ojs/' + moduleName + '";';
+            }
+            else if(doc.kind === 'interface'){
+                //there is nothing in this category.
+            }
+            else if(doc.kind === 'class' && doc.ojtsmodule && !doc.ojtsnoexport){
+                //classes which are actually exported as modules. eg:- Context, Logger, ArrayDataprovider etc.
+                importSample = '//This class is exported directly as module. To import it<br>';
+                importSample = importSample + 'import '+ doc.id + '= require("ojs/' + moduleName + '");<br><br>';
+            }
+            else if(doc.kind === 'class' && doc.ojtsmodule && doc.ojtsnoexport && doc.ojtsexportastype){
+                //These are the classes which are not exported. But they are made available for typechecking as an interface.
+                //Eg:- BusyContext, RouterState etc.
+                let exportedParent = doc.ojtsexportastype;
+                importSample = '//This class is not exported from module and can not be accessed in runtime.<br>';
+                importSample = importSample + '//However to enable typechecking and ducktyping, you can access it as an interface.<br>';
+                importSample = importSample + 'import '+ exportedParent + '= require("ojs/' + moduleName + '");<br><br>';
+                importSample = importSample + '//To access this type in your code,<br>';
+                importSample = importSample + 'class MyClass implements '+ exportedParent + '.' + doc.id + '{<br>';
+                importSample = importSample + '//or,<br>';
+                importSample = importSample + 'let myVariable: '+ exportedParent + '.' + doc.id + ';';
+            }
+            else if(doc.kind === 'class' && !doc.ojtsmodule && !doc.ojtsnoexport){
+                //classes which are returned as part of an umbrella object from the module.
+                //eg:- ColorValidator, AttributeGroupHandler, FetchByKeysMixin
+                importSample = '//To import this class, use the format below.<br>';
+                importSample = importSample + 'import {'+ doc.id + '} from "ojs/' + moduleName + '";';
+
+            }
+            else if(doc.kind === 'class' && !doc.ojtsmodule && doc.ojtsnoexport && doc.ojtsexportastype){
+                //classes which are not returned as part of an umbrella object from the module,
+                //but is exported as an interface for ducktyping or typechecking
+                //eg:- Converter, Validator
+                importSample = '//This class is not exported from module and can not be accessed in runtime.<br>';
+                importSample = importSample + '//However to enable typechecking and ducktyping, you can access it as an interface.<br>';
+                importSample = importSample + 'import {'+ doc.id + '} from "ojs/' + moduleName + '";<br><br>';
+                importSample = importSample + '//To access this type in your code,<br>';
+                importSample = importSample + 'class MyClass implements '+ doc.id + '{<br>';
+                importSample = importSample + '//or,<br>';
+                importSample = importSample + 'let myVariable: '+ doc.id + ';';
+                
+            }
+            else if (doc.kind === 'class' && doc.ojtsnoexport){
+                //classes which are not exported from a module. These cant be accessed from Typescript
+                importSample = '//This class is not exported from module and can not be accessed.<br>';
+            }
+            else if (doc.kind === 'class'){
+                //we should never be here
+            }
+            else if (doc.kind === 'namespace' && doc.ojtsmodule && !doc.ojtsnoexport){
+                //namespace which are actually exported as modules. eg:- ModuleAnimations, Composite etc.
+                importSample = '//This namespace exports multiple static methods or members. To import <br>';
+                importSample = importSample + 'import * as '+ doc.id + ' from "ojs/' + moduleName + '";<br><br>';
+                importSample = importSample + '//Now you can access the methods as '+ doc.id + '.methodName and so on <br>';
+            }
+            else if (doc.kind === 'namespace' && doc.ojtsnoexport){
+                //namespace which are not exported at all eg:- ojModule
+                importSample = '//This namespace is not exported from module and can not be accessed.<br>';
+                //non exported namespace
+            }
+            else if(doc.kind === 'namespace' && !doc.ojtsmodule && !doc.ojtsnoexport){
+                //namespaces which are returned as part of an umbrella object from the module.
+                //eg:- FetchByKeysMixin
+                importSample = '//To import this namespace, use the format below.<br>';
+                importSample = importSample + 'import {'+ doc.id + '} from "ojs/' + moduleName + '";';
+            }
+            else{
+                //we should never be here
+            }
+            // if we have decorators, provide an import sample
+            if (self.decorators){
+              importSample+= '<br><br>';
+              importSample+= '//This module also exports compiler decorators. To import a decorator use the named import format, for example:<br>';
+              importSample+= `import {${self.decorators[0].id}} from "ojs/${moduleName}";`;
+            }
+            if(importSample){
+              var importString = `<pre class="prettyprint"><code>`+importSample+`</code></pre>`;
+              return importString;
+            }
+            return null;
+        }
+        else{
+            return null;
+        }
+    };
+    self.getGenericsDetails = function(doc){
+        if(doc.tstype && doc.tstype.value && doc.tstype.genericParameters){
+            let returnString = '';
+            var dstType = doc.tstype.genericParameters;
+            dstType.forEach(function(item){
+              returnString = returnString+'<tr><td>'+item.name+'</td><td>'+item.description+'</td></tr>'
+            });
+            returnString = '<table class="keyboard-table"><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody>'+returnString+'</tbody></table>';
+            return returnString;
+        }
+        return null;
+    };
+    self.getAccessibilitySections = function(doc){
+        let accessibleObj = {
+            touchDoc:false,
+            keyboardDoc: false,
+            accessibilityDoc: false
+        };
+        if (doc) {
+            const description = doc.classdesc || doc.description || "";
+            if (description.indexOf('"touch-section"') > 0 || doc.fragments.touchDoc){
+                accessibleObj.touchDoc = true;
+            }
+            if (description.indexOf('"keyboard-section"') > 0 || doc.fragments.keyboardDoc){
+                accessibleObj.keyboardDoc = true;
+            }
+            if ((description.indexOf('"a11y-section"') > 0) ||
+                    doc.fragments.a11yKeyboard ||
+                    doc.fragments.a11y ||
+                    doc.fragments.buttonsetCommon ||
+                    doc.fragments.a11yKeyboard ||
+                    doc.fragments.comboboxCommon || doc.fragments.selectCommon){
+                accessibleObj.accessibilityDoc = true;
+            }
+        }
+        return accessibleObj;
+    };
+
+    docs.forEach(function(doc, i) {
+        self.componentId = doc.id;
+        self.propertyNameToAttribute = doc.propertyNameToAttribute;
+        self.componentCamelCaseName = doc.camelCaseName;
+        self.componentKebabCaseName = doc.tagWithoutBrackets;
+        var sortMembers = function(data) {
+            var public = [], 
+                nonPublic = [], 
+                bindingOnly = [], 
+                subIds = [], 
+                contextObjects = [], 
+                fragments = {}, 
+                children = [], 
+                styleclasses = [],
+                stylesets = [],
+                styletemplates = [],
+                stylevariablesets = [],
+                decorators = [],
+                slots = [];
+            data.forEach(function(m) {
+                if (m.ojsubid){
+                    //subIds.push(m);
+                    if(m.ojnodecontext){
+                      contextObjects.push(m);
+                    }
+                }
+                else if(m.ojnodecontext){
+                  contextObjects.push(m);
+                }
+                else if (m.ojbindingonly)
+                    bindingOnly.push(m);
+                else if (m.ojfragment)
+                    fragments[m.name] = m.description;
+                else if (m.ojchild)
+                    children.push(m);
+                else if (m.ojslot)
+                    slots.push(m);
+                else if (m.isstyleclass)
+                    styleclasses.push(m);
+                else if (m.isstyleset)
+                    stylesets.push(m);
+                else if (m.isstyletemplate)
+                    styletemplates.push(m);
+                else if (m.isstylevariableset)
+                    stylevariablesets.push(m);
+                else if(m.ojdecorator)
+                    decorators.push(m);
+                else if (m.access === 'protected' || m.access === 'private') {
+                    // for components, don't doc internal API's. 
+                    //if (!self.isCustomElement) nonPublic.push(m);
+                } else
+                    public.push(m);
+            });
+
+            var result = {
+              "public": public,
+              "nonPublic": nonPublic,
+              "bindingOnly": bindingOnly,
+              "subIds": subIds,
+              "fragments": fragments,
+              "contextObjects": contextObjects,
+              "children": children,
+              "slots": slots,
+              "styleclasses": styleclasses,
+              "stylesets": stylesets,
+              "styletemplates": styletemplates,
+              "stylevariablesets": stylevariablesets,
+              "decorators": decorators
+            };
+            return result;
+        };
+
+        var members;
+        if (title === 'Global'){
+          members = self.find({kind: 'member', name:{has: self.globals}, memberof: {isUndefined:true}});
+        }
+        else{
+          members = self.find({kind: 'member', memberof: doc.longname});
+        }
+        if (members && members.length) {
+            // Normally, members is returned in sorted order, so that the original OOTB JSDoc template didn't need a sort here, 
+            // but without this sort, we get this incorrect order:
+            // valueFormats.y  valueFormats.y2  valueFormats.y.converter  valueFormats.y2.converter
+            // which is not only undesirable, but it breaks the ordering needed for the tree functionality of the QuickNav.
+            members.sort(function(a, b) {
+              // ccsenter: we need to make sure that if we have ids such as columns, columns[].row, etc and we also have other ids
+              // like columnsDefault, columnsDefault.row, the sort order will actually try to keep the parent-child hierarchies so 
+              // the correct order would actually be columns, columns[].<subprops>, columnsDefault, columnsDefault.<subprops>
+              // right now the order is as follows:
+              // columns, columnsDefault, columnsDefault.<sub-properties>, columns[].<sub-properties> which is wrong
+              // because we loose the hierarchy.
+              var aid, bid;
+ 
+              aid = a.id.replace(/\[\]/, '');
+              bid = b.id.replace(/\[\]/, '');
+ 
+              //var aid = a.id;
+              //var bid = b.id;
+                return (aid < bid) ? -1 : (aid > bid) ? 1 : 0;
+            });
+
+            var membersObj = sortMembers(members);
+            doc.fragments = membersObj.fragments;
+        } else {
+            doc.fragments = {};
+        }
+
+        var methods;
+        if (title === 'Global'){
+          methods = self.find({kind: 'function', name:{has: self.globals}, memberof: {isUndefined:true}});
+        }
+        else{
+          methods = self.find({kind: 'function', memberof: doc.longname});
+        }
+        if (methods && methods.length) {
+            var methodsObj = sortMembers(methods);
+            if (methodsObj.decorators && methodsObj.decorators.length > 0){
+              self.decorators = methodsObj.decorators;
+            }
+            
+        }
+
+        var className = self.getDeprecatedClass(doc);
+        
+        if (title === 'Global'){
+          self.typedefs = self.find({kind: 'typedef', name:{has: self.globals}, memberof: {isUndefined:true}, access:{"!is":["private", "protected"]}});
+        }
+        else{
+          self.typedefs = self.find({kind: 'typedef', memberof: doc.longname, access:{"!is":["private", "protected"]}});
+        }
+        
+?>
+
+<?js self.isCustomElement = doc.ojcomponent;
+     self.virtual = doc.virtual; ?>
+<?js //[csaba] oj-defer is not yet an ojbindingelement (4.1.0) but will eventually be one. Then this needs to be corrected ?>
+<?js self.isBindingElement = (doc.ojbindingelement || doc.longname === 'oj.ojDefer' || doc.ojslotcomponent); ?>
+
+<?js
+// if this doc is not related to any JS API's, such as non-component styling doc 
+// (i.e. @ojstylingdoc) or any similar thing added in the future
+self.isStylingOrOverview = doc.ojstylingdoc || doc.ojoverviewdoc ; // || doc.ojsomefuturething || ... ?>
+
+<?js if (doc.kind === 'mainpage' || (doc.kind === 'package')) { ?>
+    <?js= self.partial('mainpage.tmpl', doc) ?>
+<?js } else if (doc.kind === 'source') { ?>
+    <?js= self.partial('source.tmpl', doc) ?>
+<?js } else { ?>
+
+<?js
+if (!doc.ojoverviewdoc) {?>
+    <dl class="details">
+    <?js 
+    if (doc.since) { // In JET, "since" belongs to class, not constructor ?>
+        <dt class="tag-since">Since:</dt>
+        <dd class="tag-since"><ul class="dummy"><li><?js= doc.since ?></li></ul></dd>
+    <?js 
+    }
+    //[csaba]: expose the module name the component/class belongs to
+    if (doc.meta && doc.meta.filename && doc.meta.filename.indexOf('/') >=0 && !self.isStylingOrOverview) { 
+        if (doc.ojmodule) {
+          self.moduleName = doc.ojmodule.replace(/\"/g,'').replace(/'/g, '');
+        }
+        else{
+          var _tmparr = doc.meta.filename.split('/');
+          // last element is the js file name, the element before that is the src folder which is the module name
+          self.moduleName = _tmparr[_tmparr.length - 2];
+        }
+        if (self.moduleName.toLowerCase() !== 'none') { ?>
+            <dt class="tag-module">Module:</dt>
+            <dd class="tag-module"><ul class="dummy"><li><?js= self.moduleName ?></li></ul></dd>
+        <?js 
+        }
+    } ?>
+    </dl>
+<?js
+}
+if (doc.ojunsupportedthemes && doc.ojunsupportedthemes.length > 0){ ?>
+    <?js= self.partial('themes.tmpl', doc) ?>
+<?js
+}
+var events;
+if (title === 'Global'){
+  events = self.find({kind: 'event', name:{has: self.globals}, memberof: {isUndefined: true}}); 
+}
+else{
+  events = self.find({kind: 'event', memberof: doc.longname}); 
+}
+
+var hasChildren = membersObj && membersObj.children.length;
+var hasSlots = membersObj && membersObj.slots.length;
+var hasStyleItems = (membersObj && ( membersObj.styleclasses.length || membersObj.stylesets.length || membersObj.styletemplates.length || membersObj.stylevariablesets.length ));
+
+const {touchDoc, keyboardDoc, accessibilityDoc} = self.getAccessibilitySections(doc);
+let hasMigrationSection = false;
+const description = doc.classdesc || doc.description || "";
+if (description.indexOf('"migration-section"') > 0 ){
+    hasMigrationSection = true;
+}
+
+//var hasDomColumn = hasChildren && hasSlots;
+//[csaba] we want to show the Slots section even if there's just the inherited Default slot (in many cases)
+var hasDomColumn = hasChildren || hasSlots;
+var hasFieldsColumn = members && membersObj && membersObj.public.length > 0;
+var hasEventsColumn = events && events.length && events.forEach;
+var hasMethodsColumn = methods && methods.length;
+var hasTypeDefColumn = self.typedefs && self.typedefs.length;
+var hasDecorators = methodsObj && methodsObj.decorators && methodsObj.decorators.length > 0;
+var hasOtherColumn = hasStyleItems || touchDoc || keyboardDoc || accessibilityDoc || hasMigrationSection;
+
+var columnCount = !!hasDomColumn + !!hasFieldsColumn + !!hasEventsColumn + !!hasMethodsColumn + !!hasTypeDefColumn + !!hasDecorators + !!hasOtherColumn;
+
+
+// only show QuickNav if is non-empty
+if (columnCount && !self.isStylingOrOverview) { 
+
+// TODO: this tag should be a nav, not a section, but the JSDoc theming assumes that the site-wide nav
+// down the left-hand side is the only nav on the page, so this will require redoing that theming. ?>
+<section id="quick-nav" class="<?js= className?>">
+    <header><h2>QuickNav</h2></header>
+    <?js if (hasDomColumn) { ?>
+    <div class="quick-nav-section<?js= columnCount ?>">
+        <?js if (hasChildren || hasSlots) { ?>
+        <h3> <a href="#slots-section">Slots</a></h3>
+        <ul class="subList">
+            <?js for (var i=0; i<membersObj.children.length; i++){?>
+                <?js= self.getLiTag(membersObj.children[i]) ?><a href="#<?js= membersObj.children[i].id ?>"><?js= membersObj.children[i].id ?></a></li>
+            <?js } ?>
+            <?js for (var i=0; i<membersObj.slots.length; i++){ ?>
+                <?js= self.getLiTag(membersObj.slots[i]) ?><a href="#<?js= membersObj.slots[i].id ?>"><?js= membersObj.slots[i].id ?></a></li>
+            <?js } ?>
+        </ul>
+        <?js } ?>
+    </div>
+    <?js } ?>
+
+    <?js if (hasFieldsColumn) { ?>
+    <div class="quick-nav-section<?js= columnCount ?>">
+        <h3> <a href="#members-section"><?js= self.isCustomElement ? 'Attributes' : 'Fields' ?></a></h3>
+        <ul class="optionsSubList">
+            <?js 
+            // Generate nested lists with onclick listeners to collapse/expand for sub-properties
+            let currentLevel = 1;
+
+            for (var i=0; i < membersObj.public.length; i++) {
+                let currentProperty = membersObj.public[i].id;
+                let property = [];
+                // we support internal [Symbol.asynIterator] JS symbol
+                if (currentProperty.startsWith('[Symbol.')) {
+                    // we don't want to split based on the dot
+                    property = [currentProperty];
+                }
+                else{
+                    property = membersObj.public[i].alias? membersObj.public[i].alias.split('.') : membersObj.public[i].id.split('.');
+                }
+                // if we have props with subprops...
+                if (property.length > 1) {
+                    let parentEntryExists = false;
+
+                    if(i > 0) {
+                        let prevProperty = membersObj.public[i-1].id;
+                        let propertyPrefix = currentProperty.substring(0,currentProperty.lastIndexOf("."));
+
+                        // if *any* ancestor prop contains '[' then is subproperty of array-valued property
+                        membersObj.public[i].isSubpropOfArray = propertyPrefix.indexOf('[') > -1;
+
+                        // For properties of array objects, ignore square parents when checking parent name
+                        if (propertyPrefix.slice(propertyPrefix.length-2) === '[]') {
+                            propertyPrefix = propertyPrefix.substring(0, propertyPrefix.length-2);
+                        }
+                        if(prevProperty.lastIndexOf(propertyPrefix, 0) === 0){
+                            parentEntryExists = true;
+                        }
+                    }
+
+                    if(!parentEntryExists) {
+                        throw new Error("Parent doc entry is required for nested property's field. \"" + currentProperty +"\" in " + doc.id);
+                    }
+                }
+                if (property.length > currentLevel) {
+                    // Create nested list if in a sub-properties ?>
+                    <ul class='optionsInnerSubList'>
+                    <?js 
+                    currentLevel = property.length;
+                } 
+                else if (property.length < currentLevel) {
+                    // Close nested lists if out of sub-properties
+                    let numClosedLists = 0;
+                    while (numClosedLists < (currentLevel - property.length)) { ?>
+                        </ul></li>
+                        <?js 
+                        numClosedLists++;
+                    }
+                    currentLevel = property.length;
+                } 
+                else if (i > 0) { 
+                    // Close previous list item if at the same level ?>
+                    </li>
+                <?js 
+                }
+                // Create the list item for the current property and create link to js doc if not direct parent of sub-properties
+                let membName = (self.isCustomElement && !membersObj.public[i].isSubpropOfArray) ? self.propertyNameToAttribute(property[currentLevel-1]) : property[currentLevel-1];
+                
+                if (i < (membersObj.public.length - 1)) {
+                    let nextProperty = membersObj.public[i+1].id.split('.');
+
+                    if (nextProperty.length > currentLevel) { ?>
+                        <?js= self.getLiTag(membersObj.public[i]) ?><div><a href="javascript:void(0)" ><b><?js= membName ?></b></a></div>
+                    <?js 
+                    } 
+                    else { 
+                        let hasTypeDef = false;
+                        if (hasTypeDefColumn) {
+                            for (var v = 0; v < self.typedefs.length; v++) {
+                                if (membersObj.public[i].signature) {
+                                    if (membersObj.public[i].signature.indexOf(self.typedefs[v].longname) > 0) {
+                                        hasTypeDef = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (hasTypeDef) {?>
+                            <?js= self.getLiTag(membersObj.public[i]) ?><div><a href="#<?js= membersObj.public[i].id ?>"><b><?js= membName ?></b></a></div>
+                        <?js 
+                        } 
+                        else {?>
+                            <?js= self.getLiTag(membersObj.public[i]) ?><div><a href="#<?js= membersObj.public[i].id ?>"><?js= membName ?></a></div>
+                        <?js 
+                        } 
+                    }
+                } 
+                else { ?>
+                    <?js= self.getLiTag(membersObj.public[i]) ?><div><a href="#<?js= membersObj.public[i].id ?>"><?js= membName ?></a></div>
+                <?js 
+                }
+
+                // When we get to the end, close any remaining open lists
+                if (i == (membersObj.public.length - 1)) {
+                    let numClosedLists = 0;
+                    while (numClosedLists < (currentLevel - 1)) { ?>
+                        </ul></li>
+                        <?js 
+                        numClosedLists++;
+                    }
+                }
+            } ?>
+        </ul>
+        <script type="text/javascript" >
+        var innerSubLists = document.getElementsByClassName('optionsInnerSubList');
+        for (var i=0; i<innerSubLists.length; i++) {
+            innerSubLists[i].parentNode.onclick=function(event) {
+                event.stopPropagation();
+                // Only interpret the click event if the <a> element is the target and do nothing if click occurred elsewhere on the div
+                if (event.target.parentNode == this.firstChild.firstChild) {
+                    // toggle only the clicked sub properties list and not any nested ones
+                    var subProperties = this.getElementsByClassName('optionsInnerSubList');
+                    subProperties[0].style.display = (subProperties[0].style.display=='block' ? 'none' : 'block');
+                }
+            }
+        }
+        </script>
+        <?js if (membersObj.nonPublic.length){ ?>
+            <br><a class="nonpublic-mem-link" href="#nonpublic-members-section">Non-public Fields <?js= self.isCustomElement ? '(internal use only)' : '' ?></a>
+        <?js } ?>
+        <?js if (membersObj.bindingOnly.length){ ?>
+            <br><a class="nonpublic-mem-link" href="#bindingonly-section">Binding Attributes</a>
+        <?js } ?>
+        <?js if (membersObj.contextObjects.length){ ?>
+            <br><a class="nonpublic-mem-link" href="#contextobjects-section">Context Objects</a>
+        <?js } ?>
+        <?js if (membersObj.subIds.length){ ?>
+            <br><a class="nonpublic-mem-link" href="#subids-section">Sub-ID's</a>
+        <?js } ?>
+
+    </div>
+    <?js } ?>
+    
+    <?js 
+    if (hasEventsColumn) { ?>
+    <div class="quick-nav-section<?js= columnCount ?>">
+        <h3><a  href="#events-section">Events</a></h3>
+        <ul class="subList">
+            <?js events.forEach(function(e){ ?>
+            <?js= self.getLiTag(e) ?><a href="#<?js= e.id ?>"><?js= e.name ?></a></li>
+            <?js }); ?>
+        </ul>
+    </div>
+    <?js } ?>
+
+    <?js
+    if (hasMethodsColumn) { ?>
+    <div class="quick-nav-section<?js= columnCount ?>">
+        <h3><a href="#methods-section">Methods</a></h3>
+        <ul class="subList">
+            <?js for (var i=0; i<methodsObj.public.length; i++){ ?>            
+                <?js= self.getLiTag(methodsObj.public[i]) ?><a href="#<?js= methodsObj.public[i].id ?>"><?js= methodsObj.public[i].id ?></a></li>
+            <?js } ?>
+        </ul>
+        <?js if (methodsObj.nonPublic.length){ ?>
+            <br><a class="nonpublic-mem-link" href="#nonpublic-methods-section">Non-public Methods <?js= self.isCustomElement ? '(internal use only)' : '' ?></a>
+        <?js } ?>
+    </div>
+    <?js } ?>
+    <?js
+    if (hasTypeDefColumn) { ?>
+    <div class="quick-nav-section<?js= columnCount ?>">
+        <h3><a href="#typedefs-section">Type Definitions</a></h3>
+        <ul class="subList">
+            <?js for (var i=0; i < self.typedefs.length; i++){ ?>            
+                <?js= self.getLiTag(self.typedefs[i]) ?><a href="#<?js= self.typedefs[i].name ?>"><?js= self.typedefs[i].name ?></a></li>
+            <?js } ?>
+        </ul>
+    </div>
+    <?js } ?>
+    <?js if (hasDecorators) { ?>
+        <div class="quick-nav-section<?js= columnCount ?>">
+            <h3> <a href="#decorator-section">Decorators</a></h3>
+            <ul class="subList">
+                <?js for (var i=0; i < methodsObj.decorators.length; i++){?>
+                    <?js= self.getLiTag(methodsObj.decorators[i]) ?><a href="#<?js= methodsObj.decorators[i].id ?>"><?js= `@${methodsObj.decorators[i].id}` ?></a></li>
+                <?js } ?>
+            </ul>
+        </div>
+    <?js } 
+    if (hasOtherColumn) { ?>
+        <div class="quick-nav-section<?js= columnCount ?>">
+            <h3>Other Topics</h3>
+            <ul class="subList">
+                <?js 
+                    if (touchDoc) { ?>
+                      <li><a href="#touch-section">Touch Section</a></li>
+                    <?js 
+                    }
+                    if (keyboardDoc) { ?>
+                        <li><a href="#keyboard-section">Keyboard Section</a></li>
+                    <?js 
+                    }
+                    if (accessibilityDoc) { ?>
+                        <li><a href="#a11y-section">Accessibility Section</a></li>
+                    <?js 
+                    }
+                    if (hasMigrationSection) { ?>
+                        <li><a href="#migration-section">Migration Section</a></li>
+                    <?js
+                    } 
+                    if (hasStyleItems) { ?>
+                        <li><a href="#styling-section">Styling Section</a></li>
+                    <?js 
+                    } 
+                ?>
+            </ul>
+        </div>
+    <?js 
+    } ?>
+</section>
+<?js } // end of "if quickNav section non-empty then render it" ?>
+<section class="<?js= className?>">
+<header>
+    <?js
+    // [csaba] for now (4.1) oj-defer is still not a ojbindingelement so we have to make a one off case for it 
+    if (!self.isStylingOrOverview && self.isCustomElement || self.isBindingElement ) { ?>  
+        </br>
+    <?js 
+    } 
+    if (doc.classdesc || doc.description) { 
+        let description = doc.classdesc || doc.description;
+    	let classDesc = "class-description";
+    	if (!doc.ojoverviewdoc && !self.isCustomElement ) { ?>
+      	    <?js elemId = "description-section"; ?>
+      	    <h3 id="<?js= elemId ?>">
+                Description<a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+      	    </h3>
+        <?js
+        } ?>
+		<div class="<?js= classDesc ?>">
+		  <p><?js= description ?></p>
+        </div>
+        </br>
+	<?js
+	}
+    //if the entire styling doclet is deprecated
+    if (doc.tsdeprecated && doc.ojstylingdoc) { ?>
+        <br>
+     	<h5 class="important">Deprecated:</h5>
+            <?js= self.partial('deprecated.tmpl', doc.tsdeprecated) ?>
+    <?js 
+    } ?> 
+</header>
+
+<?js
+// Hide the entire <article> for non-JS doc. The only part of it that would otherwise
+// actually show up today is the Constructor section, but that could change given bug 
+// 22314026: "always show jsdoc sections for linkability".  Could fine-tune this later if 
+// (say) we ever want non-JS doc to support @requires someModuleName.
+if (!self.isStylingOrOverview) { ?>
+<article>
+    <div class="container-overview">
+    <?js= self.partial('modulereturn.tmpl', doc) ?>
+    <br>
+    <?js
+    if (doc.kind === 'module' && doc.module) {
+        self.docInProgress = doc; ?>
+        <?js= self.partial('method.tmpl', doc.module) ?>
+        <?js 
+        self.docInProgress = null;
+    } ?>
+
+    <?js 
+    if (doc.kind === 'class' && !self.isCustomElement) {
+        self.docInProgress = doc; ?>
+        <?js= self.partial('details.tmpl', doc) ?>
+        <?js= self.partial('method.tmpl', doc) ?>
+        <?js 
+        self.docInProgress = null;
+    } 
+    else { ?>
+        <?js 
+        if (doc.description) { ?>
+            <div class="description"><?js= doc.description ?></div>
+        <?js 
+        } ?>
+        <?js 
+        if (doc.ojdeprecateddescription) { ?>
+            <div class="description deprecated-hidden"><?js= doc.ojdeprecateddescription ?></div>
+        <?js 
+        } ?>
+        <?js 
+        if (doc.ojjsdescription) { ?>
+            <div class="description jsdeprecated-hidden"><?js= doc.ojjsdescription ?></div>
+        <?js 
+        } 
+        self.docInProgress = doc;?>
+        <?js= self.partial('details.tmpl', doc) ?>
+        <?js 
+        self.docInProgress = null;
+        if (doc.tsexamples && doc.tsexamples.length) {?>
+            <?js elemId = "examples-section"; ?>
+            <h3 id="<?js= elemId ?>">
+                Example<?js= doc.tsexamples.length > 1? 's':'' ?>
+                <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+            </h3>
+            <?js= self.partial('tsexamples.tmpl', doc.tsexamples) ?>
+        <?js 
+        } ?>
+    <?js 
+    } ?>
+    </div>
+
+    <?js 
+    if (doc.mixes && doc.mixes.length) { ?>
+        <?js elemId = "mixesIn-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Mixes In
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+        <ul>
+            <?js doc.mixes.forEach(function(a) { ?>
+                <li><?js= self.linkto(a, a) ?></li>
+            <?js 
+            }); ?>
+        </ul>
+    <?js 
+    } ?>
+
+    <?js 
+    if (doc.requires && doc.requires.length) { ?>
+        <?js elemId = "requires-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Requires
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+        <ul>
+            <?js doc.requires.forEach(function(r) { ?>
+                <li><?js= self.linkto(r, r) ?></li>
+            <?js 
+            }); ?>
+        </ul>
+    <?js 
+    } ?>
+
+    <?js
+    var classes = self.find({kind: 'class', memberof: doc.longname});
+    if (doc.kind !== 'globalobj' && classes && classes.length) { ?>
+        <?js elemId = "classes-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Classes
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+        <dl>
+            <?js classes.forEach(function(c) { ?>
+                <dt><?js= self.linkto(c.longname, c.name) ?></dt>
+                <dd>
+                    <?js 
+                    if (c.summary) { ?>
+                        <?js= c.summary ?>
+                    <?js 
+                    } ?>
+                </dd>
+            <?js 
+            }); ?>
+        </dl>
+    <?js 
+    } ?>
+
+    <?js
+    var namespaces = self.find({kind: 'namespace', memberof: doc.longname});
+    if (doc.kind !== 'globalobj' && namespaces && namespaces.length) { ?>
+        <?js elemId = "namespaces-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Namespaces
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+
+        <dl>
+            <?js namespaces.forEach(function(n) { ?>
+                <dt><a href="namespaces.html#<?js= n.longname ?>"><?js= self.linkto(n.longname, n.name) ?></a></dt>
+                <dd>
+                    <?js 
+                    if (n.summary) { ?>
+                        <?js= n.summary ?>
+                    <?js 
+                    } ?>
+                </dd>
+            <?js 
+            }); ?>
+        </dl>
+    <?js 
+    } ?>
+
+    <?js 
+    // [csaba] generate styling doc from doclets
+    if (membersObj && ( membersObj.styleclasses.length || membersObj.stylesets.length || membersObj.styletemplates.length || membersObj.stylevariablesets.length )) { 
+        if (!self.tokens){
+            self.tokens = self.find({kind: 'member', memberof: 'StylingTemplateTokens'}) || [];
+        }
+        var styleObj = {
+            "classes": membersObj.styleclasses,
+            "sets": membersObj.stylesets,
+            "templates": membersObj.styletemplates,
+            "tokens": self.tokens,
+            "variablesets": membersObj.stylevariablesets
+        };
+        //self.logger.info(`Component processed: ${self.componentCamelCaseName}`);
+        // Sort the result in the following order: classes first, then sets, then templates, then variables
+        // NOTE: If we ONLY have variables (no classes/sets/templates),
+        //       then adjust the "styling-section" title text accordingly.
+        var styleItems = self.getStylingItems(styleObj, true);
+        elemId = "styling-section"; 
+        ?>
+
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            <?js if (styleItems.styleClasses && styleItems.styleClasses.length) {?>
+              Styling Classes
+            <?js } else {?>
+              Styling
+            <?js }?>
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+        <dl class="styleclasses">
+            <?js= self.partial('styleclasses.tmpl', styleItems) ?>
+        </dl>
+    <?js 
+    } ?>
+
+    <?js 
+    var memberNames = '';
+    // SLOTS
+    if (membersObj && (membersObj.children.length + membersObj.slots.length)) {  
+        var hasSlots = membersObj.slots.length > 0;
+        var hasDefault = membersObj.children.length > 0; 
+        ?>
+        <?js elemId = "slots-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Slots
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+
+        <p>JET components that allow child content support slots. 
+            Please see the <a href="<?js= env.opts.query.apidocLink ?>CustomElementOverview.html#ce-slots-section " target="_blank">slots section</a> 
+            of the JET component overview doc for more information on allowed slot content and slot types.</p>
+
+        <dl>
+            <?js 
+            for (var i = 0; i < membersObj.children.length; i++) {
+                memberNames = memberNames + ' ' +membersObj.children[i].id; 
+                self.docInProgress = membersObj.children[i];
+                ?>
+                <?js= self.partial('members.tmpl', membersObj.children[i]) ?>
+            <?js 
+            }  
+            self.docInProgress = null;
+            for (var i=0; i < membersObj.slots.length; i++) {
+                self.docInProgress = membersObj.slots[i];
+                memberNames = memberNames + ' ' +membersObj.slots[i].id; 
+                ?>
+                <?js= self.partial('members.tmpl', membersObj.slots[i]) ?>
+            <?js 
+            }
+            self.docInProgress = null;
+            ?>
+        </dl>
+    <?js 
+    }
+    // ATTRIBUTES
+    if (membersObj && membersObj.public.length) {  ?>
+        <?js elemId = "members-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            <?js= self.isCustomElement ? 'Attributes' : 'Fields' ?>
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+
+        <dl>
+            <?js 
+            for (var i=0; i < membersObj.public.length; i++) {
+                self.docInProgress = membersObj.public[i];
+                memberNames = memberNames + ' ' +membersObj.public[i].id; 
+                ?>
+                <?js= self.partial('members.tmpl', membersObj.public[i]) ?>
+            <?js 
+            }
+            self.docInProgress = null; ?>
+        </dl>
+    <?js 
+    } 
+    // NON PUBLIC FIELDS
+    if (membersObj && membersObj.nonPublic.length) {  ?>
+        <?js elemId = "nonpublic-members-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Non-public Fields
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+
+        <?js 
+        if (self.isCustomElement) { ?>
+            <p class="important"><span style="text-decoration:underline">Note</span>: Extending JET components
+               is not currently supported.  Thus, non-public fields are for internal use only.</p>
+        <?js 
+        } ?>
+
+        <dl>
+            <?js 
+            for (var i=0; i < membersObj.nonPublic.length; i++) {
+                self.docInProgress = membersObj.nonPublic[i]; 
+                ?>
+                <?js= self.partial('members.tmpl', membersObj.nonPublic[i]) ?>
+            <?js 
+            }
+            self.docInProgress = null; ?>
+        </dl>
+    <?js 
+    }
+    if(searchMetadata[doc.longname]){
+        searchMetadata[doc.longname]['members'] = memberNames;
+    }
+    // BINDING ATTRIBUTES
+    if (membersObj && membersObj.bindingOnly.length) {  ?>
+        <?js elemId = "bindingonly-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Binding Attributes
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+
+        <p>Binding attributes are similar to component properties, but are exposed only via the
+           <code class="prettyprint">ojComponent</code> binding.</p>
+
+        <dl>
+            <?js 
+            for (var i=0; i < membersObj.bindingOnly.length; i++) {
+                self.docInProgress = membersObj.bindingOnly[i]; 
+                ?>
+                <?js= self.partial('members.tmpl', membersObj.bindingOnly[i]) ?>
+            <?js 
+            }
+            self.docInProgress = null; ?>
+        </dl>
+    <?js 
+    } 
+    //CONTEXT OBJECTS
+    if (membersObj && membersObj.contextObjects.length) {  ?>
+        <?js elemId = "contextobjects-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Context Objects
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+
+        <p> Each context object contains, at minimum, a <code class="prettyprint">subId</code> property,
+            whose value is a string that identifies a particular DOM node in this element. It can have additional properties to further specify the desired node. See  <a href="#getContextByNode">getContextByNode</a> for more details. </p>
+        <dd>
+            <h5 class="subsection-title">Properties:</h5>
+            <dl><?js= self.partial('properties.tmpl', [{name:'subId',type:{names:['string']},description:'Sub-id string to identify a particular dom node.'}]) ?></dl>
+        </dd>
+        <p>Following are the valid subIds:</p>
+        <dl>
+            <?js 
+            for (var i=0; i< membersObj.contextObjects.length; i++) {
+                self.docInProgress = membersObj.contextObjects[i]; 
+                var id = membersObj.contextObjects[i].id;
+                //Add namespace to id.
+                membersObj.contextObjects[i].id = "contextObject:" + id; 
+                ?>
+                <?js= self.partial('members.tmpl', membersObj.contextObjects[i]) ?>
+                <?js
+                //Restore old id, as same doclet object could be used for rendering subid section.
+                membersObj.contextObjects[i].id = id; 
+            }
+            self.docInProgress = null;  ?>
+        </dl>
+    <?js 
+    } 
+    //Sub-ID's
+    if (membersObj && membersObj.subIds.length) {  ?>
+        <?js elemId = "subids-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Sub-ID's
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+
+        <p> Each subId locator object contains, at minimum, a <code class="prettyprint">subId</code> property,
+            whose value is a string that identifies a particular DOM node in this element. It can have additional properties to further specify the desired node. See <a href="#getNodeBySubId">getNodeBySubId</a> and <a href="#getSubIdByNode">getSubIdByNode</a> methods for more details. </p>
+        <dd>
+            <h5 class="subsection-title">Properties:</h5>
+            <dl>
+                <?js= self.partial('properties.tmpl', [{name:'subId',type:{names:['string']},description:'Sub-id string to identify a particular dom node.'}]) ?>
+            </dl>
+        </dd>
+        <p>Following are the valid subIds:</p>
+        <dl>
+            <?js 
+            for (var i=0; i< membersObj.subIds.length; i++) {
+                self.docInProgress = membersObj.subIds[i]; ?>
+                <?js= self.partial('members.tmpl', membersObj.subIds[i]) ?>
+            <?js 
+            }
+            self.docInProgress = null; ?>
+        </dl>
+    <?js 
+    } 
+    // EVENTS
+    var events;
+    if (title === 'Global') {
+        events = self.find({kind: 'event', name:{has: self.globals}, memberof: {isUndefined: true}}); 
+    }
+    else {
+        events = self.find({kind: 'event', memberof: doc.longname}); 
+    }
+    if (events && events.length && events.forEach) { ?>
+        <?js elemId = "events-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Events
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+
+        <dl>
+            <?js 
+            var eventNames = '';
+            events.forEach(function(e) {
+                self.docInProgress = e;
+                eventNames = eventNames + ' ' + e.id; 
+                ?>
+                <?js= self.partial('method.tmpl', e) ?>
+            <?js 
+            });
+            self.docInProgress = null;
+            if(searchMetadata[doc.longname]) {
+                searchMetadata[doc.longname]['events'] = eventNames;
+            } ?>
+        </dl>
+    <?js 
+    } 
+    // METHODS
+    var methodNames = '';
+    if (methodsObj && methodsObj.public.length) { ?>
+        <?js elemId = "methods-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Methods
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+
+        <dl>
+            <?js 
+            for (var i=0; i < methodsObj.public.length; i++) {
+                self.docInProgress = methods[i];
+                methodNames = methodNames + ' ' + methods[i].id; 
+                ?>
+                <?js= self.partial('method.tmpl', methodsObj.public[i]) ?>
+            <?js 
+            }
+            self.docInProgress = null; ?>
+        </dl>
+    <?js 
+    } 
+    //Non-public Methods
+    if (methodsObj && methodsObj.nonPublic.length) { ?>
+        <?js elemId = "nonpublic-methods-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Non-public Methods
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+
+        <?js 
+        if (self.isCustomElement) { ?>
+            <p class="important"><span style="text-decoration:underline">Note</span>: Extending JET components
+               is not currently supported.  Thus, non-public methods are for internal use only.</p>
+        <?js 
+        } ?>
+
+        <dl>
+            <?js 
+            for (var i=0; i < methodsObj.nonPublic.length; i++) { 
+                self.docInProgress = methodsObj.nonPublic[i];
+                ?>
+                <?js= self.partial('method.tmpl', methodsObj.nonPublic[i]) ?>
+            <?js 
+            }
+            self.docInProgress = null; ?>
+        </dl>
+    <?js 
+    }
+    if(searchMetadata[doc.longname]) {
+        searchMetadata[doc.longname]['methods'] = methodNames;
+    } 
+    // TYPEDEFS
+    if (self.typedefs && self.typedefs.length && self.typedefs.forEach) { ?>
+        <?js elemId = "typedefs-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Type Definitions
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+
+        <dl>
+            <?js 
+            self.typedefs.forEach(function(e) {
+                self.docInProgress = e;
+                if (e.signature || e.classsignature) { ?>
+                    <?js= self.partial('method.tmpl', e) ?>
+                <?js
+                }
+                else { ?>
+                    <?js= self.partial('members.tmpl', e) ?>
+                <?js
+                }
+            }); 
+            self.docInProgress = null;?>
+        </dl>
+    <?js 
+    } 
+    // DECORATORS
+    var decoratorNames = '';
+    if (methodsObj && methodsObj.decorators && methodsObj.decorators.length > 0) { ?>
+        <?js elemId = "decorator-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Decorators
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+        <dl>
+            <?js 
+            for (var i=0; i < methodsObj.decorators.length; i++) {
+                self.docInProgress = methodsObj.decorators[i];
+                decoratorNames = decoratorNames + ' ' + methodsObj.decorators[i].id; 
+                ?>
+                <?js= self.partial('method.tmpl', methodsObj.decorators[i]) ?>
+            <?js 
+            }
+            self.docInProgress = null; ?>
+        </dl>
+    <?js
+    } 
+    if(searchMetadata[doc.longname]){
+        searchMetadata[doc.longname]['decorators'] = decoratorNames;
+    } ?>
+</article>
+<?js 
+} // end of if (!self.isStylingOrOverview)
+else if (doc.ojstylingdoc) {
+  // for non-component styling classes we can now have regular member doclets so we render these here with a new template
+  // [csaba] generate non-component styling doc from doclets
+  if (membersObj && ( membersObj.styleclasses.length || membersObj.stylesets.length || membersObj.styletemplates.length || membersObj.stylevariablesets.length )) { 
+    if (!self.tokens){
+      self.tokens = self.find({kind: 'member', memberof: 'StylingTemplateTokens'}) || [];
+    }
+    var styleObj = {
+      "classes": membersObj.styleclasses,
+      "sets": membersObj.stylesets,
+      "templates": membersObj.styletemplates,
+      "tokens": self.tokens,
+      "variablesets": membersObj.stylevariablesets
+    };
+    //self.logger.info(`Component processed: ${doc.longname}`);
+    // sort the result in the following order: classes first, then sets, then templates, then variables
+    var styleItems = self.getStylingItems(styleObj, true);
+    ?>
+    <dl class="styleclasses">
+      <?js= self.partial('styleclasses.tmpl', styleItems) ?>
+    </dl>
+  <?js
+  }
+}
+
+// we provide a way to inject data content into a fragment.
+// for now we only support typedefs, the syntax is <%typedefname%>
+// the token is substituted with the template evaluated typedef content
+if (doc.fragments){
+    for (let p in doc.fragments){
+        let description = doc.fragments[p];
+        // look for <%typdef%> tokens
+        let tokenStartIdx = description.indexOf('<%');
+        while (tokenStartIdx >=0){
+            let tokenEndIdx = description.indexOf('%>', tokenStartIdx);
+            if ( tokenEndIdx > tokenStartIdx){
+                //extract the target name from the token
+                let targetname = description.substring(tokenStartIdx+2, tokenEndIdx);
+                let typedefname = targetname;
+                let typedefs = self.find({kind:"typedef", longname: typedefname});
+                if (typedefs == undefined){
+                    typedefs = self.find({kind:"typedef", name: typedefname});
+                }
+                if (typedefs.length){
+                    // we can only pull in properties of one typedef but can inject in several places
+                    let typedefobj = typedefs[0];
+                    self.docInProgress = typedefobj;
+                    let result = self.partial('details.tmpl', typedefobj);
+                    self.docInProgress = null;
+                    let regex = new RegExp('<%' + targetname + '%>');
+                    description = description.replace(regex, result);
+                }
+                tokenStartIdx = description.indexOf('<%', tokenEndIdx + 2);
+            }
+        }
+        doc.fragments[p] = description;
+    }
+}
+?>
+
+</section>
+<?js } ?>
+
+<?js }); ?>

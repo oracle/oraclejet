@@ -70,6 +70,13 @@
       height: $switchContainerHeight;
   		width: $switchContainerWidth;  
 
+		/**
+     * In Chrome 103 - the relative/absolute positioning inside a multi-col layout is broken
+     * https://bugs.chromium.org/p/chromium/issues/detail?id=1338997
+     * This is to workaround this bug and make things render correctly for chromium browsers.
+     * This bug will be fixed in 104 and later.
+     */
+		overflow: hidden;
 	}
 
 	.oj-switch .oj-switch-thumb {

@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { ItemMetadata } from '@oracle/oraclejet-preact/utils/dataProvider';
-import { ComponentChildren, h } from 'preact';
+import { ItemMetadata } from '../utils/UNSAFE_dataProvider';
+import { ComponentChildren } from 'preact';
 import { MessageVariant } from './Message.types';
 /**
  * Structure of template item used for dynamic templates
@@ -49,5 +49,5 @@ declare type Props<K, D> = {
 /**
  * Detail Component for rendering the detail content of the Message
  */
-declare function MessageDetail<K, D>({ item, renderer, variant }: Props<K, D>): h.JSX.Element | null;
+declare function MessageDetail<K, D>({ item, renderer, variant }: Props<K, D>): import("preact").JSX.Element | null;
 export { MessageDetail, MessageTemplateItem };

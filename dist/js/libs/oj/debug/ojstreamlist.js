@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdatacollection-common', 'ojs/ojcontext', 'ojs/ojvcollection', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojdomutils'], function (exports, preact, ojvcomponent, Translations, DataCollectionUtils, Context, ojvcollection, oj, ojkeyset, ojtreedataprovider, AnimationUtils, ThemeUtils, DomUtils) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdatacollection-common', 'ojs/ojcontext', 'ojs/ojvcollection', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojdomutils'], function (exports, jsxRuntime, preact, ojvcomponent, Translations, DataCollectionUtils, Context, ojvcollection, oj, ojkeyset, ojtreedataprovider, AnimationUtils, ThemeUtils, DomUtils) { 'use strict';
 
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
@@ -88,7 +88,7 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdat
             }
             const vnodes = this.renderItem(key, index, data);
             this.decorateItem(vnodes, key, index, initialFetch, visible);
-            return vnodes;
+            return vnodes[0];
         }
         renderItem(key, index, data) {
             const renderer = this.callback.getItemRenderer();
@@ -220,7 +220,7 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdat
             }
             const vnodes = this.renderItem(metadata, index, data);
             this.decorateItem(vnodes, metadata, index, initialFetch, visible);
-            return vnodes;
+            return vnodes[0];
         }
         renderItem(metadata, index, data) {
             const key = metadata.key;
@@ -259,7 +259,7 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdat
             const vnode = vnodes[0];
             if (vnode != null) {
                 vnode.key = metadata.key;
-                vnode.props.role = 'listitem';
+                vnode.props.role = 'treeitem';
                 vnode.props.tabIndex = -1;
                 vnode.props['data-oj-key'] = metadata.key;
                 if (typeof metadata.key === 'number') {
@@ -402,6 +402,9 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdat
                             if (this.actionableMode === false) {
                                 this._enterActionableMode();
                             }
+                            else {
+                                this._exitActionableMode(true);
+                            }
                             break;
                         }
                         case DataCollectionUtils.KEYBOARD_KEYS._ESCAPE:
@@ -513,12 +516,10 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdat
                 }
             }
             if (data == null) {
-                return (preact.h(ojvcomponent.Root, { ref: this.setRootElement },
-                    preact.h("div", { role: "list", "data-oj-context": true, tabIndex: 0, "aria-label": Translations.getTranslatedString('oj-ojStreamList.msgFetchingData') }, content)));
+                return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this.setRootElement }, { children: jsxRuntime.jsx("div", Object.assign({ role: "list", "data-oj-context": true, tabIndex: 0, "aria-label": Translations.getTranslatedString('oj-ojStreamList.msgFetchingData') }, { children: content })) })));
             }
             else {
-                return (preact.h(ojvcomponent.Root, { ref: this.setRootElement },
-                    preact.h("div", { role: "list", "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, content)));
+                return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this.setRootElement }, { children: jsxRuntime.jsx("div", Object.assign({ role: this._isTreeData() ? 'tree' : 'list', "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, { children: content })) })));
             }
         }
         _doBlur() {
@@ -568,8 +569,7 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdat
             if (indented) {
                 className += ' oj-stream-list-child-skeleton';
             }
-            return (preact.h("div", { class: className, key: key },
-                preact.h("div", { class: "oj-stream-list-skeleton-content oj-animation-skeleton" })));
+            return (jsxRuntime.jsx("div", Object.assign({ class: className }, { children: jsxRuntime.jsx("div", { class: "oj-stream-list-skeleton-content oj-animation-skeleton" }) }), key));
         }
         _applySkeletonExitAnimation(skeletons) {
             const resolveFunc = this.addBusyState('apply skeleton exit animations');

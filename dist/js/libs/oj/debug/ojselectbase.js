@@ -4346,7 +4346,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       if (!this._templateEngine) {
         var resolveBusyContext = this._AddBusyState('Select loading template engine');
         return new Promise(function (resolve, reject) {
-          Config.__getTemplateEngine().then(function (engine) {
+          const templateOptions = {
+            customElement: this._GetCustomElement(),
+            needsTrackableProperties: true
+          };
+          Config.__getTemplateEngine(templateOptions).then(function (engine) {
             this._templateEngine = engine;
             resolve(engine);
             resolveBusyContext();

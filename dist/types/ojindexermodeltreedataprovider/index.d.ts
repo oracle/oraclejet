@@ -11,7 +11,7 @@ declare class IndexerModelTreeDataProvider<K, D> implements IndexerModel, TreeDa
     fetchByOffset(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
     fetchFirst(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
     getCapability(capabilityName: string): any;
-    getChildDataProvider(parentKey: K): TreeDataProvider<K, D> | null;
+    getChildDataProvider(key: K): TreeDataProvider<K, D> | null;
     getIndexableSections(): IndexerModel.Section[];
     getMissingSections(): IndexerModel.Section[];
     getTotalSize(): Promise<number>;

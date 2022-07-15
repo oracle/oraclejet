@@ -89,6 +89,7 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
     };
     touchResponse?: 'touchStart' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         highlightedCount?: string;
         labelAdditionalData?: string;
@@ -437,6 +438,7 @@ export interface ojNBoxSettableProperties<K, D extends ojNBox.Node<K> | any> ext
     };
     touchResponse?: 'touchStart' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         highlightedCount?: string;
         labelAdditionalData?: string;

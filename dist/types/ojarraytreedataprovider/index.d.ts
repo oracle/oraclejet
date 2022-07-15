@@ -13,7 +13,7 @@ declare class ArrayTreeDataProvider<K, D> implements TreeDataProvider<K, D> {
     fetchByOffset(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
     fetchFirst(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
     getCapability(capabilityName: string): any;
-    getChildDataProvider(parentKey: K): TreeDataProvider<K, D> | null;
+    getChildDataProvider(key: K): TreeDataProvider<K, D> | null;
     getTotalSize(): Promise<number>;
     isEmpty(): 'yes' | 'no' | 'unknown';
     removeEventListener(eventType: string, listener: EventListener): void;

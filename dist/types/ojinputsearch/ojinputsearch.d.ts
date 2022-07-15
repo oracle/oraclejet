@@ -1,4 +1,4 @@
-import { ComponentChildren } from "preact"
+import { ComponentChildren } from 'preact';
 import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
@@ -157,81 +157,61 @@ export declare class InputSearch<K, D> extends Component<ExtendGlobalProps<Props
     private _testChangeValue;
     private _testChangeValueByKey;
 }
-// Custom Element interfaces
-export interface InputSearchElement<K,D> extends JetElement<InputSearchElementSettableProperties<K, D>>, InputSearchElementSettableProperties<K, D> {
-  /**
-  * Read-only property used for retrieving the current value from the input field in string form.
-  */
-  readonly rawValue?: Parameters<Required<Props<K, D>>['onRawValueChanged']>[0];
-  addEventListener<T extends keyof InputSearchElementEventMap<K,D>>(type: T, listener: (this: HTMLElement, ev: InputSearchElementEventMap<K,D>[T]) => any, options?: (boolean|AddEventListenerOptions)): void;
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean|AddEventListenerOptions)): void;
-  getProperty<T extends keyof InputSearchElementSettableProperties<K, D>>(property: T): InputSearchElement<K,D>[T];
-  getProperty(property: string): any;
-  setProperty<T extends keyof InputSearchElementSettableProperties<K, D>>(property: T, value: InputSearchElementSettableProperties<K, D>[T]): void;
-  setProperty<T extends string>(property: T, value: JetSetPropertyType<T, InputSearchElementSettableProperties<K, D>>): void;
-  setProperties(properties: InputSearchElementSettablePropertiesLenient<K, D>): void;
-  _testChangeValue: InputSearch<K,D>['_testChangeValue'];
-  _testChangeValueByKey: InputSearch<K,D>['_testChangeValueByKey'];
-  blur: InputSearch<K,D>['blur'];
-  focus: InputSearch<K,D>['focus'];
+export {};
+export interface InputSearchElement<K, D> extends JetElement<InputSearchElementSettableProperties<K, D>>, InputSearchElementSettableProperties<K, D> {
+    readonly rawValue?: Parameters<Required<Props<K, D>>['onRawValueChanged']>[0];
+    addEventListener<T extends keyof InputSearchElementEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: InputSearchElementEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
+    getProperty<T extends keyof InputSearchElementSettableProperties<K, D>>(property: T): InputSearchElement<K, D>[T];
+    getProperty(property: string): any;
+    setProperty<T extends keyof InputSearchElementSettableProperties<K, D>>(property: T, value: InputSearchElementSettableProperties<K, D>[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, InputSearchElementSettableProperties<K, D>>): void;
+    setProperties(properties: InputSearchElementSettablePropertiesLenient<K, D>): void;
+    _testChangeValue: InputSearch<K, D>['_testChangeValue'];
+    _testChangeValueByKey: InputSearch<K, D>['_testChangeValueByKey'];
+    blur: InputSearch<K, D>['blur'];
+    focus: InputSearch<K, D>['focus'];
 }
 export namespace InputSearchElement {
-  interface ojValueAction<Key,Data> extends CustomEvent<ValueDetail<Key,Data> & {
-  }>{}
-  // tslint:disable-next-line interface-over-type-literal
-  type placeholderChanged<K,D> = JetElementCustomEventStrict<InputSearchElement<K,D>["placeholder"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type rawValueChanged<K,D> = JetElementCustomEventStrict<InputSearchElement<K,D>["rawValue"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type suggestionItemTextChanged<K,D> = JetElementCustomEventStrict<InputSearchElement<K,D>["suggestionItemText"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type suggestionsChanged<K,D> = JetElementCustomEventStrict<InputSearchElement<K,D>["suggestions"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type valueChanged<K,D> = JetElementCustomEventStrict<InputSearchElement<K,D>["value"]>;
+    interface ojValueAction<Key, Data> extends CustomEvent<ValueDetail<Key, Data> & {}> {
+    }
+    type placeholderChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['placeholder']>;
+    type rawValueChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['rawValue']>;
+    type suggestionItemTextChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['suggestionItemText']>;
+    type suggestionsChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['suggestions']>;
+    type valueChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['value']>;
 }
-export interface InputSearchElementEventMap<K,D> extends HTMLElementEventMap {
-  'ojValueAction': InputSearchElement.ojValueAction<K, D>;
-  'placeholderChanged': JetElementCustomEventStrict<InputSearchElement<K,D>["placeholder"]>;
-  'rawValueChanged': JetElementCustomEventStrict<InputSearchElement<K,D>["rawValue"]>;
-  'suggestionItemTextChanged': JetElementCustomEventStrict<InputSearchElement<K,D>["suggestionItemText"]>;
-  'suggestionsChanged': JetElementCustomEventStrict<InputSearchElement<K,D>["suggestions"]>;
-  'valueChanged': JetElementCustomEventStrict<InputSearchElement<K,D>["value"]>;
+export interface InputSearchElementEventMap<K, D> extends HTMLElementEventMap {
+    'ojValueAction': InputSearchElement.ojValueAction<K, D>;
+    'placeholderChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['placeholder']>;
+    'rawValueChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['rawValue']>;
+    'suggestionItemTextChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['suggestionItemText']>;
+    'suggestionsChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['suggestions']>;
+    'valueChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['value']>;
 }
-export interface InputSearchElementSettableProperties<Key,Data> extends JetSettableProperties {
-  /**
-  * A short hint that can be displayed before user selects or enters a value.
-  */
-  placeholder?: Props<Key,Data>['placeholder'];
-  /**
-  * Specifies the text string to render for a suggestion.
-  */
-  suggestionItemText?: Props<Key,Data>['suggestionItemText'];
-  /**
-  * Data for the InputSearch suggestions.
-  */
-  suggestions?: Props<Key,Data>['suggestions'];
-  /**
-  * The value of the element.
-  */
-  value?: Props<Key,Data>['value'];
+export interface InputSearchElementSettableProperties<Key, Data> extends JetSettableProperties {
+    placeholder?: Props<Key, Data>['placeholder'];
+    suggestionItemText?: Props<Key, Data>['suggestionItemText'];
+    suggestions?: Props<Key, Data>['suggestions'];
+    value?: Props<Key, Data>['value'];
 }
-export interface InputSearchElementSettablePropertiesLenient<Key,Data> extends Partial<InputSearchElementSettableProperties<Key,Data>> {
-  [key: string]: any;
+export interface InputSearchElementSettablePropertiesLenient<Key, Data> extends Partial<InputSearchElementSettableProperties<Key, Data>> {
+    [key: string]: any;
 }
-export interface InputSearchIntrinsicProps extends Partial<Readonly<InputSearchElementSettableProperties<any,any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
-  rawValue?: never;
-  children?: ComponentChildren;
-  onojValueAction?: (value: InputSearchElementEventMap<any,any>['ojValueAction']) => void;
-  onplaceholderChanged?: (value: InputSearchElementEventMap<any,any>['placeholderChanged']) => void;
-  onrawValueChanged?: (value: InputSearchElementEventMap<any,any>['rawValueChanged']) => void;
-  onsuggestionItemTextChanged?: (value: InputSearchElementEventMap<any,any>['suggestionItemTextChanged']) => void;
-  onsuggestionsChanged?: (value: InputSearchElementEventMap<any,any>['suggestionsChanged']) => void;
-  onvalueChanged?: (value: InputSearchElementEventMap<any,any>['valueChanged']) => void;
+export interface InputSearchIntrinsicProps extends Partial<Readonly<InputSearchElementSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    rawValue?: never;
+    children?: ComponentChildren;
+    onojValueAction?: (value: InputSearchElementEventMap<any, any>['ojValueAction']) => void;
+    onplaceholderChanged?: (value: InputSearchElementEventMap<any, any>['placeholderChanged']) => void;
+    onrawValueChanged?: (value: InputSearchElementEventMap<any, any>['rawValueChanged']) => void;
+    onsuggestionItemTextChanged?: (value: InputSearchElementEventMap<any, any>['suggestionItemTextChanged']) => void;
+    onsuggestionsChanged?: (value: InputSearchElementEventMap<any, any>['suggestionsChanged']) => void;
+    onvalueChanged?: (value: InputSearchElementEventMap<any, any>['valueChanged']) => void;
 }
 declare global {
-  namespace preact.JSX {
-    interface IntrinsicElements {
-      "oj-input-search": InputSearchIntrinsicProps;
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            'oj-input-search': InputSearchIntrinsicProps;
+        }
     }
-  }
 }

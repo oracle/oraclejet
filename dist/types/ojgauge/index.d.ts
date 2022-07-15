@@ -5,6 +5,7 @@ import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettablePro
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface dvtBaseGauge<SP extends dvtBaseGaugeSettableProperties = dvtBaseGaugeSettableProperties> extends dvtBaseComponent<SP> {
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -48,6 +49,7 @@ export interface dvtBaseGaugeEventMap<SP extends dvtBaseGaugeSettableProperties 
 }
 export interface dvtBaseGaugeSettableProperties extends dvtBaseComponentSettableProperties {
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -452,7 +454,7 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     labelledBy?: string | null;
     max?: number;
     metricLabel?: {
-        converter?: Converter<string>;
+        converter?: Converter<string | number>;
         position?: 'center' | 'insideIndicatorEdge' | 'outsideIndicatorEdge' | 'outsidePlotArea' | 'withLabel' | 'auto';
         rendered?: 'on' | 'off' | 'auto';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
@@ -661,7 +663,7 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
     labelledBy?: string | null;
     max?: number;
     metricLabel?: {
-        converter?: Converter<string>;
+        converter?: Converter<string | number>;
         position?: 'center' | 'insideIndicatorEdge' | 'outsideIndicatorEdge' | 'outsidePlotArea' | 'withLabel' | 'auto';
         rendered?: 'on' | 'off' | 'auto';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';

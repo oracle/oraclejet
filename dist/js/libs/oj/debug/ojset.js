@@ -64,7 +64,7 @@ define(['ojs/ojkeysetimpl'], function (KeySetImpl) { 'use strict';
             }
             return this;
         }
-        get [Symbol.toStringTag]() {
+        get [(Symbol.iterator, Symbol.toStringTag)]() {
             return Set[Symbol.toStringTag]();
         }
     }

@@ -290,16 +290,16 @@ DomScroller.prototype._fetchMoreRows = function () {
           var result = _result;
           self._fetchPromise = null;
 
-          if (result != null &&
-            result.value != null) {
-            if (result.value.data.length > 0) {
-              self._rowCount += result.value.data.length;
+          if (result != null && result.value != null) {
+            var dataLength = result.value.data.length;
+            if (dataLength > 0) {
+              self._rowCount += dataLength;
 
-              if (remainingCount < self._fetchSize) {
+              if (remainingCount <= dataLength) {
                 result.maxCount = self._maxCount;
                 result.maxCountLimit = true;
 
-                if (result.value.data.length > remainingCount) {
+                if (dataLength > remainingCount) {
                   result.value.data = result.value.data.slice(0, remainingCount);
                   result.value.metadata = result.value.metadata.slice(0, remainingCount);
                   if (result.value.fetchParameters != null) {

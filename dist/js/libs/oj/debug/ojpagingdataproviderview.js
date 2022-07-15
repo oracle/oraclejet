@@ -270,6 +270,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
     })(RowCountConfidence || (RowCountConfidence = {}));
     class PagingDataProviderView {
         constructor(dataProvider, options) {
+            var _a;
             this.dataProvider = dataProvider;
             this.options = options;
             this._KEY = 'key';
@@ -303,15 +304,17 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
             this._REMOVE = 'remove';
             this._UPDATE = 'update';
             this._INDEXES = 'indexes';
-            this.AsyncIterable = class {
-                constructor(_parent, _asyncIterator) {
-                    this._parent = _parent;
-                    this._asyncIterator = _asyncIterator;
-                    this[Symbol.asyncIterator] = function () {
-                        return this._asyncIterator;
-                    };
-                }
-            };
+            this.AsyncIterable = (_a = class {
+                    constructor(_parent, _asyncIterator) {
+                        this._parent = _parent;
+                        this._asyncIterator = _asyncIterator;
+                        this[Symbol.asyncIterator] = function () {
+                            return this._asyncIterator;
+                        };
+                    }
+                },
+                Symbol.asyncIterator,
+                _a);
             this.AsyncIterator = class {
                 constructor(_parent, _nextFunc, _params, _clientId) {
                     this._parent = _parent;

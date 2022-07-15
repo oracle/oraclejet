@@ -1,0 +1,15 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/stable/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("stable.variables.tags.scoped") {
+  
+  /* tags                       */
+  /* -------------------------- */
+
+.oj-color-invert {
+  --oj-link-text-color:                 rgb(var(--oj-palette-brand-rgb-50));
+  --oj-link-text-color-active:          var(--oj-link-text-color);
+  --oj-link-text-color-visited:         var(--oj-link-text-color);
+  --oj-heading-text-color:               var(--oj-core-text-color-primary);
+}
+}

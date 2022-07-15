@@ -5,8 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { jsx } from 'preact/jsx-runtime';
 import { Root, customElement } from 'ojs/ojvcomponent';
-import { Component, createRef, h } from 'preact';
+import { Component, createRef } from 'preact';
 import { recentPointer } from 'ojs/ojdomutils';
 import { isEventClickthroughDisabled } from 'ojs/ojdatacollection-common';
 
@@ -82,9 +83,9 @@ let ActionCard = class ActionCard extends Component {
             classString += ' oj-focus-highlight';
         }
         const tabIndex = (_a = props.tabIndex) !== null && _a !== void 0 ? _a : 0;
-        return (h(Root, Object.assign({ tabIndex: tabIndex, class: classString, role: 'button', onKeyUp: this._handleKeyup, onMouseUp: this._handleUpEnd, onKeyDown: this._handleKeydown, onMouseDown: this._handleStart, onTouchStart: this._handleStart, onTouchEnd: this._handleUpEnd, onTouchCancel: this._handleTouchcancel, onTouchMove: this._handleMove, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout }, {
+        return (jsx(Root, Object.assign({ tabIndex: tabIndex, class: classString, role: "button", onKeyUp: this._handleKeyup, onMouseUp: this._handleUpEnd, onKeyDown: this._handleKeydown, onMouseDown: this._handleStart, onTouchStart: this._handleStart, onTouchEnd: this._handleUpEnd, onTouchCancel: this._handleTouchcancel, onTouchMove: this._handleMove, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout }, {
             onojAction: this._handleOjAction
-        }, { ref: this._rootRef }), this.props.children));
+        }, { ref: this._rootRef }, { children: this.props.children })));
     }
     componentDidMount() {
         this._rootRef.current.addEventListener('touchstart', this._handleStart, { passive: true });

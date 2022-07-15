@@ -2462,6 +2462,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
          * $messageComponentInlineOpenAnimation: (effect: "expand", startMaxHeight: "#oldHeight") !default;
          * $messageComponentInlineCloseAnimation: (effect: "collapse", endMaxHeight: "#newHeight") !default;
          * </code></pre>
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
          *
          * @ojshortdesc Triggered when a default animation is about to start, such as when the component is being opened/closed or a child item is being added/removed.
          *
@@ -2518,6 +2519,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         animateStart: null,
         /**
          * Triggered when a default animation has ended.
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
          *
          * @expose
          * @event
@@ -2974,6 +2976,44 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       },
 
       /**
+       * Override to release resources held by this component.
+       * It is important to unregister Hammer events
+       * since they live outside of the component's DOM and would cause Detached Dom nodes
+       * when the component is removed.
+       * @memberof oj.editableValue
+       * @instance
+       * @protected
+       */
+      _ReleaseResources: function () {
+        this._super();
+        if (this._IsCustomElement()) {
+          // componentMessaging#releaseResources removes any resources that would
+          // otherwise cause a memory leak, like Hammer.
+          // We do not deactivate component messaging because that is a bigger change, and
+          // more risky to backport.
+          this._getComponentMessaging().releaseResources();
+          this._hammerIsUnregistered = true;
+        }
+      },
+      /**
+       * @memberof oj.editableValue
+       * @instance
+       * @protected
+       */
+      _SetupResources: function () {
+        this._super();
+        // Since initComponentMessaging gets called during component creation, and that activates
+        // all the component strategies which in turn sets up listeners, we only want to
+        // re-set up resources and when we have
+        // released them in ReleaseResources.
+        if (this._IsCustomElement() && (this._hammerIsUnregistered)) {
+          const messaging = this._getComponentMessaging();
+          messaging.setupResources();
+          this._hammerIsUnregistered = false;
+        }
+      },
+
+      /**
        * If we have asynchronous converter loading, the input is readonly and a loading indicator
        * is shown to the user.
        * When the converter is 100% loaded, then the field is set back to how it was.
@@ -3202,6 +3242,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         var disabled = this.options.disabled || false;
 
         return !(disabled);
+      },
+
+      /**
+       * Override to do the delay connect/disconnect
+       * This should improve performance when a lot of editable value components are in an
+       * oj-form-layout component, which does a lot of reparenting of elements which would
+       * trigger multiple (and unneeded) _ReleaseResources/_SetupResources calls.
+       * @memberof oj.editableValue
+       * @override
+       * @protected
+       */
+      _VerifyConnectedForSetup: function () {
+        return true;
       },
 
       /**
@@ -7491,8 +7544,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     jqLauncher[0].removeEventListener('change', this._eatChangeAndClickOnPress, true);
 
     if (DomUtils.isTouchSupported()) {
-      jqLauncher.ojHammer().off('press');
-      jqLauncher.ojHammer('destroy');
+      this.releaseResources();
       jqLauncher.off('contextmenu', this._eatContextMenuOnOpenPopupListener);
       this._eatContextMenuOnOpenPopupListener = null;
       this._inPressEvent = null;
@@ -7509,55 +7561,39 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   PopupMessagingStrategy.prototype._registerLauncherEvents = function () {
     var closeEvents;
     var closePopupCallback;
-    var compDefaults;
-    var events;
-    var hammerOptions;
     var jqLauncher = this.GetLauncher();
     var nonPressOpenEvents;
-    var openPopupCallback;
-    var pressEventIndex;
 
-    compDefaults = PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
-    events = compDefaults ? compDefaults.events :
-             PopupMessagingStrategy._DEFAULTS_BY_COMPONENT.default.events;
+    const events = this._getPopupEventNamesToRegisterForComp();
 
     // 1. associate the ojPopup component to wrapper <div> for popup content
     // 2. wire up on() event handlers for registered events that open and close popup. E.g., focusin.
     // 3. autoDismissal happens automatically when focus leaves component. For other events like
     // mouseover it's required to call off()
     if (events.open) {
-      openPopupCallback = this._openPopupCallback;
-      if (!openPopupCallback) {
-        openPopupCallback = this._openPopup.bind(this);
-        this._openPopupCallback = openPopupCallback;
+      if (!this._openPopupCallback) {
+        this._openPopupCallback = this._openPopup.bind(this);
       }
 
       // separate out press event, namespace the events string, and attach event handler
-      pressEventIndex = events.open.indexOf('press');
+      const needsPressEvent = this._needsPressEvent(events);
       nonPressOpenEvents =
       this._getNamespacedEvents(events.open.replace('press', ''),
                                 PopupMessagingStrategy._OPEN_NAMESPACE);
-      jqLauncher.on(nonPressOpenEvents, openPopupCallback);
+      jqLauncher.on(nonPressOpenEvents, this._openPopupCallback);
 
       // The pressHold gesture also fires a contextmenu event on Windows 10 touch.
       // Prevent that here for components that use 'press' for popup messaging as
       // the context menu causes the popup message window to close. Note that this
       // means the context menu will be disabled for these components.
-      if (DomUtils.isTouchSupported() && pressEventIndex !== -1) {
+      if (DomUtils.isTouchSupported() && needsPressEvent) {
         this._eatContextMenuOnOpenPopupListener = function () {
           return false;
         };
 
         jqLauncher.on('contextmenu', this._eatContextMenuOnOpenPopupListener);
 
-        // for radios and checkboxes, on ios, press hold brings up popup, but release closes it
-        // and checks it, so in this case we have to eat the click/change events. this happens
-        // in the openPopupCallback
-        hammerOptions = {
-          recognizers: [
-            [Hammer.Press, { time: 750 }]
-          ] };
-        jqLauncher.ojHammer(hammerOptions).on('press', openPopupCallback);
+        this.registerHammerOpenCallbackOnLauncher();
       }
     }
 
@@ -7573,6 +7609,62 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       jqLauncher.on(closeEvents, closePopupCallback);
     }
   };
+
+    /**
+     * Symmetrical method to releaseResources. Sets up resources that get
+     * removed in releaseResources.
+     * @private
+     * @memberof oj.PopupMessagingStrategy
+     * @instance
+     */
+    PopupMessagingStrategy.prototype.setupResources = function () {
+      const events = this._getPopupEventNamesToRegisterForComp();
+      const needsPressEvent = this._needsPressEvent(events);
+      if (DomUtils.isTouchSupported() && needsPressEvent) {
+        this.registerHammerOpenCallbackOnLauncher();
+      }
+    };
+
+    /**
+     * Register Hammer Press Event. Make sure you are on touch and you
+     * need the press event before calling this function.
+     * @private
+     * @memberof oj.PopupMessagingStrategy
+     * @instance
+     */
+    PopupMessagingStrategy.prototype.registerHammerOpenCallbackOnLauncher = function () {
+      const jqLauncher = this.GetLauncher();
+      if (jqLauncher == null) {
+        return;
+      }
+      // for radios and checkboxes, on ios, press hold brings up popup, but release closes it
+      // and checks it, so in this case we have to eat the click/change events. this happens
+      // in the openPopupCallback
+      const hammerOptions = {
+        recognizers: [
+          [Hammer.Press, { time: 750 }]
+        ] };
+      jqLauncher.ojHammer(hammerOptions).on('press', this._openPopupCallback);
+    };
+
+    /**
+    * Releases resources that would otherwise leak memory if they were not released
+    * when the component's dom is removed.
+    * For example, Hammer events are put on the document and will result in
+    * detached dom memory leak if not removed.
+    * @private
+    * @memberof oj.PopupMessagingStrategy
+    * @instance
+    */
+    PopupMessagingStrategy.prototype.releaseResources = function () {
+      PopupMessagingStrategy.superclass.update.call(this);
+      const events = this._getPopupEventNamesToRegisterForComp();
+      const needsPressEvent = this._needsPressEvent(events);
+      if (DomUtils.isTouchSupported() && needsPressEvent) {
+        const jqLauncher = this.GetLauncher();
+        jqLauncher.off('press').ojHammer('destroy');
+      }
+    };
 
   /**
    * Turn the events string into an array, add namespace, and turn it back into a string.
@@ -7646,6 +7738,34 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       of: launcher
     };
     return popupPositionOptions;
+  };
+
+  /**
+   * Returns the events
+   *
+   * @private
+   * @memberof oj.PopupMessagingStrategy
+   * @instance
+   */
+  PopupMessagingStrategy.prototype._getPopupEventNamesToRegisterForComp = function () {
+    const compDefaults =
+      PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
+    return compDefaults ? compDefaults.events :
+      PopupMessagingStrategy._DEFAULTS_BY_COMPONENT.default.events;
+  };
+
+  /**
+   * Returns true if it needs a press event.
+   *
+   * @private
+   * @memberof oj.PopupMessagingStrategy
+   * @instance
+   */
+  PopupMessagingStrategy.prototype._needsPressEvent = function (events) {
+     if (events && events.open) {
+      return events.open.indexOf('press') !== -1;
+     }
+     return false;
   };
 
   /**

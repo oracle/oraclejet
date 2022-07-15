@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-export declare const variants: "banner"[];
+export declare const variants: ("inline" | "banner")[];
 export declare type MessageVariant = typeof variants[number];
-export declare const severities: ("none" | "error" | "confirmation" | "info" | "warning")[];
+export declare const severities: ("none" | "warning" | "info" | "confirmation" | "error")[];
 export declare type MessageSeverity = typeof severities[number];

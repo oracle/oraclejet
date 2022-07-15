@@ -145,7 +145,7 @@ class TreeviewSelectionManager {
  * @ojcomponent oj.ojTreeView
  * @augments oj.baseComponent
  * @since 4.0.0
- *
+ * @ojimportmembers oj.ojSharedContextMenu
  * @ojshortdesc A tree view displays hierarchical relationships between items.
  * @ojrole tree
  * @ojtsimport {module: "ojtreedataprovider", type: "AMD", importName: "TreeDataProvider"}
@@ -319,8 +319,7 @@ class TreeviewSelectionManager {
  * <p>To facilitate drag and drop including item reordering using only keyboard, application must ensure that either to expose the functionality using context menu, and/or
  * allow users to perform the functionality with the appropriate keystroke.  You can find examples of how this can be done in the cookbook demos.</p>
  *
- * <p>Developers must exercise caution when using item.focusable to disable navigation to certain items, since doing so will prevent user from interacting with these items,
- * as well as preventing the screen reader from reading the content of these items.  Applications must ensure there are alternative ways to access information of these items.</p>
+ * <p>Nesting collection components such as ListView, Table, TreeView, and TreeView inside of TreeView is not supported.</p>
  *
  * <h3 id="perf-section">
  *   Performance
@@ -348,8 +347,7 @@ class TreeviewSelectionManager {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#animation-section"></a>
  * </h3>
  *
- * <p>Applications can customize animations triggered by actions in TreeView by either listening for <code class="prettyprint">animateStart/animateEnd</code>
- *    events or overriding action specific style classes on the animated item.  See the documentation of <a href="AnimationUtils.html">AnimationUtils</a>
+ * <p>Applications can customize animations triggered by actions in TreeView by overriding action specific style classes on the animated item.  See the documentation of <a href="AnimationUtils.html">AnimationUtils</a>
  *    class for details.</p>
  *
  * <p>The following are actions in which applications can use to customize animation effects.
@@ -645,7 +643,7 @@ class TreeviewSelectionManager {
          * @ojshortdesc Specifies the data for the tree. See the Help documentation for more information.
          * @default null
          * @ojsignature {target: "Type", value: "TreeDataProvider<K, D>"}
-         * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+         * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
          *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
          *
          * @example <caption>Initialize the TreeView with the <code class="prettyprint">data</code> attribute specified:</caption>
@@ -838,6 +836,7 @@ class TreeviewSelectionManager {
            * @ojsignature {target: "Type",
            *               value: "?((itemContext: oj.ojTreeView.ItemContext<K,D>) => boolean)",
            *               jsdocOverride: true}
+           * @ojdeprecated {since: '13.0.0', description: 'Not accessible by screen reader.'}
            * @default null
            *
            * @example <caption>Initialize the TreeView such that only leaf items are focusable:</caption>
@@ -1067,6 +1066,7 @@ class TreeviewSelectionManager {
         /**
          * Triggered when the default animation of a particular action has ended.
          * Note this event will not be triggered if application cancelled the default animation on animateStart.
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
          *
          * @expose
          * @event
@@ -1081,6 +1081,7 @@ class TreeviewSelectionManager {
         /**
          * Triggered when the default animation of a particular action is about to start.
          * The default animation can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
          *
          * @expose
          * @event
@@ -1927,14 +1928,15 @@ class TreeviewSelectionManager {
        * @memberof oj.ojTreeView
        */
       _loadTemplateEngine: function () {
-        var self = this;
-
-        if (this._getItemTemplate() != null && self.options.item.renderer == null) {
-          return new Promise(function (resolve) {
-            __getTemplateEngine().then(function (engine) {
-              self.m_engine = engine;
+        if (this._getItemTemplate() != null && this.options.item.renderer == null) {
+          return new Promise((resolve) => {
+            const templateOptions = {
+              customElement: this._GetCustomElement()
+            };
+            __getTemplateEngine(templateOptions).then((engine) => {
+              this.m_engine = engine;
               resolve(engine);
-            }, function (reason) {
+            }, (reason) => {
               throw new Error('Error loading template engine: ' + reason);
             });
           });
@@ -2235,7 +2237,7 @@ class TreeviewSelectionManager {
         spacerStyle.width = 'calc(calc(' + depth + ' * var(--oj-tree-view-indent-width)) + ' + (paddingOffset) + 'rem)';
       },
       _hasIcon: function (item) {
-       return (item.querySelectorAll('.oj-treeview-icon.oj-component-icon').length > 0);
+        return (item.querySelectorAll('.oj-treeview-icon.oj-component-icon').length > 0);
       },
       /**
       * removes the indentation on the spacer
@@ -3022,17 +3024,17 @@ class TreeviewSelectionManager {
       _removeTopAndBottomSelectionClasses: function (item) {
         const previousItem = this._getPreviousItem(item);
         this._getItemContent(item).classList
-        .remove(this.constants.OJ_TREEVIEW_SELECTED_TOP_ITEM);
+          .remove(this.constants.OJ_TREEVIEW_SELECTED_TOP_ITEM);
         if (previousItem && this._isSelected(previousItem) && !this._isHiddenElement(item)) {
           this._getItemContent(previousItem).classList
-          .add(this.constants.OJ_TREEVIEW_SELECTED_BOTTOM_ITEM);
+            .add(this.constants.OJ_TREEVIEW_SELECTED_BOTTOM_ITEM);
         }
         const nextItem = this._getNextItem(item);
         this._getItemContent(item).classList
-        .remove(this.constants.OJ_TREEVIEW_SELECTED_BOTTOM_ITEM);
+          .remove(this.constants.OJ_TREEVIEW_SELECTED_BOTTOM_ITEM);
         if (nextItem && this._isSelected(nextItem) && !this._isHiddenElement(item)) {
           this._getItemContent(nextItem).classList
-          .add(this.constants.OJ_TREEVIEW_SELECTED_TOP_ITEM);
+            .add(this.constants.OJ_TREEVIEW_SELECTED_TOP_ITEM);
         }
       },
       _isHiddenElement: function (item) {
@@ -4307,7 +4309,7 @@ class TreeviewSelectionManager {
             this.handleModelMutateEvent(event);
           }
           if (event.type === 'refresh' && (event.detail && event.detail.keys)) {
-            this.handleModelMutateEvent(event);
+            this.handleModelRefreshEvent(event);
           }
         }
       },
@@ -4321,6 +4323,10 @@ class TreeviewSelectionManager {
         if (keys == null || keys.size === 0) {
           return;
         }
+
+        const currentItemKey = this._getKey(this._currentItem);
+        const oldFlatList = this._getFlatList();
+        const oldCurrentItemIndex = oldFlatList.indexOf(this._currentItem);
 
         keys.forEach(function (key) {
           if (!event.detail.add || (event.detail.add && !event.options.detail.add.keys.has(key))) {
@@ -4352,7 +4358,48 @@ class TreeviewSelectionManager {
             this._userOptionChange('expanded', newExpanded, null);
           }
         }
+        if (!this._getItemByKey(currentItemKey)) {
+          const newFlatList = this._getFlatList();
+          let newCurrentItem = null;
+          if (newFlatList.length > 0) {
+            for (let i = (oldCurrentItemIndex - 1); i >= 0; --i) {
+              if (newFlatList.includes(oldFlatList[i]) && this._isActionable(oldFlatList[i], 'focus')) {
+                newCurrentItem = oldFlatList[i];
+                break;
+              }
+            }
+            if (!newCurrentItem) {
+              for (let i = oldCurrentItemIndex; i < oldFlatList.length; i++) {
+                if (newFlatList.includes(oldFlatList[i]) && this._isActionable(oldFlatList[i], 'focus')) {
+                  newCurrentItem = oldFlatList[i];
+                  break;
+                }
+              }
+            }
+            if (!newCurrentItem) {
+              const items = this._getItems();
+              if (items.length > 0) {
+                newCurrentItem = items[0];
+              }
+            }
+            if (newCurrentItem) {
+              this._setCurrentItem(newCurrentItem);
+              this._userOptionChange('currentItem', this._getKey(this._currentItem), event);
+              return;
+            }
+          }
+        }
         this._resetFocus();
+      },
+      _getFlatList: function () {
+        const flatList = [];
+        this._getItems().forEach((item) => {
+          const parentList = item.parentElement;
+          if (parentList.style.display !== 'none') {
+            flatList.push(item);
+          }
+        });
+        return flatList;
       },
       _changeNodeToLeaf: function (item, subtree) {
         if (item === this.element[0]) {
@@ -4461,75 +4508,75 @@ class TreeviewSelectionManager {
         const keys = [];
         const addEventBusyResolve = this._addBusyState('validating mutation data for add event', null);
         this._fetchEventDataForKeys(addEvent).then((validatededEventData) => {
-            if (validatededEventData === null) {
-              addEventBusyResolve();
-              return;
-            }
-            this._truncateIfOverMaxCount(validatededEventData);
-            const data = validatededEventData.data;
-            const metadata = validatededEventData.metadata;
-            addKeys.forEach((key) => {
-              if (!event.detail.remove ||
-                (event.detail.remove && !event.options.detail.remove.keys.has(key))) {
-                keys.push(key);
-              } else if (addEvent.addBeforeKeys && addEvent.addBeforeKeys[i]
-                && addEvent.addBeforeKeys.length !== 0) {
-                this.handleModelReorder(key, addEvent.addBeforeKeys[i], false);
-              } else {
-                var locationKey;
-                if (addEvent.parentKeys && addEvent.parentKeys[i]
-                  && addEvent.parentKeys.length !== 0) {
-                  var parent = this._getItemByKey(addEvent.parentKeys[i]);
-                  var parentItemList = this._getChildItems(parent);
-                  locationKey = this.getLastItemKey(parentItemList);
-                } else {
-                  var rootList = this._getItems();
-                  locationKey = this.getLastItemKey(rootList);
-                }
-                if (locationKey) {
-                  this.handleModelReorder(key, locationKey, true);
-                }
-              }
-              i += 1;
-            });
-            parentKeys.forEach(function (key) {
-              var parentItem = self._getItemByKey(key);
-              if (parentItem && self._isLeafIcon(parentItem)) {
-                self._changeNodeToParent(parentItem);
-              }
-            });
-            const initialKeys = this._getAllTreeviewKeys();
-            const finalKeys =
-              getAddEventKeysResult(initialKeys, addEvent, true);
-            if (data && keys.length > 0 && data.length > 0 &&
-              keys.length === data.length && (indexes == null || indexes.length === data.length)) {
-              for (i = 0; i < data.length; i++) {
-                var parentKey = parentKeys[i];
-                var index = this._getInsertIndex(metadata[i].key, parentKey, finalKeys);
-                if (index === null) {
-                  // cannot find index, skip this iteration
-                  // eslint-disable-next-line no-continue
-                  continue;
-                }
-                var parentItem = this._getItemByKey(parentKey);
-                var subtree;
-                if (parentKey == null) {
-                  subtree = this._getRoot();
-                  if (subtree) {
-                    this._renderItem(subtree,
-                      { data: [data[i]], metadata: [metadata[i]] }, 0, index);
-                  }
-                } else if (parentItem) {
-                  subtree = this._getSubtree(parentItem);
-                  if (subtree) {
-                    this._renderItem(subtree,
-                      { data: [data[i]], metadata: [metadata[i]] }, 0, index);
-                  }
-                }
-              }
-            }
+          if (validatededEventData === null) {
             addEventBusyResolve();
+            return;
+          }
+          this._truncateIfOverMaxCount(validatededEventData);
+          const data = validatededEventData.data;
+          const metadata = validatededEventData.metadata;
+          addKeys.forEach((key) => {
+            if (!event.detail.remove ||
+              (event.detail.remove && !event.options.detail.remove.keys.has(key))) {
+              keys.push(key);
+            } else if (addEvent.addBeforeKeys && addEvent.addBeforeKeys[i]
+              && addEvent.addBeforeKeys.length !== 0) {
+              this.handleModelReorder(key, addEvent.addBeforeKeys[i], false);
+            } else {
+              var locationKey;
+              if (addEvent.parentKeys && addEvent.parentKeys[i]
+                && addEvent.parentKeys.length !== 0) {
+                var parent = this._getItemByKey(addEvent.parentKeys[i]);
+                var parentItemList = this._getChildItems(parent);
+                locationKey = this.getLastItemKey(parentItemList);
+              } else {
+                var rootList = this._getItems();
+                locationKey = this.getLastItemKey(rootList);
+              }
+              if (locationKey) {
+                this.handleModelReorder(key, locationKey, true);
+              }
+            }
+            i += 1;
           });
+          parentKeys.forEach(function (key) {
+            var parentItem = self._getItemByKey(key);
+            if (parentItem && self._isLeafIcon(parentItem)) {
+              self._changeNodeToParent(parentItem);
+            }
+          });
+          const initialKeys = this._getAllTreeviewKeys();
+          const finalKeys =
+            getAddEventKeysResult(initialKeys, addEvent, true);
+          if (data && keys.length > 0 && data.length > 0 &&
+            keys.length === data.length && (indexes == null || indexes.length === data.length)) {
+            for (i = 0; i < data.length; i++) {
+              var parentKey = parentKeys[i];
+              var index = this._getInsertIndex(metadata[i].key, parentKey, finalKeys);
+              if (index === null) {
+                // cannot find index, skip this iteration
+                // eslint-disable-next-line no-continue
+                continue;
+              }
+              var parentItem = this._getItemByKey(parentKey);
+              var subtree;
+              if (parentKey == null) {
+                subtree = this._getRoot();
+                if (subtree) {
+                  this._renderItem(subtree,
+                    { data: [data[i]], metadata: [metadata[i]] }, 0, index);
+                }
+              } else if (parentItem) {
+                subtree = this._getSubtree(parentItem);
+                if (subtree) {
+                  this._renderItem(subtree,
+                    { data: [data[i]], metadata: [metadata[i]] }, 0, index);
+                }
+              }
+            }
+          }
+          addEventBusyResolve();
+        });
       },
       _getInsertIndex: function (key, parentKey, finalKeys) {
         let parent;
@@ -4873,8 +4920,8 @@ var __oj_tree_view_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]

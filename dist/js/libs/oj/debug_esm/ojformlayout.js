@@ -660,6 +660,38 @@ function ojFormLayout(context) {
   };
 
   /**
+   * In Chrome 103 - the relative/absolute positioning inside a multi-col layout is broken
+   * https://bugs.chromium.org/p/chromium/issues/detail?id=1338997
+   * This is to workaround this bug and make things render correctly for chromium browsers.
+   * This bug will be fixed in 104 and later.
+   */
+  // data-oj- attributes used to identify the workaround DOM
+  const _WORKAROUND_DOM_ATTR = 'data-oj-formlayout-workaround-dom';
+  // Form layout can have nested oj-form-layout, so query only for the direct child
+  const _WORKAROUND_DOM_SELECTOR = `:scope > [${_WORKAROUND_DOM_ATTR}]`;
+
+  /**
+   * Applies the workaround for the Chromium v103 bug
+   */
+  function _applyChromium103Workaround() {
+    const workaroundDiv = document.createElement('div');
+    workaroundDiv.style.display = 'table';
+    workaroundDiv.style.visibility = 'hidden';
+    workaroundDiv.setAttribute(_WORKAROUND_DOM_ATTR, ''); // @HTMLUpdateOK
+    ojForm.appendChild(workaroundDiv);
+  }
+
+  /**
+   * Removes the workaround for the Chromium v103 bug
+   */
+  function _removeChromium103Workaround() {
+    const workaroundDiv = ojForm.querySelector(_WORKAROUND_DOM_SELECTOR);
+    if (workaroundDiv) {
+      ojForm.removeChild(workaroundDiv);
+    }
+  }
+
+  /**
    * Register event listeners for resize the container DOM element.
    * @param {Element} domElem  DOM element
    * @private
@@ -797,6 +829,7 @@ function ojFormLayout(context) {
         self._rootElementMutationObserver.disconnect();
 
         _unregisterResizeListener(ojForm);
+        _removeChromium103Workaround();
 
         _updateOjFormDiv();
 
@@ -828,6 +861,7 @@ function ojFormLayout(context) {
         // we need to do this before the mutation observer is activated because this can add divs which
         // would fire the mutation observer and send it into a refresh->mutation loop.
         _registerResizeListener(ojForm);
+        _applyChromium103Workaround();
 
         // We are done making modifications to dom subtree elements so we should start paying attention
         // to mutations of the oj-form DIV subtree.  The mutations we care about are added elements and
@@ -1077,7 +1111,7 @@ function ojFormLayout(context) {
         } else {
           // we need to tell this child if it needs an oj-flex div created for it.
           if (directionIsColumn || childCnt % calculatedColumns === 0) {
-            child.setAttribute('data-oj-needs-oj-flex-div', '');
+            child.setAttribute('data-oj-needs-oj-flex-div', ''); // @HTMLUpdateOK
           }
           // This custom element child hasn't been upgraded so add it to the unresolved children
           unresolvedChildren.push(child);
@@ -1093,7 +1127,7 @@ function ojFormLayout(context) {
    * Return true if the label is handled by the child element; false otherwise.
    */
   function _isLabelByChild(child) {
-    return (element.labelEdge === 'inside' || child.labelEdge === 'inside' || child.labelEdge === 'none');
+    return (element.labelEdge === 'inside' || child.labelEdge === 'inside' || child.labelEdge === 'none' || child.tagName.toLowerCase().startsWith('oj-c-'));
   }
 
   /**
@@ -2093,31 +2127,47 @@ ojFormLayout.getDynamicDefaults = function () {
   __oj_form_layout_metadata.extension._CONSTRUCTOR = ojFormLayout;
   __oj_form_layout_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
   oj.CustomElementBridge.register('oj-form-layout', {
-    metadata: oj.CollectionUtils.mergeDeep(
-      __oj_form_layout_metadata, {
-        properties: {
-          readonly: {
-            binding: {
-              provide: [{ name: 'containerReadonly' },
-              { name: 'readonly' }],
-              consume: { name: 'containerReadonly' }
-            }
-          },
-          userAssistanceDensity: {
-            binding: {
-              provide: [{ name: 'containerUserAssistanceDensity', default: 'efficient' },
-              { name: 'userAssistanceDensity', default: 'efficient' }],
-              consume: { name: 'containerUserAssistanceDensity' }
-            }
-          },
-          labelEdge: {
-            binding: {
-              provide: [{ name: 'containerLabelEdge' },
-              { name: 'labelEdge', transform: { top: 'provided', start: 'provided' } }],
-              consume: { name: 'containerLabelEdge' }
-            }
+    metadata: oj.CollectionUtils.mergeDeep(__oj_form_layout_metadata, {
+      properties: {
+        readonly: {
+          binding: {
+            provide: [
+              { name: 'containerReadonly', default: false },
+              { name: 'readonly' },
+            ],
+            consume: { name: 'containerReadonly' }
+          }
+        },
+        userAssistanceDensity: {
+          binding: {
+            provide: [
+              { name: 'containerUserAssistanceDensity', default: 'efficient' },
+              { name: 'userAssistanceDensity', default: 'efficient' }
+            ],
+            consume: { name: 'containerUserAssistanceDensity' }
+          }
+        },
+        labelEdge: {
+          binding: {
+            provide: [
+              { name: 'containerLabelEdge' },
+              { name: 'labelEdge', transform: { top: 'provided', start: 'provided' } }
+            ],
+            consume: { name: 'containerLabelEdge' }
+          }
+        },
+        labelWidth: {
+          binding: {
+            provide: [{ name: 'labelWidth' }]
+          }
+        },
+        labelWrapping: {
+          binding: {
+            // This is consumed by oj-c- form components to pass to the preact FormContext.
+            provide: [{ name: 'labelWrapping' }]
           }
         }
-      })
+      }
+    })
   });
 }());

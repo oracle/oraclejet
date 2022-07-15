@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact', 'ojs/ojvcomponent'], function (exports, preact, ojvcomponent) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent'], function (exports, jsxRuntime, preact, ojvcomponent) { 'use strict';
 
     var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -20,17 +20,17 @@ define(['exports', 'preact', 'ojs/ojvcomponent'], function (exports, preact, ojv
         }
         render(props) {
             const content = this._highlighter(props.text, props.matchText);
-            return preact.h(ojvcomponent.Root, { class: 'oj-highlighttext' }, content);
+            return jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: "oj-highlighttext" }, { children: content }));
         }
         _highlighter(unhighlightedText, matchText) {
             if (matchText) {
                 const escapedMatchText = this._escapeRegExp(matchText);
                 const highlightedText = unhighlightedText.replace(new RegExp(escapedMatchText, 'gi'), this._HIGHLIGHT_TOKEN + '$&' + this._HIGHLIGHT_TOKEN);
                 const tokens = highlightedText.split(this._HIGHLIGHT_TOKEN);
-                const nodes = tokens.map((current, index) => index % 2 == 0 ? current : preact.h("span", { class: 'oj-highlighttext-highlighter' }, current));
-                return preact.h("span", null, nodes);
+                const nodes = tokens.map((current, index) => index % 2 == 0 ? current : jsxRuntime.jsx("span", Object.assign({ class: "oj-highlighttext-highlighter" }, { children: current })));
+                return jsxRuntime.jsx("span", { children: nodes });
             }
-            return preact.h("span", null, unhighlightedText);
+            return jsxRuntime.jsx("span", { children: unhighlightedText });
         }
         _escapeRegExp(str) {
             return str.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');

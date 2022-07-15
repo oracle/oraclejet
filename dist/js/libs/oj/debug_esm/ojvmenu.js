@@ -5,8 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { jsx } from 'preact/jsx-runtime';
 import 'ojs/ojmenu';
-import { Component, h } from 'preact';
+import { Component } from 'preact';
 
 class VMenu extends Component {
     constructor(props) {
@@ -14,7 +15,7 @@ class VMenu extends Component {
         this._rootRef = null;
     }
     render(props) {
-        return (h("div", { style: { display: 'none' }, ref: (elem) => (this._rootRef = elem) }, props.children));
+        return (jsx("div", Object.assign({ style: { display: 'none' }, ref: (elem) => (this._rootRef = elem) }, { children: props.children })));
     }
     componentDidMount() {
         if (!this._menuElement) {

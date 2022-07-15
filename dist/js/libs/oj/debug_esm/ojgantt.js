@@ -62,8 +62,8 @@ var __oj_gantt_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -286,8 +286,8 @@ var __oj_gantt_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "12.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -364,8 +364,8 @@ var __oj_gantt_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -550,6 +550,9 @@ var __oj_gantt_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "accessibleDependencyInfo": {
           "type": "string"
         },
@@ -1855,7 +1858,6 @@ var __oj_gantt_reference_object_metadata =
  */
 
 // Slots
-
 /**
  * <p>The <code class="prettyprint">taskTemplate</code> slot is used to specify the template for creating each task of the gantt.
  * The slot content must be a single &lt;template> element.
@@ -2534,7 +2536,7 @@ function _getTaskProgressDefaultConverter() {
  * @ojcomponent oj.ojGantt
  * @augments oj.dvtTimeComponent
  * @since 2.1.0
- *
+ * @ojimportmembers oj.ojSharedContextMenu
  * @ojrole application
  * @ojshortdesc A gantt displays scheduling information graphically, making it easier to plan, coordinate, and track various tasks and resources.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -2583,7 +2585,7 @@ function _getTaskProgressDefaultConverter() {
  *   end='2017-12-31T05:00:00.000Z'
  *   major-axis='{"scale": "months"}'
  *   minor-axis='{"scale": "weeks"}'
- *   rows='[[data]]'>
+ *   row-data='[[dataProvider]]'>
  * &lt;/oj-gantt>
  * </code>
  * </pre>
@@ -2778,7 +2780,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        * @type {?Object}
        * @ojsignature {target: "Type", value: "?(DataProvider<K1, D1>)", jsdocOverride:true}
        * @default null
-       * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the Gantt with the <code class="prettyprint">dependency-data</code> attribute specified:</caption>
@@ -3393,7 +3395,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        * @type {?Object}
        * @ojsignature {target: "Type", value: "?(DataProvider<K3, D3>)", jsdocOverride:true}
        * @default null
-       * @ojwebelementstatus {type: "deprecated", since: "12.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the Gantt with the <code class="prettyprint">row-data</code> attribute specified:</caption>
@@ -3772,7 +3774,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        * @ojsignature {target: "Type", value: "?(DataProvider<K2, D2>)", jsdocOverride:true}
        * @default null
        * @ojdeprecated {since: '12.0.0', description: 'Set the data using the row-data attribute instead.'}
-       * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the Gantt with the <code class="prettyprint">task-data</code> attribute specified:</caption>
@@ -5279,7 +5281,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
     _CreateDvtComponent: function (context, callback, callbackObj) {
       // eslint-disable-next-line no-param-reassign
       context.styleClasses = this._getComponentStyleMap();
-      return Gantt.newInstance(context, callback, callbackObj);
+      return new Gantt(context, callback, callbackObj);
     },
 
     // @inheritdoc

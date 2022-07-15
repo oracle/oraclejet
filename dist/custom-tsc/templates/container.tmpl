@@ -17,7 +17,11 @@ export interface <?js= data.vcomponentName ?><?js= data.classTypeParamsDeclarati
 <?js
   if (data.properties) {
     data.propsToInclude = 'readOnly';
-    if (data.propsReadonlyMappedTypesClassName.length > 0) {
+    if (data.propsComponentPropsAlternateName.length > 0) {
+      data.propsName = data.propsComponentPropsAlternateName;
+      data.typeParams = "";
+    }
+    else if (data.propsReadonlyMappedTypesClassName.length > 0) {
       data.propsName = data.propsReadonlyMappedTypesClassName;
       data.typeParams = "";
     } else {
@@ -66,7 +70,11 @@ export interface <?js= data.settablePropertiesInterface ?><?js= data.propsClassT
 <?js
 if (data.properties) {
     data.propsToInclude = 'settable';
-    if (data.propsMappedTypesClassName.length > 0) {
+    if (data.propsComponentPropsAlternateName.length > 0) {
+      data.propsName = data.propsComponentPropsAlternateName;
+      data.typeParams = "";
+    }
+    else if (data.propsMappedTypesClassName.length > 0) {
       data.propsName = data.propsMappedTypesClassName;
       data.typeParams = "";
     } else {

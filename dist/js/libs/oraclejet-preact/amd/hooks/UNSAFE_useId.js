@@ -1,17 +1,2 @@
-define(['exports'], (function (exports) { 'use strict';
-
-	/**
-	 * Generates random string that can be used as ID. Serves as replacement for
-	 * getUniqueId() function from "ojs/ojvcomponent-preact", until React 18 is
-	 * released with useId hook (https://github.com/preactjs/preact/issues/3373).
-	 * 1. Pick a random number in the range between 0 (inclusive) and 1 (exclusive)
-	 * 2. Convert the number to a base-36 string (using characters 0-9 and a-z)
-	 * 3. Slice off the leading '0.' prefix
-	 */
-	const useId = () => Math.random().toString(36).slice(2); //@RandomNumberOK
-
-	exports.useId = useId;
-
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-}));
+define(["exports","preact/hooks"],(function(e,t){"use strict";e.useId=()=>{const[e]=t.useState((()=>`_${Math.random().toString(36).slice(2)}`));return e},Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=UNSAFE_useId.js.map

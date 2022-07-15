@@ -774,6 +774,28 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
           this._handleCloseHelpDefPopup();
         },
         /**
+         * @memberof! oj.ojLabel
+         * @instance
+         * @protected
+         */
+        _ReleaseResources: function () {
+          this._super();
+          // Hammer events must be cleaned up otherwise it will result in detached dom.
+          this._removeHelpDefIconEventListeners();
+        },
+        /**
+         * Gets called when component is created and when dom is reconnnected. E.g., oj-form-layout
+         * moves dom around, and _ReleaseResources/_SetupResources gets called then, even though
+         * the component is already created and ComponentCreate does not get called again.
+         * @memberof! oj.ojLabel
+         * @instance
+         * @protected
+         */
+        _SetupResources: function () {
+          this._super();
+          this._addShowHelpDefinitionEventHandlers();
+        },
+        /**
          * The translation section name for the private ojLabel() is oj-ojLabel.
          * In 4.0.0 and the introduction of the oj-label custom element,
          *  the translation section name is oj-ojLabel.
@@ -1501,8 +1523,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
             }
           };
 
-          // Add event handlers to open the help definition popup
-          this._addShowHelpDefinitionEventHandlers($helpIcon);
+          // Add event handlers to open the help definition popup will happen in _SetupResources
         },
         /**
          * Create the div that will be used as the popup for the help definition.
@@ -1553,14 +1574,16 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
         },
         /**
          * Add the event listeners to show the helpDefinition text in a popup
-         * @param {jQuery} $helpIcon
          * @returns {undefined}
          * @instance
          * @memberof oj.ojLabel
          * @private
          */
-        _addShowHelpDefinitionEventHandlers: function ($helpIcon) {
-          var hammerOptions;
+        _addShowHelpDefinitionEventHandlers: function () {
+          const $helpIcon = this.uiLabel.find(OJ_LABEL_HELP_ICON_CLASS);
+          if ($helpIcon.length === 0) {
+            return;
+          }
 
           // Open the popup on focusin and mousenter.
           // *I have logic in the listener to ignore these when these trigger as a result of
@@ -1573,31 +1596,60 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
           $helpIcon.on('mouseleave' + this._helpDefPopupNamespace,
                        this._mouseleaveClosePopupForHelpDefListener);
 
-          if (this._bTouchSupported) {
+          this._setupHammerEventHandlers($helpIcon);
+        },
+        /**
+         * Add the Hammer event listeners to show the helpDefinition text in a popup
+         * @returns {undefined}
+         * @instance
+         * @memberof oj.ojLabel
+         * @private
+         */
+        _setupHammerEventHandlers: function () {
+          const $helpIcon = this.uiLabel.find(OJ_LABEL_HELP_ICON_CLASS);
+          if (this._bTouchSupported && $helpIcon.length !== 0) {
             // And if touch is supported, the user can also open the popup on press or,
             //  if no help source, on tap.
             if (this.options.help.source) {
-              hammerOptions = {
+              let hammerOptions = {
                 recognizers: [
                   [hammerjs.Press, { time: DomUtils.PRESS_HOLD_THRESHOLD }]
-                ] };
+                ]
+              };
               $helpIcon.ojHammer(hammerOptions);
               // JET components are encouraged to use JQUI's _on() method, giving all the conveniences
               // of the _on method, like automatic cleanup.
               this._on($helpIcon,
-                       { press: this._openPopupForHelpDefCallbackListener });
+                { press: this._openPopupForHelpDefCallbackListener });
             } else {
-              hammerOptions = {
+              let hammerOptions = {
                 recognizers: [
                   [hammerjs.Tap],
                   [hammerjs.Press, { time: DomUtils.PRESS_HOLD_THRESHOLD }]
-
-                ] };
+                ]
+              };
               $helpIcon.ojHammer(hammerOptions);
               this._on($helpIcon,
-                { press: this._openPopupForHelpDefCallbackListener,
-                  tap: this._openPopupForHelpDefCallbackListener });
+                {
+                  press: this._openPopupForHelpDefCallbackListener,
+                  tap: this._openPopupForHelpDefCallbackListener
+                });
             }
+          }
+        },
+        /**
+         * Release the Hammer event listeners
+         * @returns {undefined}
+         * @instance
+         * @memberof oj.ojLabel
+         * @private
+         */
+        _releaseHammerEventHandlers: function () {
+          const $helpIcon = this.uiLabel.find(OJ_LABEL_HELP_ICON_CLASS);
+          if (this._bTouchSupported && $helpIcon.length !== 0) {
+            // helpIcon is same element on which we originally called ojHammer()
+            // the listeners are automatically removed since we used jqueryui's _on
+            $helpIcon.ojHammer('destroy');
           }
         },
         /**
@@ -1687,23 +1739,19 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
          * @private
          * @memberof oj.ojLabel
          */
-        _removeHelpDefIconEventListeners: function (helpIcon) {
+        _removeHelpDefIconEventListeners: function () {
+          const helpIcon = this.uiLabel.find(OJ_LABEL_HELP_ICON_CLASS);
+
           if (this._bTouchSupported) {
             this.widget().off(this._touchEatClickNamespace);
             helpIcon.off(this._touchEatContextMenuNamespace);
-            this._eatClickOnHelpIconListener = null;
-            this._eatContextMenuOnHelpIconListener = null;
-            // helpIcon is same element on which we originally called ojHammer()
-            // the listeners are automatically removed since we used jqueryui's _on
-            helpIcon.ojHammer('destroy');
           }
+          this._releaseHammerEventHandlers();
           helpIcon.off(this._helpDefPopupNamespace);
           if (this._helpDefPopupDivId != null) {
             let $helpDefPopupDiv = $(document.getElementById(this._helpDefPopupDivId));
             $helpDefPopupDiv.off(this._helpDefPopupNamespace);
           }
-          this._openPopupForHelpDefCallbackListener = null;
-          this._mouseleaveClosePopupForHelpDefListener = null;
         },
         /**
          * removes the help def popup dom and variables
@@ -1763,7 +1811,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
 
           if ($helpIcon.length === 1) {
             // remove things we added in _attachHelpDefToIconAnchor
-            this._removeHelpDefIconEventListeners($helpIcon);
+            this._removeHelpDefIconEventListeners();
             this._removeHelpDefPopup();
             $helpIcon.remove();
           }
@@ -1777,6 +1825,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
               helpSpan = this._createIconSpan(helpSpanId, true);
             }
             this._createHelp(helpSpan);
+            this._addShowHelpDefinitionEventHandlers();
             if (this._isCustomElement && targetElement) {
               this._addHelpSpanIdOnTarget(helpSpanId, targetElement);
             }
@@ -1982,8 +2031,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
          */
         _destroy: function () {
           // remove things we added in _attachHelpDefToIconAnchor
-          var helpIcon = this.uiLabel.find(OJ_LABEL_HELP_ICON_CLASS);
-          this._removeHelpDefIconEventListeners(helpIcon);
+          this._removeHelpDefIconEventListeners();
           this._removeHelpDefPopup();
           this.helpSpanId = null;
           this.requiredSpanId = null;

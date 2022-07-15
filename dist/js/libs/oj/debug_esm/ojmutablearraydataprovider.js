@@ -289,6 +289,7 @@ import { warn } from 'ojs/ojlogger';
 
 class MutableArrayDataProvider {
     constructor(_data, options) {
+        var _a;
         this._data = _data;
         this.options = options;
         this.findMovesInArrayComparison = (left, right, limitFailedCompares) => {
@@ -370,14 +371,16 @@ class MutableArrayDataProvider {
                 this[MutableArrayDataProvider._METADATA] = metadata;
             }
         };
-        this.AsyncIterable = class {
-            constructor(_asyncIterator) {
-                this._asyncIterator = _asyncIterator;
-                this[Symbol.asyncIterator] = () => {
-                    return this._asyncIterator;
-                };
-            }
-        };
+        this.AsyncIterable = (_a = class {
+                constructor(_asyncIterator) {
+                    this._asyncIterator = _asyncIterator;
+                    this[Symbol.asyncIterator] = () => {
+                        return this._asyncIterator;
+                    };
+                }
+            },
+            Symbol.asyncIterator,
+            _a);
         this.AsyncIterator = class {
             constructor(_parent, _nextFunc, _params, _offset) {
                 this._parent = _parent;
@@ -621,9 +624,23 @@ class MutableArrayDataProvider {
         }
         else if (capabilityName === 'filter') {
             return {
-                operators: ['$co', '$eq', '$ew', '$pr', '$gt', '$ge', '$lt', '$le', '$ne', '$regex', '$sw'],
+                operators: [
+                    '$co',
+                    '$eq',
+                    '$ew',
+                    '$pr',
+                    '$gt',
+                    '$ge',
+                    '$lt',
+                    '$le',
+                    '$ne',
+                    '$regex',
+                    '$sw',
+                    '$exists'
+                ],
                 attributeExpression: ['*'],
                 textFilter: {},
+                nestedFilter: {},
                 collationOptions: {
                     sensitivity: ['base', 'accent', 'case', 'variant']
                 }

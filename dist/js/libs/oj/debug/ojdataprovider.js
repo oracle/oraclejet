@@ -1209,7 +1209,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
             let subTree;
             const itemTreeArray = [];
             for (const key in expression) {
-                if (key === 'collationOptions') {
+                if (key === 'collationOptions' || key === 'criterion') {
                     continue;
                 }
                 if (expression.hasOwnProperty(key)) {
@@ -1232,6 +1232,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
                         }
                         else if (_isSingleSelector(key)) {
                             throw new Error('not a valid expression: ' + expression);
+                        }
+                        else if (_isNestedSelector(key)) {
+                            const nestedSubTree = _buildExpressionTree(expression['criterion'], expression['criterion']['collationOptions']);
+                            itemTreeArray.push({
+                                left: value,
+                                right: nestedSubTree,
+                                operator: key,
+                                collationOptions
+                            });
                         }
                     }
                     else if (_isLiteral(value)) {
@@ -1316,6 +1325,20 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
                         }
                     }
                     return false;
+                }
+            }
+            else if (_isNestedSelector(operator)) {
+                let nestedItemDataArray = getValue(expTree.left, itemData);
+                if (nestedItemDataArray === undefined ||
+                    !(nestedItemDataArray instanceof Array) ||
+                    nestedItemDataArray.length === 0) {
+                    return false;
+                }
+                for (const nestedItemData of nestedItemDataArray) {
+                    let nestedResult = _evaluateExpressionTree(expTree.right, nestedItemData);
+                    if (nestedResult) {
+                        return true;
+                    }
                 }
             }
             else {
@@ -1417,6 +1440,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
                 token === '$regex' ||
                 token === '$exists');
         }
+        function _isNestedSelector(token) {
+            return token === '$nestedAttr';
+        }
         function _isLiteral(token) {
             return typeof token !== 'object';
         }
@@ -1461,6 +1487,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
                     else if (filterDef['criteria']) {
                         this['criteria'] = filterDef['criteria'];
                     }
+                    else if (filterDef['criterion']) {
+                        this['criterion'] = filterDef['criterion'];
+                        if (filterDef['attribute']) {
+                            this['attribute'] = filterDef['attribute'];
+                        }
+                    }
                     if (filterDef['collationOptions']) {
                         this['collationOptions'] = filterDef['collationOptions'];
                     }
@@ -1479,6 +1511,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
                 let op = filter.op;
                 let filterValue;
                 const collationOptions = filter.collationOptions;
+                if (op === '$exists' && filter['attribute'] && filter['criterion']) {
+                    transformedExpr = {};
+                    transformedExpr['$nestedAttr'] = filter['attribute'];
+                    transformedExpr['criterion'] = FilterImpl._transformFilter(FilterFactory.getFilter({ filterDef: filter['criterion'] }));
+                    return transformedExpr;
+                }
                 if (filter['text']) {
                     op = '$regex';
                 }
@@ -1529,17 +1567,20 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
                     }
                     else {
                         const criteriaArray = [];
+                        if (filterValue == undefined) {
+                            throw new Error('attribute cannot be empty');
+                        }
                         FilterImpl._transformObjectExpr(filterValue, op, null, criteriaArray);
                         transformedExpr['$and'] = criteriaArray;
                     }
                 }
                 else {
                     const criteriaArray = [];
-                    filter.criteria.forEach(function (criterion) {
-                        if (criterion && criterion['text'] && filter._textFilterAttributes) {
-                            criterion['_textFilterAttributes'] = filter._textFilterAttributes;
+                    filter.criteria.forEach(function (compCriteria) {
+                        if (compCriteria && compCriteria['text'] && filter._textFilterAttributes) {
+                            compCriteria['_textFilterAttributes'] = filter._textFilterAttributes;
                         }
-                        criteriaArray.push(FilterImpl._transformFilter(criterion));
+                        criteriaArray.push(FilterImpl._transformFilter(compCriteria));
                     });
                     transformedExpr = {};
                     transformedExpr[op] = criteriaArray;
@@ -1596,6 +1637,85 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
         }
     }
     oj$1._registerLegacyNamespaceProp('FilterFactory', FilterFactory);
+
+    (function (SortUtils) {
+        function getNaturalSortCriteriaComparator(sortCriteria) {
+            return (x, y) => {
+                for (const sort of sortCriteria) {
+                    const compareResult = getNaturalSortCriterionComparator(sort)(x, y);
+                    if (compareResult !== 0) {
+                        return compareResult;
+                    }
+                }
+                return 0;
+            };
+        }
+        SortUtils.getNaturalSortCriteriaComparator = getNaturalSortCriteriaComparator;
+        function getNaturalSortCriterionComparator(sortCriterion) {
+            const _getVal = (val, attr) => {
+                if (val === null || typeof val === 'undefined') {
+                    return val;
+                }
+                if (typeof attr === 'string') {
+                    const dotIndex = attr.indexOf('.');
+                    if (dotIndex > 0) {
+                        const startAttr = attr.substring(0, dotIndex);
+                        const endAttr = attr.substring(dotIndex + 1);
+                        const subObj = val[startAttr];
+                        if (subObj) {
+                            return _getVal(subObj, endAttr);
+                        }
+                    }
+                }
+                if (typeof val[attr] === 'function') {
+                    return val[attr]();
+                }
+                return val[attr];
+            };
+            return (x, y) => {
+                let direction, attribute, xval, yval;
+                direction = sortCriterion['direction'];
+                attribute = sortCriterion['attribute'];
+                xval = _getVal(x, attribute);
+                yval = _getVal(y, attribute);
+                let compareResult = 0;
+                const comparator = getNaturalSortComparator();
+                if (direction === 'ascending') {
+                    compareResult = comparator(xval, yval);
+                }
+                else {
+                    compareResult = comparator(yval, xval);
+                }
+                if (compareResult !== 0) {
+                    return compareResult;
+                }
+                return 0;
+            };
+        }
+        SortUtils.getNaturalSortCriterionComparator = getNaturalSortCriterionComparator;
+        function getNaturalSortComparator() {
+            return (xval, yval) => {
+                if (xval === null || typeof xval === 'undefined') {
+                    return 1;
+                }
+                if (yval === null || typeof yval === 'undefined') {
+                    return -1;
+                }
+                let compareResult = 0;
+                const strX = typeof xval === 'string' ? xval : String(xval).toString();
+                const strY = typeof yval === 'string' ? yval : String(yval).toString();
+                compareResult = strX.localeCompare(strY, undefined, {
+                    numeric: true,
+                    sensitivity: 'base'
+                });
+                if (compareResult !== 0) {
+                    return compareResult;
+                }
+                return 0;
+            };
+        }
+        SortUtils.getNaturalSortComparator = getNaturalSortComparator;
+    })(exports.SortUtils || (exports.SortUtils = {}));
 
     exports.DataCache = DataCache;
     exports.DataProviderMutationEvent = DataProviderMutationEvent;

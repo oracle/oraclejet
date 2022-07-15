@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomelement-utils', 'ojs/ojdomutils'], function (exports, preact, ojthemeutils, ojlabel, ojcustomelementUtils, DomUtils) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomelement-utils', 'ojs/ojdomutils'], function (exports, jsxRuntime, preact, ojthemeutils, ojlabel, ojcustomelementUtils, DomUtils) { 'use strict';
 
     function VStartLabeler(props) {
         const labelWrapperWidth = _computeStartLabelWidth(props.labelWidth, props.colspan);
@@ -27,10 +27,7 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
         if (!Array.isArray(props.children)) {
             props.children.props['labelEdge'] = 'provided';
         }
-        return (preact.h(preact.Fragment, null,
-            preact.h("div", { class: 'oj-formlayout-inline-label', style: labelWrapperStyle },
-                preact.h("oj-label", { for: props.forid }, props.labelText)),
-            preact.h("div", { class: 'oj-formlayout-inline-value', style: valueWrapperStyle }, props.children)));
+        return (jsxRuntime.jsxs(preact.Fragment, { children: [jsxRuntime.jsx("div", Object.assign({ class: "oj-formlayout-inline-label", style: labelWrapperStyle }, { children: jsxRuntime.jsx("oj-label", Object.assign({ for: props.forid }, { children: props.labelText })) })), jsxRuntime.jsx("div", Object.assign({ class: "oj-formlayout-inline-value", style: valueWrapperStyle }, { children: props.children }))] }));
     }
     function _computeStartLabelWidth(labelWidth, colspan) {
         let newWidth = labelWidth;
@@ -71,9 +68,7 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
         if (!Array.isArray(props.children)) {
             props.children.props['labelEdge'] = 'provided';
         }
-        return (preact.h(preact.Fragment, null,
-            preact.h("oj-label", { for: props.forid }, props.labelText),
-            props.children));
+        return (jsxRuntime.jsxs(preact.Fragment, { children: [jsxRuntime.jsx("oj-label", Object.assign({ for: props.forid }, { children: props.labelText })), props.children] }));
     }
 
     const COLSPANWRAP_NOWRAP = 'nowrap';
@@ -103,10 +98,10 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
                 compId = ojcustomelementUtils.ElementUtils.getUniqueId(props.children.props['id']);
             }
             if (props.labelEdge === LABELEDGE_START) {
-                return preact.h(VStartLabeler, Object.assign({ forid: compId }, props));
+                return jsxRuntime.jsx(VStartLabeler, Object.assign({ forid: compId }, props));
             }
             else if (props.labelEdge === LABELEDGE_TOP) {
-                return preact.h(VTopLabeler, Object.assign({ forid: compId }, props));
+                return jsxRuntime.jsx(VTopLabeler, Object.assign({ forid: compId }, props));
             }
             else {
                 if (hasSingleChild) {
@@ -118,7 +113,7 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
                         props.children.props['labelEdge'] = 'none';
                     }
                 }
-                return preact.h(preact.Fragment, null, props.children);
+                return jsxRuntime.jsx(preact.Fragment, { children: props.children });
             }
         }
         else {
@@ -143,8 +138,7 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
             if (this.props.contentType === 'formLayout') {
                 rootClassName += ' oj-formlayout-nested-formlayout';
             }
-            return (preact.h("div", { class: rootClassName, style: wrapperStyle, key: props.cellKey },
-                preact.h(VLabeler, { labelText: this.props.labelText, labelEdge: this.props.labelEdge, labelWidth: this.props.labelWidth, colspan: this.props.colspan, totalColumns: this.props.totalColumns }, this.props.children)));
+            return (jsxRuntime.jsx("div", Object.assign({ class: rootClassName, style: wrapperStyle }, { children: jsxRuntime.jsx(VLabeler, Object.assign({ labelText: this.props.labelText, labelEdge: this.props.labelEdge, labelWidth: this.props.labelWidth, colspan: this.props.colspan, totalColumns: this.props.totalColumns }, { children: this.props.children })) }), props.cellKey));
         }
         _getFullFlexItemWidth(colspan, columns) {
             if (colspan === columns) {
@@ -181,7 +175,7 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
             this._columns = props.columns > 0 ? props.columns : props.maxColumns;
             const rootClassName = 'oj-form-layout oj-formlayout-max-cols-' + this._columns;
             const formContent = this._getColumnFormContent(props.formControls, props.columns);
-            return preact.h("div", { class: rootClassName }, formContent);
+            return jsxRuntime.jsx("div", Object.assign({ class: rootClassName }, { children: formContent }));
         }
         _getColumnFormContent(childArray, columns) {
             let formContent = [];
@@ -198,11 +192,11 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
                     }
                     labelEdge = this._themeDefault.labelEdge;
                 }
-                rowContent = (preact.h(VCellGenerator, { totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key }, content));
-                formContent.push(preact.h("div", { class: 'oj-flex', "data-oj-internal": true }, rowContent));
+                rowContent = (jsxRuntime.jsx(VCellGenerator, Object.assign({ totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key }, { children: content })));
+                formContent.push(jsxRuntime.jsx("div", Object.assign({ class: "oj-flex", "data-oj-internal": true }, { children: rowContent })));
             }
             const styling = this._getColumnStyling(columns);
-            return (preact.h("div", { class: styling.formClassName, style: styling.formStyle, "data-oj-context": true, "data-oj-internal": true }, formContent));
+            return (jsxRuntime.jsx("div", Object.assign({ class: styling.formClassName, style: styling.formStyle, "data-oj-context": true, "data-oj-internal": true }, { children: formContent })));
         }
         _getColumnStyling(columns) {
             let formClassNames = 'oj-form';
@@ -268,7 +262,7 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
             const cssColumnClasses = props.columns > 0 ? props.columns + NO_MIN_COLUMN_WIDTH : props.maxColumns;
             const rootClassNames = ROOTCLASSNAMES + cssColumnClasses;
             const formContent = this._getRowFormContent(this.props.formControls);
-            return (preact.h("div", { class: rootClassNames, ref: this.setFormDivRef }, formContent));
+            return (jsxRuntime.jsx("div", Object.assign({ class: rootClassNames, ref: this.setFormDivRef }, { children: formContent })));
         }
         componentDidMount() {
             this._updateAvailableColumns();
@@ -349,7 +343,7 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
                     }
                     labelEdge = this._themeDefault.labelEdge;
                 }
-                rowContent.push(preact.h(VCellGenerator, { colspan: colspan, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key }, content));
+                rowContent.push(jsxRuntime.jsx(VCellGenerator, Object.assign({ colspan: colspan, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key }, { children: content })));
                 cellCount += colspan;
                 if (cellCount % cols !== 0) {
                     this._addColumnGutter(rowContent);
@@ -357,14 +351,14 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
             }
             this._addRowToForm(formContent, rowContent, cellCount);
             const styling = this._getRowStyling(needsFullWidthClass);
-            return (preact.h("div", { class: styling.formClassName, style: styling.formStyle, "data-oj-context": true, "data-oj-internal": true }, formContent));
+            return (jsxRuntime.jsx("div", Object.assign({ class: styling.formClassName, style: styling.formStyle, "data-oj-context": true, "data-oj-internal": true }, { children: formContent })));
         }
         _addColumnGutter(rowContent) {
-            rowContent.push(preact.h("div", { class: 'oj-formlayout-column-gutter' }));
+            rowContent.push(jsxRuntime.jsx("div", { class: "oj-formlayout-column-gutter" }));
         }
         _addRowToForm(formContent, rowContent, cellCount) {
             this._addPaddingCells(rowContent, cellCount);
-            formContent.push(preact.h("div", { class: 'oj-flex', "data-oj-internal": true }, rowContent));
+            formContent.push(jsxRuntime.jsx("div", Object.assign({ class: "oj-flex", "data-oj-internal": true }, { children: rowContent })));
         }
         _addPaddingCells(rowContent, count) {
             const cols = this._calculateColumns(this.state.availableColumns) || this.props.maxColumns;
@@ -374,7 +368,7 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
                     if (i !== last) {
                         this._addColumnGutter(rowContent);
                     }
-                    rowContent.push(preact.h(VCellGenerator, { colspan: 1, totalColumns: cols, labelEdge: LABELEDGE_NONE }));
+                    rowContent.push(jsxRuntime.jsx(VCellGenerator, { colspan: 1, totalColumns: cols, labelEdge: LABELEDGE_NONE }));
                 }
             }
         }
@@ -430,10 +424,10 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
         render(props) {
             const { direction } = props, passthruProps = __rest(props, ["direction"]);
             if (direction === DIRECTION_COLUMN) {
-                return preact.h(VColumnFormGenerator, Object.assign({}, passthruProps));
+                return jsxRuntime.jsx(VColumnFormGenerator, Object.assign({}, passthruProps));
             }
             else {
-                return preact.h(VRowFormGenerator, Object.assign({}, passthruProps));
+                return jsxRuntime.jsx(VRowFormGenerator, Object.assign({}, passthruProps));
             }
         }
     }

@@ -1,0 +1,11 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.popup.ignored.scoped") {
+
+.oj-private-scale-lg {
+
+//Redefining Popup vars
+--oj-popup-padding : 8px;
+ }
+
+}

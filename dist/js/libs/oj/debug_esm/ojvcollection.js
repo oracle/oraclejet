@@ -6,8 +6,8 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import { warn, info, error } from 'ojs/ojlogger';
-import { CHECKVIEWPORT_THRESHOLD } from 'ojs/ojdatacollection-common';
+import { getEventDetail, CHECKVIEWPORT_THRESHOLD } from 'ojs/ojdatacollection-common';
+import { info, warn, error } from 'ojs/ojlogger';
 import CachedIteratorResultsDataProvider from 'ojs/ojcachediteratorresultsdataprovider';
 import DomScroller from 'ojs/ojdomscroller';
 
@@ -117,17 +117,59 @@ class DataProviderContentHandler {
                 this.handleItemsAdded(addDetail);
             }
             if (detail.remove) {
-                this.handleItemsRemoved(detail.remove);
-                detail.remove.keys.forEach((key) => {
-                    if (addAndRemoveKeys.indexOf(key) == -1) {
-                        this.callback.handleItemRemoved(key);
-                    }
-                });
+                const handleDetailRemove = () => {
+                    this.handleItemsRemoved(detail.remove);
+                    detail.remove.keys.forEach((key) => {
+                        if (addAndRemoveKeys.indexOf(key) == -1) {
+                            this.callback.handleItemRemoved(key);
+                        }
+                    });
+                };
+                if (this.getValidatedEventDetailPromise) {
+                    this.getValidatedEventDetailPromise.then(() => {
+                        handleDetailRemove();
+                        this.getValidatedEventDetailPromise = null;
+                    });
+                }
+                else {
+                    handleDetailRemove();
+                }
             }
             if (detail.update) {
                 this.handleItemsUpdated(detail.update);
             }
         }
+    }
+    _handleScrollerMaxRowCount() {
+        info('ScrollPolicyOptions max count has been reached.');
+    }
+    getMaxCount() {
+        return Infinity;
+    }
+    truncateIfOverMaxCount(validatedEventDetail, currentDataLength) {
+        const eventDataLength = validatedEventDetail.data.length;
+        const potentialDataLength = eventDataLength + currentDataLength;
+        const offset = this.getMaxCount() - potentialDataLength;
+        if (offset < 0) {
+            validatedEventDetail.data.splice(offset, eventDataLength);
+            validatedEventDetail.metadata.splice(offset, eventDataLength);
+            this._handleScrollerMaxRowCount();
+        }
+    }
+    getValidatedEventDetail(detail) {
+        const addEventBusyResolve = this.addBusyState('validating mutation add event detail');
+        return getEventDetail(this.getDataProvider(), detail).then((validatedEventDetail) => {
+            if (validatedEventDetail === null) {
+                addEventBusyResolve();
+                return;
+            }
+            const styleClass = '.' + this.callback.getItemStyleClass();
+            const items = this.root.querySelectorAll(styleClass);
+            this.truncateIfOverMaxCount(validatedEventDetail, items.length);
+            detail.data = validatedEventDetail.data;
+            detail.metadata = validatedEventDetail.metadata;
+            addEventBusyResolve();
+        });
     }
 }
 
@@ -580,7 +622,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
         this._registerDomScroller = (keys) => {
             let options = {
                 fetchSize: this.getFetchSize(),
-                maxCount: this._getMaxCount(),
+                maxCount: this.getMaxCount(),
                 keys: keys,
                 strategy: this.isRenderingViewportOnly()
                     ? VirtualizationStrategy.VIEWPORT_ONLY
@@ -629,7 +671,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
     getFetchSize() {
         return this.scrollPolicyOptions.fetchSize;
     }
-    _getMaxCount() {
+    getMaxCount() {
         return this.scrollPolicyOptions.maxCount;
     }
     isInitialFetch() {
@@ -706,9 +748,6 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
             error('an error occurred during data fetch, reason: ' + reason);
         }
     }
-    _handleScrollerMaxRowCount() {
-        info('ScrollPolicyOptions max count has been reached.');
-    }
     renderData(data, metadata, startIndex) {
         if (this.callback == null) {
             return null;
@@ -777,56 +816,68 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
         super.handleModelRefresh();
     }
     handleItemsAdded(detail) {
-        this.callback.updateData(function (currentData) {
-            let newData = {
-                startIndex: currentData.startIndex,
-                done: currentData.done,
-                maxCountLimit: currentData.maxCountLimit,
-                value: {
-                    data: currentData.value.data.slice(0),
-                    metadata: currentData.value.metadata.slice(0)
+        const itemsAdded = () => {
+            this.callback.updateData((currentData) => {
+                let newData = {
+                    startIndex: currentData.startIndex,
+                    done: currentData.done,
+                    maxCountLimit: currentData.maxCountLimit,
+                    value: {
+                        data: currentData.value.data.slice(0),
+                        metadata: currentData.value.metadata.slice(0)
+                    }
+                };
+                const indexes = detail.indexes;
+                const addBeforeKeys = detail.addBeforeKeys;
+                const keys = detail.keys;
+                if (indexes == null && addBeforeKeys == null) {
+                    if (newData.done && !newData.maxCountLimit) {
+                        newData.value.data.push(detail.data);
+                        newData.value.metadata.push(detail.metadata);
+                    }
                 }
-            };
-            const indexes = detail.indexes;
-            const addBeforeKeys = detail.addBeforeKeys;
-            const keys = detail.keys;
-            if (indexes == null && addBeforeKeys == null) {
-                if (newData.done && !newData.maxCountLimit) {
-                    newData.value.data.push(detail.data);
-                    newData.value.metadata.push(detail.metadata);
+                else {
+                    let i = 0;
+                    keys.forEach(() => {
+                        const data = detail.data[i];
+                        const metadata = detail.metadata[i];
+                        let index = -1;
+                        if (indexes != null && indexes[i] != null) {
+                            index = indexes[i];
+                        }
+                        else if (addBeforeKeys != null && addBeforeKeys[i] != null) {
+                            index = this._findIndex(newData.value.metadata, addBeforeKeys[i]);
+                        }
+                        if (index > -1 && index < newData.value.data.length) {
+                            newData.value.data.splice(index, 0, data);
+                            newData.value.metadata.splice(index, 0, metadata);
+                        }
+                        else if (newData.done && !newData.maxCountLimit) {
+                            newData.done = false;
+                            if (this.domScroller == null) {
+                                this._registerDomScroller([]);
+                            }
+                            else {
+                                this.domScroller.setAsyncIterator(this.dataProviderAsyncIterator);
+                            }
+                        }
+                        i++;
+                    });
                 }
-            }
-            else {
-                let i = 0;
-                keys.forEach(function () {
-                    const data = detail.data[i];
-                    const metadata = detail.metadata[i];
-                    let index = -1;
-                    if (indexes != null && indexes[i] != null) {
-                        index = indexes[i];
-                    }
-                    else if (addBeforeKeys != null && addBeforeKeys[i] != null) {
-                        index = this._findIndex(newData.value.metadata, addBeforeKeys[i]);
-                    }
-                    if (index > -1 && index < newData.value.data.length) {
-                        newData.value.data.splice(index, 0, data);
-                        newData.value.metadata.splice(index, 0, metadata);
-                    }
-                    else if (newData.done && !newData.maxCountLimit) {
-                        newData.done = false;
-                        if (this.domScroller == null) {
-                            this._registerDomScroller([]);
-                        }
-                        else {
-                            this.domScroller.setAsyncIterator(this.dataProviderAsyncIterator);
-                        }
-                    }
-                    i++;
-                }.bind(this));
-            }
-            return { renderedData: newData };
-        }.bind(this));
-        super.handleItemsAdded(detail);
+                return { renderedData: newData };
+            });
+            super.handleItemsAdded(detail);
+        };
+        if (detail.data == null || detail.metadata == null) {
+            this.getValidatedEventDetailPromise = this.getValidatedEventDetail(detail).then(() => {
+                if (detail.data != null && detail.metadata != null) {
+                    itemsAdded();
+                }
+            });
+        }
+        else {
+            itemsAdded();
+        }
     }
     handleItemsRemoved(detail) {
         this._handleItemsMutated(detail, 'keys', (newData, key) => {
@@ -840,12 +891,24 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
     }
     handleCurrentRangeItemUpdated(key) { }
     handleItemsUpdated(detail) {
-        this._handleItemsMutated(detail, 'keys', (newData, key, index, data, metadata) => {
-            newData.value.data.splice(index, 1, data);
-            newData.value.metadata.splice(index, 1, metadata);
-            this.handleCurrentRangeItemUpdated(key);
-        });
-        super.handleItemsUpdated(detail);
+        const itemsUpdated = () => {
+            this._handleItemsMutated(detail, 'keys', (newData, key, index, data, metadata) => {
+                newData.value.data.splice(index, 1, data);
+                newData.value.metadata.splice(index, 1, metadata);
+                this.handleCurrentRangeItemUpdated(key);
+            });
+            super.handleItemsUpdated(detail);
+        };
+        if (detail.data == null || detail.metadata == null) {
+            this.getValidatedEventDetailPromise = this.getValidatedEventDetail(detail).then(() => {
+                if (detail.data != null && detail.metadata != null) {
+                    itemsUpdated();
+                }
+            });
+        }
+        else {
+            itemsUpdated();
+        }
     }
 }
 
@@ -1104,6 +1167,16 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 expanded
             };
         };
+        this._updateAllMetadata = (metadata, parentKey, finalResults) => {
+            let newMetadata;
+            if (metadata && metadata.length > 0) {
+                newMetadata = [];
+                metadata.forEach(oneMetadata => {
+                    newMetadata.push(this._updateMetadata(oneMetadata, parentKey, finalResults));
+                });
+            }
+            return newMetadata;
+        };
         this._getIndexByKey = (key, cache) => {
             let index = -1;
             cache.some(function (item, i) {
@@ -1230,7 +1303,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 asyncIterator: { next: this.fetchMoreRows.bind(this) },
                 fetchSize: this.getFetchSize(),
                 fetchTrigger: this.callback.getSkeletonHeight() * this.getLoadMoreCount(),
-                maxCount: this._getMaxCount(),
+                maxCount: this.getMaxCount(),
                 initialRowCount: this.getFetchSize(),
                 strategy: VirtualizationStrategy.HIGH_WATER_MARK,
                 isOverflow: this._getOverflowFunc(),
@@ -1293,7 +1366,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
     getFetchSize() {
         return this.scrollPolicyOptions.fetchSize;
     }
-    _getMaxCount() {
+    getMaxCount() {
         return this.scrollPolicyOptions.maxCount;
     }
     isInitialFetch() {
@@ -1345,9 +1418,6 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
     _handleFetchError(reason) {
         this.setFetching(false);
         error('iterating dataprovider content handler fetch error :' + reason);
-    }
-    _handleScrollerMaxRowCount() {
-        info('ScrollPolicyOptions max count has been reached.');
     }
     renderData(data, metadata) {
         if (this.callback == null) {
@@ -1597,42 +1667,64 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         if (this.callback == null) {
             return;
         }
-        this.callback.updateData(function (currentData, expandingKeys) {
-            const newData = {
-                startIndex: currentData.startIndex,
-                done: currentData.done,
-                maxCountLimit: currentData.maxCountLimit,
-                value: {
-                    data: currentData.value.data.slice(0),
-                    metadata: currentData.value.metadata.slice(0)
+        const itemsAdded = () => {
+            this.callback.updateData((currentData, expandingKeys) => {
+                const newData = {
+                    startIndex: currentData.startIndex,
+                    done: currentData.done,
+                    maxCountLimit: currentData.maxCountLimit,
+                    value: {
+                        data: currentData.value.data.slice(0),
+                        metadata: currentData.value.metadata.slice(0)
+                    }
+                };
+                let indexes = detail.indexes;
+                const addBeforeKeys = detail.addBeforeKeys;
+                const parentKeys = detail.parentKeys;
+                const keysToExpand = [];
+                let newMetadata;
+                if ((indexes == null || (indexes === null || indexes === void 0 ? void 0 : indexes.length) == 0) &&
+                    (addBeforeKeys == null || (addBeforeKeys === null || addBeforeKeys === void 0 ? void 0 : addBeforeKeys.length) == 0) &&
+                    (parentKeys == null || (parentKeys === null || parentKeys === void 0 ? void 0 : parentKeys.length) == 0)) {
+                    if (newData.done && !newData.maxCountLimit) {
+                        newData.value.data.push(...detail.data);
+                        newMetadata = this._updateAllMetadata(detail.metadata, null, newData);
+                        newData.value.metadata.push(...newMetadata);
+                    }
                 }
-            };
-            let indexes = detail.indexes;
-            const addBeforeKeys = detail.addBeforeKeys;
-            const parentKeys = detail.parentKeys;
-            const keysToExpand = [];
-            let newMetadata;
-            if (indexes == null && addBeforeKeys == null && parentKeys == null) {
-                if (newData.done && !newData.maxCountLimit) {
-                    newData.value.data.push(detail.data);
-                    newMetadata = this._updateMetadata(detail.metadata, null, newData);
-                    newData.value.metadata.push(newMetadata);
-                }
-            }
-            else if (parentKeys != null) {
-                if (indexes == null) {
-                    indexes = [];
-                }
-                parentKeys.forEach(function (parentKey, i) {
-                    const data = detail.data[i];
-                    const metadata = detail.metadata[i];
-                    let index = -1;
-                    if (parentKey === null ||
-                        (this._isExpanded(parentKey) && this._getItemByKey(parentKey))) {
-                        if (addBeforeKeys != null) {
-                            if (addBeforeKeys[i] != null) {
-                                const beforeIndex = this._findIndex(newData.value.metadata, addBeforeKeys[i]);
-                                index = beforeIndex;
+                else if ((parentKeys === null || parentKeys === void 0 ? void 0 : parentKeys.length) > 0) {
+                    if (indexes == null) {
+                        indexes = [];
+                    }
+                    parentKeys.forEach((parentKey, i) => {
+                        const data = detail.data[i];
+                        const metadata = detail.metadata[i];
+                        let index = -1;
+                        if (parentKey === null ||
+                            (this._isExpanded(parentKey) && this._getItemByKey(parentKey, null))) {
+                            if (addBeforeKeys != null) {
+                                if (addBeforeKeys[i] != null) {
+                                    const beforeIndex = this._findIndex(newData.value.metadata, addBeforeKeys[i]);
+                                    index = beforeIndex;
+                                }
+                                else {
+                                    index = this._findIndexForLastItem(parentKey, newData);
+                                    if (index === -1) {
+                                        return;
+                                    }
+                                }
+                            }
+                            else if (i < indexes.length) {
+                                if (parentKey == null) {
+                                    index = this._findIndexForNewGroup(newData.value.metadata, indexes[i]);
+                                }
+                                else {
+                                    index = this._findIndex(newData.value.metadata, parentKey);
+                                    if (index === -1) {
+                                        return;
+                                    }
+                                    index += indexes[i] + 1;
+                                }
                             }
                             else {
                                 index = this._findIndexForLastItem(parentKey, newData);
@@ -1641,53 +1733,45 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                                 }
                             }
                         }
-                        else if (i < indexes.length) {
-                            if (parentKey == null) {
-                                index = this._findIndexForNewGroup(newData.value.metadata, indexes[i]);
+                        if (index > -1) {
+                            newData.value.data.splice(index, 0, data);
+                            newMetadata = this._updateMetadata(metadata, parentKey, newData);
+                            newData.value.metadata.splice(index, 0, newMetadata);
+                            if (indexes.indexOf(index) === -1) {
+                                indexes.push(index);
                             }
-                            else {
-                                index = this._findIndex(newData.value.metadata, parentKey);
-                                if (index === -1) {
-                                    return;
-                                }
-                                index += indexes[i] + 1;
+                            if (this._isExpanded(metadata.key)) {
+                                keysToExpand.push(metadata.key);
                             }
                         }
                         else {
-                            index = this._findIndexForLastItem(parentKey, newData);
-                            if (index === -1) {
-                                return;
+                            if (this._isExpanded(parentKey) && newData.done && !newData.maxCountLimit) {
+                                newData.value.data.push(data);
+                                newData.value.metadata.push(metadata);
                             }
                         }
-                    }
-                    if (index > -1) {
-                        newData.value.data.splice(index, 0, data);
-                        newMetadata = this._updateMetadata(metadata, parentKey, newData);
-                        newData.value.metadata.splice(index, 0, newMetadata);
-                        if (indexes.indexOf(index) === -1) {
-                            indexes.push(index);
-                        }
-                        if (this._isExpanded(metadata.key)) {
-                            keysToExpand.push(metadata.key);
-                        }
-                    }
-                    else {
-                        if (this._isExpanded(parentKey) && newData.done && !newData.maxCountLimit) {
-                            newData.value.data.push(data);
-                            newData.value.metadata.push(metadata);
-                        }
-                    }
-                }.bind(this));
-            }
-            if (this.domScroller && this.domScroller.handleItemsAdded) {
-                this.domScroller.handleItemsAdded(indexes);
-            }
-            return {
-                expandingKeys: expandingKeys.add(keysToExpand),
-                renderedData: newData
-            };
-        }.bind(this));
-        super.handleItemsAdded(detail);
+                    });
+                }
+                if (this.domScroller && this.domScroller.handleItemsAdded) {
+                    this.domScroller.handleItemsAdded(indexes);
+                }
+                return {
+                    expandingKeys: expandingKeys.add(keysToExpand),
+                    renderedData: newData
+                };
+            });
+            super.handleItemsAdded(detail);
+        };
+        if (detail.data == null || detail.metadata == null) {
+            this.getValidatedEventDetailPromise = this.getValidatedEventDetail(detail).then(() => {
+                if (detail.data != null && detail.metadata != null) {
+                    itemsAdded();
+                }
+            });
+        }
+        else {
+            itemsAdded();
+        }
     }
     handleItemsRemoved(detail) {
         this._handleItemsMutated(detail, 'keys', (indexes) => {
@@ -1706,25 +1790,37 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
     }
     handleCurrentRangeItemUpdated() { }
     handleItemsUpdated(detail) {
-        this._handleItemsMutated(detail, 'keys', (indexes) => {
-            if (this.domScroller.handleItemsUpdated) {
-                this.domScroller.handleItemsUpdated(indexes);
-            }
-        }, (newData, key, index, data, metadata, expandingKeys) => {
-            const oldMetadata = newData.value.metadata[index];
-            const wasLeaf = oldMetadata.isLeaf;
-            const newMetadata = this._updateMetadata(metadata, oldMetadata.parentKey, {
-                value: { data: [data], metadata: [metadata] }
+        const itemsUpdated = () => {
+            this._handleItemsMutated(detail, 'keys', (indexes) => {
+                if (this.domScroller.handleItemsUpdated) {
+                    this.domScroller.handleItemsUpdated(indexes);
+                }
+            }, (newData, key, index, data, metadata, expandingKeys) => {
+                const oldMetadata = newData.value.metadata[index];
+                const wasLeaf = oldMetadata.isLeaf;
+                const newMetadata = this._updateMetadata(metadata, oldMetadata.parentKey, {
+                    value: { data: [data], metadata: [metadata] }
+                });
+                if (wasLeaf && !newMetadata.isLeaf) {
+                    expandingKeys = expandingKeys.add([newMetadata.key]);
+                }
+                newData.value.data.splice(index, 1, data);
+                newData.value.metadata.splice(index, 1, newMetadata);
+                this.handleCurrentRangeItemUpdated();
+                return expandingKeys;
             });
-            if (wasLeaf && !newMetadata.isLeaf) {
-                expandingKeys = expandingKeys.add([newMetadata.key]);
-            }
-            newData.value.data.splice(index, 1, data);
-            newData.value.metadata.splice(index, 1, newMetadata);
-            this.handleCurrentRangeItemUpdated();
-            return expandingKeys;
-        });
-        super.handleItemsUpdated(detail);
+            super.handleItemsUpdated(detail);
+        };
+        if (detail.data == null || detail.metadata == null) {
+            this.getValidatedEventDetailPromise = this.getValidatedEventDetail(detail).then(() => {
+                if (detail.data != null && detail.metadata != null) {
+                    itemsUpdated();
+                }
+            });
+        }
+        else {
+            itemsUpdated();
+        }
     }
     checkViewport() {
         if (this.domScroller && this.isReady()) {

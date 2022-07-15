@@ -1,0 +1,2 @@
+define(["exports"],(function(n){"use strict";function t(n,t){let e=null;const l=n.split("-");for(;null===e&&l.length>1;){l.pop();const n=l.join("-");t.has(n)&&(e=n)}return e}n.matchTranslationBundle=function(n,e){let l=null;for(let o=0;null===l&&o<n.length;o++){const u=n[o];l=e.has(u)?u:t(u,e)}return l},Object.defineProperty(n,"__esModule",{value:!0})}));
+//# sourceMappingURL=UNSAFE_matchTranslationBundle.js.map

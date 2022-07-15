@@ -611,6 +611,7 @@ const ojMessage = {};
  * Triggered when the default animation is about to start for the open or close actions of the message.
  * The default animation can be cancelled by calling
  * <code class="prettyprint">event.preventDefault</code>.
+ * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
  *
  * @ignore
  * @event
@@ -660,6 +661,7 @@ const ojMessage = {};
  * Triggered when the default animation is about to end for the open or close actions of the message.
  * The default animation can be cancelled by calling
  * <code class="prettyprint">event.preventDefault</code>.
+ * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
  *
  * @ignore
  * @event
@@ -710,8 +712,6 @@ const ojMessage = {};
  * @instance
  * @since 5.0.0
  * @return {void}
- * @fires oj.ojMessage#ojAnimationStart
- * @fires oj.ojMessage#ojAnimationEnd
  * @fires oj.ojMessage#ojClose
  *
  *

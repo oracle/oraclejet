@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { h, VNode } from 'preact';
+import { VNode } from 'preact';
 import { MessageVariant } from './Message.types';
 /**
  * Props for the MessageCloseButton component
@@ -31,5 +31,5 @@ declare type Props = {
 /**
  * A Component for rendering the message close button
  */
-declare function MessageCloseButton({ onAction, buttonRenderer, title, variant }: Props): h.JSX.Element;
+declare function MessageCloseButton({ onAction, buttonRenderer, title, variant }: Props): import("preact").JSX.Element;
 export { MessageCloseButton };

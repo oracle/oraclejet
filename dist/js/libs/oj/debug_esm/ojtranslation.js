@@ -65,11 +65,11 @@ Translations.getResource = function (key) {
  * @param {Object|Array} parameters parameters to be inserted into the string. Both arrays and
  * Javascript objects with string keys are accepted.
  *
- * @return {string|null} formatted message or null if the pattern argument was null
+ * @return {string} The formatted message string, or an empty string if the pattern is either null or an empty string.
  * @export
  */
 Translations.applyParameters = function (pattern, parameters) {
-  return (pattern == null) ? null : Translations._format(pattern, parameters);
+  return (pattern == null) ? '' : Translations._format(pattern, parameters);
 };
 
 /**

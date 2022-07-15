@@ -12,7 +12,7 @@ export class RESTTreeDataProvider<K, D> implements TreeDataProvider<K, D> {
     fetchByOffset(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
     fetchFirst(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
     getCapability(capabilityName: string): any;
-    getChildDataProvider(parentKey: K): TreeDataProvider<K, D> | null;
+    getChildDataProvider(key: K): TreeDataProvider<K, D> | null;
     getTotalSize(): Promise<number>;
     isEmpty(): 'yes' | 'no' | 'unknown';
     mutate(detail: DataProviderMutationEventDetail<K, D>): void;

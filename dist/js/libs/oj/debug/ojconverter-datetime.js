@@ -1150,6 +1150,37 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    * </table>
    * </p>
    *
+   * @property {('h11'|'h12'|'h23'|'h24')=} hourCycle - The hour cycle to use. Possible values are "h11", "h12", "h23", or "h24".
+   * hour12 option takes precedence in case both options have been specified.
+   * <p style='padding-left: 5px;'>
+   * <table class="generic-table styling-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Option</th>
+   *       <th>Example</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>h11</td>
+   *       <td>T00:00:00 is formatted as "00:00:00 AM"</td>
+   *     </tr>
+   *     <tr>
+   *       <td>h12</td>
+   *       <td>T00:00:00 is formatted as "12:00:00 AM"</td>
+   *     </tr>
+  *     <tr>
+   *       <td>h23</td>
+   *       <td>T00:00:00 is formatted as "00:00:00"</td>
+   *     </tr>
+  *     <tr>
+   *       <td>h24</td>
+   *       <td>T00:00:00 is formatted as "24:00:00"</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   * </p>
+   *
    * @property {string=} pattern - a localized string pattern, where the the characters used in
    * pattern conform to Unicode CLDR for date time formats. This will override all other options
    * when present. <br/>

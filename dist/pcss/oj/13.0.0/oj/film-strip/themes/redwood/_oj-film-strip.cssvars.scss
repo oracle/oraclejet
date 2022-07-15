@@ -1,0 +1,14 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../button/themes/redwood/_oj-button.cssvars.scss";
+
+  @include module-include-once("redwood.variables.filmstrip") {
+:root {
+
+  // filmstrip
+  // ----------------------------
+
+}
+
+}

@@ -1,0 +1,2 @@
+define(["exports","preact/hooks"],(function(e,t){"use strict";e.useViewportIntersect=function(e,o=0,n,r){t.useEffect((()=>{let t;const c=e.scroller();if(c){const e={root:c===document.body||c===document.documentElement?null:c,rootMargin:`${o}px 0px`,threshold:0};t=new IntersectionObserver((e=>{for(const t of e)if(t.isIntersecting)return void r()}),e),c.querySelectorAll(n).forEach((e=>{t.observe(e)}))}return()=>{null==t||t.disconnect()}}))},Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=UNSAFE_useViewportIntersect.js.map

@@ -1,0 +1,183 @@
+<?js
+    var params = obj;    
+    
+    /* sort subparams under their parent params (like opts.classname) */
+    var parentParam = null;
+    params.forEach(function(param, i) {
+        if (!param) { return; }
+        if ( parentParam && param.name && param.name.indexOf(parentParam.name + '.') === 0 ) {
+            param.name = param.name.substr(parentParam.name.length+1);
+            parentParam.subparams = parentParam.subparams || [];
+            parentParam.subparams.push(param);
+            params[i] = null;
+        }
+        else {
+            parentParam = param;
+        }
+    });
+    
+    /* determine if we need extra columns, "attributes" and "default" */
+    params.hasAttributes = false;
+    params.hasDefault = false;
+    params.hasName = false;    
+    
+    params.forEach(function(param) {
+        if (!param) { return; }
+        
+        if (param.optional || typeof param.nullable !== 'undefined'){
+            params.hasAttributes = true;
+        }
+        
+        if (param.name) {
+            params.hasName = true;
+        }
+        
+        if (typeof param.defaultvalue !== 'undefined') {
+            params.hasDefault = true;
+        }                
+    });
+?>
+
+<table class="params">
+    <thead>
+	<tr>
+		<?js if (params.hasName) {?>
+		<th>Name</th>
+		<?js } ?>
+		
+		<th>Type</th>
+		
+		<?js if (params.hasAttributes) {?>
+		<th>Argument</th>
+		<?js } ?>
+		
+		<?js if (params.hasDefault) {?>
+		<th>Default</th>
+		<?js } ?>
+		        
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	<?js
+      var self = this;
+      //var parsedTypes = ['RecordType', 'FunctionType', 'UnionType'];
+      var skipSubProperties = false;
+	    params.forEach(function(param) {
+	        if (!param) { return; }
+	?>
+	
+        <?js= self.getTrTag(param) ?>
+            <?js if (params.hasName) {?>
+                <td class="name"><code><?js= param.name ?></code></td>
+            <?js } ?>
+            
+            <td class="type">
+            <?js 
+            if (param.type && param.type.names) {
+              //[csaba]: in jsdoc 3.4 (and above) the names array will not contain any more the exact function signature 
+              //         (if a function was used in constructing the type), only the string "function".
+              //         in order not to loose any return type or arguments to the function we will look for the
+              //         parsedType attribute of the type Object. This will contain the whole expression used for type
+              //         as it was defined by comp. developer in the jsdoc comment section.
+              var typeHandled = false;
+              
+              if (param.tstype){
+                //[csaba]: this is the use-case where ojsignature was used with a jsdocOverride property set to true
+                //         in this case the original type will be replaced with the ojsignature type
+                if (param.tstype[0].target.toLowerCase() === 'type'){                  
+                  typeHandled = true;
+                  //TODO if the sign. type is actually a TypeDef we probably don't want to display subproperties table
+                  // but in order to know if type is actually a TypeDef we need to search with self.find                   
+                  if (self.find({kind:"typedef", longname: param.tstype[0].value}).length){                    
+                    skipSubProperties = true;
+                  }
+                  ?>
+                    <?js= self.partial('typewrapper.tmpl', {tsdeprecations: param.tsdeprecated, tstype: param.tstype}) ?>   
+                <?js 
+                }
+              }
+              else if (param.type.parsedType){
+                if (param.type.parsedType.typeExpression){                  
+                  if (param.type.parsedType.typeExpression.indexOf('function') >= 0 ||
+                      (param.type.parsedType.typeExpression.indexOf('{') >=0 && param.type.parsedType.typeExpression.indexOf('}') >0)){
+                    typeHandled = true;
+                    var _expression = param.type.parsedType.typeExpression; 
+                    // remove the 'optional' operator if exists
+                    if (_expression.endsWith('=')){
+                      _expression = _expression.substr(0, _expression.length - 1);
+                    }
+                    // remove any not-null operator
+                    if (_expression.startsWith('!')){
+                      _expression = _expression.substr(1);
+                    }
+                    // remove the parenthesis of they exists
+                    if (_expression.charCodeAt(0) == 40 && _expression.charCodeAt(_expression.length - 1) == 41){
+                      _expression = _expression.substr(1, _expression.length - 2);
+                    }                    
+                    var data = _expression.split('|'); ?>
+                    <?js= self.partial('typewrapper.tmpl', {tsdeprecations: param.tsdeprecated, types: data}) ?>                                   
+                <?js 
+                  }
+                }
+              }
+              if (!typeHandled) {
+            ?>
+                <?js= self.partial('typewrapper.tmpl', {tsdeprecations: param.tsdeprecated, types:param.type.names}) ?>
+            <?js }
+            } ?>
+            </td>
+            <?js if (params.hasAttributes) {?>
+                <td class="attributes">
+                <?js if (param.optional) { ?>
+                    &lt;optional><br>
+                <?js } ?>
+                    
+                <?js 
+                  if (typeof param.nullable !== 'undefined') {
+                    if (param.nullable){?>
+                      &lt;nullable><br>
+                <?js } 
+                    else{?>  
+                      &lt;not nullable><br>
+                <?js} 
+                 } ?>
+                </td>
+            <?js } ?>
+            
+            <?js if (params.hasDefault) {?>
+                <td class="default">
+                <?js if (typeof param.defaultvalue !== 'undefined') { ?>
+                    <?js= self.htmlsafe(param.defaultvalue) ?>
+                <?js } ?>
+                </td>
+            <?js } ?>
+                                                           
+            <td class="description last"><?js= param.description ?>
+            <?js 
+            if (param.tsdeprecated && Array.isArray(param.tsdeprecated)){ 
+                var nonTypeDeprecation = [];
+                for (var k = 0; k < param.tsdeprecated.length; k++){
+                    if (param.tsdeprecated[k].target !== 'parameterType' && param.tsdeprecated[k].target !== 'returnType'){
+                        nonTypeDeprecation.push(param.tsdeprecated[k]);
+                    }
+                }
+                if (nonTypeDeprecation.length > 0){?>
+                ?>
+                <dl class="deprecated">
+                  <dt class="important">Deprecated:</dt>
+                  <dd><?js= self.partial('deprecated.tmpl', nonTypeDeprecation) ?></dd>
+                </dl>
+                <?js
+                }
+            }
+            if (param.subparams && !skipSubProperties){ ?>
+                <h6>Properties</h6>
+                <?js= self.partial('params.tmpl', param.subparams) ?>
+            <?js } ?></td>
+        </tr>
+	
+	<?js }); ?>
+	</tbody>
+</table>

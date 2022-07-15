@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', 'knockout', 'ojs/ojdomutils', 'jquery', 'ojs/ojcustomelement-utils', 'ojs/ojbindpropagation', 'ojs/ojkeysetimpl', 'ojs/ojcontext', 'ojs/ojtemplateengine', 'ojs/ojcore-base', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils'], function (widget, BindingProviderImpl, oj$1, Logger, ko, DomUtils, $, ojcustomelementUtils, ojbindpropagation, KeySetImpl, Context, templateEngine, oj$2, KnockoutTemplateUtils, ResponsiveKnockoutUtils) { 'use strict';
+define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', 'knockout', 'ojs/ojdomutils', 'jquery', 'ojs/ojcustomelement-utils', 'ojs/ojbindpropagation', 'ojs/ojkeysetimpl', 'ojs/ojcontext', 'ojs/ojtemplateengine-ko', 'ojs/ojcore-base', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils'], function (widget, BindingProviderImpl, oj$1, Logger, ko, DomUtils, $, ojcustomelementUtils, ojbindpropagation, KeySetImpl, Context, templateEngine, oj$2, KnockoutTemplateUtils, ResponsiveKnockoutUtils) { 'use strict';
 
   BindingProviderImpl = BindingProviderImpl && Object.prototype.hasOwnProperty.call(BindingProviderImpl, 'default') ? BindingProviderImpl['default'] : BindingProviderImpl;
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;

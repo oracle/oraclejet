@@ -1,0 +1,16 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// ----- start dependencies ---------
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../dvt/themes/redwood/_oj-dvt.scss";
+
+// ----- end dependencies ---------
+
+
+
+// import classes defined in the base directory
+@import "_oj-legend.cssvars.scss";
+@import "../base/_oj-legend.scss";

@@ -2213,26 +2213,26 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojlocaledata', 'ojs/ojco
                 const offset = this.getTimeZoneOffset(isoStr, timeZone, false);
                 var formatOffset = '';
                 if (offset === 0) {
-                    formatTokens.tokensArray[index] = 'UTC';
+                    formatTokens.tokensArray[index] = 'Z';
                     continue;
                 }
                 switch (key) {
                     case 'tzhm':
                         formatOffset =
-                            (offset <= 0 ? '-' : '+') +
+                            (offset < 0 ? '-' : '+') +
                                 LocalOraI18nUtils$2.padZeros(Math.floor(Math.abs(offset / 60)), 2) +
                                 LocalOraI18nUtils$2.padZeros(Math.floor(Math.abs(offset % 60)), 2);
                         break;
                     case 'tzhsepm':
                         formatOffset =
-                            (offset <= 0 ? '-' : '+') +
+                            (offset < 0 ? '-' : '+') +
                                 LocalOraI18nUtils$2.padZeros(Math.floor(Math.abs(offset / 60)), 2) +
                                 ':' +
                                 LocalOraI18nUtils$2.padZeros(Math.floor(Math.abs(offset % 60)), 2);
                         break;
                     case 'tzh':
                         formatOffset =
-                            (offset <= 0 ? '-' : '+') +
+                            (offset < 0 ? '-' : '+') +
                                 LocalOraI18nUtils$2.padZeros(Math.floor(Math.abs(offset / 60)), 2);
                         break;
                     default:

@@ -7,6 +7,7 @@
  */
 import { info } from 'ojs/ojlogger';
 
+var _a;
 class AsyncIteratorWrapper {
     constructor(asyncIterator, cache, cacheEntries) {
         this.asyncIterator = asyncIterator;
@@ -32,11 +33,12 @@ class AsyncIterableWrapper {
         this.asyncIterable = asyncIterable;
         this.cache = cache;
         this.cacheEntries = cacheEntries;
-        this[Symbol.asyncIterator] = () => {
+        this[_a] = () => {
             return new AsyncIteratorWrapper(this.asyncIterable[Symbol.asyncIterator](), this.cache, this.cacheEntries);
         };
     }
 }
+_a = Symbol.asyncIterator;
 var CacheEvictionStrategy;
 (function (CacheEvictionStrategy) {
     CacheEvictionStrategy[CacheEvictionStrategy["NEVER"] = 0] = "NEVER";

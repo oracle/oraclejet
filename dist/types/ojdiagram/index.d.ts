@@ -31,6 +31,11 @@ export interface DvtDiagramLayoutContext<K1, K2, D1 extends ojDiagram.Node<K1> |
         h: number;
     };
     isLocaleR2L(): boolean;
+    setPanZoomState(panZoomState: {
+        zoom: number | null;
+        centerX: number | null;
+        centerY: number | null;
+    }): void;
     setViewport(viewport: {
         x: number;
         y: number;
@@ -348,6 +353,11 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
         width?: number;
     };
     panDirection?: 'x' | 'y' | 'auto';
+    panZoomState?: {
+        centerX: number | null;
+        centerY: number | null;
+        zoom: number;
+    };
     panning?: 'fixed' | 'centerContent' | 'none' | 'auto';
     promotedLinkBehavior?: 'none' | 'full' | 'lazy';
     renderer?: ((context: ojDiagram.RendererContext<K1, D1>) => ({
@@ -413,6 +423,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
     } | void) | null;
     zooming?: 'auto' | 'none';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -452,6 +463,10 @@ export namespace ojDiagram {
     }
     interface ojBeforeExpand<K1> extends CustomEvent<{
         nodeId: K1;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforePanZoomReset extends CustomEvent<{
         [propName: string]: any;
     }> {
     }
@@ -509,6 +524,8 @@ export namespace ojDiagram {
     type overviewChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["overview"]>;
     // tslint:disable-next-line interface-over-type-literal
     type panDirectionChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panDirection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type panZoomStateChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panZoomState"]>;
     // tslint:disable-next-line interface-over-type-literal
     type panningChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panning"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -586,12 +603,14 @@ export namespace ojDiagram {
         previousState: {
             focused: boolean;
             hovered: boolean;
+            inActionableMode: boolean;
             selected: boolean;
         };
         rootElement: Element | null;
         state: {
             focused: boolean;
             hovered: boolean;
+            inActionableMode: boolean;
             selected: boolean;
         };
         type: 'link' | 'promotedLink';
@@ -700,6 +719,7 @@ export namespace ojDiagram {
             expanded: boolean;
             focused: boolean;
             hovered: boolean;
+            inActionableMode: boolean;
             selected: boolean;
             zoom: number;
         };
@@ -711,6 +731,7 @@ export namespace ojDiagram {
             expanded: boolean;
             focused: boolean;
             hovered: boolean;
+            inActionableMode: boolean;
             selected: boolean;
             zoom: number;
         };
@@ -730,6 +751,7 @@ export namespace ojDiagram {
 export interface ojDiagramEventMap<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponentEventMap<ojDiagramSettableProperties<K1, K2, D1, D2>> {
     'ojBeforeCollapse': ojDiagram.ojBeforeCollapse<K1>;
     'ojBeforeExpand': ojDiagram.ojBeforeExpand<K1>;
+    'ojBeforePanZoomReset': ojDiagram.ojBeforePanZoomReset;
     'ojCollapse': ojDiagram.ojCollapse<K1>;
     'ojExpand': ojDiagram.ojExpand<K1>;
     'animationOnDataChangeChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDataChange"]>;
@@ -754,6 +776,7 @@ export interface ojDiagramEventMap<K1, K2, D1 extends ojDiagram.Node<K1> | any, 
     'nodeHighlightModeChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeHighlightMode"]>;
     'overviewChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["overview"]>;
     'panDirectionChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panDirection"]>;
+    'panZoomStateChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panZoomState"]>;
     'panningChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panning"]>;
     'promotedLinkBehaviorChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["promotedLinkBehavior"]>;
     'rendererChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["renderer"]>;
@@ -972,6 +995,11 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
         width?: number;
     };
     panDirection?: 'x' | 'y' | 'auto';
+    panZoomState?: {
+        centerX: number | null;
+        centerY: number | null;
+        zoom: number;
+    };
     panning?: 'fixed' | 'centerContent' | 'none' | 'auto';
     promotedLinkBehavior?: 'none' | 'full' | 'lazy';
     renderer?: ((context: ojDiagram.RendererContext<K1, D1>) => ({
@@ -1037,6 +1065,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
     } | void) | null;
     zooming?: 'auto' | 'none';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -1292,6 +1321,10 @@ export namespace DiagramElement {
         [propName: string]: any;
     }> {
     }
+    interface ojBeforePanZoomReset extends CustomEvent<{
+        [propName: string]: any;
+    }> {
+    }
     interface ojCollapse<K1> extends CustomEvent<{
         nodeId: K1;
         [propName: string]: any;
@@ -1346,6 +1379,8 @@ export namespace DiagramElement {
     type overviewChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["overview"]>;
     // tslint:disable-next-line interface-over-type-literal
     type panDirectionChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panDirection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type panZoomStateChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panZoomState"]>;
     // tslint:disable-next-line interface-over-type-literal
     type panningChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panning"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1471,6 +1506,7 @@ export namespace DiagramElement {
             expanded: boolean;
             focused: boolean;
             hovered: boolean;
+            inActionableMode: boolean;
             selected: boolean;
             zoom: number;
         };
@@ -1482,6 +1518,7 @@ export namespace DiagramElement {
             expanded: boolean;
             focused: boolean;
             hovered: boolean;
+            inActionableMode: boolean;
             selected: boolean;
             zoom: number;
         };
@@ -1539,6 +1576,7 @@ export namespace DiagramNodeElement {
 export interface DiagramIntrinsicProps extends Partial<Readonly<ojDiagramSettableProperties<any, any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojBeforeCollapse?: (value: ojDiagramEventMap<any, any, any, any>['ojBeforeCollapse']) => void;
     onojBeforeExpand?: (value: ojDiagramEventMap<any, any, any, any>['ojBeforeExpand']) => void;
+    onojBeforePanZoomReset?: (value: ojDiagramEventMap<any, any, any, any>['ojBeforePanZoomReset']) => void;
     onojCollapse?: (value: ojDiagramEventMap<any, any, any, any>['ojCollapse']) => void;
     onojExpand?: (value: ojDiagramEventMap<any, any, any, any>['ojExpand']) => void;
     onanimationOnDataChangeChanged?: (value: ojDiagramEventMap<any, any, any, any>['animationOnDataChangeChanged']) => void;
@@ -1563,6 +1601,7 @@ export interface DiagramIntrinsicProps extends Partial<Readonly<ojDiagramSettabl
     onnodeHighlightModeChanged?: (value: ojDiagramEventMap<any, any, any, any>['nodeHighlightModeChanged']) => void;
     onoverviewChanged?: (value: ojDiagramEventMap<any, any, any, any>['overviewChanged']) => void;
     onpanDirectionChanged?: (value: ojDiagramEventMap<any, any, any, any>['panDirectionChanged']) => void;
+    onpanZoomStateChanged?: (value: ojDiagramEventMap<any, any, any, any>['panZoomStateChanged']) => void;
     onpanningChanged?: (value: ojDiagramEventMap<any, any, any, any>['panningChanged']) => void;
     onpromotedLinkBehaviorChanged?: (value: ojDiagramEventMap<any, any, any, any>['promotedLinkBehaviorChanged']) => void;
     onrendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['rendererChanged']) => void;

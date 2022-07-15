@@ -20,6 +20,7 @@ import 'ojs/ojpopupcore';
 /**
  * @namespace
  * @since 1.1.0
+ * @ojdeprecated {since: '12.0.0', description: 'Please use &lt;oj-drawer-layout> or &lt;oj-drawer-layout> components instead.'}
  * @ojtsmodule
  * @hideconstructor
  * @ojimportmembers Offcanvas
@@ -2027,7 +2028,12 @@ OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
             offcanvas.size = size;
           }
 
-          proceed = true;
+          // proceed only when there's content
+          if (size > 0) {
+            proceed = true;
+          } else {
+            OffcanvasUtils._toggleClass(offcanvas, wrapper, false);
+          }
         });
 
             // make sure it's in closed state

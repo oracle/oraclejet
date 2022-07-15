@@ -319,6 +319,10 @@ var __oj_swipe_actions_metadata =
           if (theOption) {
             this._close({ selector: theOption.parentNode }).then(function () {
               this._fireActionEvent(theOption, event);
+              // case for keyboard, need to restore focus
+              if (actionTarget == null) {
+                this.element[0].parentNode.focus();
+              }
             }.bind(this));
             return true;
           }
@@ -483,8 +487,10 @@ var __oj_swipe_actions_metadata =
               slotMap.start[0] : slotMap.end[0];
           var busyContext = Context.getContext(self.element[0]).getBusyContext();
           var busyStateResolve = busyContext.addBusyState({ description: 'rendering ojoptions' });
-
-          ojconfig.__getTemplateEngine().then(
+          const templateOptions = {
+            customElement: this._GetCustomElement()
+          };
+          ojconfig.__getTemplateEngine(templateOptions).then(
             function (engine) {
               self._render(engine, offcanvas, template);
               if (callback) {
@@ -601,6 +607,10 @@ var __oj_swipe_actions_metadata =
             event.preventDefault();
 
             self._renderOffcanvas(offcanvas, function () {
+              if (offcanvas.childElementCount === 0) {
+                return;
+              }
+
               $(offcanvas).children('oj-option')
                 .addClass('oj-swipetoreveal-action')
                 .children()
@@ -612,6 +622,7 @@ var __oj_swipe_actions_metadata =
               offcanvasInfo.autoDismiss = 'none';
               // turn animation off otherwise Talkback will not be able to focus on the item correctly
               offcanvasInfo._animate = false;
+              offcanvasInfo.displayMode = 'push';
 
               var hideLink = document.createElement('a');
               hideLink.className = 'oj-swipeactions-hide-actions-link';
@@ -621,7 +632,9 @@ var __oj_swipe_actions_metadata =
                                     self.getTranslatedString('ariaHideActionsDescription'));
 
               hideLink.addEventListener('click', function () {
-                self._close(offcanvasInfo);
+                self._close(offcanvasInfo).then(function () {
+                  self.element[0].parentNode.focus();
+                });
               });
 
               // on Android with TalkBack, click event is not fired when activate

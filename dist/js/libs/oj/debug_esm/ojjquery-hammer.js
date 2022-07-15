@@ -27,6 +27,7 @@ if (Hammer) {
             hammer.destroy();
             $el.removeData('ojHammer');
           }
+          $el.off('remove.ojHammer');
         });
 
       default:
@@ -34,7 +35,13 @@ if (Hammer) {
         return this.each(function () {
           var $el = $(this);
           if (!$el.data('ojHammer')) {
-            $el.data('ojHammer', new Manager($el[0], options));
+            const mgr = new Manager($el[0], options);
+            $el.on('remove.ojHammer', evt => {
+              if (evt.target === $el[0]) {
+                mgr.destroy();
+              }
+            });
+            $el.data('ojHammer', mgr);
           }
         });
     }

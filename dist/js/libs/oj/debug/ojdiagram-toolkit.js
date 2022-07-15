@@ -30,6 +30,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         'nodeHighlightMode': 'node',
         'linkHighlightMode': 'link',
         'panning': 'none',
+        'panZoomState': {
+          'zoom': 0.0,
+          'centerX': null,
+          'centerY': null
+        },
         'overview': {
           'fitArea': 'content',
           'preserveAspectRatio': 'meet'
@@ -1194,16 +1199,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {array} points array of points to use for rendering this link
      */
     setPoints(points) {
-      var diagram = this.GetDiagram();
       var renderer = this._getCustomRenderer('renderer');
       if (renderer) {
         this._customPoints = points;
         var prevState = {
           'hovered': false,
           'selected': false,
-          'focused': false
+          'focused': false,
+          'inActionableMode': this.hasActiveInnerElems
         };
-        this._applyCustomLinkContent(renderer, this._getState(), null);
+        this._applyCustomLinkContent(renderer, this._getState(), prevState);
       }
       else {
         if (!this._pathCmds && points) {
@@ -1273,7 +1278,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       return {
         'hovered': this._isShowingHoverEffect,
         'selected': this.isSelected(),
-        'focused': this._isShowingKeyboardFocusEffect
+        'focused': this._isShowingKeyboardFocusEffect,
+        'inActionableMode': this.hasActiveInnerElems
       };
     }
 
@@ -1776,13 +1782,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {string} the aria label string.
      */
     getAriaLabel() {
+      var options = this.GetDiagram().getOptions();
       var states = [];
-      var translations = this.GetDiagram().getOptions().translations;
+      var translations = options.translations;
+      var keyboardUtils = options._keyboardUtils;
       if (this.isSelectable()) {
         states.push(translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
       }
       if (this.isPromoted()) {
         states.push(translations.promotedLinkAriaDesc);
+      }
+      var actionableElems = keyboardUtils.getActionableElementsInNode(this.getElem());
+      if (actionableElems.length > 0) {
+        states.push(translations.accessibleContainsControls);
       }
       return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtDiagramLink.getShortDescContext(this));
     }
@@ -3210,7 +3222,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           'selected': false,
           'focused': false,
           'zoom': 1,
-          'expanded': false
+          'expanded': false,
+          'inActionableMode': false
         };
         this._applyCustomNodeContent(renderer, this._getState(), prevState, true);
         //update container padding if the node is a disclosed container
@@ -3825,13 +3838,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {string} the aria label string.
      */
     getAriaLabel() {
+      var options = this.GetDiagram().getOptions();
       var states = [];
-      var translations = this.GetDiagram().getOptions().translations;
+      var translations = options.translations;
+      var keyboardUtils = options._keyboardUtils;
       if (this.isSelectable()) {
         states.push(translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
       }
       if (this.isContainer()) {
         states.push(translations[this.isDisclosed() ? 'stateExpanded' : 'stateCollapsed']);
+      }
+      var actionableElems = keyboardUtils.getActionableElementsInNode(this.getElem());
+      if (actionableElems.length > 0) {
+        states.push(translations.accessibleContainsControls);
       }
       return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtDiagramNode.getShortDescContext(this));
     }
@@ -3856,7 +3875,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var next = null;
       // If there are active elements, then short circuit a keyboard navigation
       if (this.hasActiveInnerElems) {
-        next = null;
+        return null;
       }
       else if (event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey) {
         // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
@@ -4296,7 +4315,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         'selected': this.isSelected(),
         'focused': this._isShowingKeyboardFocusEffect,
         'zoom': zoom ? zoom : this.GetDiagram().getPanZoomCanvas().getZoom(),
-        'expanded': this.isDisclosed()};
+        'expanded': this.isDisclosed(),
+        'inActionableMode': this.hasActiveInnerElems
+      };
     }
 
     /**
@@ -5850,6 +5871,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var diagram = this.GetDiagram();
       var keyboardUtils = diagram.getOptions()._keyboardUtils;
       var currentNavigable = this._eventManager.getFocus();
+      const isActionableMode = diagram.activeInnerElems;
+      // If an element has appeared since the last render, should disable it
+      if (!isActionableMode && currentNavigable) {
+        keyboardUtils.disableAllFocusable(currentNavigable.getElem(), true);
+      }
       if (keyCode == dvt.KeyboardEvent.TAB) {
         if (currentNavigable) {
           dvt.EventManager.consumeEvent(event);
@@ -5865,7 +5891,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             return navigable;
           }
         }
-      } else if (keyCode == dvt.KeyboardEvent.F2 && currentNavigable) {
+      } else if (!isActionableMode && keyCode == dvt.KeyboardEvent.F2 && currentNavigable) {
         // navigating inside using F2
         this._eventManager.hideTooltip();
         var enabled = keyboardUtils.enableAllFocusable(currentNavigable.getElem());
@@ -5875,18 +5901,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           enabled = enabled.filter(item => item.tabIndex !== -1);
         }
         if (enabled.length > 0) {
-          enabled[0].focus();
           diagram.activeInnerElems = enabled;
           currentNavigable.hasActiveInnerElems = true;
           diagram.activeInnerElemsNodeId = currentNavigable.getId();
+          enabled[0].focus();
         }
-      } else if (keyCode == dvt.KeyboardEvent.ESCAPE && diagram.activeInnerElems && currentNavigable) {
-        // navigating outside using Esc
+      } else if (isActionableMode && currentNavigable && (keyCode == dvt.KeyboardEvent.ESCAPE || event.keyCode === dvt.KeyboardEvent.F2)) {
+        // navigating outside using Esc or F2
         diagram.activeInnerElems = null;
         keyboardUtils.disableAllFocusable(currentNavigable.getElem(), true);
+        currentNavigable.hasActiveInnerElems = false;
 
         diagram._context._parentDiv.focus();
-        currentNavigable.hasActiveInnerElems = false;
         this._eventManager.ShowFocusEffect(event, currentNavigable);
         this._eventManager.ProcessRolloverEvent(event, currentNavigable, true);
         event.preventDefault();
@@ -6770,470 +6796,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this.y = ((y === null || isNaN(y)) ? 0 : y);
       this.w = ((w === null || isNaN(w)) ? 0 : w);
       this.h = ((h === null || isNaN(h)) ? 0 : h);
-    }
-  }
-
-  /**
-   * @protected
-   * Defines the context for a layout call.
-   * @class DvtDiagramLayoutContext
-   * @param {dvt.Context} context The rendering context.
-   * @constructor
-   * initializing this context
-   */
-  class DvtDiagramLayoutContext {
-    constructor(context) {
-      this._nodeCount = 0;
-      this._linkCount = 0;
-      this._bLocaleR2L = false;
-      this._nodes = new context.ojMap();
-      this._links = new context.ojMap();
-      this._arNodes = [];
-      this._arLinks = [];
-      this._dirtyContext = new context.ojMap();
-      this.Context = context;
-    }
-
-
-    /**
-     * @protected
-     * Set the name of the layout.
-     * @param {string} layout the name of the layout
-     */
-    setLayout(layout) {
-      this._layout = layout;
-    }
-
-
-    /**
-     * Get the name of the layout.
-     * @return {string}
-     */
-    getLayout() {
-      return this._layout;
-    }
-
-
-    /**
-     * @protected
-     * Set the map of global layout attributes.
-     * @param {object} layoutAttrs map of global layout attributes
-     */
-    setLayoutAttributes(layoutAttrs) {
-      this._layoutAttrs = layoutAttrs;
-    }
-
-
-    /**
-     * Get the map of global layout attributes.
-     * @return {object}
-     */
-    getLayoutAttributes() {
-      return this._layoutAttrs;
-    }
-
-
-    /**
-     * @protected
-     * Add a node context for this layout.
-     * @param {DvtDiagramLayoutContextNode} node node context to include in this layout
-     */
-    addNode(node) {
-      if (!this.getNodeById(node.getId())) {
-        this._nodeCount++;
-        this._arNodes.push(node);
-      }
-
-      this._nodes.set(node.getId(), node);
-    }
-
-
-    /**
-     * @protected
-     * Add a node context to the lookup map. The map contains nodes being laid out and it might also contain
-     * read-only nodes provided to support cross-container links in case of "container" layout.
-     * @param {DvtDiagramLayoutContextNode} node node context to provide extra information for this layout
-     */
-    addNodeToMap(node) {
-      this._nodes.set(node.getId(), node);
-    }
-
-    /**
-     * @protected
-     * Remove a node context from this layout.
-     * @param {DvtDiagramLayoutContextNode} parent context for the parent node
-     * @param {DvtDiagramLayoutContextNode} node node context to remove from this layout
-     */
-    removeNode(parent, node) {
-      if (!node)
-        return;
-      if (parent) {
-        dvt.ArrayUtils.removeItem(parent.getChildNodes(), node);
-      }
-      else {
-        dvt.ArrayUtils.removeItem(this._arNodes, node);
-        this._nodeCount--;
-      }
-
-      this._nodes.delete(node.getId());
-    }
-
-
-    /**
-     * Get a node context by id.  Nodes being laid out and read-only nodes provided
-     * as additional information to this layout can be retrieved through this
-     * function.
-     * @param {any} id id of node context to get
-     * @return {DvtDiagramLayoutContextNode}
-     */
-    getNodeById(id) {
-      return this._nodes.get(id);
-    }
-
-
-    /**
-     * Get a node context by index.  Only nodes being laid out can be retrieved
-     * through this function.
-     * @param {number} index index of node context to get
-     * @return {DvtDiagramLayoutContextNode}
-     */
-    getNodeByIndex(index) {
-      return this._arNodes[index];
-    }
-
-
-    /**
-     * Get the number of nodes to layout.  This number does not include any
-     * read-only nodes provided as additional information to this layout.
-     * @return {number}
-     */
-    getNodeCount() {
-      return this._nodeCount;
-    }
-
-
-    /**
-     * Add a link context for this layout.
-     * @param {DvtDiagramLayoutContextLink} link link context to include in this layout
-     */
-    addLink(link) {
-      if (!this.getLinkById(link.getId())) {
-        this._linkCount++;
-        this._arLinks.push(link);
-      }
-
-      this._links.set(link.getId(), link);
-    }
-
-    /**
-     * Remove a link context from this layout.
-     * @param {DvtDiagramLayoutContextLink} link link context to remove
-     * @protected
-     */
-    removeLink(link) {
-      if (!link)
-        return;
-      if (this.getLinkById(link.getId())) {
-        dvt.ArrayUtils.removeItem(this._arLinks, link);
-        this._linkCount--;
-      }
-      this._links.delete(link.getId());
-    }
-
-    /**
-     * Get a link context by id.
-     * @param {any} id id of link context to get
-     * @return {DvtDiagramLayoutContextLink} link
-     */
-    getLinkById(id) {
-      return this._links.get(id);
-    }
-
-
-    /**
-     * Get a link context by index.
-     * @param {number} index index of link context to get
-     * @return {DvtDiagramLayoutContextLink}
-     */
-    getLinkByIndex(index) {
-      return this._arLinks[index];
-    }
-
-
-    /**
-     * Get the number of links to layout.
-     * @return {number}
-     */
-    getLinkCount() {
-      return this._linkCount;
-    }
-
-
-    /**
-     * Convert a point in the coordinate system of the given node to the global
-     * coordinate system of this layout.  For example, this can be used to convert
-     * the position of a node inside a container to a point in the container's
-     * parent coordinate system.
-     * @param {DvtDiagramPoint} point point in the coordinate system of the given
-     * node
-     * @param {DvtDiagramLayoutContextNode} node node that defines coordinate
-     * system of given point
-     * @return {DvtDiagramPoint}
-     */
-    localToGlobal(point, node) {
-      var offset = this.GetGlobalOffset(node);
-
-      return new DvtDiagramPoint(point['x'] + offset['x'], point['y'] + offset['y']);
-    }
-
-
-    /**
-     * @protected
-     * Get the position of the given node in the global coordinate system.
-     * @param {DvtDiagramLayoutContextNode} node node to get global position for
-     * @return {DvtDiagramPoint}
-     */
-    GetGlobalOffset(node) {
-      var offset = new DvtDiagramPoint(0, 0);
-      while (node) {
-        offset['x'] += node.ContentOffset['x'] + node.getPosition()['x'];
-        offset['y'] += node.ContentOffset['y'] + node.getPosition()['y'];
-
-        var containerId = node.getContainerId();
-        if (containerId) {
-          node = this.getNodeById(containerId);
-
-          //if there is a container node parent, then add that
-          //containerPadding to the offset
-          if (node && node.isDisclosed()) {
-            var containerPadding = node.getContainerPadding();
-            if (containerPadding) {
-              offset['x'] += containerPadding['left'];
-              offset['y'] += containerPadding['top'];
-            }
-          }
-        }
-        else {
-          node = null;
-        }
-      }
-
-      return offset;
-    }
-
-
-    /**
-     * @protected
-     * Set whether the locale has a right-to-left reading direction.
-     * @param {boolean} bR2L true if right-to-left, false otherwise
-     */
-    setLocaleR2L(bR2L) {
-      this._bLocaleR2L = bR2L;
-    }
-
-
-    /**
-     * Get whether the reading direction for the locale is right-to-left.
-     * @return {boolean}
-     */
-    isLocaleR2L() {
-      return this._bLocaleR2L;
-    }
-
-
-    /**
-     * @protected
-     * Set the size of the Diagram.
-     * @param {DvtDiagramRectangle} compSize size of Diagram
-     */
-    setComponentSize(compSize) {
-      this._componentSize = compSize;
-    }
-
-
-    /**
-     * Get the size of the Diagram.
-     * @return {DvtDiagramRectangle}
-     */
-    getComponentSize() {
-      return this._componentSize;
-    }
-
-
-    /**
-     * Set the viewport the component should use after the layout, in the layout's
-     * coordinate system.
-     * @param {DvtDiagramRectangle} viewport viewport the component should use
-     * after the layout
-     */
-    setViewport(viewport) {
-      this._viewport = viewport;
-    }
-
-
-    /**
-     * Get the viewport the component should use after the layout, in the layout's
-     * coordinate system.
-     * @return {DvtDiagramRectangle}
-     */
-    getViewport() {
-      return this._viewport;
-    }
-
-
-    /**
-     * @protected
-     * Set the id of the container whose nodes are being laid out.
-     * @param {any} containerId id of the container whose nodes are being laid
-     * out
-     */
-    setContainerId(containerId) {
-      this._containerId = containerId;
-    }
-
-
-    /**
-     * Get the id of the container whose nodes are being laid out, or null if this
-     * is the top level Diagram layout.
-     * @return {any}
-     */
-    getContainerId() {
-      return this._containerId;
-    }
-
-
-    /**
-     * Set the padding of the container whose children are being laid out.
-     * The top, right, bottom, left can be specified as a number or "auto". Default value: 10px.
-     *
-     * - When "auto" is specified and facet preferred size is larger than available known space for the facet,
-     * the padding will be set to the difference between preferred size and available known size.
-     * - When "auto" is specified and facet preferred size is smaller than available known space for the facet,
-     * the facet will be rendered the same way as today using the available space.
-     * - When "auto" is specified for both sides - top and bottom or left and right, the content will be centered horizontally or vertically.
-     * - When "auto" is specified and facet elements use % for its width or height,
-     *  the facet will be rendered into preferred space and the % will be ignored.
-     *
-     *  If the 'top' parameter is a string or a number, the container padding will be set from the individual 'top',
-     *  'right', 'bottom', and 'left' parameters.
-     *  Otherwise, 'top' is assumed to be an Object with 'top', 'right', 'bottom', and 'left' keys.  All other parameters will be ignored.
-     *  Default Values will be used when values are missing.
-     *
-     * @param {number|string|object} top top padding if number or string, if object,
-     * contains all padding values and rest of parameters ignored
-     * @param {number|string} right right padding
-     * @param {number|string} bottom bottom padding
-     * @param {number|string} left left padding
-     */
-    setContainerPadding(top, right, bottom, left) {
-      //if the layout is not being applied to a container's children, don't save container padding
-      if (this.getContainerId()) {
-        this._containerPadding = {};
-        if (!(typeof top === 'number' || typeof top === 'string')) {
-          left = top['left'];
-          right = top['right'];
-          bottom = top['bottom'];
-          top = top['top'];
-        }
-        this._containerPadding['top'] = top;
-        this._containerPadding['right'] = right;
-        this._containerPadding['bottom'] = bottom;
-        this._containerPadding['left'] = left;
-      }
-    }
-
-
-    /**
-     * Get the padding of the container whose children are being laid out.
-     * Values can be retrieved from the returned map using keys 'top', 'left',
-     * 'bottom', and 'right'.
-     * @return {object}
-     */
-    getContainerPadding() {
-      return this._containerPadding;
-    }
-
-
-    /**
-     * Set the current viewport used by the component in the layout's coordinate system.
-     * @param {DvtDiagramRectangle} viewport The viewport currently used by the component
-     */
-    setCurrentViewport(viewport) {
-      this._currentViewport = viewport;
-    }
-
-
-    /**
-     * Get the current viewport used by the component in the layout's coordinate system for the top level diagram
-     * @return {DvtDiagramRectangle} current viewport
-     */
-    getCurrentViewport() {
-      return this._currentViewport;
-    }
-
-    /**
-     * The function retrieves nearest common ancestor container for two nodes.
-     * @param {any} nodeId1 first node id
-     * @param {any} nodeId2 second node id
-     * @return {any}  id for the first common ancestor container or null for top level diagram
-     */
-    getCommonContainer(nodeId1, nodeId2) {
-      var getAllAncestorIds = (id, context) => {
-        var ids = [];
-        var containerId = context.getNodeById(id) ? context.getNodeById(id).getContainerId() : null;
-        while (containerId) {
-          ids.push(containerId);
-          containerId = context.getNodeById(containerId) ? context.getNodeById(containerId).getContainerId() : null;
-        }
-        ids.reverse();
-        return ids;
-      };
-
-      var startPath = getAllAncestorIds(nodeId1, this);
-      var endPath = getAllAncestorIds(nodeId2, this);
-      var commonId = null;
-
-      for (var i = 0; i < startPath.length && i < endPath.length; i++) {
-        if (!DvtDiagramDataUtils.compareValues(this.Context, startPath[i], endPath[i]))
-          break;
-        commonId = startPath[i];
-      }
-      return commonId;
-    }
-
-    /**
-     * Gets event data object. Values can be retrieved from the object using 'type' and 'data' keys.
-     * @return {object} event data object
-     */
-    getEventData() {
-      return this._eventData;
-    }
-
-    /**
-     * @protected
-     * Sets event data object
-     * @param {object} eventData event data object
-     */
-    setEventData(eventData) {
-      this._eventData = eventData;
-    }
-
-    /**
-     * @protected
-     * Sets dirty context for the layout
-     * @param {object} dirtyContext a map that contains dirty context for the layout
-     */
-    setDirtyContext(dirtyContext) {
-      this._dirtyContext = dirtyContext;
-    }
-
-    /**
-     * @protected
-     * Gets dirty context for the layout
-     * @return {object} a map that contains dirty context for the layout
-     */
-    getDirtyContext() {
-      return this._dirtyContext;
     }
   }
 
@@ -8248,8 +7810,521 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       else {
         return new dvt.Point(diagramPoint['x'], diagramPoint['y']);
       }
+    },
+    /**
+     * Convert from viewport coordinates to panZoomState coordinates
+     * @param {DvtDiagramRectangle} viewport
+     * @return {Object} the panZoomState
+     */
+    convertViewportToPanZoomState: (viewport, width, height) => {
+      var w = viewport.w;
+      var x = viewport.x;
+      var y = viewport.y;
+      var zoom = width / w;
+      var cxVal = x + width*.5/zoom;
+      var cyVal = y + height*.5/zoom;
+      return {zoom: zoom, centerX: cxVal, centerY: cyVal};
+    },
+
+    /**
+     * Convert from panZoomState coordinates to viewport coordinates
+     * @param {Object} panZoomState
+     * @return {DvtDiagramRectangle} the viewport
+     */
+    convertPanZoomStateToViewport: (panZoomState, width, height) => {
+      var cxVal = panZoomState.centerX;
+      var cyVal = panZoomState.centerY;
+      var zoom = panZoomState.zoom ? panZoomState.zoom : 1;
+      var x = cxVal - width*.5/zoom;
+      var y = cyVal - height*.5/zoom;
+      var w = width / zoom;
+      var h = height / zoom;
+      return new dvt.Rectangle(x, y, w, h);
     }
   };
+
+  /**
+   * @protected
+   * Defines the context for a layout call.
+   * @class DvtDiagramLayoutContext
+   * @param {dvt.Context} context The rendering context.
+   * @constructor
+   * initializing this context
+   */
+  class DvtDiagramLayoutContext {
+    constructor(context) {
+      this._nodeCount = 0;
+      this._linkCount = 0;
+      this._bLocaleR2L = false;
+      this._nodes = new context.ojMap();
+      this._links = new context.ojMap();
+      this._arNodes = [];
+      this._arLinks = [];
+      this._dirtyContext = new context.ojMap();
+      this.Context = context;
+    }
+
+
+    /**
+     * @protected
+     * Set the name of the layout.
+     * @param {string} layout the name of the layout
+     */
+    setLayout(layout) {
+      this._layout = layout;
+    }
+
+
+    /**
+     * Get the name of the layout.
+     * @return {string}
+     */
+    getLayout() {
+      return this._layout;
+    }
+
+
+    /**
+     * @protected
+     * Set the map of global layout attributes.
+     * @param {object} layoutAttrs map of global layout attributes
+     */
+    setLayoutAttributes(layoutAttrs) {
+      this._layoutAttrs = layoutAttrs;
+    }
+
+
+    /**
+     * Get the map of global layout attributes.
+     * @return {object}
+     */
+    getLayoutAttributes() {
+      return this._layoutAttrs;
+    }
+
+
+    /**
+     * @protected
+     * Add a node context for this layout.
+     * @param {DvtDiagramLayoutContextNode} node node context to include in this layout
+     */
+    addNode(node) {
+      if (!this.getNodeById(node.getId())) {
+        this._nodeCount++;
+        this._arNodes.push(node);
+      }
+
+      this._nodes.set(node.getId(), node);
+    }
+
+
+    /**
+     * @protected
+     * Add a node context to the lookup map. The map contains nodes being laid out and it might also contain
+     * read-only nodes provided to support cross-container links in case of "container" layout.
+     * @param {DvtDiagramLayoutContextNode} node node context to provide extra information for this layout
+     */
+    addNodeToMap(node) {
+      this._nodes.set(node.getId(), node);
+    }
+
+    /**
+     * @protected
+     * Remove a node context from this layout.
+     * @param {DvtDiagramLayoutContextNode} parent context for the parent node
+     * @param {DvtDiagramLayoutContextNode} node node context to remove from this layout
+     */
+    removeNode(parent, node) {
+      if (!node)
+        return;
+      if (parent) {
+        dvt.ArrayUtils.removeItem(parent.getChildNodes(), node);
+      }
+      else {
+        dvt.ArrayUtils.removeItem(this._arNodes, node);
+        this._nodeCount--;
+      }
+
+      this._nodes.delete(node.getId());
+    }
+
+
+    /**
+     * Get a node context by id.  Nodes being laid out and read-only nodes provided
+     * as additional information to this layout can be retrieved through this
+     * function.
+     * @param {any} id id of node context to get
+     * @return {DvtDiagramLayoutContextNode}
+     */
+    getNodeById(id) {
+      return this._nodes.get(id);
+    }
+
+
+    /**
+     * Get a node context by index.  Only nodes being laid out can be retrieved
+     * through this function.
+     * @param {number} index index of node context to get
+     * @return {DvtDiagramLayoutContextNode}
+     */
+    getNodeByIndex(index) {
+      return this._arNodes[index];
+    }
+
+
+    /**
+     * Get the number of nodes to layout.  This number does not include any
+     * read-only nodes provided as additional information to this layout.
+     * @return {number}
+     */
+    getNodeCount() {
+      return this._nodeCount;
+    }
+
+
+    /**
+     * Add a link context for this layout.
+     * @param {DvtDiagramLayoutContextLink} link link context to include in this layout
+     */
+    addLink(link) {
+      if (!this.getLinkById(link.getId())) {
+        this._linkCount++;
+        this._arLinks.push(link);
+      }
+
+      this._links.set(link.getId(), link);
+    }
+
+    /**
+     * Remove a link context from this layout.
+     * @param {DvtDiagramLayoutContextLink} link link context to remove
+     * @protected
+     */
+    removeLink(link) {
+      if (!link)
+        return;
+      if (this.getLinkById(link.getId())) {
+        dvt.ArrayUtils.removeItem(this._arLinks, link);
+        this._linkCount--;
+      }
+      this._links.delete(link.getId());
+    }
+
+    /**
+     * Get a link context by id.
+     * @param {any} id id of link context to get
+     * @return {DvtDiagramLayoutContextLink} link
+     */
+    getLinkById(id) {
+      return this._links.get(id);
+    }
+
+
+    /**
+     * Get a link context by index.
+     * @param {number} index index of link context to get
+     * @return {DvtDiagramLayoutContextLink}
+     */
+    getLinkByIndex(index) {
+      return this._arLinks[index];
+    }
+
+
+    /**
+     * Get the number of links to layout.
+     * @return {number}
+     */
+    getLinkCount() {
+      return this._linkCount;
+    }
+
+
+    /**
+     * Convert a point in the coordinate system of the given node to the global
+     * coordinate system of this layout.  For example, this can be used to convert
+     * the position of a node inside a container to a point in the container's
+     * parent coordinate system.
+     * @param {DvtDiagramPoint} point point in the coordinate system of the given
+     * node
+     * @param {DvtDiagramLayoutContextNode} node node that defines coordinate
+     * system of given point
+     * @return {DvtDiagramPoint}
+     */
+    localToGlobal(point, node) {
+      var offset = this.GetGlobalOffset(node);
+
+      return new DvtDiagramPoint(point['x'] + offset['x'], point['y'] + offset['y']);
+    }
+
+
+    /**
+     * @protected
+     * Get the position of the given node in the global coordinate system.
+     * @param {DvtDiagramLayoutContextNode} node node to get global position for
+     * @return {DvtDiagramPoint}
+     */
+    GetGlobalOffset(node) {
+      var offset = new DvtDiagramPoint(0, 0);
+      while (node) {
+        offset['x'] += node.ContentOffset['x'] + node.getPosition()['x'];
+        offset['y'] += node.ContentOffset['y'] + node.getPosition()['y'];
+
+        var containerId = node.getContainerId();
+        if (containerId) {
+          node = this.getNodeById(containerId);
+
+          //if there is a container node parent, then add that
+          //containerPadding to the offset
+          if (node && node.isDisclosed()) {
+            var containerPadding = node.getContainerPadding();
+            if (containerPadding) {
+              offset['x'] += containerPadding['left'];
+              offset['y'] += containerPadding['top'];
+            }
+          }
+        }
+        else {
+          node = null;
+        }
+      }
+
+      return offset;
+    }
+
+
+    /**
+     * @protected
+     * Set whether the locale has a right-to-left reading direction.
+     * @param {boolean} bR2L true if right-to-left, false otherwise
+     */
+    setLocaleR2L(bR2L) {
+      this._bLocaleR2L = bR2L;
+    }
+
+
+    /**
+     * Get whether the reading direction for the locale is right-to-left.
+     * @return {boolean}
+     */
+    isLocaleR2L() {
+      return this._bLocaleR2L;
+    }
+
+
+    /**
+     * @protected
+     * Set the size of the Diagram.
+     * @param {DvtDiagramRectangle} compSize size of Diagram
+     */
+    setComponentSize(compSize) {
+      this._componentSize = compSize;
+    }
+
+
+    /**
+     * Get the size of the Diagram.
+     * @return {DvtDiagramRectangle}
+     */
+    getComponentSize() {
+      return this._componentSize;
+    }
+
+
+    /**
+     * Set the viewport the component should use after the layout, in the layout's
+     * coordinate system.
+     * @param {DvtDiagramRectangle} viewport viewport the component should use
+     * after the layout
+     */
+    setViewport(viewport) {
+      this._panZoomState = viewport ? DvtDiagramLayoutUtils.convertViewportToPanZoomState(viewport,
+        this._componentSize.w, this._componentSize.h) : null;
+    }
+
+
+    /**
+     * Get the viewport the component should use after the layout, in the layout's
+     * coordinate system.
+     * @return {DvtDiagramRectangle}
+     */
+    getViewport() {
+      return this._panZoomState ? DvtDiagramLayoutUtils.convertPanZoomStateToViewport(this._panZoomState,
+        this._componentSize.w, this._componentSize.h) : null;
+    }
+
+  /**
+   * Set the panZoom state the component should use after the layout.
+   * @param {Object} panZoomState panZoomState the component should use
+   * after the layout
+   */
+   setPanZoomState(panZoomState) {
+    this._panZoomState = panZoomState;
+  }
+
+  /**
+   * Get the panZoomState the component should use after the layout, in the layout's
+   * coordinate system.
+   * @return {Object}
+   */
+   getPanZoomState() {
+    return this._panZoomState;
+  }
+
+    /**
+     * @protected
+     * Set the id of the container whose nodes are being laid out.
+     * @param {any} containerId id of the container whose nodes are being laid
+     * out
+     */
+    setContainerId(containerId) {
+      this._containerId = containerId;
+    }
+
+
+    /**
+     * Get the id of the container whose nodes are being laid out, or null if this
+     * is the top level Diagram layout.
+     * @return {any}
+     */
+    getContainerId() {
+      return this._containerId;
+    }
+
+
+    /**
+     * Set the padding of the container whose children are being laid out.
+     * The top, right, bottom, left can be specified as a number or "auto". Default value: 10px.
+     *
+     * - When "auto" is specified and facet preferred size is larger than available known space for the facet,
+     * the padding will be set to the difference between preferred size and available known size.
+     * - When "auto" is specified and facet preferred size is smaller than available known space for the facet,
+     * the facet will be rendered the same way as today using the available space.
+     * - When "auto" is specified for both sides - top and bottom or left and right, the content will be centered horizontally or vertically.
+     * - When "auto" is specified and facet elements use % for its width or height,
+     *  the facet will be rendered into preferred space and the % will be ignored.
+     *
+     *  If the 'top' parameter is a string or a number, the container padding will be set from the individual 'top',
+     *  'right', 'bottom', and 'left' parameters.
+     *  Otherwise, 'top' is assumed to be an Object with 'top', 'right', 'bottom', and 'left' keys.  All other parameters will be ignored.
+     *  Default Values will be used when values are missing.
+     *
+     * @param {number|string|object} top top padding if number or string, if object,
+     * contains all padding values and rest of parameters ignored
+     * @param {number|string} right right padding
+     * @param {number|string} bottom bottom padding
+     * @param {number|string} left left padding
+     */
+    setContainerPadding(top, right, bottom, left) {
+      //if the layout is not being applied to a container's children, don't save container padding
+      if (this.getContainerId()) {
+        this._containerPadding = {};
+        if (!(typeof top === 'number' || typeof top === 'string')) {
+          left = top['left'];
+          right = top['right'];
+          bottom = top['bottom'];
+          top = top['top'];
+        }
+        this._containerPadding['top'] = top;
+        this._containerPadding['right'] = right;
+        this._containerPadding['bottom'] = bottom;
+        this._containerPadding['left'] = left;
+      }
+    }
+
+
+    /**
+     * Get the padding of the container whose children are being laid out.
+     * Values can be retrieved from the returned map using keys 'top', 'left',
+     * 'bottom', and 'right'.
+     * @return {object}
+     */
+    getContainerPadding() {
+      return this._containerPadding;
+    }
+
+
+    /**
+     * Set the current viewport used by the component in the layout's coordinate system.
+     * @param {DvtDiagramRectangle} viewport The viewport currently used by the component
+     */
+    setCurrentPanZoomState(panZoomState) {
+      this._currentPanZoomState = panZoomState;
+    }
+
+    /**
+     * Get the current viewport used by the component in the layout's coordinate system for the top level diagram
+     * @return {DvtDiagramRectangle} current viewport
+     */
+    getCurrentViewport() {
+      return this._currentPanZoomState ? DvtDiagramLayoutUtils.convertPanZoomStateToViewport(this._currentPanZoomState,
+        this._componentSize.w, this._componentSize.h) : null;
+    }
+
+    /**
+     * The function retrieves nearest common ancestor container for two nodes.
+     * @param {any} nodeId1 first node id
+     * @param {any} nodeId2 second node id
+     * @return {any}  id for the first common ancestor container or null for top level diagram
+     */
+    getCommonContainer(nodeId1, nodeId2) {
+      var getAllAncestorIds = (id, context) => {
+        var ids = [];
+        var containerId = context.getNodeById(id) ? context.getNodeById(id).getContainerId() : null;
+        while (containerId) {
+          ids.push(containerId);
+          containerId = context.getNodeById(containerId) ? context.getNodeById(containerId).getContainerId() : null;
+        }
+        ids.reverse();
+        return ids;
+      };
+
+      var startPath = getAllAncestorIds(nodeId1, this);
+      var endPath = getAllAncestorIds(nodeId2, this);
+      var commonId = null;
+
+      for (var i = 0; i < startPath.length && i < endPath.length; i++) {
+        if (!DvtDiagramDataUtils.compareValues(this.Context, startPath[i], endPath[i]))
+          break;
+        commonId = startPath[i];
+      }
+      return commonId;
+    }
+
+    /**
+     * Gets event data object. Values can be retrieved from the object using 'type' and 'data' keys.
+     * @return {object} event data object
+     */
+    getEventData() {
+      return this._eventData;
+    }
+
+    /**
+     * @protected
+     * Sets event data object
+     * @param {object} eventData event data object
+     */
+    setEventData(eventData) {
+      this._eventData = eventData;
+    }
+
+    /**
+     * @protected
+     * Sets dirty context for the layout
+     * @param {object} dirtyContext a map that contains dirty context for the layout
+     */
+    setDirtyContext(dirtyContext) {
+      this._dirtyContext = dirtyContext;
+    }
+
+    /**
+     * @protected
+     * Gets dirty context for the layout
+     * @return {object} a map that contains dirty context for the layout
+     */
+    getDirtyContext() {
+      return this._dirtyContext;
+    }
+  }
 
   /**
    * Overview window for diagram.
@@ -8483,7 +8558,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var dy = ((newTopLeft.y - oldTopLeft.y) * zoom);
       if (dx !== 0 || dy !== 0) {
         this._bCancelUpdateViewport = true;  // cancel HandleViewportChange as redundant
-        this._callbackObj.getPanZoomCanvas().panBy(-dx, -dy);
+        this._callbackObj.getPanZoomCanvas().panBy(-dx, -dy, null, null, true);
         this._bCancelUpdateViewport = false;
       }
     }
@@ -9349,14 +9424,31 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     }
 
     /**
+     * Calculates the panZoomState given a panZoomCanvas
+     * @param {dvt.PanZoomCanvas} pzc the panZoomCanvas to calculate the panZoomState from
+     * @return {object}
+     */
+    _calcPanZoomState(pzc) {
+      var panX = pzc.getPanX();
+      var panY = pzc.getPanY();
+      var zoom = pzc.getZoom();
+      var offset = this.getLayoutOffset();
+      var centerX = (this.Width*.5 - panX)/zoom  - offset.x;
+      var centerY = (this.Height*.5 - panY)/zoom - offset.y;
+      return {'zoom': zoom, 'centerX': centerX, 'centerY': centerY};
+    }
+
+    /**
      * @override
      */
     PreRender() {
+      if (this._bRendered) {
+        this._currentPanZoomState = this._calcPanZoomState(this.getPanZoomCanvas());
+      }
       if (!this.IsResize() && this._bRendered) {
         if (DvtDiagramStyleUtils.getAnimOnDataChange(this) != 'none') {
           this._oldDataAnimState = new DvtDiagramDataAnimationState(this);
         }
-        this._currentViewport = this.getPanZoomCanvas().getViewport();
         this._bRendered = false;
         // save old pan zoom canvas for data transitions
         this._oldPanZoomCanvas = this.getPanZoomCanvas();
@@ -9370,7 +9462,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       else if (this._layoutContext) {
         this._layoutContext.setEventData(null);
         this._layoutContext.setComponentSize(new DvtDiagramRectangle(0, 0, this.getWidth(), this.getHeight()));
-        this._layoutContext.setCurrentViewport(null);
       }
     }
 
@@ -9792,7 +9883,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
                   thisRef._oldPanZoomCanvas = null;
                 }
                 thisRef._bRendered = true;
-                this._currentViewport = null;
+                this._currentPanZoomState = null;
               }
             } //failure
         );
@@ -9818,7 +9909,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (calcViewBounds) {
           this._cachedViewBounds = this.GetViewBounds();
         }
-        this._fitContent();
+        this.panZoom();
       }
       // Initialize panZoomCanvas settings on initial update
       // regardless of whether the component is empty or not.
@@ -9877,7 +9968,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         this._oldPanZoomCanvas = null;
       }
       this._bRendered = true;
-      this._currentViewport = null;
+      this._currentPanZoomState = null;
       this.RefreshEmptyText(bEmptyDiagram);
 
       // Constrain pan bounds
@@ -9889,7 +9980,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         }
       }
 
-      this.ClearLayoutViewport();
+      this.ClearLayoutPanZoomState();
       if (calcViewBounds) {
         this._cachedViewBounds = null;
       }
@@ -9897,28 +9988,63 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
     /**
      * Fit and position diagram content into container if necessary
-     * @private
+     * @param {Object} panZoomState optional the panZoomState to set the diagram to.
      */
-    _fitContent() {
+     panZoom(panZoomState) {
       var pzc = this.getPanZoomCanvas();
-      var bLayoutViewport;
-      var fitBounds;
+      var offset = this.getLayoutOffset();
+      if (!panZoomState) {
+        panZoomState = this.GetLayoutPanZoomState();
+        panZoomState = panZoomState ? panZoomState :
+          {zoom: 0, centerX: null, centerY: null};
+      }
+      var zoom = panZoomState['zoom'];
+      var centerX = panZoomState['centerX'] ;
+      var centerY = panZoomState['centerY'] ;
+
+      var panningEnabled = this.IsPanningEnabled();
+      var zoomingEnabled = this.IsZoomingEnabled();
+      pzc.setPanningEnabled(true);
+      pzc.setZoomingEnabled(true);
+      this.SetPanningEnabled(true);
+      // set panZoomState on initial render or if panning/zooming enabled
+      try {
+        if (zoom !== 0.0) {
+          this.AdjustMinZoom();
+          zoom = pzc.ConstrainZoom(zoom);
+          pzc.zoomTo(zoom, 0, 0, null, true);
+          if (centerX !== null|| centerY !== null) {
+            pzc.panTo(this.Width/2 - (centerX + offset.x)*zoom, this.Height/2 - (centerY + offset.y)*zoom);
+          } else {
+            pzc.center(null, this._cachedViewBounds);
+          }
+        } else {
+          this._zoomToFit();
+          if (centerX !== null|| centerY !== null) {
+            pzc.panTo(this.Width/2 - (centerX + offset.x)*zoom, this.Height/2 - (centerY + offset.y)*zoom);
+          }
+        }
+      } finally {
+        this.SetPanningEnabled(panningEnabled);
+        pzc.setPanningEnabled(panningEnabled);
+        pzc.setZoomingEnabled(zoomingEnabled);
+      }
+    };
+
+    /**
+     * Process zoom to fit
+     */
+    _zoomToFit() {
+      var pzc = this.getPanZoomCanvas();
       if (!this._bRendered) {
         this.AdjustMinZoom();
-        //: don't override a viewport returned from the layout engine
-        bLayoutViewport = this.IsLayoutViewport();
-        fitBounds = bLayoutViewport ? this.GetLayoutViewport() : this._cachedViewBounds;
-        if (bLayoutViewport)
-          pzc.setZoomToFitPadding(0);
-        pzc.zoomToFit(null, fitBounds);
+        pzc.zoomToFit(null, this._cachedViewBounds);
       }
       else if (this.IsResize() || this._partialUpdate) {
         // Update the min zoom if it's unspecified
         var viewBounds = this.AdjustMinZoom();
-        bLayoutViewport = this.IsLayoutViewport();
-        viewBounds = viewBounds ? viewBounds : this._cachedViewBounds;
-        fitBounds = bLayoutViewport ? this.GetLayoutViewport() : viewBounds;
-        pzc.setZoomToFitPadding(bLayoutViewport ? 0 : ojdvtPanzoomcanvas.PanZoomCanvas.DEFAULT_PADDING);
+        var fitBounds = viewBounds ? viewBounds : this._cachedViewBounds;
+        pzc.setZoomToFitPadding(ojdvtPanzoomcanvas.PanZoomCanvas.DEFAULT_PADDING);
         pzc.setZoomToFitEnabled(true);
         pzc.zoomToFit(null, fitBounds);
         pzc.setZoomToFitEnabled(this.IsZoomingEnabled());
@@ -10182,6 +10308,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (subtype == 'scrollPos' ||
             subtype == 'scrollTime') {
           this.Overview.HandleViewportChange(event);
+        } else if (subtype == 'scrollEnd') {
+          this.getPanZoomCanvas().writebackPan();
         }
         return;
       }
@@ -10264,6 +10392,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     }
 
     /**
+     * Resets the panZoomState to zoom to fit
+     * @param {boolean} reset Reset the panZoomState to default if true
+     */
+    panZoomReset(reset) {
+      this._panZoomReset = reset;
+    }
+
+    /**
      * Layout diagram nodes and links
      * @return {object} Promise or Promise like object that implements then function - then function should be executed after layout is done
      */
@@ -10272,24 +10408,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var layoutContext = this._getLayoutContext();
       layoutContext.setDirtyContext(new (this.getCtx()).ojMap());
 
-      // pass the current viewport to the layout
-      if (this._currentViewport) {
-        var viewportRect = this._currentViewport;
-        var point = this.getLayoutOffset();
-        var currentViewport = new DvtDiagramRectangle(viewportRect.x - point.x, viewportRect.y - point.y, viewportRect.w, viewportRect.h);
-        layoutContext.setCurrentViewport(currentViewport);
+      var panZoomState = this._currentPanZoomState;
+      if (panZoomState) {
+        this.dispatchEvent(new dvt.EventFactory.newEvent('beforePanZoomReset'));
       }
-
-      if (this.Options.panZoomState != null) {
-        var cxVal = this.Options.panZoomState.centerX;
-        var cyVal = this.Options.panZoomState.centerY;
-        var zoom = this.Options.panZoomState.zoom;
-        var x = cxVal - this.Width*.5/zoom;
-        var y = cyVal - this.Height*.5/zoom;
-        var w = this.Width / zoom;
-        var h = this.Height / zoom;
-        var viewport = new dvt.Rectangle(x, y, w, h);
-        layoutContext.setViewport(viewport);
+      if (this._panZoomReset) {
+        layoutContext.setPanZoomState(null);
+        if (this.IsResize()) {
+          layoutContext.setCurrentPanZoomState(null);
+        } else {
+          layoutContext.setCurrentPanZoomState(panZoomState);
+        }
+      } else {
+        layoutContext.setCurrentPanZoomState(panZoomState);
+        layoutContext.setPanZoomState(panZoomState || this.getOptions()['panZoomState']);
       }
 
       if (layoutFunc && typeof layoutFunc == 'function') {
@@ -10466,10 +10598,26 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     }
 
     /**
+     * Writebacks the panZoomState attribute
+     * @param {number} x The x pan value
+     * @param {number} y The y pan value
+     * @param {number} zoom the zoom value
+     */
+    _setPanZoomState(x, y, zoom) {
+      var offset = this.getLayoutOffset();
+      var centerX = x!== null && zoom ? (this.Width*.5 - x)/zoom - offset.x: this.Options['panZoomState']['centerX'];
+      var centerY = y!== null && zoom ? (this.Height*.5 - y)/zoom - offset.y: this.Options['panZoomState']['centerY'];
+      this.dispatchEvent(new dvt.EventFactory.newOptionChangeEvent('panZoomState', {'zoom': zoom, 'centerX': centerX, 'centerY': centerY}));
+    }
+
+    /**
      * @override
      */
     HandlePanEvent(event) {
       super.HandlePanEvent(event);
+      if(event.subtype === 'panned') {
+        this._setPanZoomState(event.newX, event.newY, event.zoom);
+      }
       if (this.Overview) {
         this.Overview.UpdateViewport();
       }
@@ -10501,6 +10649,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             this._nodes.forEach((node, nodeId, map) => {
               node.rerenderOnZoom(event);
             });
+          }
+          if (!event.panAndZoom) {
+            this._setPanZoomState(event.pos.x, event.pos.y, event.newZoom);
           }
           break;
         case 'zoomToFitEnd':
@@ -11381,8 +11532,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         this.dispatchEvent(dvt.EventFactory.newEvent('notready'));
         this._oldDataAnimState = new DvtDiagramDataAnimationState(this, type, event);
       }
-
-      this._currentViewport = this.getPanZoomCanvas().getViewport();
+      this._currentPanZoomState = this._calcPanZoomState(this.getPanZoomCanvas());
       //reset pan constraints
       if (this.IsPanningEnabled()) {
         var pzc = this.getPanZoomCanvas();
@@ -11480,7 +11630,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
                 thisRef.removeChild(thisRef._oldPanZoomCanvas);
                 thisRef._oldPanZoomCanvas = null;
                 thisRef._bRendered = true;
-                this._currentViewport = null;
+                this._currentPanZoomState = null;
               }
             } //failure
         );
@@ -11825,10 +11975,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         this.ApplyLabelPosition(lc, link, new dvt.Point(0, 0));
       }
 
-      //save viewport from layout, if specified
-      var layoutViewport = layoutContext.getViewport();
-      if (layoutViewport) {
-        this._layoutViewport = new dvt.Rectangle(layoutViewport['x'] + tx, layoutViewport['y'] + ty, layoutViewport['w'], layoutViewport['h']);
+      //save panZoomState from layout, if specified
+      var layoutPanZoomState = layoutContext.getPanZoomState();
+      if (layoutPanZoomState) {
+        this._layoutPanZoomState = layoutPanZoomState;
       }
 
       if (bSaveOffset)
@@ -11871,30 +12021,30 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     }
 
     /**
-     * Gets viewport if it was set by the layout
-     * @return {dvt.Rectangle} layout viewport
+     * Gets panZoomState if it was set by the layout
+     * @return {Object} layout panZoomState
      * @protected
      */
-    GetLayoutViewport() {
-      return this._layoutViewport;
+    GetLayoutPanZoomState() {
+      return this._layoutPanZoomState;
     }
 
     /**
      * @protected
-     * Check whether a viewport is set by the layout engine
-     * @return {boolean} true if viewport is set by the layout engine
+     * Check whether a panZoomState is set by the layout engine
+     * @return {boolean} true if panZoomState is set by the layout engine
      */
-    IsLayoutViewport() {
-      return this._layoutViewport ? true : false;
-    }
+    IsLayoutPanZoomState() {
+      return this._layoutPanZoomState ? true : false;
+    };
 
     /**
      * @protected
-     * Clear a viewport that was set by the layout engine. Should be done to avoid stale viewport.
+     * Clear a panZoomState that was set by the layout engine. Should be done to avoid stale panZoomState.
      */
-    ClearLayoutViewport() {
-      this._layoutViewport = null;
-    }
+    ClearLayoutPanZoomState() {
+      this._layoutPanZoomState = null;
+    };
 
     /**
      * Adjusts the minimum zoom level of the panZoomCanvas if the diagram minZoom was set to 0.0
@@ -12043,28 +12193,31 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         maxPanX = halfViewportW - x * zoom;
         maxPanY = halfViewportH - y * zoom;
       }
-      if (this.IsLayoutViewport()) {
+      if (this.IsLayoutPanZoomState()) {
         // if the viewport is specified and the viewport bounds are outside of the panning constraints,
         // adjust the constraints symmetrically to include the viewport bounds
-        var viewportBounds = this.GetLayoutViewport();
+        var offset = this.getLayoutOffset();
+        var panZoom = this.GetLayoutPanZoomState();
+        var boundsX = panZoom.centerX ? (panZoom.centerX + offset.x) * zoom  - this.Width/2 : - offset.x * zoom;
+        var boundsY = panZoom.centerY ? (panZoom.centerY + offset.y) * zoom - this.Height/2 : - offset.y * zoom;
         var dx, dy;
-        if (- viewportBounds.x * zoom < minPanX) {
-          dx = minPanX + viewportBounds.x * zoom;
+        if (- boundsX * zoom < minPanX) {
+          dx = minPanX + boundsX * zoom;
           minPanX -= dx;
           maxPanX += dx;
         }
-        else if (- viewportBounds.x * zoom > maxPanX) {
-          dx = - viewportBounds.x * zoom - maxPanX;
+        else if (- boundsX * zoom > maxPanX) {
+          dx = - boundsX * zoom - maxPanX;
           minPanX -= dx;
           maxPanX += dx;
         }
-        if (- viewportBounds.y * zoom < minPanY) {
-          dy = minPanY + viewportBounds.y * zoom;
+        if (- boundsY * zoom < minPanY) {
+          dy = minPanY + boundsY * zoom;
           minPanY -= dy;
           maxPanY += dy;
         }
-        else if (- viewportBounds.y * zoom > maxPanY) {
-          dy = - viewportBounds.y * zoom - maxPanY;
+        else if (- boundsY * zoom > maxPanY) {
+          dy = - boundsY * zoom - maxPanY;
           minPanY -= dy;
           maxPanY += dy;
         }

@@ -1,0 +1,15 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.badge.ignored.scoped") {
+  
+  /* Badge                     */
+  /* -------------------------- */
+  .oj-private-scale-lg {
+  --oj-badge-font-size: 11px;
+  --oj-badge-height: 24px;
+  --oj-badge-border-radius: 6px;
+  } 
+
+ 
+
+}

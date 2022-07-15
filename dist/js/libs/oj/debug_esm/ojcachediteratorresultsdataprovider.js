@@ -152,31 +152,34 @@ import 'ojs/ojcomponentcore';
 
 class CachedIteratorResultsDataProvider {
     constructor(dataProvider, options) {
+        var _a, _b;
         this.dataProvider = dataProvider;
         this.options = options;
-        this.CacheAsyncIterable = class {
-            constructor(_parent, dataProviderAsyncIterator, params, cache) {
-                this._parent = _parent;
-                this.dataProviderAsyncIterator = dataProviderAsyncIterator;
-                this.params = params;
-                this.cache = cache;
-                this[Symbol.asyncIterator] = () => {
-                    return new this._parent.CacheAsyncIterator(this._parent, this.dataProviderAsyncIterator, this.params, this.cache);
-                };
-            }
-        };
+        this.CacheAsyncIterable = (_b = class {
+                constructor(_parent, dataProviderAsyncIterator, params, cache) {
+                    this._parent = _parent;
+                    this.dataProviderAsyncIterator = dataProviderAsyncIterator;
+                    this.params = params;
+                    this.cache = cache;
+                    this[_a] = () => {
+                        return new this._parent.CacheAsyncIterator(this._parent, this.dataProviderAsyncIterator, this.params, this.cache);
+                    };
+                }
+            },
+            _a = Symbol.asyncIterator,
+            _b);
         this.CacheAsyncIterator = class {
             constructor(_parent, asyncIterator, params, cache) {
-                var _a, _b;
+                var _b, _c;
                 this._parent = _parent;
                 this.asyncIterator = asyncIterator;
                 this.params = params;
                 this.cache = cache;
                 this._cachedOffset = 0;
                 this._needLocalRowCount =
-                    ((_a = _parent.options) === null || _a === void 0 ? void 0 : _a.includeFilteredRowCount) === 'enabled' &&
+                    ((_b = _parent.options) === null || _b === void 0 ? void 0 : _b.includeFilteredRowCount) === 'enabled' &&
                         (params === null || params === void 0 ? void 0 : params.includeFilteredRowCount) === 'enabled' &&
-                        ((_b = _parent._baseFetchFirstCapability) === null || _b === void 0 ? void 0 : _b.totalFilteredRowCount) !== 'exact';
+                        ((_c = _parent._baseFetchFirstCapability) === null || _c === void 0 ? void 0 : _c.totalFilteredRowCount) !== 'exact';
             }
             ['next']() {
                 const params = this.params;

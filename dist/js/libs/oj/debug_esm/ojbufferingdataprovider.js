@@ -6,9 +6,10 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import { FilterFactory, DataProviderMutationEvent, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
-import { GenericEvent, EventTargetMixin } from 'ojs/ojeventtarget';
+import { DataProviderMutationEvent, FilterFactory, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
+import { EventTargetMixin } from 'ojs/ojeventtarget';
 import ojMap from 'ojs/ojmap';
+import { BufferingDataProviderSubmittableChangeEvent } from 'ojs/ojbufferingdataproviderevents';
 import 'ojs/ojcomponentcore';
 
 /**
@@ -69,12 +70,50 @@ import 'ojs/ojcomponentcore';
  * included in the item data. Furthermore, iterators obtained by fetchFirst must all use the same sortCriteria if the application is using
  * those iterators at the same time.
  * </p>
- * <p>If there is a sortCriteria, new items are merged with the underlying data when added, and updated items are sorted when committing
- * based on the sortCriteria.
+ * <p>New rows are inserted at the beginning of the underlying data with latest item on top.
  * </p>
- * <p>If there is no sortCriteria, new items are inserted at the beginning of the underlying data.  When new items are committed,
- * they may be moved to new positions if the underlying DataProvider fires mutate events for the committed items.
+ * <p>
+ * Updated rows are staying in their current position.
+ * <p>
+ * When uncommitted rows are sorted in current row set, their position may not correspond to server side position once they are committed.
+ * Therefore a 'remove' event may be fired when new row sets are fetched and it determines that the rows are not in current positions.
+ * Uncommitted rows will be sorted according to updated row set.
  * </p>
+ * </p>
+ * When new/updated items are committed, and if the underlying DataProvider fires mutate events for the committed items,
+ * those items will not be sorted based on SortCriteria. The items will stay in their current positions until a subsequent sort or refresh.
+ * </p>
+ * <pre class="prettyprint"><code>
+ * // ex: added and committed a new row with id 85
+ *{
+ *  notSorted:{},
+ *  add: {
+ *    metadata: [{key: 85}],
+ *    addBeforeKeys:[0],
+ *    ...
+ *  }
+ *}
+ * </code></pre>
+ * <p>
+ * Subsequent to a new/updated row but before the commit, the row can be sorted or filtered.
+ * The sorted/filtered position of the row stays after the commit until a subsequent re-order/refresh.
+ * Will dispatch remove event for rows which are not in correct position because the sorting is based on fetched row sets.
+ *
+ * When uncommitted rows are sorted in current row set, their position may not correspond to server side position once they are committed.
+ * Therefore a 'remove' event may be fired when new row sets are fetched and it determines that the rows are not in current positions.
+ * Uncommitted rows will be sorted according to updated row set.
+ * </p>
+ * <pre class="prettyprint"><code>
+ * // dispatch a remove event for rows in wrong position.
+ * // ie row with id 40 is in wrong position
+ *{
+ *  remove: {
+ *    metadata: [{key: 40}],
+ *    ...
+ *  }
+ *}
+ * </code></pre>
+ *
  * <p>BufferingDataProvider does not validate the item key and data.  It is up to the application to perform any validation
  * prior to creating edit items in the buffer.
  * </p>
@@ -438,7 +477,6 @@ import 'ojs/ojcomponentcore';
  *               value: "(editItem: BufferingDataProvider.EditItem<K, D>, newStatus: 'unsubmitted' | 'submitting' | 'submitted', error?: ItemMessage, mewKey?: K): void"}
  */
 
-
 /**
  * End of jsdoc
  */
@@ -509,21 +547,22 @@ class EditBuffer {
     constructor() {
         this.unsubmittedItems = new ojMap();
         this.submittingItems = new ojMap();
+        this.unsubmittedChangedItems = new ojMap();
+        this.mapOpTransform = new ojMap();
+        this.mapEditItemStatus = new ojMap();
     }
     addItem(item) {
         const unsubmitted = this.unsubmittedItems.get(item.metadata.key);
         const submitting = this.submittingItems.get(item.metadata.key);
+        const changed = this.unsubmittedChangedItems.get(item.metadata.key);
         if ((unsubmitted && (unsubmitted.operation === 'add' || unsubmitted.operation === 'update')) ||
             (submitting && (submitting.operation === 'add' || submitting.operation === 'update'))) {
             throw new Error('Cannot add item with same key as an item being added or updated');
         }
         else if (unsubmitted && unsubmitted.operation === 'remove') {
-            if (unsubmitted.item.data && oj.Object.compareValues(unsubmitted.item.data, item.data)) {
-                this.unsubmittedItems.delete(item.metadata.key);
-            }
-            else {
-                this.unsubmittedItems.set(item.metadata.key, { operation: 'update', item });
-            }
+            const editItem = { operation: 'update', item };
+            this.unsubmittedItems.set(item.metadata.key, editItem);
+            this.mapOpTransform.set(item.metadata.key, editItem);
             return;
         }
         this.unsubmittedItems.set(item.metadata.key, { operation: 'add', item });
@@ -540,7 +579,10 @@ class EditBuffer {
             return;
         }
         else if (unsubmitted && unsubmitted.operation === 'update') {
-            this.unsubmittedItems.set(item.metadata.key, { operation: 'remove', item });
+            this.unsubmittedItems.set(item.metadata.key, {
+                operation: 'remove',
+                item
+            });
             return;
         }
         this.unsubmittedItems.set(item.metadata.key, { operation: 'remove', item });
@@ -558,9 +600,25 @@ class EditBuffer {
                 operation: unsubmitted.operation,
                 item
             });
+            this.mapOpTransform.delete(item.metadata.key);
             return;
         }
+        this.unsubmittedChangedItems.set(item.metadata.key, true);
         this.unsubmittedItems.set(item.metadata.key, { operation: 'update', item });
+    }
+    setItemMutated(editItem) {
+        const key = editItem.item.metadata.key;
+        const item = this.submittingItems.get(key);
+        if (item) {
+            const status = this.mapEditItemStatus.get(key);
+            if (status === 'submitted') {
+                this.submittingItems.delete(key);
+            }
+            else {
+                this.mapEditItemStatus.set(key, 'mutated');
+                this.submittingItems.set(key, item);
+            }
+        }
     }
     setItemStatus(editItem, newStatus, error) {
         const key = editItem.item.metadata.key;
@@ -569,7 +627,16 @@ class EditBuffer {
             this.submittingItems.set(key, editItem);
         }
         else if (newStatus === 'submitted') {
-            this.submittingItems.delete(key);
+            if (editItem) {
+                const status = this.mapEditItemStatus.get(key);
+                if (status === 'mutated') {
+                    this.submittingItems.delete(key);
+                }
+                else {
+                    this.mapEditItemStatus.set(key, 'submitted');
+                }
+            }
+            this.unsubmittedChangedItems.delete(key);
         }
         else if (newStatus === 'unsubmitted') {
             this.submittingItems.delete(key);
@@ -608,18 +675,23 @@ class EditBuffer {
         }
         return editItem;
     }
-}
-
-class BufferingDataProviderSubmittableChangeEvent extends GenericEvent {
-    constructor(detail) {
-        const eventOptions = {};
-        eventOptions['detail'] = detail;
-        super('submittableChange', eventOptions);
+    isUpdateTransformed(key) {
+        return this.mapOpTransform.get(key) ? true : false;
+    }
+    getEditItemStatus(key) {
+        return this.mapEditItemStatus.get(key);
+    }
+    resetAllUnsubmittedItems() {
+        this.unsubmittedItems.clear();
+        this.submittingItems.clear();
+        this.unsubmittedChangedItems.clear();
+        this.mapOpTransform.clear();
     }
 }
 
 class BufferingDataProvider {
     constructor(dataProvider, options) {
+        var _a;
         this.dataProvider = dataProvider;
         this.options = options;
         this._generateKey = (value) => {
@@ -635,15 +707,17 @@ class BufferingDataProvider {
                 }
             }
         };
-        this.AsyncIterable = class {
-            constructor(_parent, _asyncIterator) {
-                this._parent = _parent;
-                this._asyncIterator = _asyncIterator;
-                this[Symbol.asyncIterator] = function () {
-                    return this._asyncIterator;
-                };
-            }
-        };
+        this.AsyncIterable = (_a = class {
+                constructor(_parent, _asyncIterator) {
+                    this._parent = _parent;
+                    this._asyncIterator = _asyncIterator;
+                    this[Symbol.asyncIterator] = function () {
+                        return this._asyncIterator;
+                    };
+                }
+            },
+            Symbol.asyncIterator,
+            _a);
         this.AsyncIterator = class {
             constructor(_parent, _baseIterator, _params) {
                 this._parent = _parent;
@@ -697,6 +771,22 @@ class BufferingDataProvider {
                             }
                         }
                     }
+                    if (this._parent.itemsInWrongPosition.size > 0) {
+                        const detail = {
+                            remove: {
+                                data: [],
+                                keys: new Set(),
+                                metadata: []
+                            }
+                        };
+                        this._parent.itemsInWrongPosition.forEach((item) => {
+                            detail.remove.data.push(item.data);
+                            detail.remove.keys.add(item.metadata.key);
+                            detail.remove.metadata.push(item.metadata);
+                        });
+                        const event = new DataProviderMutationEvent(detail);
+                        this._parent.dispatchEvent(event);
+                    }
                     const done = result.done && newDataArray.length === 0;
                     return {
                         done,
@@ -714,6 +804,8 @@ class BufferingDataProvider {
         this.lastIterator = null;
         this.customKeyGenerator = options === null || options === void 0 ? void 0 : options.keyGenerator;
         this.generatedKeyMap = new Map();
+        this.lastSortIndex = new Map();
+        this.itemsInWrongPosition = new Set();
     }
     _fetchByKeysFromBuffer(params) {
         const results = new ojMap();
@@ -751,28 +843,42 @@ class BufferingDataProvider {
         editItems.forEach((editItem, key) => {
             if (editItem.operation === 'add' && !mergedAddKeySet.has(key)) {
                 if (!filterObj || filterObj.filter(editItem.item.data)) {
-                    if (sortCriteria && sortCriteria.length) {
-                        let inserted = false;
-                        for (let i = 0; i < itemArray.length; i++) {
-                            if (this._compareItem(editItem.item.data, itemArray[i].data, sortCriteria) < 0) {
-                                itemArray.splice(i, 0, editItem.item);
-                                mergedAddKeySet.add(key);
-                                inserted = true;
-                                break;
-                            }
-                        }
-                        if (!inserted && lastBlock) {
-                            itemArray.push(editItem.item);
-                            mergedAddKeySet.add(key);
-                        }
-                    }
-                    else {
-                        itemArray.push(editItem.item);
-                        mergedAddKeySet.add(key);
-                    }
+                    itemArray.push(editItem.item);
+                    mergedAddKeySet.add(key);
                 }
             }
+            else if (editItem.operation === 'update' &&
+                !mergedAddKeySet.has(key) &&
+                this.editBuffer.isUpdateTransformed(key)) {
+                for (let i = 0; i < itemArray.length; i++) {
+                    if (itemArray[i].metadata.key === key) {
+                        itemArray.splice(i, 1);
+                        break;
+                    }
+                }
+                itemArray.push(editItem.item);
+            }
         });
+        if (sortCriteria && sortCriteria.length) {
+            itemArray.sort((a, b) => {
+                return this._compareItem(a.data, b.data, sortCriteria);
+            });
+            itemArray.forEach((item, index) => {
+                const key = item.metadata.key;
+                if (editItems.has(key)) {
+                    if (this.lastSortIndex.get(key) === undefined) {
+                        this.lastSortIndex.set(key, index);
+                    }
+                    else if (this.lastSortIndex.get(key) !== index) {
+                        this.itemsInWrongPosition.add(item);
+                        this.lastSortIndex.set(key, index);
+                    }
+                    else if (this.lastSortIndex.get(key) === index) {
+                        this.itemsInWrongPosition.delete(item);
+                    }
+                }
+            });
+        }
     }
     _mergeAddEdits(filterObj, sortCriteria, newItemArray, mergedAddKeySet, lastBlock) {
         this._insertAddEdits(this.editBuffer.getUnsubmittedItems(), filterObj, sortCriteria, newItemArray, mergedAddKeySet, lastBlock);
@@ -803,7 +909,8 @@ class BufferingDataProvider {
                 if (editItem.operation === 'remove') {
                     newItemArray.push(baseItem);
                 }
-                else if (editItem.operation === 'update') {
+                else if (editItem.operation === 'update' &&
+                    !this.editBuffer.isUpdateTransformed(editItem.item.metadata.key)) {
                     if (!filterObj || filterObj.filter(editItem.item.data)) {
                         newItemArray.push(editItem.item);
                     }
@@ -917,11 +1024,13 @@ class BufferingDataProvider {
     _calculateSizeChange(editItems) {
         let sizeChange = 0;
         editItems.forEach((value, key) => {
-            if (value.operation === 'add') {
-                ++sizeChange;
-            }
-            else if (value.operation === 'remove') {
-                --sizeChange;
+            if (!this.editBuffer.getEditItemStatus(key)) {
+                if (value.operation === 'add') {
+                    ++sizeChange;
+                }
+                else if (value.operation === 'remove') {
+                    --sizeChange;
+                }
             }
         });
         return sizeChange;
@@ -963,28 +1072,11 @@ class BufferingDataProvider {
     _addToMergedArrays(item, fromBaseDP, addBeforeKeyFromBase = null) {
         let addBeforeKey = null;
         if (this.lastIterator) {
-            const sortCriteria = this.lastSortCriteria;
-            if (sortCriteria && sortCriteria.length) {
-                const mergedItemArray = this.lastIterator.mergedItemArray;
-                for (let i = 0; i < mergedItemArray.length; i++) {
-                    if (this._compareItem(item.data, mergedItemArray[i].data, sortCriteria) < 0 &&
-                        !this._isItemRemoved(mergedItemArray[i].metadata.key)) {
-                        addBeforeKey = mergedItemArray[i].metadata.key;
-                        mergedItemArray.splice(i, 0, item);
-                        if (i < this.lastIterator.nextOffset) {
-                            ++this.lastIterator.nextOffset;
-                        }
-                        break;
-                    }
-                }
+            if (fromBaseDP) {
+                addBeforeKey = this._getNextKey(addBeforeKeyFromBase);
             }
             else {
-                if (fromBaseDP) {
-                    addBeforeKey = this._getNextKey(addBeforeKeyFromBase);
-                }
-                else {
-                    addBeforeKey = this.lastIterator.firstBaseKey;
-                }
+                addBeforeKey = this.lastIterator.firstBaseKey;
             }
         }
         return addBeforeKey;
@@ -1014,6 +1106,9 @@ class BufferingDataProvider {
         }
         this.editBuffer.addItem(addItem);
         const addBeforeKey = this._addToMergedArrays(addItem, false);
+        if (this.lastIterator) {
+            this.lastIterator.firstBaseKey = addItem.metadata.key;
+        }
         const detail = {
             add: {
                 data: [addItem.data],
@@ -1032,7 +1127,7 @@ class BufferingDataProvider {
             const mergedAddKeySet = this.lastIterator.mergedAddKeySet;
             const keyIdx = this._findKeyInItems(key, mergedItemArray);
             if (keyIdx !== -1) {
-                if (fromBaseDP || mergedAddKeySet.has(key)) {
+                if (fromBaseDP || mergedAddKeySet.has(key) || this.editBuffer.isUpdateTransformed(key)) {
                     mergedItemArray.splice(keyIdx, 1);
                     mergedAddKeySet.delete(key);
                     if (keyIdx < this.lastIterator.nextOffset) {
@@ -1098,7 +1193,7 @@ class BufferingDataProvider {
         return submittableItems;
     }
     resetAllUnsubmittedItems() {
-        this.editBuffer.getUnsubmittedItems().clear();
+        this.editBuffer.resetAllUnsubmittedItems();
         this._dispatchSubmittableChangeEvent();
         this.dispatchEvent(new DataProviderRefreshEvent());
     }
@@ -1215,6 +1310,7 @@ class BufferingDataProvider {
             if (bAdd) {
                 this._initDetailProp(detail, newDetail, 'addBeforeKeys', []);
             }
+            this._initDetailProp(detail, newDetail, 'indexes', []);
             this._initDetailProp(detail, newDetail, 'parentKeys', []);
         }
         else {
@@ -1223,6 +1319,7 @@ class BufferingDataProvider {
             if (bAdd) {
                 this._initDetailProp(detail, newDetail, 'addBeforeKeys', detail.addBeforeKeys);
             }
+            this._initDetailProp(detail, newDetail, 'indexes', detail.indexes);
             this._initDetailProp(detail, newDetail, 'parentKeys', detail.parentKeys);
         }
     }
@@ -1252,8 +1349,11 @@ class BufferingDataProvider {
             if (idx > -1) {
                 this._pushDetailProp(detail, newDetail, 'data', idx);
                 this._pushDetailProp(detail, newDetail, 'metadata', idx);
-                if (newDetail.addBeforeKeys) {
+                if (detail.addBeforeKeys && detail.addBeforeKeys.length !== 0) {
                     this._pushDetailProp(detail, newDetail, 'addBeforeKeys', idx);
+                }
+                if (detail.indexes && detail.indexes.length !== 0) {
+                    this._pushDetailProp(detail, newDetail, 'indexes', idx);
                 }
                 this._pushDetailProp(detail, newDetail, 'parentKeys', idx);
             }
@@ -1297,41 +1397,8 @@ class BufferingDataProvider {
             }
             else {
                 this._initDetails(details, newDetails, true);
+                this._processAdd(newDetails, details, submittingItems, unsubmittedItems);
                 let skipItem;
-                if (details.add) {
-                    details.add.keys.forEach((key) => {
-                        if (!this.lastIterator ||
-                            !this.lastSortCriteria ||
-                            this.lastSortCriteria.length === 0) {
-                            let removeDetail = newDetails.remove;
-                            if (!removeDetail) {
-                                removeDetail = { keys: new Set(), data: [], metadata: [] };
-                                newDetails.remove = removeDetail;
-                            }
-                            const submittingItem = submittingItems.get(key);
-                            const unsubmittedItem = unsubmittedItems.get(key);
-                            const editItem = submittingItem ? submittingItem : unsubmittedItem;
-                            if (editItem) {
-                                removeDetail.keys.add(editItem.item.metadata.key);
-                                removeDetail.data.push(editItem.item.data);
-                                removeDetail.metadata.push(editItem.item.metadata);
-                            }
-                            newDetails.remove = removeDetail;
-                            let addDetail = newDetails.add;
-                            if (!addDetail) {
-                                addDetail = { keys: new Set(), data: [], metadata: [], addBeforeKeys: [] };
-                                newDetails.add = addDetail;
-                            }
-                            this._pushDetail(key, details.add, newDetails.add);
-                        }
-                        else {
-                            skipItem = this._isSkipItem(key, submittingItems, unsubmittedItems);
-                            if (!skipItem) {
-                                this._pushDetail(key, details.add, newDetails.add);
-                            }
-                        }
-                    });
-                }
                 if (details.remove) {
                     details.remove.keys.forEach((key) => {
                         skipItem = this._isSkipItem(key, submittingItems, unsubmittedItems);
@@ -1345,44 +1412,10 @@ class BufferingDataProvider {
                     });
                 }
                 if (details.update) {
-                    let idx = 0;
                     details.update.keys.forEach((key) => {
-                        const bSortUpd = sortFldUpdateds[idx];
-                        if (bSortUpd &&
-                            this.lastIterator &&
-                            this.lastSortCriteria &&
-                            this.lastSortCriteria.length) {
-                            let removeDetail = newDetails.remove;
-                            if (!removeDetail) {
-                                removeDetail = { keys: new Set(), data: [], metadata: [] };
-                                newDetails.remove = removeDetail;
-                            }
-                            const submittingItem = submittingItems.get(key);
-                            const unsubmittedItem = unsubmittedItems.get(key);
-                            const editItem = submittingItem ? submittingItem : unsubmittedItem;
-                            if (editItem) {
-                                removeDetail.keys.add(editItem.item.metadata.key);
-                                removeDetail.data.push(editItem.item.data);
-                                removeDetail.metadata.push(editItem.item.metadata);
-                            }
-                            let addDetail = newDetails.add;
-                            if (!addDetail) {
-                                addDetail = { keys: new Set(), data: [], metadata: [], addBeforeKeys: [] };
-                                newDetails.add = addDetail;
-                            }
-                            if (editItem) {
-                                addDetail.keys.add(editItem.item.metadata.key);
-                                addDetail.data.push(editItem.item.data);
-                                addDetail.metadata.push(editItem.item.metadata);
-                                addDetail.addBeforeKeys.push(addBeforeKeys[idx]);
-                                idx++;
-                            }
-                        }
-                        else {
-                            skipItem = this._isSkipItem(key, submittingItems, unsubmittedItems);
-                            if (!skipItem) {
-                                this._pushDetail(key, details.update, newDetails.update);
-                            }
+                        skipItem = this._isSkipItem(key, submittingItems, unsubmittedItems);
+                        if (!skipItem) {
+                            this._pushDetail(key, details.update, newDetails.update);
                         }
                     });
                 }
@@ -1391,6 +1424,12 @@ class BufferingDataProvider {
         }
         else {
             return details;
+        }
+    }
+    _processAdd(newDetails, details, submittingItems, unsubmittedItems) {
+        if (details.add) {
+            newDetails.add = details.add;
+            return;
         }
     }
     _handleRefreshEvent(event) {
@@ -1416,26 +1455,55 @@ class BufferingDataProvider {
             this.dispatchEvent(event);
         }
     }
+    _cleanUpSubmittedItem(operation, key) {
+        const submittedItems = this.editBuffer.getSubmittingItems();
+        const item = submittedItems.get(key);
+        if (item) {
+            this.editBuffer.setItemMutated(item);
+        }
+    }
     _handleMutateEvent(event) {
         const detailAdd = event.detail.add;
         if (detailAdd && detailAdd.metadata && detailAdd.data) {
             detailAdd.metadata.forEach((metadata, idx) => {
-                const addBeforeKey = this._addToMergedArrays({ metadata: detailAdd.metadata[idx], data: detailAdd.data[idx] }, true, detailAdd.addBeforeKeys[idx]);
-                if (detailAdd.addBeforeKeys[idx] && !addBeforeKey) {
-                    if (this.lastIterator && this.lastIterator.mergedItemArray) {
-                        this.lastIterator.mergedItemArray.splice(this.lastIterator.mergedItemArray.length, 0, {
-                            data: detailAdd.data[idx],
-                            metadata: detailAdd.metadata[idx]
-                        });
+                let addBeforeKey;
+                if (detailAdd.addBeforeKeys && detailAdd.addBeforeKeys[idx] !== undefined) {
+                    addBeforeKey = this._addToMergedArrays({ metadata: detailAdd.metadata[idx], data: detailAdd.data[idx] }, true, detailAdd.addBeforeKeys[idx]);
+                    if (detailAdd.addBeforeKeys[idx] && !addBeforeKey) {
+                        if (this.lastIterator && this.lastIterator.mergedItemArray) {
+                            this.lastIterator.mergedItemArray.splice(this.lastIterator.mergedItemArray.length, 0, {
+                                data: detailAdd.data[idx],
+                                metadata: detailAdd.metadata[idx]
+                            });
+                        }
+                    }
+                    detailAdd.addBeforeKeys[idx] = addBeforeKey;
+                }
+                else {
+                    if (detailAdd.indexes && detailAdd.indexes[idx]) {
+                        let nextIdx = detailAdd.indexes[idx];
+                        while (this.lastIterator && nextIdx < this.lastIterator.mergedItemArray.length) {
+                            if (!this._isItemRemoved(this.lastIterator.mergedItemArray[nextIdx].metadata.key)) {
+                                break;
+                            }
+                            nextIdx++;
+                        }
+                        if (this.lastIterator && nextIdx >= this.lastIterator.mergedItemArray.length) {
+                            this.lastIterator.mergedItemArray.splice(this.lastIterator.mergedItemArray.length, 0, {
+                                data: detailAdd.data[idx],
+                                metadata: detailAdd.metadata[idx]
+                            });
+                        }
                     }
                 }
-                detailAdd.addBeforeKeys[idx] = addBeforeKey;
+                this._cleanUpSubmittedItem('add', metadata.key);
             });
         }
         const detailRemove = event.detail.remove;
         if (detailRemove) {
             detailRemove.keys.forEach((key) => {
                 this._removeFromMergedArrays(key, true);
+                this._cleanUpSubmittedItem('remove', key);
             });
         }
         const addBeforeKeys = [];
@@ -1456,6 +1524,7 @@ class BufferingDataProvider {
                         }
                     }
                 }
+                this._cleanUpSubmittedItem('remove', detailUpdate.metadata[idx].key);
             });
         }
         const newDetails = this._getOperationDetails(event.detail, addBeforeKeys, sortFldUpdateds);

@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -23,6 +27,7 @@ const ts = __importStar(require("typescript"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const MetaTypes = __importStar(require("./utils/MetadataTypes"));
+const ApiDocUtils = __importStar(require("./utils/ApiDocUtils"));
 const DecoratorUtils = __importStar(require("./utils/DecoratorUtils"));
 const MetaUtils = __importStar(require("./utils/MetadataUtils"));
 const ComponentUtils = __importStar(require("./utils/MetadataComponentUtils"));
@@ -33,9 +38,11 @@ const MethodUtils = __importStar(require("./utils/MetadataMethodUtils"));
 const TransformerError_1 = require("./utils/TransformerError");
 let _BUILD_OPTIONS;
 let _CHECKER;
+let _COMPILER_OPTIONS;
 function transformer(program, buildOptions) {
     _BUILD_OPTIONS = buildOptions;
     _CHECKER = program.getTypeChecker();
+    _COMPILER_OPTIONS = program.getCompilerOptions();
     function visitor(ctx, sf) {
         const vexportToAlias = {};
         const aliasToVExport = {};
@@ -77,14 +84,22 @@ function generateClassElementMetadata(classNode, vexportToAlias, aliasToVExport)
         return classNode;
     }
     let elementName = custElemDecorator.expression['arguments'][0].text;
-    let vcompClassInfo = ComponentUtils.getVCompClassInfo(elementName, classNode, vexportToAlias, _CHECKER);
+    let vcompClassInfo = ComponentUtils.getVCompClassInfo(elementName, classNode, vexportToAlias, _CHECKER, _COMPILER_OPTIONS, _BUILD_OPTIONS.translationBundleIds);
     if (!vcompClassInfo || !vcompClassInfo.className) {
         return classNode;
     }
     const metaUtilObj = getNewMetaUtilObj(_CHECKER, _BUILD_OPTIONS, vcompClassInfo, vexportToAlias, aliasToVExport);
     MetaUtils.updateCompilerCompMetadata(vcompClassInfo, metaUtilObj);
-    metaUtilObj.fullMetadata, ComponentUtils.getDtMetadataForComponent(classNode, metaUtilObj);
+    ComponentUtils.getDtMetadataForComponent(classNode, metaUtilObj);
     const propsInfo = vcompClassInfo.propsInfo;
+    if (ts.isSourceFile(classNode.parent)) {
+        const fileName = classNode.parent.fileName;
+        metaUtilObj.fullMetadata['jsdoc'] = metaUtilObj.fullMetadata['jsdoc'] || {};
+        metaUtilObj.fullMetadata['jsdoc']['meta'] = {
+            filename: path.basename(fileName),
+            path: path.dirname(fileName)
+        };
+    }
     if (propsInfo) {
         if (!propsInfo.propsName) {
             throw new TransformerError_1.TransformerError(vcompClassInfo.className, "Invalid Component 'Props' argument type -- must be a Class, Interface, or Type reference.", propsInfo.propsNode);
@@ -104,16 +119,25 @@ Instead, declare individual properties of the 'Props' object with Conditional ty
     MethodUtils.updateJetElementMethods(metaUtilObj);
     storeMetadataInBuildOptions(metaUtilObj);
     SlotUtils.validateDynamicSlots(metaUtilObj);
+    generateApiDocMetadata(metaUtilObj);
     writeMetaFiles(metaUtilObj);
-    return MetaUtils.addMetadataToClassNode(classNode, metaUtilObj.rtMetadata);
+    return MetaUtils.addMetadataToClassNode(vcompClassInfo, metaUtilObj.rtMetadata);
 }
 function generateFunctionalElementMetadata(functionalCompNode, vexportToAlias, aliasToVExport) {
-    let vcompFunctionInfo = ComponentUtils.getVCompFunctionInfo(functionalCompNode, vexportToAlias, _CHECKER);
+    let vcompFunctionInfo = ComponentUtils.getVCompFunctionInfo(functionalCompNode, vexportToAlias, _CHECKER, _COMPILER_OPTIONS, _BUILD_OPTIONS.translationBundleIds);
     if (vcompFunctionInfo) {
         const metaUtilObj = getNewMetaUtilObj(_CHECKER, _BUILD_OPTIONS, vcompFunctionInfo, vexportToAlias, aliasToVExport);
         MetaUtils.updateCompilerCompMetadata(vcompFunctionInfo, metaUtilObj);
         metaUtilObj.fullMetadata,
             ComponentUtils.getDtMetadataForComponent(vcompFunctionInfo.componentNode, metaUtilObj);
+        if (ts.isSourceFile(functionalCompNode.parent)) {
+            const fileName = functionalCompNode.parent.fileName;
+            metaUtilObj.fullMetadata['jsdoc'] = metaUtilObj.fullMetadata['jsdoc'] || {};
+            metaUtilObj.fullMetadata['jsdoc']['meta'] = {
+                filename: path.basename(fileName),
+                path: path.dirname(fileName)
+            };
+        }
         const propsInfo = vcompFunctionInfo.propsInfo;
         if (propsInfo) {
             if (!propsInfo.propsName) {
@@ -132,6 +156,7 @@ function generateFunctionalElementMetadata(functionalCompNode, vexportToAlias, a
         }
         storeMetadataInBuildOptions(metaUtilObj);
         SlotUtils.validateDynamicSlots(metaUtilObj);
+        generateApiDocMetadata(metaUtilObj);
         writeMetaFiles(metaUtilObj);
         return MetaUtils.addArgumentsToRegisterCustomElementCall(functionalCompNode, vcompFunctionInfo, metaUtilObj);
     }
@@ -169,6 +194,14 @@ function walkClassElements(classNode, walkElements, metaUtilObj) {
         }
     });
 }
+function writeApiDocFiles(apidocResult, componentName) {
+    const apiDocDir = _BUILD_OPTIONS.apiDocDir;
+    if (!fs.existsSync(apiDocDir)) {
+        fs.mkdirSync(apiDocDir, { recursive: true });
+    }
+    const apiDocForComponent = `${apiDocDir}/${componentName}.json`;
+    fs.writeFileSync(apiDocForComponent, JSON.stringify(apidocResult, null, 2));
+}
 function writeMetaFiles(metaUtilObj) {
     MetaUtils.pruneCompilerMetadata(metaUtilObj);
     const dtDir = _BUILD_OPTIONS.dtDir;
@@ -204,7 +237,7 @@ function storeImportsInBuildOptions(vexportToAlias, aliasToVExport) {
 }
 const _EXCLUDED_NAMED_EXPORT_TYPES = ['ObservedGlobalProps'];
 function getNewMetaUtilObj(typeChecker, buildOptions, componentInfo, namedExportToAlias, aliasToNamedExport) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     if (!buildOptions['reservedGlobalProps']) {
         const RGPSet = generateReservedGlobalPropsSet(componentInfo, typeChecker);
         if (RGPSet) {
@@ -224,12 +257,12 @@ function getNewMetaUtilObj(typeChecker, buildOptions, componentInfo, namedExport
             name: componentInfo.elementName,
             version: buildOptions['version'],
             jetVersion: buildOptions['jetVersion'],
-            type: buildOptions['coreJetBuildOptions'] ? 'core' : 'composite'
+            type: (_d = (_c = buildOptions['coreJetBuildOptions']) === null || _c === void 0 ? void 0 : _c.defaultCompType) !== null && _d !== void 0 ? _d : 'composite'
         },
         dynamicSlotsInUse: 0b0000,
         dynamicSlotNameNodes: []
     };
-    if ((_c = componentInfo.propsInfo) === null || _c === void 0 ? void 0 : _c.propsName) {
+    if ((_e = componentInfo.propsInfo) === null || _e === void 0 ? void 0 : _e.propsName) {
         rtnObj.propsName = componentInfo.propsInfo.propsName;
     }
     if (buildOptions['reservedGlobalProps']) {
@@ -304,6 +337,7 @@ const _VCOMPONENT_EXPORTS = new Set([
     'DynamicSlots',
     'DynamicTemplateSlots',
     'Component',
+    'ComponentProps',
     'PureComponent',
     'forwardRef',
     'memo',
@@ -340,5 +374,17 @@ function isVComponentModule(module) {
         module === 'preact' ||
         module === 'preact/compat' ||
         module === 'ojs/ojvcomponent-binding');
+}
+function generateApiDocMetadata(metaUtilObj) {
+    if (_BUILD_OPTIONS.apiDocDir) {
+        try {
+            const apidoc = ApiDocUtils.generateDoclets(metaUtilObj);
+            writeApiDocFiles(apidoc, metaUtilObj.componentName);
+        }
+        catch (e) {
+            const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName);
+            console.log(`${logHeader} Unexpected error happened during ApiDoc metadata processing.`);
+        }
+    }
 }
 //# sourceMappingURL=metadataTransformer.js.map

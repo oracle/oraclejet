@@ -1,0 +1,2 @@
+define(["exports","preact/hooks","../UNSAFE_Environment","preact","preact/jsx-runtime","../UNSAFE_Layer","preact/compat"],(function(e,n,t,o,r,a,i){"use strict";e.useTranslationBundle=function(e){const o=n.useContext(t.EnvironmentContext).translations,r=null==o?void 0:o[e];if(!r)throw new Error(`Translation bundle ${e} is not loaded.`);return r},Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=UNSAFE_useTranslationBundle.js.map

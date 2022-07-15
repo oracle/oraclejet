@@ -54,6 +54,7 @@ export interface ojSunburst<K, D extends ojSunburst.Node<K> | any> extends dvtBa
     };
     touchResponse?: 'touchStart' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -364,6 +365,7 @@ export interface ojSunburstSettableProperties<K, D extends ojSunburst.Node<K> | 
     };
     touchResponse?: 'touchStart' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;

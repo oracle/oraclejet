@@ -5,10 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { jsx, jsxs } from 'preact/jsx-runtime';
 import { recentTouchEnd, makeFocusable, getNoJQFocusHandlers } from 'ojs/ojdomutils';
 import { startDetectContextMenuGesture, stopDetectContextMenuGesture } from 'ojs/ojgestureutils';
 import { getUniqueId, Root, customElement } from 'ojs/ojvcomponent';
-import { Component, createRef, h } from 'preact';
+import { Component, createRef } from 'preact';
 import { VMenu } from 'ojs/ojvmenu';
 import 'ojs/ojvcomponent-binding';
 import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
@@ -135,14 +136,14 @@ let Button2 = Button2_1 = class Button2 extends Component {
                     if (!hasDefaultAriaAttribute) {
                         ariaLabel = props.label;
                     }
-                    defaultContent = (h("span", { ref: (elem) => (this._defaultSlotRef = elem) }, defaultContent));
+                    defaultContent = (jsx("span", Object.assign({ ref: (elem) => (this._defaultSlotRef = elem) }, { children: defaultContent })));
                 }
                 else {
                     if (!hasDefaultAriaAttribute) {
                         ariaLabelledById = this.uniquePrefix + '|text';
                         ariaLabelledBy = ariaLabelledById;
                     }
-                    defaultContent = (h("span", { ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text oj-helper-hidden-accessible", id: ariaLabelledById }, buttonLabel));
+                    defaultContent = (jsx("span", Object.assign({ ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text oj-helper-hidden-accessible", id: ariaLabelledById }, { children: buttonLabel })));
                 }
             }
             else if (props.display === 'label') {
@@ -156,41 +157,36 @@ let Button2 = Button2_1 = class Button2 extends Component {
                     ariaLabelledById = this.uniquePrefix + '|text';
                     ariaLabelledBy = ariaLabelledById;
                 }
-                defaultContent = (h("span", { ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text", id: ariaLabelledById }, buttonLabel));
+                defaultContent = (jsx("span", Object.assign({ ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text", id: ariaLabelledById }, { children: buttonLabel })));
             }
             else {
                 if (!hasDefaultAriaAttribute) {
                     ariaLabelledById = this.uniquePrefix + '|text';
                     ariaLabelledBy = ariaLabelledById;
                 }
-                defaultContent = (h("span", { ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text", id: ariaLabelledById }, buttonLabel));
+                defaultContent = (jsx("span", Object.assign({ ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text", id: ariaLabelledById }, { children: buttonLabel })));
             }
         }
         else {
-            defaultContent = (h("span", { ref: (elem) => (this._defaultSlotRef = elem) }, defaultContent));
+            defaultContent = (jsx("span", Object.assign({ ref: (elem) => (this._defaultSlotRef = elem) }, { children: defaultContent })));
         }
-        const labelContent = (h("div", { class: "oj-button-label" },
-            startIconContent,
-            defaultContent,
-            endIconContent));
+        const labelContent = (jsxs("div", Object.assign({ class: "oj-button-label" }, { children: [startIconContent, defaultContent, endIconContent] })));
         let buttonContent;
         if (props.disabled) {
-            buttonContent = (h("button", { class: "oj-button-button", "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-label": ariaLabel, disabled: true }, labelContent));
+            buttonContent = (jsx("button", Object.assign({ class: "oj-button-button", "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-label": ariaLabel, disabled: true }, { children: labelContent })));
         }
         else {
             clickHandler = this._handleClick;
-            buttonContent = (h("button", { class: "oj-button-button", ref: (elem) => (this._buttonRef = elem), "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-label": ariaLabel, onTouchStart: this._handleTouchstart, onTouchEnd: this._handleTouchend, onTouchCancel: this._handleTouchend, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave, onMouseDown: this._handleMousedown, onMouseUp: this._handleMouseup, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onKeyDown: this._handleKeydown, onKeyUp: this._handleKeyup }, labelContent));
+            buttonContent = (jsx("button", Object.assign({ class: "oj-button-button", ref: (elem) => (this._buttonRef = elem), "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-label": ariaLabel, onTouchStart: this._handleTouchstart, onTouchEnd: this._handleTouchend, onTouchCancel: this._handleTouchend, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave, onMouseDown: this._handleMousedown, onMouseUp: this._handleMouseup, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onKeyDown: this._handleKeydown, onKeyUp: this._handleKeyup }, { children: labelContent })));
         }
         const rootClasses = this._getRootClasses(startIconContent, endIconContent);
-        return (h(Root, { class: rootClasses, id: props.id, title: title, onClick: clickHandler, ref: this._rootRef },
-            buttonContent,
-            this._renderContextMenu()));
+        return (jsxs(Root, Object.assign({ class: rootClasses, id: props.id, title: title, onClick: clickHandler, ref: this._rootRef }, { children: [buttonContent, this._renderContextMenu()] })));
     }
     _renderContextMenu() {
         if (!this.state.contextMenuTriggerEvent || !this.props.contextMenu) {
             return null;
         }
-        return (h(VMenu, { eventObj: this.state.contextMenuTriggerEvent, launcherElement: this._buttonRef, onCloseCallback: this._onCloseCallback }, [this.props.contextMenu]));
+        return (jsx(VMenu, Object.assign({ eventObj: this.state.contextMenuTriggerEvent, launcherElement: this._buttonRef, onCloseCallback: this._onCloseCallback }, { children: [this.props.contextMenu] })));
     }
     _processIcon(icon, slotClass) {
         let iconContent;
@@ -200,7 +196,7 @@ let Button2 = Button2_1 = class Button2 extends Component {
             });
         }
         else if (icon) {
-            iconContent = h("span", { class: slotClass }, icon);
+            iconContent = jsx("span", Object.assign({ class: slotClass }, { children: icon }));
         }
         return iconContent;
     }

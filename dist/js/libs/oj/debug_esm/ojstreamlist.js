@@ -5,7 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Component, h } from 'preact';
+import { jsx } from 'preact/jsx-runtime';
+import { Component } from 'preact';
 import { Root, customElement } from 'ojs/ojvcomponent';
 import { getTranslatedString } from 'ojs/ojtranslation';
 import { KEYBOARD_KEYS, handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, getActionableElementsInNode, disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
@@ -96,7 +97,7 @@ class StreamListContentHandler extends IteratingDataProviderContentHandler {
         }
         const vnodes = this.renderItem(key, index, data);
         this.decorateItem(vnodes, key, index, initialFetch, visible);
-        return vnodes;
+        return vnodes[0];
     }
     renderItem(key, index, data) {
         const renderer = this.callback.getItemRenderer();
@@ -228,7 +229,7 @@ class StreamListTreeContentHandler extends IteratingTreeDataProviderContentHandl
         }
         const vnodes = this.renderItem(metadata, index, data);
         this.decorateItem(vnodes, metadata, index, initialFetch, visible);
-        return vnodes;
+        return vnodes[0];
     }
     renderItem(metadata, index, data) {
         const key = metadata.key;
@@ -267,7 +268,7 @@ class StreamListTreeContentHandler extends IteratingTreeDataProviderContentHandl
         const vnode = vnodes[0];
         if (vnode != null) {
             vnode.key = metadata.key;
-            vnode.props.role = 'listitem';
+            vnode.props.role = 'treeitem';
             vnode.props.tabIndex = -1;
             vnode.props['data-oj-key'] = metadata.key;
             if (typeof metadata.key === 'number') {
@@ -410,6 +411,9 @@ let StreamList = StreamList_1 = class StreamList extends Component {
                         if (this.actionableMode === false) {
                             this._enterActionableMode();
                         }
+                        else {
+                            this._exitActionableMode(true);
+                        }
                         break;
                     }
                     case KEYBOARD_KEYS._ESCAPE:
@@ -521,12 +525,10 @@ let StreamList = StreamList_1 = class StreamList extends Component {
             }
         }
         if (data == null) {
-            return (h(Root, { ref: this.setRootElement },
-                h("div", { role: "list", "data-oj-context": true, tabIndex: 0, "aria-label": getTranslatedString('oj-ojStreamList.msgFetchingData') }, content)));
+            return (jsx(Root, Object.assign({ ref: this.setRootElement }, { children: jsx("div", Object.assign({ role: "list", "data-oj-context": true, tabIndex: 0, "aria-label": getTranslatedString('oj-ojStreamList.msgFetchingData') }, { children: content })) })));
         }
         else {
-            return (h(Root, { ref: this.setRootElement },
-                h("div", { role: "list", "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, content)));
+            return (jsx(Root, Object.assign({ ref: this.setRootElement }, { children: jsx("div", Object.assign({ role: this._isTreeData() ? 'tree' : 'list', "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, { children: content })) })));
         }
     }
     _doBlur() {
@@ -576,8 +578,7 @@ let StreamList = StreamList_1 = class StreamList extends Component {
         if (indented) {
             className += ' oj-stream-list-child-skeleton';
         }
-        return (h("div", { class: className, key: key },
-            h("div", { class: "oj-stream-list-skeleton-content oj-animation-skeleton" })));
+        return (jsx("div", Object.assign({ class: className }, { children: jsx("div", { class: "oj-stream-list-skeleton-content oj-animation-skeleton" }) }), key));
     }
     _applySkeletonExitAnimation(skeletons) {
         const resolveFunc = this.addBusyState('apply skeleton exit animations');

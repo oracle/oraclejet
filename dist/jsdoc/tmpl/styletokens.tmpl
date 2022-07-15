@@ -1,0 +1,63 @@
+<?js
+  var tokens = obj;
+  var self = this;
+
+  tokens.forEach(token => {
+    let tokenName = `Values for <i><code>${token.name}</code></i>`;
+    ?>
+    <h4 class="subsection-title"><?js= tokenName ?></h4>
+    <?js
+    let valueHeader = token.name.startsWith('(') && token.name.endsWith(')') ? 'Value (optional)' : 'Value (required)'
+    let tokenValues = token.values;
+    token.hasDisplayName = false;
+    token.hasDescription = false;
+    tokenValues.forEach(value => {
+      if (value.displayName) token.hasDisplayName = true;
+      if (value.description) token.hasDescription = true;
+    });?>
+    <table class="props">
+      <thead>
+        <tr>
+            <th><?js= valueHeader ?></th>
+          <?js 
+          if (token.hasDisplayName) {?>
+            <th>Name</th>
+          <?js 
+          } 
+          if (token.hasDescription) {?>
+            <th class="last">Description</th>
+          <?js 
+          }?>
+        </tr>
+      </thead>
+      <tbody>
+        <?js
+        tokenValues.forEach(value => { ?>
+          <?js= self.getTrTag(value) ?>
+            <td class="name"><code><?js= value.name ?></code></td>
+            <?js 
+            if (token.hasDisplayName) {?>
+              <td class="displayName"><?js= value.displayName ?></td>
+            <?js 
+            }
+            if (token.hasDescription) {?>
+              <td class="description last">
+                <?js= value.description ?>
+                <?js 
+                  if (value.tsdeprecated) { ?>
+                    <dl class="deprecated">
+                      <dd class="important">Deprecated:</dd>
+                      <dd><?js= self.partial('deprecated.tmpl', value.tsdeprecated) ?></dd>
+                    </dl>
+                  <?js
+                  }?>
+              </td>
+            <?js 
+            }?>
+          </tr>
+        <?js
+        });?>
+      </tbody>
+    </table>
+  <?js
+  });?>

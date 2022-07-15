@@ -404,6 +404,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
 
     const CHILD_BINDING_PROVIDER = Symbol('childBindingProvider');
     const CACHED_BINDING_PROVIDER = Symbol('cachedBindingProvider');
+    const CACHED_USE_KO_FLAG = Symbol('cachedUseKoFlag');
     class ElementState {
         constructor(element) {
             this.dirtyProps = new Set();
@@ -555,6 +556,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
             }
             return this._bindingProviderType;
         }
+        getUseKoFlag() {
+            if (this._useKoFlag === undefined) {
+                this._useKoFlag = ElementState._findKoUseFlag(this.Element);
+            }
+            return this._useKoFlag;
+        }
         getBindingProviderCleanNode() {
             return this._bpClean || ElementState._NOOP;
         }
@@ -689,6 +696,26 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
                 this._resolveCreatedBusyState = null;
             }
         }
+        static _findKoUseFlag(element, startElement = element) {
+            let useKoFlag = element[CACHED_USE_KO_FLAG];
+            if (useKoFlag !== undefined) {
+                return useKoFlag;
+            }
+            const parent = element.parentElement;
+            if (!parent) {
+                if (element === document.documentElement) {
+                    useKoFlag = false;
+                }
+                else {
+                    throw new JetElementError(startElement, 'Cannot determine knockout use for a disconnected subtree.');
+                }
+            }
+            else {
+                useKoFlag = ElementState._findKoUseFlag(parent, startElement);
+            }
+            element[CACHED_USE_KO_FLAG] = useKoFlag;
+            return useKoFlag;
+        }
         static _walkBindingProviders(element, startElement = element) {
             var _a;
             let name = element[CACHED_BINDING_PROVIDER];
@@ -822,6 +849,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
 
     exports.AttributeUtils = AttributeUtils;
     exports.CACHED_BINDING_PROVIDER = CACHED_BINDING_PROVIDER;
+    exports.CACHED_USE_KO_FLAG = CACHED_USE_KO_FLAG;
     exports.CHILD_BINDING_PROVIDER = CHILD_BINDING_PROVIDER;
     exports.CustomElementUtils = CustomElementUtils;
     exports.ElementState = ElementState;

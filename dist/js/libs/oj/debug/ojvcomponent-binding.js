@@ -18,21 +18,30 @@ define(['exports'], function (exports) { 'use strict';
      * <p>These decorators are designed to be used on VComponent classes when a particular property value
      * has to propagate to descendant components or a particular property value should be received
      * from a parent component, if that property value is provided by the parent.</p>
-     * <p>Note that the property binding decorators can only be used by VComponents that have Knockout binding applied to them.</p>
+     * <p>Additional considerations:
+     *  <ul>
+     *    <li>Property binding decorators are only honored when the VComponent custom element
+     *      is used in a Knockout binding environment.</li>
+     *    <li>Functional VComponents rely upon the 'options' argument to <code>registerCustomElement</code>
+     *      for registering this runtime metadata with the custom element.  See the
+     *      <a href='ojvcomponent.html#registerCustomElement'>registerCustomElement</a> API Doc
+     *      for additional information.</li>
+     *  </ul>
+     * </p>
      *
      * <pre class="prettyprint">
      * <code>
-     * import { consumedBindings, providedBindings} from "ojs/ojvcomponent-binding";
+     * import { consumedBindings, providedBindings } from "ojs/ojvcomponent-binding";
      * import { customElement, ExtendGlobalProps } from "ojs/ojvcomponent";
-     * import { h, Component } from "preact";
+     * import { Component } from "preact";
      *
-     * type Props = {
+     * type Props = Readonly<{
      *   labelEdge?: 'inside' | 'start' | 'top';
      *   readonly?: boolean;
-     * };
+     * }>;
      *
      * // Indicate that the component's 'labelEdge' and 'readonly' properties will consume
-     * // the 'containerlabelEdge' and 'containerReadonly' variable values, respectively,
+     * // the 'containerLabelEdge' and 'containerReadonly' variable values, respectively,
      * // provided by the parent.
      * &#64;consumedBindings( { labelEdge: { name: 'containerLabelEdge' },
      *                      readonly: { name: 'containerReadonly' }
@@ -54,7 +63,10 @@ define(['exports'], function (exports) { 'use strict';
      *     labelEdge: 'inside',
      *     readonly: false
      *   };
-     *   ...
+     *
+     *   render(props: Props) {
+     *     return &lt;div&gt;Label position = {props.labelEdge}, sub-section is {props.readonly ? 'read only' : 'editable'}&lt;/div&gt;;
+     *   }
      * }
      * </code>
      * </pre>

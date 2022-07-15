@@ -1,0 +1,851 @@
+html {
+    overflow: auto;
+    background-color: #fff;
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.85em;
+    line-height: 130%;
+    color: #000;
+    background-color: #fff;
+    margin: 0;
+}
+
+a {
+    color: #444;
+}
+
+a:visited {
+    color: #444;
+}
+
+a:active {
+    color: #444;
+}
+
+header {
+    display: block;
+    padding: 6px 4px;
+}
+
+/* [jim] margin-top and margin-bottom were both 1em.  For other changes, see .class-summary. */
+.class-description {
+    margin-bottom: 0em;
+    margin-top: -1em;
+}
+.styling-class-description {
+    margin-bottom: 0em;
+    margin-top: 2em;
+}
+
+/* [jim] Carved these styles out from .class-description to this new class, for anyone who wants to
+ * apply it manually to their class description.  These styles are appropriate for a one-liner, but
+ * not for the multi-page class descriptions that JET components have.
+ */
+.class-summary {
+    font-style: italic;
+    font-family: Palatino, 'Palatino Linotype', serif;
+    font-size: 130%;
+    line-height: 140%;
+}
+
+#main {
+    display: block;
+    margin-left: 280px;
+}
+
+#main,
+nav {
+    height: 100vh;
+    overflow: auto;
+    box-sizing: border-box;
+    margin-top: 0;
+    padding-top: 28px;
+}
+
+section {
+    background-color: #fff;
+    padding: 12px 24px;
+    border-bottom: 1px solid #ccc;
+    margin-right: 50px;
+}
+
+.variation {
+    display: none;
+}
+
+.optional:after {
+    content: 'opt';
+    font-size: 60%;
+    color: #aaa;
+    font-style: italic;
+    font-weight: lighter;
+}
+
+ul.subList li.current-nav-item {
+    background-color: #807d77;
+}
+
+ul.subList li.current-nav-item a {
+    font-weight: bold;
+    color: #f5f5f2;
+}
+
+nav {
+    border-right: 1px solid #cccccc;
+    display: block;
+    float: left;
+    margin-left: 0;
+    margin-right: 9px;
+    background-color: #3a3631;
+    width: 365px;
+    padding-left: 9px;
+}
+
+nav ul {
+    line-height: 17px;
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    color: #f5f4f2;
+}
+
+nav p {
+    color: #f5f4f2;
+}
+nav h2,
+nav h3 {
+    color: #f5f4f2;
+    font-size: 170%;
+    font-weight: bold;
+    letter-spacing: -0.01em;
+    margin: 6px 0 15px 0;
+}
+
+nav h2 a,
+nav h3 a,
+nav h2 a:visited,
+nav h3 a:visited {
+    text-decoration: none;
+}
+
+#navElements {
+    margin: 24px 0 4px 0;
+}
+
+nav li {
+    margin-top: 6px;
+}
+
+nav a {
+    color: #bcb6b1;
+}
+
+nav a:visited {
+    color: #bcb6b1;
+}
+
+nav a:active {
+    color: #bcb6b1;
+}
+
+div.module_element a {
+    font-weight: 600;
+    color: #f5f4f2;
+}
+.nav_exports {
+    font-style: italic;
+    font-stretch: expanded;
+    margin-left: 6px;
+}
+ul.subList_lev3 div.nav_exports a {
+    color: #a35a00;
+}
+
+ul.subList,
+ul.optionsSubList,
+ul.subList_lev2,
+ul.subList_lev3 {
+    display: block;
+    margin-bottom: 15px;
+    padding: 0;
+    width: 100%;
+}
+
+ul.subList li,
+ul.optionsSubList li,
+ul.subList_lev2 li {
+    list-style: none outside none;
+    width: 100%;
+    padding-top: 3px;
+}
+ul.subList_lev3 li {
+    list-style: none outside none;
+    width: 100%;
+    margin-left: 25px;
+    padding-top: 3px;
+}
+
+ul.subList li:hover,
+ul.subList_lev3 li:hover {
+    background-color: #807d77;
+    color: #f5f4f2;
+}
+
+ul.subList a:hover,
+ul.subList_lev3 a:hover {
+    font-weight: 500;
+    color: #f5f4f2;
+}
+
+ul.subList li a,
+ul.optionsSubList li a,
+ul.subList_lev2 a,
+ul.subList_lev3 a {
+    display: inline-block;
+    margin: 0;
+    min-height: 16px;
+    padding: 1px 7px 1px 13px;
+    text-decoration: none;
+}
+ul.subList li.deprecated-hidden a,
+ul.optionsSubList li.deprecated-hidden a,
+ul.subList_lev3 li.deprecated-hidden a {
+    color: #2f2c29;
+    text-decoration: line-through;
+}
+
+ul.optionsSubList li div:hover {
+    background-color: #807d77;
+    color: #f5f4f2;
+}
+ul.optionsSubList li a:hover {
+    color: #f5f4f2;
+    font-weight: 500;
+}
+
+ul.optionsInnerSubList {
+    display: none;
+    padding-left: 13px;
+}
+
+ul.optionsInnerSubList li {
+    font-weight: normal;
+}
+
+footer {
+    display: block;
+    padding: 6px;
+    margin-top: 12px;
+    font-style: italic;
+    font-size: 90%;
+}
+
+h1 {
+    font-size: 200%;
+    font-weight: bold;
+    letter-spacing: -0.01em;
+    margin: 6px 0 9px 0;
+    line-height: 1.2em;
+}
+
+h2 {
+    font-size: 170%;
+    font-weight: bold;
+    letter-spacing: -0.01em;
+    margin: 6px 0 3px 0;
+}
+
+h3 {
+    font-size: 150%;
+    font-weight: bold;
+    letter-spacing: -0.01em;
+    margin-top: 16px;
+    margin: 6px 0 3px 0;
+}
+
+h4 {
+    font-size: 130%;
+    font-weight: bold;
+    letter-spacing: -0.01em;
+    margin-top: 16px;
+    margin: 18px 0 3px 0;
+    color: #a35a00;
+}
+
+h5 {
+    font-size: 120%;
+    font-weight: bold;
+    letter-spacing: -0.01em;
+    margin: 8px 0 3px 0;
+}
+
+h6 {
+    font-size: 100%;
+    letter-spacing: -0.01em;
+    margin: 6px 0 3px 0;
+    font-style: italic;
+}
+.shortdesc {
+    overflow: auto;
+    font-size: 1.2em;
+    border-left: 3px solid #ddd;
+    border-top: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    padding-left: 10px;
+    margin-right: 100px;
+}
+.page-title {
+    display: inline-flex;
+}
+.deprecation-checkboxes {
+    margin-bottom: 10px;
+    position: relative;
+}
+.container-overview .subsection-title {
+    font-size: 120%;
+    font-weight: bold;
+    letter-spacing: -0.01em;
+    margin: 8px 0 3px -16px;
+}
+
+.subsection-title {
+    margin-top: 30px;
+}
+
+kbd {
+    font-family: Consolas, 'Lucida Console', Monaco, monospace;
+}
+
+.ancestors {
+    color: #999;
+}
+.ancestors a {
+    color: #999 !important;
+    /*text-decoration: none;  w/o underline you can't tell it's a link! */
+}
+
+.extends {
+    font-size: 75%;
+    color: #999;
+}
+.extends a {
+    color: #999 !important;
+}
+
+.important {
+    font-weight: bold;
+    color: #950b02;
+}
+
+.yes-def {
+    text-indent: -1000px;
+}
+
+.type-signature {
+    color: #aaa;
+}
+
+.name,
+.signature {
+    font-family: Consolas, 'Lucida Console', Monaco, monospace;
+}
+
+.details {
+    margin-top: 14px;
+}
+.details dt {
+    width: 130px;
+    float: left;
+    border-left: 2px solid #ddd;
+    padding-left: 10px;
+    padding-top: 6px;
+}
+.details dd {
+    margin-left: 50px;
+}
+.details ul {
+    margin: 0;
+}
+.details ul {
+    list-style-type: none;
+}
+.details li {
+    margin-left: 45px;
+    padding-top: 6px;
+}
+.details .description ul {
+    list-style-type: disc;
+}
+.details .description li {
+    margin-left: 5px;
+    padding-top: 6px;
+}
+
+.deprecated {
+    margin-top: 14px;
+}
+.deprecated dt {
+    width: 0px;
+    float: none;
+    border-left: none;
+    padding-left: 0px;
+    padding-top: 6px;
+}
+.deprecated dd {
+    margin-left: 40px;
+    padding-top: 6px;
+}
+
+.deprecated2 {
+    margin-top: 14px;
+}
+.deprecated2 dt {
+    float: none;
+    border-left: none;
+    padding-left: 0px;
+    padding-top: 6px;
+}
+
+.description {
+    margin-bottom: 1em;
+    margin-left: 0px;
+    margin-top: 1em;
+}
+#main label {
+    padding: 3px 2px 1px 2px;
+    box-shadow: 4px 5px 4px 0px #8f602d;
+}
+
+.code-caption {
+    font-style: italic;
+    margin: 0;
+}
+
+.code-caption .prettyprint {
+    font-family: Consolas, 'Lucida Console', Monaco, monospace;
+    font-style: normal;
+}
+
+.prettyprint {
+    border: 1px solid #ddd;
+    overflow: auto;
+    font-size: 1.2em;
+}
+
+.pretty-print-noprettify {
+    border: 1px solid #ddd;
+    overflow: auto;
+    font-size: 1.2em;
+}
+
+.prettyprint.source {
+    width: inherit;
+}
+
+code.pretty-print-noprettify {
+    color: #4d4d4c;
+}
+
+.prettyprint code {
+    font-family: Consolas, 'Lucida Console', Monaco, monospace;
+    line-height: 18px;
+    display: block;
+    padding: 4px 12px;
+    margin: 0;
+    color: #000;
+    border-left: 3px #ddd solid;
+}
+.prettyprint.cssvars-block code * {
+    color: #4d4d4c;
+}
+
+.params,
+.props,
+.keyboard-table,
+.generic-table {
+    border-spacing: 0;
+    border: 0;
+    border-collapse: collapse;
+}
+
+.params .name,
+.props .name,
+.name code,
+.styling-table td:first-child {
+    color: #a35a00;
+    font-family: Consolas, 'Lucida Console', Monaco, monospace;
+    font-size: 100%;
+}
+
+.rt {
+    color: rgb(247, 101, 4);
+    font-family: Consolas, 'Lucida Console', Monaco, monospace;
+    font-size: 110%;
+    font-weight: bold;
+}
+
+.styling-table td:first-child {
+    white-space: nowrap;
+}
+
+.params td,
+.params th,
+.props td,
+.props th,
+.keyboard-table td,
+.keyboard-table th,
+.generic-table td,
+.generic-table th {
+    border: 1px solid #ddd;
+    margin: 0px;
+    text-align: left;
+    vertical-align: top;
+    padding: 4px 6px;
+    display: table-cell;
+}
+
+.params thead tr,
+.props thead tr,
+.keyboard-table thead tr,
+.generic-table thead tr,
+.props .description .props thead tr {
+    background-color: #ddd;
+    font-weight: bold;
+}
+
+.params .params thead tr,
+.props .props thead tr,
+.keyboard-table .keyboard-table thead tr {
+    background-color: #fff;
+    font-weight: bold;
+}
+
+.params th,
+.props th,
+.keyboard-table th,
+.generic-table th {
+    border-right: 1px solid #aaa;
+}
+.params th:last-child,
+.props th:last-child,
+.keyboard-table th:last-child,
+.generic-table th:last-child {
+    border-right: 1px solid #ddd;
+}
+
+.disabled {
+    color: #454545;
+}
+
+.doc-palette-table {
+    font-family: monospace;
+    font-size: 0.875em;
+}
+.doc-palette-table thead th {
+    background-color: rgb(245, 245, 245);
+}
+.doc-palette-table .doc-space-td {
+    width: 20px;
+}
+
+/*
+ * [jim] This rule and referenced image copied from JET cookbook.
+ * TODO: if/when cookbook and jsdoc share resources, replace this rule and image with references to cookbook's copy.
+ */
+.bookmarkable-link {
+    display: inline-block;
+    width: 24px;
+    height: 40px;
+    vertical-align: middle;
+    background-repeat: no-repeat;
+    background-position: 0px 4px;
+    background-image: url('images/bookmark.png');
+}
+
+/*
+ * [jim] Per Doc team request, we need to display this header when our doc is displayed as part
+ * of the Oracle product docs (i.e. alongside non-JET doc).  But we want to hide it for our
+ * JET doc, both standalone and embedded (in demos).  They don't pick up our CSS, so our
+ * display:none affects only our copies, as desired.
+ */
+.product-docs-header {
+    display: none;
+
+    // this was the (highly non-artistic) theming I used before we decided to hide it:
+    //margin-left:50px;
+    //font-style:italic;
+}
+
+#quick-nav {
+    border: 1px solid #cccccc;
+    overflow: auto;
+    margin-top: 15px;
+    min-width: 800px;
+}
+
+#quick-nav h2 {
+    background: none repeat scroll 0 0 #a35a00;
+    border-bottom: 1px solid #cccccc;
+    color: #ffffff;
+    margin: -18px -28px 0;
+    padding: 10px;
+}
+
+.quick-nav-section1 {
+    float: left;
+    width: 100%;
+}
+
+.quick-nav-section2 {
+    float: left;
+    width: 50%;
+}
+
+.quick-nav-section3 {
+    float: left;
+    width: 33%;
+}
+
+.quick-nav-section4 {
+    float: left;
+    width: 25%;
+}
+.quick-nav-section5 {
+    float: left;
+    width: 20%;
+}
+.quick-nav-section6 {
+    float: left;
+    width: 20%;
+}
+.quick-nav-section7 {
+    float: left;
+    width: 20%;
+}
+
+.nonpublic-mem-link {
+    padding: 1px 7px 1px 13px;
+}
+
+@media screen and (max-width: 767px) {
+    .quick-nav-section {
+        float: none;
+        width: 100%;
+        padding-left: 3px;
+    }
+}
+
+#navIndex {
+    padding: 6px 0 3px 0;
+    margin-top: 16px;
+}
+#navIndex a {
+    color: #f5f4f2;
+}
+
+.jsdoc-deprecated {
+    color: red;
+}
+#jump-to-top-btn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 32px;
+    z-index: 100;
+    width: 32px;
+    height: 32px;
+    border: none;
+    outline: none;
+    vertical-align: middle;
+    background-repeat: no-repeat;
+    background-image: url('images/linesarrowup.png');
+    background-size: 32px;
+    background-color: #fff;
+    animation: bounceBack 1s linear both;
+}
+#jump-to-top-btn:hover {
+    background-image: url('images/linesarrowup_blue.png');
+}
+
+#jump-to-top-btn:active {
+    background-image: url('images/linesarrowup_white.png');
+    background-color: #027bc7;
+    border: 1px solid #76b8e1;
+}
+@-moz-keyframes bounceBack {
+    0% {
+        opacity: 0;
+        transform: translateY(-2000px);
+    }
+    20% {
+        opacity: 1;
+        transform: translateY(50px);
+    }
+    40% {
+        transform: translateY(-25px);
+    }
+    60% {
+        transform: translateY(30px);
+    }
+    75% {
+        transform: translateY(-10px);
+    }
+    85% {
+        transform: translateY(10px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+@-ms-keyframes bounceBack {
+    0% {
+        opacity: 0;
+        transform: translateY(-2000px);
+    }
+    20% {
+        opacity: 1;
+        transform: translateY(50px);
+    }
+    40% {
+        transform: translateY(-25px);
+    }
+    60% {
+        transform: translateY(30px);
+    }
+    75% {
+        transform: translateY(-10px);
+    }
+    85% {
+        transform: translateY(10px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+@-webkit-keyframes bounceBack {
+    0% {
+        opacity: 0;
+        transform: translateY(-2000px);
+    }
+    20% {
+        opacity: 1;
+        transform: translateY(50px);
+    }
+    40% {
+        transform: translateY(-25px);
+    }
+    60% {
+        transform: translateY(30px);
+    }
+    75% {
+        transform: translateY(-10px);
+    }
+    85% {
+        transform: translateY(10px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+@keyframes bounceBack {
+    0% {
+        opacity: 0;
+        transform: translateY(-2000px);
+    }
+    20% {
+        opacity: 1;
+        transform: translateY(50px);
+    }
+    40% {
+        transform: translateY(-25px);
+    }
+    60% {
+        transform: translateY(30px);
+    }
+    75% {
+        transform: translateY(-10px);
+    }
+    85% {
+        transform: translateY(10px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+.deprecated-cb-common {
+  margin-bottom: 10px 0 10px 0;
+}
+
+.deprecated-hidden {
+    background-color: #bbb295;
+    display: none;
+}
+
+.jsdeprecated-hidden {
+    background-color: #9c7d79;
+    display: none;
+}
+
+.jsdeprecated-hidden-only {
+    background-color: #9c7d79;
+}
+
+.deprecated-hidden-only {
+    background-color: #bbb295;
+}
+
+.jsdeprecated-option {
+    background-color: #9c7d79;
+}
+.deprecated-option {
+    background-color: #bbb295;
+}
+
+.styleclasses h4 {
+    color: #000;
+    text-decoration: none;
+}
+
+.styleclasses h5 {
+    color: #a35a00;
+    text-decoration: none;
+}
+.styleclasses .style-example {
+    color: #000;
+}
+.jsdoc-type {
+}
+.dep-type {
+}
+.clean-type {
+}
+#toc {
+    padding-top: 20px;
+}
+#toc a {
+    line-height: 20px;
+}
+#toc a.visited {
+    color: #a35a00;
+}
+#toc .h1 {
+    text-indent: 0.1in;
+}
+#toc .h2 {
+    text-indent: 0.3in;
+}
+#toc .h3 {
+    text-indent: 0.5in;
+}
+#toc .h4 {
+    text-indent: 0.7in;
+}
+#toc .h5 {
+    text-indent: 1in;
+}
+#toc .h6 {
+    text-indent: 1.2in;
+}

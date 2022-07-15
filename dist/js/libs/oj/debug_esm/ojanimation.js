@@ -26,7 +26,6 @@ const _TRANSLATE2 = ') translateZ(0)';
  * <ol>
  *   <li>For all JET components.</li>
  *   <li>For all instances of a JET component.</li>
- *   <li>For one instance of a JET component.</li>
  * </ol>
  *
  * <h4>1. For all JET components</h4>
@@ -44,73 +43,7 @@ const _TRANSLATE2 = ') translateZ(0)';
  * <h4>2. For All Instances of a JET Component.</h4>
  *
  * <p>Default animations for JET components are defined by component-specific theme variables.  Changing the values of the theme variables for a particular component
- * will affect the default animations for all instances of that component.  These theme variables are listed in the API documentation
- * for the <code class="prettyprint">ojAnimateStart</code> event of each component.</p>
- *
- * <h4>3. For One Instance of a JET Component</h4>
- *
- * <p>Applications can customize animations triggered by actions in some components by listening for <code class="prettyprint">ojAnimateStart/ojAnimateEnd</code>
- *    events and override action specific animations.  See the documentation of individual components for support details of <code
- *    class="prettyprint">ojAnimateStart/ojAnimateEnd</code> events and the associated actions.</p>
- * <p>To customize an animation, applications first listen to <code class="prettyprint">ojAnimateStart</code> event and cancel the default animation.  Then
- *    specify the new animation in one of several ways:</p>
- * <ul>
- *   <li>Call one of the animation effect methods in AnimationUtils.</li>
- *   <li>Call a 3rd-party animation function with a Javascript API, such as GreenSock, Velocity.js, etc.</li>
- *   <li>Define action-specific CSS style classes on the animated item.  When an action triggers animation, a marker class of the form "oj-animate-&lt;action&gt;"
- *       (e.g. "oj-animate-open") is added to the animated element.  After a slight delay, a second marker class of the form "oj-animate-&lt;action&gt;-active"
- *       (e.g. "oj-animate-open-active") is added.  This allows application to define CSS transition on the element.</li>
- * </ul>
- *
- * <h4>Examples</h4>
- * <br>
- * <i>Disable a default "open" animation:</i>
- * <pre class="prettyprint"><code>
- * myComponent.addEventListener( "ojAnimateStart", function( event ) {
- *   if (event.detail.action == "open") {
- *     event.preventDefault();
- *     event.detail.endCallback();
- *   }
- * });
- * </code></pre>
- * <br>
- * <i>Customize a default "open" animation with AnimationUtils method:</i>
- * <pre class="prettyprint"><code>
- * myComponent.addEventListener( "ojAnimateStart", function( event ) {
- *   if (event.detail.action == "open") {
- *     event.preventDefault();
- *     AnimationUtils.slideIn(event.detail.element).then(event.detail.endCallback);
- *   }
- * });
- * </code></pre>
- * <br>
- * <i>Customize a default "update" animation with CSS style classes:</i>
- * <pre class="prettyprint"><code>
- * // Cancel the default animation in the event listener
- * myComponent.addEventListener( "ojAnimateStart", function( event ) {
- *   if (event.detail.action == "update") {
- *     event.preventDefault();
- *     event.detail.endCallback();
- *   }
- * });
- *
- * </code></pre>
- *
- * <pre class="prettyprint"><code>
- * /* Define new animation in CSS
- *    Different selectors may be needed to target the CSS correctly *&#47;
- *
- * /* State to animate from is marked by oj-animate-&lt;action&gt; class *&#47;
- * .selector .oj-animate-update {
- *   color: red;
- * }
- *
- * /* State to animate to is marked by oj-animate-&lt;action&gt; and oj-animate-&lt;action&gt;-active classes *&#47;
- * .selector .oj-animate-update.oj-animate-update-active {
- *   transition: color 1s;
- *   color: black;
- * }
- * </code></pre>
+ * will affect the default animations for all instances of that component.
  *
  * <h3 id="busy-state-section">
  *   Adding Busy State

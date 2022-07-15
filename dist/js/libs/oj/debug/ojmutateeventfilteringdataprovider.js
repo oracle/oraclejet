@@ -148,18 +148,21 @@ define(['ojs/ojcore-base', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojded
 
     class MutateEventFilteringDataProvider {
         constructor(dataProvider) {
+            var _a, _b;
             this.dataProvider = dataProvider;
-            this.MutateEventFilteringAsyncIterable = class {
-                constructor(_parent, params, dataProviderAsyncIterator, cache) {
-                    this._parent = _parent;
-                    this.params = params;
-                    this.dataProviderAsyncIterator = dataProviderAsyncIterator;
-                    this.cache = cache;
-                    this[Symbol.asyncIterator] = () => {
-                        return new this._parent.MutateEventFilteringAsyncIterator(this._parent, this.params, this.dataProviderAsyncIterator, this.cache);
-                    };
-                }
-            };
+            this.MutateEventFilteringAsyncIterable = (_b = class {
+                    constructor(_parent, params, dataProviderAsyncIterator, cache) {
+                        this._parent = _parent;
+                        this.params = params;
+                        this.dataProviderAsyncIterator = dataProviderAsyncIterator;
+                        this.cache = cache;
+                        this[_a] = () => {
+                            return new this._parent.MutateEventFilteringAsyncIterator(this._parent, this.params, this.dataProviderAsyncIterator, this.cache);
+                        };
+                    }
+                },
+                _a = Symbol.asyncIterator,
+                _b);
             this.MutateEventFilteringAsyncIterator = class {
                 constructor(_parent, params, asyncIterator, cache) {
                     this._parent = _parent;

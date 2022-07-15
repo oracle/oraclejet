@@ -201,6 +201,34 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   };
 
   /**
+   * Releases resources that would otherwise leak memory if they were not released
+   * when the component's dom is removed.
+   * For example, Hammer events are put on the document and will result in
+   * detached dom memory leak if not removed.
+   * @private
+   */
+   ComponentMessaging.prototype.releaseResources = function () {
+    if (this._activated) {
+      $.each(this._strategies, function (i, strategy) {
+        strategy.releaseResources();
+      });
+    }
+  };
+
+  /**
+   * Symmetrical method to releaseResources. Sets up resources that get
+   * removed in releaseResources.
+   * @private
+   */
+   ComponentMessaging.prototype.setupResources = function () {
+    if (this._activated) {
+      $.each(this._strategies, function (i, strategy) {
+        strategy.setupResources();
+      });
+    }
+  };
+
+  /**
    * Creates a messaging strategy for the specified type, initializing it with the options provided.
    * @param {string|number} type defined by oj.ComponentMessaging._STRATEGY_TYPE. For example,
    * a strategyType of 'notewindow' creates a PopupComponentMessaging strategy. See
@@ -750,6 +778,20 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    * @private
    */
   MessagingStrategy.prototype.close = function () {
+  };
+
+  /**
+   *
+   * @private
+   */
+   MessagingStrategy.prototype.setupResources = function () {
+  };
+
+  /**
+   *
+   * @private
+   */
+   MessagingStrategy.prototype.releaseResources = function () {
   };
 
   /**
@@ -2437,6 +2479,21 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   CustomElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
   oj._registerLegacyNamespaceProp('CustomElementBridge', CustomElementBridge);
 
+  const getFocusEventPropagator = function (element, type) {
+    return function (event) {
+      // Ensure that the target is the custom element, not the inner element, so create
+      // a new event and dispatch on the custom element.
+      element.dispatchEvent(new FocusEvent(type, { relatedTarget: event.relatedTarget }));
+    };
+  };
+
+  const getTeardownFunction = function (element, focusPropagator, blurPropagator) {
+    return function () {
+      element.removeEventListener('focus', focusPropagator);
+      element.removeEventListener('blur', blurPropagator);
+    };
+  };
+
   oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
     // Provides a promise for JET's Knockout throttling timeout
     // when knockout is used for the component
@@ -2604,18 +2661,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       }
 
       // Setup blur/focus listeners on inner element so we can trigger on the root custom element for 
-      var getFocusEventPropagator = function (type) {
-        return function (event) {
-          // Ensure that the target is the custom element, not the inner element, so create
-          // a new event and dispatch on the custom element.
-          element.dispatchEvent(new FocusEvent(type, { relatedTarget: event.relatedTarget }));
-        };
-      };
-      var focusElem = this._WIDGET_INSTANCE.__getFocusElement();
-      if (focusElem && focusElem !== element) {
-        focusElem.addEventListener('focus', getFocusEventPropagator('focus'));
-        focusElem.addEventListener('blur', getFocusEventPropagator('blur'));
-      }
+      this._setupFocusPropagation(element);
     },
 
     DefineMethodCallback: function (proto, method, methodMeta) {
@@ -2738,11 +2784,15 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       if (Components.__GetWidgetConstructor(this._WIDGET_ELEM) && this._WIDGET_INSTANCE) {
         this._WIDGET_INSTANCE.__handleDisconnected();
       }
+
+      this._teardownFocusPropagation(element);
     },
 
     HandleReattached: function (element) {
       // Invoke callback on the superclass
       oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
+
+      this._setupFocusPropagation(element);
 
       if (this._WIDGET_INSTANCE) {
         this._WIDGET_INSTANCE.__handleConnected();
@@ -2938,6 +2988,25 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         elem[prop] = value;
       }
       return isEvent;
+    },
+
+    _setupFocusPropagation: function (element) {
+      // Setup blur/focus listeners on inner element so we can trigger on the root custom element for 
+      const focusElem = this._WIDGET_INSTANCE.__getFocusElement();
+      if (focusElem && focusElem !== element) {
+        const focusPropagator = getFocusEventPropagator(element, 'focus');
+        const blurPropagator = getFocusEventPropagator(element, 'blur');
+        focusElem.addEventListener('focus', focusPropagator);
+        focusElem.addEventListener('blur', blurPropagator);
+        this._teardownFocus = getTeardownFunction(focusElem, focusPropagator, blurPropagator);
+      }
+    },
+
+    _teardownFocusPropagation: function () {
+      if (this._teardownFocus) {
+        this._teardownFocus();
+        this._teardownFocus = null;
+      }
     }
   });
 
@@ -5816,6 +5885,19 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       },
 
       /**
+       * This method retrieves root custom element that is used by TemplateEngine
+       * loader to determine the type of template engine to load - legacy or preact with or without knockout.
+       *
+       * @returns {Element}
+       * @protected
+       * @instance
+       * @memberof oj.baseComponent
+       */
+      _GetCustomElement: function () {
+        return this._getRootElement();
+      },
+
+      /**
        * Returns a wrapper function for custom elements that converts an object
        * returned by a custom renderer into an old format supported by widgets
        * @param {Function} origRenderer Renderer function called to create custom content
@@ -6353,7 +6435,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    * @ojslot contextMenu
    * @memberof oj.baseComponent
    * @ojpreferredcontent ["MenuElement"]
-   *
+   * @ojdeprecated {since: '13.0.0', description: 'This web component no longer supports launching a context menu.'}
    * @ojshortdesc The contextMenu slot is set on the oj-menu instance within this element.  It designates the JET Menu to launch as a context menu.
    * @ojmaxitems 1
    *

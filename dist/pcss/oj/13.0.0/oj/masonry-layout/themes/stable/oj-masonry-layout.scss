@@ -1,0 +1,13 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+@import "../../../panel/themes/stable/_oj-panel.cssvars.scss";
+
+@import "_oj-masonry-layout.servervars.scss";
+@import "_oj-masonry-layout.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-masonry-layout.scss"; 

@@ -1,0 +1,29 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.messagebanner.scoped") {
+  // Severity specific styles
+  .oj-c-messagebanner-error {
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-background-color:   var(--oj-core-danger-secondary-3);
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-start-icon-color:   var(--oj-core-danger-3);
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-text-color: var(--oj-core-danger-3);
+  }
+
+  .oj-c-messagebanner-warning {
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-background-color:   var(--oj-core-warning-secondary-3);
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-start-icon-color:   var(--oj-core-warning-3);
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-text-color: var(--oj-core-warning-3);
+  }
+
+  .oj-c-messagebanner-confirmation {
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-background-color:   var(--oj-core-success-secondary-3);
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-start-icon-color:   var(--oj-core-success-3);
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-text-color: var(--oj-core-success-3);
+  }
+
+  .oj-c-messagebanner-info {
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-background-color:   var(--oj-core-info-secondary-3);
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-start-icon-color:   var(--oj-core-info-3);
+    --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-text-color: var(--oj-core-info-3);
+  }
+
+}

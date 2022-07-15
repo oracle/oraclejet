@@ -37,12 +37,12 @@ const oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '12.1.0',
+  version: '13.0.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2022-04-09_00-30-04',
+  revision: '2022-07-11_18-26-09',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate

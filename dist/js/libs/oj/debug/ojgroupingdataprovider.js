@@ -275,6 +275,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
 
     class GroupingDataProvider {
         constructor(dataProvider, sortComparator, sectionRenderer, options) {
+            var _a;
             this.dataProvider = dataProvider;
             this.sortComparator = sortComparator;
             this.sectionRenderer = sectionRenderer;
@@ -373,15 +374,17 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                     });
                 }
             };
-            this.TreeAsyncIterable = class {
-                constructor(_parent, _asyncIterator) {
-                    this._parent = _parent;
-                    this._asyncIterator = _asyncIterator;
-                    this[Symbol.asyncIterator] = () => {
-                        return this._asyncIterator;
-                    };
-                }
-            };
+            this.TreeAsyncIterable = (_a = class {
+                    constructor(_parent, _asyncIterator) {
+                        this._parent = _parent;
+                        this._asyncIterator = _asyncIterator;
+                        this[Symbol.asyncIterator] = () => {
+                            return this._asyncIterator;
+                        };
+                    }
+                },
+                Symbol.asyncIterator,
+                _a);
             this.FetchListParameters = class {
                 constructor(_parent, size, sortCriteria, attributes) {
                     this._parent = _parent;

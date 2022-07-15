@@ -5,7 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Component, h } from 'preact';
+import { jsx } from 'preact/jsx-runtime';
+import { Component } from 'preact';
 import { Root, customElement } from 'ojs/ojvcomponent';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
@@ -21,17 +22,17 @@ let HighlightText = class HighlightText extends Component {
     }
     render(props) {
         const content = this._highlighter(props.text, props.matchText);
-        return h(Root, { class: 'oj-highlighttext' }, content);
+        return jsx(Root, Object.assign({ class: "oj-highlighttext" }, { children: content }));
     }
     _highlighter(unhighlightedText, matchText) {
         if (matchText) {
             const escapedMatchText = this._escapeRegExp(matchText);
             const highlightedText = unhighlightedText.replace(new RegExp(escapedMatchText, 'gi'), this._HIGHLIGHT_TOKEN + '$&' + this._HIGHLIGHT_TOKEN);
             const tokens = highlightedText.split(this._HIGHLIGHT_TOKEN);
-            const nodes = tokens.map((current, index) => index % 2 == 0 ? current : h("span", { class: 'oj-highlighttext-highlighter' }, current));
-            return h("span", null, nodes);
+            const nodes = tokens.map((current, index) => index % 2 == 0 ? current : jsx("span", Object.assign({ class: "oj-highlighttext-highlighter" }, { children: current })));
+            return jsx("span", { children: nodes });
         }
-        return h("span", null, unhighlightedText);
+        return jsx("span", { children: unhighlightedText });
     }
     _escapeRegExp(str) {
         return str.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');

@@ -1,0 +1,14 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.collection.scoped") {
+  :root.oj-scale-sm {
+    // collection
+    // ------------------------------
+    --oj-collection-header-font-size: var(--oj-typography-body-md-font-size);
+  }
+  
+  :root.oj-scale-md {
+    --oj-collection-header-font-size: var(--oj-typography-body-md-font-size);
+  }
+}

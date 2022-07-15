@@ -1602,6 +1602,7 @@ var __oj_masonry_layout_metadata =
   /**
    * @ojcomponent oj.ojMasonryLayout
    * @augments oj.baseComponent
+   * @ojimportmembers oj.ojSharedContextMenu
    * @since 1.1.0
    *
    * @ojshortdesc A masonry layout lays out its children in a grid of tiles.
@@ -2135,6 +2136,7 @@ var __oj_masonry_layout_metadata =
            * $masonryLayoutResizeAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
            * $masonryLayoutReorderAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDurationFast, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
            * </code></pre>
+           * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
            *
            * @expose
            * @event
@@ -2192,6 +2194,7 @@ var __oj_masonry_layout_metadata =
 
           /**
            * Triggered when a default animation has ended.
+           * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
            *
            * @expose
            * @event

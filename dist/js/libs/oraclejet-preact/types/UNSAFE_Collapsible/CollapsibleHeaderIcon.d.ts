@@ -1,14 +1,12 @@
-import { h } from 'preact';
 declare type IconProps = {
     contentId: string;
-    disabled: boolean;
+    isDisabled: boolean;
     headerId: string;
-    expanded: boolean;
-    fill?: string;
+    isExpanded: boolean;
     onClick?: (event: Event) => void;
 };
 /**
  * Header icon subcomponent
  */
-export declare const CollapsibleHeaderIcon: ({ contentId, disabled, headerId, expanded, fill, onClick }: IconProps) => h.JSX.Element;
+export declare const CollapsibleHeaderIcon: ({ contentId, isDisabled, headerId, isExpanded, onClick }: IconProps) => import("preact").JSX.Element;
 export {};

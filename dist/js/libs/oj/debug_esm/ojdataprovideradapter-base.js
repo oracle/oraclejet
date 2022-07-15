@@ -10,15 +10,18 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
 
 class DataSourceAdapter {
     constructor(dataSource) {
+        var _a;
         this.dataSource = dataSource;
-        this.AsyncIterable = class {
-            constructor(_asyncIterator) {
-                this._asyncIterator = _asyncIterator;
-                this[Symbol.asyncIterator] = function () {
-                    return this._asyncIterator;
-                };
-            }
-        };
+        this.AsyncIterable = (_a = class {
+                constructor(_asyncIterator) {
+                    this._asyncIterator = _asyncIterator;
+                    this[Symbol.asyncIterator] = function () {
+                        return this._asyncIterator;
+                    };
+                }
+            },
+            Symbol.asyncIterator,
+            _a);
         this.AsyncIterator = class {
             constructor(_nextFunc, _params) {
                 this._nextFunc = _nextFunc;

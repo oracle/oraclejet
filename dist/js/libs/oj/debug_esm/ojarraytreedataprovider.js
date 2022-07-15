@@ -406,6 +406,7 @@ obData()[0].children.push(moveNode);</td>
 
 class ArrayTreeDataProvider {
     constructor(treeData, options, _rootDataProvider) {
+        var _a;
         this.treeData = treeData;
         this.options = options;
         this._rootDataProvider = _rootDataProvider;
@@ -426,15 +427,17 @@ class ArrayTreeDataProvider {
                 });
             }
         };
-        this.TreeAsyncIterable = class {
-            constructor(_parent, _asyncIterator) {
-                this._parent = _parent;
-                this._asyncIterator = _asyncIterator;
-                this[Symbol.asyncIterator] = () => {
-                    return this._asyncIterator;
-                };
-            }
-        };
+        this.TreeAsyncIterable = (_a = class {
+                constructor(_parent, _asyncIterator) {
+                    this._parent = _parent;
+                    this._asyncIterator = _asyncIterator;
+                    this[Symbol.asyncIterator] = () => {
+                        return this._asyncIterator;
+                    };
+                }
+            },
+            Symbol.asyncIterator,
+            _a);
         this._baseDataProvider = new ArrayDataProvider(treeData, options);
         this._mapKeyToNode = new Map();
         this._mapNodeToKey = new Map();
@@ -554,15 +557,37 @@ class ArrayTreeDataProvider {
             let operationRemoveEventDetail = null;
             const refreshKeySet = new Set();
             const removeDuplicate = [];
-            for (i = 0; i < changes.length; i++) {
-                index = changes[i].index;
-                status = changes[i].status;
+            const changesCopy = [];
+            for (let i = 0; i < changes.length; i++) {
+                changesCopy[i] = { index: changes[i]['index'], status: changes[i]['status'] };
+            }
+            for (let i = 0; i < changesCopy.length; i++) {
+                const index = changesCopy[i].index;
+                const status = changesCopy[i].status;
+                if (status === 'deleted') {
+                    for (let j = 0; j < changesCopy.length; j++) {
+                        if (changesCopy[j].status === 'deleted' && changesCopy[j].index > index) {
+                            changesCopy[j].index--;
+                        }
+                    }
+                }
+                else if (status === 'added') {
+                    for (let j = 0; j < changesCopy.length; j++) {
+                        if (changesCopy[j].status === 'added' && changesCopy[j].index > index) {
+                            changesCopy[j].index++;
+                        }
+                    }
+                }
+            }
+            for (i = 0; i < changesCopy.length; i++) {
+                index = changesCopy[i].index;
+                status = changesCopy[i].status;
                 const iKey = this._getId(changes[i].value);
                 if (iKey) {
-                    for (j = 0; j < changes.length; j++) {
+                    for (j = 0; j < changesCopy.length; j++) {
                         if (j !== i &&
-                            index === changes[j].index &&
-                            status !== changes[j]['status'] &&
+                            index === changesCopy[j].index &&
+                            status !== changesCopy[j]['status'] &&
                             updatedIndexes.indexOf(i) < 0 &&
                             removeDuplicate.indexOf(i) < 0) {
                             const jKey = this._getId(changes[j].value);

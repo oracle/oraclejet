@@ -198,17 +198,20 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
 
 class SuppressNodeTreeDataProvider {
     constructor(treeDataProvider, options) {
+        var _a, _b;
         this.treeDataProvider = treeDataProvider;
         this.options = options;
-        this.SuppressNodeTreeAsyncIterable = class {
-            constructor(_parent, _asyncIterator) {
-                this._parent = _parent;
-                this._asyncIterator = _asyncIterator;
-                this[Symbol.asyncIterator] = () => {
-                    return new this._parent.SuppressNodeTreeAsyncIterator(this._parent, this._asyncIterator);
-                };
-            }
-        };
+        this.SuppressNodeTreeAsyncIterable = (_b = class {
+                constructor(_parent, _asyncIterator) {
+                    this._parent = _parent;
+                    this._asyncIterator = _asyncIterator;
+                    this[_a] = () => {
+                        return new this._parent.SuppressNodeTreeAsyncIterator(this._parent, this._asyncIterator);
+                    };
+                }
+            },
+            _a = Symbol.asyncIterator,
+            _b);
         this.SuppressNodeTreeAsyncIterator = class {
             constructor(_parent, _baseIterator) {
                 this._parent = _parent;

@@ -1,0 +1,7 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.variables.applayout.hybrid.ignored.scoped") {
+  .oj-hybrid-applayout-page {
+    --oj-current-bg-color: var(--oj-body-bg-color);
+  }
+}

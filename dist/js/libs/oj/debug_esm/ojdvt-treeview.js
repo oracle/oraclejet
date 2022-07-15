@@ -3796,7 +3796,7 @@ class DvtTreemapNode extends DvtTreeNode {
       }
 
       var navigables = this.GetNodesAtDepth(root, depth);
-      next = KeyboardHandler.getNextNavigable(this, event, navigables);
+      next = KeyboardHandler.getNextNavigable(this, event, navigables, false, null, true);
     }
 
     next.MarkAsLastVisitedChild();
@@ -5732,9 +5732,11 @@ class DvtTreeView extends BaseComponent {
     var bNewOptions = (options || !this.Options);
     this.SetOptions(options);
 
-    // Process the options object
-    var root = this._processNodes();
-    this.ApplyParsedProps({root: root});
+    if (bNewOptions) {
+      // Process the options object
+      var root = this._processNodes();
+      this.ApplyParsedProps({root: root});
+    }
 
     // Update the width and height if provided
     if (!isNaN(width) && !isNaN(height)) {

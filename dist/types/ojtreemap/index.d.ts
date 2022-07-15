@@ -67,6 +67,7 @@ export interface ojTreemap<K, D extends ojTreemap.Node<K> | any> extends dvtBase
     };
     touchResponse?: 'touchStart' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -353,6 +354,7 @@ export interface ojTreemapSettableProperties<K, D extends ojTreemap.Node<K> | an
     };
     touchResponse?: 'touchStart' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;

@@ -77,6 +77,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     //if momentum panning was running, stop it
     if (this._momentumTimer && this._momentumTimer.isRunning()) {
       this._momentumTimer.stop();
+      this._callbackObj._view.dispatchEvent(EventFactory.newEvent('ready'));
       this._momentumTimer.reset();
     }
   }
@@ -255,7 +256,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     //add accumulated deltas to the last drag pan position
     var newX = this._origPanX + this._mx - this._px + this._momentumDx;
     var newY = this._origPanY + this._my - this._py + this._momentumDy;
-    this._callbackObj.panTo(newX, newY);
+    this._callbackObj.panTo(newX, newY, null, true);
     var bStop = false;
     //stop just before ratio goes to 0
     if (this._momentumIterCount >= (1 / fraction) - 1) {
@@ -276,6 +277,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
 
     if (bStop) {
       this._momentumTimer.stop();
+      this._callbackObj._view.dispatchEvent(EventFactory.newEvent('ready'));
       this._momentumTimer.reset();
       //turn off elastic constraints when momentum stops
       this._callbackObj.SetElasticConstraints(false);
@@ -355,6 +357,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     //if momentum panning was running, stop it
     if (this._momentumTimer && this._momentumTimer.isRunning()) {
       this._momentumTimer.stop();
+      this._callbackObj._view.dispatchEvent(EventFactory.newEvent('ready'));
       this._momentumTimer.reset();
     }
   }
@@ -452,6 +455,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     //if momentum panning was running, stop it
     if (this._momentumTimer && this._momentumTimer.isRunning()) {
       this._momentumTimer.stop();
+      this._callbackObj._view.dispatchEvent(EventFactory.newEvent('ready'));
       this._momentumTimer.reset();
     }
   }
@@ -522,7 +526,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     //for elastic constraints, use a panTo so that the delta is relative to the mouseDown point,
     //resulting in more consistent values and smoother elastic animation
     //this._callbackObj.panBy(xx - this._mx, yy - this._my);
-    this._callbackObj.panTo(this._origPanX + xx - this._px, this._origPanY + yy - this._py);
+    this._callbackObj.panTo(this._origPanX + xx - this._px, this._origPanY + yy - this._py, null, true);
 
     if (this._bMomentumPanning) {
       //get new timestamp for momentum-based panning
@@ -533,6 +537,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       if (this._momentumStartTimer) {
         if (this._momentumStartTimer.isRunning()) {
           this._momentumStartTimer.stop();
+          this._callbackObj._view.dispatchEvent(EventFactory.newEvent('ready'));
         }
         this._momentumStartTimer.reset();
       }
@@ -548,6 +553,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       //start the timer to indicate if we should start momentum-based panning;
       //if the timer expires, we won't do momentum-based panning, if the timer hasn't expired when the
       //mouseup occurs, then we'll start momentum-based panning
+      this._callbackObj._view.dispatchEvent(EventFactory.newEvent('notready'));
       this._momentumStartTimer.start();
     }
   }
@@ -565,6 +571,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     //very quickly after the last mouse move, so we want to start momentum-based panning
     if (this._momentumStartTimer && this._momentumStartTimer.isRunning()) {
       this._momentumStartTimer.stop();
+      this._callbackObj._view.dispatchEvent(EventFactory.newEvent('ready'));
       this._momentumStartTimer.reset();
       //create or reset the momentum panning timer
       if (!this._momentumTimer) {
@@ -595,8 +602,10 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       this._momentumDx = 0;
       this._momentumDy = 0;
       //We disable and enable panning on DnD operations. The check should prevent momentum panning when panning is temporary disabled
-      if (this._pzc.isPanningEnabled())
+      if (this._pzc.isPanningEnabled()) {
+        this._callbackObj._view.dispatchEvent(EventFactory.newEvent('notready'));
         this._momentumTimer.start();
+      }
     }
     else {
       //turn off elastic constraints, which will animate a bounce back to constrained values, if necessary
@@ -842,8 +851,9 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     * @param {number} dy vertical amount to pan by
     * @param {dvt.Animator} animator optional animator to use to animate the pan
     * @param {function=} panEndFunc Additional optional callback function panning completed
+    * @param {boolean} noWriteback optional if true, don't writeback to options
     */
-  panBy(dx, dy, animator, panEndFunc) {
+  panBy(dx, dy, animator, panEndFunc, noWriteback) {
     if (!this.isPanningEnabled()) {
       return;
     }
@@ -869,10 +879,12 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
 
     var thisRef = this;
     var fireStartEventFunc = () => {
-      thisRef.FirePanEvent('panning', newX, newY, oldX, oldY, animator);
+      thisRef.FirePanEvent('panning', newX, newY, oldX, oldY, animator, this.getZoom());
     };
     var fireEndEventFunc = () => {
-      thisRef.FirePanEvent('panned', newX, newY, oldX, oldY, animator);
+      if (!noWriteback) {
+        thisRef.FirePanEvent('panned', newX, newY, oldX, oldY, animator, this.getZoom());
+      }
     };
 
     if (animator) {
@@ -902,17 +914,24 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     * @param {number} xx horizontal position to pan to
     * @param {number} yy vertical position to pan to
     * @param {dvt.Animator} animator optional animator to use to animate the pan
+    * @param {boolean} noWriteback optional, if true, don't writeback to options
     */
-  panTo(xx, yy, animator) {
+  panTo(xx, yy, animator, noWriteback) {
     if (!this.isPanningEnabled()) {
       return;
     }
 
     var dx = xx - this.getPanX(animator);
     var dy = yy - this.getPanY(animator);
-    this.panBy(dx, dy, animator);
+    this.panBy(dx, dy, animator, null, noWriteback);
   }
 
+  /**
+   * Writeback the pan value to options
+   */
+  writebackPan() {
+    this.FirePanEvent('panned', this.getPanX(), this.getPanY(), this.getPanX(), this.getPanY(), null, this.getZoom());
+  }
 
   /**
     * Zoom by the given amount.
@@ -920,8 +939,9 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     * @param {number} xx horizontal center of zoom (if not specified, treated as the horizontal center of the canvas)
     * @param {number} yy vertical center of zoom (if not specified, treated as the vertical center of the canvas)
     * @param {dvt.Animator} animator optional animator to use to animate the zoom
+    * @param {boolean} panAndZoom optional if true, both zoom + pan changes are occurring
     */
-  zoomBy(dz, xx, yy, animator) {
+  zoomBy(dz, xx, yy, animator, panAndZoom) {
     if (!this.isZoomingEnabled()) {
       return;
     }
@@ -938,13 +958,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
 
     var deltaZoom = newZoom / oldZoom;
 
-    var mat = null;
-    if (animator) {
-      mat = animator.getDestVal(this._contentPane, this._contentPane.getMatrix);
-    }
-    if (!mat) {
-      mat = this._contentPane.getMatrix();
-    }
+    var mat = this.getContentPaneMatrix();
 
     // determine the new matrix after zooming
     mat = mat.scale(deltaZoom, deltaZoom, xx, yy);
@@ -952,7 +966,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     // shift the update matrix back into bounds
     var xDiff = this.ConstrainPanX(mat.getTx()) - mat.getTx();
     var yDiff = this.ConstrainPanY(mat.getTy()) - mat.getTy();
-    this.FireZoomEvent('adjustPanConstraints', newZoom, oldZoom, animator, xx, yy, xDiff, yDiff);
+    this.FireZoomEvent('adjustPanConstraints', newZoom, oldZoom, animator, xx, yy);
 
     // shift the update matrix back into bounds again in case the zooming listener changes the pan constraints
     xDiff = this.ConstrainPanX(mat.getTx()) - mat.getTx();
@@ -961,7 +975,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
 
     var thisRef = this;
     var fireStartEventFunc = () => {
-      thisRef.FireZoomEvent('zooming', newZoom, oldZoom, animator, xx, yy, xDiff, yDiff);
+      thisRef.FireZoomEvent('zooming', newZoom, oldZoom, animator, xx, yy, thisRef.getPanX(), thisRef.getPanY());
     };
     var fireEndEventFunc = () => {
       //use current zoom level at time of firing event as new zoom level
@@ -969,7 +983,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       //zoom animation gets interrupted by the next one, so each event
       //doesn't actually zoom all the way to the desired scale until the
       //last event
-      thisRef.FireZoomEvent('zoomed', thisRef.getZoom(), oldZoom, animator, xx, yy, xDiff, yDiff);
+      thisRef.FireZoomEvent('zoomed', thisRef.getZoom(), oldZoom, animator, xx, yy, thisRef.getPanX(), thisRef.getPanY(), panAndZoom);
     };
 
     if (animator) {
@@ -994,14 +1008,14 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     * @param {number} xx horizontal center of zoom (if not specified, treated as the horizontal center of the canvas)
     * @param {number} yy vertical center of zoom (if not specified, treated as the vertical center of the canvas)
     * @param {dvt.Animator} animator optional animator to use to animate the zoom
+    * @param {boolean} panAndZoom optional if true, both zoom + pan changes are occurring
     */
-  zoomTo(zz, xx, yy, animator) {
+  zoomTo(zz, xx, yy, animator, panAndZoom) {
     if (!this.isZoomingEnabled()) {
       return;
     }
-
     var dz = zz / this.getZoom(animator);
-    this.zoomBy(dz, xx, yy, animator);
+    this.zoomBy(dz, xx, yy, animator, panAndZoom);
   }
 
 
@@ -1075,7 +1089,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       else
         Playable.prependOnInit(animator, fireStartEventFunc);
 
-      this.zoomTo(dz, 0, 0, animator);
+      this.zoomTo(dz, 0, 0, animator, true);
       this.panTo(dx, dy, animator);
 
       if (animator) {
@@ -1137,7 +1151,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
         bottomRightLocal.y - topLeftLocal.y);
   }
 
-
   /**
    * @protected
    * Set whether constraints should be elastic, with overflow and bounce back.
@@ -1180,7 +1193,11 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
           this.FirePanEvent('elasticAnimBegin', null, null, null, null, this._elasticConstraintsAnim);
         if (this._bElasticZoom)
           this.FireZoomEvent('elasticAnimBegin', null, null, null, null, this._elasticConstraintsAnim);
+        this._view.dispatchEvent(EventFactory.newEvent('notready'));
         this._elasticConstraintsAnim.play();
+      } else {
+        this.writebackPan();
+        this._view.dispatchEvent(EventFactory.newEvent('ready'));
       }
     }
   }
@@ -1204,6 +1221,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       this.FirePanEvent('elasticAnimEnd');
     if (this._bElasticZoom)
       this.FireZoomEvent('elasticAnimEnd');
+    this._view.dispatchEvent(EventFactory.newEvent('ready'));
   }
 
 
@@ -1344,8 +1362,8 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
   /**
    * @protected
    */
-  FirePanEvent(subtype, newX, newY, oldX, oldY, animator) {
-    var panEvent = EventFactory.newPanEvent(subtype, newX, newY, oldX, oldY, animator);
+  FirePanEvent(subtype, newX, newY, oldX, oldY, animator, zoom) {
+    var panEvent = EventFactory.newPanEvent(subtype, newX, newY, oldX, oldY, animator, zoom);
     this.FireListener(panEvent);
   }
 
@@ -1359,12 +1377,14 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
    * @param {dvt.Animator}  animator  optional animator used to animate the zoom
    * @param {number}  xx  horizontal center of zoom
    * @param {number}  yy  vertical center of zoom
-   * @param {number}  tx  the horizontal translation applied after the zoom
-   * @param {number}  ty  the vertical translation applied after the zoom
+   * @param {number}  panX  optional current X position
+   * @param {number}  panY  optional current Y position
+   * @param {boolean} panAndZoom optional if true, both zoom + pan changes are occurring
    * @protected
    */
-  FireZoomEvent(subtype, newZoom, oldZoom, animator, xx, yy, tx, ty) {
-    var zoomEvent = EventFactory.newZoomEvent(subtype, newZoom, oldZoom, animator, new Point(xx, yy), tx, ty);
+  FireZoomEvent(subtype, newZoom, oldZoom, animator, xx, yy, panX, panY, panAndZoom) {
+    var point = panX != null && panY != null ? new Point(panX, panY) : null;
+    var zoomEvent = EventFactory.newZoomEvent(subtype, newZoom, oldZoom, animator, new Point(xx, yy), point, panAndZoom);
     this.FireListener(zoomEvent);
     return zoomEvent;
   }
@@ -1880,12 +1900,12 @@ PanZoomCanvas.DEFAULT_PADDING = 20;
   }
 
 
-  /**
-   * @override
-   */
-  SetOptions(options) {
-    this.Options = this.Defaults ? this.Defaults.calcOptions(options) : options;
-  }
+/**
+ * @override
+ */
+SetOptions(options) {
+  this.Options = this.Defaults ? this.Defaults.calcOptions(options) : options;
+}
 
 
   /**

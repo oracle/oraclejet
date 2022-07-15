@@ -456,7 +456,7 @@
     // potential regression, but I think it is very unlikely to cause any issues.
     // Due to a change in Chrome 98 (see bug JET-49143), we need to make these specific only to
     // the affected browsers.  Firefox needs both work arounds, Safari just needs this one.
-    .oj-agent-browser-safari .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across),
+   .oj-agent-browser-safari .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across),
     .oj-agent-browser-firefox .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across) {
       display: inline;
     }

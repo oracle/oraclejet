@@ -69,8 +69,8 @@ var __oj_n_box_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -404,6 +404,9 @@ var __oj_n_box_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },
@@ -711,7 +714,7 @@ var __oj_n_box_node_metadata =
  * @ojcomponent oj.ojNBox
  * @augments oj.dvtBaseComponent
  * @since 1.1.0
- *
+ * @ojimportmembers oj.ojSharedContextMenu
  * @ojrole application
  * @ojshortdesc NBox is an interactive data visualization (typically found in Human Capital Management applications) in which employees are grouped and compared across two dimensions.  Each dimension can be split into multiple ranges.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -983,7 +986,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       * @type {Object|null}
       * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
       * @default null
-      * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+      * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
       *
       * @example <caption>Initialize the NBox with the
@@ -2876,7 +2879,6 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  */
 
   // Slots
-
  /**
   * <p> The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for creating each node of the NBox when a DataProvider
   * has been specified with the data attribute. The slot content must be a single &lt;template> element.

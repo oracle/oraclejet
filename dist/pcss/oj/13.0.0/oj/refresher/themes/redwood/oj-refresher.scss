@@ -1,0 +1,18 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+// ----- end dependencies ---------
+
+@import "_oj-refresher.cssvars.scss";
+@import "_oj-refresher.servervars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-refresher.scss";

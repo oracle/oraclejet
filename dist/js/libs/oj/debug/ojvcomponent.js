@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-utils', 'ojs/ojmetadatautils', 'ojs/ojcore-base', 'ojs/ojpreact-patch'], function (require, exports, compat, preact, ojcustomelementUtils, MetadataUtils, oj, ojpreactPatch) { 'use strict';
+define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-utils', 'ojs/ojmetadatautils', 'ojs/ojcore-base', 'ojs/ojpreact-patch', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_Environment', 'ojs/ojpopupcore', '@oracle/oraclejet-preact/UNSAFE_Layer', '@oracle/oraclejet-preact/utils/UNSAFE_matchTranslationBundle'], function (require, exports, compat, preact, ojcustomelementUtils, MetadataUtils, oj, ojpreactPatch, ojconfig, UNSAFE_Environment, ojpopupcore, UNSAFE_Layer, UNSAFE_matchTranslationBundle) { 'use strict';
 
     function _interopNamespace(e) {
         if (e && e.__esModule) { return e; } else {
@@ -77,7 +77,7 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
      * components, with the custom element tag name specified via the
      * <a href="#customElement">&#64;customElement</a> decorator:
      * </p>
-     * <pre class="prettyprint"><code>import { h, Component, ComponentChild } from 'preact';
+     * <pre class="prettyprint"><code>import { Component, ComponentChild } from 'preact';
      * import { customElement, GlobalProps } from 'ojs/ojvcomponent';
      *
      * &#64;customElement('oj-hello-world')
@@ -200,7 +200,7 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
      *   Using ExtendGlobalProps, a component with
      *   the above Props type (including some default values) ends up looking like:
      * </p>
-     * <pre class="prettyprint"><code>import { h, Component, ComponentChild } from 'preact';
+     * <pre class="prettyprint"><code>import { Component, ComponentChild } from 'preact';
      * import { customElement, ExtendGlobalProps } from 'ojs/ojvcomponent';
      *
      * type Props = {
@@ -289,7 +289,7 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
      *   declared in a similar fashion, using the
      *   VComponent-specific <a href="#Slot">Slot</a> type:
      * </p>
-     * <pre class="prettyprint"><code>import { h, Component, ComponentChildren } from 'preact';
+     * <pre class="prettyprint"><code>import { Component, ComponentChildren } from 'preact';
      * import { customElement, ExtendGlobalProps, Slot } from 'ojs/ojvcomponent';
      *
      * type Props = {
@@ -372,7 +372,7 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
      *   than using the Slot type, the <a href="#TemplateSlot">TemplateSlot</a>
      *   type is used:
      * </p>
-     * <pre class="prettyprint"><code>import { h, Component } from "preact";
+     * <pre class="prettyprint"><code>import { Component } from "preact";
      * import { customElement, ExtendGlobalProps, TemplateSlot } from "ojs/ojvcomponent";
      *
      * type Props = {
@@ -643,7 +643,7 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
      *   For example, consider this case of a VComponent that renders a link:
      * </p>
      * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, ObservedGlobalProps } from "ojs/ojvcomponent";
-     * import { h, Component, ComponentChild } from "preact";
+     * import { Component, ComponentChild } from "preact";
      *
      * type Props = {
      *   href?: string;
@@ -1156,6 +1156,18 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
 
     /**
      * <p>
+     *   The PropertyBindings type maps functional VComponent property names to their corresponding
+     *   <a href="MetadataTypes.html#PropertyBinding">PropertyBinding</a> metadata.
+     * </p>
+     * @typedef {Object} PropertyBindings
+     * @ojexports
+     * @memberof ojvcomponent
+     * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
+     *               {target: "Type", value: "Partial<Record<keyof P, MetadataTypes.PropertyBinding>>"}]
+     */
+
+    /**
+     * <p>
      *   The PropertyChanged type is used to identify callback properties that
      *   notify VComponent consumers of writeback property mutations.
      *   Writeback property callbacks must adhere to the naming convention of
@@ -1197,6 +1209,74 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
      * @ojexports
      * @memberof ojvcomponent
      * @ojsignature [{target: "Type", value: "ComponentChildren"}]
+     */
+
+    /**
+     * <p>
+     *   The Options type specifies additional options that can be passed when calling
+     *   <a href=#registerCustomElement>registerCustomElement</a> to register a functional VComponent
+     *   with the JET framework. Type argument inference typically resolves the type argument
+     *   to the functional component's Props type.
+     * </p>
+     * <p>
+     *   Note that the optional <code>bindings</code> metadata
+     *   (see <a href="#PropertyBindings">PropertyBindings</a> for further details)
+     *   are only honored when the VComponent custom element is used in a Knockout
+     *   binding environment.
+     * </p>
+     * <p>
+     *   Here is an example:
+     * </p>
+     * <pre class="prettyprint"><code>
+     * import { h } from 'preact';
+     * import { registerCustomElement } from 'ojs/ojvcomponent';
+     *
+     * type Props = {
+     *   labelEdge?: 'inside' | 'start' | 'top';
+     *   readonly?: boolean;
+     * };
+     *
+     * export const FormSubsectionFunctionalComponent = registerCustomElement(
+     *   'my-form-subsection-functional-component',
+     *
+     *   ({ labelEdge = 'inside', readonly = false }: Props) => {
+     *     return &lt;div&gt;Label position = {labelEdge}, sub-section is {readonly ? 'read only' : 'editable'}&lt;/div&gt;;
+     *   },
+     *
+     *   {
+     *     bindings: {
+     *       // Indicate that the component's 'labelEdge' property will consume
+     *       // the 'containerLabelEdge' variable provided by its parent, as well as
+     *       // provide the 'labelEdge' property value under different keys and with
+     *       // different transforms as required for different consumers.
+     *       labelEdge: {
+     *         consume: { name: 'containerLabelEdge' },
+     *         provide: [
+     *           { name: 'containerLabelEdge', default: 'inside' },
+     *           { name: 'labelEdge', default: 'inside', transform: {  top: 'provided', start: 'provided'  } }
+     *         ]
+     *       },
+     *       // Indicate that the component's 'readonly' property will consume
+     *       // the 'containerReadonly' variable provided by its parent, as well as
+     *       // provide the 'readonly' property value under different keys for different
+     *       // consumers.
+     *       readonly: {
+     *         consume: { name: 'containerReadonly' },
+     *         provide: [
+     *           { name: 'containerReadonly' },
+     *           { name: 'readonly' }
+     *         ]
+     *       }
+     *     }
+     *   }
+     * }
+     * </code>
+     * </pre>
+     * @typedef {Object} Options
+     * @ojexports
+     * @memberof ojvcomponent
+     * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
+     *               {target: "Type", value: "{ bindings?: VComponent.PropertyBindings<P> }"}]
      */
 
     /**
@@ -1266,7 +1346,7 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
      * <p>
      *   Putting this all together, we end up with a component like this:
      * </p>
-     * <pre class="prettyprint"><code>import { h, Component, ComponentChild } from 'preact';
+     * <pre class="prettyprint"><code>import { Component, ComponentChild } from 'preact';
      * import { customElement, ExtendGlobalProps, ObservedGlobalProps, getUniqueId } from 'ojs/ojvcomponent';
      * import "ojs/ojinputtext";
      * import "ojs/ojlabel";
@@ -1309,16 +1389,18 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
     /**
      * <p>
      *   Class-based VComponents use the <a href="#customElement">&#64;customElement</a> decorator
-     *   to specify the VComponent's custom element tag name (also known as its full name) and to register the
+     *   to specify the VComponent's custom element tag name (also known as its full name) and to register
      *   the custom element with the JET framework.  However, Function-based VComponents cannot utilize this
      *   approach because decorators are only supported for classes and their constituent fields.
      * </p>
      * <p>
      *   JET provides an alternate mechanism for registering a functional VComponent and specifying its
-     *   custom element tag name. The registerCustomElement method accepts two arguments:  the custom element
-     *   tag name to be associated with the VComponent, and a reference to the Preact functional component that
-     *   supplies the VComponent implementation.  It returns a higher-order VComponent that is registered with the
-     *   framework using the specified custom element tag name. 
+     *   custom element tag name. The registerCustomElement method accepts three arguments:  the custom element
+     *   tag name to be associated with the VComponent, a reference to the Preact functional component that
+     *   supplies the VComponent implementation, and a reference to additional options that can be specified
+     *   when registering the functional VComponent (see <a href="#Options">Options</a>
+     *   for futher details).  It returns a higher-order VComponent that is registered with the
+     *   framework using the specified custom element tag name.
      * </p>
      * <p>
      *   There are some other considerations to keep in mind when implementing functional VComponents:
@@ -1330,9 +1412,9 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
      *    <li>Default custom property values are specified using destructuring assignment syntax in the function implementation.</li>
      *  </ul>
      * <p>
-     *   Here is an example:
+     *   Here is a simple example:
      * </p>
-     * <pre class="prettyprint"><code>import { h } from 'preact';
+     * <pre class="prettyprint"><code>
      * import { registerCustomElement } from 'ojs/ojvcomponent';
      *
      * export type Props = Readonly<{
@@ -1350,13 +1432,14 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
      * @function registerCustomElement
      * @param {string} tagName The custom element tag name for the registered functional VComponent.
      * @param {function} functionalComponent The Preact functional component that supplies the VComponent implementation.
-     * @returns {VComponent} Higher-order VComponnent that wraps the Preact functional component.
+     * @param {VComponent.Options<P>=} options Additional options for the functional VComponent. Type argument inference typically resolves the type argument to the functional component's Props type.
+     * @returns {VComponent} Higher-order VComponent that wraps the Preact functional component.
      *
      * @memberof ojvcomponent
      * @expose
      * @ojexports
      */
-     
+
     /**
      * <p>
      *   Root is a Preact component that can be used to wrap the
@@ -1770,8 +1853,26 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
                 }
                 this._playbackEarlyPropertySets();
             }
-            this._vdom = preact.h(this._component, this._props);
-            const props = this._vdom.props;
+            const translationBundleMap = this._state.getTranslationBundleMap();
+            if (!this._rootEnvironment) {
+                this._rootEnvironment = {
+                    user: { locale: ojconfig.getLocale() },
+                    translations: translationBundleMap
+                };
+            }
+            if (!this._layerContext) {
+                this._layerContext = { getHost: ojpopupcore.getLayerHost.bind(null, this._element) };
+            }
+            const componentVDom = preact.h(this._component, this._props);
+            const rootEnvironmentProvider = preact.h(UNSAFE_Environment.RootEnvironmentProvider, {
+                environment: this._rootEnvironment,
+                children: componentVDom
+            });
+            this._vdom = preact.h(UNSAFE_Layer.LayerContext.Provider, {
+                value: this._layerContext,
+                children: rootEnvironmentProvider
+            });
+            const props = componentVDom.props;
             props[ELEMENT_REF] = this._element;
             props[ROOT_VNODE_PATCH] = this._rootPatchCallback;
             props[EXECUTE_ON_COMMIT] = this._executeOnCommit;
@@ -2360,7 +2461,61 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
         return !!((_a = helper.isInitialized) === null || _a === void 0 ? void 0 : _a.call(helper));
     };
 
+    const SUPPORTED_LOCALES = new Set([
+        'ar',
+        'ar-XB',
+        'bg',
+        'bs',
+        'bs-Cyrl',
+        'cs',
+        'da',
+        'de',
+        'el',
+        'en',
+        'en-XA',
+        'en-XC',
+        'es',
+        'et',
+        'fi',
+        'fr',
+        'fr-CA',
+        'he',
+        'hr',
+        'hu',
+        'is',
+        'it',
+        'ja',
+        'ko',
+        'lt',
+        'lv',
+        'ms',
+        'nl',
+        'no',
+        'pl',
+        'pt',
+        'pt-PT',
+        'ro',
+        'ru',
+        'sk',
+        'sl',
+        'sr',
+        'sr-Latn',
+        'sv',
+        'th',
+        'tr',
+        'uk',
+        'vi',
+        'zh-Hans',
+        'zh-Hant'
+    ]);
     class VComponentState extends ojcustomelementUtils.ElementState {
+        constructor(element) {
+            super(element);
+            this._translationBundleMap = {};
+        }
+        getTranslationBundleMap() {
+            return this._translationBundleMap;
+        }
         getTemplateEngine() {
             return VComponentState._cachedTemplateEngine;
         }
@@ -2400,7 +2555,10 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
             });
         }
         GetPreCreatedPromise() {
-            const preCreatePromise = super.GetPreCreatedPromise();
+            let preCreatePromise = super.GetPreCreatedPromise();
+            if (this.Element.constructor.translationBundleMap) {
+                preCreatePromise = preCreatePromise.then(() => this._getTranslationBundlesPromise());
+            }
             if (!VComponentState._cachedTemplateEngine && this._hasDirectTemplateChildren()) {
                 return preCreatePromise.then(() => this._getTemplateEnginePromise());
             }
@@ -2411,6 +2569,26 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
         }
         GetDescriptiveTransferAttributeValue(attrName) {
             return getDescriptiveTransferAttributeValue(this.Element, attrName);
+        }
+        _getTranslationBundlesPromise() {
+            if (VComponentState._translationBundleLocale === undefined) {
+                VComponentState._translationBundleLocale = UNSAFE_matchTranslationBundle.matchTranslationBundle([ojconfig.getLocale()], SUPPORTED_LOCALES);
+            }
+            const translationBundleMap = this.Element.constructor.translationBundleMap;
+            const bundleKeys = Object.keys(translationBundleMap);
+            const translationBundlePromises = [];
+            bundleKeys.forEach((key) => {
+                if (!VComponentState._bundlePromiseCache[key]) {
+                    const loader = translationBundleMap[key];
+                    VComponentState._bundlePromiseCache[key] = loader(VComponentState._translationBundleLocale);
+                }
+                translationBundlePromises.push(VComponentState._bundlePromiseCache[key]);
+            });
+            return Promise.all(translationBundlePromises).then((resolvedBundlesArray) => {
+                bundleKeys.forEach((key, index) => {
+                    this._translationBundleMap[key] = resolvedBundlesArray[index];
+                });
+            });
         }
         _getTemplateEnginePromise() {
             return new Promise(function (resolve, reject) { require(['ojs/ojvcomponent-template'], function (m) { resolve(_interopNamespace(m)); }, reject) }).then((eng) => {
@@ -2428,6 +2606,7 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
             return false;
         }
     }
+    VComponentState._bundlePromiseCache = {};
 
     const Root = () => {
         throw new Error('The Root component should only be used as the top-level return from a VComponent render function.  It will be rewritten by VComponent code so Preact will never actually render it unless it appears in an invalid location.');
@@ -2442,26 +2621,29 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
             const observedAttrs = observedProps.map((prop) => ojcustomelementUtils.AttributeUtils.getGlobalAttrForProp(prop));
             overrideRender(tagName, constructor, metadata, new Set(observedProps));
             overrideCommitMethods(constructor);
-            registerElement(tagName, metadata, constructor, observedProps, observedAttrs);
+            registerElement(tagName, metadata, constructor, observedProps, observedAttrs, constructor['translationBundleMap']);
         };
     }
-    function registerCustomElement(tagName, fcomp) {
+    function registerCustomElement(tagName, fcomp, options) {
         class VCompWrapper extends preact.Component {
             render() {
                 return fcomp(arguments[0]);
             }
         }
         VCompWrapper.displayName = arguments[2];
-        if (arguments.length >= 4) {
+        if (arguments.length >= 4 && arguments[3]) {
             VCompWrapper.metadata = arguments[3];
-            if (arguments.length >= 5) {
+            if (arguments.length >= 5 && arguments[4]) {
                 VCompWrapper.defaultProps = arguments[4];
             }
+        }
+        if (arguments.length >= 6) {
+            VCompWrapper.translationBundleMap = arguments[5];
         }
         customElement(tagName)(VCompWrapper);
         return VCompWrapper;
     }
-    function registerElement(tagName, metadata, constructor, observedProps, observedAttrs) {
+    function registerElement(tagName, metadata, constructor, observedProps, observedAttrs, translationBundleMap) {
         class HTMLPreactElement extends HTMLJetElement {
         }
         HTMLPreactElement.metadata = metadata || {};
@@ -2472,6 +2654,7 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
         HTMLPreactElement.defaultProps = constructor['defaultProps']
             ? MetadataUtils.deepFreeze(constructor['defaultProps'])
             : null;
+        HTMLPreactElement.translationBundleMap = translationBundleMap;
         addPropGetterSetters(HTMLPreactElement.prototype, metadata === null || metadata === void 0 ? void 0 : metadata.properties);
         addMethods(HTMLPreactElement.prototype, metadata === null || metadata === void 0 ? void 0 : metadata.methods);
         ojcustomelementUtils.CustomElementUtils.registerElement(tagName, {
@@ -2494,11 +2677,11 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
                 ojcustomelementUtils.CustomElementUtils.getElementState(element).disposeTemplateCache();
             }
             let vdom = componentRender.call(this, props, state, context);
-            if (vdom.type === Root) {
+            if ((vdom === null || vdom === void 0 ? void 0 : vdom.type) === Root) {
                 vdom = preact.cloneElement(vdom);
                 vdom.type = tagName;
             }
-            if (vdom.type !== tagName) {
+            if ((vdom === null || vdom === void 0 ? void 0 : vdom.type) !== tagName) {
                 const rootProps = {};
                 if (!isElementFirst) {
                     rootProps['ref'] = function (ref) {
@@ -2519,7 +2702,7 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
                 return vdom;
             }
             if (!isElementFirst) {
-                const vdomProps = vdom.props;
+                const vdomProps = vdom === null || vdom === void 0 ? void 0 : vdom.props;
                 if (props.style && vdomProps['style']) {
                     vdomProps['style'] = Object.assign({}, props.style, vdomProps['style']);
                 }
@@ -2539,7 +2722,7 @@ define(['require', 'exports', 'preact/compat', 'preact', 'ojs/ojcustomelement-ut
                 return vdom;
             }
             props[ROOT_VNODE_PATCH](vdom);
-            return preact.h(preact.Fragment, {}, vdom.props.children);
+            return preact.h(preact.Fragment, {}, vdom === null || vdom === void 0 ? void 0 : vdom.props.children);
         };
     }
     function overrideCommitMethods(constructor) {

@@ -1,0 +1,7 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@include module-include-once("redwood.variables.gauge") {
+
+:root {
+  --oj-gauge-metric-label-font-weight: normal;
+  }
+}

@@ -1,0 +1,13 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../label/themes/stable/_oj-label.cssvars.scss";
+@import "../../../button/themes/stable/_oj-button.cssvars.scss";
+@import "../../../text-field/themes/stable/_oj-text-field.cssvars.scss";
+
+  @include module-include-once("stable.variables.pagingcontrol") {
+
+:root {
+
+}
+}

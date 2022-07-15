@@ -1,0 +1,8 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "_oj-typography.cssvars.scss";
+@import "../base/oj-typography";
+// scoped cssvars override
+@import "_oj-typography-scoped.cssvars.scss";
+@import"_oj-typography-ignore.scoped.cssvars.scss";

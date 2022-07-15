@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtranslations'], function (require, exports, oj, ojt) { 'use strict';
+define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtranslations', 'ojs/ojcustomelement-utils'], function (require, exports, oj, ojt, ojcustomelementUtils) { 'use strict';
 
   function _interopNamespace(e) {
     if (e && e.__esModule) { return e; } else {
@@ -39,6 +39,10 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
    * @ojtsimport {module: "ojcspexpressionevaluator", type: "AMD", importName: "CspExpressionEvaluator"}
    */
   const Config = {};
+
+  const TEMPLATE_ENGINE_KO = Symbol();
+  const PREACT_TEMPLATE_PROMISE_KO = Symbol();
+  const PREACT_TEMPLATE_PROMISE = Symbol();
 
   let trans = ojt;
   /**
@@ -292,17 +296,52 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
   };
 
   /**
-   * Retrives JET's template engine for dealing with inline templates (currently internal only)
+   * Returns specified template engine promise.
+   * Dynamically loads and stores the engine on Config object at the first request.
+   * @private
+   * @ignore
+   */
+  Config._getEngineByType = function (templateProp) {
+    if (!Config[templateProp]) {
+      let promise;
+      switch (templateProp) {
+        case PREACT_TEMPLATE_PROMISE_KO: promise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine-preact-ko'], function (m) { resolve(_interopNamespace(m)); }, reject) }); break;
+        case PREACT_TEMPLATE_PROMISE: promise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine-preact'], function (m) { resolve(_interopNamespace(m)); }, reject) }); break;
+        case TEMPLATE_ENGINE_KO:
+        default: promise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine-ko'], function (m) { resolve(_interopNamespace(m)); }, reject) });
+      }
+      Config[templateProp] = promise.then((engine) => engine.default);
+    }
+    return Config[templateProp];
+  };
+
+  /**
+   * Retrives JET's template engine for dealing with inline templates (currently internal only).
+   * The method checks whether component might need 'knockout' module and loads the corresponding
+   * TemplateEngine.
+   * @param {Object} options An object with the following props:
+   *  - customElement - Element - root custom element
+   *  - needsTrackableProperties - boolean - optional property that indicates a need for tracking observables
    * @ignore
    * @memberof oj.Config
    * @private
    */
-  Config.__getTemplateEngine = function () {
-    if (!Config._templateEnginePromise) {
-      Config._templateEnginePromise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine'], function (m) { resolve(_interopNamespace(m)); }, reject) })
-      .then((engine) => engine.default);
+   Config.__getTemplateEngine = function (options) {
+    let enginePromise;
+    const state = ojcustomelementUtils.CustomElementUtils.getElementState(options.customElement);
+    const bpType = state.getBindingProviderType();
+    if (bpType !== 'preact') {
+      // legacy component - lets use old template engine with knockout
+      enginePromise = Config._getEngineByType(TEMPLATE_ENGINE_KO);
+    } else if (options.needsTrackableProperties || state.getUseKoFlag()) {
+      // Preact component that needs knockout - lets use preact template engine with knockout
+      enginePromise = Config._getEngineByType(PREACT_TEMPLATE_PROMISE_KO);
+    } else {
+      // Preact component without knockout - lets use plain preact template engine that does not track observables.
+      enginePromise = Config._getEngineByType(PREACT_TEMPLATE_PROMISE);
     }
-    return Config._templateEnginePromise;
+
+    return enginePromise;
   };
 
   /**

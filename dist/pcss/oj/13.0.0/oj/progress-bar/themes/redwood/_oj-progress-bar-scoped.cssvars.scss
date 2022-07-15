@@ -1,0 +1,12 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.progress.bar.scoped") {
+
+  
+  /* progress bar               */
+  /* -------------------------- */
+.oj-color-invert {
+  --oj-progress-bar-track-bg-color:   rgba(var(--oj-palette-neutral-rgb-10), .15);
+  --oj-progress-bar-value-bg-color:   rgb(var(--oj-palette-neutral-rgb-0));
+}
+}

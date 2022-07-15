@@ -827,6 +827,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
          * Triggered when a default animation is about to start, such as when the component is
          * being opened/closed or a child item is being added/removed. The default animation can
          * be cancelled by calling <code class="prettyprint">event.preventDefault</code>.
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
          *
          * @expose
          * @event
@@ -871,6 +872,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
          * opened/closed or a child item is being added/removed. This event is not triggered if
          * the application has called preventDefault on the animateStart
          * event.
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
          *
          * @expose
          * @event
@@ -1003,8 +1005,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
        *                for: "position",
        *                jsdocOverride: true}
        * @fires oj.ojPopup#ojBeforeOpen
-       * @fires oj.ojPopup#ojAnimationStart
-       * @fires oj.ojPopup#ojAnimationEnd
        * @fires oj.ojPopup#ojOpen
        *
        * @example <caption>Invoke the <code class="prettyprint">open</code> method:</caption>
@@ -1177,8 +1177,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
        * @instance
        * @return {void}
        * @fires oj.ojPopup#ojBeforeClose
-       * @fires oj.ojPopup#ojAnimationStart
-       * @fires oj.ojPopup#ojAnimationEnd
        * @fires oj.ojPopup#ojClose
        *
        * @example <caption>Invoke the <code class="prettyprint">close</code> method:</caption>
@@ -2018,6 +2016,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         if (event.keyCode === $.ui.keyCode.ESCAPE &&
           (this._isFocusInPopup(target) || this._isFocusInLauncher(target))) {
           event.preventDefault();
+          event.stopPropagation();
           this.close();
         } else if (event.keyCode === 117 || event.key === 'F6') {
           // F6 - toggle focus to launcher or popup

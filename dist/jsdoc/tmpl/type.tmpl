@@ -1,0 +1,43 @@
+<?js
+	var data = obj;
+  var self = this; 
+  var name, className; 
+  data.forEach(function(type, i) {
+
+    //Naizam -> Support class information from the deprecation information
+    if(typeof type === 'object'){
+      name = type.type;
+      className =type.className;
+    }
+    else{
+      name = type;
+      className = null;
+    }
+
+    var classNames = "param-type";
+    if(className){
+      classNames = classNames + ' '+ className;
+    }
+
+    //[csaba] try parsing the type. if we don't succeed just call htmlsafe but
+    // don't try to create a link because catharsis parser won't be able to do it anyway 
+    // (the parser is called as part of linkto).
+    // Some odd type constructs: "?((param0: oj.ojListView.ItemContext) => boolean)|boolean"
+    // if it's not parse-able then just make sure that we have the arrow bracket represented as &lt.
+    // the type will be rendered as is, no links will be added to it.
+    var current = self.docInProgress || {};
+    var deepParsed = self.tryToFindAllPossibleLinks(name, current);
+    if(deepParsed && deepParsed.length ==1){?>
+      <span class="<?js= classNames?>"><?js= deepParsed[0] ?></span>
+    <?js
+    }
+    else if (!self.skiphtmlescape){?>
+      <span class="<?js= classNames?>"><?js= self.htmlsafe(name) ?></span>
+    <?js 
+    }
+    else{ ?>
+      <span class="<?js= classNames?>"><?js= name ?></span>
+    <?js
+    }
+    if (i < data.length-1) { ?>|<?js } ?>
+<?js }); ?>

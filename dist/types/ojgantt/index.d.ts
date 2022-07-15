@@ -183,6 +183,7 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
     viewportStart: string;
     zooming: 'on' | 'off';
     translations: {
+        accessibleContainsControls?: string;
         accessibleDependencyInfo?: string;
         accessiblePredecessorInfo?: string;
         accessibleSuccessorInfo?: string;
@@ -854,6 +855,7 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
     viewportStart: string;
     zooming: 'on' | 'off';
     translations: {
+        accessibleContainsControls?: string;
         accessibleDependencyInfo?: string;
         accessiblePredecessorInfo?: string;
         accessibleSuccessorInfo?: string;

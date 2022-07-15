@@ -160,9 +160,11 @@ define(['ojs/ojkoshared', 'ojs/ojcustomelement-utils', 'knockout', 'ojs/ojcore-b
         configPromise.then(function (config) {
           if (configPromise === _currentPromise) {
             try {
-              ko.virtualElements.setDomNodeChildren(element, config.view || []);
+              var view = config ? config.view : [];
+              var data = config ? config.data : null;
+              ko.virtualElements.setDomNodeChildren(element, view || []);
               // Null out the parent references since we don't want the view to be able to access the outside context
-              var childBindingContext = bindingContext.createChildContext(config.data, undefined,
+              var childBindingContext = bindingContext.createChildContext(data, undefined,
                 function (ctx) {
                   ctx.$parent = null;
                   ctx.$parentContext = null;

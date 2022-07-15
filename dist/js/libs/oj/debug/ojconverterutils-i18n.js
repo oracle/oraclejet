@@ -469,7 +469,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
    * @method getTimeStringFromOffset
    */
   OraI18nUtils.getTimeStringFromOffset = function (prefix, offset, reverseSign, alwaysMinutes) {
-    var isNegative = reverseSign ? offset >= 0 : offset < 0;
+    var isNegative = reverseSign ? offset > 0 : offset <= 0;
     var absOffset = Math.abs(offset);
     var hours = Math.floor(absOffset / 60);
     var minutes = absOffset % 60;

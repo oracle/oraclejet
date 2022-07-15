@@ -246,22 +246,25 @@ import { warn } from 'ojs/ojlogger';
 
 class JoiningDataProvider {
     constructor(baseDataProvider, options) {
+        var _a, _b;
         this.baseDataProvider = baseDataProvider;
         this.options = options;
         this._mapJoinAttributes = new Map();
         this._fks = [];
         this._transform = [];
         this._joinDPs = [];
-        this.JoiningAsyncIterable = class {
-            constructor(_parent, params, _asyncIterator) {
-                this._parent = _parent;
-                this.params = params;
-                this._asyncIterator = _asyncIterator;
-                this[Symbol.asyncIterator] = () => {
-                    return new this._parent.JoiningAsyncIterator(this._parent, this._asyncIterator, this.params);
-                };
-            }
-        };
+        this.JoiningAsyncIterable = (_b = class {
+                constructor(_parent, params, _asyncIterator) {
+                    this._parent = _parent;
+                    this.params = params;
+                    this._asyncIterator = _asyncIterator;
+                    this[_a] = () => {
+                        return new this._parent.JoiningAsyncIterator(this._parent, this._asyncIterator, this.params);
+                    };
+                }
+            },
+            _a = Symbol.asyncIterator,
+            _b);
         this.JoiningAsyncIterator = class {
             constructor(_parent, _baseIterator, _params) {
                 this._parent = _parent;

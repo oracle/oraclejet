@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact'], function (exports, preact) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'preact'], function (exports, jsxRuntime, preact) { 'use strict';
 
     var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -340,7 +340,7 @@ define(['exports', 'preact'], function (exports, preact) { 'use strict';
                     const { data, addBusyState } = props, passThroughProps = __rest(props, ["data", "addBusyState"]);
                     const { fetchedData } = state;
                     const childProps = Object.assign({ [dataProp]: fetchedData }, passThroughProps);
-                    return preact.h(WrappedComponent, Object.assign({}, childProps));
+                    return jsxRuntime.jsx(WrappedComponent, Object.assign({}, childProps));
                 }
                 _initDataProviderHandler() {
                     const { data, addBusyState } = this.props;

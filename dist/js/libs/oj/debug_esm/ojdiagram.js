@@ -15,7 +15,7 @@ import * as Logger from 'ojs/ojlogger';
 import { error } from 'ojs/ojlogger';
 import { KeySetImpl } from 'ojs/ojkeyset';
 import 'ojs/ojdatasource-common';
-import { enableAllFocusableElements, disableAllFocusableElements } from 'ojs/ojkeyboardfocus-utils';
+import { enableAllFocusableElements, disableAllFocusableElements, getActionableElementsInNode, getFocusableElementsInNode } from 'ojs/ojkeyboardfocus-utils';
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
@@ -51,8 +51,8 @@ var __oj_diagram_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -259,8 +259,8 @@ var __oj_diagram_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -312,8 +312,8 @@ var __oj_diagram_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -396,6 +396,22 @@ var __oj_diagram_metadata =
         "y"
       ],
       "value": "auto"
+    },
+    "panZoomState": {
+      "type": "object",
+      "writeback": true,
+      "properties": {
+        "centerX": {
+          "type": "number"
+        },
+        "centerY": {
+          "type": "number"
+        },
+        "zoom": {
+          "type": "number",
+          "value": 0
+        }
+      }
     },
     "panning": {
       "type": "string",
@@ -656,6 +672,9 @@ var __oj_diagram_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },
@@ -747,6 +766,7 @@ var __oj_diagram_metadata =
   "events": {
     "ojBeforeCollapse": {},
     "ojBeforeExpand": {},
+    "ojBeforePanZoomReset": {},
     "ojCollapse": {},
     "ojExpand": {}
   },
@@ -1129,7 +1149,7 @@ ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (nod
  * @ojcomponent oj.ojDiagram
  * @augments oj.dvtBaseComponent
  * @since 1.1.0
- *
+ * @ojimportmembers oj.ojSharedContextMenu
  * @ojrole application
  * @ojshortdesc A diagram displays a set of nodes and the links between them. The node positions and link paths are specified by an application-provided layout function.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -1922,6 +1942,53 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        */
       panDirection: 'auto',
       /**
+       * A writeback object that contains properties zoom, centerX, and centerY that represent the panZoomState
+       * @expose
+       * @name panZoomState
+       * @memberof oj.ojDiagram
+       * @instance
+       * @type {Object=}
+       * @ojwriteback
+       */
+       panZoomState: {
+        /**
+         * Specifies the zoom value of the diagram.  The specified value should be between the diagram minZoom and maxZoom values.
+         * A value of 0, the default, indicates that the diagram should be zoomed in as much as possible while keeping all content visible.
+         * @ojshortdesc The zoom value in the range of min/max-zoom
+         * @expose
+         * @name panZoomState.zoom
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {number}
+         * @default 0.0
+         */
+        zoom: 0.0,
+        /**
+         * The x coordinate of the center of the viewport in the layout coordinate space.
+         * By default the content will be centered horizontally.
+         * @ojshortdesc The x coordinate of the center of the viewport
+         * @expose
+         * @name panZoomState.centerX
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {number|null}
+         * @default null
+         */
+        centerX: null,
+        /**
+         * The y coordinate of the center of the viewport in the layout coordinate space
+         * By default the content will be centered vertically.
+         * @ojshortdesc The y coordinate of the center of the viewport
+         * @expose
+         * @name panZoomState.centerY
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {number|null}
+         * @default null
+         */
+        centerY: null
+      },
+      /**
        * An object containing an optional callback function for tooltip customization.
        * @expose
        * @name tooltip
@@ -2636,7 +2703,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * @instance
        * @type {Object}
        * @default null
-       * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the diagram with the <code class="prettyprint">data</code> attribute specified:</caption>
@@ -2665,7 +2732,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * @type {(Object|null)=}
        * @ojsignature {target: "Type", value: "DataProvider<K2, D2>|null", jsdocOverride:true}
        * @default null
-       * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the diagram with the
@@ -2695,7 +2762,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * @type {Object|null}
        * @ojsignature {target: "Type", value: "DataProvider<K1, D1>|null", jsdocOverride:true}
        * @default null
-       * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the diagram with the
@@ -3485,7 +3552,20 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        *               {target:"Type", value:"K1", for:"nodeId"}]
        * @ojdeprecated {since: '12.1.0', description: 'The oj-collapse event has been deprecated.  Use on-expanded-changed instead.'}
        */
-      collapse: null
+      collapse: null,
+      /**
+       * Triggered in response to property changes and component resizes. By default,
+       * the panZoomState is reset in these cases such that the content is centered and zoomed to fit.
+       * This behavior can be prevented by listening to this event and calling
+       * event.preventDefault() which will cause the current panZoomState to be preserved.
+       * @ojshortdesc Event that is fired before the panZoomState is reset.
+       * @ojcancelable
+       * @expose
+       * @event
+       * @memberof oj.ojDiagram
+       * @instance
+       */
+      beforePanZoomReset: null,
     },
 
 
@@ -3555,9 +3635,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       }
       // Add these enable/disable all focusable functions to enable actionable mode
       this.options._keyboardUtils = { enableAllFocusable: enableAllFocusableElements,
-                                      disableAllFocusable: disableAllFocusableElements };
+                                      disableAllFocusable: disableAllFocusableElements,
+                                      getActionableElementsInNode: getActionableElementsInNode,
+                                      getFocusableElementsInNode: getFocusableElementsInNode };
     },
-
 
     _IsDraggable: function () {
       var dragObj = this.options.dnd ? this.options.dnd.drag : null;
@@ -3594,6 +3675,14 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
         this._component.removeDataSourceEventListeners();
       }
     },
+
+    /**
+     * This property is used by the TemplateHandler to indicate that the template engine for diagram needs
+     * needs knockout module.
+     * @protected
+     * @ignore
+     */
+    _NeedsTrackableProperties: true,
 
     /**
      * Creates a callback function that will be used by DvtDiagramNode to populate context for the custom renderer
@@ -3638,8 +3727,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      *  <li>{SVGElement} parentElement  - a parent group element that takes a custom SVG fragment as the node content. Used for measurements and reading properties.
      *                Modifications of the parentElement are not supported</li>
      *  <li>{SVGElement} rootElement  - an SVG fragment created as a node content passed for subsequent modifications</li>
-     *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, zoom</li>
-     *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, zoom</li>
+     *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
+     *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
      *  <li>{string} id - node id</li>
      *  <li>{string} type - object type - node</li>
      *  <li>{string} label - object label</li>
@@ -3665,8 +3754,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      *  <li>{SVGElement} parentElement  - a parent group element that takes a custom SVG fragment as the node content. Used for measurements and reading properties.
      *                Modifications of the parentElement are not supported</li>
      *  <li>{SVGElement} rootElement  - an SVG fragment created as a node content passed for subsequent modifications</li>
-     *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, zoom</li>
-     *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, zoom</li>
+     *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
+     *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
      *  <li>{string} id - node id</li>
      *  <li>{string} type - object type - node</li>
      *  <li>{string} label - object label</li>
@@ -3692,8 +3781,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      *  <li>{SVGElement} parentElement  - a parent group element that takes a custom SVG fragment as the node content. Used for measurements and reading properties.
      *                Modifications of the parentElement are not supported</li>
      *  <li>{SVGElement} rootElement  - an SVG fragment created as a node content passed for subsequent modifications</li>
-     *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, zoom</li>
-     *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, zoom</li>
+     *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
+     *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
      *  <li>{string} id - node id</li>
      *  <li>{string} type - object type - node</li>
      *  <li>{string} label - object label</li>
@@ -3801,7 +3890,18 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
 
 
     _GetEventTypes: function () {
-      return ['optionChange', 'beforeExpand', 'beforeCollapse', 'expand', 'collapse'];
+      return ['optionChange', 'beforeExpand', 'beforeCollapse', 'expand', 'collapse', 'beforePanZoomReset'];
+    },
+
+    _GetOptimizedOptions: function () {
+      return this._super().concat('panZoomState');
+    },
+
+    _UpdateNoRenderOptions: function (options) {
+      if (options.panZoomState !== undefined) {
+        this._component.panZoom(options.panZoomState);
+      }
+      this._super(options);
     },
 
 
@@ -3820,6 +3920,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
         this._trigger(type, null, { nodeId: event.id });
       } else if (type === 'notready') {
         this._NotReady();
+      } else if (type === 'beforePanZoomReset') {
+        this._panZoomReset();
       } else {
         this._super(event);
       }
@@ -3963,25 +4065,17 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
     _TemplateRenderer: function (context, templateEngine, templateElement, templateName) {
       var states = context.state;
       var prevStates = context.previousState;
-      var trackableProperties = Object.keys(states);
       var id = context.id;
-      this._states[id] = states;
-      this._prevStates[id] = prevStates;
-      for (var i = 0; i < trackableProperties.length; i++) {
-        var property = trackableProperties[i];
-        templateEngine.defineTrackableProperty(states, property, states[property]);
-        templateEngine.defineTrackableProperty(prevStates, property, prevStates[property]);
-      }
+      this._nodeLinkContext[id] = context;
+      templateEngine.defineTrackableProperty(context, 'state', states);
+      templateEngine.defineTrackableProperty(context, 'prevState', prevStates);
       return this._super(context, templateEngine, templateElement, templateName);
     },
 
     _ProcessInlineTemplateRenderer: function (options, optionPath,
       templateElement, templateName) {
-        if (!this._states) {
-          this._states = {};
-        }
-        if (!this._prevStates) {
-          this._prevStates = {};
+        if (!this._nodeLinkContext) {
+          this._nodeLinkContext = {};
         }
         this._super(options, optionPath, templateElement, templateName);
       },
@@ -4005,8 +4099,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
 
       var mutateObservables = (context) => {
         var id = context.id;
-        Object.assign(this._prevStates[id], context.previousState);
-        Object.assign(this._states[id], context.state);
+        Object.assign(this._nodeLinkContext[id], context);
       };
 
       var getDefaultWrapperFunction = (defaultFunc) => {
@@ -4061,6 +4154,19 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       }
 
       this._super(options);
+    },
+
+
+    /**
+     * Resets the panZoom state if the beforePanZoomReset event is not veto'd
+     * @ignore
+     * @instance
+     * @memberof oj.ojDiagram
+     */
+    _panZoomReset: function () {
+      // if beforePanZoomReset is veto'd, we do not reset the panZoom State to zoomToFit
+      var reset = this._trigger('beforePanZoomReset');
+      this._component.panZoomReset(reset);
     },
 
     /**
@@ -4378,7 +4484,7 @@ setDefaultOptions({
  *     </tr>
  *     <tr>
  *       <td><kbd>F2</kbd></td>
- *       <td>Enter Actionable mode.  This enables keyboard action on elements inside the node/link, including navigating between focusable elements inside the node/link.</td>
+ *       <td>Toggles Actionable mode.  Entering actionable mode enables keyboard action on elements inside the node/link, including navigating between focusable elements inside the node/link.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Esc</kbd></td>
@@ -4555,12 +4661,14 @@ setDefaultOptions({
  * @property {boolean}  state.selected True if the node is currently selected.
  * @property {boolean}  state.focused True if the node is currently selected.
  * @property {boolean}  state.expanded True if the node is expanded.
+ * @property {boolean}  state.inActionableMode True if the node is currently in actionable mode.
  * @property {number}   state.zoom Current zoom state.
  * @property {Object}   previousState An object that reflects the previous state of the data item.
  * @property {boolean}  previousState.hovered True if the node was previously hovered.
  * @property {boolean}  previousState.selected True if the node was previously selected.
  * @property {boolean}  previousState.focused True if the node was previously selected.
  * @property {boolean}  previousState.expanded True if the node was previously expanded.
+ * @property {boolean}  previousState.inActionableMode True if the node was previously in actionable mode.
  * @property {number}   previousState.zoom Previous zoom state.
  * @property {any}      id Node id.
  * @property {string}   type Object type = node.
@@ -4586,10 +4694,12 @@ setDefaultOptions({
  * @property {boolean}  state.hovered True if the link is currently hovered.
  * @property {boolean}  state.selected True if the link is currently selected.
  * @property {boolean}  state.focused True if the link is currently selected.
+ * @property {boolean}  state.inActionableMode True if the link is currently in actionable mode.
  * @property {Object}   previousState An object that reflects the previous state of the data item.
  * @property {boolean}  previousState.hovered True if the link was previously hovered.
  * @property {boolean}  previousState.selected True if the link was previously selected.
  * @property {boolean}  previousState.focused True if the link was previously selected.
+ * @property {boolean}  previousState.inActionableMode True if the link was previously in actionable mode.
  * @property {any}      id Link id.
  * @property {string}   type Object type is 'link' or 'promotedLink'.
  * @property {array|string} points An array of points or a string with SVG path to use for rendering this link as set by diagram layout.
@@ -5661,6 +5771,21 @@ setDefaultOptions({
  */
 
 /**
+ * Set the pan/zoom state the component should use after the layout.
+ * @method setPanZoomState
+ * @instance
+ * @param {Object} panZoomState An object containing properties of the panZoomState that the component should use after the layout
+ * @property {number|null} zoom Specifies the zoom value of the diagram.  The specified value should be between the diagram minZoom and maxZoom values.
+ * A value of 0 indicates that the diagram should be zoomed in as much as possible while keeping all content visible.
+ * @property {number|null} centerX The x coordinate of the center of the viewport in the layout coordinate space. If undefined, the content will be centered horizontally.
+ * @property {number|null} centerY The y coordinate of the center of the viewport in the layout coordinate space. If undefined, the content will be centered vertically.
+ * @return {void}
+ * @memberof oj.DvtDiagramLayoutContext
+ * @ojsignature {target: "Type", value: "{ zoom: number|null, centerX: number|null, centerY: number|null}", for: "panZoomState"}
+ * @export
+ */
+
+/**
  * Set the viewport the component should use after the layout, in the layout's coordinate system.
  * @method setViewport
  * @instance
@@ -5672,6 +5797,7 @@ setDefaultOptions({
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContext
  * @ojsignature {target: "Type", value: "{ x: number, y: number, w: number, h: number }", for: "viewport"}
+ * @ojdeprecated {since: '13.0.0', description: 'The setViewport method has been deprecated, please use the setPanZoomState method instead.'}
  * @export
  */
 
@@ -5686,6 +5812,7 @@ setDefaultOptions({
  * @property {number} h height
  * @memberof oj.DvtDiagramLayoutContext
  * @ojsignature {target: "Type", value: "{ x: number, y: number, w: number, h: number }", for: "returns"}
+ * @ojdeprecated {since: '13.0.0', description: 'The getViewport method has been deprecated, please use the panZoomState object on the component.'}
  * @export
  */
 
@@ -5700,6 +5827,7 @@ setDefaultOptions({
  * @property {number} h height
  * @memberof oj.DvtDiagramLayoutContext
  * @ojsignature {target: "Type", value: "{ x: number, y: number, w: number, h: number }", for: "returns"}
+ * @ojdeprecated {since: '13.0.0', description: 'The getCurrentViewportport method has been deprecated, please use the panZoomState object on the component.'}
  * @export
  */
 

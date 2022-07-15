@@ -1,5 +1,5 @@
-import { Item } from '@oracle/oraclejet-preact/utils/dataProvider';
-import { ComponentChildren, h, Ref, VNode } from 'preact';
+import { Item } from '../utils/UNSAFE_dataProvider';
+import { ComponentChildren, Ref, VNode } from 'preact';
 import { MessageSeverity } from './Message.types';
 import { MessageTemplateItem } from './MessageDetail';
 /**
@@ -115,5 +115,5 @@ declare type Props<Key, Data> = {
 /**
  * Component that renders an individual message
  */
-declare function Message<K extends string | number = string | number, D extends MessageItem = MessageItem>({ closeButtonRenderer, detailRenderer, index, item, onClose, messageRef, translations, type }: Props<K, D>): h.JSX.Element;
+declare function Message<K extends string | number = string | number, D extends MessageItem = MessageItem>({ closeButtonRenderer, detailRenderer, index, item, onClose, messageRef, translations, type }: Props<K, D>): import("preact").JSX.Element;
 export { Message };

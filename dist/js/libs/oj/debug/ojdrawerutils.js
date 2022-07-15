@@ -7,6 +7,7 @@
  */
 define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict';
 
+    const ojet = oj;
     class DrawerConstants {
         static get DrawerLayoutStyleSurrogate() {
             return `${this.stringOjDrawer}${this.charDash}layout${this.charDash}${this.stringSurrogate}`;
@@ -101,6 +102,30 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
         static getElementWidth(element) {
             return Math.round(element.getBoundingClientRect().width);
         }
+        static getFocusables(element) {
+            const defaultFocusableElements = [
+                'button',
+                '[href]',
+                'input',
+                'select',
+                'textarea',
+                '[tabindex]',
+                'video'
+            ];
+            const selectorSuffix = ':not([tabindex="-1"]):not([disabled]):not([hidden])';
+            const elementsCount = defaultFocusableElements.length;
+            let safeFocusablesSelector = '';
+            for (let i = 0; i < elementsCount; i++) {
+                const elSelector = `${defaultFocusableElements[i]}${selectorSuffix}`;
+                safeFocusablesSelector += i < elementsCount - 1 ? `${elSelector}, ` : `${elSelector}`;
+            }
+            return element.querySelectorAll(safeFocusablesSelector);
+        }
+        static isFocusable(element) {
+            return Array.from(DrawerUtils.getFocusables(element.parentElement)).some((item) => {
+                return item === element;
+            });
+        }
         static isObjectEmpty(object) {
             if (typeof object === 'object') {
                 return Object.keys(object).length === 0 && object.constructor === Object;
@@ -168,7 +193,22 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
             return styleClassString;
         }
         static getViewportWidth() {
+            if (ojet.AgentUtils.getAgentInfo().os === ojet.AgentUtils.OS.IOS) {
+                return document.documentElement.clientWidth;
+            }
             return window.innerWidth;
+        }
+        static moveFocusToElementOrNearestAncestor(element) {
+            if (DrawerUtils.isFocusable(element)) {
+                element.focus();
+            }
+            else {
+                let nearestAncestor = element.parentElement;
+                while (nearestAncestor.nodeName !== 'HTML' && !DrawerUtils.isFocusable(nearestAncestor)) {
+                    nearestAncestor = nearestAncestor.parentElement;
+                }
+                nearestAncestor.focus();
+            }
         }
     }
 

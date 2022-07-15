@@ -1,0 +1,39 @@
+<?js 
+  // Template to render a span rendering the union type of a styleVariable.
+  // The union type consists of formats and keywords.  If the format is a known type,
+  //  then it is rendered as a link.
+  // The caller is expected to pass an object with 'formats' and 'keywords' Array properties.
+  // 
+  var self = this;
+  const CSS_FORMAT_ROOT = 'https://developer.mozilla.org/en-US/docs/Web/CSS';
+  const CSS_FORMAT_LINKS = {
+    color: `${CSS_FORMAT_ROOT}/color_value`,
+    font_weight: `${CSS_FORMAT_ROOT}/font-weight`,
+    length: `${CSS_FORMAT_ROOT}/length`,
+    number: `${CSS_FORMAT_ROOT}/number`,
+    percentage: `${CSS_FORMAT_ROOT}/percentage`,
+    rgb_values: "CssVariablesOverview.html#usingpalette",
+    time: `${CSS_FORMAT_ROOT}/time`
+  };
+
+  let formatCount = formats.length;
+  let keywordCount = keywords.length;
+  let typeItemCount = formatCount + keywordCount;
+  if (formatCount) {
+    formats.forEach(function (format, i) {
+      if (CSS_FORMAT_LINKS[format]) { ?>
+        <span><a href="<?js= CSS_FORMAT_LINKS[format] ?>"><?js= "&lt;" + format + "&gt;" ?></a></span>
+      <?js }
+      else { ?>
+        <span><?js= "&lt;" + format + "&gt;" ?></span>
+      <?js }
+      if (i < (typeItemCount-1)) { ?>|<?js }
+    });
+  }
+  if (keywordCount) {
+    keywords.forEach(function (keyword, j) { ?>
+      <span><?js= keyword ?></span>
+      <?js if ((formatCount + j) < (typeItemCount-1)) { ?>|<?js }
+    });
+  }
+?>

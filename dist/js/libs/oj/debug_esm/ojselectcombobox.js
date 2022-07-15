@@ -1723,6 +1723,10 @@ const _ComboUtils = {
     widget.options._dataProvider = null;
   },
 
+  isDataProviderWrapped: function (widget) {
+    return widget.options._dataProvider != null;
+  },
+
   //  - need to be able to specify the initial value of select components bound to dprv
   // traversal using depth first search
   // return an oj.Option object if found otherwise return null
@@ -3752,10 +3756,11 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object,
         this._focus();
       }
 
-      _ComboUtils.addDataProviderEventListeners(opts.ojContext);
-
       // Readonly support
       this.applyReadonlyState();
+
+      // flag to indicate that the OjChoice instance is alive
+      this.isInitialized = true;
     },
 
     /**
@@ -4142,6 +4147,20 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object,
 
       // Clear all active timers
       this._clearActiveTimers();
+
+      // remove jQuery data
+      this.container.removeData(this._elemNm);
+
+      // Cleanup elements reference
+      this._dropdownPositioningProxyContainer = null;
+      this.container = null;
+      this.dropdown = null;
+      this.results = null;
+      this.search = null;
+      this.selection = null;
+
+      // update the flag to indicate the current instance is destroyed
+      this.isInitialized = false;
     },
 
     /**
@@ -8208,6 +8227,25 @@ const _OjMultiCombobox = _ComboUtils.clazz(_AbstractMultiChoice,
       return $(contentStructure.join(''));
     },
 
+    // _OjMultiCombobox
+    _initContainer: function () {
+      _OjMultiCombobox.superclass._initContainer.apply(this, arguments);
+
+      // JET-50535 - focus lost from component when mouse down on dropdown (Similar to JET-47442)
+      // The editable table relies on the focus events from the popup to determine whether
+      // or not the table should be edit mode. Initially when clicking on the combobox,
+      // the initial focus is on the input element. At this point, when one clicks on
+      // an option item, the focus will be lost on mousedown. Since, none of the other elements
+      // in the dropdown are focusable, the focus is transferred to the first focusable ancestor
+      // which in this case happens to be the body element. This results in the focusout event
+      // on the popup. As the selection only happens on the mouseup event, if one keeps the mouse
+      // pressed long enough, the table will exit the edit mode before the selection happens.
+      // Since, we are not relying on the physical focus anyway for selection mechanism, a patchy
+      // solution here would be to prevent the focus transfer when one clicks in the results area.
+      // This way the table would stay in edit mode.
+      this.dropdown.on('mousedown', _ComboUtils.killEvent);
+    },
+
     _opening: function (event, dontUpdateResults) {
       // if beforeExpand is not cancelled
       // beforeExpand event will be triggered in base class _shouldOpen method
@@ -8516,6 +8554,7 @@ const _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
           if (this._opened()) {
             // prevent the page from scrolling
             e.preventDefault();
+            e.stopPropagation();
           }
           this._cancel(e);
           this._userTyping = false;
@@ -8892,6 +8931,11 @@ const _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
               if ((tagName === 'select') && !self.ojContext._HasPlaceholderSet()) {
                 _ComboUtils.fetchFirstBlockFromDataProvider(self.container, opts, 1)
                   .then(function (data) {
+                    // check if the current instance is still alive. If it has been destroyed
+                    // while fetching the data, do not do anything here
+                    if (!self.isInitialized) {
+                      return;
+                    }
                     // since the fetch process is not synchronous, at this point
                     // we need to check if the current value is still null and we should
                     // default it to the first option only if the value is not updated
@@ -9439,6 +9483,25 @@ const _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice,
 
       // Clear the reference to the dom element
       this._endSlot = null;
+    },
+
+    // _OjSingleCombobox
+    _initContainer: function () {
+      _OjSingleCombobox.superclass._initContainer.apply(this, arguments);
+
+      // JET-50535 - focus lost from component when mouse down on dropdown (Similar to JET-47442)
+      // The editable table relies on the focus events from the popup to determine whether
+      // or not the table should be edit mode. Initially when clicking on the combobox,
+      // the initial focus is on the input element. At this point, when one clicks on
+      // an option item, the focus will be lost on mousedown. Since, none of the other elements
+      // in the dropdown are focusable, the focus is transferred to the first focusable ancestor
+      // which in this case happens to be the body element. This results in the focusout event
+      // on the popup. As the selection only happens on the mouseup event, if one keeps the mouse
+      // pressed long enough, the table will exit the edit mode before the selection happens.
+      // Since, we are not relying on the physical focus anyway for selection mechanism, a patchy
+      // solution here would be to prevent the focus transfer when one clicks in the results area.
+      // This way the table would stay in edit mode.
+      this.dropdown.on('mousedown', _ComboUtils.killEvent);
     },
 
     _triggerValueUpdatedEvent: function (data, previousValue) {
@@ -12438,11 +12501,7 @@ oj$1.__registerWidget('oj.ojCombobox', $.oj.editableValue,
         EditableValueUtils._GetNormalizedAsyncValidatorsFromOption,
 
     _setup: function () {
-      var opts = {};
       var multi = this.multiple;
-
-      opts.element = this.element;
-      opts.ojContext = this;
 
       // fixup valueOption(s) if placeholder is selected
       if (_ComboUtils.isValueForPlaceholder(multi, this.options.value)) {
@@ -12454,14 +12513,11 @@ oj$1.__registerWidget('oj.ojCombobox', $.oj.editableValue,
               _ComboUtils.getValueOptionsForPlaceholder(this, this.options.valueOption);
         }
       }
-      opts = $.extend(this.options, opts);
 
       // Fetch the option defaults from the CSS file
       this.cssOptionDefaults = parseJSONFromFontFamily('oj-combobox-option-defaults') || {};
 
-      this.combobox = multi ? new _OjMultiCombobox() : new _OjSingleCombobox();
-
-      this.combobox._init(opts);
+      this._initComboboxInstance();
       this._refreshRequired(this.options.required);
 
       // JET-43071 - messagescustom property doesn't work when initial render
@@ -12498,6 +12554,105 @@ oj$1.__registerWidget('oj.ojCombobox', $.oj.editableValue,
     _destroy: function () {
       this.combobox._destroy();
       this._super();
+    },
+
+    /**
+     * Instantiates the combobox instance
+     *
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @private
+     */
+    _initComboboxInstance: function () {
+      const opts = $.extend(this.options, {
+        element: this.element,
+        ojContext: this
+      });
+      this.combobox = this.multiple ? new _OjMultiCombobox() : new _OjSingleCombobox();
+
+      this.combobox._init(opts);
+    },
+
+    /**
+     * Destroys the combobox instance
+     *
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @private
+     */
+    _destroyComboboxInstance: function () {
+      this.combobox._destroy();
+      this.combobox = null;
+    },
+
+    /**
+     * Checks if the combobox is already instantiated
+     *
+     * @returns {boolean} indicates if we have the combobox instantiated
+     *
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @private
+     */
+    _isComboboxInstantiated: function () {
+      return this.combobox != null;
+    },
+
+    /**
+     * Setup resources for the combobox
+     *
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @private
+     */
+    _setupComboboxResources: function () {
+      if (!this._isComboboxInstantiated()) {
+        this._initComboboxInstance();
+      }
+      // Check if the dp is already wrapped
+      if (!_ComboUtils.isDataProviderWrapped(this)) {
+        _ComboUtils.wrapDataProviderIfNeeded(this, this.combobox ? this.combobox.opts : null);
+      }
+      _ComboUtils.addDataProviderEventListeners(this);
+    },
+
+    /**
+     * releases resources of the combobox
+     *
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @private
+     */
+    _releaseComboboxResources: function () {
+      if (this._isComboboxInstantiated()) {
+        this._destroyComboboxInstance();
+      }
+      _ComboUtils.removeDataProviderEventListeners(this);
+      _ComboUtils.clearDataProviderWrapper(this);
+    },
+
+    /**
+     * Override to setup combobox resources
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected
+     * @override
+     */
+    _SetupResources: function () {
+      this._super();
+      this._setupComboboxResources();
+    },
+
+    /**
+     * Override to release combobox resources
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected
+     * @override
+     */
+    _ReleaseResources: function () {
+      this._super();
+      this._releaseComboboxResources();
     },
 
     /**
@@ -12540,8 +12695,10 @@ oj$1.__registerWidget('oj.ojCombobox', $.oj.editableValue,
     refresh: function () {
       this._super();
 
-      this.combobox._destroy();
+      this._releaseComboboxResources();
+
       this._setup();
+      this._setupComboboxResources();
       this._SetRootAttributes();
       this._initComponentMessaging();
     },
@@ -18239,8 +18396,10 @@ oj$1.__registerWidget('oj.ojSelect', $.oj.editableValue,
 
       // cleanup the old HTML and setup the new HTML markups
         this._cleanup();
+        this._releaseSelectResources();
 
         this._setup();
+        this._setupSelectResources();
       // TODO: apply value in options for the selected value
 
         if (this._isNative() && this.options.value) {
@@ -18278,6 +18437,57 @@ oj$1.__registerWidget('oj.ojSelect', $.oj.editableValue,
         this._cleanup();
         this._super();
       },
+
+    /**
+     * Setup resources for the select
+     *
+     * @memberof! oj.ojSelect
+     * @instance
+     * @private
+     */
+     _setupSelectResources: function () {
+       // Check if the dataprovider is already wrapped
+       if (!_ComboUtils.isDataProviderWrapped(this)) {
+        _ComboUtils.wrapDataProviderIfNeeded(this, this.select ? this.select.opts : null);
+       }
+      _ComboUtils.addDataProviderEventListeners(this);
+    },
+
+    /**
+     * releases resources of the select
+     *
+     * @memberof! oj.ojSelect
+     * @instance
+     * @private
+     */
+    _releaseSelectResources: function () {
+      _ComboUtils.removeDataProviderEventListeners(this);
+      _ComboUtils.clearDataProviderWrapper(this);
+    },
+
+    /**
+     * Override to setup select resources
+     * @memberof! oj.ojSelect
+     * @instance
+     * @protected
+     * @override
+     */
+    _SetupResources: function () {
+      this._super();
+      this._setupSelectResources();
+    },
+
+    /**
+     * Override to release select resources
+     * @memberof! oj.ojSelect
+     * @instance
+     * @protected
+     * @override
+     */
+    _ReleaseResources: function () {
+      this._super();
+      this._releaseSelectResources();
+    },
 
       // 19670760, dropdown popup should be closed on subtreeDetached notification.
       _NotifyDetached: function () {

@@ -1,0 +1,7 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.message-banner") {
+oj-message-banner:not(.oj-complete) {
+  visibility: hidden;
+}
+}

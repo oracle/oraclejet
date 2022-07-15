@@ -14,3 +14,4 @@ export declare type MessageBannerTemplateContext<K, D> = {
     key: K;
     metadata?: ItemMetadata<K>;
 };
+export {};

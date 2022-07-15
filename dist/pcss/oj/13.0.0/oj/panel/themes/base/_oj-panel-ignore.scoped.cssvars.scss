@@ -1,0 +1,11 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.panel.ignored.scoped") {
+
+  
+  /* panel                      */
+  /* -------------------------- */
+.oj-panel {
+  --oj-current-bg-color:                var(--oj-panel-bg-color);
+}
+}

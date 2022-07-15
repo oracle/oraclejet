@@ -1,0 +1,268 @@
+<?js
+var self = this;
+var members = [];
+var methods = [];
+var typedefs = [];
+var classes = [];
+var interfaces = [];
+var namespaces = [];
+var elements = [];
+var decorators = [];
+var moduleContainer;
+
+docs.forEach(function(doc, i) {
+  if (doc.ojmodulecontainer){
+    moduleContainer = doc;
+    members = self.find({kind: 'member', memberof: doc.longname, ojexports: true});
+    if (members && members.length) {
+      members.sort(function(a, b) {
+        return (a.id < b.id) ? -1 : (a.id > b.id) ? 1 : 0;
+      });
+    }
+    methods = self.find({kind: 'function', memberof: doc.longname, ojexports: true});
+    
+    if (methods && methods.length) {
+      decorators = methods.filter(method => method.ojdecorator);
+      methods = methods.filter(method => !method.ojdecorator);
+    }
+    typedefs = self.find({kind: 'typedef', memberof: doc.longname});
+  }
+  else if (doc.ojcomponent){
+    elements.push(doc);
+  }
+  else if (doc.kind === 'namespace'){
+    namespaces.push(doc);
+  }
+  else if (doc.kind === 'interface'){
+    interfaces.push(doc);
+  }
+  else{
+    classes.push(doc);
+  }
+
+});
+var hasFieldsColumn = members && members.length > 0;
+var hasMethodsColumn = methods && methods.length > 0;
+var hasTypeDefColumn = typedefs && typedefs.length > 0;
+var hasClassColumn = classes.length > 0;
+var hasNamespaceColumn = namespaces.length > 0;
+var hasInterfaceColumn = interfaces.length > 0;
+var hasElementsColumn = elements.length > 0;
+var hasDecoratorsColumn = decorators && decorators.length > 0;
+var columnCount = !!hasFieldsColumn + !!hasMethodsColumn + !!hasDecoratorsColumn + !!hasTypeDefColumn + !!hasClassColumn + !!hasElementsColumn + !!hasNamespaceColumn + !!hasInterfaceColumn;
+
+if (columnCount) { ?>
+<section id="quick-nav">
+  <header>
+    <h2>QuickNav</h2>
+  </header>
+  <?js
+  if (hasMethodsColumn) { ?>
+  <div class="quick-nav-section<?js= columnCount ?>">
+    <h3><a href="#methods-section">Functions</a></h3>
+    <ul class="subList">
+      <?js 
+        for (var i=0; i < methods.length; i++){ ?>
+      <?js= self.getLiTag(methods[i]) ?><a href="#<?js= methods[i].id ?>">
+        <?js= methods[i].id ?></a></li>
+      <?js 
+        } ?>
+    </ul>
+  </div>
+  <?js 
+  } 
+  if (hasFieldsColumn) { ?>
+  <div class="quick-nav-section<?js= columnCount ?>">
+    <h3><a href="#members-section">Variables</a></h3>
+    <ul class="subList">
+      <?js 
+        for (var i=0; i < members.length; i++){ ?>
+      <?js= self.getLiTag(members[i]) ?><a href="#<?js= members[i].id ?>">
+        <?js= members[i].id ?></a></li>
+      <?js 
+        } ?>
+    </ul>
+  </div>
+  <?js 
+  }
+  if (hasDecoratorsColumn) { ?>
+    <div class="quick-nav-section<?js= columnCount ?>">
+      <h3> <a href="#decorator-section">Decorators</a></h3>
+        <ul class="subList">
+          <?js for (var i=0; i < decorators.length; i++){?>
+                <?js= self.getLiTag(decorators[i]) ?><a href="#<?js= decorators[i].id ?>"><?js= `@${decorators[i].id}` ?></a></li>
+          <?js } ?>
+        </ul>
+    </div>
+  <?js 
+  } 
+  if (hasTypeDefColumn) { ?>
+  <div class="quick-nav-section<?js= columnCount ?>">
+    <h3><a href="#members-section">Type Definitions</a></h3>
+    <ul class="subList">
+      <?js 
+      for (var i=0; i < typedefs.length; i++){ ?>
+      <?js= self.getLiTag(typedefs[i]) ?><a href="#<?js= typedefs[i].id ?>">
+        <?js= typedefs[i].id ?></a></li>
+      <?js 
+      } ?>
+    </ul>
+  </div>
+  <?js 
+  }
+  if (hasClassColumn) { ?>
+  <div class="quick-nav-section<?js= columnCount ?>">
+    <h3>Classes</h3>
+    <ul class="subList">
+      <?js 
+        for (var i=0; i < classes.length; i++){ ?>
+      <?js= self.getLiTag(classes[i]) ?><?js= self.linkto(classes[i].longname, classes[i].name) ?></li>
+      <?js 
+        } ?>
+    </ul>
+  </div>
+  <?js 
+  } 
+  if (hasInterfaceColumn) { ?>
+    <div class="quick-nav-section<?js= columnCount ?>">
+      <h3>Interfaces</h3>
+      <ul class="subList">
+        <?js 
+          for (var i=0; i < interfaces.length; i++){ ?>
+        <?js= self.getLiTag(interfaces[i]) ?><?js= self.linkto(interfaces[i].longname, interfaces[i].name) ?></li>
+        <?js 
+          } ?>
+      </ul>
+    </div>
+    <?js 
+  } 
+  if (hasNamespaceColumn) { ?>
+    <div class="quick-nav-section<?js= columnCount ?>">
+      <h3>Namespaces</h3>
+      <ul class="subList">
+        <?js 
+          for (var i=0; i < namespaces.length; i++){ ?>
+        <?js= self.getLiTag(namespaces[i]) ?><?js= self.linkto(namespaces[i].longname, namespaces[i].name) ?></li>
+        <?js 
+          } ?>
+      </ul>
+    </div>
+    <?js 
+  } 
+  if (hasElementsColumn) { ?>
+    <div class="quick-nav-section<?js= columnCount ?>">
+      <h3>Elements</h3>
+      <ul class="subList">
+        <?js 
+          for (var i=0; i < elements.length; i++){ ?>
+        <?js= self.getLiTag(elements[i]) ?><?js= self.linkto(elements[i].longname, '&lt;' + elements[i].tagWithoutBrackets + '>') ?></li>
+        <?js 
+          } ?>
+      </ul>
+    </div>
+    <?js 
+    } ?>
+</section>
+<?js 
+} // end of "if quickNav section ?>
+
+<section>
+  <header>
+    <h3>JET Modules</h3>
+    <p>See
+      <a href="<?js= env.opts.query.apidocLink ?>ModuleLoadingOverview.html" target="_blank">JET Module Loading</a> for an overview of module usage within JET.</p>
+    <?js 
+  if (moduleContainer && moduleContainer.classdesc) { 
+    let classDesc = "class-description"; ?>
+    <?js elemId = "description-section"; ?>
+    <h3 id="<?js= elemId ?>" class="subsection-title">
+      Description<a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+    </h3>
+    <div class="<?js= classDesc ?>">
+      <?js= moduleContainer.classdesc ?>
+    </div>
+    <?js
+  }
+  if (!columnCount){ ?>
+    <p>This module does not return any value at all. The purpose of these modules is simply to load the associated JavaScript into memory, but the application typically does not directly interact with or instantiate the module code. For example, modules that define JET Web Components typically would not have return values.</p>
+  <?js
+  }?>
+</header>
+<article>
+<?js
+if (methods && methods.length > 0) { ?>
+    <?js elemId = "methods-section"; ?>
+    <h3 id="<?js= elemId ?>" class="subsection-title">
+      Functions
+      <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+    </h3>
+    <dl>
+      <?js 
+    for (var i=0; i < methods.length; i++) {
+      self.docInProgress = methods[i]; ?>
+      <?js= self.partial('method.tmpl', methods[i]) ?>
+      <?js 
+    }
+    self.docInProgress = null; ?>
+    </dl>
+    <?js 
+}  
+if (members && members.length > 0) { ?>
+    <?js elemId = "members-section"; ?>
+    <h3 id="<?js= elemId ?>" class="subsection-title">
+      Variables
+      <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+    </h3>
+    <dl>
+      <?js 
+    for (var i=0; i < members.length; i++) {
+      self.docInProgress = members[i]; ?>
+      <?js= self.partial('members.tmpl', members[i]) ?>
+      <?js 
+    }
+    self.docInProgress = null; ?>
+    </dl>
+    <?js 
+} 
+if (decorators && decorators.length > 0) { ?>
+  <?js elemId = "decorator-section"; ?>
+  <h3 id="<?js= elemId ?>" class="subsection-title">
+    Decorators
+    <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+  </h3>
+  <dl>
+    <?js 
+  for (var i=0; i < decorators.length; i++) {
+    self.docInProgress = decorators[i]; ?>
+    <?js= self.partial('method.tmpl', decorators[i]) ?>
+    <?js 
+  }
+  self.docInProgress = null; ?>
+  </dl>
+  <?js 
+} 
+if (typedefs && typedefs.length > 0) { ?>
+  <?js elemId = "typedef-section"; ?>
+  <h3 id="<?js= elemId ?>" class="subsection-title">
+    Type Definitions
+    <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+  </h3>
+  <dl>
+    <?js 
+  for (var i=0; i < typedefs.length; i++) {
+    self.docInProgress = typedefs[i];
+    if (typedefs[i].signature || typedefs[i].classsignature) { ?>
+      <?js= self.partial('method.tmpl', typedefs[i]) ?>
+    <?js
+    }
+    else { ?>
+      <?js= self.partial('members.tmpl', typedefs[i]) ?>
+    <?js
+    }
+  }
+  self.docInProgress = null; ?>
+  </dl>
+  <?js 
+} ?>
+</article>
+</section>

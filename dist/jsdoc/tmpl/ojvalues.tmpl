@@ -1,0 +1,134 @@
+<?js
+    
+    var props = obj;
+    var self = this;
+    
+    /* sort subprops under their parent props (like opts.classname) */
+    var parentProp = null;
+    props.forEach(function(prop, i) {
+        if (!prop) { return; }
+        if ( parentProp && prop.name.indexOf(parentProp.name + '.') === 0 ) {
+            prop.name = prop.name.substr(parentProp.name.length+1);
+            parentProp.subprops = parentProp.subprops || [];
+            parentProp.subprops.push(prop);
+            props[i] = null;
+        }
+        else {
+            parentProp = prop;
+        }
+    });
+    
+    /* determine if we need extra columns, "attributes" and "default" */
+    props.hasAttributes = false;
+    props.hasDefault = false;
+    props.hasName = false;
+    props.hasDescriptionOrSubprops = false;
+    
+    props.forEach(function(prop) {
+        if (!prop) { return; }
+        
+        if (prop.optional || typeof prop.nullable !== 'undefined'){
+            props.hasAttributes = true;
+        }
+        
+        if (prop.name) {
+            props.hasName = true;
+        }
+        
+        if (typeof prop.defaultvalue !== 'undefined') {
+            props.hasDefault = true;
+        }       
+        
+        if (typeof prop.description !== 'undefined' || typeof prop.subprops !== 'undefined') {
+            props.hasDescriptionOrSubprops = true;
+        }
+    });
+?>
+
+<table class="props">
+    <thead>
+	<tr>
+		<?js if (props.hasName) {?>
+		<th>Value</th>
+		<?js } ?>
+		
+		<?js if (props.hasAttributes) {?>
+		<th>Argument</th>
+		<?js } ?>
+		
+		<?js if (props.hasDefault) {?>
+		<th>Default</th>
+		<?js } ?>
+       		
+		<?js if (props.hasDescriptionOrSubprops) {?>
+		<th class="last">Description</th>
+		<?js } ?>
+	</tr>
+	</thead>
+	
+	<tbody>
+	<?js
+      var self = this;
+      var skipSubProperties = false;
+	    props.forEach(function(prop) {
+	        if (!prop) { return; }
+	?>
+	
+        <?js= self.getTrTag(prop) ?>
+            <?js if (props.hasName) {?>
+                <td class="name"><code><?js= prop.name ?></code></td>
+            <?js } ?>
+            
+            <?js if (props.hasAttributes) {?>
+                <td class="attributes">
+                <?js if (prop.optional) { ?>
+                    &lt;optional><br>
+                <?js } ?>
+                    
+                <?js 
+                  if (typeof prop.nullable !== 'undefined') {
+                    if (prop.nullable){?>
+                      &lt;nullable><br>
+                <?js } 
+                    else{?>  
+                      &lt;not nullable><br>
+                <?js} 
+                 } ?>
+                </td>
+            <?js } ?>
+            
+            <?js if (props.hasDefault) {?>
+                <td class="default">
+                <?js if (typeof prop.defaultvalue !== 'undefined') { ?>
+                    <?js= self.htmlsafe(prop.defaultvalue) ?>
+                <?js } ?>
+                </td>
+            <?js } ?>
+                                                                                        
+            <?js if (props.hasDescriptionOrSubprops || prop.tsdeprecated) {?>
+                <td class="description last"><?js= prop.description ?>
+                  <?js 
+                  if (prop.tsdeprecated && Array.isArray(prop.tsdeprecated)){ 
+                    var nonTypeDeprecation = [];
+                    for (var k = 0; k < prop.tsdeprecated.length; k++){
+                        if (prop.tsdeprecated[k].target !== 'propertyType'){
+                            nonTypeDeprecation.push(prop.tsdeprecated[k]);
+                        }
+                    }
+                    if (nonTypeDeprecation.length > 0){?>
+                    <dl class="deprecated">
+                      <dd class="important">Deprecated:</dd>
+                      <dd><?js= self.partial('deprecated.tmpl', nonTypeDeprecation) ?></dd>
+                    </dl>
+                    <?js
+                    }
+                  }                                            
+              if (prop.subprops && !skipSubProperties) { ?>
+              <h6>Properties</h6><?js= self.partial('properties.tmpl', prop.subprops) ?>
+                <?js } ?></td>
+            <?js } ?>
+        </tr>
+	
+	<?js }); ?>
+	</tbody>
+</table>

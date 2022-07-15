@@ -121,6 +121,7 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
     viewportNavigationMode: 'continuous' | 'discrete';
     viewportStart: string;
     translations: {
+        accessibleContainsControls?: string;
         accessibleItemDesc?: string;
         accessibleItemEnd?: string;
         accessibleItemStart?: string;
@@ -499,6 +500,7 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
     viewportNavigationMode: 'continuous' | 'discrete';
     viewportStart: string;
     translations: {
+        accessibleContainsControls?: string;
         accessibleItemDesc?: string;
         accessibleItemEnd?: string;
         accessibleItemStart?: string;

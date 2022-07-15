@@ -1,0 +1,286 @@
+<?js
+
+    // [jim] properties.tmpl is now used by the ojvalue tag, not just by details.tmpl.
+    // If needs diverge, copy properties.tmpl as ojvalues.tmpl, for use by ojvalue tag.
+    let props = obj;
+    let sortmembers = true;
+    if (obj.properties){
+      props = obj.properties;
+      sortmembers = obj.sortmembers;
+    }
+    var self = this;
+
+    /* sort subprops under their parent props (like opts.classname) */
+    var parentProp = null;
+    props.forEach(function(prop, i) {
+        if (!prop) { return; }
+        if ( parentProp && prop.name.indexOf(parentProp.name + '.') === 0 ) {
+            prop.name = prop.name.substr(parentProp.name.length+1);
+            parentProp.subprops = parentProp.subprops || [];
+            parentProp.subprops.push(prop);
+            if (sortmembers){
+              parentProp.subprops.sort(function(a, b) {
+                return (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0;
+              });
+            }
+            props[i] = null;
+        }
+        else {
+            parentProp = prop;
+        }
+    });
+
+    props = props.filter(prop => prop != null);
+    if (sortmembers){
+      props.sort(function(a, b) {
+        return (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0;
+      });
+    }
+
+    
+    /* determine if we need extra columns, "attributes" and "default" */
+    props.hasAttributes = false;
+    props.hasDefault = false;
+    props.hasName = false;
+    props.hasDescriptionOrSubprops = false;
+    // a new special column for properties that are marked with ojruntime (used by the metadata types typedef)
+    props.hasUseAtRuntime = false;
+    
+    props.forEach(function(prop) {
+        if (!prop) { return; }
+        
+        if (prop.optional || typeof prop.nullable !== 'undefined'){
+            props.hasAttributes = true;
+        }
+        
+        if (prop.name) {
+            props.hasName = true;
+        }
+
+        if (prop.ojruntime) {
+          props.hasUseAtRuntime = true;
+        }
+        
+        if (typeof prop.defaultvalue !== 'undefined') {
+            props.hasDefault = true;
+        }       
+        
+        if (typeof prop.description !== 'undefined' || typeof prop.subprops !== 'undefined') {
+            props.hasDescriptionOrSubprops = true;
+        }
+    });
+?>
+
+<table class="props">
+    <thead>
+	<tr>
+		<?js 
+    if (props.hasName) {
+      let columnHeader = 'Name';
+      if (props.hasUseAtRuntime) {
+        columnHeader = 'Key';
+      }  ?>
+		  <th><?js= columnHeader ?></th>
+    <?js 
+    }
+    if (props.hasUseAtRuntime) {?>
+      <th>Used at Runtime</th>
+    <?js
+    }
+    ?>
+		
+		<th>Type</th>
+		
+		<?js if (props.hasAttributes) {?>
+		<th>Argument</th>
+		<?js } ?>
+		
+		<?js if (props.hasDefault) {?>
+		<th>Default</th>
+		<?js } ?>
+       		
+		<?js if (props.hasDescriptionOrSubprops) {?>
+		<th class="last">Description</th>
+		<?js } ?>
+	</tr>
+	</thead>
+	
+	<tbody>
+	<?js
+      var self = this;
+	    props.forEach(function(prop) {
+        let skipSubProperties = false;
+        let propDesc = "";
+	      if (!prop) { return; } ?>
+        <?js= self.getTrTag(prop) ?>
+            <?js if (props.hasName) {
+              if (props.hasUseAtRuntime && prop.ojruntime) { ?>
+                <td class="rt"><code><?js= prop.name ?></code></td>
+              <?js
+              }
+              else { ?>
+                <td class="name"><code><?js= prop.name ?></code></td>
+            <?js 
+              } 
+            }?>
+            <?js if (props.hasUseAtRuntime) {?>
+              <td class="name"><code><?js= prop.ojruntime? 'yes':'no' ?></code></td>
+            <?js } ?>
+            
+            <td class="type">
+            <?js 
+            if (prop.type && prop.type.names) {
+              //[csaba]: in jsdoc 3.4 (and above) the names array will not contain any more the exact function signature 
+              //         (if a function was used in constructing the type), only the string "function".
+              //         in order not to loose any return type or arguments to the function we will look for the
+              //         parsedType attribute of the type Object. This will contain the whole expression used for type
+              //         as it was defined by comp. developer in the jsdoc comment section.
+              var typeHandled = false;
+              if (prop.tstype){
+                //[csaba]: this is the use-case where ojsignature was used with a jsdocOverride property set to true
+                //         in this case the original type will be replaced with the ojsignature type
+                if (prop.tstype[0].target.toLowerCase() === 'type'){ 
+                  typeHandled = true;
+                  //TODO if the sign. type is actually a TypeDef we probably don't want to display subproperties table
+                  // but in order to know if type is actually a TypeDef we need to search with self.find
+                  if (self.find({kind:"typedef", longname: prop.tstype[0].value}).length){
+                    skipSubProperties = true;
+                  } 
+                  if (!skipSubProperties && prop.properties){ ?>
+                    <?js= self.partial('properties.tmpl', prop.properties) ?>
+                  <?js
+                  }
+                  else{ ?>
+                    <?js= self.partial('typewrapper.tmpl', {tsdeprecations: prop.tsdeprecated, tstype: prop.tstype}) ?> 
+                  <?js 
+                  }
+                }
+              }
+              else if (prop.properties){ 
+                typeHandled = true; ?>
+                <?js= self.partial('properties.tmpl', prop.properties) ?>
+              <?js 
+              }
+              else if (prop.type.parsedType){
+                if (prop.type.parsedType.typeExpression){
+                  if (prop.type.parsedType.typeExpression.indexOf('function') >= 0 || prop.type.parsedType.typeExpression.indexOf('Function') >= 0 ||
+                      (prop.type.parsedType.typeExpression.indexOf('{') >=0 && prop.type.parsedType.typeExpression.indexOf('}') >0)){
+                    typeHandled = true;
+                    var _expression = prop.type.parsedType.typeExpression; 
+                    // remove the 'optional' operator if exists
+                    if (_expression.endsWith('=')){
+                      _expression = _expression.substr(0, _expression.length - 1);
+                    }
+                    // remove any not-null operator
+                    if (_expression.startsWith('!')){
+                      _expression = _expression.substr(1);
+                    }
+                    // remove the parenthesis of they exists
+                    if (_expression.charCodeAt(0) == 40 && _expression.charCodeAt(_expression.length - 1) == 41){
+                      _expression = _expression.substr(1, _expression.length - 2);
+                    }
+                    var data = _expression.split('|'); ?>
+                    <?js= self.partial('typewrapper.tmpl', {tsdeprecations: prop.tsdeprecated, types: data}) ?>
+                <?js 
+                  }
+                }
+              } 
+              if (!typeHandled) { ?>
+                <?js= self.partial('typewrapper.tmpl', {tsdeprecations: prop.tsdeprecated, types:prop.type.names}) ?>
+              <?js 
+              }
+            } ?>
+            </td>
+            
+            <?js if (props.hasAttributes) {?>
+                <td class="attributes">
+                <?js if (prop.optional) { ?>
+                    &lt;optional><br>
+                <?js } ?>
+                    
+                <?js 
+                  if (typeof prop.nullable !== 'undefined') {
+                    if (prop.nullable){?>
+                      &lt;nullable><br>
+                <?js } 
+                    else{?>  
+                      &lt;not nullable><br>
+                <?js} 
+                 } ?>
+                </td>
+            <?js } ?>
+            
+            <?js if (props.hasDefault) {?>
+                <td class="default">
+                <?js if (typeof prop.defaultvalue !== 'undefined') { ?>
+                    <?js= self.htmlsafe(prop.defaultvalue) ?>
+                <?js } ?>
+                </td>
+            <?js } ?>
+
+            <?js if (props.hasDescriptionOrSubprops || prop.tsdeprecated) {
+                if (prop.description){
+                  propDesc = prop.description;
+                  // we provide a way to inject data content into the description column.
+                  // for now we only support typedefs or the sub-properties of the property being processed.
+                  // the syntax is <%typedefname%> or <%properties%>
+                  // the token is substituted with the properties template evaluated content
+                  // look for <%typdef%> tokens
+                  let tokenStartIdx = propDesc.indexOf('<%');
+                  while (tokenStartIdx >=0){
+                    let tokenEndIdx = propDesc.indexOf('%>', tokenStartIdx);
+                    if ( tokenEndIdx > tokenStartIdx){
+                      //extract the target name from the token
+                      let targetname = propDesc.substring(tokenStartIdx+2, tokenEndIdx);
+                      let properties = [];
+                      if (targetname !== 'properties' && (/([\w-]+\.)+/g).test(targetname)){
+                        let typedefname = targetname;
+                        let typedefs = self.find({kind:"typedef", longname: typedefname});
+                        if (typedefs.length){
+                          // we can only pull in properties of one typedef but can inject in several places
+                          let typedefobj = typedefs[0];
+                          if (typedefobj.properties && typedefobj.properties.length > 0){
+                            properties = typedefobj.properties;
+                          }
+                        }
+                      }
+                      if (targetname == 'properties'){
+                        properties = prop.subprops;
+                      }
+                      if (properties.length > 0){
+                        skipSubProperties = true;
+                        let content = self.partial('properties.tmpl', prop.subprops);
+                        let subpropsTable = '<h6>Properties</h6>' + content;
+                        let regex = new RegExp('<%' + targetname + '%>');
+                        propDesc = propDesc.replace(regex, subpropsTable);
+                      }
+                      tokenStartIdx = propDesc.indexOf('<%', tokenEndIdx + 2);
+                    }
+                  }
+                }?>
+                <td class="description last"><?js= (propDesc.length > 0? propDesc : prop.description) ?>
+                  <?js 
+                  if (prop.tsdeprecated && Array.isArray(prop.tsdeprecated)){ 
+                    var nonTypeDeprecation = [];
+                    for (var k = 0; k < prop.tsdeprecated.length; k++){
+                        if (prop.tsdeprecated[k].target !== 'propertyType' && prop.tsdeprecated[k].target !== 'returnType'){
+                            nonTypeDeprecation.push(prop.tsdeprecated[k]);
+                        }
+                    }
+                    if (nonTypeDeprecation.length > 0){?>
+                    <dl class="deprecated">
+                      <dt class="important">Deprecated:</dt>
+                      <dd><?js= self.partial('deprecated.tmpl', nonTypeDeprecation) ?></dd>
+                    </dl>
+                    <?js
+                    }
+                  }
+                  if (prop.subprops && !skipSubProperties) { ?>
+                  <h6>Properties</h6><?js= self.partial('properties.tmpl', prop.subprops) ?>
+                <?js } ?></td>
+            <?js } ?>
+        </tr>
+	
+	<?js }); ?>
+	</tbody>
+</table>

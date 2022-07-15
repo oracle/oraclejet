@@ -1,0 +1,44 @@
+<?js
+  var data = obj;
+  var self = this;
+
+  //[csaba] the entire doclet is deprecated
+  if (data.tsdeprecated && !data.tsdeprecated.target){ ?>
+    <h5 class="important">Deprecated:</h5>
+    <?js= this.partial('deprecated.tmpl', data.tsdeprecated) ?>
+  <?js
+  } 
+  if (data.version || data.since || data.see ) {
+    ?>
+    <dl class="details">
+    <?js 
+    if (data.version) { ?>
+      <dt class="tag-version">Version:</dt>
+      <dd class="tag-version"><ul class="dummy"><li><?js= version ?></li></ul></dd>
+    <?js 
+    } 
+    if (data.since && (data.kind !== "class") && data.kind !== "namespace" && data.kind !== "interface") { ?>
+      <dt class="tag-since">Since:</dt>
+      <dd class="tag-since"><ul class="dummy"><li><?js= since ?></dd>
+    <?js 
+    } 
+    if (data.see && see.length) {?>
+      <dt class="tag-see">See:</dt>
+        <dd class="tag-see">
+          <ul><?js see.forEach(function(s) { ?>
+                  <li><?js= self.linkto(s) ?></li>
+                  <?js 
+                   }); ?>
+          </ul>
+        </dd>
+    <?js 
+    } ?>
+  </dl>
+  <?js 
+  }
+  if (data.tsexamples && tsexamples.length) { ?>
+    <h5 class="style-example">Example<?js= tsexamples.length > 1? 's':'' ?></h5>
+    <?js= this.partial('tsexamples.tmpl', tsexamples) ?>
+  <?js 
+  } 
+  ?>

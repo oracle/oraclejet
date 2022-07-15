@@ -1,0 +1,6 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@include module-include-once("stable.variables.gauge") {
+:root {
+  --oj-gauge-metric-label-font-weight: bold;
+  }
+}

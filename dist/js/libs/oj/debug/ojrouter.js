@@ -3501,6 +3501,21 @@ var Router = oj.Router;
 
     this.viewModel = undefined;
 
+    this.go = () => {
+      if (!this._router) {
+        oj.Router._transitionedToState.dispatch({ hasChanged: false });
+        return Promise.reject(new Error('Router is not defined for this RouterState object.'));
+      }
+      return this._router.go(this._id);
+    };
+
+    this.isCurrent = () => {
+      if (!this._router) {
+        throw new Error('Router is not defined for this RouterState object.');
+      }
+      return this._router._stateId() === this._id;
+    };
+
     Object.defineProperties(this, {
       id: {
         value: this._id,
@@ -3576,21 +3591,6 @@ var Router = oj.Router;
         enumerable: true
       }
     });
-  };
-
-  oj.RouterState.prototype.go = function () {
-    if (!this._router) {
-      oj.Router._transitionedToState.dispatch({ hasChanged: false });
-      return Promise.reject(new Error('Router is not defined for this RouterState object.'));
-    }
-    return this._router.go(this._id);
-  };
-
-  oj.RouterState.prototype.isCurrent = function () {
-    if (!this._router) {
-      throw new Error('Router is not defined for this RouterState object.');
-    }
-    return this._router._stateId() === this._id;
   };
 }());
 

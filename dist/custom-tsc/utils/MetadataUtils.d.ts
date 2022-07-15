@@ -7,7 +7,7 @@ export declare function stringToJS(memberName: string, type: ts.SyntaxKind, valu
 export declare function getGenericTypeParameters(propsTypeNode: ts.NodeWithTypeArguments): string;
 export declare function getTypeParametersFromType(type: ts.Type, checker: ts.TypeChecker): string;
 export declare function getDtMetadata(objWithJsDoc: ts.HasJSDoc, metaUtilObj: MetaTypes.MetaUtilObj, flags?: number): MetaTypes.AllMetadataTypes;
-export declare function addMetadataToClassNode(classNode: ts.ClassDeclaration, metadata: MetaTypes.RuntimeMetadata): ts.ClassDeclaration;
+export declare function addMetadataToClassNode(vcompClassInfo: MetaTypes.VCompClassInfo, metadata: MetaTypes.RuntimeMetadata): ts.ClassDeclaration;
 export declare function addArgumentsToRegisterCustomElementCall(functionalCompNode: MetaTypes.VCompFunctionalNode, vcompFunctionInfo: MetaTypes.VCompFunctionInfo, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.VCompFunctionalNode;
 export declare function getPropsInfo(compType: MetaTypes.VCompType, componentName: string, typeRef: ts.TypeReferenceNode, vexportToAlias: MetaTypes.ImportAliases, checker: ts.TypeChecker): MetaTypes.PropsInfo | null;
 export declare function getIntersectionTypeNodeInfo(intersectionTypeNode: ts.IntersectionTypeNode, vexportToAlias: MetaTypes.ImportAliases, isInline: boolean, checker: ts.TypeChecker): MetaTypes.IntersectionTypeNodeInfo;
@@ -29,3 +29,4 @@ export declare function updateCompilerCompMetadata(vcompInfo: MetaTypes.VCompInf
 export declare function pruneCompilerMetadata(metaUtilObj: MetaTypes.MetaUtilObj): void;
 export declare function pruneMetadata(metadata: Record<string, any>): void;
 export declare function updateRtExtensionMetadata(name: string, value: any, metaUtilObj: MetaTypes.MetaUtilObj): void;
+export declare function getValueFromNode(exp: ts.Node): string | number | boolean | object | Array<string | number | boolean | object> | null | undefined;

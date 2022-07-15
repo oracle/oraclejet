@@ -19,6 +19,15 @@ export function getLayout<K1, K2, D1, D2>(obj: {
         path?: (context: DvtDiagramLayoutContext<K1, K2, D1, D2>, link: DvtDiagramLayoutContextLink<K1, K2, D2>) => string;
         labelLayout?: (context: DvtDiagramLayoutContext<K1, K2, D1, D2>, link: DvtDiagramLayoutContextLink<K1, K2, D2>) => LabelLayout;
     };
+    panZoomState?: {
+        zoom: number;
+        centerX: number;
+        centerY: number;
+    } | ((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => {
+        zoom: number;
+        centerY: number;
+        centerX: number;
+    });
     viewport?: {
         x: number;
         y: number;

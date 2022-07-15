@@ -1,9 +1,12 @@
-import { h } from 'preact';
 declare type Props = {
+    /**
+     * Whether this live region is atomic
+     */
+    atomic?: 'true' | 'false';
     /**
      * The text to be read out in the live region
      */
-    text?: string;
+    children?: string;
     /**
      * Timeout for updating the text
      */
@@ -12,10 +15,6 @@ declare type Props = {
      * The value for the aria-live attribute
      */
     type?: 'assertive' | 'polite' | 'off';
-    /**
-     * Whether this live region is atomic
-     */
-    atomic?: 'true' | 'false';
 };
 /**
  * A helper component that renders an aria-live region
@@ -23,5 +22,5 @@ declare type Props = {
  * TODO: Create a more centralized component that can handle aria-live region for
  * the whole application and use context api to communicate
  */
-declare function LiveRegion({ atomic, text, timeout, type }: Props): h.JSX.Element;
+declare function LiveRegion({ atomic, children, timeout, type }: Props): import("preact").JSX.Element;
 export { LiveRegion };

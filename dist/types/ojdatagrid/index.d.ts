@@ -164,6 +164,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         accessibleSelectionAffordanceTop?: string;
         accessibleSortAscending?: string;
         accessibleSortDescending?: string;
+        accessibleSortable?: string;
         accessibleStateSelected?: string;
         accessibleSummaryEstimate?: string;
         accessibleSummaryExact?: string;
@@ -189,9 +190,11 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         labelResizeRow?: string;
         labelResizeWidth?: string;
         labelSelectMultiple?: string;
+        labelSortAsc?: string;
         labelSortCol?: string;
         labelSortColAsc?: string;
         labelSortColDsc?: string;
+        labelSortDsc?: string;
         labelSortRow?: string;
         labelSortRowAsc?: string;
         labelSortRowDsc?: string;
@@ -200,6 +203,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         resizeColumnDialog?: string;
         resizeRowDialog?: string;
         rowHeight?: string;
+        tooltipRequired?: string;
     };
     addEventListener<T extends keyof ojDataGridEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojDataGridEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -638,6 +642,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         accessibleSelectionAffordanceTop?: string;
         accessibleSortAscending?: string;
         accessibleSortDescending?: string;
+        accessibleSortable?: string;
         accessibleStateSelected?: string;
         accessibleSummaryEstimate?: string;
         accessibleSummaryExact?: string;
@@ -663,9 +668,11 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         labelResizeRow?: string;
         labelResizeWidth?: string;
         labelSelectMultiple?: string;
+        labelSortAsc?: string;
         labelSortCol?: string;
         labelSortColAsc?: string;
         labelSortColDsc?: string;
+        labelSortDsc?: string;
         labelSortRow?: string;
         labelSortRowAsc?: string;
         labelSortRowDsc?: string;
@@ -674,6 +681,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         resizeColumnDialog?: string;
         resizeRowDialog?: string;
         rowHeight?: string;
+        tooltipRequired?: string;
     };
 }
 export interface ojDataGridSettablePropertiesLenient<K, D> extends Partial<ojDataGridSettableProperties<K, D>> {

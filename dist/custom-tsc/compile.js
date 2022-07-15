@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -25,21 +29,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ts = __importStar(require("typescript"));
 const metadataTransformer_1 = __importDefault(require("./metadataTransformer"));
 const decoratorTransformer_1 = __importDefault(require("./decoratorTransformer"));
-const JetTypeGenerator_1 = require("./JetTypeGenerator");
+const importTransformer_1 = __importDefault(require("./importTransformer"));
+const dtsTransformer_1 = __importDefault(require("./dtsTransformer"));
+const dtsTransformer_2 = require("./dtsTransformer");
 function compile({ tsconfigJson, buildOptions }) {
+    var _a, _b;
     const parsedJsonConfig = ts.parseJsonConfigFileContent(tsconfigJson, ts.sys, '.');
     const parsedTsconfigJson = {
         compilerOptions: parsedJsonConfig.options,
         files: parsedJsonConfig.fileNames
     };
     const _buildOptions = Object.assign({}, buildOptions);
+    if ((_b = (_a = parsedJsonConfig === null || parsedJsonConfig === void 0 ? void 0 : parsedJsonConfig.raw) === null || _a === void 0 ? void 0 : _a.compilerOptions) === null || _b === void 0 ? void 0 : _b['_JET_translationBundleIds']) {
+        _buildOptions.translationBundleIds = [
+            ...parsedJsonConfig.raw.compilerOptions['_JET_translationBundleIds']
+        ];
+    }
     const compilerHost = ts.createCompilerHost(parsedTsconfigJson.compilerOptions);
     const program = ts.createProgram(parsedTsconfigJson.files, parsedTsconfigJson.compilerOptions, compilerHost);
-    compilerHost.writeFile = JetTypeGenerator_1.getTypeGenerator(_buildOptions);
     let emitResult;
     const errors = [];
     const EmitOptions = {
-        before: [metadataTransformer_1.default(program, _buildOptions), decoratorTransformer_1.default(_buildOptions)]
+        before: [
+            (0, metadataTransformer_1.default)(program, _buildOptions),
+            (0, decoratorTransformer_1.default)(_buildOptions),
+            (0, importTransformer_1.default)(_buildOptions)
+        ],
+        afterDeclarations: [(0, dtsTransformer_1.default)(program, _buildOptions)]
     };
     if (_buildOptions.isolationMode) {
         program.getSourceFiles().forEach((sf) => {
@@ -63,7 +79,7 @@ function compile({ tsconfigJson, buildOptions }) {
     }
     handleDiagnosticMessages(program, emitResult, errors);
     if (errors.length == 0 && parsedTsconfigJson.compilerOptions.declaration) {
-        JetTypeGenerator_1.assembleTypes(buildOptions);
+        (0, dtsTransformer_2.assembleTypes)(buildOptions);
     }
     return {
         errors,

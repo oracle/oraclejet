@@ -83,6 +83,9 @@ var __oj_time_axis_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },

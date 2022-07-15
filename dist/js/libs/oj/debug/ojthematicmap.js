@@ -50,8 +50,8 @@ var __oj_thematic_map_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -131,8 +131,8 @@ var __oj_thematic_map_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -174,8 +174,8 @@ var __oj_thematic_map_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -353,6 +353,9 @@ var __oj_thematic_map_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "areasRegion": {
           "type": "string"
         },
@@ -724,7 +727,7 @@ var __oj_thematic_map_marker_metadata =
    * @ojcomponent oj.ojThematicMap
    * @augments oj.dvtBaseComponent
    * @since 0.7.0
-   *
+   * @ojimportmembers oj.ojSharedContextMenu
    * @ojrole application
    * @ojshortdesc A thematic map is an interactive data visualization that displays data corresponding to geographic locations or regions.
    *              Applications are required to supply a mapProvider for a valid thematic map.
@@ -892,7 +895,7 @@ var __oj_thematic_map_marker_metadata =
          * @type {(Object|null)=}
          * @ojsignature {target: "Type", value: "DataProvider<K1, D1>|null", jsdocOverride:true}
          * @default null
-         * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+         * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
          *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
          *
          * @example <caption>Initialize the thematic map with the
@@ -1200,7 +1203,7 @@ var __oj_thematic_map_marker_metadata =
          * @type {(Object|null)=}
          * @ojsignature {target: "Type", value: "DataProvider<K2, D2>|null", jsdocOverride:true}
          * @default null
-         * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+         * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
          *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
          *
          * @example <caption>Initialize the thematic map with the
@@ -1384,7 +1387,7 @@ var __oj_thematic_map_marker_metadata =
          * @type {(Object|null)=}
          * @ojsignature {target: "Type", value: "DataProvider<K3, D3>|null", jsdocOverride:true}
          * @default null
-         * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+         * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
          *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
          *
          * @example <caption>Initialize the thematic map with the
@@ -3529,7 +3532,6 @@ var __oj_thematic_map_marker_metadata =
    */
 
    // Slots
-
   /**
    * <p>
    *  The <code class="prettyprint">areaTemplate</code> slot is used to specify the template for

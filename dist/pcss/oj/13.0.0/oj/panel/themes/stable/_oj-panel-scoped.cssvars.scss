@@ -1,0 +1,12 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.panel.scoped") {
+
+  
+  /* panel                      */
+  /* -------------------------- */
+.oj-color-invert {
+  --oj-panel-bg-color:                  var(--oj-core-bg-color-content); 
+  --oj-panel-border-color:              var(--oj-core-divider-color);
+}
+}

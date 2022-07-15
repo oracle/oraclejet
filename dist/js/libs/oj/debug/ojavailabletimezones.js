@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojlocaledata', 'ojs/ojoratimezone', 'ojs/ojconverterutils-i18n'], function (exports, LocaleData, ojoratimezone, __ConverterUtilsI18n) { 'use strict';
+define(['exports', 'ojs/ojlocaledata', 'ojs/ojoratimezone', 'ojs/ojconverterutils-i18n', 'ojs/ojconfig'], function (exports, LocaleData, ojoratimezone, __ConverterUtilsI18n, ojconfig) { 'use strict';
 
     const LocalOraI18nUtils = __ConverterUtilsI18n.OraI18nUtils;
     const _UTC = 'UTC';
@@ -17,6 +17,32 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojoratimezone', 'ojs/ojconverterutil
             const arr = tag.split('-');
             return arr[0];
         }
+        static getDatesNode(localeElements) {
+            function getDates(locale) {
+                let datesNode = null;
+                const mainNode = localeElements.main[locale];
+                if (mainNode) {
+                    datesNode = mainNode.dates;
+                }
+                return datesNode;
+            }
+            let locale = ojconfig.getLocale();
+            let dates = getDates(locale);
+            if (dates) {
+                return dates;
+            }
+            let parts = locale.split('-');
+            parts.pop();
+            while (parts.length > 0) {
+                locale = parts.join('-');
+                dates = getDates(locale);
+                if (dates) {
+                    return dates;
+                }
+                parts.pop();
+            }
+            return localeElements.main['en-US'].dates;
+        }
         static _availableTimeZonesImpl(localeElements) {
             const tz = ojoratimezone.OraTimeZone.getInstance();
             const sortOptions = { sensitivity: 'variant' };
@@ -24,8 +50,9 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojoratimezone', 'ojs/ojconverterutil
             const mainNode = LocalOraI18nUtils.getLocaleElementsMainNode(localeElements);
             const mainNodeKey = LocalOraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
             const lang = AvailableTimeZones._getBCP47Lang(mainNodeKey);
-            const metaZones = mainNode.dates.timeZoneNames.metazone;
-            const cities = mainNode.dates.timeZoneNames.zone;
+            const dates = AvailableTimeZones.getDatesNode(localeElements);
+            const metaZones = dates.timeZoneNames.metazone;
+            const cities = dates.timeZoneNames.zone;
             const sortedZones = [];
             const offsets = {};
             const tzData = localeElements.supplemental.timeZoneData;

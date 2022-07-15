@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -24,15 +28,15 @@ const ts = __importStar(require("typescript"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
 const TypeUtils = __importStar(require("./MetadataTypeUtils"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
+const TransformerError_1 = require("./TransformerError");
+const _REGEX_RESERVED_EVENT_PREFIX = new RegExp(/^on[A-Z]/);
 function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
-    let types = TypeUtils.getPropertyTypes(propDeclaration);
-    let typeNames = Object.keys(types);
-    if (typeNames.length === 0) {
-        return false;
-    }
-    const rtEventMeta = {};
     let isEvent = false;
-    let eventTypeName, eventTypeNode;
+    const types = TypeUtils.getPropertyTypes(propDeclaration);
+    const typeNames = Object.keys(types);
+    const rtEventMeta = {};
+    let eventTypeName;
+    let eventTypeNode;
     for (let i = 0; i < typeNames.length; i++) {
         let typeName = typeNames[i];
         switch (typeName) {
@@ -49,6 +53,10 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
         }
     }
     if (isEvent) {
+        if (!memberKey.startsWith('on')) {
+            const suggestion = `on${memberKey[0].toUpperCase()}${memberKey.substring(1)}`;
+            throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `"${memberKey}" is not a valid property name for defining a custom event. Did you mean "${suggestion}"?`, propDeclaration);
+        }
         const eventProp = `${memberKey[2].toLowerCase()}${memberKey.substring(3)}`;
         if (!metaUtilObj.rtMetadata.events) {
             metaUtilObj.rtMetadata.events = {};
@@ -56,6 +64,11 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
         }
         metaUtilObj.rtMetadata.events[eventProp] = rtEventMeta;
         metaUtilObj.fullMetadata.events[eventProp] = Object.assign({}, rtEventMeta, getDtMetadataForEvent(propDeclaration, eventTypeName, eventTypeNode, metaUtilObj));
+    }
+    else {
+        if (memberKey.match(_REGEX_RESERVED_EVENT_PREFIX)) {
+            throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `'${memberKey}' - property names beginning with the 'on' prefix are reserved for custom element Events.`, propDeclaration);
+        }
     }
     return isEvent;
 }
@@ -106,6 +119,13 @@ function getDtMetadataForEvent(propDeclaration, typeName, typeNode, metaUtilObj)
             }
         }
         detailObj = getEventDetails(detailNode, metaUtilObj);
+        if (detailObj) {
+            if (ts.isTypeReferenceNode(detailNode) && TypeUtils.isLocalExport(detailNode, metaUtilObj)) {
+                const typeDefName = TypeUtils.getTypeNameFromTypeReference(detailNode);
+                dt['jsdoc'] = dt['jsdoc'] || {};
+                dt['jsdoc']['typedef'] = typeDefName;
+            }
+        }
     }
     if (detailObj || cancelableDetail) {
         dt['detail'] = Object.assign({}, cancelableDetail, detailObj);
@@ -150,6 +170,11 @@ function getEventDetails(detailNode, metaUtilObj) {
                         else {
                             details[property].type = 'object';
                             details[property].properties = subprops;
+                        }
+                        const typeDefName = TypeUtils.getPossibleTypeDef(property, symbol, eventDetailMetadata, metaUtilObj);
+                        if (typeDefName) {
+                            details[property]['jsdoc'] = details[property]['jsdoc'] || {};
+                            details[property]['jsdoc']['typedef'] = typeDefName;
                         }
                     }
                 }

@@ -5,8 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { jsx, jsxs } from 'preact/jsx-runtime';
 import { customElement } from 'ojs/ojvcomponent';
-import { Component, h } from 'preact';
+import { Component } from 'preact';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -25,16 +26,16 @@ let ListItemLayout = class ListItemLayout extends Component {
         if (this._hasContent(slotContent)) {
             let defaultTabIndex = 0;
             if (wrapperClasses && wrapperClasses.length > 0 && isAdditionalTabIndexNeeded) {
-                return (h("div", { class: wrapperClasses, tabIndex: defaultTabIndex }, slotContent));
+                return (jsx("div", Object.assign({ class: wrapperClasses, tabIndex: defaultTabIndex }, { children: slotContent })));
             }
             else if (wrapperClasses && wrapperClasses.length > 0) {
-                return h("div", { class: wrapperClasses }, slotContent);
+                return jsx("div", Object.assign({ class: wrapperClasses }, { children: slotContent }));
             }
             else if (isAdditionalTabIndexNeeded) {
-                return h("div", { tabIndex: defaultTabIndex }, slotContent);
+                return jsx("div", Object.assign({ tabIndex: defaultTabIndex }, { children: slotContent }));
             }
             else {
-                return h("div", null, slotContent);
+                return jsx("div", { children: slotContent });
             }
         }
         return null;
@@ -43,16 +44,16 @@ let ListItemLayout = class ListItemLayout extends Component {
         if (this._hasContent(slotContent)) {
             let defaultTabIndex = 0;
             if (wrapperClasses && wrapperClasses.length > 0 && isAdditionalTabIndexNeeded) {
-                return (h("div", { "data-oj-clickthrough": 'disabled', class: wrapperClasses, tabIndex: defaultTabIndex }, slotContent));
+                return (jsx("div", Object.assign({ "data-oj-clickthrough": "disabled", class: wrapperClasses, tabIndex: defaultTabIndex }, { children: slotContent })));
             }
             else if (wrapperClasses && wrapperClasses.length > 0) {
-                return (h("div", { "data-oj-clickthrough": 'disabled', class: wrapperClasses }, slotContent));
+                return (jsx("div", Object.assign({ "data-oj-clickthrough": "disabled", class: wrapperClasses }, { children: slotContent })));
             }
             else if (isAdditionalTabIndexNeeded) {
-                return (h("div", { "data-oj-clickthrough": 'disabled', tabIndex: defaultTabIndex }, slotContent));
+                return (jsx("div", Object.assign({ "data-oj-clickthrough": "disabled", tabIndex: defaultTabIndex }, { children: slotContent })));
             }
             else {
-                return h("div", { "data-oj-clickthrough": 'disabled' }, slotContent);
+                return jsx("div", Object.assign({ "data-oj-clickthrough": "disabled" }, { children: slotContent }));
             }
         }
         return null;
@@ -75,20 +76,7 @@ let ListItemLayout = class ListItemLayout extends Component {
             textSlotClass = textSlotClass + ' oj-listitemlayout-start-padding';
             quaternaryClass = quaternaryClass + ' oj-listitemlayout-start-padding';
         }
-        return (h("div", { class: 'oj-listitemlayout-grid' },
-            this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector', false),
-            this._getWrappedSlotContent(props.leading, leadingClass, true),
-            h("div", { class: textSlotClass },
-                this._getWrappedSlotContent(props.overline, null, true),
-                this._getWrappedSlotContent(props.children, null, true),
-                this._getWrappedSlotContent(props.secondary, null, true),
-                this._getWrappedSlotContent(props.tertiary, tertiaryClass, true)),
-            hasExtra ? (h("div", { class: 'oj-listitemlayout-extra' },
-                this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding', true),
-                this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding', true),
-                this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding', false))) : null,
-            this._getWrappedSlotContent(props.quaternary, quaternaryClass, true),
-            this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation', false)));
+        return (jsxs("div", Object.assign({ class: "oj-listitemlayout-grid" }, { children: [this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector', false), this._getWrappedSlotContent(props.leading, leadingClass, true), jsxs("div", Object.assign({ class: textSlotClass }, { children: [this._getWrappedSlotContent(props.overline, null, true), this._getWrappedSlotContent(props.children, null, true), this._getWrappedSlotContent(props.secondary, null, true), this._getWrappedSlotContent(props.tertiary, tertiaryClass, true)] })), hasExtra ? (jsxs("div", Object.assign({ class: "oj-listitemlayout-extra" }, { children: [this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding', true), this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding', true), this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding', false)] }))) : null, this._getWrappedSlotContent(props.quaternary, quaternaryClass, true), this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation', false)] })));
     }
 };
 ListItemLayout.metadata = { "slots": { "": {}, "overline": {}, "selector": {}, "leading": {}, "secondary": {}, "tertiary": {}, "metadata": {}, "trailing": {}, "action": {}, "quaternary": {}, "navigation": {} } };

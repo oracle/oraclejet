@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojvcollection', 'ojs/ojdomutils'], function (exports, preact, ojvcomponent, oj, DataCollectionUtils, AnimationUtils, ThemeUtils, Translations, Context, Logger, ojvcollection, DomUtils) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojvcollection', 'ojs/ojdomutils'], function (exports, jsxRuntime, preact, ojvcomponent, oj, DataCollectionUtils, AnimationUtils, ThemeUtils, Translations, Context, Logger, ojvcollection, DomUtils) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -521,6 +521,9 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojcore-base', 'ojs/ojdatac
                             if (this.actionableMode === false) {
                                 this._enterActionableMode();
                             }
+                            else {
+                                this._exitActionableMode();
+                            }
                             break;
                         }
                         case 'Escape':
@@ -584,7 +587,7 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojcore-base', 'ojs/ojdatac
             else {
                 data = this.getData();
                 const positions = this.state.skeletonPositions;
-                if (data) {
+                if (data && this.state.width > 0) {
                     if (data.value && data.value.data.length === 0) {
                         content = this.contentHandler.renderNoData();
                     }
@@ -603,14 +606,10 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojcore-base', 'ojs/ojdatac
                 }
             }
             if (data == null) {
-                return (preact.h(ojvcomponent.Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
-                    preact.h("div", { role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
-                        preact.h("div", { role: "row", style: this._getContentDivStyle(), tabIndex: 0, "aria-label": Translations.getTranslatedString('oj-ojWaterfallLayout.msgFetchingData'), "data-oj-context": true }, content))));
+                return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsxRuntime.jsx("div", Object.assign({ role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsxRuntime.jsx("div", Object.assign({ role: "row", style: this._getContentDivStyle(), tabIndex: 0, "aria-label": Translations.getTranslatedString('oj-ojWaterfallLayout.msgFetchingData'), "data-oj-context": true }, { children: content })) })) })));
             }
             else {
-                return (preact.h(ojvcomponent.Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
-                    preact.h("div", { onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
-                        preact.h("div", { role: "row", style: this._getContentDivStyle(), "data-oj-context": true }, content))));
+                return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsxRuntime.jsx("div", Object.assign({ onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsxRuntime.jsx("div", Object.assign({ role: "row", style: this._getContentDivStyle(), "data-oj-context": true }, { children: content })) })) })));
             }
         }
         _getScrollPolicyOptions() {
@@ -651,6 +650,10 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojcore-base', 'ojs/ojdatac
                             const currWidth = this.state.width;
                             const newWidth = Math.round(entry.contentRect.width);
                             if (Math.abs(newWidth - currWidth) > WaterfallLayout_1.minResizeWidthThreshold) {
+                                const skeleton = root.querySelector('.oj-waterfalllayout-skeleton');
+                                if (skeleton && this.skeletonWidth == 0) {
+                                    this.skeletonWidth = skeleton.clientWidth;
+                                }
                                 this.setState({ width: newWidth });
                                 if (this.getSkeletonPositions() != null) {
                                     this._updatePositionsForSkeletons(newWidth);
@@ -1160,8 +1163,7 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojcore-base', 'ojs/ojdatac
                     style.width = position.width + 'px';
                 }
             }
-            return (preact.h("div", { class: "oj-waterfalllayout-skeleton", style: style },
-                preact.h("div", { class: "oj-waterfalllayout-skeleton-content oj-animation-skeleton" })));
+            return (jsxRuntime.jsx("div", Object.assign({ class: "oj-waterfalllayout-skeleton", style: style }, { children: jsxRuntime.jsx("div", { class: "oj-waterfalllayout-skeleton-content oj-animation-skeleton" }) })));
         }
     };
     exports.WaterfallLayout.defaultProps = {

@@ -488,23 +488,9 @@ define(['ojs/ojcore-base', 'ojs/ojrowexpander', 'ojs/ojdatasource-common'], func
     return new Promise(function (resolve) {
       // call helper method to find the flattened index
       var rowIndex = FlattenedTreeDataGridDataSource.superclass.getIndex.call(this, rowKey);
-      // for column index, just search through the column keys array
       var colIndex;
-      for (var i = 0; i < this.m_columns.length; i++) {
-        if (this.m_columns[i] === colKey) {
-          colIndex = i;
-          break;
-        }
-      }
-
-      // make sure at least one of the indexes are valid
-      // (at least one, since caller might only have specified one axis)
-      if (rowIndex >= 0 || colIndex >= 0) {
-        resolve({ row: rowIndex, column: colIndex });
-      } else {
-        // can't find it (should it be reject?)
-        resolve(null);
-      }
+      colIndex = this.m_columns.indexOf(colKey);
+      resolve({ row: rowIndex, column: colIndex });
     }.bind(this));
   };
 

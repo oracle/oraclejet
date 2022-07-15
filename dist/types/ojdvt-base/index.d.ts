@@ -2,6 +2,7 @@ import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, 
 export interface dvtBaseComponent<SP extends dvtBaseComponentSettableProperties = dvtBaseComponentSettableProperties> extends baseComponent<SP> {
     trackResize: 'on' | 'off';
     translations: {
+        accessibleContainsControls?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
         labelCountWithTotal?: string;
@@ -44,6 +45,7 @@ export interface dvtBaseComponentEventMap<SP extends dvtBaseComponentSettablePro
 export interface dvtBaseComponentSettableProperties extends baseComponentSettableProperties {
     trackResize: 'on' | 'off';
     translations: {
+        accessibleContainsControls?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
         labelCountWithTotal?: string;

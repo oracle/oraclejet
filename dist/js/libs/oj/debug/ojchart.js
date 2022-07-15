@@ -1310,7 +1310,6 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    */
 
    // Slots
-
   /**
    * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the chart. The slot content must be a &lt;template> element.
    * The content of the template should only be one &lt;oj-chart-item> element. See the [oj-chart-item]{@link oj.ojChartItem} doc for more details. A <b>series-id</b> and <b>group-id</b> must be specified.</p>
@@ -2491,8 +2490,8 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @memberof! oj.ojChart.Legend
    * @type {string=}
    * @ojdeprecated {since: '12.1.0', description: 'Setting scrolling to off is not supported in Redwood theme and it is not recommended. As such, this attribute is deprecated.'}
-   * @ojvalue {string} "off"
-   * @ojvalue {string} "asNeeded"
+   * @ojvalue {string} "off" The legend will not be scrollable.
+   * @ojvalue {string} "asNeeded" The legend will be scrollable if items do not fit in the specified space.
    * @default "asNeeded"
    */
 
@@ -3781,8 +3780,8 @@ var __oj_chart_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -4652,6 +4651,9 @@ var __oj_chart_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },
@@ -5971,6 +5973,7 @@ var __oj_chart_metadata =
     }
   },
   "methods": {
+    "getAutomation": {},
     "getContextByNode": {},
     "getDataItem": {},
     "getGroup": {},
@@ -6564,8 +6567,8 @@ var __oj_spark_chart_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -6657,6 +6660,9 @@ var __oj_spark_chart_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },
@@ -7054,6 +7060,7 @@ var __oj_spark_chart_item_metadata =
 
   /**
    * @ojcomponent oj.ojChart
+   * @ojimportmembers oj.ojSharedContextMenu
    * @augments oj.dvtBaseComponent
    * @since 0.7.0
    *
@@ -7167,7 +7174,7 @@ var __oj_spark_chart_item_metadata =
          * @type {Object|null}
          * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
          * @default null
-         * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+         * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
          *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
          */
         data: null,
@@ -8037,6 +8044,17 @@ var __oj_spark_chart_item_metadata =
         return null;
       },
 
+
+   /**
+    * Returns the chart automation component used by webdriver.
+    * @memberof oj.ojChart
+    * @instance
+    * @ojhidden
+    */
+      getAutomation: function () {
+        return this._component.getAutomation();
+      },
+
       // @inheritdoc
       _GetComponentNoClonePaths: function () {
         var noClonePaths = this._super();
@@ -8185,7 +8203,7 @@ var __oj_spark_chart_item_metadata =
        * @type {Object|null}
        * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
        * @default null
-       * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the spark chart with the

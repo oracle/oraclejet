@@ -1,0 +1,2 @@
+define(["exports"],(function(n){"use strict";const t=/^\s*|\s*$/g;function r(n){if(null===n)return!0;var t=i(n);return!(null==t?void 0:t.hasOwnProperty("length"))||0===t.length}function e(n){return null!==n&&("string"==typeof n||n instanceof String)}function i(n){return e(n)?n.replace(t,""):n}n.hashCode=function(n){var t=0;if(0===n.length)return t;for(var r=0;r<n.length;r++){t=(t<<5)-t+n.charCodeAt(r),t&=t}return t},n.isEmpty=r,n.isEmptyOrUndefined=function(n){return!(void 0!==n&&!r(n))},n.isString=e,n.trim=i}));
+//# sourceMappingURL=stringUtils-b43463af.js.map

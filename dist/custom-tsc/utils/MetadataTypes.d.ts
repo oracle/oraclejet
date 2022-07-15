@@ -14,6 +14,7 @@ export declare const GETMD_FLAGS_NONE = 0;
 export declare const GETMD_FLAGS_RO_WRITEBACK = 1;
 export declare type ImportAliases = {
     Component?: string;
+    ComponentProps?: string;
     PureComponent?: string;
     forwardRef?: string;
     memo?: string;
@@ -55,6 +56,10 @@ export interface ExtendedEventDetailsMetadata extends Metadata.EventDetailItem, 
 }
 export interface ExtendedPropertiesMetadata extends Metadata.ComponentMetadataProperties, ALL_TYPES {
 }
+export declare type PropertyBindingMetadata = Record<string, Metadata.PropertyBinding>;
+export declare type RegistrationOptions = {
+    bindings?: PropertyBindingMetadata;
+};
 export declare type AllMetadataTypes = Metadata.ComponentMetadata | Metadata.ComponentMetadataProperties | Metadata.ComponentMetadataMethods | Metadata.ComponentMetadataEvents | Metadata.ComponentMetadataSlots;
 export declare type NameValuePair = [string, any];
 export declare type ALL_TYPES = {
@@ -63,6 +68,7 @@ export declare type ALL_TYPES = {
     optional?: boolean;
     enumValues?: string[];
     isArrayOfObject?: boolean;
+    isStringTypeExplicit?: boolean;
 };
 export declare enum MetadataScope {
     RT_EXTENDED = -1,
@@ -108,11 +114,17 @@ export declare type IntersectionTypeNodeInfo = {
     substituteTypeNode?: ts.TypeNode;
     propsName?: string;
 };
+export declare type VCompTranslationBundleInfo = {
+    additionalImports: Array<string>;
+    bundleMapExpression: ts.Expression;
+};
 export declare type VCompClassInfo = {
     elementName: string;
     className: string;
     classNode: ts.ClassDeclaration;
     propsInfo: PropsInfo | null;
+    additionalImports?: Array<string>;
+    translationBundleMapExpression?: ts.Expression;
 };
 export declare type VCompFunctionInfo = {
     compRegisterCall: ts.CallExpression;
@@ -122,6 +134,10 @@ export declare type VCompFunctionInfo = {
     componentName?: string;
     functionName?: string;
     defaultProps?: ts.NodeArray<DefaultPropsElement>;
+    propBindings?: PropertyBindingMetadata;
+    useComponentPropsForSettableProperties?: boolean;
+    additionalImports?: Array<string>;
+    translationBundleMapExpression?: ts.Expression;
 };
 export declare type VCompInfo = VCompClassInfo | VCompFunctionInfo;
 export declare function isClassInfo(info: VCompInfo): info is VCompClassInfo;
@@ -151,4 +167,5 @@ export declare type MetaUtilObj = {
     classPropsAliasTypeArgs?: readonly ts.Type[];
     classConsumedBindingsDecorator?: ts.Decorator;
     classProvidedBindingsDecorator?: ts.Decorator;
+    functionPropBindings?: PropertyBindingMetadata;
 };

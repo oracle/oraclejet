@@ -8,6 +8,7 @@
 import { __getBundle } from 'ojs/ojlocaledata';
 import { OraTimeZone } from 'ojs/ojoratimezone';
 import { OraI18nUtils } from 'ojs/ojconverterutils-i18n';
+import { getLocale } from 'ojs/ojconfig';
 
 const LocalOraI18nUtils = OraI18nUtils;
 const _UTC = 'UTC';
@@ -19,6 +20,32 @@ class AvailableTimeZones {
         const arr = tag.split('-');
         return arr[0];
     }
+    static getDatesNode(localeElements) {
+        function getDates(locale) {
+            let datesNode = null;
+            const mainNode = localeElements.main[locale];
+            if (mainNode) {
+                datesNode = mainNode.dates;
+            }
+            return datesNode;
+        }
+        let locale = getLocale();
+        let dates = getDates(locale);
+        if (dates) {
+            return dates;
+        }
+        let parts = locale.split('-');
+        parts.pop();
+        while (parts.length > 0) {
+            locale = parts.join('-');
+            dates = getDates(locale);
+            if (dates) {
+                return dates;
+            }
+            parts.pop();
+        }
+        return localeElements.main['en-US'].dates;
+    }
     static _availableTimeZonesImpl(localeElements) {
         const tz = OraTimeZone.getInstance();
         const sortOptions = { sensitivity: 'variant' };
@@ -26,8 +53,9 @@ class AvailableTimeZones {
         const mainNode = LocalOraI18nUtils.getLocaleElementsMainNode(localeElements);
         const mainNodeKey = LocalOraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
         const lang = AvailableTimeZones._getBCP47Lang(mainNodeKey);
-        const metaZones = mainNode.dates.timeZoneNames.metazone;
-        const cities = mainNode.dates.timeZoneNames.zone;
+        const dates = AvailableTimeZones.getDatesNode(localeElements);
+        const metaZones = dates.timeZoneNames.metazone;
+        const cities = dates.timeZoneNames.zone;
         const sortedZones = [];
         const offsets = {};
         const tzData = localeElements.supplemental.timeZoneData;

@@ -293,18 +293,21 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
 
     class ListDataProviderView {
         constructor(dataProvider, options) {
+            var _a;
             this.dataProvider = dataProvider;
             this.options = options;
             this._noFilterSupport = false;
-            this.AsyncIterable = class {
-                constructor(_parent, _asyncIterator) {
-                    this._parent = _parent;
-                    this._asyncIterator = _asyncIterator;
-                    this[Symbol.asyncIterator] = () => {
-                        return this._asyncIterator;
-                    };
-                }
-            };
+            this.AsyncIterable = (_a = class {
+                    constructor(_parent, _asyncIterator) {
+                        this._parent = _parent;
+                        this._asyncIterator = _asyncIterator;
+                        this[Symbol.asyncIterator] = () => {
+                            return this._asyncIterator;
+                        };
+                    }
+                },
+                Symbol.asyncIterator,
+                _a);
             this.AsyncIterator = class {
                 constructor(_parent, _nextFunc, _params) {
                     this._parent = _parent;
@@ -467,26 +470,86 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                     this[ListDataProviderView._DONE] = done;
                 }
             };
-            this[ListDataProviderView._FROM] =
+            this[ListDataProviderView._INTERNAL_FROM] =
                 this.options == null ? null : this.options[ListDataProviderView._FROM];
-            this[ListDataProviderView._OFFSET] =
+            this[ListDataProviderView._INTERNAL_OFFSET] =
                 this.options == null
                     ? 0
                     : this.options[ListDataProviderView._OFFSET] > 0
                         ? this.options[ListDataProviderView._OFFSET]
                         : 0;
-            this[ListDataProviderView._SORTCRITERIA] =
+            this[ListDataProviderView._INTERNAL_SORTCRITERIA] =
                 this.options == null ? null : this.options[ListDataProviderView._SORTCRITERIA];
-            this[ListDataProviderView._DATAMAPPING] =
+            this[ListDataProviderView._INTERNAL_DATAMAPPING] =
                 this.options == null ? null : this.options[ListDataProviderView._DATAMAPPING];
-            this[ListDataProviderView._FETCHATTRIBUTES] =
+            this[ListDataProviderView._INTERNAL_FETCHATTRIBUTES] =
                 this.options == null ? null : this.options[ListDataProviderView._FETCHATTRIBUTES];
-            this[ListDataProviderView._FILTERCRITERION] =
+            this[ListDataProviderView._INTERNAL_FILTERCRITERION] =
                 this.options == null ? null : this.options[ListDataProviderView._FILTERCRITERION];
             this._addEventListeners(dataProvider);
             if (dataProvider.getCapability && !dataProvider.getCapability('filter')) {
                 this._noFilterSupport = true;
             }
+            Object.defineProperty(this, 'from', {
+                set(value) {
+                    this[ListDataProviderView._INTERNAL_FROM] = value;
+                    this.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
+                },
+                get() {
+                    return this[ListDataProviderView._INTERNAL_FROM];
+                },
+                enumerable: true
+            });
+            Object.defineProperty(this, 'offset', {
+                set(value) {
+                    this[ListDataProviderView._INTERNAL_OFFSET] = value;
+                    this.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
+                },
+                get() {
+                    return this[ListDataProviderView._INTERNAL_OFFSET];
+                },
+                enumerable: true
+            });
+            Object.defineProperty(this, 'sortCriteria', {
+                set(value) {
+                    this[ListDataProviderView._INTERNAL_SORTCRITERIA] = value;
+                    this.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
+                },
+                get() {
+                    return this[ListDataProviderView._INTERNAL_SORTCRITERIA];
+                },
+                enumerable: true
+            });
+            Object.defineProperty(this, 'dataMapping', {
+                set(value) {
+                    this[ListDataProviderView._INTERNAL_DATAMAPPING] = value;
+                    this.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
+                },
+                get() {
+                    return this[ListDataProviderView._INTERNAL_DATAMAPPING];
+                },
+                enumerable: true
+            });
+            Object.defineProperty(this, 'attributes', {
+                set(value) {
+                    this[ListDataProviderView._INTERNAL_FETCHATTRIBUTES] = value;
+                    this.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
+                },
+                get() {
+                    return this[ListDataProviderView._INTERNAL_FETCHATTRIBUTES];
+                },
+                enumerable: true
+            });
+            Object.defineProperty(this, 'filterCriterion', {
+                set(value) {
+                    this[ListDataProviderView._INTERNAL_FILTERCRITERION] = value;
+                    this.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
+                },
+                get() {
+                    return this[ListDataProviderView._INTERNAL_FILTERCRITERION];
+                },
+                enumerable: true
+            });
         }
         containsKeys(params) {
             if (this.dataProvider[ListDataProviderView._CONTAINSKEYS]) {
@@ -508,7 +571,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             const keys = params != null ? params[ListDataProviderView._KEYS] : null;
             let fetchAttributes = params != null ? params[ListDataProviderView._FETCHATTRIBUTES] : null;
             if (fetchAttributes == null) {
-                fetchAttributes = this[ListDataProviderView._FETCHATTRIBUTES];
+                fetchAttributes = this[ListDataProviderView._INTERNAL_FETCHATTRIBUTES];
             }
             const updatedParams = new this.FetchByKeysParameters(this, keys, params, fetchAttributes);
             if (this.dataProvider[ListDataProviderView._FETCHBYKEYS]) {
@@ -541,11 +604,11 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             const size = params != null ? params[ListDataProviderView._SIZE] : null;
             let fetchAttributes = params != null ? params[ListDataProviderView._FETCHATTRIBUTES] : null;
             if (fetchAttributes == null) {
-                fetchAttributes = this[ListDataProviderView._FETCHATTRIBUTES];
+                fetchAttributes = this[ListDataProviderView._INTERNAL_FETCHATTRIBUTES];
             }
             let sortCriteria = params != null ? params[ListDataProviderView._SORTCRITERIA] : null;
             if (sortCriteria == null) {
-                sortCriteria = this[ListDataProviderView._SORTCRITERIA];
+                sortCriteria = this[ListDataProviderView._INTERNAL_SORTCRITERIA];
             }
             const mappedSortCriteria = this._getMappedSortCriteria(sortCriteria);
             const filterCriterion = this._combineFilters(params);
@@ -571,17 +634,18 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             const size = params != null ? params[ListDataProviderView._SIZE] : null;
             let sortCriteria = params != null ? params[ListDataProviderView._SORTCRITERIA] : null;
             if (sortCriteria == null) {
-                sortCriteria = this[ListDataProviderView._SORTCRITERIA];
+                sortCriteria = this[ListDataProviderView._INTERNAL_SORTCRITERIA];
             }
             const mappedSortCriteria = this._getMappedSortCriteria(sortCriteria);
             const filterCriterion = this._combineFilters(params);
             const mappedFilterCriterion = this._getMappedFilterCriterion(filterCriterion);
             let fetchAttributes = params != null ? params[ListDataProviderView._FETCHATTRIBUTES] : null;
             if (fetchAttributes == null) {
-                fetchAttributes = this[ListDataProviderView._FETCHATTRIBUTES];
+                fetchAttributes = this[ListDataProviderView._INTERNAL_FETCHATTRIBUTES];
             }
-            if (this[ListDataProviderView._FROM] == null && this[ListDataProviderView._OFFSET] > 0) {
-                let offset = this[ListDataProviderView._OFFSET];
+            if (this[ListDataProviderView._INTERNAL_FROM] == null &&
+                this[ListDataProviderView._INTERNAL_OFFSET] > 0) {
+                let offset = this[ListDataProviderView._INTERNAL_OFFSET];
                 return new this.AsyncIterable(this, new this.AsyncIterator(this, ((cachedData) => {
                     return () => {
                         const updatedParams = new this.FetchByOffsetParameters(this, offset, null, size, mappedSortCriteria, mappedFilterCriterion, fetchAttributes);
@@ -606,7 +670,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                                 : null;
                             const unmappedResultSortCriteria = this._getUnmappedSortCriteria(resultSortCriteria);
                             const unmappedResultFilterCriterion = this._getUnmappedFilterCriterion(resultFilterCriterion);
-                            const resultParams = new this.FetchByOffsetParameters(this, this[ListDataProviderView._OFFSET], null, size, unmappedResultSortCriteria, unmappedResultFilterCriterion);
+                            const resultParams = new this.FetchByOffsetParameters(this, this[ListDataProviderView._INTERNAL_OFFSET], null, size, unmappedResultSortCriteria, unmappedResultFilterCriterion);
                             if (cachedData[ListDataProviderView._DONE]) {
                                 return Promise.resolve(new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, resultParams, data, metadata)));
                             }
@@ -653,8 +717,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                             const unmappedResultSortCriteria = this._getUnmappedSortCriteria(resultSortCriteria);
                             const unmappedResultFilterCriterion = this._getUnmappedFilterCriterion(resultFilterCriterion);
                             const resultParams = new this.FetchListParameters(this, params, size, unmappedResultSortCriteria, unmappedResultFilterCriterion);
-                            return this._fetchUntilKey(resultParams, this[ListDataProviderView._FROM], cachedData, cachedAsyncIterator).then(() => {
-                                return this._fetchUntilOffset(resultParams, this[ListDataProviderView._OFFSET] +
+                            return this._fetchUntilKey(resultParams, this[ListDataProviderView._INTERNAL_FROM], cachedData, cachedAsyncIterator).then(() => {
+                                return this._fetchUntilOffset(resultParams, this[ListDataProviderView._INTERNAL_OFFSET] +
                                     cachedData[ListDataProviderView._STARTINDEX], data.length, cachedData, cachedAsyncIterator, totalFilteredRowCount);
                             });
                         });
@@ -818,8 +882,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             }
         }
         _getMappedItems(items) {
-            if (this[ListDataProviderView._DATAMAPPING] != null) {
-                const mapFields = this[ListDataProviderView._DATAMAPPING][ListDataProviderView._MAPFIELDS];
+            if (this[ListDataProviderView._INTERNAL_DATAMAPPING] != null) {
+                const mapFields = this[ListDataProviderView._INTERNAL_DATAMAPPING][ListDataProviderView._MAPFIELDS];
                 if (mapFields != null && items != null && items.length > 0) {
                     const mappedItems = items.map((value) => {
                         return mapFields.bind(this)(value);
@@ -836,8 +900,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                 filters[i] = params[ListDataProviderView._FILTERCRITERION];
                 i++;
             }
-            if (this[ListDataProviderView._FILTERCRITERION] != null) {
-                filters[i] = this[ListDataProviderView._FILTERCRITERION];
+            if (this[ListDataProviderView._INTERNAL_FILTERCRITERION] != null) {
+                filters[i] = this[ListDataProviderView._INTERNAL_FILTERCRITERION];
             }
             let filterCriterion;
             if (filters.length == 0) {
@@ -852,8 +916,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             return filterCriterion;
         }
         _getMappedFilterCriterion(filterCriterion) {
-            if (this[ListDataProviderView._DATAMAPPING] != null) {
-                const mappedFilterCriterion = this[ListDataProviderView._DATAMAPPING][ListDataProviderView._MAPFILTERCRITERION];
+            if (this[ListDataProviderView._INTERNAL_DATAMAPPING] != null) {
+                const mappedFilterCriterion = this[ListDataProviderView._INTERNAL_DATAMAPPING][ListDataProviderView._MAPFILTERCRITERION];
                 if (mappedFilterCriterion != null && filterCriterion != null) {
                     return mappedFilterCriterion(filterCriterion);
                 }
@@ -861,8 +925,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             return filterCriterion;
         }
         _getMappedSortCriteria(sortCriteria) {
-            if (this[ListDataProviderView._DATAMAPPING] != null) {
-                const mapSortCriteria = this[ListDataProviderView._DATAMAPPING][ListDataProviderView._MAPSORTCRITERIA];
+            if (this[ListDataProviderView._INTERNAL_DATAMAPPING] != null) {
+                const mapSortCriteria = this[ListDataProviderView._INTERNAL_DATAMAPPING][ListDataProviderView._MAPSORTCRITERIA];
                 if (mapSortCriteria != null && sortCriteria != null && sortCriteria.length > 0) {
                     return mapSortCriteria(sortCriteria);
                 }
@@ -870,8 +934,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             return sortCriteria;
         }
         _getUnmappedSortCriteria(sortCriteria) {
-            if (this[ListDataProviderView._DATAMAPPING] != null) {
-                const unmapSortCriteria = this[ListDataProviderView._DATAMAPPING][ListDataProviderView._UNMAPSORTCRITERIA];
+            if (this[ListDataProviderView._INTERNAL_DATAMAPPING] != null) {
+                const unmapSortCriteria = this[ListDataProviderView._INTERNAL_DATAMAPPING][ListDataProviderView._UNMAPSORTCRITERIA];
                 if (unmapSortCriteria != null && sortCriteria != null && sortCriteria.length > 0) {
                     return unmapSortCriteria(sortCriteria);
                 }
@@ -879,8 +943,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             return sortCriteria;
         }
         _getUnmappedFilterCriterion(filter) {
-            if (this[ListDataProviderView._DATAMAPPING] != null) {
-                const unmapFilterCriterion = this[ListDataProviderView._DATAMAPPING][ListDataProviderView._UNMAPFILTERCRITERION];
+            if (this[ListDataProviderView._INTERNAL_DATAMAPPING] != null) {
+                const unmapFilterCriterion = this[ListDataProviderView._INTERNAL_DATAMAPPING][ListDataProviderView._UNMAPFILTERCRITERION];
                 if (unmapFilterCriterion != null && filter != null) {
                     return unmapFilterCriterion(filter);
                 }
@@ -901,10 +965,14 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
     ListDataProviderView._DATA = 'data';
     ListDataProviderView._STARTINDEX = 'startIndex';
     ListDataProviderView._SORT = 'sort';
+    ListDataProviderView._INTERNAL_SORTCRITERIA = '_sortCriteria';
     ListDataProviderView._SORTCRITERIA = 'sortCriteria';
+    ListDataProviderView._INTERNAL_FILTERCRITERION = '_filterCriterion';
     ListDataProviderView._FILTERCRITERION = 'filterCriterion';
     ListDataProviderView._METADATA = 'metadata';
     ListDataProviderView._ITEMS = 'items';
+    ListDataProviderView._INTERNAL_FROM = '_from';
+    ListDataProviderView._INTERNAL_OFFSET = '_offset';
     ListDataProviderView._FROM = 'from';
     ListDataProviderView._OFFSET = 'offset';
     ListDataProviderView._REFRESH = 'refresh';
@@ -914,6 +982,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
     ListDataProviderView._VALUE = 'value';
     ListDataProviderView._DONE = 'done';
     ListDataProviderView._LASTDONEHASDATA = 'lastDoneHasData';
+    ListDataProviderView._INTERNAL_DATAMAPPING = '_dataMapping';
     ListDataProviderView._DATAMAPPING = 'dataMapping';
     ListDataProviderView._MAPFIELDS = 'mapFields';
     ListDataProviderView._MAPSORTCRITERIA = 'mapSortCriteria';
@@ -928,6 +997,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
     ListDataProviderView._FETCHBYOFFSET = 'fetchByOffset';
     ListDataProviderView._FETCHFIRST = 'fetchFirst';
     ListDataProviderView._ADDEVENTLISTENER = 'addEventListener';
+    ListDataProviderView._INTERNAL_FETCHATTRIBUTES = '_attributes';
     ListDataProviderView._FETCHATTRIBUTES = 'attributes';
     ojeventtarget.EventTargetMixin.applyMixin(ListDataProviderView);
     oj._registerLegacyNamespaceProp('ListDataProviderView', ListDataProviderView);

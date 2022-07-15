@@ -440,5 +440,23 @@ var __oj_label_value_metadata =
   "extension": {}
 };
   __oj_label_value_metadata.extension._CONSTRUCTOR = ojLabelValue;
-  oj.CustomElementBridge.register('oj-label-value', { metadata: __oj_label_value_metadata });
+  oj.CustomElementBridge.register('oj-label-value', {
+    metadata: oj.CollectionUtils.mergeDeep(
+      __oj_label_value_metadata, {
+      properties: {
+        labelEdge: {
+          binding: {
+            provide: [{ name: 'containerLabelEdge' },
+            { name: 'labelEdge', transform: { top: 'provided', start: 'provided' } }],
+            consume: { name: 'containerLabelEdge' }
+          }
+        },
+        labelWidth: {
+          binding: {
+            provide: [{ name: 'labelWidth' }]
+          }
+        }
+      }
+    })
+  });
 }());

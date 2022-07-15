@@ -1,0 +1,2 @@
+define(["exports","preact/hooks"],(function(e,t){"use strict";e.useUncontrolledState=function(e,r){const[n,u]=t.useState(e),c=t.useRef(n),o=t.useRef(r);return o.current=r,[n,t.useCallback(((e,...t)=>{var r,n;(u(e),c.current!==e)&&(null===(r=o.current)||void 0===r||(n=r).call.apply(n,[o,e].concat(t)),c.current=e)}),[])]},Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=UNSAFE_useUncontrolledState.js.map

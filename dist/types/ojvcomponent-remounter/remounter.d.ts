@@ -6,3 +6,4 @@ export declare class Remounter extends Component<Props> {
     private _getSlotInfo;
     private _isVNode;
 }
+export {};

@@ -21,6 +21,7 @@ var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, ge
 };
 class RESTTreeDataProvider {
     constructor(options) {
+        var _a;
         this.options = options;
         this.TreeAsyncIterator = class {
             constructor(_rootDataProvider, _baseIterable) {
@@ -40,14 +41,16 @@ class RESTTreeDataProvider {
                 });
             }
         };
-        this.TreeAsyncIterable = class {
-            constructor(_asyncIterator) {
-                this._asyncIterator = _asyncIterator;
-                this[Symbol.asyncIterator] = () => {
-                    return this._asyncIterator;
-                };
-            }
-        };
+        this.TreeAsyncIterable = (_a = class {
+                constructor(_asyncIterator) {
+                    this._asyncIterator = _asyncIterator;
+                    this[Symbol.asyncIterator] = () => {
+                        return this._asyncIterator;
+                    };
+                }
+            },
+            Symbol.asyncIterator,
+            _a);
         this._baseDataProvider = new RESTDataProvider(options);
         this._mapKeyToItem = new Map();
     }

@@ -17,6 +17,6 @@ export type { MessageAnimation } from './MessagesManager';
 export { MessageStartIcon } from './MessageStartIcon';
 export { MessageSummary } from './MessageSummary';
 export { MessageTimestamp } from './MessageTimestamp';
-export { getRenderer, playSound, throwError } from './MessageUtils';
+export { getRenderer, playSound, throwError, severityBasedStyleClass, isSeverityIconNeeded } from './MessageUtils';
 export type { MessageSeverity } from './Message.types';
 export { severities } from './Message.types';

@@ -5,9 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { jsx } from 'preact/jsx-runtime';
 import { getTranslatedString } from 'ojs/ojtranslation';
 import { Root, customElement } from 'ojs/ojvcomponent';
-import { Component, h } from 'preact';
+import { Component } from 'preact';
 import { recentPointer } from 'ojs/ojdomutils';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
@@ -58,6 +59,7 @@ let Selector = class Selector extends Component {
         };
     }
     render(props, state) {
+        var _a;
         const { rowKey, indeterminate } = props;
         const isSelected = this._isSelected(rowKey);
         let spanClass = 'oj-selector-wrapper oj-component-icon';
@@ -71,16 +73,13 @@ let Selector = class Selector extends Component {
             spanClass += ' oj-focus-highlight';
         }
         const ariaLabelledby = props['aria-labelledby'] || null;
-        const ariaLabel = (props['aria-label'] ||
-            getTranslatedString('oj-ojSelector.checkboxAriaLabel', {
-                rowKey
-            })) +
-            (isSelected
-                ? getTranslatedString('oj-ojSelector.checkboxAriaLabelSelected')
-                : getTranslatedString('oj-ojSelector.checkboxAriaLabelUnselected'));
-        return (h(Root, { class: 'oj-selector' },
-            h("span", { class: spanClass },
-                h("input", { type: 'checkbox', class: 'oj-selectorbox', "data-oj-clickthrough": 'disabled', "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._checkboxListener }))));
+        const ariaLabel = props['aria-label'] == null || ((_a = props['aria-label']) === null || _a === void 0 ? void 0 : _a.trim()) == ''
+            ? null
+            : props['aria-label'] +
+                (isSelected
+                    ? getTranslatedString('oj-ojSelector.checkboxAriaLabelSelected')
+                    : getTranslatedString('oj-ojSelector.checkboxAriaLabelUnselected'));
+        return (jsx(Root, Object.assign({ class: "oj-selector" }, { children: jsx("span", Object.assign({ class: spanClass }, { children: jsx("input", { type: "checkbox", class: "oj-selectorbox", "data-oj-clickthrough": "disabled", "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._checkboxListener }) })) })));
     }
     _isSelected(rowKey) {
         const { selectedKeys, selectionMode } = this.props;

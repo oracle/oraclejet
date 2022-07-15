@@ -1,0 +1,13 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/stable/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("stable.variables.label.scoped") {
+    
+  /* label                      */
+  /* -------------------------- */
+.oj-color-invert {
+    --oj-label-color:         var(--oj-core-text-color-primary); 
+    --oj-label-color-disabled:var(--oj-core-text-color-disabled);
+    --oj-label-inside-edge-color: var(--oj-core-text-color-secondary);
+}
+}

@@ -15,9 +15,9 @@
   requirejs.config({
     // Path mappings for the logical module names
     paths: {
-      'ojs': 'libs/oj/v12.1.0/min@insertESLevelPath@',
-      'ojL10n': 'libs/oj/v12.1.0/ojL10n',
-      'ojtranslations': 'libs/oj/v12.1.0/resources',
+      'ojs': 'libs/oj/13.0.0/min@insertESLevelPath@',
+      'ojL10n': 'libs/oj/13.0.0/ojL10n',
+      'ojtranslations': 'libs/oj/13.0.0/resources',
       
   'knockout': 'libs/knockout/knockout-3.5.1',
   'jquery': 'libs/jquery/jquery-3.6.0.min',
@@ -29,9 +29,11 @@
   'css': 'libs/require-css/css.min',
   'css-builder': 'libs/require-css/css-builder',
   'normalize': 'libs/require-css/normalize',
+  '@oracle/oraclejet-preact': 'libs/oraclejet-preact/amd',
   'preact': 'libs/preact/dist/preact.umd',
   'preact/hooks': 'libs/preact/hooks/dist/hooks.umd',
   'preact/compat': 'libs/preact/compat/dist/compat.umd',
+  'preact/jsx-runtime': 'libs/preact/jsx-runtime/dist/jsxRuntime.umd',
   'proj4': 'libs/proj4js/dist/proj4',
   'touchr': 'libs/touchr/touchr'
     },

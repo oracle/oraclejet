@@ -60,9 +60,9 @@ export interface ContainsKeysResults<K> {
 // tslint:disable-next-line no-unnecessary-class
 export namespace DataFilter {
     // tslint:disable-next-line interface-over-type-literal
-    type Filter<D> = AttributeFilter<D> | AttributeExprFilter<D> | CompoundFilter<D> | TextFilter<D>;
+    type Filter<D> = AttributeFilter<D> | AttributeExprFilter<D> | CompoundFilter<D> | ExtendedCompoundFilter<D> | NestedFilter<D> | TextFilter<D>;
     // tslint:disable-next-line interface-over-type-literal
-    type FilterDef<D> = AttributeFilterDef<D> | AttributeExprFilterDef<D> | CompoundFilterDef<D> | TextFilterDef;
+    type FilterDef<D> = AttributeFilterDef<D> | AttributeExprFilterDef<D> | CompoundFilterDef<D> | ExtendedCompoundFilterDef<D> | NestedFilterDef<D> | TextFilterDef;
 }
 export interface DataMapping<K, D, Kin, Din> {
     mapFields: (item: Item<Kin, Din>) => Item<K, D>;
@@ -167,6 +167,12 @@ export interface DedupCapability {
 export interface EventFilteringCapability {
     type: 'global' | 'none' | 'iterator';
 }
+// tslint:disable-next-line no-unnecessary-class
+export interface ExtendedCompoundFilter<D> extends ExtendedCompoundFilterDef<D>, BaseDataFilter<D> {
+}
+export interface ExtendedCompoundFilterDef<D> extends Omit<CompoundFilterDef<D>, 'criteria'> {
+    criteria: Array<AttributeFilterDef<D> | AttributeExprFilterDef<D> | ExtendedCompoundFilterDef<D> | NestedFilterDef<D> | TextFilterDef>;
+}
 export interface FetchAttribute {
     attributes?: Array<string | FetchAttribute>;
     name: string;
@@ -241,7 +247,8 @@ export interface FilterCapability {
     collationOptions?: {
         sensitivity?: Array<'base' | 'accent' | 'case' | 'variant'>;
     };
-    operators?: Array<AttributeFilterDef.AttributeOperator | CompoundFilterDef.CompoundOperator>;
+    nestedFilter?: any;
+    operators?: Array<AttributeFilterDef.AttributeOperator | CompoundFilterDef.CompoundOperator | NestedFilterDef.NestedOperator>;
     textFilter?: any;
 }
 export class FilterFactory<D> {
@@ -281,6 +288,17 @@ export interface ItemMetadata<K> {
 export interface ItemWithOptionalData<K, D> {
     data?: D;
     metadata: ItemMetadata<K>;
+}
+// tslint:disable-next-line no-unnecessary-class
+export interface NestedFilter<D> extends NestedFilterDef<D>, BaseDataFilter<D> {
+}
+export interface NestedFilterDef<D> {
+    attribute: AttributeFilterDef.AttributeExpression | string;
+    criterion: AttributeFilterDef<D> | AttributeExprFilterDef<D> | ExtendedCompoundFilterDef<D> | NestedFilterDef<D>;
+    op: NestedFilterDef.NestedOperator;
+}
+export namespace NestedFilterDef {
+    type NestedOperator = "$exists";
 }
 export interface SortCapability {
     attributes: 'none' | 'single' | 'multiple';

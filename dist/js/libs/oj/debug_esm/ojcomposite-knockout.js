@@ -11,7 +11,8 @@ import 'ojs/ojcustomelement';
 import { CustomElementUtils, AttributeUtils } from 'ojs/ojcustomelement-utils';
 import BindingProviderImpl from 'ojs/ojkoshared';
 import { error } from 'ojs/ojlogger';
-import TemplateEngine from 'ojs/ojtemplateengine';
+import TemplateEngine from 'ojs/ojtemplateengine-ko';
+import PreactTemplateEngine from 'ojs/ojtemplateengine-preact-ko';
 
 /**
  * @ignore
@@ -377,6 +378,7 @@ bindingHandlers._ojBindTemplateSlot_ = {
       // Get the slot value of this oj-bind-template element so we can assign it to its
       // assigned nodes for downstream slotting
       template.__oj_slots = unwrap(values.slot) || '';
+      const engine = template.render ? PreactTemplateEngine : TemplateEngine;
 
       // Re-execute the template if the oj-bind-template-slot bound attributes change
       computed(function () {
@@ -385,8 +387,9 @@ bindingHandlers._ojBindTemplateSlot_ = {
         var as = unwrap(values.as);
 
         // Extend the composite's bindingContext for the default template
-        var nodes = TemplateEngine.execute(isDefaultTemplate ? element : composite,
-                                           template, data, isDefaultTemplate ? as : null);
+        var nodes = engine.execute(isDefaultTemplate ? element : composite,
+            template, data, isDefaultTemplate ? as : null);
+
         virtualElements.setDomNodeChildren(element, nodes);
       });
     } else {

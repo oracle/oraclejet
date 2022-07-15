@@ -396,7 +396,9 @@ DataCollectionUtils.KEYBOARD_KEYS = {
   _NUM5_KEY_CODE: 53,
   _LETTER_A: 'a',
   _LETTER_A_UPPERCASE: 'A',
-  _LETTER_A_CODE: 65
+  _LETTER_A_CODE: 65,
+  _META: 'Meta',
+  _META_CODE: 91
 };
 
 /**
@@ -508,6 +510,14 @@ DataCollectionUtils.isLetterAKeyEvent = function (eventKey) {
   return eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A ||
          eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A_UPPERCASE ||
          eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A_CODE;
+};
+
+/**
+ * @private
+ */
+DataCollectionUtils.isMetaKeyEvent = function (eventKey) {
+  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._META ||
+         eventKey === DataCollectionUtils.KEYBOARD_KEYS._META_CODE;
 };
 
 /** **************** data mutation event handling methods ****************** */
@@ -685,19 +695,27 @@ DataCollectionUtils.getLogicalChildPopup = function (componentElement) {
  * @param {Element} elem
  * @param {Element} scroller
  */
-DataCollectionUtils.isElementInScrollerBounds = function (elem, scroller) {
+DataCollectionUtils.isElementIntersectingScrollerBounds = function (elem, scroller) {
   var top;
   var bottom;
+  var left;
+  var right;
   if (scroller === document.documentElement) {
     top = 0;
     bottom = document.documentElement.clientHeight;
+    left = 0;
+    right = document.documentElement.clientWidth;
   } else {
     var scrollerBounds = scroller.getBoundingClientRect();
     top = scrollerBounds.top;
     bottom = scrollerBounds.bottom;
+    left = scrollerBounds.left;
+    right = scrollerBounds.right;
   }
   var bounds = elem.getBoundingClientRect();
-  return (bounds.top >= top && bounds.bottom <= bottom);
+  return (bounds.top <= bottom && bounds.bottom >= top &&
+   bounds.left <= right && bounds.right >= left
+  );
 };
 
 /**
@@ -795,11 +813,12 @@ const isSpaceBarKeyEvent = DataCollectionUtils.isSpaceBarKeyEvent;
 const isTabKeyEvent = DataCollectionUtils.isTabKeyEvent;
 const isNumberFiveKeyEvent = DataCollectionUtils.isNumberFiveKeyEvent;
 const isLetterAKeyEvent = DataCollectionUtils.isLetterAKeyEvent;
+const isMetaKeyEvent = DataCollectionUtils.isMetaKeyEvent;
 const KEYBOARD_KEYS = DataCollectionUtils.KEYBOARD_KEYS;
 const CHECKVIEWPORT_THRESHOLD = DataCollectionUtils.CHECKVIEWPORT_THRESHOLD;
 const calculateOffsetTop = DataCollectionUtils.calculateOffsetTop;
-const isElementInScrollerBounds = DataCollectionUtils.isElementInScrollerBounds;
+const isElementIntersectingScrollerBounds = DataCollectionUtils.isElementIntersectingScrollerBounds;
 const getEventDetail = DataCollectionUtils.getEventDetail;
 const isRequestIdleCallbackSupported = DataCollectionUtils.isRequestIdleCallbackSupported;
 
-export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, applyMergedInlineStyles, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, enableAllFocusableElements, getActionableElementsInNode, getAddEventKeysResult, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getLogicalChildPopup, getNoJQFocusHandlers, handleActionablePrevTab, handleActionableTab, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isClickthroughDisabled, isElementInScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFromDefaultSelector, isHomeKeyEvent, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSpaceBarKeyEvent, isTabKeyEvent };
+export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, applyMergedInlineStyles, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, enableAllFocusableElements, getActionableElementsInNode, getAddEventKeysResult, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getLogicalChildPopup, getNoJQFocusHandlers, handleActionablePrevTab, handleActionableTab, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isClickthroughDisabled, isElementIntersectingScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFromDefaultSelector, isHomeKeyEvent, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMetaKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSpaceBarKeyEvent, isTabKeyEvent };

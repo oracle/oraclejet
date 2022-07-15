@@ -14,11 +14,11 @@ const TreeDataProvider = function () {
 oj._registerLegacyNamespaceProp('TreeDataProvider', TreeDataProvider);
 
 /**
- * Get the data provider for the children of the row identified by parentKey.
+ * Get the data provider for the children of the row identified by key.
  *
  *
  * @since 5.1.0
- * @param {any} parentKey key of the row to get child data provider for.
+ * @param {any} key key of the row to get child data provider for.
  * @return {TreeDataProvider | null} A TreeDataProvider if the row can (but doesn't have to) have children; or null if the row cannot have children.
  *   Use the <code class="prettyprint">isEmpty</code> method on the returned TreeDataProvider to determine if it currently has children.
  * @export
@@ -28,7 +28,7 @@ oj._registerLegacyNamespaceProp('TreeDataProvider', TreeDataProvider);
  * @method
  * @name getChildDataProvider
  * @ojsignature {target: "Type",
- *               value: "(parentKey: K): TreeDataProvider<K, D> | null"}
+ *               value: "(key: K): TreeDataProvider<K, D> | null"}
  */
 
 /**

@@ -1,0 +1,11 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.collection.ignored.scoped") {
+
+
+ .oj-private-scale-lg {
+ --oj-collection-list-row-height:48px; 
+ }
+
+
+}

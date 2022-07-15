@@ -324,7 +324,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
  * @since 1.1.0
  *
  * @ojshortdesc A filmstrip lays out its children in a single row or column across logical pages and allows navigating through them.
- * @ojrole region
+ * @ojrole application
  * @class oj.ojFilmStrip
  *
  * @ojtsimport {module: "ojpagingmodel", type: "AMD", imported: ["PagingModel"]}
@@ -428,7 +428,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
  *
  * <p>FilmStrip assigns itself the WAI-ARIA
  * <code class="prettyprint">role</code> of
- * <code class="prettyprint">"region"</code>.  The application <b>must</b>
+ * <code class="prettyprint">"application"</code>.  The application <b>must</b>
  * specify a WAI-ARIA label for the FilmStrip element so that screen reader
  * users will understand the purpose of the FilmStrip.
  *
@@ -1016,7 +1016,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         elem
           .addClass('oj-filmstrip oj-component')
           .attr('tabindex', 0)
-          .attr('role', 'region');
+          .attr('role', 'application');
 
         // ensure a unique id for use with aria-labelledby on navigation arrows
         elem.uniqueId();

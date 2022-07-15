@@ -18,6 +18,7 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
     };
     class RESTTreeDataProvider {
         constructor(options) {
+            var _a;
             this.options = options;
             this.TreeAsyncIterator = class {
                 constructor(_rootDataProvider, _baseIterable) {
@@ -37,14 +38,16 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
                     });
                 }
             };
-            this.TreeAsyncIterable = class {
-                constructor(_asyncIterator) {
-                    this._asyncIterator = _asyncIterator;
-                    this[Symbol.asyncIterator] = () => {
-                        return this._asyncIterator;
-                    };
-                }
-            };
+            this.TreeAsyncIterable = (_a = class {
+                    constructor(_asyncIterator) {
+                        this._asyncIterator = _asyncIterator;
+                        this[Symbol.asyncIterator] = () => {
+                            return this._asyncIterator;
+                        };
+                    }
+                },
+                Symbol.asyncIterator,
+                _a);
             this._baseDataProvider = new ojrestdataprovider.RESTDataProvider(options);
             this._mapKeyToItem = new Map();
         }

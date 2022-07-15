@@ -360,6 +360,16 @@ $labelPosition: $radioCheckboxLabelPosition) {
       position: relative;
     }
     
+    .oj-choice-item {
+      /**
+       * In Chrome 103 - the relative/absolute positioning inside a multi-col layout is broken
+       * https://bugs.chromium.org/p/chromium/issues/detail?id=1338997
+       * This is to workaround this bug and make things render correctly for chromium browsers.
+       * This bug will be fixed in 104 and later.
+       */
+      overflow: hidden;
+    }
+    
     // if the label's text is really long, then I need the min-height on the ::before to work
     // around an IE11 issue: IE11 Flexbox with 
     // min-height not vertically aligning with align-items: center

@@ -5,9 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevaluator', 'ojs/ojcustomelement-utils', 'preact', 'ojs/ojcontext', 'ojs/ojdataproviderhandler', 'ojs/ojbindpropagation', 'ojs/ojconfig', 'ojs/ojmetadatautils'], function (exports, Logger, HtmlUtils, CspExpressionEvaluator, ojcustomelementUtils, preact, Context, ojdataproviderhandler, ojbindpropagation, ojconfig, ojmetadatautils) { 'use strict';
+define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils', 'preact', 'preact/jsx-runtime', 'ojs/ojcontext', 'ojs/ojdataproviderhandler', 'ojs/ojbindpropagation', 'ojs/ojconfig', 'ojs/ojmetadatautils', 'ojs/ojcspexpressionevaluator-internal'], function (exports, Logger, HtmlUtils, ojcustomelementUtils, preact, jsxRuntime, Context, ojdataproviderhandler, ojbindpropagation, ojconfig, ojmetadatautils, ojcspexpressionevaluatorInternal) { 'use strict';
 
-    CspExpressionEvaluator = CspExpressionEvaluator && Object.prototype.hasOwnProperty.call(CspExpressionEvaluator, 'default') ? CspExpressionEvaluator['default'] : CspExpressionEvaluator;
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
     class Props {
@@ -40,9 +39,9 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
             }
         }
         render() {
-            return (preact.h(preact.Fragment, null, this.state.view && this.props.executeFragment
-                ? this.props.executeFragment(null, this.state.view, this.state.data, this.forceUpdate.bind(this), this.props.bindingProvider)
-                : null));
+            return (jsxRuntime.jsx(preact.Fragment, { children: this.state.view && this.props.executeFragment
+                    ? this.props.executeFragment(null, this.state.view, this.state.data, this.forceUpdate.bind(this), this.props.bindingProvider)
+                    : null }));
         }
     }
 
@@ -57,31 +56,31 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
         }
         render(props) {
             if (Array.isArray(props.data)) {
-                return preact.h(BindForEachWithArray, { data: props.data, itemRenderer: props.itemRenderer });
+                return jsxRuntime.jsx(BindForEachWithArray, { data: props.data, itemRenderer: props.itemRenderer });
             }
             else {
-                return (preact.h(this.BindForEachWithDP, { addBusyState: this._addBusyState, data: props.data, itemRenderer: props.itemRenderer }));
+                return (jsxRuntime.jsx(this.BindForEachWithDP, { addBusyState: this._addBusyState, data: props.data, itemRenderer: props.itemRenderer }));
             }
         }
     }
     class BindForEachDataUnwrapper extends preact.Component {
         render(props) {
             const unwrappedData = props.data.map((item) => item.data);
-            return preact.h(BindForEachWithArray, { data: unwrappedData, itemRenderer: props.itemRenderer });
+            return jsxRuntime.jsx(BindForEachWithArray, { data: unwrappedData, itemRenderer: props.itemRenderer });
         }
     }
     class BindForEachWithArray extends preact.Component {
         render() {
             const data = this.props.data;
-            return (preact.h(preact.Fragment, null, data
-                ? data.map((row, index) => {
-                    return this.props.itemRenderer({
-                        data: row,
-                        index: index,
-                        observableIndex: () => index
-                    });
-                })
-                : []));
+            return (jsxRuntime.jsx(preact.Fragment, { children: data
+                    ? data.map((row, index) => {
+                        return this.props.itemRenderer({
+                            data: row,
+                            index: index,
+                            observableIndex: () => index
+                        });
+                    })
+                    : [] }));
         }
     }
 
@@ -103,7 +102,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
         constructor() {
             var _a;
             this._templateAstCache = new WeakMap();
-            this._cspEvaluator = (_a = ojconfig.getExpressionEvaluator()) !== null && _a !== void 0 ? _a : new CspExpressionEvaluator();
+            this._cspEvaluator = (_a = ojconfig.getExpressionEvaluator()) !== null && _a !== void 0 ? _a : new ojcspexpressionevaluatorInternal.CspExpressionEvaluatorInternal();
         }
         static cleanupTemplateCache(templateElement) {
             if (templateElement && templateElement['_cachedRows']) {
@@ -252,6 +251,9 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
                         }
                     }
                 }
+                if (template && template.render) {
+                    return template.render(dataProp);
+                }
                 if (template) {
                     const templateAst = this._getAstViaCache(engineContext, template);
                     const templateAlias = template.getAttribute('data-oj-as');
@@ -314,6 +316,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
                         type: 3,
                         value: (refObj) => {
                             if (refObj) {
+                                refObj[ojcustomelementUtils.CACHED_USE_KO_FLAG] = !!engineContext[BINDING_PROVIDER];
                                 deferNode = refObj;
                                 preact.render(deferContent, deferNode);
                             }
@@ -642,6 +645,19 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
             if (dottedExpressions.length > 0) {
                 attrNodes.push(this._createRefPropertyNodeForNestedProps(engineContext, dottedExpressions));
             }
+            else if (engineContext[BINDING_PROVIDER] &&
+                ojcustomelementUtils.CustomElementUtils.isElementRegistered(node.tagName)) {
+                attrNodes.push({
+                    key: 'ref',
+                    value: {
+                        type: 3,
+                        value: (refObj) => {
+                            if (refObj)
+                                refObj[ojcustomelementUtils.CACHED_USE_KO_FLAG] = true;
+                        }
+                    }
+                });
+            }
             writebacks.forEach((valuesArray, name) => {
                 var _a;
                 const propName = `on${name}Changed`;
@@ -671,15 +687,14 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
             const cb = VTemplateEngine._nestedPropsRefCallback;
             return {
                 key: 'ref',
-                value: this._createCallNodeWithContext(Function.prototype.bind.bind(cb), [
-                    dottedPropsArrayNode
-                ])
+                value: this._createCallNodeWithContext(Function.prototype.bind.bind(cb, engineContext[BINDING_PROVIDER]), [dottedPropsArrayNode])
             };
         }
-        static _nestedPropsRefCallback(resolvedSubPropValues, refObj) {
+        static _nestedPropsRefCallback(bindingProvider, resolvedSubPropValues, refObj) {
             if (refObj && refObj.setProperties) {
                 const updatedProps = Object.assign({}, ...resolvedSubPropValues);
                 refObj.setProperties(updatedProps);
+                refObj[ojcustomelementUtils.CACHED_USE_KO_FLAG] = !!bindingProvider;
             }
         }
         _createWritebackPropertyNode(engineContext, propName, valuesArray, existingCallbackExpr) {

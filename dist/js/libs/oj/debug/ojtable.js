@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['touchr', 'ojdnd', 'ojs/ojeditablevalue', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'ojs/ojdialog', 'ojs/ojbutton', 'ojs/ojdatasource-common', 'ojs/ojdataprovideradapter', 'ojs/ojlistdataproviderview', 'ojs/ojselector', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojdomscroller', 'ojs/ojcustomelement-utils', 'ojs/ojkeyset', 'ojs/ojvalidator-regexp', 'ojs/ojkeyboardfocus-utils'], function (touchr, ojdnd, ojeditablevalue, ojinputnumber, ojmenu, ojpopup, ojdialog, ojbutton, ojdatasourceCommon, ojdataprovideradapter, ListDataProviderView, ojselector, oj, $, DomUtils, Logger, Context, Config, ojtranslation, ThemeUtils, ojcomponentcore, DataCollectionUtils, ojanimation, DomScroller, ojcustomelementUtils, ojkeyset, RegExpValidator, ojkeyboardfocusUtils) { 'use strict';
+define(['touchr', 'ojdnd', 'ojs/ojeditablevalue', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'ojs/ojdialog', 'ojs/ojbutton', 'ojs/ojdatasource-common', 'ojs/ojdataprovideradapter', 'ojs/ojlistdataproviderview', 'ojs/ojselector', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojdomscroller', 'ojs/ojcustomelement-utils', 'ojs/ojkeyset', 'ojs/ojvalidator-regexp', 'ojs/ojkeyboardfocus-utils'], function (touchr, ojdnd, ojeditablevalue, ojinputnumber, ojmenu, ojpopup, ojdialog, ojbutton, ojdatasourceCommon, ojdataprovideradapter, ListDataProviderView, ojselector, oj$1, $, DomUtils, Logger, Context, Config, ojtranslation, ThemeUtils, ojcomponentcore, DataCollectionUtils, ojanimation, DomScroller, ojcustomelementUtils, ojkeyset, RegExpValidator, ojkeyboardfocusUtils) { 'use strict';
 
   ListDataProviderView = ListDataProviderView && Object.prototype.hasOwnProperty.call(ListDataProviderView, 'default') ? ListDataProviderView['default'] : ListDataProviderView;
-  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
+  oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
   DomScroller = DomScroller && Object.prototype.hasOwnProperty.call(DomScroller, 'default') ? DomScroller['default'] : DomScroller;
@@ -137,8 +137,8 @@ var __oj_table_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -455,6 +455,9 @@ var __oj_table_metadata =
         "accessibleStateSelected": {
           "type": "string"
         },
+        "accessibleStateUnselected": {
+          "type": "string"
+        },
         "accessibleSummaryEstimate": {
           "type": "string"
         },
@@ -585,7 +588,7 @@ var __oj_table_metadata =
 };
     __oj_table_metadata.extension._WIDGET_NAME = 'ojTable';
     __oj_table_metadata.extension._INNER_ELEM = 'table';
-    oj.CustomElementBridge.register('oj-table', { metadata: __oj_table_metadata });
+    oj$1.CustomElementBridge.register('oj-table', { metadata: __oj_table_metadata });
   }());
 
   /**
@@ -636,7 +639,7 @@ var __oj_table_metadata =
    *   </thead>
    *   <tbody>
    *   <tr>
-   *       <td rowspan="15">Cell</td>
+   *       <td rowspan="16">Cell</td>
    *       <td><kbd>Tab</kbd></td>
    *       <td>The first Tab into the Table moves focus to the first column header. The second Tab moves focus to the next focusable element outside of the Table.
    *           <br>If focus is on a row and the row is actionable then Tab moves focus to the next focusable element within the row. If focus is already on the last focusable element then focus will wrap to the first focusable element in the row.
@@ -657,6 +660,10 @@ var __oj_table_metadata =
    *     <tr>
    *       <td><kbd>Shift+DownArrow</kbd></td>
    *       <td>Select and move focus to the next row.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift+F10</kbd></td>
+   *       <td>Display context menu.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>Ctrl+DownArrow</kbd></td>
@@ -785,13 +792,17 @@ var __oj_table_metadata =
    *       <td>Make the current row readonly.</td>
    *     </tr>
    *     <tr>
-   *       <td rowspan="15">Column Header</td>
+   *       <td rowspan="16">Column Header</td>
    *       <td><kbd>Tab</kbd></td>
    *       <td>Navigate to next focusable element on page (outside table).</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>Shift+Tab</kbd></td>
    *       <td>Navigate to previous focusable element on page (outside table).</td>
+   *     </tr>
+   *      <tr>
+   *       <td><kbd>Shift+F10</kbd></td>
+   *       <td>Display context menu.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>DownArrow</kbd></td>
@@ -847,13 +858,17 @@ var __oj_table_metadata =
    *       <td>Exit actionable mode.</td>
    *     </tr>
    *     <tr>
-   *       <td rowspan="15">Column Footer</td>
+   *       <td rowspan="16">Column Footer</td>
    *       <td><kbd>Tab</kbd></td>
    *       <td>Navigate to next focusable element on page (outside table).</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>Shift+Tab</kbd></td>
    *       <td>Navigate to previous focusable element on page (outside table).</td>
+   *     </tr>
+   *      <tr>
+   *       <td><kbd>Shift+F10</kbd></td>
+   *       <td>Display context menu.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>DownArrow</kbd></td>
@@ -917,8 +932,7 @@ var __oj_table_metadata =
 
 
   /**
-   * <p>Applications can customize animations triggered by actions in Table by either listening for <code class="prettyprint">animateStart/animateEnd</code>
-   *    events or overriding action specific style classes on the animated item. To disable animations for specific table, please call event.preventDefault() from your listener.
+   * <p>Applications can customize animations triggered by actions in Table by overriding action specific style classes on the animated item.
    *    To disable animations for all tables, the CSS variable values can be modified to specify empty effects. See the documentation of <a href="AnimationUtils.html">AnimationUtils</a>
    *    class for details.</p>
    *
@@ -1121,6 +1135,7 @@ var __oj_table_metadata =
    *
    * @ojslot bottom
    * @memberof oj.ojTable
+   * @ojdeprecated {since: '13.0.0', description: 'This is an anti-pattern. Please use high-water mark scrolling and page layouts instead.'}
    *
    * @example <caption>Initialize the Table with the <code class="prettyprint">bottom</code> slot specified:</caption>
    * &lt;oj-table>
@@ -1639,6 +1654,16 @@ var __oj_table_metadata =
   /**
    * @private
    */
+  Table._DATA_OJ_COLUMNIDX = 'data-oj-columnIdx';
+
+  /**
+   * @private
+   */
+  Table._VALIDATOR_PATTERN = '^[1-9][0-9]*$';
+
+  /**
+   * @private
+   */
   Table._DATA_OJ_BINDING_PROVIDER = 'data-oj-binding-provider';
 
   /**
@@ -2033,7 +2058,7 @@ var __oj_table_metadata =
 
       // If this._data is a TableDataSourceAdapter, call destroy so that it can remove listeners
       // on the underlying DataSource to avoid stranding memory
-      if (this._data instanceof oj.TableDataSourceAdapter) {
+      if (this._data instanceof oj$1.TableDataSourceAdapter) {
         this._data.destroy();
       }
 
@@ -2062,6 +2087,7 @@ var __oj_table_metadata =
     this._clearShowStatusTimeout();
     this._clearTableBodyHideTimeout();
     this._clearTableFooterHideTimeout();
+    this._clearNotifyAttachedTimeout();
   };
 
   /**
@@ -2303,7 +2329,7 @@ var __oj_table_metadata =
         var columnsCount = columns.length;
         for (var i = 0; i < columnsCount; i++) {
           var column = columns[i];
-          if (oj.Object.compareValues(column, this._sortColumn)) {
+          if (oj$1.Object.compareValues(column, this._sortColumn)) {
             foundColumn = true;
             break;
           }
@@ -2958,6 +2984,9 @@ var __oj_table_metadata =
         addRowCell = document.createElement(Table.DOM_ELEMENT._TD); // @HTMLUpdateOK
         placeHolderRow.insertBefore(addRowCell, placeHolderRow.firstChild); // @HTMLUpdateOK
         addRowCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+        if (this._isVerticalGridEnabled()) {
+          addRowCell.classList.add(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
+        }
       }
       if (!skipTopUpdate) {
         this._getLayoutManager()._updateAddRowTop();
@@ -2978,12 +3007,15 @@ var __oj_table_metadata =
     var tableBody = this._getTableBody();
     return this._waitForAllElementsToResolve([tableBody]).then(function () {
       var editableRowKey = this._hasEditableRow() ? this._getEditableRowKey() : null;
+      var actionableModeRowKey = (this._isTableActionableMode() && this._active) ?
+        this._active.key : null;
       rowElements.forEach(function (tableBodyRow) {
         var rowKey = this._getRowKey(tableBodyRow);
-        // disable all focusable content unless this is the current edit row
-        if (!(editableRowKey != null && oj.KeyUtils.equals(rowKey, editableRowKey))) {
-          DataCollectionUtils.disableAllFocusableElements(tableBodyRow, null, null, true);
-        }
+        // disable all focusable content unless this is the current edit row or actionable row
+        if (!(editableRowKey != null && oj$1.KeyUtils.equals(rowKey, editableRowKey)) &&
+          !(actionableModeRowKey != null && oj$1.KeyUtils.equals(rowKey, actionableModeRowKey))) {
+            DataCollectionUtils.disableAllFocusableElements(tableBodyRow, null, null, true);
+          }
       }.bind(this));
       return Promise.resolve(true);
     }.bind(this));
@@ -3027,21 +3059,21 @@ var __oj_table_metadata =
    * @param {number} rowIdx  Index of the row to refresh.
    * @param {boolean} resetFocus  true to reset focus if needed; false to ignore focus.
    * @param {boolean=} skipDataChecks true if the data checks can safely be skipped.
+   * @param {boolean=} useCache true if this should use previously cached row data.
    * @return {Promise.<boolean>} Promise resolves when done to true if refreshed, false if not
    * @private
    */
-  Table.prototype._refreshRow = function (rowIdx, resetFocus, skipDataChecks) {
+  Table.prototype._refreshRow = function (rowIdx, resetFocus, skipDataChecks, useCache) {
     var dataprovider = this._getData();
+    var tableBodyRow = this._getTableBodyRow(rowIdx);
+
     if (!skipDataChecks) {
       // if no data then bail
       if (!dataprovider) {
         return Promise.resolve(false);
       }
 
-      var tableBodyRows = this._getTableBodyRows();
-
-      if (isNaN(rowIdx) || rowIdx < 0 || rowIdx >= tableBodyRows.length ||
-          tableBodyRows.length === 0) {
+      if (!tableBodyRow) {
         // validate rowIdx value
         var errSummary = Table._LOGGER_MSG._ERR_REFRESHROW_INVALID_INDEX_SUMMARY;
         var errDetail = ojtranslation.applyParameters(
@@ -3053,7 +3085,22 @@ var __oj_table_metadata =
     // get row at rowIdx
     var rowKey = this._getRowKeyForRowIdx(rowIdx);
     this._getLayoutManager().notifyTableUpdate(Table._UPDATE._ROW_REFRESH);
-    return dataprovider.fetchByKeys({ keys: new Set([rowKey]) }).then(function (keyResult) {
+
+    var dataPromise;
+    if (useCache) {
+      // use existing row data cache
+      var resultsMap = new Map();
+      var rowItem = {
+        data: $(tableBodyRow).data('rowData'),
+        metadata: $(tableBodyRow).data('rowMetadata')
+      };
+      resultsMap.set(rowKey, rowItem);
+      dataPromise = Promise.resolve({ results: resultsMap });
+    } else {
+      // trigger fetchByKeys to get the new row data instead
+      dataPromise = dataprovider.fetchByKeys({ keys: new Set([rowKey]) });
+    }
+    return dataPromise.then(function (keyResult) {
       if (keyResult == null ||
           keyResult.results == null ||
           keyResult.results.size === 0) {
@@ -3061,7 +3108,6 @@ var __oj_table_metadata =
       }
 
       // Find out if the row contains the focus element.  Focus will be lost to the document body after refresh.
-      var tableBodyRow = this._getTableBodyRow(rowIdx);
       // eslint-disable-next-line no-param-reassign
       resetFocus = resetFocus && $.contains(tableBodyRow, document.activeElement);
 
@@ -3112,7 +3158,7 @@ var __oj_table_metadata =
       // clear any existing table rows (if a sort for example)
       if (this._isSkeletonSupport()) {
         var dataprovider = this._getData();
-        if (dataprovider instanceof oj.TableDataSourceAdapter) {
+        if (dataprovider instanceof oj$1.TableDataSourceAdapter) {
           // if using legacy data source, and start index is greater than 0, leave current rows (paging loadMore case)
           var adapterStartIndex = dataprovider._startIndex;
           if (adapterStartIndex != null && adapterStartIndex > 0) {
@@ -3152,7 +3198,7 @@ var __oj_table_metadata =
         tempSkeletonRow.appendChild(tempCell); // @HTMLUpdateOK
         this._appendElementToTableBody(tempSkeletonRow, this._getTableBody());
         this._skeletonHWMSFadeInEndListener = function () {
-          tempSkeletonRow.classList.remove('oj-animation-skeleton-fade-in');
+          tempSkeletonRow.classList.remove(Table.CSS_CLASSES._ANIMATION_SKELETON_FADE_IN_CLASS);
           var skeletons = tempSkeletonRow.querySelectorAll('.oj-table-skeleton');
           skeletons.forEach(function (row) {
             row.classList.add('oj-animation-skeleton');
@@ -3160,7 +3206,7 @@ var __oj_table_metadata =
           tempSkeletonRow.removeEventListener('animationend', this._skeletonHWMSFadeInEndListener);
         }.bind(this);
         tempSkeletonRow.addEventListener('animationend', this._skeletonHWMSFadeInEndListener);
-        tempSkeletonRow.classList.add('oj-animation-skeleton-fade-in');
+        tempSkeletonRow.classList.add(Table.CSS_CLASSES._ANIMATION_SKELETON_FADE_IN_CLASS);
       }
     }
   };
@@ -3196,7 +3242,7 @@ var __oj_table_metadata =
       pendingRow.insertBefore(skeletonCell, pendingRow.firstChild); // @HTMLUpdateOK
 
       this._skeletonHWMSFadeInEndListener = function () {
-        skeletonRow.classList.remove('oj-animation-skeleton-fade-in');
+        skeletonRow.classList.remove(Table.CSS_CLASSES._ANIMATION_SKELETON_FADE_IN_CLASS);
         var skeletons = skeletonRow.querySelectorAll('.oj-table-skeleton');
         skeletons.forEach(function (row) {
           row.classList.add('oj-animation-skeleton');
@@ -3204,7 +3250,7 @@ var __oj_table_metadata =
         skeletonRow.removeEventListener('animationend', this._skeletonHWMSFadeInEndListener);
       }.bind(this);
       skeletonRow.addEventListener('animationend', this._skeletonHWMSFadeInEndListener);
-      skeletonRow.classList.add('oj-animation-skeleton-fade-in');
+      skeletonRow.classList.add(Table.CSS_CLASSES._ANIMATION_SKELETON_FADE_IN_CLASS);
     }
   };
 
@@ -3225,7 +3271,7 @@ var __oj_table_metadata =
       // remove temporary table row for pending skeleton behavior
       var skeletonCell = pendingRow.children[0];
       var skeletonRow = skeletonCell.children[0];
-      skeletonRow.classList.remove('oj-animation-skeleton-fade-in');
+      skeletonRow.classList.remove(Table.CSS_CLASSES._ANIMATION_SKELETON_FADE_IN_CLASS);
       skeletonRow.removeEventListener('animationend', this._skeletonHWMSFadeInEndListener);
       pendingRow.removeChild(skeletonCell);
 
@@ -3394,7 +3440,7 @@ var __oj_table_metadata =
       let spinner = document.getElementById(
         this._getTableId() + '_resize_popup_spinner');
       let popup = this._getContextMenuResizePopup();
-      columnIdx = parseInt(popup.getAttribute('data-oj-columnIdx'), 10);
+      columnIdx = parseInt(popup.getAttribute(Table._DATA_OJ_COLUMNIDX), 10);
       if (this._IsCustomElement()) {
         widthValue = spinner.value;
         popup.close();
@@ -3406,7 +3452,7 @@ var __oj_table_metadata =
       let columnWidthInput = document.getElementById(
         this._getTableId() + '_resize_column_width_input');
       let dialog = this._getContextMenuResizeDialog();
-      columnIdx = parseInt(dialog.getAttribute('data-oj-columnIdx'), 10);
+      columnIdx = parseInt(dialog.getAttribute(Table._DATA_OJ_COLUMNIDX), 10);
       if (this._IsCustomElement()) {
         widthValue = columnWidthInput.value;
         dialog.close();
@@ -3462,13 +3508,13 @@ var __oj_table_metadata =
 
     if (headerColumn != null) {
       columnIdx = this._getElementColumnIdx(headerColumn);
-    }
-    if (tableBodyCell != null) {
+    } else if (tableBodyCell != null) {
       columnIdx = this._getElementColumnIdx(tableBodyCell);
     }
     if (columnIdx === null) {
       return;
     }
+
     if (menuItemCommand === 'oj-table-sortAsc') {
       this._handleSortTableHeaderColumn(columnIdx, true, event);
     } else if (menuItemCommand === 'oj-table-sortDsc') {
@@ -3490,17 +3536,12 @@ var __oj_table_metadata =
       var target = headerColumn || tableBodyCell;
       var columnWidth = this._getLayoutManager().getColumnWidthProperty(target);
 
-      var launcher = this._getTable();
-      if (headerColumn != null) {
-        launcher = headerColumn;
-      } else if (tableBodyCell != null) {
-        launcher = tableBodyCell;
-      }
+      var launcher = headerColumn != null ? headerColumn : tableBodyCell;
 
       const isRedwood = ThemeUtils.parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
       if (!isRedwood) {
         let popup = this._getContextMenuResizePopup();
-        popup.setAttribute('data-oj-columnIdx', columnIdx);
+        popup.setAttribute(Table._DATA_OJ_COLUMNIDX, columnIdx); // @HTMLUpdateOK
 
         let spinner = document.getElementById(
           this._getTableId() + '_resize_popup_spinner');
@@ -3513,7 +3554,7 @@ var __oj_table_metadata =
         }
       } else {
         let dialog = this._getContextMenuResizeDialog();
-        dialog.setAttribute('data-oj-columnIdx', columnIdx);
+        dialog.setAttribute(Table._DATA_OJ_COLUMNIDX, columnIdx); // @HTMLUpdateOK
 
         let columnWidthInput = document.getElementById(
           this._getTableId() + '_resize_column_width_input');
@@ -3551,7 +3592,7 @@ var __oj_table_metadata =
       }.bind(this);
     }
     if (!this._isResizeListenerAdded) {
-      DomUtils.addResizeListener(element, this._resizeListener, 50);
+      DomUtils.addResizeListener(element, this._resizeListener, 50, true);
       this._isResizeListenerAdded = true;
     }
   };
@@ -3586,7 +3627,7 @@ var __oj_table_metadata =
   Table.prototype._isLoadMoreOnScroll = function () {
     if (this.options.scrollPolicy === Table._OPTION_SCROLL_POLICY._AUTO) {
       // maintain old 'auto' behavior for legacy DataSource
-      return !(this._data instanceof oj.TableDataSourceAdapter);
+      return !(this._data instanceof oj$1.TableDataSourceAdapter);
     }
     return this.options.scrollPolicy !== Table._OPTION_SCROLL_POLICY._LOAD_ALL;
   };
@@ -3675,9 +3716,9 @@ var __oj_table_metadata =
         key === 'selection' || key === 'selected' || key === 'currentRow' || key === 'editRow' ||
         (key === 'scrollPolicyOptions' && this._isStickyLayoutEnabled() && flags != null &&
          (flags.subkey === 'scrollerOffsetTop' || flags.subkey === 'scrollerOffsetBottom' ||
-          flags.subkey === 'scrollerOffsetStart' || flags.subkey === 'scrollerOffsetEnd'))) {
+         flags.subkey === 'scrollerOffsetStart' || flags.subkey === 'scrollerOffsetEnd'))) {
       refresh = false;
-    } else if (!oj.Object.compareValues(value, currentOptions[key])) {
+    } else if (!oj$1.Object.compareValues(value, currentOptions[key])) {
       if (key === 'verticalGridVisible' || key === 'display') {
         this._renderedTableHeaderColumns = false;
       }
@@ -3788,32 +3829,13 @@ var __oj_table_metadata =
   Table.prototype._processFetchSort = function (result) {
     try {
       var fetchParameters = result.fetchParameters;
-      var columns = this._getColumnDefs();
       var sortCriteria = fetchParameters[Table._CONST_SORTCRITERIA];
       if (sortCriteria != null && sortCriteria.length > 0) {
         var sortAttribute = sortCriteria[0].attribute;
         var sortDirection = sortCriteria[0].direction === Table._COLUMN_SORT_ORDER._ASCENDING;
         this._refreshSortTableHeaderColumn(sortAttribute, sortDirection);
-
         // set the current row
         this._setCurrentRow(this.options.currentRow);
-        var columnIdx = null;
-        var columnsCount = columns.length;
-
-        for (var i = 0; i < columnsCount; i++) {
-          var column = columns[i];
-          var sortField = column.sortProperty == null ? column.field : column.sortProperty;
-
-          if (sortAttribute === sortField) {
-            columnIdx = i;
-            break;
-          }
-        }
-        if (columnIdx != null) {
-          setTimeout(function () { // @HTMLUpdateOK
-            this._scrollColumnIntoViewport(columnIdx);
-          }.bind(this), 0);
-        }
       } else {
         this._clearSortedHeaderColumn();
       }
@@ -4147,41 +4169,43 @@ var __oj_table_metadata =
           });
           var metadataArray = value[Table._CONST_METADATA];
 
-          var i;
-          // remove any duplicate rows that are already in the DOM
-          for (i = keys.length - 1; i >= 0; i--) {
-            if (this._getRowIdxForRowKey(keys[i]) !== null) {
-              data.splice(i, 1);
-              keys.splice(i, 1);
-              metadataArray.splice(i, 1);
-            }
-          }
-
           if (data.length > 0) {
             this._queueTask(function () {
-              layoutManager.notifyTableUpdate(Table._UPDATE._ROWS_ADDED);
-              var tableBodyRows = this._getTableBodyRows();
-              var rowCount = tableBodyRows.length;
-              var indexArray = [];
-              for (i = 0; i < data.length; i++) {
-                indexArray[i] = rowCount + i;
-              }
-              return this._refreshTableBody({
-                isMouseWheel: result.isMouseWheel,
-                data: data,
-                keys: keys,
-                metadata: metadataArray,
-                indexes: indexArray }, rowCount, true).then(function () {
-                // cached dimensions are cleared on refreshTableDimension, but since
-                // we are skipping that, we'll need to explicitly clear them
-                layoutManager.clearCachedDimensions();
-                if (result.done) {
-                  this._noMoreData = true;
-                  this._syncScrollPosition();
-                } else {
-                  this._syncScrollPosition(null, this._scrollPosition != null);
+              var i;
+              // remove any duplicate rows that are already in the DOM
+              for (i = keys.length - 1; i >= 0; i--) {
+                if (this._getRowIdxForRowKey(keys[i]) !== null) {
+                  data.splice(i, 1);
+                  keys.splice(i, 1);
+                  metadataArray.splice(i, 1);
                 }
-              }.bind(this));
+              }
+              if (data.length > 0) {
+                layoutManager.notifyTableUpdate(Table._UPDATE._ROWS_ADDED);
+                var tableBodyRows = this._getTableBodyRows();
+                var rowCount = tableBodyRows.length;
+                var indexArray = [];
+                for (i = 0; i < data.length; i++) {
+                  indexArray[i] = rowCount + i;
+                }
+                return this._refreshTableBody({
+                  isMouseWheel: result.isMouseWheel,
+                  data: data,
+                  keys: keys,
+                  metadata: metadataArray,
+                  indexes: indexArray }, rowCount, true).then(function () {
+                  // cached dimensions are cleared on refreshTableDimension, but since
+                  // we are skipping that, we'll need to explicitly clear them
+                  layoutManager.clearCachedDimensions();
+                  if (result.done) {
+                    this._noMoreData = true;
+                    this._syncScrollPosition();
+                  } else {
+                    this._syncScrollPosition(null, this._scrollPosition != null);
+                  }
+                }.bind(this));
+              }
+              return Promise.resolve();
             }.bind(this));
             return;
           }
@@ -4327,7 +4351,7 @@ var __oj_table_metadata =
     // Chromium has an issue with requestIdleCallback when mouse wheel is used, see Chrome :
     // https://bugs.chromium.org/p/chromium/issues/detail?id=822269
     var options;
-    if (isMouseWheel && oj.AgentUtils.getAgentInfo().engine === oj.AgentUtils.ENGINE.BLINK) {
+    if (isMouseWheel && oj$1.AgentUtils.getAgentInfo().engine === oj$1.AgentUtils.ENGINE.BLINK) {
       options = { timeout: 100 };
     }
     this._idleCallback = window.requestIdleCallback(function (idleDeadline) {
@@ -4369,8 +4393,8 @@ var __oj_table_metadata =
 
         // to resolve an issue where on Firefox scroll with mouse wheel will randomly reset scrolltop
         // after DOM append
-        if (isMouseWheel && oj.AgentUtils.getAgentInfo().browser ===
-          oj.AgentUtils.BROWSER.FIREFOX && tableBody.scrollTop !== self._scrollTop) {
+        if (isMouseWheel && oj$1.AgentUtils.getAgentInfo().browser ===
+          oj$1.AgentUtils.BROWSER.FIREFOX && tableBody.scrollTop !== self._scrollTop) {
           // eslint-disable-next-line no-param-reassign
           tableBody.scrollTop = self._scrollTop;
         }
@@ -4892,7 +4916,7 @@ var __oj_table_metadata =
     // do an initial fetch if a TableDataSource
     // paging control should do the fetches for PagingTableDataSource
     if (dataprovider != null &&
-        oj.DataProviderFeatureChecker.isDataProvider(dataprovider) &&
+        oj$1.DataProviderFeatureChecker.isDataProvider(dataprovider) &&
         (!this._isPagingModelDataProvider() || isSortUpdate)) {
       return this._queueTask(function () {
         layoutManager.notifyTableUpdate(isSortUpdate ? Table._UPDATE._DATA_SORT :
@@ -4902,7 +4926,7 @@ var __oj_table_metadata =
           this._scrollTop = 0;
           layoutManager.getScroller().scrollTop = 0;
         }
-        if (dataprovider instanceof oj.TableDataSourceAdapter) {
+        if (dataprovider instanceof oj$1.TableDataSourceAdapter) {
           updatedOptions.fetchType = 'init';
           if (this._isLoadMoreOnScroll()) {
             updatedOptions[Table._CONST_OFFSET] = 0;
@@ -4929,7 +4953,10 @@ var __oj_table_metadata =
     this._queueTask(function () {
       var enginePromise;
       try {
-        enginePromise = Config.__getTemplateEngine().then(function (engine) {
+        const templateOptions = {
+          customElement: this._GetCustomElement()
+        };
+        enginePromise = Config.__getTemplateEngine(templateOptions).then(function (engine) {
           this._templateEngine = engine;
         }.bind(this), function (err) {
           Logger.warn(err);
@@ -4972,7 +4999,7 @@ var __oj_table_metadata =
    */
   Table.prototype._containsKey = function (key, metadata) {
     for (var i = 0; i < metadata.length; i++) {
-      if (oj.KeyUtils.equals(metadata[i].key, key)) {
+      if (oj$1.KeyUtils.equals(metadata[i].key, key)) {
         return true;
       }
     }
@@ -5037,7 +5064,7 @@ var __oj_table_metadata =
           });
 
           var offset = 0;
-          if (dataprovider instanceof oj.TableDataSourceAdapter) {
+          if (dataprovider instanceof oj$1.TableDataSourceAdapter) {
             offset = dataprovider[Table._CONST_OFFSET];
           }
           var startIndex = 0;
@@ -5122,7 +5149,7 @@ var __oj_table_metadata =
       header: sortCriteria[0][Table._CONST_ATTRIBUTE],
       direction: sortCriteria[0].direction
     });
-    this._beforeDataRefresh();
+    this._beforeDataRefresh(true);
     // show the Fetching Data... message
     this._showStatusMessage();
     this._initFetch({ sortCriteria: sortCriteria }, true);
@@ -5214,7 +5241,7 @@ var __oj_table_metadata =
     var columnsCount = columns.length;
     for (var i = 0; i < columnsCount; i++) {
       var column = columns[i];
-      if (oj.KeyUtils.equals(column.id, columnKey)) {
+      if (oj$1.KeyUtils.equals(column.id, columnKey)) {
         return i;
       }
     }
@@ -5272,7 +5299,7 @@ var __oj_table_metadata =
     if (tableBodyRows.length > 0) {
       var tableBodyRowsCount = tableBodyRows.length;
       for (var i = 0; i < tableBodyRowsCount; i++) {
-        if (oj.KeyUtils.equals($(tableBodyRows[i]).data('rowKey'), rowKey)) {
+        if (oj$1.KeyUtils.equals($(tableBodyRows[i]).data('rowKey'), rowKey)) {
           return i;
         }
       }
@@ -5291,7 +5318,7 @@ var __oj_table_metadata =
     if (tableBodyRows.length > 0) {
       var tableBodyRowsCount = tableBodyRows.length;
       for (var i = 0; i < tableBodyRowsCount; i++) {
-        if (oj.KeyUtils.equals($(tableBodyRows[i]).data('rowKey'), rowKey)) {
+        if (oj$1.KeyUtils.equals($(tableBodyRows[i]).data('rowKey'), rowKey)) {
           var dataprovider = this._getData();
           var offset = 0;
           if (this._isPagingModelDataProvider()) {
@@ -5494,10 +5521,10 @@ var __oj_table_metadata =
     this.component = component;
     this.Init();
   };
-  oj._registerLegacyNamespaceProp('TableDndContext', TableDndContext);
+  oj$1._registerLegacyNamespaceProp('TableDndContext', TableDndContext);
 
   // Subclass from oj.Object
-  oj.Object.createSubclass(TableDndContext, oj.Object, 'oj.TableDndContext');
+  oj$1.Object.createSubclass(TableDndContext, oj$1.Object, 'oj.TableDndContext');
 
   /**
    * @private
@@ -5583,19 +5610,19 @@ var __oj_table_metadata =
 
       var clonedCells = rowClone.querySelectorAll('td');
 
-      rowClone.style.position = 'absolute';
+      rowClone.style.position = Table.CSS_VAL._ABSOLUTE;
       rowClone.style.top = (row.offsetTop - minTop) + Table.CSS_VAL._PX;
       rowClone.style.width = row.offsetWidth + Table.CSS_VAL._PX;
       rowClone.classList.add('oj-table-body-row-drag-image');
-      rowClone.classList.remove('oj-selected');
-      rowClone.classList.remove('oj-focus');
-      rowClone.classList.remove('oj-focus-highlight');
+      rowClone.classList.remove(Table.MARKER_STYLE_CLASSES._SELECTED);
+      rowClone.classList.remove(Table.MARKER_STYLE_CLASSES._FOCUS);
+      rowClone.classList.remove(Table.MARKER_STYLE_CLASSES._FOCUS_HIGHLIGHT);
 
       clonedCells.forEach(function (cell, index) {
         // eslint-disable-next-line no-param-reassign
         cell.style.width = cells[index].offsetWidth + Table.CSS_VAL._PX;
-        cell.classList.remove('oj-selected');
-        cell.classList.remove('oj-hover');
+        cell.classList.remove(Table.MARKER_STYLE_CLASSES._SELECTED);
+        cell.classList.remove(Table.MARKER_STYLE_CLASSES._HOVER);
       });
       tableBodyClone.appendChild(rowClone);
     }.bind(this));
@@ -5773,11 +5800,10 @@ var __oj_table_metadata =
    * @memberof oj.TableDndContext
    */
   TableDndContext.prototype.handleColumnReorderDragOver = function (event) {
-    var columnIdx = this._getEventColumnIndex(event);
-
-    if (this._dragStartColumnIdxs != null && this._dragStartColumnIdxs.length > 0 &&
-      this._dragStartColumnIdxs.indexOf(columnIdx) === -1) {
-        this._currentDropColumnBefore = this._isDragOverBeforeColumn(event);
+    var columnIdx = this._getDragOverColumnIndex(event);
+    if (columnIdx != null && this._dragStartColumnIdxs != null &&
+      this._dragStartColumnIdxs.length > 0 && this._dragStartColumnIdxs.indexOf(columnIdx) === -1) {
+        this._currentDropColumnBefore = this._isDragOverBeforeColumn(event, columnIdx);
         // Check the current before/after column position against indicator position
         // to see if we need to move the indicator
         if (!(this._currentDropColumnBefore &&
@@ -5791,6 +5817,28 @@ var __oj_table_metadata =
   };
 
   /**
+   * Get the column index from cursor position
+   * @param {Event} event  jQuery event object
+   * @return {number} the column index
+   * @memberof oj.TableDndContext
+   * @private
+   */
+  TableDndContext.prototype._getDragOverColumnIndex = function (event) {
+    let headerCells = this.component._getTableHeaderColumns();
+    if (event.originalEvent.clientX < headerCells[0].getBoundingClientRect().left) {
+      return 0;
+    }
+    for (let i = 0; i < headerCells.length; i++) {
+      let position = headerCells[i].getBoundingClientRect();
+      if (event.originalEvent.clientX > position.left &&
+        event.originalEvent.clientX <= position.right) {
+          return i;
+        }
+    }
+    return null;
+  };
+
+  /**
    * Handle dragover on column
    * @param {Event} event  jQuery event object
    * @return {boolean|undefined} a value passed back to jQuery.  Returning false will
@@ -5801,17 +5849,18 @@ var __oj_table_metadata =
    */
   TableDndContext.prototype.handleColumnDragOver = function (event) {
     if (this._isColumnReordering()) {
-      return this.handleColumnReorderDragOver(event);
+      return undefined;
     }
 
     var columnIdx = this._getEventColumnIndex(event);
-    this._currentDropColumnBefore = this._isDragOverBeforeColumn(event);
+    this._currentDropColumnBefore = this._isDragOverBeforeColumn(event, columnIdx);
 
     var returnValue = this._invokeDropCallback('columns', 'dragOver', event,
                                                { columnIndex: columnIdx });
 
     if (returnValue === false || event.isDefaultPrevented()) {
-      this.component._displayDragOverIndicatorColumn(columnIdx, this._isDragOverBeforeColumn(event));
+      this.component._displayDragOverIndicatorColumn(columnIdx,
+        this._isDragOverBeforeColumn(event, columnIdx));
     }
 
     return returnValue;
@@ -5846,13 +5895,15 @@ var __oj_table_metadata =
    */
   TableDndContext.prototype.handleColumnReorderDrop = function (event) {
     this.component._removeDragOverIndicatorColumn();
-    var columnIdx = this._getEventColumnIndex(event);
-    if (!this._currentDropColumnBefore) {
-      columnIdx += 1;
-    }
-    if (this._dragStartColumnIdxs.indexOf(columnIdx) === -1) {
-      this.component._columnsDestMap =
-        this.component._moveTableHeaderColumn(this._dragStartColumnIdxs, columnIdx, event);
+    var columnIdx = this._getDragOverColumnIndex(event);
+    if (columnIdx != null) {
+      if (!this._currentDropColumnBefore) {
+        columnIdx += 1;
+      }
+      if (this._dragStartColumnIdxs.indexOf(columnIdx) === -1) {
+        this.component._columnsDestMap =
+          this.component._moveTableHeaderColumn(this._dragStartColumnIdxs, columnIdx, event);
+      }
     }
     event.preventDefault();
   };
@@ -5868,7 +5919,7 @@ var __oj_table_metadata =
    */
   TableDndContext.prototype.handleColumnDrop = function (event) {
     if (this._isColumnReordering()) {
-      return this.handleColumnReorderDrop(event);
+      return undefined;
     }
 
     this.component._removeDragOverIndicatorColumn();
@@ -5934,7 +5985,7 @@ var __oj_table_metadata =
       this.component._rowsDragged.forEach(function (row) {
         row.classList.remove(TableDndContext._CSS_CLASSES._DRAG_SOURCE_OPAQUE);
         row.classList.remove('oj-table-row-drag-source-hide');
-        row.classList.add('oj-selected');
+        row.classList.add(Table.MARKER_STYLE_CLASSES._SELECTED);
         this.component._updateRowStateCellsClass(null, row, { selected: true });
       }.bind(this));
     }
@@ -6134,8 +6185,8 @@ var __oj_table_metadata =
    * @private
    * @memberof oj.TableDndContext
    */
-  TableDndContext.prototype._isDragOverBeforeColumn = function (event) {
-    var columnRect = event.currentTarget.getBoundingClientRect();
+  TableDndContext.prototype._isDragOverBeforeColumn = function (event, columnIdx) {
+    var columnRect = this.component._getTableHeaderColumn(columnIdx).getBoundingClientRect();
 
     if (event.originalEvent.clientX != null) {
       var cursorPosX = columnRect.right - event.originalEvent.clientX;
@@ -6336,7 +6387,7 @@ var __oj_table_metadata =
   };
 
   // Subclass from oj.Object
-  oj.Object.createSubclass(TableLayoutManager, oj.Object, 'TableLayoutManager');
+  oj$1.Object.createSubclass(TableLayoutManager, oj$1.Object, 'TableLayoutManager');
 
 
   /**
@@ -6416,7 +6467,7 @@ var __oj_table_metadata =
       var sizingState = this._getSizingState();
       return (width > 0 && height > 0 &&
               (width !== sizingState.outerWidth ||
-              height !== sizingState.outerHeight));
+               height !== sizingState.outerHeight));
     }
     //  Otherwise, we only need to ensure the tableContainer's size is non-zero.
     var tableContainer = this._table._getTableContainer();
@@ -6493,7 +6544,7 @@ var __oj_table_metadata =
   /**
    * @private
    */
-   TableLayoutManager.prototype._handleScrollerScrollLeft = function (scrollLeft) {
+  TableLayoutManager.prototype._handleScrollerScrollLeft = function (scrollLeft) {
     this._table._scrollLeft = scrollLeft;
   };
 
@@ -6501,7 +6552,7 @@ var __oj_table_metadata =
    * Handle scrollTop on scroller
    * @private
    */
-   TableLayoutManager.prototype._handleScrollerScrollTop = function (scrollTop) {
+  TableLayoutManager.prototype._handleScrollerScrollTop = function (scrollTop) {
     // if no domScroller is set, make sure scroll pos busy state is cleared here
     if (!this._table._domScroller) {
       this._table._clearScrollPosBusyState();
@@ -7329,9 +7380,6 @@ var __oj_table_metadata =
   // eslint-disable-next-line no-unused-vars
   TableLayoutManager.prototype._handleHeaderColumnResizeStart = function (event, isMouse) { };
 
-  /**
-   * @private
-   */
   // eslint-disable-next-line no-unused-vars
   TableLayoutManager.prototype.displayDragOverIndicatorColumn = function (columnIdx, isStart) { };
 
@@ -7403,7 +7451,7 @@ var __oj_table_metadata =
   };
 
   // Subclass from oj.Object
-  oj.Object.createSubclass(TableLegacyLayoutManager, TableLayoutManager, 'TableLegacyLayoutManager');
+  oj$1.Object.createSubclass(TableLegacyLayoutManager, TableLayoutManager, 'TableLegacyLayoutManager');
 
 
   /**
@@ -7436,17 +7484,19 @@ var __oj_table_metadata =
   TableLegacyLayoutManager.prototype.registerScrollListeners = function () {
     TableLegacyLayoutManager.superclass.registerScrollListeners.call(this);
 
+    var headerFooterScrollListener = function (event) {
+      var scrollLeft = this._table._getElementScrollLeft(event.target);
+      if (this._table._scrollLeft !== scrollLeft) {
+        this._table._setScrollX(scrollLeft);
+      }
+    }.bind(this);
+
     // although header region does not contain scrollbars, browser may auto-scroll when contents gain focus
     var tableHeaderRow = this._table._getTableHeaderRow();
     if (tableHeaderRow != null) {
       var tableHeader = tableHeaderRow.parentNode;
       if (this._headerScrollEventListener == null) {
-        this._headerScrollEventListener = (function (event) {
-          var scrollLeft = this._table._getElementScrollLeft(event.target);
-          if (this._table._scrollLeft !== scrollLeft) {
-            this._table._setScrollX(scrollLeft);
-          }
-        }.bind(this));
+        this._headerScrollEventListener = headerFooterScrollListener;
       }
       // remove the event listener before adding to make sure only one is active at a time
       tableHeader.removeEventListener('scroll', this._headerScrollEventListener);
@@ -7457,12 +7507,7 @@ var __oj_table_metadata =
     if (tableFooterRow != null) {
       var tableFooter = tableFooterRow.parentNode;
       if (this._footerScrollEventListener == null) {
-        this._footerScrollEventListener = (function (event) {
-          var scrollLeft = this._table._getElementScrollLeft(event.target);
-          if (this._table._scrollLeft !== scrollLeft) {
-            this._table._setScrollX(scrollLeft);
-          }
-        }.bind(this));
+        this._footerScrollEventListener = headerFooterScrollListener;
       }
       // remove the event listener before adding to make sure only one is active at a time
       tableFooter.removeEventListener('scroll', this._footerScrollEventListener);
@@ -7561,20 +7606,21 @@ var __oj_table_metadata =
     var rowRect = tableBodyRow.getBoundingClientRect();
     var scrollingElementRect = scroller.getBoundingClientRect();
 
-    var vertDiff = {};
-    vertDiff.top = (scrollingElementRect.top - rowRect.top) + scroller.clientTop;
-    vertDiff.bottom = (rowRect.bottom - scrollingElementRect.bottom) +
-                      (scroller.offsetHeight - scroller.clientHeight - scroller.clientTop);
+    var vertDiff = {
+      top: (scrollingElementRect.top - rowRect.top) + scroller.clientTop,
+      bottom: ((rowRect.bottom - scrollingElementRect.bottom) +
+                (scroller.offsetHeight - scroller.clientHeight - scroller.clientTop))
+    };
     return vertDiff;
   };
 
   /**
-  * Determines the number of pixels the Table would need to scroll to align each
-  * horizontal edge of the given column with the corresponding edge of the scrollable viewport.
-  * @param {Element} columnCell A cell in the column to be scrolled.
-  * @param {number} columnIndex The index of the column to be scrolled.
-  * @private
-  */
+   * Determines the number of pixels the Table would need to scroll to align each
+   * horizontal edge of the given column with the corresponding edge of the scrollable viewport.
+   * @param {Element} columnCell A cell in the column to be scrolled.
+   * @param {number} columnIndex The index of the column to be scrolled.
+   * @private
+   */
   TableLegacyLayoutManager.prototype.getHorizontalOverflowDiff = function (columnCell) {
     var isRTL = (this._table._GetReadingDirection() === 'rtl');
     var scrollingElement = this.getScroller();
@@ -7996,9 +8042,9 @@ var __oj_table_metadata =
   };
 
   /**
-    * Iterate through the columns and remove the widths
-    * @private
-    */
+   * Iterate through the columns and remove the widths
+   * @private
+   */
   TableLegacyLayoutManager.prototype._removeHeaderColumnAndCellColumnWidths = function () {
     var columns = this._table._getColumnDefs();
     var columnCount = columns.length;
@@ -8445,15 +8491,15 @@ var __oj_table_metadata =
     }
   };
 
-  /**
-   * @private
-   */
+   /**
+    * @private
+    */
   TableLegacyLayoutManager.prototype.displayDragOverIndicatorColumn = function (columnIdx, isStart) {
     this._table._removeDragOverIndicatorColumn();
     var tableHeaderRow = this._table._getTableHeaderRow();
     var tableHeaderColumn = this._table._getTableHeaderColumn(columnIdx);
     var indicatorClass = isStart ? Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_BEFORE_CLASS :
-                                   Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS;
+                                  Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS;
 
     if (tableHeaderColumn != null) {
       tableHeaderColumn.classList.add(indicatorClass);
@@ -8465,9 +8511,9 @@ var __oj_table_metadata =
     }
   };
 
-  /**
-   * @private
-   */
+   /**
+    * @private
+    */
   TableLegacyLayoutManager.prototype.removeDragOverIndicatorColumn = function () {
     var indicatorElements = this._table._tableQuerySelectorAll(this._table._getTable(),
       '.' + Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_BEFORE_CLASS + ',' +
@@ -8491,7 +8537,7 @@ var __oj_table_metadata =
   };
 
   // Subclass from oj.Object
-  oj.Object.createSubclass(TableStickyLayoutManager, TableLayoutManager, 'TableStickyLayoutManager');
+  oj$1.Object.createSubclass(TableStickyLayoutManager, TableLayoutManager, 'TableStickyLayoutManager');
 
 
   /**
@@ -8805,7 +8851,7 @@ var __oj_table_metadata =
     var overallWidth;
     // this shouldn't be necessary, but safari has a bug where it does not recalculate the table column widths
     // correctly when the DOM surrounding it is cleaned up without doing something to force a reflow on the table
-    if (oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI) {
+    if (oj$1.AgentUtils.getAgentInfo().browser === oj$1.AgentUtils.BROWSER.SAFARI) {
       tableElem.classList.remove(Table.CSS_CLASSES._TABLE_ELEMENT_CLASS);
       overallWidth = tableElem.offsetWidth;
       tableElem.classList.add(Table.CSS_CLASSES._TABLE_ELEMENT_CLASS);
@@ -9220,7 +9266,7 @@ var __oj_table_metadata =
       var frozenStartColumns = this._getFrozenStartColumnIndexes();
       for (i = 0; i < frozenStartColumns.length; i++) {
         currIndex = frozenStartColumns[i];
-        if (currIndex < currentColumnIndex) {
+        if (currIndex < currentColumnIndex && this._appliedColumnWidths[currIndex] > 0) {
           startIndex = currIndex;
         } else {
           break;
@@ -9240,7 +9286,7 @@ var __oj_table_metadata =
       var colWidths = 0;
       var frozenEndColumns = this._getFrozenEndColumnIndexes();
       for (i = this._appliedColumnWidths.length - 1; i > -1; i--) {
-        if (frozenEndColumns.indexOf(i) !== -1) {
+        if (frozenEndColumns.indexOf(i) !== -1 && this._appliedColumnWidths[i] > 0) {
           endIndex = i;
         } else {
           colWidths += this._appliedColumnWidths[i];
@@ -9620,17 +9666,25 @@ var __oj_table_metadata =
    * @private
    */
   TableStickyLayoutManager.prototype._setResizeIndicator = function () {
-    var visibleRowIdxArray = this._table._getVisibleRowIdxs();
-    var tableHeaderColumn = this._table._getTableHeaderColumn(this._resizeStartIndex);
-    if (tableHeaderColumn != null) {
-      tableHeaderColumn.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
+    var addRowCell = this._table._getPlaceHolderRowCell(this._resizeEndIndex);
+    if (addRowCell != null) {
+      addRowCell.classList.add(Table.CSS_CLASSES._COLUMN_RESIZE_INDICATOR_CLASS);
     }
+    var tableHeaderColumn = this._table._getTableHeaderColumn(this._resizeEndIndex);
+    if (tableHeaderColumn != null) {
+      tableHeaderColumn.classList.add(Table.CSS_CLASSES._COLUMN_RESIZE_INDICATOR_CLASS);
+    }
+    var visibleRowIdxArray = this._table._getVisibleRowIdxs();
     visibleRowIdxArray.forEach(function (rowIdx) {
-      var dataCell = this._table._getTableBodyCell(rowIdx, this._resizeStartIndex);
+      var dataCell = this._table._getTableBodyCell(rowIdx, this._resizeEndIndex);
       if (dataCell != null) {
-        dataCell.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
+        dataCell.classList.add(Table.CSS_CLASSES._COLUMN_RESIZE_INDICATOR_CLASS);
       }
     }.bind(this));
+    var footerCell = this._table._getTableFooterCell(this._resizeEndIndex);
+    if (footerCell != null) {
+      footerCell.classList.add(Table.CSS_CLASSES._COLUMN_RESIZE_INDICATOR_CLASS);
+    }
   };
 
   /**
@@ -9639,10 +9693,10 @@ var __oj_table_metadata =
   TableStickyLayoutManager.prototype._removeResizeIndicator = function () {
     var tableContainer = this._table._getTableContainer();
     var columnCells = this._table._getTableElementsByClassName(tableContainer,
-      Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
+      Table.CSS_CLASSES._COLUMN_RESIZE_INDICATOR_CLASS);
 
     columnCells.forEach(function (columnCell) {
-      columnCell.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
+      columnCell.classList.remove(Table.CSS_CLASSES._COLUMN_RESIZE_INDICATOR_CLASS);
     });
   };
 
@@ -9746,7 +9800,7 @@ var __oj_table_metadata =
   };
 
   // Subclass from oj.Object
-  oj.Object.createSubclass(TableFixedLayoutManager, TableStickyLayoutManager, 'TableFixedLayoutManager');
+  oj$1.Object.createSubclass(TableFixedLayoutManager, TableStickyLayoutManager, 'TableFixedLayoutManager');
 
 
   /**
@@ -10130,13 +10184,18 @@ var __oj_table_metadata =
         tableHeaderColumn = this._getTableSelectorColumn();
       } else {
         // handle normal column header case
+        var headerSelected = false;
         tableHeaderColumn = this._getTableHeaderColumn(activeIndex);
         var selectedHeaderIdxs = this._getSelectedHeaderColumnIdxs();
         for (i = 0; i < selectedHeaderIdxs.length; i++) {
           if (selectedHeaderIdxs[i] === activeIndex) {
             stateInfo += this.getTranslatedString('accessibleStateSelected') + ' ';
+            headerSelected = true;
             break;
           }
+        }
+        if (!headerSelected && this._isColumnSelectionEnabled()) {
+          stateInfo += this.getTranslatedString('accessibleStateUnselected') + ' ';
         }
         var column = this._getColumnDefs()[activeIndex];
         var sorted = $(tableHeaderColumn).data('sorted');
@@ -10170,13 +10229,18 @@ var __oj_table_metadata =
         tableFooterCell = this._getTableFooterSelectorCell();
       } else {
         // handle normal column footer case
+        var footerSelected = false;
         tableFooterCell = this._getTableFooterCell(activeIndex);
         var selectedFooterIdxs = this._getSelectedFooterColumnIdxs();
         for (i = 0; i < selectedFooterIdxs.length; i++) {
           if (selectedFooterIdxs[i] === activeIndex) {
             stateInfo += this.getTranslatedString('accessibleStateSelected') + ' ';
+            footerSelected = true;
             break;
           }
+        }
+        if (!footerSelected && this._isColumnSelectionEnabled()) {
+          stateInfo += this.getTranslatedString('accessibleStateUnselected') + ' ';
         }
       }
       actionableElems = DataCollectionUtils.getActionableElementsInNode(tableFooterCell);
@@ -10199,14 +10263,19 @@ var __oj_table_metadata =
         this._rowContextInfo.textContent =
           this.getTranslatedString('accessibleRowContext', { index: activeIndex + 1 });
 
+        var rowSelected = false;
         var rowStateInfo = '';
         // find state of the row
         var selectedRowIdxs = this._getSelectedRowIdxs();
         for (i = 0; i < selectedRowIdxs.length; i++) {
           if (selectedRowIdxs[i] === activeIndex) {
             rowStateInfo += this.getTranslatedString('accessibleStateSelected') + ' ';
+            rowSelected = true;
             break;
           }
+        }
+        if (!rowSelected && this._isRowSelectionEnabled()) {
+          rowStateInfo += this.getTranslatedString('accessibleStateUnselected') + ' ';
         }
         actionableElems = DataCollectionUtils.getActionableElementsInNode(activeRowElem);
         if (actionableElems.length > 0) {
@@ -10257,6 +10326,24 @@ var __oj_table_metadata =
     label += this._stateInfo.id;
     // apply new label
     this._applyAccStatusLabel(label);
+  };
+
+  /**
+   * @private
+   */
+  Table.prototype._announceAccSelectionUpdate = function (isSelected) {
+    var stateInfo;
+
+    if (isSelected) {
+      stateInfo = this.getTranslatedString('accessibleStateSelected');
+    } else {
+      stateInfo = this.getTranslatedString('accessibleStateUnselected');
+    }
+    this._stateInfo.textContent = stateInfo;
+    var label = this._stateInfo.id;
+
+    // apply new label
+    this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, label); // @HTMLUpdateOK
   };
 
   /**
@@ -10349,12 +10436,12 @@ var __oj_table_metadata =
   Table.prototype._getData = function () {
     if (!this._data && this.options.data != null) {
       var dataprovider = this.options.data;
-      if ((oj.TableDataSource && dataprovider instanceof oj.TableDataSource) ||
+      if ((oj$1.TableDataSource && dataprovider instanceof oj$1.TableDataSource) ||
           (this._isPagingModelTableDataSource())) {
-        this._data = new oj.TableDataSourceAdapter(dataprovider);
-      } else if (oj.DataProviderFeatureChecker.isDataProvider(dataprovider)) {
+        this._data = new oj$1.TableDataSourceAdapter(dataprovider);
+      } else if (oj$1.DataProviderFeatureChecker.isDataProvider(dataprovider)) {
         if (!(dataprovider instanceof ListDataProviderView) &&
-          !oj.DataProviderFeatureChecker.isTreeDataProvider(dataprovider)) {
+          !oj$1.DataProviderFeatureChecker.isTreeDataProvider(dataprovider)) {
           this._data = new ListDataProviderView(dataprovider);
         } else {
           this._data = dataprovider;
@@ -10375,7 +10462,7 @@ var __oj_table_metadata =
    * @private
    */
   Table.prototype._isPagingModelTableDataSource = function () {
-    if (oj.PagingTableDataSource && this.options.data instanceof oj.PagingTableDataSource) {
+    if (oj$1.PagingTableDataSource && this.options.data instanceof oj$1.PagingTableDataSource) {
       return true;
     }
     return false;
@@ -10473,11 +10560,12 @@ var __oj_table_metadata =
 
   /**
    * Things to do before data is refresh, this could be due to sort, model refresh event, or data attribute changed.
+   * @param {boolean} isSort
    * @private
    */
-  Table.prototype._beforeDataRefresh = function () {
+  Table.prototype._beforeDataRefresh = function (isSort) {
     this._clearIdleCallback();
-    this._adjustScrollPositionOnFetch();
+    this._adjustScrollPositionOnFetch(isSort);
     this._invalidateRangeSelection();
     if (this._lastSelectedRowIdxArray != null) {
       this._lastSelectedRowIdxArray = [];
@@ -10604,7 +10692,6 @@ var __oj_table_metadata =
         // first check if we are removing all rows. If so, we can do a removeAll
         var remainingRowIdxArray = [];
         var rowIdxArray = [];
-        var rowKeyArray = [];
         var removedTableBodyRows = [];
         var rowsCount = rows.length;
         var removeAll = false;
@@ -10620,7 +10707,6 @@ var __oj_table_metadata =
           for (i = 0; i < rowsCount; i++) {
             rowIdx = rows[i].rowIdx;
             rowIdxArray.push(rowIdx);
-            rowKeyArray.push(rows[i].row.key);
             for (var j = 0; j < remainingRowIdxArray.length; j++) {
               if (remainingRowIdxArray[j] === rowIdx) {
                 tableBodyRow = self._getTableBodyRow(rowIdx);
@@ -10936,14 +11022,14 @@ var __oj_table_metadata =
     }
 
     var metadataSource;
-    if (dataprovider instanceof oj.TableDataSourceAdapter) {
-      if (oj.FlattenedTreeTableDataSource &&
-          dataprovider.tableDataSource instanceof oj.FlattenedTreeTableDataSource) {
+    if (dataprovider instanceof oj$1.TableDataSourceAdapter) {
+      if (oj$1.FlattenedTreeTableDataSource &&
+          dataprovider.tableDataSource instanceof oj$1.FlattenedTreeTableDataSource) {
         metadataSource = dataprovider.tableDataSource;
       } else if (this._isPagingModelTableDataSource() &&
-                  oj.FlattenedTreeTableDataSource &&
+                  oj$1.FlattenedTreeTableDataSource &&
                   dataprovider.tableDataSource.dataSource instanceof
-                  oj.FlattenedTreeTableDataSource) {
+                  oj$1.FlattenedTreeTableDataSource) {
         metadataSource = dataprovider.tableDataSource.dataSource;
       }
     }
@@ -11415,7 +11501,7 @@ var __oj_table_metadata =
         };
         spinner.userAssistanceDensity = 'compact';
         spinner.validators = [new RegExpValidator({
-          pattern: '^[1-9][0-9]*$',
+          pattern: Table._VALIDATOR_PATTERN,
           messageDetail: this.getTranslatedString('msgColumnResizeWidthValidation')
         })];
 
@@ -11483,7 +11569,7 @@ var __oj_table_metadata =
         },
         userAssistanceDensity: 'compact',
         validators: [new RegExpValidator({
-          pattern: '^[1-9][0-9]*$',
+          pattern: Table._VALIDATOR_PATTERN,
           messageDetail: this.getTranslatedString('msgColumnResizeWidthValidation')
         })]
       });
@@ -11540,7 +11626,7 @@ var __oj_table_metadata =
         };
         columnWidthInput.userAssistanceDensity = 'compact';
         columnWidthInput.validators = [new RegExpValidator({
-          pattern: '^[1-9][0-9]*$',
+          pattern: Table._VALIDATOR_PATTERN,
           messageDetail: this.getTranslatedString('msgColumnResizeWidthValidation')
         })];
         dialogBody.appendChild(columnWidthInput);
@@ -11561,9 +11647,15 @@ var __oj_table_metadata =
         dialogFooter.appendChild(dialogApplyButton); // @HTMLUpdateOK
 
         if (Config.getDeviceRenderMode() === 'phone') {
-          dialog.classList.add('oj-table-resize-dialog-mobile');
-          dialogApplyButton.classList.add('oj-button-sm', 'oj-sm-6', 'oj-sm-margin-2x-horizontal');
-          dialogCancelButton.classList.add('oj-button-sm', 'oj-sm-6', 'oj-sm-margin-2x-horizontal');
+          dialog.classList.add(Table.CSS_CLASSES._TABLE_RESIZE_DIALOG_MOBILE_CLASS);
+          dialogApplyButton.classList.add(
+            Table.CSS_CLASSES._BUTTON_SMALL_CLASS,
+            Table.CSS_CLASSES._SMALL_6_CLASS,
+            Table.CSS_CLASSES._SMALL_HOR_MARGIN_CLASS);
+          dialogCancelButton.classList.add(
+            Table.CSS_CLASSES._BUTTON_SMALL_CLASS,
+            Table.CSS_CLASSES._SMALL_6_CLASS,
+            Table.CSS_CLASSES._SMALL_HOR_MARGIN_CLASS);
           dialogFooter.classList.add('oj-sm-justify-content-center');
         }
 
@@ -11598,7 +11690,7 @@ var __oj_table_metadata =
       dialog.setAttribute('id', tableId + '_resize_dialog');
       dialog.setAttribute(Table._DATA_OJ_BINDING_PROVIDER, 'none'); // @HTMLUpdateOK
       if (Config.getDeviceRenderMode() === 'phone') {
-        dialog.classList.add('oj-table-resize-dialog-mobile');
+        dialog.classList.add(Table.CSS_CLASSES._TABLE_RESIZE_DIALOG_MOBILE_CLASS);
       }
       tableContainer.appendChild(dialog); // @HTMLUpdateOK
       let dialogBody = document.createElement('div');
@@ -11647,7 +11739,7 @@ var __oj_table_metadata =
         },
         userAssistanceDensity: 'compact',
         validators: [new RegExpValidator({
-          pattern: '^[1-9][0-9]*$',
+          pattern: Table._VALIDATOR_PATTERN,
           messageDetail: this.getTranslatedString('msgColumnResizeWidthValidation')
         })]
       });
@@ -11656,9 +11748,15 @@ var __oj_table_metadata =
         modality: 'modal'
       });
       if (Config.getDeviceRenderMode() === 'phone') {
-        dialog.classList.add('oj-table-resize-dialog-mobile');
-        dialogApplyButton.classList.add('oj-button-sm', 'oj-sm-6', 'oj-sm-margin-2x-horizontal');
-        dialogCancelButton.classList.add('oj-button-sm', 'oj-sm-6', 'oj-sm-margin-2x-horizontal');
+        dialog.classList.add(Table.CSS_CLASSES._TABLE_RESIZE_DIALOG_MOBILE_CLASS);
+        dialogApplyButton.classList.add(
+          Table.CSS_CLASSES._BUTTON_SMALL_CLASS,
+          Table.CSS_CLASSES._SMALL_6_CLASS,
+          Table.CSS_CLASSES._SMALL_HOR_MARGIN_CLASS);
+        dialogCancelButton.classList.add(
+          Table.CSS_CLASSES._BUTTON_SMALL_CLASS,
+          Table.CSS_CLASSES._SMALL_6_CLASS,
+          Table.CSS_CLASSES._SMALL_HOR_MARGIN_CLASS);
         dialogFooter.classList.add('oj-sm-justify-content-center');
       }
       $(columnWidthInput).on('change', function () {
@@ -11819,7 +11917,8 @@ var __oj_table_metadata =
     selector.classList.add(Table.CSS_CLASSES._TABLE_DATA_ROW_SELECTOR_CLASS);
     selector.setAttribute('selection-mode', 'multiple');
     selector.rowKey = rowKey;
-    selector.setAttribute('aria-label', this.getTranslatedString(Table._BUNDLE_KEY._LABEL_SELECT_ROW));
+    selector.setAttribute(Table.DOM_ATTR._ARIA_LABEL, // @HTMLUpdateOK
+      this.getTranslatedString(Table._BUNDLE_KEY._LABEL_SELECT_ROW));
     selector.addEventListener('selectedKeysChanged', this._selectedKeysChangedListener.bind(this));
     selectorCell.appendChild(selector);
 
@@ -11850,7 +11949,8 @@ var __oj_table_metadata =
       selector.setAttribute(Table._DATA_OJ_BINDING_PROVIDER, 'none'); // @HTMLUpdateOK
       selector.classList.add(Table.CSS_CLASSES._TABLE_HEADER_SELECTOR_CLASS);
       selector.setAttribute('selection-mode', 'all');
-      selector.setAttribute('aria-label', this.getTranslatedString(Table._BUNDLE_KEY._LABEL_SELECT_ALL_ROWS));
+      selector.setAttribute(Table.DOM_ATTR._ARIA_LABEL, // @HTMLUpdateOK
+        this.getTranslatedString(Table._BUNDLE_KEY._LABEL_SELECT_ALL_ROWS));
       selector.addEventListener('selectedKeysChanged', this._selectedKeysChangedListener.bind(this));
       headerColumn.appendChild(selector);
     }
@@ -12275,9 +12375,8 @@ var __oj_table_metadata =
       var statusMessageLoadingIndicator = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
       statusMessageLoadingIndicator.classList.add(Table.CSS_CLASSES._ICON_CLASS);
       statusMessageLoadingIndicator.classList.add(Table.CSS_CLASSES._TABLE_LOADING_ICON_CLASS);
-      statusMessageLoadingIndicator.setAttribute(
-        'aria-label', this.getTranslatedString(Table._BUNDLE_KEY._MSG_FETCHING_DATA)
-      );
+      statusMessageLoadingIndicator.setAttribute(Table.DOM_ATTR._ARIA_LABEL, // @HTMLUpdateOK
+        this.getTranslatedString(Table._BUNDLE_KEY._MSG_FETCHING_DATA));
       statusMessage.appendChild(statusMessageLoadingIndicator); // @HTMLUpdateOK
     }
 
@@ -12333,7 +12432,7 @@ var __oj_table_metadata =
       if (isReorder) {
         this._rowsDragged.forEach(function (row) {
           row.classList.add('oj-table-row-drag-source-hide');
-          row.classList.remove('oj-selected');
+          row.classList.remove(Table.MARKER_STYLE_CLASSES._SELECTED);
           this._updateRowStateCellsClass(null, row, { selected: false });
         }.bind(this));
       }
@@ -13693,6 +13792,10 @@ var __oj_table_metadata =
       addRowCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
       addRowCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
     }
+
+    if (this._isVerticalGridEnabled()) {
+      addRowCell.classList.add(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
+    }
   };
 
   /**
@@ -14075,7 +14178,7 @@ var __oj_table_metadata =
         tableStatusMessage.appendChild(this._createSkeletonRow()); // @HTMLUpdateOK
       }
       this._skeletonFadeInEndListener = function () {
-        tableStatusMessage.classList.remove('oj-animation-skeleton-fade-in');
+        tableStatusMessage.classList.remove(Table.CSS_CLASSES._ANIMATION_SKELETON_FADE_IN_CLASS);
         var skeletons = tableStatusMessage.querySelectorAll('.oj-table-skeleton');
         skeletons.forEach(function (row) {
           row.classList.add('oj-animation-skeleton');
@@ -14083,7 +14186,7 @@ var __oj_table_metadata =
         tableStatusMessage.removeEventListener('animationend', this._skeletonFadeInEndListener);
       }.bind(this);
       tableStatusMessage.addEventListener('animationend', this._skeletonFadeInEndListener);
-      tableStatusMessage.classList.add('oj-animation-skeleton-fade-in');
+      tableStatusMessage.classList.add(Table.CSS_CLASSES._ANIMATION_SKELETON_FADE_IN_CLASS);
     } else if (statusMessageHeight <= 40) {
       // use overall container height if space reserved for table body is too small
       statusMessageTop = 0;
@@ -14532,15 +14635,20 @@ var __oj_table_metadata =
     _TABLE_ADD_ROW_CLASS: 'oj-table-add-row',
     _TABLE_ADD_ROW_PLACEHOLDER_CLASS: 'oj-table-add-row-placeholder',
     _TABLE_HIDDEN_CELL_CLASS: 'oj-table-hidden-cell',
-    _ICON_CLASS: 'oj-icon',
-    _WIDGET_ICON_CLASS: 'oj-component-icon',
-    _HIDDEN_CONTENT_ACC_CLASS: 'oj-helper-hidden-accessible',
-    _TEXT_ALIGN_END: 'oj-helper-text-align-end',
     _TABLE_FROZEN_START: 'oj-table-frozen-start',
     _TABLE_FROZEN_END: 'oj-table-frozen-end',
     _TABLE_FROZEN_EDGE: 'oj-table-frozen-edge',
     _TABLE_LEGACY_SIZER_CLASS: 'oj-table-legacy-sizer',
-    _TABLE_LEGACY_SCROLL_CLASS: 'oj-table-legacy-scroll'
+    _TABLE_LEGACY_SCROLL_CLASS: 'oj-table-legacy-scroll',
+    _TABLE_RESIZE_DIALOG_MOBILE_CLASS: 'oj-table-resize-dialog-mobile',
+    _BUTTON_SMALL_CLASS: 'oj-button-sm',
+    _SMALL_HOR_MARGIN_CLASS: 'oj-sm-margin-2x-horizontal',
+    _SMALL_6_CLASS: 'oj-sm-6',
+    _ICON_CLASS: 'oj-icon',
+    _WIDGET_ICON_CLASS: 'oj-component-icon',
+    _HIDDEN_CONTENT_ACC_CLASS: 'oj-helper-hidden-accessible',
+    _TEXT_ALIGN_END: 'oj-helper-text-align-end',
+    _ANIMATION_SKELETON_FADE_IN_CLASS: 'oj-animation-skeleton-fade-in'
   };
 
   /**
@@ -14940,6 +15048,12 @@ var __oj_table_metadata =
      * Capture keyboard up events
      */
     keyup: function (event) {
+      // fix for mac issue where keyup is not registered when command is pressed
+      const isMac = (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.MAC);
+      if (isMac && this._isKeyPressMatch(DataCollectionUtils.isMetaKeyEvent)) {
+        this._clearKeyboardKeys();
+        return;
+      }
       // process single or 2 key events
       if (this._getKeyboardKeys().length === 1) {
         var keyboardCode1 = this._getKeyboardKeys()[0];
@@ -15435,6 +15549,9 @@ var __oj_table_metadata =
      * handle the dragover event and invoke event callback.
      */
     'dragover .oj-table-body': function (event) {
+      if (this._getTableDndContext()._isColumnReordering()) {
+        return undefined;
+      }
       return this._getTableDndContext().handleRowDragOver(event);
     },
 
@@ -15449,8 +15566,31 @@ var __oj_table_metadata =
      * handle the drop event and invoke event callback.
      */
     'drop .oj-table-body': function (event) {
+      if (this._getTableDndContext()._isColumnReordering()) {
+        return undefined;
+      }
       return this._getTableDndContext().handleRowDrop(event);
-    }
+    },
+
+    /*
+     * Set dragover handler for column DnD.
+     */
+    'dragover .oj-table-element': function (event) {
+      if (this._getTableDndContext()._isColumnReordering()) {
+        return this._getTableDndContext().handleColumnReorderDragOver(event);
+      }
+      return undefined;
+    },
+
+    /*
+     * Set drop handler for column DnD.
+     */
+    'drop .oj-table-element': function (event) {
+      if (this._getTableDndContext()._isColumnReordering()) {
+        return this._getTableDndContext().handleColumnReorderDrop(event);
+      }
+      return undefined;
+    },
   };
 
   /**
@@ -15799,7 +15939,7 @@ var __oj_table_metadata =
     if (active1 != null && active2 != null) {
       return (active1.type === active2.type &&
               active1.index === active2.index &&
-              oj.KeyUtils.equals(active1.key, active2.key));
+              oj$1.KeyUtils.equals(active1.key, active2.key));
     }
     return (active1 == null && active2 == null);
   };
@@ -15855,14 +15995,15 @@ var __oj_table_metadata =
 
   /**
    * Highlight the current active element
+   * @param {boolean=} skipFocus whether to skip setting focus highlighting on the active element
    * @private
    */
-  Table.prototype._highlightActive = function () {
+  Table.prototype._highlightActive = function (skipFocus) {
     if (this._active != null) {
       var element = this._getElementFromActiveObject(this._active);
       if (element) {
         element.classList.add(Table.CSS_CLASSES._TABLE_ACTIVE_ELEMENT_CLASS);
-        if (this._hasFocus() && !this._active.isActionable) {
+        if (this._hasFocus() && !this._active.isActionable && !skipFocus) {
           this._focusInHandler($(element));
           if (this._hasActiveHeader() && this._active.index !== -1) {
             this._showTableHeaderColumnSortIcon(this._active.index);
@@ -15925,7 +16066,7 @@ var __oj_table_metadata =
         return;
       }
       if (this._hasActiveRow()) {
-        if (oj.KeyUtils.equals(this._active.key, this._getRowKeyForRowIdx(this._active.index))) {
+        if (oj$1.KeyUtils.equals(this._active.key, this._getRowKeyForRowIdx(this._active.index))) {
           if (hasFocus) {
             this._scrollRowIntoViewport(this._active.index);
           }
@@ -16186,7 +16327,7 @@ var __oj_table_metadata =
     var hasLeftOverflow = leftOverflowDiff >= 0;
     var hasRightOverflow = rightOverflowDiff >= 0;
 
-    if (oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE) {
+    if (oj$1.AgentUtils.getAgentInfo().browser === oj$1.AgentUtils.BROWSER.EDGE) {
       leftOverflowDiff *= -1;
       rightOverflowDiff *= -1;
     }
@@ -16391,7 +16532,7 @@ var __oj_table_metadata =
     }
     if (currentRowValue1 != null && currentRowValue2 != null) {
       if (currentRowValue1.rowIndex === currentRowValue2.rowIndex &&
-          oj.KeyUtils.equals(currentRowValue1.rowKey, currentRowValue2.rowKey)) {
+          oj$1.KeyUtils.equals(currentRowValue1.rowKey, currentRowValue2.rowKey)) {
         return true;
       }
     } else if (currentRowValue1 == null && currentRowValue2 == null) {
@@ -16473,16 +16614,17 @@ var __oj_table_metadata =
    * @param {Event|null=} event the DOM event causing the active element change
    * @param {boolean=} updateCurrent whether to update the currentRow
    * @param {boolean=} skipScroll whether to skip scrolling the row into view
+   * @param {boolean=} skipFocus whether to skip setting focus highlighting on the row
    * @returns {boolean} true if active was changed, false if not
    * @private
    */
-  Table.prototype._setActiveRow = function (index, event, updateCurrent, skipScroll) {
+  Table.prototype._setActiveRow = function (index, event, updateCurrent, skipScroll, skipFocus) {
     if (index === -1) {
       return this._clearActiveRow(event, updateCurrent);
     }
     var activeElement = this._getTableBodyRow(index);
     if (activeElement != null) {
-      return this._setActive(activeElement, event, updateCurrent, skipScroll);
+      return this._setActive(activeElement, event, updateCurrent, skipScroll, skipFocus);
     }
     return false;
   };
@@ -16568,10 +16710,11 @@ var __oj_table_metadata =
    * @param {Event|null=} event the DOM event causing the active element change
    * @param {boolean=} updateCurrent whether to update the currentRow
    * @param {boolean=} skipScroll whether to skip scrolling the active element into view
+   * @param {boolean=} skipFocus whether to skip setting focus highlighting on the row
    * @returns {boolean} true if active was changed, false if not
    * @private
    */
-  Table.prototype._setActive = function (element, event, updateCurrent, skipScroll) {
+  Table.prototype._setActive = function (element, event, updateCurrent, skipScroll, skipFocus) {
     if (element != null) {
       var active = this._createActiveObject(element);
       // see if the active cell is actually changing
@@ -16584,20 +16727,8 @@ var __oj_table_metadata =
               return false;
             }
           }
-          // ensure active element is in view before setting focus
-          if (!skipScroll) {
-            this._scrollRowIntoViewport(active.index);
-          }
         } else if (!this._clearActiveRow(event, updateCurrent)) {
           return false;
-        } else if (active.type === Table.ACTIVE_ELEMENT_TYPES._HEADER) {
-          if (!skipScroll) {
-            this._scrollColumnIntoViewport(active.index);
-          }
-        } else if (active.type === Table.ACTIVE_ELEMENT_TYPES._FOOTER) {
-          if (!skipScroll) {
-            this._scrollColumnIntoViewport(active.index);
-          }
         }
         this._setTableActionableMode(false, true);
         // update focus highlighting for previous active element
@@ -16613,7 +16744,7 @@ var __oj_table_metadata =
         }
       }
       // update focus highlighting for current active element
-      this._highlightActive();
+      this._highlightActive(skipFocus);
       if (!this._active.isActionable) {
         this._updateAccStatusInfo();
       }
@@ -16761,9 +16892,10 @@ var __oj_table_metadata =
 
   /**
    * Adjust scrollPosition such that it will scroll to the selection anchor (last selected row)
+   * @param {boolean} isSort
    * @private
    */
-  Table.prototype._adjustScrollPositionOnFetch = function () {
+  Table.prototype._adjustScrollPositionOnFetch = function (isSort) {
     var scrollPosition = this.options.scrollPosition == null ?
       {} : this.options.scrollPosition;
 
@@ -16795,10 +16927,13 @@ var __oj_table_metadata =
       delete scrollPosition.rowKey;
     }
 
-    scrollPosition.x = 0;
-    scrollPosition.columnKey = null;
-    scrollPosition.columnIndex = 0;
-    scrollPosition.offsetX = 0;
+    // don't reset horizontal scroll position while sorting
+    if (!isSort) {
+      scrollPosition.x = 0;
+      scrollPosition.columnKey = null;
+      scrollPosition.columnIndex = 0;
+      scrollPosition.offsetX = 0;
+    }
     scrollPosition.offsetY = 0;
 
     // explicitly set changed to false so option change will not be triggered, syncScrollPosition
@@ -16831,7 +16966,7 @@ var __oj_table_metadata =
   Table.prototype._findRowElementByKey = function (rowKey) {
     var tableBodyRows = this._getTableBodyRows();
     for (var i = 0; i < tableBodyRows.length; i++) {
-      if (oj.KeyUtils.equals($(tableBodyRows[i]).data('rowKey'), rowKey)) {
+      if (oj$1.KeyUtils.equals($(tableBodyRows[i]).data('rowKey'), rowKey)) {
         return tableBodyRows[i];
       }
     }
@@ -16850,7 +16985,7 @@ var __oj_table_metadata =
     }
 
     var data = this.options.data;
-    if (!oj.DataProviderFeatureChecker.isDataProvider(data)) {
+    if (!oj$1.DataProviderFeatureChecker.isDataProvider(data)) {
       return true;
     } else if (data.getCapability) {
       var capability = data.getCapability('fetchFirst');
@@ -17606,7 +17741,7 @@ var __oj_table_metadata =
     var rowCount = tableBodyRows.length;
     var newRowIdx = isNext ? rowIdx + 1 : rowIdx - 1;
     if (newRowIdx >= 0 && newRowIdx < rowCount) {
-      this._setActiveRow(newRowIdx, event, true);
+      this._setActiveRow(newRowIdx, event, true, false, true);
       this._setTableEditable(true, false, columnIdx, isNext, event);
     } else {
       this._getTable().focus();
@@ -17653,6 +17788,7 @@ var __oj_table_metadata =
     if (!this._isTableEditMode() || this._isEditPending) {
       return undefined;
     }
+    var isLegacyDataSource = this._getData() instanceof oj$1.TableDataSourceAdapter;
     var currentRow = this._getCurrentRow();
     if (currentRow != null) {
       var rowKey = currentRow.rowKey;
@@ -17662,6 +17798,9 @@ var __oj_table_metadata =
       var updateEditMode;
       var newEditRowValue;
       var editAcceptPromiseArray = [];
+
+      // save the old editable row index
+      var prevEditableRowIdx = this._getEditableRowIdx();
 
       try {
         if (editable && !this._hasEditableRow()) {
@@ -17717,6 +17856,7 @@ var __oj_table_metadata =
         return false;
       }
       if (!updateEditMode) {
+        this._syncActiveElement();
         return false;
       }
       if (editAcceptPromiseArray.length !== 0) {
@@ -17731,17 +17871,13 @@ var __oj_table_metadata =
               this._fireEditRowChangeEvent(newEditRowValue, event);
             }
 
-            // save the old editable row index
-            var prevEditableRowIdx = this._getEditableRowIdx();
             if (editable) {
               // set the editable row index
               this._setEditableRowIdx(rowIdx);
               this._getTable().setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
               this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
               // re-render the newly editable row
-              return this._refreshRow(rowIdx, true).then(function () {
-                // set focus on the column in the row
-                this._setActiveRow(rowIdx, event);
+              return this._refreshRow(rowIdx, true, false, !isLegacyDataSource).then(function () {
                 this._setCellInRowFocus(rowIdx, columnIdx, forwardSearch);
                 // clear out the old editable row
                 if (prevEditableRowIdx != null) {
@@ -17779,6 +17915,9 @@ var __oj_table_metadata =
             return Promise.resolve();
           }.bind(this), function () {
             this._removeSkeletonRow(rowIdx);
+            if (editable && prevEditableRowIdx == null) {
+              this._syncActiveElement();
+            }
             this._isEditPending = false;
             return false;
           }.bind(this));
@@ -17790,8 +17929,6 @@ var __oj_table_metadata =
         this._fireEditRowChangeEvent(newEditRowValue, event);
       }
 
-      // save the old editable row index
-      var prevEditableRowIdx = this._getEditableRowIdx();
       if (editable) {
         // set the editable row index
         this._setEditableRowIdx(rowIdx);
@@ -17799,9 +17936,8 @@ var __oj_table_metadata =
         this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
         // re-render the newly editable row
         this._queueTask(function () {
-          return this._refreshRow(rowIdx, true).then(function () {
+          return this._refreshRow(rowIdx, true, false, !isLegacyDataSource).then(function () {
             // set focus on the column in the row
-            this._setActiveRow(rowIdx, event);
             this._setCellInRowFocus(rowIdx, columnIdx, forwardSearch);
           }.bind(this));
         }.bind(this));
@@ -18671,7 +18807,7 @@ var __oj_table_metadata =
         var editableRowKey = this._getEditableRowKey();
 
         // only set to edit mode for the editable row
-        if (oj.Object.compareValues(rowKey, editableRowKey)) {
+        if (oj$1.Object.compareValues(rowKey, editableRowKey)) {
           context.mode = 'edit';
         } else {
           context.mode = 'navigation';
@@ -18962,7 +19098,7 @@ var __oj_table_metadata =
         var key = eventKeys[i];
         var updatedRowData = eventDetail[Table._CONST_DATA][i];
         // update firstSelectedRow data if selected row is updated
-        if (oj.KeyUtils.equals(key, currentFirstSelectedRow.key)) {
+        if (oj$1.KeyUtils.equals(key, currentFirstSelectedRow.key)) {
           this.option('firstSelectedRow', { key: key, data: updatedRowData }, {
             _context: {
               writeback: true,
@@ -18974,7 +19110,7 @@ var __oj_table_metadata =
         if (this._validatedSelectedRowKeyData != null) {
           for (var j = 0; j < this._validatedSelectedRowKeyData.length; j++) {
             var rowKeyData = this._validatedSelectedRowKeyData[j];
-            if (oj.KeyUtils.equals(key, rowKeyData.key)) {
+            if (oj$1.KeyUtils.equals(key, rowKeyData.key)) {
               this._validatedSelectedRowKeyData[j] = updatedRowData;
               break;
             }
@@ -19513,7 +19649,8 @@ var __oj_table_metadata =
   Table.prototype._setFirstSelectedRow = function (newKey) {
     // only update the firstSelectedRow option if it has changed
     var currentFirstSelectedRow = this.option('firstSelectedRow');
-    if (!oj.KeyUtils.equals(newKey, currentFirstSelectedRow.key)) {
+    if (!oj$1.KeyUtils.equals(newKey, currentFirstSelectedRow.key) ||
+        !this._initialSelectionStateValidated) {
       var newData = null;
       if (newKey != null) {
         var row = this.getDataForVisibleRow(this._getRowIdxForRowKey(newKey));
@@ -19522,7 +19659,7 @@ var __oj_table_metadata =
         } else if (this._validatedSelectedRowKeyData) {
           for (var i = 0; i < this._validatedSelectedRowKeyData.length; i++) {
             var rowKeyData = this._validatedSelectedRowKeyData[i];
-            if (oj.KeyUtils.equals(newKey, rowKeyData.key)) {
+            if (oj$1.KeyUtils.equals(newKey, rowKeyData.key)) {
               newData = rowKeyData.data;
               break;
             }
@@ -19822,6 +19959,7 @@ var __oj_table_metadata =
    * @private
    */
   Table.prototype._handleSelectionGesture = function (index, isRow, isMultiSelectGesture) {
+    var isSelect;
     var selected = this.option('selected');
     var rowKeySet = selected.row;
     var columnKeySet = selected.column;
@@ -19839,17 +19977,21 @@ var __oj_table_metadata =
             // selection is now the new row key
             rowKeySet = new ojkeyset.KeySetImpl([rowKey]);
           }
+          isSelect = true;
         } else if (this._isStickyLayoutEnabled()) {
           // handle selection for non-alta themes as windows explorer rather than legacy logic in 'else' cases below
           rowKeySet = isMultiSelectGesture ? rowKeySet.delete([rowKey]) :
                                              new ojkeyset.KeySetImpl([rowKey]);
+          isSelect = !isMultiSelectGesture;
         } else if (!isMultiSelectGesture && this._getSelectedRowIdxs().length > 1 &&
                    rowSelectionMode === Table._OPTION_SELECTION_MODES._MULTIPLE) {
           // selection is now the new row key
           rowKeySet = new ojkeyset.KeySetImpl([rowKey]);
+          isSelect = true;
         } else {
           // remove row from the existing selection
           rowKeySet = rowKeySet.delete([rowKey]);
+          isSelect = false;
         }
       }
     } else if (this._isColumnSelectionEnabled()) {
@@ -19867,17 +20009,21 @@ var __oj_table_metadata =
             // selection is now the new column key
             columnKeySet = new ojkeyset.KeySetImpl([columnKey]);
           }
+          isSelect = true;
         } else if (this._isStickyLayoutEnabled()) {
           // handle selection for non-alta themes as windows explorer rather than legacy logic in 'else' cases below
           columnKeySet = isMultiSelectGesture ? columnKeySet.delete([columnKey]) :
                                                 new ojkeyset.KeySetImpl([columnKey]);
+          isSelect = !isMultiSelectGesture;
         } else if (!isMultiSelectGesture && this._getSelectedHeaderColumnIdxs().length > 1 &&
                   columnSelectionMode === Table._OPTION_SELECTION_MODES._MULTIPLE) {
           // selection is now the new column key
           columnKeySet = new ojkeyset.KeySetImpl([columnKey]);
+          isSelect = true;
         } else {
           // remove column from the existing selection
           columnKeySet = columnKeySet.delete([columnKey]);
+          isSelect = false;
         }
       }
     }
@@ -19885,6 +20031,7 @@ var __oj_table_metadata =
     if (selected.row !== rowKeySet || selected.column !== columnKeySet) {
       selected = { row: rowKeySet, column: columnKeySet };
       if (this._isSelectionRequiredSatisfied(selected)) {
+        this._announceAccSelectionUpdate(isSelect);
         this._setSelected(selected);
       }
     }
@@ -20194,7 +20341,7 @@ var __oj_table_metadata =
   /**
    * @ojcomponent oj.ojTable
    * @augments oj.baseComponent
-   *
+   * @ojimportmembers oj.ojSharedContextMenu
    * @since 0.6.0
    * @ojshortdesc A table displays data items in a tabular format with highly interactive features.
    * @ojrole application
@@ -20262,9 +20409,15 @@ var __oj_table_metadata =
    * </h3>
    *
    * <p>Developers should always either specify the <code class="prettyprint">aria-label</code> attribute or use other alternatives for the table element to conform to accessibility guidelines.</p>
+   * <p>Nesting collection components such as ListView, Table, TreeView, and Table inside of Table is not supported.</p>
    *
    * <p>To facilitate drag and drop including row reordering using only keyboard, application must ensure that either to expose the functionality using context menu, and/or
-   * allow users to perform the functionality with the appropriate keystroke.  You can find examples of how this can be done in the cookbook demos.
+   * allow users to perform the functionality with the appropriate keystroke.  You can find examples of how this can be done in the cookbook demos.</p>
+   * <p>Hiding Column headers is not supported by table to avoid accessibility issues.</p>
+   * <h4>Custom Colours</h4>
+   * <p>Using colors, including background and text colors, is not accessible if it is the only way information is conveyed.
+   * Low vision users may not be able to see the different colors, and in high contrast mode the colors are removed.
+   * The Redwood approved way to show status is to use badge.</p>
    *
    * <h3 id="perf-section">
    *   Performance
@@ -20272,16 +20425,19 @@ var __oj_table_metadata =
    * </h3>
    *
    * <h4>Data Set Size</h4>
-   * <p>As a rule of thumb, it's recommended that applications limit the amount of data to display.  Displaying large
-   * numbers of items in Table makes it hard for users to find what they are looking for, but affects the
-   * rendering performance as well.  If displaying large numbers of items is necessary, consider use a paging control with Table
-   * to limit the number of items to display at a time.  Also consider setting <code class="prettyprint">scrollPolicy</code> to
-   * 'loadMoreOnScroll' to enable high-water mark scrolling to reduce the number of items to display initially .</p>
+   * <p>As a rule of thumb, it's recommended that applications limit the amount of data displayed in a Table. Displaying a large
+   * number of items in a Table makes it hard for users to find what they are looking for, and affects the rendering performance
+   * as well. If displaying a large number of items is necessary, consider using a search control with the Table. This will allow
+   * the user to filter data and display only the rows desired. Also consider setting <code class="prettyprint">scrollPolicy</code>
+   * to 'loadMoreOnScroll' to enable high-water mark scrolling to reduce the number of items to display initially.</p>
    *
    * <h4>Cell Content</h4>
-   * <p>Table allows developers to specify arbitrary content inside its cells. In order to minimize any negative effect on
+   * <p>The Table allows developers to specify arbitrary content inside its cells. In order to minimize any negative effect on
    * performance, you should avoid putting a large number of heavy-weight components inside a cell because as you add more complexity
    * to the structure, the effect will be multiplied because there can be many items in the Table.</p>
+   * <p><code class="prettyprint">label-hint/label-edge</code> are expected as attributes when <code class="prettyprint">oj-input-text</code> is used for accessibility purpose in <code class="prettyprint">oj-form-layout</code>.
+   * Since <code class="prettyprint">oj-table</code> itself handles accessibility for cell content, user does not need to add attributes <code class="prettyprint">label-hint/label-edge</code> when <code class="prettyprint">oj-input-text</code> is used.
+   * But for read-only texts, it is a best practice to avoid using <code class="prettyprint">oj-input-text</code>, prefer <code class="prettyprint">oj-bind-text</code> or plain html instead.</p>
    *
    * <h4>Layout Attribute</h4>
    * <p>The Table's <code class="prettyprint">layout</code> attribute can have a significant effect on rendering performance. When set to
@@ -20416,6 +20572,7 @@ var __oj_table_metadata =
      * Triggered when the default animation of a particular action is about to start.  The default animation can be cancelled by calling <code class="prettyprint">event.preventDefault</code>.
      * If the event listener calls <code class="prettyprint">event.preventDefault</code> to cancel the default animation, it must call the <code class="prettyprint">event.detail.endCallback</code> function when it finishes its own animation handling.
      * Row animations will only be triggered for rows in the current viewport and an event will be triggered for each cell in the animated row.
+     * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
      *
      * @expose
      * @event
@@ -20433,6 +20590,7 @@ var __oj_table_metadata =
     /**
      * Triggered when the default animation of a particular action has ended.  Note this event will not be triggered if application cancelled the default animation on animateStart.
      * Row animations will only be triggered for rows in the current viewport and an event will be triggered for each cell in the animated row.
+     * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
      *
      * @expose
      * @event
@@ -20518,7 +20676,7 @@ var __oj_table_metadata =
      * @ojsignature [{target: "Type", value: "DataProvider<K, D>|null"},
      *               {target: "Type", value: "DataProvider|TableDataSource|null", consumedBy:"js"}]
      * @default null
-     * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+     * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
      *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
      *
      * @example <caption>Initialize the Table with the <code class="prettyprint">data</code> attribute specified:</caption>
@@ -21958,7 +22116,8 @@ var __oj_table_metadata =
      * @memberof oj.ojTable
      * @ojshortdesc Triggered before the table is going to enter edit mode.
      * @instance
-     * @property {function} accept This method can be called with an application-created Promise to cancel this event asynchronously. The Promise should be resolved or rejected to accept or cancel the event, respectively.
+     * @property {function} accept This method can be called with an application-created Promise to cancel this event asynchronously.
+     * The Promise should be resolved or rejected to accept or cancel the event, respectively.
      * @property {Object} rowContext The rowContext of the row that editing is going to be performed on.
      * @property {Element} rowContext.componentElement A reference to the Table root element.
      * @property {Element} rowContext.parentElement Empty rendered TR element.
@@ -21988,7 +22147,8 @@ var __oj_table_metadata =
      * @memberof oj.ojTable
      * @ojshortdesc Triggered before the table is going to exit edit mode. See the Help documentation for more information.
      * @instance
-     * @property {function} accept This method can be called with an application-created Promise to cancel this event asynchronously. The Promise should be resolved or rejected to accept or cancel the event, respectively.
+     * @property {function} accept This method can be called with an application-created Promise to cancel this event asynchronously.
+     * The Promise should be resolved or rejected to accept or cancel the event, respectively.
      * @property {Object} rowContext The rowContext of the edited row.
      * @property {Element} rowContext.componentElement A reference to the Table root element.
      * @property {Element} rowContext.parentElement Empty rendered TR element.
@@ -22015,7 +22175,8 @@ var __oj_table_metadata =
      * @ojcancelable
      * @memberof oj.ojTable
      * @instance
-     * @property {function} accept This method can be called with an application-created Promise to cancel this event asynchronously. The Promise should be resolved or rejected to accept or cancel the event, respectively.
+     * @property {function} accept This method can be called with an application-created Promise to cancel this event asynchronously.
+     * The Promise should be resolved or rejected to accept or cancel the event, respectively.
      * @property {boolean} cancelAdd true if the insert should be negated based on actions (i.e. escape key).
      * @ojshortdesc Triggered before the table is going to exit the insert row mode. See the Help documentation for more information.
      */
@@ -22276,6 +22437,7 @@ var __oj_table_metadata =
    * @expose
    * @alias refreshRow
    * @memberof! oj.ojTable
+   * @ojdeprecated {since: "13.0.0", description: "Use DataProvider mutations and update events instead."}
    * @instance
    * @example <caption>Invoke the <code class="prettyprint">refreshRow</code> method:</caption>
    * myTable.refreshRow(1);
@@ -22403,20 +22565,67 @@ var __oj_table_metadata =
   };
 
   /**
-     * <p>Notifies the component that its subtree has been connected to the document programmatically after the component has
-     * been created.
-     *
-     * @memberof! oj.ojTable
-     * @instance
-     * @protected
-     * @override
-     */
-  Table.prototype._NotifyAttached = function () {
+   * <p>Notifies the component that its subtree has been connected to the document programmatically after the component has
+   * been created.
+   *
+   * @memberof! oj.ojTable
+   * @instance
+   * @protected
+   * @override
+   */
+   Table.prototype._NotifyAttached = function () {
     this._super();
-    this._getLayoutManager().notifyTableUpdate(Table._UPDATE._ATTACHED);
-    // refresh dimensions if no tasks are pending since refresh dimensions runs during final task
-    if (!this._hasPendingTasks()) {
-      this._syncTableSizing();
+
+    // reattaching the Table causes the scroll position to be reset
+    this._scrollTop = null;
+    this._scrollLeft = null;
+
+    // for custom element, SetupResources will be called if needed
+    if (!this._IsCustomElement()) {
+      this._getLayoutManager().notifyTableUpdate(Table._UPDATE._ATTACHED);
+      // refresh dimensions if no tasks are pending since refresh dimensions runs during final task
+      if (!this._hasPendingTasks()) {
+        this._syncTableSizing();
+      }
+    } else {
+      this._initializeNotifyAttachedTimeout();
+    }
+  };
+
+  /**
+   * <p>Notifies the component that its subtree has been removed from the document programmatically after the component has
+   * been created.
+   *
+   * @memberof! oj.ojTable
+   * @instance
+   * @protected
+   * @override
+   */
+  Table.prototype._NotifyDetached = function () {
+    this._super();
+    this._clearNotifyAttachedTimeout();
+  };
+
+  /**
+   * @private
+   */
+  Table.prototype._initializeNotifyAttachedTimeout = function () {
+    this._clearNotifyAttachedTimeout();
+    this._notifyAttachedTimeout = setTimeout(function () { // @HTMLUpdateOK
+      if (!this._hasPendingTasks()) {
+        this._syncScrollPosition();
+      }
+      this._notifyAttachedTimeout = null;
+    }.bind(this), 0);
+  };
+
+  /**
+   * @private
+   */
+  Table.prototype._clearNotifyAttachedTimeout = function () {
+    if (this._notifyAttachedTimeout != null) {
+      clearTimeout(this._notifyAttachedTimeout);
+      this._notifyAttachedTimeout = null;
     }
   };
 
@@ -22609,7 +22818,8 @@ var __oj_table_metadata =
       if (requiresHeaderRefresh) {
         this._clearCachedMetadata();
         this._refreshTableHeader();
-      } if (requiresDataRefresh) {
+      }
+      if (requiresDataRefresh) {
         this._beforeDataRefresh();
       }
       this._refresh();
@@ -22673,7 +22883,7 @@ var __oj_table_metadata =
     switch (option) {
       case 'columns':
       case 'currentRow':
-        return oj.Object.compareValues(value1, value2);
+        return oj$1.Object.compareValues(value1, value2);
       case 'selection':
         if (value1 && value1.inverted === undefined) {
           // eslint-disable-next-line no-param-reassign
@@ -22686,7 +22896,7 @@ var __oj_table_metadata =
         if (value1 && value2 && value1.inverted !== value2.inverted) {
           return false;
         }
-        return oj.Object.compareValues(value1, value2);
+        return oj$1.Object.compareValues(value1, value2);
       case 'selected':
         return ((value1.row && value2.row && DataCollectionUtils.areKeySetsEqual(value1.row, value2.row)) ||
           (value1.row == null && value2.row == null)) &&
@@ -22743,6 +22953,28 @@ var __oj_table_metadata =
       this._layoutManager.unregisterListeners();
     }
     this._layoutManager = null;
+  };
+
+  /**
+   * @private
+   */
+  // exposing this on the custom element so that it can be called by the Webelement
+  Table.prototype._doSortHelper = function (header, direction) {
+    const columDef = this._getColumnDefs();
+    const columnIdx = this._getColumnIdxForColumnKey(header);
+    const headerColumn = this._getTableHeaderColumn(columnIdx);
+    if (columnIdx < columDef.length) {
+      if (this._getColumnDefs()[columnIdx].sortable === Table._OPTION_ENABLED) {
+        if (headerColumn != null && $(headerColumn).data('sorted') === direction) {
+          return `Column is already sorted in ${direction} order.`;
+        }
+        this._handleSortTableHeaderColumn(columnIdx,
+          direction === Table._COLUMN_SORT_ORDER._ASCENDING, null);
+        return null;
+      }
+      return 'Sort is not enabled for given header.';
+    }
+    return 'Invalid header.';
   };
 
   /* Later when needed
@@ -22819,7 +23051,7 @@ var __oj_table_metadata =
 
   // --------------------------------------------------- oj.ojTable Styling End -----------------------------------------------------------
   (function () {
-    oj.__registerWidget('oj.ojTable', $.oj.baseComponent, new Table());
+    oj$1.__registerWidget('oj.ojTable', $.oj.baseComponent, new Table());
   }());
 
   ojcomponentcore.setDefaultOptions({

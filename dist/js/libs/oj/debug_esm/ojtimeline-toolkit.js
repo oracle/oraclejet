@@ -18,8 +18,7 @@ import { OverviewParser, Overview, OverviewUtils } from 'ojs/ojdvt-overview';
  * @extends {TimeComponentKeyboardHandler}
  * @constructor
  */
-class  DvtTimelineKeyboardHandler extends TimeComponentKeyboardHandler {
-
+class DvtTimelineKeyboardHandler extends TimeComponentKeyboardHandler {
   /**
    * Whether keyboard event equates to initializing High level DnD Move
    * @param {dvt.KeyboardEvent} event keyboard event
@@ -174,7 +173,10 @@ class  DvtTimelineKeyboardHandler extends TimeComponentKeyboardHandler {
       EventManager.consumeEvent(event);
       return null;
     }
-    if (event.keyCode === KeyboardEvent.F2) {
+
+    const isActionableMode = this._eventManager._component.activeInnerElems;
+    // F2 enters actionable mode
+    if (!isActionableMode && currentNavigable && event.keyCode === KeyboardEvent.F2) {
       var enabled = keyboardUtils.enableAllFocusable(currentNavigable._displayable.getElem());
       if (enabled.length > 0) {
         enabled[0].focus();
@@ -182,9 +184,10 @@ class  DvtTimelineKeyboardHandler extends TimeComponentKeyboardHandler {
         currentNavigable.hasActiveInnerElems = true;
         this._eventManager._component.activeInnerElemsNode = currentNavigable;
       }
+      return null;
     }
-    if (event.keyCode === KeyboardEvent.ESCAPE && this._eventManager._component.activeInnerElems && currentNavigable) {
-      // navigating outside using Esc
+    // Esc or F2 key can be used to exit actionable mode
+    if (isActionableMode && currentNavigable && (event.keyCode === KeyboardEvent.ESCAPE || event.keyCode === KeyboardEvent.F2)) {
       this._eventManager._component.activeInnerElems = null;
       this._eventManager._component.activeInnerElemsNode = null;
       keyboardUtils.disableAllFocusable(currentNavigable._displayable.getElem(), true);
@@ -192,8 +195,8 @@ class  DvtTimelineKeyboardHandler extends TimeComponentKeyboardHandler {
       this._eventManager._component._context._parentDiv.focus();
       currentNavigable.hasActiveInnerElems = false;
       this._eventManager.ShowFocusEffect(event, currentNavigable);
-      event.preventDefault();
-      event.stopPropagation();
+      EventManager.consumeEvent(event);
+      return null;
     }
 
     if (this._eventManager._component.isDiscreteNavigationMode()) {
@@ -342,6 +345,16 @@ const DvtTimelineTooltipUtils = {
    */
   getDatatip: (seriesNode, isTabular, isAria) => {
     var timeline = seriesNode._timeline;
+
+    // If performing DnD Move via keyboard and the navigation scale changed, show the scale change info instead of the normal tooltip
+    if (timeline.getEventManager().isKeyboardDnDScaleChanged()) {
+      // No valueFormats support for scale change info, so type is left as empty string for now
+      var navigationScale = timeline.getEventManager().getKeyboardDnDNavigationScale();
+      var defaultNavigationLabel = timeline.getEventManager().getKeyboardDnDMode() === 'move' ? 'MoveBy' : 'ResizeBy';
+      var navigationScaleDesc = [];
+      DvtTimelineTooltipUtils._addDatatipRow(navigationScaleDesc, timeline, defaultNavigationLabel, 'MoveBy', navigationScale, isTabular);
+      return DvtTimelineTooltipUtils._processDatatip(navigationScaleDesc, isTabular);
+    }
 
     // Custom Tooltip via Function
     var customTooltip = timeline.getOptions()['tooltip'];
@@ -1524,9 +1537,17 @@ class DvtTimelineSeriesNode {
    * @override
    */
   getAriaLabel() {
+    var options = this._timeline.getOptions();
+    var translations = options.translations;
+    var keyboardUtils = options._keyboardUtils;
     var states = [];
-    if (this.isSelectable())
-      states.push(this._timeline.getOptions().translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
+    if (this.isSelectable()) {
+      states.push(translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
+    }
+    var actionableElems = keyboardUtils.getActionableElementsInNode(this._displayable.getElem());
+    if (actionableElems.length > 0) {
+      states.push(translations.accessibleContainsControls);
+    }
     var shortDesc = DvtTimelineTooltipUtils.getDatatip(this, false);
     return Displayable.generateAriaLabel(shortDesc, states);
   }
@@ -2035,7 +2056,6 @@ DvtTimelineSeriesNode.DURATION_BAR = 'duration-bar';
  * @constructor
  */
 class DvtTimelineAutomation extends Automation {
-
   /**
    * Valid subIds inlcude:
    * <ul>
@@ -2313,10 +2333,11 @@ const DvtTimelineSeriesItemRenderer = {
    * @param {DvtTimelineSeriesItem} item The item being initialized.
    * @param {DvtTimelineSeries} series The series containing this item.
    * @param {number} index The index of the item.
+   * @param {type} mvAnimator optional animator.
    */
-  initializeItem: (item, series, index) => {
+  initializeItem: (item, series, index, mvAnimator) => {
     if (item.getBubble() && series._allowUpdates)
-      DvtTimelineSeriesItemRenderer._updateBubble(item, series, index);
+      DvtTimelineSeriesItemRenderer._updateBubble(item, series, index, mvAnimator);
     else
       DvtTimelineSeriesItemRenderer._createBubble(item, series, index);
   },
@@ -2873,12 +2894,13 @@ const DvtTimelineSeriesItemRenderer = {
    * @param {DvtTimelineSeriesItem} item The item being updated.
    * @param {DvtTimelineSeries} series The series containing this item.
    * @param {number} index The index of the item.
+   * @param {type} mvAnimator optional animator.
    * @private
    */
-  _updateBubble: (item, series, index) => {
+  _updateBubble: (item, series, index, mvAnimator) => {
     // Need to update the bubble widths before spacing if applicable
     if (item.getItemType() === DvtTimelineSeriesNode.DURATION_EVENT) {
-      DvtTimelineSeriesItemRenderer._updateDurationEvent(item, series);
+      DvtTimelineSeriesItemRenderer._updateDurationEvent(item, series, null, mvAnimator);
     }
 
     var spacing = series.calculateSpacing(item, index);
@@ -3207,10 +3229,11 @@ const DvtTimelineSeriesItemRenderer = {
   /**
    * Updates the rendering of a timeline series item duration event.
    * @param {DvtTimelineSeriesItem} item The item being updated.
-   * @param {Number} transX optional transX to shift the duration event (resize dnd) default null
+   * @param {Number} transX optional transX to shift the duration event (resize dnd)
+   * @param {type} animator optional animator.
    * @private
    */
-  _updateDurationEvent: (item, series, transX = null) => {
+  _updateDurationEvent: (item, series, transX, animator) => {
     var nodeWidth, content, contentBubbleArray;
     var context = series.getCtx();
     var isRTL = Agent.isRightToLeft(context);
@@ -3227,8 +3250,13 @@ const DvtTimelineSeriesItemRenderer = {
     var navMode = item._timeline.isDiscreteNavigationMode();
 
     // resize the bubble and address overflow content if needed
-    durationBubble.setWidth(durationWidth);
-    durationInnerBubble.setWidth(durationWidth - 4);
+    if (animator) {
+      animator.addProp(Animator.TYPE_NUMBER, durationBubble, durationBubble.getWidth, durationBubble.setWidth, durationWidth);
+      animator.addProp(Animator.TYPE_NUMBER, durationInnerBubble, durationInnerBubble.getWidth, durationInnerBubble.setWidth, durationWidth - 4);
+    } else {
+      durationBubble.setWidth(durationWidth);
+      durationInnerBubble.setWidth(durationWidth - 4);
+    }
 
     var resizeHandle = isRTL ? item.getResizeHandleStart() : item.getResizeHandleEnd();
     if (resizeHandle) {
@@ -3273,14 +3301,22 @@ const DvtTimelineSeriesItemRenderer = {
       var contentPadding = DvtTimelineSeriesItemRenderer.calcPadding(item, isRTL, padding, durationWidth, true, content);
 
       var contentBubbleAdjust = (contentPadding + 15.5) * (flipContentBubble ? -1 : 1);
-      contentBubble.setTranslateX(contentBubbleAdjust);
+      if (animator) {
+        animator.addProp(Animator.TYPE_NUMBER, contentBubble, contentBubble.getTranslateX, contentBubble.setTranslateX, contentBubbleAdjust);
+      } else {
+        contentBubble.setTranslateX(contentBubbleAdjust);
+      }
 
       // set content to visible if in discrete viewport navigation mode since it may have been hidden outside of viewport
       if (navMode) {
         content.setVisible('visible');
 
         // reset content padding back to original
-        content.setTranslateX(padding);
+        if (animator) {
+          animator.addProp(Animator.TYPE_NUMBER, content, content.getTranslateX, content.setTranslateX, padding);
+        } else {
+          content.setTranslateX(padding);
+        }
 
         // turn off draggable class (content is outside of bubble)
         if (item._timeline.isDnDMoveEnabled()) {
@@ -3312,7 +3348,11 @@ const DvtTimelineSeriesItemRenderer = {
         }
       } else {
         content.setVisible('visible');
-        content.setTranslateX(contentPadding);
+        if (animator) {
+          animator.addProp(Animator.TYPE_NUMBER, content, content.getTranslateX, content.setTranslateX, contentPadding);
+        } else {
+          content.setTranslateX(contentPadding);
+        }
 
         // turn on draggable classes (content is inside bubble)
         if (item._timeline.isDnDMoveEnabled()) {
@@ -3321,13 +3361,19 @@ const DvtTimelineSeriesItemRenderer = {
       }
     }
 
-    if (transX) {
-      bubble.setTranslateX(transX);
+    if (animator) {
+      if (transX) {
+        animator.addProp(Animator.TYPE_NUMBER, bubble, bubble.getTranslateX, bubble.setTranslateX, transX);
+      }
+      animator.addProp(Animator.TYPE_NUMBER, item, item.getWidth, item.setWidth, nodeWidth);
+      animator.addProp(Animator.TYPE_NUMBER, item, item.getDurationWidth, item.setDurationWidth, Math.max(durationWidth, DvtTimelineStyleUtils.getMinDurationEvent()));
+    } else {
+      if (transX) {
+        bubble.setTranslateX(transX);
+      }
+      item.setWidth(nodeWidth);
+      item.setDurationWidth(Math.max(durationWidth, DvtTimelineStyleUtils.getMinDurationEvent()));
     }
-
-    // update the item with the new widths;
-    item.setWidth(nodeWidth);
-    item.setDurationWidth(Math.max(durationWidth, DvtTimelineStyleUtils.getMinDurationEvent()));
   },
 
   /**
@@ -4613,7 +4659,7 @@ class DvtTimelineEventManager extends TimeComponentEventManager {
     this._keyboardDnDScaleRampIndex = Math.max(0, Math.min(this._keyboardDnDScaleRampIndex + step, this._HIGH_LEVEL_DND_NAV_SCALES.length - 1));
 
     // Update and show feedback
-    this._keyboardDragObject.showDragFeedback(event, this._keyboardDnDFeedbackLocalPos, this._keyboardDnDTargetObj, {x: 0, y: 0}, true);
+    this._keyboardDragObject.showDragFeedback(event, this._keyboardDnDFeedbackLocalPos, this._keyboardDragObject, {x: 0, y: 0}, true, true);
 
     // Update the aria live region with text that the screenreader should read.
     // Tooltip should be showing the navigation scale at this point, so can just grab that text
@@ -4669,7 +4715,8 @@ class DvtTimelineEventManager extends TimeComponentEventManager {
       for (var i = 0; i < selection.length; i++)
       {
         var selectionObj = selection[i];
-        itemContexts.push(selectionObj.getDataContext());
+        if (selectionObj !== this._keyboardDragObject)
+          itemContexts.push(selectionObj.getDataContext());
       }
       start = new Date(this._keyboardDnDFeedbackTime['start']).toISOString();
       end = new Date(this._keyboardDnDFeedbackTime['end']).toISOString();
@@ -4924,7 +4971,6 @@ class DvtTimelineEventManager extends TimeComponentEventManager {
  * @class
  */
 class DvtTimelineParser {
-
   /**
    * Parses the specified data options and returns the root node of the timeline
    * @param {object} options The data options describing the component.
@@ -5304,9 +5350,7 @@ const DvtTimelineOverviewStyleUtils = {
  * @constructor
  * @extends {OverviewParser}
  */
-class DvtTimelineOverviewParser extends OverviewParser{
-
-
+class DvtTimelineOverviewParser extends OverviewParser {
   /**
    * Parses the specified options object and returns the root node of the timelineOverview
    * @param {object} options The options object describing the component.
@@ -7841,9 +7885,6 @@ const DvtTimelineSeriesRenderer = {
     else
       block = series._blocks[0];
 
-    series.prepareDurations();
-    series.prepareItems(series._items);
-
     if (series._isInitialRender)
     {
       if (series._isIRAnimationEnabled)
@@ -7869,6 +7910,9 @@ const DvtTimelineSeriesRenderer = {
       }
     }
     series._hasMvAnimations = false;
+
+    series.prepareDurations();
+    series.prepareItems(series._items, series._mvAnimator);
 
     //make sure to take overflow into consideration
     var overflowOffset = Math.max(0, series._maxOverflowValue - series._size);
@@ -8542,7 +8586,7 @@ const DvtTimelineSeriesRenderer = {
 
       var startTime = item.getStartTime();
       var endTime = item.getEndTime();
-      if (endTime && endTime !== startTime)
+      if (endTime && endTime !== startTime && item.getItemType() === DvtTimelineSeriesNode.DURATION_BAR)
       {
         var durationBar = item.getDurationBar();
         if (!series.isVertical())
@@ -8747,7 +8791,7 @@ class DvtTimelineSeries extends BaseComponent {
     // Apply 'Series' label for accessibility
     var desc = this.GetComponentDescription();
     if (desc) {
-      ToolkitUtils.setAttrNullNS(this.getElem(), 'role', 'img');
+      ToolkitUtils.setAttrNullNS(this.getElem(), 'role', 'group');
       ToolkitUtils.setAttrNullNS(this.getElem(), 'aria-label', AriaUtils.processAriaLabel(desc));
     }
   }
@@ -9069,8 +9113,9 @@ class DvtTimelineSeries extends BaseComponent {
   /**
    * Prepares the items for rendering.
    * @param {Array<DvtTimelineSeriesItem>} items The items to be prepared.
+   * @param {type} mvAnimator optional animator.
    */
-  prepareItems(items) {
+  prepareItems(items, mvAnimator) {
     var i, item, loc;
     if (this.isVertical())
       this._initialSpacing = 20 * (this._maxDurationSize > 0 ? 1 : 0) + DvtTimelineStyleUtils.getBubbleSpacing() + 10 * this._maxDurationSize;
@@ -9087,7 +9132,7 @@ class DvtTimelineSeries extends BaseComponent {
       {
         var span = this._callbackObj.getDatePos(endTime) - loc;
         // don't adjust if duration-event
-        if (item.getItemType() !== DvtTimelineSeriesNode.DURATION_EVENT ) {
+        if (item.getItemType() !== DvtTimelineSeriesNode.DURATION_EVENT) {
           loc = loc + Math.min(DvtTimelineStyleUtils.getDurationFeelerOffset(), span / 2);
         }
       }
@@ -9099,7 +9144,7 @@ class DvtTimelineSeries extends BaseComponent {
       item = this._items[i];
       loc = this._callbackObj.getDatePos(item.getStartTime());
       if (loc >= this._fetchStartPos && loc <= this._fetchEndPos)
-        DvtTimelineSeriesItemRenderer.initializeItem(item, this, i);
+        DvtTimelineSeriesItemRenderer.initializeItem(item, this, i, mvAnimator);
     }
   }
 
@@ -10729,6 +10774,23 @@ class Timeline extends TimeComponent {
     }
     this.setRelativeStartPos(startPos);
     this.applyTimeZoomCanvasPosition();
+
+    if (!this._isVertical) {
+      // panBy() is being invoked and for vertical transalation _dragPanSeries needs to be set.
+      this._dragPanSeries = item._series;
+      var itemTop = item._displayable.getTranslateY();
+      var itemBottom = itemTop + item.getHeight();
+      var seriesCount = this._series.length;
+      var axisSize = this.getTimeAxisVisibleSize(seriesCount);
+      var viewTop = this._dragPanSeries._isInverted ? (this._dragPanSeries.Height + axisSize) - this._dragPanSeries.getTranslateY() : this._dragPanSeries._maxOverflowValue - (this._dragPanSeries.getTranslateY() + this._dragPanSeries.Height); 
+      var viewBottom = viewTop + this._dragPanSeries.Height;
+      if (itemTop < viewTop)
+        this.panBy(0, itemTop - viewTop);
+      else if (itemBottom > viewBottom)
+        this.panBy(0, itemBottom - viewBottom);
+      
+      this._dragPanSeries = null;
+    }
 
     if (this._hasOverview)
     {

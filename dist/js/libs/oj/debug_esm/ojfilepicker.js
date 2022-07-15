@@ -5,10 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { jsx } from 'preact/jsx-runtime';
 import oj from 'ojs/ojcore-base';
 import { recentPointer } from 'ojs/ojdomutils';
 import { Root, customElement } from 'ojs/ojvcomponent';
-import { Component, createRef, h } from 'preact';
+import { Component, createRef } from 'preact';
 import { getTranslatedString } from 'ojs/ojtranslation';
 import { pickFiles } from 'ojs/ojfilepickerutils';
 import FocusUtils from 'ojs/ojfocusutils';
@@ -201,26 +202,22 @@ let FilePicker = class FilePicker extends Component {
     }
     _renderDisabled(props, triggerSlot) {
         const rootClasses = triggerSlot ? 'oj-filepicker' : 'oj-filepicker oj-filepicker-no-trigger';
-        return (h(Root, { class: rootClasses },
-            h("div", { class: "oj-filepicker-disabled oj-filepicker-container" }, triggerSlot || this._renderDefaultTriggerContent(props))));
+        return (jsx(Root, Object.assign({ class: rootClasses }, { children: jsx("div", Object.assign({ class: "oj-filepicker-disabled oj-filepicker-container" }, { children: triggerSlot || this._renderDefaultTriggerContent(props) })) })));
     }
     _renderWithCustomTrigger(props, triggerSlot, clickHandler) {
         const dndHandlers = this._getDndHandlers(props);
-        return (h(Root, { class: `oj-filepicker ${this._getFocusClass()}`, ref: this.rootRef, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut },
-            h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, class: "oj-filepicker-container", "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) }, triggerSlot)));
+        return (jsx(Root, Object.assign({ class: `oj-filepicker ${this._getFocusClass()}`, ref: this.rootRef, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, { children: jsx("div", Object.assign({ onClick: clickHandler, onKeyPress: this._handleSelectingFiles, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, class: "oj-filepicker-container", "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) }, { children: triggerSlot })) })));
     }
     _renderWithDefaultTrigger(props, clickHandler) {
         const validity = this.state.validity;
         const validityState = validity === 'valid' ? 'oj-valid-drop' : validity === 'invalid' ? 'oj-invalid-drop' : '';
         const dndHandlers = this._getDndHandlers(props);
-        return (h(Root, { class: `oj-filepicker oj-filepicker-no-trigger ${this._getFocusClass()}`, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, ref: this.rootRef },
-            h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, class: 'oj-filepicker-container', tabIndex: 0, "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) },
-                h("div", { class: `oj-filepicker-dropzone ${validityState}`, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop }, this._renderDefaultTriggerContent(props)))));
+        return (jsx(Root, Object.assign({ class: `oj-filepicker oj-filepicker-no-trigger ${this._getFocusClass()}`, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, ref: this.rootRef }, { children: jsx("div", Object.assign({ onClick: clickHandler, onKeyPress: this._handleSelectingFiles, class: 'oj-filepicker-container', tabIndex: 0, "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) }, { children: jsx("div", Object.assign({ class: `oj-filepicker-dropzone ${validityState}`, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop }, { children: this._renderDefaultTriggerContent(props) })) })) })));
     }
     _renderDefaultTriggerContent(props) {
         return [
-            h("div", { class: "oj-filepicker-text" }, this._getPrimaryText(props)),
-            h("div", { class: "oj-filepicker-secondary-text" }, this._getSecondaryText(props))
+            jsx("div", Object.assign({ class: "oj-filepicker-text" }, { children: this._getPrimaryText(props) })),
+            jsx("div", Object.assign({ class: "oj-filepicker-secondary-text" }, { children: this._getSecondaryText(props) }))
         ];
     }
     _getRole(props, clickHandler) {

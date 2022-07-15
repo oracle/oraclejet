@@ -1659,7 +1659,18 @@ ListViewDndContext.prototype._appendToMenuContainer = function (menuContainer, c
  * @private
  */
 ListViewDndContext.prototype._handleContextMenuBeforeOpen = function (event, ui) {
-  var item = ui ? ui.openOptions.launcher : event.detail.openOptions.launcher;
+  var item;
+  var posOf = ui ? ui.openOptions.position.of : event.detail.openOptions.position.of;
+  if (posOf) {
+    if (posOf.target) {
+      // mouse case
+      item = this.listview.FindItem(posOf.target);
+    } else if (posOf.hasClass && posOf.hasClass(this.listview.getItemStyleClass())) {
+      // keyboard case
+      item = posOf;
+    }
+  }
+
   if (!this.IsItemReOrdering()) {
     this.m_contextMenuItem = item;
     return;

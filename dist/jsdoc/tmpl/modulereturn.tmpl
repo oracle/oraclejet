@@ -1,0 +1,79 @@
+<?js
+  //ojmodulereturn is not associated with a custom plugin
+  //it is set dynamically during page generation time in publish.js
+  var data = obj;
+  var self = this;
+  var elemId = "usage-section"; 
+  ?>
+  
+  <div class="<?js= elemId ?>">
+    <h3 id="<?js= elemId ?>">Usage<a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a></h3> 
+    <?js
+    //insert class signature if any.
+    if(data.classsignature){?>
+      <?js= data.classsignature ?>
+    <?js 
+    }
+    if (!data.tsignore) {
+      var genericDetails = self.getGenericsDetails(data);
+      if(genericDetails) { ?>
+      <dl>
+          <dt><h5>Generic Parameters</h5></dt>
+          <dd><?js= genericDetails ?></dd>
+      </dl>
+      <?js 
+      }
+    }
+    if (data.ojmodulereturn) {
+      var requireExampleTmpl = "define(['ojs/%module%'], function(%callback%) {\n"+
+        " // Application should call API on %callable% \n"+
+        "})";
+  
+      if (data.ojmodulereturn === 'simple') { 
+        requireExampleTmpl = requireExampleTmpl.replace('%module%', self.moduleName).replace('%callback%', data.name).replace('%callable%', data.name); 
+      }
+      else if (data.ojmodulereturn === 'complex'){
+        //make sure to use camelCase name for modulename in the callback
+        var camelCasedModule = self.moduleName.substr(2).replace(/-\w/g, function(match){return match.substr(1).toUpperCase()});
+        requireExampleTmpl = requireExampleTmpl.replace('%module%', self.moduleName).replace('%callback%',  camelCasedModule).replace('%callable%', camelCasedModule + "." + data.name); 
+      }?>
+      <dl>
+        <dt><h5>Javascript Import Format</h5></dt>
+        <dd><pre class="prettyprint"><code><?js= requireExampleTmpl ?></code></pre></dd>
+      </dl>
+    <?js
+    }
+    if (!data.tsignore) {
+      var importDetails = self.getImportDetails(data); 
+      if(importDetails) { ?>
+        <dl>
+          <dt><h5>Typescript Import Format</h5></dt>
+          <dd><?js= importDetails ?></dd>
+        </dl>
+      <?js
+      }
+    }?>
+    <p>For additional information visit:</p>
+    <ul>
+      <?js
+      if (!self.isStylingOrOverview && self.isCustomElement && !self.virtual && !self.isBindingElement) {?>
+        <li><a href="<?js= env.opts.query.apidocLink ?>CustomElementOverview.html" target="_blank">Using JET Custom Elements</a></li>
+      <?js
+      }?>
+      <li><a href="<?js= env.opts.query.apidocLink ?>TypescriptOverview.html" target="_blank">Using JET with TypeScript</a></li>
+      <li><a href="<?js= env.opts.query.apidocLink ?>ModuleLoadingOverview.html" target="_blank">JET Module Loading</a></li>
+    </ul>
+    <?js
+    if (data.readonly){?>
+      <?js elemId = "final-class-section"; ?>
+      </br>
+      <h3 id="<?js= elemId ?>" class="final-class-section-title">Final classes in JET</h3>
+      <p>Classes in JET are generally final and do not support subclassing. At the moment, final is not enforced. However, this will likely change in an upcoming JET release.</p> 
+    <?js
+    }
+    if (self.isCustomElement && !self.isBindingElement && !data.virtual) { ?> 
+      <p class="important">Note: Application logic should not interact with the component's properties or invoke its methods 
+          until the <a href="<?js= env.opts.query.apidocLink ?>oj.BusyContext.html" target="_blank">BusyContext</a> indicates that the component is ready for interaction.</p>
+    <?js
+    } ?>
+  </div>

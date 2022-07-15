@@ -1,0 +1,2 @@
+define(["exports",'css!./text.css',"../../keys-20e26f7c","../../_curry1-28c749e4","../../_has-d3e8a510"],(function(e,t,s,i,n){"use strict";const r={start:"so5vivr",end:"exraja",right:"rnoefqf"},l={textAlign:r},a=s.keys_1(r),o={textAlign:({textAlign:e})=>void 0===e?{}:{class:r[e]}};e.textAlignStyles=r,e.textAligns=a,e.textInterpolations=o,e.textStyles=l,Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=text.js.map

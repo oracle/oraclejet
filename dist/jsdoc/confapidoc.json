@@ -1,0 +1,41 @@
+{
+    "tags": {
+        "allowUnknownTags": true
+    },
+    "source": {
+        "include": [
+            "overviews"
+        ],
+        "exclude": [
+        ],
+        "includePattern": ".+\\.js(doc)?$",
+        "excludePattern": "(^|\\/|\\\\)_"
+    },
+    "plugins": [
+     ],
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": false,
+        "default": {
+            "outputSourceFiles": false
+        }
+    },
+    "opts": {
+        "template": ".",
+        "destination": ".",
+        "recurse": true,
+        "violations":{
+          "MISSING_LINKS": false,
+          "TYPEDEF_IN_TYPE": true,
+          "INVALID_GLOBAL_MEMBER": true,
+          "MISSING_OJCOMPONENT_TYPE": true,
+          "MISSING_CLASS_TYPE": true,
+          "INVALID_ATTRIBUTE_TYPE": true,
+          "INVALID_DEFAULT_VALUE": true,
+          "BROKEN_ANCHOR_LINKS": true,
+          "BROKEN_LINK_LINKS": true
+        },
+        "violationLevel":"error"
+    },
+    "jsVersion": 180
+}

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojvcomponent', 'preact', 'ojs/ojtranslation'], function (exports, ojvcomponent, preact, Translations) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojtranslation'], function (exports, jsxRuntime, ojvcomponent, preact, Translations) { 'use strict';
 
     var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -29,14 +29,10 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'ojs/ojtranslation'], function 
                 value = 0;
             }
             const percentage = max === 0 ? 0 : value > max ? 1 : value / max;
-            return (preact.h(ojvcomponent.Root, { class: 'oj-progress-bar', role: 'progressbar', "aria-valuemin": '0', "aria-valuemax": String(max), "aria-valuenow": String(value) },
-                preact.h("div", { class: 'oj-progress-bar-track' },
-                    preact.h("div", { class: 'oj-progress-bar-value', style: { width: percentage * 100 + '%' } }))));
+            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: "oj-progress-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(max), "aria-valuenow": String(value) }, { children: jsxRuntime.jsx("div", Object.assign({ class: "oj-progress-bar-track" }, { children: jsxRuntime.jsx("div", { class: "oj-progress-bar-value", style: { width: percentage * 100 + '%' } }) })) })));
         }
         _renderIndeterminateBar(props) {
-            return (preact.h(ojvcomponent.Root, { class: 'oj-progress-bar', role: 'progressbar', "aria-valuetext": Translations.getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText') },
-                preact.h("div", { class: 'oj-progress-bar-track' },
-                    preact.h("div", { class: 'oj-progress-bar-value oj-progress-bar-indeterminate' }))));
+            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: "oj-progress-bar", role: "progressbar", "aria-valuetext": Translations.getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText') }, { children: jsxRuntime.jsx("div", Object.assign({ class: "oj-progress-bar-track" }, { children: jsxRuntime.jsx("div", { class: "oj-progress-bar-value oj-progress-bar-indeterminate" }) })) })));
         }
     };
     exports.ProgressBar.defaultProps = {

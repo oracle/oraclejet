@@ -1,0 +1,199 @@
+<?js
+var data = obj;
+var self = this;
+var elemId;
+var clasName = "";
+var additional = self.getDeprecatedClass(data);
+if(additional){
+  clasName = clasName + ' '+ additional;
+}
+?>
+<dt class="<?js= clasName ?>">
+    <?js var attribs = data.attribs.replace("virtual", "abstract"); // [jim] show abstract classes / components / members as abstract, not virtual ?>    
+    <?js if (kind === 'class' && !data.hideconstructor) { // [jim] then show new "Constructor" header ?>
+        <?js elemId = "constructor-section"; ?>
+        <h3 id="<?js= elemId ?>">
+            Constructor
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+    <?js } ?>
+    <?js elemId = id; 
+    //[csaba] don't display the constructor if was marked with the hideconstructor tag
+    if (!data.hideconstructor){ // [jim] add bookmarkable link icon ?>
+      <h4 id="<?js= elemId ?>" class="name">
+      <?js
+      var renderedName = (data.fullName || name).replace(/^(#)+/g, '');
+      // decorators are parsed as static members but we don't want to render that attribute neither their name starting with a dot
+      if (data.ojdecorator || data.ojexports){
+        attribs = attribs.replace('(static)', '');
+        if(renderedName.startsWith('.')){
+          renderedName = renderedName.substring(1);
+        }
+        if (!data.ojexports){
+          renderedName=`@${renderedName}`;
+        }
+      }
+      if(!data.tsdepsignature && !data.jssignature){
+        //there is no deprecation. We are just using our default signature everywhere.?>
+        <?js= attribs + (kind === 'class' ? 'new ' : '') + renderedName + (data.genericSignature? data.genericSignature:'')+ (kind !== 'event' ? data.signature? data.signature:'' : '') ?>
+        <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+      <?js 
+      }
+      else{
+        if(data.jssignature){ ?>
+          <span class="jsdoc-type">
+            <?js= attribs + (kind === 'class' ? 'new ' : '') + renderedName + (kind !== 'event' ? data.jssignature?data.jssignature:'' : '') ?>
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+          </span>
+          <?js
+        }
+        if(data.tsdepsignature){
+          var depclasses =  'dep-type';
+          if(!data.jssignature){
+            depclasses = depclasses+ ' jsdoc-type';
+          } ?>
+          <span class="<?js= depclasses?>">
+            <?js= attribs + (kind === 'class' ? 'new ' : '') + renderedName + (kind !== 'event' ? data.tsdepsignature?data.tsdepsignature:'' : '') ?>
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+          </span>
+          <?js
+        }
+        //default for clean signature
+        var cleanclasses =  'clean-only';
+        if(!data.tsdepsignature){
+          cleanclasses = cleanclasses+ ' dep-type';
+        }
+        if(!data.tsdepsignature && !data.jssignature){
+          cleanclasses = cleanclasses+ ' jsdoc-type';
+          }
+        ?>
+          <span class="<?js= cleanclasses?>">
+            <?js= attribs + (kind === 'class' ? 'new ' : '') + renderedName + (data.genericSignature? data.genericSignature:'')+ (kind !== 'event' ? data.signature?data.signature:'' : '') ?>
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+          </span>
+          <?js
+      }?>
+      </h4>
+      <?js
+    } ?>
+        
+    <?js if (data.ojpreview) { ?>
+    <p><?js= self.previewMessage ?></p>
+    <?js } ?>
+
+    <?js if (data.summary) { ?>
+    <p class="summary"><?js= summary ?></p>
+    <?js } ?>
+</dt>
+<dd class="<?js= clasName ?>">
+    <?js
+    // for classes, components his is handled in container.tmpl
+    if (data.kind !== 'class' && !data.ojcomponent && data.ojunsupportedthemes && data.ojunsupportedthemes.length > 0){ ?>
+      <?js= self.partial('themes.tmpl', data) ?>
+    <?js
+    }?>
+    <?js if (data.description) { ?>
+    <div class="description">
+        <?js= data.description ?>
+        <?js 
+        var properties = data.properties;
+        if (data.kind === 'event' && !properties) { ?>
+          <p>See <a href="<?js= env.opts.query.apidocLink ?>CustomElementOverview.html#ce-events-section" target="_blank">Events and Listeners</a> for additional information.</p>
+        <?js } ?>
+    </div>
+    <?js } ?>
+    <?js if (data.ojdeprecateddescription) { 
+        ?>
+        <div class="description deprecated-hidden"><?js= data.ojdeprecateddescription ?></div>
+    <?js } ?>
+    <?js if (data.ojjsdescription) { 
+        ?>
+        <div class="description jsdeprecated-hidden"><?js= data.ojjsdescription ?></div>
+    <?js } ?>
+
+    <?js if (data.kind === 'typedef' && data.classsignature) { ?>
+    <?js= data.classsignature ?>
+    <?js } ?>
+
+    <?js if (kind === 'event' && data.type && data.type.names) {?>
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                <?js= self.partial('type.tmpl', data.type.names) ?>
+            </li>
+        </ul>
+    <?js } ?>
+    
+    <?js if (data['this']) { ?>
+        <h5>This:</h5>
+        <ul><li><?js= this.linkto(data['this'], data['this']) ?></li></ul>
+    <?js } ?>
+    
+    <?js if (data.params && params.length && !data.hideconstructor) { ?>
+        <h5>Parameters:</h5>
+        <?js= this.partial('params.tmpl', params) ?>
+    <?js } ?>
+    
+    <?js= this.partial('details.tmpl', data) ?>
+    
+    <?js if (data.fires && fires.length) { ?>
+    <h5>Fires:</h5>
+    <ul><?js fires.forEach(function(f) { ?>
+        <?js= self.partial('fires.tmpl', self.linkto(f) ) ?>
+    <?js }); ?></ul>
+    <?js } ?>
+    
+    <?js if (data.exceptions && exceptions.length) { ?>
+    <h5>Throws:</h5>
+    <?js if (exceptions.length > 1) { ?><ul><?js
+        exceptions.forEach(function(r) { ?>
+            <li><?js= self.partial('exceptions.tmpl', r) ?></li>
+        <?js });
+    ?></ul><?js } else {
+        exceptions.forEach(function(r) { ?>
+            <?js= self.partial('exceptions.tmpl', r) ?>
+        <?js });
+    } } ?>
+    
+    <?js if (data.returns && returns.length && !data.ojdecorator) { ?>
+        <h5>Returns:</h5>
+        <?js if (returns.length > 1) { ?><ul><?js
+            returns.forEach(function(r) { ?>
+                <li><?js= self.partial('returns.tmpl', r) ?></li>
+            <?js });
+        ?></ul><?js } else {
+            returns.forEach(function(r) {?>
+                <?js= self.partial('returns.tmpl', r) ?>
+            <?js });
+        }
+    } ?>
+    
+    <?js 
+      // For component events, we just auto-generate examples rather than each component having to supply them.
+      if (self.isCustomElement && kind === 'event') {
+        var componentVarName = "my" + self.componentCamelCaseName.substring(2); // "myRowExpander"
+        var eventName = data.fullName; // "ojCollapse"
+        var listenerProp = "on" + eventName; // "onOjCollapse"
+        var listenerAttr = self.propertyNameToAttribute(listenerProp); // "on-oj-collapse"
+        var defaultExamples = [
+          {
+            caption: 'Specify an <code class="prettyprint">' + eventName + '</code> listener via the DOM attribute:',
+            code: '&lt;' + self.componentKebabCaseName + ' ' + listenerAttr + "='[[listener]]'>&lt;/" + self.componentKebabCaseName + '>'
+          },
+          {
+            caption: 'Add an <code class="prettyprint">' + eventName + '</code> listener via the <code class="prettyprint">addEventListener</code> API:',
+            code: componentVarName + ".addEventListener('" + eventName + "', listener);"
+          }
+        ];
+        /*if (data.tsexamples && data.tsexamples.length) {              
+          data.tsexamples = data.tsexamples.concat(defaultExamples);
+        }
+        else{
+          data.tsexamples = defaultExamples;
+        }*/
+      }      
+      if (data.tsexamples && data.tsexamples.length) { // data. ?>
+        <h5>Example<?js= data.tsexamples.length > 1? 's':'' ?></h5>
+        <?js= this.partial('tsexamples.tmpl', data.tsexamples) ?>
+    <?js } ?>
+</dd>

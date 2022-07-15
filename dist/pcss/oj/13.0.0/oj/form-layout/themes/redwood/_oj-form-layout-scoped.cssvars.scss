@@ -1,0 +1,13 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.formLayout.scoped") {
+
+:root.oj-scale-sm {
+
+// forms
+// ------------------------------
+  --oj-form-layout-margin-bottom: 1rem;
+}    
+
+}

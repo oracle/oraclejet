@@ -5,6 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { jsx, jsxs } from 'preact/jsx-runtime';
 import { recentTouchEnd, getReadingDirection } from 'ojs/ojdomutils';
 import 'ojs/ojlistdataproviderview';
 import oj from 'ojs/ojcore-base';
@@ -14,7 +15,7 @@ import { error } from 'ojs/ojlogger';
 import { parseJSONFromFontFamily, getCachedCSSVarValues } from 'ojs/ojthemeutils';
 import { getTimer } from 'ojs/ojtimerutils';
 import { getTranslatedString } from 'ojs/ojtranslation';
-import { Component, h } from 'preact';
+import { Component } from 'preact';
 import { HighlightText } from 'ojs/ojhighlighttext';
 import { getUniqueId, Root, customElement } from 'ojs/ojvcomponent';
 import { VPopup } from 'ojs/ojpopupcore';
@@ -24,8 +25,7 @@ class InputSearchSkeleton extends Component {
         super(props);
     }
     render(props) {
-        return (h("li", { role: 'presentation', class: 'oj-listbox-result', style: props.itemStyle },
-            h("div", { class: 'oj-listbox-result-label oj-listbox-skeleton-line-height oj-animation-skeleton' })));
+        return (jsx("li", Object.assign({ role: "presentation", class: "oj-listbox-result", style: props.itemStyle }, { children: jsx("div", { class: "oj-listbox-result-label oj-listbox-skeleton-line-height oj-animation-skeleton" }) })));
     }
 }
 InputSearchSkeleton.defaultProps = {
@@ -39,9 +39,9 @@ class InputSearchSkeletonList extends Component {
     render(props) {
         const skeletonItems = [];
         for (let i = 0; i < props.numItems; i++) {
-            skeletonItems.push(h(InputSearchSkeleton, { itemStyle: props.itemStyle }));
+            skeletonItems.push(jsx(InputSearchSkeleton, { itemStyle: props.itemStyle }));
         }
-        return (h("ul", { role: 'listbox', id: props.id, class: 'oj-listbox-results oj-inputsearch-results' }, skeletonItems));
+        return (jsx("ul", Object.assign({ role: "listbox", id: props.id, class: "oj-listbox-results oj-inputsearch-results" }, { children: skeletonItems })));
     }
 }
 InputSearchSkeletonList.defaultProps = {
@@ -90,8 +90,7 @@ class InputSearchSuggestion extends Component {
             rootClasses += ' oj-focus';
         }
         const content = this._renderContent(props);
-        return (h("li", { role: 'presentation', class: rootClasses, onClick: this._handleClick, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave },
-            h("div", { id: props.labelId, class: 'oj-listbox-result-label', role: 'option' }, content)));
+        return (jsx("li", Object.assign({ role: "presentation", class: rootClasses, onClick: this._handleClick, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave }, { children: jsx("div", Object.assign({ id: props.labelId, class: "oj-listbox-result-label", role: "option" }, { children: content })) })));
     }
     _renderContent(props) {
         var _a;
@@ -105,7 +104,7 @@ class InputSearchSuggestion extends Component {
                 searchText: props.searchText
             });
         }
-        return (h(HighlightText, { "data-oj-internal": true, text: props.formattedText, matchText: (_a = props.searchText) !== null && _a !== void 0 ? _a : '' }));
+        return (jsx(HighlightText, { "data-oj-internal": true, text: props.formattedText, matchText: (_a = props.searchText) !== null && _a !== void 0 ? _a : '' }));
     }
 }
 InputSearchSuggestion.defaultProps = {
@@ -144,10 +143,10 @@ class InputSearchSuggestionsList extends Component {
             for (let i = 0; i < props.data.length; i++) {
                 const focused = i === props.focusIndex;
                 const formattedText = props.formatItemText(props.suggestionItemText, props.data[i]);
-                const suggestion = (h(InputSearchSuggestion, { ref: this._setRenderedSuggestion.bind(this, i), labelId: props.labelIds[i], focus: focused, index: i, formattedText: formattedText, searchText: props.searchText, suggestionItemContext: props.data[i], suggestionItemTemplate: props.suggestionItemTemplate, onOjSuggestionAction: props.onOjSuggestionAction }));
+                const suggestion = (jsx(InputSearchSuggestion, { ref: this._setRenderedSuggestion.bind(this, i), labelId: props.labelIds[i], focus: focused, index: i, formattedText: formattedText, searchText: props.searchText, suggestionItemContext: props.data[i], suggestionItemTemplate: props.suggestionItemTemplate, onOjSuggestionAction: props.onOjSuggestionAction }));
                 suggestions.push(suggestion);
             }
-            return (h("ul", { role: 'listbox', id: props.id, class: 'oj-listbox-results oj-inputsearch-results' }, suggestions));
+            return (jsx("ul", Object.assign({ role: "listbox", id: props.id, class: "oj-listbox-results oj-inputsearch-results" }, { children: suggestions })));
         }
         return null;
     }
@@ -206,7 +205,7 @@ class ComposingInput extends Component {
     }
     render(props) {
         const { onInputChanged, onInput, onCompositionStart, onCompositionEnd } = props, passThroughProps = __rest(props, ["onInputChanged", "onInput", "onCompositionStart", "onCompositionEnd"]);
-        return (h("input", Object.assign({ ref: this._setInputElem, onInput: this._handleInput, oncompositionstart: this._handleCompositionstart, oncompositionend: this._handleCompositionend }, passThroughProps)));
+        return (jsx("input", Object.assign({ ref: this._setInputElem, onInput: this._handleInput, oncompositionstart: this._handleCompositionstart, oncompositionend: this._handleCompositionend }, passThroughProps)));
     }
 }
 
@@ -901,7 +900,7 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
         const autocompleteFloatingElem = state.autocompleteFloatingText
             ? this._renderAutocompleteFloatingText(state.autocompleteFloatingText, displayValue)
             : null;
-        const searchIcon = h("span", { class: iconClasses, role: "presentation" });
+        const searchIcon = jsx("span", { class: iconClasses, role: "presentation" });
         const textFieldContainer = state.fullScreenPopup
             ? this._renderMobileMainTextFieldContainer(props, state, searchIcon, inputClasses, ariaLabel, listboxId)
             : this._renderDesktopMainTextFieldContainer(props, state, searchIcon, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem);
@@ -909,32 +908,22 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
             ? this._renderDropdown(props, state, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem)
             : null;
         const ariaLiveRegion = this._dataProvider ? this._renderAriaLiveRegion(state) : null;
-        return (h(Root, { id: id, ref: this._setRootElem, class: rootClasses, "aria-label": ariaLabel, onMouseDown: this._handleMousedown, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave },
-            ariaLiveRegion,
-            textFieldContainer,
-            dropdown));
+        return (jsxs(Root, Object.assign({ id: id, ref: this._setRootElem, class: rootClasses, "aria-label": ariaLabel, onMouseDown: this._handleMousedown, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave }, { children: [ariaLiveRegion, textFieldContainer, dropdown] })));
     }
     _renderAriaLiveRegion(state) {
         var _a;
         const text = state.fetchedInitial && !state.fetching && ((_a = state.fetchedData) === null || _a === void 0 ? void 0 : _a.length) == 0
             ? getTranslatedString('oj-ojInputSearch2.noSuggestionsFound')
             : '\xa0';
-        return (h("div", { id: 'oj-listbox-live-' + this._uniqueId, class: "oj-helper-hidden-accessible oj-listbox-liveregion", "aria-live": "polite" }, text));
+        return (jsx("div", Object.assign({ id: 'oj-listbox-live-' + this._uniqueId, class: "oj-helper-hidden-accessible oj-listbox-liveregion", "aria-live": "polite" }, { children: text })));
     }
     _renderDesktopMainTextFieldContainer(props, state, searchIcon, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem) {
         const containerClasses = 'oj-text-field-container oj-text-field-has-start-slot';
-        return (h("div", { role: "presentation", class: containerClasses, id: this._getMainInputContainerId(), ref: this._setMainInputContainerElem },
-            h("span", { class: "oj-text-field-start" }, searchIcon),
-            h("div", { class: "oj-text-field-middle", role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-owns": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": state.dropdownOpen ? 'true' : 'false' },
-                h(ComposingInput, Object.assign({ type: inputType, inputRef: this._setMainInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: "off", autocorrect: "off" }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-controls": listboxId, "aria-busy": state.dropdownOpen && state.loading, "aria-activedescendant": this._dataProvider ? state.activeDescendantId : null, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onInputChanged: this._handleInputChanged, onKeyDown: this._handleDesktopMainInputKeydown })),
-                autocompleteFloatingElem)));
+        return (jsxs("div", Object.assign({ role: "presentation", class: containerClasses, id: this._getMainInputContainerId(), ref: this._setMainInputContainerElem }, { children: [jsx("span", Object.assign({ class: "oj-text-field-start" }, { children: searchIcon })), jsxs("div", Object.assign({ class: "oj-text-field-middle", role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-owns": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": state.dropdownOpen ? 'true' : 'false' }, { children: [jsx(ComposingInput, Object.assign({ type: inputType, inputRef: this._setMainInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: "off", autocorrect: "off" }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-controls": listboxId, "aria-busy": state.dropdownOpen && state.loading, "aria-activedescendant": this._dataProvider ? state.activeDescendantId : null, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onInputChanged: this._handleInputChanged, onKeyDown: this._handleDesktopMainInputKeydown })), autocompleteFloatingElem] }))] })));
     }
     _renderMobileMainTextFieldContainer(props, state, searchIcon, inputClasses, ariaLabel, listboxId) {
         const containerClasses = 'oj-text-field-container oj-text-field-has-start-slot';
-        return (h("div", { role: "presentation", class: containerClasses, id: this._getMainInputContainerId() },
-            h("span", { class: "oj-text-field-start" }, searchIcon),
-            h("div", { class: "oj-text-field-middle", role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-owns": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": state.dropdownOpen ? 'true' : 'false' },
-                h("input", Object.assign({ readOnly: true, ref: this._setMainInputElem, value: props.value, class: inputClasses, placeholder: props.placeholder, autocomplete: "off", autocorrect: "off" }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-controls": listboxId, "aria-busy": state.dropdownOpen && state.loading, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout })))));
+        return (jsxs("div", Object.assign({ role: "presentation", class: containerClasses, id: this._getMainInputContainerId() }, { children: [jsx("span", Object.assign({ class: "oj-text-field-start" }, { children: searchIcon })), jsx("div", Object.assign({ class: "oj-text-field-middle", role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-owns": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": state.dropdownOpen ? 'true' : 'false' }, { children: jsx("input", Object.assign({ readOnly: true, ref: this._setMainInputElem, value: props.value, class: inputClasses, placeholder: props.placeholder, autocomplete: "off", autocorrect: "off" }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-controls": listboxId, "aria-busy": state.dropdownOpen && state.loading, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout })) }))] })));
     }
     _renderMobileDropdownFilterField(props, state, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem) {
         let classes = 'oj-text-field';
@@ -951,25 +940,17 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
             containerClasses += ' oj-text-field-has-end-slot';
             clearIcon = this._renderMobileDropdownClearIcon();
         }
-        return (h("div", { class: classes },
-            h("div", { role: "presentation", class: containerClasses, id: this._getMobileFilterContainerId() },
-                h("span", { class: "oj-text-field-start" }, backIcon),
-                h("div", { class: "oj-text-field-middle", "aria-label": ariaLabel, "aria-owns": listboxId },
-                    h(ComposingInput, Object.assign({ type: inputType, inputRef: this._setMobileFilterInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: "off", autocorrect: "off" }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": "list", "aria-controls": listboxId, "aria-busy": state.loading, "aria-activedescendant": state.activeDescendantId, onfocusin: this._handleMobileFilterInputFocusin, onfocusout: this._handleMobileFilterInputFocusout, onInputChanged: this._handleInputChanged, onKeyDown: this._handleMobileFilterInputKeydown, onMouseDown: this._handleFilterInputMousedown })),
-                    autocompleteFloatingElem),
-                h("span", { class: "oj-text-field-end" }, clearIcon))));
+        return (jsx("div", Object.assign({ class: classes }, { children: jsxs("div", Object.assign({ role: "presentation", class: containerClasses, id: this._getMobileFilterContainerId() }, { children: [jsx("span", Object.assign({ class: "oj-text-field-start" }, { children: backIcon })), jsxs("div", Object.assign({ class: "oj-text-field-middle", "aria-label": ariaLabel, "aria-owns": listboxId }, { children: [jsx(ComposingInput, Object.assign({ type: inputType, inputRef: this._setMobileFilterInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: "off", autocorrect: "off" }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": "list", "aria-controls": listboxId, "aria-busy": state.loading, "aria-activedescendant": state.activeDescendantId, onfocusin: this._handleMobileFilterInputFocusin, onfocusout: this._handleMobileFilterInputFocusout, onInputChanged: this._handleInputChanged, onKeyDown: this._handleMobileFilterInputKeydown, onMouseDown: this._handleFilterInputMousedown })), autocompleteFloatingElem] })), jsx("span", Object.assign({ class: "oj-text-field-end" }, { children: clearIcon }))] })) })));
     }
     _renderMobileDropdownBackIcon() {
         const backIconClasses = 'oj-inputsearch-back-icon oj-inputsearch-icon oj-component-icon oj-clickable-icon-nocontext';
         const backButtonAriaLabel = getTranslatedString('oj-ojInputSearch2.cancel');
-        return (h("span", { class: "oj-inputsearch-back-button", "aria-label": backButtonAriaLabel, onClick: this._handleMobileDropdownBack },
-            h("span", { class: backIconClasses })));
+        return (jsx("span", Object.assign({ class: "oj-inputsearch-back-button", "aria-label": backButtonAriaLabel, onClick: this._handleMobileDropdownBack }, { children: jsx("span", { class: backIconClasses }) })));
     }
     _renderMobileDropdownClearIcon() {
         const clearIconClasses = 'oj-inputsearch-clear-icon oj-inputsearch-icon oj-component-icon' +
             ' oj-clickable-icon-nocontext';
-        return (h("span", { class: "oj-inputsearch-clear-button", "aria-hidden": true, onClick: this._handleMobileFilterClear },
-            h("span", { class: clearIconClasses })));
+        return (jsx("span", Object.assign({ class: "oj-inputsearch-clear-button", "aria-hidden": true, onClick: this._handleMobileFilterClear }, { children: jsx("span", { class: clearIconClasses }) })));
     }
     _renderDropdown(props, state, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem) {
         const dropdownContent = state.loading
@@ -1006,16 +987,11 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
         return this._renderVPopup(dropdownPosition, dropdownClasses, dropdownStyle, dropdownContent, dropdownFilterField, null);
     }
     _renderVPopup(position, classes, style, content, headerContent, mousedownHandler) {
-        return (h(VPopup, { position: position, layerSelectors: "oj-listbox-drop-layer", autoDismiss: this._clickAwayHandler },
-            h("div", { "data-oj-binding-provider": "preact", id: this._getDropdownElemId(), ref: this._setDropdownElem, class: classes, role: "presentation", style: style, onMouseDown: mousedownHandler, onMouseMove: this._handleDropdownMousemove, onMouseLeave: this._handleDropdownMouseleave },
-                headerContent,
-                content)));
+        return (jsx(VPopup, Object.assign({ position: position, layerSelectors: "oj-listbox-drop-layer", autoDismiss: this._clickAwayHandler }, { children: jsxs("div", Object.assign({ "data-oj-binding-provider": "preact", id: this._getDropdownElemId(), ref: this._setDropdownElem, class: classes, role: "presentation", style: style, onMouseDown: mousedownHandler, onMouseMove: this._handleDropdownMousemove, onMouseLeave: this._handleDropdownMouseleave }, { children: [headerContent, content] })) })));
     }
     _renderAutocompleteFloatingText(autocompleteFloatingText, displayValue) {
         const text = '\xa0\u2014\xa0' + autocompleteFloatingText;
-        return (h("div", { class: "oj-inputsearch-autocomplete-floating-container" },
-            h("span", { style: "visibility: hidden;" }, displayValue),
-            h("span", { class: "oj-inputsearch-autocomplete-floating-text" }, text)));
+        return (jsxs("div", Object.assign({ class: "oj-inputsearch-autocomplete-floating-container" }, { children: [jsx("span", Object.assign({ style: "visibility: hidden;" }, { children: displayValue })), jsx("span", Object.assign({ class: "oj-inputsearch-autocomplete-floating-text" }, { children: text }))] })));
     }
     _scrollSuggestionIntoView(activeDescendantId, alignToTop) {
         const labelElem = document.getElementById(activeDescendantId);
@@ -1120,12 +1096,12 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
             }
         }
         const resultStyle = resultsWidth > 0 ? { width: resultsWidth + 'px' } : null;
-        return (h(InputSearchSkeletonList, { id: this._getListboxId(), numItems: numItems, itemStyle: resultStyle }));
+        return (jsx(InputSearchSkeletonList, { id: this._getListboxId(), numItems: numItems, itemStyle: resultStyle }));
     }
     _renderDropdownSuggestions(props, state) {
         var _a;
         if (((_a = state.fetchedData) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-            return (h(InputSearchSuggestionsList, { ref: this._setSuggestionsList, data: state.fetchedData, searchText: state.filterText, focusIndex: state.focusedSuggestionIndex, formatItemText: InputSearch_1._formatItemText, id: this._getListboxId(), labelIds: state.labelIds, onOjSuggestionAction: this._handleSuggestionAction, suggestionItemText: props.suggestionItemText, suggestionItemTemplate: props.suggestionItemTemplate }));
+            return (jsx(InputSearchSuggestionsList, { ref: this._setSuggestionsList, data: state.fetchedData, searchText: state.filterText, focusIndex: state.focusedSuggestionIndex, formatItemText: InputSearch_1._formatItemText, id: this._getListboxId(), labelIds: state.labelIds, onOjSuggestionAction: this._handleSuggestionAction, suggestionItemText: props.suggestionItemText, suggestionItemTemplate: props.suggestionItemTemplate }));
         }
         return null;
     }

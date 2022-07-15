@@ -57,8 +57,8 @@ var __oj_picto_chart_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -164,6 +164,9 @@ var __oj_picto_chart_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },
@@ -328,7 +331,7 @@ var __oj_picto_chart_item_metadata =
  * @ojcomponent oj.ojPictoChart
  * @augments oj.dvtBaseComponent
  * @since 1.2.0
- *
+ * @ojimportmembers oj.ojSharedContextMenu
  * @ojshortdesc A picto chart displays information using icons to visualize an absolute number or the relative sizes of the different parts of a population.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature [{
@@ -526,7 +529,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
        * @type {Object|null}
        * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
        * @default null
-       * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the picto chart with the
@@ -1048,17 +1051,17 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * @typedef {Object} oj.ojPictoChart.Item
  * @property {any=} id The item id. The item id should be set by the application if the DataProvider is not being used.
  * @property {string=} name The name of the item. Used for default tooltip and accessibility.
- * @property {"ellipse"|"square"|"circle"|"diamond"|"triangleUp"|"triangleDown"|"star"|"plus"|"human"|"none"|"rectangle"|string}[shape="rectangle"] The shape of the item. 
- * Can take the name of a built-in shape or the SVG path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. 
+ * @property {"ellipse"|"square"|"circle"|"diamond"|"triangleUp"|"triangleDown"|"star"|"plus"|"human"|"none"|"rectangle"|string}[shape="rectangle"] The shape of the item.
+ * Can take the name of a built-in shape or the SVG path commands for a custom shape. "None" will make the item transparent and can be used to create gaps.
  * Does not apply if custom image is specified.
  * @property {string=} color The color of the item. Does not apply if custom image is specified.
  * @property {string=} borderColor The border color of the item. Does not apply if custom image is specified.
  * @property {number=} borderWidth The border width of the item in pixels. Does not apply if custom image is specified.
  * @property {string=} source The URI of the custom image. If specified, it takes precedence over shape.
- * @property {string=} svgClassName The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. 
+ * @property {string=} svgClassName The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties.
  * For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
  * @property {Object=} svgStyle The inline style to apply to the item. The style class and inline style will override any other styling specified with other
- * properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified. 
+ * properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
  * Only SVG CSS style properties are supported.
  * @property {string=} sourceHover The optional URI for the hover state. If not specified, the source image will be used.
  * @property {string=} sourceSelected The optional URI for the selected state. If not specified, the source image will be used.
@@ -1134,7 +1137,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * specified with the data attribute. The slot content must be a single &lt;template> element.</p>
  * <p>When the template is executed for each item, it will have access to the picto chart's binding context and the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. 
+ *   <li>$current - an object that contains information for the current item.
  *      (See [oj.ojPictoChart.ItemTemplateContext]{@link oj.ojPictoChart.ItemTemplateContext} or the table below for a list of properties available on $current)
  *   </li>
  * </li>
@@ -1168,7 +1171,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. 
+ *   <li>$current - an object that contains information for the current item.
  *      (See [oj.ojPictoChart.TooltipContext]{@link oj.ojPictoChart.TooltipContext} or the table below for a list of properties available on $current)
  *   </li>
  * </ul>

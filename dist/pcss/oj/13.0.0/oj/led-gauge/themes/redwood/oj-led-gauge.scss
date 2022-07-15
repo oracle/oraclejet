@@ -1,0 +1,7 @@
+@import "../../../gauge/themes/redwood/oj-gauge.scss"; 
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+// import classes defined in the base directory
+@import "../base/_oj-led-gauge.scss"; 
+@import "_oj-led-gauge.cssvars.scss";

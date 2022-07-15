@@ -9,6 +9,7 @@ import oj from 'ojs/ojcore-base';
 import { bindingProvider, components, ignoreDependencies, virtualElements, nativeTemplateEngine, templateSources, utils, expressionRewriting } from 'knockout';
 import { getExpressionEvaluator } from 'ojs/ojconfig';
 import { error } from 'ojs/ojlogger';
+import { getTemplateContent } from 'ojs/ojhtmlutils';
 
 /**
  * @private
@@ -342,11 +343,28 @@ function _KoCustomBindingProvider() {
   function _patchKoComponentsLoaders() {
     components.loaders.unshift({
       loadTemplate: function (name, templateConfig, callback) {
+        var nodes;
         if (typeof templateConfig === 'string') {
-          var nodes = utils.parseHtmlFragment(templateConfig, document);
+          nodes = utils.parseHtmlFragment(templateConfig, document);
+        } else if (templateConfig.element) {
+          var element = templateConfig.element;
+          if (element instanceof HTMLElement) {
+            nodes = getTemplateContent(element);
+          } else if (typeof element === 'string') {
+            var template = document.getElementById(element);
+            if (!template) {
+              throw new Error(`Cannot find element with ID ${element}`);
+            }
+            nodes = getTemplateContent(template);
+          } else {
+            throw new Error(`Unknown element type: ${element}`);
+          }
+        }
+
+        if (nodes) {
           components.defaultLoader.loadTemplate(name, nodes, callback);
         } else {
-          // Config type is not a string. Let default loader handle it.
+          // Config type is not a string or an object. Let default loader handle it.
           callback(null);
         }
       }

@@ -134,6 +134,7 @@ export type EventDetailItem = {
 };
 // tslint:disable-next-line interface-over-type-literal
 export type FilterCapabilities = {
+    nestedFilter: boolean;
     textFilter: boolean;
 };
 // tslint:disable-next-line interface-over-type-literal

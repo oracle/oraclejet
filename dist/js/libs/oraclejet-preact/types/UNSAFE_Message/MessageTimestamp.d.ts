@@ -5,8 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { h } from 'preact';
-import { MessageVariant } from "./Message.types";
+import { MessageVariant } from './Message.types';
 /**
  * Props for the Timestamp component
  */
@@ -23,5 +22,5 @@ declare type Props = {
 /**
  * Timestamp Component for rendering timestamp in Message
  */
-declare function MessageTimestamp({ value, variant }: Props): h.JSX.Element;
+declare function MessageTimestamp({ value, variant }: Props): import("preact").JSX.Element;
 export { MessageTimestamp };

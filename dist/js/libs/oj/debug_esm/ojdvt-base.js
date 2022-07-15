@@ -1125,8 +1125,12 @@ TemplateHandler.prototype.getTemplateEngine = function () {
     return this._templateEnginePromise;
   }
 
-  this._templateEnginePromise = new Promise(function (resolve) {
-    __getTemplateEngine().then(
+  this._templateEnginePromise = new Promise((resolve) => {
+    const templateOptions = {
+      customElement: this._component._GetCustomElement(),
+      needsTrackableProperties: this._component._NeedsTrackableProperties
+    };
+    __getTemplateEngine(templateOptions).then(
         function (engine) {
           resolve(engine);
         },
@@ -1853,7 +1857,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     return [];
   },
 
-
   _VerifyConnectedForSetup: function () {
     return true;
   },
@@ -1941,7 +1944,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       // Event listeners don't require rendering.  Iterate through options to check for non-event options.
       // Also no render is needed if the component has exposed a method to update the option without rerendering.
       var eventTypes = this._GetEventTypes();
-      var optimizedOptions = ['highlightedCategories', 'selection', 'dataCursorPosition', 'scrollPosition'];
+      var optimizedOptions = this._GetOptimizedOptions();
       $.each(options, function (key) {
         if (eventTypes.indexOf(key) < 0 && optimizedOptions.indexOf(key) < 0) {
           bRenderNeeded = true;
@@ -1954,19 +1957,27 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     if (bRenderNeeded) {
       this._Render();
     } else {
-        // Update options without rerendering. Check for undefined to allow nulls.
-      if (options.highlightedCategories !== undefined) {
-        this._component.highlight(options.highlightedCategories);
-      }
-      if (options.selection !== undefined) {
-        this._component.select(options.selection);
-      }
-      if (options.dataCursorPosition !== undefined && this._component.positionDataCursor) {
-        this._component.positionDataCursor(options.dataCursorPosition);
-      }
-      if (options.scrollPosition !== undefined) {
-        this._component.scroll(options.scrollPosition);
-      }
+      // Update options without rerendering. Check for undefined to allow nulls.
+      this._UpdateNoRenderOptions(options);
+    }
+  },
+
+  _GetOptimizedOptions: function () {
+    return ['highlightedCategories', 'selection', 'dataCursorPosition', 'scrollPosition'];
+  },
+
+  _UpdateNoRenderOptions: function (options) {
+    if (options.highlightedCategories !== undefined) {
+      this._component.highlight(options.highlightedCategories);
+    }
+    if (options.selection !== undefined) {
+      this._component.select(options.selection);
+    }
+    if (options.dataCursorPosition !== undefined && this._component.positionDataCursor) {
+      this._component.positionDataCursor(options.dataCursorPosition);
+    }
+    if (options.scrollPosition !== undefined) {
+      this._component.scroll(options.scrollPosition);
     }
   },
 

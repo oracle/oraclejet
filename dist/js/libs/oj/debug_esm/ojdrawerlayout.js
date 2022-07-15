@@ -5,8 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { jsxs, jsx } from 'preact/jsx-runtime';
 import { Root, customElement } from 'ojs/ojvcomponent';
-import { Component, createRef, h } from 'preact';
+import { Component, createRef } from 'preact';
 import $ from 'jquery';
 import { expand, slideIn, collapse, slideOut } from 'ojs/ojanimation';
 import { removeResizeListener, addResizeListener } from 'ojs/ojdomutils';
@@ -19,6 +20,15 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
 var DrawerLayout_1;
 const ojet = oj;
@@ -99,6 +109,15 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                     }
                 }, DrawerConstants.animationDuration + 50);
             }
+        };
+        this.refreshHandler = (edge) => {
+            const $drawerElement = $(this.getDrawerRef(edge).current);
+            $drawerElement.position(this.getDrawerPosition(edge));
+            if ([DrawerConstants.stringStart, DrawerConstants.stringEnd].indexOf(edge) > -1) {
+                this.setStartEndOverlayDrawersHeight();
+            }
+            this.setBottomOverlayDrawerWidth();
+            PopupService.getInstance().triggerOnDescendents($drawerElement, PopupService.EVENT.POPUP_REFRESH);
         };
         this.resizeHandler = () => {
             if (this.handleResize) {
@@ -202,12 +221,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         let startDrawer = this.getDrawer(DrawerConstants.stringStart);
         let endDrawer = this.getDrawer(DrawerConstants.stringEnd);
         let bottomDrawer = this.getDrawer(DrawerConstants.stringBottom);
-        return (h(Root, { ref: this.rootRef },
-            startDrawer,
-            h("div", { ref: this.middleSectionRef, class: DrawerConstants.middleSectionSelector },
-                h("div", { ref: this.mainSectionRef, class: DrawerConstants.mainContentSelector }, props.children),
-                bottomDrawer),
-            endDrawer));
+        return (jsxs(Root, Object.assign({ ref: this.rootRef }, { children: [startDrawer, jsxs("div", Object.assign({ ref: this.middleSectionRef, class: DrawerConstants.middleSectionSelector }, { children: [jsx("div", Object.assign({ ref: this.mainSectionRef, class: DrawerConstants.mainContentSelector }, { children: props.children })), bottomDrawer] })), endDrawer] })));
     }
     getDrawer(edge) {
         const resolvedMode = this.getDrawerResolvedDisplayMode(edge);
@@ -218,8 +232,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         if (this.isDrawerOpened(edge) ||
             this.wasDrawerOpenedInPrevState(edge) ||
             this.wasDrawerClosedWithEsc(edge)) {
-            return (h("div", { ref: this.getDrawerWrapperRef(edge), class: this.getDrawerWrapperStyleClasses(edge) },
-                h("div", { ref: this.getDrawerRef(edge), role: roleAttr, tabIndex: tabIndexAttr, class: this.getDrawerStyleClasses(edge), onKeyDown: (event) => this.handleKeyDown(edge, event) }, this.getDrawerContent(edge))));
+            return (jsx("div", Object.assign({ ref: this.getDrawerWrapperRef(edge), class: this.getDrawerWrapperStyleClasses(edge) }, { children: jsx("div", Object.assign({ ref: this.getDrawerRef(edge), role: roleAttr, tabIndex: tabIndexAttr, class: this.getDrawerStyleClasses(edge), onKeyDown: (event) => this.handleKeyDown(edge, event) }, { children: this.getDrawerContent(edge) })) })));
         }
         return null;
     }
@@ -319,23 +332,31 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         return DrawerConstants.stringFullOverlay;
     }
     selfClose(edge) {
-        var _a, _b, _c, _d, _e, _f;
-        if (edge === DrawerConstants.stringStart) {
-            (_b = (_a = this.props).onStartOpenedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, false);
-        }
-        if (edge === DrawerConstants.stringEnd) {
-            (_d = (_c = this.props).onEndOpenedChanged) === null || _d === void 0 ? void 0 : _d.call(_c, false);
-        }
-        if (edge === DrawerConstants.stringBottom) {
-            (_f = (_e = this.props).onBottomOpenedChanged) === null || _f === void 0 ? void 0 : _f.call(_e, false);
-        }
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield ((_b = (_a = this.props).onOjBeforeClose) === null || _b === void 0 ? void 0 : _b.call(_a, { edge }));
+            }
+            catch (_) {
+                return;
+            }
+            if (edge === DrawerConstants.stringStart) {
+                (_d = (_c = this.props).onStartOpenedChanged) === null || _d === void 0 ? void 0 : _d.call(_c, false);
+            }
+            if (edge === DrawerConstants.stringEnd) {
+                (_f = (_e = this.props).onEndOpenedChanged) === null || _f === void 0 ? void 0 : _f.call(_e, false);
+            }
+            if (edge === DrawerConstants.stringBottom) {
+                (_h = (_g = this.props).onBottomOpenedChanged) === null || _h === void 0 ? void 0 : _h.call(_g, false);
+            }
+        });
     }
     setDrawerFocus(edge) {
         const drawerRef = this.getDrawerRef(edge);
         const autofocusItems = drawerRef.current.querySelectorAll('[autofocus]');
         const { length: autofocusLength, 0: autofocusFirstItem } = autofocusItems;
         if (autofocusLength > 0) {
-            autofocusFirstItem.focus();
+            autofocusFirstItem.focus({ preventScroll: true });
             return;
         }
         const focusables = drawerRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), video');
@@ -348,7 +369,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                 }
             }
         }
-        elementToFocus.focus();
+        elementToFocus.focus({ preventScroll: true });
     }
     componentDidUpdate(prevProps, prevState) {
         this.handleComponentUpdate(prevState);
@@ -407,10 +428,12 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         if (this.isDrawerOpened(edge) === false ||
             this.shouldDrawerChangeDisplayMode(edge) ||
             this.getStateToChangeTo(edge)) {
+            this.elementWithFocusBeforeDrawerCloses = document.activeElement;
             this.animateClose(edge)
                 .then(() => {
-                removeResizeListener(this.rootRef.current, this.reflowDrawerResizeListener);
+                removeResizeListener(this.getDrawerRef(edge).current, this.reflowDrawerResizeListener);
                 this.reflowDrawerResizeListener === null;
+                this.returnFocus(edge);
                 if (this.getStateToChangeTo(edge)) {
                     const updatedState = {};
                     const resetStateToChangeTo = {};
@@ -442,6 +465,9 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                 if (prevState[this.edgeToStateOpenedName(edge)] === false ||
                     prevState[this.edgeToShouldChangeDisplayMode(edge)] ||
                     prevState[this.edgeToDisplayName(edge)] != this.state[this.edgeToDisplayName(edge)]) {
+                    if (!prevState[this.edgeToShouldChangeDisplayMode(edge)]) {
+                        this.drawerOpener = document.activeElement;
+                    }
                     this.animateOpen(edge).then(() => {
                         this.setBottomOverlayDrawerWidth();
                         if (this.reflowDrawerResizeListener === null) {
@@ -451,6 +477,11 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                     });
                 }
             }
+        }
+    }
+    returnFocus(edge) {
+        if (this.getDrawerRef(edge).current.contains(this.elementWithFocusBeforeDrawerCloses)) {
+            DrawerUtils.moveFocusToElementOrNearestAncestor(this.drawerOpener);
         }
     }
     animateOpen(edge) {
@@ -521,22 +552,19 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         PSOptions[PSoption.POSITION] = this.getDrawerPosition(edge);
         const PSEvent = PopupService.EVENT;
         PSOptions[PSoption.EVENTS] = {
-            [PSEvent.POPUP_BEFORE_OPEN]: () => this.beforeOpenHandler(edge, PSOptions),
+            [PSEvent.POPUP_BEFORE_OPEN]: () => this.beforeOpenHandler(edge, prevState, PSOptions),
             [PSEvent.POPUP_AFTER_OPEN]: () => this.afterOpenHandler(edge, prevState),
             [PSEvent.POPUP_BEFORE_CLOSE]: () => this.beforeCloseHandler(edge),
             [PSEvent.POPUP_AFTER_CLOSE]: () => this.afterCloseHandler(edge, prevState),
-            [PSEvent.POPUP_REFRESH]: () => {
-                $drawerElement.position(this.getDrawerPosition(edge));
-                if ([DrawerConstants.stringStart, DrawerConstants.stringEnd].indexOf(edge) > -1) {
-                    this.setStartEndOverlayDrawersHeight();
-                }
-                this.setBottomOverlayDrawerWidth();
-            }
+            [PSEvent.POPUP_REFRESH]: () => this.refreshHandler(edge)
         };
         return PSOptions;
     }
-    beforeOpenHandler(edge, PSOptions) {
+    beforeOpenHandler(edge, prevState, PSOptions) {
         DrawerUtils.disableBodyOverflow();
+        if (!prevState[this.edgeToShouldChangeDisplayMode(edge)]) {
+            this.drawerOpener = document.activeElement;
+        }
         const $drawerElement = PSOptions[PopupService.OPTION.POPUP];
         const position = PSOptions[PopupService.OPTION.POSITION];
         if (edge === DrawerConstants.stringBottom) {
@@ -583,7 +611,8 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
     }
     beforeCloseHandler(edge) {
         DrawerUtils.disableBodyOverflow();
-        removeResizeListener(this.rootRef.current, this.overlayDrawerResizeListener);
+        this.elementWithFocusBeforeDrawerCloses = document.activeElement;
+        removeResizeListener(this.getDrawerRef(edge).current, this.overlayDrawerResizeListener);
         this.overlayDrawerResizeListener === null;
         return this.animateClose(edge);
     }
@@ -592,6 +621,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             this[this.edgeToClosedWithEsc(edge)] = false;
         }
         DrawerUtils.enableBodyOverflow();
+        this.returnFocus(edge);
         const $drawerElement = $(this.getDrawerRef(edge).current);
         const status = ZOrderUtils.getStatus($drawerElement);
         if (this.getDrawerRef(edge).current) {
@@ -639,7 +669,7 @@ DrawerLayout.defaultProps = {
     endDisplay: 'auto',
     bottomDisplay: 'auto'
 };
-DrawerLayout.metadata = { "slots": { "": {}, "start": {}, "end": {}, "bottom": {} }, "properties": { "startOpened": { "type": "boolean", "writeback": true }, "endOpened": { "type": "boolean", "writeback": true }, "bottomOpened": { "type": "boolean", "writeback": true }, "startDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] }, "endDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] }, "bottomDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] } }, "extension": { "_WRITEBACK_PROPS": ["startOpened", "endOpened", "bottomOpened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
+DrawerLayout.metadata = { "slots": { "": {}, "start": {}, "end": {}, "bottom": {} }, "properties": { "startOpened": { "type": "boolean", "writeback": true }, "endOpened": { "type": "boolean", "writeback": true }, "bottomOpened": { "type": "boolean", "writeback": true }, "startDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] }, "endDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] }, "bottomDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] } }, "events": { "ojBeforeClose": { "cancelable": true } }, "extension": { "_WRITEBACK_PROPS": ["startOpened", "endOpened", "bottomOpened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
 DrawerLayout = DrawerLayout_1 = __decorate([
     customElement('oj-drawer-layout')
 ], DrawerLayout);

@@ -1,0 +1,18 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../button/themes/redwood/_oj-button.cssvars.scss";
+
+  @include module-include-once("redwood.variables.conveyorbelt") {
+
+:root {
+
+  // conveyorBelt
+  // ----------------------------
+  --oj-conveyor-belt-box-shadow-width: 0.25rem;
+
+  --oj-private-conveyor-belt-global-arrow-visibility-default: auto;
+
+}
+
+}

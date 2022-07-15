@@ -1,4 +1,4 @@
-const Parser = require('intl-messageformat-parser');
+const Parser = require('@formatjs/icu-messageformat-parser');
 const PluralCompiler = require('make-plural-compiler');
 
 module.exports = class PatternCompiler {
@@ -12,20 +12,7 @@ module.exports = class PatternCompiler {
     const ast = Parser.parse(pattern, {ignoreTag: true});
     const paramAccumulator = Object.create(null);
     const combinedParts = this._processParts(ast, paramAccumulator);
-    return {paramTypes: paramAccumulator, formatter: `function (p){return ${combinedParts};}`};
-  }
-
-  getPluralSelect() {
-    if (!this._hasPlurals) {
-      return '';
-    }
-    PluralCompiler.load(require('cldr-core/supplemental/plurals.json'));
-    const select = new PluralCompiler(this._getLanguage()).compile();
-    return `function _pluralSelect(n) {
-if (Intl.PluralRules) return new Intl.PluralRules('${this._locale}').select(n);
-return (${String(select)})(n);
-}
-`
+    return {paramTypes: paramAccumulator, formatter: combinedParts};
   }
 
   _processParts(ast, paramAccumulator, currentPluralNode) {
@@ -112,10 +99,6 @@ return (${String(select)})(n);
       `{${opts.join(',')}}[_pluralSelect(${num}${offset})]`;
     const exactMatch =
       exactPlurals.length > 0 ? `{${exactPlurals.join(',')}}[${num}]||` : '';
-
-    if (opts.length > 0) {
-      this._hasPlurals = true;
-    }
 
     // The generated code will look like the following:
     // {0: "message for zero"}[pluralNum]||

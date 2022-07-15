@@ -13,7 +13,7 @@ import Context from 'ojs/ojcontext';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { parseJSONFromFontFamily, getCachedCSSVarValues } from 'ojs/ojthemeutils';
 import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { enableAllFocusableElements, isMobileTouchDevice, isElementInScrollerBounds, disableAllFocusableElements, isElementOrAncestorFocusable, isEventClickthroughDisabled, handleActionablePrevTab, handleActionableTab, getFocusableElementsInNode, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
+import { enableAllFocusableElements, isMobileTouchDevice, isElementIntersectingScrollerBounds, disableAllFocusableElements, isElementOrAncestorFocusable, isEventClickthroughDisabled, handleActionablePrevTab, handleActionableTab, getFocusableElementsInNode, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
 import { fadeIn, startAnimation } from 'ojs/ojanimation';
 import { info, error, warn } from 'ojs/ojlogger';
 import { KeySet, KeySetImpl, KeySetUtils } from 'ojs/ojkeyset';
@@ -42,8 +42,8 @@ var __oj_list_view_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -448,7 +448,6 @@ StaticContentHandler.prototype.Expand = function (item, successCallback) {
   successCallback.call(null, groupItem);
 };
 
-// eslint-disable-next-line no-unused-vars
 StaticContentHandler.prototype.Collapse = function (item) {
   var groupItem = item.get(0);
   groupItem.style.display = 'none';
@@ -598,8 +597,7 @@ StaticContentHandler.prototype.modifyContent = function (elem, depth) {
 
           // add the expand icon
           var icon = document.createElement('a');
-          $(icon).attr('href', '#')
-            .attr('role', 'button')
+          $(icon).attr('role', 'button')
             .attr('aria-labelledby', content.get(0).id)
             .addClass('oj-component-icon oj-clickable-icon-nocontext')
             .addClass(collapseClass);
@@ -1068,10 +1066,17 @@ TreeDataProviderContentHandler.prototype._handleFetchSuccess =
     }
 
     var data = dataObj.value.data;
-    var keys = dataObj.value.metadata.map(function (value) {
+    var metadata = dataObj.value.metadata;
+    var suggestions = 0;
+    // we only handle suggestions in the root during initial fetch, and non-card view
+    if (!this.isCardLayout() && parent == null) {
+      suggestions = this.handleSuggestions(metadata);
+    }
+
+    var keys = metadata.map(function (value) {
       return value.key;
     });
-    var metadata = dataObj.value.metadata;
+
     if (data.length === keys.length) {
       var index = 0;
       var fragment = document.createDocumentFragment();
@@ -1103,6 +1108,7 @@ TreeDataProviderContentHandler.prototype._handleFetchSuccess =
           this.animateShowContent(parentElem, fragment, true).then(function () {
             if (this.m_widget) {
               this.m_widget.signalTaskEnd();
+              this.renderSparkles(this.getItems(parentElem, suggestions));
             }
             postProcessing();
           }.bind(this));
@@ -1112,6 +1118,9 @@ TreeDataProviderContentHandler.prototype._handleFetchSuccess =
         this.animateShowContent(parentElem, fragment, true).then(function () {
           if (this.m_widget) {
             this.m_widget.signalTaskEnd();
+            if (suggestions) {
+              this.renderSparkles(this.getItems(parentElem, suggestions));
+            }
           }
           postProcessing();
         }.bind(this));
@@ -1229,8 +1238,7 @@ TreeDataProviderContentHandler.prototype.afterRenderItem =
         item.addClass('oj-collapsed');
 
         var icon = document.createElement('a');
-        $(icon).attr('aria-labelledby', content.get(0).id)
-          .addClass('oj-component-icon oj-clickable-icon-nocontext')
+        $(icon).addClass('oj-component-icon oj-clickable-icon-nocontext')
           .addClass(collapseClass);
 
         content.prepend(icon); // @HTMLUpdateOK
@@ -2239,6 +2247,7 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
     this.m_scroller = null;
     this.m_initialSelectionStateValidated = null;
     this.m_validatedSelectedKeyData = null;
+    this.m_selectionFrontier = null;
 
     this.ClearCache();
     this._clearFocusoutTimeout();
@@ -2293,7 +2302,9 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
     if (this.m_contentHandler != null && this.m_contentHandler.IsReady()) {
       // restore scroll position as needed since some browsers reset scroll position
       this.syncScrollPosition();
-
+      // clears the accessibility information in status when listviews goes from
+      // hidden to shown
+      this._clearAccInfoText();
       // call ContentHandler in case for example fetch is needed
       this.m_contentHandler.notifyShown();
     }
@@ -3237,6 +3248,14 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
   },
 
   /**
+   * Sets the accessible text info to an empty string
+   * @private
+   */
+   _clearAccInfoText: function () {
+      this.m_accInfo.text('');
+  },
+
+  /**
    * Update role status text to reflect that it is fetching data
    * @private
    */
@@ -3616,16 +3635,16 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
             next = prevElem;
           } else {
             next = nextElem;
-            if (next == null || !$(next).hasClass(this.getItemElementStyleClass())) {
+            if (next == null || (!next.classList.contains(this.getItemElementStyleClass()) && !next.classList.contains('oj-listview-temp-item'))) {
               next = prevElem;
-              if (next == null || !$(next).hasClass(this.getItemElementStyleClass())) {
+              if (next == null || !next.classList.contains(this.getItemElementStyleClass())) {
                 this.SetOption('currentItem', null);
               }
             }
           }
         }
 
-        if (next != null && $(next).hasClass(this.getItemElementStyleClass())) {
+        if (next != null && (next.classList.contains(this.getItemElementStyleClass()) || next.classList.contains('oj-listview-temp-item'))) {
           this.SetCurrentItem($(next), null, !restoreFocus);
           currentItemUpdated = true;
         }
@@ -3758,9 +3777,9 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
         noDataContentRoot.id = this._createSubId('empty');
         noDataContentRoot.classList.add('oj-listview-no-data-container');
         noDataContentRoot.classList.add('oj-listview-no-data-item');
-
         var noDataContent = document.createElement('div');
         noDataContent.setAttribute('role', 'gridcell');
+        noDataContent.setAttribute('tabIndex', '0');
         noDataContent.classList.add('oj-listview-no-data-container');
         noDataContentRoot.appendChild(noDataContent);
 
@@ -3770,7 +3789,10 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
 
         var self = this;
         this.signalTaskStart('run no data template');
-        __getTemplateEngine().then(function (engine) {
+        const templateOptions = {
+          customElement: this._GetCustomElement(),
+        };
+        __getTemplateEngine(templateOptions).then(function (engine) {
           var nodes = engine.execute(self.GetRootElement(), slot[0], {}, null);
           nodes.forEach(function (node) {
             noDataContent.appendChild(node); // @HTMLUpdateOK
@@ -4512,7 +4534,7 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
    * @private
    */
   _isInViewport: function (elem) {
-    return isElementInScrollerBounds(elem, this._getScroller());
+    return isElementIntersectingScrollerBounds(elem, this._getScroller());
   },
 
   /**
@@ -4604,25 +4626,14 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
       this.SetCurrentItem($(parent[0]), null);
     }
 
-    var launcher;
-
-    // When user right click on disabled item(non-focusable), this.m_active
-    // will not be updated to disabled item so explicitly setting the launcher from event.target.
-    if (event.button === 2) {
-      launcher = this.FindItem($(event.target));
-    } else if (this.m_active != null) {
-      launcher = this.m_active.elem;
-    }
-
-    // if not on any item, then launcher is the root element
-    if (launcher == null) {
-      launcher = this.element;
-    }
-
-    var openOptions = { launcher: launcher, initialFocus: 'menu' };
+    // for Tabbar/NavList, the custom element is the focusable element, so using
+    // this.element (<ul>) won't work, use this.ojContext.element instead
+    // which works for ListView as well as Tabbar/NavList
+    var openOptions = { launcher: this.ojContext.element, initialFocus: 'menu' };
 
     if (eventType === 'keyboard') {
-      openOptions.position = { my: 'start top', at: 'start bottom', of: launcher };
+      var posOf = this.m_active != null ? this.m_active.elem : this.element;
+      openOptions.position = { my: 'start top', at: 'start bottom', of: posOf };
     }
 
     if (this.ojContext._GetContextMenu() == null) {
@@ -4870,6 +4881,7 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
       // focus will be moved to root node
       if (!this.m_preActive && event.target === this.ojContext.element[0]
         && !this._isFocusBlurTriggeredByDescendent(event)) {
+        this._makeFocusable(this.m_active.elem);
         this.HighlightActive();
         this._focusItem(this.m_active.elem);
       }
@@ -5341,12 +5353,14 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
 
         // don't apply ripple effect on the item when target is one of these controls
         var target = event.target;
-        var nodes = elem.querySelectorAll(
-          "input, select, button, a, textarea, object, [tabIndex]:not([tabIndex='-1']), [data-oj-tabmod]");
-        for (var i = 0; i < nodes.length; i++) {
-          if (nodes[i].contains(target)) {
-            elem = null;
-            break;
+        if (elem) {
+          var nodes = elem.querySelectorAll(
+            "input, select, button, a, textarea, object, [tabIndex]:not([tabIndex='-1']), [data-oj-tabmod]");
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i].contains(target)) {
+              elem = null;
+              break;
+            }
           }
         }
 
@@ -5485,10 +5499,9 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
         // triger action event
         if (!clickthroughDisabled) {
           this._fireActionEvent(item.get(0), event);
+          // clicking on header will expand/collapse item
+          this._handleHeaderClick(event, target, item);
         }
-
-        // clicking on header will expand/collapse item
-        this._handleHeaderClick(event, target, item);
       }
     }
   },
@@ -6467,6 +6480,7 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
           this._makeFocusable(item);
           // make sure ul is not tabbable
           this.RemoveRootElementTabIndex();
+          this._focusItem(item);
         }
       }
     } else {
@@ -7201,7 +7215,8 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
 
     if (this._isActionableMode()) {
       // Esc key goes to navigation mode
-      if (key === 'Escape' || key === 'Esc' || key === this.ESC_KEY) {
+      // F2 key can also be used to exit actionable mode if already in actionable mode
+      if (key === 'Escape' || key === 'Esc' || key === this.ESC_KEY || key === 'F2' || key === this.F2_KEY) {
         this._exitActionableMode();
 
         // force focus back on the active cell
@@ -7247,8 +7262,8 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
         }
         current.removeClass('oj-focus-highlight');
       }
-    } else if ((key === ' ' || key === 'Spacebar' || key === this.SPACE_KEY)
-      && this._isSelectionEnabled() && !this._isInputElement(event.target)) {
+    } else if ((key === ' ' || key === 'Spacebar' || key === this.SPACE_KEY) &&
+      this._isSelectionEnabled() && !this._isInputElement(event.target)) {
       ctrlKey = this._ctrlEquivalent(event);
       shiftKey = event.shiftKey;
       if (shiftKey && !ctrlKey && this.m_selectionFrontier != null &&
@@ -8574,8 +8589,8 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
     };
     scrollElem[0].addEventListener('scroll', this._scrollListener);
 
-    // only do this for high-water mark scrolling, other cases we have (and should not care) no knowledge about the scroller
-    if (this.isLoadMoreOnScroll()) {
+    // only do this for high-water mark scrolling as other cases we have (and should not care) no knowledge about the scroller
+    if (this.isLoadMoreOnScroll() && this._getScroller() !== document.documentElement) {
       this._wheelListener = function (event) {
         // add originalEvent for downstream code expecting it
         if (!event.originalEvent) {
@@ -8904,7 +8919,7 @@ oj._registerLegacyNamespaceProp('_ojListView', _ojListView);
  * @ojcomponent oj.ojListView
  * @augments oj.baseComponent
  * @since 1.1.0
- *
+ * @ojimportmembers oj.ojSharedContextMenu
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "ItemMetadata", "Item"]}
  * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet"]}
  * @ojtsimport {module: "ojcommontypes", type: "AMD", importName: ["CommonTypes"]}
@@ -9115,11 +9130,12 @@ oj._registerLegacyNamespaceProp('_ojListView', _ojListView);
  * <p>To facilitate drag and drop including item reordering using only keyboard, application must ensure that either to expose the functionality using context menu, and/or
  * allow users to perform the functionality with the appropriate keystroke.  You can find examples of how this can be done in the cookbook demos.</p>
  *
- * <p>Developers must exercise caution when using item.focusable to disable navigation to certain items, since doing so will prevent user from interacting with these items,
- * as well as preventing the screen reader from reading the content of these items.  Applications must ensure there are alternative ways to access information of these items.</p>
- *
  * <p>Note that ListView uses the grid role and follows the <a href="https://www.w3.org/TR/wai-aria-practices/examples/grid/LayoutGrids.html">Layout Grid</a> design as outlined in the <a href="https://www.w3.org/TR/wai-aria-practices/#grid">grid design pattern</a></p>.
- *
+ * <p>Nesting collection components such as ListView, Table, TreeView, and ListView inside of ListView is not supported.</p>
+ * <h4>Custom Colours</h4>
+ * <p>Using colors, including background and text colors, is not accessible if it is the only way information is conveyed.
+ * Low vision users may not be able to see the different colors, and in high contrast mode the colors are removed.
+ * The Redwood approved way to show status is to use badge.</p>
  *
  * <h3 id="perf-section">
  *   Performance
@@ -9149,8 +9165,7 @@ oj._registerLegacyNamespaceProp('_ojListView', _ojListView);
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#animation-section"></a>
  * </h3>
  *
- * <p>Applications can customize animations triggered by actions in ListView by either listening for <code class="prettyprint">animateStart/animateEnd</code>
- *    events or overriding action specific style classes on the animated item.  See the documentation of <a href="AnimationUtils.html">AnimationUtils</a>
+ * <p>Applications can customize animations triggered by actions in ListView by overriding action specific style classes on the animated item.  See the documentation of <a href="AnimationUtils.html">AnimationUtils</a>
  *    class for details.</p>
  *
  * <p>The following are actions in which applications can use to customize animation effects.
@@ -9227,7 +9242,8 @@ oj._registerLegacyNamespaceProp('_ojListView', _ojListView);
  *       <td><p>Specify on any element inside an item where you want to control whether ListView should perform actions triggered by
  *           a click event originating from the element or one of its descendants.</p>
  *           <p>For example, if you specify this attribute with a value of "disabled" on a button inside an item, then ListView
- *           will not select or trigger itemAction event to be fired when user clicks on the button.</p>
+ *           will not select or trigger itemAction event to be fired when user clicks on the button. Expand/collapse will also
+ *           be ignored if the button is inside the group header.</p>
  *           <p>Note that the currentItem will still be updated to the item that the user clicked on.</p>
  *       </td>
  *       <td>
@@ -9240,6 +9256,15 @@ oj._registerLegacyNamespaceProp('_ojListView', _ojListView);
  *     </tr>
  *   </tbody>
  * </table>
+ *
+ * <h3 id="suggestion-items-section">
+ *   Suggestion Items
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#suggestion-items-section"></a>
+ * </h3>
+ *
+ * <p>If <a href="ItemMetadata.html">ItemMetadata</a> returned by the DataProvider contains suggestion field, ListView will apply special visual to those
+ *    items. The DataProvider must ensure the suggestion items are the first items returned by the initial fetchFirst call. Suggestion items are only supported
+ *    when display is 'item'.  Applications should not allow users to reorder suggestion items.</p>
  */
 // --------------------------------------------------- oj.ojListView Styling Start -----------------------------------------------------------
 // ---------------- oj-clickthrough-disabled --------------
@@ -9488,7 +9513,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * @instance
      * @type {Object}
      * @default null
-     * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+     * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
      *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
      *
      * @example <caption>Initialize the ListView with the <code class="prettyprint">data</code> attribute specified:</caption>
@@ -9792,7 +9817,8 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
        * @ojsignature { target: "Type",
        *                value: "?((param0: oj.ojListView.ItemContext<K,D>) => boolean)|boolean",
        *                jsdocOverride: true}
-       * @default true
+       *  @ojdeprecated {since: '13.0.0', description: 'Not accessible by screen reader.'}
+       *  @default true
        *
        * @example <caption>Initialize the ListView with the <code class="prettyprint">focusable</code> attribute specified:</caption>
        * &lt;oj-list-view item.focusable='{{myFocusableFunc}}'>&lt;/oj-list-view>
@@ -10181,6 +10207,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
     selectionRequired: false,
     /**
      * Triggered when the default animation of a particular action is about to start.  The default animation can be cancelled by calling event.preventDefault.
+     * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
      *
      * @ojshortdesc Triggered when the default animation of a particular action is about to start.
      * @expose
@@ -10194,6 +10221,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
     animateStart: null,
     /**
      * Triggered when the default animation of a particular action has ended. Note this event will not be triggered if application cancelled the default animation on animateStart.
+     * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
      *
      * @ojshortdesc Triggered when the default animation of a particular action has ended.
      * @expose
@@ -10439,6 +10467,9 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
     };
     this.listview._WrapCustomElementRenderer = function (renderer) {
       return self._WrapCustomElementRenderer(renderer);
+    };
+    this.listview._GetCustomElement = function () {
+      return self._GetCustomElement();
     };
 
     this.listview.afterCreate();
@@ -10816,6 +10847,8 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
    * @memberof oj.ojListView
    * @return {void}
    * @instance
+   * @ojdeprecated {value: "scrollToItem", since: "13.0.0",
+    description: "The scrollToItem method  is deprecated. Use scrollPosition instead."}
    */
   scrollToItem: function (item) {
     this.listview.scrollToItem(item);
@@ -11305,7 +11338,7 @@ setDefaultOptions({
   ojListView: {
     gridlines: createDynamicPropertyGetter(function () {
       const gridlinesObject = _ojListView._CSS_Vars.gridlines;
-      const defaults = {
+      var defaults = {
         gridlines: _ojListView.getComplexCSSVariable(gridlinesObject)
       };
       if (defaults == null) {

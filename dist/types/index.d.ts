@@ -8,18 +8,7 @@
 
 import './oj-requirejs-plugins';
 export namespace oj {
-    let checkVisibility: any;
-    let disableAllFocusableElements: any;
-    let disableElement: any;
-    let enableAllFocusableElements: any;
-    let fromCollapsible: any;
-    let getActionableElementsInNode: any;
-    let getFocusableElementsInNode: any;
-    let getLogicalChildPopup: any;
-    let isActionableElement: any;
-    let removeAriaReadonly: any;
     let revision: string;
-    let toCollapsible: any;
     let version: string;
 }
 export interface baseComponent<SP extends baseComponentSettableProperties = baseComponentSettableProperties> extends JetElement<SP> {

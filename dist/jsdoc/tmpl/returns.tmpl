@@ -1,0 +1,89 @@
+<?js
+var data = obj;
+if (data.description) {
+?>
+<div class="param-desc">
+    <?js= description ?>
+</div>
+<?js } ?>
+
+<?js 
+if (data.type && data.type.names) {
+  //[csaba]: in jsdoc 3.4 (and above) the names array will not contain any more the exact function signature 
+  //         (if a function was used in constructing the type), only the string "function".
+  //         in order not to loose any return type or arguments to the function we will look for the
+  //         parsedType attribute of the type Object. This will contain the whole expression used for type
+  //         as it was defined by comp. developer in the jsdoc comment section.
+  var typeHandled = false;
+  if (data.tstype){
+    //[csaba]: this is the use-case where ojsignature was used with a jsdocOverride property set to true
+    //         in this case the original type will be replaced with the ojsignature type
+    if (data.tstype.target.toLowerCase() === 'type'){                  
+      typeHandled = true;      
+      var ojsigntype = [data.tstype.value]; ?>      
+      <dl>
+        <dt>
+          Type
+        </dt>
+        <dd>
+          <?js= this.partial('type.tmpl', ojsigntype) ?>
+        </dd>   
+      </dl>              
+      <?js 
+    }
+  }
+  else 
+  if (data.type.parsedType){
+    if (data.type.parsedType.typeExpression){                  
+      if (data.type.parsedType.typeExpression.indexOf('function') >= 0 ||
+         (data.type.parsedType.typeExpression.indexOf('{') >=0 && data.type.parsedType.typeExpression.indexOf('}') >0)){
+            typeHandled = true;
+            var _expression = data.type.parsedType.typeExpression; 
+            // remove the 'optional' operator if exists
+            if (_expression.endsWith('=')){
+              _expression = _expression.substr(0, _expression.length - 1);
+            }
+            // remove any not-null operator
+            if (_expression.startsWith('!')){
+              _expression = _expression.substr(1);
+            }
+            // remove the parenthesis of they exists
+            if (_expression.charCodeAt(0) == 40 && _expression.charCodeAt(_expression.length - 1) == 41){
+              _expression = _expression.substr(1, _expression.length - 2);
+            }                    
+            var _data = [_expression]; ?>            
+            <dl>
+              <dt>
+                Type
+              </dt>
+              <dd>
+                <?js= this.partial('type.tmpl', _data) ?>
+              </dd>   
+            </dl>              
+  <?js 
+      }
+    }
+  }
+  if (!typeHandled) {?>                
+    <dl>
+      <dt>
+        Type
+      </dt>
+      <dd>
+        <?js= this.partial('type.tmpl', data.type.names) ?>
+      </dd>
+    </dl>
+<?js 
+  }
+  //[csaba] a function return type is deprecated
+  if (data.tsdeprecated && Array.isArray(data.tsdeprecated)){ ?>  
+  <span class="dep-type jsdoc-type">
+  <dl class="deprecated2 deprecated-hidden-only">
+    <dt class="important">Deprecated Return Types:</dt>
+    <dd><?js= this.partial('deprecated.tmpl', data.tsdeprecated) ?></dd>      
+  </dl>
+  </span>
+  <?js 
+  } 
+}
+?> 

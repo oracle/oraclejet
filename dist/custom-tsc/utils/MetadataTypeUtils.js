@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -19,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEnumStringsFromUnion = exports.isClassDeclaration = exports.possibleComplexProperty = exports.getAllMetadataForDeclaration = exports.getSubstituteTypeForCircularReference = exports.getComplexPropertyMetadata = exports.getPropertyTypes = exports.getPropertyType = exports.isGenericTypeParameter = exports.isTypeLiteralType = exports.getTypeDeclaration = exports.getNodeDeclaration = exports.getTypeNameFromIntersectionTypes = exports.getTypeNameFromType = exports.getTypeNameFromTypeReference = exports.getSignatureFromType = exports.getIndexedAccessTypeNodeSignature = exports.getTypeReferenceNodeSignature = exports.getUnionTypeNodeSignature = exports.getGenericsAndTypeParametersFromType = exports.getGenericsAndTypeParameters = void 0;
+exports.isLocalExport = exports.getPossibleTypeDef = exports.getEnumStringsFromUnion = exports.isClassDeclaration = exports.possibleComplexProperty = exports.getAllMetadataForDeclaration = exports.getSubstituteTypeForCircularReference = exports.getComplexPropertyMetadata = exports.getPropertyTypes = exports.getPropertyType = exports.isGenericTypeParameter = exports.isTypeLiteralType = exports.getTypeDeclaration = exports.getNodeDeclaration = exports.getTypeNameFromIntersectionTypes = exports.getTypeNameFromType = exports.getTypeNameFromTypeReference = exports.getSignatureFromType = exports.getIndexedAccessTypeNodeSignature = exports.getTypeReferenceNodeSignature = exports.getUnionTypeNodeSignature = exports.getLiteralTypeNodeSignature = exports.getGenericsAndTypeParametersFromType = exports.getGenericsAndTypeParameters = void 0;
 const ts = __importStar(require("typescript"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
@@ -107,9 +111,37 @@ function getGenericsAndTypeParametersFromType(typeObj, metaUtilObj) {
     return retVal;
 }
 exports.getGenericsAndTypeParametersFromType = getGenericsAndTypeParametersFromType;
+function getLiteralTypeNodeSignature(literalNode) {
+    let typeObj = { type: 'any' };
+    const literalToken = literalNode.literal;
+    if (ts.isStringLiteral(literalToken) || ts.isNoSubstitutionTemplateLiteral(literalToken)) {
+        typeObj['type'] = 'string';
+        typeObj['reftype'] = 'string';
+        typeObj['enumValues'] = [literalToken.text];
+    }
+    else if (ts.isNumericLiteral(literalToken)) {
+        typeObj['type'] = 'number';
+        typeObj['reftype'] = 'number';
+    }
+    else if (ts.isBigIntLiteral(literalToken)) {
+        typeObj['type'] = 'bigint';
+        typeObj['reftype'] = 'bigint';
+    }
+    else if (literalToken.kind === ts.SyntaxKind.NullKeyword) {
+        typeObj['type'] = 'null';
+        typeObj['reftype'] = 'null';
+    }
+    else if (literalToken.kind === ts.SyntaxKind.TrueKeyword ||
+        literalToken.kind === ts.SyntaxKind.FalseKeyword) {
+        typeObj['type'] = 'boolean';
+        typeObj['reftype'] = 'boolean';
+    }
+    return typeObj;
+}
+exports.getLiteralTypeNodeSignature = getLiteralTypeNodeSignature;
 function getUnionTypeNodeSignature(unionNode, metaUtilObj) {
     let typeObj = { type: 'string' };
-    let stringTypeExplicit = false;
+    let isStringTypeExplicit = false;
     const unionNodeSymbol = metaUtilObj.typeChecker.getTypeAtLocation(unionNode);
     const strType = metaUtilObj.typeChecker.typeToString(unionNodeSymbol);
     if (strType === 'any') {
@@ -130,9 +162,10 @@ function getUnionTypeNodeSignature(unionNode, metaUtilObj) {
             let kind = typeNode.kind;
             switch (kind) {
                 case ts.SyntaxKind.StringKeyword:
+                case ts.SyntaxKind.TemplateLiteralType:
                     regTypes.add('string');
                     reftypes.add('string');
-                    stringTypeExplicit = true;
+                    isStringTypeExplicit = true;
                     break;
                 case ts.SyntaxKind.NumberKeyword:
                     regTypes.add('number');
@@ -149,6 +182,8 @@ function getUnionTypeNodeSignature(unionNode, metaUtilObj) {
                 case ts.SyntaxKind.NullKeyword:
                     regTypes.add('null');
                     reftypes.add('null');
+                    break;
+                case ts.SyntaxKind.UndefinedKeyword:
                     break;
                 case ts.SyntaxKind.ObjectKeyword:
                     regTypes.add('object');
@@ -170,6 +205,9 @@ function getUnionTypeNodeSignature(unionNode, metaUtilObj) {
                     if (refTypes.enumValues) {
                         refTypes.enumValues.forEach((val) => allEnums.add(val));
                     }
+                    else if (refTypes.isStringTypeExplicit) {
+                        isStringTypeExplicit = true;
+                    }
                     regTypes.add(refTypes.type);
                     reftypes.add(refTypes['reftype']);
                     break;
@@ -186,24 +224,12 @@ function getUnionTypeNodeSignature(unionNode, metaUtilObj) {
                     reftypes.add(typeLiteral.getText());
                     break;
                 case ts.SyntaxKind.LiteralType:
-                    const literal = typeNode.literal;
-                    if (ts.isStringLiteral(literal)) {
-                        allEnums.add(literal.text);
-                        regTypes.add('string');
-                        reftypes.add('string');
+                    const literalTypes = getLiteralTypeNodeSignature(typeNode);
+                    if (literalTypes.enumValues) {
+                        literalTypes.enumValues.forEach((val) => allEnums.add(val));
                     }
-                    else if (ts.isNumericLiteral(literal)) {
-                        regTypes.add('number');
-                        reftypes.add('number');
-                    }
-                    else if (ts.isBigIntLiteral(literal)) {
-                        regTypes.add('bigint');
-                        reftypes.add('bigint');
-                    }
-                    else if ((literal === null || literal === void 0 ? void 0 : literal.kind) === ts.SyntaxKind.NullKeyword) {
-                        regTypes.add('null');
-                        reftypes.add('null');
-                    }
+                    regTypes.add(literalTypes.type);
+                    reftypes.add(literalTypes['reftype']);
                     break;
                 case ts.SyntaxKind.TypeOperator: {
                     let regTypeVal = 'any';
@@ -252,7 +278,7 @@ function getUnionTypeNodeSignature(unionNode, metaUtilObj) {
             enumValues.push(val);
         }
         typeObj['reftype'] = enumValues.join('|');
-        if (allEnums.size > 0 && !stringTypeExplicit) {
+        if (allEnums.size > 0 && !isStringTypeExplicit) {
             iter = allEnums.values();
             enumValues = [];
             for (let val of iter) {
@@ -269,6 +295,9 @@ function getTypeReferenceNodeSignature(node, isPropSignature, metaUtilObj) {
     const typeRefNode = node;
     let refNodeTypeName = typeRefNode.typeName.getText();
     const typeObject = metaUtilObj.typeChecker.getTypeAtLocation(typeRefNode);
+    if (isLiteralTypeObject(typeObject)) {
+        return getSignatureFromType(typeObject, isPropSignature, metaUtilObj);
+    }
     const strType = metaUtilObj.typeChecker.typeToString(typeObject);
     if (MetaUtils.isMappedType(typeObject)) {
         refNodeTypeName = strType;
@@ -290,10 +319,16 @@ function getTypeReferenceNodeSignature(node, isPropSignature, metaUtilObj) {
     else if (typeObject.aliasSymbol) {
         symbol = typeObject.aliasSymbol;
         declaration = (_b = symbol.declarations) === null || _b === void 0 ? void 0 : _b[0];
-        declaration = declaration.type;
-        kind = declaration.kind;
+        if (declaration) {
+            declaration = declaration.type;
+            kind = declaration.kind;
+        }
     }
     if (!symbol) {
+        return typeObj;
+    }
+    else if (!declaration) {
+        typeObj['type'] = 'any';
         return typeObj;
     }
     switch (kind) {
@@ -340,6 +375,9 @@ function getTypeReferenceNodeSignature(node, isPropSignature, metaUtilObj) {
                             }
                         }
                         return typeObj;
+                    }
+                    else if (ts.isTypeLiteralNode(typearg)) {
+                        typevars = 'object';
                     }
                     else {
                         typevars = typearg.getText();
@@ -456,6 +494,21 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
         else if (type.isStringLiteral()) {
             typeObj = { type: 'string', reftype: 'string', enumValues: [type.value] };
         }
+        else if (type.isNumberLiteral()) {
+            typeObj = { type: 'number', reftype: 'number' };
+        }
+        else if (type.flags & ts.TypeFlags.BigIntLiteral) {
+            typeObj = { type: 'bigint', reftype: 'bigint' };
+        }
+        else if (type.flags & ts.TypeFlags.BooleanLiteral) {
+            typeObj = { type: 'boolean', reftype: 'boolean' };
+        }
+        else if (type.flags & ts.TypeFlags.Null) {
+            typeObj = { type: 'null', reftype: 'null' };
+        }
+        else if (type.flags & ts.TypeFlags.TemplateLiteral) {
+            typeObj = { type: 'string', reftype: 'string', isStringTypeExplicit: true };
+        }
         else if (type.isTypeParameter() || MetaUtils.isAnyOrUnknownType(type)) {
             typeObj = { type: 'any' };
         }
@@ -485,7 +538,7 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
                 typeObj = { type: 'number', reftype: 'Number' };
             }
             else if (typeObj.type === 'String') {
-                typeObj = { type: 'string', reftype: 'String' };
+                typeObj = { type: 'string', reftype: 'String', isStringTypeExplicit: true };
             }
             else if (typeObj.type === 'Boolean') {
                 typeObj = { type: 'boolean', reftype: 'Boolean' };
@@ -577,7 +630,7 @@ function getSignatureFromUnionTypes(unionTypes, metaUtilObj) {
     let reftypes = new Set();
     let enumvalues = new Set();
     let values;
-    let stringTypeExplicit = false;
+    let isStringTypeExplicit = false;
     unionTypes.forEach((type) => {
         if (MetaUtils.isConditionalType(type)) {
             type = metaUtilObj.typeChecker.getApparentType(type);
@@ -604,10 +657,10 @@ function getSignatureFromUnionTypes(unionTypes, metaUtilObj) {
             reftypes.add('string');
             enumvalues.add(type.value);
         }
-        else if (tFlags & ts.TypeFlags.String) {
+        else if (tFlags & (ts.TypeFlags.String | ts.TypeFlags.TemplateLiteral)) {
             types.add('string');
             reftypes.add('string');
-            stringTypeExplicit = true;
+            isStringTypeExplicit = true;
         }
         else if (tFlags & ts.TypeFlags.Null) {
             types.add('null');
@@ -644,7 +697,7 @@ function getSignatureFromUnionTypes(unionTypes, metaUtilObj) {
     values = [...reftypes];
     typeObj.reftype = values.join('|');
     if (enumvalues.size > 0) {
-        if (!stringTypeExplicit) {
+        if (!isStringTypeExplicit) {
             typeObj.enumValues = [...enumvalues];
         }
     }
@@ -701,10 +754,10 @@ function getNodeDeclaration(node, checker) {
 }
 exports.getNodeDeclaration = getNodeDeclaration;
 function getTypeDeclaration(type) {
-    var _a, _b;
+    var _a, _b, _c;
     let declaration = type.aliasSymbol
-        ? type.aliasSymbol.declarations[0]
-        : (_b = (_a = type.symbol) === null || _a === void 0 ? void 0 : _a.declarations) === null || _b === void 0 ? void 0 : _b[0];
+        ? (_a = type.aliasSymbol.declarations) === null || _a === void 0 ? void 0 : _a[0]
+        : (_c = (_b = type.symbol) === null || _b === void 0 ? void 0 : _b.declarations) === null || _c === void 0 ? void 0 : _c[0];
     return declaration;
 }
 exports.getTypeDeclaration = getTypeDeclaration;
@@ -836,6 +889,12 @@ function getAllMetadataForDeclaration(declarationWithType, scope, metaUtilObj, f
             case ts.SyntaxKind.ArrayType:
                 typeObj = getArrayTypeNodeSignature(declTypeNode, metaUtilObj);
                 break;
+            case ts.SyntaxKind.LiteralType:
+                typeObj = getLiteralTypeNodeSignature(declTypeNode);
+                break;
+            case ts.SyntaxKind.TemplateLiteralType:
+                typeObj = { type: 'string' };
+                break;
             case ts.SyntaxKind.TypeLiteral:
             case ts.SyntaxKind.IntersectionType:
                 typeObj = { type: 'object' };
@@ -859,6 +918,7 @@ function getAllMetadataForDeclaration(declarationWithType, scope, metaUtilObj, f
     if (scope == MetaTypes.MetadataScope.RT) {
         delete typeObj.reftype;
         delete typeObj.optional;
+        delete typeObj.isStringTypeExplicit;
     }
     return Object.assign({}, metadata, typeObj);
 }
@@ -1088,6 +1148,13 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, stack, metaUt
                     metadata[prop].type = 'object';
                     metadata[prop].properties = returnObj.metadata;
                 }
+                if (scope == MetaTypes.MetadataScope.DT) {
+                    const typeDefName = getPossibleTypeDef(prop, symbol, metaObj, metaUtilObj);
+                    if (typeDefName) {
+                        metadata[prop]['jsdoc'] = metadata[prop]['jsdoc'] || {};
+                        metadata[prop]['jsdoc']['typedef'] = typeDefName;
+                    }
+                }
             }
         }
         delete metadata[prop]['isArrayOfObject'];
@@ -1181,6 +1248,14 @@ function isDomType(symbolType) {
                 sourceFile.fileName.indexOf('typescript/lib/lib.dom.d.ts') > -1;
     }
     return isDomType;
+}
+function isLiteralTypeObject(type) {
+    return (type.isLiteral() ||
+        !!(type.flags &
+            (ts.TypeFlags.BigIntLiteral |
+                ts.TypeFlags.BooleanLiteral |
+                ts.TypeFlags.Null |
+                ts.TypeFlags.TemplateLiteral)));
 }
 function getTypeRefNodeForPropDeclaration(declaration, metaUtilObj) {
     var _a, _b;
@@ -1277,4 +1352,64 @@ function getSymbolTypeFromIndexedAccessTypeNode(indexedAccessNode, metaUtilObj) 
     }
     return rtnType;
 }
+function getPossibleTypeDef(prop, memberSymbol, metaObj, metaUtilObj) {
+    var _a, _b, _c, _d;
+    let typeName;
+    if (metaObj.reftype) {
+        try {
+            let symbolType = metaUtilObj.typeChecker
+                .getTypeOfSymbolAtLocation(memberSymbol, memberSymbol.valueDeclaration)
+                .getNonNullableType();
+            if (!(symbolType.isIntersection() || MetaUtils.isMappedType(symbolType))) {
+                const kind = memberSymbol.valueDeclaration.kind;
+                const declaration = memberSymbol.valueDeclaration;
+                if (kind == ts.SyntaxKind.PropertyDeclaration || kind == ts.SyntaxKind.PropertySignature) {
+                    const typeRefNode = getTypeRefNodeForPropDeclaration(declaration, metaUtilObj);
+                    if (typeRefNode && ts.isTypeReferenceNode(typeRefNode)) {
+                        symbolType = metaUtilObj.typeChecker.getTypeAtLocation(typeRefNode);
+                        if (!!(symbolType['flags'] & ts.SymbolFlags.TypeAlias)) {
+                            const type = getTypeNameFromTypeReference(typeRefNode);
+                            const typeAliasDeclaration = ((_b = (_a = symbolType.aliasSymbol) === null || _a === void 0 ? void 0 : _a.declarations) === null || _b === void 0 ? void 0 : _b[0]) || ((_d = (_c = symbolType.symbol) === null || _c === void 0 ? void 0 : _c.declarations) === null || _d === void 0 ? void 0 : _d[0]);
+                            if (typeAliasDeclaration.kind == ts.SyntaxKind.TypeAliasDeclaration) {
+                                const exportedSymbol = metaUtilObj.typeChecker.getExportSymbolOfSymbol(symbolType.aliasSymbol ? symbolType.aliasSymbol : symbolType.symbol);
+                                if (exportedSymbol) {
+                                    if (typeAliasDeclaration.parent &&
+                                        ts.isSourceFile(typeAliasDeclaration === null || typeAliasDeclaration === void 0 ? void 0 : typeAliasDeclaration.parent)) {
+                                        const sourceFile = typeAliasDeclaration.parent;
+                                        const isLocalExport = sourceFile.fileName.indexOf(metaUtilObj.fullMetadata['jsdoc'].meta.filename) >
+                                            -1;
+                                        if (isLocalExport) {
+                                            typeName = type;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (ex) {
+            console.log(`Unexpected error happened during typdef lookup for ${prop}`);
+        }
+    }
+    return typeName;
+}
+exports.getPossibleTypeDef = getPossibleTypeDef;
+function isLocalExport(typeRefNode, metaUtilObj) {
+    var _a, _b, _c, _d;
+    let isLocalExport = false;
+    const symbolType = metaUtilObj.typeChecker.getTypeAtLocation(typeRefNode);
+    const typeAliasDeclaration = ((_b = (_a = symbolType.aliasSymbol) === null || _a === void 0 ? void 0 : _a.declarations) === null || _b === void 0 ? void 0 : _b[0]) || ((_d = (_c = symbolType.symbol) === null || _c === void 0 ? void 0 : _c.declarations) === null || _d === void 0 ? void 0 : _d[0]);
+    const exportedSymbol = metaUtilObj.typeChecker.getExportSymbolOfSymbol(symbolType.aliasSymbol ? symbolType.aliasSymbol : symbolType.symbol);
+    if (exportedSymbol) {
+        if (typeAliasDeclaration.parent && ts.isSourceFile(typeAliasDeclaration === null || typeAliasDeclaration === void 0 ? void 0 : typeAliasDeclaration.parent)) {
+            const sourceFile = typeAliasDeclaration.parent;
+            isLocalExport =
+                sourceFile.fileName.indexOf(metaUtilObj.fullMetadata['jsdoc'].meta.filename) > -1;
+        }
+    }
+    return isLocalExport;
+}
+exports.isLocalExport = isLocalExport;
 //# sourceMappingURL=MetadataTypeUtils.js.map

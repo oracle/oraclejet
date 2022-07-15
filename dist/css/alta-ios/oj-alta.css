@@ -270,7 +270,7 @@ template {
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"alta","targetPlatform":"ios","behavior":"alta","jetReleaseVersion":"v12.1.0"}'; }
+  font-family: '{"name":"alta","targetPlatform":"ios","behavior":"alta","jetReleaseVersion":"v13.0.0"}'; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -9000,6 +9000,10 @@ oj-table:not(.oj-complete) {
   font-size: inherit;
   min-width: 240px;
   min-height: 5.375rem;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
 
 /* Grid display styling for the root component element. */
@@ -9066,6 +9070,7 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* Styling for the header element. */
 .oj-table-header {
+  height: 2.75em;
   color: rgba(0, 0, 0, 0.85);
   border-bottom: 1px solid #e5e6e6;
   font-size: inherit;
@@ -9074,12 +9079,18 @@ table.oj-table-element.oj-table-column-header-resizing {
 /* Styling for the header element when table has vertical or horizontal scrollbars. */
 .oj-table-legacy-scroll .oj-table-header {
   display: block;
-  position: relative; }
+  position: relative;
+  height: calc(2.75em - 1px); }
 
 /* Grid display styling for the header element. */
 .oj-table-grid-display .oj-table-header {
+  height: 2.6875rem;
   background-color: white;
   border-bottom: 1px solid #e5e6e6; }
+
+/* Styling for the header element when table has vertical or horizontal scrollbars. */
+.oj-table-grid-display .oj-table-legacy-scroll .oj-table-header {
+  height: calc(2.6875rem - 1px); }
 
 .oj-table-sticky .oj-table-header,
 .oj-table-grid-display .oj-table-sticky .oj-table-header {
@@ -9087,24 +9098,24 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* Styling for the header row element. */
 .oj-table-header-row {
-  height: 2.75em;
+  height: calc(2.75em - 1px);
   font-size: inherit;
   vertical-align: middle; }
 
 /* Grid display table styling for the header row element. */
 .oj-table-grid-display .oj-table-header-row {
-  height: 2.6875rem; }
+  height: calc(2.6875rem - 1px); }
 
 /* Styling for the header row element when table is scrollable. */
 .oj-table-legacy-scroll .oj-table-header-row {
-  min-height: 2.75em;
+  min-height: calc(2.75em - 1px);
   height: auto;
   display: block;
   position: relative; }
 
 /* Grid display table styling for the header row element when table is scrollable. */
 .oj-table-legacy-scroll.oj-table-grid-display .oj-table-header-row {
-  min-height: 2.6875rem; }
+  min-height: calc(2.6875rem - 1px); }
 
 /* Styling for the column header elements. */
 .oj-table-column-header-cell {
@@ -9114,7 +9125,7 @@ table.oj-table-element.oj-table-column-header-resizing {
   padding-right: 1em;
   padding-top: 0.625rem;
   padding-bottom: 0.625rem;
-  height: 2.75em;
+  height: calc(2.75em - 1px);
   float: none;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -9134,7 +9145,7 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* Grid display table styling for the column header elements. */
 .oj-table-grid-display .oj-table-column-header-cell {
-  height: 2.6875rem;
+  height: calc(2.6875rem - 1px);
   padding-left: 0.625rem;
   padding-right: 0.625rem; }
 
@@ -9941,8 +9952,8 @@ html[dir="rtl"] .oj-treeview-list.oj-treeview-drag-image > .oj-treeview-item {
 .oj-treeview-item-content {
   width: 100%;
   display: inline-block;
-  vertical-align: middle;
   box-sizing: border-box;
+  vertical-align: middle;
   padding-inline-start: 0.5rem;
   padding-inline-end: 0.5rem; }
 
@@ -11251,7 +11262,8 @@ oj-list-item-layout {
 
 .oj-listitemlayout-leading {
   grid-area: leading;
-  align-self: center; }
+  align-self: center;
+  display: flex; }
 
 .oj-listitemlayout-textslots {
   grid-area: textslots;
@@ -12164,6 +12176,15 @@ oj-choice-row .oj-radio-label,
 .oj-choice-row,
 .oj-choice-row-inline {
   position: relative; }
+
+.oj-choice-item {
+  /**
+       * In Chrome 103 - the relative/absolute positioning inside a multi-col layout is broken
+       * https://bugs.chromium.org/p/chromium/issues/detail?id=1338997
+       * This is to workaround this bug and make things render correctly for chromium browsers.
+       * This bug will be fixed in 104 and later.
+       */
+  overflow: hidden; }
 
 .oj-choice-item::before,
 .oj-choice-row::before,
@@ -17281,7 +17302,14 @@ oj-switch:not(.oj-complete) {
 .oj-switch .oj-switch-container {
   position: relative;
   height: 1.9375rem;
-  width: 3.12519rem; }
+  width: 3.12519rem;
+  /**
+     * In Chrome 103 - the relative/absolute positioning inside a multi-col layout is broken
+     * https://bugs.chromium.org/p/chromium/issues/detail?id=1338997
+     * This is to workaround this bug and make things render correctly for chromium browsers.
+     * This bug will be fixed in 104 and later.
+     */
+  overflow: hidden; }
 
 .oj-switch .oj-switch-thumb {
   box-sizing: content-box; }

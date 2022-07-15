@@ -1,0 +1,9 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+
+@include module-include-once("common.variables.popup.ignored.scoped") {
+  .oj-popup {
+    --oj-current-bg-color:            var(--oj-popup-bg-color);
+  }
+}

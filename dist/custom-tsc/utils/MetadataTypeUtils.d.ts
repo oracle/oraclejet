@@ -3,6 +3,7 @@ import * as MetaTypes from './MetadataTypes';
 import * as Metadata from 'ojs/ojmetadata';
 export declare function getGenericsAndTypeParameters(node: MetaTypes.HasTypeParameters, isPropsClass?: boolean): MetaTypes.GenericsTypes | undefined;
 export declare function getGenericsAndTypeParametersFromType(typeObj: ts.Type, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.GenericsTypes | undefined;
+export declare function getLiteralTypeNodeSignature(literalNode: ts.LiteralTypeNode): MetaTypes.ALL_TYPES;
 export declare function getUnionTypeNodeSignature(unionNode: ts.UnionTypeNode, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ALL_TYPES;
 export declare function getTypeReferenceNodeSignature(node: ts.TypeNode, isPropSignature: boolean, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ALL_TYPES;
 export declare function getIndexedAccessTypeNodeSignature(indexedAccessNode: ts.IndexedAccessTypeNode, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ALL_TYPES;
@@ -22,3 +23,5 @@ export declare function getAllMetadataForDeclaration(declarationWithType: ts.Has
 export declare function possibleComplexProperty(symbolType: ts.Type, type: string, scope: MetaTypes.MetadataScope): boolean;
 export declare function isClassDeclaration(symbolType: ts.Type): boolean;
 export declare function getEnumStringsFromUnion(union: ts.UnionTypeNode): string[] | null;
+export declare function getPossibleTypeDef(prop: string, memberSymbol: ts.Symbol, metaObj: MetaTypes.ExtendedPropertiesMetadata | MetaTypes.ExtendedEventDetailsMetadata | MetaTypes.ExtendedSlotDataMetadata, metaUtilObj: MetaTypes.MetaUtilObj): string;
+export declare function isLocalExport(typeRefNode: ts.TypeNode, metaUtilObj: MetaTypes.MetaUtilObj): boolean;

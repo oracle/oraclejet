@@ -1296,20 +1296,6 @@ FlattenedTreeDataSource.prototype._handleFetchDescendantsSuccess =
       }
 
       if (callbacks != null && callbacks.success != null) {
-        /*
-        if (options != null) {
-          if (options.count === 0) {
-            // nothing is used from node set, just return a empty node set
-            _nodeSet = new EmptyNodeSet(null, range.start);
-          } else {
-            // wraps node set with a filter that only returns nodes that
-            // have not been fetched already
-            _nodeSet = new FlattenedNodeSet(_nodeSet, actualStart);
-          }
-        } else {
-          _nodeSet = new FlattenedNodeSet(_nodeSet);
-        }
-        */
        if (options.count === 0) {
           // nothing is used from node set, just return a empty node set
           _nodeSet = new EmptyNodeSet(null, range.start);
@@ -2730,7 +2716,8 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
       this.component.element[0].removeEventListener('keydown', this.handleKeyDownCallback, true);
       this.toucharea.removeEventListener('touchend', this.handleTouchEndCallback);
       this.toucharea.removeEventListener('click', this.handleClickCallback);
-      this.element[0].removeEventListener('keypress', this.handleKeyPressCallback);
+      this.element[0].removeEventListener('keydown', this.handleKeyPressCallback);
+
 
       if (this.component._IsCustomElement()) {
         $(this.component.element).off('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
@@ -2786,7 +2773,7 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
         this.toucharea.addEventListener('click', this.handleClickCallback);
 
         this.handleKeyPressCallback = this._keyPressListener.bind(this);
-        this.element[0].addEventListener('keypress', this.handleKeyPressCallback);
+        this.element[0].addEventListener('keydown', this.handleKeyPressCallback);
 
         // listens for expand and collapse event from flattened datasource
         // this could be due to user clicks, keyboard shortcuts or programmatically
@@ -3182,7 +3169,6 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
         // if the event is triggered by initial setting of expanded, we should not
         // fire expand or option change event
         var expanded = this.options.expanded;
-        // if (expanded == null || (expanded != null && !expanded)) {
         if (expanded == null || !expanded) {
           this._trigger('expand', null, { rowKey: rowKey });
           this._updateExpandedState(true);
@@ -3207,7 +3193,6 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
         // if the event is triggered by initial setting of expanded, we should not
         // fire expand or option change event
         var expanded = this.options.expanded;
-        // if (expanded == null || (expanded != null && expanded)) {
         if (expanded == null || expanded) {
           this._trigger('collapse', null, { rowKey: rowKey });
           this._updateExpandedState(false);

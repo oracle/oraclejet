@@ -108,6 +108,7 @@ export interface GridHeaderItem<D> {
 }
 export interface GridHeaderMetadata {
     expanded?: 'expanded' | 'collapsed';
+    showRequired?: boolean;
     sortDirection?: 'ascending' | 'descending' | 'unsorted';
     treeDepth?: number;
 }

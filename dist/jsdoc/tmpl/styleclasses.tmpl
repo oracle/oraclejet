@@ -1,0 +1,212 @@
+<?js 
+  // Template to process a built doclet tree object representing style classes and CSS variables,
+  // for components and non-components alike
+  // The template receives styleItems object, with styleClasses and styleVariableSets properties,
+  // as parameter (see container.tmpl)
+  var self = this;
+  var className;
+  var level = 0;
+  const DEPRECATED_CLASS_NAME = 'deprecated-hidden';
+
+  //recursive function generating dl, dt, dd tags
+  const renderStyleItem = function(styleObj, kind, data, level) {
+    var itemName = styleObj.id.split('.').pop();
+    var displayName = data.ojdisplayname ? data.ojdisplayname : itemName;
+    className = kind === 'set'? 'category' : (kind === 'template'? 'template' : 'styleclass');
+    className = className + '-' + level;
+    if (data.tsdeprecated && !data.tsdeprecated.target){
+      className = DEPRECATED_CLASS_NAME + ' ' + className;
+    }
+    if (kind === 'template' || kind === 'set'){
+      ?>
+      <dt class="<?js= className ?>">
+        <h4 id="<?js= itemName ?>" >
+          Category:  <?js= displayName ?>
+          <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= itemName ?>"></a>
+        </h4>
+      </dt>
+      <dd class="<?js= className ?>">
+      <?js 
+      if (data.ojunsupportedthemes && data.ojunsupportedthemes.length > 0){ ?>
+        <?js= self.partial('themes.tmpl', data) ?>
+      <?js
+      }
+      if (data.description) { ?>
+        <div class="description">
+          <?js= data.description ?>
+        </div>
+      <?js
+      }
+      ?>
+      <h4 class="<?js= className ?>"> <?js= (kind === 'template'? 'Class template:' : 'Classes:') ?></h4>
+      <dl>
+      <?js
+      if (Array.isArray(styleObj.styleItems)) { 
+        level++;
+        styleObj.styleItems.forEach( item => {
+          renderStyleItem(item, item.kind, item.doclet, level);
+        });
+      }
+      else{ 
+        let tempName = itemName;
+        styleObj.tokens.forEach(token =>{
+          tempName = tempName.replace(token.name, `<i><code>${token.name}</code></i>`);
+        });
+        ?>
+        <dt class="<?js= className ?>">
+          <h5 id="<?js= itemName ?>"><?js= '.' + tempName ?></h5>
+          <p><strong>Note:</strong><i> Square brackets signify required token substitutions whereas parentheses signify optional token substitutions.</i></p>
+        </dt>
+        <dd>
+          <dl><?js= self.partial('styletokens.tmpl', styleObj.tokens) ?></dl>
+        </dd>
+      <?js
+      }
+      // render deprecation information, examples, since, etc
+      ?>
+      </br>
+      <?js= self.partial('styledetails.tmpl', data) ?>
+      </dl>
+    </dd>
+    <?js
+    }
+    else {
+      ?>
+      <dt class="<?js= className ?>">
+        <h5 id="<?js= itemName ?>">
+          <?js= '.' + itemName ?>
+          <?js if (level == 0) { ?>
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= itemName ?>"></a>
+          <?js
+          }?>
+        </h5>
+      </dt>
+      <dd class="<?js= className ?>">
+      <?js 
+      if (data.ojunsupportedthemes && data.ojunsupportedthemes.length > 0){ ?>
+        <?js= self.partial('themes.tmpl', data) ?>
+      <?js
+      }
+      if (data.description) { ?>
+        <div class="description">
+          <?js= data.description ?>
+        </div>
+      <?js
+      }
+      ?>
+      <?js= self.partial('styledetails.tmpl', data) ?>
+      </dd>
+    <?js  
+    }
+  };
+
+  const renderStyleVariableSet = function(varSet, index) {
+    // if rendering the first styleVariableSet,
+    // then render 'CSS Variables' section header w/bookmarkable-link
+    if (index == 0) {
+    ?>
+      <dt class="variables">
+        <h4 id="css-variables" >
+          CSS Variables
+          <a class="bookmarkable-link" title="Bookmarkable Link" href="#css-variables"></a>
+        </h4>
+      </dt>
+      <div class="description">
+        See <a href="<?js= env.opts.query.apidocLink ?>CssVariablesOverview.html" target="_blank">JET CSS Variables</a> for additional details.
+      </div>
+    <?js }
+
+    // TODO:  Handle unsupportedthemes, deprecated doclet metadata...
+
+    // if available, render the styleVariableSet displayName
+    // use its name as a bookmarkable link
+    let varSetDispName = varSet.doclet.ojdisplayname;
+    if (varSetDispName) {
+      let varSetName = varSet.doclet.name;
+      ?>
+      <dt class="variableset">
+        <h5 id="<?js= varSetName ?>" style="color:black" >
+          <?js= varSetDispName ?>
+          <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= varSetName ?>"></a>
+        </h5>
+      </dt>
+    <?js }
+    // if available, render the styleVariableSet description
+    let varSetDescription = varSet.doclet.description;
+    if (varSetDescription) {
+      ?>
+      <div class="description">
+          <?js= varSetDescription ?>
+      </div>
+    <?js }
+    // check for names, types (formats/keywords), and descriptions for styleVariables in the set
+    var styleVarHasName = false;
+    var styleVarHasType = false;
+    var styleVarHasDescription = false;
+    let styleVars = varSet.doclet.ojstylevariables;
+    if (styleVars && Array.isArray(styleVars)) {
+      styleVars.forEach(function(stylevar) {
+        if (stylevar.name)
+          styleVarHasName = true;
+        if ((stylevar.formats && Array.isArray(stylevar.formats)) || (stylevar.keywords && Array.isArray(stylevar.keywords)))
+          styleVarHasType = true;
+        if (stylevar.description)
+          styleVarHasDescription = true;
+      });
+      if (styleVarHasName || styleVarHasType || styleVarHasDescription) {
+      ?>
+      <table class="props">
+        <thead>
+          <tr>
+            <?js if (styleVarHasName) {?>
+            <th>Name</th>
+            <?js }
+            if (styleVarHasType) {?>
+            <th>Type</th>
+            <?js }
+            if (styleVarHasDescription) {?>
+            <th class="last">Description</th>
+            <?js }?>
+          </tr>
+        </thead>
+        <tbody>
+	      <?js
+        styleVars.forEach(function(stylevar, i) {
+          ?>
+          <tr>
+          <?js if (styleVarHasName) {?>
+            <td class="name"><code><?js= '--' + stylevar.name ?></code></td>
+          <?js }
+          if (styleVarHasType) {
+            let types = {
+              formats: (stylevar.formats && Array.isArray(stylevar.formats)) ? stylevar.formats : [],
+              keywords: (stylevar.keywords && Array.isArray(stylevar.keywords)) ? stylevar.keywords : []
+            }; ?>
+            <td class="type">
+            <?js= self.partial('styletype.tmpl', types) ?>
+            </td>
+          <?js }
+          if (styleVarHasDescription) {?>
+            <td class="description last"><?js= stylevar.description ?></td>
+          <?js } ?>
+          </tr>
+        <?js });?>
+        </tbody>
+      </table>
+      <?js }
+    }
+  };
+
+  // start processing 
+  while (styleClasses.length) {
+    let styleItem = styleClasses.shift();
+    // skip over protected implementation detail style items
+    if (!styleItem.doclet.ojstylescope || styleItem.doclet.ojstylescope !== "protected") {
+      renderStyleItem(styleItem, styleItem.kind, styleItem.doclet, level);
+    }
+  };
+  for (let index = 0; index < styleVariableSets.length; index++) {
+    let varSet = styleVariableSets[index];
+    renderStyleVariableSet(varSet, index);
+  }
+?>

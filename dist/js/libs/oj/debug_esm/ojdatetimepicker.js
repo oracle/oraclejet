@@ -2793,7 +2793,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     childDiv.className = 'oj-datepicker-content';
     dpDiv.appendChild(childDiv);
     this._dpDiv = bindHover($(dpDiv));
-    document.body.appendChild(dpDiv); // @HTMLUpdateOK
+    // Append the dpDiv to the CE wrapper and for widgets simply to the body
+    if (this._IsCustomElement()) {
+      this._dpDiv.appendTo(this.OuterWrapper); // @HTMLUpdateOK
+    } else {
+      this._dpDiv.appendTo(document.body); // @HTMLUpdateOK
+    }
   },
 
   _createPopupDpDiv: function () {
@@ -2899,8 +2904,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       // http://bugs.jqueryui.com/ticket/7552 - A Datepicker created on a detached div has zero height
       this._dpDiv.css('display', 'block');
 
-      this._registerSwipeHandler();
-
       // For this to be accessible, the root dom element needs role/aria-labelledby.
       const rootDomElem = this.widget();
       rootDomElem[0].setAttribute('role', 'group');
@@ -2910,7 +2913,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       this._processReadOnlyKeyboardEdit();
       if (this.options.readOnly !== true) {
         this._attachTrigger();
-        this._registerSwipeHandler();
       }
     }
 
@@ -3263,6 +3265,11 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         this._setupResizePopupBind();
       }
     }
+
+    if (this._dpDiv && (this._isInLine || (this.options.readOnly !== true))) {
+      this._registerSwipeHandler();
+    }
+
     return this._super();
   },
 
@@ -3309,6 +3316,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     // for non custom element, this is done as first step in destroy
     if (this._IsCustomElement()) {
       this._cleanUpListeners();
+
+      this._unregisterSwipeHandler();
     }
     return this._super();
   },
@@ -4463,6 +4472,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         self._gotoPrev(stepMonths);
         return false;
       });
+    }
+  },
+
+  _unregisterSwipeHandler: function () {
+    if (this._dpDiv) {
+      this._dpDiv.off('swiperight swipeleft').ojHammer('destroy');
     }
   },
 
@@ -8888,8 +8903,9 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
     },
 
     _getPrependNode: function () {
+      const independentPrependNode = this._IsCustomElement() ? $(this.OuterWrapper) : $('body');
       return this._isIndependentInput() ?
-        $('body') :
+        independentPrependNode :
         $('.oj-popup-content', this._datePickerComp.widget._popUpDpDiv.ojPopup('widget'));
     },
 
@@ -8947,8 +8963,16 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       var div = document.createElement('div');
       div.id = this._GetSubId(this._TIME_PICKER_ID);
       var cssClasses = 'oj-timepicker-content';
+      // JET-51605 - done and cancel buttons are not accessible when trying to input time
+      // setting the oj-timepicker-mobile-content makes the wheel picker 100vh. But we do not
+      // want this for oj-input-date-time as the popup includes the buttons to set the selected
+      // time as well as to switch to the date picker. These controls are outside the wheel picker
+      // so setting this to 100vh completely hides this. So, set the css style classes based on
+      // where this timepicker is being used.
       if (getDeviceRenderMode() === 'phone') {
-        cssClasses += ' oj-timepicker-mobile-content';
+        const mobileCSSStlyeClass = this._isContainedInDateTimePicker() ?
+          ' oj-timepicker-datetime-mobile-content' : ' oj-timepicker-mobile-content';
+        cssClasses += mobileCSSStlyeClass;
       }
       div.className = cssClasses;
       wheelPicker.appendChild(div);
@@ -9350,6 +9374,8 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
         var children = group.children;
         for (var index = 0; index < children.length; index++) {
           wheel = children[index];
+          // This calls Wheel#destroy() and this calls off on each
+          // event listener and destroys Hammer.
           wheel.ojDestroy();
         }
       }
@@ -9385,10 +9411,14 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
      * @override
      */
     _ReleaseResources: function () {
-      // for non custom element, this is done as first step in destroy
-      if (this._IsCustomElement()) {
-        this._cleanUpListeners();
-      }
+      // Since destroy calls _ReleaseResources, we do here for both CustomElement and non CustomElement
+      // instead of doing it here for CustomElement and in destroy which is only for non CustomElements.
+      this._removeResizePopupBind();
+      // Note: We do not have a symmetrical 'createHammer' call in SetupResources.
+      // We create the timepicker wheels that have the Hammer events
+      // when the user clicks on the timepicker icon, or when
+      // the component's options change.
+      this._destroyHammer();
       return this._super();
     },
 
@@ -9409,8 +9439,6 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
         this._triggerNode.remove();
       }
 
-      this._cleanUpListeners();
-      this._destroyHammer();
       if (this._wheelPicker) {
         this._wheelPicker.remove();
         this._clearWheelModels();
@@ -9424,7 +9452,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
    * @ignore
    * @private
    */
-    _cleanUpListeners: function () {
+   _removeResizePopupBind: function () {
       if (this._resizePopupBind) {
         window.removeEventListener('resize', this._resizePopupBind);
       }
@@ -12194,6 +12222,53 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
 
     return retVal;
   },
+
+  /**
+   * @ignore
+   * @protected
+   * @override
+   * @memberof oj.ojInputDateTime
+   */
+  _ReleaseResources: function () {
+    if (this._IsCustomElement()) {
+      // Trigger the ojInputTime's _ReleaseResources() using the ojInputTime instance.
+      // this._timePicker.ojInputTime('destroy') will not work.
+      // jqueryui-base#destroy will throw an error because IsCustomElement() is true
+      // and you cannot call destroy when IsCustomElement is true.
+      if (this._timePicker) {
+        const timePickerInstance = this._timePicker.ojInputTime('instance');
+        if (timePickerInstance) {
+          timePickerInstance._ReleaseResources();
+          this._timePickerResourcesReleased = true;
+        }
+      }
+    }
+    return this._super();
+  },
+
+  /**
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.ojInputDateTime
+   */
+  _SetupResources: function () {
+    var ret = this._superApply(arguments);
+    if (this._IsCustomElement()) {
+      // oj-input-date-time's AfterCreate calls createTimepicker, which creates ojInputTime() which
+      // calls InputTime's _SetupResources.
+      // Then oj-input-date-time's SetupResources is called. Only call ojInputTime's _SetupResources
+      // if they were released in ReleaseResources, so check the flag.
+      if (this._timePickerResourcesReleased && this._timePicker) {
+        const timePickerInstance = this._timePicker.ojInputTime('instance');
+        if (timePickerInstance) {
+          timePickerInstance._SetupResources();
+          this._timePickerResourcesReleased = false;
+        }
+      }
+    }
+    return ret;
+  },
   /**
    * @ignore
    * @protected
@@ -12205,6 +12280,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     return this._super();
   },
   /**
+   * Called from _destroy. This is for widgets. Cleaning up custom
+   * elements is done in ReleaseResources
    * @ignore
    * @private
    * @memberof oj.ojInputDateTime
@@ -12225,6 +12302,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
         this._switcherDiv.remove();
       }
   },
+
   /**
    * @ignore
    * @protected

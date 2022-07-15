@@ -46,10 +46,10 @@ const DvtChartDataItemUtils = {
 class DvtChartDataItem {
   constructor(id, series, group, context) {
     // Expose as named properties to simplify uptake.
-    this.id= id;
+    this.id = id;
     this.series = series;
-    this.group= group;
-    this.context= context;
+    this.group = group;
+    this.context = context;
   }
 
   /**
@@ -65,10 +65,8 @@ class DvtChartDataItem {
       if (this.id != null || dataItem.id != null) {
         return DvtChartDataItemUtils.isEqualId(this.id, dataItem.id, this.context);
       }
-      else {
-        return DvtChartDataItemUtils.isEqualId(this.series, dataItem.series, this.context) &&
-            DvtChartDataItemUtils.isEqualId(this.group, dataItem.group, this.context);
-      }
+      return DvtChartDataItemUtils.isEqualId(this.series, dataItem.series, this.context) &&
+        DvtChartDataItemUtils.isEqualId(this.group, dataItem.group, this.context);
     }
     return false;
   }
@@ -6579,22 +6577,28 @@ class DvtAxisEventManager extends EventManager {
 }
 
 /**
- * Renderer for DvtAxis.
- */
- const DvtAxisRenderer = {
-   /**
-   * The max amount of lines we allow in title wrapping.
+* Renderer for DvtAxis.
+*/
+const DvtAxisRenderer = {
+  /**
+   * Fraction of width or height used to calculate initial preferred size for title width / height for axes.
    * @private
    */
+   _PREFERRED_TITLE_PROPORTION: 0.8,
+
+  /**
+  * The max amount of lines we allow in title wrapping.
+  * @private
+  */
   _MAX_TITLE_LINE_WRAP: 3,
-   /**
-   * Returns the preferred dimensions for this component given the maximum available space. This will never be called for
-   * radial axis.
-   * @param {DvtAxis} axis
-   * @param {number} availWidth
-   * @param {number} availHeight
-   * @return {dvt.Dimension} The preferred dimensions for the object.
-   */
+  /**
+  * Returns the preferred dimensions for this component given the maximum available space. This will never be called for
+  * radial axis.
+  * @param {DvtAxis} axis
+  * @param {number} availWidth
+  * @param {number} availHeight
+  * @return {dvt.Dimension} The preferred dimensions for the object.
+  */
   getPreferredSize: (axis, availWidth, availHeight, ignoreRenderedOption) => {
     // Calculate the axis extents and increments
     var axisInfo = DvtAxisRenderer._createAxisInfo(axis, new Rectangle(0, 0, availWidth, availHeight));
@@ -6610,7 +6614,15 @@ class DvtAxisEventManager extends EventManager {
       return bHoriz ? new Dimension(availWidth, 0) : new Dimension(0, availHeight);
 
     // Allocate space for the title
-    var titleHeight = DvtAxisRenderer.getTitleHeight(context, options, (bHoriz ? availWidth : availHeight) * 0.8, (bHoriz ? availHeight : availWidth) * 0.8);
+    var availableTitleWidth = (bHoriz ? availWidth : availHeight) * DvtAxisRenderer._PREFERRED_TITLE_PROPORTION;
+    var availableTitleHeight = (bHoriz ? availHeight : availWidth) * DvtAxisRenderer._PREFERRED_TITLE_PROPORTION;
+    var titleHeightInfo = DvtAxisRenderer.getTitleHeight(context, options, availableTitleWidth, availableTitleHeight);
+    var titleHeight = titleHeightInfo.height;
+
+    // cache preferred title line count and available space used
+    axis.getOptionsCache().putToCache('prefTitleLineCount', titleHeightInfo.lineCount);
+    axis.getOptionsCache().putToCache('prefAvailableTitleWidth', availableTitleWidth);
+
     var size = titleHeight != 0 ? titleHeight + DvtAxisRenderer._getTitleGap(axis) : 0;
 
     // Allocate space for the tick labels
@@ -6647,10 +6659,10 @@ class DvtAxisEventManager extends EventManager {
   },
 
   /**
-   * Renders the axis and updates the available space.
-   * @param {DvtAxis} axis The axis being rendered.
-   * @param {dvt.Rectangle} availSpace The available space.
-   */
+  * Renders the axis and updates the available space.
+  * @param {DvtAxis} axis The axis being rendered.
+  * @param {dvt.Rectangle} availSpace The available space.
+  */
   render: (axis, availSpace) => {
     // Calculate the axis extents and increments
     var axisInfo = DvtAxisRenderer._createAxisInfo(axis, availSpace);
@@ -6671,12 +6683,12 @@ class DvtAxisEventManager extends EventManager {
   },
 
   /**
-   * Creates and returns the DvtAxisInfo for the specified axis.
-   * @param {DvtAxis} axis The axis being rendered.
-   * @param {dvt.Rectangle} availSpace The available space.
-   * @return {DvtAxisInfo}
-   * @private
-   */
+  * Creates and returns the DvtAxisInfo for the specified axis.
+  * @param {DvtAxis} axis The axis being rendered.
+  * @param {dvt.Rectangle} availSpace The available space.
+  * @return {DvtAxisInfo}
+  * @private
+  */
   _createAxisInfo: (axis, availSpace) => {
     var axisInfo = DvtAxisInfo.newInstance(axis.getCtx(), axis.getOptions(), availSpace);
     axis.__setInfo(axisInfo);
@@ -6684,22 +6696,22 @@ class DvtAxisEventManager extends EventManager {
   },
 
   /**
-   * Returns the gap between the title and the tick labels.
-   * @param {DvtAxis} axis
-   * @return {number}
-   * @private
-   */
+  * Returns the gap between the title and the tick labels.
+  * @param {DvtAxis} axis
+  * @return {number}
+  * @private
+  */
   _getTitleGap: (axis) => {
     var options = axis.getOptions();
     return DvtAxisDefaults.getGapSize(axis.getCtx(), options, options['layout']['titleGap']);
   },
 
   /**
-   * Renders the axis invisble background. Needed for DnD drop effect.
-   * @param {DvtAxis} axis The axis being rendered.
-   * @param {dvt.Rectangle} availSpace The available space.
-   * @private
-   */
+  * Renders the axis invisble background. Needed for DnD drop effect.
+  * @param {DvtAxis} axis The axis being rendered.
+  * @param {dvt.Rectangle} availSpace The available space.
+  * @private
+  */
   _renderBackground: (axis, availSpace) => {
     var options = axis.getOptions();
     if (!options['dnd'])
@@ -6728,12 +6740,12 @@ class DvtAxisEventManager extends EventManager {
   },
 
   /**
-   * Renders the axis title and updates the available space.
-   * @param {DvtAxis} axis The axis being rendered.
-   * @param {DvtAxisInfo} axisInfo The axis model.
-   * @param {dvt.Rectangle} availSpace The available space.
-   * @private
-   */
+  * Renders the axis title and updates the available space.
+  * @param {DvtAxis} axis The axis being rendered.
+  * @param {DvtAxisInfo} axisInfo The axis model.
+  * @param {dvt.Rectangle} availSpace The available space.
+  * @private
+  */
   _renderTitle: (axis, axisInfo, availSpace) => {
     // Note: DvtAxisRenderer.getPreferredSize must be updated for any layout changes to this function.
     var options = axis.getOptions();
@@ -6751,9 +6763,16 @@ class DvtAxisEventManager extends EventManager {
     var maxLabelHeight = bHoriz ? availSpace.h : availSpace.w;
     var titleStyle = options['titleStyle'];
     var isMultiLine = DvtAxisRenderer.isWrapEnabled(titleStyle);
+    // JET-48758 - Set maxlineCount to originally calculated value in getPrefferedSize if available width for title is less than it was in getPreferredSize.
+    // Otherwise, the title might occupy more space due to wrapping which might lead to missing ticklabels.
+    var maxLineCount;
+    var prefAvailableTitleWidth = axis.getOptionsCache().getFromCache('prefAvailableTitleWidth');
+    if (prefAvailableTitleWidth > maxLabelWidth) {
+      maxLineCount = axis.getOptionsCache().getFromCache('prefTitleLineCount');
+    }
     var title = DvtAxisRenderer._createText(axis.getEventManager(), axis, options['title'], titleStyle,
                                             0, 0, maxLabelWidth, maxLabelHeight,
-                                            DvtAxisEventManager.getUIParams('title'), isMultiLine);
+                                            DvtAxisEventManager.getUIParams('title'), isMultiLine, maxLineCount);
 
     if (title) {
       // Position the title based on text size and axis position
@@ -6795,12 +6814,12 @@ class DvtAxisEventManager extends EventManager {
 
 
   /**
-   * Renders the tick labels and updates the available space.
-   * @param {DvtAxis} axis The axis being rendered.
-   * @param {DvtAxisInfo} axisInfo The axis model.
-   * @param {dvt.Rectangle} availSpace The available space.
-   * @private
-   */
+  * Renders the tick labels and updates the available space.
+  * @param {DvtAxis} axis The axis being rendered.
+  * @param {DvtAxisInfo} axisInfo The axis model.
+  * @param {dvt.Rectangle} availSpace The available space.
+  * @private
+  */
   _renderLabels: (axis, axisInfo, availSpace) => {
     // Note: DvtAxisRenderer.getPreferredSize must be updated for any layout changes to this function.
     var options = axis.getOptions();
@@ -6823,12 +6842,12 @@ class DvtAxisEventManager extends EventManager {
 
 
   /**
-   * Renders tick labels for a horizontal axis and updates the available space.
-   * @param {DvtAxis} axis The axis being rendered.
-   * @param {DvtAxisInfo} axisInfo The axis model.
-   * @param {dvt.Rectangle} availSpace The available space.
-   * @private
-   */
+  * Renders tick labels for a horizontal axis and updates the available space.
+  * @param {DvtAxis} axis The axis being rendered.
+  * @param {DvtAxisInfo} axisInfo The axis model.
+  * @param {dvt.Rectangle} availSpace The available space.
+  * @private
+  */
   _renderLabelsHoriz: (axis, axisInfo, availSpace) => {
     // Note: DvtAxisRenderer.getPreferredSize must be updated for any layout changes to this function.
     // Position and add the axis labels.
@@ -7016,12 +7035,12 @@ class DvtAxisEventManager extends EventManager {
 
 
   /**
-   * Renders tick labels for a vertical axis and updates the available space.
-   * @param {DvtAxis} axis The axis being rendered.
-   * @param {DvtAxisInfo} axisInfo The axis model.
-   * @param {dvt.Rectangle} availSpace The available space.
-   * @private
-   */
+  * Renders tick labels for a vertical axis and updates the available space.
+  * @param {DvtAxis} axis The axis being rendered.
+  * @param {DvtAxisInfo} axisInfo The axis model.
+  * @param {dvt.Rectangle} availSpace The available space.
+  * @private
+  */
   _renderLabelsVert: (axis, axisInfo, availSpace) => {
     // Note: DvtAxisRenderer.getPreferredSize must be updated for any layout changes to this function.
     var options = axis.getOptions();
@@ -7164,12 +7183,12 @@ class DvtAxisEventManager extends EventManager {
 
 
   /**
-   * Renders tick labels for a tangential axis and updates the available space.
-   * @param {DvtAxis} axis The axis being rendered.
-   * @param {DvtAxisInfo} axisInfo The axis model.
-   * @param {dvt.Rectangle} availSpace The available space.
-   * @private
-   */
+  * Renders tick labels for a tangential axis and updates the available space.
+  * @param {DvtAxis} axis The axis being rendered.
+  * @param {DvtAxisInfo} axisInfo The axis model.
+  * @param {dvt.Rectangle} availSpace The available space.
+  * @private
+  */
   _renderLabelsTangent: (axis, axisInfo, availSpace) => {
     var labels = axisInfo.getLabels(axis.getCtx());
     for (var i = 0; i < labels.length; i++) {
@@ -7204,25 +7223,26 @@ class DvtAxisEventManager extends EventManager {
 
 
   /**
-   * Creates and adds a dvt.Text object to a container. Will truncate and add tooltip as necessary.
-   * @param {dvt.EventManager} eventManager
-   * @param {dvt.Container} container The container to add the text object to.
-   * @param {String} textString The text string of the text object.
-   * @param {dvt.CSSStyle} cssStyle The css style to apply to the text object.
-   * @param {number} x The x coordinate of the text object.
-   * @param {number} y The y coordinate of the text object.
-   * @param {number} width The width of available text space.
-   * @param {number} height The height of the available text space.
-   * @param {object} params Additional parameters that will be passed to the logical object.
-   * @param {boolean=} bMultiLine True if text can use multiple lines
-   * @return {dvt.OutputText|dvt.MultilineText} The created text object. Can be null if no text object could be created in the given space.
-   * @private
-   */
-  _createText: (eventManager, container, textString, cssStyle, x, y, width, height, params, bMultiLine) => {
+  * Creates and adds a dvt.Text object to a container. Will truncate and add tooltip as necessary.
+  * @param {dvt.EventManager} eventManager
+  * @param {dvt.Container} container The container to add the text object to.
+  * @param {String} textString The text string of the text object.
+  * @param {dvt.CSSStyle} cssStyle The css style to apply to the text object.
+  * @param {number} x The x coordinate of the text object.
+  * @param {number} y The y coordinate of the text object.
+  * @param {number} width The width of available text space.
+  * @param {number} height The height of the available text space.
+  * @param {object} params Additional parameters that will be passed to the logical object.
+  * @param {boolean=} bMultiLine True if text can use multiple lines
+  * @param {number} maxLineCount Maximum number of lines allowed in the case of multi line texts.
+  * @return {dvt.OutputText|dvt.MultilineText} The created text object. Can be null if no text object could be created in the given space.
+  * @private
+  */
+  _createText: (eventManager, container, textString, cssStyle, x, y, width, height, params, bMultiLine, maxLineCount) => {
     var text;
     if (bMultiLine) {
       text = new MultilineText(container.getCtx(), textString, x, y);
-      text.setMaxLines(DvtAxisRenderer._MAX_TITLE_LINE_WRAP);
+      text.setMaxLines(maxLineCount != null ? maxLineCount : DvtAxisRenderer._MAX_TITLE_LINE_WRAP);
       text.setCSSStyle(cssStyle);
       text.wrapText(width, height, 1);
     }
@@ -7242,12 +7262,12 @@ class DvtAxisEventManager extends EventManager {
 
 
   /**
-   * Renders the separators between group labels
-   * @param {DvtAxis} axis The axis being rendered.
-   * @param {DvtAxisInfo} axisInfo The axis model.
-   * @param {dvt.Rectangle} availSpace The available space.
-   * @private
-   */
+  * Renders the separators between group labels
+  * @param {DvtAxis} axis The axis being rendered.
+  * @param {DvtAxisInfo} axisInfo The axis model.
+  * @param {dvt.Rectangle} availSpace The available space.
+  * @private
+  */
   _renderGroupSeparators: (axis, axisInfo, availSpace) => {
     if (axisInfo instanceof DvtAxisInfo.getConstructor('group') && axisInfo.areSeparatorsRendered()) {
       var numLevels = axisInfo.getNumLevels();
@@ -7422,15 +7442,15 @@ class DvtAxisEventManager extends EventManager {
   },
 
   /**
-   * Renders separator line
-   * @param {DvtAxis} axis The axis on which the separators are rendered.
-   * @param {dvt.Stroke} lineStroke The stroke for the line.
-   * @param {Number} x1 The first xCoordinate of the line.
-   * @param {Number} y1 The first yCoordinate of the line.
-   * @param {Number} x2 The second xCoordinate of the line.
-   * @param {Number} y2 The second yCoordinate of the line.
-   * @private
-   */
+  * Renders separator line
+  * @param {DvtAxis} axis The axis on which the separators are rendered.
+  * @param {dvt.Stroke} lineStroke The stroke for the line.
+  * @param {Number} x1 The first xCoordinate of the line.
+  * @param {Number} y1 The first yCoordinate of the line.
+  * @param {Number} x2 The second xCoordinate of the line.
+  * @param {Number} y2 The second yCoordinate of the line.
+  * @private
+  */
   _addSeparatorLine: (axis, lineStroke, x1, y1, x2, y2) => {
     var line = new Line(axis.getCtx(), x1, y1, x2, y2);
     line.setStroke(lineStroke);
@@ -7441,15 +7461,15 @@ class DvtAxisEventManager extends EventManager {
   },
 
   /**
-   * Gets the preferred size for a group axis, which may include hierarchical labels
-   * @param {DvtAxis} axis The axis
-   * @param {DvtGroupAxisInfo} axisInfo The group axis info
-   * @param {Number} size The current preferred size of the axis
-   * @param {Number} availSize The maximum availHeight or availWidth of the axis
-   * @param {Boolean} bHoriz Whether or not the axis is vertical of horizontal
-   * @return {Number}
-   * @private
-   */
+  * Gets the preferred size for a group axis, which may include hierarchical labels
+  * @param {DvtAxis} axis The axis
+  * @param {DvtGroupAxisInfo} axisInfo The group axis info
+  * @param {Number} size The current preferred size of the axis
+  * @param {Number} availSize The maximum availHeight or availWidth of the axis
+  * @param {Boolean} bHoriz Whether or not the axis is vertical of horizontal
+  * @return {Number}
+  * @private
+  */
   _getGroupAxisPreferredSize: (axis, axisInfo, size, availSize, bHoriz) => {
     var context = axis.getCtx();
     var options = axis.getOptions();
@@ -7500,19 +7520,20 @@ class DvtAxisEventManager extends EventManager {
   },
 
   /**
-   * Get the height of the axis title
-   * @param {dvt.Context} context The axis context
-   * @param {Object} options The options for the axis
-   * @param {Number} availWidth The maximum available width for the title
-   * @param {Number} availHeight The maximum available height for the title
-   * @return {Number}
-   */
+  * Get the height and line count of the axis title.
+  * @param {dvt.Context} context The axis context
+  * @param {Object} options The options for the axis
+  * @param {Number} availWidth The maximum available width for the title
+  * @param {Number} availHeight The maximum available height for the title
+  * @return {Object} Contains the height and line count of the axis title
+  */
   getTitleHeight: (context, options, availWidth, availHeight) => {
     var titleHeight = 0;
+    var text;
 
     if (options['title']) {
       if (DvtAxisRenderer.isWrapEnabled(options['titleStyle'])) {
-        var text = new MultilineText(context, options['title'], 0, 0);
+        text = new MultilineText(context, options['title'], 0, 0);
         text.setMaxLines(DvtAxisRenderer._MAX_TITLE_LINE_WRAP);
         text.setCSSStyle(options['titleStyle']);
         text.wrapText(availWidth, availHeight, 1);
@@ -7522,14 +7543,17 @@ class DvtAxisEventManager extends EventManager {
         titleHeight = TextUtils.getTextStringHeight(context, options['titleStyle']);
     }
 
-    return titleHeight;
+    return {
+      height: titleHeight,
+      lineCount: text ? text.getLineCount() : 0
+    };
   },
 
   /**
-   * Returns true if the white space property is not nowrap.
-   * @param {dvt.CSSStyle} cssStyle The css style to be evaluated
-   * @return {boolean}
-   */
+  * Returns true if the white space property is not nowrap.
+  * @param {dvt.CSSStyle} cssStyle The css style to be evaluated
+  * @return {boolean}
+  */
   isWrapEnabled: (cssStyle) => {
     var whiteSpaceValue = cssStyle.getStyle(CSSStyle.WHITE_SPACE);
     // checking noWrap for backwards compatibility
@@ -7537,7 +7561,7 @@ class DvtAxisEventManager extends EventManager {
       return false;
     return true;
   }
- };
+};
 
 /**
  * Calculated axis information and drawable creation for a group axis.
@@ -7548,7 +7572,7 @@ class DvtAxisEventManager extends EventManager {
  * @constructor
  * @extends {DvtAxisInfo}
  */
- class DvtGroupAxisInfo extends DvtAxisInfo {
+class DvtGroupAxisInfo extends DvtAxisInfo {
   constructor(context, options, availSpace) {
     super(context, options, availSpace);
 
@@ -7636,7 +7660,7 @@ class DvtAxisEventManager extends EventManager {
     // Initial height/width that will be available for the labels. Used for text wrapping.
     this._maxSpace = isHoriz ? availSpace.h : availSpace.w;
     if (options['rendered'] != 'off') {
-      var titleHeight = DvtAxisRenderer.getTitleHeight(context, options, isHoriz ? availSpace.w : availSpace.h, isHoriz ? availSpace.h : availSpace.w);
+      var titleHeight = DvtAxisRenderer.getTitleHeight(context, options, isHoriz ? availSpace.w : availSpace.h, isHoriz ? availSpace.h : availSpace.w).height;
       this._maxSpace -= titleHeight != 0 ? titleHeight + DvtAxisDefaults.getGapSize(context, options, options['layout']['titleGap']) : 0;
     }
 
@@ -7666,7 +7690,7 @@ class DvtAxisEventManager extends EventManager {
 
     // Divide the total viewport length (in pixels) proportionally based on the group width ratios.
     var totalWidth = this.EndCoord - this.StartCoord;
-    this._groupWidths = this._groupWidthRatios.map((ratio) => {return ratio * totalWidth / sum;});
+    this._groupWidths = this._groupWidthRatios.map((ratio) => { return ratio * totalWidth / sum; });
 
     // Construct borderValues array which stores the the value location of the group boundaries.
     this._borderValues = [];
@@ -7976,7 +8000,7 @@ class DvtAxisEventManager extends EventManager {
           if (coord != null) {
             // get categorical axis label style, if it exists
             cssStyle = this.getLabelStyleAt(i, level);
-            var bMultiline = !autoRotate && wrapping && typeof(label) != 'number' && label.indexOf(' ') >= 0;
+            var bMultiline = !autoRotate && wrapping && typeof (label) != 'number' && label.indexOf(' ') >= 0;
             text = this.CreateLabel(context, label, coord, cssStyle, bMultiline);
 
             var groupSpan = groupWidth * (this.getEndIdx(i, level) - this.getStartIdx(i, level) + 1);
@@ -8464,7 +8488,7 @@ class DvtAxisEventManager extends EventManager {
         levelsArray[level] = [];
 
       // Store object for group
-      levelsArray[level].push({'item': groupsArray[i], 'start': groupIndex, 'end': groupIndex, 'position': i});
+      levelsArray[level].push({ 'item': groupsArray[i], 'start': groupIndex, 'end': groupIndex, 'position': i });
 
       if (groupsArray[i] && groupsArray[i]['groups']) {
         var lastIndex = levelsArray[level].length - 1;
@@ -8558,7 +8582,7 @@ class DvtAxisEventManager extends EventManager {
    * Returns the group index range and groupData array for the groupPath
    * @param {Array} groupPath
    */
-  getItemsRange (groupPath) {
+  getItemsRange(groupPath) {
     if (!(groupPath instanceof Array)) {
       groupPath = [groupPath];
     }
@@ -8631,7 +8655,7 @@ class DvtAxisEventManager extends EventManager {
   /**
    * Returns the true index of the given group label
    * @param {dvt.OutputText} label The group label
-   * @return {Number} The index of teh group label in regards to it's position in it's level of labels
+   * @return {Number} The index of the group label in regards to it's position in it's level of labels
    */
   getLabelIdx(label) {
     return label._index >= 0 ? label._index : null;
@@ -8694,7 +8718,7 @@ class DvtAxisEventManager extends EventManager {
     }
     return Math.max(1, Math.floor(increment));
   }
- }
+}
 
 DvtAxisInfo.registerConstructor('group', DvtGroupAxisInfo);
 
@@ -8795,9 +8819,36 @@ DvtAxisInfo.registerConstructor('group', DvtGroupAxisInfo);
           }
         }
       }
-
     }
     return null;
+  }
+
+  /**
+   * Returns the logical object belonging to the axis label corresponding to the groupId.
+   * @param {Array<string>} groupId An array of group ids associated with the axisLabel
+   * @return {object} obj Logical object used corresponding to axis label belonging to groupId
+   */
+  findPeerFromGroupId(groupId) {
+    let objs = this._comp._navigablePeers;
+    for (let i = 0; i < objs.length; i++) {
+      let obj = objs[i];
+
+      if ((typeof obj._group === 'string' && groupId.length === 1 && groupId[0] === obj._group) ||
+        (Array.isArray(obj._group) && ArrayUtils.equals(obj._group, groupId))) {
+        return obj;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Dispatches synthetic drill event from axis label. Used by webdriver.
+   * @param {Array<string> } groupId An array of group ids associated with the axisLabel
+   */
+
+  dispatchDrillEvent(groupId) {
+    let obj = this.findPeerFromGroupId(groupId);
+    this._comp.getEventManager().processDrillEvent(obj);
   }
  }
 
@@ -13765,12 +13816,19 @@ const DvtChartPieLabelUtils = {
     if (pieChart.getRadiusX() * 2 < 150)
       decDigits = Math.max(decDigits - 1, 0);
 
+    var formats = pieChart.getOptions().valueFormats;
+    var customConverter;
+    if (formats && formats.label && formats.label.converter){
+  	  customConverter = formats.label.converter;
+    }
     var percentConverter = pieChart.getCtx().getNumberConverter({'style': 'percent', 'maximumFractionDigits': decDigits, 'minimumFractionDigits': decDigits});
     var spercent = '';
 
-    // Apply the percent converter if present
 
-    if (percentConverter && percentConverter['format']) {
+    if (customConverter && customConverter['format']){
+      spercent = customConverter['format'](percentage);
+    }
+    else if (percentConverter && percentConverter['format']) { // Apply the percent converter if present
       spercent = percentConverter['format'](percentage);
     }
     else {
@@ -14601,6 +14659,7 @@ class DvtChartPieSlice {
       this._seriesLabel = options.translations.labelOther;
       this._drillable = DvtChartDataUtils.isMultiSeriesDrillEnabled(this._chart);
       this._id = DvtChartPieUtils.getOtherSliceId(this._chart);
+      this._otherId = true;
     }
   }
 
@@ -14666,6 +14725,7 @@ class DvtChartPieSlice {
 
     // WAI-ARIA
     var displayable = this.getTopDisplayable();
+
     if (displayable) {
       displayable.setAriaRole('img');
       this._updateAriaLabel();
@@ -15933,22 +15993,18 @@ class DvtChartAutomation extends Automation {
       return this._comp.pieChart.getCenterLabel().getElem();
     else if (subId == 'plotArea') // PLOT AREA
       return this._comp.getPlotArea().getElem();
-  
+
     // CHART ELEMENTS
     var openParen1 = subId.indexOf('[');
     var closeParen1 = subId.indexOf(']');
     var openParen2, closeParen2, logicalObj;
     var colon = subId.indexOf(':');
-  
     if (openParen1 > 0 && closeParen1 > 0 || colon > 0) {
-  
       var objType = (colon < 0) ? subId.substring(0, openParen1) : subId.substring(0, colon);
-  
       // GROUP AXIS LABELS
       if (objType == 'group') {
         return this._xAxisAutomation.getDomElementForSubId(subId);
       }
-  
       // LEGEND ITEMS
       if (objType == 'series') {
         subId = this._convertToLegendSubId(subId);
@@ -15958,9 +16014,7 @@ class DvtChartAutomation extends Automation {
         subId = subId.substring(colon + 1);
         return this._legendAutomation.getDomElementForSubId(subId);
       }
-  
       var seriesIndex = subId.substring(openParen1 + 1, closeParen1);
-  
       // AXIS TITLE & REFERENCE OBJECTS
       if (objType == 'xAxis' || objType == 'yAxis' || objType == 'y2Axis') {
         var axisObjectType = subId.substring(colon + 1);
@@ -15983,7 +16037,7 @@ class DvtChartAutomation extends Automation {
           }
         }
       }
-  
+
       // CHART DATA ITEMS
       if (this._options['type'] == 'pie') {
         var pieSlice = this._comp.pieChart.getSliceDisplayable(seriesIndex);
@@ -16028,6 +16082,31 @@ class DvtChartAutomation extends Automation {
       var item = peers[i].getGroupIndex(); // correspinds to the data item's position in its series array
       if (series == seriesIndex && item == itemIndex)
         return peers[i];
+    }
+    return null;
+  }
+
+  /**
+   * Returns the DvtChartObjPeer for the given series and groupid
+   * @param {String} seriesId The seriesId for dataItem types
+   * @param {Array} groupId The groupIds for dataItem types
+   * @param {number} itemIndex The index for dataItem corresponding to index in boxplot sub items.
+   * @return {DvtChartObjPeer} The DvtChartObjPeer matching the parameters or null if none exists
+   * @private
+   */
+
+  _getChartObjPeerFromId(seriesId, groupId, itemIndex) {
+    var peers = this._comp.getChartObjPeers();
+    for (var i = 0; i < peers.length; i++) {
+      var series = peers[i].getSeries();
+      var group = peers[i].getGroup();
+      if ((series === seriesId) &&
+        ((typeof group === 'string' && groupId.length === 1 && groupId[0] === group) ||
+        (Array.isArray(group) && ArrayUtils.equals(group, groupId)))) {
+        if (itemIndex == null || itemIndex === peers[i]._itemIndex) {
+          return peers[i];
+        }
+      }
     }
     return null;
   }
@@ -16307,7 +16386,53 @@ class DvtChartAutomation extends Automation {
     if (id && (id.indexOf(DvtChartDataCursor.TOOLTIP_ID) == 0 || id.indexOf(HtmlTooltipManager._TOOLTIP_DIV_ID) == 0))
       return true;
     return false;
-  };
+  }
+
+
+   /**
+   * Method to fire synthetic item drill event. Used by chart webdriver.
+   * @param {string} seriesId The series id of the data item.
+   * @param {Array<string>} groupId The group id of the data item.
+   * @param {number} itemIndex The index of data item belonging to boxplot sub items.
+   */
+
+  dispatchItemDrill(seriesId, groupId, itemIndex) {
+    var obj = this._getChartObjPeerFromId(seriesId, groupId, itemIndex);
+    if (obj) {
+      this._comp.getEventManager().processDrillEvent(obj);
+    }
+  }
+
+  /**
+   * Method to fire synthetic multiseries drill event. Used by chart webdriver.
+   */
+  dispatchMultiSeriesDrill() {
+    var pie = this._comp.pieChart;
+    if (pie && pie.otherSlice) {
+      this._comp.getEventManager().processDrillEvent(pie.otherSlice);
+    }
+  }
+
+  /**
+   * Fires synthetic group drill event from chart. Used by chart webdriver.
+   * @param {Array<string>} groupId The group id of the axis label from which group drill event is fired.
+   */
+  dispatchGroupDrill(groupId) {
+    if (this._xAxisAutomation && groupId) {
+      this._xAxisAutomation.dispatchDrillEvent(groupId);
+    }
+  }
+
+  /**
+   * Fires synthetic series drill event from chart. Used by chart webdriver.
+   * @param {string} seriesId The id of chart series from which series drill event is fired.
+   */
+
+  dispatchSeriesDrill(seriesId) {
+    if (this._legendAutomation && seriesId) {
+      this._legendAutomation.dispatchDrillEvent(seriesId);
+    }
+  }
 }
 
 /**
@@ -27467,6 +27592,7 @@ class DvtChartPie extends Container {
     this._frame = availSpace.clone();
     chart.pieChart = this; // store reference to itself for interactivity
 
+    this.otherSlice = null;
     var labelPosition = this.getLabelPos();
 
     // Read the position from all series. Override if some label positions are inside/none and some outside.
@@ -27560,13 +27686,16 @@ class DvtChartPie extends Container {
 
     // Create an "Other" slice if needed
     var hiddenCategories = DvtChartDataUtils.getHiddenCategories(this.chart);
-    var isOtherHidden = hiddenCategories.indexOf(DvtChartPieUtils.OTHER_SLICE_SERIES_ID) >= 0;
+    var isOtherHidden = hiddenCategories.indexOf(DvtChartPieUtils.OTHER_ID) >= 0;
     if (otherValue > 0 && !isOtherHidden) {
       var otherSlice = new DvtChartPieSlice(this);
-      if (this.chart.getOptions()['sorting'] == 'ascending')
+      if (this.chart.getOptions()['sorting'] == 'ascending') {
         slices.unshift(otherSlice);
-      else
+      } else {
         slices.push(otherSlice);
+      }
+      // store otherSlice for easy access without having to search
+      this.otherSlice = otherSlice;
     }
 
     // Reverse the slices for BIDI
@@ -29696,7 +29825,7 @@ class Chart extends BaseComponent {
         compDesc += delimiter + this.Options['subtitle']['text'];
     }
     if (options['footnote']['text'])
-      compDesc = (compDesc.length == 0) ? this.Options['footnote']['text'] : compDesc.concat(delimiter, this.Options['footnote']['text']);
+      compDesc = (compDesc.length === 0) ? this.Options['footnote']['text'] : compDesc.concat(delimiter, this.Options['footnote']['text']);
 
     if (compDesc.length > 0)
       return ResourceUtils.format(this.Options.translations.labelAndValue, [compName, compDesc]);
@@ -29732,9 +29861,9 @@ class Chart extends BaseComponent {
 
     // Initialize the selection handler
     var selectionMode = this.Options['selectionMode'];
-    if (selectionMode == 'single')
+    if (selectionMode === 'single')
       this._selectionHandler = new SelectionHandler(this.getCtx(), SelectionHandler.TYPE_SINGLE);
-    else if (selectionMode == 'multiple')
+    else if (selectionMode === 'multiple')
       this._selectionHandler = new SelectionHandler(this.getCtx(), SelectionHandler.TYPE_MULTIPLE);
     else
       this._selectionHandler = null;
@@ -29793,7 +29922,7 @@ class Chart extends BaseComponent {
         // AnimationOnDisplay
         this.Animation = BlackBoxAnimationHandler.getInAnimation(context, animationOnDisplay, container,
           bounds, animationDuration);
-        if (!this.Animation && animationOnDisplay == 'auto') {
+        if (!this.Animation && animationOnDisplay === 'auto') {
           this.Animation = DvtChartAnimOnDisplay.createAnim(this, animationOnDisplay, animationDuration);
         }
       }
@@ -29804,7 +29933,7 @@ class Chart extends BaseComponent {
         container, bounds, animationDuration);
       if (this.Animation)           // Black Box Animation
         bBlackBoxUpdate = true;
-      else if (animationOnDataChange == 'auto' && this.getPlotArea()) {
+      else if (animationOnDataChange === 'auto' && this.getPlotArea()) {
         var paSpace = this.__getPlotAreaSpace();
         this._delContainer = DvtChartPlotAreaRenderer.createClippedGroup(this, this._container, new Rectangle(0, 0, paSpace.w, paSpace.h));
         this.Animation = DvtChartAnimOnDC.createAnim(oldChart, this, animationOnDataChange,
@@ -30037,7 +30166,7 @@ class Chart extends BaseComponent {
    */
   filter(category, type) {
     // Update the component state
-    var visibility = (type == 'out' ? 'hidden' : 'visible');
+    var visibility = (type === 'out' ? 'hidden' : 'visible');
     DvtChartEventUtils.setVisibility(this, category, visibility);
     // Rerender the component. Pass the options to cause animation to happen.
     this.render(this.Options);
@@ -30051,7 +30180,7 @@ class Chart extends BaseComponent {
     this.getOptions()['highlightedCategories'] = JsonUtils.clone(categories);
 
     // Perform the highlighting and propagate to children
-    CategoryRolloverHandler.highlight(categories, this.getObjects(), this.getOptions()['highlightMatch'] == 'any');
+    CategoryRolloverHandler.highlight(categories, this.getObjects(), this.getOptions()['highlightMatch'] === 'any');
 
     if (this.legend)
       this.legend.highlight(categories);
@@ -30121,10 +30250,10 @@ class Chart extends BaseComponent {
    */
   processEvent(event, source) {
     var type = event['type'];
-    if (type == 'categoryHide' || type == 'categoryShow')
-      this.filter(event['category'], (type == 'categoryHide' ? 'out' : 'in'));
+    if (type === 'categoryHide' || type === 'categoryShow')
+      this.filter(event['category'], (type === 'categoryHide' ? 'out' : 'in'));
 
-    else if (type == 'categoryHighlight') {
+    else if (type === 'categoryHighlight') {
       // If the chart is not the source of the event, perform highlighting.
       if (this != source)
         this.highlight(event['categories']);
@@ -30133,29 +30262,29 @@ class Chart extends BaseComponent {
         this.legend.processEvent(event, source);
     }
 
-    else if (type == 'selection')
+    else if (type === 'selection')
       event = this._processSelectionEvent(event);
 
-    else if (type == 'dvtPanZoom')
+    else if (type === 'dvtPanZoom')
       event = this._processPanZoomEvent(event);
 
-    else if (type == 'dvtMarquee')
+    else if (type === 'dvtMarquee')
       event = this._processMarqueeEvent(event);
 
-    else if (type == 'overview') {
+    else if (type === 'overview') {
       var subtype = event.subtype;
-      if (subtype == 'dropCallback')
+      if (subtype === 'dropCallback')
         return;
-      var actionDone = subtype == 'scrollTime' ||
-        subtype == 'scrollEnd' ||
-        subtype == 'rangeChange';
+      var actionDone = subtype === 'scrollTime' ||
+        subtype === 'scrollEnd' ||
+        subtype === 'rangeChange';
       event = this._processScrollbarEvent(event.newX1, event.newX2, actionDone, source);
     }
 
-    else if (type == 'dvtSimpleScrollbar')
-      event = this._processScrollbarEvent(event.newMin, event.newMax, event.subtype == 'end', source);
+    else if (type === 'dvtSimpleScrollbar')
+      event = this._processScrollbarEvent(event.newMin, event.newMax, event.subtype === 'end', source);
 
-    else if (type == 'ready' && this != source)
+    else if (type === 'ready' && this != source)
       return; // Ready event fired by legend shouldn't be dispatched because the chart isn't ready yet ()
 
 
@@ -30167,7 +30296,7 @@ class Chart extends BaseComponent {
     type = event['type'];
 
     // For selection events, update the options object and calculate the added/removed arrays
-    if (type == 'selection') {
+    if (type === 'selection') {
       // TODO : The calculation of added/removedSet should ideally happen in the selectionHandler, but the code there
       // was changed such that it doesn't fire the selection event directly anymore.
       var options = this.getOptions();
@@ -30284,7 +30413,7 @@ class Chart extends BaseComponent {
    */
   _processPanZoomEvent(event) {
     var subtype = event.subtype;
-    var actionStart = subtype == 'panStart' || subtype == 'pinchStart';
+    var actionStart = subtype === 'panStart' || subtype === 'pinchStart';
     if (actionStart) {
       // The initial touch target has to be kept so that the subsequent touch move events are fired
       if (Agent.isTouchDevice() && this._panZoomTarget != this._plotArea) {
@@ -30323,7 +30452,7 @@ class Chart extends BaseComponent {
     this._lastPanZoomEvent = null; // nullify to indicate that the event has been processed
 
     var subtype = event.subtype;
-    var actionDone = subtype == 'panEnd' || subtype == 'zoom' || subtype == 'pinchEnd';
+    var actionDone = subtype === 'panEnd' || subtype === 'zoom' || subtype === 'pinchEnd';
 
     // Calculate the bounds and update the viewport
     var bounds;
@@ -30375,10 +30504,10 @@ class Chart extends BaseComponent {
     DvtChartEventUtils.adjustBounds(event);
 
     // Marquee selection
-    if (em.getDragMode() == DvtChartEventManager.DRAG_MODE_SELECT) {
+    if (em.getDragMode() === DvtChartEventManager.DRAG_MODE_SELECT) {
       var selectionHandler = em.getSelectionHandler();
 
-      if (subtype == 'start') {
+      if (subtype === 'start') {
         // If ctrl key is pressed at start of drag, the previous selection should be preserved.
         this._initSelection = event.ctrlKey ? selectionHandler.getSelectedIds() : [];
       }
@@ -30391,20 +30520,20 @@ class Chart extends BaseComponent {
       // Create and populate selection event
       var selection = selectionHandler.getSelectedIds();
       bounds = DvtChartEventUtils.getAxisBounds(this, event, false);
-      var bComplete = (subtype == 'end') ? true : false;
+      var bComplete = (subtype === 'end') ? true : false;
       var selectionEvent = EventFactory.newChartSelectionEvent(selection, bComplete,
         bounds.xMin, bounds.xMax, bounds.startGroup, bounds.endGroup,
         bounds.yMin, bounds.yMax, bounds.y2Min, bounds.y2Max);
 
       // Update the selection in the overview bg chart
-      if (subtype == 'end')
+      if (subtype === 'end')
         this._updateOverviewSelection();
 
       return selectionEvent;
     }
 
     // Marquee zoom
-    else if (em.getDragMode() == DvtChartEventManager.DRAG_MODE_ZOOM) {
+    else if (em.getDragMode() === DvtChartEventManager.DRAG_MODE_ZOOM) {
       if (subtype != 'end')
         return null;
 
@@ -30559,7 +30688,7 @@ class Chart extends BaseComponent {
    */
   getObject(seriesIndex, groupIndex) {
     for (var i = 0; i < this.Peers.length; i++) {
-      if (this.Peers[i] instanceof DvtChartObjPeer && this.Peers[i].getSeriesIndex() == seriesIndex && this.Peers[i].getGroupIndex() == groupIndex)
+      if (this.Peers[i] instanceof DvtChartObjPeer && this.Peers[i].getSeriesIndex() === seriesIndex && this.Peers[i].getGroupIndex() === groupIndex)
         return this.Peers[i];
     }
     return null;

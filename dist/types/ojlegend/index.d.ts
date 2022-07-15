@@ -22,6 +22,7 @@ export interface ojLegend<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | 
     textStyle?: Partial<CSSStyleDeclaration>;
     valign?: 'middle' | 'bottom' | 'top';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -188,6 +189,7 @@ export interface ojLegendSettableProperties<K, D extends ojLegend.Item<K> | ojLe
     textStyle?: Partial<CSSStyleDeclaration>;
     valign?: 'middle' | 'bottom' | 'top';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;

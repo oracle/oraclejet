@@ -18,7 +18,7 @@ import { CustomElementUtils, AttributeUtils, JetElementError, ElementUtils } fro
 import { getPropagationMetadataViaCache } from 'ojs/ojbindpropagation';
 import KeySetImpl from 'ojs/ojkeysetimpl';
 import Context from 'ojs/ojcontext';
-import templateEngine from 'ojs/ojtemplateengine';
+import templateEngine from 'ojs/ojtemplateengine-ko';
 import oj$2 from 'ojs/ojcore-base';
 import * as KnockoutTemplateUtils from 'ojs/ojknockouttemplateutils';
 import * as ResponsiveKnockoutUtils from 'ojs/ojresponsiveknockoututils';

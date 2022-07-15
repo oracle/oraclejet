@@ -29,7 +29,18 @@ var __oj_collapsible_metadata =
     "expanded": {
       "type": "boolean",
       "writeback": true,
-      "value": false
+      "value": false,
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "13.0.0",
+              "description": "Use doCollapse/doExpand instead"
+            }
+          ]
+        }
+      }
     },
     "translations": {
       "type": "object",
@@ -284,6 +295,11 @@ var __oj_collapsible_metadata =
          * @default false
          * @ojwriteback
          * @ojeventgroup common
+         * @ojwebelementstatus {
+         *   type: "deprecated",
+         *   since: "13.0.0",
+         *   description: "Use doCollapse/doExpand instead"
+         * }
          *
          * @example <caption>Initialize the collapsible with the <code class="prettyprint">expanded</code> attribute specified:</caption>
          * &lt;oj-collapsible expanded='true'>&lt;/oj-collapsible>
@@ -527,7 +543,7 @@ var __oj_collapsible_metadata =
 
           this.header
           .removeClass(OJC_HEADER)
-          .each(this._removeIdAttr(this.id));
+          .each(this._removeIdAttr.bind(this));
 
         // aria
           var focusable = this._findFirstFocusableInHeader();
@@ -544,7 +560,7 @@ var __oj_collapsible_metadata =
           .removeAttr(OJ_ARIA_HIDDEN)
           .removeAttr('tabIndex')
           .removeClass('oj-component-content oj-collapsible-content')
-          .each(this._removeIdAttr(this.id));
+          .each(this._removeIdAttr.bind(this));
         },
 
       /**
@@ -1368,8 +1384,8 @@ var __oj_collapsible_metadata =
        * @memberof oj.ojCollapsible
        * @private
        */
-        _removeIdAttr: function (id) {
-          if (/^oj-collapsible/.test(id)) {
+        _removeIdAttr: function (_, element) {
+          if (/^oj-collapsible/.test(element.id)) {
             this.removeAttribute('id');
           }
         }

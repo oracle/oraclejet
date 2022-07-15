@@ -1,0 +1,32 @@
+<table class="params">
+  <thead>
+    <tr>		
+      <?js
+        var self = this;
+        var deprObjs = obj;
+      ?>
+      <th>Since</th><?js
+      if(deprObjs && deprObjs.length && deprObjs[0].value){ ?>
+       <th>Value</th>
+      <?js }
+      ?>		
+      <th>Description</th>
+    </tr>
+	</thead>
+	
+	<tbody>
+    <?js
+	    deprObjs.forEach(function(depr) {
+        if (!depr) { return; }
+    ?>	
+    <tr>    
+      <td class="name"><code><?js= depr.since ?></code></td>  <?js
+      if(depr.value){ ?>
+      <td class="description"><?js= self.htmlsafe(depr.value) ?></td> 
+      <?js }
+      ?>
+      <td class="description last"><?js= depr.description ?></td> 
+    </tr>
+	<?js }); ?>
+	</tbody>
+</table>

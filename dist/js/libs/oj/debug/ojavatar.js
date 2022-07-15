@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojvcomponent', 'ojs/ojthemeutils', 'preact'], function (exports, ojvcomponent, ThemeUtils, preact) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'ojs/ojthemeutils', 'preact'], function (exports, jsxRuntime, ojvcomponent, ThemeUtils, preact) { 'use strict';
 
     var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -15,9 +15,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojthemeutils', 'preact'], function (
     };
     exports.Avatar = class Avatar extends preact.Component {
         render(props) {
-            return (preact.h("div", { class: this._getClasses(props), "aria-hidden": "true" },
-                this._getInnerContent(props),
-                this._getSecondaryInnerContent(props)));
+            return (jsxRuntime.jsxs("div", Object.assign({ class: this._getClasses(props), "aria-hidden": "true" }, { children: [this._getInnerContent(props), this._getSecondaryInnerContent(props)] })));
         }
         _getClasses(props) {
             var _a;
@@ -36,24 +34,24 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojthemeutils', 'preact'], function (
         }
         _getInnerContent(props) {
             if (props.src && !props.iconClass) {
-                return (preact.h("div", { class: "oj-avatar-background-image", style: { backgroundImage: `url("${props.src}")` } }));
+                return (jsxRuntime.jsx("div", { class: "oj-avatar-background-image", style: { backgroundImage: `url("${props.src}")` } }));
             }
             else {
-                return preact.h("div", { class: "oj-avatar-background oj-avatar-background-image" });
+                return jsxRuntime.jsx("div", { class: "oj-avatar-background oj-avatar-background-image" });
             }
         }
         _getSecondaryInnerContent(props) {
             if (props.iconClass) {
-                return preact.h("div", { class: `oj-avatar-icon ${props.iconClass}` });
+                return jsxRuntime.jsx("div", { class: `oj-avatar-icon ${props.iconClass}` });
             }
             else if (props.src) {
                 return;
             }
             else if (props.initials) {
-                return preact.h("div", { class: "oj-avatar-initials oj-avatar-background-image" }, props.initials);
+                return jsxRuntime.jsx("div", Object.assign({ class: "oj-avatar-initials oj-avatar-background-image" }, { children: props.initials }));
             }
             else {
-                return preact.h("div", { class: "oj-avatar-background-image oj-avatar-placeholder-icon" });
+                return jsxRuntime.jsx("div", { class: "oj-avatar-background-image oj-avatar-placeholder-icon" });
             }
         }
     };
@@ -64,7 +62,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojthemeutils', 'preact'], function (
         src: null,
         iconClass: ''
     };
-    exports.Avatar.metadata = { "properties": { "background": { "type": "string", "enumValues": ["neutral", "orange", "green", "teal", "blue", "slate", "mauve", "pink", "purple", "lilac", "gray", "red", "forest"] }, "initials": { "type": "string|null" }, "size": { "type": "string", "enumValues": ["xxs", "xs", "sm", "md", "lg", "xl", "xxl"] }, "src": { "type": "string|null" }, "iconClass": { "type": "string" }, "shape": { "type": "string", "enumValues": ["square", "circle"] } } };
+    exports.Avatar.metadata = { "properties": { "background": { "type": "string", "enumValues": ["neutral", "orange", "green", "teal", "blue", "slate", "mauve", "pink", "purple", "lilac", "gray", "red", "forest"] }, "initials": { "type": "string|null" }, "size": { "type": "string", "enumValues": ["2xs", "xxs", "xs", "sm", "md", "lg", "xl", "2xl", "xxl"] }, "src": { "type": "string|null" }, "iconClass": { "type": "string" }, "shape": { "type": "string", "enumValues": ["square", "circle"] } } };
     exports.Avatar = __decorate([
         ojvcomponent.customElement('oj-avatar')
     ], exports.Avatar);

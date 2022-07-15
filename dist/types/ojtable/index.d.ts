@@ -93,6 +93,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         accessibleSortDescending?: string;
         accessibleSortable?: string;
         accessibleStateSelected?: string;
+        accessibleStateUnselected?: string;
         accessibleSummaryEstimate?: string;
         accessibleSummaryExact?: string;
         labelAccSelectionAffordanceBottom?: string;
@@ -650,6 +651,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         accessibleSortDescending?: string;
         accessibleSortable?: string;
         accessibleStateSelected?: string;
+        accessibleStateUnselected?: string;
         accessibleSummaryEstimate?: string;
         accessibleSummaryExact?: string;
         labelAccSelectionAffordanceBottom?: string;

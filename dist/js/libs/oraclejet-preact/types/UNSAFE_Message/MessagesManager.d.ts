@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { ComponentChild, h } from 'preact';
-import { Item } from '@oracle/oraclejet-preact/utils/dataProvider';
+import { ComponentChild } from 'preact';
+import { Item } from '../utils/UNSAFE_dataProvider';
 /**
  * A type that defines animation configuration
  */
@@ -52,10 +52,10 @@ declare type Props<Key, Data> = {
     /**
      * A callback function that gets called before a message is removed
      */
-    onMessageWillRemove?: (key: Key, index: number) => void;
+    onMessageWillRemove?: (key: Key, index: number, node?: Element) => void;
 };
 /**
  * The component that renders individual messages for the provided data.
  */
-declare function MessagesManager<K extends string | number = string | number, D = any>(props: Props<K, D>): h.JSX.Element;
+declare function MessagesManager<K extends string | number = string | number, D = any>(props: Props<K, D>): import("preact").JSX.Element;
 export { MessageAnimation, MessagesManager };

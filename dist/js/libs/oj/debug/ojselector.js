@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'preact', 'ojs/ojdomutils'], function (exports, Translations, ojvcomponent, preact, DomUtils) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'preact', 'ojs/ojdomutils'], function (exports, jsxRuntime, Translations, ojvcomponent, preact, DomUtils) { 'use strict';
 
     var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -55,6 +55,7 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'preact', 'ojs/ojdom
             };
         }
         render(props, state) {
+            var _a;
             const { rowKey, indeterminate } = props;
             const isSelected = this._isSelected(rowKey);
             let spanClass = 'oj-selector-wrapper oj-component-icon';
@@ -68,16 +69,13 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'preact', 'ojs/ojdom
                 spanClass += ' oj-focus-highlight';
             }
             const ariaLabelledby = props['aria-labelledby'] || null;
-            const ariaLabel = (props['aria-label'] ||
-                Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabel', {
-                    rowKey
-                })) +
-                (isSelected
-                    ? Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabelSelected')
-                    : Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabelUnselected'));
-            return (preact.h(ojvcomponent.Root, { class: 'oj-selector' },
-                preact.h("span", { class: spanClass },
-                    preact.h("input", { type: 'checkbox', class: 'oj-selectorbox', "data-oj-clickthrough": 'disabled', "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._checkboxListener }))));
+            const ariaLabel = props['aria-label'] == null || ((_a = props['aria-label']) === null || _a === void 0 ? void 0 : _a.trim()) == ''
+                ? null
+                : props['aria-label'] +
+                    (isSelected
+                        ? Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabelSelected')
+                        : Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabelUnselected'));
+            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: "oj-selector" }, { children: jsxRuntime.jsx("span", Object.assign({ class: spanClass }, { children: jsxRuntime.jsx("input", { type: "checkbox", class: "oj-selectorbox", "data-oj-clickthrough": "disabled", "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._checkboxListener }) })) })));
         }
         _isSelected(rowKey) {
             const { selectedKeys, selectionMode } = this.props;

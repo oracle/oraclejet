@@ -1,0 +1,20 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+ 
+ 
+// ----- start dependencies ---------
+ 
+// set up include variables before importing dependencies
+ 
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../popup/themes/redwood/_oj-layer.scss";
+ 
+@import "_oj-menu-select-many.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-menu-select-many.scss"; 
+ 
+// ----- end dependencies ---------
+ 
+  @include module-include-once("redwood.menuselectmany") { 
+  }

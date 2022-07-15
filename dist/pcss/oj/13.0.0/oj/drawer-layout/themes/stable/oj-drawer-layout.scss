@@ -1,0 +1,9 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "../base/_oj-drawer-layout-ignore.scoped.cssvars.scss";
+
+@import "_oj-drawer-layout.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-drawer-layout.scss";

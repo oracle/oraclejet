@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -72,7 +76,7 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
                 }
             }
             else if (!SlotUtils.generateSlotsMetadata(prop, propDeclaration, typeName, metaUtilObj) &&
-                !MetadataEventUtils_1.generateEventsMetadata(prop, propDeclaration, metaUtilObj)) {
+                !(0, MetadataEventUtils_1.generateEventsMetadata)(prop, propDeclaration, metaUtilObj)) {
                 if (readOnlyPropNameNodes.find((item) => item.name === prop)) {
                     const errMsg = typeName === `${metaUtilObj.namedExportToAlias.ElementReadOnly}`
                         ? `Duplicate read-only writeback property "${prop}" detected. Delete extraneous property of type "ElementReadOnly".`
@@ -202,43 +206,60 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeS
         if (subprops.circRefDetected) {
             md.type = TypeUtils.getSubstituteTypeForCircularReference(metaObj);
         }
-        else if (metaObj.isArrayOfObject) {
-            if (scope == MetaTypes.MetadataScope.DT) {
-                md.extension = {};
-                md.extension['vbdt'] = {};
-                md.extension['vbdt']['itemProperties'] = subprops;
-            }
-        }
         else {
-            const typeNames = md.type.split(MetaUtils._UNION_SPLITTER);
-            md.type =
-                typeNames.length <= 1 || typeNames.indexOf('null') === -1 ? 'object' : 'object|null';
-            md.properties = subprops;
+            if (scope == MetaTypes.MetadataScope.DT) {
+                const typeDefName = TypeUtils.getPossibleTypeDef(prop, memberSymbol, metaObj, metaUtilObj);
+                if (typeDefName) {
+                    md['jsdoc'] = md['jsdoc'] || {};
+                    md['jsdoc']['typedef'] = typeDefName;
+                }
+            }
+            if (metaObj.isArrayOfObject) {
+                if (scope == MetaTypes.MetadataScope.DT) {
+                    md.extension = {};
+                    md.extension['vbdt'] = {};
+                    md.extension['vbdt']['itemProperties'] = subprops;
+                }
+            }
+            else {
+                const typeNames = md.type.split(MetaUtils._UNION_SPLITTER);
+                md.type =
+                    typeNames.length <= 1 || typeNames.indexOf('null') === -1 ? 'object' : 'object|null';
+                md.properties = subprops;
+            }
         }
     }
     if (propDeclaration.initializer) {
         const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName, propDeclaration);
         console.log(`${logHeader} Default value should be set using defaultProps for '${memberSymbol.name}'.`);
     }
-    if (metaUtilObj.classConsumedBindingsDecorator) {
-        const consume = DecoratorUtils.getDecoratorParamValue(metaUtilObj.classConsumedBindingsDecorator, prop);
-        if (consume) {
-            if (!md.binding) {
-                md.binding = {};
-            }
-            md.binding.consume = consume;
+    if (metaUtilObj.functionPropBindings) {
+        if (metaUtilObj.functionPropBindings[prop]) {
+            md.binding = metaUtilObj.functionPropBindings[prop];
         }
     }
-    if (metaUtilObj.classProvidedBindingsDecorator) {
-        const provide = DecoratorUtils.getDecoratorParamValue(metaUtilObj.classProvidedBindingsDecorator, prop);
-        if (provide) {
-            if (!md.binding) {
-                md.binding = {};
+    else {
+        if (metaUtilObj.classConsumedBindingsDecorator) {
+            const consume = DecoratorUtils.getDecoratorParamValue(metaUtilObj.classConsumedBindingsDecorator, prop);
+            if (consume) {
+                if (!md.binding) {
+                    md.binding = {};
+                }
+                md.binding.consume = consume;
             }
-            md.binding.provide = provide;
+        }
+        if (metaUtilObj.classProvidedBindingsDecorator) {
+            const provide = DecoratorUtils.getDecoratorParamValue(metaUtilObj.classProvidedBindingsDecorator, prop);
+            if (provide) {
+                if (!md.binding) {
+                    md.binding = {};
+                }
+                md.binding.provide = provide;
+            }
         }
     }
     delete md['isArrayOfObject'];
+    delete md['isStringTypeExplicit'];
     return md;
 }
 function isDefaultProps(node) {
@@ -296,6 +317,10 @@ Use a reference to a non-primitive constant instead.`);
             defValueExpression = defValueExpression.expression;
         }
         defaultValue = defValueExpression.getText();
+        if (defValueExpression.kind === ts.SyntaxKind.ObjectLiteralExpression) {
+            const castMatch = /\s+as\s+\w+/gm;
+            defaultValue = defaultValue.replace(castMatch, '');
+        }
         const value = MetaUtils.stringToJS(propertyName, defValueExpression.kind, defaultValue, metaUtilObj);
         if (value !== undefined) {
             if (!md.properties) {

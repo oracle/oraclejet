@@ -1,7 +1,7 @@
 import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
-import { ExtendGlobalProps, ObservedGlobalProps, PropertyChanged, Slot } from 'ojs/ojvcomponent';
+import { CancelableAction, ExtendGlobalProps, ObservedGlobalProps, PropertyChanged, Slot } from 'ojs/ojvcomponent';
 import { Component, ComponentChild, ComponentChildren } from 'preact';
 import 'ojs/ojcore-base';
 import 'ojs/ojpopup';
@@ -27,6 +27,9 @@ declare type State = {
 declare type GenericObject = {
     [key: string]: any;
 };
+declare type ToggleDetail = {
+    edge: EdgeLayout;
+};
 declare type Props = ObservedGlobalProps<'role'> & {
     children?: ComponentChildren;
     start?: Slot;
@@ -34,6 +37,7 @@ declare type Props = ObservedGlobalProps<'role'> & {
     bottom?: Slot;
     startOpened?: boolean;
     onStartOpenedChanged?: PropertyChanged<boolean>;
+    onOjBeforeClose?: CancelableAction<ToggleDetail>;
     endOpened?: boolean;
     onEndOpenedChanged?: PropertyChanged<boolean>;
     bottomOpened?: boolean;
@@ -60,6 +64,8 @@ export declare class DrawerLayout extends Component<ExtendGlobalProps<Props>, St
     private bottomClosedWithEsc;
     private overlayDrawerResizeListener;
     private reflowDrawerResizeListener;
+    private drawerOpener;
+    private elementWithFocusBeforeDrawerCloses;
     private handleResize;
     static readonly defaultProps: Partial<Props>;
     readonly state: State;
@@ -85,6 +91,7 @@ export declare class DrawerLayout extends Component<ExtendGlobalProps<Props>, St
     private handleComponentUpdate;
     private openOrCloseDrawer;
     private openOrCloseReflowDrawer;
+    private returnFocus;
     private getRefToAnimate;
     private animateOpen;
     private animateClose;
@@ -107,84 +114,67 @@ export declare class DrawerLayout extends Component<ExtendGlobalProps<Props>, St
     private beforeCloseHandler;
     private afterCloseHandler;
     private lockResizeListener;
+    private refreshHandler;
     private resizeHandler;
     private getDrawerPosition;
     private setStartEndOverlayDrawersHeight;
 }
-// Custom Element interfaces
+export {};
 export interface DrawerLayoutElement extends JetElement<DrawerLayoutElementSettableProperties>, DrawerLayoutElementSettableProperties {
-  addEventListener<T extends keyof DrawerLayoutElementEventMap>(type: T, listener: (this: HTMLElement, ev: DrawerLayoutElementEventMap[T]) => any, options?: (boolean|AddEventListenerOptions)): void;
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean|AddEventListenerOptions)): void;
-  getProperty<T extends keyof DrawerLayoutElementSettableProperties>(property: T): DrawerLayoutElement[T];
-  getProperty(property: string): any;
-  setProperty<T extends keyof DrawerLayoutElementSettableProperties>(property: T, value: DrawerLayoutElementSettableProperties[T]): void;
-  setProperty<T extends string>(property: T, value: JetSetPropertyType<T, DrawerLayoutElementSettableProperties>): void;
-  setProperties(properties: DrawerLayoutElementSettablePropertiesLenient): void;
+    addEventListener<T extends keyof DrawerLayoutElementEventMap>(type: T, listener: (this: HTMLElement, ev: DrawerLayoutElementEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
+    getProperty<T extends keyof DrawerLayoutElementSettableProperties>(property: T): DrawerLayoutElement[T];
+    getProperty(property: string): any;
+    setProperty<T extends keyof DrawerLayoutElementSettableProperties>(property: T, value: DrawerLayoutElementSettableProperties[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, DrawerLayoutElementSettableProperties>): void;
+    setProperties(properties: DrawerLayoutElementSettablePropertiesLenient): void;
 }
 export namespace DrawerLayoutElement {
-  // tslint:disable-next-line interface-over-type-literal
-  type bottomDisplayChanged = JetElementCustomEventStrict<DrawerLayoutElement["bottomDisplay"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type bottomOpenedChanged = JetElementCustomEventStrict<DrawerLayoutElement["bottomOpened"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type endDisplayChanged = JetElementCustomEventStrict<DrawerLayoutElement["endDisplay"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type endOpenedChanged = JetElementCustomEventStrict<DrawerLayoutElement["endOpened"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type startDisplayChanged = JetElementCustomEventStrict<DrawerLayoutElement["startDisplay"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type startOpenedChanged = JetElementCustomEventStrict<DrawerLayoutElement["startOpened"]>;
+    interface ojBeforeClose extends CustomEvent<ToggleDetail & {
+        accept: (param: Promise<void>) => void;
+    }> {
+    }
+    type bottomDisplayChanged = JetElementCustomEventStrict<DrawerLayoutElement['bottomDisplay']>;
+    type bottomOpenedChanged = JetElementCustomEventStrict<DrawerLayoutElement['bottomOpened']>;
+    type endDisplayChanged = JetElementCustomEventStrict<DrawerLayoutElement['endDisplay']>;
+    type endOpenedChanged = JetElementCustomEventStrict<DrawerLayoutElement['endOpened']>;
+    type startDisplayChanged = JetElementCustomEventStrict<DrawerLayoutElement['startDisplay']>;
+    type startOpenedChanged = JetElementCustomEventStrict<DrawerLayoutElement['startOpened']>;
 }
 export interface DrawerLayoutElementEventMap extends HTMLElementEventMap {
-  'bottomDisplayChanged': JetElementCustomEventStrict<DrawerLayoutElement["bottomDisplay"]>;
-  'bottomOpenedChanged': JetElementCustomEventStrict<DrawerLayoutElement["bottomOpened"]>;
-  'endDisplayChanged': JetElementCustomEventStrict<DrawerLayoutElement["endDisplay"]>;
-  'endOpenedChanged': JetElementCustomEventStrict<DrawerLayoutElement["endOpened"]>;
-  'startDisplayChanged': JetElementCustomEventStrict<DrawerLayoutElement["startDisplay"]>;
-  'startOpenedChanged': JetElementCustomEventStrict<DrawerLayoutElement["startOpened"]>;
+    'ojBeforeClose': DrawerLayoutElement.ojBeforeClose;
+    'bottomDisplayChanged': JetElementCustomEventStrict<DrawerLayoutElement['bottomDisplay']>;
+    'bottomOpenedChanged': JetElementCustomEventStrict<DrawerLayoutElement['bottomOpened']>;
+    'endDisplayChanged': JetElementCustomEventStrict<DrawerLayoutElement['endDisplay']>;
+    'endOpenedChanged': JetElementCustomEventStrict<DrawerLayoutElement['endOpened']>;
+    'startDisplayChanged': JetElementCustomEventStrict<DrawerLayoutElement['startDisplay']>;
+    'startOpenedChanged': JetElementCustomEventStrict<DrawerLayoutElement['startOpened']>;
 }
 export interface DrawerLayoutElementSettableProperties extends JetSettableProperties {
-  /**
-  * Specifies the display mode of the Bottom drawer.
-  */
-  bottomDisplay?: Props['bottomDisplay'];
-  /**
-  * Specifies the 'opened' state of the Bottom drawer.
-  */
-  bottomOpened?: Props['bottomOpened'];
-  /**
-  * Specifies the display mode of the End drawer.
-  */
-  endDisplay?: Props['endDisplay'];
-  /**
-  * Specifies the 'opened' state of the End drawer.
-  */
-  endOpened?: Props['endOpened'];
-  /**
-  * Specifies the display mode of the Start drawer.
-  */
-  startDisplay?: Props['startDisplay'];
-  /**
-  * Specifies the 'opened' state of the Start drawer.
-  */
-  startOpened?: Props['startOpened'];
+    bottomDisplay?: Props['bottomDisplay'];
+    bottomOpened?: Props['bottomOpened'];
+    endDisplay?: Props['endDisplay'];
+    endOpened?: Props['endOpened'];
+    startDisplay?: Props['startDisplay'];
+    startOpened?: Props['startOpened'];
 }
 export interface DrawerLayoutElementSettablePropertiesLenient extends Partial<DrawerLayoutElementSettableProperties> {
-  [key: string]: any;
+    [key: string]: any;
 }
 export interface DrawerLayoutIntrinsicProps extends Partial<Readonly<DrawerLayoutElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
-  children?: ComponentChildren;
-  onbottomDisplayChanged?: (value: DrawerLayoutElementEventMap['bottomDisplayChanged']) => void;
-  onbottomOpenedChanged?: (value: DrawerLayoutElementEventMap['bottomOpenedChanged']) => void;
-  onendDisplayChanged?: (value: DrawerLayoutElementEventMap['endDisplayChanged']) => void;
-  onendOpenedChanged?: (value: DrawerLayoutElementEventMap['endOpenedChanged']) => void;
-  onstartDisplayChanged?: (value: DrawerLayoutElementEventMap['startDisplayChanged']) => void;
-  onstartOpenedChanged?: (value: DrawerLayoutElementEventMap['startOpenedChanged']) => void;
+    children?: ComponentChildren;
+    onojBeforeClose?: (value: DrawerLayoutElementEventMap['ojBeforeClose']) => void;
+    onbottomDisplayChanged?: (value: DrawerLayoutElementEventMap['bottomDisplayChanged']) => void;
+    onbottomOpenedChanged?: (value: DrawerLayoutElementEventMap['bottomOpenedChanged']) => void;
+    onendDisplayChanged?: (value: DrawerLayoutElementEventMap['endDisplayChanged']) => void;
+    onendOpenedChanged?: (value: DrawerLayoutElementEventMap['endOpenedChanged']) => void;
+    onstartDisplayChanged?: (value: DrawerLayoutElementEventMap['startDisplayChanged']) => void;
+    onstartOpenedChanged?: (value: DrawerLayoutElementEventMap['startOpenedChanged']) => void;
 }
 declare global {
-  namespace preact.JSX {
-    interface IntrinsicElements {
-      "oj-drawer-layout": DrawerLayoutIntrinsicProps;
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            'oj-drawer-layout': DrawerLayoutIntrinsicProps;
+        }
     }
-  }
 }

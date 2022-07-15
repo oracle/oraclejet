@@ -1,22 +1,2 @@
-define(['exports', 'preact'], (function (exports, preact) { 'use strict';
-
-  const hiddenAccessibleStyle = "oj-hidden-accessible-hiddenAccessibleStyle-10xavsd";
-  /**
-   * HiddenAccessible is a helper component that hides its children visually,
-   * but keeps them visible to screen readers.
-   *
-   */
-
-  function HiddenAccessible({
-    children
-  }) {
-    return preact.h("span", {
-      class: hiddenAccessibleStyle
-    }, children);
-  }
-
-  exports.HiddenAccessible = HiddenAccessible;
-
-  Object.defineProperty(exports, '__esModule', { value: true });
-
-}));
+define(["exports","./HiddenAccessible-52609b87","preact/jsx-runtime",'css!./UNSAFE_HiddenAccessible.css'],(function(e,i,s,c){"use strict";e.HiddenAccessible=i.HiddenAccessible,Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=UNSAFE_HiddenAccessible.js.map

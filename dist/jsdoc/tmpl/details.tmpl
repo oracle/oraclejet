@@ -1,0 +1,222 @@
+<?js
+  var data = obj;
+  var self = this;
+  
+  //[csaba] the entire doclet is deprecated
+  if ((data.tsignore && data.tsdeprecated) || (data.tsdeprecated && !Array.isArray(data.tsdeprecated) && !data.tsdeprecated.target)){
+      ?>
+    <h5 class="important">Deprecated:</h5>
+    <?js= this.partial('deprecated.tmpl', data.tsdeprecated) ?>
+  <?js
+  }
+  else if(data.tsdeprecated && Array.isArray(data.tsdeprecated)){  //memberType deprecations
+    
+    var tsOnlyDeprecations = [];
+    var jsDeprecations = [];
+    var allDeprecations = [];
+    var since, removeBasedonSince;
+    data.tsdeprecated.forEach(function(deprecation){
+      //if (deprecation.target === 'memberType'){
+        since = deprecation.since;
+        removeBasedonSince = !since || self.convertSemverToInt32(since) <= self.convertSemverToInt32('6.0.0');
+        if(removeBasedonSince){
+            //is it deprecated prior to typescript? if so, it goes only in jsdoc.
+            jsDeprecations.push(deprecation);
+            allDeprecations.push(deprecation);
+        }
+        else{
+            //else it goes in deprecation doc.
+            tsOnlyDeprecations.push(deprecation);
+            allDeprecations.push(deprecation);
+        }
+      //}
+    });
+    if(jsDeprecations.length){ ?>
+     <span class='jsdoc-type jsdeprecated-hidden-only'>
+      <dl class="deprecated jsdeprecated-hidden-only">
+        <dt class="important">Deprecated:</dt>
+        <dd><?js= self.partial('deprecated.tmpl', allDeprecations) ?></dd>
+      </dl>
+     </span>
+    <?js 
+    }
+    if(tsOnlyDeprecations.length){
+        var depclasses =  'dep-type deprecated-hidden-only';
+        if(!jsDeprecations.length){
+            depclasses = depclasses+ ' jsdoc-type';
+        } ?>
+        <span class="<?js= depclasses?>">
+        <dl class="deprecated deprecated-hidden-only">
+          <dt class="important">Deprecated:</dt>
+          <dd><?js= self.partial('deprecated.tmpl', tsOnlyDeprecations) ?></dd>
+        </dl>
+        </span>
+    <?js }
+  } ?> 
+  <dl class="details">
+    <?js
+        var slotproperties;
+        var slotdef_longname = (data.ojtemplateslotprops ? data.ojtemplateslotprops : data.ojslotitemprops);
+        if (slotdef_longname) {
+            // need to lookup the TypeDef of templateslotprops OR (deprecated) slotitemprops, and get its properties
+            // we have the array of all TypeDefs exposed on the view (this)
+            if (self.allTypeDefs.length) {
+              for (let td of self.allTypeDefs) {
+                if (td.longname === slotdef_longname) {
+                  slotproperties = td.properties;
+                  break;
+                }
+              }
+            }
+        }
+        var properties = (slotproperties ? slotproperties : data.properties);
+        if (properties && properties.length && properties.forEach) {
+            var propData = {properties, sortmembers: !data.ojkeepsortorder, name: data.name};
+            var propsTableTitle = "Properties:";
+            if (data.ojslot || data.ojchild || data.ojtemplateslotname || slotproperties) {
+                propsTableTitle = "Properties of $current:";
+            }?>
+            <h5 class="subsection-title notoc"><?js=propsTableTitle?></h5>
+
+            <?js if (data.kind === 'event') { ?>
+                <p>All of the event payloads listed below can be found under <code class="prettyprint">event.detail</code>.
+                See <a href="<?js= env.opts.query.apidocLink ?>CustomElementOverview.html#ce-events-section" target="_blank">Events and Listeners</a> for additional information.
+                </p>
+            <?js } ?>
+
+            <dl><?js= this.partial('properties.tmpl', propData) ?></dl>
+
+    <?js } ?>
+
+    <?js
+        var ojvalues = data.ojvalues;
+        if (ojvalues && ojvalues.length && ojvalues.forEach) {
+          //[csaba]: sort the values before handing over to the template
+          //[csaba]: sort only if ojvalueskeeporder tag is not specified
+          if (!data.ojvalueskeeporder){
+            ojvalues.sort(function(val1, val2){
+              var v1 = val1.name;
+              var v2 = val2.name;
+              v1 = v1.replace(/\"/g,'');
+              v2 = v2.replace(/\"/g,'');
+
+              if (v1 < v2){
+              return -1;
+              }
+              else if (v1 > v2){
+              return 1;
+              }
+              else {
+              return 0;
+              }
+            });
+          }
+    ?>
+
+        <h5 class="subsection-title">Supported Values:</h5>
+
+        <dl><?js= this.partial('ojvalues.tmpl', ojvalues) ?></dl>
+
+    <?js } ?>
+
+    <?js
+        // [jim] move default value to the top of the one-liners (since, deprecated, ...),
+        // to be just after the new table of Supported Values.
+        if (data.defaultvalue !== undefined) {
+          var defVal = data.defaultvalue;
+          defVal = '<code class=\"prettyprint\">' + defVal + '</code>';
+          
+    ?>
+        <dt class="tag-default">Default Value:</dt>
+        <dd class="tag-default"><ul class="dummy"><li><?js= defVal ?></li></ul></dd>
+    <?js } ?>
+
+    <?js
+        // [csaba] add writeback information if exists,
+        if (data.ojwriteback) {
+    ?>
+        <dt class="tag-default">Supports writeback:</dt>
+        <dd class="tag-default"><ul class="dummy"><li><code class="prettyprint"><?js= data.ojwriteback ?></code></li></ul></dd>
+    <?js } ?>
+
+    <?js // In JET, we maintain the version centrally in the template, rather than maintaining
+         // "version" tags all over the place, so disabling this with "false". ?>
+    <?js if (false && data.version) { ?>
+        <dt class="tag-version">Version:</dt>
+        <dd class="tag-version"><ul class="dummy"><li><?js= version ?></li></ul></dd>
+    <?js } ?>
+
+    <?js
+        // [jim] display "since" on the class (container.tmpl), not on the constructor (method.tmpl > details.tmpl)
+        if (data.since && (data.kind !== "class") && data.kind !== "namespace" && data.kind !== "interface") {
+    ?>
+        <dt class="tag-since">Since:</dt>
+        <dd class="tag-since"><ul class="dummy"><li><?js= since ?></dd>
+    <?js } ?>
+
+    <?js
+       // don't include "Inherited From:" for components
+       if (!self.isCustomElement && data.inherited && data.inherits) { ?>
+        <dt class="inherited-from">Inherited From:</dt>
+        <dd class="inherited-from"><ul class="dummy"><li>
+            <?js= this.linkto(data.inherits, this.htmlsafe(data.inherits)) ?>
+        </li></dd>
+    <?js } ?>
+
+
+    <?js if (data.author && author.length) {?>
+        <dt class="tag-author">Author:</dt>
+        <dd class="tag-author">
+            <ul><?js author.forEach(function(a) { ?>
+                <li><?js= self.resolveAuthorLinks(a) ?></li>
+            <?js }); ?></ul>
+        </dd>
+    <?js } ?>
+
+    <?js if (data.copyright) {?>
+        <dt class="tag-copyright">Copyright:</dt>
+        <dd class="tag-copyright"><ul class="dummy"><li><?js= copyright ?></li></ul></dd>
+    <?js } ?>
+
+    <?js if (data.license) {?>
+        <dt class="tag-license">License:</dt>
+        <dd class="tag-license"><ul class="dummy"><li><?js= license ?></li></ul></dd>
+    <?js } ?>
+
+    <?js
+       // [csaba] include src link of you run jsdoc with the debug options enabled
+       // see confJs.json and the debug key (default is false)
+       if (data.meta && env.opts.debug) {?>
+        <dt class="tag-source">Source:</dt>
+        <dd class="tag-source"><ul class="dummy"><li>
+            <?js= self.linkto(meta.filename) ?>, line <?js= meta.lineno ?>
+        </li></ul></dd>
+    <?js } ?>
+
+    <?js if (data.tutorials && tutorials.length) {?>
+        <dt class="tag-tutorial">Tutorials:</dt>
+        <dd class="tag-tutorial">
+            <ul><?js tutorials.forEach(function(t) { ?>
+                <li><?js= self.tutoriallink(t) ?></li>
+            <?js }); ?></ul>
+        </dd>
+    <?js } ?>
+
+    <?js if (data.see && see.length) {?>
+        <dt class="tag-see">See:</dt>
+        <dd class="tag-see">
+            <ul><?js see.forEach(function(s) { ?>
+                <li><?js= self.linkto(s) ?></li>
+            <?js }); ?></ul>
+        </dd>
+    <?js } ?>
+
+    <?js if (data.todo && todo.length) {?>
+        <dt class="tag-todo">To Do:</dt>
+        <dd class="tag-todo">
+            <ul><?js todo.forEach(function(t) { ?>
+                <li><?js= t ?></li>
+            <?js }); ?></ul>
+        </dd>
+    <?js } ?>
+</dl>

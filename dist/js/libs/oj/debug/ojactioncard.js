@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojvcomponent', 'preact', 'ojs/ojdomutils', 'ojs/ojdatacollection-common'], function (exports, ojvcomponent, preact, DomUtils, DataCollectionUtils) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdomutils', 'ojs/ojdatacollection-common'], function (exports, jsxRuntime, ojvcomponent, preact, DomUtils, DataCollectionUtils) { 'use strict';
 
     var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -79,9 +79,9 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'ojs/ojdomutils', 'ojs/ojdataco
                 classString += ' oj-focus-highlight';
             }
             const tabIndex = (_a = props.tabIndex) !== null && _a !== void 0 ? _a : 0;
-            return (preact.h(ojvcomponent.Root, Object.assign({ tabIndex: tabIndex, class: classString, role: 'button', onKeyUp: this._handleKeyup, onMouseUp: this._handleUpEnd, onKeyDown: this._handleKeydown, onMouseDown: this._handleStart, onTouchStart: this._handleStart, onTouchEnd: this._handleUpEnd, onTouchCancel: this._handleTouchcancel, onTouchMove: this._handleMove, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout }, {
+            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ tabIndex: tabIndex, class: classString, role: "button", onKeyUp: this._handleKeyup, onMouseUp: this._handleUpEnd, onKeyDown: this._handleKeydown, onMouseDown: this._handleStart, onTouchStart: this._handleStart, onTouchEnd: this._handleUpEnd, onTouchCancel: this._handleTouchcancel, onTouchMove: this._handleMove, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout }, {
                 onojAction: this._handleOjAction
-            }, { ref: this._rootRef }), this.props.children));
+            }, { ref: this._rootRef }, { children: this.props.children })));
         }
         componentDidMount() {
             this._rootRef.current.addEventListener('touchstart', this._handleStart, { passive: true });

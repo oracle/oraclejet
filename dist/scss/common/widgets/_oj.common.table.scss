@@ -32,6 +32,7 @@
        // to leave space for the No Data message.
        min-height: calc(2 * #{$collectionRowHeight});
 
+       @include oj-user-select-property (none);
        // prevent graying on iOS safari
        -webkit-tap-highlight-color: rgba(0,0,0,0);
     }
@@ -117,6 +118,7 @@
     /* Styling for the header element. */
     .oj-table-header {
 
+        height: $tableRowHeight;
         color: $collectionHeaderTextColor;
         border-bottom: 1px solid $tableHeaderBorderColor;
 
@@ -128,14 +130,21 @@
     .oj-table-legacy-scroll .oj-table-header {
       display: block;
       position: relative;
+      height: calc(#{$tableRowHeight} - 1px);
     }
 
     /* Grid display styling for the header element. */
     .oj-table-grid-display .oj-table-header {
 
+        height: $collectionRowHeight;
         background-color: $collectionHeaderBgColor;
         border-bottom: 1px solid $collectionHeaderBorderColor;
 
+    }
+
+    /* Styling for the header element when table has vertical or horizontal scrollbars. */
+    .oj-table-grid-display .oj-table-legacy-scroll .oj-table-header {
+      height: calc(#{$collectionRowHeight} - 1px);
     }
 
     .oj-table-sticky .oj-table-header,
@@ -146,7 +155,7 @@
     /* Styling for the header row element. */
     .oj-table-header-row {
 
-        height: $tableRowHeight;
+        height: calc(#{$tableRowHeight} - 1px);
 
       font-size: inherit;
       vertical-align: middle;
@@ -155,13 +164,13 @@
     /* Grid display table styling for the header row element. */
     .oj-table-grid-display .oj-table-header-row {
 
-        height: $collectionRowHeight;
+        height: calc(#{$collectionRowHeight} - 1px);
 
     }
 
     /* Styling for the header row element when table is scrollable. */
     .oj-table-legacy-scroll .oj-table-header-row {
-      min-height: $tableRowHeight;
+      min-height: calc(#{$tableRowHeight} - 1px);
       height: auto;
       display: block;
       position: relative;
@@ -169,7 +178,7 @@
 
     /* Grid display table styling for the header row element when table is scrollable. */
     .oj-table-legacy-scroll.oj-table-grid-display .oj-table-header-row {
-      min-height: $collectionRowHeight;
+      min-height: calc(#{$collectionRowHeight} - 1px);
     }
 
     /* Styling for the column header elements. */
@@ -181,7 +190,7 @@
        padding-right: $tableHeaderPadding;
        padding-top: $collectionCellPadding;
        padding-bottom: $collectionCellPadding;
-       height: $tableRowHeight;
+       height: calc(#{$tableRowHeight} - 1px);
 
        float: none;
        white-space: nowrap;
@@ -207,7 +216,7 @@
     /* Grid display table styling for the column header elements. */
     .oj-table-grid-display .oj-table-column-header-cell {
 
-       height: $collectionRowHeight;
+       height: calc(#{$collectionRowHeight} - 1px);
        padding-left: $collectionCellPadding;
        padding-right: $collectionCellPadding;
 

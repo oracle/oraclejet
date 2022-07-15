@@ -1,0 +1,14 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+  @include module-include-once("stable.variables.diagram") {
+:root {
+
+
+  // diagram
+  // ----------------------------
+  --oj-diagram-node-border-color-hover:              rgb(var(--oj-palette-neutral-rgb-120));
+  --oj-diagram-link-color:                           rgb(var(--oj-palette-neutral-rgb-120));
+  --oj-diagram-node-bg-color:               rgb(var(--oj-palette-neutral-rgb-170));
+}
+
+}

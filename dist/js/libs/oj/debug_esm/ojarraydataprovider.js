@@ -8,7 +8,7 @@
 import oj from 'ojs/ojcore-base';
 import ojMap from 'ojs/ojmap';
 import ojSet from 'ojs/ojset';
-import { FilterFactory, DataProviderRefreshEvent, DataProviderMutationEvent } from 'ojs/ojdataprovider';
+import { FilterFactory, DataProviderRefreshEvent, DataProviderMutationEvent, SortUtils } from 'ojs/ojdataprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 import { warn } from 'ojs/ojlogger';
 
@@ -319,6 +319,7 @@ import { warn } from 'ojs/ojlogger';
 
 class ArrayDataProvider {
     constructor(data, options) {
+        var _a;
         this.data = data;
         this.options = options;
         this.Item = class {
@@ -383,14 +384,16 @@ class ArrayDataProvider {
                 this[ArrayDataProvider._METADATA] = metadata;
             }
         };
-        this.AsyncIterable = class {
-            constructor(_asyncIterator) {
-                this._asyncIterator = _asyncIterator;
-                this[Symbol.asyncIterator] = () => {
-                    return this._asyncIterator;
-                };
-            }
-        };
+        this.AsyncIterable = (_a = class {
+                constructor(_asyncIterator) {
+                    this._asyncIterator = _asyncIterator;
+                    this[Symbol.asyncIterator] = () => {
+                        return this._asyncIterator;
+                    };
+                }
+            },
+            Symbol.asyncIterator,
+            _a);
         this.AsyncIterator = class {
             constructor(_parent, _nextFunc, _params, _offset) {
                 this._parent = _parent;
@@ -398,12 +401,21 @@ class ArrayDataProvider {
                 this._params = _params;
                 this._offset = _offset;
                 this._clientId = (_params && _params.clientId) || Symbol();
-                _parent._mapClientIdToOffset.set(this._clientId, _offset);
+                _parent._mapClientIdToIteratorInfo.set(this._clientId, {
+                    offset: _offset,
+                    rowKey: null,
+                    data: null,
+                    filterCriterion: _params === null || _params === void 0 ? void 0 : _params.filterCriterion,
+                    sortCriteria: _params === null || _params === void 0 ? void 0 : _params.sortCriteria,
+                    fetchedRowKeys: []
+                });
                 this._cacheObj = {};
                 this._cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] = _parent._mutationSequenceNum;
             }
             ['next']() {
-                const cachedOffset = this._parent._mapClientIdToOffset.get(this._clientId);
+                var _a, _b, _c, _d, _e, _f;
+                const cachedIteratorInfo = this._parent._mapClientIdToIteratorInfo.get(this._clientId);
+                const cachedOffset = cachedIteratorInfo ? cachedIteratorInfo.offset : null;
                 const resultObj = this._nextFunc(this._params, cachedOffset, false, this._cacheObj);
                 Object.defineProperty(resultObj.result.value, 'totalFilteredRowCount', {
                     get: () => {
@@ -411,7 +423,25 @@ class ArrayDataProvider {
                     },
                     enumerable: true
                 });
-                this._parent._mapClientIdToOffset.set(this._clientId, resultObj.offset);
+                const lastRowKey = ((_a = resultObj.result.value.metadata) === null || _a === void 0 ? void 0 : _a.length) > 0
+                    ? (_b = resultObj.result.value.metadata[resultObj.result.value.metadata.length - 1]) === null || _b === void 0 ? void 0 : _b.key
+                    : null;
+                const lastData = ((_c = resultObj.result.value.data) === null || _c === void 0 ? void 0 : _c.length) > 0
+                    ? resultObj.result.value.data[resultObj.result.value.data.length - 1]
+                    : null;
+                const rowKeyArray = (_d = resultObj.result.value.metadata) === null || _d === void 0 ? void 0 : _d.map((itemMetadata) => itemMetadata.key);
+                this._parent._mapClientIdToIteratorInfo.set(this._clientId, {
+                    offset: resultObj.offset,
+                    rowKey: lastRowKey,
+                    data: lastData,
+                    filterCriterion: (_e = this._params) === null || _e === void 0 ? void 0 : _e.filterCriterion,
+                    sortCriteria: (_f = this._params) === null || _f === void 0 ? void 0 : _f.sortCriteria,
+                    fetchedRowKeys: rowKeyArray
+                        ? (cachedIteratorInfo === null || cachedIteratorInfo === void 0 ? void 0 : cachedIteratorInfo.fetchedRowKeys)
+                            ? cachedIteratorInfo.fetchedRowKeys.concat(rowKeyArray)
+                            : rowKeyArray
+                        : []
+                });
                 return Promise.resolve(resultObj.result);
             }
             _getTotalFilteredRowCount() {
@@ -497,7 +527,7 @@ class ArrayDataProvider {
         };
         this._sequenceNum = 0;
         this._mutationSequenceNum = 0;
-        this._mapClientIdToOffset = new Map();
+        this._mapClientIdToIteratorInfo = new Map();
         this._subscribeObservableArray(data);
         if (options != null && options[ArrayDataProvider._KEYS] != null) {
             this._keysSpecified = true;
@@ -620,9 +650,23 @@ class ArrayDataProvider {
         }
         else if (capabilityName === 'filter') {
             return {
-                operators: ['$co', '$eq', '$ew', '$pr', '$gt', '$ge', '$lt', '$le', '$ne', '$regex', '$sw'],
+                operators: [
+                    '$co',
+                    '$eq',
+                    '$ew',
+                    '$pr',
+                    '$gt',
+                    '$ge',
+                    '$lt',
+                    '$le',
+                    '$ne',
+                    '$regex',
+                    '$sw',
+                    '$exists'
+                ],
                 attributeExpression: ['*'],
                 textFilter: {},
+                nestedFilter: {},
                 collationOptions: {
                     sensitivity: ['base', 'accent', 'case', 'variant']
                 }
@@ -661,8 +705,7 @@ class ArrayDataProvider {
         }
         return this._keys;
     }
-    _indexOfKey(searchKey) {
-        const keys = this._getKeys();
+    _indexOfKey(searchKey, keys) {
         let keyIndex = -1;
         let i;
         for (i = 0; i < keys.length; i++) {
@@ -673,25 +716,55 @@ class ArrayDataProvider {
         }
         return keyIndex;
     }
-    _adjustIteratorOffset(removeIndexes, addIndexes) {
-        this._mapClientIdToOffset.forEach((offset, clientId) => {
-            let deleteCount = 0;
-            if (removeIndexes) {
-                removeIndexes.forEach((index) => {
-                    if (index < offset) {
-                        ++deleteCount;
-                    }
-                });
+    _adjustIteratorOffset(removeArray, addArray) {
+        const removeIndexes = removeArray === null || removeArray === void 0 ? void 0 : removeArray.indexes;
+        const addIndexes = addArray === null || addArray === void 0 ? void 0 : addArray.indexes;
+        this._mapClientIdToIteratorInfo.forEach((iteratorInfo, clientId) => {
+            if (iteratorInfo.offset > 0) {
+                const filterCriterion = iteratorInfo.filterCriterion;
+                const sortCriteria = iteratorInfo.sortCriteria;
+                const sortComparator = sortCriteria ? this._getSortComparator(sortCriteria) : null;
+                if (removeIndexes) {
+                    removeIndexes.forEach((rowIndex, index) => {
+                        const rowKey = Array.from(removeArray.keys)[index];
+                        const fetchedRowIndex = this._indexOfKey(rowKey, iteratorInfo.fetchedRowKeys);
+                        if (fetchedRowIndex > -1) {
+                            --iteratorInfo.offset;
+                            iteratorInfo.fetchedRowKeys.splice(fetchedRowIndex, 1);
+                        }
+                    });
+                }
+                if (addIndexes) {
+                    addIndexes.forEach((rowIndex, index) => {
+                        const data = addArray.data[index];
+                        const rowKey = Array.from(addArray.keys)[index];
+                        if (!filterCriterion ||
+                            !filterCriterion.filter ||
+                            (data && filterCriterion.filter(data))) {
+                            if (!sortComparator) {
+                                const lastFetchedRowIndex = this._indexOfKey(iteratorInfo.rowKey, this._getKeys());
+                                if (rowIndex < lastFetchedRowIndex) {
+                                    ++iteratorInfo.offset;
+                                    const fetchedRowIndex = this._indexOfKey(rowKey, iteratorInfo.fetchedRowKeys);
+                                    if (fetchedRowIndex < 0) {
+                                        iteratorInfo.fetchedRowKeys.splice(rowIndex, 0, rowKey);
+                                    }
+                                }
+                            }
+                            else if (data &&
+                                iteratorInfo.data &&
+                                sortComparator({ value: iteratorInfo.data }, { value: data }) > 0) {
+                                ++iteratorInfo.offset;
+                                const fetchedRowIndex = this._indexOfKey(rowKey, iteratorInfo.fetchedRowKeys);
+                                if (fetchedRowIndex < 0) {
+                                    iteratorInfo.fetchedRowKeys.splice(rowIndex, 0, rowKey);
+                                }
+                            }
+                        }
+                    });
+                }
+                this._mapClientIdToIteratorInfo.set(clientId, iteratorInfo);
             }
-            offset -= deleteCount;
-            if (addIndexes) {
-                addIndexes.forEach((index) => {
-                    if (index < offset) {
-                        ++offset;
-                    }
-                });
-            }
-            this._mapClientIdToOffset.set(clientId, offset);
         });
     }
     _subscribeObservableArray(data) {
@@ -791,7 +864,7 @@ class ArrayDataProvider {
                     }
                     if (keyArray.length > 0) {
                         keyArray.forEach((key) => {
-                            const keyIndex = this._indexOfKey(key);
+                            const keyIndex = this._indexOfKey(key, this._getKeys());
                             if (keyIndex >= 0) {
                                 this._keys.splice(keyIndex, 1);
                             }
@@ -826,7 +899,7 @@ class ArrayDataProvider {
                                 this._sequenceNum++;
                                 this._keys.splice(changes[i].index, 0, id);
                             }
-                            else if (isInitiallyEmpty || this._indexOfKey(id) === -1) {
+                            else if (isInitiallyEmpty || this._indexOfKey(id, this._getKeys()) === -1) {
                                 this._keys.splice(changes[i].index, 0, id);
                             }
                             else if (!generatedKeys && !this._keysSpecified) {
@@ -865,10 +938,9 @@ class ArrayDataProvider {
                 this._fireMutationEvent(operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
             }, null, 'arrayChange');
             data['subscribe']((changes) => {
-                var _a, _b, _c, _d;
                 if (this._mutationEvent) {
                     const detail = this._mutationEvent['detail'];
-                    this._adjustIteratorOffset((_a = detail.remove) === null || _a === void 0 ? void 0 : _a.indexes, (_b = detail.add) === null || _b === void 0 ? void 0 : _b.indexes);
+                    this._adjustIteratorOffset(detail.remove, detail.add);
                     this.dispatchEvent(this._mutationEvent);
                 }
                 else if (this._mutationRemoveEvent ||
@@ -876,12 +948,12 @@ class ArrayDataProvider {
                     this._mutationUpdateEvent) {
                     if (this._mutationRemoveEvent) {
                         const detail = this._mutationRemoveEvent['detail'];
-                        this._adjustIteratorOffset((_c = detail.remove) === null || _c === void 0 ? void 0 : _c.indexes, null);
+                        this._adjustIteratorOffset(detail.remove, null);
                         this.dispatchEvent(this._mutationRemoveEvent);
                     }
                     if (this._mutationAddEvent) {
                         const detail = this._mutationAddEvent['detail'];
-                        this._adjustIteratorOffset(null, (_d = detail.add) === null || _d === void 0 ? void 0 : _d.indexes);
+                        this._adjustIteratorOffset(null, detail.add);
                         this.dispatchEvent(this._mutationAddEvent);
                     }
                     if (this._mutationUpdateEvent) {
@@ -1127,44 +1199,13 @@ class ArrayDataProvider {
                 }
                 xval = this._getVal(x.value, attribute);
                 yval = this._getVal(y.value, attribute);
-                if (comparator != null) {
-                    const descendingResult = direction === 'descending' ? -1 : 1;
-                    const comparatorResult = comparator(xval, yval) * descendingResult;
-                    if (comparatorResult !== 0) {
-                        return comparatorResult;
-                    }
+                if (!comparator) {
+                    comparator = SortUtils.getNaturalSortComparator();
                 }
-                else {
-                    let compareResult = 0;
-                    const strX = typeof xval === 'string' ? xval : new String(xval).toString();
-                    const strY = typeof yval === 'string' ? yval : new String(yval).toString();
-                    if (direction === 'ascending') {
-                        if (strX === 'null' || strX === 'undefined') {
-                            return 1;
-                        }
-                        if (strY === 'null' || strY === 'undefined') {
-                            return -1;
-                        }
-                        compareResult = strX.localeCompare(strY, undefined, {
-                            numeric: true,
-                            sensitivity: 'base'
-                        });
-                    }
-                    else {
-                        if (strX === 'null' || strX === 'undefined') {
-                            return -1;
-                        }
-                        if (strY === 'null' || strY === 'undefined') {
-                            return 1;
-                        }
-                        compareResult = strY.localeCompare(strX, undefined, {
-                            numeric: true,
-                            sensitivity: 'base'
-                        });
-                    }
-                    if (compareResult !== 0) {
-                        return compareResult;
-                    }
+                const descendingResult = direction === 'descending' ? -1 : 1;
+                const comparatorResult = comparator(xval, yval) * descendingResult;
+                if (comparatorResult !== 0) {
+                    return comparatorResult;
                 }
             }
             return 0;

@@ -557,18 +557,21 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
     const _DEFAULTFETCHSIZE = 25;
     class RESTDataProvider {
         constructor(options) {
+            var _a;
             this.options = options;
             this._totalSize = -1;
             this._sequenceNum = 0;
-            this._mapClientIdToOffset = new Map();
-            this.AsyncIterable = class {
-                constructor(_asyncIterator) {
-                    this._asyncIterator = _asyncIterator;
-                    this[Symbol.asyncIterator] = function () {
-                        return this._asyncIterator;
-                    };
-                }
-            };
+            this._mapClientIdToProps = new Map();
+            this.AsyncIterable = (_a = class {
+                    constructor(_asyncIterator) {
+                        this._asyncIterator = _asyncIterator;
+                        this[Symbol.asyncIterator] = function () {
+                            return this._asyncIterator;
+                        };
+                    }
+                },
+                Symbol.asyncIterator,
+                _a);
             this.AsyncIterator = class {
                 constructor(_parent, _nextFunc, _fetchParameters, _offset, _iterationLimit) {
                     this._parent = _parent;
@@ -578,13 +581,18 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
                     this._iterationLimit = _iterationLimit;
                     this._rowsFetched = 0;
                     this._clientId = (_fetchParameters && _fetchParameters.clientId) || Symbol();
-                    _parent._mapClientIdToOffset.set(this._clientId, _offset);
+                    _parent._mapClientIdToProps.set(this._clientId, { hasMore: true, offset: _offset });
                 }
                 next() {
                     return __awaiter$1(this, void 0, void 0, function* () {
-                        const cachedOffset = this._parent._mapClientIdToOffset.get(this._clientId);
-                        const { result, offset } = yield this._nextFunc(_FETCHFIRST, this._fetchParameters, cachedOffset);
-                        this._parent._mapClientIdToOffset.set(this._clientId, offset);
+                        const propObject = this._parent._mapClientIdToProps.get(this._clientId);
+                        const cachedOffset = propObject.offset;
+                        const hasMore = propObject.hasMore;
+                        const { result, offset, hasNoMore } = yield this._nextFunc(_FETCHFIRST, this._fetchParameters, cachedOffset, hasMore);
+                        this._parent._mapClientIdToProps.set(this._clientId, {
+                            hasMore: !hasNoMore,
+                            offset: offset
+                        });
                         const data = result.value.data;
                         this._rowsFetched += data.length;
                         if (Number.isInteger(this._iterationLimit) && this._rowsFetched >= this._iterationLimit) {
@@ -691,50 +699,59 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
             this._adjustIteratorOffset(remove, add);
             this.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(detail));
         }
-        _fetchFrom(fetchType, fetchParameters, offset) {
+        _fetchFrom(fetchType, fetchParameters, offset, hasMore) {
             return __awaiter$1(this, void 0, void 0, function* () {
-                const convertedFetchParameters = this._convertFetchListToFetchByOffsetParameters(fetchParameters, offset);
-                const fetchSize = this._getFetchSize(convertedFetchParameters);
-                const fullFetchParameters = Object.assign(Object.assign({}, convertedFetchParameters), { size: fetchSize, filterCriterion: ojdataprovider.FilterFactory.getFilter({
-                        filterDef: convertedFetchParameters.filterCriterion,
-                        filterOptions: this.options
-                    }) });
-                const restHelper = new RESTHelper({
-                    fetchType,
-                    fetchParameters: fullFetchParameters,
-                    url: this.options.url,
-                    transforms: this.options.transforms,
-                    fetchOptions: {
-                        textFilterAttributes: this.options.textFilterAttributes
+                if (hasMore) {
+                    const convertedFetchParameters = this._convertFetchListToFetchByOffsetParameters(fetchParameters, offset);
+                    const fetchSize = this._getFetchSize(convertedFetchParameters);
+                    const fullFetchParameters = Object.assign(Object.assign({}, convertedFetchParameters), { size: fetchSize, filterCriterion: ojdataprovider.FilterFactory.getFilter({
+                            filterDef: convertedFetchParameters.filterCriterion,
+                            filterOptions: this.options
+                        }) });
+                    const restHelper = new RESTHelper({
+                        fetchType,
+                        fetchParameters: fullFetchParameters,
+                        url: this.options.url,
+                        transforms: this.options.transforms,
+                        fetchOptions: {
+                            textFilterAttributes: this.options.textFilterAttributes
+                        }
+                    });
+                    const fetchResult = yield restHelper.fetch();
+                    const { data, totalSize, hasMore } = fetchResult;
+                    let metadata;
+                    if (fetchResult.metadata) {
+                        metadata = fetchResult.metadata.map((entry) => (Object.assign({}, entry)));
                     }
-                });
-                const fetchResult = yield restHelper.fetch();
-                const { data, totalSize, hasMore } = fetchResult;
-                let metadata;
-                if (fetchResult.metadata) {
-                    metadata = fetchResult.metadata.map((entry) => (Object.assign({}, entry)));
-                }
-                else {
-                    const keys = fetchResult.keys || this._generateKeysFromData(data);
-                    metadata = this._generateMetadataFromKeys(keys);
-                }
-                const mergedSortCriteria = this._mergeSortCriteria(fetchParameters.sortCriteria);
-                if (mergedSortCriteria) {
-                    fetchParameters.sortCriteria = mergedSortCriteria;
-                }
-                const result = { fetchParameters, data, metadata };
-                if (Number.isInteger(totalSize) && this._totalSize !== totalSize) {
-                    this._totalSize = totalSize;
-                }
-                if (typeof hasMore === 'boolean' && (hasMore || data.length > 0)) {
+                    else {
+                        const keys = fetchResult.keys || this._generateKeysFromData(data);
+                        metadata = this._generateMetadataFromKeys(keys);
+                    }
+                    const mergedSortCriteria = this._mergeSortCriteria(fetchParameters.sortCriteria);
+                    if (mergedSortCriteria) {
+                        fetchParameters.sortCriteria = mergedSortCriteria;
+                    }
+                    const result = { fetchParameters, data, metadata };
+                    if (Number.isInteger(totalSize) && this._totalSize !== totalSize) {
+                        this._totalSize = totalSize;
+                    }
+                    if (typeof hasMore === 'boolean' && (hasMore || data.length > 0)) {
+                        return {
+                            result: new this.AsyncIteratorYieldResult(result),
+                            offset: offset + data.length,
+                            hasNoMore: !hasMore
+                        };
+                    }
                     return {
-                        result: new this.AsyncIteratorYieldResult(result),
-                        offset: offset + data.length
+                        result: new this.AsyncIteratorReturnResult(result),
+                        offset: offset + data.length,
+                        hasNoMore: !hasMore
                     };
                 }
                 return {
-                    result: new this.AsyncIteratorReturnResult(result),
-                    offset: offset + data.length
+                    result: new this.AsyncIteratorReturnResult({ fetchParameters: fetchParameters, data: [], metadata: [] }),
+                    offset: offset,
+                    hasNoMore: true
                 };
             });
         }
@@ -807,7 +824,7 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
         }
         _fetchByOffsetRandomAccess(fetchParameters, offset) {
             return __awaiter$1(this, void 0, void 0, function* () {
-                const fetchResult = yield this._fetchFrom(_FETCHBYOFFSET, this._convertFetchByOffsetToFetchListParameters(fetchParameters), offset);
+                const fetchResult = yield this._fetchFrom(_FETCHBYOFFSET, this._convertFetchByOffsetToFetchListParameters(fetchParameters), offset, true);
                 const { value, done } = fetchResult.result;
                 const { data, metadata } = value;
                 const results = data.map((value, index) => ({ metadata: metadata[index], data: value }));
@@ -995,7 +1012,8 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
         _adjustIteratorOffset(remove, add) {
             const removeIndexes = remove ? remove.indexes : null;
             const addIndexes = add ? add.indexes : null;
-            this._mapClientIdToOffset.forEach((offset, clientId) => {
+            this._mapClientIdToProps.forEach((propObject, clientId) => {
+                let offset = propObject.offset;
                 let deleteCount = 0;
                 if (removeIndexes) {
                     removeIndexes.forEach(function (index) {
@@ -1005,14 +1023,23 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
                     });
                 }
                 offset -= deleteCount;
+                let resetHasMore = false;
                 if (addIndexes) {
                     addIndexes.forEach(function (index) {
                         if (index < offset) {
                             ++offset;
                         }
+                        else {
+                            resetHasMore = true;
+                        }
                     });
                 }
-                this._mapClientIdToOffset.set(clientId, offset);
+                if (resetHasMore) {
+                    this._mapClientIdToProps.set(clientId, { hasMore: true, offset: offset });
+                }
+                else {
+                    this._mapClientIdToProps.set(clientId, { hasMore: propObject.hasMore, offset: offset });
+                }
             });
         }
     }

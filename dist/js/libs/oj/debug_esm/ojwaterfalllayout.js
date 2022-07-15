@@ -5,7 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Component, h } from 'preact';
+import { jsx } from 'preact/jsx-runtime';
+import { Component } from 'preact';
 import { Root, customElement } from 'ojs/ojvcomponent';
 import oj from 'ojs/ojcore-base';
 import { handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
@@ -528,6 +529,9 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
                         if (this.actionableMode === false) {
                             this._enterActionableMode();
                         }
+                        else {
+                            this._exitActionableMode();
+                        }
                         break;
                     }
                     case 'Escape':
@@ -591,7 +595,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         else {
             data = this.getData();
             const positions = this.state.skeletonPositions;
-            if (data) {
+            if (data && this.state.width > 0) {
                 if (data.value && data.value.data.length === 0) {
                     content = this.contentHandler.renderNoData();
                 }
@@ -610,14 +614,10 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             }
         }
         if (data == null) {
-            return (h(Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
-                h("div", { role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
-                    h("div", { role: "row", style: this._getContentDivStyle(), tabIndex: 0, "aria-label": getTranslatedString('oj-ojWaterfallLayout.msgFetchingData'), "data-oj-context": true }, content))));
+            return (jsx(Root, Object.assign({ ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsx("div", Object.assign({ role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsx("div", Object.assign({ role: "row", style: this._getContentDivStyle(), tabIndex: 0, "aria-label": getTranslatedString('oj-ojWaterfallLayout.msgFetchingData'), "data-oj-context": true }, { children: content })) })) })));
         }
         else {
-            return (h(Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
-                h("div", { onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
-                    h("div", { role: "row", style: this._getContentDivStyle(), "data-oj-context": true }, content))));
+            return (jsx(Root, Object.assign({ ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsx("div", Object.assign({ onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsx("div", Object.assign({ role: "row", style: this._getContentDivStyle(), "data-oj-context": true }, { children: content })) })) })));
         }
     }
     _getScrollPolicyOptions() {
@@ -658,6 +658,10 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
                         const currWidth = this.state.width;
                         const newWidth = Math.round(entry.contentRect.width);
                         if (Math.abs(newWidth - currWidth) > WaterfallLayout_1.minResizeWidthThreshold) {
+                            const skeleton = root.querySelector('.oj-waterfalllayout-skeleton');
+                            if (skeleton && this.skeletonWidth == 0) {
+                                this.skeletonWidth = skeleton.clientWidth;
+                            }
                             this.setState({ width: newWidth });
                             if (this.getSkeletonPositions() != null) {
                                 this._updatePositionsForSkeletons(newWidth);
@@ -1167,8 +1171,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
                 style.width = position.width + 'px';
             }
         }
-        return (h("div", { class: "oj-waterfalllayout-skeleton", style: style },
-            h("div", { class: "oj-waterfalllayout-skeleton-content oj-animation-skeleton" })));
+        return (jsx("div", Object.assign({ class: "oj-waterfalllayout-skeleton", style: style }, { children: jsx("div", { class: "oj-waterfalllayout-skeleton-content oj-animation-skeleton" }) })));
     }
 };
 WaterfallLayout.defaultProps = {

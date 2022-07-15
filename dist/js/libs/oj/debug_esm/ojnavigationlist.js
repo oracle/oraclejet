@@ -12,7 +12,7 @@ import $ from 'jquery';
 import { isTouchSupported, getReadingDirection } from 'ojs/ojdomutils';
 import { NavigationListDndContext } from 'ojs/ojnavigationlistdnd';
 import 'ojs/ojlistview';
-import { disableElement } from 'ojs/ojdatacollection-common';
+import { isElementIntersectingScrollerBounds, disableElement } from 'ojs/ojdatacollection-common';
 import 'ojs/ojmenu';
 import 'ojs/ojbutton';
 
@@ -33,8 +33,8 @@ var __oj_navigation_list_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -1649,7 +1649,7 @@ const _ojNavigationListView = _NavigationListUtils.clazz(oj$1._ojListView,
     HandleSelectionOption: function (options) {
       if (options.selection !== undefined) {
         var newSelectionValue = options.selection;
-        if (newSelectionValue) {
+        if (newSelectionValue !== null) {
           var selection = this.GetOption('selection');
           if (!selection || selection.length === 0 ||
               !this.compareValues(selection[0], newSelectionValue)) {
@@ -2550,8 +2550,7 @@ _ojNavigationListView._CSS_Vars = {
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#animation-section"></a>
    * </h3>
    *
-   * <p>Applications can customize animations triggered by actions in Navigation List by either listening for <code class="prettyprint">animateStart/animateEnd</code>
-   *    events or overriding action specific style classes on the animated item.  See the documentation of <a href="AnimationUtils.html">AnimationUtils</a>
+   * <p>Applications can customize animations triggered by actions in Navigation List by overriding action specific style classes on the animated item.  See the documentation of <a href="AnimationUtils.html">AnimationUtils</a>
    *    class for details.</p>
    *
    * <p>The following are actions in which applications can use to customize animation effects.
@@ -3306,6 +3305,8 @@ _ojNavigationListView._CSS_Vars = {
        * @instance
        * @type {number}
        * @default 0
+       * @ojdeprecated {value: "hierarchyMenuThreshold", since: "13.0.0",
+       * description: "The hierarchyMenuThreshold attribute is deprecated as it is not suppoted in Redwood theme"}
        *
        * @example <caption>Initialize the Navigation List with the <code class="prettyprint">hierarchy-menu-threshold</code> attribute specified:</caption>
        *  &lt;oj-navigation-list hierarchy-menu-threshold='4'> ... &lt;/oj-navigation-list>
@@ -3414,7 +3415,7 @@ _ojNavigationListView._CSS_Vars = {
        * @instance
        * @type {Object|null}
        * @default null
-       * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the Navigation List with the <code class="prettyprint">data</code> attribute specified:</caption>
@@ -3590,6 +3591,7 @@ _ojNavigationListView._CSS_Vars = {
       // Events
       /**
        * Triggered when the default animation of a particular action is about to start.  The default animation can be cancelled by calling event.preventDefault.
+       * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
        *
        * @ojshortdesc Event handler for when the default animation of a particular action is about to start.
        * @expose
@@ -3603,6 +3605,7 @@ _ojNavigationListView._CSS_Vars = {
       animateStart: null,
       /**
        * Triggered when the default animation of a particular action has ended.  Note this event will not be triggered if application cancelled the default animation on animateStart.
+       * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
        *
        * @ojshortdesc Event handler for when the default animation of a particular action has ended.
        * @expose
@@ -3730,6 +3733,9 @@ _ojNavigationListView._CSS_Vars = {
       };
       this.navlist._WrapCustomElementRenderer = function (renderer) {
         return self._WrapCustomElementRenderer(renderer);
+      };
+      this.navlist._GetCustomElement = function () {
+        return self._GetCustomElement();
       };
       this.navlist.afterCreate();
     },
@@ -4122,7 +4128,7 @@ _ojNavigationListView._CSS_Vars = {
   /**
    * @ojcomponent oj.ojTabBar
    * @augments oj.baseComponent
-   *
+   * @ojimportmembers oj.ojSharedContextMenu
    * @since 4.0.0
    * @ojrole tablist
    * @ojsignature [{
@@ -4311,8 +4317,7 @@ _ojNavigationListView._CSS_Vars = {
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#animation-section"></a>
    * </h3>
    *
-   * <p>Applications can customize animations triggered by actions in Tab Bar by either listening for <code class="prettyprint">animateStart/animateEnd</code>
-   *    events or overriding action specific style classes on the animated item.  See the documentation of <a href="AnimationUtils.html">AnimationUtils</a>
+   * <p>Applications can customize animations triggered by actions in Tab Bar by overriding action specific style classes on the animated item.  See the documentation of <a href="AnimationUtils.html">AnimationUtils</a>
    *    class for details.</p>
    *
    * <p>The following are actions in which applications can use to customize animation effects.
@@ -5022,6 +5027,7 @@ _ojNavigationListView._CSS_Vars = {
   // Events
   /**
    * Triggered when the default animation of a particular action is about to start.  The default animation can be cancelled by calling event.preventDefault.
+   * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
    *
    * @expose
    * @ojshortdesc Event handler for when the default animation of a particular action is about to start.
@@ -5035,6 +5041,7 @@ _ojNavigationListView._CSS_Vars = {
    */
   /**
    * Triggered when the default animation of a particular action has ended.  Note this event will not be triggered if application cancelled the default animation on animateStart.
+   * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
    *
    * @expose
    * @ojshortdesc Event handler for when the default animation of a particular action has ended.
@@ -5190,7 +5197,6 @@ _ojNavigationListView._CSS_Vars = {
    */
 
       // Slots
-
     /**
      * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot content must be a &lt;template> element.
      * The content of the template could either include the &lt;li> element, in which case that will be used as
@@ -5836,7 +5842,10 @@ HorizontalNavListHandler.prototype.HandleArrowKeys = function (keyCode, isExtend
       _ojNavigationListView.superclass.HandleArrowKeys.call(this.m_widget, keyCode,
                                                             isExtend, event);
   var current = this.m_widget.m_active.elem;
-  current[0].scrollIntoView(false);
+  if (!isElementIntersectingScrollerBounds(
+    this.m_root[0], document.documentElement)) {
+      current[0].scrollIntoView(false);
+  }
   return processed;
 };
 
@@ -5987,7 +5996,7 @@ HorizontalNavListHandler.prototype.SetOptions = function (options) {
 
 HorizontalNavListHandler.prototype.HandleSelectionChange = function (item) {
   if (this.m_overflowMenuItem) {
-    if (item.style.display === 'none') {
+    if (item != null && item.style.display === 'none') {
       this._highlightUnhighlightMoreItem(true);
     } else {
       this._highlightUnhighlightMoreItem(false);

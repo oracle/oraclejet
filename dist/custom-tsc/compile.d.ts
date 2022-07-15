@@ -6,8 +6,10 @@ declare type CompileOptions = {
 };
 export declare type BuildOptions = {
     dtDir: string;
+    apiDocDir?: string;
     isolationMode: boolean;
     coreJetBuildOptions?: {
+        defaultCompType?: MetadataTypes.ComponentMetadata['type'];
         exclude?: Array<string>;
         enableLegacyElement?: number;
     };
@@ -22,6 +24,7 @@ export declare type BuildOptions = {
     tsBuiltDir: string;
     mainEntryFile: string;
     typesDir: string;
+    translationBundleIds?: Array<string>;
 };
 export default function compile({ tsconfigJson, buildOptions }: CompileOptions): {
     errors: any[];

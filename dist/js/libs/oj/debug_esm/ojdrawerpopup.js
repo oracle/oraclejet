@@ -5,8 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { jsx } from 'preact/jsx-runtime';
 import { getUniqueId, Root, customElement } from 'ojs/ojvcomponent';
-import { Component, createRef, h } from 'preact';
+import { Component, createRef } from 'preact';
 import $ from 'jquery';
 import { slideIn, slideOut } from 'ojs/ojanimation';
 import { addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
@@ -20,6 +21,15 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
 var DrawerPopup_1;
 const ojet = oj;
@@ -42,7 +52,7 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
                 this.selfClose();
                 return;
             }
-            const focusables = this.getFocusables();
+            const focusables = DrawerUtils.getFocusables(this.rootRef.current);
             if (event.key === DrawerConstants.keys.TAB && this.props.modality === 'modal') {
                 this.isShiftKeyActive = event.shiftKey;
                 const { length, 0: firstItem, [length - 1]: lastItem } = focusables;
@@ -68,10 +78,10 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
             }
         };
         this.autoDismissHandler = (event) => {
-            const focusables = this.getFocusables();
+            const focusables = DrawerUtils.getFocusables(this.rootRef.current);
             const zorderLayer = this.rootRef.current.parentNode;
+            const isTargetWithin = this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings(zorderLayer, event.target);
             if (this.props.autoDismiss === 'focus-loss') {
-                const isTargetWithin = this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings(zorderLayer, event.target);
                 if (event.type === 'focus' && this.props.modality === 'modal' && !isTargetWithin) {
                     event.preventDefault();
                     const elementLosingFocus = event.relatedTarget;
@@ -90,9 +100,16 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
                     this.selfClose();
                 }
             }
+            else if (this.props.autoDismiss === 'none' &&
+                this.props.modality === 'modal' &&
+                !isTargetWithin) {
+                event.preventDefault();
+            }
         };
-        this.getFocusables = () => {
-            return this.rootRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), video');
+        this.refreshHandler = (edge) => {
+            const $drawerElement = $(this.rootRef.current);
+            $drawerElement.position(this.getDrawerPosition(edge));
+            PopupService.getInstance().triggerOnDescendents($drawerElement, PopupService.EVENT.POPUP_REFRESH);
         };
         this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings = (zorderLayer, target) => {
             const zorderLayersBuffer = [zorderLayer];
@@ -129,10 +146,9 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
         if (this.isDrawerOpened() ||
             this.wasDrawerOpenedInPrevState() ||
             this.isDrawerClosedWithAutoDismiss()) {
-            return (h(Root, { ref: this.rootRef, class: this.getPopupStyleClasses(this.props.edge), tabIndex: -1, role: this.props.role || 'dialog', onKeyDown: this.handleKeyDown },
-                h("div", { class: "oj-drawer-full-height" }, props.children)));
+            return (jsx(Root, Object.assign({ ref: this.rootRef, class: this.getPopupStyleClasses(this.props.edge), tabIndex: -1, role: this.props.role || 'dialog', onKeyDown: this.handleKeyDown }, { children: jsx("div", Object.assign({ class: "oj-drawer-full-height" }, { children: props.children })) })));
         }
-        return h(Root, null);
+        return jsx(Root, {});
     }
     isDrawerOpened() {
         return this.state[DrawerConstants.stringOpened];
@@ -144,8 +160,16 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
         return DrawerPopup_1.idsClosedWithAutoDismiss.indexOf(this.state.id) > -1;
     }
     selfClose() {
-        var _a, _b;
-        (_b = (_a = this.props).onOpenedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, false);
+        var _a, _b, _c, _d;
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield ((_b = (_a = this.props).onOjBeforeClose) === null || _b === void 0 ? void 0 : _b.call(_a));
+            }
+            catch (_) {
+                return;
+            }
+            (_d = (_c = this.props).onOpenedChanged) === null || _d === void 0 ? void 0 : _d.call(_c, false);
+        });
     }
     openOrCloseDrawer(prevState) {
         if (this.isDrawerOpened() != prevState.opened) {
@@ -183,14 +207,13 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
             [PSEvent.POPUP_BEFORE_CLOSE]: () => this.beforeCloseHandler(edge),
             [PSEvent.POPUP_AFTER_CLOSE]: () => this.afterCloseHandler(prevState),
             [PSEvent.POPUP_AUTODISMISS]: (event) => this.autoDismissHandler(event),
-            [PSEvent.POPUP_REFRESH]: () => {
-                $drawerElement.position(this.getDrawerPosition(edge));
-            }
+            [PSEvent.POPUP_REFRESH]: () => this.refreshHandler(edge)
         };
         return PSOptions;
     }
     beforeOpenHandler(edge, PSOptions) {
         DrawerUtils.disableBodyOverflow();
+        this.drawerOpener = document.activeElement;
         const $drawerElement = PSOptions[PopupService.OPTION.POPUP];
         const position = PSOptions[PopupService.OPTION.POSITION];
         $drawerElement.show();
@@ -224,10 +247,10 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
             const autofocusItems = this.rootRef.current.querySelectorAll('[autofocus]');
             const { length: autofocusLength, 0: autofocusFirstItem } = autofocusItems;
             if (autofocusLength > 0) {
-                autofocusFirstItem.focus();
+                autofocusFirstItem.focus({ preventScroll: true });
                 return;
             }
-            const focusables = this.getFocusables();
+            const focusables = DrawerUtils.getFocusables(this.rootRef.current);
             let elementToFocus = this.rootRef.current;
             if (focusables.length) {
                 for (let i = 0; i < focusables.length; i++) {
@@ -237,11 +260,12 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
                     }
                 }
             }
-            elementToFocus.focus();
+            elementToFocus.focus({ preventScroll: true });
         }
     }
     beforeCloseHandler(edge) {
         DrawerUtils.disableBodyOverflow();
+        this.elementWithFocusBeforeDrawerCloses = document.activeElement;
         removeResizeListener(this.rootRef.current, this.drawerResizeHandler);
         const busyContext = ojet.Context.getContext(this.rootRef.current).getBusyContext();
         const resolveFunc = busyContext.addBusyState({ description: 'Animation in progress' });
@@ -259,6 +283,9 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
             if (status === ZOrderUtils.STATUS.CLOSE && this.props.opened) {
                 (_b = (_a = this.props).onOpenedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, false);
             }
+        }
+        if (this.rootRef.current.contains(this.elementWithFocusBeforeDrawerCloses)) {
+            DrawerUtils.moveFocusToElementOrNearestAncestor(this.drawerOpener);
         }
         if (status === ZOrderUtils.STATUS.CLOSE && this.isDrawerOpened()) {
             const popupServiceInstance = PopupService.getInstance();
@@ -366,7 +393,7 @@ DrawerPopup.defaultProps = {
     closeGesture: 'swipe'
 };
 DrawerPopup.idsClosedWithAutoDismiss = [];
-DrawerPopup.metadata = { "slots": { "": {} }, "properties": { "opened": { "type": "boolean", "writeback": true }, "edge": { "type": "string", "enumValues": ["start", "end", "bottom"] }, "modality": { "type": "string", "enumValues": ["modal", "modeless"] }, "autoDismiss": { "type": "string", "enumValues": ["focus-loss", "none"] }, "closeGesture": { "type": "string", "enumValues": ["swipe", "none"] } }, "extension": { "_WRITEBACK_PROPS": ["opened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
+DrawerPopup.metadata = { "slots": { "": {} }, "properties": { "opened": { "type": "boolean", "writeback": true }, "edge": { "type": "string", "enumValues": ["start", "end", "bottom"] }, "modality": { "type": "string", "enumValues": ["modal", "modeless"] }, "autoDismiss": { "type": "string", "enumValues": ["focus-loss", "none"] }, "closeGesture": { "type": "string", "enumValues": ["swipe", "none"] } }, "events": { "ojBeforeClose": { "cancelable": true } }, "extension": { "_WRITEBACK_PROPS": ["opened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
 DrawerPopup = DrawerPopup_1 = __decorate([
     customElement('oj-drawer-popup')
 ], DrawerPopup);

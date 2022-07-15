@@ -147,6 +147,9 @@ var __oj_led_gauge_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },
@@ -425,6 +428,9 @@ var __oj_rating_gauge_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },
@@ -840,6 +846,9 @@ var __oj_status_meter_gauge_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },
@@ -2705,7 +2714,7 @@ var __oj_status_meter_gauge_metadata =
            * @ojshortdesc The converter used to format the labels. See the Help documentation for more information.
            * @instance
            * @type {Object}
-           * @ojsignature {target: "Type", value: "?oj.Converter<string>"}
+           * @ojsignature {target: "Type", value: "?oj.Converter<string|number>"}
            * @default null
            */
           converter: null,
@@ -3722,6 +3731,7 @@ var __oj_status_meter_gauge_metadata =
    * @ojstylevariableset oj-status-meter-gauge-css-set1
    * @ojdisplayname metricLabel
    * @ojstylevariable --oj-gauge-metric-label-font-weight {description: "Font weight for metric label.", formats: ["font_weight"], help: "oj-status-meter-gauge-css-set1"}
+   * @memberof oj.ojStatusMeterGauge
    */
 
   /**

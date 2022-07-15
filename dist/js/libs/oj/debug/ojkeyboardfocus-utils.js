@@ -46,6 +46,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
   /**
    * Check if the specified element is visible
    * @param {Element} element
+   * @ignore
    * @export
    */
   const checkVisibility = function (element) {
@@ -54,6 +55,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
 
   /**
    * @export
+   * @ignore
    */
   const getActionableElementsInNode = function (element) {
     var actionableElems = [];
@@ -69,6 +71,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
 
   /**
    * @export
+   * @ignore
    */
   const isActionableElement = function (node) {
     var parentNode = node.parentNode;
@@ -89,6 +92,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * @param {boolean=} skipVisibilityCheck
    * @return {Element[]} An array of all of the focusable elements in a node
    * @export
+   * @ignore
    */
   const getFocusableElementsInNode = function (node, skipVisibilityCheck) {
     var inputElems = [];
@@ -123,6 +127,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * Remove the aria-readonly attribute from the specified element
    * @param {Element} element
    * @export
+   * @ignore
    */
   const removeAriaReadonly = function (element) {
     var ariaReadonly = element.getAttribute(_ARIA_READONLY);
@@ -135,6 +140,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * Make the specified element unfocusable
    * @param {Element} element
    * @export
+   * @ignore
    */
   const disableElement = function (element) {
     var tabIndex = parseInt(element.getAttribute(_TAB_INDEX), 10);
@@ -151,6 +157,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * @param {boolean=} includeReadonly
    * @return {Element[]} An array of the disabled elements
    * @export
+   * @ignore
    */
   const disableAllFocusableElements = function (element, skipVisibilityCheck,
     excludeActiveElement, includeReadonly) {
@@ -174,6 +181,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * @param {Element} element
    * @return {NodeList} An array of the enabled elements
    * @export
+   * @ignore
    */
   const enableAllFocusableElements = function (element) {
     // make all non-focusable elements focusable again
@@ -203,6 +211,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * This method should be used inside the component's focusout handler.
    * @param elem the component element
    * @return the logical popup element if one has been launched from within the component, null otherwise.
+   * @ignore
    */
   const getLogicalChildPopup = function (componentElement) {
     var popups = oj.ZOrderUtils.findOpenPopups();

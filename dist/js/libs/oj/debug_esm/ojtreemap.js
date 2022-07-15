@@ -52,8 +52,8 @@ var __oj_treemap_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -323,6 +323,9 @@ var __oj_treemap_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },
@@ -561,7 +564,7 @@ var __oj_treemap_node_metadata =
  * @ojcomponent oj.ojTreemap
  * @augments oj.dvtBaseComponent
  * @since 0.7.0
- *
+ * @ojimportmembers oj.ojSharedContextMenu
  * @ojshortdesc A tree map is an interactive data visualization in which hierarchical data is represented across two dimensions by the size and color of nested rectangular nodes.
  * @ojrole application
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -731,7 +734,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
        * @type {Object|null}
        * @ojsignature {target: "Type", value: "DataProvider<K, D>|null"}
        * @default null
-       * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the treemap with the
@@ -1900,7 +1903,6 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
  */
 
  // Slots
-
 /**
  * <p>
  *  The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for

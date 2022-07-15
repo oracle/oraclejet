@@ -5,5 +5,6 @@
  * 1. Pick a random number in the range between 0 (inclusive) and 1 (exclusive)
  * 2. Convert the number to a base-36 string (using characters 0-9 and a-z)
  * 3. Slice off the leading '0.' prefix
+ * 4. ids should always start with a letter, so prefix it with 'id'
  */
 export declare const useId: () => string;

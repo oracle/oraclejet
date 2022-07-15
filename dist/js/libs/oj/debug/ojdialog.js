@@ -1776,12 +1776,12 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           /**
            * Specifies the cancel behavior of the dialog.
            * The default value depends on the theme.
-           * In the alta-web theme, the default is <code class="prettyprint">"icon"</code>,
-           * and in alta-android, alta-ios and alta-windows themes, the
-           * default is <code class="prettyprint">"none"</code>.
+           * In the Redwood theme, the default is <code class="prettyprint">"none"</code>.
+           * In the deprecated Alta web theme, the default is <code class="prettyprint">"icon"</code>.
+           * In the deprecated Alta mobile themes (Android, iOS, Windows), the default is <code class="prettyprint">"none"</code>.
            *
            * <p> Note that the cancelBehavior applies to both automatic and user-defined headers.
-           * So by default, a user-defined header in the alta-web theme will have a system generated close icon.
+           * So, a user-defined header will use the cancelBehavior setting or a theme-specific default.
            *
            * @expose
            * @memberof oj.ojDialog
@@ -1800,19 +1800,19 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
            * var cancelBehavior = myDialog.cancelBehavior;
            *
            * // setter
-           * myDialog.cancelBehavior = "none";
+           * myDialog.cancelBehavior = "icon";
            *
            * @example <caption>Set the default in the theme (SCSS) :</caption>
-           * $dialogCancelBehaviorOptionDefault: none !default;
+           * $dialogCancelBehaviorOptionDefault: icon !default;
            *
            */
         cancelBehavior: 'icon',
           /**
            * Specifies the drag affordance.
            * The default value depends on the theme.
-           * In the alta-web theme, the default is <code class="prettyprint">"title-bar"</code>,
-           * and in alta-android, alta-ios and alta-windows themes, the
-           * default is <code class="prettyprint">"none"</code>.
+           * In the Redwood theme, the default is <code class="prettyprint">"none"</code>.
+           * In the deprecated Alta web theme, the default is <code class="prettyprint">"title-bar"</code>.
+           * In the deprecated Alta mobile themes (Android, iOS, Windows), the default is <code class="prettyprint">"none"</code>.
            *
            * @expose
            * @memberof oj.ojDialog
@@ -1822,15 +1822,15 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
            * @ojvalue {string} "title-bar" The dialog will be draggable by the title bar.
            * @ojvalue {string} "none" The dialog will not be draggable.
            *
-           * @example <caption>Initialize the dialog to disable dragging <code class="prettyprint">dragAffordance</code></caption>
-           * &lt;oj-dialog drag-affordance="none" &gt;&lt;/oj-dialog&gt;
+           * @example <caption>Initialize the dialog to enable dragging <code class="prettyprint">dragAffordance</code></caption>
+           * &lt;oj-dialog drag-affordance="title-bar" &gt;&lt;/oj-dialog&gt;
            *
            * @example <caption>Get or set the <code class="prettyprint">dragAffordance</code> property, after initialization:</caption>
            * // getter
            * var dragAffordance = myDialog.dragAffordance;
            *
            * // setter
-           * myDialog.dragAffordance = "none";
+           * myDialog.dragAffordance = "title-bar";
            */
         dragAffordance: 'title-bar',
           /**
@@ -2092,9 +2092,9 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
            *
            * Specifies the resizeBehavior of the dialog.
            * The default value depends on the theme.
-           * In the alta-web theme, the default is <code class="prettyprint">"resizable"</code>,
-           * and in alta-android, alta-ios and alta-windows themes, the
-           * default is <code class="prettyprint">"none"</code>.
+           * In the Redwood theme, the default is <code class="prettyprint">"none"</code>.
+           * In the deprecated Alta web theme, the default is <code class="prettyprint">"resizable"</code>.
+           * In the deprecated Alta mobile themes (Android, iOS, Windows), the default is <code class="prettyprint">"none"</code>.
            *
            * @expose
            * @memberof oj.ojDialog
@@ -2105,7 +2105,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
            * @ojvalue {string} "none" The dialog will not be interactively resizable.
            *
            * @example <caption>Initialize the dialog to a specific resizeBehavior <code class="prettyprint">resizeBehavior</code></caption>
-           * &lt;oj-dialog resize-behavior="none" &gt;&lt;/oj-dialog&gt;
+           * &lt;oj-dialog resize-behavior="resizable" &gt;&lt;/oj-dialog&gt;
            *
            * @example <caption>Get or set the <code class="prettyprint">resizeBehavior</code> property, after initialization:</caption>
            *
@@ -2113,9 +2113,9 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
            * var resizeBehavior = myDialog.resizeBehavior;
            *
            * // setter
-           * myDialog.resizeBehavior = "none";
+           * myDialog.resizeBehavior = "resizable";
            * @example <caption>Set the default in the theme (SCSS) :</caption>
-           * $dialogResizeBehaviorOptionDefault: none !default;
+           * $dialogResizeBehaviorOptionDefault: resizable !default;
            */
         resizeBehavior: 'resizable',
           /**
@@ -2306,6 +2306,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
              * Triggered when a default animation is about to start, such as when the component is
              * being opened/closed or a child item is being added/removed. The default animation can
              * be cancelled by calling <code class="prettyprint">event.preventDefault</code>.
+             * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
              *
              * @expose
              * @event
@@ -2352,6 +2353,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
              * opened/closed or a child item is being added/removed. This event is not triggered if
              * the application has called preventDefault on the animateStart
              * event.
+             * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
              *
              * @expose
              * @event
@@ -2762,8 +2764,6 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @return {void}
        * @fires oj.ojDialog#beforeClose
        * @fires oj.ojDialog#close
-       * @fires oj.ojDialog#ojAnimationStart
-       * @fires oj.ojDialog#ojAnimationEnd
        *
        * @example <caption>Invoke the <code class="prettyprint">close</code> method:</caption>
        * myDialog.close();
@@ -2791,19 +2791,6 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // activates the _isOperationPending gatekeeper
         this._setWhenReady('close');
         this._focusedElement = null;
-
-        // if the launcher is not focusable, find the closet focuable ancestor
-        if (!this.opener.filter(':focusable').focus().length) {
-          var launcher = this.opener.parents().filter(':focusable');
-          if (launcher.length > 0) {
-            launcher[0].focus();
-          } else {
-             // Hiding a focused element doesn't trigger blur in WebKit
-             // so in case we have nothing to focus on, explicitly blur the active element
-             // https://bugs.webkit.org/show_bug.cgi?id=47182
-            $(this.document[0].activeElement).blur();
-          }
-        }
 
         // if dialog modality is modal, check if we need
         // to restore the disabled accesskey attributes
@@ -2887,6 +2874,21 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       _afterCloseHandler: function (psOptions) {
         var context = psOptions[oj.PopupService.OPTION.CONTEXT];
         this._restoreBodyOverflow();
+
+        // Moved from close(). Don't want to move focus until the close animation completed.
+        // If the launcher is not focusable, find the closet focuable ancestor
+        if (!this.opener.filter(':focusable').focus().length) {
+          var launcher = this.opener.parents().filter(':focusable');
+          if (launcher.length > 0) {
+            launcher[0].focus();
+          } else {
+             // Hiding a focused element doesn't trigger blur in WebKit
+             // so in case we have nothing to focus on, explicitly blur the active element
+             // https://bugs.webkit.org/show_bug.cgi?id=47182
+            $(this.document[0].activeElement).blur();
+          }
+        }
+
         var event;
         if (context) {
           event = context.closeEvent;
@@ -2931,8 +2933,6 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @return {void}
        * @fires oj.ojDialog#beforeOpen
        * @fires oj.ojDialog#open
-       * @fires oj.ojDialog#ojAnimationStart
-       * @fires oj.ojDialog#ojAnimationEnd
        *
        * @example <caption>Invoke the <code class="prettyprint">open</code> method:</caption>
        * var open = myDialog.open();

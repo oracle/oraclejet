@@ -111,6 +111,16 @@ define(['exports', 'ojs/ojmap', 'ojs/ojcore-base'], function (exports, ojMap, oj
    *                        <li>{DvtDiagramLayoutContextLink} - layout context for the current link</li>
    *                      </ul>
    *                      The return value of the function is a label object with the following properties {@link DiagramUtils.LabelLayout}
+   *  @property {(Object|Function)=} obj.panZoomState An object with the following properties that defines diagram panZoom state.
+   *                         <p>Alternatively a panZoom State can be defined with a function. The function will receive the following parameters:
+   *                           <ul>
+   *                             <li>{DvtDiagramLayoutContext} - layout context for the diagram</li>
+   *                           </ul>
+   *                           The return value of the function is a panZoom state object with the properties defined below.
+   *                          </p>
+   * @property {number} obj.panZoomState.zoom zoom value
+   * @property {number} obj.panZoomState.centerX center x value
+   * @property {number} obj.panZoomState.centerY center y value
    * @property {(Object|Function)=} obj.viewport An object with the following properties that defines diagram viewport.
    *                         <p>Alternatively a viewport can be defined with a function. The function will receive the following parameters:
    *                           <ul>
@@ -122,6 +132,7 @@ define(['exports', 'ojs/ojmap', 'ojs/ojcore-base'], function (exports, ojMap, oj
    * @property {number} obj.viewport.y y-coordinate
    * @property {number} obj.viewport.w width
    * @property {number} obj.viewport.h height
+   * @ojdeprecated {target:'property', for:"obj.viewport", since: "13.0.0", description: "Viewport has been deprecated, please use panZoomState property instead."}
    * @returns {Function} layout callback function
    * @ojsignature [{target:"Type", value:"<K1, K2, D1, D2>", for:"genericTypeParameters"},
    *               {target: "Type", value: "K1", for: "obj.nodes.id"},
@@ -133,6 +144,7 @@ define(['exports', 'ojs/ojmap', 'ojs/ojcore-base'], function (exports, ojMap, oj
    *               {target: "Type", value: "(context: DvtDiagramLayoutContext<K1, K2, D1, D2>, link: DvtDiagramLayoutContextLink<K1, K2, D2>) => string", for: "obj.linkDefaults.path"},
    *               {target: "Type", value: "(context: DvtDiagramLayoutContext<K1, K2, D1, D2>, link: DvtDiagramLayoutContextLink<K1, K2, D2>) => DiagramUtils.LabelLayout", for: "obj.linkDefaults.labelLayout"},
    *               {target: "Type", value: "{x: number, y: number, w: number, h: number} |((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => {x: number, y: number, w: number, h: number})", for: "obj.viewport"},
+   *               {target: "Type", value: "{zoom: number, centerX: number, centerY: number} |((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => {zoom: number, centerY: number, centerX: number})", for: "obj.panZoomState"},
    *               {target: "Type", value: "(context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void", for: "returns"}]
    * @export
    * @method getLayout
@@ -189,6 +201,14 @@ define(['exports', 'ojs/ojmap', 'ojs/ojcore-base'], function (exports, ojMap, oj
           layoutContext.setViewport(viewport(layoutContext));
         } else {
           layoutContext.setViewport(viewport);
+        }
+      }
+      if (obj.panZoomState) {
+        var panZoomState = obj.panZoomState;
+        if (panZoomState instanceof Function) {
+          layoutContext.setPanZoomState(panZoomState(layoutContext));
+        } else {
+          layoutContext.setPanZoomState(panZoomState);
         }
       }
     };

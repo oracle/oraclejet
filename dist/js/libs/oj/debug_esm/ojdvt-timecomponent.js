@@ -1372,16 +1372,7 @@ class TimeComponentEventManager extends EventManager {
    * @return {dvt.Point} The relative position.
    * @private
    */
-  _getRelativePosition(pageX, pageY) {
-    // TODO: Consider removing this method, and use context.pageToStageCoords(pageX, pageY) instead
-    // Looks like this method is only necessary to cache the stage absolute position, but
-    // at the time of writing, there is already a cache in the context for this purpose.
-    // The base dvt.EventManager handles clearing this cache on mouseout, so I think
-    // we only need to take care of calling context.clearStageAbsolutePosition() in _onTouchDragEnd.
-    //
-    // Summary: remove this method, replace all instance with context.pageToStageCoords(pageX, pageY),
-    // remove all instances of this._stageAbsolutePosition, and just call
-    // context.clearStageAbsolutePosition() in _onTouchDragEnd
+  _getRelativePosition(pageX, pageY) { 
     if(!this._stageAbsolutePosition)
       this._stageAbsolutePosition = this._context.getStageAbsolutePosition();
 
@@ -1463,8 +1454,6 @@ class TimeComponentEventManager extends EventManager {
       this._isDragPanning = false;
 
       this._comp.endDragPan();
-      // Clear the stage absolute position cache
-      this._stageAbsolutePosition = null;
 
       // No longer need the glass pane
       this._comp.unregisterAndDestroyGlassPane();
@@ -1485,6 +1474,8 @@ class TimeComponentEventManager extends EventManager {
         this._comp.setCursor(dragHandler.getCursor(relPos));
       }
     }
+    // Clear the stage absolute position cache
+    this._stageAbsolutePosition = null;
   }
 
   /**

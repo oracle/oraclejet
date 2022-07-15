@@ -147,18 +147,21 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcac
 
     class DedupDataProvider {
         constructor(dataProvider) {
+            var _a, _b;
             this.dataProvider = dataProvider;
-            this.DedupAsyncIterable = class {
-                constructor(_parent, params, dataProviderAsyncIterator, cache) {
-                    this._parent = _parent;
-                    this.params = params;
-                    this.dataProviderAsyncIterator = dataProviderAsyncIterator;
-                    this.cache = cache;
-                    this[Symbol.asyncIterator] = () => {
-                        return new this._parent.DedupAsyncIterator(this._parent, this.params, this.dataProviderAsyncIterator, this.cache);
-                    };
-                }
-            };
+            this.DedupAsyncIterable = (_b = class {
+                    constructor(_parent, params, dataProviderAsyncIterator, cache) {
+                        this._parent = _parent;
+                        this.params = params;
+                        this.dataProviderAsyncIterator = dataProviderAsyncIterator;
+                        this.cache = cache;
+                        this[_a] = () => {
+                            return new this._parent.DedupAsyncIterator(this._parent, this.params, this.dataProviderAsyncIterator, this.cache);
+                        };
+                    }
+                },
+                _a = Symbol.asyncIterator,
+                _b);
             this.DedupAsyncIterator = class {
                 constructor(_parent, params, asyncIterator, cache) {
                     this._parent = _parent;

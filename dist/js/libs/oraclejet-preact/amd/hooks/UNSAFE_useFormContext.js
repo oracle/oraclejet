@@ -1,0 +1,2 @@
+define(["exports","preact","preact/hooks"],(function(e,t,s){"use strict";const n={isDisabled:!1,isFormLayout:!1,isReadonly:!1,labelEdge:"inside",labelStartWidth:"33%",labelWrapping:"wrap",textAlign:"start",userAssistanceDensity:"reflow"},o=t.createContext(n);e.FormContext=o,e.useFormContext=function(){const e=s.useContext(o);return Object.assign({},n,e)},Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=UNSAFE_useFormContext.js.map

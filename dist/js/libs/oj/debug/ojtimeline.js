@@ -40,8 +40,8 @@ var __oj_timeline_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -396,6 +396,9 @@ var __oj_timeline_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "accessibleItemDesc": {
           "type": "string"
         },
@@ -857,7 +860,7 @@ var __oj_timeline_series_metadata =
    *     </tr>
    *     <tr>
    *       <td><kbd>F2</kbd></td>
-   *       <td>Enter Actionable mode.  This enables keyboard action on elements inside the item bubble, including navigating between focusable elements inside the item bubble.</td>
+   *       <td>Toggle Actionable mode. Entering actionable mode enables keyboard action on elements inside the item bubble, including navigating between focusable elements inside the item bubble.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>UpArrow</kbd></td>
@@ -1174,7 +1177,6 @@ var __oj_timeline_series_metadata =
    *               {target: "Type", value: "<K, D>", for: "genericTypeParameters"}]
    */
   // Slots
-
   /**
    * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the timeline.
    *  The slot content must be a single &lt;template> element.
@@ -1503,7 +1505,7 @@ var __oj_timeline_series_metadata =
    * @augments oj.dvtTimeComponent
    * @ojrole application
    * @since 1.1.0
-   *
+   * @ojimportmembers oj.ojSharedContextMenu
    * @ojshortdesc A timeline is an interactive data visualization that displays a series of events in chronological order.
    * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
    * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
@@ -1538,11 +1540,11 @@ var __oj_timeline_series_metadata =
    * <pre class="prettyprint">
    * <code>
    * &lt;oj-timeline
-   *   start='{{oj.IntlConverterUtils.dateToLocalIso(new Date("Jan 1, 2016"))}}'
-   *   end='{{oj.IntlConverterUtils.dateToLocalIso(new Date("Dec 31, 2016"))}}'
+   *   start='[[oj.IntlConverterUtils.dateToLocalIso(new Date("Jan 1, 2016"))]]'
+   *   end='[[oj.IntlConverterUtils.dateToLocalIso(new Date("Dec 31, 2016"))]]'
    *   major-axis='{"scale": "months"}'
    *   minor-axis='{"scale": "weeks"}'
-   *   series='{{seriesData}}'>
+   *   data='[[dataProvider]]'>
    * &lt;/oj-timeline>
    * </code>
    * </pre>
@@ -1795,7 +1797,7 @@ var __oj_timeline_series_metadata =
        * @type {?Object}
        * @ojsignature {target: "Type", value: "?(DataProvider<K, D>)", jsdocOverride:true}
        * @default null
-       * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the Timeline with the <code class="prettyprint">data</code> attribute specified:</caption>
@@ -3535,8 +3537,11 @@ var __oj_timeline_series_metadata =
         resources.next = 'oj-fwk-icon oj-fwk-icon-caret-end';
 
         // Add these enable/disable all focusable functions to enable actionable mode
-        this.options._keyboardUtils = { enableAllFocusable: ojkeyboardfocusUtils.enableAllFocusableElements,
-                                        disableAllFocusable: ojkeyboardfocusUtils.disableAllFocusableElements };
+        this.options._keyboardUtils = {
+          enableAllFocusable: ojkeyboardfocusUtils.enableAllFocusableElements,
+          disableAllFocusable: ojkeyboardfocusUtils.disableAllFocusableElements,
+          getActionableElementsInNode: ojkeyboardfocusUtils.getActionableElementsInNode
+        };
       },
 
       // @inheritdoc

@@ -510,8 +510,8 @@ var __oj_tag_cloud_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -613,6 +613,9 @@ var __oj_tag_cloud_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },
@@ -741,7 +744,7 @@ var __oj_tag_cloud_item_metadata =
  * @ojcomponent oj.ojTagCloud
  * @augments oj.dvtBaseComponent
  * @since 1.1.0
- *
+ * @ojimportmembers oj.ojSharedContextMenu
  * @ojrole application
  * @ojshortdesc A tag cloud is an interactive data visualization of textual data, where the importance of each tagged word or phrase is represented by font size or color.
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -905,7 +908,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       * @type {Object|null}
       * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
       * @default null
-      * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+      * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
       *
       * @example <caption>Initialize the tag cloud with the

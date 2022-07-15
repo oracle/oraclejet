@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'preact', 'ojs/ojtranslation', 'ojs/ojfilepickerutils', 'ojs/ojfocusutils', 'jqueryui-amd/tabbable'], function (exports, oj, DomUtils, ojvcomponent, preact, Translations, ojfilepickerutils, FocusUtils, tabbable) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'preact', 'ojs/ojtranslation', 'ojs/ojfilepickerutils', 'ojs/ojfocusutils', 'jqueryui-amd/tabbable'], function (exports, jsxRuntime, oj, DomUtils, ojvcomponent, preact, Translations, ojfilepickerutils, FocusUtils, tabbable) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     FocusUtils = FocusUtils && Object.prototype.hasOwnProperty.call(FocusUtils, 'default') ? FocusUtils['default'] : FocusUtils;
@@ -197,26 +197,22 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'pre
         }
         _renderDisabled(props, triggerSlot) {
             const rootClasses = triggerSlot ? 'oj-filepicker' : 'oj-filepicker oj-filepicker-no-trigger';
-            return (preact.h(ojvcomponent.Root, { class: rootClasses },
-                preact.h("div", { class: "oj-filepicker-disabled oj-filepicker-container" }, triggerSlot || this._renderDefaultTriggerContent(props))));
+            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: rootClasses }, { children: jsxRuntime.jsx("div", Object.assign({ class: "oj-filepicker-disabled oj-filepicker-container" }, { children: triggerSlot || this._renderDefaultTriggerContent(props) })) })));
         }
         _renderWithCustomTrigger(props, triggerSlot, clickHandler) {
             const dndHandlers = this._getDndHandlers(props);
-            return (preact.h(ojvcomponent.Root, { class: `oj-filepicker ${this._getFocusClass()}`, ref: this.rootRef, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut },
-                preact.h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, class: "oj-filepicker-container", "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) }, triggerSlot)));
+            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: `oj-filepicker ${this._getFocusClass()}`, ref: this.rootRef, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, { children: jsxRuntime.jsx("div", Object.assign({ onClick: clickHandler, onKeyPress: this._handleSelectingFiles, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, class: "oj-filepicker-container", "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) }, { children: triggerSlot })) })));
         }
         _renderWithDefaultTrigger(props, clickHandler) {
             const validity = this.state.validity;
             const validityState = validity === 'valid' ? 'oj-valid-drop' : validity === 'invalid' ? 'oj-invalid-drop' : '';
             const dndHandlers = this._getDndHandlers(props);
-            return (preact.h(ojvcomponent.Root, { class: `oj-filepicker oj-filepicker-no-trigger ${this._getFocusClass()}`, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, ref: this.rootRef },
-                preact.h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, class: 'oj-filepicker-container', tabIndex: 0, "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) },
-                    preact.h("div", { class: `oj-filepicker-dropzone ${validityState}`, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop }, this._renderDefaultTriggerContent(props)))));
+            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: `oj-filepicker oj-filepicker-no-trigger ${this._getFocusClass()}`, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, ref: this.rootRef }, { children: jsxRuntime.jsx("div", Object.assign({ onClick: clickHandler, onKeyPress: this._handleSelectingFiles, class: 'oj-filepicker-container', tabIndex: 0, "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) }, { children: jsxRuntime.jsx("div", Object.assign({ class: `oj-filepicker-dropzone ${validityState}`, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop }, { children: this._renderDefaultTriggerContent(props) })) })) })));
         }
         _renderDefaultTriggerContent(props) {
             return [
-                preact.h("div", { class: "oj-filepicker-text" }, this._getPrimaryText(props)),
-                preact.h("div", { class: "oj-filepicker-secondary-text" }, this._getSecondaryText(props))
+                jsxRuntime.jsx("div", Object.assign({ class: "oj-filepicker-text" }, { children: this._getPrimaryText(props) })),
+                jsxRuntime.jsx("div", Object.assign({ class: "oj-filepicker-secondary-text" }, { children: this._getSecondaryText(props) }))
             ];
         }
         _getRole(props, clickHandler) {

@@ -5,7 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { h, Fragment, Component } from 'preact';
+import { jsxs, jsx } from 'preact/jsx-runtime';
+import { Fragment, Component } from 'preact';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import 'ojs/ojlabel';
 import { ElementUtils } from 'ojs/ojcustomelement-utils';
@@ -31,10 +32,7 @@ function VStartLabeler(props) {
     if (!Array.isArray(props.children)) {
         props.children.props['labelEdge'] = 'provided';
     }
-    return (h(Fragment, null,
-        h("div", { class: 'oj-formlayout-inline-label', style: labelWrapperStyle },
-            h("oj-label", { for: props.forid }, props.labelText)),
-        h("div", { class: 'oj-formlayout-inline-value', style: valueWrapperStyle }, props.children)));
+    return (jsxs(Fragment, { children: [jsx("div", Object.assign({ class: "oj-formlayout-inline-label", style: labelWrapperStyle }, { children: jsx("oj-label", Object.assign({ for: props.forid }, { children: props.labelText })) })), jsx("div", Object.assign({ class: "oj-formlayout-inline-value", style: valueWrapperStyle }, { children: props.children }))] }));
 }
 function _computeStartLabelWidth(labelWidth, colspan) {
     let newWidth = labelWidth;
@@ -75,9 +73,7 @@ function VTopLabeler(props) {
     if (!Array.isArray(props.children)) {
         props.children.props['labelEdge'] = 'provided';
     }
-    return (h(Fragment, null,
-        h("oj-label", { for: props.forid }, props.labelText),
-        props.children));
+    return (jsxs(Fragment, { children: [jsx("oj-label", Object.assign({ for: props.forid }, { children: props.labelText })), props.children] }));
 }
 
 const COLSPANWRAP_NOWRAP = 'nowrap';
@@ -107,10 +103,10 @@ function VLabeler(props) {
             compId = ElementUtils.getUniqueId(props.children.props['id']);
         }
         if (props.labelEdge === LABELEDGE_START) {
-            return h(VStartLabeler, Object.assign({ forid: compId }, props));
+            return jsx(VStartLabeler, Object.assign({ forid: compId }, props));
         }
         else if (props.labelEdge === LABELEDGE_TOP) {
-            return h(VTopLabeler, Object.assign({ forid: compId }, props));
+            return jsx(VTopLabeler, Object.assign({ forid: compId }, props));
         }
         else {
             if (hasSingleChild) {
@@ -122,7 +118,7 @@ function VLabeler(props) {
                     props.children.props['labelEdge'] = 'none';
                 }
             }
-            return h(Fragment, null, props.children);
+            return jsx(Fragment, { children: props.children });
         }
     }
     else {
@@ -147,8 +143,7 @@ class VCellGenerator extends Component {
         if (this.props.contentType === 'formLayout') {
             rootClassName += ' oj-formlayout-nested-formlayout';
         }
-        return (h("div", { class: rootClassName, style: wrapperStyle, key: props.cellKey },
-            h(VLabeler, { labelText: this.props.labelText, labelEdge: this.props.labelEdge, labelWidth: this.props.labelWidth, colspan: this.props.colspan, totalColumns: this.props.totalColumns }, this.props.children)));
+        return (jsx("div", Object.assign({ class: rootClassName, style: wrapperStyle }, { children: jsx(VLabeler, Object.assign({ labelText: this.props.labelText, labelEdge: this.props.labelEdge, labelWidth: this.props.labelWidth, colspan: this.props.colspan, totalColumns: this.props.totalColumns }, { children: this.props.children })) }), props.cellKey));
     }
     _getFullFlexItemWidth(colspan, columns) {
         if (colspan === columns) {
@@ -185,7 +180,7 @@ class VColumnFormGenerator extends Component {
         this._columns = props.columns > 0 ? props.columns : props.maxColumns;
         const rootClassName = 'oj-form-layout oj-formlayout-max-cols-' + this._columns;
         const formContent = this._getColumnFormContent(props.formControls, props.columns);
-        return h("div", { class: rootClassName }, formContent);
+        return jsx("div", Object.assign({ class: rootClassName }, { children: formContent }));
     }
     _getColumnFormContent(childArray, columns) {
         let formContent = [];
@@ -202,11 +197,11 @@ class VColumnFormGenerator extends Component {
                 }
                 labelEdge = this._themeDefault.labelEdge;
             }
-            rowContent = (h(VCellGenerator, { totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key }, content));
-            formContent.push(h("div", { class: 'oj-flex', "data-oj-internal": true }, rowContent));
+            rowContent = (jsx(VCellGenerator, Object.assign({ totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key }, { children: content })));
+            formContent.push(jsx("div", Object.assign({ class: "oj-flex", "data-oj-internal": true }, { children: rowContent })));
         }
         const styling = this._getColumnStyling(columns);
-        return (h("div", { class: styling.formClassName, style: styling.formStyle, "data-oj-context": true, "data-oj-internal": true }, formContent));
+        return (jsx("div", Object.assign({ class: styling.formClassName, style: styling.formStyle, "data-oj-context": true, "data-oj-internal": true }, { children: formContent })));
     }
     _getColumnStyling(columns) {
         let formClassNames = 'oj-form';
@@ -272,7 +267,7 @@ class VRowFormGenerator extends Component {
         const cssColumnClasses = props.columns > 0 ? props.columns + NO_MIN_COLUMN_WIDTH : props.maxColumns;
         const rootClassNames = ROOTCLASSNAMES + cssColumnClasses;
         const formContent = this._getRowFormContent(this.props.formControls);
-        return (h("div", { class: rootClassNames, ref: this.setFormDivRef }, formContent));
+        return (jsx("div", Object.assign({ class: rootClassNames, ref: this.setFormDivRef }, { children: formContent })));
     }
     componentDidMount() {
         this._updateAvailableColumns();
@@ -353,7 +348,7 @@ class VRowFormGenerator extends Component {
                 }
                 labelEdge = this._themeDefault.labelEdge;
             }
-            rowContent.push(h(VCellGenerator, { colspan: colspan, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key }, content));
+            rowContent.push(jsx(VCellGenerator, Object.assign({ colspan: colspan, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key }, { children: content })));
             cellCount += colspan;
             if (cellCount % cols !== 0) {
                 this._addColumnGutter(rowContent);
@@ -361,14 +356,14 @@ class VRowFormGenerator extends Component {
         }
         this._addRowToForm(formContent, rowContent, cellCount);
         const styling = this._getRowStyling(needsFullWidthClass);
-        return (h("div", { class: styling.formClassName, style: styling.formStyle, "data-oj-context": true, "data-oj-internal": true }, formContent));
+        return (jsx("div", Object.assign({ class: styling.formClassName, style: styling.formStyle, "data-oj-context": true, "data-oj-internal": true }, { children: formContent })));
     }
     _addColumnGutter(rowContent) {
-        rowContent.push(h("div", { class: 'oj-formlayout-column-gutter' }));
+        rowContent.push(jsx("div", { class: "oj-formlayout-column-gutter" }));
     }
     _addRowToForm(formContent, rowContent, cellCount) {
         this._addPaddingCells(rowContent, cellCount);
-        formContent.push(h("div", { class: 'oj-flex', "data-oj-internal": true }, rowContent));
+        formContent.push(jsx("div", Object.assign({ class: "oj-flex", "data-oj-internal": true }, { children: rowContent })));
     }
     _addPaddingCells(rowContent, count) {
         const cols = this._calculateColumns(this.state.availableColumns) || this.props.maxColumns;
@@ -378,7 +373,7 @@ class VRowFormGenerator extends Component {
                 if (i !== last) {
                     this._addColumnGutter(rowContent);
                 }
-                rowContent.push(h(VCellGenerator, { colspan: 1, totalColumns: cols, labelEdge: LABELEDGE_NONE }));
+                rowContent.push(jsx(VCellGenerator, { colspan: 1, totalColumns: cols, labelEdge: LABELEDGE_NONE }));
             }
         }
     }
@@ -434,10 +429,10 @@ class VFormGenerator extends Component {
     render(props) {
         const { direction } = props, passthruProps = __rest(props, ["direction"]);
         if (direction === DIRECTION_COLUMN) {
-            return h(VColumnFormGenerator, Object.assign({}, passthruProps));
+            return jsx(VColumnFormGenerator, Object.assign({}, passthruProps));
         }
         else {
-            return h(VRowFormGenerator, Object.assign({}, passthruProps));
+            return jsx(VRowFormGenerator, Object.assign({}, passthruProps));
         }
     }
 }

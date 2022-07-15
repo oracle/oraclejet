@@ -1,0 +1,2 @@
+define(["exports","preact/hooks","./UNSAFE_useToggle"],(function(e,s,l){"use strict";e.useClearIcon=function({clearIcon:e,display:o,hasValue:u,isEnabled:a=!0,isFocused:n=!1,isHover:t=!1}){const c=s.useCallback((()=>a&&("always"===o||"conditionally"===o&&u&&(n||t))),[o,u,a,n,t]),{bool:i,setFalse:r,setTrue:d}=l.useToggle(c());return s.useEffect((()=>{c()?d():r()}),[c]),i?e:null},Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=UNSAFE_useClearIcon.js.map

@@ -5,7 +5,6 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { h } from 'preact';
 import { MessageSeverity, MessageVariant } from './Message.types';
 /**
  * Props for the StartIcon component
@@ -45,5 +44,5 @@ declare type Props = {
 /**
  * StartIcon Component for rendering the severity based icon in Message
  */
-declare function MessageStartIcon({ severity, variant, translations }: Props): h.JSX.Element;
+declare function MessageStartIcon({ severity, variant, translations }: Props): import("preact").JSX.Element;
 export { MessageStartIcon };

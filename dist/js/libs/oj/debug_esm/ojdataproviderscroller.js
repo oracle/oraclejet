@@ -8,10 +8,10 @@
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
 import Context from 'ojs/ojcontext';
+import { getEventDetail, isRequestIdleCallbackSupported, calculateOffsetTop, getDefaultScrollBarWidth, isElementIntersectingScrollerBounds, isIterateAfterDoneNotAllowed } from 'ojs/ojdatacollection-common';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { fadeOut, fadeIn } from 'ojs/ojanimation';
-import { log, info, error } from 'ojs/ojlogger';
-import { isRequestIdleCallbackSupported, calculateOffsetTop, getDefaultScrollBarWidth, isElementInScrollerBounds, isIterateAfterDoneNotAllowed } from 'ojs/ojdatacollection-common';
+import { info, log, error } from 'ojs/ojlogger';
 import DomScroller from 'ojs/ojdomscroller';
 import KeySet from 'ojs/ojset';
 import KeyMap from 'ojs/ojmap';
@@ -92,6 +92,7 @@ DataProviderContentHandler.prototype.Destroy = function (completelyDestroy) {
   if (completelyDestroy) {
     $(this.m_root).empty();
   }
+  this._destroySparkles();
   this.m_widget = null;
   this.m_root = null;
   this.m_superRoot = null;
@@ -145,14 +146,21 @@ DataProviderContentHandler.prototype.GetKey = function (element) {
 
 DataProviderContentHandler.prototype.FindElementByKey = function (key) {
   // the later selector is for cards that are in the process of insert animation
-  var children = this.m_root.querySelectorAll('.' + this.m_widget.getItemElementStyleClass() + ', .oj-listview-temp-item.oj-listview-card-animated');
+  var children = this.m_root.querySelectorAll(
+    '.' +
+      this.m_widget.getItemElementStyleClass() +
+      ', .oj-listview-temp-item.oj-listview-card-animated'
+  );
   for (var i = 0; i < children.length; i++) {
     var elem = children[i];
     // use == for the string number compare case
     // make sure item is not marked for deletion or a clone created by dnd
-    // eslint-disable-next-line eqeqeq
-    if ((key == this.GetKey(elem) || oj.Object.compareValues(key, this.GetKey(elem))) &&
-      !elem.classList.contains('oj-listview-item-remove') && !elem.classList.contains('oj-drop')) {
+    if (
+      // eslint-disable-next-line eqeqeq
+      (key == this.GetKey(elem) || oj.Object.compareValues(key, this.GetKey(elem))) &&
+      !elem.classList.contains('oj-listview-item-remove') &&
+      !elem.classList.contains('oj-drop')
+    ) {
       return elem;
     }
   }
@@ -206,14 +214,15 @@ DataProviderContentHandler.prototype._removeDataSourceEventListeners = function 
  * @protected
  */
 DataProviderContentHandler.prototype.loadTemplateEngine = function () {
-  var self = this;
-
   if (this.m_widget.getItemTemplate() != null && this.m_widget._getItemRenderer() == null) {
-    return new Promise(function (resolve) {
-      __getTemplateEngine().then(function (engine) {
-        self.m_engine = engine;
+    return new Promise((resolve) => {
+      const templateOptions = {
+        customElement: this.m_widget._GetCustomElement(),
+      };
+      __getTemplateEngine(templateOptions).then((engine) => {
+        this.m_engine = engine;
         resolve(engine);
-      }, function (reason) {
+      }, (reason) => {
         throw new Error('Error loading template engine: ' + reason);
       });
     });
@@ -253,11 +262,14 @@ DataProviderContentHandler.prototype.GetReferenceNode = function (parentElement,
     return null;
   }
 
-  var childElements =
-      $(parentElement).children('.' + this.m_widget.getItemElementStyleClass() +
-                                ', .' + this.m_widget.getEmptyTextStyleClass() +
-                                ', .oj-listview-temp-item');
-  return (index === childElements.length) ? null : childElements[index];
+  var childElements = $(parentElement).children(
+    '.' +
+      this.m_widget.getItemElementStyleClass() +
+      ', .' +
+      this.m_widget.getEmptyTextStyleClass() +
+      ', .oj-listview-temp-item'
+  );
+  return index === childElements.length ? null : childElements[index];
 };
 
 /**
@@ -272,21 +284,38 @@ DataProviderContentHandler.prototype.GetReferenceNode = function (parentElement,
  * @return {Object} itemMetaData the array of metadata
  * @protected
  */
-DataProviderContentHandler.prototype.addItem =
-  function (parentElement, index, data, metadata, templateEngine, callback, itemMetaData) {
-    var item = document.createElement(this.GetChildElementTagName()); // @HTMLUpdateOK
+DataProviderContentHandler.prototype.addItem = function (
+  parentElement,
+  index,
+  data,
+  metadata,
+  templateEngine,
+  callback,
+  itemMetaData
+) {
+  var item = document.createElement(this.GetChildElementTagName()); // @HTMLUpdateOK
 
-    $(item).uniqueId();
-    var referenceNode = this.GetReferenceNode(parentElement, index);
-    // should be optional
-    if (this.m_widget.BeforeInsertItem) {
-      this.m_widget.BeforeInsertItem();
-    }
-    parentElement.insertBefore(item, referenceNode); // @HTMLUpdateOK
-    var position = $(parentElement).children().index(item);
-    return this._addOrReplaceItem(item, position, parentElement, index, data, metadata,
-                                  templateEngine, callback, false, itemMetaData);
-  };
+  $(item).uniqueId();
+  var referenceNode = this.GetReferenceNode(parentElement, index);
+  // should be optional
+  if (this.m_widget.BeforeInsertItem) {
+    this.m_widget.BeforeInsertItem();
+  }
+  parentElement.insertBefore(item, referenceNode); // @HTMLUpdateOK
+  var position = $(parentElement).children().index(item);
+  return this._addOrReplaceItem(
+    item,
+    position,
+    parentElement,
+    index,
+    data,
+    metadata,
+    templateEngine,
+    callback,
+    false,
+    itemMetaData
+  );
+};
 
 /**
  * Replace an existing list item in the list
@@ -299,101 +328,127 @@ DataProviderContentHandler.prototype.addItem =
  * @param {boolean} restoreFocus flag to restore focus on updated item
  * @protected
  */
-DataProviderContentHandler.prototype.replaceItem =
-  function (item, index, data, metadata, templateEngine, callback, restoreFocus) {
-    // animate hiding of existing item first
-    this.signalTaskStart('replace item'); // signal replace item animation start. Ends in _handleReplaceTransitionEnd() defined in TableDataSourceContentHandler
+DataProviderContentHandler.prototype.replaceItem = function (
+  item,
+  index,
+  data,
+  metadata,
+  templateEngine,
+  callback,
+  restoreFocus
+) {
+  // animate hiding of existing item first
+  this.signalTaskStart('replace item'); // signal replace item animation start. Ends in _handleReplaceTransitionEnd() defined in TableDataSourceContentHandler
 
-    // now actually replace the item
-    var parentElement = item.parentNode;
-    var position = $(parentElement).children().index(item);
-    var newItem = document.createElement(this.GetChildElementTagName()); // @HTMLUpdateOK
+  // now actually replace the item
+  var parentElement = item.parentNode;
+  var position = $(parentElement).children().index(item);
+  var newItem = document.createElement(this.GetChildElementTagName()); // @HTMLUpdateOK
 
-    // explicit clean when inline template is used
-    if (templateEngine) {
-      templateEngine.clean(item);
-    }
+  // explicit clean when inline template is used
+  if (templateEngine) {
+    templateEngine.clean(item);
+  }
 
-    // this should trigger ko.cleanNode if applicable
-    $(item).replaceWith(newItem); // @HTMLUpdateOK newItem is constructed by the component and not yet manipulated by the application
+  // this should trigger ko.cleanNode if applicable
+  $(item).replaceWith(newItem); // @HTMLUpdateOK newItem is constructed by the component and not yet manipulated by the application
 
-    return this._addOrReplaceItem(newItem, position, parentElement, index, data, metadata,
-                           templateEngine, callback, restoreFocus);
-  };
+  return this._addOrReplaceItem(
+    newItem,
+    position,
+    parentElement,
+    index,
+    data,
+    metadata,
+    templateEngine,
+    callback,
+    restoreFocus
+  );
+};
 
 /**
  * Handles both add and replace item
  * @private
  */
-DataProviderContentHandler.prototype._addOrReplaceItem =
-  function (item, position, parentElement, index, data, metadata, templateEngine, callback,
-    restoreFocus, itemMetaData, replaceChildCallback) {
-    if (callback == null) {
-      // eslint-disable-next-line no-param-reassign
-      callback = this.afterRenderItem.bind(this);
+DataProviderContentHandler.prototype._addOrReplaceItem = function (
+  item,
+  position,
+  parentElement,
+  index,
+  data,
+  metadata,
+  templateEngine,
+  callback,
+  restoreFocus,
+  itemMetaData,
+  replaceChildCallback
+) {
+  if (callback == null) {
+    // eslint-disable-next-line no-param-reassign
+    callback = this.afterRenderItem.bind(this);
+  }
+
+  var context = this.createContext(position, data, metadata, item, itemMetaData);
+  var renderer = this.m_widget._getItemRenderer();
+  var templateElement = this.m_widget.getItemTemplate();
+  var textWrapper;
+  var isCustomizeItem = false;
+
+  if (renderer != null) {
+    // if an element is returned from the renderer and the parent of that element is null, we will append
+    // the returned element to the parentElement.  If non-null, we won't do anything, assuming that the
+    // rendered content has already added into the DOM somewhere.
+    var content = renderer.call(this, context);
+    if (content != null) {
+      // allow return of document fragment from jquery create/js document.createDocumentFragment
+      if (content.parentNode === null || content.parentNode instanceof DocumentFragment) {
+        item.appendChild(content); // @HTMLUpdateOK
+      } else if (content.parentNode != null) {
+        // parent node exists, do nothing
+      } else if (content.toString) {
+        textWrapper = document.createElement('span');
+        textWrapper.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
+        item.appendChild(textWrapper); // @HTMLUpdateOK
+      }
     }
-
-    var context = this.createContext(position, data, metadata, item, itemMetaData);
-    var renderer = this.m_widget._getItemRenderer();
-    var templateElement = this.m_widget.getItemTemplate();
-    var textWrapper;
-    var isCustomizeItem = false;
-
-    if (renderer != null) {
-      // if an element is returned from the renderer and the parent of that element is null, we will append
-      // the returned element to the parentElement.  If non-null, we won't do anything, assuming that the
-      // rendered content has already added into the DOM somewhere.
-      var content = renderer.call(this, context);
-      if (content != null) {
-        // allow return of document fragment from jquery create/js document.createDocumentFragment
-        if (content.parentNode === null || content.parentNode instanceof DocumentFragment) {
-          item.appendChild(content); // @HTMLUpdateOK
-        } else if (content.parentNode != null) {
-          // parent node exists, do nothing
-        } else if (content.toString) {
-          textWrapper = document.createElement('span');
-          textWrapper.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
-          item.appendChild(textWrapper); // @HTMLUpdateOK
-        }
-      }
-    } else if (templateElement != null && templateEngine != null) {
-      var componentElement = this.m_widget.GetRootElement()[0];
-      var bindingContext = this.GetBindingContext(context);
-      var as = this.m_widget.getAs ? this.m_widget.getAs() : null;
-      var nodes = templateEngine.execute(componentElement, templateElement, bindingContext, as);
-      if (replaceChildCallback) {
-        isCustomizeItem = replaceChildCallback(nodes);
-      } else {
-        var tagName = this.GetChildElementTagName();
-        for (var i = 0; i < nodes.length; i++) {
-          if (nodes[i].tagName === tagName) {
-            parentElement.replaceChild(nodes[i], item);
-            isCustomizeItem = true;
-            break;
-          } else {
-            item.appendChild(nodes[i]);
-          }
-        }
-      }
+  } else if (templateElement != null && templateEngine != null) {
+    var componentElement = this.m_widget.GetRootElement()[0];
+    var bindingContext = this.GetBindingContext(context);
+    var as = this.m_widget.getAs ? this.m_widget.getAs() : null;
+    var nodes = templateEngine.execute(componentElement, templateElement, bindingContext, as);
+    if (replaceChildCallback) {
+      isCustomizeItem = replaceChildCallback(nodes);
     } else {
-      textWrapper = document.createElement('span');
-      textWrapper.appendChild(document.createTextNode(data == null ? '' : data.toString())); // @HTMLUpdateOK
-      item.appendChild(textWrapper); // @HTMLUpdateOK
+      var tagName = this.GetChildElementTagName();
+      for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].tagName === tagName) {
+          parentElement.replaceChild(nodes[i], item);
+          isCustomizeItem = true;
+          break;
+        } else {
+          item.appendChild(nodes[i]);
+        }
+      }
     }
+  } else {
+    textWrapper = document.createElement('span');
+    textWrapper.appendChild(document.createTextNode(data == null ? '' : data.toString())); // @HTMLUpdateOK
+    item.appendChild(textWrapper); // @HTMLUpdateOK
+  }
 
-    // get the item from root again as template replaces the item element
-    var parentItem = parentElement.children ?
-      parentElement.children[position] :
-      this._getItemFromDocumentFragment(parentElement, position);
-    context.parentElement = parentItem;
+  // get the item from root again as template replaces the item element
+  var parentItem = parentElement.children
+    ? parentElement.children[position]
+    : this._getItemFromDocumentFragment(parentElement, position);
+  context.parentElement = parentItem;
 
-    // cache data and metadata in item element, this is needed for getDataForVisibleItem.
-    $.data(parentItem, 'data', data);
-    $.data(parentItem, 'metadata', itemMetaData);
+  // cache data and metadata in item element, this is needed for getDataForVisibleItem.
+  $.data(parentItem, 'data', data);
+  $.data(parentItem, 'metadata', itemMetaData);
 
-    // do any post processing
-    return callback(parentItem, context, isCustomizeItem, restoreFocus);
-  };
+  // do any post processing
+  return callback(parentItem, context, isCustomizeItem, restoreFocus);
+};
 
 /**
  * In IE/Safari, DocumentFragment does not support children property
@@ -548,14 +603,25 @@ DataProviderContentHandler.prototype.handleModelMutateEvent = function (event) {
   if (event.detail.update != null) {
     this.handleModelChangeEvent(event);
   }
+  if (this.getValidatedEventDetailPromise) {
+    this.getValidatedEventDetailPromise.then(() => {
+      if (this.m_widget == null) {
+        return;
+      }
+
+      if (event.detail.remove) {
+        this.handleModelRemoveEvent(event);
+      }
+      this.getValidatedEventDetailPromise = null;
+    });
+  }
 };
 
 /**
  * @protected
  */
 // eslint-disable-next-line no-unused-vars
-DataProviderContentHandler.prototype.handleModelRefreshEvent = function (event) {
-};
+DataProviderContentHandler.prototype.handleModelRefreshEvent = function (event) {};
 
 /**
  * @private
@@ -604,8 +670,7 @@ DataProviderContentHandler.prototype._clearEventQueue = function () {
  */
 DataProviderContentHandler.prototype.addItemsForModelInsert =
   // eslint-disable-next-line no-unused-vars
-  function (data, indexes, keys, parentKeys, afterKeys) {
-  };
+  function (data, indexes, keys, parentKeys, afterKeys) {};
 
 /**
  * Retrieve the index of the item with the specified key
@@ -618,7 +683,66 @@ DataProviderContentHandler.prototype.getIndex = function (keys, index) {
 
   var key = keys[index];
   var elem = this.FindElementByKey(key);
-  return (elem != null) ? $(elem.parentNode).children().index(elem) : -1;
+  return elem != null ? $(elem.parentNode).children().index(elem) : -1;
+};
+
+/**
+ * Gets the maximum number of items that can be retrieved from data source
+ * @return {number} the maximum fetch count
+ * @private
+ */
+DataProviderContentHandler.prototype._getMaxCount = function () {
+  return this.m_widget.options.scrollPolicyOptions.maxCount;
+};
+
+/**
+ * Callback handler max fetch count.
+ * @private
+ */
+DataProviderContentHandler.prototype._handleScrollerMaxRowCount = function () {
+  // TODO: use resource bundle
+  info('ScrollPolicyOptions max count has been reached.');
+};
+
+/**
+ * Truncate the data if the length of data is greater than max count
+ * @param validatedEventDetail validated event detail
+ * @param currentDataLength length of current data
+ */
+DataProviderContentHandler.prototype.truncateIfOverMaxCount = function (
+  validatedEventDetail,
+  currentDataLength
+) {
+  const eventDataLength = validatedEventDetail.data.length;
+  const potentialDataLength = eventDataLength + currentDataLength;
+  const offset = this._getMaxCount() - potentialDataLength;
+  // over max count need to truncate
+  if (offset < 0) {
+    validatedEventDetail.data.splice(offset, eventDataLength);
+    validatedEventDetail.metadata.splice(offset, eventDataLength);
+    this._handleScrollerMaxRowCount();
+  }
+};
+
+/**
+ * Get the validated data and metadata for event detail
+ * @param detail event detail
+ */
+DataProviderContentHandler.prototype.getValidatedEventDetail = function (detail) {
+  const addEventBusyResolve = this.m_widget._addComponentBusyState(
+    'validating mutation add event detail'
+  );
+  return getEventDetail(this.getDataProvider(), detail).then((validatedEventDetail) => {
+    if (validatedEventDetail === null) {
+      addEventBusyResolve();
+      return null;
+    }
+    const styleClass = '.' + this.m_widget.getItemElementStyleClass();
+    const items = this.m_root.querySelectorAll(styleClass);
+    this.truncateIfOverMaxCount(validatedEventDetail, items.length);
+    addEventBusyResolve();
+    return validatedEventDetail;
+  });
 };
 
 /**
@@ -675,156 +799,201 @@ DataProviderContentHandler.prototype.handleModelAddEvent = function (event) {
   // metadata could be undefined if not supported by DataProvider
   var metadata = addEvent.metadata;
 
-  if (data != null && keys != null && keys.length > 0 && data.length > 0 &&
-      keys.length === data.length && (indexes == null || indexes.length === data.length)) {
+  if (
+    data != null &&
+    keys != null &&
+    keys.length > 0 &&
+    data.length > 0 &&
+    keys.length === data.length &&
+    (indexes == null || indexes.length === data.length)
+  ) {
     this.addItemsForModelInsert(data, indexes, keys, parentKeys, isBeforeKeys, refKeys, metadata);
-  }
+    this.signalTaskEnd();
 
-  this.signalTaskEnd(); // signal method task end
-};
-
-DataProviderContentHandler.prototype.afterRenderItemForInsertEvent =
-  function (item, context, isCustomizeItem) {
-    var action = 'add';
-
-    this.signalTaskStart('after render item from model insert event'); // signal post rendering processing start. Ends at the end of the method.
-
-    item.setAttribute('data-oj-context', '');
-
-    this.afterRenderItem(item, context, isCustomizeItem);
-
-    // hide it before starting animation to show added item
-    var elem = $(item);
-
-    var itemStyleClass = item.className;
-    // save it for restore later
-    // eslint-disable-next-line no-param-reassign
-    item._className = itemStyleClass;
-    // eslint-disable-next-line no-param-reassign
-    item.className = 'oj-listview-temp-item oj-listview-item-add-remove-transition';
-
-    var isCardLayout = this.isCardLayout();
-
-    // add card style class to wrapper/transforming div
-    if (isCardLayout) {
-      // eslint-disable-next-line no-param-reassign
-      item.className = item.className + ' oj-listview-card-animated ' +
-        this.m_widget.getItemStyleClass();
-    }
-    if (!this.shouldUseGridRole()) {
-      elem.children().wrapAll('<div></div>'); // @HTMLUpdateOK
-    }
-
-    var content = elem.children().first();
-    if (!isCardLayout) {
-      content[0].className = itemStyleClass;
-    }
-    // transfer key and role for FindElementByKey lookup that might happen while animating (navlist)
-    content[0].key = item.key;
-
-    // transfer aria-selected for selectable checks that might happen while animating (navlist)
-    if (!this.shouldUseGridRole()) {
-      content.attr('role', item.getAttribute('role'));
-      if (elem[0].hasAttribute('aria-selected')) {
-        content.attr('aria-selected', item.getAttribute('aria-selected'));
-      }
-    } else if (!isCardLayout) {
-      var firstElem = content[0].firstElementChild;
-      if (firstElem) {
-        firstElem.classList.add('oj-listview-cell-element');
-      }
-    }
-
-    var self = this;
-    // initially hide it to avoid blinking
-    // eslint-disable-next-line no-param-reassign
-    item.style.opacity = 0;
-
-    return new Promise(function (resolve) {
-      var busyContext = Context.getContext(item).getBusyContext();
-      busyContext.whenReady().then(function () {
-        if (self.m_widget == null) {
-          resolve(true);
+    // get validated data when data is missing in add event detail
+  } else if ((data == null || metadata == null) && keys != null && keys.length > 0) {
+    this.getValidatedEventDetailPromise = this.getValidatedEventDetail(event.detail.add).then(
+      (validatedEventDetail) => {
+        if (this.m_widget == null) {
+          this.signalTaskEnd();
           return;
         }
 
-        self.signalTaskStart('kick off animation for insert item'); // signal add animation start. Ends in _handleAddTransitionEnd().
-
-        var currentClassName = item.className;
-        // now we can reset opacity, this is to avoid AnimationUtils setting opacity to 0 when it restores element styles
-        // eslint-disable-next-line no-param-reassign
-        item.style.opacity = '';
-        var promise = self.m_widget.StartAnimation(item, action);
-
-        // now show it
-        promise.then(function () {
-          item.removeAttribute('data-oj-context');
-          self._handleAddTransitionEnd(context, item, currentClassName);
-          resolve(true);
-        });
-
-        self.signalTaskEnd(); // signal post rendering processing end. Started at the beginning of the method.
-      });
-    });
-  };
-
-DataProviderContentHandler.prototype._handleAddTransitionEnd =
-  function (context, elem, currentClassName) {
-    // this could have been called after listview is destroyed
-    // or it could have been removed immediately
-    if (this.m_widget == null || elem.parentNode == null) {
-      this.signalTaskEnd();
-      return;
-    }
-
-    var beforeTransitionClasses = currentClassName.split(' ');
-    var afterTransitionClasses = elem.className.split(' ');
-
-    var hasFocus = elem.classList.contains('oj-focus') &&
-      elem.classList.contains('oj-focus-highlight');
-    var isCardAnimated = elem.classList.contains('oj-listview-card-animated');
-    // restore class name
-    // eslint-disable-next-line no-param-reassign
-    elem.className = elem._className;
-    if (hasFocus) {
-      elem.classList.add('oj-focus');
-      elem.classList.add('oj-focus-highlight');
-    }
-    if (isCardAnimated) {
-      elem.classList.add('oj-listview-card-animated');
-    }
-
-    // add classes that might have been added during custom animation callback
-    afterTransitionClasses.forEach(function (cls) {
-      if (beforeTransitionClasses.indexOf(cls) === -1) {
-        elem.classList.add(cls);
-      }
-    });
-
-    if (this.shouldUseGridRole()) {
-      if (!this.isCardLayout()) {
-        var firstChild = elem.firstElementChild;
-        // should not be null
-        if (firstChild) {
-          elem._className.split(' ').forEach(function (cls) {
-            firstChild.classList.remove(cls);
-          });
-          firstChild.classList.add('oj-listview-cell-element');
-
-          var firstElem = firstChild.firstElementChild;
-          if (firstElem) {
-            firstElem.classList.remove('oj-listview-cell-element');
+        if (validatedEventDetail != null && validatedEventDetail.data != null) {
+          data = validatedEventDetail.data;
+          metadata = validatedEventDetail.metadata;
+          if (
+            data.length > 0 &&
+            keys.length === data.length &&
+            (indexes == null || indexes.length === data.length)
+          ) {
+            this.addItemsForModelInsert(
+              data,
+              indexes,
+              keys,
+              parentKeys,
+              isBeforeKeys,
+              refKeys,
+              metadata
+            );
           }
         }
+        this.signalTaskEnd();
       }
-    } else {
-      $(elem).children().children().unwrap();
+    );
+  } else {
+    this.signalTaskEnd();
+  }
+};
+
+DataProviderContentHandler.prototype.afterRenderItemForInsertEvent = function (
+  item,
+  context,
+  isCustomizeItem
+) {
+  var action = 'add';
+
+  this.signalTaskStart('after render item from model insert event'); // signal post rendering processing start. Ends at the end of the method.
+
+  item.setAttribute('data-oj-context', '');
+
+  this.afterRenderItem(item, context, isCustomizeItem);
+
+  // hide it before starting animation to show added item
+  var elem = $(item);
+
+  var itemStyleClass = item.className;
+  // save it for restore later
+  // eslint-disable-next-line no-param-reassign
+  item._className = itemStyleClass;
+  // eslint-disable-next-line no-param-reassign
+  item.className = 'oj-listview-temp-item oj-listview-item-add-remove-transition';
+
+  var isCardLayout = this.isCardLayout();
+
+  // add card style class to wrapper/transforming div
+  if (isCardLayout) {
+    // eslint-disable-next-line no-param-reassign
+    item.className =
+      item.className + ' oj-listview-card-animated ' + this.m_widget.getItemStyleClass();
+  }
+  if (!this.shouldUseGridRole()) {
+    elem.children().wrapAll('<div></div>'); // @HTMLUpdateOK
+  }
+
+  var content = elem.children().first();
+  if (!isCardLayout) {
+    content[0].className = itemStyleClass;
+  }
+  // transfer key and role for FindElementByKey lookup that might happen while animating (navlist)
+  content[0].key = item.key;
+
+  // transfer aria-selected for selectable checks that might happen while animating (navlist)
+  if (!this.shouldUseGridRole()) {
+    content.attr('role', item.getAttribute('role'));
+    if (elem[0].hasAttribute('aria-selected')) {
+      content.attr('aria-selected', item.getAttribute('aria-selected'));
     }
+  } else if (!isCardLayout) {
+    var firstElem = content[0].firstElementChild;
+    if (firstElem) {
+      firstElem.classList.add('oj-listview-cell-element');
+    }
+  }
 
-    this.m_widget.itemInsertComplete(elem, context);
+  var self = this;
+  // initially hide it to avoid blinking
+  // eslint-disable-next-line no-param-reassign
+  item.style.opacity = 0;
 
-    this.signalTaskEnd(); // signal add animation end. Started in afterRenderItemForInsertEvent();
-  };
+  return new Promise(function (resolve) {
+    var busyContext = Context.getContext(item).getBusyContext();
+    busyContext.whenReady().then(function () {
+      if (self.m_widget == null) {
+        resolve(true);
+        return;
+      }
+
+      self.signalTaskStart('kick off animation for insert item'); // signal add animation start. Ends in _handleAddTransitionEnd().
+
+      var currentClassName = item.className;
+      // now we can reset opacity, this is to avoid AnimationUtils setting opacity to 0 when it restores element styles
+      // eslint-disable-next-line no-param-reassign
+      item.style.opacity = '';
+      var promise = self.m_widget.StartAnimation(item, action);
+
+      // now show it
+      promise.then(function () {
+        item.removeAttribute('data-oj-context');
+        self._handleAddTransitionEnd(context, item, currentClassName);
+        resolve(true);
+      });
+
+      self.signalTaskEnd(); // signal post rendering processing end. Started at the beginning of the method.
+    });
+  });
+};
+
+DataProviderContentHandler.prototype._handleAddTransitionEnd = function (
+  context,
+  elem,
+  currentClassName
+) {
+  // this could have been called after listview is destroyed
+  // or it could have been removed immediately
+  if (this.m_widget == null || elem.parentNode == null) {
+    this.signalTaskEnd();
+    return;
+  }
+
+  var beforeTransitionClasses = currentClassName.split(' ');
+  var afterTransitionClasses = elem.className.split(' ');
+
+  var hasFocus =
+    elem.classList.contains('oj-focus') && elem.classList.contains('oj-focus-highlight');
+  var isCardAnimated = elem.classList.contains('oj-listview-card-animated');
+  // restore class name
+  // eslint-disable-next-line no-param-reassign
+  elem.className = elem._className;
+  if (hasFocus) {
+    elem.classList.add('oj-focus');
+    elem.classList.add('oj-focus-highlight');
+  }
+  if (isCardAnimated) {
+    elem.classList.add('oj-listview-card-animated');
+  }
+
+  // add classes that might have been added during custom animation callback
+  afterTransitionClasses.forEach(function (cls) {
+    if (beforeTransitionClasses.indexOf(cls) === -1) {
+      elem.classList.add(cls);
+    }
+  });
+
+  if (this.shouldUseGridRole()) {
+    if (!this.isCardLayout()) {
+      var firstChild = elem.firstElementChild;
+      // should not be null
+      if (firstChild) {
+        elem._className.split(' ').forEach(function (cls) {
+          firstChild.classList.remove(cls);
+        });
+        firstChild.classList.add('oj-listview-cell-element');
+
+        var firstElem = firstChild.firstElementChild;
+        if (firstElem) {
+          firstElem.classList.remove('oj-listview-cell-element');
+        }
+      }
+    }
+  } else {
+    $(elem).children().children().unwrap();
+  }
+
+  this.m_widget.itemInsertComplete(elem, context);
+
+  this.signalTaskEnd(); // signal add animation end. Started in afterRenderItemForInsertEvent();
+};
 
 DataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
   var self = this;
@@ -893,9 +1062,6 @@ DataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
     }
   }
 
-  // since the items are removed, need to clear cache
-  this.m_widget.ClearCache();
-
   this.handleRemoveItemsPromises(promises);
 
   this.signalTaskEnd(); // signal method task end
@@ -908,8 +1074,7 @@ DataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
  * @protected
  */
 // eslint-disable-next-line no-unused-vars
- DataProviderContentHandler.prototype.handleRemoveItemsPromises = function (promises) {
-};
+DataProviderContentHandler.prototype.handleRemoveItemsPromises = function (promises) {};
 
 /**
  * Remove a single item element
@@ -929,7 +1094,9 @@ DataProviderContentHandler.prototype.removeItem = function (elem, isReinsert) {
 
   var item = $(elem).get(0);
   var itemStyleClass = item.className;
-  $(item).children().wrapAll("<div class='" + itemStyleClass + "'></div>"); // @HTMLUpdateOK
+  $(item)
+    .children()
+    .wrapAll("<div class='" + itemStyleClass + "'></div>"); // @HTMLUpdateOK
   item.className = 'oj-listview-item-add-remove-transition oj-listview-item-remove';
   item.children[0].key = elem.key;
 
@@ -943,16 +1110,19 @@ DataProviderContentHandler.prototype.removeItem = function (elem, isReinsert) {
   var promise = this.m_widget.StartAnimation(item, action);
 
   // now hide it
-  promise.then(function () {
-    self.handleRemoveTransitionEnd(elem, restoreFocus, isReinsert);
-    if (self.m_widget) {
-      self.m_widget.enableResizeListener();
+  promise.then(
+    function () {
+      self.handleRemoveTransitionEnd(elem, restoreFocus, isReinsert);
+      if (self.m_widget) {
+        self.m_widget.enableResizeListener();
+      }
+    },
+    function () {
+      if (self.m_widget) {
+        self.m_widget.enableResizeListener();
+      }
     }
-  }, function () {
-    if (self.m_widget) {
-      self.m_widget.enableResizeListener();
-    }
-  });
+  );
 
   this.signalTaskEnd(); // signal method task end
 
@@ -966,52 +1136,57 @@ DataProviderContentHandler.prototype.removeItem = function (elem, isReinsert) {
  * @param {boolean} isReinsert
  * @protected
  */
-DataProviderContentHandler.prototype.handleRemoveTransitionEnd =
-  function (elem, restoreFocus, isReinsert) {
-    // this could have been called after listview is destroyed
-    if (this.m_widget == null) {
-      this.signalTaskEnd();
-      return;
-    }
+DataProviderContentHandler.prototype.handleRemoveTransitionEnd = function (
+  elem,
+  restoreFocus,
+  isReinsert
+) {
+  // this could have been called after listview is destroyed
+  if (this.m_widget == null) {
+    this.signalTaskEnd();
+    return;
+  }
 
-    var $elem = $(elem);
-    var parent = $elem.parent();
-    // could happen if there is a reset right after model update, the content has already been cleared out
-    if (parent.length === 0) {
-      this.signalTaskEnd();
-      return;
-    }
+  var $elem = $(elem);
+  var parent = $elem.parent();
+  // could happen if there is a reset right after model update, the content has already been cleared out
+  if (parent.length === 0) {
+    this.signalTaskEnd();
+    return;
+  }
 
-    // invoke hook before actually removing the item
-    var currentItemUpdated = this.m_widget.itemRemoveComplete($elem.get(0), restoreFocus,
-      isReinsert);
+  // invoke hook before actually removing the item
+  var currentItemUpdated = this.m_widget.itemRemoveComplete($elem.get(0), restoreFocus, isReinsert);
 
-    // template engine should have already been loaded
-    var templateEngine = this.getTemplateEngine();
-    if (templateEngine) {
-      templateEngine.clean($elem.get(0));
-    }
+  // template engine should have already been loaded
+  var templateEngine = this.getTemplateEngine();
+  if (templateEngine) {
+    templateEngine.clean($elem.get(0));
+  }
 
-    $elem.remove();
+  $elem.remove();
 
-    // if it's the last item, show empty text
-    if (parent.get(0).childElementCount === 0) {
-      this.m_widget.renderComplete(true);
-    }
+  // since the items are removed, need to clear cache
+  this.m_widget.ClearCache();
 
-    // ensure something is selected if the removed item is the last selected item
-    // need to complete after the DOM element is removed
-    if (this.isSelectionEnabled()) {
-      this.m_widget.enforceSelectionRequired();
-    }
+  // if it's the last item, show empty text
+  if (parent.get(0).childElementCount === 0) {
+    this.m_widget.renderComplete(true);
+  }
 
-    // this should focus on the current item, set by itemRemoveComplete
-    if (currentItemUpdated && restoreFocus && !this.m_root.contains(document.activeElement)) {
-      this.m_root.focus();
-    }
+  // ensure something is selected if the removed item is the last selected item
+  // need to complete after the DOM element is removed
+  if (this.isSelectionEnabled()) {
+    this.m_widget.enforceSelectionRequired();
+  }
 
-    this.signalTaskEnd(); // signal remove item animation end. Started in _removeItem()
-  };
+  // this should focus on the current item, set by itemRemoveComplete
+  if (currentItemUpdated && restoreFocus && !this.m_root.contains(document.activeElement)) {
+    this.m_root.focus();
+  }
+
+  this.signalTaskEnd(); // signal remove item animation end. Started in _removeItem()
+};
 
 /**
  * Model change event handler.  Called when a row has been changed from the underlying data.
@@ -1033,57 +1208,87 @@ DataProviderContentHandler.prototype.handleModelChangeEvent = function (event) {
 
   var restoreFocusElem;
 
-  // indexes could be undefined if not supported by DataProvider
-  var indexes = changeEvent.indexes;
-  for (var i = 0; i < keys.length; i++) {
-    this.m_widget.updateSelectedKeyData(keys[i], data[i]);
+  var updateData = () => {
+    // indexes could be undefined if not supported by DataProvider
+    var indexes = changeEvent.indexes;
+    for (var i = 0; i < keys.length; i++) {
+      this.m_widget.updateSelectedKeyData(keys[i], data[i]);
 
-    var elem = this.FindElementByKey(keys[i]);
-    if (elem != null) {
-      if (restoreFocusElem === undefined && elem.contains(document.activeElement)) {
-        restoreFocusElem = elem;
-      }
-      this.signalTaskStart('handling model update event for item: ' + keys[i]); // signal replace item start
-      var index = (indexes == null) ? -1 : indexes[i];
-      this.replaceItem(elem, index, data[i], this.getMetadata(index, keys[i], data[i],
-       elem.parentNode), templateEngine, this.afterRenderItemForChangeEvent.bind(this),
-       restoreFocusElem != null);
-      this.signalTaskEnd(); // signal replace item end
+      var elem = this.FindElementByKey(keys[i]);
+      if (elem != null) {
+        if (restoreFocusElem === undefined && elem.contains(document.activeElement)) {
+          restoreFocusElem = elem;
+        }
+        this.signalTaskStart('handling model update event for item: ' + keys[i]); // signal replace item start
+        var index = indexes == null ? -1 : indexes[i];
+        this.replaceItem(
+          elem,
+          index,
+          data[i],
+          this.getMetadata(index, keys[i], data[i], elem.parentNode),
+          templateEngine,
+          this.afterRenderItemForChangeEvent.bind(this),
+          restoreFocusElem != null
+        );
+        this.signalTaskEnd(); // signal replace item end
 
-      if (restoreFocusElem != null) {
-        restoreFocusElem = null; // doing this will ensure we don't do the check again
+        if (restoreFocusElem != null) {
+          restoreFocusElem = null; // doing this will ensure we don't do the check again
+        }
       }
     }
+
+    // since the item element will change, need to clear cache
+    this.m_widget.ClearCache();
+  };
+
+  if (data == null) {
+    this.getValidatedEventDetailPromise = this.getValidatedEventDetail(changeEvent).then(
+      (validatedEventDetail) => {
+        if (this.m_widget == null) {
+          this.signalTaskEnd();
+          return;
+        }
+
+        if (validatedEventDetail != null) {
+          data = validatedEventDetail.data;
+          updateData();
+        }
+        this.signalTaskEnd(); // signal method task end
+      }
+    );
+  } else {
+    updateData();
+    this.signalTaskEnd(); // signal method task end
   }
-
-  // since the item element will change, need to clear cache
-  this.m_widget.ClearCache();
-
-  this.signalTaskEnd(); // signal method task end
 };
 
 /**
  * @private
  */
-DataProviderContentHandler.prototype.afterRenderItemForChangeEvent =
-  function (item, context, isCustomizeItem, restoreFocus) {
-    var self = this;
-    var action = 'update';
+DataProviderContentHandler.prototype.afterRenderItemForChangeEvent = function (
+  item,
+  context,
+  isCustomizeItem,
+  restoreFocus
+) {
+  var self = this;
+  var action = 'update';
 
-    this.signalTaskStart('after render item for model change event'); // signal method task start
+  this.signalTaskStart('after render item for model change event'); // signal method task start
 
-    // adds all neccessary wai aria role and classes
-    this.afterRenderItem(item, context, isCustomizeItem);
+  // adds all neccessary wai aria role and classes
+  this.afterRenderItem(item, context, isCustomizeItem);
 
-    var promise = this.m_widget.StartAnimation(item, action);
+  var promise = this.m_widget.StartAnimation(item, action);
 
-    // now hide it
-    promise.then(function () {
-      self._handleReplaceTransitionEnd(item, restoreFocus);
-    });
+  // now hide it
+  promise.then(function () {
+    self._handleReplaceTransitionEnd(item, restoreFocus);
+  });
 
-    this.signalTaskEnd(); // signal method task end
-  };
+  this.signalTaskEnd(); // signal method task end
+};
 
 /**
  * @private
@@ -1104,8 +1309,13 @@ DataProviderContentHandler.prototype._handleReplaceTransitionEnd = function (ite
   this.signalTaskEnd(); // signal replace item animation end. Started in replaceItem() from handleModelChangeEvent() (see base class DataSourceContentHandler)
 };
 
-DataProviderContentHandler.prototype.createContext =
-function (index, data, metadata, elem, itemMetaData) {
+DataProviderContentHandler.prototype.createContext = function (
+  index,
+  data,
+  metadata,
+  elem,
+  itemMetaData
+) {
   var context = {};
 
   context.parentElement = elem;
@@ -1153,13 +1363,15 @@ DataProviderContentHandler.prototype.isAsyncRendering = function () {
 };
 
 DataProviderContentHandler.prototype.signalTaskStart = function (description) {
-  if (this.m_widget) { // check that widget exists (e.g. not destroyed)
+  if (this.m_widget) {
+    // check that widget exists (e.g. not destroyed)
     this.m_widget.signalTaskStart('DataSource ContentHandler ' + description);
   }
 };
 
 DataProviderContentHandler.prototype.signalTaskEnd = function () {
-  if (this.m_widget) { // check that widget exists (e.g. not destroyed)
+  if (this.m_widget) {
+    // check that widget exists (e.g. not destroyed)
     this.m_widget.signalTaskEnd();
   }
 };
@@ -1228,7 +1440,8 @@ DataProviderContentHandler.prototype.createSkeletonItem = function () {
     item.classList.add('gridline-hidden');
   }
   // oj-listview-skeleton is a marker class to identify this is an item skeleton and not skeleton from other component
-  content.className = 'oj-listview-cell-element oj-listview-skeleton oj-listview-skeleton-line-height oj-animation-skeleton';
+  content.className =
+    'oj-listview-cell-element oj-listview-skeleton oj-listview-skeleton-line-height oj-animation-skeleton';
   item.appendChild(content); // @HTMLUpdateOK
   return item;
 };
@@ -1238,11 +1451,15 @@ DataProviderContentHandler.prototype.createSkeletonItem = function () {
  * Returns a Promie that resolves to false to signal not to skip post processing
  * @protected
  */
-DataProviderContentHandler.prototype.animateShowContent =
-  function (parentElem, content, shouldEmptyElem) {
-    // first fade out the skeletons, if any
-    // eslint-disable-next-line no-unused-vars
-    return new Promise(function (resolve, reject) {
+DataProviderContentHandler.prototype.animateShowContent = function (
+  parentElem,
+  content,
+  shouldEmptyElem
+) {
+  // first fade out the skeletons, if any
+  // eslint-disable-next-line no-unused-vars
+  return new Promise(
+    function (resolve) {
       var root = this.m_superRoot != null ? this.m_superRoot : this.m_root;
       var skeletonContainer = root.querySelector('.oj-listview-skeleton-container');
       if (skeletonContainer != null) {
@@ -1263,54 +1480,68 @@ DataProviderContentHandler.prototype.animateShowContent =
         });
 
         // wait for all content to be ready first before fade in the content
-        Promise.all(promises).then(function () {
-          // component could have been destroyed
-          if (this.m_widget == null) {
-            resolve(false);
-            return;
-          }
-
-          fadeOut(skeletonContainer, { duration: '100ms' }).then(function () {
+        Promise.all(promises).then(
+          function () {
             // component could have been destroyed
             if (this.m_widget == null) {
               resolve(false);
               return;
             }
 
-            // remove skeleton
-            var skeletonContainerRoot = skeletonContainer.parentNode;
-            if (skeletonContainerRoot.classList.contains('oj-listview-initial-skeletons')) {
-              root.removeChild(skeletonContainerRoot);
-            } else {
-              skeletonContainer.querySelectorAll('.oj-listview-skeleton').forEach(
-                function (skeleton) {
-                  var skeletonItem = skeleton.parentNode;
-                  if (skeletonItem && skeletonContainer === skeletonItem.parentNode) {
-                    skeletonContainer.removeChild(skeletonItem);
-                  }
-              });
-            }
+            fadeOut(skeletonContainer, { duration: '100ms' }).then(
+              function () {
+                // component could have been destroyed
+                if (this.m_widget == null) {
+                  resolve(false);
+                  return;
+                }
 
-            // issue, if I just start the fadeIn animation here, the animation will end immediately.
-            // To workaround it, we start the fadeIn animation on a slight delay.  However, because of the
-            // delay, we ended up have to set opacity to 0 to avoid the actual content from briefly showing up.
-            // eslint-disable-next-line no-param-reassign
-            parentElem.style.opacity = 0;
-            children.forEach(function (child) {
-              if (child !== skeletonContainer.parentNode) {
+                // remove skeleton
+                var skeletonContainerRoot = skeletonContainer.parentNode;
+                if (skeletonContainerRoot.classList.contains('oj-listview-initial-skeletons')) {
+                  root.removeChild(skeletonContainerRoot);
+                } else {
+                  skeletonContainer
+                    .querySelectorAll('.oj-listview-skeleton')
+                    .forEach(function (skeleton) {
+                      var skeletonItem = skeleton.parentNode;
+                      if (skeletonItem && skeletonContainer === skeletonItem.parentNode) {
+                        skeletonContainer.removeChild(skeletonItem);
+                      }
+                    });
+                }
+
+                // issue, if I just start the fadeIn animation here, the animation will end immediately.
+                // To workaround it, we start the fadeIn animation on a slight delay.  However, because of the
+                // delay, we ended up have to set opacity to 0 to avoid the actual content from briefly showing up.
                 // eslint-disable-next-line no-param-reassign
-                child.style.opacity = 1;
-                child.removeAttribute('data-oj-context');
-              }
-            });
+                parentElem.style.opacity = 0;
+                children.forEach(function (child) {
+                  if (child !== skeletonContainer.parentNode) {
+                    // eslint-disable-next-line no-param-reassign
+                    child.style.opacity = 1;
+                    child.removeAttribute('data-oj-context');
+                  }
+                });
 
-            window.requestAnimationFrame(function () {
-              fadeIn(parentElem, { duration: '150ms', persist: 'all' });
-            });
-            // can resolve immediately instead of waiting for fade in
-            resolve(false);
-          }.bind(this));
-        }.bind(this));
+                // use setTimeout instead of requestAnimationFrame since that might not invoke by some browser
+                // if the tab/page is hidden for example
+                setTimeout(function () {
+                  fadeIn(parentElem, { duration: '150ms', persist: 'all' }).then(function () {
+                    // force opacity to be 1 in case if CSS transition did not happen
+                    if (parseInt(parentElem.style.opacity, 10) === 0) {
+                      // eslint-disable-next-line no-param-reassign
+                      parentElem.style.opacity = 1;
+                    }
+                  });
+                }, 0);
+
+                // can resolve immediately instead of waiting for fade in
+                resolve(false);
+              }.bind(this)
+            );
+          }.bind(this)
+        );
       } else {
         // skeleton is not supported
         if (shouldEmptyElem) {
@@ -1322,6 +1553,124 @@ DataProviderContentHandler.prototype.animateShowContent =
       }
     }.bind(this));
   };
+
+/**
+ * Destroy any sparkle artifacts and observer
+ * @private
+ */
+DataProviderContentHandler.prototype._destroySparkles = function () {
+  if (this.m_sparklesObserver) {
+    this.m_sparklesObserver.disconnect();
+    this.m_sparklesObserver = null;
+  }
+
+  if (this.m_sparkles) {
+    this.m_sparkles.remove();
+    this.m_sparkles = null;
+  }
+};
+
+/**
+ * Debounce the callback with specified wait time
+ * @private
+ */
+DataProviderContentHandler.prototype._debounce = function (callback, wait) {
+  let timeout = null;
+  return (...args) => {
+    const next = () => callback(...args);
+    clearTimeout(timeout);
+    timeout = setTimeout(next, wait);
+  };
+};
+
+/**
+ * Gets the number of suggestions which should be at the beginning of the data set.
+ * @param {Object} metadata
+ * @protected
+ */
+DataProviderContentHandler.prototype.handleSuggestions = function (metadata) {
+  var suggestionCount = 0;
+  for (var i = 0; i < metadata.length; i++) {
+    if (metadata[i].suggestion !== undefined) {
+      suggestionCount += 1;
+    }
+  }
+  return suggestionCount;
+};
+
+/**
+ * Returns the first N (count) items
+ * @protected
+ */
+DataProviderContentHandler.prototype.getItems = function (parentElem, count) {
+  var items = parentElem.querySelectorAll('.oj-listview-item-element');
+  return Array.prototype.slice.call(items, 0, count);
+};
+
+/**
+ * Render sparkles based on the specified items
+ * @param {Element} items
+ * @protected
+ */
+DataProviderContentHandler.prototype.renderSparkles = function (items) {
+  // if not specified, we'll find the existing ones
+  if (items === undefined) {
+    // eslint-disable-next-line no-param-reassign
+    items = this.m_root.querySelectorAll('[data-oj-suggestion]');
+  }
+
+  if (items == null || items.length === 0) {
+    this._destroySparkles();
+    return;
+  }
+
+  if (this.m_sparkles == null) {
+    var sparkles = document.createElement('li');
+    sparkles.className = 'oj-listview-sparkles';
+    sparkles.setAttribute('role', 'presentation');
+    this.m_sparkles = sparkles;
+  }
+
+  if (this.m_sparklesObserver == null) {
+    var heightMap = new Map();
+    // use debounce to prevent loop limit exceed issue in Chrome
+    this.m_sparklesObserver = new ResizeObserver(
+      this._debounce((entries) => {
+        var heightChanged = false;
+        entries.forEach((entry) => {
+          var currentHeight = heightMap.get(entry.target);
+          if (currentHeight != null && Math.abs(currentHeight - entry.contentRect.height) > 1) {
+            heightChanged = true;
+          }
+          heightMap.set(entry.target, entry.contentRect.height);
+        });
+        // re-render sparkles if the height of any of the suggested items has changed
+        if (heightChanged && this.m_widget) {
+          this.renderSparkles();
+        }
+      }, 100)
+    );
+  }
+  var height = 0;
+  for (var i = 0; i < items.length; i++) {
+    height += items[i].offsetHeight;
+    // mark as sparkle (see mutation)
+    // eslint-disable-next-line no-param-reassign
+    items[i].dataset.ojSuggestion = 'true';
+    this.m_sparklesObserver.unobserve(items[i]);
+    this.m_sparklesObserver.observe(items[i]);
+    // for rendering border
+    if (i === items.length - 1) {
+      items[i].classList.add('oj-listview-last-suggestion');
+    }
+  }
+  this.m_sparkles.style.top = this.m_root.offsetTop + 'px';
+  this.m_sparkles.style.height = height + 'px';
+  this.m_sparkles.style.display = 'block';
+  if (this.m_sparkles.parentNode == null) {
+    this.m_root.insertBefore(this.m_sparkles, this.m_root.firstElementChild); // @HTMLUpdateOK
+  }
+};
 
 /**
  * Handler for IteratingDataProvider generated content
@@ -1606,15 +1955,6 @@ IteratingDataProviderContentHandler.prototype._getLoadingIndicatorHeight = funct
     container.remove();
   }
   return height;
-};
-
-/**
- * Gets the maximum number of items that can be retrieved from data source
- * @return {number} the maximum fetch count
- * @private
- */
-IteratingDataProviderContentHandler.prototype._getMaxCount = function () {
-  return this.m_widget.options.scrollPolicyOptions.maxCount;
 };
 
 /**
@@ -2010,14 +2350,6 @@ IteratingDataProviderContentHandler.prototype.afterRenderItem =
     this.m_widget.itemRenderComplete(item, context);
   };
 
-/**
- * Callback handler max fetch count.
- * @private
- */
-IteratingDataProviderContentHandler.prototype._handleScrollerMaxRowCount = function () {
-  // TODO: use resource bundle
-  info('ScrollPolicyOptions max count has been reached.');
-};
 
 /**
  * Empty out root element and create any necessary artifacts before rendering items
@@ -2369,7 +2701,7 @@ IteratingDataProviderContentHandler.prototype._isLastItemNotInViewport = functio
   }
 
   if (lastItem) {
-    return !isElementInScrollerBounds(lastItem, this._getScroller());
+    return !isElementIntersectingScrollerBounds(lastItem, this._getScroller());
   }
 
   // no items
@@ -2484,7 +2816,9 @@ IteratingDataProviderContentHandler.prototype.handleDomScrollerFetchedData =
       this._handleFetchedData(result, this.getTemplateEngine(), false); // will call fetchEnd(), which signals a task end. Started either in fetchRows() or in a dummy task not involving data fetch.
 
       if (result.value && result.value.data) {
-        this.m_widget.updateStatusFetchEnd(result.value.data.length);
+        if (!this._hasPendingInsertKeys()) {
+          this.m_widget.updateStatusFetchEnd(result.value.data.length);
+        }
       } else if (result.maxCountLimit) {
         // value could be null but maxCountLimit set, which could happen if for example
         // maxCount is a multiple of fetchSize
@@ -2544,9 +2878,10 @@ IteratingDataProviderContentHandler.prototype._registerDomScroller = function ()
       if (self.m_idleCallback != null) {
         return false;
       }
-      self.m_widget.updateStatusFetchStart();
+
       if (!isCheckViewport) {
         self.signalTaskStart('starts high-water mark scrolling'); // signal domscroller data fetching. Ends either in success call (m_domScrollerMaxCountFunc) or in error call (self.signalTaskEnd)
+        self.m_widget.updateStatusFetchStart();
       }
       return true;
     },
@@ -2707,7 +3042,9 @@ IteratingDataProviderContentHandler.prototype.addItemsForModelInsert =
       // there are some items out of range, we'll need to ensure DomScroller is active
       // so that we can get them from checkViewport
       if (this.m_domScroller == null) {
-        this._registerDomScroller();
+        if (this._isLoadMoreOnScroll()) {
+          this._registerDomScroller();
+        }
       } else {
         // make sure it is active
         this.m_domScroller.setAsyncIterator(this.m_dataProviderAsyncIterator);
@@ -2840,10 +3177,14 @@ IteratingDataProviderContentHandler.prototype._handleFetchedData =
     }
 
     var data = dataObj.value.data;
-    var keys = dataObj.value.metadata.map(function (value) {
+    var metadata = dataObj.value.metadata;
+    var suggestions = 0;
+    if (isInitialFetch && !this.isCardLayout()) {
+      suggestions = this.handleSuggestions(metadata);
+    }
+    var keys = metadata.map(function (value) {
       return value.key;
     });
-    var metadata = dataObj.value.metadata;
 
     if (data.length === keys.length) {
       this._handleFetchSuccess(data, keys, (dataObj.done || dataObj.maxCountLimit), templateEngine,
@@ -2881,6 +3222,14 @@ IteratingDataProviderContentHandler.prototype._handleFetchedData =
               // no more data, but DomScroller still active from before
               this._destroyDomScroller();
             }
+          }
+
+          if (suggestions > 0) {
+            // wait until items completely render otherwise we won't get an accurate height
+            var busyContext = Context.getContext(this.m_root).getBusyContext();
+            busyContext.whenReady().then(() => {
+              this.renderSparkles(this.getItems(this.m_root, suggestions));
+            });
           }
 
           if (dataObj.maxCountLimit) {

@@ -5,12 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { h, ComponentChildren } from "preact";
-import type { DimensionProps } from "@oracle/oraclejet-preact/utils/interpolations/dimensions";
-import type { FlexboxProps } from "./flexbox";
-declare type StyleProps = DimensionProps & FlexboxProps;
+import { ComponentChildren } from 'preact';
+import type { DimensionProps } from '../utils/UNSAFE_interpolations/dimensions';
+import type { BoxAlignmentProps } from '../utils/UNSAFE_interpolations/boxalignment';
+import type { FlexboxProps } from '../utils/UNSAFE_interpolations/flexbox';
+import type { FlexitemProps } from '../utils/UNSAFE_interpolations/flexitem';
+declare type StyleProps = DimensionProps & FlexboxProps & FlexitemProps & BoxAlignmentProps;
 declare type Props = StyleProps & {
     children?: ComponentChildren;
 };
-export declare const Flex: ({ children, ...props }: Props) => h.JSX.Element;
+export declare const Flex: ({ children, ...props }: Props) => import("preact").JSX.Element;
 export {};

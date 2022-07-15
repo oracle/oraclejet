@@ -24,8 +24,8 @@ var __oj_legend_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "11.0.0",
+              "type": "unsupported",
+              "since": "13.0.0",
               "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
             }
           ]
@@ -126,6 +126,9 @@ var __oj_legend_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleContainsControls": {
+          "type": "string"
+        },
         "componentName": {
           "type": "string"
         },
@@ -540,7 +543,6 @@ var __oj_legend_section_metadata =
    */
 
    // Slots
-
   /**
    * <p>
    *  The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for
@@ -684,7 +686,7 @@ var __oj_legend_section_metadata =
    * @ojcomponent oj.ojLegend
    * @augments oj.dvtBaseComponent
    * @since 0.7.0
-   *
+   * @ojimportmembers oj.ojSharedContextMenu
    * @ojshortdesc A legend displays an interactive description of symbols, colors, etc., used in graphical information representations.
    * @ojrole application
    * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
@@ -775,7 +777,7 @@ var __oj_legend_section_metadata =
        * @type {Object|null}
        * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
        * @default null
-       * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
        * @example <caption>Initialize the legend with the

@@ -1,0 +1,6 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../radio-checkbox/themes/stable/_oj-radiocheckbox.cssvars.scss";
+@import "../../../menu/themes/stable/_oj-menu.cssvars.scss";
+
+  @include module-include-once("stable.variables.menuselectmany") {
+  }

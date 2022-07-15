@@ -395,7 +395,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
     _NUM5_KEY_CODE: 53,
     _LETTER_A: 'a',
     _LETTER_A_UPPERCASE: 'A',
-    _LETTER_A_CODE: 65
+    _LETTER_A_CODE: 65,
+    _META: 'Meta',
+    _META_CODE: 91
   };
 
   /**
@@ -507,6 +509,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
     return eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A ||
            eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A_UPPERCASE ||
            eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A_CODE;
+  };
+
+  /**
+   * @private
+   */
+  DataCollectionUtils.isMetaKeyEvent = function (eventKey) {
+    return eventKey === DataCollectionUtils.KEYBOARD_KEYS._META ||
+           eventKey === DataCollectionUtils.KEYBOARD_KEYS._META_CODE;
   };
 
   /** **************** data mutation event handling methods ****************** */
@@ -684,19 +694,27 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
    * @param {Element} elem
    * @param {Element} scroller
    */
-  DataCollectionUtils.isElementInScrollerBounds = function (elem, scroller) {
+  DataCollectionUtils.isElementIntersectingScrollerBounds = function (elem, scroller) {
     var top;
     var bottom;
+    var left;
+    var right;
     if (scroller === document.documentElement) {
       top = 0;
       bottom = document.documentElement.clientHeight;
+      left = 0;
+      right = document.documentElement.clientWidth;
     } else {
       var scrollerBounds = scroller.getBoundingClientRect();
       top = scrollerBounds.top;
       bottom = scrollerBounds.bottom;
+      left = scrollerBounds.left;
+      right = scrollerBounds.right;
     }
     var bounds = elem.getBoundingClientRect();
-    return (bounds.top >= top && bounds.bottom <= bottom);
+    return (bounds.top <= bottom && bounds.bottom >= top &&
+     bounds.left <= right && bounds.right >= left
+    );
   };
 
   /**
@@ -794,10 +812,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   const isTabKeyEvent = DataCollectionUtils.isTabKeyEvent;
   const isNumberFiveKeyEvent = DataCollectionUtils.isNumberFiveKeyEvent;
   const isLetterAKeyEvent = DataCollectionUtils.isLetterAKeyEvent;
+  const isMetaKeyEvent = DataCollectionUtils.isMetaKeyEvent;
   const KEYBOARD_KEYS = DataCollectionUtils.KEYBOARD_KEYS;
   const CHECKVIEWPORT_THRESHOLD = DataCollectionUtils.CHECKVIEWPORT_THRESHOLD;
   const calculateOffsetTop = DataCollectionUtils.calculateOffsetTop;
-  const isElementInScrollerBounds = DataCollectionUtils.isElementInScrollerBounds;
+  const isElementIntersectingScrollerBounds = DataCollectionUtils.isElementIntersectingScrollerBounds;
   const getEventDetail = DataCollectionUtils.getEventDetail;
   const isRequestIdleCallbackSupported = DataCollectionUtils.isRequestIdleCallbackSupported;
 
@@ -827,7 +846,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   exports.isArrowRightKeyEvent = isArrowRightKeyEvent;
   exports.isArrowUpKeyEvent = isArrowUpKeyEvent;
   exports.isClickthroughDisabled = isClickthroughDisabled;
-  exports.isElementInScrollerBounds = isElementInScrollerBounds;
+  exports.isElementIntersectingScrollerBounds = isElementIntersectingScrollerBounds;
   exports.isElementOrAncestorFocusable = isElementOrAncestorFocusable;
   exports.isEndKeyEvent = isEndKeyEvent;
   exports.isEnterKeyEvent = isEnterKeyEvent;
@@ -838,6 +857,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   exports.isHomeKeyEvent = isHomeKeyEvent;
   exports.isIterateAfterDoneNotAllowed = isIterateAfterDoneNotAllowed;
   exports.isLetterAKeyEvent = isLetterAKeyEvent;
+  exports.isMetaKeyEvent = isMetaKeyEvent;
   exports.isMobileTouchDevice = isMobileTouchDevice;
   exports.isNumberFiveKeyEvent = isNumberFiveKeyEvent;
   exports.isRequestIdleCallbackSupported = isRequestIdleCallbackSupported;

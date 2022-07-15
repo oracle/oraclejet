@@ -1,0 +1,21 @@
+<div>
+  <?js
+    let objtype = obj.kind;
+    if (obj.kind === 'class' && obj.ojcomponent){
+      objtype = 'component';
+    }
+    else if (obj.kind === 'member' && (obj.ojslot || obj.ojchild)){
+      objtype = 'slot';
+    }
+    else if (obj.kind === 'member' && obj.isstyleclass){
+      objtype = 'styleclass';
+    }
+    else if (obj.kind === 'member' && (obj.isstyleset || obj.isstyletemplate)){
+      objtype = 'category of style classes';
+    }
+    else if (obj.kind === 'member'){
+      objtype = 'attribute';
+    }
+  ?>
+  <p class="important">Note: This <?js= objtype ?> is not supported in the following themes: <code style="font-size: 120%; color:black"><?js= obj.ojunsupportedthemes.join(',')?>	</code></p>
+</div>

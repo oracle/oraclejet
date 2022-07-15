@@ -1,0 +1,9 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../helpers/themes/redwood/oj-helpers.scss";   
+@import "_oj-tags.cssvars.scss";
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../base/_oj-tags.scss"; 
+// scoped cssvars override
+@import "_oj-tags-scoped.cssvars.scss";
+@import "../base/_oj-tags-ignore.scoped.cssvars.scss";

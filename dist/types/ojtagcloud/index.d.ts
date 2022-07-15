@@ -29,6 +29,7 @@ export interface ojTagCloud<K, D extends ojTagCloud.Item<K> | any> extends dvtBa
     };
     touchResponse?: 'touchStart' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -181,6 +182,7 @@ export interface ojTagCloudSettableProperties<K, D extends ojTagCloud.Item<K> | 
     };
     touchResponse?: 'touchStart' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;

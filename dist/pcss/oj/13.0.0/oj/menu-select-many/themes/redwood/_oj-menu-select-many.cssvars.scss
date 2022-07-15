@@ -1,0 +1,8 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../radio-checkbox/themes/redwood/_oj-radiocheckbox.cssvars.scss";
+// scoped cssvars override
+@import "../../../radio-checkbox/themes/redwood/_oj-radiocheckbox-scoped.cssvars.scss";
+@import "../../../menu/themes/redwood/_oj-menu.cssvars.scss";
+
+  @include module-include-once("redwood.variables.menuselectmany") {
+  }

@@ -1,14 +1,14 @@
-import { h, JSX } from 'preact';
+import { JSX } from 'preact';
 declare type IntrinsicProps = Pick<JSX.HTMLAttributes<HTMLDivElement>, 'id' | 'children'>;
 declare type HeaderProps = IntrinsicProps & {
     id: string;
     contentId: string;
-    disabled: boolean;
-    expanded: boolean;
-    toggleHandler: (event: Event) => void;
+    isDisabled: boolean;
+    isExpanded: boolean;
+    toggleHandler: () => void;
 };
 /**
  * Header subcomponent
  */
-export declare const CollapsibleHeader: ({ children, id, contentId, disabled, expanded, toggleHandler }: HeaderProps) => h.JSX.Element;
+export declare const CollapsibleHeader: ({ children, id, contentId, isDisabled, isExpanded, toggleHandler }: HeaderProps) => JSX.Element;
 export {};

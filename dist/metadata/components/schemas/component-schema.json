@@ -7,6 +7,16 @@
 
   "definitions": {
 
+    "jetCustomElementNameDef" : {
+      "$comment": "central definition for JET custom element names",
+      "type": "string",
+      "pattern": "^([a-z][a-z0-9_\u002d]*)$",
+      "not": {
+        "enum": ["annotation-xml", "color-profile", "font-face", "font-face-src",
+                 "font-face-uri", "font-face-format", "font-face-name", "missing-glyph"]
+      }
+    },
+
     "extensionDef": {
       "type": "object",
       "properties": {
@@ -745,7 +755,7 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["deprecated"]
+            "enum": ["deprecated", "maintenance", "supersedes"]
           },
           "since": {
             "$ref": "#/definitions/semverExactDef"
@@ -1057,18 +1067,104 @@
       },
       "required": ["name"],
       "additionalProperties": false
+    },
+
+    "contentItemsDef": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "defaultExport": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "exports": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "readme": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/statusDef"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["component", "module", "resource"]
+        }
+      },
+      "required": ["name"],
+      "if": {
+        "$comment": "if the content type is 'component' (default) or 'resource', then apply JET custom element naming rules AND 'defaultExport' is invalid (only applicable to 'module' content)",
+        "oneOf": [
+          {"not": { "required": ["type"] }},
+          {
+            "properties": {
+              "type": {
+                "enum": ["component", "resource"]
+              }
+            },
+            "required": ["type"]
+          }
+        ]          
+      },
+      "then": {
+        "properties": {
+          "name": {
+            "$ref": "#/definitions/jetCustomElementNameDef"
+          }
+        },
+        "propertyNames": {
+          "not": {
+            "enum": ["defaultExport"]
+          }
+        }
+      },
+      "else": {
+        "$comment": "otherwise if the content type is explicitly set to 'resource', then 'exports' is invalid (only applicable to 'component' or 'module')",
+        "if": {
+          "properties": {
+            "type": {
+              "const": "resource"
+            }
+          },
+          "required": ["type"]
+        },
+        "then": {
+          "propertyNames": {
+            "not": {
+              "enum": ["exports"]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "contentsDef": {
+      "type": "array",
+      "items": {
+        "$comment": "either an @components@ token string OR a contentItems object",
+        "anyOf": [
+          { "const": "@components@" },
+          { "$ref": "#/definitions/contentItemsDef" }
+        ]
+      }
     }
 
   },
 
   "properties": {
     "name": {
-      "type": "string",
-      "pattern": "^([a-z][a-z0-9_\u002d]*)$",
-      "not": {
-        "enum": ["annotation-xml", "color-profile", "font-face", "font-face-src",
-                 "font-face-uri", "font-face-format", "font-face-name", "missing-glyph"]
-      }
+      "$ref": "#/definitions/jetCustomElementNameDef"
     },
     "version": {
       "$ref": "#/definitions/semverExactDef"
@@ -1094,12 +1190,21 @@
       },
       "additionalProperties": false
     },
+    "contents": {
+      "$ref": "#/definitions/contentsDef"
+    },
     "dependencies": {
-      "type": "object",
-      "additionalProperties": {
-        "$comment": "values in 'dependencies' key-value pairs are USUALLY valid semver ranges, but JET Packs require exact semvers -- see conditional rules below",
-        "type": "string"
-      }
+      "$comment": "either an @dependencies@ token string OR an object with key-value pairs",
+      "oneOf": [
+        { "const": "@dependencies@" },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$comment": "values in 'dependencies' key-value pairs are USUALLY valid semver ranges, but JET Packs require exact semvers -- see conditional rules below",
+            "type": "string"
+          }
+        }
+      ]
     },
     "demoFor": {
       "type": "array",
@@ -1165,6 +1270,9 @@
     "license": {
       "type": "string"
     },
+    "main": {
+      "type": "string"
+    },
     "pack": {
       "type": "string",
       "pattern": "^([a-z][a-z0-9_\u002d]*)$"
@@ -1215,7 +1323,7 @@
     },
     "type": {
       "type": "string",
-      "enum": ["composite", "core", "pack", "reference", "resource", "demo", "stripe", "vbcs-pattern", "vbcs-template", "vbcs-action"]
+      "enum": ["composite", "core", "pack", "mono-pack", "reference", "resource", "demo", "stripe", "vbcs-pattern", "vbcs-template", "vbcs-action"]
     }
   },
   "patternProperties": {
@@ -1223,41 +1331,35 @@
       "$comment": "Also allow OpenAPI extension properties at the top level."
     }
   },
-  "required": ["name", "version"],
+  "required": ["name"],
   "additionalProperties": false,
 
   "$comment": "the following 'allOf' array entries specify conditional validation rules, per JSON Schema draft-07",
   "allOf": [
 
     {
-      "$comment": "if the 'type' property is absent OR is explicitly set to 'core' or 'component', then the 'jetVersion' property is required; else 'implements' property is invalid",
+      "$comment": "if the 'type' property is explicitly set to anything other than 'composite' or 'core', then 'implements' and 'main' properties are invalid",
       "if": {
-        "oneOf": [
-          {"not": { "required": ["type"] }},
-          {
-            "properties": {
-              "type": {
-                "enum": ["core", "composite"]
-              }
-            },
-            "required": ["type"]
+        "properties": {
+          "type": {
+            "not": {
+              "enum": ["core", "composite"]
+            }
           }
-        ]
+        },
+        "required": ["type"]
       },
       "then": {
-        "required": ["jetVersion"]
-      },
-      "else": {
         "propertyNames": {
           "not": {
-            "enum": ["implements"]
+            "enum": ["implements", "main"]
           }
         }
       }
     },
 
     {
-      "$comment": "if the component type is explicitly set to 'core', then the 'since' property is required; else the 'since' property is invalid",
+      "$comment": "if the component type is explicitly set to 'core', then the 'since' property is required",
       "if": {
         "properties": {
           "type": {
@@ -1268,18 +1370,11 @@
       },
       "then": {
         "required": ["since"]
-      },
-      "else": {
-        "propertyNames": {
-          "not": {
-            "enum": ["since"]
-          }
-        }
       }
     },
 
     {
-      "$comment": "if the component type is explicitly set to 'reference', then the 'package' property is required; else 'package' property is invalid",
+      "$comment": "if the component type is explicitly set to 'reference', then the 'package' property is required",
       "if": {
         "properties": {
           "type": {
@@ -1292,9 +1387,22 @@
         "required": ["package"]
       },
       "else": {
-        "propertyNames": {
+        "$comment": "otherwise, if the component type is not explicitly set to 'mono-pack', then 'package' property is invalid",
+        "if": {
           "not": {
-            "enum": ["package"]
+            "properties": {
+              "type": {
+                "const": "mono-pack"
+              }
+            },
+            "required": ["type"]
+          }
+        },
+        "then": {
+          "propertyNames": {
+            "not": {
+              "enum": ["package"]
+            }
           }
         }
       }
@@ -1332,10 +1440,15 @@
       "then": {
         "properties": {
           "dependencies": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/definitions/semverExactDef"
-            }
+            "oneOf": [
+              { "const": "@dependencies@" },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/definitions/semverExactDef"
+               }
+              }
+            ]
           }
         },
         "propertyNames": {
@@ -1348,10 +1461,43 @@
         "$comment": "otherwise, the values of 'dependencies' property key-value pairs must be a semver range string",
         "properties": {
           "dependencies": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/definitions/semverRangeDef"
-            }
+            "oneOf": [
+              { "const": "@dependencies@" },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/definitions/semverRangeDef"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+
+    {
+      "$comment": "if the component type is explicitly set to 'mono-pack', then the 'contents', 'jetVersion', and 'version' properties are required AND 'pack' property is invalid (nested JET Packs not allowed)",
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mono-pack"
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "required": ["contents", "jetVersion", "version"],
+        "propertyNames": {
+          "not": {
+            "enum": ["pack"]
+          }
+        }
+      },
+      "else": {
+        "$comment": "otherwise, the 'contents' property is invalid (reserved for mono-packs)",
+        "propertyNames": {
+          "not": {
+            "enum": ["contents"]
           }
         }
       }

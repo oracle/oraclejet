@@ -31,6 +31,7 @@ export interface ojPictoChart<K, D extends ojPictoChart.Item<K> | any> extends d
         })) | null;
     };
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -219,6 +220,7 @@ export interface ojPictoChartSettableProperties<K, D extends ojPictoChart.Item<K
         })) | null;
     };
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;

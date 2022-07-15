@@ -1,0 +1,205 @@
+<?js
+	var data = obj;
+  var self = this;  
+  var tsdeprecations = data.tsdeprecations;
+  var tssignatures = data.tstype;
+  var typeArray = data.types;
+  var tsOnlyDeprecations = [];
+  var jsDeprecations = [];
+  var allDeprecations = [];
+  var since, removeBasedonSince;
+
+  var removeAllDeprecated = function (types, deprecations){
+      return types.filter((item)=> {
+        for(var i=0; i< deprecations.length; i++){
+          if(deprecations[i].value.indexOf(item)>-1){
+            return false;
+          }
+        }
+        return true;
+      });
+  }
+
+  
+  //Method to add the class we need to stamp on the type. 
+  //The modified return array is passed to type.tmpl which will render the class.
+
+  var modifyArrayWithDeprecationInfo = function (types, deprecations, type){
+    var className = 'deprecated-hidden-only' //ts deprecated default class;
+    if(type =="js"){
+      className = "jsdeprecated-hidden-only";
+    }
+
+    let result = [];
+    let isDep = false;
+    types.forEach(type => {
+      isDep = false;
+      for(var i=0; i< deprecations.length; i++){
+          if(deprecations[i].value.indexOf(type)>-1){
+            isDep = true;
+          }
+      }
+      if(isDep){
+        result.push({type: type, className: className});
+      }else{
+        result.push(type);
+      }
+    });
+
+    return result;
+
+  }
+
+  // figure out if we have any type deprecations.
+  if(tsdeprecations){
+    tsdeprecations.forEach(function(deprecation){
+      if (deprecation.target === 'parameterType' || deprecation.target ==='propertyType'){
+          since = deprecation.since;
+          removeBasedonSince = !since || self.convertSemverToInt32(since) <= self.convertSemverToInt32('6.0.0');
+          if(removeBasedonSince){
+            //is it deprecated prior to typescript? if so, it goes only in jsdoc.
+            jsDeprecations.push(deprecation);
+            allDeprecations.push(deprecation);
+          }
+          else{
+            //else it goes in deprecation doc.
+            tsOnlyDeprecations.push(deprecation);
+            allDeprecations.push(deprecation);
+          }
+      }
+    });
+  }
+
+  var cleanSig = null;
+  var tsdeprecatedSig = null;
+  var jsdeprecatedSig = null;
+
+  if(tssignatures && tssignatures.length){
+    tssignatures.forEach(function(signature){
+      if(signature.target.toLowerCase() === 'type'){
+        if(signature.consumedBy === 'ts' || !signature.consumedBy){
+          cleanSig = signature.value;
+        }
+        else if(signature.consumedBy === 'tsdep'){
+          tsdeprecatedSig = signature.value;
+        }
+        else if(signature.consumedBy === 'js'){
+          jsdeprecatedSig = signature.value;
+        }
+      }
+    });
+  }
+
+  var isSomethingDeprecated = allDeprecations.length > 0 ? true: false;
+  var isJSOnlyDeprecated = jsDeprecations.length > 0 ? true: false;
+  var isTSeprecated = tsOnlyDeprecations.length > 0 ? true: false;
+
+  var isSomeSignature = cleanSig || tsdeprecatedSig || jsdeprecatedSig;
+  if(isSomeSignature){
+    //in this case we depend on the new ojsignature format to support all the different variations
+    //of signatures for ts/deprecated/and jsdoc
+    if(cleanSig && !tsdeprecatedSig && !jsdeprecatedSig){
+      //there is no deprecation. We are just using our default signature everywhere.?>
+      <?js= self.partial('type.tmpl', cleanSig.split('|')) ?>
+    <?js 
+    }
+    else{
+      if(jsdeprecatedSig){ ?>
+        <span class='jsdoc-type'>
+        <?js= self.partial('type.tmpl', modifyArrayWithDeprecationInfo(jsdeprecatedSig.split('|'),allDeprecations,'js')) ?>
+        <?js
+         if(isJSOnlyDeprecated){ ?>
+          <dl class="deprecated jsdeprecated-hidden-only">
+            <dt class="important">Deprecated:</dt>
+            <dd><?js= self.partial('deprecated.tmpl', allDeprecations) ?></dd>
+          </dl>
+        <?js }
+        ?>
+        </span>
+        <?js
+      }
+      if(tsdeprecatedSig){
+        var depclasses =  'dep-type';
+        if(!jsdeprecatedSig){
+          depclasses = depclasses+ ' jsdoc-type';
+        } ?>
+        <span class="<?js= depclasses?>">
+        <?js= self.partial('type.tmpl', modifyArrayWithDeprecationInfo(tsdeprecatedSig.split('|'),allDeprecations,'ts')) ?>
+        <?js
+         if(isTSeprecated){ ?>
+           <dl class="deprecated">
+            <dt class="important">Deprecated:</dt>
+            <dd><?js= self.partial('deprecated.tmpl', tsOnlyDeprecations) ?></dd>
+           </dl>
+        <?js }
+        ?>
+        </span>
+        <?js
+      }
+      //default for clean signature
+      var cleanclasses =  'clean-only';
+      if(!tsdeprecatedSig){
+        cleanclasses = cleanclasses+ ' dep-type';
+      }
+      if(!tsdeprecatedSig && !jsdeprecatedSig){
+        cleanclasses = cleanclasses+ ' jsdoc-type';
+        }
+      ?>
+        <span class="<?js= cleanclasses?>">
+        <?js= self.partial('type.tmpl', cleanSig.split('|')) ?>
+        </span>
+        <?js
+    }
+  }
+  else{ 
+    if(!isSomethingDeprecated){
+      //only clean API and clean stuff. We are good here. ?>
+      <?js= self.partial('type.tmpl', typeArray) ?>
+    <?js 
+    }
+    else{
+      if(isJSOnlyDeprecated){
+        //create jsonly type info ?>
+        <span class='jsdoc-type'>
+        <?js= self.partial('type.tmpl', modifyArrayWithDeprecationInfo(typeArray, allDeprecations, 'js')) ?>
+        <dl class="deprecated jsdeprecated-hidden-only">
+          <dt class="important">Deprecated:</dt>
+          <dd><?js= self.partial('deprecated.tmpl', allDeprecations) ?></dd>
+        </dl>
+        </span>
+        <?js
+      }
+      if(isTSeprecated){
+        //create ts deprecations
+        var tswithDeprecatedtypes = removeAllDeprecated(typeArray, jsDeprecations);
+        var depclasses =  'dep-type';
+        if(!isJSOnlyDeprecated){
+        depclasses = depclasses+ ' jsdoc-type';
+        } ?>
+        <span class="<?js= depclasses?>">
+        <?js= self.partial('type.tmpl', modifyArrayWithDeprecationInfo(tswithDeprecatedtypes, allDeprecations, 'ts')) ?>
+        <dl class="deprecated deprecated-hidden-only">
+          <dt class="important">Deprecated:</dt>
+          <dd><?js= self.partial('deprecated.tmpl', tsOnlyDeprecations) ?></dd>
+        </dl>
+        </span>
+        <?js
+      }
+      //create clean when deprecations are present.
+      var cleanTypes = removeAllDeprecated(typeArray, allDeprecations);
+      var cleanclasses =  'clean-only';
+      if(!isTSeprecated){
+        cleanclasses = cleanclasses+ ' dep-type';
+      }
+      if(!isTSeprecated && !isJSOnlyDeprecated){
+        cleanclasses = cleanclasses+ ' jsdoc-type';
+        }
+      ?>
+        <span class="<?js= cleanclasses?>">
+        <?js= self.partial('type.tmpl', cleanTypes) ?>
+        </span>
+        <?js
+    }
+  }
+  
+  ?>

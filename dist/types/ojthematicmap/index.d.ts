@@ -82,6 +82,7 @@ export interface ojThematicMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | a
     touchResponse?: 'touchStart' | 'auto';
     zooming?: 'auto' | 'none';
     translations: {
+        accessibleContainsControls?: string;
         areasRegion?: string;
         componentName?: string;
         labelAndValue?: string;
@@ -488,6 +489,7 @@ export interface ojThematicMapSettableProperties<K1, K2, K3, D1 extends ojThemat
     touchResponse?: 'touchStart' | 'auto';
     zooming?: 'auto' | 'none';
     translations: {
+        accessibleContainsControls?: string;
         areasRegion?: string;
         componentName?: string;
         labelAndValue?: string;

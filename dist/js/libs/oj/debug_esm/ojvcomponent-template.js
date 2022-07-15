@@ -7,14 +7,15 @@
  */
 import { info } from 'ojs/ojlogger';
 import { getTemplateContent } from 'ojs/ojhtmlutils';
-import CspExpressionEvaluator from 'ojs/ojcspexpressionevaluator';
-import { CustomElementUtils, AttributeUtils } from 'ojs/ojcustomelement-utils';
-import { Component, h, Fragment, render } from 'preact';
+import { CustomElementUtils, CACHED_USE_KO_FLAG, AttributeUtils } from 'ojs/ojcustomelement-utils';
+import { Component, Fragment, h, render } from 'preact';
+import { jsx } from 'preact/jsx-runtime';
 import Context from 'ojs/ojcontext';
 import { withDataProvider } from 'ojs/ojdataproviderhandler';
 import { getPropagationMetadataViaCache } from 'ojs/ojbindpropagation';
 import { getExpressionEvaluator } from 'ojs/ojconfig';
 import { getPropertyMetadata } from 'ojs/ojmetadatautils';
+import { CspExpressionEvaluatorInternal } from 'ojs/ojcspexpressionevaluator-internal';
 
 class Props {
 }
@@ -46,9 +47,9 @@ class BindDom extends Component {
         }
     }
     render() {
-        return (h(Fragment, null, this.state.view && this.props.executeFragment
-            ? this.props.executeFragment(null, this.state.view, this.state.data, this.forceUpdate.bind(this), this.props.bindingProvider)
-            : null));
+        return (jsx(Fragment, { children: this.state.view && this.props.executeFragment
+                ? this.props.executeFragment(null, this.state.view, this.state.data, this.forceUpdate.bind(this), this.props.bindingProvider)
+                : null }));
     }
 }
 
@@ -63,31 +64,31 @@ class BindForEachWrapper extends Component {
     }
     render(props) {
         if (Array.isArray(props.data)) {
-            return h(BindForEachWithArray, { data: props.data, itemRenderer: props.itemRenderer });
+            return jsx(BindForEachWithArray, { data: props.data, itemRenderer: props.itemRenderer });
         }
         else {
-            return (h(this.BindForEachWithDP, { addBusyState: this._addBusyState, data: props.data, itemRenderer: props.itemRenderer }));
+            return (jsx(this.BindForEachWithDP, { addBusyState: this._addBusyState, data: props.data, itemRenderer: props.itemRenderer }));
         }
     }
 }
 class BindForEachDataUnwrapper extends Component {
     render(props) {
         const unwrappedData = props.data.map((item) => item.data);
-        return h(BindForEachWithArray, { data: unwrappedData, itemRenderer: props.itemRenderer });
+        return jsx(BindForEachWithArray, { data: unwrappedData, itemRenderer: props.itemRenderer });
     }
 }
 class BindForEachWithArray extends Component {
     render() {
         const data = this.props.data;
-        return (h(Fragment, null, data
-            ? data.map((row, index) => {
-                return this.props.itemRenderer({
-                    data: row,
-                    index: index,
-                    observableIndex: () => index
-                });
-            })
-            : []));
+        return (jsx(Fragment, { children: data
+                ? data.map((row, index) => {
+                    return this.props.itemRenderer({
+                        data: row,
+                        index: index,
+                        observableIndex: () => index
+                    });
+                })
+                : [] }));
     }
 }
 
@@ -109,7 +110,7 @@ class VTemplateEngine {
     constructor() {
         var _a;
         this._templateAstCache = new WeakMap();
-        this._cspEvaluator = (_a = getExpressionEvaluator()) !== null && _a !== void 0 ? _a : new CspExpressionEvaluator();
+        this._cspEvaluator = (_a = getExpressionEvaluator()) !== null && _a !== void 0 ? _a : new CspExpressionEvaluatorInternal();
     }
     static cleanupTemplateCache(templateElement) {
         if (templateElement && templateElement['_cachedRows']) {
@@ -258,6 +259,9 @@ class VTemplateEngine {
                     }
                 }
             }
+            if (template && template.render) {
+                return template.render(dataProp);
+            }
             if (template) {
                 const templateAst = this._getAstViaCache(engineContext, template);
                 const templateAlias = template.getAttribute('data-oj-as');
@@ -320,6 +324,7 @@ class VTemplateEngine {
                     type: 3,
                     value: (refObj) => {
                         if (refObj) {
+                            refObj[CACHED_USE_KO_FLAG] = !!engineContext[BINDING_PROVIDER];
                             deferNode = refObj;
                             render(deferContent, deferNode);
                         }
@@ -648,6 +653,19 @@ class VTemplateEngine {
         if (dottedExpressions.length > 0) {
             attrNodes.push(this._createRefPropertyNodeForNestedProps(engineContext, dottedExpressions));
         }
+        else if (engineContext[BINDING_PROVIDER] &&
+            CustomElementUtils.isElementRegistered(node.tagName)) {
+            attrNodes.push({
+                key: 'ref',
+                value: {
+                    type: 3,
+                    value: (refObj) => {
+                        if (refObj)
+                            refObj[CACHED_USE_KO_FLAG] = true;
+                    }
+                }
+            });
+        }
         writebacks.forEach((valuesArray, name) => {
             var _a;
             const propName = `on${name}Changed`;
@@ -677,15 +695,14 @@ class VTemplateEngine {
         const cb = VTemplateEngine._nestedPropsRefCallback;
         return {
             key: 'ref',
-            value: this._createCallNodeWithContext(Function.prototype.bind.bind(cb), [
-                dottedPropsArrayNode
-            ])
+            value: this._createCallNodeWithContext(Function.prototype.bind.bind(cb, engineContext[BINDING_PROVIDER]), [dottedPropsArrayNode])
         };
     }
-    static _nestedPropsRefCallback(resolvedSubPropValues, refObj) {
+    static _nestedPropsRefCallback(bindingProvider, resolvedSubPropValues, refObj) {
         if (refObj && refObj.setProperties) {
             const updatedProps = Object.assign({}, ...resolvedSubPropValues);
             refObj.setProperties(updatedProps);
+            refObj[CACHED_USE_KO_FLAG] = !!bindingProvider;
         }
     }
     _createWritebackPropertyNode(engineContext, propName, valuesArray, existingCallbackExpr) {

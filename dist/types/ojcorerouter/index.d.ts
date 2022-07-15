@@ -17,6 +17,7 @@ declare class CoreRouter<D extends {
     [key: string]: any;
 }> {
     beforeStateChange: CoreRouter.Observable<CoreRouter.VetoableState<D, P>>;
+    childRouter: CoreRouter;
     currentState: CoreRouter.Observable<CoreRouter.ActionableState<D, P>>;
     constructor(routes: Array<CoreRouter.DetailedRouteConfig<D> | CoreRouter.RedirectedRouteConfig>, options?: CoreRouter.CreateOptions<P>, parentRouter?: CoreRouter<ParentD, ParentP>);
     createChildRouter<ChildD extends {
@@ -30,7 +31,8 @@ declare class CoreRouter<D extends {
     }>(routes: Array<CoreRouter.DetailedRouteConfig<ChildD> | CoreRouter.RedirectedRouteConfig>, options?: CoreRouter.CreateOptions<ChildP>): CoreRouter<ChildD, ChildP>;
     destroy(): any;
     go(...route: CoreRouter.Route<P>[]): Promise<CoreRouter.CoreRouterState<D, P>>;
-    reconfigure(routes: Array<(CoreRouter.DetailedRouteConfig | CoreRouter.RedirectedRouteConfig)>, route: CoreRouter.Route<P>): Promise<CoreRouter.CoreRouterState<D, P>>;
+    reconfigure(routeConfigs: Array<(CoreRouter.DetailedRouteConfig | CoreRouter.RedirectedRouteConfig)>, navigateTo?: CoreRouter.Route<P> |
+       CoreRouter.Route<P>[]): Promise<CoreRouter.CoreRouterState<D, P>>;
     sync(): Promise<CoreRouter.CoreRouterState<D, P>>;
 }
 declare namespace CoreRouter {

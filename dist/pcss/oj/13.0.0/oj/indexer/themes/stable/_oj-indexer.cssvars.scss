@@ -1,0 +1,14 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.variables.indexer") {
+
+:root {
+
+  // indexer
+  // ----------------------------
+  --oj-indexer-text-color:            var(--oj-core-text-color-primary);
+  --oj-indexer-font-size:             var(--oj-typography-body-sm-font-size);
+  
+}
+
+}

@@ -1,26 +1,31 @@
-const fsx = require("fs-extra");
-const path = require("path");
-const PatternCompiler = require("./PatternCompiler");
+const fsx = require('fs-extra');
+const glob = require('glob');
+const path = require('path');
+const os = require('os');
+const PatternCompiler = require('./PatternCompiler');
+const ts = require('typescript');
 
 /**
  * Traverse the message bundle and compile all strings.
  * @param {PatternCompiler} compiler The instance of the PatternCompiler
- * @param {Object} entry The message bundle
+ * @param {Object} bundle The message bundle
  * @return {Object} A message bundle whose strings are wrapped by functions
  * generated from the PatternCompiler.
  */
-function traverse(compiler, entry) {
-  const output = {};
-  Object.keys(entry).forEach((key) => {
+function traverse(compiler, bundle) {
+  const output = Object.keys(bundle).reduce((accum, key) => {
     // Ignore '@...' annotation entries
     if (!key.match(/^@/)) {
-      const value = entry[key];
-      if (typeof value !== "string") {
+      const value = bundle[key];
+      if (typeof value !== 'string') {
         throw Error(`"${key}" value must be a string`);
       }
-      output[key] = compiler.compile(value);
+      return {
+        ...accum,
+        [key]: compiler.compile(value)
+      };
     }
-  });
+  }, {});
   return output;
 }
 
@@ -45,49 +50,30 @@ function getBundle(filepath) {
  * @param {string} locale The locale of the bundle
  * @param {string} targetFile The path to the target file where the contents will
  * be written.
- * @param {string} dtsFile If specified, write the type definitions out to the
- * given file name
- * @param {string} moduleType The type of module to output (amd|esm)
+ * @param {boolean} exportType Whether to export the bundle type
  */
-function convertBundle(bundle, locale, targetFile, dtsFile, moduleType) {
+function convertBundle(bundle, locale, targetFile, exportType) {
   const compiler = new PatternCompiler(locale);
   const processed = traverse(compiler, bundle);
-  const pluralSelect = compiler.getPluralSelect();
-  const formatters = [];
-  const typeDefs = [];
-  Object.keys(processed).forEach((messageKey) => {
+  const contents = Object.keys(processed).map((messageKey) => {
     const entry = processed[messageKey];
-    // Object properties
-    formatters.push(`  "${messageKey}": ${entry.formatter},`);
-    const params = [];
-    // Param types for .d.ts
-    Object.keys(entry.paramTypes).forEach((paramKey) => {
-      params.push(`${paramKey}:${entry.paramTypes[paramKey]}`);
-    });
-    const paramString = params.length ? `p: {${params.join(",")}}` : "";
-    typeDefs.push(`  "${messageKey}": (${paramString}) => string`);
+    // Param types for TS
+    const params = Object.keys(entry.paramTypes).map(
+      (paramKey) => `${paramKey}:${entry.paramTypes[paramKey]}`
+    );
+    const paramString = params.length ? `p: {${params.join(',')}}` : '';
+    return `  "${messageKey}": (${paramString}) => ${entry.formatter}`;
   });
   const targetDir = path.dirname(targetFile);
-  const contents = `{\n${formatters.join("\n")}\n}`;
   fsx.ensureDirSync(targetDir);
-  fsx.writeFileSync(
-    targetFile,
-    wrapInModule(moduleType, contents, pluralSelect)
-  );
-  if (dtsFile) {
-    fsx.writeFileSync(
-      dtsFile,
-      `export const bundle: {\n${typeDefs.join(",\n")}\n}`
-    );
-  }
+  fsx.writeFileSync(targetFile, wrapInModule(`{\n${contents.join(',\n')}\n}`, exportType));
 }
 
-function wrapInModule(moduleType, contents, pluralSelect) {
-  if (moduleType === "esm") {
-    return `${pluralSelect}\nexport const bundle = ${contents}`;
-  } else if (moduleType === "amd") {
-    return `(function() {\n${pluralSelect}\ndefine(${contents})\n}())`;
-  }
+function wrapInModule(contents, exportType) {
+  return `const bundle = ${contents};
+export default bundle;
+${exportType ? 'export type BundleType = typeof bundle;' : ''}
+`;
 }
 
 /**
@@ -96,27 +82,20 @@ function wrapInModule(moduleType, contents, pluralSelect) {
  * @return True if NLS directory, false otherwise
  */
 function isNlsDir(name) {
-  return name.match(/^[a-z]{2,3}$/i) || name.match(/^[a-z]{2,3}-.+/);
+  return (name.match(/^[a-z]{2,3}$/i) || name.match(/^[a-z]{2,3}-.+/)) && !name.match(/\.\w+$/);
 }
 
-/**
- * Do a deep (recursive) assignment of the source object into the target object.
- * @param {Object} target The target object
- * @param {Object} source The source object
- * @return {Object} The target object
- */
-function deepAssign(target, source) {
-  if (!source) return target;
-  Object.keys(source).forEach((key) => {
-    const value = source[key];
-    if (typeof value === "object") {
-      target[key] = target[key] || {};
-      deepAssign(target[key], value);
-    } else {
-      target[key] = value;
-    }
-  });
-  return target;
+function transpile(rootDir, moduleType) {
+  const moduleMap = {
+    amd: ts.ModuleKind.AMD,
+    esm: ts.ModuleKind.ES2020
+  };
+  const options = {
+    module: moduleMap[moduleType],
+    target: 'es6'
+  };
+  const program = ts.createProgram(glob.sync(`${rootDir}/**/*.ts`), options);
+  program.emit();
 }
 
 /**
@@ -127,57 +106,58 @@ function deepAssign(target, source) {
  * also be compiled.
  * When creating the output file in the given targetDir, the locale directory
  * structure from the source will be recreated.
- * @param {string} rootBundleFile The path to the root message bundle
- * @param {string} rootLocale The locale of the root message bundle
- * @param {string} targetDir The target directory where the compiled root message
- * @param {string} moduleType The type of module to output; one of [amd|esm]
+ * @param {string} rootDir The path to the root message bundle
+ * @param {string} bundleName The name of the bundle file
+ * @param {string} locale The locale of the root message bundle
+ * @param {string} outDir The target directory where the compiled root message
+ * @param {string} module The type of module to produce -- 'amd' or 'esm'
+ * @param {string} supportedLocales The comma-separated list of supported locales
+ * to build
  */
-module.exports = function build(
-  root,
+module.exports = function build({
+  rootDir,
   bundleName,
-  rootLocale,
-  targetDir,
-  moduleType = "esm"
-) {
+  locale,
+  outDir,
+  module,
+  supportedLocales = ''
+}) {
   const jsonRegEx = /\.json$/;
   if (!jsonRegEx.test(bundleName)) {
     throw Error(`${bundleName} must be a JSON file`);
   }
-  const targetBundleName = bundleName.replace(jsonRegEx, ".js");
-  const dtsName = bundleName.replace(jsonRegEx, ".d.ts");
+  const pkg = require('./package.json');
+  const targetBundleName = bundleName.replace(jsonRegEx, '.ts');
 
   // Traverse root bundle
-  const rootBundle = getBundle(path.join(root, bundleName));
+  const rootBundle = getBundle(path.join(rootDir, bundleName));
   if (rootBundle) {
-    convertBundle(
-      rootBundle,
-      rootLocale,
-      path.join(targetDir, targetBundleName),
-      path.join(targetDir, dtsName),
-      moduleType
-    );
+    convertBundle(rootBundle, locale, path.join(outDir, targetBundleName), true);
   }
 
-  // Traverse all locales, merging all base locales
-  fsx.readdirSync(root).forEach((locale) => {
-    if (isNlsDir(locale)) {
-      // Combine all levels into single bundle, starting with rootBundle
-      const combinedBundle = deepAssign({}, rootBundle);
-      const localeParts = locale.split("-");
-      for (let i = 0, len = localeParts.length; i < len; i++) {
-        // Build segment from region (0) to index
-        let segment = localeParts.slice(0, i + 1).join("-");
-        const perBundle = getBundle(path.join(root, segment, bundleName));
-        deepAssign(combinedBundle, perBundle);
-      }
+  fsx
+    // Traverse all locales, merging all base locales
+    .readdirSync(rootDir)
+    // Merge in supported locales to build. If physical dirs don't exist, they'll
+    // inherit the root translations
+    .concat(supportedLocales.split(','))
+    .forEach((locale) => {
+      if (isNlsDir(locale)) {
+        // Combine all levels into single bundle, starting with rootBundle
+        const combinedBundle = Object.assign({}, rootBundle);
+        const localeParts = locale.split('-');
+        for (let i = 0, len = localeParts.length; i < len; i++) {
+          // Build segment from region (0) to index
+          let segment = localeParts.slice(0, i + 1).join('-');
+          const perBundle = getBundle(path.join(rootDir, segment, bundleName));
+          Object.assign(combinedBundle, perBundle);
+        }
 
-      convertBundle(
-        combinedBundle,
-        locale,
-        path.join(targetDir, locale, targetBundleName),
-        false,
-        moduleType
-      );
-    }
-  });
+        convertBundle(combinedBundle, locale, path.join(outDir, locale, targetBundleName));
+      }
+    });
+
+  if (module) {
+    transpile(path.resolve(outDir), module);
+  }
 };

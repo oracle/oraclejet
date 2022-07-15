@@ -59,6 +59,7 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
     zoomAndScroll?: 'delayedScrollOnly' | 'liveScrollOnly' | 'delayed' | 'live' | 'off';
     zoomDirection?: 'x' | 'y' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -107,6 +108,7 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
     setProperty<T extends keyof ojChartSettableProperties<K, D, I, C>>(property: T, value: ojChartSettableProperties<K, D, I, C>[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojChartSettableProperties<K, D, I, C>>): void;
     setProperties(properties: ojChartSettablePropertiesLenient<K, D, I, C>): void;
+    getAutomation(): any;
     getContextByNode(node: Element): ojChart.PieCenterLabelContext | ojChart.LegendItemContext | ojChart.ReferenceObject | ojChart.GroupContext | ojChart.AxisTitleContext | ojChart.ItemContext |
        ojChart.SeriesContext;
     getLegend(): {
@@ -1255,6 +1257,7 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
     zoomAndScroll?: 'delayedScrollOnly' | 'liveScrollOnly' | 'delayed' | 'live' | 'off';
     zoomDirection?: 'x' | 'y' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -1787,6 +1790,7 @@ export interface ojSparkChart<K, D extends ojSparkChart.Item | any> extends dvtB
     type?: 'area' | 'lineWithArea' | 'bar' | 'line';
     visualEffects?: 'none' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -1984,6 +1988,7 @@ export interface ojSparkChartSettableProperties<K, D extends ojSparkChart.Item |
     type?: 'area' | 'lineWithArea' | 'bar' | 'line';
     visualEffects?: 'none' | 'auto';
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;

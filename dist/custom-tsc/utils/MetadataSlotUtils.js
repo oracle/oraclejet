@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -143,6 +147,11 @@ function getDtMetadataForSlot(propDeclaration, metaUtilObj) {
         const dataObj = getSlotData(detailNode, metaUtilObj);
         if (dataObj) {
             dt['data'] = dataObj;
+            if (ts.isTypeReferenceNode(detailNode) && TypeUtils.isLocalExport(detailNode, metaUtilObj)) {
+                const typeDefName = TypeUtils.getTypeNameFromTypeReference(detailNode);
+                dt['jsdoc'] = dt['jsdoc'] || {};
+                dt['jsdoc']['typedef'] = typeDefName;
+            }
         }
     }
     return dt;
@@ -183,19 +192,27 @@ function getSlotData(detailNode, metaUtilObj) {
                         data[property].type = 'object';
                         data[property].properties = subprops;
                     }
+                    const typeDefName = TypeUtils.getPossibleTypeDef(property, symbol, slotDataMetadata, metaUtilObj);
+                    if (typeDefName) {
+                        data[property]['jsdoc'] = data[property]['jsdoc'] || {};
+                        data[property]['jsdoc']['typedef'] = typeDefName;
+                    }
                 }
             }
-            MetaUtils.pruneMetadata(data[property]);
         }
     });
     return data;
 }
 exports.getSlotData = getSlotData;
 function checkDefaultSlotType(propName, typeName, propDecl, metaUtilObj) {
-    var _a;
+    var _a, _b;
     if (propName === MetaTypes.DEFAULT_SLOT_PROP &&
         typeName !== `${metaUtilObj.namedExportToAlias.ComponentChildren}`) {
         throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `Unsupported type '${typeName}' for reserved default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'.`, (_a = propDecl.type) !== null && _a !== void 0 ? _a : propDecl);
+    }
+    else if (typeName === `${metaUtilObj.namedExportToAlias.ComponentChildren}` &&
+        propName !== MetaTypes.DEFAULT_SLOT_PROP) {
+        throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `'${typeName}' is reserved for default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'. Did you mean to declare this property as type '${MetaTypes.SLOT_TYPE}'?`, (_b = propDecl.type) !== null && _b !== void 0 ? _b : propDecl);
     }
 }
 exports.checkDefaultSlotType = checkDefaultSlotType;

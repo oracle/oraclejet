@@ -11292,9 +11292,9 @@ TextUtils.getTextStringWidth = function (context, textString, cssStyle) {
       width = TextUtils._getCanvasTextWidth(context, textString, cssStyle);
     } else {
       // Properties that are supported in <canvas> elements by browser
-      // Chrome and Safari supports only supports fontVariantNumeric
+      // Chrome and Safari supports only support fontVariantNumeric
       // Firefox supports none
-     if ((Agent.browser === 'safari' || Agent.browser === 'chrome') && isLetterSpacingNormal && isWordSpacingNormal) {
+      if ((Agent.browser === 'safari' || Agent.browser === 'chrome') && isLetterSpacingNormal && isWordSpacingNormal) {
         if (TextUtils._fontVariantNumeric != fontVariantNumeric) {
           TextUtils._clearCanvasContext();
           TextUtils._setSpacing(wordSpacing, letterSpacing, fontVariantNumeric);
@@ -15144,9 +15144,10 @@ EventFactory.newTreemapIsolateEvent = function (id) {
  * @param {number}  oldX  old x-coord
  * @param {number}  oldY  old y-coord
  * @param {dvt.Animator}  animator  optional animator used to animate the zoom
+ * @param {number}  zoom zoom value
  * @return {object}
  */
-EventFactory.newPanEvent = function (subtype, newX, newY, oldX, oldY, animator) {
+  EventFactory.newPanEvent = function (subtype, newX, newY, oldX, oldY, animator, zoom) {
   var ret = EventFactory.newEvent('dvtPan');
   ret.subtype = subtype;
   ret.newX = newX;
@@ -15154,6 +15155,7 @@ EventFactory.newPanEvent = function (subtype, newX, newY, oldX, oldY, animator) 
   ret.oldX = oldX;
   ret.oldY = oldY;
   ret.animator = animator;
+  ret.zoom = zoom;
   return ret;
 };
 
@@ -15166,19 +15168,19 @@ EventFactory.newPanEvent = function (subtype, newX, newY, oldX, oldY, animator) 
  * @param {number}  oldZoom  old zoom factor
  * @param {dvt.Animator}  animator  optional animator used to animate the zoom
  * @param {dvt.Point}  centerPoint  center of zoom
- * @param {number}  tx  the horizontal translation applied after the zoom
- * @param {number}  ty  the vertical translation applied after the zoom
+ * @param {dvt.Point} pos optional current position of component
+ * @param {boolean} panAndZoom if true, both zoom + pan changes are occurring
  * @return {object}
  */
-EventFactory.newZoomEvent = function (subtype, newZoom, oldZoom, animator, centerPoint, tx, ty) {
+EventFactory.newZoomEvent = function (subtype, newZoom, oldZoom, animator, centerPoint, pos, panAndZoom) {
   var ret = EventFactory.newEvent('dvtZoom');
   ret.subtype = subtype;
   ret.newZoom = newZoom;
   ret.oldZoom = oldZoom;
   ret.animator = animator;
   ret.centerPoint = centerPoint;
-  ret.tx = tx;
-  ret.ty = ty;
+  ret.pos = pos;
+  ret.panAndZoom = !!panAndZoom;
   return ret;
 };
 

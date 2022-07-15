@@ -10,6 +10,7 @@ export interface ojTimeAxis extends dvtBaseComponent<ojTimeAxisSettablePropertie
     scale?: (string | DvtTimeComponentScale);
     start: string;
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
@@ -76,6 +77,7 @@ export interface ojTimeAxisSettableProperties extends dvtBaseComponentSettablePr
     scale?: (string | DvtTimeComponentScale);
     start: string;
     translations: {
+        accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;

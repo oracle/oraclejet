@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -19,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isAnyOrUnknownType = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.addArgumentsToRegisterCustomElementCall = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.stringToJS = exports.writebackCallbackToProperty = exports.tagNameToElementName = exports.tagNameToElementInterfaceName = void 0;
+exports.getValueFromNode = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isAnyOrUnknownType = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.addArgumentsToRegisterCustomElementCall = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.stringToJS = exports.writebackCallbackToProperty = exports.tagNameToElementName = exports.tagNameToElementInterfaceName = void 0;
 const ts = __importStar(require("typescript"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
@@ -76,7 +80,9 @@ function getGenericTypeParameters(propsTypeNode) {
             ? ts.idText(typeRefNode.typeName)
             : typeRefNode.typeName && ts.isQualifiedName(typeRefNode.typeName)
                 ? ts.idText(typeRefNode.typeName.right)
-                : typeRefNode.getText();
+                : ts.isTypeLiteralNode(typeRefNode)
+                    ? 'object'
+                    : typeRefNode.getText();
         genericSignature += typeName;
         const typeNode = typeRefNode;
         if (typeNode.typeArguments && typeNode.typeArguments.length) {
@@ -120,6 +126,7 @@ exports.getTypeParametersFromType = getTypeParametersFromType;
 const _METADATA_TAG = 'ojmetadata';
 const _METADATA_ARRAYS = [
     'implements',
+    'params',
     'preferredContent',
     'propertyLayout',
     'status',
@@ -132,75 +139,124 @@ function getDtMetadata(objWithJsDoc, metaUtilObj, flags = MetaTypes.GETMD_FLAGS_
     tags.forEach((tag) => {
         if (ts.idText(tag.tagName) === _METADATA_TAG) {
             let [mdKey, mdVal] = _getDtMetadataNameValue(tag, metaUtilObj);
-            let isClassMetadata = ts.isClassDeclaration(objWithJsDoc);
-            if (mdKey === 'value' && !(flags & MetaTypes.GETMD_FLAGS_RO_WRITEBACK)) {
-                throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `The default value for this VComponent property cannot be specified by a JSDoc annotation.
+            if (mdKey) {
+                let isClassMetadata = ts.isClassDeclaration(objWithJsDoc);
+                if (mdKey === 'value' && !(flags & MetaTypes.GETMD_FLAGS_RO_WRITEBACK)) {
+                    throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `The default value for this VComponent property cannot be specified by a JSDoc annotation.
 Instead, specify the default value in the class's static "defaultProps" field.`, tag);
-            }
-            if (mdKey === 'styleVariableSet') {
-                if (mdVal.styleVariables && Array.isArray(mdVal.styleVariables)) {
-                    mdKey = 'styleVariables';
-                    mdVal = mdVal.styleVariables.slice();
                 }
-                else {
-                    const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName, tag);
-                    console.log(`${logHeader} Invalid 'styleVariableSet' DT metadata specified: ${mdVal}`);
+                if (mdKey === 'styleVariableSet') {
+                    if (mdVal.styleVariables && Array.isArray(mdVal.styleVariables)) {
+                        mdKey = 'styleVariables';
+                        mdVal = mdVal.styleVariables.slice();
+                    }
+                    else {
+                        const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName, tag);
+                        console.log(`${logHeader} Invalid 'styleVariableSet' DT metadata specified: ${mdVal}`);
+                    }
                 }
-            }
-            if ((isClassMetadata && ['version', 'jetVersion'].indexOf(mdKey) > -1) || !dt[mdKey]) {
-                if (_METADATA_ARRAYS.indexOf(mdKey) > -1 && !Array.isArray(mdVal)) {
-                    mdVal = [mdVal];
-                }
-                if (mdKey === 'styleClasses') {
-                    let styleClasses = mdVal;
-                    styleClasses.forEach((sc) => {
-                        if (sc.extension) {
-                            delete sc.extension['jet'];
-                            if (Object.getOwnPropertyNames(sc.extension).length == 0) {
-                                delete sc.extension;
+                if ((isClassMetadata && ['version', 'jetVersion'].indexOf(mdKey) > -1) || !dt[mdKey]) {
+                    if (_METADATA_ARRAYS.indexOf(mdKey) > -1 && !Array.isArray(mdVal)) {
+                        mdVal = [mdVal];
+                    }
+                    if (mdKey === 'styleClasses') {
+                        let styleClasses = mdVal;
+                        styleClasses.forEach((sc) => {
+                            if (sc.extension) {
+                                delete sc.extension['jet'];
+                                if (Object.getOwnPropertyNames(sc.extension).length == 0) {
+                                    delete sc.extension;
+                                }
                             }
-                        }
-                    });
-                }
-                dt[mdKey] = mdVal;
-            }
-            else {
-                if (!Array.isArray(dt[mdKey])) {
-                    dt[mdKey] = [dt[mdKey]];
-                }
-                if (!Array.isArray(mdVal)) {
-                    dt[mdKey].push(mdVal);
+                        });
+                    }
+                    dt[mdKey] = mdVal;
                 }
                 else {
-                    dt[mdKey] = dt[mdKey].concat(mdVal);
+                    if (!Array.isArray(dt[mdKey])) {
+                        dt[mdKey] = [dt[mdKey]];
+                    }
+                    if (!Array.isArray(mdVal)) {
+                        dt[mdKey].push(mdVal);
+                    }
+                    else {
+                        dt[mdKey] = dt[mdKey].concat(mdVal);
+                    }
                 }
             }
         }
+        else if (ts.idText(tag.tagName) === 'classdesc' || ts.idText(tag.tagName) === 'description') {
+            dt['jsdoc'] = dt['jsdoc'] || {};
+            dt['jsdoc']['description'] = ts.getTextOfJSDocComment(tag.comment);
+        }
+        else if (ts.idText(tag.tagName) === 'example') {
+            dt['jsdoc'] = dt['jsdoc'] || {};
+            dt['jsdoc']['example'] = dt['jsdoc']['example'] || [];
+            dt['jsdoc']['example'].push(ts.getTextOfJSDocComment(tag.comment));
+        }
+        else if (ts.idText(tag.tagName) === 'typeparam') {
+            dt['jsdoc'] = dt['jsdoc'] || {};
+            dt['jsdoc']['typeparams'] = dt['jsdoc']['typeparams'] || [];
+            let [mdKey, mdVal] = _getDtMetadataNameValue(tag, metaUtilObj);
+            dt['jsdoc']['typeparams'].push({ name: mdKey, description: mdVal });
+        }
     });
+    if (!dt['jsdoc'] || !dt['jsdoc']['description']) {
+        if (objWithJsDoc['jsDoc']) {
+            let commentNode = objWithJsDoc['jsDoc'][0];
+            if (commentNode && commentNode.kind === ts.SyntaxKind.JSDocComment && commentNode.comment) {
+                dt['jsdoc'] = dt['jsdoc'] || {};
+                dt['jsdoc']['description'] = ts.getTextOfJSDocComment(commentNode.comment);
+            }
+        }
+    }
     return dt;
 }
 exports.getDtMetadata = getDtMetadata;
-function addMetadataToClassNode(classNode, metadata) {
-    if (Object.keys(metadata).length === 0) {
+function addMetadataToClassNode(vcompClassInfo, metadata) {
+    const classNode = vcompClassInfo.classNode;
+    let additionalPropDecls = [];
+    if (Object.keys(metadata).length > 0) {
+        const metadataNode = _metadataToAstNodes(metadata);
+        additionalPropDecls.push(ts.factory.createPropertyDeclaration(undefined, ts.factory.createModifiersFromModifierFlags(ts.ModifierFlags.Static), 'metadata', undefined, undefined, metadataNode));
+    }
+    if (vcompClassInfo.translationBundleMapExpression) {
+        additionalPropDecls.push(ts.factory.createPropertyDeclaration(undefined, ts.factory.createModifiersFromModifierFlags(ts.ModifierFlags.Static), 'translationBundleMap', undefined, undefined, vcompClassInfo.translationBundleMapExpression));
+    }
+    if (additionalPropDecls.length === 0) {
         return classNode;
     }
-    const metadataNode = _metadataToAstNodes(metadata);
-    const metadataProperty = ts.factory.createPropertyDeclaration(undefined, ts.factory.createModifiersFromModifierFlags(ts.ModifierFlags.Static), 'metadata', undefined, undefined, metadataNode);
-    const members = classNode.members.concat([metadataProperty]);
-    return ts.factory.updateClassDeclaration(classNode, classNode.decorators, classNode.modifiers, classNode.name, classNode.typeParameters, classNode.heritageClauses, members);
+    else {
+        const updatedMembers = classNode.members.concat(additionalPropDecls);
+        return ts.factory.updateClassDeclaration(classNode, classNode.decorators, classNode.modifiers, classNode.name, classNode.typeParameters, classNode.heritageClauses, updatedMembers);
+    }
 }
 exports.addMetadataToClassNode = addMetadataToClassNode;
 function addArgumentsToRegisterCustomElementCall(functionalCompNode, vcompFunctionInfo, metaUtilObj) {
     var _a, _b;
     const rtMetadata = metaUtilObj.rtMetadata;
+    const needPlaceholderArgs = !!vcompFunctionInfo.translationBundleMapExpression;
     const defDisplayNameExpression = ts.factory.createStringLiteral((_a = vcompFunctionInfo.componentName) !== null && _a !== void 0 ? _a : `VComponent(${(_b = vcompFunctionInfo.functionName) !== null && _b !== void 0 ? _b : vcompFunctionInfo.elementName})`);
     const compRegisterCall = vcompFunctionInfo.compRegisterCall;
-    const updatedCallArgs = [...compRegisterCall.arguments, defDisplayNameExpression];
+    const updatedCallArgs = [
+        compRegisterCall.arguments[0],
+        compRegisterCall.arguments[1]
+    ];
+    updatedCallArgs.push(defDisplayNameExpression);
     if (Object.keys(rtMetadata).length > 0) {
         updatedCallArgs.push(_metadataToAstNodes(rtMetadata));
         if (metaUtilObj.defaultProps) {
             updatedCallArgs.push(_metadataToAstNodes(metaUtilObj.defaultProps));
         }
+        else if (needPlaceholderArgs) {
+            updatedCallArgs.push(ts.factory.createIdentifier('undefined'));
+        }
+    }
+    else if (needPlaceholderArgs) {
+        updatedCallArgs.push(ts.factory.createIdentifier('undefined'), ts.factory.createIdentifier('undefined'));
+    }
+    if (vcompFunctionInfo.translationBundleMapExpression) {
+        updatedCallArgs.push(vcompFunctionInfo.translationBundleMapExpression);
     }
     const updatedCompRegisterCall = ts.factory.updateCallExpression(compRegisterCall, compRegisterCall.expression, compRegisterCall.typeArguments, updatedCallArgs);
     if (ts.isVariableStatement(functionalCompNode)) {
@@ -317,9 +373,7 @@ function getPropsInfo(compType, componentName, typeRef, vexportToAlias, checker)
                     rtnType = unwrappedType;
                     isUnwrappedROType = true;
                 }
-                else {
-                    mappedTypeGenericsDeclaration = _getScopedSymbolDeclaration(rtnTypeNode, checker);
-                }
+                mappedTypeGenericsDeclaration = _getScopedSymbolDeclaration(rtnTypeNode, checker);
             }
             let rtnIsInlineTypeLiteral = ts.isTypeLiteralNode(rtnTypeNode);
             let rtnPropsName;
@@ -576,7 +630,7 @@ function isAnyOrUnknownType(type) {
 exports.isAnyOrUnknownType = isAnyOrUnknownType;
 exports._UNION_SPLITTER = /\s*\|\s*/;
 function isConditionalTypeNodeDetected(typeNode, seen, metaUtilObj) {
-    var _a, _b;
+    var _a;
     let foundIt = false;
     if (ts.isConditionalTypeNode(typeNode)) {
         foundIt = true;
@@ -589,7 +643,7 @@ function isConditionalTypeNodeDetected(typeNode, seen, metaUtilObj) {
         else if (!seen.has(typeName)) {
             seen.add(typeName);
             const typeDecl = TypeUtils.getNodeDeclaration(typeNode, metaUtilObj.typeChecker);
-            const aliasTypeNode = (_b = typeDecl) === null || _b === void 0 ? void 0 : _b.type;
+            const aliasTypeNode = typeDecl === null || typeDecl === void 0 ? void 0 : typeDecl.type;
             if (aliasTypeNode) {
                 foundIt = isConditionalTypeNodeDetected(aliasTypeNode, seen, metaUtilObj);
             }
@@ -614,18 +668,18 @@ function isConditionalTypeNodeDetected(typeNode, seen, metaUtilObj) {
 exports.isConditionalTypeNodeDetected = isConditionalTypeNodeDetected;
 function walkTypeMembers(type, metaUtilObj, callback) {
     const isExcludedType = function (type, metaUtilObj) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         let rtnValue = false;
         const tname = (_a = type.aliasSymbol) === null || _a === void 0 ? void 0 : _a.name;
         if (tname && ((_b = metaUtilObj.excludedTypes) === null || _b === void 0 ? void 0 : _b.has(tname))) {
             rtnValue = true;
         }
         else {
-            const decl = (_c = type.aliasSymbol) === null || _c === void 0 ? void 0 : _c.declarations[0];
+            const decl = (_d = (_c = type.aliasSymbol) === null || _c === void 0 ? void 0 : _c.declarations) === null || _d === void 0 ? void 0 : _d[0];
             if (decl &&
                 ts.isTypeAliasDeclaration(decl) &&
                 ts.isTypeReferenceNode(decl.type) &&
-                ((_d = metaUtilObj.excludedTypeAliases) === null || _d === void 0 ? void 0 : _d.has(TypeUtils.getTypeNameFromTypeReference(decl.type)))) {
+                ((_e = metaUtilObj.excludedTypeAliases) === null || _e === void 0 ? void 0 : _e.has(TypeUtils.getTypeNameFromTypeReference(decl.type)))) {
                 rtnValue = true;
             }
         }
@@ -741,7 +795,7 @@ function updateCompilerPropsMetadata(propsInfo, readOnlyPropNameNodes, metaUtilO
 }
 exports.updateCompilerPropsMetadata = updateCompilerPropsMetadata;
 function updateCompilerCompMetadata(vcompInfo, metaUtilObj) {
-    var _a;
+    var _a, _b, _c;
     if (MetaTypes.isClassInfo(vcompInfo)) {
         const classNode = vcompInfo.classNode;
         if (classNode.typeParameters) {
@@ -759,11 +813,52 @@ function updateCompilerCompMetadata(vcompInfo, metaUtilObj) {
             metaUtilObj.classProvidedBindingsDecorator = providedDecorator;
         }
     }
-    if ((_a = vcompInfo.propsInfo) === null || _a === void 0 ? void 0 : _a.propsType.aliasTypeArguments) {
+    else {
+        if (vcompInfo.componentNode['typeParameters']) {
+            const genericsInfo = TypeUtils.getGenericsAndTypeParameters(vcompInfo.componentNode);
+            metaUtilObj.fullMetadata['classTypeParamsDeclaration'] = genericsInfo === null || genericsInfo === void 0 ? void 0 : genericsInfo.genericsDeclaration;
+            metaUtilObj.fullMetadata['classTypeParams'] = genericsInfo === null || genericsInfo === void 0 ? void 0 : genericsInfo.genericsTypeParams;
+        }
+        if (vcompInfo.propBindings) {
+            metaUtilObj.functionPropBindings = vcompInfo.propBindings;
+        }
+        if ((_a = vcompInfo.additionalImports) === null || _a === void 0 ? void 0 : _a.length) {
+            metaUtilObj.fullMetadata['additionalImports'] = [...vcompInfo.additionalImports];
+        }
+        if (vcompInfo.useComponentPropsForSettableProperties) {
+            metaUtilObj.fullMetadata['useComponentPropsForSettableProperties'] = true;
+        }
+    }
+    if ((_b = vcompInfo.additionalImports) === null || _b === void 0 ? void 0 : _b.length) {
+        metaUtilObj.fullMetadata['additionalImports'] = [...vcompInfo.additionalImports];
+    }
+    if ((_c = vcompInfo.propsInfo) === null || _c === void 0 ? void 0 : _c.propsType.aliasTypeArguments) {
         metaUtilObj.classPropsAliasTypeArgs = vcompInfo.propsInfo.propsType.aliasTypeArguments;
     }
 }
 exports.updateCompilerCompMetadata = updateCompilerCompMetadata;
+const dummyEventDetail = {
+    description: '',
+    enumValues: [],
+    extension: {},
+    eventGroup: '',
+    properties: {},
+    status: [],
+    type: ''
+};
+const dummySlotData = {
+    description: '',
+    extension: {},
+    properties: {},
+    status: [],
+    type: ''
+};
+const validEventSubProps = {
+    detail: new Set(Object.keys(dummyEventDetail))
+};
+const validSlotSubProps = {
+    data: new Set(Object.keys(dummySlotData))
+};
 function pruneCompilerMetadata(metaUtilObj) {
     delete metaUtilObj.fullMetadata['classTypeParams'];
     delete metaUtilObj.fullMetadata['classTypeParamsDeclaration'];
@@ -775,8 +870,23 @@ function pruneCompilerMetadata(metaUtilObj) {
     delete metaUtilObj.fullMetadata['ojLegacyVComponent'];
     delete metaUtilObj.fullMetadata['propsClassName'];
     delete metaUtilObj.fullMetadata['readOnlyProps'];
+    delete metaUtilObj.fullMetadata['jsdoc'];
+    delete metaUtilObj.fullMetadata['additionalImports'];
+    delete metaUtilObj.fullMetadata['useComponentPropsForSettableProperties'];
     pruneMetadata(metaUtilObj.fullMetadata.properties);
+    pruneMetadata(metaUtilObj.fullMetadata.methods);
     pruneMetadata(metaUtilObj.fullMetadata.events);
+    for (let event in metaUtilObj.fullMetadata.events) {
+        _pruneSubPropMetadata(metaUtilObj.fullMetadata.events[event], validEventSubProps);
+    }
+    pruneMetadata(metaUtilObj.fullMetadata.slots);
+    for (let slot in metaUtilObj.fullMetadata.slots) {
+        _pruneSubPropMetadata(metaUtilObj.fullMetadata.slots[slot], validSlotSubProps);
+    }
+    pruneMetadata(metaUtilObj.fullMetadata.dynamicSlots);
+    for (let dynSlot in metaUtilObj.fullMetadata.dynamicSlots) {
+        _pruneSubPropMetadata(metaUtilObj.fullMetadata.dynamicSlots[dynSlot], validSlotSubProps);
+    }
 }
 exports.pruneCompilerMetadata = pruneCompilerMetadata;
 function pruneMetadata(metadata) {
@@ -784,8 +894,10 @@ function pruneMetadata(metadata) {
         delete metadata['reftype'];
         delete metadata['optional'];
         delete metadata['isArrayOfObject'];
+        delete metadata['isStringTypeExplicit'];
         delete metadata['evnDetailTypeParamsDeclaration'];
         delete metadata['evnDetailNameTypeParams'];
+        delete metadata['jsdoc'];
         for (let prop in metadata) {
             pruneMetadata(metadata[prop]);
         }
@@ -799,6 +911,69 @@ function updateRtExtensionMetadata(name, value, metaUtilObj) {
     metaUtilObj.rtMetadata.extension[name] = value;
 }
 exports.updateRtExtensionMetadata = updateRtExtensionMetadata;
+function getValueFromNode(exp) {
+    let value = undefined;
+    switch (exp.kind) {
+        case ts.SyntaxKind.StringLiteral:
+            value = exp.text;
+            break;
+        case ts.SyntaxKind.NumericLiteral:
+            value = Number(exp.text);
+            break;
+        case ts.SyntaxKind.TrueKeyword:
+            value = true;
+            break;
+        case ts.SyntaxKind.FalseKeyword:
+            value = false;
+            break;
+        case ts.SyntaxKind.NullKeyword:
+            value = null;
+            break;
+        case ts.SyntaxKind.ArrayLiteralExpression:
+            value = _getArrayLiteral(exp);
+            break;
+        case ts.SyntaxKind.ObjectLiteralExpression:
+            value = _getObjectLiteral(exp);
+            break;
+    }
+    return value;
+}
+exports.getValueFromNode = getValueFromNode;
+function _pruneSubPropMetadata(metaelement, validSubPropMap) {
+    for (let metaprop in metaelement) {
+        const validSubPropSet = validSubPropMap[metaprop];
+        if (validSubPropSet) {
+            const metadata = metaelement[metaprop];
+            for (let prop in metadata) {
+                for (let subprop in metadata[prop]) {
+                    if (!validSubPropSet.has(subprop)) {
+                        delete metadata[prop][subprop];
+                    }
+                }
+            }
+        }
+    }
+}
+function _getArrayLiteral(arrayExpression) {
+    let retArray = [];
+    arrayExpression.elements.forEach((element) => {
+        const item = getValueFromNode(element);
+        if (!(item === null || item === undefined)) {
+            retArray.push(item);
+        }
+    });
+    return retArray;
+}
+function _getObjectLiteral(objExpression) {
+    let retObj = {};
+    objExpression.properties.forEach((prop) => {
+        if (ts.isPropertyAssignment(prop)) {
+            const propKey = prop.name.getText();
+            retObj[propKey] = getValueFromNode(prop.initializer);
+        }
+    });
+    return retObj;
+}
 function _getScopedSymbolDeclaration(typeNode, checker) {
     let scopedSymbolDeclaration;
     const scopedTypeAliases = checker.getSymbolsInScope(typeNode, ts.SymbolFlags.TypeAlias);
@@ -827,25 +1002,65 @@ function _getObservedGlobalPropsArray(refNode) {
     return observedProps;
 }
 function _getDtMetadataNameValue(tag, metaUtilObj) {
-    const comment = tag.comment.trim();
-    const mdkeySep = comment.indexOf(' ');
     let mdKey, mdVal;
-    if (mdkeySep > 0) {
-        mdKey = comment.substr(0, mdkeySep);
-        mdVal = comment.substr(mdkeySep + 1);
-        try {
-            mdVal = _execBundle(mdVal);
+    let commentText = ts.getTextOfJSDocComment(tag.comment);
+    if (commentText) {
+        const dtMdTagText = commentText.trim();
+        const mdkeySep = dtMdTagText.indexOf(' ');
+        if (mdkeySep > 0) {
+            mdKey = dtMdTagText.substr(0, mdkeySep);
+            mdVal = dtMdTagText.substr(mdkeySep + 1).trim();
+            mdVal = _normalizeDtMetadataValue(mdKey, mdVal);
+            try {
+                mdVal = _execBundle(mdVal);
+            }
+            catch (e) {
+                const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName, tag);
+                console.log(`${logHeader} Malformed metadata value ${mdVal} for key ${mdKey}.`);
+            }
         }
-        catch (e) {
-            const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName, tag);
-            console.log(`${logHeader} Malformed metadata value ${mdVal} for key ${mdKey}.`);
+        else {
+            mdKey = dtMdTagText;
+            mdVal = true;
         }
-    }
-    else {
-        mdKey = comment;
-        mdVal = true;
     }
     return [mdKey, mdVal];
+}
+const _STRING_METADATA_KEYS = new Set([
+    'description',
+    'displayName',
+    'help',
+    'license',
+    'pack',
+    'eventGroup',
+    'internalName',
+    'name',
+    'dynamicSlotDef',
+    'format',
+    'placeholder',
+    'propertyGroup',
+    'units'
+]);
+const _STRING_ARRAY_METADATA_KEYS = new Set(['implements', 'preferredContent']);
+function _normalizeDtMetadataValue(key, value) {
+    let isStringNormalizationNeeded = false;
+    if (_STRING_METADATA_KEYS.has(key) ||
+        (_STRING_ARRAY_METADATA_KEYS.has(key) &&
+            !(value.charAt(0) === '[' && value.charAt(value.length - 1) === ']'))) {
+        isStringNormalizationNeeded = true;
+        if (value.match(/^(['"])(?:[\s\S])*?\1$/)) {
+            if (value.length > 2) {
+                value = value.substring(1, value.length - 1);
+            }
+            else if (value.length === 2) {
+                isStringNormalizationNeeded = false;
+            }
+        }
+    }
+    if (isStringNormalizationNeeded) {
+        value = `"${value.replace(/\s+/g, ' ').replace(/['"]/g, '\\$&').trim()}"`;
+    }
+    return value;
 }
 function _metadataToAstNodes(value) {
     if (Array.isArray(value)) {

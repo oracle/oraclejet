@@ -1212,6 +1212,37 @@ class DvtNBoxKeyboardHandler extends KeyboardHandler {
     }
     return next;
   }
+
+  /**
+   * Finds next navigable cell
+   * Using grid coordinates in calculating the next navigable cell
+   * @param {DvtNBoxCell} curr current navigable cell with keyboard focus.
+   * @param {dvt.KeyboardEvent} event
+   * @param {Array} navigableItems An array of items that could receive focus next
+   * @param {DvtNBox} nbox The current nbox
+   * @return {DvtNBoxCell} The object that can get keyboard focus as a result of the keyboard event.
+   */
+  static getNextNavigableCell(curr, event, navigableItems, nbox) {
+    if (!navigableItems || navigableItems.length === 0)
+      return null;
+
+    var nextRow = parseInt(curr.getData()['row']);
+    var nextCol = parseInt(curr.getData()['column']);
+    var maxRow = DvtNBoxDataUtils.getRowCount(nbox);
+    var maxCol = DvtNBoxDataUtils.getColCount(nbox);
+
+    const bound = (val, max) => ((max + val) % max);
+    if (event.keyCode == KeyboardEvent.RIGHT_ARROW) {
+      nextCol = bound(nextCol + 1, maxCol);
+    } else if (event.keyCode == KeyboardEvent.LEFT_ARROW) {
+      nextCol = bound(nextCol -1, maxCol);
+    } else if (event.keyCode == KeyboardEvent.UP_ARROW) {
+      nextRow = bound(nextRow + 1, maxRow);
+    } else {
+      nextRow = bound(nextRow - 1, maxRow);
+    }
+    return DvtNBoxDataUtils.getCellByRowCol(nbox, nextRow, nextCol);
+  }
 }
 
 /**
@@ -3122,7 +3153,9 @@ class DvtNBoxCell extends Container{
     var cellCount = DvtNBoxDataUtils.getRowCount(this._nbox) * DvtNBoxDataUtils.getColCount(this._nbox);
     for (var i = 0; i < cellCount; i++)
       cells.push(DvtNBoxUtils.getDisplayable(this._nbox, DvtNBoxDataUtils.getCell(this._nbox, i)));
-    return KeyboardHandler.getNextNavigable(this, event, cells);
+    // Cannot use dvt.KeyboardHandler.getNextNavigable because initials background image distorts KeyboardBoundingBox
+    // JET-49672
+    return DvtNBoxKeyboardHandler.getNextNavigableCell(this, event, cells, this._nbox);
   }
 
 
@@ -4882,7 +4915,7 @@ class DvtNBoxNode extends Container {
     var ancestor = this;
     while (ancestor && ancestor.getParent) {
       ancestor = ancestor.getParent();
-      if (ancestor.nboxType === 'drawer') {
+      if (ancestor && ancestor.nboxType === 'drawer') {
         return ancestor;
       }
     }
@@ -7127,7 +7160,7 @@ class DvtNBoxEventManager extends EventManager {
     var obj = this.GetLogicalObject(event.target);
 
     // Only open drawer if category node not selectable. If selectable, open using double click.
-    if (obj.nboxType === 'categoryNode' && !obj.isSelectable())
+    if (obj && obj.nboxType === 'categoryNode' && !obj.isSelectable())
       obj.openDrawer();
   }
 
@@ -8932,6 +8965,11 @@ class NBox extends BaseComponent {
 
     // Update if a new options object has been provided or initialize with defaults if needed.
     this.SetOptions(options);
+
+    // Remove stale drawer data
+    if (!DvtNBoxDataUtils.getGrouping(this) && this.getOptions()['_drawer']) {
+      this.getOptions()['_drawer'] = null;
+    }
 
     // Update the width and height if provided
     if (!isNaN(width) && !isNaN(height)) {

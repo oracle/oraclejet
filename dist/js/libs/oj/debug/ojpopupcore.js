@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojdomutils', 'ojs/ojpreact-patch', 'jqueryui-amd/position', 'ojs/ojcontext', 'preact'], function (exports, oj, $, Components, Logger, DomUtils, ojpreactPatch, position, Context, preact) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojdomutils', 'ojs/ojpreact-patch', 'jqueryui-amd/position', 'ojs/ojcontext', 'preact/jsx-runtime', 'preact', 'ojs/ojcustomelement-utils'], function (exports, oj, $, Components, Logger, DomUtils, ojpreactPatch, position, Context, jsxRuntime, preact, ojcustomelementUtils) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -471,7 +471,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     oj.Assert.assertObject(options);
 
     /** @type {!jQuery} */
-    var popup = options[PopupService.OPTION.POPUP];
+    var popup = $(options[PopupService.OPTION.POPUP]);
     oj.Assert.assertPrototype(popup, $);
 
     // Trying to open a popup that is either already opening, open or closing.
@@ -486,7 +486,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     }
 
     /** @type {jQuery} */
-    var launcher = options[PopupService.OPTION.LAUNCHER];
+    var launcher = $(options[PopupService.OPTION.LAUNCHER]);
     oj.Assert.assertPrototype(launcher, $);
 
     /** @type {Object} */
@@ -587,7 +587,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    */
   PopupServiceImpl._defaultBeforeOpenCallback = function (options) {
     /** @type {!jQuery} */
-    var popup = options[PopupService.OPTION.POPUP];
+    var popup = $(options[PopupService.OPTION.POPUP]);
     oj.Assert.assertPrototype(popup, $);
 
     /** @type {Object} */
@@ -616,7 +616,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     oj.Assert.assertObject(options);
 
     /** @type {!jQuery} */
-    var popup = options[PopupService.OPTION.POPUP];
+    var popup = $(options[PopupService.OPTION.POPUP]);
     oj.Assert.assertPrototype(popup, $);
 
     /** @type {!jQuery} */
@@ -705,7 +705,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    */
   PopupServiceImpl._defaultBeforeCloseCallback = function (options) {
     /** @type {!jQuery} */
-    var popup = options[PopupService.OPTION.POPUP];
+    var popup = $(options[PopupService.OPTION.POPUP]);
     oj.Assert.assertPrototype(popup, $);
 
     popup.hide();
@@ -726,7 +726,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     oj.Assert.assertObject(options);
 
     /** @type {!jQuery} */
-    var popup = options[PopupService.OPTION.POPUP];
+    var popup = $(options[PopupService.OPTION.POPUP]);
     oj.Assert.assertPrototype(popup, $);
 
     if (ZOrderUtils.getStatus(popup) !== ZOrderUtils.STATUS.OPEN) {
@@ -899,6 +899,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
     var targetWithinLayer = ZOrderUtils.getFirstAncestorLayer(target);
     var $lastFocusLayer = defaultLayer.find('.' + PopupServiceImpl._FOCUS_WITHIN_SELECTOR).first();
+    var targetIsOverlay = event.target.classList.contains(ZOrderUtils._OVERLAY_SELECTOR);
 
     // toggle the oj-focus-within pseudo state
     if (defaultLayer[0] !== targetWithinLayer[0]) {
@@ -908,7 +909,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         }
         targetWithinLayer.addClass(PopupServiceImpl._FOCUS_WITHIN_SELECTOR);
       }
-    } else if ($lastFocusLayer.length) {
+    } else if ($lastFocusLayer.length && !targetIsOverlay) {
       // focus relinquished outside any managed popup
       $lastFocusLayer.removeClass(PopupServiceImpl._FOCUS_WITHIN_SELECTOR);
     }
@@ -922,6 +923,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
     // redistribute events for auto dismissal
     var context = {};
+    context.targetIsOverlay = targetIsOverlay;
 
     // Capture all interesting event properties.  Similar to jQuery.event.fix.
     var _COPY_SAFE_EVENT_PROPERTIES = PopupServiceImpl._COPY_SAFE_EVENT_PROPERTIES;
@@ -956,6 +958,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
     if (events && $.isFunction(events[PopupService.EVENT.POPUP_AUTODISMISS])) {
       events[PopupService.EVENT.POPUP_AUTODISMISS](event);
+    } else if (event.type === 'mousedown' && context.targetIsOverlay) {
+      // JET-50124: if no autodismiss handler is registered and the event is 'mousedown'
+      // on overlay div, we need to prevent focus from escaping to the document body
+      event.preventDefault();
     }
 
     return ZOrderUtils.VISIT_RESULT.ACCEPT;
@@ -1151,7 +1157,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       popup = $(popup);
     }
 
-    if (status > ZOrderUtils.STATUS.UNKNOWN &&
+    if (status >= ZOrderUtils.STATUS.UNKNOWN &&
         status <= ZOrderUtils.STATUS.CLOSE) {
       popup.data(ZOrderUtils._STATUS_DATA, status);
     }
@@ -1494,6 +1500,16 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     body.classList.remove('oj-component-modal-open');
   };
 
+  ZOrderUtils._removeFocusWithinFromOverlayedContent = function () {
+    var defaultLayer = ZOrderUtils.getDefaultLayer();
+    var $lastFocusLayer = defaultLayer.find('.' + PopupServiceImpl._FOCUS_WITHIN_SELECTOR).first();
+
+    if ($lastFocusLayer.length) {
+      // focus relinquished outside any managed popup
+      $lastFocusLayer.removeClass(PopupServiceImpl._FOCUS_WITHIN_SELECTOR);
+    }
+  };
+
   /**
    * Handles adding or removing a sibling overlay blocking pane before the dialog
    * based on the modality option.  The overlay pane is associated with the dialog
@@ -1513,6 +1529,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       if (PopupService.MODALITY.MODAL === modality) {
         ZOrderUtils._addOverlayToAncestorLayer(layer);
         ZOrderUtils._disableBodyOverflow(layer);
+        ZOrderUtils._removeFocusWithinFromOverlayedContent();
       } else {
         ZOrderUtils._removeOverlayFromAncestorLayer(layer);
       }
@@ -1520,6 +1537,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       if (modality !== currModality && modality === PopupService.MODALITY.MODAL) {
         ZOrderUtils._addOverlayToAncestorLayer(layer);
         ZOrderUtils._disableBodyOverflow(layer);
+        ZOrderUtils._removeFocusWithinFromOverlayedContent();
       } else {
         ZOrderUtils._removeOverlayFromAncestorLayer(layer);
       }
@@ -4093,7 +4111,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
           };
       }
       render(props) {
-          return (preact.h("div", { style: { display: 'none' }, ref: this._setRootRef }, props.children));
+          return (jsxRuntime.jsx("div", Object.assign({ style: { display: 'none' }, ref: this._setRootRef }, { children: props.children })));
       }
       componentDidMount() {
           this._popup = $(this._rootRef.firstChild);
@@ -4128,12 +4146,111 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       position: {}
   };
 
+  const OLD_DEFAULT_LAYER_ID = '__oj_zorder_container';
+  const NEW_DEFAULT_LAYER_ID = '__root_layer_host';
+  const getUniqueId = ojcustomelementUtils.ElementUtils.getUniqueId.bind(null, null);
+  const V_LAYER_HOST_ID_REF = Symbol();
+  function getPopupServiceOptions(element, launcherElement) {
+      const PSOptions = {};
+      const PSoption = oj.PopupService.OPTION;
+      PSOptions[PSoption.POPUP] = element;
+      PSOptions[PSoption.LAUNCHER] = launcherElement;
+      PSOptions[PSoption.LAYER_SELECTORS] = 'oj-v-layer-host-layer';
+      const PSEvent = oj.PopupService.EVENT;
+      PSOptions[PSoption.EVENTS] = {
+          [PSEvent.POPUP_BEFORE_OPEN]: () => { },
+          [PSEvent.POPUP_AFTER_OPEN]: () => { },
+          [PSEvent.POPUP_BEFORE_CLOSE]: () => { },
+          [PSEvent.POPUP_AFTER_CLOSE]: () => { },
+          [PSEvent.POPUP_AUTODISMISS]: () => { },
+          [PSEvent.POPUP_REFRESH]: () => { },
+          [PSEvent.POPUP_CLOSE]: () => {
+              closeLayerHost(element, launcherElement);
+          },
+          [PSEvent.POPUP_REMOVE]: () => { }
+      };
+      return PSOptions;
+  }
+  function getLayerHost(element) {
+      const anchorRef = element['anchorRef'];
+      let layerHost;
+      if (!element[V_LAYER_HOST_ID_REF]) {
+          element[V_LAYER_HOST_ID_REF] = `__v_layer_host_${getUniqueId()}`;
+      }
+      else {
+          layerHost = document.getElementById(element[V_LAYER_HOST_ID_REF]);
+      }
+      if (layerHost) {
+          return layerHost;
+      }
+      let isComponentInOldDom = false;
+      let launcherElement;
+      if (anchorRef != undefined) {
+          launcherElement = anchorRef.current;
+      }
+      else {
+          launcherElement = element;
+      }
+      let zOrderContainer = element.closest(`#${OLD_DEFAULT_LAYER_ID}`);
+      if (zOrderContainer) {
+          isComponentInOldDom = true;
+      }
+      else {
+          if (anchorRef && anchorRef.current && !anchorRef.current.x) {
+              zOrderContainer = anchorRef.current.closest(`#${OLD_DEFAULT_LAYER_ID}`);
+              if (zOrderContainer) {
+                  isComponentInOldDom = true;
+              }
+          }
+      }
+      if (isComponentInOldDom) {
+          return openLayerHost(element[V_LAYER_HOST_ID_REF], launcherElement);
+      }
+      let newLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
+      if (!newLayerHost) {
+          newLayerHost = document.createElement('div');
+          newLayerHost.setAttribute('id', NEW_DEFAULT_LAYER_ID);
+          newLayerHost.classList.add('oj-root-layer-host');
+          zOrderContainer = document.getElementById(OLD_DEFAULT_LAYER_ID);
+          if (!zOrderContainer) {
+              document.body.prepend(newLayerHost);
+          }
+          else {
+              zOrderContainer.after(newLayerHost);
+          }
+      }
+      return newLayerHost;
+  }
+  function openLayerHost(elementId, launcherElement) {
+      if (!elementId)
+          return;
+      let vpopupCoreElement = document.getElementById(elementId);
+      if (!vpopupCoreElement) {
+          vpopupCoreElement = document.createElement('div');
+          vpopupCoreElement.setAttribute('id', elementId);
+          document.body.appendChild(vpopupCoreElement);
+      }
+      const popupServiceInstance = oj.PopupService.getInstance();
+      const popupServiceOptions = getPopupServiceOptions(vpopupCoreElement, launcherElement);
+      popupServiceInstance.open(popupServiceOptions);
+      return vpopupCoreElement;
+  }
+  function closeLayerHost(element, launcherElement) {
+      if (!element)
+          return;
+      const popupServiceInstance = oj.PopupService.getInstance();
+      const popupServiceOptions = getPopupServiceOptions(element, launcherElement);
+      popupServiceInstance.close(popupServiceOptions);
+      element.remove();
+  }
+
   exports.PopupLiveRegion = PopupLiveRegion;
   exports.PopupService = PopupService;
   exports.PopupSkipLink = PopupSkipLink;
   exports.PopupWhenReadyMediator = PopupWhenReadyMediator;
   exports.PositionUtils = PositionUtils;
   exports.VPopup = VPopup;
+  exports.getLayerHost = getLayerHost;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
