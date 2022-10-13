@@ -1,5 +1,5 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
-import { _ as __rest } from './tslib.es6-fc945e53.js';
+/* @oracle/oraclejet-preact: 13.1.0 */
+import { _ as __rest } from './tslib.es6-deee4931.js';
 import { jsx } from 'preact/jsx-runtime';
 import { classNames } from './utils/UNSAFE_classNames.js';
 import './UNSAFE_Avatar.css';
@@ -85,15 +85,15 @@ const AvatarWrapper = ({
 };
 
 const styles = {
-  base: "bdu7o2i",
-  circle: "ckqasx"
+  base: "_1bu6wv",
+  circle: "_0f93l"
 };
 const contentStyles = {
-  base: "b2h7dvs",
-  content: "c10p2zz8",
-  image: "i17ccxhr",
-  initials: "i1b5olv3",
-  icon: "i1pwxo7y"
+  base: "y6dkls",
+  content: "_7b3rpj",
+  image: "jduz12",
+  initials: "goml2v",
+  icon: "_dpb87j"
 };
 
 export { Avatar };

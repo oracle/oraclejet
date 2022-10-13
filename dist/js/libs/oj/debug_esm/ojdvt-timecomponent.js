@@ -129,6 +129,7 @@ class TimeComponent extends BaseComponent {
    * @override
    */
   SetOptions(options) {
+    super.SetOptions(options);
     // Combine the user options with the defaults and store
     this.Options = this.Defaults.calcOptions(options);
 

@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 // If the value is an array, just return it, otherwise make a single entry array out of it and return it.
 const coerceArray = (value) => (Array.isArray(value) ? value : [value]);
 // By default TS will infer `string[]` for an array so use this function to

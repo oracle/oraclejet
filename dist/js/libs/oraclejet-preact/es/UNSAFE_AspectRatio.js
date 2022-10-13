@@ -1,5 +1,5 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
-import { _ as __rest } from './tslib.es6-fc945e53.js';
+/* @oracle/oraclejet-preact: 13.1.0 */
+import { _ as __rest } from './tslib.es6-deee4931.js';
 import { jsx } from 'preact/jsx-runtime';
 import './UNSAFE_AspectRatio.css';
 import { dimensionInterpolations } from './utils/UNSAFE_interpolations/dimensions.js';
@@ -8,9 +8,9 @@ import { classNames } from './utils/UNSAFE_classNames.js';
 import { stringLiteralArray } from './utils/UNSAFE_arrayUtils.js';
 import './utils/UNSAFE_size.js';
 import './utils/UNSAFE_stringUtils.js';
-import './_curry1-8b0d63fc.js';
-import './_curry2-6a0eecef.js';
-import './_has-77a27fd6.js';
+import './_curry1-b6f34fc4.js';
+import './_curry2-255e04d1.js';
+import './_has-f370c697.js';
 
 // hack to get aspect-ratio to work.
 // CSS now has an aspect-ratio attribute that makes this super easy.
@@ -28,7 +28,7 @@ import './_has-77a27fd6.js';
 // 100%/ratio. 100/(4/3) = 75%
 // e.g., 16/9 = 56.25%, 4/3 = 75%, 1/1=100%, 2/1=50%
 
-const baseDivStyles = "b10sxgzy"; // common aspect ratios
+const baseDivStyles = "_atcn2l"; // common aspect ratios
 // The box’s preferred aspect ratio is the specified ratio of width / height.
 // The ratio has a '/' as a separator and not a ':' because the '/' is what
 // the CSS aspect-ratio uses.

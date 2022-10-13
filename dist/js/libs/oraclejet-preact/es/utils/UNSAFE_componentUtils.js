@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 /**
  * Adds components before a specific VNode
  * @param src The src component

@@ -65,7 +65,7 @@ module.exports = class PatternCompiler {
       if (typeof style === 'string') {
           opts = this._getFormatOpts().number[style];
       } else if (Parser.isNumberSkeleton(style)) {
-          opts = Parser.convertNumberSkeletonToNumberFormatOptions(style.tokens);
+          opts = style.parsedOptions;
       }
       return `new Intl.NumberFormat("${this._locale}",${this._stringifyOptions(opts)}).
                 format(${this._getParameterExpression(node, paramAccumulator, 'number')})`;
@@ -77,10 +77,10 @@ module.exports = class PatternCompiler {
     if (typeof style === 'string') {
         opts = this._getFormatOpts()[type][style];
     } else if (Parser.isDateTimeSkeleton(style)) {
-        opts = Parser.parseDateTimeSkeleton(style.pattern);
+        opts = style.parsedOptions;
     }
     return `new Intl.DateTimeFormat("${this._locale}",${this._stringifyOptions(opts)}).
-              format(${this._getParameterExpression(node, paramAccumulator, 'date')})`;
+              format(${this._getParameterExpression(node, paramAccumulator, 'Date')})`;
   }
 
   _getSelectFormat(node, paramAccumulator) {
@@ -138,8 +138,8 @@ module.exports = class PatternCompiler {
   }
 
  _getParameterExpression(node, paramAccumulator, type) {
-   const paramName = node.value;
-   paramAccumulator[paramName] = type || 'string';
+    const paramName = node.value;
+    paramAccumulator[paramName] = type || 'string';
     // no need to escape parameter name since it is supposed to be a valid identifier or number
     return `p["${paramName}"]`;
   }

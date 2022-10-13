@@ -1,0 +1,12 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../palette/themes/redwood/_oj-palette.cssvars.scss";
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "_oj-progress-circle.cssvars.scss";
+@import "../base/_oj-progress-circle.scss";
+// scoped cssvars override
+@import "../../../palette/themes/redwood/_oj-palette-scoped.cssvars.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+@import "_oj-progress-circle-scoped.cssvars.scss";
+
+  @include module-include-once("redwood.progress-circle") {
+  }

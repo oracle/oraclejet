@@ -53,7 +53,7 @@ export interface ActionCardElementSettablePropertiesLenient extends Partial<Acti
     [key: string]: any;
 }
 export interface ActionCardIntrinsicProps extends Partial<Readonly<ActionCardElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
-    children?: ComponentChildren;
+    children?: import('preact').ComponentChildren;
     onojAction?: (value: ActionCardElementEventMap['ojAction']) => void;
 }
 declare global {

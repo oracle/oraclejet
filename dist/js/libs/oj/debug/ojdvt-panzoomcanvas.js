@@ -1904,6 +1904,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @override
    */
   SetOptions(options) {
+    super.SetOptions(options);
     this.Options = this.Defaults ? this.Defaults.calcOptions(options) : options;
   }
 

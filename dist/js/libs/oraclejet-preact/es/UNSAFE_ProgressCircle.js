@@ -1,5 +1,5 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
-import { _ as __rest } from './tslib.es6-fc945e53.js';
+/* @oracle/oraclejet-preact: 13.1.0 */
+import { _ as __rest } from './tslib.es6-deee4931.js';
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import { classNames } from './utils/UNSAFE_classNames.js';
 import './UNSAFE_ProgressCircle.css';
@@ -115,12 +115,12 @@ const CircleInner = _a => {
 };
 
 const styles = {
-  base: "bn7wf4q",
-  indeterminateOuter: "iv2lv64",
-  indeterminateInner: "i1p1jgv8",
-  determinateInner: "d1d0ra29",
-  track: "tl8cvpa",
-  value: "v1oiv99s"
+  base: "_3lr0d6",
+  indeterminateOuter: "_d7hulw",
+  indeterminateInner: "_3fy22f",
+  determinateInner: "ilt9ry",
+  track: "_fgu73v",
+  value: "bab7ro"
 };
 
 function _getClipPath(percentage) {

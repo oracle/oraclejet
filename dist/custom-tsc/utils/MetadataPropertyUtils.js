@@ -317,9 +317,30 @@ Use a reference to a non-primitive constant instead.`);
             defValueExpression = defValueExpression.expression;
         }
         defaultValue = defValueExpression.getText();
-        if (defValueExpression.kind === ts.SyntaxKind.ObjectLiteralExpression) {
-            const castMatch = /\s+as\s+\w+/gm;
-            defaultValue = defaultValue.replace(castMatch, '');
+        if (ts.isObjectLiteralExpression(defValueExpression) ||
+            ts.isArrayLiteralExpression(defValueExpression)) {
+            let start = 0;
+            let sections = [];
+            const castRegExp = /\s+as\s+\w+/gm;
+            const quotedStringRegExp = /(['"])(?:[\s\S])*?\1/gm;
+            const quotedStringMatches = defaultValue.matchAll(quotedStringRegExp);
+            for (const match of quotedStringMatches) {
+                if (match.index > start) {
+                    const section = defaultValue.substring(start, match.index).replace(castRegExp, '');
+                    sections.push(section);
+                }
+                sections.push(defaultValue.substring(match.index, match.index + match[0].length));
+                start = match.index + match[0].length;
+            }
+            if (sections.length > 0) {
+                if (start < defaultValue.length) {
+                    sections.push(defaultValue.substring(start).replace(castRegExp, ''));
+                }
+                defaultValue = sections.join('');
+            }
+            else {
+                defaultValue = defaultValue.replace(castRegExp, '');
+            }
         }
         const value = MetaUtils.stringToJS(propertyName, defValueExpression.kind, defaultValue, metaUtilObj);
         if (value !== undefined) {

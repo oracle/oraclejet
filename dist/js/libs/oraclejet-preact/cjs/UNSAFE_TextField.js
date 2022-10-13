@@ -1,9 +1,9 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var tslib_es6 = require('./tslib.es6-5c843188.js');
+var tslib_es6 = require('./tslib.es6-e91f819d.js');
 var jsxRuntime = require('preact/jsx-runtime');
 var hooks_UNSAFE_useFormContext = require('./hooks/UNSAFE_useFormContext.js');
 require('identity-obj-proxy');
@@ -11,49 +11,52 @@ require('./utils/UNSAFE_classNames.js');
 var utils_UNSAFE_interpolations_text = require('./utils/UNSAFE_interpolations/text.js');
 var utils_UNSAFE_mergeInterpolations = require('./utils/UNSAFE_mergeInterpolations.js');
 var hooks_UNSAFE_useFormFieldContext = require('./hooks/UNSAFE_useFormFieldContext.js');
-var TextFieldInput = require('./TextFieldInput-3f8612a3.js');
-var classNames = require('./classNames-69178ebf.js');
+var TextFieldInput = require('./TextFieldInput-40fdc487.js');
+var classNames = require('./classNames-82bfab52.js');
 var UNSAFE_LabelValueLayout = require('./UNSAFE_LabelValueLayout.js');
 var preact = require('preact');
 require('./UNSAFE_Flex.js');
-var _curry1$2 = require('./_curry1-33165c71.js');
-var _curry2$1 = require('./_curry2-40682636.js');
-var Flex = require('./Flex-b2488744.js');
+var _curry1$2 = require('./_curry1-94f22a19.js');
+var _curry2$1 = require('./_curry2-e6dc9cf1.js');
+var Flex = require('./Flex-327ae051.js');
 var hooks_UNSAFE_useDebounce = require('./hooks/UNSAFE_useDebounce.js');
 var hooks_UNSAFE_useTranslationBundle = require('./hooks/UNSAFE_useTranslationBundle.js');
 var UNSAFE_LiveRegion = require('./UNSAFE_LiveRegion.js');
 require('preact/hooks');
-require('./keys-4bd017bf.js');
-require('./_has-2cbf94e8.js');
+require('./keys-0a611b24.js');
+require('./_has-556488e4.js');
 require('./hooks/UNSAFE_useTextFieldInputHandlers.js');
 require('./utils/PRIVATE_clientHints.js');
-require('./clientHints-90ca1b41.js');
+require('./clientHints-d9b5605d.js');
 require('./utils/UNSAFE_size.js');
 require('./utils/UNSAFE_stringUtils.js');
-require('./stringUtils-bca189f8.js');
+require('./stringUtils-b22cc214.js');
 require('./utils/UNSAFE_interpolations/dimensions.js');
 require('./utils/UNSAFE_arrayUtils.js');
 require('./utils/UNSAFE_interpolations/boxalignment.js');
 require('./utils/UNSAFE_interpolations/flexbox.js');
-require('./flexbox-c4644897.js');
+require('./flexbox-3d991801.js');
 require('./utils/UNSAFE_interpolations/flexitem.js');
-require('./flexitem-5f5d588b.js');
+require('./flexitem-91650faf.js');
 require('./UNSAFE_Environment.js');
 require('./UNSAFE_Layer.js');
 require('preact/compat');
 
+// and the textarea, so the the textarea's focus outline doesn't get truncated.
+// The 0.25rem is an aesthetically pleasing amount of margin to make the readonly
+// focus ring visible.
+
+const borderToTextAreaContentMargin = '0.25rem';
 const readOnlyTextFieldStyles = {
-  base: "byczszj",
-  textareaBase: "to9zpcl",
-  inEnabledFormBase: "iuhxjs8",
-  textareaInEnabledFormBase: "t1ch5h18",
-  inEnabledFormLabelInside: "iol9fno",
-  textareaInEnabledFormLabelInside: "t15jwrza",
-  // We don't want any default padding the browser provides for readonly
-  textareaInReadonlyFormNotInside: "t1y841pv",
-  inEnabledFormNoLabelInside: "i1cijd50",
+  base: "_n1b6om",
+  textareaBase: "znllbr",
+  inEnabledFormBase: "_psuy0h",
+  textareaInEnabledFormBase: "_qrph7n",
+  inEnabledFormLabelInside: "_eeetkl",
+  textareaInEnabledFormLabelInside: "_bmdju7",
+  inEnabledFormNoLabelInside: "zr8b2q",
   // don't apply this for textarea
-  inEnabledFormNoStartContent: "i1of5qyc"
+  inEnabledFormNoStartContent: "wg3pte"
 };
 function ReadonlyTextFieldInput(_a) {
   var {
@@ -86,7 +89,8 @@ function ReadonlyTextFieldInput(_a) {
   const {
     class: styleInterpolationClasses
   } = styleInterpolations(props);
-  const readonlyDivClasses = classNames.classNames([as !== 'textarea' && 'oj-c-hide-scrollbar', readOnlyTextFieldStyles.base, as === 'textarea' && readOnlyTextFieldStyles.textareaBase, isFormLayout && !isReadonlyForm && readOnlyTextFieldStyles.inEnabledFormBase, isFormLayout && !isReadonlyForm && as === 'textarea' && readOnlyTextFieldStyles.textareaInEnabledFormBase, isFormLayout && !isReadonlyForm && (hasInsideLabel ? readOnlyTextFieldStyles.inEnabledFormLabelInside : readOnlyTextFieldStyles.inEnabledFormNoLabelInside), isFormLayout && !isReadonlyForm && as === 'textarea' && hasInsideLabel && readOnlyTextFieldStyles.textareaInEnabledFormLabelInside, isFormLayout && isReadonlyForm && as === 'textarea' && !hasInsideLabel && readOnlyTextFieldStyles.textareaInReadonlyFormNotInside, isFormLayout && !isReadonlyForm && as !== 'textarea' && readOnlyTextFieldStyles.inEnabledFormNoStartContent, styleInterpolationClasses]);
+  const readonlyDivClasses = classNames.classNames([as !== 'textarea' && 'oj-c-hide-scrollbar', readOnlyTextFieldStyles.base, as === 'textarea' && readOnlyTextFieldStyles.textareaBase, isFormLayout && !isReadonlyForm && readOnlyTextFieldStyles.inEnabledFormBase, as === 'textarea' && isFormLayout && !isReadonlyForm && readOnlyTextFieldStyles.textareaInEnabledFormBase, isFormLayout && !isReadonlyForm && (hasInsideLabel ? readOnlyTextFieldStyles.inEnabledFormLabelInside : readOnlyTextFieldStyles.inEnabledFormNoLabelInside), as === 'textarea' && isFormLayout && !isReadonlyForm && hasInsideLabel && readOnlyTextFieldStyles.textareaInEnabledFormLabelInside, as !== 'textarea' && // not for textarea element
+  isFormLayout && !isReadonlyForm && readOnlyTextFieldStyles.inEnabledFormNoStartContent, styleInterpolationClasses]);
 
   if (as === 'input') {
     return jsxRuntime.jsx("input", {
@@ -412,18 +416,18 @@ const ojButtonIconSize = 'var(--oj-c-PRIVATE-DO-NOT-USE-core-icon-size-lg)'; // 
 
 const ojButtonSmIconSize = '1.25rem';
 const textFieldContainerStyles = {
-  base: "bpxth0a",
-  textarea: "t1nwf48c",
-  labelInside: "l1asas25",
-  focused: "f1fkvmlv",
+  base: "jrzml0",
+  textarea: "_9mcyl0",
+  labelInside: "j78ji5",
+  focused: "_lxrr59",
   resize: {
-    both: "byvh15",
-    horizontal: "haatqwl",
-    vertical: "vnx52bj"
+    both: "_r7uwp3",
+    horizontal: "_ungs9n",
+    vertical: "_jpfde"
   },
-  disabled: "de62cmy",
-  error: "ewejuy9",
-  warning: "w1ywmvcj"
+  disabled: "_1fz7c7",
+  error: "j6tnap",
+  warning: "_qd3ih"
 };
 const containerContentVariantStyles = {
   textarea: textFieldContainerStyles.textarea,
@@ -440,13 +444,13 @@ const getStyle = curry_1((styles, variant) => variant && styles[variant]);
 const getContainerContentVariantStyles = getStyle(containerContentVariantStyles);
 const getContainerStatusVariantStyles = getStyle(containerStatusVariantStyles);
 const textFieldStartContentStyles = {
-  base: "bwv846o",
-  labelInside: "l4zuwwr",
-  disabled: "deqisnl"
+  base: "vnnb98",
+  labelInside: "_wv3kzo",
+  disabled: "_pxtnet"
 };
 const textFieldMiddleStyles = {
-  base: "b1g2m4fu",
-  textarea: "ti5cls5"
+  base: "ftj5wx",
+  textarea: "qnnx9f"
 };
 const middleContentVariantStyles = {
   textarea: textFieldMiddleStyles.textarea,
@@ -455,8 +459,8 @@ const middleContentVariantStyles = {
 };
 const getMiddleContentVariantStyles = getStyle(middleContentVariantStyles);
 const textFieldEndContentStyles = {
-  base: "b1m9i38d",
-  labelInside: "loikvln"
+  base: "_w86pwh",
+  labelInside: "_mlam0"
 }; // Renders the oj-text-field-container dom which includes the
 // start, middle (where the inside label and inputElem goes),
 // and end pieces of the form component.

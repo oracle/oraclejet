@@ -5486,10 +5486,16 @@ var __oj_gantt_reference_object_metadata =
         };
 
         // chart border
-        styleClasses['oj-gantt-container'] = {
-          path: '_resources/chartArea/strokeWidth',
-          property: 'stroke-width'
-        };
+        styleClasses['oj-gantt-container'] = [
+          {
+            path: '_resources/chartArea/strokeWidth',
+            property: 'stroke-width'
+          },
+          {
+            path: '_resources/componentPaddingStart',
+            property: 'padding-inline-start'
+          }
+        ];
 
         // horizontal gridline width
         styleClasses['oj-gantt-horizontal-gridline'] = {
@@ -5531,12 +5537,12 @@ var __oj_gantt_reference_object_metadata =
             property: 'TEXT'
           },
           {
-            path: '_resources/rowLabelPaddingLeft',
-            property: 'padding-left'
+            path: '_resources/rowLabelPaddingStart',
+            property: 'padding-inline-start'
           },
           {
-            path: '_resources/rowLabelPaddingRight',
-            property: 'padding-right'
+            path: '_resources/rowLabelPaddingEnd',
+            property: 'padding-inline-end'
           }
         ];
 

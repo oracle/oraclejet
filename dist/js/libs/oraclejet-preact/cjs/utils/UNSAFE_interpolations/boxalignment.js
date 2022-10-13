@@ -1,37 +1,37 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
 require('identity-obj-proxy');
-var keys = require('../../keys-4bd017bf.js');
+var keys = require('../../keys-0a611b24.js');
 var utils_UNSAFE_size = require('../UNSAFE_size.js');
 var utils_UNSAFE_arrayUtils = require('../UNSAFE_arrayUtils.js');
-require('../../_curry1-33165c71.js');
-require('../../_has-2cbf94e8.js');
+require('../../_curry1-94f22a19.js');
+require('../../_has-556488e4.js');
 require('../UNSAFE_stringUtils.js');
-require('../../stringUtils-bca189f8.js');
+require('../../stringUtils-b22cc214.js');
 
 // align, and gap.
 
 const alignStyles = {
-  baseline: "b1hfcv8t",
-  center: "coc1cbu",
-  end: "e48xkrk",
-  start: "skrlc38",
-  inherit: "i13jv0tx",
-  initial: "izwuuu1",
-  stretch: "s12b86de"
+  baseline: "klvue0",
+  center: "_v1pufi",
+  end: "szsgpl",
+  start: "_x69i5n",
+  inherit: "_u6mp9r",
+  initial: "rrxsr6",
+  stretch: "_kkrwzj"
 };
 const justifyStyles = {
-  center: "cwbq0ib",
-  end: "ei13mle",
-  start: "s1bbko6s",
-  inherit: "ipgkr5n",
-  initial: "ihg9slo",
-  around: "a4gorz7",
-  between: "b14ouk2h",
-  evenly: "eolmhjh"
+  center: "ataoye",
+  end: "_awwr4",
+  start: "_xgdc22",
+  inherit: "_t1r35v",
+  initial: "byxkkh",
+  around: "_lk9m3",
+  between: "_3ui4p2",
+  evenly: "y2mpjt"
 };
 const boxAlignmentInterpolations = {
   align: ({

@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getValueFromNode = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isAnyOrUnknownType = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.addArgumentsToRegisterCustomElementCall = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.stringToJS = exports.writebackCallbackToProperty = exports.tagNameToElementName = exports.tagNameToElementInterfaceName = void 0;
+exports.generateStatementsFromText = exports.getValueFromNode = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isAnyOrUnknownType = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.addArgumentsToRegisterCustomElementCall = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.stringToJS = exports.writebackCallbackToProperty = exports.tagNameToElementName = exports.tagNameToElementInterfaceName = void 0;
 const ts = __importStar(require("typescript"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
@@ -939,6 +939,19 @@ function getValueFromNode(exp) {
     return value;
 }
 exports.getValueFromNode = getValueFromNode;
+function generateStatementsFromText(text) {
+    let tmpNode = ts.createSourceFile('temp.ts', text, ts.ScriptTarget.Latest, false, ts.ScriptKind.TSX);
+    fixSingleQuoteAndFlagsRecursively(tmpNode);
+    return tmpNode.statements;
+}
+exports.generateStatementsFromText = generateStatementsFromText;
+function fixSingleQuoteAndFlagsRecursively(node) {
+    if (node.kind == ts.SyntaxKind.StringLiteral && !node['singleQuote']) {
+        node['singleQuote'] = true;
+    }
+    node.flags |= ts.NodeFlags.Synthesized;
+    node.forEachChild((child) => fixSingleQuoteAndFlagsRecursively(child));
+}
 function _pruneSubPropMetadata(metaelement, validSubPropMap) {
     for (let metaprop in metaelement) {
         const validSubPropSet = validSubPropMap[metaprop];
@@ -1010,7 +1023,7 @@ function _getDtMetadataNameValue(tag, metaUtilObj) {
         if (mdkeySep > 0) {
             mdKey = dtMdTagText.substr(0, mdkeySep);
             mdVal = dtMdTagText.substr(mdkeySep + 1).trim();
-            mdVal = _normalizeDtMetadataValue(mdKey, mdVal);
+            mdVal = _normalizeDtMetadataValue(mdKey, mdVal, tag, metaUtilObj);
             try {
                 mdVal = _execBundle(mdVal);
             }
@@ -1042,12 +1055,22 @@ const _STRING_METADATA_KEYS = new Set([
     'units'
 ]);
 const _STRING_ARRAY_METADATA_KEYS = new Set(['implements', 'preferredContent']);
-function _normalizeDtMetadataValue(key, value) {
+function _normalizeDtMetadataValue(key, value, tag, metaUtilObj) {
     let isStringNormalizationNeeded = false;
     if (_STRING_METADATA_KEYS.has(key) ||
         (_STRING_ARRAY_METADATA_KEYS.has(key) &&
             !(value.charAt(0) === '[' && value.charAt(value.length - 1) === ']'))) {
         isStringNormalizationNeeded = true;
+        const start = value.charAt(0);
+        const end = value.charAt(value.length - 1);
+        if ((start === '"' || start === "'") && start !== end) {
+            const matchingEndQuoteIndex = value.lastIndexOf(start);
+            if (matchingEndQuoteIndex > 0) {
+                const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName, tag);
+                console.log(`${logHeader} ${key} text beyond the matching quote character was trimmed for metadata value: ${value}`);
+                value = value.substring(0, matchingEndQuoteIndex + 1);
+            }
+        }
         if (value.match(/^(['"])(?:[\s\S])*?\1$/)) {
             if (value.length > 2) {
                 value = value.substring(1, value.length - 1);

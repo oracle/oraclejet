@@ -1,4 +1,3 @@
-import { ComponentChildren } from 'preact';
 import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
@@ -162,7 +161,7 @@ export type ojFilePickerEventMap = FilePickerElementEventMap;
 export type ojFilePickerSettableProperties = FilePickerElementSettableProperties;
 export type ojFilePickerSettablePropertiesLenient = FilePickerElementSettablePropertiesLenient;
 export interface FilePickerIntrinsicProps extends Partial<Readonly<FilePickerElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
-    children?: ComponentChildren;
+    children?: import('preact').ComponentChildren;
     onojBeforeSelect?: (value: FilePickerElementEventMap['ojBeforeSelect']) => void;
     onojInvalidSelect?: (value: FilePickerElementEventMap['ojInvalidSelect']) => void;
     onojSelect?: (value: FilePickerElementEventMap['ojSelect']) => void;

@@ -1,0 +1,2 @@
+define(["exports","preact/jsx-runtime",'module',"preact","./MessageFormattingUtils-ce5ff913"],(function(e,n,t,i,a){"use strict";const r={base:"e6hwt0",banner:"c9vgnw",inline:void 0};function s(e){const{detail:t}=e.data;return a.isValidValueForProp(t)?n.jsx(i.Fragment,{children:t}):null}e.MessageDetail=function({item:e,renderer:t=s,variant:i="banner"}){const a=t(e);if(null==a)return null;const c=`oj-c-message${i}-detail ${r.base} ${r[i]}`;return n.jsx("div",Object.assign({class:c},{children:a}))}}));
+//# sourceMappingURL=MessageDetail-d90dbb66.js.map

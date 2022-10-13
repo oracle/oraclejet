@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx } from 'preact/jsx-runtime';
 import { useActionable } from './hooks/UNSAFE_useActionable.js';
 import './UNSAFE_Chip.css';
@@ -11,13 +11,13 @@ import './hooks/UNSAFE_useActive.js';
 import './hooks/UNSAFE_useFocus.js';
 import './hooks/UNSAFE_usePress.js';
 
-const cursorandFocusStyle = "c1drwgih";
+const cursorandFocusStyle = "_sxeu7d";
 const styles = {
-  base: "b16hrnn0",
-  disabled: "d16riqis",
-  info: "i1abp3op",
-  infoSubtle: "iu2igik",
-  infoSubtleLighter: "i149ovoc"
+  base: "vds7d",
+  disabled: "_07cpx4",
+  info: "vrs1no",
+  infoSubtle: "sz8twf",
+  infoSubtleLighter: "q6dzqw"
 };
 function Chip({
   isSelected,

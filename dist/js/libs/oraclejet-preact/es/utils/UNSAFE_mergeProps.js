@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 /**
  * @license
  * Copyright (c) 2011 %CURRENT_YEAR%, Oracle and/or its affiliates.

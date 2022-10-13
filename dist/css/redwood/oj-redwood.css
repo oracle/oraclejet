@@ -361,7 +361,7 @@
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v13.0.0"}' !important; }
+  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v13.1.0"}' !important; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -8917,10 +8917,12 @@ oj-label:not(.oj-complete) {
   --oj-label-inside-edge-color: var(--oj-core-text-color-secondary); }
 
 :root.oj-scale-sm {
-  --oj-label-font-size: var(--oj-typography-body-md-font-size); }
+  --oj-label-font-size: var(--oj-typography-body-md-font-size);
+  --oj-label-inside-edge-position-top: 3px; }
 
 :root.oj-scale-md {
-  --oj-label-font-size: var(--oj-typography-body-md-font-size); }
+  --oj-label-font-size: var(--oj-typography-body-md-font-size);
+  --oj-label-inside-edge-position-top: 4px; }
 
 /* form-control classes */
 /* --------------------------------------------------------------- */
@@ -9030,6 +9032,9 @@ html .oj-form-control {
 .oj-form-layout .oj-form.oj-enabled:not(.oj-form-cols-labels-inline) .oj-label,
 .oj-label-value:not(.oj-formlayout-labels-inline) .oj-label {
   margin-bottom: var(--oj-form-layout-top-edge-label-to-value-padding); }
+
+.oj-form-layout .oj-form:not(.oj-enabled) .oj-label-value .oj-label {
+  margin-bottom: 0; }
 
 /** for all hints */
 .oj-form-control-hint {
@@ -10256,8 +10261,7 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
 .oj-listview-card-group {
   display: flex;
   flex-wrap: wrap;
-  list-style-type: none;
-  padding: 0 0 var(--oj-panel-gutter) 0; }
+  list-style-type: none; }
 
 /* Styling for group content when listview is filling the entire width and display mode is card */
 .oj-listview.oj-listview-full-width > .oj-listview-element > li > .oj-listview-card-group,
@@ -10482,6 +10486,13 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
 /* Styling for the last suggestion (even if gridlines is hidden) */
 .oj-listview-gridlines-hidden .oj-listview-last-suggestion {
   border-bottom: 1px solid var(--oj-core-divider-color); }
+
+.oj-listview-card-group,
+.oj-listview-card-layout .oj-listview-group {
+  padding-top: 0;
+  padding-bottom: var(--oj-panel-gutter);
+  padding-inline-start: var(--oj-core-gutter-start, 0);
+  padding-inline-end: var(--oj-core-gutter-end, 0); }
 
 /* Styling for the expand icon */
 /* Styling for the collapse icon */
@@ -13436,6 +13447,9 @@ html[dir="rtl"] .oj-drawer-reflow-wrapper.oj-drawer-reflow.oj-drawer-end {
   width: 100%;
   max-width: 100%; }
 
+.oj-drawer-full-overlay.oj-drawer-bottom {
+  max-height: 100vh; }
+
 html:not([dir="rtl"]) .oj-drawer-layout-surrogate .oj-drawer-overlay.oj-drawer-start {
   box-shadow: 8px 0 15px rgba(var(--oj-core-box-shadow-rgb), 0.05); }
 
@@ -13500,10 +13514,10 @@ oj-drawer-popup:not(.oj-complete) {
 .oj-drawer-popup-surrogate .oj-drawer-bottom {
   width: 100vw;
   max-width: 100vw;
-  max-height: 90vh; }
+  max-height: 100vh; }
 
 .oj-drawer-popup-surrogate .oj-drawer-bottom.oj-drawer-full-overlay {
-  max-height: 100vh; }
+  height: 100vh; }
 
 @supports (-webkit-touch-callout: none) {
   .oj-drawer-popup-surrogate .oj-drawer-bottom {
@@ -14390,7 +14404,8 @@ oj-gantt:not(.oj-complete) {
 /* Styling for the container (around time axis and databody) */
 .oj-gantt-container {
   fill: transparent;
-  stroke-width: 2px; }
+  stroke-width: 2px;
+  padding-inline-start: var(--oj-core-gutter-start, 0); }
 
 /* Styling for the empty text */
 .oj-gantt-no-data-message {
@@ -14435,8 +14450,8 @@ oj-gantt:not(.oj-complete) {
   fill: var(--oj-core-text-color-primary);
   font-size: var(--oj-dvt-label-font-size-lg);
   font-weight: normal;
-  padding-left: 1rem;
-  padding-right: 1rem; }
+  padding-inline-start: calc(var(--oj-core-gutter-start, 1rem) - var(--oj-core-gutter-start, 0px));
+  padding-inline-end: 1rem; }
 
 /* Styling for all tasks */
 .oj-gantt-task {
@@ -15909,7 +15924,6 @@ oj-list-item-layout {
   grid-template-areas: "selector leading textslots extra" ".... .... quaternary navigation";
   grid-template-columns: auto auto minmax(0, 1fr) auto;
   grid-template-rows: minmax(0, 1fr) auto;
-  padding: var(--oj-collection-list-cell-padding-vertical) var(--oj-list-view-item-padding-horizontal);
   box-sizing: border-box;
   min-height: var(--oj-collection-list-row-height); }
 
@@ -15974,6 +15988,12 @@ oj-list-item-layout {
 
 :root.oj-scale-md {
   --oj-collection-header-font-size: var(--oj-typography-body-md-font-size); }
+
+.oj-listitemlayout-grid {
+  padding-top: var(--oj-collection-list-cell-padding-vertical);
+  padding-bottom: var(--oj-collection-list-cell-padding-vertical);
+  padding-inline-start: var(--oj-core-gutter-start, var(--oj-list-view-item-padding-horizontal));
+  padding-inline-end: var(--oj-core-gutter-end, var(--oj-list-view-item-padding-horizontal)); }
 
 :root {
   --oj-masonry-layout-tile-width:    10rem;
@@ -21216,13 +21236,13 @@ table.oj-table-element.oj-table-column-header-resizing {
 .oj-table-sticky.oj-table-grid-display:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:last-child > .oj-table-data-cell.oj-selected {
   padding-bottom: var(--oj-collection-grid-cell-padding); }
 
-.oj-table-horizontal-grid:not(.oj-table-sticky) .oj-table-body-row:not(:first-child),
-.oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child) > .oj-table-data-cell,
-.oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child) > .oj-table-selector-cell,
-.oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child) > .oj-table-skeleton-cell,
-.oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)) > .oj-table-data-cell,
-.oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)) > .oj-table-selector-cell,
-.oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)) > .oj-table-skeleton-cell,
+.oj-table-horizontal-grid:not(.oj-table-sticky) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row),
+.oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row) > .oj-table-data-cell,
+.oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row) > .oj-table-selector-cell,
+.oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row) > .oj-table-skeleton-cell,
+.oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-data-cell,
+.oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-selector-cell,
+.oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-skeleton-cell,
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-fetch-skeleton-row:not(:first-child) > .oj-table-skeleton-cell {
   border-top: 1px solid var(--oj-core-divider-color); }
 
@@ -21231,8 +21251,8 @@ table.oj-table-element.oj-table-column-header-resizing {
   border-bottom: 1px solid var(--oj-core-divider-color); }
 
 /* selection borders for row selection */
-.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:first-child) > .oj-table-data-cell.oj-selected,
-.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row > .oj-table-data-cell {
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:first-child):not(.oj-table-stuck-row) > .oj-table-data-cell.oj-selected,
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row:not(.oj-table-stuck-row) > .oj-table-data-cell {
   border-top: 1px solid var(--oj-core-border-color-selected); }
 
 .oj-table-sticky.oj-table-add-row:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:nth-child(2) > .oj-table-data-cell.oj-selected {
@@ -21309,21 +21329,30 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 
 .oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-start,
 .oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-start {
-  z-index: 10; }
+  z-index: 100007; }
 
 .oj-table-sticky .oj-table-column-header-cell {
-  z-index: 9; }
+  z-index: 100006; }
 
 .oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end {
-  z-index: 11; }
+  z-index: 100008; }
 
 .oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start {
-  z-index: 4; }
+  z-index: 100001; }
 
 .oj-table-sticky .oj-table-add-row-placeholder td {
-  z-index: 3; }
+  z-index: 100000; }
 
 .oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end {
+  z-index: 100002; }
+
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-start {
+  z-index: 4; }
+
+.oj-table-sticky .oj-table-sticky-row td {
+  z-index: 3; }
+
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-end {
   z-index: 5; }
 
 .oj-table-sticky .oj-table-data-cell.oj-table-frozen-start,
@@ -21335,13 +21364,13 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 
 .oj-table-sticky .oj-table-footer-cell.oj-table-frozen-start,
 .oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-start {
-  z-index: 7; }
+  z-index: 100004; }
 
 .oj-table-sticky .oj-table-footer-cell {
-  z-index: 6; }
+  z-index: 100003; }
 
 .oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end {
-  z-index: 8; }
+  z-index: 100005; }
 
 .oj-table-body-row .oj-selector,
 .oj-table-body-row .oj-selector .oj-selector-wrapper .oj-selectorbox {
@@ -21533,6 +21562,13 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
   top: 0;
   border-bottom: 1px solid var(--oj-collection-border-color); }
 
+.oj-table-body-row.oj-table-sticky-row td {
+  position: sticky;
+  top: 0; }
+
+.oj-table-body-row.oj-table-sticky-row.oj-table-stuck-row td {
+  border-bottom: 1px solid var(--oj-collection-border-color); }
+
 .oj-table-body-scroll-buffer {
   background-color: inherit;
   height: 0px; }
@@ -21689,7 +21725,7 @@ html[dir="rtl"] .oj-table-body-row-drag-image td:last-child {
   border-inline-start-style: solid;
   border-inline-start-color: var(--oj-core-drag-drop-line-color);
   border-inline-start-width: 2px;
-  z-index: 12; }
+  z-index: 100009; }
 
 /* Styling for the data cell elements. */
 .oj-table-data-cell {
@@ -22439,6 +22475,7 @@ oj-time-axis:not(.oj-complete) {
   --oj-private-timeline-reference-object-color:                rgb(var(--oj-palette-danger-rgb-100));
   --oj-private-timeline-border-color:                          rgb(var(--oj-palette-neutral-rgb-50));
   --oj-private-timeline-item-bg-color:                         rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-private-timeline-item-stripe-bg-color:                     rgb(var(--oj-palette-neutral-rgb-100));
   --oj-private-timeline-item-border-color:                     rgb(var(--oj-palette-neutral-rgb-160));
   --oj-private-timeline-item-border-color-hover:               var(--oj-private-timeline-item-border-color);
   --oj-private-timeline-minor-axis-bg-color:                   transparent;
@@ -22448,6 +22485,30 @@ oj-time-axis:not(.oj-complete) {
   --oj-private-timeline-item-padding:                          16px;
   --oj-private-timeline-item-border-radius:                    6px;
   --oj-private-timeline-item-duration-event-overflow-bg-color: rgb(var(--oj-palette-neutral-rgb-30)); }
+
+.oj-timeline-item-bubble-bg-purple {
+  --oj-private-timeline-item-bg-color:                       rgb(245, 236, 251);
+  --oj-private-timeline-item-stripe-bg-color:                   rgb(78, 65, 55); }
+
+.oj-timeline-item-bubble-bg-orange {
+  --oj-private-timeline-item-bg-color:                       rgb(252, 237, 217);
+  --oj-private-timeline-item-stripe-bg-color:                   rgb(222, 127, 17); }
+
+.oj-timeline-item-bubble-bg-teal {
+  --oj-private-timeline-item-bg-color:                      rgb(232, 241, 240);
+  --oj-private-timeline-item-stripe-bg-color:                  rgb(95, 162, 186); }
+
+.oj-timeline-item-bubble-bg-green {
+  --oj-private-timeline-item-bg-color:                        rgb(224, 245, 231);
+  --oj-private-timeline-item-stripe-bg-color:                    rgb(49, 122, 69); }
+
+.oj-timeline-item-bubble-bg-red {
+  --oj-private-timeline-item-bg-color:                         rgb(251, 236, 239);
+  --oj-private-timeline-item-stripe-bg-color:                     rgb(131, 64, 30); }
+
+.oj-timeline-item-bubble-bg-blue {
+  --oj-private-timeline-item-bg-color:                      rgb(228, 241, 247);
+  --oj-private-timeline-item-stripe-bg-color:                  rgb(36, 93, 99); }
 
 oj-timeline:not(.oj-complete) {
   visibility: hidden; }
@@ -22540,8 +22601,25 @@ oj-timeline:not(.oj-complete) {
   font-size: var(--oj-dvt-label-font-size-md);
   white-space: nowrap; }
 
-.oj-timeline-item-bubble {
+.oj-timeline-item-bubble-container {
   font-size: var(--oj-typography-body-sm-font-size); }
+
+.oj-timeline-item-bubble {
+  fill: var(--oj-private-timeline-item-bg-color); }
+
+.oj-timeline-item-bubble-with-stripe {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-inline-start: 0.75rem;
+  padding-inline-end: 0.75rem; }
+
+.oj-timeline-item-bubble-stripe {
+  fill: var(--oj-private-timeline-item-stripe-bg-color);
+  margin-inline-start: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  width: 0.375rem;
+  border-radius: 0.1875rem; }
 
 .oj-timeline-resize-handle-start.oj-draggable,
 .oj-timeline-resize-handle-end.oj-draggable {

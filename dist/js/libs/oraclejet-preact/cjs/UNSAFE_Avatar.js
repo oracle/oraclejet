@@ -1,13 +1,13 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var tslib_es6 = require('./tslib.es6-5c843188.js');
+var tslib_es6 = require('./tslib.es6-e91f819d.js');
 var jsxRuntime = require('preact/jsx-runtime');
 require('./utils/UNSAFE_classNames.js');
 require('identity-obj-proxy');
-var classNames = require('./classNames-69178ebf.js');
+var classNames = require('./classNames-82bfab52.js');
 
 function Avatar(_a) {
   var {
@@ -90,15 +90,15 @@ const AvatarWrapper = ({
 };
 
 const styles = {
-  base: "bdu7o2i",
-  circle: "ckqasx"
+  base: "_1bu6wv",
+  circle: "_0f93l"
 };
 const contentStyles = {
-  base: "b2h7dvs",
-  content: "c10p2zz8",
-  image: "i17ccxhr",
-  initials: "i1b5olv3",
-  icon: "i1pwxo7y"
+  base: "y6dkls",
+  content: "_7b3rpj",
+  image: "jduz12",
+  initials: "goml2v",
+  icon: "_dpb87j"
 };
 
 exports.Avatar = Avatar;

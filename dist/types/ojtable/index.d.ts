@@ -49,6 +49,11 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     readonly firstSelectedRow: CommonTypes.ItemContext<K, D>;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
     layout: 'contents' | 'fixed';
+    row: {
+        editable?: ((item: Item<K, D>) => 'on' | 'off') | null;
+        selectable?: ((item: Item<K, D>) => 'on' | 'off') | null;
+        sticky?: ((item: Item<K, D>) => 'on' | 'off') | null;
+    };
     rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
     scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
@@ -84,9 +89,11 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';
     translations: {
+        accessibleAddRow?: string;
         accessibleColumnContext?: string;
         accessibleColumnFooterContext?: string;
         accessibleColumnHeaderContext?: string;
+        accessibleColumnsSpan?: string;
         accessibleContainsControls?: string;
         accessibleRowContext?: string;
         accessibleSortAscending?: string;
@@ -244,6 +251,8 @@ export namespace ojTable {
     // tslint:disable-next-line interface-over-type-literal
     type layoutChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["layout"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type rowChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["row"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type rowRendererChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["rowRenderer"]>;
     // tslint:disable-next-line interface-over-type-literal
     type scrollPolicyChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["scrollPolicy"]>;
@@ -289,6 +298,7 @@ export namespace ojTable {
         key: any;
         mode: 'edit' | 'navigation';
         row: any;
+        rowEditable: 'on' | 'off';
     };
     // tslint:disable-next-line interface-over-type-literal
     type Column<K, D> = {
@@ -391,6 +401,7 @@ export namespace ojTable {
         cellContext: {
             datasource: DataProvider<K, D> | null;
             mode: 'edit' | 'navigation';
+            rowEditable: 'on' | 'off';
             status: ContextStatus<K>;
         };
         columnIndex: number;
@@ -479,6 +490,7 @@ export namespace ojTable {
         parentElement: Element;
         rowContext: {
             datasource: DataProvider<K, D> | null;
+            editable: 'on' | 'off';
             mode: 'edit' | 'navigation';
             status: ContextStatus<K>;
         };
@@ -520,6 +532,7 @@ export namespace ojTable {
         componentElement: Element;
         data: any;
         datasource: DataProvider<K, D> | null;
+        editable: 'on' | 'off';
         index: number;
         item: Item<K, D>;
         key: any;
@@ -550,6 +563,7 @@ export interface ojTableEventMap<K, D> extends baseComponentEventMap<ojTableSett
     'firstSelectedRowChanged': JetElementCustomEvent<ojTable<K, D>["firstSelectedRow"]>;
     'horizontalGridVisibleChanged': JetElementCustomEvent<ojTable<K, D>["horizontalGridVisible"]>;
     'layoutChanged': JetElementCustomEvent<ojTable<K, D>["layout"]>;
+    'rowChanged': JetElementCustomEvent<ojTable<K, D>["row"]>;
     'rowRendererChanged': JetElementCustomEvent<ojTable<K, D>["rowRenderer"]>;
     'scrollPolicyChanged': JetElementCustomEvent<ojTable<K, D>["scrollPolicy"]>;
     'scrollPolicyOptionsChanged': JetElementCustomEvent<ojTable<K, D>["scrollPolicyOptions"]>;
@@ -607,6 +621,11 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     readonly firstSelectedRow: CommonTypes.ItemContext<K, D>;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
     layout: 'contents' | 'fixed';
+    row: {
+        editable?: ((item: Item<K, D>) => 'on' | 'off') | null;
+        selectable?: ((item: Item<K, D>) => 'on' | 'off') | null;
+        sticky?: ((item: Item<K, D>) => 'on' | 'off') | null;
+    };
     rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
     scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
@@ -642,9 +661,11 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';
     translations: {
+        accessibleAddRow?: string;
         accessibleColumnContext?: string;
         accessibleColumnFooterContext?: string;
         accessibleColumnHeaderContext?: string;
+        accessibleColumnsSpan?: string;
         accessibleContainsControls?: string;
         accessibleRowContext?: string;
         accessibleSortAscending?: string;
@@ -783,6 +804,8 @@ export namespace TableElement {
     // tslint:disable-next-line interface-over-type-literal
     type layoutChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["layout"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type rowChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["row"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type rowRendererChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["rowRenderer"]>;
     // tslint:disable-next-line interface-over-type-literal
     type scrollPolicyChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["scrollPolicy"]>;
@@ -823,6 +846,7 @@ export namespace TableElement {
         key: any;
         mode: 'edit' | 'navigation';
         row: any;
+        rowEditable: 'on' | 'off';
     };
     // tslint:disable-next-line interface-over-type-literal
     type ColumnDefault<K, D> = {
@@ -917,6 +941,7 @@ export namespace TableElement {
         parentElement: Element;
         rowContext: {
             datasource: DataProvider<K, D> | null;
+            editable: 'on' | 'off';
             mode: 'edit' | 'navigation';
             status: ojTable.ContextStatus<K>;
         };
@@ -961,6 +986,7 @@ export interface TableIntrinsicProps extends Partial<Readonly<ojTableSettablePro
     onfirstSelectedRowChanged?: (value: ojTableEventMap<any, any>['firstSelectedRowChanged']) => void;
     onhorizontalGridVisibleChanged?: (value: ojTableEventMap<any, any>['horizontalGridVisibleChanged']) => void;
     onlayoutChanged?: (value: ojTableEventMap<any, any>['layoutChanged']) => void;
+    onrowChanged?: (value: ojTableEventMap<any, any>['rowChanged']) => void;
     onrowRendererChanged?: (value: ojTableEventMap<any, any>['rowRendererChanged']) => void;
     onscrollPolicyChanged?: (value: ojTableEventMap<any, any>['scrollPolicyChanged']) => void;
     onscrollPolicyOptionsChanged?: (value: ojTableEventMap<any, any>['scrollPolicyOptionsChanged']) => void;

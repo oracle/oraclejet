@@ -1120,6 +1120,7 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
 
 /**
  * @ojcomponent oj.ojLedGauge
+ * @ojdeprecated {since: '13.1.0', description: 'Use oj-badge classes or icons instead.'}
  * @augments oj.dvtBaseGauge
  * @since 0.7.0
  *

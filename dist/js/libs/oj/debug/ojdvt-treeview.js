@@ -5695,6 +5695,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     SetOptions(options) {
+      super.SetOptions(options);
       if (options) {
         this.Options = this.Defaults.calcOptions(options);
 
@@ -6697,29 +6698,24 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     /**
      * @override
      */
-    ProcessKeyboardEvent(event)
-    {
+    ProcessKeyboardEvent(event) {
       var eventConsumed = true;
 
       var keyCode = event.keyCode;
       var node = this.getFocus(); // the item with current keyboard focus
       var sunburst = this.GetView();
-
+      var expandCollapseEnabled = node && node.isExpandCollapseEnabled && node.isExpandCollapseEnabled();
       // expand/collapse
-      if (node.isExpandCollapseEnabled() &&
+      if (expandCollapseEnabled &&
           ((dvt.KeyboardEvent.isPlus(event) && !node.isDisclosed()) ||
           (dvt.KeyboardEvent.isMinus(event) && node.isDisclosed()) ||
-          (event.ctrlKey && keyCode === dvt.KeyboardEvent.ENTER)))
-
-      {
+          (event.ctrlKey && keyCode === dvt.KeyboardEvent.ENTER))) {
         sunburst.expandCollapseNode(node.getId());
         dvt.EventManager.consumeEvent(event);
-      }
-      // rotation
-      else if (sunburst && sunburst.__isRotationEnabled() &&
+      } else if (sunburst && sunburst.__isRotationEnabled() &&
               (keyCode === dvt.KeyboardEvent.LEFT_ARROW || keyCode === dvt.KeyboardEvent.RIGHT_ARROW) &&
-              !event.ctrlKey && event.altKey && event.shiftKey)
-      {
+              !event.ctrlKey && event.altKey && event.shiftKey) {
+        // rotation
         var newAngle;
         if (keyCode === dvt.KeyboardEvent.LEFT_ARROW)
           newAngle = -5 * (Math.PI / 180);

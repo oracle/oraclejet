@@ -17,7 +17,7 @@ declare type PickedPropsFromInlineUserAssistance = Pick<ComponentProps<typeof In
 declare type Props = PickedPropsFromTextField & PickedPropsFromTextFieldTextArea & PickedPropsFromInlineUserAssistance & {
     isDisabled?: boolean;
     isReadonly?: boolean;
-    label?: string;
+    label: string;
     labelEdge?: 'inside' | 'start' | 'top' | 'none';
     labelStartWidth?: Size;
     minRows?: number;

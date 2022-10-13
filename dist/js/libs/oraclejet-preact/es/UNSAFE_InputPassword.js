@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx } from 'preact/jsx-runtime';
 import { forwardRef } from 'preact/compat';
 import { useCallback } from 'preact/hooks';
@@ -17,19 +17,20 @@ import './UNSAFE_ThemedIcons.js';
 import { IcoViewHide as SvgIcoViewHide, IcoView as SvgIcoView } from './UNSAFE_Icons.js';
 import { useClearIcon } from './hooks/UNSAFE_useClearIcon.js';
 import { beforeVNode } from './utils/UNSAFE_componentUtils.js';
-import { C as ClearIcon } from './ClearIcon-41582422.js';
+import { C as ClearIcon } from './ClearIcon-2b8fb446.js';
 import { useToggle } from './hooks/UNSAFE_useToggle.js';
-import './tslib.es6-fc945e53.js';
+import { useCurrentValueReducer } from './hooks/UNSAFE_useCurrentValueReducer.js';
+import './tslib.es6-deee4931.js';
 import './hooks/UNSAFE_useFocusWithin.js';
 import 'preact';
 import './hooks/UNSAFE_useId.js';
 import './utils/UNSAFE_classNames.js';
 import './utils/UNSAFE_interpolations/text.js';
-import './keys-cb973048.js';
-import './_curry1-8b0d63fc.js';
-import './_has-77a27fd6.js';
+import './keys-77d2b8e6.js';
+import './_curry1-b6f34fc4.js';
+import './_has-f370c697.js';
 import './utils/UNSAFE_mergeInterpolations.js';
-import './_curry2-6a0eecef.js';
+import './_curry2-255e04d1.js';
 import './UNSAFE_LabelValueLayout.js';
 import './UNSAFE_Flex.js';
 import './utils/UNSAFE_interpolations/dimensions.js';
@@ -44,6 +45,7 @@ import './utils/PRIVATE_clientHints.js';
 import './hooks/UNSAFE_useDebounce.js';
 import './UNSAFE_LiveRegion.js';
 import './UNSAFE_ComponentMessage.js';
+import './UNSAFE_HiddenAccessible.js';
 import './UNSAFE_Message.js';
 import './utils/UNSAFE_getLocale.js';
 import './utils/UNSAFE_logger.js';
@@ -72,7 +74,7 @@ const ojButtonBorderlessChromeBorderColorHover = 'transparent'; // TODO: replace
 
 const ojButtonIconSize = 'var(--oj-c-PRIVATE-DO-NOT-USE-core-icon-size-lg)';
 const revealToggleIconStyles = {
-  base: "bedqiru"
+  base: "_f2rlos"
 };
 function RevealToggleIcon({
   isRevealed,
@@ -104,6 +106,17 @@ function RevealToggleIcon({
 // One way InputPassword differs from InputText is InputPassword's readonly
 // is implemented with an <input> and not a <div>.
 const InputPassword = forwardRef(({ assistiveText, autoComplete = 'off', autoFocus = false, hasClearIcon, hasRevealToggle = 'always', helpSourceLink, helpSourceText, id, isDisabled: propIsDisabled, isReadonly: propIsReadonly, isRequired = false, isRequiredShown, label, labelEdge: propLabelEdge, messages, placeholder, textAlign: propTextAlign, userAssistanceDensity: propUserAssistanceDensity, value, onInput, onCommit }, ref) => {
+    const { currentCommitValue, dispatch } = useCurrentValueReducer({ value });
+    const onInputAndDispatch = useCallback((detail) => {
+        // Should dispatch happen first? This will queue up a re-render, ordering should not cause issues (this is async)
+        dispatch({ type: 'input', payload: detail.value });
+        onInput === null || onInput === void 0 ? void 0 : onInput(detail);
+    }, [onInput]);
+    const onCommitAndDispatch = useCallback((detail) => {
+        // Should dispatch happen first? This will queue up a re-render, ordering should not cause issues (this is async)
+        dispatch({ type: 'commit', payload: detail.value });
+        onCommit === null || onCommit === void 0 ? void 0 : onCommit(detail);
+    }, [onCommit]);
     const { isDisabled: isFormDisabled, isReadonly: isFormReadonly, labelEdge: formLabelEdge, textAlign: formTextAlign, userAssistanceDensity: formUserAssistanceDensity } = useFormContext();
     // default to FormContext values if component properties are not specified
     const isDisabled = propIsDisabled !== null && propIsDisabled !== void 0 ? propIsDisabled : isFormDisabled;
@@ -129,9 +142,23 @@ const InputPassword = forwardRef(({ assistiveText, autoComplete = 'off', autoFoc
     const onRevealIconPress = useCallback(() => {
         isRevealed ? setRevealedFalse() : setRevealedTrue();
     }, [isRevealed]);
-    // At this point we have returned the readonly component if isReadonly, so now
-    // we know we are not readonly. We don't show the revealToggle icon in readonly or disabled.
     const revealToggleIcon = !isDisabled && hasRevealToggle === 'always' ? (jsx(RevealToggleIcon, { onPress: onRevealIconPress, isRevealed: isRevealed })) : null;
+    const onClickClearIcon = useCallback(() => {
+        var _a;
+        // Clicking the clear icon should put the focus on the input field
+        (_a = enabledElementRef.current) === null || _a === void 0 ? void 0 : _a.focus();
+        // Send an event to clear the field's value
+        onInputAndDispatch === null || onInputAndDispatch === void 0 ? void 0 : onInputAndDispatch({ previousValue: value, value: '' });
+    }, [onInput, value]);
+    const maybeClearIcon = useClearIcon({
+        clearIcon: jsx(ClearIcon, { onClick: onClickClearIcon }),
+        display: hasClearIcon,
+        hasValue: formFieldContext.hasValue,
+        isFocused,
+        isEnabled: !isReadonly && !isDisabled,
+        isHover
+    });
+    const endContentCombined = beforeVNode(revealToggleIcon, maybeClearIcon);
     const labelComp = labelEdge !== 'none' ? jsx(Label, Object.assign({}, labelProps, { children: label })) : undefined;
     const fieldLabelProps = {
         label: labelEdge !== 'none' ? labelComp : undefined,
@@ -145,23 +172,7 @@ const InputPassword = forwardRef(({ assistiveText, autoComplete = 'off', autoFoc
     if (isReadonly) {
         return (jsx(FormFieldContext.Provider, Object.assign({ value: formFieldContext }, { children: jsx(ReadonlyTextField, Object.assign({ role: "presentation", inlineUserAssistance: inlineUserAssistance }, fieldLabelProps, { children: jsx(ReadonlyTextFieldInput, { ariaLabel: ariaLabel, ariaLabelledby: labelProps.id, as: "input", autoFocus: autoFocus, elementRef: readonlyElementRef, id: id, textAlign: textAlign, type: "password", value: value, hasInsideLabel: label !== undefined && labelEdge === 'inside' }) })) })));
     }
-    const mainContent = (jsx(TextFieldInput, Object.assign({ ariaLabel: ariaLabel, autoComplete: autoComplete, autoFocus: autoFocus, hasInsideLabel: labelComp !== undefined && labelEdge === 'inside', inputRef: enabledElementRef, isRequired: isRequired, onInput: onInput, onCommit: onCommit, placeholder: placeholder, textAlign: textAlign, value: value, type: isRevealed ? 'text' : 'password' }, inputProps)));
-    const onClickClearIcon = useCallback(() => {
-        var _a;
-        // Clicking the clear icon should put the focus on the input field
-        (_a = enabledElementRef.current) === null || _a === void 0 ? void 0 : _a.focus();
-        // Send an event to clear the field's value
-        onInput === null || onInput === void 0 ? void 0 : onInput({ previousValue: value, value: '' });
-    }, [onInput, value]);
-    const maybeClearIcon = useClearIcon({
-        clearIcon: jsx(ClearIcon, { onClick: onClickClearIcon }),
-        display: hasClearIcon,
-        hasValue: formFieldContext.hasValue,
-        isFocused,
-        isEnabled: !isReadonly && !isDisabled,
-        isHover
-    });
-    const endContentCombined = beforeVNode(revealToggleIcon, maybeClearIcon);
+    const mainContent = (jsx(TextFieldInput, Object.assign({ ariaLabel: ariaLabel, autoComplete: autoComplete, autoFocus: autoFocus, currentCommitValue: currentCommitValue, hasInsideLabel: labelComp !== undefined && labelEdge === 'inside', inputRef: enabledElementRef, isRequired: isRequired, onInput: onInputAndDispatch, onCommit: onCommitAndDispatch, placeholder: placeholder, textAlign: textAlign, value: value, type: isRevealed ? 'text' : 'password' }, inputProps)));
     return (jsx(FormFieldContext.Provider, Object.assign({ value: formFieldContext }, { children: jsx(TextField, Object.assign({ endContent: endContentCombined, inlineUserAssistance: inlineUserAssistance, mainContent: mainContent, onBlur: focusProps.onfocusout, onFocus: focusProps.onfocusin }, textFieldProps, fieldLabelProps, hoverProps)) })));
 });
 

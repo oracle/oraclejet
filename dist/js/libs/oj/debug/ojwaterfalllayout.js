@@ -1105,7 +1105,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
         }
         _disableAllTabbableElements(items) {
             items.forEach((item) => {
-                DataCollectionUtils.disableAllFocusableElements(item.element, true);
+                DataCollectionUtils.disableAllFocusableElements(item.element);
             });
         }
         _enterActionableMode() {
@@ -1120,7 +1120,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
         _exitActionableMode() {
             this.actionableMode = false;
             if (this.currentItem) {
-                DataCollectionUtils.disableAllFocusableElements(this.currentItem, true);
+                DataCollectionUtils.disableAllFocusableElements(this.currentItem);
                 this._setFocus(this.currentItem, true);
             }
         }

@@ -1,9 +1,9 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var HighlightText = require('./HighlightText-7c600dab.js');
+var HighlightText = require('./HighlightText-172ee2d6.js');
 require('preact/jsx-runtime');
 require('preact');
 require('identity-obj-proxy');

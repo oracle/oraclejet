@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { useContext, useMemo, useState, useLayoutEffect, createPortal, forwardRef, useCallback } from 'preact/compat';
 import { createContext } from 'preact';
 import { jsx, jsxs } from 'preact/jsx-runtime';

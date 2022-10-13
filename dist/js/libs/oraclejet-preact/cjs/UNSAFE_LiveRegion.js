@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -7,7 +7,7 @@ var jsxRuntime = require('preact/jsx-runtime');
 require('identity-obj-proxy');
 var hooks = require('preact/hooks');
 
-const offScreenStyle = "o1xwg2xa";
+const offScreenStyle = "fnnyln";
 /**
  * A helper component that renders an aria-live region
  *

@@ -1,9 +1,9 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx } from 'preact/jsx-runtime';
 import { withDirectionIcon } from './UNSAFE_Icon.js';
 import { IcoChevronRight as SvgIcoChevronRight, IcoChevronLeft as SvgIcoChevronLeft, IcoChevronDown as SvgIcoChevronDown, IcoErrorS as SvgIcoErrorS, IcoWarningS as SvgIcoWarningS, IcoInformationS as SvgIcoInformationS, IcoSuccessS as SvgIcoSuccessS, IcoView as SvgIcoView, IcoViewHide as SvgIcoViewHide, CheckboxOff as SvgCheckboxOff, CheckboxOn as SvgCheckboxOn } from './UNSAFE_Icons.js';
 export { CheckboxOff as CheckboxOffIcon, CheckboxOn as CheckboxOnIcon, IcoChevronDown as ExpandIcon, IcoSuccessS as MessageConfirmationIcon, IcoErrorS as MessageErrorIcon, IcoInformationS as MessageInfoIcon, IcoWarningS as MessageWarningIcon, IcoViewHide as ViewHideIcon, IcoView as ViewIcon } from './UNSAFE_Icons.js';
-import './tslib.es6-fc945e53.js';
+import './tslib.es6-deee4931.js';
 
 import './utils/UNSAFE_classNames.js';
 import './hooks/UNSAFE_useUser.js';

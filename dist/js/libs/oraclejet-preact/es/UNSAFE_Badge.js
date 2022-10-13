@@ -1,24 +1,24 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx } from 'preact/jsx-runtime';
 import { classNames } from './utils/UNSAFE_classNames.js';
 import './UNSAFE_Badge.css';
 
 const styles = {
-  base: "b1p6r8y1",
+  base: "tn08m2",
   //right-aligned with the right edge of another component for ltr direction
   //left-aligned for rtl direction pending by
   //https://jira.oraclecorp.com/jira/browse/JET-47572: need an api for rtl
-  end: "ejfnjah",
-  neutral: "ncn0ths",
-  danger: "d9z2tc0",
-  warning: "w1tk4m7e",
-  success: "s1vtrr8j",
-  info: "i1fjs3t3",
-  neutralSubtle: "nmgj8vm",
-  dangerSubtle: "d688ooe",
-  warningSubtle: "w1g35qkp",
-  successSubtle: "s1dzbo4i",
-  infoSubtle: "iuorc8j"
+  end: "a7igkf",
+  neutral: "_4uh43s",
+  danger: "fa1e52",
+  warning: "w2op4l",
+  success: "_yaohz2",
+  info: "_yvc3bl",
+  neutralSubtle: "n0gf0d",
+  dangerSubtle: "s5sehe",
+  warningSubtle: "_kv88wp",
+  successSubtle: "_n1l5su",
+  infoSubtle: "_denzcr"
 };
 function Badge({
   variant = 'neutral',

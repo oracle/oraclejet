@@ -1,6 +1,6 @@
 {
   "name": "@oracle/oraclejet-preact",
-  "version": "13.0.0",
+  "version": "13.1.0",
   "description": "Oracle JET preact based components",
   "scripts": {
     "dev": "cross-env STORIES=dev SB_PORT=6006 yarn storybook",

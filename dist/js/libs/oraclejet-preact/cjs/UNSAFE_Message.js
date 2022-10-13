@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -8,44 +8,44 @@ require('identity-obj-proxy');
 require('./UNSAFE_Flex.js');
 require('./utils/UNSAFE_classNames.js');
 var hooks = require('preact/hooks');
-var MessageCloseButton = require('./MessageCloseButton-bb97745b.js');
-var MessageDetail = require('./MessageDetail-4f21648c.js');
-var MessageFormattingUtils = require('./MessageFormattingUtils-d406c991.js');
-var MessageStartIcon = require('./MessageStartIcon-8c60ed0a.js');
-var MessageSummary = require('./MessageSummary-e7e6089e.js');
-var MessageTimestamp = require('./MessageTimestamp-00534130.js');
-var MessageUtils = require('./MessageUtils-d65699cf.js');
-var classNames = require('./classNames-69178ebf.js');
-var Flex = require('./Flex-b2488744.js');
-var MessagesManager = require('./MessagesManager-2ef5e191.js');
-var Message_types = require('./Message.types-27433937.js');
-require('./tslib.es6-5c843188.js');
+var MessageCloseButton = require('./MessageCloseButton-c5605b75.js');
+var MessageDetail = require('./MessageDetail-4d43ff71.js');
+var MessageFormattingUtils = require('./MessageFormattingUtils-6764fed3.js');
+var MessageStartIcon = require('./MessageStartIcon-600451b4.js');
+var MessageSummary = require('./MessageSummary-f93feb7b.js');
+var MessageTimestamp = require('./MessageTimestamp-abe719cf.js');
+var MessageUtils = require('./MessageUtils-68957380.js');
+var classNames = require('./classNames-82bfab52.js');
+var Flex = require('./Flex-327ae051.js');
+var MessagesManager = require('./MessagesManager-e88df2a4.js');
+var Message_types = require('./Message.types-2c9b978d.js');
+require('./tslib.es6-e91f819d.js');
 require('./utils/UNSAFE_interpolations/dimensions.js');
 require('./utils/UNSAFE_arrayUtils.js');
 require('./utils/UNSAFE_size.js');
 require('./utils/UNSAFE_stringUtils.js');
-require('./stringUtils-bca189f8.js');
-require('./_curry1-33165c71.js');
+require('./stringUtils-b22cc214.js');
+require('./_curry1-94f22a19.js');
 require('./utils/UNSAFE_mergeInterpolations.js');
-require('./_curry2-40682636.js');
-require('./_has-2cbf94e8.js');
+require('./_curry2-e6dc9cf1.js');
+require('./_has-556488e4.js');
 require('./utils/UNSAFE_interpolations/boxalignment.js');
-require('./keys-4bd017bf.js');
+require('./keys-0a611b24.js');
 require('./utils/UNSAFE_interpolations/flexbox.js');
-require('./flexbox-c4644897.js');
+require('./flexbox-3d991801.js');
 require('./utils/UNSAFE_interpolations/flexitem.js');
-require('./flexitem-5f5d588b.js');
+require('./flexitem-91650faf.js');
 require('preact');
 require('./utils/UNSAFE_getLocale.js');
-require('./index-9adddc55.js');
+require('./index-dcd95188.js');
 require('./UNSAFE_Icon.js');
-require('./Icon-b60b3f23.js');
+require('./Icon-42559ff1.js');
 require('./hooks/UNSAFE_useUser.js');
 require('./UNSAFE_Environment.js');
 require('./UNSAFE_Layer.js');
 require('preact/compat');
 require('./hooks/UNSAFE_useTheme.js');
-require('./index-f38e0982.js');
+require('./index-e2b299b3.js');
 require('./utils/UNSAFE_logger.js');
 require('./utils/UNSAFE_soundUtils.js');
 require('./UNSAFE_TransitionGroup.js');
@@ -80,11 +80,11 @@ function isSeverityIconNeeded(severity) {
 
 
 const messageStyles = {
-  base: "bb5rzqk",
-  section: "s1c5gur5",
-  header: "h1k6g34i",
+  base: "_f3dkge",
+  section: "_nls1pj",
+  header: "_3uuhyw",
   // TODO: Replace with Flex and View components to handle padding and flex
-  content: "cy2ssrz"
+  content: "n7zh9m"
 };
 /**
  * A component that styles the header for the message component

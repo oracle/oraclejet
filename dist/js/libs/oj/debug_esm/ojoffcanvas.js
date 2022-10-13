@@ -1954,11 +1954,11 @@ OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
 
   // use hammer for swipe
   mOptions = {
+    // ensure pinch zoom work properly
+    touchAction: 'pinch-zoom',
     recognizers: [
        [Pan, { direction: DIRECTION_HORIZONTAL }]
-    ],
-    // ensure native gesture like pinch zoom work properly
-    touchAction: 'auto'
+    ]
    };
 
   // workaround for Hammer with iOS 13 issue, see: https://github.com/hammerjs/hammer.js/issues/1237
@@ -2002,8 +2002,6 @@ OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
           break;
         default:
       }
-
-      event.preventDefault();
 
       if (direction === null) {
         return;
@@ -2086,7 +2084,6 @@ OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
 
         // stop bubbling
       event.stopPropagation();
-      event.preventDefault();
     })
     .on('panend', function (event) {
         // don't do anything if start is vetoed
@@ -2145,7 +2142,6 @@ OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
         // restore item position
       wrapper.addClass(OffcanvasUtils.TRANSITION_SELECTOR);
       OffcanvasUtils._setTranslationX(wrapper, 'start', '0px');
-      event.preventDefault();
     });
 };
 

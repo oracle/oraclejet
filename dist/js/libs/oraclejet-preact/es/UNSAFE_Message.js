@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import './UNSAFE_Message.css';
 import { Flex } from './UNSAFE_Flex.js';
@@ -13,15 +13,15 @@ import { IcoSuccessS as SvgIcoSuccessS, IcoErrorS as SvgIcoErrorS, IcoInformatio
 import { Logger } from './utils/UNSAFE_logger.js';
 import { playDefaultNotificationSound, playAudioFromURL } from './utils/UNSAFE_soundUtils.js';
 import { TransitionGroup, Transition } from './UNSAFE_TransitionGroup.js';
-import './tslib.es6-fc945e53.js';
+import './tslib.es6-deee4931.js';
 import './utils/UNSAFE_interpolations/dimensions.js';
 import './utils/UNSAFE_size.js';
-import './_curry1-8b0d63fc.js';
+import './_curry1-b6f34fc4.js';
 import './utils/UNSAFE_mergeInterpolations.js';
-import './_curry2-6a0eecef.js';
-import './_has-77a27fd6.js';
+import './_curry2-255e04d1.js';
+import './_has-f370c697.js';
 import './utils/UNSAFE_interpolations/boxalignment.js';
-import './keys-cb973048.js';
+import './keys-77d2b8e6.js';
 import './utils/UNSAFE_interpolations/flexbox.js';
 import './utils/UNSAFE_interpolations/flexitem.js';
 import './UNSAFE_Icon.js';
@@ -32,7 +32,7 @@ import 'preact/compat';
 import './hooks/UNSAFE_useTheme.js';
 
 const messageCloseButtonStyles = {
-  banner: "b10cag1l",
+  banner: "tjwh2i",
   inline: undefined
 };
 /**
@@ -170,8 +170,8 @@ function formatTimestamp(isoTime) {
 
 const messageDetailStyles = {
   // TODO: Reevaluate once the TEXT component is available (JET-46891)
-  base: "bbznd28",
-  banner: "b39ctpn",
+  base: "e6hwt0",
+  banner: "c9vgnw",
   inline: undefined
 };
 /**
@@ -216,10 +216,10 @@ function MessageDetail({
   }));
 }
 
-const messageStartIconStyles = "mmmpf1e";
+const messageStartIconStyles = "pkt5vp";
 const severityIconStyles = {
-  banner: "b1mv77e8",
-  inline: "ie3df0t"
+  banner: "lwh3cu",
+  inline: "r7vpj0"
 };
 const severityIcons = {
   confirmation: SvgIcoSuccessS,
@@ -258,9 +258,9 @@ function MessageStartIcon({
 
 const messageSummaryStyles = {
   // TODO: Reevaluate once the TEXT component is available (JET-46891)
-  base: "bczmanu",
-  banner: "bonzci6",
-  inline: "i1j7ne0i"
+  base: "voojor",
+  banner: "_icrkuj",
+  inline: "_gwsuhf"
 };
 /**
  * Summary Component for rendering the summary text of the Message
@@ -280,7 +280,7 @@ function MessageSummary({
 }
 
 const messageTimestampStyles = {
-  banner: "b1i0o3vp",
+  banner: "_lyan3k",
   inline: undefined
 };
 /**
@@ -433,11 +433,11 @@ function isSeverityIconNeeded(severity) {
 
 
 const messageStyles = {
-  base: "bb5rzqk",
-  section: "s1c5gur5",
-  header: "h1k6g34i",
+  base: "_f3dkge",
+  section: "_nls1pj",
+  header: "_3uuhyw",
   // TODO: Replace with Flex and View components to handle padding and flex
-  content: "cy2ssrz"
+  content: "n7zh9m"
 };
 /**
  * A component that styles the header for the message component

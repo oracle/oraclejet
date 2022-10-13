@@ -2873,6 +2873,12 @@ var __oj_list_view_metadata =
           for (var i = 0; i < newSelection.length; i++) {
             var elem = this.FindElementByKey(newSelection[i]);
             if (elem != null) {
+              // check if the selected item is in the process of animation
+              if (elem.tagName !== 'LI' && elem.parentElement &&
+                elem.parentElement.classList.contains('oj-listview-temp-item')) {
+                // eslint-disable-next-line no-param-reassign
+                elem = elem.parentElement;
+              }
               this._applySelection(elem, newSelection[i]);
             }
           }
@@ -4740,7 +4746,7 @@ var __oj_list_view_metadata =
       // on every item on render, it becomes expensive.  Do the filter later in enableTabbableElements, which is only
       // triggered by entering actionable mode.
       if (elem[0]) {
-        var elems = $(DataCollectionUtils.disableAllFocusableElements(elem[0], true,
+        var elems = $(DataCollectionUtils.disableAllFocusableElements(elem[0],
           excludeActiveElement));
 
         elems.each(function () {

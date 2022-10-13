@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import { useRef, useState, useEffect, useCallback, useMemo } from 'preact/hooks';
 import './UNSAFE_ListView.css';
@@ -19,7 +19,7 @@ import 'preact';
 import './hooks/UNSAFE_useViewportIntersect.js';
 import './UNSAFE_ThemedIcons.js';
 import './UNSAFE_Icon.js';
-import './tslib.es6-fc945e53.js';
+import './tslib.es6-deee4931.js';
 import './hooks/UNSAFE_useUser.js';
 import './UNSAFE_Environment.js';
 import './UNSAFE_Layer.js';
@@ -30,30 +30,30 @@ import './hooks/UNSAFE_useTranslationBundle.js';
 import './utils/UNSAFE_interpolations/dimensions.js';
 import './utils/UNSAFE_size.js';
 import './utils/UNSAFE_stringUtils.js';
-import './_curry1-8b0d63fc.js';
+import './_curry1-b6f34fc4.js';
 import './utils/UNSAFE_mergeInterpolations.js';
-import './_curry2-6a0eecef.js';
-import './_has-77a27fd6.js';
+import './_curry2-255e04d1.js';
+import './_has-f370c697.js';
 import './utils/UNSAFE_interpolations/borders.js';
 import './utils/UNSAFE_interpolations/boxalignment.js';
-import './keys-cb973048.js';
+import './keys-77d2b8e6.js';
 import './utils/UNSAFE_interpolations/flexbox.js';
 import './utils/UNSAFE_interpolations/flexitem.js';
 
 const ITEM_STYLE_CLASS = 'oj-listview-item';
 const styles$1 = {
-  base: "bvntlxs",
-  gridlines: "gktvhyj",
-  selectable: "s1xqyijx",
-  selected: "s1664glh",
-  selectedSingle: "s1g33zwe",
+  base: "_if96r3",
+  gridlines: "_f5nulg",
+  selectable: "i9fts1",
+  selected: "_sbscrb",
+  selectedSingle: "_kqa9vv",
   // TODO: revisit later to prevent double lines when implementing gridlines feature
-  suggestionEnd: "sz4hzft"
+  suggestionEnd: "_8t3c3"
 };
 const cellStyles = {
-  base: "b1sxv8rj",
-  checkboxContainer: "c1w05clj",
-  focused: "f2pds8n"
+  base: "umkir2",
+  checkboxContainer: "_3wy9mj",
+  focused: "w2hu2y"
 };
 /**
  * Helper method to determine whether item is selectable
@@ -117,7 +117,7 @@ function ListViewItem({
 }
 
 const containerStyle = {
-  base: "b1e4zkxl"
+  base: "_srn9vk"
 };
 /**
  * Allows to specify the time delay for rendering the component
@@ -155,11 +155,11 @@ function SkeletonContainer({
 
 const gridlinesValues = stringLiteralArray(['visible', 'hidden']);
 const styles = {
-  base: "bry7agl"
+  base: "_nhpugw"
 };
 const sparkleStyles = {
-  base: "b1nulapo",
-  container: "c1vo4hpw"
+  base: "nh7a81",
+  container: "_lwwt6p"
 };
 
 const getViewportConfig = (rootRef, config) => {

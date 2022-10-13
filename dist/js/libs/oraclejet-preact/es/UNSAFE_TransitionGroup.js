@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx } from 'preact/jsx-runtime';
 import { cloneElement, Component } from 'preact';
 

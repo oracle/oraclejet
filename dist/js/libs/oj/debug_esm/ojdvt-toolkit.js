@@ -16446,6 +16446,128 @@ SimpleObjPeer.prototype.getDatatipColor = function (target) {
 };
 
 /**
+ * Simple logical object for dvt text that supports tooltip and keyboard focus.
+  * @param {Container} The container of the element associated with the peer.
+  * @param {MultilineText | OutputText} text The text element associated with the
+  * @param {string} tooltip The tooltip to display.
+  * @param {string} datatip The datatip to display.
+  * @param {string} datatipColor The border color of the datatip.
+ * @param {object=} params Optional object containing additional parameters for use by component.
+ * @class
+ * @constructor
+ * @implements {DvtTooltipSource}
+ * @implements {DvtLogicalObject}
+ */
+class TextObjPeer extends SimpleObjPeer {
+  /**
+   * @param {Container} The container of the element associated with the peer.
+   * @param {MultilineText | OutputText} text The text element associated with the
+   * @param {string} tooltip The tooltip to display.
+   * @param {string} datatip The datatip to display.
+   * @param {string} datatipColor The border color of the datatip.
+   * @param {object=} params Optional object containing additional parameters for use by component.
+   */
+  constructor(container, text, tooltip, datatip, datatipColor, params) {
+    super(tooltip, datatip, datatipColor, params);
+    this._parent = container;
+    this._text = text;
+  }
+
+  //---------------------------------------------------------------------//
+  // Keyboard Support: DvtKeyboardNavigable impl                         //
+  //---------------------------------------------------------------------//
+
+  /**
+   * @override
+   * Returns true if the text associated with this logical object is
+   * showing keyboard focus effect
+   * @returns {boolean}
+   */
+  isShowingKeyboardFocusEffect() {
+    return this._isShowingKeyboardFocusEffect;
+  }
+
+  /**
+   * @override
+   * Shows the keyboard focus effect on the text associated with this logical object.
+   */
+  showKeyboardFocusEffect() {
+    this._isShowingKeyboardFocusEffect = true;
+    if (this._text) {
+      var bounds = this.getKeyboardBoundingBox();
+      this._overlayRect = new Rect(this._parent.getCtx(), bounds.x, bounds.y, bounds.w, bounds.h);
+      this._overlayRect.setSolidStroke(Agent.getFocusColor());
+      this._overlayRect.setInvisibleFill();
+
+      // necessary to align rect with tangential and rotated labels
+      this._overlayRect.setMatrix(this._text.getMatrix());
+      this._parent.addChild(this._overlayRect);
+    }
+  }
+
+  /**
+   * @override
+   * Returns the bounding box of the text element.
+   * @param {*} targetCoordinateSpace
+   * @returns {Rectangle}
+   */
+  getKeyboardBoundingBox(targetCoordinateSpace) {
+    if (this._text) {
+      return this._text.getDimensions(targetCoordinateSpace);
+    }
+    return new Rectangle(0, 0, 0, 0);
+  }
+
+  /**
+   * @override
+   * Hides the keyboard focus effect on the text.
+   */
+  hideKeyboardFocusEffect() {
+    this._isShowingKeyboardFocusEffect = false;
+    if (this._text) {
+      this._parent.removeChild(this._overlayRect);
+      this._overlayRect = null;
+    }
+  }
+
+  /**
+   * @override
+   * Returns the dom text element.
+   */
+  getTargetElem() {
+    if (this._text) {
+      return this._text.getElem();
+    }
+    return null;
+  }
+
+  /**
+   * @override
+   * Returns the associated displayable.
+   * @returns {MultilineText | OutputText}
+   */
+  getDisplayable() {
+    return this._text;
+  }
+
+  /**
+   * @override
+   * Returns the aria-label to be read when text is focused.
+   * @returns {string}
+   */
+  getAriaLabel() {
+    return this._text.getTextString();
+  }
+
+  /**
+   * Returns the id of the text object peer if present.
+   */
+  getId() {
+    return this._params ? this._params.id : null;
+  }
+}
+
+/**
  * Base class for JSON components.
  * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
@@ -16579,7 +16701,9 @@ BaseComponent.prototype.UpdateAriaAttributes = function () {
  * @protected
  */
 BaseComponent.prototype.SetOptions = function (options) {
-  // Subclasses should override
+  if (options) {
+    this._optionsCache.clearCache();
+  }
 };
 
 /**
@@ -16808,18 +16932,22 @@ BaseComponent.prototype.renderEmptyText =
   text.alignCenter();
   text.alignMiddle();
 
+  let tooltip;
+
   // Truncate the text to fit horizontally.  Note, we do not account for vertical size, because displaying a
   // cut off "No Data" message is better than displaying none at all.
   var maxWidth = space.w - 2 * TextUtils.EMPTY_TEXT_BUFFER;
   if (TextUtils.fitText(text, maxWidth, Infinity, container, 0)) {
     // Add tooltip if truncated
     if (text.isTruncated()) {
-      eventManager.associate(text, new SimpleObjPeer(text.getUntruncatedTextString()));
+      tooltip = text.getUntruncatedTextString();
     }
-
     // WAI-ARIA
     text.setAriaProperty('hidden', null);
   }
+  let noDataPeer = new TextObjPeer(container, text, tooltip, null, null, { id: 'noDataPeer' });
+  this.getOptionsCache().putToCache('noDataPeer', noDataPeer);
+  eventManager.associate(text, noDataPeer);
   return text;
 };
 
@@ -19829,14 +19957,15 @@ EventManager.prototype.ShowDropEffect = function (event) {
 EventManager.prototype.ShowRejectedDropEffect = function (event) {
   // subclasses should override
   // implemented temporary for  - theming is not implemented for charts dnd
-  this.ClearDropEffect();
+  this.ClearDropEffect(event);
 };
 
 /**
  * Clears all hover effects from drop targets.
+ * @param {dvt.BaseEvent} event
  * @protected
  */
-EventManager.prototype.ClearDropEffect = function () {
+EventManager.prototype.ClearDropEffect = function (event) {
   // subclasses should override
   return;
 };
@@ -19866,7 +19995,7 @@ EventManager.prototype._handleDropTargetEvent = function (event, eventType, show
 
   if (!dropRejected && showEffect) this.ShowDropEffect(event);
   else if (dropRejected && showEffect) this.ShowRejectedDropEffect(event);
-  else this.ClearDropEffect();
+  else this.ClearDropEffect(event);
 };
 
 /**
@@ -29485,6 +29614,15 @@ KeyboardHandler.prototype.Init = function (manager) {
  *                                does not affect which DvtKeyboardNavigable has focus.
  */
 KeyboardHandler.prototype.processKeyDown = function (event) {
+  // If component does not have any data, return the logical object associated with no data text
+  // to make the no data text keyboard navigable and accessible to non visual user.
+  let optionsCache = this._eventManager.getComponent().getOptionsCache();
+  let noDataPeer = optionsCache.getFromCache('noDataPeer');
+  if (noDataPeer) {
+    EventManager.consumeEvent(event);
+    return noDataPeer;
+  }
+
   var currentNavigable = this._eventManager.getFocus();
   if (currentNavigable && (this.isNavigationEvent(event) || this.isMultiSelectEvent(event))) {
     EventManager.consumeEvent(event);
@@ -30639,4 +30777,4 @@ PanZoomHandler.prototype.isWithinBounds = function (relPos) {
   return this._bounds.containsPoint(pos.x, pos.y);
 };
 
-export { Agent, AnimFadeIn, AnimFadeOut, AnimMoveBy, AnimMoveTo, AnimPopIn, AnimScaleFadeIn, AnimScaleTo, Animator, AriaUtils, Array2D, ArrayUtils, Automation, BackgroundMultilineText, BackgroundOutputText, BaseAnimation, BaseComponent, BaseComponentCache, BaseComponentDefaults, BaseEvent, BlackBoxAnimationHandler, Button, CSSGradient, CSSStyle, Cache, CategoryRolloverHandler, Circle, ClipPath, ColorUtils, CombinedAnimMoveBy, ComponentTouchEvent, Container, Context, CustomAnimation, CustomDatatipPeer, DataAnimationHandler, Dimension, Displayable, DisplayableUtils, DomEventFactory, DragAndDropUtils, DragSource, Easing, EventFactory, EventManager, GradientFill, GradientParser, HtmlKeyboardListenerUtils, HtmlTooltipManager, IconButton, Image, ImageLoader, ImageMarker, JsonUtils, KeyboardEvent, KeyboardFocusEffect, KeyboardHandler, LayoutUtils, Line, LinearGradientFill, Map2D, MarqueeHandler, Mask, DvtMath as Math, Matrix, MouseEvent, MultilineText, Obj, OutputText, PanZoomHandler, ParallelPlayable, Path, PathUtils, PatternFill, PixelMap, Playable, Point, Polygon, PolygonUtils, Polyline, Rect, Rectangle, ResourceUtils, SelectionEffectUtils, SelectionHandler, SequentialPlayable, Shadow, Shape, SimpleMarker, SimpleObjPeer, SimpleScrollableContainer, SimpleScrollbar, SolidFill, Stroke, SvgDocumentUtils, SvgShapeUtils, TextUtils, Timer, ToolkitUtils, Touch, TouchEvent, TouchManager, TransientButton, Use };
+export { Agent, AnimFadeIn, AnimFadeOut, AnimMoveBy, AnimMoveTo, AnimPopIn, AnimScaleFadeIn, AnimScaleTo, Animator, AriaUtils, Array2D, ArrayUtils, Automation, BackgroundMultilineText, BackgroundOutputText, BaseAnimation, BaseComponent, BaseComponentCache, BaseComponentDefaults, BaseEvent, BlackBoxAnimationHandler, Button, CSSGradient, CSSStyle, Cache, CategoryRolloverHandler, Circle, ClipPath, ColorUtils, CombinedAnimMoveBy, ComponentTouchEvent, Container, Context, CustomAnimation, CustomDatatipPeer, DataAnimationHandler, Dimension, Displayable, DisplayableUtils, DomEventFactory, DragAndDropUtils, DragSource, Easing, EventFactory, EventManager, GradientFill, GradientParser, HtmlKeyboardListenerUtils, HtmlTooltipManager, IconButton, Image, ImageLoader, ImageMarker, JsonUtils, KeyboardEvent, KeyboardFocusEffect, KeyboardHandler, LayoutUtils, Line, LinearGradientFill, Map2D, MarqueeHandler, Mask, DvtMath as Math, Matrix, MouseEvent, MultilineText, Obj, OutputText, PanZoomHandler, ParallelPlayable, Path, PathUtils, PatternFill, PixelMap, Playable, Point, Polygon, PolygonUtils, Polyline, Rect, Rectangle, ResourceUtils, SelectionEffectUtils, SelectionHandler, SequentialPlayable, Shadow, Shape, SimpleMarker, SimpleObjPeer, SimpleScrollableContainer, SimpleScrollbar, SolidFill, Stroke, SvgDocumentUtils, SvgShapeUtils, TextObjPeer, TextUtils, Timer, ToolkitUtils, Touch, TouchEvent, TouchManager, TransientButton, Use };

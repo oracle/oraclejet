@@ -952,7 +952,28 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     // listening for mouse events outside of itself so it can close itself. since the dropdown
     // is now outside the combobox's dom it will trigger the popup close, which is not what we
     // want
-    containerElem.on('click mouseup mousedown', LovUtils.stopEventPropagation);
+    containerElem.on(
+      'click mouseup mousedown',
+      function (event) {
+        LovUtils.stopEventPropagation(event);
+        if (event.type === 'mousedown') {
+          // JET-50692 - focus lost from component when mouse down on dropdown between items
+          // In the mobile dropdown, call event.preventDefault() (to prevent focus from transferring
+          // to the body element temporarily) if the target of the mousedown event is one of:
+          // 1) the dropdown container itself (for example if the user taps in the empty space
+          // below the last item in a short list)
+          // 2) a descendant element of the filter field except for the input itself
+          if (
+            this._fullScreenPopup &&
+            (event.target === containerElem[0] ||
+              (DomUtils.isAncestorOrSelf(this._filterInputText, event.target) &&
+                event.target.tagName.toLowerCase() !== 'input'))
+          ) {
+            event.preventDefault();
+          }
+        }
+      }.bind(this)
+    );
 
     var afterRenderFunc = function () {
       if (options.afterDropdownInitFunc) {

@@ -1949,11 +1949,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
 
     // use hammer for swipe
     mOptions = {
+      // ensure pinch zoom work properly
+      touchAction: 'pinch-zoom',
       recognizers: [
          [Hammer.Pan, { direction: Hammer.DIRECTION_HORIZONTAL }]
-      ],
-      // ensure native gesture like pinch zoom work properly
-      touchAction: 'auto'
+      ]
      };
 
     // workaround for Hammer with iOS 13 issue, see: https://github.com/hammerjs/hammer.js/issues/1237
@@ -1997,8 +1997,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
             break;
           default:
         }
-
-        event.preventDefault();
 
         if (direction === null) {
           return;
@@ -2081,7 +2079,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
 
           // stop bubbling
         event.stopPropagation();
-        event.preventDefault();
       })
       .on('panend', function (event) {
           // don't do anything if start is vetoed
@@ -2140,7 +2137,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
           // restore item position
         wrapper.addClass(OffcanvasUtils.TRANSITION_SELECTOR);
         OffcanvasUtils._setTranslationX(wrapper, 'start', '0px');
-        event.preventDefault();
       });
   };
 

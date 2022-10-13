@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { stringLiteralArray, coerceArray } from '../UNSAFE_arrayUtils.js';
 import { sizeToCSS } from '../UNSAFE_size.js';
 import '../UNSAFE_stringUtils.js';

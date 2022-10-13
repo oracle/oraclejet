@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -10,41 +10,41 @@ require('./UNSAFE_Flex.js');
 var hooks_UNSAFE_useFormContext = require('./hooks/UNSAFE_useFormContext.js');
 var hooks_UNSAFE_useFormFieldContext = require('./hooks/UNSAFE_useFormFieldContext.js');
 var utils_UNSAFE_size = require('./utils/UNSAFE_size.js');
-var classNames = require('./classNames-69178ebf.js');
-var Flex = require('./Flex-b2488744.js');
-require('./tslib.es6-5c843188.js');
+var classNames = require('./classNames-82bfab52.js');
+var Flex = require('./Flex-327ae051.js');
+require('./tslib.es6-e91f819d.js');
 require('./utils/UNSAFE_interpolations/dimensions.js');
 require('./utils/UNSAFE_arrayUtils.js');
-require('./_curry1-33165c71.js');
+require('./_curry1-94f22a19.js');
 require('./utils/UNSAFE_stringUtils.js');
-require('./stringUtils-bca189f8.js');
+require('./stringUtils-b22cc214.js');
 require('./utils/UNSAFE_mergeInterpolations.js');
-require('./_curry2-40682636.js');
-require('./_has-2cbf94e8.js');
+require('./_curry2-e6dc9cf1.js');
+require('./_has-556488e4.js');
 require('./utils/UNSAFE_interpolations/boxalignment.js');
-require('./keys-4bd017bf.js');
+require('./keys-0a611b24.js');
 require('./utils/UNSAFE_interpolations/flexbox.js');
-require('./flexbox-c4644897.js');
+require('./flexbox-3d991801.js');
 require('./utils/UNSAFE_interpolations/flexitem.js');
-require('./flexitem-5f5d588b.js');
+require('./flexitem-91650faf.js');
 require('preact');
 require('preact/hooks');
 
 const labelSlotStyles = {
-  base: "b3rhoif",
-  start: "s1ejed7k",
-  top: "t1hxzyqn",
-  topPureReadonly: "t1oxsith"
+  base: "_679b43",
+  start: "_dhalxg",
+  top: "aa00qt",
+  topPureReadonly: "zf108r"
 };
 const labelInnerStyles = {
   // base is labelEdge 'top'
-  base: "b6iz1xm",
-  start: "sjye8qc",
-  startNotPureReadonly: "s1ri2ukc",
+  base: "_w9jxr",
+  start: "l9bvr2",
+  startNotPureReadonly: "bwq2w7",
   // TODO: Use Text Component instead of CSS
-  noWrap: "n1b91k80"
+  noWrap: "_qu2y3"
 };
-const valueSlotStyles = "v3l5soi";
+const valueSlotStyles = "g03sh4";
 const LabelValueLayout = ({
   label,
   labelEdge,

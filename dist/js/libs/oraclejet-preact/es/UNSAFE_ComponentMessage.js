@@ -1,55 +1,68 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsxs, jsx } from 'preact/jsx-runtime';
 import './UNSAFE_ComponentMessage.css';
+import { useTranslationBundle } from './hooks/UNSAFE_useTranslationBundle.js';
+import { HiddenAccessible } from './UNSAFE_HiddenAccessible.js';
 import { severityBasedStyleClass, isSeverityIconNeeded, MessageStartIcon, MessageSummary, MessagesManager } from './UNSAFE_Message.js';
 import { classNames } from './utils/UNSAFE_classNames.js';
+import 'preact/hooks';
+import './UNSAFE_Environment.js';
+import 'preact';
+import './UNSAFE_Layer.js';
+import 'preact/compat';
 import './UNSAFE_Flex.js';
-import './tslib.es6-fc945e53.js';
+import './tslib.es6-deee4931.js';
 import './utils/UNSAFE_interpolations/dimensions.js';
 import './utils/UNSAFE_arrayUtils.js';
 import './utils/UNSAFE_size.js';
 import './utils/UNSAFE_stringUtils.js';
-import './_curry1-8b0d63fc.js';
+import './_curry1-b6f34fc4.js';
 import './utils/UNSAFE_mergeInterpolations.js';
-import './_curry2-6a0eecef.js';
-import './_has-77a27fd6.js';
+import './_curry2-255e04d1.js';
+import './_has-f370c697.js';
 import './utils/UNSAFE_interpolations/boxalignment.js';
-import './keys-cb973048.js';
+import './keys-77d2b8e6.js';
 import './utils/UNSAFE_interpolations/flexbox.js';
 import './utils/UNSAFE_interpolations/flexitem.js';
-import 'preact/hooks';
-import 'preact';
 import './utils/UNSAFE_getLocale.js';
 import './UNSAFE_ThemedIcons.js';
 import './UNSAFE_Icon.js';
 import './hooks/UNSAFE_useUser.js';
-import './UNSAFE_Environment.js';
-import './UNSAFE_Layer.js';
-import 'preact/compat';
 import './hooks/UNSAFE_useTheme.js';
 import './UNSAFE_Icons.js';
 import './utils/UNSAFE_logger.js';
 import './utils/UNSAFE_soundUtils.js';
 import './UNSAFE_TransitionGroup.js';
 
-const baseStyles = "bisdpvl";
+const baseStyles = "n1cjnf";
 /**
  * The component that renders an individual message for inline component messaging.
  */
 
 function ComponentMessage({
-  severity = 'error',
-  detail
+  detail,
+  fieldLabel,
+  severity = 'error'
 }) {
   const classes = classNames([baseStyles, severityBasedStyleClass(severity, 'inline')]);
+  const translations = useTranslationBundle('@oracle/oraclejet-preact');
+  const severityTranslations = {
+    confirmation: translations.confirmation(),
+    error: translations.error(),
+    info: translations.info(),
+    warning: translations.warn()
+  };
   return jsxs("div", Object.assign({
     class: classes,
     role: "alert",
     "aria-atomic": "true"
   }, {
-    children: [isSeverityIconNeeded(severity) && jsx(MessageStartIcon, {
+    children: [fieldLabel && jsx(HiddenAccessible, {
+      children: fieldLabel
+    }), isSeverityIconNeeded(severity) && jsx(MessageStartIcon, {
       variant: "inline",
-      severity: severity
+      severity: severity,
+      translations: severityTranslations
     }), jsx(MessageSummary, {
       variant: "inline",
       text: detail
@@ -57,7 +70,7 @@ function ComponentMessage({
   }));
 }
 
-const rootStyles = "rgqp09a";
+const rootStyles = "yqm965";
 /**
  * Converts the messages data into Item
  *
@@ -80,6 +93,7 @@ function generateMessagesData(messages) {
 
 function ComponentMessageContainer({
   animations,
+  fieldLabel,
   messages = []
 }) {
   return jsx("div", Object.assign({
@@ -93,6 +107,7 @@ function ComponentMessageContainer({
         item
       }) => jsx(ComponentMessage, {
         detail: item.data.detail,
+        fieldLabel: fieldLabel,
         severity: item.data.severity
       }, item.key)
     }))

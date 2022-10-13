@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import './UNSAFE_UserAssistance.css';
 import { useTranslationBundle } from './hooks/UNSAFE_useTranslationBundle.js';
@@ -11,19 +11,20 @@ import './UNSAFE_Environment.js';
 import 'preact';
 import './UNSAFE_Layer.js';
 import 'preact/compat';
+import './UNSAFE_HiddenAccessible.js';
 import './UNSAFE_Message.js';
 import './UNSAFE_Flex.js';
-import './tslib.es6-fc945e53.js';
+import './tslib.es6-deee4931.js';
 import './utils/UNSAFE_interpolations/dimensions.js';
 import './utils/UNSAFE_arrayUtils.js';
 import './utils/UNSAFE_size.js';
 import './utils/UNSAFE_stringUtils.js';
-import './_curry1-8b0d63fc.js';
+import './_curry1-b6f34fc4.js';
 import './utils/UNSAFE_mergeInterpolations.js';
-import './_curry2-6a0eecef.js';
-import './_has-77a27fd6.js';
+import './_curry2-255e04d1.js';
+import './_has-f370c697.js';
 import './utils/UNSAFE_interpolations/boxalignment.js';
-import './keys-cb973048.js';
+import './keys-77d2b8e6.js';
 import './utils/UNSAFE_interpolations/flexbox.js';
 import './utils/UNSAFE_interpolations/flexitem.js';
 import './utils/UNSAFE_getLocale.js';
@@ -36,7 +37,7 @@ import './utils/UNSAFE_logger.js';
 import './utils/UNSAFE_soundUtils.js';
 import './UNSAFE_TransitionGroup.js';
 
-const rootStyles = "r1yxs6yj";
+const rootStyles = "_k9pwhe";
 function InlineHelpSource({
   children,
   source
@@ -54,7 +55,7 @@ function InlineHelpSource({
   }));
 }
 
-const helpTextStyles = "h178vflh";
+const helpTextStyles = "_igqc22";
 function InlineHelp({
   assistiveText,
   sourceLink,
@@ -74,10 +75,10 @@ function InlineHelp({
 }
 
 const variantStyles$1 = {
-  start: "s1qfwwsi",
-  end: "e1y8b86q"
+  start: "_0kd52r",
+  end: "va9krn"
 };
-const displayHiddenStyles = "dq4dyme";
+const displayHiddenStyles = "g2l5cm";
 function InlineRequired({
   align = 'end',
   hasHelp = false,
@@ -93,10 +94,10 @@ function InlineRequired({
   }));
 }
 
-const baseStyles = "b1edsw0w";
+const baseStyles = "_yui29";
 const variantStyles = {
-  reflow: "r15mbt1n",
-  efficient: "e53t0ow"
+  reflow: "_86ld0",
+  efficient: "_hk1l7g"
 }; // defaults to type='reflow'. If this is within an oj-form-layout, the o-f-l
 // will pass down its type which defaults to 'efficient' (TODO).
 
@@ -115,11 +116,11 @@ function InlineUserAssistanceContainer({
 }
 
 // This has the precedence rules for the user assistance.
-function InlineUserAssistance({ assistiveText, helpSourceLink, helpSourceText, id, isRequiredShown, messages = [], userAssistanceDensity }) {
+function InlineUserAssistance({ assistiveText, fieldLabel, helpSourceLink, helpSourceText, id, isRequiredShown, messages = [], userAssistanceDensity }) {
     const { isReadonly: isFormReadonly } = useFormContext();
     const needsUserAssistanceIfNoContent = userAssistanceDensity === 'efficient' && isFormReadonly === false;
     const { isFocused } = useFormFieldContext();
-    const uaInlineContent = messages.length > 0 ? (jsx(ComponentMessageContainer, { messages: messages })) : (assistiveText || helpSourceLink) && isFocused ? (jsx(InlineHelp, { assistiveText: assistiveText, sourceLink: helpSourceLink, sourceText: helpSourceText })) : isRequiredShown ? (jsx(InlineRequired, {})) : null;
+    const uaInlineContent = messages.length > 0 ? (jsx(ComponentMessageContainer, { fieldLabel: fieldLabel, messages: messages })) : (assistiveText || helpSourceLink) && isFocused ? (jsx(InlineHelp, { assistiveText: assistiveText, sourceLink: helpSourceLink, sourceText: helpSourceText })) : isRequiredShown ? (jsx(InlineRequired, {})) : null;
     // when reflow we do not render unless it has content.
     // when efficient we render regardless of if it has content.
     // TODO: Get the userAssistanceDensity value from the FormContext

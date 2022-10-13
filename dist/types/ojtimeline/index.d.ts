@@ -265,9 +265,11 @@ export namespace ojTimeline {
     type trackResizeChanged<K, D extends DataItem | any> = dvtTimeComponent.trackResizeChanged<ojTimelineSettableProperties<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type DataItem<K = any, D = any> = {
+        background?: 'blue' | 'orange' | 'purple' | 'red' | 'teal' | 'green';
         description?: string;
         durationFillColor?: string;
         end?: string;
+        itemType?: 'event' | 'duration-bar' | 'duration-event' | 'auto';
         seriesId: string;
         shortDesc?: (string | ((context: ItemShortDescContext<K, D>) => string));
         start: string;
@@ -277,6 +279,7 @@ export namespace ojTimeline {
     };
     // tslint:disable-next-line interface-over-type-literal
     type itemBubbleTemplateContext<K, D> = {
+        contentWidth: number;
         data: SeriesItem<K>;
         durationWidth: number;
         itemData: D;
@@ -327,11 +330,12 @@ export namespace ojTimeline {
     };
     // tslint:disable-next-line interface-over-type-literal
     type SeriesItem<K, D = any> = {
+        background?: 'blue' | 'orange' | 'purple' | 'red' | 'teal' | 'green';
         description?: string;
         durationFillColor?: string;
         end?: string;
         id: K;
-        itemType?: string;
+        itemType?: 'event' | 'duration-bar' | 'duration-event' | 'auto';
         shortDesc?: (string | ((context: ItemShortDescContext<K, D>) => string));
         start: string;
         svgStyle?: Partial<CSSStyleDeclaration>;
@@ -556,6 +560,7 @@ export interface ojTimelineSettablePropertiesLenient<K, D extends ojTimeline.Dat
     [key: string]: any;
 }
 export interface ojTimelineItem<K = any, D = any> extends dvtTimeComponent<ojTimelineItemSettableProperties<K, D>> {
+    background?: 'blue' | 'orange' | 'purple' | 'red' | 'teal' | 'green';
     description?: string;
     durationFillColor?: string | null;
     end?: string;
@@ -576,6 +581,8 @@ export interface ojTimelineItem<K = any, D = any> extends dvtTimeComponent<ojTim
     setProperties(properties: ojTimelineItemSettablePropertiesLenient<K, D>): void;
 }
 export namespace ojTimelineItem {
+    // tslint:disable-next-line interface-over-type-literal
+    type backgroundChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["background"]>;
     // tslint:disable-next-line interface-over-type-literal
     type descriptionChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["description"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -598,6 +605,7 @@ export namespace ojTimelineItem {
     type thumbnailChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["thumbnail"]>;
 }
 export interface ojTimelineItemEventMap<K = any, D = any> extends dvtTimeComponentEventMap<ojTimelineItemSettableProperties<K, D>> {
+    'backgroundChanged': JetElementCustomEvent<ojTimelineItem<K, D>["background"]>;
     'descriptionChanged': JetElementCustomEvent<ojTimelineItem<K, D>["description"]>;
     'durationFillColorChanged': JetElementCustomEvent<ojTimelineItem<K, D>["durationFillColor"]>;
     'endChanged': JetElementCustomEvent<ojTimelineItem<K, D>["end"]>;
@@ -610,6 +618,7 @@ export interface ojTimelineItemEventMap<K = any, D = any> extends dvtTimeCompone
     'thumbnailChanged': JetElementCustomEvent<ojTimelineItem<K, D>["thumbnail"]>;
 }
 export interface ojTimelineItemSettableProperties<K = any, D = any> extends dvtTimeComponentSettableProperties {
+    background?: 'blue' | 'orange' | 'purple' | 'red' | 'teal' | 'green';
     description?: string;
     durationFillColor?: string | null;
     end?: string;
@@ -749,9 +758,11 @@ export namespace TimelineElement {
     type trackResizeChanged<K, D extends ojTimeline.DataItem | any> = dvtTimeComponent.trackResizeChanged<ojTimelineSettableProperties<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type DataItem<K = any, D = any> = {
+        background?: 'blue' | 'orange' | 'purple' | 'red' | 'teal' | 'green';
         description?: string;
         durationFillColor?: string;
         end?: string;
+        itemType?: 'event' | 'duration-bar' | 'duration-event' | 'auto';
         seriesId: string;
         shortDesc?: (string | ((context: ojTimeline.ItemShortDescContext<K, D>) => string));
         start: string;
@@ -793,6 +804,8 @@ export namespace TimelineElement {
     };
 }
 export namespace TimelineItemElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type backgroundChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["background"]>;
     // tslint:disable-next-line interface-over-type-literal
     type descriptionChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["description"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -852,6 +865,7 @@ export interface TimelineIntrinsicProps extends Partial<Readonly<ojTimelineSetta
     children?: ComponentChildren;
 }
 export interface TimelineItemIntrinsicProps extends Partial<Readonly<ojTimelineItemSettableProperties<any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onbackgroundChanged?: (value: ojTimelineItemEventMap<any, any>['backgroundChanged']) => void;
     ondescriptionChanged?: (value: ojTimelineItemEventMap<any, any>['descriptionChanged']) => void;
     ondurationFillColorChanged?: (value: ojTimelineItemEventMap<any, any>['durationFillColorChanged']) => void;
     onendChanged?: (value: ojTimelineItemEventMap<any, any>['endChanged']) => void;

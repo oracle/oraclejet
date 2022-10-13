@@ -1,12 +1,12 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var tslib_es6 = require('../tslib.es6-5c843188.js');
+var tslib_es6 = require('../tslib.es6-e91f819d.js');
 var hooks = require('preact/hooks');
 require('./UNSAFE_useFocusWithin.js');
-var useFocusWithin = require('../useFocusWithin-4642944b.js');
+var useFocusWithin = require('../useFocusWithin-b68e203b.js');
 
 /**
  * A custom hook that handles the focus when the text field

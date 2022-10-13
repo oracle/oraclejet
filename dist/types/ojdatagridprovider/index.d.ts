@@ -57,7 +57,7 @@ export interface DataGridProviderUpdateOperationEventDetail {
 export interface FetchByOffsetGridParameters {
     columnCount: number;
     columnOffset: number;
-    fetchRegions: Set<FetchByOffsetGridParameters.FetchRegionValues>;
+    fetchRegions?: Set<FetchByOffsetGridParameters.FetchRegionValues>;
     rowCount: number;
     rowOffset: number;
 }
@@ -94,7 +94,9 @@ export interface GridBodyItem<D> {
     columnExtent: number;
     columnIndex: number;
     data: D;
-    metadata: object;
+    metadata: {
+        [propName: string]: any;
+    };
     rowExtent: number;
     rowIndex: number;
 }
@@ -104,7 +106,9 @@ export interface GridHeaderItem<D> {
     extent: number;
     index: number;
     level: number;
-    metadata: GridHeaderMetadata;
+    metadata: GridHeaderMetadata & {
+        [propName: string]: any;
+    };
 }
 export interface GridHeaderMetadata {
     expanded?: 'expanded' | 'collapsed';
@@ -114,7 +118,9 @@ export interface GridHeaderMetadata {
 }
 export interface GridItem<D> {
     data: D;
-    metadata: object;
+    metadata: {
+        [propName: string]: any;
+    };
 }
 export interface VersionCapability {
     implementation: 'none' | 'monotonicallyIncreasing';

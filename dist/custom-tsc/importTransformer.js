@@ -22,13 +22,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const ts = __importStar(require("typescript"));
-const dtsTransformer_1 = require("./dtsTransformer");
-const ts_creator_1 = __importDefault(require("ts-creator"));
+const MetaUtils = __importStar(require("./utils/MetadataUtils"));
 let _BUILD_OPTIONS;
 function importTransformWrapper(buildOptions) {
     _BUILD_OPTIONS = buildOptions;
@@ -61,9 +57,7 @@ function generateMissingImports(context, rootNode) {
     }
     if (content && content.length) {
         const { factory } = context;
-        const code = (0, dtsTransformer_1.fixCreateImportExportSpecifierCalls)((0, dtsTransformer_1.fixStringLiteralCalls)((0, ts_creator_1.default)(content)));
-        let result = ts.transpile(code);
-        let importStatements = eval(result);
+        const importStatements = MetaUtils.generateStatementsFromText(content);
         rootNode = factory.updateSourceFile(rootNode, [...importStatements, ...rootNode.statements]);
     }
     return rootNode;

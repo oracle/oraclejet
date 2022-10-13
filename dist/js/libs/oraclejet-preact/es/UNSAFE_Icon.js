@@ -1,5 +1,5 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
-import { _ as __rest } from './tslib.es6-fc945e53.js';
+/* @oracle/oraclejet-preact: 13.1.0 */
+import { _ as __rest } from './tslib.es6-deee4931.js';
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import './UNSAFE_Icon.css';
 import { classNames } from './utils/UNSAFE_classNames.js';
@@ -63,29 +63,29 @@ const SemanticSvg = _a => {
 
 
 const sizeStyles = {
-  '1em': "_9nac0f",
-  '1x': "_1jaiq1b",
-  '2x': "_1puxizk",
-  '3x': "_1c3qvh7",
-  '4x': "_1ybw47b",
-  '5x': "_ljayyj",
-  '6x': "_1aydtil",
-  '7x': "_1d899hp",
-  '8x': "_1ok5en6",
-  '9x': "_orim7s",
-  '10x': "_vf34xt",
-  '11x': "_sl4bfi",
-  '12x': "_1xyz8wn"
+  '1em': "_c4fe53",
+  '1x': "rrae9h",
+  '2x': "_by48t9",
+  '3x': "fdupy4",
+  '4x': "osiq1l",
+  '5x': "gvtc7g",
+  '6x': "_41uyo8",
+  '7x': "_ss8mw",
+  '8x': "_hbuhmw",
+  '9x': "_i1hrcm",
+  '10x': "opk1y",
+  '11x': "_0xd71v",
+  '12x': "_ipt43g"
 };
 const colorStyles = {
-  primary: "pgrs8zp",
-  secondary: "sxqh1wz",
-  disabled: "d86rf1x",
-  danger: "dqi69lw",
-  warning: "w1w3h8bf",
-  success: "sx3np7l",
-  info: "ibec5dk",
-  currentColor: "c186ccwk"
+  primary: "bd7zl7",
+  secondary: "knq0dk",
+  disabled: "_jz995w",
+  danger: "_8dj6gg",
+  warning: "yhzbxr",
+  success: "_bxs21n",
+  info: "_84wwqe",
+  currentColor: "f2jaxp"
 };
 
 // Returns a component that renders one of the given icon components based on reading direction

@@ -91,6 +91,12 @@ export namespace ojNavigationList {
         [propName: string]: any;
     }> {
     }
+    interface ojSelectionAction<K> extends CustomEvent<{
+        previousValue: K;
+        value: K;
+        [propName: string]: any;
+    }> {
+    }
     // tslint:disable-next-line interface-over-type-literal
     type asChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["as"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -155,6 +161,7 @@ export interface ojNavigationListEventMap<K, D> extends baseComponentEventMap<oj
     'ojBeforeSelect': ojNavigationList.ojBeforeSelect;
     'ojCollapse': ojNavigationList.ojCollapse;
     'ojExpand': ojNavigationList.ojExpand;
+    'ojSelectionAction': ojNavigationList.ojSelectionAction<K>;
     'asChanged': JetElementCustomEvent<ojNavigationList<K, D>["as"]>;
     'currentItemChanged': JetElementCustomEvent<ojNavigationList<K, D>["currentItem"]>;
     'dataChanged': JetElementCustomEvent<ojNavigationList<K, D>["data"]>;
@@ -453,6 +460,12 @@ export namespace NavigationListElement {
         [propName: string]: any;
     }> {
     }
+    interface ojSelectionAction<K> extends CustomEvent<{
+        previousValue: K;
+        value: K;
+        [propName: string]: any;
+    }> {
+    }
     // tslint:disable-next-line interface-over-type-literal
     type asChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["as"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -608,6 +621,7 @@ export interface NavigationListIntrinsicProps extends Partial<Readonly<ojNavigat
     onojBeforeSelect?: (value: ojNavigationListEventMap<any, any>['ojBeforeSelect']) => void;
     onojCollapse?: (value: ojNavigationListEventMap<any, any>['ojCollapse']) => void;
     onojExpand?: (value: ojNavigationListEventMap<any, any>['ojExpand']) => void;
+    onojSelectionAction?: (value: ojNavigationListEventMap<any, any>['ojSelectionAction']) => void;
     onasChanged?: (value: ojNavigationListEventMap<any, any>['asChanged']) => void;
     oncurrentItemChanged?: (value: ojNavigationListEventMap<any, any>['currentItemChanged']) => void;
     ondataChanged?: (value: ojNavigationListEventMap<any, any>['dataChanged']) => void;

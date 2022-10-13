@@ -139,6 +139,25 @@ function runTestCases(extractBundle) {
     });
   });
 
+  describe('Number formats', () => {
+    const bundle = extractBundle('app-strings.js');
+
+    it('formats date/time', () => {
+      assert.equal(
+        bundle.dateFormat({
+          date_time: new Date('2022-09-29 07:25 MDT'),
+          item: 'an alien',
+          planet: 5
+        }),
+        'At 25 past 07 on September 29, there was an alien on planet 5.'
+      );
+    });
+
+    it('formats currency', () => {
+      assert.equal(bundle.currencyFormat({ gbp: 99 }), 'The budget is +£99 and no more.');
+    });
+  });
+
   describe('Override files', () => {
     it('creates the ru override bundle in Russian', () => {
       const bundle = extractBundle(`ru/app-strings-x.js`);

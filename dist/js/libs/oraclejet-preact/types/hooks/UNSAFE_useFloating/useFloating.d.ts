@@ -29,7 +29,19 @@ export { autoPlacement, flip, hide, shift, limitShift, size, inline, detectOverf
 export declare type Coords = {
     [key in Axis]: number;
 };
-export declare type Placement = 'top' | 'right' | 'bottom' | 'left' | 'top-start' | 'right-start' | 'bottom-start' | 'left-start' | 'top-end' | 'right-end' | 'bottom-end' | 'left-end';
+/**
+ * Where to place the floating element relative to its reference element.
+ * The top, bottom, right and left are physical positions of the floating element
+ * The start, end are logical positions and will adapt to the writing direction (e.g. RTL) as expected.
+ * The -[*] and -[*] are alignments on the cross axis.
+ * For example start-top means place the floating element to the left (in LTR) from the reference element and align their top edges
+ * There are several synonyms for placements:
+ * - right-top, right-start and end-top in LTR (start-top in RTL)
+ * - left-top, left-start and start-top in LTR (end-top in RTL)
+ * - right-bottom, right-end and end-bottom in LTR (start-bottom in RTL)
+ * - left-bottom, left-end and start-bottom in LTR (end-bottom in RTL)
+ */
+export declare type Placement = 'top' | 'right' | 'bottom' | 'left' | 'start' | 'end' | 'top-start' | 'right-start' | 'right-top' | 'end-top' | 'bottom-start' | 'left-start' | 'left-top' | 'start-top' | 'top-end' | 'right-end' | 'right-bottom' | 'end-bottom' | 'bottom-end' | 'left-end' | 'left-bottom' | 'start-bottom';
 declare type Side = 'top' | 'right' | 'bottom' | 'left';
 declare type Axis = 'x' | 'y';
 declare type Length = 'width' | 'height';
@@ -57,7 +69,8 @@ export declare type VirtualElement = {
     contextElement?: any;
 };
 declare type ReferenceType = Element | VirtualElement;
-declare type UseFloatingProps<RT extends ReferenceType = ReferenceType> = Omit<Partial<ComputePositionConfig>, 'platform'> & {
+declare type UseFloatingProps<RT extends ReferenceType = ReferenceType> = Omit<Partial<ComputePositionConfig>, 'platform' | 'placement'> & {
+    placement: Placement;
     whileElementsMounted?: (reference: RT, floating: HTMLElement, update: () => void) => void | (() => void);
 };
 declare type UseFloatingData = Omit<ComputePositionReturn, 'x' | 'y'> & {

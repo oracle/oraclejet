@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -9,29 +9,29 @@ var hooks_UNSAFE_useId = require('./hooks/UNSAFE_useId.js');
 require('identity-obj-proxy');
 require('./utils/UNSAFE_classNames.js');
 require('./UNSAFE_Flex.js');
-var UNSAFE_ThemedIcons = require('./index-9adddc55.js');
-var classNames = require('./classNames-69178ebf.js');
-var UNSAFE_Icons = require('./index-f38e0982.js');
-var Flex = require('./Flex-b2488744.js');
+var UNSAFE_ThemedIcons = require('./index-dcd95188.js');
+var classNames = require('./classNames-82bfab52.js');
+var UNSAFE_Icons = require('./index-e2b299b3.js');
+var Flex = require('./Flex-327ae051.js');
 var hooks_UNSAFE_useAnimation = require('./hooks/UNSAFE_useAnimation.js');
-require('./tslib.es6-5c843188.js');
+require('./tslib.es6-e91f819d.js');
 require('./utils/UNSAFE_interpolations/dimensions.js');
 require('./utils/UNSAFE_arrayUtils.js');
 require('./utils/UNSAFE_size.js');
 require('./utils/UNSAFE_stringUtils.js');
-require('./stringUtils-bca189f8.js');
-require('./_curry1-33165c71.js');
+require('./stringUtils-b22cc214.js');
+require('./_curry1-94f22a19.js');
 require('./utils/UNSAFE_mergeInterpolations.js');
-require('./_curry2-40682636.js');
-require('./_has-2cbf94e8.js');
+require('./_curry2-e6dc9cf1.js');
+require('./_has-556488e4.js');
 require('./utils/UNSAFE_interpolations/boxalignment.js');
-require('./keys-4bd017bf.js');
+require('./keys-0a611b24.js');
 require('./utils/UNSAFE_interpolations/flexbox.js');
-require('./flexbox-c4644897.js');
+require('./flexbox-3d991801.js');
 require('./utils/UNSAFE_interpolations/flexitem.js');
-require('./flexitem-5f5d588b.js');
+require('./flexitem-91650faf.js');
 require('./UNSAFE_Icon.js');
-require('./Icon-b60b3f23.js');
+require('./Icon-42559ff1.js');
 require('./hooks/UNSAFE_useUser.js');
 require('./UNSAFE_Environment.js');
 require('preact');
@@ -40,8 +40,8 @@ require('preact/compat');
 require('./hooks/UNSAFE_useTheme.js');
 
 const styles$1 = {
-  base: "b1gp27yz",
-  disabled: "d1mpodss"
+  base: "_qztm4t",
+  disabled: "_fwsa20"
 };
 /**
  * Header icon subcomponent
@@ -70,8 +70,8 @@ const CollapsibleHeaderIcon = ({
 };
 
 const styles = {
-  base: "bchzlky",
-  disabled: "dxflc5a"
+  base: "_5zk568",
+  disabled: "_1458rr"
 };
 /**
  * Header subcomponent

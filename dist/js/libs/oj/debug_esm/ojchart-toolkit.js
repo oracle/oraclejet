@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Obj, Point, ArrayUtils, BaseComponentDefaults, CSSStyle, Agent, ColorUtils, JsonUtils, Container, Stroke, Line, SimpleMarker, Displayable, HtmlTooltipManager, ResourceUtils, SelectionEffectUtils, MouseEvent, KeyboardEvent, KeyboardHandler, Rectangle, TextUtils, BackgroundOutputText, OutputText, BackgroundMultilineText, MultilineText, SimpleObjPeer, Rect, EventManager, EventFactory, ToolkitUtils, Dimension, PathUtils, Path, Automation, BaseComponent, Math as Math$1, PatternFill, LinearGradientFill, SolidFill, Matrix, Polygon, Circle, CustomDatatipPeer, CustomAnimation, Animator, SvgDocumentUtils, IconButton, AnimFadeIn, AnimFadeOut, ParallelPlayable, Shape, Polyline, DataAnimationHandler, SequentialPlayable, AnimPopIn, PolygonUtils, LayoutUtils, ImageMarker, PixelMap, ClipPath, CategoryRolloverHandler, PanZoomHandler, MarqueeHandler, SimpleScrollbar, AriaUtils, SelectionHandler, BlackBoxAnimationHandler, Playable, Context, BaseComponentCache } from 'ojs/ojdvt-toolkit';
+import { Obj, Point, ArrayUtils, BaseComponentDefaults, CSSStyle, Agent, ColorUtils, JsonUtils, Container, Stroke, Line, SimpleMarker, Displayable, HtmlTooltipManager, ResourceUtils, SelectionEffectUtils, MouseEvent, KeyboardEvent, KeyboardHandler, Rectangle, TextUtils, BackgroundOutputText, OutputText, BackgroundMultilineText, MultilineText, TextObjPeer, EventManager, EventFactory, ToolkitUtils, Dimension, Rect, SimpleObjPeer, PathUtils, Path, Automation, BaseComponent, Math as Math$1, PatternFill, LinearGradientFill, SolidFill, Matrix, Polygon, Circle, CustomDatatipPeer, CustomAnimation, Animator, SvgDocumentUtils, IconButton, AnimFadeIn, AnimFadeOut, ParallelPlayable, Shape, Polyline, DataAnimationHandler, SequentialPlayable, AnimPopIn, PolygonUtils, LayoutUtils, ImageMarker, PixelMap, ClipPath, CategoryRolloverHandler, PanZoomHandler, MarqueeHandler, SimpleScrollbar, AriaUtils, SelectionHandler, BlackBoxAnimationHandler, Playable, Context, BaseComponentCache } from 'ojs/ojdvt-toolkit';
 import { LinearScaleAxisValueFormatter, BaseAxisInfo, DataAxisInfoMixin } from 'ojs/ojdvt-axis';
 import { Legend } from 'ojs/ojlegend-toolkit';
 import { Overview } from 'ojs/ojdvt-overview';
@@ -6275,12 +6275,12 @@ DvtAxisInfo._constructors = [];
  * @param {object=} params Optional object containing additional parameters for use by component.
  * @class DvtAxisObjPeer
  * @constructor
- * @implements {dvt.SimpleObjPeer}
+ * @implements {dvt.TextObjPeer}
  * @implements {DvtLogicalObject}
  * @implements {DvtDraggable}
  */
 
- class DvtAxisObjPeer extends SimpleObjPeer {
+ class DvtAxisObjPeer extends TextObjPeer {
    /**
    * @param {DvtAxis} axis The axis.
    * @param {dvt.OutputText} label The owning text instance.
@@ -6291,7 +6291,7 @@ DvtAxisInfo._constructors = [];
    * @param {object=} params Optional object containing additional parameters for use by component.
    */
   constructor(axis, label, group, drillable, tooltip, datatip, params) {
-    super(tooltip, datatip, null, params);
+    super(axis, label, tooltip, datatip, null, params);
     this._axis = axis;
     this._label = label;
     this._group = group;
@@ -6355,71 +6355,6 @@ DvtAxisInfo._constructors = [];
     return KeyboardHandler.getNextNavigable(this, event, navigables, false, this._axis.getCtx().getStage());
   }
 
-  /**
-   * @override
-   */
-  getKeyboardBoundingBox(targetCoordinateSpace) {
-    if (this._label)
-      return this._label.getDimensions(targetCoordinateSpace);
-    else
-      return new Rectangle(0, 0, 0, 0);
-  }
-
-  /**
-   * @override
-   */
-  getDisplayable() {
-    return this._label;
-  }
-
-  /**
-   * @override
-   */
-  getTargetElem() {
-    if (this._label)
-      return this._label.getElem();
-    return null;
-  }
-
-  /**
-   * @override
-   */
-  showKeyboardFocusEffect() {
-    this._isShowingKeyboardFocusEffect = true;
-    if (this._label) {
-      var bounds = this.getKeyboardBoundingBox();
-      this._overlayRect = new Rect(this._axis.getCtx(), bounds.x, bounds.y, bounds.w, bounds.h);
-      this._overlayRect.setSolidStroke(Agent.getFocusColor());
-      this._overlayRect.setInvisibleFill();
-
-      // necessary to align rect with tagential and rotated labels
-      this._overlayRect.setMatrix(this._label.getMatrix());
-
-      this._axis.addChild(this._overlayRect);
-    }
-  }
-
-
-  /**
-   * @override
-   */
-  hideKeyboardFocusEffect() {
-    this._isShowingKeyboardFocusEffect = false;
-    if (this._label) {
-      this._axis.removeChild(this._overlayRect);
-      this._overlayRect = null;
-    }
-  }
-
-
-  /**
-   * @override
-   */
-  isShowingKeyboardFocusEffect() {
-    return this._isShowingKeyboardFocusEffect;
-  }
-
-
   //---------------------------------------------------------------------//
   // WAI-ARIA Support: DvtLogicalObject impl               //
   //---------------------------------------------------------------------//
@@ -6428,16 +6363,14 @@ DvtAxisInfo._constructors = [];
    */
   getAriaLabel() {
     var states;
-    if (this.isDrillable())
+    if (this.isDrillable()) {
       states = [this._axis.getOptions().translations.stateDrillable];
-
+    }
     if (this.getDatatip() != null) {
       return Displayable.generateAriaLabel(this.getDatatip() , states);
-    }
-    else if (states != null) {
+    } else if (states != null) {
       return Displayable.generateAriaLabel(this.getLabel().getTextString(), states);
     }
-
   }
 
 
@@ -13613,13 +13546,14 @@ const DvtChartPieLabelUtils = {
    * @private
    */
   _createLabel:  (slice, isInside) => {
+    var isHighContrast = Agent.isHighContrast();
     var pieChart = slice.getPieChart();
 
     var context = pieChart.getCtx();
     var sliceLabel = isInside ? new OutputText(context) : new MultilineText(context);
 
     // Apply the label color- read all applicable styles and merge them.
-    var contrastColor = ColorUtils.getContrastingTextColor(slice.getFillColor());
+    var contrastColor = isInside ? ColorUtils.getContrastingTextColor(slice.getFillColor()) : ColorUtils.getContrastingTextColor(ColorUtils.getColorFromName('black'));
     var contrastColorStyle = new CSSStyle({ color: contrastColor });
     var styleDefaults = pieChart.getOptions().styleDefaults;
     var labelStyleArray = [styleDefaults._dataLabelStyle];
@@ -13632,7 +13566,7 @@ const DvtChartPieLabelUtils = {
       labelStyleArray.push(new CSSStyle(dataItem.labelStyle));
     }
 
-    if (Agent.isHighContrast()) {
+    if (isHighContrast) {
       labelStyleArray.push(contrastColorStyle);
     }
     var style = CSSStyle.mergeStyles(labelStyleArray);
@@ -17642,7 +17576,7 @@ class DvtChartDataChangeHandler {
     this._insertDuration = duration * 0.50;
     this._deleteDuration = duration * 0.50;
     this._shape = peer.getDisplayables()[0];
-    this._animId = peer.getDataItemId() || peer.getSeries() + '/' + peer.getGroup() + animId;
+    this._animId = (peer.getDataItemId() || peer.getSeries() + '/' + peer.getGroup()) + animId;
   }
 
 /**
@@ -29837,14 +29771,12 @@ class Chart extends BaseComponent {
    * @override
    */
   SetOptions(options) {
+    super.SetOptions(options);
 
     if (options) {
       // Combine the user options with the defaults and store
       this._rawOptions = options;
       this.Options = this.Defaults.calcOptions(options);
-
-      // Reset options cache
-      this.getOptionsCache().clearCache();
 
       // Process the data to add bulletproofing
       DvtChartDataObjectUtils.processDataObj(this);

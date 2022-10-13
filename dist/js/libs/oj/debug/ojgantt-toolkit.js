@@ -41,6 +41,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     _DEFAULT_ZOOM_CONTROL_SPACING: 9,
 
     /**
+     * The default component padding.
+     * @const
+     * @private
+     */
+    _DEFAULT_COMPONENT_PADDING: 0,
+
+    /**
      * The default task height (without baseline).
      * @const
      * @private
@@ -701,14 +708,27 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     },
 
     /**
-     * Gets the row label (container) let/right padding. Assumes the left and right paddings are the same.
+     * Gets the row label (container) start padding.
      * @param {object} options The object containing data and specifications for the component.
-     * @return {number} The row label (container) padding.
+     * @return {number} The row label (container) start padding.
      */
-    getRowLabelPadding: (options) => {
+     getRowLabelPaddingStart: (options) => {
       var resources = options ? options['_resources'] : null;
-      if (resources && resources['rowLabelPaddingLeft'] != null) {
-        return DvtGanttStyleUtils.getSizeInPixels(resources['rowLabelPaddingLeft']);
+      if (resources && resources['rowLabelPaddingStart'] != null) {
+        return DvtGanttStyleUtils.getSizeInPixels(resources['rowLabelPaddingStart']);
+      }
+      return DvtGanttStyleUtils._ROW_LABEL_CONTAINER_PADDING;
+    },
+
+    /**
+     * Gets the row label (container) end padding.
+     * @param {object} options The object containing data and specifications for the component.
+     * @return {number} The row label (container) end padding.
+     */
+     getRowLabelPaddingEnd: (options) => {
+      var resources = options ? options['_resources'] : null;
+      if (resources && resources['rowLabelPaddingEnd'] != null) {
+        return DvtGanttStyleUtils.getSizeInPixels(resources['rowLabelPaddingEnd']);
       }
       return DvtGanttStyleUtils._ROW_LABEL_CONTAINER_PADDING;
     },
@@ -753,6 +773,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         }
       }
       return 1; // default for browsers is 1px when not specified
+    },
+
+    /**
+     * Gets the component padding start.
+     * @param {object} options The object containing data and specifications for the component.
+     * @return {number} The component padding start.
+     */
+    getComponentPaddingStart: (options) => {
+      var resources = options ? options['_resources'] : null;
+      if (resources && resources['componentPaddingStart'] != null) {
+        return DvtGanttStyleUtils.getSizeInPixels(resources['componentPaddingStart']);
+      }
+      return DvtGanttStyleUtils._DEFAULT_COMPONENT_PADDING;
     },
 
     /**
@@ -1813,7 +1846,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       var options = this._gantt.getOptions();
       var renderer = options['rowAxis']['label']['renderer']; // must have been defined if reached here
-      var rowLabelPadding = DvtGanttStyleUtils.getRowLabelPadding(options);
+      var startPadding = DvtGanttStyleUtils.getRowLabelPaddingStart(options);
+      var endPadding = DvtGanttStyleUtils.getRowLabelPaddingEnd(options);
+      var totalPadding = startPadding + endPadding;
 
       // maxWidth in the renderer context should be -1 if width is unbounded AND max-width is unbounded. Otherwise, width is bounded in some way, so give them that value in px
       var maxWidthOption = this._gantt.getRowAxisMaxWidth();
@@ -1821,10 +1856,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         var contextMaxWidth = -1;
       } else if (this._gantt.isRowsHierarchical()) {
         // some space reserved for hierarchical indentation and expand/collapse button and padding
-        contextMaxWidth = Math.max(0, availableWidth['calculatedWidth'] - this._rowAxis.getLabelContentIndentSize(rowObj)) - (2 * rowLabelPadding);
+        contextMaxWidth = Math.max(0, availableWidth['calculatedWidth'] - this._rowAxis.getLabelContentIndentSize(rowObj)) - totalPadding;
       } else {
         // some space reserved for padding
-        contextMaxWidth = Math.max(0, availableWidth['calculatedWidth'] - (2 * rowLabelPadding));
+        contextMaxWidth = Math.max(0, availableWidth['calculatedWidth'] - totalPadding);
       }
 
       var availableHeight = rowObj['height'];
@@ -2377,10 +2412,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         'attribute': this._generateRectCmd
       };
 
-      cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
+      cmds = this.generateCmd(this._x, this._y, this._w, this._h, this._r);
       this.setCmds(cmds);
 
-      this.applyDefaultStyleClasses();
+      this.applyStyleClasses();
 
       switch (this._type) {
         case 'mainDragFeedback':
@@ -2555,109 +2590,176 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     }
 
     /**
-     * Applies any default classes and styles to the shape based on the specified type.
+     * Generates the path command for the shape.
+     * @param {number} x position
+     * @param {number} y posiiton
+     * @param {number} h height
+     * @param {string=} r borderradius If not specified assume to be 0.
+     * @return {string} the command string
      */
-    applyDefaultStyleClasses() {
-      var styleClass, milestoneDefaultClass, barDefaultClass, summaryDefaultClass, taskFillColor, style,
-          gantt = this._task.getGantt(), taskDraggable = gantt.getEventManager().IsDragSupported('tasks');
-      if (DvtGanttTaskShape.PROGRESS_TYPES.indexOf(this._type) > -1) {
-        styleClass = gantt.GetStyleClass('taskProgress');
-        if (this._task.isSummary('main')) {
-          styleClass += ' ' + gantt.GetStyleClass('taskSummaryProgress');
-        }
-        if (taskDraggable) {
-          styleClass += ' ' + gantt.GetStyleClass('draggable');
-        }
-        this.setClassName(styleClass);
-      } else if (DvtGanttTaskShape.MAIN_TYPES.indexOf(this._type) > -1) {
-        styleClass = gantt.GetStyleClass('task');
-        milestoneDefaultClass = gantt.GetStyleClass('taskMilestone');
-        barDefaultClass = gantt.GetStyleClass('taskBar');
-        summaryDefaultClass = gantt.GetStyleClass('taskSummary');
-        if (this._task.isMilestone(this._type) && this._w === 0) {
-          styleClass += ' ' + milestoneDefaultClass;
-        } else {
-          styleClass += ' ' + (this._task.isSummary(this._type) ? summaryDefaultClass : barDefaultClass);
+    generateCmd(x, y, w, h, r) {
+      var gantt = this._task.getGantt();
+      var precision = gantt.getRenderingPrecision();
+      if (precision === null) {
+        return this._typeCmdGeneratorMap[this._type].call(this, x, y, w, h, r);
+      }
+      return this._typeCmdGeneratorMap[this._type].call(
+        this,
+        gantt.round(x, precision),
+        gantt.round(y, precision),
+        gantt.round(w, precision),
+        gantt.round(h, precision),
+        r
+      );
+    }
 
-          if (this._type === 'main' && this._task.getProgressValue() != null) {
-            styleClass += ' ' + gantt.GetStyleClass('taskUnprogress');
+    /**
+     * Gets base style classes for the shape based on the specified type.
+     */
+    getDefaultStyleClasses() {
+      let styleClass;
+      let milestoneDefaultClass;
+      let barDefaultClass;
+      let summaryDefaultClass;
+      const gantt = this._task.getGantt();
+      const taskDraggable = gantt.getEventManager().IsDragSupported('tasks');
+
+      switch (this._type) {
+        case 'main':
+        case 'mainSelect':
+        case 'mainHover':
+        case 'mainFocus':
+          styleClass = gantt.GetStyleClass('task');
+          milestoneDefaultClass = gantt.GetStyleClass('taskMilestone');
+          barDefaultClass = gantt.GetStyleClass('taskBar');
+          summaryDefaultClass = gantt.GetStyleClass('taskSummary');
+          if (this._task.isMilestone(this._type) && this._w === 0) {
+            styleClass += ' ' + milestoneDefaultClass;
+          } else {
+            styleClass += ' ' + (this._task.isSummary(this._type) ? summaryDefaultClass : barDefaultClass);
+
+            if (this._type === 'main' && this._task.getProgressValue() != null) {
+              styleClass += ' ' + gantt.GetStyleClass('taskUnprogress');
+            }
           }
-        }
 
-        if (this._type === 'mainBackground') {
+          if (this._type === 'main' && taskDraggable) {
+            styleClass += ' ' + gantt.GetStyleClass('draggable');
+          } else if (this._type === 'mainSelect') {
+            styleClass += ' ' + gantt.GetStyleClass('selected');
+          } else if (this._type === 'mainHover') {
+            styleClass += ' ' + gantt.GetStyleClass('hover');
+          } else if (this._type === 'mainFocus') {
+            styleClass += ' ' + gantt.GetStyleClass('focus');
+          }
+          break;
+        case 'mainBackground':
           // Task colors may have opacity/alpha. Make tasks opaque by rendering a (white) background.
           styleClass = gantt.GetStyleClass('taskBackdrop');
-        } else if (this._type === 'mainSelect') {
-          styleClass += ' ' + gantt.GetStyleClass('selected');
-        } else if (this._type === 'mainHover' || this._type === 'mainFocus') {
-          styleClass += ' ' + gantt.GetStyleClass(this._type === 'mainHover' ? 'hover' : 'focus');
-
-          // In alta only, effect stroke colors reflect task fill
-          if (this._context.getThemeBehavior() === 'alta') {
-            style = {'fill': 'none'};
-            taskFillColor = this._task.getFillColor();
-            if (taskFillColor != null) {
-              this.setStroke(dvt.SelectionEffectUtils.createSelectingStroke(taskFillColor['fill']));
-              style['stroke'] = taskFillColor['fill']; // make sure stroke color is not overridden by CSS if any
-              if (taskFillColor['filter'] === 'none') {
-                style['filter'] = 'none';
-              }
-            }
-            this.setStyle(style);
+          break;
+        case 'progress':
+        case 'progressZero':
+        case 'progressFull':
+          styleClass = gantt.GetStyleClass('taskProgress');
+          if (this._task.isSummary('main')) {
+            styleClass += ' ' + gantt.GetStyleClass('taskSummaryProgress');
           }
-        } else if (this._type === 'main' && taskDraggable) {
-          styleClass += ' ' + gantt.GetStyleClass('draggable');
-        }
-
-        this.setClassName(styleClass);
-      } else if (DvtGanttTaskShape.BASELINE_TYPES.indexOf(this._type) > -1) {
-        styleClass = gantt.GetStyleClass('baseline');
-        milestoneDefaultClass = gantt.GetStyleClass('baselineMilestone');
-        barDefaultClass = gantt.GetStyleClass('baselineBar');
-        if (this._task.isMilestone(this._type) && this._w === 0) {
-          styleClass += ' ' + milestoneDefaultClass;
-        } else {
-          styleClass += ' ' + barDefaultClass;
-        }
-        this.setClassName(styleClass);
-      } else if (this._type === 'overtime') {
-        styleClass = gantt.GetStyleClass('taskOvertime');
-        if (taskDraggable) {
-          styleClass += ' ' + gantt.GetStyleClass('draggable');
-        }
-        this.setClassName(styleClass);
-      } else if (this._type === 'downtime') {
-        styleClass = gantt.GetStyleClass('taskDowntime');
-        if (taskDraggable) {
-          styleClass += ' ' + gantt.GetStyleClass('draggable');
-        }
-        this.setClassName(styleClass);
-      } else if (this._type === 'attribute') {
-        styleClass = gantt.GetStyleClass('taskAttribute');
-        if (taskDraggable) {
-          styleClass += ' ' + gantt.GetStyleClass('draggable');
-        }
-        this.setClassName(styleClass);
-      } else if (this._type === 'mainDragFeedback' || this._type === 'mainResizeHandleDragFeedback') {
-        styleClass = gantt.GetStyleClass('taskDragImage');
-        this.setClassName(styleClass);
-      } else if (this._type === 'mainResizeHandleStart' || this._type === 'mainResizeHandleEnd') {
-        styleClass = gantt.GetStyleClass('taskResizeHandle');
-        this.setClassName(styleClass + ' ' + this._task.getGantt().GetStyleClass('draggable'));
+          if (taskDraggable) {
+            styleClass += ' ' + gantt.GetStyleClass('draggable');
+          }
+          break;
+        case 'overtime':
+        case 'downtime':
+        case 'attribute':
+          styleClass = gantt.GetStyleClass(`task${this._type[0].toUpperCase()}${this._type.slice(1)}`);
+          if (taskDraggable) {
+            styleClass += ' ' + gantt.GetStyleClass('draggable');
+          }
+          break;
+        case 'mainDragFeedback':
+        case 'mainResizeHandleDragFeedback':
+          styleClass = gantt.GetStyleClass('taskDragImage');
+          break;
+        case 'mainResizeHandleStart':
+        case 'mainResizeHandleEnd':
+          styleClass = gantt.GetStyleClass('taskResizeHandle') + ' ' + gantt.GetStyleClass('draggable');
+          break;
+        case 'baseline':
+        case 'baselineSelect':
+        case 'baselineHover':
+          styleClass = gantt.GetStyleClass('baseline');
+          milestoneDefaultClass = gantt.GetStyleClass('baselineMilestone');
+          barDefaultClass = gantt.GetStyleClass('baselineBar');
+          if (this._task.isMilestone(this._type) && this._w === 0) {
+            styleClass += ' ' + milestoneDefaultClass;
+          } else {
+            styleClass += ' ' + barDefaultClass;
+          }
+          break;
+        default:
+          styleClass = '';
       }
+
+      return styleClass;
+    }
+
+    /**
+     * Applies default classes and any addition styles and classes to the shape based on the specified type.
+     * @param {string=} svgClassName Classes to apply in addition to the default styles classes. Default undefined.
+     */
+    applyStyleClasses(svgClassName) {
+      // In alta only, effect stroke colors reflect task fill
+      if ((this._type === 'mainHover' || this._type === 'mainFocus') && this._context.getThemeBehavior() === 'alta') {
+        const style = {'fill': 'none'};
+        const taskFillColor = this._task.getFillColor();
+        if (taskFillColor != null) {
+          this.setStroke(dvt.SelectionEffectUtils.createSelectingStroke(taskFillColor['fill']));
+          style['stroke'] = taskFillColor['fill']; // make sure stroke color is not overridden by CSS if any
+          if (taskFillColor['filter'] === 'none') {
+            style['filter'] = 'none';
+          }
+        }
+        this.setStyle(style);
+      }
+
+      this._svgClassName = svgClassName;
+      const defaultStyleClasses = this.getDefaultStyleClasses();
+      this.setClassName(svgClassName ? `${defaultStyleClasses} ${svgClassName}` : defaultStyleClasses);
     }
 
     /**
      * @override
      */
     setClassName(className) {
+      if (this.getClassName() === className) {
+        return;
+      }
+
       super.setClassName(className);
+
+      // Unset any previously calculated fill color so that getFillColor() will recalculate after style change.
+      this._fillColor = undefined;
+
       // If the task is highlighted, it would have the associated highlight CSS class applied.
       // However, calls to setClassName blows away the highlight class.
       // Add the highlight class if that's the case:
       if (this._isHighlighted) {
         this.highlight();
       }
+    }
+
+    /**
+     * @override
+     */
+    setStyle(style) {
+      if (this.getStyle() === style) {
+        return;
+      }
+
+      super.setStyle(style);
+
+      // Unset any previously calculated fill color so that getFillColor() will recalculate after style change.
+      this._fillColor = undefined;
     }
 
     /**
@@ -2695,8 +2797,26 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      *                  'filter': the filter property of the shape
      *                  'computedFill': the *actual* fill of the shape, after the default tint/shade filter is applied
      *                  'stroke': the stroke color of the shape
+     *                  'fromShapeCache': whether this object is returned from this shape's cache (in which case, the fill color didn't change since the last time it was computed)
      */
     getFillColor() {
+      // Immediate cache (useful for updating task labels with inner positions that need contrast color calculations during zooming)
+      if (this._fillColor) {
+        this._fillColor.fromShapeCache = true;
+        return this._fillColor;
+      }
+
+      // Global cache of computed fill color for a given task's class and style.
+      // In most use cases, there are only a few possible task class and style varieties.
+      // Useful for improving initial render performance of task labels with inner positions that need contrast color calculations.
+      const cache = this._task.getGantt().getCache();
+      const key = `FILL_(${JSON.stringify(this.getClassName()) || ''})_${JSON.stringify(this.getStyle()) || ''}`;
+      const cachedFillColor = cache.getFromCache(key);
+      if (cachedFillColor) {
+        this._fillColor = cachedFillColor;
+        return cachedFillColor;
+      }
+
       var elem, svgRoot, computedStyle, fill, computedFill, filter, isUrlFill, fillColor, fillOpacity;
 
       // we need to figure out the fill color, which could be set in style class
@@ -2734,11 +2854,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           if (fillOpacity !== 1 && !Number.isNaN(fillOpacity)) {
             computedFill = dvt.ColorUtils.getBrighter(computedFill, 1 - fillOpacity);
           }
-          fillColor = {'fill': fill, 'computedFill': computedFill, 'filter': filter, 'stroke': computedStyle.stroke};
+          fillColor = {'fill': fill, 'computedFill': computedFill, 'filter': filter, 'stroke': computedStyle.stroke, 'fromShapeCache': false};
         }
       } finally {
         svgRoot.removeChild(elem);
       }
+      this._fillColor = fillColor;
+      cache.putToCache(key, fillColor);
       return fillColor;
     }
 
@@ -2873,11 +2995,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           DvtGanttTaskShape.BASELINE_TYPES.indexOf(this._type) > -1) &&
           (this._w === 0 || width === 0)) {
         this._w = width;
-        this.applyDefaultStyleClasses();
+        this.applyStyleClasses(this._svgClassName);
       }
 
       this._w = width;
-      cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
+      cmds = this.generateCmd(this._x, this._y, this._w, this._h, this._r);
       this.setCmds(cmds);
     }
 
@@ -2915,7 +3037,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     setHeight(height) {
       var cmds;
       this._h = height;
-      cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
+      cmds = this.generateCmd(this._x, this._y, this._w, this._h, this._r);
       this.setCmds(cmds);
     }
 
@@ -2950,7 +3072,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     setX(x) {
       var cmds;
       this._x = x;
-      cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
+      cmds = this.generateCmd(this._x, this._y, this._w, this._h, this._r);
       this.setCmds(cmds);
     }
 
@@ -2985,7 +3107,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     setY(y) {
       var cmds;
       this._y = y;
-      cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
+      cmds = this.generateCmd(this._x, this._y, this._w, this._h, this._r);
       this.setCmds(cmds);
     }
 
@@ -3012,7 +3134,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     setBorderRadius(r) {
       var cmds;
       this._r = r != null ? r : "0";
-      cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
+      cmds = this.generateCmd(this._x, this._y, this._w, this._h, this._r);
       this.setCmds(cmds);
     }
 
@@ -3032,7 +3154,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           DvtGanttTaskShape.BASELINE_TYPES.indexOf(this._type) > -1) &&
           (this._w === 0 || w === 0)) {
         this._w = w;
-        this.applyDefaultStyleClasses();
+        this.applyStyleClasses(this._svgClassName);
       }
 
       this._x = x;
@@ -3041,7 +3163,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._h = h;
       this._r = r != null ? r : '0';
 
-      cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
+      cmds = this.generateCmd(this._x, this._y, this._w, this._h, this._r);
       this.setCmds(cmds);
     }
   }
@@ -3510,6 +3632,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
          * @private
          */
         this._HIGH_LEVEL_DND_NAVIGATION_SCALES = ['milliseconds', 'seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'quarters', 'years'];
+        /**
+         * Milliseconds to wait before rendering the drag feedback between animation frames
+         * Essentially, this causes the feedback to show up at (1000/(this value)) FPS.
+         * This throttling should only be done at high viewport density, for better drag over performance.
+         * @type {number}
+         * @private
+         */
+        this._DND_DRAGOVER_FEEDBACK_THROTTLE_DELAY = 100;
       }
     /**
      * Returns the DvtKeyboardNavigable item with the current keyboard focus
@@ -4345,7 +4475,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @override
      */
     ShowDropEffect(event) {
-     var dropObj = this._getDropObject(event);
+      var prevActiveDropObj = this._activeDropObj;
+      var dropObj = this._getDropObject(event);
+      this._activeDropObj = dropObj;
       if (this._comp.isTaskResizeEnabled()) {
         var obj = this.DragSource.getDragObject();
         if (obj && obj.nodeType === 'task') {
@@ -4356,7 +4488,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           }
         }
       }
-      if (dropObj && dropObj.nodeType === 'row') {
+      // If the previous active drop row is the same as the current one, skip updating the row highlight
+      if (dropObj && dropObj.nodeType === 'row' && dropObj !== prevActiveDropObj) {
         // In firefox (and sometimes on mobile), when one drags a task
         // to the edge such that the gantt starts panning, the drop effect doesn't clear
         // from previous rows (normally the ClearDropEffect is invoked to clear them,
@@ -4386,7 +4519,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @override
      */
     ShowRejectedDropEffect(event) {
-     var dropObj = this._getDropObject(event);
+      var prevActiveDropObj = this._activeDropObj;
+      var dropObj = this._getDropObject(event);
+      this._activeDropObj = dropObj;
+      // If the previous active drop row is the same as the current one, skip updating the row highlight
+      if (dropObj && dropObj.nodeType === 'row' && dropObj === prevActiveDropObj) {
+        return;
+      }
+
       if (this._comp.isTaskResizeEnabled()) {
         var obj = this.DragSource.getDragObject();
         if (obj && obj.nodeType === 'task') {
@@ -4405,12 +4545,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     /**
      * @override
      */
-    ClearDropEffect() {
-     var prevDropObj = this._getDropObject();
-      if (prevDropObj && prevDropObj.nodeType === 'row') {
-        prevDropObj.removeEffect('invalidDrop');
-        prevDropObj.removeEffect('activeDrop');
+    ClearDropEffect(event) {
+      // According to spec,
+      // dragleave (leaving the old thing) is always preceded by dragenter (entering the new thing)
+      // If this clear is triggered by dragleave, then at this point
+      // dropObj is the obj we're leaving (dragleave),
+      // and this._activeDropObj is the obj we're entering (dragenter)
+      // If they're the same object (e.g. leaving a task, and entering within the same row),
+      // no need to clear the (e.g. row highlight) effect.
+      var dropObj = this._getDropObject();
+      if (event.type === 'dragleave' && dropObj && dropObj.nodeType === 'row' && dropObj === this._activeDropObj) {
+        return;
       }
+
+      if (dropObj && dropObj.nodeType === 'row') {
+        dropObj.removeEffect('invalidDrop');
+        dropObj.removeEffect('activeDrop');
+      }
+      this._activeDropObj = null;
     }
 
     /**
@@ -4461,7 +4613,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           (!this._lastProcessedDragOverEvent ||
             this._lastKnownDragOverEvent.pageX !== this._lastProcessedDragOverEvent.pageX ||
             this._lastKnownDragOverEvent.pageY !== this._lastProcessedDragOverEvent.pageY)) {
-        requestAnimationFrame(() => {
+        requestAnimationFrame((timestamp) => {
+          self._isDragOverTicking = false;
+          if (self._startDnDDragOver === undefined) {
+            self._startDnDDragOver = timestamp;
+          }
+          const elapsed = timestamp - self._startDnDDragOver;
+          // At high viewport density, throttle the drag feedback update by 100ms between requestAnimationFrame
+          if (elapsed < self._DND_DRAGOVER_FEEDBACK_THROTTLE_DELAY && self._comp.getViewportDensity() > 1) {
+            return;
+          }
+          self._startDnDDragOver = timestamp;
+
           // Need to do this here instead of onDndDrag because the drag event doesn't have pageX/Y on FF for some reason.
           var obj = self.DragSource.getDragObject();
           if (obj && obj.nodeType === 'task' && self._isDndDragging) {
@@ -4493,7 +4656,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
               obj.removeDragFeedbacks();
           }
           self._lastProcessedDragOverEvent = self._lastKnownDragOverEvent;
-          self._isDragOverTicking = false;
         });
         this._isDragOverTicking = true;
       }
@@ -5647,20 +5809,43 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @private
      */
     _applyStyles(taskShape, property) {
-      var svgClassName = this.getSvgClassName(property),
-          svgStyle = this.getSvgStyle(property);
+      const svgClassName = this.getSvgClassName(property);
+      const svgStyle = this.getSvgStyle(property);
 
       if (svgClassName) {
-        // Apply default class names, which also removes any previous svgClassNames
-        taskShape.applyDefaultStyleClasses();
-        // Concatenate the default class names with the provided svgClassName
-        taskShape.setClassName(taskShape.getClassName() + ' ' + svgClassName);
+        taskShape.applyStyleClasses(svgClassName);
       }
 
       if (svgStyle) {
         taskShape.setStyle(svgStyle);
       }
     }
+
+    /**
+     * Applies a clippath shaped to the main shape on the task artifacts container.
+     */
+    _applyMainContainerClippath() {
+      var isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx());
+      if (!isRTL || dvt.Agent.browser === 'firefox') {
+        // In Firefox only, the CSS clip-path path's reference coordinate is the same
+        // as that of SVG (in all other browsers, the reference coordinate is relative
+        // to the rendered mainContainer bounding box).
+        // So in both RTL and LTR, the mainShape's path command should be used.
+        this._mainContainer.setStyle({ clipPath: `path('${this._mainShape.getCmds()}')` });
+      } else {
+        // In all browsers (except Firefox), negative path values as clip-paths don't work.
+        // In RTL the mainShape's path contains negative values, so apply
+        // a transformed equivalent path with all positive values instead.
+        var width = this._mainShape.getWidth();
+        this._mainContainer.setStyle({ clipPath: `path('${this._mainShape.generateCmd(
+        this._mainShape.getX() + width,
+        this._mainShape.getY(),
+        width,
+        this._mainShape.getHeight(),
+        this._mainShape.getBorderRadius()
+      )}')` });
+      }
+    };
 
     /**
      * Whether the task element should be shown as a milestone
@@ -5943,10 +6128,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           taskHeight = this._container.getValue('height'),
           start = this._container.getValue('start'),
           end = this._container.getValue('end'),
-          isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx()),
+          context = this._gantt.getCtx(),
+          isRTL = dvt.Agent.isRightToLeft(context),
+          theme = context.getThemeBehavior(),
           self = this, finalStates,
           options = this._gantt.getOptions(),
-          onRenderEnd, mainDim, x, y, width, height, borderRadius, isMilestone, rawBorderRadius, aggregationState;
+          onRenderEnd, mainDim,
+          x, y, width, height, borderRadius,
+          isMilestone, rawBorderRadius, aggregationState,
+          isViewportDensityHigh;
 
       if (taskProps) {
         // If type is "milestone", and if 'start' and 'end' values are specified and unequal, the 'start' value is used to evaluate position.
@@ -5957,33 +6147,40 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           y = Math.max(0, (progressHeight - taskHeight) / 2);
           width = Math.abs(mainDim['distance']);
           // (Alta only) Summary task case, want the summary task shape to take on the full height
-          height = this.isSummary('main') && this._gantt.getCtx().getThemeBehavior() === 'alta' ? this._container.getFinalHeight(true) : taskHeight;
+          height = this.isSummary('main') && theme === 'alta' ? this._container.getFinalHeight(true) : taskHeight;
           isMilestone = this.isMilestone('main');
+          isViewportDensityHigh = this._gantt.getViewportDensity() > 1;
 
           // Get border radius. If task aggregation is on, assume given border radius is a singular value rather than a multi value shorthand, and override accordingly:
+          // If viewport density is high though, turn off border radius for better performance.
           rawBorderRadius = !isMilestone ? this._container.getValue('borderRadius') : options._resources.milestoneBorderRadius;
-          aggregationState = this._container.getLayoutObject().aggregation;
-          switch (aggregationState) {
-            case 'stackStart':
-              borderRadius = !isRTL ? `${rawBorderRadius} 0px 0px ${rawBorderRadius}` : `0px ${rawBorderRadius} ${rawBorderRadius} 0px`;
-              break;
-            case 'stackMiddle':
-              borderRadius = '0';
-              break;
-            case 'stackEnd':
-              borderRadius = !isRTL ? `0px ${rawBorderRadius} ${rawBorderRadius} 0px` : `${rawBorderRadius} 0px 0px ${rawBorderRadius}`;
-              break;
-            case 'stackSolo':
-            default: // no aggregation
-              borderRadius = rawBorderRadius;
+          if (rawBorderRadius === '0' || rawBorderRadius === '0px' || isViewportDensityHigh) {
+            borderRadius = '0';
+          } else {
+            aggregationState = this._container.getLayoutObject().aggregation;
+            switch (aggregationState) {
+              case 'stackStart':
+                borderRadius = !isRTL ? `${rawBorderRadius} 0px 0px ${rawBorderRadius}` : `0px ${rawBorderRadius} ${rawBorderRadius} 0px`;
+                break;
+              case 'stackMiddle':
+                borderRadius = '0';
+                break;
+              case 'stackEnd':
+                borderRadius = !isRTL ? `0px ${rawBorderRadius} ${rawBorderRadius} 0px` : `${rawBorderRadius} 0px 0px ${rawBorderRadius}`;
+                break;
+              case 'stackSolo':
+              default: // no aggregation
+                borderRadius = rawBorderRadius;
+            }
           }
 
           if (this._mainShape == null) { // element doesn't exist in DOM already
-            if (this._gantt.getCtx().getThemeBehavior() !== 'alta') {
-              this._mainBackgroundShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'mainBackground');
+            // If viewport density is high, don't render the white background for better performance.
+            if (theme !== 'alta' && !isViewportDensityHigh) {
+              this._mainBackgroundShape = new DvtGanttTaskShape(context, x, y, width, height, borderRadius, this, 'mainBackground');
               this._container.addChild(this._mainBackgroundShape);
             }
-            this._mainShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'main');
+            this._mainShape = new DvtGanttTaskShape(context, x, y, width, height, borderRadius, this, 'main');
             this._container.addChild(this._mainShape);
             this._mainShape.setRenderState('add');
 
@@ -5997,23 +6194,47 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             }
           } else {
             this._mainShape.setRenderState('exist');
+            if (theme !== 'alta') {
+              if (isViewportDensityHigh) {
+                // If viewport density is high, but there's a white background, remove it for better performance
+                if (this._mainBackgroundShape) {
+                  this._container.removeChild(this._mainBackgroundShape);
+                  this._mainBackgroundShape = null;
+                }
+              } else if (!this._mainBackgroundShape) {
+                // If viewport density is low, but there's no white background, add it right behind the main shape
+                this._mainBackgroundShape = new DvtGanttTaskShape(context, x, y, width, height, borderRadius, this, 'mainBackground');
+                this._container.addChildAt(this._mainBackgroundShape, this._container.getChildIndex(this._mainShape));
+              }
+            }
           }
 
           // Construct container for task elements such as progress, downtime, overtime, attribute bar, etc.
           // with a clippath of the main shape.
           // Only do this if applicable; otherwise the empty containers aggravate performance.
-          if (this._mainContainer == null) {
-            var hasAttribute = this._container.getValue('attribute', 'rendered') === 'on';
-            var hasProgress = this.getProgressValue() != null;
-            var hasDowntime = this._container.getValue('downtime', 'start') != null || this._container.getValue('downtime', 'end') != null;
-            var hasOvertime = this._container.getValue('overtime', 'start') != null || this._container.getValue('overtime', 'end') != null;
-            if (hasAttribute || hasProgress || hasDowntime || hasOvertime) {
-              this._mainContainer = new dvt.Container(this._gantt.getCtx());
-              var cp = new dvt.ClipPath();
-              cp.addPath(this._mainShape.getCmds());
-              this._mainContainer.setClipPath(cp);
+          var hasAttribute = this._container.getValue('attribute', 'rendered') === 'on';
+          var hasProgress = this.getProgressValue() != null;
+          var hasDowntime = this._container.getValue('downtime', 'start') != null || this._container.getValue('downtime', 'end') != null;
+          var hasOvertime = this._container.getValue('overtime', 'start') != null || this._container.getValue('overtime', 'end') != null;
+          if (theme !== 'alta'
+            && !isMilestone
+            && borderRadius !== '0'
+            && (hasAttribute || hasProgress || hasDowntime || hasOvertime)
+          ) {
+            if (this._mainContainer == null) {
+              this._mainContainer = new dvt.Container(context);
+              // for CSS clip-path to work as expected, the this._mainContainer's bounding box need to match the mainShape's bounding box.
+              // To ensure this, render a hidden rect that matches the expected bounding box.
+              this._mainContainerSupport = new dvt.Rect(this._gantt.getCtx(), isRTL ? -width : 0, 0, width, height);
+              this._mainContainerSupport.setVisible(false);
+              this._mainContainer.addChild(this._mainContainerSupport);
+              this._applyMainContainerClippath();
               this._container.addChild(this._mainContainer);
             }
+          } else if (this._mainContainer != null) {
+            this._container.removeChild(this._mainContainer);
+            this._mainContainer = null;
+            this._mainContainerSupport = null;
           }
 
           // Since final dimensions are not applied until after animations (if any), store
@@ -6216,9 +6437,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._mainCustomContent.setWidth(width);
       }
       if (this._mainContainer) {
-        var cp = new dvt.ClipPath();
-        cp.addPath(this._mainShape.getCmds());
-        this._mainContainer.setClipPath(cp);
+        this._applyMainContainerClippath();
       }
     }
 
@@ -6249,9 +6468,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._mainCustomContent.setHeight(height);
       }
       if (this._mainContainer) {
-        var cp = new dvt.ClipPath();
-        cp.addPath(this._mainShape.getCmds());
-        this._mainContainer.setClipPath(cp);
+        this._applyMainContainerClippath();
       }
     }
 
@@ -6282,9 +6499,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._mainCustomContent.setX(x);
       }
       if (this._mainContainer) {
-        var cp = new dvt.ClipPath();
-        cp.addPath(this._mainShape.getCmds());
-        this._mainContainer.setClipPath(cp);
+        this._applyMainContainerClippath();
       }
     }
 
@@ -6315,9 +6530,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._mainCustomContent.setY(y);
       }
       if (this._mainContainer) {
-        var cp = new dvt.ClipPath();
-        cp.addPath(this._mainShape.getCmds());
-        this._mainContainer.setClipPath(cp);
+        this._applyMainContainerClippath();
       }
     }
 
@@ -6348,9 +6561,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._mainCustomContent.setBorderRadius(r);
       }
       if (this._mainContainer) {
-        var cp = new dvt.ClipPath();
-        cp.addPath(this._mainShape.getCmds());
-        this._mainContainer.setClipPath(cp);
+        this._applyMainContainerClippath();
       }
     }
 
@@ -6377,9 +6588,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._mainCustomContent.setDimensions(x, y, w, h, r);
       }
       if (this._mainContainer) {
-        var cp = new dvt.ClipPath();
-        cp.addPath(this._mainShape.getCmds());
-        this._mainContainer.setClipPath(cp);
+        this._applyMainContainerClippath();
       }
     }
 
@@ -6446,7 +6655,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           self = this, onRenderEnd, finalStates,
           x, y, width, borderRadius, type;
 
-      if (progressValue !== null && this._mainShape && this._mainContainer && !this.isMilestone('main')) {
+      if (progressValue !== null && this._mainShape && !this.isMilestone('main')) {
         // Calculate final dimensions
         x = 0;
         y = Math.max(0, (taskHeight - progressHeight) / 2);
@@ -6463,12 +6672,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         if (this._progressShape == null) // element doesn't exist in DOM already
         {
           this._progressShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, progressHeight, borderRadius, this, type);
-          this._mainContainer.addChild(this._progressShape);
           this._progressShape.setRenderState('add');
         } else {
           this._progressShape.setType(type);
           this._progressShape.setRenderState('exist');
         }
+        var container = this._mainContainer || this._container;
+        container.addChild(this._progressShape);
 
         this._progressShape.setFinalWidth(width);
         this._progressShape.setFinalHeight(progressHeight);
@@ -6514,16 +6724,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     renderOvertime() {
       var self = this;
-      if (this._mainShape && this._mainContainer && !this.isMilestone('main')) {
+      if (this._mainShape && !this.isMilestone('main')) {
         var start = this._container.getValue('overtime', 'start');
         var end = this._container.getValue('overtime', 'end');
         var dim = this.getTimeSpanDimensions(start, end);
         if (dim) {
           // Calculate final dimensions
-          var isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx());
           var taskStart = this._container.getValue('start');
           var taskObj = this._container.getLayoutObject();
-          var x = (isRTL ? -1 : 1) * this.getTimeSpanDimensions(taskStart, start)['distance'];
+          var x = this.getTimeSpanDimensions(taskStart, start)['distance'];
           var y = 0;
           var height = taskObj['overtimeHeight'];
           var width = Math.abs(dim['distance']);
@@ -6532,11 +6741,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           if (this._overtimeShape == null) // element doesn't exist in DOM already
           {
             this._overtimeShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'overtime');
-            this._mainContainer.addChild(this._overtimeShape);
             this._overtimeShape.setRenderState('add');
           } else {
             this._overtimeShape.setRenderState('exist');
           }
+          var container = this._mainContainer || this._container;
+          container.addChild(this._overtimeShape);
 
           this._overtimeShape.setFinalWidth(width);
           this._overtimeShape.setFinalHeight(height);
@@ -6585,17 +6795,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     renderDowntime() {
       var self = this;
-      if (this._mainShape && this._mainContainer && !this.isMilestone('main')) {
+      if (this._mainShape && !this.isMilestone('main')) {
         var start = this._container.getValue('downtime', 'start');
         var end = this._container.getValue('downtime', 'end');
         var dim = this.getTimeSpanDimensions(start, end);
         if (dim) {
           // Calculate final dimensions
           var options = this._gantt.getOptions();
-          var isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx());
           var taskStart = this._container.getValue('start');
           var taskObj = this._container.getLayoutObject();
-          var x = (isRTL ? -1 : 1) * this.getTimeSpanDimensions(taskStart, start)['distance'];
+          var x = this.getTimeSpanDimensions(taskStart, start)['distance'];
           var height = taskObj['downtimeHeight'];
           var y = this._mainShape.getFinalHeight() - height;
           var width = Math.abs(dim['distance']);
@@ -6604,11 +6813,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
           if (this._downtimeShape == null) { // element doesn't exist in DOM already
             this._downtimeShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'downtime');
-            this._mainContainer.addChild(this._downtimeShape);
             this._downtimeShape.setRenderState('add');
           } else {
             this._downtimeShape.setRenderState('exist');
           }
+          var container = this._mainContainer || this._container;
+          container.addChild(this._downtimeShape);
 
           this._downtimeShape.setFinalWidth(width);
           this._downtimeShape.setFinalHeight(height);
@@ -6658,7 +6868,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     renderAttribute() {
       var self = this;
       var rendered = this._container.getValue('attribute', 'rendered') === 'on';
-      if (rendered && this._mainShape && this._mainContainer && !this.isMilestone('main')) {
+      if (rendered && this._mainShape && !this.isMilestone('main')) {
         // Calculate final dimensions
         var taskObj = this._container.getLayoutObject();
         var x = 0;
@@ -6670,11 +6880,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         if (this._attributeShape == null) // element doesn't exist in DOM already
         {
           this._attributeShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'attribute');
-          this._mainContainer.addChild(this._attributeShape);
           this._attributeShape.setRenderState('add');
         } else {
           this._attributeShape.setRenderState('exist');
         }
+        var container = this._mainContainer || this._container;
+        container.addChild(this._attributeShape);
 
         this._attributeShape.setFinalWidth(width);
         this._attributeShape.setFinalHeight(height);
@@ -6904,29 +7115,37 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       return this._renderState;
     }
 
-    /**
-     * Applies styles on the label
-     * @param {string|object} labelStyle
-     * @private
-     */
-    _applyStyles(labelStyle) {
-      var labelCSSStyle;
-
-      if (labelStyle != null) {
+    _getLabelCSSStyle(labelStyle) {
+      let labelCSSStyle;
+      // If labelStyle is {}; don't process it.
+      if (labelStyle != null && Object.keys(labelStyle).length > 0) {
         // Get the base label style dvt.CSSStyle object. Should not grab the one from cache
         // because we're going to be modifying it.
         labelCSSStyle = DvtGanttStyleUtils.getTaskLabelStyle(this._gantt.getOptions());
-
         labelCSSStyle.parseInlineStyle(labelStyle);
-        this._labelOutputText.setStyle(labelStyle); // works if style is object
       } else {
         // Grab the base label style dvt.CSSStyle object from cache rather than instantiating
         // a new one for performance reasons
         labelCSSStyle = this._gantt.getCache().getFromCache('baseTaskLabelCSSStyle');
       }
+      return labelCSSStyle;
+    }
 
+    /**
+     * Applies styles on the label
+     * @param {string|object} labelStyle
+     * @param {dvt.CSSStyle} labelCSSStyle Computed labelCSSStyle from _getLabelCSSStyle(labelStyle)
+     * @private
+     */
+    _applyStyles(labelStyle, labelCSSStyle) {
+      // If labelStyle is {} or labelStyle same as current styles, don't bother processing it.
+      if (labelStyle != null && Object.keys(labelStyle).length > 0 && this._labelOutputText.getStyle() !== labelStyle) {
+        this._labelOutputText.setStyle(labelStyle); // works if style is object
+      }
       // necessary for getDimension/fitText to obtain CSS style of the text
-      this._labelOutputText.setCSSStyle(labelCSSStyle);
+      if (this._labelOutputText.getCSSStyle() !== labelCSSStyle) {
+        this._labelOutputText.setCSSStyle(labelCSSStyle);
+      }
     }
 
     /**
@@ -7016,7 +7235,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           padding = DvtGanttStyleUtils.getTaskPadding(this._gantt.getOptions()),
           margin = DvtGanttStyleUtils.getTaskLabelMargin(this._gantt.getOptions()),
           innerPadding = padding + margin,
-          hasProgress, isMilestone,
+          shouldConsiderProgress, isMilestone,
           isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx()),
           ganttWidth = this._gantt.getContentLength(),
           ganttStartPos, ganttEndPos,
@@ -7092,10 +7311,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         case 'innerStart_ABSOLUTE':
         case 'innerEnd_ABSOLUTE':
           // normalize the _ABSOLUTE positions to the effective position name
-          if (position.slice(-('_ABSOLUTE'.length)) === '_ABSOLUTE')
-            position = position.slice(0, -('_ABSOLUTE'.length));
+          if (position.slice(-9) === '_ABSOLUTE')
+            position = position.slice(0, -9);
 
-          hasProgress = typeof this._container.getValue('progress', 'value') === 'number';
+          // Progress space evaluation requires this._labeOutputText to exist
+          // If this._labelOutputText doesn't exist (yet), then this method is called for initial conservative estimation purposes (for performance)
+          // in which case we don't need to evaluate the progress space anyway to be conservative.
+          shouldConsiderProgress = this._labelOutputText && typeof this._container.getValue('progress', 'value') === 'number';
           isMilestone = task.isMilestone('main');
           if (!isMilestone) {
             if (isPositionBlocked) {
@@ -7106,7 +7328,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
             taskMainBounds = this._container.getTaskShapePhysicalBounds('main');
             insideWidth = Math.abs(taskMainBounds['endPos'] - taskMainBounds['startPos']);
-            if (hasProgress) {
+            if (shouldConsiderProgress) {
               labelDimensions = this._labelOutputText.getDimensions();
               progressShape = task.getShape('progress');
               if (progressShape) {
@@ -7249,7 +7471,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     /**
      * Process and place label accordingly based on given labelPosition from options.
-     * @param {string|Array} labelPosition The labelPosition from options.
+     * @param {string|Array} labelPosition The processed labelPosition.
      * @return {boolean} whether position evaluation is successful
      * @private
      */
@@ -7257,8 +7479,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var traversalCache = {}, effectivePosition,
           availableWidth,
           labelDimensions = this._labelOutputText.getDimensions(),
-          labelWidth = labelDimensions.w, labelHeight = labelDimensions.h,
-          labelPosition = this._preprocessLabelPosition(labelPosition);
+          labelWidth = labelDimensions.w;
 
       var largestPosition;
       var largestAvailableWidth = 0;
@@ -7301,9 +7522,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         return false;
       }
 
+      if (availableWidth <= 1) {
+        return false;
+      }
+
       // Truncate label if necessary
+      let labelShown = true;
       if (labelWidth > availableWidth) {
-        dvt.TextUtils.fitText(this._labelOutputText, availableWidth, Infinity, this._container, 1);
+        labelShown = dvt.TextUtils.fitText(this._labelOutputText, availableWidth, Infinity, this._container, 1);
+      }
+
+      if (!labelShown) {
+        return false;
       }
 
       this._placeLabel(effectivePosition);
@@ -7314,7 +7544,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * Renders the task label
      */
     render() {
-      var label = this._container.getValue('label'),
+      var context = this._gantt.getCtx(),
+          label = this._container.getValue('label'),
           labelPosition = this._container.getValue('labelPosition'),
           labelStyle = this._container.getValue('labelStyle'),
           finalStates,
@@ -7325,6 +7556,35 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._renderState = 'exist';
 
       if (label != null && label.length > 0 && labelPosition !== 'none' && this._associatedShape) {
+        const labelCSSStyle = this._getLabelCSSStyle(labelStyle);
+        const processedLabelPosition = this._preprocessLabelPosition(labelPosition);
+        // If labelPosition from options is not an array, conservatively guess-timate whether the text
+        // definitely fits in the available space or not; early return if definitely not for performance reasons.
+        if (processedLabelPosition.length === 1 && processedLabelPosition[0].slice(-9) === '_ABSOLUTE') {
+          const availableWidth = this._getAvailableWidth(processedLabelPosition[0])[1];
+          if (availableWidth <= 0) {
+            this.remove();
+            return;
+          }
+          // '|' is one of the skinniest characters there is.
+          // Thus (length of '|')*(label length) is a very conservative estimate of the label width.
+          const conservativeCharWidth = dvt.TextUtils.getTextStringWidth(context, '|', labelCSSStyle);
+          const lowerBoundTextWidth = conservativeCharWidth * label.length;
+          if (lowerBoundTextWidth > availableWidth) {
+            // If it's a single character and that doesn't fit, then it can't be truncated and definitely doesn't fit.
+            if (label.length === 1) {
+              this.remove();
+              return;
+            }
+            // If even the smallest possible result of truncation ("|...") doesn't fit, then bail.
+            const ellipsisWidth = dvt.TextUtils.getTextStringWidth(context, dvt.TextUtils.ELLIPSIS, labelCSSStyle);
+            if ((conservativeCharWidth + ellipsisWidth) > availableWidth) {
+              this.remove();
+              return;
+            }
+          }
+        }
+
         if (this._labelOutputText == null) {
           this._labelOutputText = new dvt.OutputText(this._gantt.getCtx(), label, 0, 0);
           if (this._gantt.getEventManager().IsDragSupported('tasks')) {
@@ -7341,14 +7601,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._labelOutputText.setTextString(label);
 
         // Apply styles; necessary before positioning because position is font size dependent
-        this._applyStyles(labelStyle);
-        isPositionFeasible = this._evaluatePosition(labelPosition);
+        this._applyStyles(labelStyle, labelCSSStyle);
+        isPositionFeasible = this._evaluatePosition(processedLabelPosition);
 
         if (isPositionFeasible) {
           // Called at the end of animation (if any)
           onRenderEnd = () => {
-            var labelColor, fillColor;
-
             // Apply contrast text color depending on background color
             switch (self._effectiveLabelPosition) {
               case 'innerCenter':
@@ -7357,9 +7615,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
               case 'progressStart':
               case 'progress':
               case 'oProgress':
-                fillColor = self._associatedShape.getFillColor();
-                labelColor = dvt.ColorUtils.getContrastingTextColor(fillColor ? fillColor['computedFill'] : null);
-                if (labelColor != null) {
+                const fillColor = self._associatedShape.getFillColor();
+                if (fillColor && !fillColor.fromShapeCache) {
+                  const labelColor = dvt.ColorUtils.getContrastingTextColor(fillColor.computedFill);
                   self._labelOutputText.setFill(new dvt.SolidFill(labelColor));
                 }
                 break;
@@ -7772,6 +8030,37 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var posInDataBody = dataBody.stageToLocal(referenceFrame.localToStage({x: x, y: y}));
       var region = new dvt.Rectangle(posInDataBody.x, posInDataBody.y, w, h);
       this._gantt.scrollIntoView(region, xPriority, yPriority, DvtGanttStyleUtils.getRowPaddingTop(options));
+    }
+
+    /**
+     * @override
+     */
+    setTranslateX(tx) {
+      // Translate a rounded value based on precision
+      var precision = this._gantt.getRenderingPrecision();
+      var x = precision === null ? tx : this._gantt.round(tx, precision);
+      return super.setTranslateX(x);
+    }
+
+    /**
+     * @override
+     */
+    setTranslateY(ty) {
+      // Translate a rounded value based on precision
+      var precision = this._gantt.getRenderingPrecision(this._gantt);
+      var y = precision === null ? ty : this._gantt.round(ty, precision);
+      return super.setTranslateY(y);
+    }
+
+    /**
+     * @override
+     */
+    setTranslate(tx, ty) {
+      // Translate a rounded value based on precision
+      var precision = this._gantt.getRenderingPrecision(this._gantt);
+      var x = precision === null ? tx : this._gantt.round(tx, precision);
+      var y = precision === null ? ty : this._gantt.round(ty, precision);
+      return super.setTranslate(x, y);
     }
 
     /**
@@ -8442,8 +8731,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this.show();
       }
 
-      if (this.isSelectable())
-        this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
+      var selectingCursor = dvt.SelectionEffectUtils.getSelectingCursor();
+      if (this.isSelectable() && this.getCursor() !== selectingCursor)
+        this.setCursor(selectingCursor);
 
       if (this.getParent() != container)
         container.addChild(this);
@@ -9281,24 +9571,27 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var labelContent = this.getRowLabelContent();
       var top = this.getFinalY();
       var height = this._rowObj['height'];
-      var rowLabelPadding = DvtGanttStyleUtils.getRowLabelPadding(gantt.getOptions());
+      var options = gantt.getOptions();
+      var startPadding = DvtGanttStyleUtils.getRowLabelPaddingStart(options);
+      var endPadding = DvtGanttStyleUtils.getRowLabelPaddingEnd(options);
+      var totalPadding = startPadding + endPadding;
       var rowAxis = gantt.getRowAxis();
       if (labelContent.getDisplayableType() === 'g') {
-        var x = !isRTL ? rowLabelPadding : rowAxis.getWidth() - rowLabelPadding;
+        var x = !isRTL ? startPadding : rowAxis.getWidth() - startPadding;
       } else {
         var labelDisplayable = labelContent.getDisplayable();
         if (labelDisplayable.isTruncated())
           labelDisplayable.setTextString(labelDisplayable.getUntruncatedTextString());
 
         // Truncate label to fit
-        dvt.TextUtils.fitText(labelDisplayable, rowAxis.getWidth() - 2 * rowLabelPadding, height, labelDisplayable.getParent(), 1);
+        dvt.TextUtils.fitText(labelDisplayable, rowAxis.getWidth() - totalPadding, height, labelDisplayable.getParent(), 1);
 
         // Always start align labels
         if (isRTL) {
           labelDisplayable.alignRight();
-          x = rowAxis.getWidth() - rowLabelPadding;
+          x = rowAxis.getWidth() - startPadding;
         } else {
-          x = rowLabelPadding;
+          x = startPadding;
         }
       }
 
@@ -9663,6 +9956,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     getContentHeight() {
       return this._contentHeight;
+    }
+
+    /**
+     * Gets the number of tasks in the current viewport.
+     * @return {number}
+     */
+    getNumViewportTasks() {
+      return this._numViewportTasks;
     }
 
     /**
@@ -11506,7 +11807,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @private
      */
     _computeViewportRenderOperations (viewport, action) {
-     var rowsDelete = [];
+      var rowsDelete = [];
       var rowsAdd = [];
       var rowsUpdate = [];
       if (action === DvtGanttDataLayoutManager.VPC_REFRESH) {
@@ -11711,6 +12012,27 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     renderViewport (viewport, action) {
       this._prepareViewport(viewport, action);
       var renderOperations = this._computeViewportRenderOperations(viewport, action);
+
+      // Number of tasks in the viewport = number of task adds + number of task updates
+      var accViewportTasks = (acc, rowOp) => acc + rowOp.tasksAdd.size + rowOp.tasksUpdate.size;
+      this._numViewportTasks = renderOperations.rowsAdd.reduce(accViewportTasks, 0) + renderOperations.rowsUpdate.reduce(accViewportTasks, 0);
+
+      // Apply any appropriate shape and text rendering performance optimizations to the databody
+      // before updating the viewport
+      var databodyElem = this._gantt.getDatabody().getElem();
+      var shapeRendering = dvt.ToolkitUtils.getAttrNullNS(databodyElem, 'shape-rendering');
+      if (this._gantt.getViewportDensity() > 1) {
+        if (shapeRendering !== 'optimizeSpeed') {
+          dvt.ToolkitUtils.setAttrNullNS(databodyElem, 'shape-rendering', 'optimizeSpeed');
+          dvt.ToolkitUtils.setAttrNullNS(databodyElem, 'text-rendering', 'optimizeSpeed');
+        }
+      } else {
+        if (shapeRendering === 'optimizeSpeed') {
+          dvt.ToolkitUtils.removeAttrNullNS(databodyElem, 'shape-rendering');
+          dvt.ToolkitUtils.removeAttrNullNS(databodyElem, 'text-rendering');
+        }
+      }
+
       this._executeViewportRenderOperations(renderOperations);
 
       this.renderViewportDependencyLines(viewport, action);
@@ -13114,7 +13436,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             this._rowLabelContents.push(labelContent);
           }
         }
-        this._width += 2 * DvtGanttStyleUtils.getRowLabelPadding(this._gantt.getOptions());
+        var options = this._gantt.getOptions();
+        var startPadding = DvtGanttStyleUtils.getRowLabelPaddingStart(options);
+        var endPadding = DvtGanttStyleUtils.getRowLabelPaddingEnd(options);
+        this._width += (startPadding + endPadding);
       } else { // row axis width is not dependent on content width; defer actual content rendering to when rows are rendered
         this._width = this._availableWidth['calculatedWidth'];
         for (var i = 0; i < rowObjs.length; i++) {
@@ -13221,12 +13546,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx());
       var width = this._width;
       var height = this._gantt.getCanvasSize() - this._gantt.getAxesHeight();
+      var componentStartPadding = DvtGanttStyleUtils.getComponentPaddingStart(this._gantt.getOptions());
 
-      var x = isRTL ? this._gantt.getStartXOffset() + this._gantt.getCanvasLength() + this._gantt.getBorderWidth() + DvtGanttStyleUtils.getRowAxisGap() : 0;
+      var x = isRTL
+        ? this._gantt.getStartXOffset() + this._gantt.getCanvasLength() + this._gantt.getBorderWidth() + DvtGanttStyleUtils.getRowAxisGap()
+        : componentStartPadding;
       this.setTranslateX(x);
 
       var cp = new dvt.ClipPath();
-      cp.addRect(this.getTranslateX(), this._gantt.getDatabodyStart() + this._gantt.getStartYOffset(), width, height);
+      cp.addRect(
+        isRTL ? x : x - componentStartPadding,
+        this._gantt.getDatabodyStart() + this._gantt.getStartYOffset(),
+        width + componentStartPadding,
+        height
+      );
       this.setClipPath(cp);
 
       this._backgroundContainer.setTranslateX(isRTL ? x - 1 : x); // offset by 1 in rtl to hide border touching gantt (see also DvtGanttRenderer.renderRowAxis).
@@ -14897,6 +15230,57 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     }
 
     /**
+     * Returns how dense the viewport is.
+     * @return {number} 0 for low, 1 for medium, 2 for high
+     */
+    getViewportDensity() {
+      if (this._viewportDensity !== undefined) {
+        return this._viewportDensity
+      }
+      var numViewportTasks = this._dataLayoutManager.getNumViewportTasks();
+      if (numViewportTasks < 2000) {
+        this._viewportDensity = 0;
+      } else if (numViewportTasks < 5000) {
+        this._viewportDensity = 1;
+      } else {
+        this._viewportDensity = 2;
+      }
+      return this._viewportDensity;
+    }
+
+    /**
+     * Gets the rendering precision of the gantt, based on the viewport density.
+     * Rendering precision is the number of decimal places numerical values (such as in transforms and paths)
+     * should round to for rendering.
+     * Generally the lower the rendering precision, the better the rendering performance at the expense of accuracy.
+     * @return {number|null} number of decimal places to round to. null means values should not be rounded, and the full precision should be used.
+     */
+     getRenderingPrecision() {
+      if (this._renderingPrecision !== undefined) {
+        return this._renderingPrecision;
+      }
+      var density = this.getViewportDensity();
+      if (density === 0) {
+        this._renderingPrecision = null;
+      } else if (density === 1) {
+        this._renderingPrecision = 1;
+      } else {
+        this._renderingPrecision = 0;
+      }
+      return this._renderingPrecision;
+    }
+
+    /**
+     * Round given number to a certain precision.
+     * @param {number} n Original value
+     * @param {number} precision Number of decimal places to keep
+     * @return {number}
+     */
+    round(n, precision) {
+      return Math.round(n * 10**precision) / 10**precision;
+    }
+
+    /**
      * Renders the current viewport.
      * @param {string} action The action that triggered the viewport change. One of the DvtGanttDataLayoutManager.VPC_X strings.
      * @param {boolean=} bScrollPositionChanged Whether to dispatch a scroll position change event
@@ -14905,6 +15289,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (this._databody == null) {
         return;
       }
+
+      // Clear previously cached values derived from viewport density
+      this._viewportDensity = undefined;
+      this._renderingPrecision = undefined;
 
       var viewport = this.getViewPort();
       this._dataLayoutManager.renderViewport(viewport, action);
@@ -15188,6 +15576,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       this.setStartXOffset(this._widthOffset + this._borderWidth);
       this.setStartYOffset(this._borderWidth);
+
+      // Apply component start padding
+      var startPadding = DvtGanttStyleUtils.getComponentPaddingStart(this.Options);
+      this._backgroundWidth -= startPadding;
+      if (!isRTL) {
+        this._widthOffset += startPadding;
+        this.setStartXOffset(this.getStartXOffset() + startPadding);
+      }
 
       // The size of the canvas viewport
       this._canvasLength = this._backgroundWidth - doubleBorderWidth;
@@ -15611,6 +16007,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._emptyText.getParent().removeChild(this._emptyText);
         delete this._emptyText;
         this._emptyText = null;
+        let eventManager = this.getEventManager();
+        let focus = eventManager.getFocus();
+        if (focus && focus.getId && focus.getId() === 'noDataPeer') {
+          eventManager.setFocus(null);
+        }
       }
     }
 

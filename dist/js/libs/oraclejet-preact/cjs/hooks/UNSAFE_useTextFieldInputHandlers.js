@@ -1,25 +1,14 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var hooks = require('preact/hooks');
 require('../utils/PRIVATE_clientHints.js');
-var clientHints = require('../clientHints-90ca1b41.js');
+var clientHints = require('../clientHints-d9b5605d.js');
 
-function useTextFieldInputHandlers({ value, onInput, onCommit, onKeyDown }) {
+function useTextFieldInputHandlers({ currentCommitValue, value, onInput, onCommit, onKeyDown }) {
     const isComposing = hooks.useRef(false);
-    // It is difficult to determine the previous value because, we will get a new value prop when
-    // user types and also when it is updated programmatically. It cannot be differentiated without an
-    // internal state. And we only need to trigger an onCommit for user interacted changes.
-    // So, we maintain two refs here one gets updated on input and another one gets updated on commit.
-    const previousCommitValue = hooks.useRef(value);
-    const previousInputValue = hooks.useRef(value);
-    // When we get a value this is different from previousInputValue, this means the value is updated
-    // programmatically and we need to update the commit value as well.
-    if (value !== previousInputValue.current) {
-        previousCommitValue.current = value;
-    }
     // preactjs/preact #1899 - https://github.com/preactjs/preact/issues/1899
     // Preact does not force the native input to be controlled, so we need to
     // trigger a rerender in order to keep it fully controlled.
@@ -31,11 +20,18 @@ function useTextFieldInputHandlers({ value, onInput, onCommit, onKeyDown }) {
     // as well like radio, select, checkbox.
     const handleChange = hooks.useCallback((event) => {
         const currentValue = event.target.value;
-        if (previousCommitValue.current !== currentValue) {
-            onCommit === null || onCommit === void 0 ? void 0 : onCommit({ previousValue: previousCommitValue.current, value: currentValue });
-            previousCommitValue.current = currentValue;
+        // When do we *not* want to call onCommit?
+        // When the input's value
+        // is the same as the currentCommitValue (like if the user hits Enter over and over,
+        // or if the user focuses and blurs over and over).
+        // Or when the component's value is programmatically changed.
+        // (currentCommitValue is updated whenever we commit or get a programmatic change.
+        // See component code and useCurrentValueReducer hook)
+        // We only need to trigger an onCommit for user interacted changes, not programmatic changes
+        if (currentCommitValue !== currentValue) {
+            onCommit === null || onCommit === void 0 ? void 0 : onCommit({ previousValue: currentCommitValue, value: currentValue });
         }
-    }, [onCommit]);
+    }, [onCommit, currentCommitValue]);
     const handleKeyDown = hooks.useCallback((event) => {
         onKeyDown === null || onKeyDown === void 0 ? void 0 : onKeyDown(event);
         if (event.key === 'Enter') {
@@ -53,8 +49,6 @@ function useTextFieldInputHandlers({ value, onInput, onCommit, onKeyDown }) {
         // See JET-39086 for more details.
         if (!isComposing.current || clientHints.getClientHints().platform === 'android') {
             const newValue = event.target.value;
-            // update the internal ref to the new value
-            previousInputValue.current = newValue;
             onInput === null || onInput === void 0 ? void 0 : onInput({ previousValue: value, value: newValue });
             // preactjs/preact #1899 - https://github.com/preactjs/preact/issues/1899
             // Preact does not force the native input to be controlled, so we need to

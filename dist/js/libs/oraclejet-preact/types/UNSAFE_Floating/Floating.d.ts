@@ -9,7 +9,7 @@ declare type Props = IntrinsicProps & {
     /**
      * Trigger element reference.
      */
-    anchorRef: RefObject<HTMLElement | Coords>;
+    anchorRef: RefObject<Element | Coords>;
     /**
      * Placement offset.
      */

@@ -30,3 +30,4 @@ export declare function pruneCompilerMetadata(metaUtilObj: MetaTypes.MetaUtilObj
 export declare function pruneMetadata(metadata: Record<string, any>): void;
 export declare function updateRtExtensionMetadata(name: string, value: any, metaUtilObj: MetaTypes.MetaUtilObj): void;
 export declare function getValueFromNode(exp: ts.Node): string | number | boolean | object | Array<string | number | boolean | object> | null | undefined;
+export declare function generateStatementsFromText(text: string): ts.NodeArray<ts.Statement>;

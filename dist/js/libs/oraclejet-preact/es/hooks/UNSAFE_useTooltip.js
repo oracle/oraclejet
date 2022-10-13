@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { useState, useRef, useEffect } from 'preact/hooks';
 import { jsx } from 'preact/jsx-runtime';
 import './UNSAFE_useTooltip.css';
@@ -12,17 +12,19 @@ import { mergeProps } from '../utils/UNSAFE_mergeProps.js';
 import { stringLiteralArray } from '../utils/UNSAFE_arrayUtils.js';
 import { classNames } from '../utils/UNSAFE_classNames.js';
 import 'preact/compat';
-import '../index-8347aa9c.js';
-import './UNSAFE_useOutsideClick.js';
+import '../index-46e68d3c.js';
+import './UNSAFE_useUser.js';
+import '../UNSAFE_Environment.js';
 import 'preact';
+import './UNSAFE_useOutsideClick.js';
 import './UNSAFE_useToggle.js';
 
 const positions = stringLiteralArray(['start', 'top-start', 'top', 'top-end', 'end', 'bottom-end', 'bottom', 'bottom-start']);
 const anchorTos = stringLiteralArray(['element', 'pointer']);
 const styles = {
-  wrapper: "w1vvnp2m",
-  base: "b1gymgil",
-  datatip: "d1hwecin"
+  wrapper: "_uophsw",
+  base: "_gg49p7",
+  datatip: "pb2ba7"
 };
 const useTooltipControlled = ({
   text,

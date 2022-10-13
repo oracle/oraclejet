@@ -6272,12 +6272,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
    * @param {object=} params Optional object containing additional parameters for use by component.
    * @class DvtAxisObjPeer
    * @constructor
-   * @implements {dvt.SimpleObjPeer}
+   * @implements {dvt.TextObjPeer}
    * @implements {DvtLogicalObject}
    * @implements {DvtDraggable}
    */
 
-   class DvtAxisObjPeer extends dvt.SimpleObjPeer {
+   class DvtAxisObjPeer extends dvt.TextObjPeer {
      /**
      * @param {DvtAxis} axis The axis.
      * @param {dvt.OutputText} label The owning text instance.
@@ -6288,7 +6288,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @param {object=} params Optional object containing additional parameters for use by component.
      */
     constructor(axis, label, group, drillable, tooltip, datatip, params) {
-      super(tooltip, datatip, null, params);
+      super(axis, label, tooltip, datatip, null, params);
       this._axis = axis;
       this._label = label;
       this._group = group;
@@ -6352,71 +6352,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       return dvt.KeyboardHandler.getNextNavigable(this, event, navigables, false, this._axis.getCtx().getStage());
     }
 
-    /**
-     * @override
-     */
-    getKeyboardBoundingBox(targetCoordinateSpace) {
-      if (this._label)
-        return this._label.getDimensions(targetCoordinateSpace);
-      else
-        return new dvt.Rectangle(0, 0, 0, 0);
-    }
-
-    /**
-     * @override
-     */
-    getDisplayable() {
-      return this._label;
-    }
-
-    /**
-     * @override
-     */
-    getTargetElem() {
-      if (this._label)
-        return this._label.getElem();
-      return null;
-    }
-
-    /**
-     * @override
-     */
-    showKeyboardFocusEffect() {
-      this._isShowingKeyboardFocusEffect = true;
-      if (this._label) {
-        var bounds = this.getKeyboardBoundingBox();
-        this._overlayRect = new dvt.Rect(this._axis.getCtx(), bounds.x, bounds.y, bounds.w, bounds.h);
-        this._overlayRect.setSolidStroke(dvt.Agent.getFocusColor());
-        this._overlayRect.setInvisibleFill();
-
-        // necessary to align rect with tagential and rotated labels
-        this._overlayRect.setMatrix(this._label.getMatrix());
-
-        this._axis.addChild(this._overlayRect);
-      }
-    }
-
-
-    /**
-     * @override
-     */
-    hideKeyboardFocusEffect() {
-      this._isShowingKeyboardFocusEffect = false;
-      if (this._label) {
-        this._axis.removeChild(this._overlayRect);
-        this._overlayRect = null;
-      }
-    }
-
-
-    /**
-     * @override
-     */
-    isShowingKeyboardFocusEffect() {
-      return this._isShowingKeyboardFocusEffect;
-    }
-
-
     //---------------------------------------------------------------------//
     // WAI-ARIA Support: DvtLogicalObject impl               //
     //---------------------------------------------------------------------//
@@ -6425,16 +6360,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      */
     getAriaLabel() {
       var states;
-      if (this.isDrillable())
+      if (this.isDrillable()) {
         states = [this._axis.getOptions().translations.stateDrillable];
-
+      }
       if (this.getDatatip() != null) {
         return dvt.Displayable.generateAriaLabel(this.getDatatip() , states);
-      }
-      else if (states != null) {
+      } else if (states != null) {
         return dvt.Displayable.generateAriaLabel(this.getLabel().getTextString(), states);
       }
-
     }
 
 
@@ -13610,13 +13543,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @private
      */
     _createLabel:  (slice, isInside) => {
+      var isHighContrast = dvt.Agent.isHighContrast();
       var pieChart = slice.getPieChart();
 
       var context = pieChart.getCtx();
       var sliceLabel = isInside ? new dvt.OutputText(context) : new dvt.MultilineText(context);
 
       // Apply the label color- read all applicable styles and merge them.
-      var contrastColor = dvt.ColorUtils.getContrastingTextColor(slice.getFillColor());
+      var contrastColor = isInside ? dvt.ColorUtils.getContrastingTextColor(slice.getFillColor()) : dvt.ColorUtils.getContrastingTextColor(dvt.ColorUtils.getColorFromName('black'));
       var contrastColorStyle = new dvt.CSSStyle({ color: contrastColor });
       var styleDefaults = pieChart.getOptions().styleDefaults;
       var labelStyleArray = [styleDefaults._dataLabelStyle];
@@ -13629,7 +13563,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         labelStyleArray.push(new dvt.CSSStyle(dataItem.labelStyle));
       }
 
-      if (dvt.Agent.isHighContrast()) {
+      if (isHighContrast) {
         labelStyleArray.push(contrastColorStyle);
       }
       var style = dvt.CSSStyle.mergeStyles(labelStyleArray);
@@ -17639,7 +17573,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       this._insertDuration = duration * 0.50;
       this._deleteDuration = duration * 0.50;
       this._shape = peer.getDisplayables()[0];
-      this._animId = peer.getDataItemId() || peer.getSeries() + '/' + peer.getGroup() + animId;
+      this._animId = (peer.getDataItemId() || peer.getSeries() + '/' + peer.getGroup()) + animId;
     }
 
   /**
@@ -29834,14 +29768,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @override
      */
     SetOptions(options) {
+      super.SetOptions(options);
 
       if (options) {
         // Combine the user options with the defaults and store
         this._rawOptions = options;
         this.Options = this.Defaults.calcOptions(options);
-
-        // Reset options cache
-        this.getOptionsCache().clearCache();
 
         // Process the data to add bulletproofing
         DvtChartDataObjectUtils.processDataObj(this);

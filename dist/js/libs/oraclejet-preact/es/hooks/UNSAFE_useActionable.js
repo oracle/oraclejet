@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { mergeProps } from '../utils/UNSAFE_mergeProps.js';
 import { useHover } from './UNSAFE_useHover.js';
 import { useActive } from './UNSAFE_useActive.js';

@@ -18,7 +18,7 @@ declare type Props = PickedPropsFromTextField & PickedPropsFromTextFieldInput & 
     hasRevealToggle?: 'always' | 'never';
     isDisabled?: boolean;
     isReadonly?: boolean;
-    label?: string;
+    label: string;
     labelEdge?: 'inside' | 'start' | 'top' | 'none';
     labelStartWidth?: Size;
 };

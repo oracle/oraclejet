@@ -951,6 +951,7 @@ DataProviderContentHandler.prototype._handleAddTransitionEnd = function (
 
   var hasFocus =
     elem.classList.contains('oj-focus') && elem.classList.contains('oj-focus-highlight');
+  var isSelected = elem.classList.contains('oj-selected');
   var isCardAnimated = elem.classList.contains('oj-listview-card-animated');
   // restore class name
   // eslint-disable-next-line no-param-reassign
@@ -958,6 +959,9 @@ DataProviderContentHandler.prototype._handleAddTransitionEnd = function (
   if (hasFocus) {
     elem.classList.add('oj-focus');
     elem.classList.add('oj-focus-highlight');
+  }
+  if (isSelected) {
+    elem.classList.add('oj-selected');
   }
   if (isCardAnimated) {
     elem.classList.add('oj-listview-card-animated');
@@ -3224,11 +3228,16 @@ IteratingDataProviderContentHandler.prototype._handleFetchedData =
             }
           }
 
+          this.m_suggestions = suggestions;
           if (suggestions > 0) {
             // wait until items completely render otherwise we won't get an accurate height
             var busyContext = Context.getContext(this.m_root).getBusyContext();
             busyContext.whenReady().then(() => {
-              this.renderSparkles(this.getItems(this.m_root, suggestions));
+              // if listview not destroyed and suggetion hasn't change while waiting for render
+              // which could happen if there is a refresh event before sparkles are rendered
+              if (this.m_widget && this.m_suggestions === suggestions) {
+                this.renderSparkles(this.getItems(this.m_root, suggestions));
+              }
             });
           }
 

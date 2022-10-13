@@ -23,17 +23,12 @@ const _DATA_OJ_TABMOD = 'data-oj-tabmod';
 /**
  * @private
  */
-const _TAB_INDEX = 'tabIndex';
-
-/**
- * @private
- */
 const _DATA_OJ_ARIA_READONLY_MOD = 'data-oj-ariareadonlymod';
 
 /**
  * @private
  */
-const _FOCUSABLE_ELEMENTS_QUERY = 'input, select, button, a[href], textarea, object, [tabIndex]:not([tabIndex="-1"])';
+const _FOCUSABLE_ELEMENTS_QUERY = 'input, select, button, a[href], textarea, object, [tabIndex]:not([tabIndex="-1"]), [tabindex]:not([tabindex="-1"])';
 
 /**
  * @private
@@ -50,7 +45,8 @@ const _ACTIONABLE_ELEMENTS_QUERY = '[' + _DATA_OJ_TABMOD + '], ' + _FOCUSABLE_EL
  * @export
  */
 const checkVisibility = function (element) {
-  return !(element.offsetHeight === 0 || element.offsetWidth === 0);
+  return !(element.offsetHeight === 0 || element.offsetWidth === 0 ||
+    window.getComputedStyle(element).visibility === 'hidden');
 };
 
 /**
@@ -62,7 +58,7 @@ const getActionableElementsInNode = function (element) {
   let nodes = element.querySelectorAll(_ACTIONABLE_ELEMENTS_QUERY);
   for (var i = 0; i < nodes.length; i++) {
     var elem = nodes[i];
-    if (!elem.disabled && elem.style.display !== 'none') {
+    if (!elem.disabled && checkVisibility(elem)) {
       actionableElems.push(elem);
     }
   }
@@ -113,8 +109,8 @@ const getFocusableElementsInNode = function (node, skipVisibilityCheck) {
     for (var i = 0; i < nodeCount; i++) {
       var elem = nodes[i];
       if (!elem.disabled && (skipVisibilityCheck || checkVisibility(elem))) {
-        var tabIndex = parseInt(elem.getAttribute(_TAB_INDEX), 10);
-        if (isNaN(tabIndex) || tabIndex >= 0) {
+        var tabIndex = elem.tabIndex;
+        if (tabIndex >= 0) {
           inputElems.push(elem);
         }
       }
@@ -143,27 +139,27 @@ const removeAriaReadonly = function (element) {
  * @ignore
  */
 const disableElement = function (element) {
-  var tabIndex = parseInt(element.getAttribute(_TAB_INDEX), 10);
+  var tabIndex = element.tabIndex;
   // store the tabindex as an attribute
   element.setAttribute(_DATA_OJ_TABMOD, tabIndex); // @HTMLUpdateOK
-  element.setAttribute(_TAB_INDEX, -1); // @HTMLUpdateOK
+  // eslint-disable-next-line no-param-reassign
+  element.tabIndex = -1;
 };
 
 /**
  * Make all focusable elements within the specified element unfocusable
  * @param {Element} element
- * @param {boolean=} skipVisibilityCheck
  * @param {boolean=} excludeActiveElement
  * @param {boolean=} includeReadonly
  * @return {Element[]} An array of the disabled elements
  * @export
  * @ignore
  */
-const disableAllFocusableElements = function (element, skipVisibilityCheck,
-  excludeActiveElement, includeReadonly) {
+const disableAllFocusableElements = function (element, excludeActiveElement,
+  includeReadonly) {
   var disabledElems = [];
   // make all focusable elements non-focusable, since we want to manage tab stops
-  var focusElems = getFocusableElementsInNode(element, skipVisibilityCheck);
+  var focusElems = getFocusableElementsInNode(element, true);
   for (var i = 0; i < focusElems.length; i++) {
     if (!excludeActiveElement || focusElems[i] !== document.activeElement) {
       disableElement(focusElems[i]);
@@ -189,13 +185,9 @@ const enableAllFocusableElements = function (element) {
   for (var i = 0; i < focusElems.length; i++) {
     var tabIndex =
       parseInt(focusElems[i].getAttribute(_DATA_OJ_TABMOD), 10);
-    focusElems[i].removeAttribute(_DATA_OJ_TABMOD);
-    // restore tabIndex as needed
-    if (isNaN(tabIndex)) {
-      focusElems[i].removeAttribute(_TAB_INDEX);
-    } else {
-      focusElems[i].setAttribute(_TAB_INDEX, tabIndex); // @HTMLUpdateOK
-    }
+      focusElems[i].removeAttribute(_DATA_OJ_TABMOD);
+    // restore tabIndex
+    focusElems[i].tabIndex = tabIndex;
     if (focusElems[i].hasAttribute(_DATA_OJ_ARIA_READONLY_MOD)) {
       var ariaReadonly = focusElems[i].getAttribute(_DATA_OJ_ARIA_READONLY_MOD);
       focusElems[i].removeAttribute(_DATA_OJ_ARIA_READONLY_MOD);

@@ -1,17 +1,17 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var UNSAFE_ThemedIcons = require('./index-9adddc55.js');
-var UNSAFE_Icons = require('./index-f38e0982.js');
+var UNSAFE_ThemedIcons = require('./index-dcd95188.js');
+var UNSAFE_Icons = require('./index-e2b299b3.js');
 require('preact/jsx-runtime');
 require('./UNSAFE_Icon.js');
-require('./Icon-b60b3f23.js');
-require('./tslib.es6-5c843188.js');
+require('./Icon-42559ff1.js');
+require('./tslib.es6-e91f819d.js');
 
 require('./utils/UNSAFE_classNames.js');
-require('./classNames-69178ebf.js');
+require('./classNames-82bfab52.js');
 require('./hooks/UNSAFE_useUser.js');
 require('preact/hooks');
 require('./UNSAFE_Environment.js');

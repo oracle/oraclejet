@@ -1,9 +1,9 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx } from 'preact/jsx-runtime';
 import { Fragment } from 'preact';
 import './UNSAFE_HighlightText.css';
 
-const highlightStyles = "hkkzuh9";
+const highlightStyles = "_xwz06k";
 /**
  * Renders a text string with highlighting applied to the given text to match.
  */

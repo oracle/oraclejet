@@ -42,7 +42,8 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
         this.state = {
             opened: this.props.opened,
             id: getUniqueId(),
-            viewportResolvedDisplayMode: this.getViewportResolvedDisplayMode()
+            viewportResolvedDisplayMode: this.getViewportResolvedDisplayMode(),
+            viewportResolvedDisplayModeVertical: this.getViewportResolvedDisplayModeVertical()
         };
         this.rootRef = createRef();
         this.isShiftKeyActive = false;
@@ -123,10 +124,19 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
             });
         };
         this.resizeHandler = () => {
+            const updatedState = {};
             const prevViewportResolvedDisplayMode = this.state.viewportResolvedDisplayMode;
             const nextViewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
             if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode) {
-                this.setState({ viewportResolvedDisplayMode: nextViewportResolvedDisplayMode });
+                updatedState['viewportResolvedDisplayMode'] = nextViewportResolvedDisplayMode;
+            }
+            const prevViewportResolvedDisplayModeVertical = this.state.viewportResolvedDisplayModeVertical;
+            const nextViewportResolvedDisplayModeVertical = this.getViewportResolvedDisplayModeVertical();
+            if (prevViewportResolvedDisplayModeVertical !== nextViewportResolvedDisplayModeVertical) {
+                updatedState['viewportResolvedDisplayModeVertical'] = nextViewportResolvedDisplayModeVertical;
+            }
+            if (Object.keys(updatedState).length > 0) {
+                this.setState(updatedState);
             }
         };
         this.handleSwipeAction = () => {
@@ -253,12 +263,7 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
             const focusables = DrawerUtils.getFocusables(this.rootRef.current);
             let elementToFocus = this.rootRef.current;
             if (focusables.length) {
-                for (let i = 0; i < focusables.length; i++) {
-                    if (focusables[i].disabled !== true) {
-                        elementToFocus = focusables[i];
-                        break;
-                    }
-                }
+                elementToFocus = focusables[0];
             }
             elementToFocus.focus({ preventScroll: true });
         }
@@ -316,9 +321,18 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
     }
     getPopupStyleClasses(edge) {
         const customStyleClassMap = {};
-        if (this.getViewportResolvedDisplayMode() === DrawerConstants.stringFullOverlay) {
-            customStyleClassMap[DrawerConstants.styleDisplayMode(DrawerConstants.stringFullOverlay)] =
-                true;
+        if (edge === DrawerConstants.stringBottom) {
+            if (this.getViewportResolvedDisplayModeVertical() === DrawerConstants.stringFullOverlay ||
+                this.getViewportResolvedDisplayMode() === DrawerConstants.stringFullOverlay) {
+                customStyleClassMap[DrawerConstants.styleDisplayMode(DrawerConstants.stringFullOverlay)] =
+                    true;
+            }
+        }
+        else {
+            if (this.getViewportResolvedDisplayMode() === DrawerConstants.stringFullOverlay) {
+                customStyleClassMap[DrawerConstants.styleDisplayMode(DrawerConstants.stringFullOverlay)] =
+                    true;
+            }
         }
         return DrawerUtils.getStyleClassesMapAsString(Object.assign(customStyleClassMap, DrawerUtils.getCommonStyleClasses(edge)));
     }
@@ -344,6 +358,13 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
     getViewportResolvedDisplayMode() {
         const viewportWidth = DrawerUtils.getViewportWidth();
         if (viewportWidth >= DrawerConstants.fullWidthDrawerChangeThreshold) {
+            return DrawerConstants.stringOverlay;
+        }
+        return DrawerConstants.stringFullOverlay;
+    }
+    getViewportResolvedDisplayModeVertical() {
+        const viewportHeight = DrawerUtils.getViewportHeight();
+        if (viewportHeight >= DrawerConstants.fullHeightDrawerChangeThreshold) {
             return DrawerConstants.stringOverlay;
         }
         return DrawerConstants.stringFullOverlay;

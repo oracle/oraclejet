@@ -698,6 +698,17 @@ var __oj_timeline_metadata =
 var __oj_timeline_item_metadata = 
 {
   "properties": {
+    "background": {
+      "type": "string",
+      "enumValues": [
+        "blue",
+        "green",
+        "orange",
+        "purple",
+        "red",
+        "teal"
+      ]
+    },
     "description": {
       "type": "string",
       "value": ""
@@ -1099,8 +1110,6 @@ var __oj_timeline_series_metadata =
    * @ojimportmembers oj.ojTimelineItemProperties
    * @property {any} id The identifier for the timeline item. This must be unique across all items in the timeline, and is required in order for the timeline to properly render.
    * @property {string=} title The title text displayed on the timeline item. If not specified, no title will be shown.
-   * @property {string=} itemType The item type of the item if specified. If not specified, will default to event (if only start-date provided),
-   *                              or duration-bar (if start and end provided)
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "?(string | ((context: oj.ojTimeline.ItemShortDescContext<K,D>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "<K,D=any>", for:"genericTypeParameters"}]
@@ -1170,7 +1179,10 @@ var __oj_timeline_series_metadata =
    * @property {boolean}  previousState.selected True if the item was previously selected.
    * @property {boolean}  previousState.focused True if the item was previously focused.
    * @property {Number}  durationWidth width of the duration-event bubble or null if not duration-event
+   * @property {Number}  contentWidth The available width in px for content.
+   * If the item is not a duration-event, then this is null, and the component will automatically allocate enough width space to accommodate the content.
    *
+   * @ojdeprecated {target: "property", for: "durationWidth", since:"13.1.0", description: "The durationWidth property is deprecated. Please use the contentWidth property instead."}
    * @ojsignature [{target: "Type", value: "oj.ojTimeline.SeriesItem<K>", for: "data"},
    *               {target: "Type", value: "oj.ojTimeline.Series<K>", for: "seriesData"},
    *               {target: "Type", value: "D", for: "itemData"},
@@ -1392,6 +1404,16 @@ var __oj_timeline_series_metadata =
    * &lt;/oj-timeline>
    * </code>
    * </pre>
+   *
+   * <h3 id="a11y-section">
+   *   Accessibility
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+   * </h3>
+   *
+   * <p> The application is responsible for populating the shortDesc value in the component options object
+   * with meaningful descriptors when the component does not provide a default descriptor.
+   * Additionally, the application is responsible for ensuring that information conveyed by color differences
+   * is also available in visible text.
    */
 
   /**
@@ -1418,32 +1440,6 @@ var __oj_timeline_series_metadata =
    * @example <caption>Initialize the timeline item with the
    * <code class="prettyprint">label</code> attribute specified:</caption>
    * &lt;oj-timeline-item label="[[$current.data.label]]">&lt;/oj-timeline-item>
-   */
-  /**
-   * The item type for the bubble. If not specified, defaults to auto behavior.
-   * <ul>
-   *  <li>event: item bubble using only the start date</li>
-   *  <li>duration-bar: item bubble with a bar on the time-axis that matches the duration of the event using the start/end dates</li>
-   *  <li>duration-event: item bubble with width equal to the duration and edges of the event matching the start/end date (only available on horizontal timeline)</li>
-   *  <li>auto (default behavior): event item-type if end date not specified, duration-bar if end date specified.</li>
-   * </ul>
-   *
-   * @since 11.1.0
-   * @expose
-   * @name itemType
-   * @memberof! oj.ojTimelineItem
-   * @instance
-   * @type {string=}
-   * @ojvalue {string} "event"
-   * @ojvalue {string} "duration-bar"
-   * @ojvalue {string} "duration-event"
-   * @ojvalue {string} "auto"
-   * @default "auto"
-   * @ojunsupportedthemes ['Alta']
-   *
-   * @example <caption>Create a timeline item using the
-   * <code class="prettyprint">item-type</code> attribute specified:</caption>
-   * &lt;oj-timeline-item item-type="event">&lt;/oj-timeline-item>
    */
 
   /**
@@ -3443,6 +3439,19 @@ var __oj_timeline_series_metadata =
           { path: 'styleDefaults/item/backgroundColor', property: 'background-color' },
           { path: 'styleDefaults/item/padding', property: 'padding-top' },
           { path: 'styleDefaults/item/borderRadius', property: 'border-top-left-radius' }
+        ];
+        styleClasses['oj-timeline-item-bubble-stripe'] = [
+          { path: 'styleDefaults/item/_stripeWidth', property: 'width' },
+          { path: 'styleDefaults/item/_stripeMarginStart', property: 'margin-inline-start' },
+          { path: 'styleDefaults/item/_stripeMarginTop', property: 'margin-top' },
+          { path: 'styleDefaults/item/_stripeMarginBottom', property: 'margin-bottom' },
+          { path: 'styleDefaults/item/_stripeBorderRadius', property: 'border-radius' }
+        ];
+        styleClasses['oj-timeline-item-bubble-with-stripe'] = [
+          { path: 'styleDefaults/item/_withStripePaddingTop', property: 'padding-top' },
+          { path: 'styleDefaults/item/_withStripePaddingBottom', property: 'padding-bottom' },
+          { path: 'styleDefaults/item/_withStripePaddingStart', property: 'padding-inline-start' },
+          { path: 'styleDefaults/item/_withStripePaddingEnd', property: 'padding-inline-end' }
         ];
         styleClasses['oj-timeline-item-duration-event-overflow-bubble'] = [
           { path: 'styleDefaults/durationEventOverflow/backgroundColor', property: 'background-color' }

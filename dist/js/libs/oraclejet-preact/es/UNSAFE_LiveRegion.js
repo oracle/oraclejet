@@ -1,9 +1,9 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx } from 'preact/jsx-runtime';
 import './UNSAFE_LiveRegion.css';
 import { useState, useCallback, useEffect } from 'preact/hooks';
 
-const offScreenStyle = "o1xwg2xa";
+const offScreenStyle = "fnnyln";
 /**
  * A helper component that renders an aria-live region
  *

@@ -60,6 +60,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 endStateToChangeTo: null,
                 bottomStateToChangeTo: null,
                 viewportResolvedDisplayMode: this.getViewportResolvedDisplayMode(),
+                viewportResolvedDisplayModeVertical: this.getViewportResolvedDisplayModeVertical(),
                 lastlyOpenedDrawer: ojdrawerutils.DrawerConstants.stringStart
             };
             this.handleKeyDown = (edge, event) => {
@@ -90,6 +91,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                     this.handleResize = false;
                     setTimeout(() => {
                         this.handleResize = true;
+                        const updatedState = {};
                         if (this.state.viewportResolvedDisplayMode !== this.getViewportResolvedDisplayMode()) {
                             const updatedState = {};
                             [ojdrawerutils.DrawerConstants.stringStart, ojdrawerutils.DrawerConstants.stringEnd].forEach((edge) => {
@@ -97,9 +99,16 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                                     updatedState[this.edgeToShouldChangeDisplayMode(edge)] = true;
                                 }
                             });
-                            if (Object.keys(updatedState).length > 0) {
-                                this.setState(updatedState);
+                        }
+                        if (this.state.viewportResolvedDisplayModeVertical !==
+                            this.getViewportResolvedDisplayModeVertical()) {
+                            if (this.isDrawerOpened(ojdrawerutils.DrawerConstants.stringBottom) &&
+                                this.state[this.edgeToDisplayName(ojdrawerutils.DrawerConstants.stringBottom)] === 'auto') {
+                                updatedState[this.edgeToShouldChangeDisplayMode(ojdrawerutils.DrawerConstants.stringBottom)] = true;
                             }
+                        }
+                        if (Object.keys(updatedState).length > 0) {
+                            this.setState(updatedState);
                         }
                     }, ojdrawerutils.DrawerConstants.animationDuration + 50);
                 }
@@ -117,23 +126,29 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 if (this.handleResize) {
                     const prevViewportResolvedDisplayMode = this.state.viewportResolvedDisplayMode;
                     const nextViewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
+                    const prevViewportResolvedDisplayModeVertical = this.state.viewportResolvedDisplayModeVertical;
+                    const nextViewportResolvedDisplayModeVertical = this.getViewportResolvedDisplayModeVertical();
                     this.setBottomOverlayDrawerWidth();
                     let atLeastOneOverlayDrawerNeedsToClose = false;
                     const updatedState = {};
-                    if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode) {
+                    if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode ||
+                        prevViewportResolvedDisplayModeVertical !== nextViewportResolvedDisplayModeVertical) {
                         this.lockResizeListener();
-                        [
-                            ojdrawerutils.DrawerConstants.stringStart,
-                            ojdrawerutils.DrawerConstants.stringEnd,
-                            ojdrawerutils.DrawerConstants.stringBottom
-                        ].forEach((edge) => {
+                        [ojdrawerutils.DrawerConstants.stringStart, ojdrawerutils.DrawerConstants.stringEnd].forEach((edge) => {
                             if (this.isDrawerOpened(edge) && this.state[this.edgeToDisplayName(edge)] === 'auto') {
                                 atLeastOneOverlayDrawerNeedsToClose = true;
                                 updatedState[this.edgeToShouldChangeDisplayMode(edge)] = true;
                             }
                         });
+                        if (this.isDrawerOpened(ojdrawerutils.DrawerConstants.stringBottom) &&
+                            this.state[this.edgeToDisplayName(ojdrawerutils.DrawerConstants.stringBottom)] === 'auto') {
+                            atLeastOneOverlayDrawerNeedsToClose = true;
+                            updatedState[this.edgeToShouldChangeDisplayMode(ojdrawerutils.DrawerConstants.stringBottom)] = true;
+                        }
                         if (atLeastOneOverlayDrawerNeedsToClose === false) {
                             updatedState.viewportResolvedDisplayMode = nextViewportResolvedDisplayMode;
+                            updatedState.viewportResolvedDisplayModeVertical =
+                                nextViewportResolvedDisplayModeVertical;
                         }
                     }
                     if (Object.keys(updatedState).length > 0) {
@@ -221,7 +236,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             const resolvedMode = this.getDrawerResolvedDisplayMode(edge);
             const isOverlay = resolvedMode === ojdrawerutils.DrawerConstants.stringOverlay ||
                 resolvedMode === ojdrawerutils.DrawerConstants.stringFullOverlay;
-            const roleAttr = this.props.role || (isOverlay && 'dialog');
+            const roleAttr = this.props.role || (isOverlay ? 'dialog' : undefined);
             const tabIndexAttr = isOverlay ? -1 : undefined;
             if (this.isDrawerOpened(edge) ||
                 this.wasDrawerOpenedInPrevState(edge) ||
@@ -303,13 +318,27 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         getDrawerResolvedDisplayMode(edge) {
             const edgeDisplay = this.edgeToDisplayName(edge);
             if (this.state[edgeDisplay] === 'auto') {
+                if (edge === ojdrawerutils.DrawerConstants.stringBottom) {
+                    if (this.state.viewportResolvedDisplayModeVertical === ojdrawerutils.DrawerConstants.stringFullOverlay ||
+                        this.state.viewportResolvedDisplayMode === ojdrawerutils.DrawerConstants.stringFullOverlay) {
+                        return ojdrawerutils.DrawerConstants.stringFullOverlay;
+                    }
+                    if (this.state.viewportResolvedDisplayModeVertical === ojdrawerutils.DrawerConstants.stringOverlay ||
+                        this.state.viewportResolvedDisplayMode === ojdrawerutils.DrawerConstants.stringOverlay) {
+                        return ojdrawerutils.DrawerConstants.stringOverlay;
+                    }
+                    return ojdrawerutils.DrawerConstants.stringReflow;
+                }
                 return this.state.viewportResolvedDisplayMode;
             }
             if (this.state[edgeDisplay] === ojdrawerutils.DrawerConstants.stringReflow) {
                 return ojdrawerutils.DrawerConstants.stringReflow;
             }
             if (this.state[edgeDisplay] === ojdrawerutils.DrawerConstants.stringOverlay) {
-                return this.state.viewportResolvedDisplayMode === ojdrawerutils.DrawerConstants.stringFullOverlay
+                const axisDisplayMode = edge === ojdrawerutils.DrawerConstants.stringBottom
+                    ? this.state.viewportResolvedDisplayModeVertical
+                    : this.state.viewportResolvedDisplayMode;
+                return axisDisplayMode === ojdrawerutils.DrawerConstants.stringFullOverlay
                     ? ojdrawerutils.DrawerConstants.stringFullOverlay
                     : ojdrawerutils.DrawerConstants.stringOverlay;
             }
@@ -322,6 +351,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             else if (viewportWidth < ojdrawerutils.DrawerConstants.displayTypeChangeThreshold &&
                 viewportWidth >= ojdrawerutils.DrawerConstants.fullWidthDrawerChangeThreshold) {
                 return ojdrawerutils.DrawerConstants.stringOverlay;
+            }
+            return ojdrawerutils.DrawerConstants.stringFullOverlay;
+        }
+        getViewportResolvedDisplayModeVertical() {
+            const viewportHeight = ojdrawerutils.DrawerUtils.getViewportHeight();
+            if (viewportHeight >= ojdrawerutils.DrawerConstants.fullHeightDrawerChangeThreshold) {
+                return ojdrawerutils.DrawerConstants.stringReflow;
             }
             return ojdrawerutils.DrawerConstants.stringFullOverlay;
         }
@@ -353,15 +389,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 autofocusFirstItem.focus({ preventScroll: true });
                 return;
             }
-            const focusables = drawerRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), video');
+            const focusables = ojdrawerutils.DrawerUtils.getFocusables(drawerRef.current);
             let elementToFocus = drawerRef.current;
             if (focusables.length) {
-                for (let i = 0; i < focusables.length; i++) {
-                    if (focusables[i].disabled !== true) {
-                        elementToFocus = focusables[i];
-                        break;
-                    }
-                }
+                elementToFocus = focusables[0];
             }
             elementToFocus.focus({ preventScroll: true });
         }
@@ -439,6 +470,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                         const updatedState = {};
                         updatedState[this.edgeToShouldChangeDisplayMode(edge)] = false;
                         updatedState.viewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
+                        updatedState.viewportResolvedDisplayModeVertical =
+                            this.getViewportResolvedDisplayModeVertical();
                         this.setState(updatedState);
                     }
                     else {
@@ -632,6 +665,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 const updatedState = {};
                 updatedState[this.edgeToShouldChangeDisplayMode(edge)] = false;
                 updatedState.viewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
+                updatedState.viewportResolvedDisplayModeVertical =
+                    this.getViewportResolvedDisplayModeVertical();
                 this.setState(updatedState);
             }
             else if (status === ZOrderUtils.STATUS.CLOSE && this.isDrawerOpened(edge)) {

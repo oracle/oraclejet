@@ -1,9 +1,9 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var Collection = require('./Collection-86dbad21.js');
+var Collection = require('./Collection-52275ad2.js');
 require('preact/jsx-runtime');
 require('preact');
 

@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -7,7 +7,7 @@ var hooks = require('preact/hooks');
 var jsxRuntime = require('preact/jsx-runtime');
 require('identity-obj-proxy');
 var hooks_UNSAFE_useId = require('./UNSAFE_useId.js');
-var UNSAFE_Floating = require('../UNSAFE_Floating.js');
+require('../UNSAFE_Floating.js');
 var UNSAFE_Layer = require('../UNSAFE_Layer.js');
 var hooks_UNSAFE_useHover = require('./UNSAFE_useHover.js');
 var hooks_UNSAFE_useFocus = require('./UNSAFE_useFocus.js');
@@ -15,19 +15,22 @@ var hooks_UNSAFE_useTouch = require('./UNSAFE_useTouch.js');
 var utils_UNSAFE_mergeProps = require('../utils/UNSAFE_mergeProps.js');
 var utils_UNSAFE_arrayUtils = require('../utils/UNSAFE_arrayUtils.js');
 require('../utils/UNSAFE_classNames.js');
-var classNames = require('../classNames-69178ebf.js');
+var Floating = require('../Floating-3d10c829.js');
+var classNames = require('../classNames-82bfab52.js');
 require('preact/compat');
-require('../index-d49bf124.js');
-require('./UNSAFE_useOutsideClick.js');
 require('preact');
 require('./UNSAFE_useToggle.js');
+require('../index-a5277960.js');
+require('./UNSAFE_useUser.js');
+require('../UNSAFE_Environment.js');
+require('./UNSAFE_useOutsideClick.js');
 
 const positions = utils_UNSAFE_arrayUtils.stringLiteralArray(['start', 'top-start', 'top', 'top-end', 'end', 'bottom-end', 'bottom', 'bottom-start']);
 const anchorTos = utils_UNSAFE_arrayUtils.stringLiteralArray(['element', 'pointer']);
 const styles = {
-  wrapper: "w1vvnp2m",
-  base: "b1gymgil",
-  datatip: "d1hwecin"
+  wrapper: "_uophsw",
+  base: "_gg49p7",
+  datatip: "pb2ba7"
 };
 const useTooltipControlled = ({
   text,
@@ -333,7 +336,7 @@ const useTooltipControlled = ({
   };
 
   const renderContent = jsxRuntime.jsx(UNSAFE_Layer.Layer, {
-    children: jsxRuntime.jsx(UNSAFE_Floating.Floating, Object.assign({
+    children: jsxRuntime.jsx(Floating.Floating, Object.assign({
       anchorRef: usedRef,
       placement: placements.placement,
       offsetValue: placements.offsetValue

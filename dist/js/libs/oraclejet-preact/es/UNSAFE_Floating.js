@@ -1,9 +1,13 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx } from 'preact/jsx-runtime';
 import { useLayoutEffect, useMemo } from 'preact/hooks';
 import { forwardRef } from 'preact/compat';
-import { u as useFloating, o as offset, b, D, N } from './index-8347aa9c.js';
+import { u as useFloating, o as offset, b, D, L, N } from './index-46e68d3c.js';
 import useOutsideClick from './hooks/UNSAFE_useOutsideClick.js';
+import './hooks/UNSAFE_useUser.js';
+import './UNSAFE_Environment.js';
+import 'preact';
+import './UNSAFE_Layer.js';
 import './utils/UNSAFE_arrayUtils.js';
 
 function assignRef(ref, value) {
@@ -26,18 +30,25 @@ function mergeRefs(...refs) {
         refs.forEach((ref) => assignRef(ref, node));
     };
 }
+function isElement(value) {
+    return value instanceof Element;
+}
 const Floating = forwardRef(({ children, onClickOutside, placement = 'bottom', anchorRef, offsetValue, class: className }, ref) => {
     const { x, y, reference, floating, refs } = useFloating({
         placement: placement,
-        middleware: [offset(offsetValue), b({ mainAxis: true, crossAxis: true }), D()],
+        middleware: [offset(offsetValue), b({ mainAxis: true, crossAxis: true }), D({ limiter: L() })],
         whileElementsMounted: N
     });
     if (onClickOutside) {
         useOutsideClick({ isDisabled: false, ref: refs.floating, handler: onClickOutside });
     }
     useLayoutEffect(() => {
+        if (isElement(anchorRef.current)) {
+            const element = anchorRef;
+            reference(element.current);
+            return;
+        }
         const coords = anchorRef;
-        const element = anchorRef;
         const virtualEl = {
             getBoundingClientRect() {
                 return {
@@ -52,8 +63,9 @@ const Floating = forwardRef(({ children, onClickOutside, placement = 'bottom', a
                 };
             }
         };
-        const result = coords.current && coords.current.x ? virtualEl : element.current;
-        reference(result);
+        if (coords.current && coords.current.x != null) {
+            reference(virtualEl);
+        }
     }, [anchorRef.current]);
     const stableRef = useMemo(() => mergeRefs(ref, floating), [ref, floating]);
     const content = (jsx("div", Object.assign({ class: className, ref: stableRef, style: {

@@ -9,9 +9,13 @@ declare type Props = {
      */
     animations?: Record<string, MessageAnimation[]>;
     /**
+     * The label of the field which is showing this error
+     */
+    fieldLabel?: string;
+    /**
      * Data for the messages. This data is used for rendering each message.
      */
     messages?: ComponentMessageItem[];
 };
-export declare function ComponentMessageContainer({ animations, messages }: Props): import("preact").JSX.Element;
+export declare function ComponentMessageContainer({ animations, fieldLabel, messages }: Props): import("preact").JSX.Element;
 export {};

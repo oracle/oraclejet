@@ -1,6 +1,6 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { useRef, useLayoutEffect, useCallback } from 'preact/hooks';
-import { _ as __rest } from '../tslib.es6-fc945e53.js';
+import { _ as __rest } from '../tslib.es6-deee4931.js';
 
 /**
  * Converts shorthand translate props into transform string representation.

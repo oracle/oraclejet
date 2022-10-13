@@ -22,9 +22,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.assembleTypes = exports.fixCreateImportExportSpecifierCalls = exports.fixStringLiteralCalls = void 0;
 const ts = __importStar(require("typescript"));
@@ -32,10 +29,8 @@ const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
 const glob = __importStar(require("glob"));
 const template_1 = require("./template");
-const MetaTypes = __importStar(require("./utils/MetadataTypes"));
 const MetaUtils = __importStar(require("./utils/MetadataUtils"));
 const TransformerError_1 = require("./utils/TransformerError");
-const ts_creator_1 = __importDefault(require("ts-creator"));
 let _BUILD_OPTIONS;
 let view;
 const _REGEX_BLANK_LINES = new RegExp(/^(?:[\t ]*(?:\r?\n|\r))+/gm);
@@ -66,13 +61,9 @@ exports.default = dtsTransformWrapper;
 function generateCustomElementTypes(context, rootNode) {
     const { factory } = context;
     let imports = getImportStatements(rootNode, context);
-    imports = fixCreateImportExportSpecifierCalls(fixStringLiteralCalls(imports));
-    let result = ts.transpile(imports);
-    let importStatements = eval(result);
+    const importStatements = MetaUtils.generateStatementsFromText(imports);
     let newContent = generateCustomElementTypeContent(rootNode.fileName);
-    newContent = fixCreateImportExportSpecifierCalls(fixStringLiteralCalls(newContent));
-    result = ts.transpile(newContent);
-    let newStatements = eval(result);
+    const newStatements = MetaUtils.generateStatementsFromText(newContent);
     return factory.updateSourceFile(rootNode, [
         ...importStatements,
         ...rootNode.statements,
@@ -138,8 +129,7 @@ function generateCustomElementTypeContent(fileName) {
             }
         }
     }
-    const generatedFactoryCode = (0, ts_creator_1.default)(content);
-    return generatedFactoryCode;
+    return content;
 }
 function getImportStatements(rootNode, context) {
     var _a, _b;
@@ -167,19 +157,10 @@ function getImportStatements(rootNode, context) {
             }
         }
     }
-    const isComponentChildrenImportNeeded = importComponentChildren(rootNode, context);
-    if (isComponentChildrenImportNeeded || isComponentPropsImportNeeded) {
-        const missingPreactImports = [];
-        if (isComponentChildrenImportNeeded) {
-            missingPreactImports.push('ComponentChildren');
-        }
-        if (isComponentPropsImportNeeded) {
-            missingPreactImports.push('ComponentProps');
-        }
-        typeImports = `import { ${missingPreactImports.join(', ')} } from "preact"\n` + typeImports;
+    if (isComponentPropsImportNeeded) {
+        typeImports = `import { ComponentProps } 'preact'\n` + typeImports;
     }
-    const generatedFactoryCode = (0, ts_creator_1.default)(typeImports);
-    return generatedFactoryCode;
+    return typeImports;
 }
 function getComponentTemplateData(metadata, buildOptions, customElementName, vcomponentName) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
@@ -260,24 +241,6 @@ function getLegacyComponentName(metadata, buildOptions, vcomponentName) {
     }
     return legacyComponentName;
 }
-function importComponentChildren(rootNode, context) {
-    let importComponentChildren = false;
-    const vcomponents = _BUILD_OPTIONS.componentToMetadata;
-    for (let vcomponentName in vcomponents) {
-        let metadata = vcomponents[vcomponentName];
-        const customElementName = metadata.name;
-        if (customElementName) {
-            if (vcomponentName === customElementName) {
-                vcomponentName = MetaUtils.tagNameToElementName(customElementName);
-            }
-            const data = getComponentTemplateData(metadata, _BUILD_OPTIONS, customElementName, vcomponentName);
-            if (data.slots || data.dynamicSlots) {
-                importComponentChildren = true;
-            }
-        }
-    }
-    return importComponentChildren && !isUsingComponentChildren(rootNode, context);
-}
 function getComponentExportsString(data, buildOptions) {
     const coreJET = !!buildOptions.coreJetBuildOptions;
     if (coreJET) {
@@ -315,51 +278,6 @@ function sortAndFilterMethods(methods) {
         }
         return a;
     }, {});
-}
-function isUsingComponentChildren(rootNode, context) {
-    const content = rootNode.getText();
-    const regexp1 = new RegExp(/\s*import\s+\{[\w\,\s]+\bComponentChildren\b[\w\,\s]+\}\s+from\s+['"]preact['"]/, 'g');
-    let usageExists = regexp1.test(content);
-    if (usageExists) {
-        usageExists = checkComponentChildrenInUse(rootNode, context);
-    }
-    return usageExists;
-}
-function checkComponentChildrenInUse(sf, context) {
-    let inUse = false;
-    const visitor = (node) => {
-        try {
-            if (isNodeDefaultSlot(node)) {
-                inUse = true;
-                return node;
-            }
-        }
-        catch (ex) {
-            console.log(`Warning: failed to get text from ReferenceType node while processing ${sf.fileName}`);
-        }
-        return ts.visitEachChild(node, visitor, context);
-    };
-    ts.visitNode(sf, visitor);
-    return inUse;
-}
-function isNodeDefaultSlot(node) {
-    let isDefaultSlot = false;
-    if ((ts.isPropertySignature(node) || ts.isPropertyDeclaration(node)) &&
-        ts.isIdentifier(node.name)) {
-        const id = node.name;
-        const defSlot = ts.idText(id);
-        if (defSlot === MetaTypes.DEFAULT_SLOT_PROP) {
-            if (node.type && ts.isTypeReferenceNode(node.type)) {
-                const typeRefNode = node.type;
-                if (typeRefNode.pos !== -1 &&
-                    typeRefNode.end !== -1 &&
-                    ts.idText(typeRefNode.typeName) === 'ComponentChildren') {
-                    isDefaultSlot = true;
-                }
-            }
-        }
-    }
-    return isDefaultSlot;
 }
 function fixStringLiteralCalls(text) {
     const regex = /(?<=createStringLiteral\()(\s*\'[\w\/.-]+\'\s*)(?=\))/gm;

@@ -1,9 +1,9 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var clientHints = require('../clientHints-90ca1b41.js');
+var clientHints = require('../clientHints-d9b5605d.js');
 
 
 

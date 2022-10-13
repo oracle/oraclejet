@@ -1130,7 +1130,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             items.forEach((item) => {
                 const busyContext = Context.getContext(item).getBusyContext();
                 busyContext.whenReady().then(function () {
-                    DataCollectionUtils.disableAllFocusableElements(item, true);
+                    DataCollectionUtils.disableAllFocusableElements(item);
                 });
             });
         }
@@ -1147,7 +1147,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
         _exitActionableMode(shouldFocus) {
             this.actionableMode = false;
             if (this.currentItem) {
-                DataCollectionUtils.disableAllFocusableElements(this.currentItem, true);
+                DataCollectionUtils.disableAllFocusableElements(this.currentItem);
                 this._setFocus(this.currentItem, shouldFocus);
             }
         }

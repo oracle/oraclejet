@@ -1,5 +1,5 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
-import { _ as __rest } from './tslib.es6-fc945e53.js';
+/* @oracle/oraclejet-preact: 13.1.0 */
+import { _ as __rest } from './tslib.es6-deee4931.js';
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import { Fragment } from 'preact';
 import { useRef, useState, useEffect } from 'preact/hooks';
@@ -13,7 +13,7 @@ import './UNSAFE_Layer.js';
 import 'preact/compat';
 import './hooks/UNSAFE_useId.js';
 import './UNSAFE_Floating.js';
-import './index-8347aa9c.js';
+import './index-46e68d3c.js';
 import './hooks/UNSAFE_useOutsideClick.js';
 import './utils/UNSAFE_arrayUtils.js';
 import './hooks/UNSAFE_useHover.js';
@@ -51,19 +51,19 @@ const RatingStar = ({
 };
 
 const ratingStarStyles = {
-  base: "b1fpmsq7",
-  selectedColor: "s1ub3kc",
-  selectedBorderColor: "s11mpjof",
-  unselectedColor: "uh6i9jh",
-  unselectedBorderColor: "uwvnsek",
-  selectedReadonlyColor: "s10t37jt",
-  selectedReadonlyBorderColor: "s1onntbs",
-  unselectedReadonlyColor: "u2vyvvv",
-  unselectedReadonlyBorderColor: "u9973ms",
-  selectedDisabledColor: "s1bebe5q",
-  unselectedDisabledColor: "u1eb2oqr",
-  selectedDisabledBorderColor: "s1euhvz3",
-  unselectedDisabledBorderColor: "usuv7wt"
+  base: "_k7180v",
+  selectedColor: "_29ecq3",
+  selectedBorderColor: "_2r2o6x",
+  unselectedColor: "_qc4qse",
+  unselectedBorderColor: "_o7hntv",
+  selectedReadonlyColor: "_mgr4kj",
+  selectedReadonlyBorderColor: "_53rojp",
+  unselectedReadonlyColor: "goezwb",
+  unselectedReadonlyBorderColor: "g13d7e",
+  selectedDisabledColor: "_dbjry0",
+  unselectedDisabledColor: "ks0ff2",
+  selectedDisabledBorderColor: "jwlywu",
+  unselectedDisabledBorderColor: "_5nh9vh"
 };
 
 const RatingGaugeItem = ({
@@ -114,7 +114,7 @@ const RatingGaugeItem = ({
 };
 
 const fractionalStar = {
-  base: "b1htd91l"
+  base: "rwtkdq"
 };
 
 function getValue(pageX, max, step, dimensionsRef, isRtl) {
@@ -122,15 +122,10 @@ function getValue(pageX, max, step, dimensionsRef, isRtl) {
     if (!dimensions || dimensions.width === 0) {
         return -1;
     }
-    let val = (max * (pageX - dimensions.x)) / dimensions.width;
-    const stepNum = val / step;
-    if (stepNum < 0.5) {
-        val = 0;
-    }
-    else {
-        val = Math.ceil(stepNum) * step;
-    }
-    return isRtl ? max - val : val;
+    const width = pageX - dimensions.x;
+    const val = (max * (isRtl ? dimensions.width - width : width)) / dimensions.width;
+    const numSteps = val / step;
+    return numSteps < 0.5 ? 0 : Math.ceil(numSteps) * step;
 }
 function getDimensions(element) {
     if (!element) {
@@ -153,74 +148,95 @@ function getDimensions(element) {
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-const useEvents = (max, step, value, dimensionsRef, isInteractive, onCommit, onInput) => {
+const useEvents = (max, step, value, rootRef, dimensionsRef, isInteractive, onCommit, onInput) => {
     const currentInput = useRef();
     const { direction } = useUser();
     if (!isInteractive) {
         return {};
     }
     const isRtl = direction === 'rtl';
+    const handleInput = (inputValue) => {
+        onInput === null || onInput === void 0 ? void 0 : onInput({ value: inputValue });
+        currentInput.current = inputValue;
+    };
+    const cancelEvent = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+    };
     const pointerUpHandler = (event) => {
         const val = getValue(event.pageX, max, step, dimensionsRef, isRtl);
         if (val !== -1) {
             onCommit === null || onCommit === void 0 ? void 0 : onCommit({ value: val });
         }
     };
+    // When the document or rating gauge parent scrolls, we need to update the dimensionRef.current.x.
+    // Instead of updating it for every scroll event, recalculate the dims the first time mouse enters
+    // so we get fresh dimension value.
+    const pointerEnterHandler = () => {
+        dimensionsRef.current = getDimensions(rootRef.current);
+    };
     const hoverHandler = (event) => {
         const val = getValue(event.pageX, max, step, dimensionsRef, isRtl);
         if (val !== -1 && val != currentInput.current) {
-            onInput === null || onInput === void 0 ? void 0 : onInput({ value: val });
-            currentInput.current = val;
+            handleInput(val);
         }
     };
     const blurHandler = () => {
         onCommit === null || onCommit === void 0 ? void 0 : onCommit({ value: value });
     };
     const pointerLeaveHandler = () => {
-        onInput === null || onInput === void 0 ? void 0 : onInput({ value: undefined });
-        currentInput.current = undefined;
+        handleInput(undefined);
     };
-    const keyboardHandler = (event) => {
+    const keyDownHandler = (event) => {
         const key = event.key;
-        if (key === 'Tab') {
-            return;
-        }
-        if (key === 'Enter') {
-            onCommit === null || onCommit === void 0 ? void 0 : onCommit({ value: value });
-            return;
-        }
-        let inputValue = undefined;
         switch (key) {
+            case 'Tab':
+                return;
+            case 'ArrowDown':
+                handleInput(Math.max(0, value - step));
+                break;
+            case 'ArrowUp':
+                handleInput(Math.min(max, value + step));
+                break;
             case 'ArrowLeft': {
-                inputValue = Math.max(0, value - step);
+                const inputValue = isRtl ? Math.min(max, value + step) : Math.max(0, value - step);
+                handleInput(inputValue);
                 break;
             }
             case 'ArrowRight': {
-                inputValue = Math.min(max, value + step);
-                break;
-            }
-            case 'Home': {
-                inputValue = 0;
-                break;
-            }
-            case 'End': {
-                inputValue = max;
+                const inputValue = isRtl ? Math.max(0, value - step) : Math.min(max, value + step);
+                handleInput(inputValue);
                 break;
             }
         }
-        if (inputValue !== undefined) {
-            onInput === null || onInput === void 0 ? void 0 : onInput({ value: inputValue });
-            currentInput.current = inputValue;
+        cancelEvent(event);
+    };
+    const keyUpHandler = (event) => {
+        const key = event.key;
+        switch (key) {
+            case 'Enter':
+                onCommit === null || onCommit === void 0 ? void 0 : onCommit({ value: value });
+                break;
+            case 'Tab':
+                handleInput(value);
+                break;
+            case 'Home':
+                handleInput(0);
+                break;
+            case 'End':
+                handleInput(max);
+                break;
         }
-        event.preventDefault();
-        event.stopPropagation();
+        cancelEvent(event);
     };
     return {
         onPointerUp: pointerUpHandler,
         onBlur: blurHandler,
         onPointerMove: hoverHandler,
-        onKeyUp: keyboardHandler,
-        onPointerLeave: pointerLeaveHandler
+        onKeyUp: keyUpHandler,
+        onKeyDown: keyDownHandler,
+        onPointerLeave: pointerLeaveHandler,
+        onPointerEnter: pointerEnterHandler
     };
 };
 
@@ -278,7 +294,7 @@ function RatingGauge(_a) {
   useEffect(() => {
     dimensionsRef.current = getDimensions(rootRef.current);
   }, [size, max]);
-  const eventProps = useEvents(max, step, value, dimensionsRef, isInteractive, props.onCommit, props.onInput);
+  const eventProps = useEvents(max, step, value, rootRef, dimensionsRef, isInteractive, props.onCommit, props.onInput);
   const {
     tooltipContent,
     tooltipProps
@@ -329,12 +345,12 @@ function RatingGauge(_a) {
   });
 }
 const ratingStyles = {
-  base: "b97wbq7",
-  interactive: "i1vpcap0",
-  lg: "l152t3gc",
-  md: "m19upflt",
-  sm: "s33yyxs",
-  item: "i16crsb0"
+  base: "jdcynz",
+  interactive: "l6g07z",
+  lg: "_yb85ls",
+  md: "_3j3phs",
+  sm: "_y7g8lb",
+  item: "_wrhoe9"
 };
 
 export { RatingGauge };

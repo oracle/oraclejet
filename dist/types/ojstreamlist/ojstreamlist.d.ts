@@ -1,4 +1,3 @@
-import { ComponentChildren } from 'preact';
 import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
@@ -185,7 +184,7 @@ export interface StreamListElementSettablePropertiesLenient<Key, Data> extends P
     [key: string]: any;
 }
 export interface StreamListIntrinsicProps extends Partial<Readonly<StreamListElementSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
-    children?: ComponentChildren;
+    children?: import('preact').ComponentChildren;
     ondataChanged?: (value: StreamListElementEventMap<any, any>['dataChanged']) => void;
     onexpandedChanged?: (value: StreamListElementEventMap<any, any>['expandedChanged']) => void;
     onscrollPolicyChanged?: (value: StreamListElementEventMap<any, any>['scrollPolicyChanged']) => void;

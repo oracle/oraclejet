@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx } from 'preact/jsx-runtime';
 import './UNSAFE_Link.css';
 import { classNames } from './utils/UNSAFE_classNames.js';
@@ -6,11 +6,11 @@ import { usePress } from './hooks/UNSAFE_usePress.js';
 import 'preact/hooks';
 
 const styles = {
-  default: "d84zyna",
-  primary: "pbavu3n",
-  secondary: "s8zm58y",
-  standalone: "sf2d2uo",
-  embedded: "enzr2k5"
+  default: "_1zfo6",
+  primary: "lcxov1",
+  secondary: "_200l65",
+  standalone: "_s6ypvg",
+  embedded: "_deg018"
 };
 
 const noop = () => {};

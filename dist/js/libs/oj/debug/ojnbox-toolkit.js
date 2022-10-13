@@ -7097,7 +7097,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
    * @override
    */
   getNoCloneObject() {
-    return {'data': true, 'nodes': true};
+    return {'data': true};
   }
    }
 
@@ -7111,31 +7111,35 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
    */
   class DvtNBoxCategoryRolloverHandler extends dvt.CategoryRolloverHandler {
     /**
-     * @override
-     */
-    GetRolloverCallback(event) {
-      return () => {
+       * @override
+       */
+     GetRolloverCallback(event) {
+      var callback = function () {
         this.SetHighlightMode(true);
         this._callbackObj.processEvent(event);
 
         // Fire the event to the component's callback if specified.
-        if (this._callback)
-          this._callback(this._callbackObj, event, this._source);
+        if (this._callback) {
+          this._callback.call(this._callbackObj, event, this._source);
+        }
       };
+      return callback.bind(this);
     }
 
     /**
      * @override
      */
     GetRolloutCallback(event) {
-      return () => {
+      var callback = function () {
         this.SetHighlightModeTimeout();
         this._callbackObj.processEvent(event);
 
         // Fire the event to the component's callback if specified.
-        if (this._callback)
-          this._callback(this._callbackObj, event, this._source);
-      }
+        if (this._callback) {
+          this._callback.call(this._callbackObj, event, this._source);
+        }
+      };
+      return callback.bind(this);
     }
   }
 
@@ -8904,6 +8908,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
      * @protected
      */
     SetOptions(options) {
+      super.SetOptions(options);
       if (!options)
         options = this.getSanitizedOptions();
 
@@ -8962,6 +8967,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
       // Cleanup objects from the previous render
       this.__cleanUp();
 
+      // Animation Support
+      // Stop any animation in progress
+      this.StopAnimation();
+
       // Update if a new options object has been provided or initialize with defaults if needed.
       this.SetOptions(options);
 
@@ -8990,10 +8999,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
 
       // Update keyboard focus
       this._updateKeyboardFocusEffect();
-
-      // Animation Support
-      // Stop any animation in progress
-      this.StopAnimation();
 
       // Construct the new animation playable
       var animationOnDisplay = DvtNBoxStyleUtils.getAnimOnDisplay(this);

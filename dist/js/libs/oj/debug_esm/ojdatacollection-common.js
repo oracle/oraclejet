@@ -19,11 +19,6 @@ const DataCollectionUtils = function () {};
 /**
  * @private
  */
-DataCollectionUtils._TAB_INDEX = 'tabIndex';
-
-/**
- * @private
- */
 DataCollectionUtils._DATA_OJ_TABMOD = 'data-oj-tabmod';
 
 /**
@@ -70,16 +65,14 @@ DataCollectionUtils.disableElement = function (element) {
 /**
  * Make all focusable elements within the specified element unfocusable
  * @param {Element} element
- * @param {boolean=} skipVisibilityCheck
  * @param {boolean=} excludeActiveElement
  * @param {boolean=} includeReadonly
  * @return {Element[]} An array of the disabled elements
  * @private
  */
-DataCollectionUtils.disableAllFocusableElements = function (element, skipVisibilityCheck,
-  excludeActiveElement, includeReadonly) {
-    return disableAllFocusableElements$1(element, skipVisibilityCheck, excludeActiveElement,
-                                       includeReadonly);
+DataCollectionUtils.disableAllFocusableElements = function (element, excludeActiveElement,
+  includeReadonly) {
+    return disableAllFocusableElements$1(element, excludeActiveElement, includeReadonly);
 };
 
 /**
@@ -122,7 +115,7 @@ DataCollectionUtils.isElementOrAncestorFocusable = function (element, stopCondit
     return false;
   } else if (element.hasAttribute(DataCollectionUtils._DATA_OJ_TABMOD)) {
     return true;
-  } else if (parseInt(element.getAttribute(DataCollectionUtils._TAB_INDEX), 10) >= 0) {
+  } else if (element.tabIndex >= 0) {
     return true;
   } else if (DataCollectionUtils._FOCUSABLE_ELEMENTS_TAG.indexOf(element.tagName.toLowerCase())
     > -1) {
@@ -540,7 +533,7 @@ DataCollectionUtils.getAddEventKeysResult = function (initialKeys, addEventDetai
     return { key: itemKey, index: itemIndex };
   }
 
-  var returnKeys = [...initialKeys];
+  var returnKeys = initialKeys.slice();
   var eventKeys = [];
   addEventDetail.keys.forEach(function (key) {
     eventKeys.push(key);

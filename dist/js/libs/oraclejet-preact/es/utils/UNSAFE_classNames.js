@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 /**
  * Given a set of string arguments, join the values together into a string with
  * spaces. Falsey values will be omitted,

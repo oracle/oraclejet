@@ -1,8 +1,8 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx } from 'preact/jsx-runtime';
 import './UNSAFE_HiddenAccessible.css';
 
-const hiddenAccessibleStyle = "hbvw96q";
+const hiddenAccessibleStyle = "aei1uf";
 /**
  * HiddenAccessible is a helper component that hides its children visually,
  * but keeps them visible to screen readers.

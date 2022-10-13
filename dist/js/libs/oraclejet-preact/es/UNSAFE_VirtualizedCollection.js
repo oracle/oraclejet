@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import { useRef, useEffect } from 'preact/hooks';
 import { Collection } from './UNSAFE_Collection.js';

@@ -1,5 +1,5 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
-import { _ as __rest } from './tslib.es6-fc945e53.js';
+/* @oracle/oraclejet-preact: 13.1.0 */
+import { _ as __rest } from './tslib.es6-deee4931.js';
 import { jsx } from 'preact/jsx-runtime';
 import { useFormFieldContext } from './hooks/UNSAFE_useFormFieldContext.js';
 import { classNames } from './utils/UNSAFE_classNames.js';
@@ -9,19 +9,19 @@ import 'preact';
 import 'preact/hooks';
 
 const labelStyles = {
-  base: "bqpszk1",
-  startBase: "s8tyzhy",
-  topBase: "t1nf0aj6",
-  insideBase: "ibq10wn",
-  insideReadonlyInEnabledForm: "itgrc9d",
-  insideReadonlyNotInEnabledForm: "iurpzj3",
-  insideNonReadonly: "im4lvc5",
-  insideNonReadonlyHasValue: "i3diidy",
-  insideDisabled: "i1jkkk8p",
-  insideFocused: "i1fr54gj",
-  insideError: "ilnjrnk",
-  insideWarning: "i1p5m3qn",
-  noWrap: "n8alcy4"
+  base: "yz8etg",
+  startBase: "_q3agwh",
+  topBase: "_8l2kx4",
+  insideBase: "_1yjqj",
+  insideReadonlyInEnabledForm: "_yokbv",
+  insideReadonlyNotInEnabledForm: "c737yd",
+  insideNonReadonly: "v9odi8",
+  insideNonReadonlyHasValue: "_qzlzu",
+  insideDisabled: "_wmrmyn",
+  insideFocused: "_b1rcmh",
+  insideError: "_gumw1q",
+  insideWarning: "_h7yz0",
+  noWrap: "_g7qdqc"
 };
 
 const StyledLabel = _a => {

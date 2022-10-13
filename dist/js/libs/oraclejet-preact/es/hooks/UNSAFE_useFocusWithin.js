@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { useState, useCallback } from 'preact/hooks';
 
 function useFocusWithin({ isDisabled, onBlurWithin, onFocusWithin } = {}) {

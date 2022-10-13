@@ -31,6 +31,7 @@ declare type AriaProps = {
 };
 declare type Props = UniqueProps & TextProps & RenamedPropsFromInput & AriaProps & {
     autoComplete?: Autocomplete;
+    currentCommitValue?: string;
     hasEndContent?: boolean;
     hasInsideLabel?: boolean;
     hasStartContent?: boolean;
@@ -40,5 +41,5 @@ declare type Props = UniqueProps & TextProps & RenamedPropsFromInput & AriaProps
     onKeyDown?: (event: KeyboardEvent) => void;
     onKeyUp?: (event: KeyboardEvent) => void;
 };
-export declare const TextFieldInput: ({ as, ariaAutocomplete, ariaControls, ariaDescribedby, ariaExpanded, ariaInvalid, ariaLabel, ariaLabelledby, autoComplete, autoFocus, hasEndContent, hasInsideLabel, hasStartContent, id, inputRef, placeholder, isRequired, role, rows, spellcheck, type, value, onInput, onCommit, onKeyDown, onKeyUp, ...props }: Props) => JSX.Element;
+export declare const TextFieldInput: ({ as, ariaAutocomplete, ariaControls, ariaDescribedby, ariaExpanded, ariaInvalid, ariaLabel, ariaLabelledby, autoComplete, autoFocus, currentCommitValue, hasEndContent, hasInsideLabel, hasStartContent, id, inputRef, placeholder, isRequired, role, rows, spellcheck, type, value, onInput, onCommit, onKeyDown, onKeyUp, ...props }: Props) => JSX.Element;
 export {};

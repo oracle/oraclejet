@@ -1,13 +1,13 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var VirtualizedCollection = require('./VirtualizedCollection-4c35a9ca.js');
+var VirtualizedCollection = require('./VirtualizedCollection-ac8517f3.js');
 require('preact/jsx-runtime');
 require('preact/hooks');
 require('./UNSAFE_Collection.js');
-require('./Collection-86dbad21.js');
+require('./Collection-52275ad2.js');
 require('preact');
 require('./utils/UNSAFE_arrayUtils.js');
 require('./hooks/UNSAFE_useViewportIntersect.js');

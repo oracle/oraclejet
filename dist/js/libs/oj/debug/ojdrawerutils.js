@@ -48,6 +48,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
     }
     DrawerConstants.displayTypeChangeThreshold = 1024;
     DrawerConstants.fullWidthDrawerChangeThreshold = 600;
+    DrawerConstants.fullHeightDrawerChangeThreshold = 600;
     DrawerConstants.charDash = '-';
     DrawerConstants.charSpace = ' ';
     DrawerConstants.stringOjDrawer = 'oj-drawer';
@@ -112,7 +113,11 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
                 '[tabindex]',
                 'video'
             ];
-            const selectorSuffix = ':not([tabindex="-1"]):not([disabled]):not([hidden])';
+            const selectorSuffix = ':not([tabindex="-1"]):not([disabled]):not([hidden])' +
+                ':not([style*="display:none"])' +
+                ':not([style*="display:none"] *)' +
+                ':not([style*="visibility:hidden"])' +
+                ':not([style*="visibility:hidden"] *)';
             const elementsCount = defaultFocusableElements.length;
             let safeFocusablesSelector = '';
             for (let i = 0; i < elementsCount; i++) {
@@ -197,6 +202,12 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
                 return document.documentElement.clientWidth;
             }
             return window.innerWidth;
+        }
+        static getViewportHeight() {
+            if (ojet.AgentUtils.getAgentInfo().os === ojet.AgentUtils.OS.IOS) {
+                return document.documentElement.clientHeight;
+            }
+            return window.innerHeight;
         }
         static moveFocusToElementOrNearestAncestor(element) {
             if (DrawerUtils.isFocusable(element)) {

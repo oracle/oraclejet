@@ -1,5 +1,5 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
-import { _ as __rest } from './tslib.es6-fc945e53.js';
+/* @oracle/oraclejet-preact: 13.1.0 */
+import { _ as __rest } from './tslib.es6-deee4931.js';
 import { jsx } from 'preact/jsx-runtime';
 import { classNames } from './utils/UNSAFE_classNames.js';
 import './UNSAFE_ProgressBar.css';
@@ -121,12 +121,12 @@ const BarValue = _a => {
 };
 
 const styles = {
-  base: "b1ivnjsl",
-  value: "vv4ipiv",
-  indeterminate: "i16t7nhx",
-  standalone: "s1bvzqgk",
-  rtl: "r7hk5fg",
-  ltr: "luxx1rg"
+  base: "_f0ixjh",
+  value: "kywy72",
+  indeterminate: "_jlqptl",
+  standalone: "_ilu9sk",
+  rtl: "_2du5hf",
+  ltr: "_6ostrg"
 };
 
 export { ProgressBar };

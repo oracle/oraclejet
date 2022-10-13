@@ -1,10 +1,10 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
 require('./UNSAFE_stringUtils.js');
-var stringUtils = require('../stringUtils-bca189f8.js');
+var stringUtils = require('../stringUtils-b22cc214.js');
 
 /**
  * Given a value that is of type Size, transform the value into

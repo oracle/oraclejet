@@ -1306,6 +1306,11 @@ class DvtDiagramLink extends Container {
       state, prevState, this._customPoints);
 
     var linkContent = renderer(context);
+    // Disable any new focusable elements that may have been added during render
+    if (!this.hasActiveInnerElems) {
+      var keyboardUtils = this.GetDiagram().getOptions()._keyboardUtils;
+      keyboardUtils.disableAllFocusable(this.getElem());
+    }
     //   - support null case on updates for custom elements
     if (!linkContent && this._customLinkContent) {
       return;
@@ -3293,6 +3298,11 @@ class DvtDiagramNode extends Container {
     }
     var context = contextHandler('node', this.getElem(), this._customNodeContent, childContent, nodeDataContext, state, prevState);
     var nodeContent = renderer(context);
+    // Disable any new focusable elements that may have been added during render
+    if (!this.hasActiveInnerElems) {
+      var keyboardUtils = this.GetDiagram().getOptions()._keyboardUtils;
+      keyboardUtils.disableAllFocusable(this.getElem());
+    }
     this._nodeContext = context;
     //   - support null case on updates for custom elements
     if (!nodeContent && this._customNodeContent && this.getCtx().isCustomElement()) {
@@ -5275,12 +5285,12 @@ class DvtDiagramEventManager extends EventManager {
     // set timeout to stay in editable/actionable mode if focus comes back into the diagram
     this._focusoutTimeout = setTimeout(function () { // @HTMLUpdateOK
       var keyboardUtils = this._component.getOptions()._keyboardUtils;
-      if (this._component.activeInnerElemsNodeId) {
-        const activeNode = this._component.getNodeById(this._component.activeInnerElemsNodeId);
-        keyboardUtils.disableAllFocusable(activeNode.getElem(), true);
-        activeNode.hasActiveInnerElems = false;
+      if (this._component.activeInnerElemsItemId) {
+        const activeItem = this._component.getNodeById(this._component.activeInnerElemsItemId) || this._component.getLinkById(this._component.activeInnerElemsItemId);
+        keyboardUtils.disableAllFocusable(activeItem.getElem());
+        activeItem.hasActiveInnerElems = false;
         this._component.activeInnerElems = null;
-        this._component.activeInnerElemsNodeId = null;
+        this._component.activeInnerElemsItemId = null;
       }
     }.bind(this), 100);
   }
@@ -5422,8 +5432,8 @@ class DvtDiagramEventManager extends EventManager {
           }
           this._component.ensureObjInViewport(event, focusObj);
           var keyboardUtils = this._component.Options._keyboardUtils;
-          keyboardUtils.disableAllFocusable(this._component.getNodesPane().getElem(), true, true);
-          keyboardUtils.disableAllFocusable(this._component.getLinksPane().getElem(), true, true);
+          keyboardUtils.disableAllFocusable(this._component.getNodesPane().getElem(), true);
+          keyboardUtils.disableAllFocusable(this._component.getLinksPane().getElem(), true);
       }
       eventConsumed = super.ProcessKeyboardEvent(event);
     }
@@ -5878,7 +5888,7 @@ class DvtDiagramKeyboardHandler extends PanZoomCanvasKeyboardHandler {
     const isActionableMode = diagram.activeInnerElems;
     // If an element has appeared since the last render, should disable it
     if (!isActionableMode && currentNavigable) {
-      keyboardUtils.disableAllFocusable(currentNavigable.getElem(), true);
+      keyboardUtils.disableAllFocusable(currentNavigable.getElem());
     }
     if (keyCode == KeyboardEvent.TAB) {
       if (currentNavigable) {
@@ -5900,20 +5910,20 @@ class DvtDiagramKeyboardHandler extends PanZoomCanvasKeyboardHandler {
       this._eventManager.hideTooltip();
       var enabled = keyboardUtils.enableAllFocusable(currentNavigable.getElem());
       if (currentNavigable instanceof DvtDiagramNode && currentNavigable.isDisclosed() && currentNavigable.GetChildNodePane(true)) {
-        keyboardUtils.disableAllFocusable(currentNavigable.GetChildNodePane().getElem(), true);
+        keyboardUtils.disableAllFocusable(currentNavigable.GetChildNodePane().getElem());
         enabled = Array.from(enabled);
         enabled = enabled.filter(item => item.tabIndex !== -1);
       }
       if (enabled.length > 0) {
         diagram.activeInnerElems = enabled;
         currentNavigable.hasActiveInnerElems = true;
-        diagram.activeInnerElemsNodeId = currentNavigable.getId();
+        diagram.activeInnerElemsItemId = currentNavigable.getId();
         enabled[0].focus();
       }
     } else if (isActionableMode && currentNavigable && (keyCode == KeyboardEvent.ESCAPE || event.keyCode === KeyboardEvent.F2)) {
       // navigating outside using Esc or F2
       diagram.activeInnerElems = null;
-      keyboardUtils.disableAllFocusable(currentNavigable.getElem(), true);
+      keyboardUtils.disableAllFocusable(currentNavigable.getElem());
       currentNavigable.hasActiveInnerElems = false;
 
       diagram._context._parentDiv.focus();
@@ -11401,9 +11411,9 @@ InitComponentInternal() {
     var keyboardUtils = this.Options._keyboardUtils;
     var busyContext = oj.Context.getContext(this.getContainerElem()).getBusyContext();
     busyContext.whenReady().then(() =>{
-      keyboardUtils.disableAllFocusable(this.getElem(), true);
+      keyboardUtils.disableAllFocusable(this.getElem());
       if (this.activeInnerElems) {
-        var node = this.getNodeById(this.activeInnerElemsNodeId);
+        var node = this.getNodeById(this.activeInnerElemsItemId);
         // if neither the old active elem had an ID and elem was successfully focused
         // nor if old custom elem had an ID and was succesffuly focused
         if (!(this._oldActiveElemId && this._enableActiveElems(this._oldActiveElemId, node) ||
@@ -11448,7 +11458,7 @@ InitComponentInternal() {
       var keyboardUtils = this.Options._keyboardUtils;
       var enabled = keyboardUtils.enableAllFocusable(node.getElem());
       if (node instanceof DvtDiagramNode && node.isDisclosed() && node.GetChildNodePane(true)) {
-        keyboardUtils.disableAllFocusable(node.GetChildNodePane().getElem(), true);
+        keyboardUtils.disableAllFocusable(node.GetChildNodePane().getElem());
         enabled = Array.from(enabled);
         enabled = enabled.filter(item => item.tabIndex !== -1);
       }

@@ -815,6 +815,7 @@ class DvtGauge extends BaseComponent {
   }
 
   SetOptions(options) {
+    super.SetOptions(options);
     this.Options = options;
 
     if (Agent.isEnvironmentTest()) {

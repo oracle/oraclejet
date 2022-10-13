@@ -1,5 +1,5 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
-import { _ as __rest } from './tslib.es6-fc945e53.js';
+/* @oracle/oraclejet-preact: 13.1.0 */
+import { _ as __rest } from './tslib.es6-deee4931.js';
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import { useFormContext } from './hooks/UNSAFE_useFormContext.js';
 import './UNSAFE_TextField.css';
@@ -11,14 +11,14 @@ import { useTranslationBundle } from './hooks/UNSAFE_useTranslationBundle.js';
 import { LabelValueLayout } from './UNSAFE_LabelValueLayout.js';
 import { Fragment } from 'preact';
 import { Flex } from './UNSAFE_Flex.js';
-import { a as _isPlaceholder_1, _ as _curry1_1 } from './_curry1-8b0d63fc.js';
-import { _ as _curry2_1 } from './_curry2-6a0eecef.js';
+import { a as _isPlaceholder_1, _ as _curry1_1 } from './_curry1-b6f34fc4.js';
+import { _ as _curry2_1 } from './_curry2-255e04d1.js';
 import { useTextFieldInputHandlers } from './hooks/UNSAFE_useTextFieldInputHandlers.js';
 import { useDebounce } from './hooks/UNSAFE_useDebounce.js';
 import { LiveRegion } from './UNSAFE_LiveRegion.js';
 import 'preact/hooks';
-import './keys-cb973048.js';
-import './_has-77a27fd6.js';
+import './keys-77d2b8e6.js';
+import './_has-f370c697.js';
 import './UNSAFE_Environment.js';
 import './UNSAFE_Layer.js';
 import 'preact/compat';
@@ -32,8 +32,8 @@ import './utils/UNSAFE_interpolations/flexitem.js';
 import './utils/PRIVATE_clientHints.js';
 
 const rootStyles$1 = {
-  base: "bz3fot0",
-  labelInside: "ls05z7w"
+  base: "_p7jaqt",
+  labelInside: "_mh88i5"
 };
 const getFormControlClasses = hasInsideLabel => {
   return classNames([rootStyles$1.base, hasInsideLabel && rootStyles$1.labelInside]);
@@ -43,18 +43,21 @@ const getLoadingAriaLabel = () => {
   return translations.formControl_loading();
 };
 
+// and the textarea, so the the textarea's focus outline doesn't get truncated.
+// The 0.25rem is an aesthetically pleasing amount of margin to make the readonly
+// focus ring visible.
+
+const borderToTextAreaContentMargin = '0.25rem';
 const readOnlyTextFieldStyles = {
-  base: "byczszj",
-  textareaBase: "to9zpcl",
-  inEnabledFormBase: "iuhxjs8",
-  textareaInEnabledFormBase: "t1ch5h18",
-  inEnabledFormLabelInside: "iol9fno",
-  textareaInEnabledFormLabelInside: "t15jwrza",
-  // We don't want any default padding the browser provides for readonly
-  textareaInReadonlyFormNotInside: "t1y841pv",
-  inEnabledFormNoLabelInside: "i1cijd50",
+  base: "_n1b6om",
+  textareaBase: "znllbr",
+  inEnabledFormBase: "_psuy0h",
+  textareaInEnabledFormBase: "_qrph7n",
+  inEnabledFormLabelInside: "_eeetkl",
+  textareaInEnabledFormLabelInside: "_bmdju7",
+  inEnabledFormNoLabelInside: "zr8b2q",
   // don't apply this for textarea
-  inEnabledFormNoStartContent: "i1of5qyc"
+  inEnabledFormNoStartContent: "wg3pte"
 };
 function ReadonlyTextFieldInput(_a) {
   var {
@@ -87,7 +90,8 @@ function ReadonlyTextFieldInput(_a) {
   const {
     class: styleInterpolationClasses
   } = styleInterpolations(props);
-  const readonlyDivClasses = classNames([as !== 'textarea' && 'oj-c-hide-scrollbar', readOnlyTextFieldStyles.base, as === 'textarea' && readOnlyTextFieldStyles.textareaBase, isFormLayout && !isReadonlyForm && readOnlyTextFieldStyles.inEnabledFormBase, isFormLayout && !isReadonlyForm && as === 'textarea' && readOnlyTextFieldStyles.textareaInEnabledFormBase, isFormLayout && !isReadonlyForm && (hasInsideLabel ? readOnlyTextFieldStyles.inEnabledFormLabelInside : readOnlyTextFieldStyles.inEnabledFormNoLabelInside), isFormLayout && !isReadonlyForm && as === 'textarea' && hasInsideLabel && readOnlyTextFieldStyles.textareaInEnabledFormLabelInside, isFormLayout && isReadonlyForm && as === 'textarea' && !hasInsideLabel && readOnlyTextFieldStyles.textareaInReadonlyFormNotInside, isFormLayout && !isReadonlyForm && as !== 'textarea' && readOnlyTextFieldStyles.inEnabledFormNoStartContent, styleInterpolationClasses]);
+  const readonlyDivClasses = classNames([as !== 'textarea' && 'oj-c-hide-scrollbar', readOnlyTextFieldStyles.base, as === 'textarea' && readOnlyTextFieldStyles.textareaBase, isFormLayout && !isReadonlyForm && readOnlyTextFieldStyles.inEnabledFormBase, as === 'textarea' && isFormLayout && !isReadonlyForm && readOnlyTextFieldStyles.textareaInEnabledFormBase, isFormLayout && !isReadonlyForm && (hasInsideLabel ? readOnlyTextFieldStyles.inEnabledFormLabelInside : readOnlyTextFieldStyles.inEnabledFormNoLabelInside), as === 'textarea' && isFormLayout && !isReadonlyForm && hasInsideLabel && readOnlyTextFieldStyles.textareaInEnabledFormLabelInside, as !== 'textarea' && // not for textarea element
+  isFormLayout && !isReadonlyForm && readOnlyTextFieldStyles.inEnabledFormNoStartContent, styleInterpolationClasses]);
 
   if (as === 'input') {
     return jsx("input", {
@@ -136,19 +140,19 @@ function ReadonlyTextFieldInput(_a) {
 }
 
 const textFieldStyles = {
-  base: "b1xca3of",
-  nonReadonly: "ni40gqb"
+  base: "_p2gfel",
+  nonReadonly: "_dn1zg"
 };
 const readonlyStyles = {
-  base: "bun4eps",
-  insideEnabledForm: "ijdzj0w",
-  textarea: "t13hvi0u",
-  insideEnabledFormLabelInside: "i1hdg7a3",
-  notInsideEnabledForm: "nbcpkci",
-  textareaNotInsideEnabledForm: "tzp1pxl"
+  base: "_qcacp5",
+  insideEnabledForm: "_6z8p96",
+  textarea: "_cqjxkn",
+  insideEnabledFormLabelInside: "_nj5aga",
+  notInsideEnabledForm: "_mt8uw",
+  textareaNotInsideEnabledForm: "b90zw3"
 }; //Consolidating all loading styles on form elements here
 
-const loadingStyles = "l1omatdu";
+const loadingStyles = "mqs4hy";
 const getTextFieldClasses = readonly => {
   const classes = classNames([textFieldStyles.base, !readonly && textFieldStyles.nonReadonly]);
   return classes;
@@ -442,18 +446,18 @@ const ojButtonIconSize = 'var(--oj-c-PRIVATE-DO-NOT-USE-core-icon-size-lg)'; // 
 
 const ojButtonSmIconSize = '1.25rem';
 const textFieldContainerStyles = {
-  base: "bpxth0a",
-  textarea: "t1nwf48c",
-  labelInside: "l1asas25",
-  focused: "f1fkvmlv",
+  base: "jrzml0",
+  textarea: "_9mcyl0",
+  labelInside: "j78ji5",
+  focused: "_lxrr59",
   resize: {
-    both: "byvh15",
-    horizontal: "haatqwl",
-    vertical: "vnx52bj"
+    both: "_r7uwp3",
+    horizontal: "_ungs9n",
+    vertical: "_jpfde"
   },
-  disabled: "de62cmy",
-  error: "ewejuy9",
-  warning: "w1ywmvcj"
+  disabled: "_1fz7c7",
+  error: "j6tnap",
+  warning: "_qd3ih"
 };
 const containerContentVariantStyles = {
   textarea: textFieldContainerStyles.textarea,
@@ -470,13 +474,13 @@ const getStyle = curry_1((styles, variant) => variant && styles[variant]);
 const getContainerContentVariantStyles = getStyle(containerContentVariantStyles);
 const getContainerStatusVariantStyles = getStyle(containerStatusVariantStyles);
 const textFieldStartContentStyles = {
-  base: "bwv846o",
-  labelInside: "l4zuwwr",
-  disabled: "deqisnl"
+  base: "vnnb98",
+  labelInside: "_wv3kzo",
+  disabled: "_pxtnet"
 };
 const textFieldMiddleStyles = {
-  base: "b1g2m4fu",
-  textarea: "ti5cls5"
+  base: "ftj5wx",
+  textarea: "qnnx9f"
 };
 const middleContentVariantStyles = {
   textarea: textFieldMiddleStyles.textarea,
@@ -485,8 +489,8 @@ const middleContentVariantStyles = {
 };
 const getMiddleContentVariantStyles = getStyle(middleContentVariantStyles);
 const textFieldEndContentStyles = {
-  base: "b1m9i38d",
-  labelInside: "loikvln"
+  base: "_w86pwh",
+  labelInside: "_mlam0"
 }; // Renders the oj-text-field-container dom which includes the
 // start, middle (where the inside label and inputElem goes),
 // and end pieces of the form component.
@@ -575,14 +579,15 @@ const TextField = ({ id, endContent, mainContent, startContent, inlineUserAssist
 };
 
 const rootStyles = {
-  base: "b5vrti3",
-  textarea: "tqajw3e",
-  labelInsideBase: "lz92e5s",
-  textareaLabelInsideBase: "tu7n3hp",
-  labelInsideNoValueAndHasFocus: "l1anaj9x",
-  hasStartContent: "h11v9ury",
-  hasEndContent: "h1lksuif",
-  disabled: "d9vukc7"
+  base: "_td6wml",
+  textarea: "v1wu0m",
+  password: "b9zln2",
+  labelInsideBase: "onu3ux",
+  textareaLabelInsideBase: "_h206",
+  labelInsideNoValueAndHasFocus: "nntzq3",
+  hasStartContent: "_la3rso",
+  hasEndContent: "_tcvcyf",
+  disabled: "a8aw7n"
 };
 const interpolations = [...Object.values(textInterpolations)];
 const styleInterpolations = mergeInterpolations(interpolations);
@@ -598,6 +603,7 @@ const TextFieldInput = _a => {
     ariaLabelledby,
     autoComplete,
     autoFocus,
+    currentCommitValue,
     hasEndContent = false,
     hasInsideLabel = false,
     hasStartContent = false,
@@ -615,7 +621,7 @@ const TextFieldInput = _a => {
     onKeyDown,
     onKeyUp
   } = _a,
-      props = __rest(_a, ["as", "ariaAutocomplete", "ariaControls", "ariaDescribedby", "ariaExpanded", "ariaInvalid", "ariaLabel", "ariaLabelledby", "autoComplete", "autoFocus", "hasEndContent", "hasInsideLabel", "hasStartContent", "id", "inputRef", "placeholder", "isRequired", "role", "rows", "spellcheck", "type", "value", "onInput", "onCommit", "onKeyDown", "onKeyUp"]);
+      props = __rest(_a, ["as", "ariaAutocomplete", "ariaControls", "ariaDescribedby", "ariaExpanded", "ariaInvalid", "ariaLabel", "ariaLabelledby", "autoComplete", "autoFocus", "currentCommitValue", "hasEndContent", "hasInsideLabel", "hasStartContent", "id", "inputRef", "placeholder", "isRequired", "role", "rows", "spellcheck", "type", "value", "onInput", "onCommit", "onKeyDown", "onKeyUp"]);
 
   const hasValue = value !== '';
   const {
@@ -628,9 +634,10 @@ const TextFieldInput = _a => {
   const {
     class: styleInterpolationClasses
   } = styleInterpolations(props);
-  const inputClasses = classNames(['oj-c-text-field-input', rootStyles.base, as === 'textarea' && rootStyles.textarea, hasInsideLabel && classNames([rootStyles.labelInsideBase, as === 'textarea' && rootStyles.textareaLabelInsideBase, !hasValue && isFocused && rootStyles.labelInsideNoValueAndHasFocus]), hasStartContent && rootStyles.hasStartContent, hasEndContent && rootStyles.hasEndContent, isDisabled && rootStyles.disabled, styleInterpolationClasses]);
+  const inputClasses = classNames(['oj-c-text-field-input', rootStyles.base, as === 'textarea' && rootStyles.textarea, type === 'password' && rootStyles.password, hasInsideLabel && classNames([rootStyles.labelInsideBase, as === 'textarea' && rootStyles.textareaLabelInsideBase, !hasValue && isFocused && rootStyles.labelInsideNoValueAndHasFocus]), hasStartContent && rootStyles.hasStartContent, hasEndContent && rootStyles.hasEndContent, isDisabled && rootStyles.disabled, styleInterpolationClasses]);
   const Comp = as || 'input';
   const handlers = useTextFieldInputHandlers({
+    currentCommitValue,
     value,
     onInput,
     onCommit,

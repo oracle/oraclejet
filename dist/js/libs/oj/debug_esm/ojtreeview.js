@@ -1415,7 +1415,6 @@ class TreeviewSelectionManager {
           }
           this._resetFocus();
           this._decorateTree();
-          this._lastSelectedItem = null;
           this.element[0].classList.add(this.constants.OJ_COMPLETE);
         }
       },
@@ -2139,6 +2138,7 @@ class TreeviewSelectionManager {
                   currentSelected = currentSelected.delete([event.target.rowKey]);
                 } else {
                   currentSelected = currentSelected.add([event.target.rowKey]);
+                  this._selectionAnchor = event.target.rowKey;
                 }
                 this._userSelectedOptionChange(currentSelected, event);
               }
@@ -2508,7 +2508,6 @@ class TreeviewSelectionManager {
           this._focus(item, event);
         }
 
-        this._lastSelectedItem = null;
         var subtree = this._getSubtree(item);
         var key = self._getKey(item);
         if (!subtree) {
@@ -2735,7 +2734,6 @@ class TreeviewSelectionManager {
         item.classList.remove(this.constants.OJ_EXPANDED);
         item.classList.add(this.constants.OJ_COLLAPSED);
         this._setAriaExpanded(item, 'false');
-        this._lastSelectedItem = null;
 
         var subtree = this._getSubtree(item);
         if (animate) {
@@ -2883,8 +2881,8 @@ class TreeviewSelectionManager {
           var selected = new KeySetImpl();
 
           if ((this._isMultiSelectionEnabled() || this._isLeafOnlySelectionEnabled())
-            && event.shiftKey && !isNavigation) {
-            // Maintain selection of other items if meta key is pressed
+            && event.shiftKey && !isNavigation && this._selectionAnchor) {
+            let nextItem = this._getItemByKey(this._selectionAnchor);
             if (isMetaKey) {
               selected = this._getSelected();
             } else {
@@ -2892,7 +2890,6 @@ class TreeviewSelectionManager {
             }
 
             // Select a range from the last selected item to the current item
-            var nextItem = this._lastSelectedItem;
             var getNextItem = (nextItem && nextItem.offsetTop < item.offsetTop) ?
               this._getNextActionableItem.bind(this) : this._getPreviousActionableItem.bind(this);
 
@@ -2905,7 +2902,6 @@ class TreeviewSelectionManager {
               nextItem = getNextItem(nextItem, 'select');
             }
 
-            // Select the current item
             isSelected = true;
             selected = selected.add([key]);
           } else if ((this._isMultiSelectionEnabled() || this._isLeafOnlySelectionEnabled())
@@ -2918,6 +2914,7 @@ class TreeviewSelectionManager {
             } else {
               selected = selected.delete([key]);
             }
+            this._selectionAnchor = key;
           } else if ((isTouch || isSpaceBarKeyEvent(eventKey)) && isSelected) {
             // On touch or spacebar, toggle the selection of the current item
             // Otherwise, select the current item even if it is already selected
@@ -2926,11 +2923,11 @@ class TreeviewSelectionManager {
           } else {
             isSelected = true;
             selected = new KeySetImpl([key]);
+            this._selectionAnchor = key;
           }
           // Since clicking on the item resets the selection, ignore the previous selection when computing the final selection for the leafOnly case.
           this._userSelectedOptionChange(selected, event,
             (!isMetaKey && !isNavigation && !isTouch));
-          this._lastSelectedItem = item;
         }
 
         if (isSelected) {
@@ -3392,7 +3389,6 @@ class TreeviewSelectionManager {
         var selectionMode = this.options.selectionMode;
         if (selectionMode !== 'none') {
           this._clearSelection();
-          this._lastSelectedItem = null;
           this._userSelectedOptionChange(new KeySetImpl(), event);
         }
 
@@ -3502,7 +3498,7 @@ class TreeviewSelectionManager {
               // Shift+Up/Down either extends the selection to the next item or cancels previous Shift+Down/Up
               this._select(this._isSelected(nextItem) ? currentItem : nextItem, event);
             }
-            this._scrollToVisible(nextItem, eventKey);
+            this._scrollToVisible(nextItem);
             this._focus(nextItem, event);
           }
         } else if (isArrowLeftKeyEvent(eventKey) ||
@@ -3546,28 +3542,28 @@ class TreeviewSelectionManager {
       /**
       * Scroll as needed to make an element visible in the viewport
       * @param {Element} elem the element to make visible
-      * @param {Number} eventKey key or keycode of keyboard event
       * @private
       */
-      _scrollToVisible: function (elem, eventKey) {
-        var spacerHeight = this._getItemSpacer(elem).offsetHeight;
-        var tree = this.element[0];
-        var treeScrollTop = tree.scrollTop;
-        var height = spacerHeight;
+       _scrollToVisible: function (elem) {
+        const tree = this.element[0];
+        const spacerHeight = this._getItemSpacer(elem).offsetHeight;
 
-        var viewportStart = treeScrollTop;
-        var viewportEnd = treeScrollTop + this.element[0].offsetHeight;
-        var position;
-        position = elem.offsetTop - this.element[0].offsetTop;
-        if (isArrowUpKeyEvent(eventKey)) { // UP
-          position += height;
+        const treeBoundingClientRect = tree.getBoundingClientRect();
+        const viewportStart = treeBoundingClientRect.top;
+        const viewportEnd = treeBoundingClientRect.bottom;
+
+        const elemBoundingClientRect = elem.getBoundingClientRect();
+        const elemTop = elemBoundingClientRect.top;
+        const elemBottom = elemBoundingClientRect.top + spacerHeight;
+
+        if ((elemTop >= viewportStart && elemBottom <= viewportEnd)) {
+          return;
         }
         // +- 1 for the focus border
-        if (position < viewportStart) {
-          tree.scrollTop = treeScrollTop + (position - viewportStart - 1);
-        } else if (position > viewportEnd) {
-          // eslint-disable-next-line no-mixed-operators
-          tree.scrollTop = treeScrollTop + (position - viewportEnd + 1);
+        if (elemTop < viewportStart) {
+          tree.scrollTop += (elemTop - viewportStart - 1);
+        } else if (elemBottom > viewportEnd) {
+          tree.scrollTop += (elemBottom - viewportEnd + 1);
         }
       },
       /**
@@ -4394,8 +4390,8 @@ class TreeviewSelectionManager {
       _getFlatList: function () {
         const flatList = [];
         this._getItems().forEach((item) => {
-          const parentList = item.parentElement;
-          if (parentList.style.display !== 'none') {
+          const isHiddenElement = this._isHiddenElement(item);
+          if (!isHiddenElement) {
             flatList.push(item);
           }
         });

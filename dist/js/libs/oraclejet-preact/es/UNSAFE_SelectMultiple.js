@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import { Fragment } from 'preact';
 import { forwardRef } from 'preact/compat';
@@ -23,7 +23,7 @@ import { Layer } from './UNSAFE_Layer.js';
 import useOutsideClick from './hooks/UNSAFE_useOutsideClick.js';
 import { usePress } from './hooks/UNSAFE_usePress.js';
 import { classNames } from './utils/UNSAFE_classNames.js';
-import { _ as __rest } from './tslib.es6-fc945e53.js';
+import { _ as __rest } from './tslib.es6-deee4931.js';
 import { Chip } from './UNSAFE_Chip.js';
 import { useTranslationBundle } from './hooks/UNSAFE_useTranslationBundle.js';
 import './hooks/UNSAFE_useFocusWithin.js';
@@ -33,12 +33,12 @@ import './utils/UNSAFE_interpolations/dimensions.js';
 import './utils/UNSAFE_arrayUtils.js';
 import './utils/UNSAFE_size.js';
 import './utils/UNSAFE_stringUtils.js';
-import './_curry1-8b0d63fc.js';
+import './_curry1-b6f34fc4.js';
 import './utils/UNSAFE_mergeInterpolations.js';
-import './_curry2-6a0eecef.js';
-import './_has-77a27fd6.js';
+import './_curry2-255e04d1.js';
+import './_has-f370c697.js';
 import './utils/UNSAFE_interpolations/boxalignment.js';
-import './keys-cb973048.js';
+import './keys-77d2b8e6.js';
 import './utils/UNSAFE_interpolations/flexbox.js';
 import './utils/UNSAFE_interpolations/flexitem.js';
 import './utils/UNSAFE_interpolations/text.js';
@@ -47,6 +47,7 @@ import './hooks/UNSAFE_useTextFieldInputHandlers.js';
 import './hooks/UNSAFE_useDebounce.js';
 import './UNSAFE_Environment.js';
 import './UNSAFE_ComponentMessage.js';
+import './UNSAFE_HiddenAccessible.js';
 import './UNSAFE_Message.js';
 import './utils/UNSAFE_getLocale.js';
 import './UNSAFE_ThemedIcons.js';
@@ -67,7 +68,7 @@ import './hooks/PRIVATE_useCurrentKey.js';
 import './hooks/PRIVATE_useCollectionFocusRing.js';
 import './UNSAFE_Skeleton.js';
 import './utils/UNSAFE_interpolations/borders.js';
-import './index-8347aa9c.js';
+import './index-46e68d3c.js';
 import './hooks/UNSAFE_useActionable.js';
 import './hooks/UNSAFE_useHover.js';
 import './hooks/UNSAFE_useToggle.js';
@@ -97,7 +98,7 @@ function renderItemText(item, itemText) {
     return itemText(item);
 }
 
-const itemStyles = "idd6a1a";
+const itemStyles = "_3otv08";
 
 const noOp = () => {};
 
@@ -193,7 +194,7 @@ const isSimpleClick = (event) => {
 };
 
 const rootStyles$3 = {
-  base: "b1x3qtg"
+  base: "l1irv3"
 };
 function Dropdown({
   anchorRef,
@@ -268,11 +269,11 @@ const ojButtonBorderlessChromeBgColorHover = 'var(--oj-c-PRIVATE-DO-NOT-USE-core
 
 const ojButtonBorderlessChromeBorderColorHover = 'transparent';
 const rootStyles$2 = {
-  base: "bd2dc79",
-  sizeMd: "s15qor59",
-  sizeSm: "s12pbwsa",
-  enabled: "e1yzq7zc",
-  disabled: "d13seyx8"
+  base: "_u290a",
+  sizeMd: "twg85i",
+  sizeSm: "_f3eafd",
+  enabled: "dxvfy",
+  disabled: "usxalw"
 };
 
 const noop = () => {};
@@ -314,13 +315,13 @@ function DropdownArrow({
 }
 
 const rootStyles$1 = {
-  base: "b4ys03i",
+  base: "_bjjqqk",
   // TODO: This should really be applied directly to the child ListView so that the content
   // displays under the padding when scrolled, but we can't apply styles to the child collection.
   // TODO: Also need to figure out how to determine whether the collection is a ListView (in
   // the collectionRenderer case) in order to apply this styling.
-  listView: "lchlgjc",
-  loading: "l6rxyq0"
+  listView: "_7skzed",
+  loading: "_r0l2mo"
 };
 function DropdownList({
   children,
@@ -334,7 +335,7 @@ function DropdownList({
   }));
 }
 
-const rootStyles = "r1onwb12"; // This component renders a badge showing the number of selected values
+const rootStyles = "_hne3yc"; // This component renders a badge showing the number of selected values
 
 function SelectedValuesCount(_a) {
   var {
@@ -848,13 +849,13 @@ const SelectMultiple = forwardRef(({ assistiveText, data: propData, helpSourceLi
     const inlineUserAssistance = isDisabled || isReadonly ? (
     // save space for user assistance if density is 'efficient', even though we don't
     // render user assistance for disabled or readonly fields
-    userAssistanceDensity !== 'efficient' ? undefined : (jsx(InlineUserAssistance, Object.assign({ userAssistanceDensity: userAssistanceDensity }, userAssistanceProps)))) : (jsx(InlineUserAssistance, Object.assign({ assistiveText: assistiveText, helpSourceLink: helpSourceLink, helpSourceText: helpSourceText, messages: messages, isRequiredShown: isRequiredShown, userAssistanceDensity: userAssistanceDensity }, userAssistanceProps)));
+    userAssistanceDensity !== 'efficient' ? undefined : (jsx(InlineUserAssistance, Object.assign({ userAssistanceDensity: userAssistanceDensity }, userAssistanceProps)))) : (jsx(InlineUserAssistance, Object.assign({ assistiveText: assistiveText, fieldLabel: label, helpSourceLink: helpSourceLink, helpSourceText: helpSourceText, messages: messages, isRequiredShown: isRequiredShown, userAssistanceDensity: userAssistanceDensity }, userAssistanceProps)));
     if (isReadonly) {
         return (jsx(FormFieldContext.Provider, Object.assign({ value: formFieldContext }, { children: jsx(ReadonlyTextField, Object.assign({ role: "presentation", inlineUserAssistance: inlineUserAssistance, onBlur: focusProps.onfocusout, onFocus: focusProps.onfocusin }, fieldLabelProps, { children: jsx(ReadonlyTextFieldInput, { ariaLabel: ariaLabel, ariaLabelledby: labelProps.id, as: "div", elementRef: readonlyElementRef, hasInsideLabel: label !== undefined && labelEdge === 'inside', id: textFieldProps.id, textAlign: textAlign, value: displayValue }) })) })));
     }
     const hasInsideLabel = labelComp !== undefined && labelEdge === 'inside';
     const translations = useTranslationBundle('@oracle/oraclejet-preact');
-    const liveRegionText = isDropdownOpen && data !== undefined && data !== null
+    const liveRegionText = isDropdownOpen && data !== undefined && data !== null && !isBeforeDataFetch(data)
         ? (data === null || data === void 0 ? void 0 : data.totalSize) === 0
             ? translations.select_noMatchesFound()
             : (data === null || data === void 0 ? void 0 : data.totalSize) === 1
@@ -867,7 +868,9 @@ const SelectMultiple = forwardRef(({ assistiveText, data: propData, helpSourceLi
     const dropdownArrow = (jsx(DropdownArrow, Object.assign({ isDisabled: isDisabled, size: hasInsideLabel ? 'md' : 'sm' }, dropdownArrowEventHandlers)));
     const selectedValuesCount = valueItems === null || valueItems === void 0 ? void 0 : valueItems.length;
     const endContent = isLoading ? undefined : !hasSelectedValuesCount ? (dropdownArrow) : (jsxs(Flex, Object.assign({ align: "center", justify: "center", gap: [0, '1x'] }, { children: [jsx(SelectedValuesCount, Object.assign({ accessibleLabel: label, count: selectedValuesCount, isDisabled: isDisabled, isSelected: isDropdownSelectedOnlyView }, selectedValuesCountProps)), dropdownArrow] })));
-    return (jsxs(Fragment, { children: [jsx(FormFieldContext.Provider, Object.assign({ value: formFieldContext }, { children: jsx(TextField, Object.assign({ endContent: endContent, inlineUserAssistance: inlineUserAssistance, mainContent: mainContent, mainFieldRef: mainFieldRef, onBlur: focusProps === null || focusProps === void 0 ? void 0 : focusProps.onfocusout, onFocus: focusProps === null || focusProps === void 0 ? void 0 : focusProps.onfocusin }, textFieldProps, fieldLabelProps, mouseProps)) })), jsx(Dropdown, Object.assign({ dropdownRef: dropdownRef, id: dropdownId, isOpen: isDropdownOpen && data !== undefined && (data === null || data.totalSize > 0), anchorRef: mainFieldRef }, dropdownEventHandlers, { children: jsx(DropdownList, Object.assign({ isLoading: data === null }, { children: jsx(DefaultList, Object.assign({}, collectionProps, { accessibleSummary: label !== null && label !== void 0 ? label : '', data: data, itemText: itemText, onLoadRange: onLoadRange, searchText: isDropdownSelectedOnlyView ? undefined : isUserFiltering ? searchText : undefined })) })) }))] }));
+    return (jsxs(Fragment, { children: [jsx(FormFieldContext.Provider, Object.assign({ value: formFieldContext }, { children: jsx(TextField, Object.assign({ endContent: endContent, inlineUserAssistance: inlineUserAssistance, mainContent: mainContent, mainFieldRef: mainFieldRef, onBlur: focusProps === null || focusProps === void 0 ? void 0 : focusProps.onfocusout, onFocus: focusProps === null || focusProps === void 0 ? void 0 : focusProps.onfocusin }, textFieldProps, fieldLabelProps, mouseProps)) })), jsx(Dropdown, Object.assign({ dropdownRef: dropdownRef, id: dropdownId, isOpen: isDropdownOpen &&
+                    data !== undefined &&
+                    (data === null || data.totalSize > 0 || isBeforeDataFetch(data)), anchorRef: mainFieldRef }, dropdownEventHandlers, { children: jsx(DropdownList, Object.assign({ isLoading: data === null }, { children: jsx(DefaultList, Object.assign({}, collectionProps, { accessibleSummary: label !== null && label !== void 0 ? label : '', data: data, itemText: itemText, onLoadRange: onLoadRange, searchText: isDropdownSelectedOnlyView ? undefined : isUserFiltering ? searchText : undefined })) })) }))] }));
 });
 /**
  * Helper function to determine whether the current device is a mobile device
@@ -876,6 +879,9 @@ const SelectMultiple = forwardRef(({ assistiveText, data: propData, helpSourceLi
 function isMobile() {
     const deviceType = getClientHints().deviceType;
     return deviceType === 'phone' || deviceType === 'tablet';
+}
+function isBeforeDataFetch(data) {
+    return data.sizePrecision === 'atLeast' && data.totalSize === 0;
 }
 
 /**

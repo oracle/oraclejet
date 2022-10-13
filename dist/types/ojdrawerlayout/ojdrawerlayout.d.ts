@@ -19,6 +19,7 @@ declare type State = {
     endShouldChangeDisplayMode: boolean;
     bottomShouldChangeDisplayMode: boolean;
     viewportResolvedDisplayMode: ResolvedDisplayMode;
+    viewportResolvedDisplayModeVertical: ResolvedDisplayMode;
     lastlyOpenedDrawer: EdgeLayout;
     startStateToChangeTo: GenericObject;
     endStateToChangeTo: GenericObject;
@@ -82,6 +83,7 @@ export declare class DrawerLayout extends Component<ExtendGlobalProps<Props>, St
     private getDrawerStyleClasses;
     private getDrawerResolvedDisplayMode;
     private getViewportResolvedDisplayMode;
+    private getViewportResolvedDisplayModeVertical;
     private handleKeyDown;
     private selfClose;
     private setDrawerFocus;
@@ -162,7 +164,7 @@ export interface DrawerLayoutElementSettablePropertiesLenient extends Partial<Dr
     [key: string]: any;
 }
 export interface DrawerLayoutIntrinsicProps extends Partial<Readonly<DrawerLayoutElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
-    children?: ComponentChildren;
+    children?: import('preact').ComponentChildren;
     onojBeforeClose?: (value: DrawerLayoutElementEventMap['ojBeforeClose']) => void;
     onbottomDisplayChanged?: (value: DrawerLayoutElementEventMap['bottomDisplayChanged']) => void;
     onbottomOpenedChanged?: (value: DrawerLayoutElementEventMap['bottomOpenedChanged']) => void;

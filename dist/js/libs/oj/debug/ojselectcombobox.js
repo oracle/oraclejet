@@ -2668,7 +2668,9 @@ var __oj_select_many_metadata =
       // jet-39078 - accessibility: jaws does not read "no matches found" for oj-select-many
       // add the message text to the live region for it be read
       const widget = _ComboUtils.getWidget(context);
-      widget._updateMatchesCount(messageText, true);
+      if (widget != null) {
+        widget._updateMatchesCount(messageText, true);
+      }
     },
 
     // _ComboUtils
@@ -5700,6 +5702,10 @@ var __oj_select_many_metadata =
             context: null,
             matcher: opts.matcher,
             callback: this._bind(function (data) {
+              // if the instance is destroyed at this point, do nothing
+              if (!this.isInitialized) {
+                return;
+              }
               // clear dropdown loading indicator
               _ComboUtils.updateDropdownLoadingState(this, false);
 
@@ -6867,6 +6873,10 @@ var __oj_select_many_metadata =
                   {
                     value: ids,
                     callback: function (qryResult) {
+                      // if the instance is destroyed at this point, do nothing
+                      if (!self.isInitialized) {
+                        return;
+                      }
                       // Clear the loading indicator now that the label is fetched
                       _ComboUtils.updateLoadingState(self, false);
 
@@ -6952,8 +6962,12 @@ var __oj_select_many_metadata =
                     return isMatch;
                   },
                   callback: !$.isFunction(callback) ? $.noop : function () {
-                  // reorder matches based on the order they appear in the ids array because right now
-                  // they are in the order in which they appear in data array
+                    // if the instance is destroyed at this point, do nothing
+                    if (!self.isInitialized) {
+                      return;
+                    }
+                    // reorder matches based on the order they appear in the ids array because right now
+                    // they are in the order in which they appear in data array
                     var ordered = [];
                     for (var i = 0; i < ids.length; i++) {
                       var id = ids[i];
@@ -8983,6 +8997,10 @@ var __oj_select_many_metadata =
                     // call the method with the match found. Otherwise do nothing
                     // except cleaning up.
                     callback: (typeof callback !== 'function') ? clearLoadingState : function (qryResult) {
+                      // if the instance is destroyed at this point, do nothing
+                      if (!self.isInitialized) {
+                        return;
+                      }
                       // Clear the loading indicator, now that the label is fetched
                       clearLoadingState();
                       //  - While fetching the label for the initial value,
@@ -9040,6 +9058,10 @@ var __oj_select_many_metadata =
                     return isMatch;
                   },
                   callback: !$.isFunction(callback) ? $.noop : function () {
+                    // if the instance is destroyed at this point, do nothing
+                    if (!self.isInitialized) {
+                      return;
+                    }
                     if (match != null) {
                       self._idsFromDropdown.add(opts.id(match));
                     }
@@ -12200,7 +12222,10 @@ var __oj_select_many_metadata =
          * @return {jQuery} the combobox
          */
       widget: function () {
-        return this.combobox.container;
+        if (this._isComboboxInstantiated()) {
+          return this.combobox.container;
+        }
+        return $(this.OuterWrapper);
       },
 
 
@@ -12349,7 +12374,9 @@ var __oj_select_many_metadata =
         // Fix  - Acc error in the OATB tool
         const ariaLabelledBy = ojeditablevalue.EditableValueUtils._getOjLabelAriaLabelledBy(
             labelledBy, `${this.uuid}_Label`);
-        this.combobox.updateAriaLabelledByIfNeeded(ariaLabelledBy);
+        if (this._isComboboxInstantiated()) {
+          this.combobox.updateAriaLabelledByIfNeeded(ariaLabelledBy);
+        }
       },
       /**
        * @memberof! oj.ojCombobox
@@ -12664,7 +12691,7 @@ var __oj_select_many_metadata =
        * @return {Element|undefined}
        */
       _GetContentWrapper: function () {
-        if (this._IsCustomElement()) {
+        if (this._IsCustomElement() && this._isComboboxInstantiated()) {
           return this.combobox._GetContentWrapper();
         }
         return undefined;
@@ -12923,13 +12950,17 @@ var __oj_select_many_metadata =
       // 19670748, dropdown popup should be closed on subtreeDetached notification.
       _NotifyDetached: function () {
         this._superApply(arguments);
-        this.combobox.close();
+        if (this._isComboboxInstantiated()) {
+          this.combobox.close();
+        }
       },
 
       // 19670748, dropdown popup should be closed on subtreeHidden notification.
       _NotifyHidden: function () {
         this._superApply(arguments);
-        this.combobox.close();
+        if (this._isComboboxInstantiated()) {
+          this.combobox.close();
+        }
       },
 
       /**
@@ -13161,7 +13192,10 @@ var __oj_select_many_metadata =
        * @return {jQuery} jquery element which represents the content.
        */
       _GetContentElement: function () {
-        return this.combobox.search;
+        if (this._isComboboxInstantiated()) {
+          return this.combobox.search;
+        }
+        return this.element;
       },
 
       /**
@@ -13199,7 +13233,9 @@ var __oj_select_many_metadata =
        */
       _SetLoading: function () {
         this._super();
-        this.combobox.applyReadonlyState();
+        if (this._isComboboxInstantiated()) {
+          this.combobox.applyReadonlyState();
+        }
       },
 
       /**
@@ -13211,7 +13247,9 @@ var __oj_select_many_metadata =
        */
       _ClearLoading: function () {
         this._super();
-        this.combobox.applyReadonlyState();
+        if (this._isComboboxInstantiated()) {
+          this.combobox.applyReadonlyState();
+        }
       },
       /**
        * <ol>
@@ -13573,7 +13611,7 @@ var __oj_select_many_metadata =
         var node = null;
         var subId;
         if (locator == null) {
-          return this.combobox.container ? this.combobox.container[0] : null;
+          return (this.combobox && this.combobox.container) ? this.combobox.container[0] : null;
         }
 
         node = this._super(locator);

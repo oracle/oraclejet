@@ -308,6 +308,20 @@ var __oj_table_metadata =
       ],
       "value": "contents"
     },
+    "row": {
+      "type": "object",
+      "properties": {
+        "editable": {
+          "type": "function"
+        },
+        "selectable": {
+          "type": "function"
+        },
+        "sticky": {
+          "type": "function"
+        }
+      }
+    },
     "rowRenderer": {
       "type": "function"
     },
@@ -448,6 +462,9 @@ var __oj_table_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleAddRow": {
+          "type": "string"
+        },
         "accessibleColumnContext": {
           "type": "string"
         },
@@ -455,6 +472,9 @@ var __oj_table_metadata =
           "type": "string"
         },
         "accessibleColumnHeaderContext": {
+          "type": "string"
+        },
+        "accessibleColumnsSpan": {
           "type": "string"
         },
         "accessibleContainsControls": {
@@ -793,7 +813,7 @@ var __oj_table_metadata =
  *     </tr>
  *     <tr>
  *       <td><kbd>Enter</kbd></td>
- *       <td>Make the next row editable and move focus to the editable cell in current column in the next row.
+ *       <td>Focus the next editable cell in the current column of the next editable row.
  *          <br>If last row is editable then make it readonly.
  *       </td>
  *     </tr>
@@ -1071,6 +1091,7 @@ var __oj_table_metadata =
  * @property {Object} rowContext Context of the row.
  * @property {"edit"|"navigation"} mode The mode of the row containing the cell.  It can be "edit" or "navigation".
  * @property {Item<K, D>} item  The Item<K, D> for the row being rendered.
+ * @property {"on"|"off"} editable On if row is editable, off if editing has been disabled.
  * @property {DataProvider<K, D> | null} datasource The "data" attribute of the Table.
  * @ojdeprecated [{target:"property", for: "componentElement", since:"10.0.0", description:"Use HTMLDocument methods to retrieve this element." },
  * {target:"property", for: "data", since:"10.0.0", description:"Use RowTemplateContext.item.data instead." },
@@ -1510,12 +1531,24 @@ Table._CONST_VALUE = 'value';
  * @private
  * @type {string}
  */
+ Table._CONST_ON = 'on';
+
+/**
+ * @private
+ * @type {string}
+ */
 Table._CONST_SORTCRITERIA = 'sortCriteria';
 
 /**
  * @private
  * @type {string}
  */
+Table._CONST_OFF = 'off';
+
+/**
+* @private
+* @type {string}
+*/
 Table._COLUMN_HEADER_ID = '_headerColumn';
 
 /**
@@ -1674,6 +1707,16 @@ Table._DATA_OJ_COMMAND = 'data-oj-command';
 /**
  * @private
  */
+ Table._DATA_OJ_EDITABLE = 'data-oj-editable';
+
+/**
+ * @private
+ */
+Table._DATA_OJ_SELECTABLE = 'data-oj-selectable';
+
+/**
+ * @private
+ */
 Table._DATA_OJ_COLUMNIDX = 'data-oj-columnIdx';
 
 /**
@@ -1704,6 +1747,11 @@ Table.SIZING_ERROR_MARGIN = 0.05;
 /**
  * @private
  */
+Table._SELECTOR_OFF_COLSPAN_OFFSET = 1;
+
+/**
+ * @private
+ */
 Table._CSS_Vars = {
   enableSticky: '--oj-private-table-global-sticky-default',
   enableSelector: '--oj-private-table-global-enable-selector-default',
@@ -1721,6 +1769,16 @@ Table._CSS_Vars = {
 Table.prototype._isStickyLayoutEnabled = function () {
   if (this._getDefaultOptions().enableSticky === 'true') {
     return true;
+  }
+  return false;
+};
+
+/**
+ * @private
+ */
+Table.prototype._isStickyRowsEnabled = function () {
+  if (this._isStickyLayoutEnabled() && this.options.row != null) {
+    return (typeof this.options.row.sticky === 'function');
   }
   return false;
 };
@@ -1752,6 +1810,52 @@ Table.prototype._isExternalScrollEnabled = function () {
     }
   }
   return false;
+};
+
+/**
+ * Invokes app provided row.selectable capability callback if available.
+ * @param {Object} item The oj-item data.
+ * @return {string} 'on' or 'off'
+ * @private
+ */
+Table.prototype._invokeRowSelectableCallback = function (item) {
+  return this._invokeActionCallback(item, 'selectable', Table._CONST_ON);
+};
+
+/**
+ * Invokes app provided row.editable capability callback if available.
+ * @param {Object} item The oj-item data.
+ * @return {string} 'on' or 'off'
+ * @private
+ */
+Table.prototype._invokeRowEditableCallback = function (item) {
+  return this._invokeActionCallback(item, 'editable', Table._CONST_ON);
+};
+
+/**
+ * Invokes app provided row.sticky capability callback if available.
+ * @param {Object} item The oj-item data.
+ * @return {string} 'on' or 'off'
+ * @private
+ */
+Table.prototype._invokeRowStickyCallback = function (item) {
+  return this._invokeActionCallback(item, 'sticky', Table._CONST_OFF);
+};
+
+/**
+ * Invokes app provided row API capability callbacks based on action name value.
+ * @param {Object} item The oj-item data.
+ * @param {string} actionName The action name: ('editable', 'selectable', 'sticky').
+ * @param {boolean} defaultVal The default value when no callback is provided.
+ * @return {string} 'on' or 'off'
+ * @private
+ */
+Table.prototype._invokeActionCallback = function (item, actionName, defaultVal) {
+  const capability = this.options.row[actionName];
+  if (typeof capability === 'function') {
+    return capability(item);
+  }
+  return defaultVal;
 };
 
 /**
@@ -2774,6 +2878,9 @@ Table.prototype._refreshTableBodyRow = function (rowIdx, row, tableBodyRow, docF
     row: row,
     isCurrentRow: currentRow.rowIndex === rowIdx
   });
+  rowContext.editable = this._invokeRowEditableCallback(tableBodyRow[Table._ROW_ITEM_EXPANDO]);
+  const selectable = this._invokeRowSelectableCallback(tableBodyRow[Table._ROW_ITEM_EXPANDO]);
+
   // Copy additional properties to top-level context to work with custom element
   var context = {
     rowContext: rowContext,
@@ -2853,6 +2960,9 @@ Table.prototype._refreshTableBodyRow = function (rowIdx, row, tableBodyRow, docF
       }
     }
 
+    // eslint-disable-next-line no-param-reassign
+    tableBodyRow[Table._ROW_ITEM_EXPANDO] = row;
+
     this._clearCachedDomRowData();
     this._setTableBodyRowAttributes(row, tableBodyRow);
     this._styleTableBodyRow(tableBodyRow, false);
@@ -2875,20 +2985,33 @@ Table.prototype._refreshTableBodyRow = function (rowIdx, row, tableBodyRow, docF
         moveTableBodyCell.parentNode.appendChild(moveTableBodyCell); // @HTMLUpdateOK
       }
     }
-    if (columns.length > 0 && this._isDefaultSelectorEnabled()) {
+    if (columns.length > 0 && this._isDefaultSelectorEnabled() && selectable !== Table._CONST_OFF) {
       this._createTableBodyDefaultSelector(row.key, tableBodyRow);
     }
   } else {
-    if (columns.length > 0 && this._isDefaultSelectorEnabled()) {
+    if (columns.length > 0 && this._isDefaultSelectorEnabled() && selectable !== Table._CONST_OFF) {
       this._createTableBodyDefaultSelector(row.key, tableBodyRow);
     }
+
+    // eslint-disable-next-line no-param-reassign
+    tableBodyRow[Table._ROW_ITEM_EXPANDO] = row;
+
     this._tableBodyRowDefaultRenderer(rowIdx, row, context);
   }
+
+  if (selectable === Table._CONST_OFF && columns.length > 0 && this._isDefaultSelectorEnabled()) {
+    // eslint-disable-next-line no-param-reassign
+    this._getTableBodyCells(rowIdx, tableBodyRow)[0].colSpan += Table._SELECTOR_OFF_COLSPAN_OFFSET;
+  }
+
   // immediately apply styling to newly refreshed row when possible
   this._getLayoutManager().handleRowRefresh(rowIdx, tableBodyRow, isRefresh);
 
   // eslint-disable-next-line no-param-reassign
-  tableBodyRow[Table._ROW_ITEM_EXPANDO] = row;
+  tableBodyRow[Table._DATA_OJ_EDITABLE] = rowContext.editable;
+
+  // eslint-disable-next-line no-param-reassign
+  tableBodyRow[Table._DATA_OJ_SELECTABLE] = selectable;
 
   return tableBodyRow;
 };
@@ -3009,7 +3132,7 @@ Table.prototype._refreshAddNewRowPlaceholder = function (docFrag, skipTopUpdate)
       }
     }
     if (!skipTopUpdate) {
-      this._getLayoutManager()._updateAddRowTop();
+      this._getLayoutManager()._updateStickyRowTops();
     }
     return this._finalizeNonBodyRowRendering([placeHolderRow]);
   }
@@ -3034,7 +3157,7 @@ Table.prototype._finalizeBodyRowRendering = function (rowElements) {
       // disable all focusable content unless this is the current edit row or actionable row
       if (!(editableRowKey != null && oj$1.KeyUtils.equals(rowKey, editableRowKey)) &&
         !(actionableModeRowKey != null && oj$1.KeyUtils.equals(rowKey, actionableModeRowKey))) {
-          disableAllFocusableElements(tableBodyRow, null, null, true);
+          disableAllFocusableElements(tableBodyRow, null, true);
         }
     }.bind(this));
     return Promise.resolve(true);
@@ -3051,7 +3174,7 @@ Table.prototype._finalizeBodyRowRendering = function (rowElements) {
 Table.prototype._finalizeNonBodyRowRendering = function (rowElements) {
   return this._waitForAllElementsToResolve(rowElements).then(function () {
     rowElements.forEach(function (rowElement) {
-      disableAllFocusableElements(rowElement, null, null, true);
+      disableAllFocusableElements(rowElement, null, true);
     });
     return Promise.resolve(true);
   });
@@ -4641,7 +4764,6 @@ Table.prototype._addSingleTableBodyRow = function (rowIdx, row, docFrag, docFrag
   this._insertTableBodyRow(rowIdx, tableBodyRow, row, docFrag);
   tableBodyRow =
     this._refreshTableBodyRow(rowIdx, row, tableBodyRow, docFrag, docFragStartIdx);
-  $(tableBodyRow).data('rowKey', row.metadata.key);
   if (!docFrag) {
     // call subtreeAttached on individual row if we are not batching in documentFragment
     subtreeAttached(tableBodyRow);
@@ -7197,7 +7319,7 @@ TableLayoutManager.prototype._applyColMinMax = function (columns, columnIndex, r
     // if first row is in edit mode then fetching cell style from second row
     if (this._table._editableRowIdx === 0 && rowsCount > 1) {
       tableBodyCell = this._table._getTableBodyCell(1, columnIndex, null);
-    } else {
+    } else if (rowsCount > 0) {
       tableBodyCell = this._table._getTableBodyCell(0, columnIndex, null);
     }
     footerCell = this._table._getTableFooterCell(columnIndex);
@@ -7221,9 +7343,8 @@ TableLayoutManager.prototype._applyColMinMax = function (columns, columnIndex, r
         this._applyForcedColumnWidth(headerCell, forcedColumnWidth);
       }
 
-      // update column table body cell widths
+      // update width buffer row for legacy rendering
       var legacyWidthBuffer = this._table._getTableBodyLegacyWidthBuffer();
-      // check for width buffer row for legacy rendering
       if (legacyWidthBuffer != null) {
         var bufferCell = legacyWidthBuffer.childNodes[columnIndex];
         var bufferCellWidth = this._getForcedColumnWidth(bufferCell,
@@ -7231,21 +7352,24 @@ TableLayoutManager.prototype._applyColMinMax = function (columns, columnIndex, r
         this._applyForcedColumnWidth(bufferCell, bufferCellWidth);
       }
 
-      if (!this._table._hasRowOrCellRendererOrTemplate(columnIndex)) {
-        columnCellCompStyle = window.getComputedStyle(tableBodyCell);
-        forcedColumnCellWidth =
-          this._getForcedColumnWidth(tableBodyCell, columnCellCompStyle, colTestWidth);
-      }
-      for (var i = 0; i < rowsCount; i++) {
-        tableBodyCell = this._table._getTableBodyCell(i, columnIndex, null);
-        if (tableBodyCell != null) {
-          if (columnCellCompStyle == null) {
-            var cellCompStyle = window.getComputedStyle(tableBodyCell);
-            var forcedCellWidth =
-              this._getForcedColumnWidth(tableBodyCell, cellCompStyle, colTestWidth);
-            this._applyForcedColumnWidth(tableBodyCell, forcedCellWidth);
-          } else {
-            this._applyForcedColumnWidth(tableBodyCell, forcedColumnCellWidth);
+      // update column table body cell widths
+      if (tableBodyCell != null) {
+        if (!this._table._hasRowOrCellRendererOrTemplate(columnIndex)) {
+          columnCellCompStyle = window.getComputedStyle(tableBodyCell);
+          forcedColumnCellWidth =
+            this._getForcedColumnWidth(tableBodyCell, columnCellCompStyle, colTestWidth);
+        }
+        for (var i = 0; i < rowsCount; i++) {
+          tableBodyCell = this._table._getTableBodyCell(i, columnIndex, null);
+          if (tableBodyCell != null) {
+            if (columnCellCompStyle == null) {
+              var cellCompStyle = window.getComputedStyle(tableBodyCell);
+              var forcedCellWidth =
+                this._getForcedColumnWidth(tableBodyCell, cellCompStyle, colTestWidth);
+              this._applyForcedColumnWidth(tableBodyCell, forcedCellWidth);
+            } else {
+              this._applyForcedColumnWidth(tableBodyCell, forcedColumnCellWidth);
+            }
           }
         }
       }
@@ -8687,6 +8811,25 @@ TableStickyLayoutManager.prototype._handleScrollerScrollLeft = function (scrollL
 };
 
 /**
+ * @private
+ */
+TableStickyLayoutManager.prototype._handleScrollerScrollTop = function (scrollTop) {
+  TableStickyLayoutManager.superclass._handleScrollerScrollTop.call(this, scrollTop);
+
+  if (this._table._isStickyRowsEnabled()) {
+    var stickyRows = this._table._getTableBodyStickyRows();
+    for (var i = 0; i < stickyRows.length; i++) {
+      var stickyRow = stickyRows[i];
+      if (this.getVerticalOverflowDiff(stickyRow).top > 0) {
+        stickyRow.classList.add(Table.CSS_CLASSES._TABLE_STUCK_ROW_CLASS);
+      } else {
+        stickyRow.classList.remove(Table.CSS_CLASSES._TABLE_STUCK_ROW_CLASS);
+      }
+    }
+  }
+};
+
+/**
  * Determines the number of pixels the Table would need to scroll to align each
  * vertical edge of the given row with the corresponding edge of the scrollable viewport.
  * @param {Element} tableBodyRow The row to be scrolled.
@@ -8719,6 +8862,20 @@ TableStickyLayoutManager.prototype.getVerticalOverflowDiff = function (tableBody
   var footer = this._table._getTableFooter();
   if (footer != null) {
     scrollerBottomOffset += footer.offsetHeight;
+  }
+
+  if (this._table._isStickyRowsEnabled()) {
+    var stickyRows = this._table._getTableBodyStickyRows();
+    for (var i = stickyRows.length - 1; i >= 0; i--) {
+      var stickyRow = stickyRows[i];
+      if (stickyRow === tableBodyRow) {
+        break;
+      }
+      if (stickyRow.classList.contains(Table.CSS_CLASSES._TABLE_STUCK_ROW_CLASS)) {
+        scrollerTopOffset += stickyRow.offsetHeight;
+        break;
+      }
+    }
   }
 
   // special case for using overall page scroller with boundingClientRect values
@@ -8855,6 +9012,10 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
         tableUpdates.has(Table._UPDATE._ADD_ROW_DISPLAY)) {
       this._initializeFrozenColumns();
       this._table._styleTableContainer(tableContainer);
+      this._updateStickyRowTops();
+    } else if (tableUpdates.has(Table._UPDATE._ROW_REFRESH)) {
+      // when a row refresh occurs, sticky rows need to be re-initialized as well
+      this._updateStickyRowTops();
     }
     // updates do not require a sizing refresh - clear updates and return
     this._clearTableUpdates();
@@ -8888,7 +9049,7 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
     tableElem.style['table-layout'] = 'fixed';
   }
   this._initializeFrozenColumns();
-  this._updateAddRowTop();
+  this._updateStickyRowTops();
 
   var tableContainerScrollableState =
     this._getTableContainerScrollableState(bottomSlotHeight);
@@ -8915,18 +9076,58 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
 /**
  * @private
  */
-TableStickyLayoutManager.prototype._updateAddRowTop = function () {
+TableStickyLayoutManager.prototype._updateStickyRowTops = function () {
+  var i;
+  var tableHeaderRow = this._table._getTableHeaderRow();
+  var scrollerTopOffset = (this._table.options.scrollPolicyOptions.scrollerOffsetTop == null) ?
+    0 : this._table.options.scrollPolicyOptions.scrollerOffsetTop;
+  var top = tableHeaderRow != null ?
+    tableHeaderRow.offsetHeight + scrollerTopOffset : scrollerTopOffset;
+
+  // add row
   var addRowCells = this._table._getPlaceHolderRowCells();
   var addRowCellsCount = addRowCells.length;
   if (addRowCellsCount > 0) {
-    var tableHeaderRow = this._table._getTableHeaderRow();
-    var scrollerTopOffset = (this._table.options.scrollPolicyOptions.scrollerOffsetTop == null) ?
-      0 : this._table.options.scrollPolicyOptions.scrollerOffsetTop;
-    var top = tableHeaderRow != null ?
-      tableHeaderRow.offsetHeight + scrollerTopOffset : scrollerTopOffset;
-
-    for (var i = 0; i < addRowCellsCount; i++) {
+    for (i = 0; i < addRowCellsCount; i++) {
       addRowCells[i].style[Table.CSS_PROP._TOP] = top + 'px';
+    }
+  }
+
+  // sticky rows
+  if (this._table._isStickyRowsEnabled()) {
+    var cell;
+    var frozenEdgeOffset;
+    var stickyLevel = 2;
+    var addRow = this._table._getPlaceHolderRow();
+    if (addRow != null) {
+      top += addRow.offsetHeight;
+    }
+    var tableBodyRows = this._table._getTableBodyRows();
+    for (i = 0; i < tableBodyRows.length; i++) {
+      var isSticky = false;
+      var tableBodyRow = tableBodyRows[i];
+      var rowCells = this._table._getTableElementsByTagName(tableBodyRow, Table.DOM_ELEMENT._TD);
+      if (tableBodyRow.classList.contains(Table.CSS_CLASSES._TABLE_STICKY_ROW_CLASS)) {
+        isSticky = true;
+      }
+      for (var j = 0; j < rowCells.length; j++) {
+        cell = rowCells[j];
+        if (isSticky) {
+          cell.style[Table.CSS_PROP._TOP] = top + 'px';
+        }
+        if (cell.classList.contains(Table.CSS_CLASSES._TABLE_FROZEN_START)) {
+          frozenEdgeOffset = 1;
+        } else if (cell.classList.contains(Table.CSS_CLASSES._TABLE_FROZEN_END)) {
+          frozenEdgeOffset = 2;
+        } else {
+          frozenEdgeOffset = 0;
+        }
+        cell.style[Table.CSS_PROP._ZINDEX] = isSticky ? (stickyLevel + 1) * 3 + frozenEdgeOffset :
+          (stickyLevel - 2) * 3 + frozenEdgeOffset;
+      }
+      if (isSticky) {
+        stickyLevel += 2;
+      }
     }
   }
 };
@@ -9652,7 +9853,7 @@ TableStickyLayoutManager.prototype._updateResizeColumnWidths = function (event, 
   var tableEndCol = this._table._getTableCol(this._resizeEndIndex);
   tableStartCol.style[Table.CSS_PROP._WIDTH] = newStartColWidth + Table.CSS_VAL._PX;
   tableEndCol.style[Table.CSS_PROP._WIDTH] = newEndColWidth + Table.CSS_VAL._PX;
-  this._updateAddRowTop();
+  this._updateStickyRowTops();
 
   if (updateOptions) {
     var columnsCount = this._table.options.columns.length;
@@ -10280,11 +10481,11 @@ Table.prototype._updateAccStatusInfo = function (columnHint) {
     var activeRowElem = this._getTableBodyRow(activeIndex);
     // update row context information if changed
     if (activeIndex !== this._accRowIndex || this._accFirstFocus !== false) {
+      var rowIndexOffset = this._isAddNewRowEnabled() ? 2 : 1;
       this._rowContextInfo.textContent =
-        this.getTranslatedString('accessibleRowContext', { index: activeIndex + 1 });
-
-      var rowSelected = false;
+        this.getTranslatedString('accessibleRowContext', { index: activeIndex + rowIndexOffset });
       var rowStateInfo = '';
+      var rowSelected = false;
       // find state of the row
       var selectedRowIdxs = this._getSelectedRowIdxs();
       for (i = 0; i < selectedRowIdxs.length; i++) {
@@ -10294,7 +10495,8 @@ Table.prototype._updateAccStatusInfo = function (columnHint) {
           break;
         }
       }
-      if (!rowSelected && this._isRowSelectionEnabled()) {
+      if (!rowSelected && this._isRowSelectionEnabled()
+        && activeRowElem[Table._DATA_OJ_SELECTABLE] !== Table._CONST_OFF) {
         rowStateInfo += this.getTranslatedString('accessibleStateUnselected') + ' ';
       }
       actionableElems = getActionableElementsInNode(activeRowElem);
@@ -10325,8 +10527,14 @@ Table.prototype._updateAccStatusInfo = function (columnHint) {
       }
     } else {
       tableHeaderColumn = this._getTableHeaderColumn(columnIndex);
+      var tableCell = tableBodyCellElements[columnIndex];
       if (tableHeaderColumn != null) {
-        label += tableHeaderColumn.id + ' ' + tableBodyCellElements[columnIndex].id + ' ';
+        label += tableHeaderColumn.id + ' ' + tableCell.id + ' ';
+      }
+
+      var span = tableCell.colSpan;
+      if (span > 1) {
+        stateInfo += this.getTranslatedString('accessibleColumnsSpan', { count: span });
       }
     }
 
@@ -10341,6 +10549,21 @@ Table.prototype._updateAccStatusInfo = function (columnHint) {
     if (actionableElems.length > 0) {
       stateInfo += this.getTranslatedString('accessibleContainsControls');
     }
+  } else if (activeType === Table.ACTIVE_ELEMENT_TYPES._ADD_ROW) {
+    this._accRowIndex = null;
+    this._accColumnIndex = null;
+    this._rowContextInfo.textContent =
+      this.getTranslatedString('accessibleRowContext', { index: 1 });
+    this._rowStateInfo.textContent =
+      this.getTranslatedString('accessibleAddRow');
+
+    var placeholderRow = this._getActiveElement();
+    actionableElems = getActionableElementsInNode(placeholderRow);
+    if (actionableElems.length > 0) {
+      stateInfo += this.getTranslatedString('accessibleContainsControls');
+    }
+
+    label += this._rowContextInfo.id + ' ' + this._rowStateInfo.id + ' ';
   }
   this._stateInfo.textContent = stateInfo;
   label += this._stateInfo.id;
@@ -10778,21 +11001,55 @@ Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
       function _removeRows() {
         var ii;
         var _rowIdx;
+        // logic to buffer unwanted scroll position jumps
         if (self._getCurrentScrollPosition().y > 0) {
+          var rowToRemove;
+          var stuckRow;
+          var stickyRow;
+          var stickyRows;
           var totalRowHeight = 0;
           var tableBodyRowsToRemove = [];
           for (ii = 0; ii < rowsCount; ii++) {
             _rowIdx = rows[ii].rowIdx;
-            var tableBodyRowToRemove = self._getTableBodyRow(_rowIdx);
-            if (tableBodyRowToRemove != null) {
-              totalRowHeight += tableBodyRowToRemove.offsetHeight;
-              tableBodyRowsToRemove.push(tableBodyRowToRemove);
+            rowToRemove = self._getTableBodyRow(_rowIdx);
+            if (rowToRemove != null) {
+              totalRowHeight += rowToRemove.offsetHeight;
+              tableBodyRowsToRemove.push(rowToRemove);
+            }
+          }
+          if (self._isStickyRowsEnabled()) {
+            stickyRows = self._getTableBodyStickyRows();
+            for (ii = stickyRows.length - 1; ii >= 0; ii--) {
+              stickyRow = stickyRows[ii];
+              if (stickyRow.classList.contains(Table.CSS_CLASSES._TABLE_STUCK_ROW_CLASS)) {
+                stuckRow = stickyRow;
+                break;
+              }
             }
           }
           var scrollBuffer = self._createTableBodyScrollBuffer();
           scrollBuffer.style[Table.CSS_PROP._HEIGHT] = totalRowHeight + Table.CSS_VAL._PX;
-          for (var ij = 0; ij < tableBodyRowsToRemove.length; ij++) {
-            self._removeTableBodyRow(null, tableBodyRowsToRemove[ij]);
+          for (ii = 0; ii < tableBodyRowsToRemove.length; ii++) {
+            rowToRemove = tableBodyRowsToRemove[ii];
+            self._removeTableBodyRow(null, rowToRemove);
+            if (stuckRow != null) {
+              var stickyIndex = stickyRows.indexOf(rowToRemove);
+              if (stickyIndex !== -1) {
+                stickyRows.splice(stickyIndex, 1);
+              }
+            }
+          }
+          // set scroll position to stuck row if necessary
+          if (stuckRow != null) {
+            for (ii = stickyRows.length - 1; ii >= 0; ii--) {
+              stickyRow = stickyRows[ii];
+              if (self._getLayoutManager().getVerticalOverflowDiff(stickyRow).top > 0) {
+                if (stuckRow !== stickyRow) {
+                  self._scrollRowIntoViewport(null, true, stuckRow);
+                }
+                break;
+              }
+            }
           }
         } else {
           for (ii = 0; ii < rowsCount; ii++) {
@@ -11220,6 +11477,7 @@ Table.prototype._clearCachedDom = function () {
  */
 Table.prototype._clearCachedDomRowData = function () {
   this._cachedDomTableBodyRows = null;
+  this._cachedDomTableBodyStickyRows = null;
 };
 
 /**
@@ -12654,7 +12912,7 @@ Table.prototype._getTableBodyLegacyWidthBuffer = function () {
  * @private
  */
 Table.prototype._getTableLegacySizer = function () {
-  return this._getTableElementByClassName(Table.CSS_CLASSES._TABLE_LEGACY_SIZER_CLASS);
+  return this._getTableElementByClassName(Table.CSS_CLASSES._TABLE_LEGACY_SIZER_CLASS, true);
 };
 
 /**
@@ -12800,6 +13058,24 @@ Table.prototype._getTableBodyRows = function () {
     }
   }
   return this._cachedDomTableBodyRows;
+};
+
+/**
+ * Return all the sticky table rows
+ * @return {Array|null} array of tr DOM elements
+ * @private
+ */
+Table.prototype._getTableBodyStickyRows = function () {
+  if (!this._cachedDomTableBodyStickyRows) {
+    var tableBody = this._getTableBody();
+    if (tableBody != null) {
+      this._cachedDomTableBodyStickyRows = this._getTableElementsByClassName(tableBody,
+        Table.CSS_CLASSES._TABLE_STICKY_ROW_CLASS);
+    } else {
+      this._cachedDomTableBodyStickyRows = [];
+    }
+  }
+  return this._cachedDomTableBodyStickyRows;
 };
 
 /**
@@ -13052,7 +13328,7 @@ Table.prototype._getPlaceHolderRowCell = function (columnIdx) {
  * @private
  */
 Table.prototype._getTableColGroup = function () {
-  return this._getTableElementByClassName(Table.CSS_CLASSES._TABLE_COLGROUP_CLASS);
+  return this._getTableElementByClassName(Table.CSS_CLASSES._TABLE_COLGROUP_CLASS, true);
 };
 
 /**
@@ -13312,10 +13588,7 @@ Table.prototype._moveTableHeaderColumn = function (columnIdxs, destIdx, event) {
   var tableFooterCells = [];
   var tableBodyCells = [];
   var tableAddRowBodyCells = [];
-  var destTableHeaderColumn = null;
-  var destTableFooterCell = null;
   var destTableBodyCell = null;
-  var destTableAddRowCell = null;
   var colSpan = null;
   var afterColumn = false;
 
@@ -13325,7 +13598,10 @@ Table.prototype._moveTableHeaderColumn = function (columnIdxs, destIdx, event) {
     afterColumn = true;
   }
 
-  destTableHeaderColumn = this._getTableHeaderColumn(destIdx);
+  var destTableHeaderColumn = this._getTableHeaderColumn(destIdx);
+  var destTableFooterCell = this._getTableFooterCell(destIdx);
+  var destTableAddRowCell = this._getPlaceHolderRowCell(destIdx);
+
   for (let i = 0; i < columnIdxs.length; i++) {
     let columnIdx = columnIdxs[i];
     tableHeaderColumns[i] = this._getTableHeaderColumn(columnIdx);
@@ -13351,11 +13627,11 @@ Table.prototype._moveTableHeaderColumn = function (columnIdxs, destIdx, event) {
     }
     if (tableFooterCells[i] != null) {
       colSpan = tableFooterCells[i].getAttribute(Table.DOM_ATTR._COLSPAN);
-      destTableFooterCell = this._getTableFooterCell(destIdx);
       if (destTableFooterCell != null && (colSpan == null || colSpan === 1)) {
         if (afterColumn) {
           destTableFooterCell.parentNode.insertBefore(tableFooterCells[i], // @HTMLUpdateOK
                                                       destTableFooterCell.nextSibling);
+          destTableFooterCell = tableFooterCells[i];
         } else {
           destTableFooterCell.parentNode.insertBefore(tableFooterCells[i], destTableFooterCell); // @HTMLUpdateOK
         }
@@ -13363,11 +13639,11 @@ Table.prototype._moveTableHeaderColumn = function (columnIdxs, destIdx, event) {
     }
     if (tableAddRowBodyCells[i] != null) {
       colSpan = tableAddRowBodyCells[i].getAttribute(Table.DOM_ATTR._COLSPAN);
-      destTableAddRowCell = this._getPlaceHolderRowCell(destIdx);
       if (destTableAddRowCell != null && (colSpan == null || colSpan === 1)) {
         if (afterColumn) {
           destTableAddRowCell.parentNode.insertBefore(tableAddRowBodyCells[i], // @HTMLUpdateOK
                                                       destTableAddRowCell.nextSibling);
+          destTableAddRowCell = tableAddRowBodyCells[i];
         } else {
           destTableAddRowCell.parentNode.insertBefore(tableAddRowBodyCells[i], destTableAddRowCell); // @HTMLUpdateOK
         }
@@ -13827,6 +14103,10 @@ Table.prototype._styleTableAddRowCell = function (columnIndex, addRowCell) {
 Table.prototype._styleTableBodyRow = function (tableBodyRow, isNew) {
   if (isNew || !tableBodyRow.classList.contains(Table.CSS_CLASSES._TABLE_DATA_ROW_CLASS)) {
     tableBodyRow.classList.add(Table.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
+  }
+
+  if (this._invokeRowStickyCallback(tableBodyRow[Table._ROW_ITEM_EXPANDO]) === Table._CONST_ON) {
+    tableBodyRow.classList.add(Table.CSS_CLASSES._TABLE_STICKY_ROW_CLASS);
   }
 };
 
@@ -14612,6 +14892,8 @@ Table.CSS_CLASSES = {
   _TABLE_LEGACY_WIDTH_BUFFER_ROW_CLASS: 'oj-table-legacy-width-buffer',
   _TABLE_LEGACY_WIDTH_BUFFER_CELL_CLASS: 'oj-table-legacy-width-buffer-cell',
   _TABLE_DATA_ROW_CLASS: 'oj-table-body-row',
+  _TABLE_STICKY_ROW_CLASS: 'oj-table-sticky-row',
+  _TABLE_STUCK_ROW_CLASS: 'oj-table-stuck-row',
   _TABLE_DATA_ROW_DRAG_INDICATOR_CLASS: 'oj-table-body-row-drag-indicator',
   _TABLE_TOUCH_AFFORDANCE_GLASS_PANE_CLASS: 'oj-table-touch-affordance-glass-pane',
   _TABLE_DATA_ROW_TOUCH_SELECTION_AFFORDANCE_TOP_CLASS:
@@ -15325,6 +15607,11 @@ Table.prototype._events = {
       if (!focused) {
         return;
       }
+    }
+
+    const row = this._getTableBodyRow(rowIdx);
+    if (row[Table._DATA_OJ_SELECTABLE] === Table._CONST_OFF) {
+      return;
     }
 
     this._fireActionEvent(rowIdx, event);
@@ -16282,12 +16569,22 @@ Table.prototype._hasActiveNoData = function () {
 
 /**
  * Scroll row into viewport
- * @param {number} rowIdx  row index
+ * @param {number=} rowIdx  row index
+ * @param {boolean=} includeStuckRow if a 'stuck' row should be acted on
+ * @param {Element=} tableBodyRow the row element
  * @private
  */
-Table.prototype._scrollRowIntoViewport = function (rowIdx) {
+Table.prototype._scrollRowIntoViewport = function (rowIdx, includeStuckRows,
+  tableBodyRow) {
   var layoutManager = this._getLayoutManager();
-  var tableBodyRow = this._getTableBodyRow(rowIdx);
+  if (tableBodyRow == null) {
+    // eslint-disable-next-line no-param-reassign
+    tableBodyRow = this._getTableBodyRow(rowIdx);
+  }
+  if (!includeStuckRows &&
+      tableBodyRow.classList.contains(Table.CSS_CLASSES._TABLE_STUCK_ROW_CLASS)) {
+    return;
+  }
   var $scrollingElement = $(layoutManager.getScroller());
 
   var vertOverflowDiff = layoutManager.getVerticalOverflowDiff(tableBodyRow);
@@ -16635,16 +16932,19 @@ Table.prototype._setFocusOutHandler = function (focusHandler) {
  * @param {boolean=} updateCurrent whether to update the currentRow
  * @param {boolean=} skipScroll whether to skip scrolling the row into view
  * @param {boolean=} skipFocus whether to skip setting focus highlighting on the row
+ * @param {boolean=} scrollStuckRow whether to scroll a stuck row into view
  * @returns {boolean} true if active was changed, false if not
  * @private
  */
-Table.prototype._setActiveRow = function (index, event, updateCurrent, skipScroll, skipFocus) {
+Table.prototype._setActiveRow = function (index, event, updateCurrent, skipScroll, skipFocus,
+  scrollStuckRow) {
   if (index === -1) {
     return this._clearActiveRow(event, updateCurrent);
   }
   var activeElement = this._getTableBodyRow(index);
   if (activeElement != null) {
-    return this._setActive(activeElement, event, updateCurrent, skipScroll, skipFocus);
+    return this._setActive(activeElement, event, updateCurrent, skipScroll, skipFocus,
+             scrollStuckRow);
   }
   return false;
 };
@@ -16731,10 +17031,12 @@ Table.prototype._setActiveNoData = function () {
  * @param {boolean=} updateCurrent whether to update the currentRow
  * @param {boolean=} skipScroll whether to skip scrolling the active element into view
  * @param {boolean=} skipFocus whether to skip setting focus highlighting on the row
+ * @param {boolean=} scrollStuckRow whether to scroll a stuck row into view
  * @returns {boolean} true if active was changed, false if not
  * @private
  */
-Table.prototype._setActive = function (element, event, updateCurrent, skipScroll, skipFocus) {
+Table.prototype._setActive = function (element, event, updateCurrent, skipScroll, skipFocus,
+  scrollStuckRow) {
   if (element != null) {
     var active = this._createActiveObject(element);
     // see if the active cell is actually changing
@@ -16760,7 +17062,7 @@ Table.prototype._setActive = function (element, event, updateCurrent, skipScroll
           active.type === Table.ACTIVE_ELEMENT_TYPES._FOOTER) {
         this._scrollColumnIntoViewport(active.index);
       } else if (active.type === Table.ACTIVE_ELEMENT_TYPES._DATA_ROW) {
-        this._scrollRowIntoViewport(active.index);
+        this._scrollRowIntoViewport(active.index, scrollStuckRow);
       }
     }
     // update focus highlighting for current active element
@@ -16876,6 +17178,11 @@ Table.prototype._updateRowStateCellsClass = function (rowIdx, tableBodyRow, stat
     // eslint-disable-next-line no-param-reassign
     tableBodyRow = this._getTableBodyRow(rowIdx);
   }
+
+  if (tableBodyRow[Table._DATA_OJ_SELECTABLE] === Table._CONST_OFF) {
+    return;
+  }
+
   var tableBodyCells = this._getTableBodyCells(null, tableBodyRow);
   if (tableBodyCells.length === 0) {
     return;
@@ -17619,7 +17926,7 @@ Table.prototype._setTableActionableMode = function (value, skipFocusShift) {
     }
     // active boundary element may no longer exist if row containing actionable element was just refreshed or removed
     if (activeBoundary != null) {
-      disableAllFocusableElements(activeBoundary, null, null, true);
+      disableAllFocusableElements(activeBoundary, null, true);
     }
   }
 };
@@ -17718,6 +18025,21 @@ Table.prototype._setEditRow = function (editRow) {
 };
 
 /**
+ * Returns the row from editRowObject
+ * @private
+ */
+ Table.prototype._getRowToBeEdited = function (editRow) {
+  const rowKey = editRow.rowKey;
+  const rowIndex = editRow.rowIndex;
+  if (rowKey != null) {
+    return this._findRowElementByKey(rowKey);
+  } else if (rowIndex > -1) {
+    return this._getTableBodyRow(rowIndex);
+  }
+  return null;
+};
+
+/**
  * Set the editable row index
  * @param {number} rowIdx  row index
  * @private
@@ -17758,14 +18080,35 @@ Table.prototype._setAdjacentRowEditable = function (columnIdx, origColumnIdx, is
  */
 Table.prototype._handleAdjacentEditEndSuccessful = function (columnIdx, rowIdx, isNext, event) {
   var tableBodyRows = this._getTableBodyRows();
-  var rowCount = tableBodyRows.length;
-  var newRowIdx = isNext ? rowIdx + 1 : rowIdx - 1;
-  if (newRowIdx >= 0 && newRowIdx < rowCount) {
+  var newRowIdx = this._findAdjacentEditableRow(rowIdx, tableBodyRows, isNext);
+  if (newRowIdx !== null) {
     this._setActiveRow(newRowIdx, event, true, false, true);
     this._setTableEditable(true, false, columnIdx, isNext, event);
   } else {
     this._getTable().focus();
   }
+};
+
+/**
+ * @private
+ */
+ Table.prototype._findAdjacentEditableRow = function (rowIdx, tableBodyRows, isNext) {
+  if (isNext) {
+    for (let i = (rowIdx + 1); i < tableBodyRows.length; i++) {
+      const row = tableBodyRows[i];
+      if (row[Table._DATA_OJ_EDITABLE] !== Table._CONST_OFF) {
+        return i;
+      }
+    }
+  } else {
+    for (let i = (rowIdx - 1); i >= 0; i--) {
+      const row = tableBodyRows[i];
+      if (row[Table._DATA_OJ_EDITABLE] !== Table._CONST_OFF) {
+        return i;
+      }
+    }
+  }
+  return null;
 };
 
 /**
@@ -17811,172 +18154,177 @@ Table.prototype._setTableEditable = function (editable, cancelled, columnIdx, fo
   var isLegacyDataSource = this._getData() instanceof oj$1.TableDataSourceAdapter;
   var currentRow = this._getCurrentRow();
   if (currentRow != null) {
-    var rowKey = currentRow.rowKey;
-    var rowIdx = this._getRowIdxForRowKey(rowKey);
-    var tableBodyRow;
-    var rowContext;
-    var updateEditMode;
-    var newEditRowValue;
-    var editAcceptPromiseArray = [];
+    const rowElementToBeEdited = this._getRowToBeEdited(currentRow);
+    if (rowElementToBeEdited
+      && rowElementToBeEdited[Table._DATA_OJ_EDITABLE] !== Table._CONST_OFF) {
+      var rowKey = currentRow.rowKey;
+      var rowIdx = this._getRowIdxForRowKey(rowKey);
+      var tableBodyRow;
+      var rowContext;
+      var updateEditMode;
+      var newEditRowValue;
+      var editAcceptPromiseArray = [];
 
-    // save the old editable row index
-    var prevEditableRowIdx = this._getEditableRowIdx();
+      // save the old editable row index
+      var prevEditableRowIdx = this._getEditableRowIdx();
 
-    try {
-      if (editable && !this._hasEditableRow()) {
-        // fire the beforeEdit event if there are no existing editable rows
-        // and we are starting edit on a row
-        tableBodyRow = this._getTableBodyRow(rowIdx);
-        rowContext = this._getRendererContextObject(tableBodyRow, {
-          row: {
-            key: rowKey,
-            index: currentRow.rowIndex
-          },
-          isCurrentRow: true
-        });
-        rowContext.item = tableBodyRow[Table._ROW_ITEM_EXPANDO];
-        updateEditMode = this._trigger('beforeRowEdit', event, {
-          accept: function (acceptPromise) {
-            editAcceptPromiseArray.push(acceptPromise);
-          },
-          rowContext: rowContext }
-        );
-        if (updateEditMode) {
-          newEditRowValue = { rowKey: rowKey, rowIndex: rowIdx };
+      try {
+        if (editable && !this._hasEditableRow()) {
+          // fire the beforeEdit event if there are no existing editable rows
+          // and we are starting edit on a row
+          tableBodyRow = this._getTableBodyRow(rowIdx);
+          rowContext = this._getRendererContextObject(tableBodyRow, {
+            row: {
+              key: rowKey,
+              index: currentRow.rowIndex
+            },
+            isCurrentRow: true
+          });
+          rowContext.item = tableBodyRow[Table._ROW_ITEM_EXPANDO];
+          updateEditMode = this._trigger('beforeRowEdit', event, {
+            accept: function (acceptPromise) {
+              editAcceptPromiseArray.push(acceptPromise);
+            },
+            rowContext: rowContext
+          }
+          );
+          if (updateEditMode) {
+            newEditRowValue = { rowKey: rowKey, rowIndex: rowIdx };
+          }
+        } else if (!editable && this._hasEditableRow()) {
+          // only trigger the beforeRowEditEnd if we are actually ending an edit
+          // fire on the edited row
+          tableBodyRow = this._getTableBodyRow(this._getEditableRowIdx());
+          rowKey = this._getRowKeyForRowIdx(this._getEditableRowIdx());
+          rowContext = this._getRendererContextObject(tableBodyRow, {
+            row: {
+              key: rowKey,
+              index: this._getDataSourceRowIndexForRowKey(rowKey)
+            },
+            isCurrentRow: true
+          });
+          rowContext.item = tableBodyRow[Table._ROW_ITEM_EXPANDO];
+          updateEditMode = this._trigger('beforeRowEditEnd', event, {
+            accept: function (acceptPromise) {
+              editAcceptPromiseArray.push(acceptPromise);
+            },
+            cancelEdit: cancelled,
+            rowContext: rowContext
+          });
+
+          if (updateEditMode) {
+            newEditRowValue = { rowKey: null, rowIndex: -1 };
+          }
+        } else {
+          // No updates so just exit
+          return undefined;
         }
-      } else if (!editable && this._hasEditableRow()) {
-        // only trigger the beforeRowEditEnd if we are actually ending an edit
-        // fire on the edited row
-        tableBodyRow = this._getTableBodyRow(this._getEditableRowIdx());
-        rowKey = this._getRowKeyForRowIdx(this._getEditableRowIdx());
-        rowContext = this._getRendererContextObject(tableBodyRow, {
-          row: {
-            key: rowKey,
-            index: this._getDataSourceRowIndexForRowKey(rowKey)
-          },
-          isCurrentRow: true
-        });
-        rowContext.item = tableBodyRow[Table._ROW_ITEM_EXPANDO];
-        updateEditMode = this._trigger('beforeRowEditEnd', event, {
-          accept: function (acceptPromise) {
-            editAcceptPromiseArray.push(acceptPromise);
-          },
-          cancelEdit: cancelled,
-          rowContext: rowContext
-        });
-
-        if (updateEditMode) {
-          newEditRowValue = { rowKey: null, rowIndex: -1 };
-        }
-      } else {
-        // No updates so just exit
-        return undefined;
+      } catch (err) {
+        return false;
       }
-    } catch (err) {
-      return false;
-    }
-    if (!updateEditMode) {
-      this._syncActiveElement();
-      return false;
-    }
-    if (editAcceptPromiseArray.length !== 0) {
-      this._isEditPending = true;
-      this._insertSkeletonRow(rowIdx);
-      this._getTable().focus();
-      this._queueTask(function () {
-        return Promise.all(editAcceptPromiseArray).then(function () {
-          this._removeSkeletonRow(rowIdx);
-          // update editRow option
-          if (newEditRowValue) {
-            this._fireEditRowChangeEvent(newEditRowValue, event);
-          }
+      if (!updateEditMode) {
+        this._syncActiveElement();
+        return false;
+      }
+      if (editAcceptPromiseArray.length !== 0) {
+        this._isEditPending = true;
+        this._insertSkeletonRow(rowIdx);
+        this._getTable().focus();
+        this._queueTask(function () {
+          return Promise.all(editAcceptPromiseArray).then(function () {
+            this._removeSkeletonRow(rowIdx);
+            // update editRow option
+            if (newEditRowValue) {
+              this._fireEditRowChangeEvent(newEditRowValue, event);
+            }
 
-          if (editable) {
-            // set the editable row index
-            this._setEditableRowIdx(rowIdx);
-            this._getTable().setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
-            this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
-            // re-render the newly editable row
-            return this._refreshRow(rowIdx, true, false, !isLegacyDataSource).then(function () {
-              this._setCellInRowFocus(rowIdx, columnIdx, forwardSearch);
-              // clear out the old editable row
-              if (prevEditableRowIdx != null) {
-                // make sure the row still exists before we refresh it
-                var prevEditableTableBodyRow = this._getTableBodyRow(prevEditableRowIdx);
-                if (prevEditableTableBodyRow != null) {
-                  // re-render the previously editable row, which will be read-only now
-                  return this._refreshRow(prevEditableRowIdx, false).then(function () {
-                    this._isEditPending = false;
-                  }.bind(this));
+            if (editable) {
+              // set the editable row index
+              this._setEditableRowIdx(rowIdx);
+              this._getTable().setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
+              this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
+              // re-render the newly editable row
+              return this._refreshRow(rowIdx, true, false, !isLegacyDataSource).then(function () {
+                this._setCellInRowFocus(rowIdx, columnIdx, forwardSearch);
+                // clear out the old editable row
+                if (prevEditableRowIdx != null) {
+                  // make sure the row still exists before we refresh it
+                  var prevEditableTableBodyRow = this._getTableBodyRow(prevEditableRowIdx);
+                  if (prevEditableTableBodyRow != null) {
+                    // re-render the previously editable row, which will be read-only now
+                    return this._refreshRow(prevEditableRowIdx, false).then(function () {
+                      this._isEditPending = false;
+                    }.bind(this));
+                  }
                 }
-              }
-              this._isEditPending = false;
-              return Promise.resolve();
-            }.bind(this));
-          }
-          this._focusEditCell = null;
-          this._setEditableRowIdx(null);
-          if (!skipFocusReset) {
-            this._getTable().focus();
-          }
-
-          // clear out the old editable row
-          if (prevEditableRowIdx != null) {
-            // make sure the row still exists before we refresh it
-            var prevEditableTableBodyRow = this._getTableBodyRow(prevEditableRowIdx);
-            if (prevEditableTableBodyRow != null) {
-              // re-render the previously editable row, which will be read-only now
-              return this._refreshRow(prevEditableRowIdx, false).then(function () {
                 this._isEditPending = false;
+                return Promise.resolve();
               }.bind(this));
             }
-          }
-          this._isEditPending = false;
-          return Promise.resolve();
-        }.bind(this), function () {
-          this._removeSkeletonRow(rowIdx);
-          if (editable && prevEditableRowIdx == null) {
-            this._syncActiveElement();
-          }
-          this._isEditPending = false;
-          return false;
-        }.bind(this));
-      }.bind(this));
-      return Promise.all(editAcceptPromiseArray);
-    }
-    // update editRow option
-    if (newEditRowValue) {
-      this._fireEditRowChangeEvent(newEditRowValue, event);
-    }
+            this._focusEditCell = null;
+            this._setEditableRowIdx(null);
+            if (!skipFocusReset) {
+              this._getTable().focus();
+            }
 
-    if (editable) {
-      // set the editable row index
-      this._setEditableRowIdx(rowIdx);
-      this._getTable().setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
-      this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
-      // re-render the newly editable row
-      this._queueTask(function () {
-        return this._refreshRow(rowIdx, true, false, !isLegacyDataSource).then(function () {
-          // set focus on the column in the row
-          this._setCellInRowFocus(rowIdx, columnIdx, forwardSearch);
+            // clear out the old editable row
+            if (prevEditableRowIdx != null) {
+              // make sure the row still exists before we refresh it
+              var prevEditableTableBodyRow = this._getTableBodyRow(prevEditableRowIdx);
+              if (prevEditableTableBodyRow != null) {
+                // re-render the previously editable row, which will be read-only now
+                return this._refreshRow(prevEditableRowIdx, false).then(function () {
+                  this._isEditPending = false;
+                }.bind(this));
+              }
+            }
+            this._isEditPending = false;
+            return Promise.resolve();
+          }.bind(this), function () {
+            this._removeSkeletonRow(rowIdx);
+            if (editable && prevEditableRowIdx == null) {
+              this._syncActiveElement();
+            }
+            this._isEditPending = false;
+            return false;
+          }.bind(this));
         }.bind(this));
-      }.bind(this));
-    } else {
-      this._focusEditCell = null;
-      this._setEditableRowIdx(null);
-      if (!skipFocusReset) {
-        this._getTable().focus();
+        return Promise.all(editAcceptPromiseArray);
       }
-    }
-    // clear out the old editable row
-    if (prevEditableRowIdx != null) {
-      // make sure the row still exists before we refresh it
-      var prevEditableTableBodyRow = this._getTableBodyRow(prevEditableRowIdx);
-      if (prevEditableTableBodyRow != null) {
+      // update editRow option
+      if (newEditRowValue) {
+        this._fireEditRowChangeEvent(newEditRowValue, event);
+      }
+
+      if (editable) {
+        // set the editable row index
+        this._setEditableRowIdx(rowIdx);
+        this._getTable().setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
+        this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
+        // re-render the newly editable row
         this._queueTask(function () {
-          // re-render the previously editable row, which will be read-only now
-          return this._refreshRow(prevEditableRowIdx, false);
+          return this._refreshRow(rowIdx, true, false, !isLegacyDataSource).then(function () {
+            // set focus on the column in the row
+            this._setCellInRowFocus(rowIdx, columnIdx, forwardSearch);
+          }.bind(this));
         }.bind(this));
+      } else {
+        this._focusEditCell = null;
+        this._setEditableRowIdx(null);
+        if (!skipFocusReset) {
+          this._getTable().focus();
+        }
+      }
+      // clear out the old editable row
+      if (prevEditableRowIdx != null) {
+        // make sure the row still exists before we refresh it
+        var prevEditableTableBodyRow = this._getTableBodyRow(prevEditableRowIdx);
+        if (prevEditableTableBodyRow != null) {
+          this._queueTask(function () {
+            // re-render the previously editable row, which will be read-only now
+            return this._refreshRow(prevEditableRowIdx, false);
+          }.bind(this));
+        }
       }
     }
   }
@@ -18226,12 +18574,12 @@ Table.prototype._handleKeydownUpDown = function (event, isExtend) {
       this._isNavigate = false;
       // select all rows between focusedRowIdx and target
       this._selectRange(focusedRowIdx, target, true);
-      this._scrollRowIntoViewport(target);
+      this._scrollRowIntoViewport(target, true);
     } else {
       this._isNavigate = true;
       // if row is focused then up/down navigates the rows
       if (target !== focusedRowIdx) {
-        if (!this._setActiveRow(target, event, true)) {
+        if (!this._setActiveRow(target, event, true, null, null, true)) {
           return;
         }
         this._getTable().focus();
@@ -18254,14 +18602,14 @@ Table.prototype._handleKeydownUpDown = function (event, isExtend) {
     if (this._isAddNewRowEnabled()) {
       this._setActiveAddRow();
     } else if (this._getTableBodyRows().length > 0) {
-      this._setActiveRow(0, event, true);
+      this._setActiveRow(0, event, true, null, null, true);
     } else {
       this._setActiveNoData();
     }
   } else if (isUpEvent && this._getActiveFooterIndex() != null) {
     if (this._getTableBodyRows().length > 0) {
       // if user is on a column footer and pressed up then focus on the last row
-      this._setActiveRow(this._getTableBodyRows().length - 1, event, true);
+      this._setActiveRow(this._getTableBodyRows().length - 1, event, true, null, null, true);
     } else {
       this._setActiveNoData();
     }
@@ -18269,7 +18617,7 @@ Table.prototype._handleKeydownUpDown = function (event, isExtend) {
     if (isUpEvent) {
       this._setActiveHeader(visibleIndex, event);
     } else if (this._getTableBodyRows().length > 0) {
-      this._setActiveRow(0, event, true);
+      this._setActiveRow(0, event, true, null, null, true);
     } else {
       this._setActiveNoData();
     }
@@ -18743,6 +19091,7 @@ Table.prototype._tableBodyCellDefaultRenderer = function (rowIdx, columnIdx,
     tableBodyCell.appendChild(document.createTextNode(textValue)); // @HTMLUpdateOK
   } else {
     var cellContext = this._getRendererContextObject(tableBodyCell, { row: row });
+    cellContext.rowEditable = tableBodyRow[Table._DATA_OJ_EDITABLE];
     // Copy additional properties to top-level context to work with custom element
     var rendererContext = {
       cellContext: cellContext,
@@ -18873,7 +19222,10 @@ Table.prototype._getCellSlotTemplateContextObject = function (context, isAddRowC
     slotContext[Table._CONST_INDEX] = rowIndex;
     slotContext.mode = context.cellContext.mode;
     slotContext[Table._CONST_KEY] = rowKey;
-    slotContext.item = context.parentElement.parentElement[Table._ROW_ITEM_EXPANDO];
+    const row = context.parentElement.parentElement;
+    slotContext.item = row[Table._ROW_ITEM_EXPANDO];
+    slotContext.rowEditable =
+      this._invokeRowEditableCallback(row[Table._ROW_ITEM_EXPANDO]);
   }
   slotContext.columnIndex = columnIndex;
   slotContext.columnKey = this._getColumnKeyForColumnIdx(context.columnIndex);
@@ -18899,6 +19251,8 @@ Table.prototype._getRowSlotTemplateContextObject = function (context, isAddRowTe
     slotContext[Table._CONST_KEY] = context.rowContext.status.rowKey;
     slotContext.mode = context.rowContext.mode;
     slotContext.item = context.parentElement[Table._ROW_ITEM_EXPANDO];
+    slotContext.editable =
+      this._invokeRowEditableCallback(context.parentElement[Table._ROW_ITEM_EXPANDO]);
     slotContext.rowContext = context.rowContext;
   }
   var dataSource = this.options.data;
@@ -19813,7 +20167,8 @@ Table.prototype._applySelected = function (selected) {
   var prevSelectedRows = this._getSelectedRowIdxs();
   prevSelectedRows.forEach(function (rowIndex) {
     var row = this._getTableBodyRow(rowIndex);
-    if (!rowKeySet.has(this._getRowKey(row))) {
+    const isSelectable = row[Table._DATA_OJ_SELECTABLE] !== Table._CONST_OFF;
+    if (!rowKeySet.has(this._getRowKey(row)) && isSelectable) {
       this._applyRowSelection(rowIndex, row, false);
       this._setLastRowSelection(rowIndex, false);
     }
@@ -19823,21 +20178,29 @@ Table.prototype._applySelected = function (selected) {
     // apply selection state to selected rows
     if (rowKeySet.isAddAll()) {
       var rows = this._getTableBodyRows();
+      let lastRowIndex;
       rows.forEach(function (row, index) {
-        if (rowKeySet.has(this._getRowKey(row))) {
+        const isSelectable = row[Table._DATA_OJ_SELECTABLE] !== Table._CONST_OFF;
+        const rowKey = this._getRowKey(row);
+        if (rowKeySet.has(rowKey) && isSelectable) {
           this._applyRowSelection(index, row, true);
+          lastRowIndex = index;
         }
       }, this);
 
-      var lastRowIndex = rows.length - 1;
-      var lastRowKey = this._getRowKeyForRowIdx(lastRowIndex);
-      this._setLastRowSelection(lastRowIndex, rowKeySet.has(lastRowKey));
+      if (lastRowIndex) {
+        this._setLastRowSelection(lastRowIndex, true);
+      }
     } else {
       rowKeySet.values().forEach(function (rowKey) {
         var index = this._getRowIdxForRowKey(rowKey);
         if (index != null && index >= 0) {
-          this._applyRowSelection(index, this._getTableBodyRow(index), true);
-          this._setLastRowSelection(index, true);
+          const row = this._getTableBodyRow(index);
+          const isSelectable = row[Table._DATA_OJ_SELECTABLE] !== Table._CONST_OFF;
+          if (isSelectable) {
+            this._applyRowSelection(index, row, true);
+            this._setLastRowSelection(index, true);
+          }
         }
       }, this);
     }
@@ -19985,9 +20348,11 @@ Table.prototype._handleSelectionGesture = function (index, isRow, isMultiSelectG
   var columnKeySet = selected.column;
   if (isRow) {
     columnKeySet = columnKeySet.clear();
-    if (this._isRowSelectionEnabled()) {
-      var rowSelectionMode = this._getRowSelectionMode();
+    const row = this._getTableBodyRow(index);
+    if (this._isRowSelectionEnabled()
+      && (row && row[Table._DATA_OJ_SELECTABLE] !== Table._CONST_OFF)) {
       var rowKey = this._getRowKeyForRowIdx(index);
+      var rowSelectionMode = this._getRowSelectionMode();
       if (!rowKeySet.has(rowKey)) {
         // handle multiple selection gesture
         if (isMultiSelectGesture && rowSelectionMode === Table._OPTION_SELECTION_MODES._MULTIPLE) {
@@ -20133,11 +20498,19 @@ Table.prototype._selectRange = function (firstSelectedIndex, lastSelectedIndex, 
       // selected rows should be added in the order that they are selected
       if (firstSelectedIndex <= lastSelectedIndex) {
         for (i = firstSelectedIndex; i <= lastSelectedIndex; i++) {
-          rowKeySet = rowKeySet.add([this._getRowKeyForRowIdx(i)]);
+          const key = this._getRowKeyForRowIdx(i);
+          const row = this._findRowElementByKey(key);
+          if (row && row[Table._DATA_OJ_SELECTABLE] !== Table._CONST_OFF) {
+            rowKeySet = rowKeySet.add([key]);
+          }
         }
       } else {
         for (i = firstSelectedIndex; i >= lastSelectedIndex; i--) {
-          rowKeySet = rowKeySet.add([this._getRowKeyForRowIdx(i)]);
+          const key = this._getRowKeyForRowIdx(i);
+          const row = this._findRowElementByKey(key);
+          if (row && row[Table._DATA_OJ_SELECTABLE] !== Table._CONST_OFF) {
+            rowKeySet = rowKeySet.add([key]);
+          }
         }
       }
       // save last selected row, so that selection can be continued using shift+arrow keys(up/down)
@@ -21112,7 +21485,107 @@ Table.prototype.options = {
    * myTable.layout = 'fixed';
    */
   layout: 'contents',
-
+  /**
+  * The row attribute contains a subset of attributes for controlling certain behaviors on a per row basis.
+  *
+  * @expose
+  * @memberof! oj.ojTable
+  * @ojshortdesc Customizes the functionality of each row in the table.
+  * @type {Object}
+  * @instance
+  * @since 13.1.0
+  */
+  row: {
+    /**
+     * A function that returns whether the row can be edited.
+     * See <a href="Item.html">Item</a> to see the object passed into the editable function.
+     * If no function is specified, and edit-mode is set to "rowEdit" then all the rows will be editable.
+     *
+     * @expose
+     * @name row.editable
+     * @ojshortdesc Specifies whether the row can be edited. See the Help documentation for more information.
+     * @memberof! oj.ojTable
+     * @instance
+     * @type {Function|null}
+     * @since 13.1.0
+     * @ojsignature {target: "Type",
+     *               value: "?((item: Item<K,D>) => 'on'|'off') | null)",
+     *               jsdocOverride: true}
+     * @default null
+     *
+     * @example <caption>Initialize the Table with the <code class="prettyprint">editable</code> attribute specified:</caption>
+     * &lt;oj-table row.editable='{{myEditableFunc}}'>&lt;/table>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">editable</code> property after initialization:</caption>
+     * // getter
+     * const editable = myTable.row.editable;
+     *
+     * // setter
+     * myTable.row.editable = myEditableFunc;
+     */
+    editable: null,
+    /**
+     * If selection-mode.row is 'multiple' or 'single', this callback will be invoked and allows apps to control selection on individual rows.
+     * See <a href="Item.html">Item</a> to see the object passed into the selectable function.
+     * If no function is specified then all the rows will be selectable, unless selection-mode.row is not set to "none".
+     * In addition, <code>row.selectable</code> does not impact column selection modes.
+     * If an <a href="AllKeySetImpl.html">AllKeySetImpl</a> is set on the table the table will not show those rows as selected.
+     * However, the table will not add the non-selectable keys to AllKeySets's deletedValues set.
+     * If selection-mode.row = 'multiple', turning selection off for a particular row will remove the oj-selector and increase the span of the td in the first column by one for that row.
+     *
+     * @expose
+     * @name row.selectable
+     * @ojshortdesc Specifies whether the row can be selected. See the Help documentation for more information.
+     * @memberof! oj.ojTable
+     * @instance
+     * @since 13.1.0
+     * @type {Function|null}
+     * @ojsignature {target: "Type",
+     *               value: "?((item: Item<K,D>) => 'on'|'off') | null)",
+     *               jsdocOverride: true}
+     * @default null
+     *
+     * @example <caption>Initialize the Table with the <code class="prettyprint">selectable</code> attribute specified:</caption>=
+     * &lt;oj-table row.selectable='{{mySelectableFunc}}'>&lt;/oj-table>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">selectable</code> property after initialization:</caption>
+     * // getter
+     * const selectable = myTable.row.selectable;
+     *
+     * // setter
+     * myTable.row.selectable = mySelectableFunc;
+     */
+    selectable: null,
+    /**
+     * A function that returns whether the row should be sticky.
+     * See <a href="Item.html">Item</a> to see the object passed into the sticky function.
+     * If no function is specified, no rows will be sticky.
+     *
+     * @expose
+     * @name row.sticky
+     * @ojshortdesc Specifies whether the row is sticky. See the Help documentation for more information.
+     * @memberof! oj.ojTable
+     * @instance
+     * @since 13.1.0
+     * @type {Function|null}
+     * @ojsignature {target: "Type",
+     *               value: "?((item: Item<K,D>) => 'on'|'off') | null)",
+     *               jsdocOverride: true}
+     * @default null
+     * @ojunsupportedthemes ["Alta"]
+     *
+     * @example <caption>Initialize the Table with the <code class="prettyprint">sticky</code> attribute specified:</caption>
+     * &lt;oj-table row.sticky='{{myStickyFunc}}'>&lt;/oj-table>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">sticky</code> property after initialization:</caption>
+     * // getter
+     * const sticky = myTable.row.sticky;
+     *
+     * // setter
+     * myTable.row.sticky = myStickyFunc;
+     */
+    sticky: null
+  },
   /**
    * The row renderer function to use.
    * <p>
@@ -21159,6 +21632,7 @@ Table.prototype.options = {
    * @property {DataProvider<K, D>|null} rowContext.datasource The "data" attribute of the Table
    * @property {"edit"|"navigation"} rowContext.mode The mode of the row.  It can be "edit" or "navigation".
    * @property {ojTable.ContextStatus<K>} rowContext.status Contains the rowIndex, rowKey, and currentRow.
+   * @property {"on"|"off"} rowContext.editable On if row is editable, off if editing has been disabled.
    * @ojsignature [{target:"Type", value:"D", for:"data"},
    *               {target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
    */
@@ -21497,7 +21971,7 @@ Table.prototype.options = {
    * // setter
    * myTable.selectAllControl = 'hidden';
    */
-   selectAllControl: 'visible',
+  selectAllControl: 'visible',
 
   /**
    * Gets the key and data of the first selected row.  The first selected row is defined as the first
@@ -21765,6 +22239,7 @@ Table.prototype.options = {
    * @property {DataProvider<K, D>|null} cellContext.datasource The "data" attribute of the Table.
    * @property {"edit"|"navigation"} cellContext.mode The mode of the row.  It can be "edit" or "navigation".
    * @property {ojTable.ContextStatus<K>} cellContext.status Contains the rowIndex, rowKey, and currentRow.
+   * @property {"on"|"off"} cellContext.rowEditable On if row is editable, off if editing has been disabled.
    * @property {number} columnIndex The column index.
    * @property {Element} componentElement A reference to the Table root element.
    * @property {any} data The cell data.
@@ -21838,6 +22313,7 @@ Table.prototype.options = {
    * @property {Item<K,D>} item The Item<K, D> for the row being rendered.
    * @property {any} columnKey The key of the current column being rendered.
    * @property {DataProvider<K, D> | null} datasource The "data" attribute of the Table.
+   * @property {"on"|"off"} rowEditable On if row is editable, off if editing has been disabled.
    * @ojsignature [{target:"Type", value:"D[keyof D]", for:"data", jsdocOverride:true},
    * {target:"Type", value:"keyof D", for:"columnKey", jsdocOverride:true},
    * {target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
@@ -21951,7 +22427,8 @@ Table.prototype.options = {
    * myTable.columns = [{"headerText": "Department Id", "field": "DepartmentId"},
    *                    {"headerText": "Department Name", "field": "DepartmentName"}];
    */
-  columns: [{ className: null,
+  columns: [{
+    className: null,
     field: null,
     footerClassName: null,
     footerRenderer: null,
@@ -21973,42 +22450,43 @@ Table.prototype.options = {
     minWidth: null,
     maxWidth: null,
     weight: null,
-    width: null }],
+    width: null
+  }],
 
- /**
-   * The default knockout template used to render the content of the column header.
-   *
-   * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
-   * component option. The following
-   *   variables are also passed into the template
-   *     <ul>
-   *       <li>$columnIndex: The column index.</li>
-   *       <li>$data: The header text.</li>
-   *       <li>$headerContext: The header context.</li>
-   *     </ul>
-   *   </li>
-   *
-   * @ojbindingonly
-   * @name headerTemplate
-   * @memberof! oj.ojTable.ColumnDefault
-   * @instance
-   * @type {string|null}
-   * @ojsignature {target:"Type", value:"?"}
-   * @default null
-   *
-   * @example <caption>Specify the column header <code class="prettyprint">template</code> when initializing Table:</caption>
-   * // set the template
-   * &lt;oj-table aria-label="Departments Table"
-   *      data='{{dataProvider}}'
-   *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
-   *                        {"headerText": "Department Name", "field": "DepartmentName"},
-   *                        {"headerText": "Location Id", "field": "LocationId"},
-   *                        {"headerText": "Manager Id", "field": "ManagerId"},
-   *                        {"headerTemplate": "oracle_link_hdr"}]'&gt;
-   * &lt;/oj-table&gt;
-   *
-   * @ignore
-   */
+  /**
+    * The default knockout template used to render the content of the column header.
+    *
+    * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+    * component option. The following
+    *   variables are also passed into the template
+    *     <ul>
+    *       <li>$columnIndex: The column index.</li>
+    *       <li>$data: The header text.</li>
+    *       <li>$headerContext: The header context.</li>
+    *     </ul>
+    *   </li>
+    *
+    * @ojbindingonly
+    * @name headerTemplate
+    * @memberof! oj.ojTable.ColumnDefault
+    * @instance
+    * @type {string|null}
+    * @ojsignature {target:"Type", value:"?"}
+    * @default null
+    *
+    * @example <caption>Specify the column header <code class="prettyprint">template</code> when initializing Table:</caption>
+    * // set the template
+    * &lt;oj-table aria-label="Departments Table"
+    *      data='{{dataProvider}}'
+    *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
+    *                        {"headerText": "Department Name", "field": "DepartmentName"},
+    *                        {"headerText": "Location Id", "field": "LocationId"},
+    *                        {"headerText": "Manager Id", "field": "ManagerId"},
+    *                        {"headerTemplate": "oracle_link_hdr"}]'&gt;
+    * &lt;/oj-table&gt;
+    *
+    * @ignore
+    */
   /**
    * The default knockout template used to render the content of the column footer.
    *
@@ -22086,7 +22564,8 @@ Table.prototype.options = {
    *     headerStyle: 'text-align: left; white-space:nowrap;'
    * };
    */
-  columnsDefault: { className: null,
+  columnsDefault: {
+    className: null,
     field: null,
     footerClassName: null,
     footerRenderer: null,
@@ -22106,7 +22585,8 @@ Table.prototype.options = {
     minWidth: 'auto',
     maxWidth: null,
     weight: 1,
-    width: null },
+    width: null
+  },
 
   /**
    * Triggered before the current row is changed via the <code class="prettyprint">currentRow</code> property or via the UI.
@@ -22347,8 +22827,8 @@ Table.prototype.getNodeBySubId = function (locator) {
     columnIdx = parseInt(locator.columnIndex, 10);
     return this._getTableBodyLogicalCells(rowIdx)[columnIdx];
   } else if (subId === Table._SUB_ID._TABLE_HEADER ||
-              subId === Table._SUB_ID._TABLE_SORT_ASCENDING ||
-              subId === Table._SUB_ID._TABLE_SORT_DESCENDING) {
+    subId === Table._SUB_ID._TABLE_SORT_ASCENDING ||
+    subId === Table._SUB_ID._TABLE_SORT_DESCENDING) {
     columnIdx = locator.index;
     var tableHeaderColumn = this._getTableHeaderLogicalColumns()[columnIdx];
     if (tableHeaderColumn != null) {
@@ -22593,12 +23073,12 @@ Table.prototype._destroy = function () {
  * @protected
  * @override
  */
- Table.prototype._NotifyAttached = function () {
+Table.prototype._NotifyAttached = function () {
   this._super();
 
   // reattaching the Table causes the scroll position to be reset
-  this._scrollTop = null;
-  this._scrollLeft = null;
+  this._scrollTop = undefined;
+  this._scrollLeft = undefined;
 
   // for custom element, SetupResources will be called if needed
   if (!this._IsCustomElement()) {
@@ -22650,6 +23130,15 @@ Table.prototype._clearNotifyAttachedTimeout = function () {
 };
 
 /**
+ * <p>Notifies the component that its subtree has been made hidden programmatically after the component has
+ * been created.
+ */
+Table.prototype._NotifyHidden = function () {
+  this._super();
+  this._getLayoutManager().clearCachedDimensions();
+};
+
+/**
  * <p>Notifies the component that its subtree has been made visible programmatically after the component has
  * been created.
  *
@@ -22694,8 +23183,8 @@ Table.prototype._NotifyContextMenuGesture = function (contextMenu, event, eventT
 
   // first check if we are invoking on an editable or clickable element, or draggable element on touch event. If so bail
   if (this._isNodeEditable(this._contextMenuEvent.target) ||
-      this._isNodeClickable(this._contextMenuEvent.target) ||
-      (eventType === 'touch' && this._isNodeDraggable(this._contextMenuEvent.target))) {
+    this._isNodeClickable(this._contextMenuEvent.target) ||
+    (eventType === 'touch' && this._isNodeDraggable(this._contextMenuEvent.target))) {
     return;
   }
 
@@ -22707,7 +23196,7 @@ Table.prototype._NotifyContextMenuGesture = function (contextMenu, event, eventT
     headerColumn = this._getTableHeaderColumn(columnIdx);
   } else {
     headerColumn = this._getFirstAncestor(this._contextMenuEvent.target,
-    '.' + Table.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS, true);
+      '.' + Table.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS, true);
   }
 
   if (this._contextMenuEvent.type === 'keydown') {
@@ -22866,7 +23355,7 @@ Table.prototype._setOption = function (key, value, flags) {
   } else if (key === 'currentRow') {
     this._queueTask(function () {
       this._setCurrentRow(value, null, true);
-    }.bind(this)).catch(function () {});
+    }.bind(this)).catch(function () { });
     this._superApply(arguments);
   } else if (key === 'scrollPosition') {
     this._queueTask(function () {
@@ -22881,10 +23370,10 @@ Table.prototype._setOption = function (key, value, flags) {
     this._superApply(arguments);
     if (this._isStickyLayoutEnabled()) {
       if (flags.subkey === 'scrollerOffsetTop' ||
-          flags.subkey === 'scrollerOffsetBottom') {
+        flags.subkey === 'scrollerOffsetBottom') {
         this._styleTableContainer(this._getTableContainer());
       } else if (flags.subkey === 'scrollerOffsetStart' ||
-                 flags.subkey === 'scrollerOffsetEnd') {
+        flags.subkey === 'scrollerOffsetEnd') {
         this._getLayoutManager()._initializeFrozenColumns();
       }
     }
@@ -22921,7 +23410,7 @@ Table.prototype._CompareOptionValues = function (option, value1, value2) {
       return ((value1.row && value2.row && areKeySetsEqual(value1.row, value2.row)) ||
         (value1.row == null && value2.row == null)) &&
         ((value1.column && value2.column && areKeySetsEqual(value1.column, value2.column)) ||
-        (value1.column == null && value2.column == null));
+          (value1.column == null && value2.column == null));
     default:
       return this._super(option, value1, value2);
   }

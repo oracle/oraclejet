@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -17,67 +17,70 @@ var UNSAFE_UserAssistance = require('./UNSAFE_UserAssistance.js');
 require('identity-obj-proxy');
 var hooks_UNSAFE_useTranslationBundle = require('./hooks/UNSAFE_useTranslationBundle.js');
 var hooks_UNSAFE_usePress = require('./hooks/UNSAFE_usePress.js');
-require('./index-9adddc55.js');
-var UNSAFE_Icons = require('./index-f38e0982.js');
+require('./index-dcd95188.js');
+var UNSAFE_Icons = require('./index-e2b299b3.js');
 var hooks_UNSAFE_useClearIcon = require('./hooks/UNSAFE_useClearIcon.js');
 var utils_UNSAFE_componentUtils = require('./utils/UNSAFE_componentUtils.js');
-var ClearIcon = require('./ClearIcon-ebb9372a.js');
+var ClearIcon = require('./ClearIcon-a579c8f3.js');
 var hooks_UNSAFE_useToggle = require('./hooks/UNSAFE_useToggle.js');
-var TextFieldInput = require('./TextFieldInput-3f8612a3.js');
-require('./tslib.es6-5c843188.js');
+var hooks_UNSAFE_useCurrentValueReducer = require('./hooks/UNSAFE_useCurrentValueReducer.js');
+var TextFieldInput = require('./TextFieldInput-40fdc487.js');
+require('./tslib.es6-e91f819d.js');
 require('./hooks/UNSAFE_useFocusWithin.js');
-require('./useFocusWithin-4642944b.js');
+require('./useFocusWithin-b68e203b.js');
 require('preact');
 require('./hooks/UNSAFE_useId.js');
 require('./utils/UNSAFE_classNames.js');
-require('./classNames-69178ebf.js');
+require('./classNames-82bfab52.js');
 require('./utils/UNSAFE_interpolations/text.js');
-require('./keys-4bd017bf.js');
-require('./_curry1-33165c71.js');
-require('./_has-2cbf94e8.js');
+require('./keys-0a611b24.js');
+require('./_curry1-94f22a19.js');
+require('./_has-556488e4.js');
 require('./utils/UNSAFE_mergeInterpolations.js');
-require('./_curry2-40682636.js');
+require('./_curry2-e6dc9cf1.js');
 require('./UNSAFE_LabelValueLayout.js');
 require('./UNSAFE_Flex.js');
-require('./Flex-b2488744.js');
+require('./Flex-327ae051.js');
 require('./utils/UNSAFE_interpolations/dimensions.js');
 require('./utils/UNSAFE_arrayUtils.js');
 require('./utils/UNSAFE_size.js');
 require('./utils/UNSAFE_stringUtils.js');
-require('./stringUtils-bca189f8.js');
+require('./stringUtils-b22cc214.js');
 require('./utils/UNSAFE_interpolations/boxalignment.js');
 require('./utils/UNSAFE_interpolations/flexbox.js');
-require('./flexbox-c4644897.js');
+require('./flexbox-3d991801.js');
 require('./utils/UNSAFE_interpolations/flexitem.js');
-require('./flexitem-5f5d588b.js');
+require('./flexitem-91650faf.js');
 require('./hooks/UNSAFE_useDebounce.js');
 require('./UNSAFE_LiveRegion.js');
 require('./UNSAFE_ComponentMessage.js');
-require('./ComponentMessage-2d34a873.js');
+require('./ComponentMessage-a872eb39.js');
+require('./UNSAFE_HiddenAccessible.js');
+require('./HiddenAccessible-12dce52a.js');
 require('./UNSAFE_Message.js');
-require('./MessageCloseButton-bb97745b.js');
-require('./MessageDetail-4f21648c.js');
-require('./MessageFormattingUtils-d406c991.js');
+require('./MessageCloseButton-c5605b75.js');
+require('./MessageDetail-4d43ff71.js');
+require('./MessageFormattingUtils-6764fed3.js');
 require('./utils/UNSAFE_getLocale.js');
-require('./Message.types-27433937.js');
-require('./MessageStartIcon-8c60ed0a.js');
-require('./MessageSummary-e7e6089e.js');
-require('./MessageTimestamp-00534130.js');
-require('./MessageUtils-d65699cf.js');
+require('./Message.types-2c9b978d.js');
+require('./MessageStartIcon-600451b4.js');
+require('./MessageSummary-f93feb7b.js');
+require('./MessageTimestamp-abe719cf.js');
+require('./MessageUtils-68957380.js');
 require('./utils/UNSAFE_logger.js');
 require('./utils/UNSAFE_soundUtils.js');
-require('./MessagesManager-2ef5e191.js');
+require('./MessagesManager-e88df2a4.js');
 require('./UNSAFE_TransitionGroup.js');
 require('./UNSAFE_Icon.js');
-require('./Icon-b60b3f23.js');
+require('./Icon-42559ff1.js');
 require('./hooks/UNSAFE_useUser.js');
 require('./UNSAFE_Environment.js');
 require('./UNSAFE_Layer.js');
 require('./hooks/UNSAFE_useTheme.js');
-require('./ComponentMessageContainer-00bd8855.js');
+require('./ComponentMessageContainer-caebad7b.js');
 require('./hooks/UNSAFE_useTextFieldInputHandlers.js');
 require('./utils/PRIVATE_clientHints.js');
-require('./clientHints-90ca1b41.js');
+require('./clientHints-d9b5605d.js');
 
 // will need to refactor to use that.
 // TODO: replace this with var(--oj-c-PRIVATE-DO-NOT-USE-button-height) once it is available
@@ -96,7 +99,7 @@ const ojButtonBorderlessChromeBorderColorHover = 'transparent'; // TODO: replace
 
 const ojButtonIconSize = 'var(--oj-c-PRIVATE-DO-NOT-USE-core-icon-size-lg)';
 const revealToggleIconStyles = {
-  base: "bedqiru"
+  base: "_f2rlos"
 };
 function RevealToggleIcon({
   isRevealed,
@@ -128,6 +131,17 @@ function RevealToggleIcon({
 // One way InputPassword differs from InputText is InputPassword's readonly
 // is implemented with an <input> and not a <div>.
 const InputPassword = compat.forwardRef(({ assistiveText, autoComplete = 'off', autoFocus = false, hasClearIcon, hasRevealToggle = 'always', helpSourceLink, helpSourceText, id, isDisabled: propIsDisabled, isReadonly: propIsReadonly, isRequired = false, isRequiredShown, label, labelEdge: propLabelEdge, messages, placeholder, textAlign: propTextAlign, userAssistanceDensity: propUserAssistanceDensity, value, onInput, onCommit }, ref) => {
+    const { currentCommitValue, dispatch } = hooks_UNSAFE_useCurrentValueReducer.useCurrentValueReducer({ value });
+    const onInputAndDispatch = hooks.useCallback((detail) => {
+        // Should dispatch happen first? This will queue up a re-render, ordering should not cause issues (this is async)
+        dispatch({ type: 'input', payload: detail.value });
+        onInput === null || onInput === void 0 ? void 0 : onInput(detail);
+    }, [onInput]);
+    const onCommitAndDispatch = hooks.useCallback((detail) => {
+        // Should dispatch happen first? This will queue up a re-render, ordering should not cause issues (this is async)
+        dispatch({ type: 'commit', payload: detail.value });
+        onCommit === null || onCommit === void 0 ? void 0 : onCommit(detail);
+    }, [onCommit]);
     const { isDisabled: isFormDisabled, isReadonly: isFormReadonly, labelEdge: formLabelEdge, textAlign: formTextAlign, userAssistanceDensity: formUserAssistanceDensity } = hooks_UNSAFE_useFormContext.useFormContext();
     // default to FormContext values if component properties are not specified
     const isDisabled = propIsDisabled !== null && propIsDisabled !== void 0 ? propIsDisabled : isFormDisabled;
@@ -153,9 +167,23 @@ const InputPassword = compat.forwardRef(({ assistiveText, autoComplete = 'off', 
     const onRevealIconPress = hooks.useCallback(() => {
         isRevealed ? setRevealedFalse() : setRevealedTrue();
     }, [isRevealed]);
-    // At this point we have returned the readonly component if isReadonly, so now
-    // we know we are not readonly. We don't show the revealToggle icon in readonly or disabled.
     const revealToggleIcon = !isDisabled && hasRevealToggle === 'always' ? (jsxRuntime.jsx(RevealToggleIcon, { onPress: onRevealIconPress, isRevealed: isRevealed })) : null;
+    const onClickClearIcon = hooks.useCallback(() => {
+        var _a;
+        // Clicking the clear icon should put the focus on the input field
+        (_a = enabledElementRef.current) === null || _a === void 0 ? void 0 : _a.focus();
+        // Send an event to clear the field's value
+        onInputAndDispatch === null || onInputAndDispatch === void 0 ? void 0 : onInputAndDispatch({ previousValue: value, value: '' });
+    }, [onInput, value]);
+    const maybeClearIcon = hooks_UNSAFE_useClearIcon.useClearIcon({
+        clearIcon: jsxRuntime.jsx(ClearIcon.ClearIcon, { onClick: onClickClearIcon }),
+        display: hasClearIcon,
+        hasValue: formFieldContext.hasValue,
+        isFocused,
+        isEnabled: !isReadonly && !isDisabled,
+        isHover
+    });
+    const endContentCombined = utils_UNSAFE_componentUtils.beforeVNode(revealToggleIcon, maybeClearIcon);
     const labelComp = labelEdge !== 'none' ? jsxRuntime.jsx(UNSAFE_Label.Label, Object.assign({}, labelProps, { children: label })) : undefined;
     const fieldLabelProps = {
         label: labelEdge !== 'none' ? labelComp : undefined,
@@ -169,23 +197,7 @@ const InputPassword = compat.forwardRef(({ assistiveText, autoComplete = 'off', 
     if (isReadonly) {
         return (jsxRuntime.jsx(hooks_UNSAFE_useFormFieldContext.FormFieldContext.Provider, Object.assign({ value: formFieldContext }, { children: jsxRuntime.jsx(UNSAFE_TextField.ReadonlyTextField, Object.assign({ role: "presentation", inlineUserAssistance: inlineUserAssistance }, fieldLabelProps, { children: jsxRuntime.jsx(UNSAFE_TextField.ReadonlyTextFieldInput, { ariaLabel: ariaLabel, ariaLabelledby: labelProps.id, as: "input", autoFocus: autoFocus, elementRef: readonlyElementRef, id: id, textAlign: textAlign, type: "password", value: value, hasInsideLabel: label !== undefined && labelEdge === 'inside' }) })) })));
     }
-    const mainContent = (jsxRuntime.jsx(TextFieldInput.TextFieldInput, Object.assign({ ariaLabel: ariaLabel, autoComplete: autoComplete, autoFocus: autoFocus, hasInsideLabel: labelComp !== undefined && labelEdge === 'inside', inputRef: enabledElementRef, isRequired: isRequired, onInput: onInput, onCommit: onCommit, placeholder: placeholder, textAlign: textAlign, value: value, type: isRevealed ? 'text' : 'password' }, inputProps)));
-    const onClickClearIcon = hooks.useCallback(() => {
-        var _a;
-        // Clicking the clear icon should put the focus on the input field
-        (_a = enabledElementRef.current) === null || _a === void 0 ? void 0 : _a.focus();
-        // Send an event to clear the field's value
-        onInput === null || onInput === void 0 ? void 0 : onInput({ previousValue: value, value: '' });
-    }, [onInput, value]);
-    const maybeClearIcon = hooks_UNSAFE_useClearIcon.useClearIcon({
-        clearIcon: jsxRuntime.jsx(ClearIcon.ClearIcon, { onClick: onClickClearIcon }),
-        display: hasClearIcon,
-        hasValue: formFieldContext.hasValue,
-        isFocused,
-        isEnabled: !isReadonly && !isDisabled,
-        isHover
-    });
-    const endContentCombined = utils_UNSAFE_componentUtils.beforeVNode(revealToggleIcon, maybeClearIcon);
+    const mainContent = (jsxRuntime.jsx(TextFieldInput.TextFieldInput, Object.assign({ ariaLabel: ariaLabel, autoComplete: autoComplete, autoFocus: autoFocus, currentCommitValue: currentCommitValue, hasInsideLabel: labelComp !== undefined && labelEdge === 'inside', inputRef: enabledElementRef, isRequired: isRequired, onInput: onInputAndDispatch, onCommit: onCommitAndDispatch, placeholder: placeholder, textAlign: textAlign, value: value, type: isRevealed ? 'text' : 'password' }, inputProps)));
     return (jsxRuntime.jsx(hooks_UNSAFE_useFormFieldContext.FormFieldContext.Provider, Object.assign({ value: formFieldContext }, { children: jsxRuntime.jsx(UNSAFE_TextField.TextField, Object.assign({ endContent: endContentCombined, inlineUserAssistance: inlineUserAssistance, mainContent: mainContent, onBlur: focusProps.onfocusout, onFocus: focusProps.onfocusin }, textFieldProps, fieldLabelProps, hoverProps)) })));
 });
 

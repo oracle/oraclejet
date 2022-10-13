@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import { Fragment } from 'preact';
 import { forwardRef } from 'preact/compat';
@@ -15,20 +15,21 @@ import { ReadonlyTextField, ReadonlyTextFieldInput, TextFieldInput, MaxLengthLiv
 import { InlineUserAssistance } from './UNSAFE_UserAssistance.js';
 import { getClientHints } from './utils/PRIVATE_clientHints.js';
 import { beforeVNode } from './utils/UNSAFE_componentUtils.js';
-import { C as ClearIcon } from './ClearIcon-41582422.js';
+import { C as ClearIcon } from './ClearIcon-2b8fb446.js';
+import { useCurrentValueReducer } from './hooks/UNSAFE_useCurrentValueReducer.js';
 import './hooks/UNSAFE_useToggle.js';
-import './tslib.es6-fc945e53.js';
+import './tslib.es6-deee4931.js';
 import './hooks/UNSAFE_useFocusWithin.js';
 import './utils/UNSAFE_lengthFilter.js';
 import './hooks/UNSAFE_useId.js';
 import './utils/UNSAFE_classNames.js';
 import './UNSAFE_InputText.css';
 import './utils/UNSAFE_interpolations/text.js';
-import './keys-cb973048.js';
-import './_curry1-8b0d63fc.js';
-import './_has-77a27fd6.js';
+import './keys-77d2b8e6.js';
+import './_curry1-b6f34fc4.js';
+import './_has-f370c697.js';
 import './utils/UNSAFE_mergeInterpolations.js';
-import './_curry2-6a0eecef.js';
+import './_curry2-255e04d1.js';
 import './hooks/UNSAFE_useTranslationBundle.js';
 import './UNSAFE_Environment.js';
 import './UNSAFE_Layer.js';
@@ -45,6 +46,7 @@ import './hooks/UNSAFE_useTextFieldInputHandlers.js';
 import './hooks/UNSAFE_useDebounce.js';
 import './UNSAFE_LiveRegion.js';
 import './UNSAFE_ComponentMessage.js';
+import './UNSAFE_HiddenAccessible.js';
 import './UNSAFE_Message.js';
 import './utils/UNSAFE_getLocale.js';
 import './UNSAFE_ThemedIcons.js';
@@ -66,6 +68,17 @@ function isMobile() {
     return deviceType === 'phone' || deviceType === 'tablet';
 }
 const InputText = forwardRef(({ assistiveText, autoComplete = 'off', autoFocus = false, hasClearIcon, endContent, helpSourceLink, helpSourceText, id, isDisabled: propIsDisabled, isReadonly: propIsReadonly, isRequired = false, isRequiredShown, label, labelEdge: propLabelEdge, labelStartWidth: propLabelStartWidth, maxLength, maxLengthUnit, messages, placeholder, role, startContent, textAlign: propTextAlign, userAssistanceDensity: propUserAssistanceDensity, value, virtualKeyboard, onInput, onCommit }, ref) => {
+    const { currentCommitValue, dispatch } = useCurrentValueReducer({ value });
+    const onInputAndDispatch = useCallback((detail) => {
+        // Should dispatch happen first? This will queue up a re-render, ordering should not cause issues (this is async)
+        dispatch({ type: 'input', payload: detail.value });
+        onInput === null || onInput === void 0 ? void 0 : onInput(detail);
+    }, [onInput]);
+    const onCommitAndDispatch = useCallback((detail) => {
+        // Should dispatch happen first? This will queue up a re-render, ordering should not cause issues (this is async)
+        dispatch({ type: 'commit', payload: detail.value });
+        onCommit === null || onCommit === void 0 ? void 0 : onCommit(detail);
+    }, [onCommit]);
     const { isDisabled: isFormDisabled, isReadonly: isFormReadonly, labelEdge: formLabelEdge, labelStartWidth: formLabelStartWidth, textAlign: formTextAlign, userAssistanceDensity: formUserAssistanceDensity } = useFormContext();
     // default to FormContext values if component properties are not specified
     const isDisabled = propIsDisabled !== null && propIsDisabled !== void 0 ? propIsDisabled : isFormDisabled;
@@ -90,8 +103,8 @@ const InputText = forwardRef(({ assistiveText, autoComplete = 'off', autoFocus =
         // Clicking the clear icon should put the focus on the input field
         (_a = enabledElementRef.current) === null || _a === void 0 ? void 0 : _a.focus();
         // Send an event to clear the field's value
-        onInput === null || onInput === void 0 ? void 0 : onInput({ previousValue: value, value: '' });
-    }, [onInput, value]);
+        onInputAndDispatch === null || onInputAndDispatch === void 0 ? void 0 : onInputAndDispatch({ previousValue: value, value: '' });
+    }, [onInputAndDispatch, value]);
     const maybeClearIcon = useClearIcon({
         clearIcon: jsx(ClearIcon, { onClick: onClickClearIcon }),
         display: hasClearIcon,
@@ -101,13 +114,12 @@ const InputText = forwardRef(({ assistiveText, autoComplete = 'off', autoFocus =
         isHover
     });
     const endContentCombined = beforeVNode(endContent, maybeClearIcon);
-    // Handle length filter for user-typed inputs and controlled inputs
     const { isMaxLengthExceeded, valueLength, onFilteredInput } = useLengthFilter({
         maxLength,
         maxLengthUnit,
         value,
-        onInput,
-        onCommit
+        onInput: onInputAndDispatch,
+        onCommit: onCommitAndDispatch
     });
     const labelComp = labelEdge !== 'none' ? jsx(Label, Object.assign({}, labelProps, { children: label })) : undefined;
     const fieldLabelProps = {
@@ -119,13 +131,13 @@ const InputText = forwardRef(({ assistiveText, autoComplete = 'off', autoFocus =
     const inlineUserAssistance = isDisabled || isReadonly ? (
     // save space for user assistance if density is 'efficient', even though we don't
     // render user assistance for disabled or readonly fields
-    userAssistanceDensity !== 'efficient' ? undefined : (jsx(InlineUserAssistance, Object.assign({ userAssistanceDensity: userAssistanceDensity }, userAssistanceProps)))) : (jsx(InlineUserAssistance, Object.assign({ assistiveText: assistiveText, helpSourceLink: helpSourceLink, helpSourceText: helpSourceText, messages: messages, isRequiredShown: isRequiredShown, userAssistanceDensity: userAssistanceDensity }, userAssistanceProps)));
+    userAssistanceDensity !== 'efficient' ? undefined : (jsx(InlineUserAssistance, Object.assign({ userAssistanceDensity: userAssistanceDensity }, userAssistanceProps)))) : (jsx(InlineUserAssistance, Object.assign({ assistiveText: assistiveText, fieldLabel: label, helpSourceLink: helpSourceLink, helpSourceText: helpSourceText, messages: messages, isRequiredShown: isRequiredShown, userAssistanceDensity: userAssistanceDensity }, userAssistanceProps)));
     if (isReadonly) {
         // TODO: should be able to configure whether start/end content is shown when readonly
         // JET-49916 - Preact InputText: show start/end content when readonly
         return (jsx(FormFieldContext.Provider, Object.assign({ value: formFieldContext }, { children: jsx(ReadonlyTextField, Object.assign({ role: "presentation", inlineUserAssistance: inlineUserAssistance, onBlur: focusProps.onfocusout, onFocus: focusProps.onfocusin }, fieldLabelProps, { children: jsx(ReadonlyTextFieldInput, { ariaLabel: ariaLabel, ariaLabelledby: labelProps.id, as: "div", autoFocus: autoFocus, elementRef: readonlyElementRef, id: textFieldProps.id, textAlign: textAlign, value: value, hasInsideLabel: label !== undefined && labelEdge === 'inside' }) })) })));
     }
-    const mainContent = (jsxs(Fragment, { children: [jsx(TextFieldInput, Object.assign({ ariaLabel: ariaLabel, autoComplete: autoComplete, autoFocus: autoFocus, hasInsideLabel: labelComp !== undefined && labelEdge === 'inside', inputRef: enabledElementRef, isRequired: isRequired, placeholder: placeholder, role: role, textAlign: textAlign, type: isMobile() ? virtualKeyboard : undefined, value: value, onCommit: onCommit, onInput: onFilteredInput }, inputProps)), maxLength !== undefined && (jsx(MaxLengthLiveRegion, Object.assign({}, { isMaxLengthExceeded, maxLength, valueLength })))] }));
+    const mainContent = (jsxs(Fragment, { children: [jsx(TextFieldInput, Object.assign({ ariaLabel: ariaLabel, autoComplete: autoComplete, autoFocus: autoFocus, currentCommitValue: currentCommitValue, hasInsideLabel: labelComp !== undefined && labelEdge === 'inside', inputRef: enabledElementRef, isRequired: isRequired, placeholder: placeholder, role: role, textAlign: textAlign, type: isMobile() ? virtualKeyboard : undefined, value: value, onCommit: onCommitAndDispatch, onInput: onFilteredInput }, inputProps)), maxLength !== undefined && (jsx(MaxLengthLiveRegion, Object.assign({}, { isMaxLengthExceeded, maxLength, valueLength })))] }));
     return (jsx(FormFieldContext.Provider, Object.assign({ value: formFieldContext }, { children: jsx(TextField, Object.assign({ endContent: endContentCombined, inlineUserAssistance: inlineUserAssistance, mainContent: mainContent, onBlur: focusProps.onfocusout, onFocus: focusProps.onfocusin, startContent: startContent }, textFieldProps, fieldLabelProps, hoverProps)) })));
 });
 

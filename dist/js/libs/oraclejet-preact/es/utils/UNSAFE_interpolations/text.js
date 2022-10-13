@@ -1,13 +1,13 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import './text.css';
-import { k as keys_1 } from '../../keys-cb973048.js';
-import '../../_curry1-8b0d63fc.js';
-import '../../_has-77a27fd6.js';
+import { k as keys_1 } from '../../keys-77d2b8e6.js';
+import '../../_curry1-b6f34fc4.js';
+import '../../_has-f370c697.js';
 
 const textAlignStyles = {
-  start: "so5vivr",
-  end: "exraja",
-  right: "rnoefqf"
+  start: "_wibxf",
+  end: "cgdb3m",
+  right: "n4t3gp"
 };
 const textStyles = {
   textAlign: textAlignStyles

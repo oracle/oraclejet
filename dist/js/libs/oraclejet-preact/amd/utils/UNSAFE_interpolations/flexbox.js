@@ -1,2 +1,2 @@
-define(["exports","../../flexbox-f4630ff2",'css!./flexbox.css',"../../keys-20e26f7c","../../_curry1-28c749e4","../../_has-d3e8a510"],(function(e,o,s,t,r,f){"use strict";e.directions=o.directions,e.flexboxInterpolations=o.flexboxInterpolations,e.flexboxStyles=o.flexboxStyles,e.wraps=o.wraps,Object.defineProperty(e,"__esModule",{value:!0})}));
+define(["exports","../../flexbox-a1508bc2",'css!./flexbox.css',"../../keys-9527ebf1","../../_curry1-b1038181","../../_has-f8addc41"],(function(e,o,s,t,r,i){"use strict";e.directions=o.directions,e.flexboxInterpolations=o.flexboxInterpolations,e.flexboxStyles=o.flexboxStyles,e.wraps=o.wraps,Object.defineProperty(e,"__esModule",{value:!0})}));
 //# sourceMappingURL=flexbox.js.map

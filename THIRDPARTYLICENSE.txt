@@ -15,26 +15,51 @@ js/libs/chai/chai-4.2.0.js                                                    MI
 js/libs/hammer/hammer-2.0.8.js                                                MIT
 js/libs/js-signals/signals.js                                                 MIT
 js/libs/jquery/jquery-3.6.0.js                                                MIT
-js/libs/jquery/jquery-ui-1.12.1.custom.js                                     MIT
-js/libs/jquery/jqueryui-amd-1.12.1/core.js                                    MIT
-js/libs/jquery/jqueryui-amd-1.12.1/draggable.js                               MIT
-js/libs/jquery/jqueryui-amd-1.12.1/mouse.js                                   MIT
-js/libs/jquery/jqueryui-amd-1.12.1/position.js                                MIT
-js/libs/jquery/jqueryui-amd-1.12.1/sortable.js                                MIT
-js/libs/jquery/jqueryui-amd-1.12.1/widget.js                                  MIT
+js/libs/jquery/jquery-ui-1.13.2.custom.js                                     MIT
+js/libs/jquery/jqueryui-amd-1.13.2/core.js                                    MIT
+js/libs/jquery/jqueryui-amd-1.13.2/draggable.js                               MIT
+js/libs/jquery/jqueryui-amd-1.13.2/mouse.js                                   MIT
+js/libs/jquery/jqueryui-amd-1.13.2/position.js                                MIT
+js/libs/jquery/jqueryui-amd-1.13.2/sortable.js                                MIT
+js/libs/jquery/jqueryui-amd-1.13.2/widget.js                                  MIT
+js/libs/jquery/jqueryui-amd-1.13.2/disable-selection.js                       MIT
+js/libs/jquery/jqueryui-amd-1.13.2/jquery-var-for-color.js                    MIT
+js/libs/jquery/jqueryui-amd-1.13.2/core.js                                    MIT
+js/libs/jquery/jqueryui-amd-1.13.2/ie.js                                      MIT
+js/libs/jquery/jqueryui-amd-1.13.2/keycode.js                                 MIT
+js/libs/jquery/jqueryui-amd-1.13.2/jquery-patch.js                            MIT
+js/libs/jquery/jqueryui-amd-1.13.2/labels.js                                  MIT
+js/libs/jquery/jqueryui-amd-1.13.2/form-reset-mixin.js                        MIT
+js/libs/jquery/jqueryui-amd-1.13.2/unique-id.js                               MIT
+js/libs/jquery/jqueryui-amd-1.13.2/scroll-parent.js                           MIT
+js/libs/jquery/jqueryui-amd-1.13.2/tabbable.js                                MIT
+js/libs/jquery/jqueryui-amd-1.13.2/widget.js                                  MIT
+js/libs/jquery/jqueryui-amd-1.13.2/version.js                                 MIT
+js/libs/jquery/jqueryui-amd-1.13.2/focusable.js                               MIT
+js/libs/jquery/jqueryui-amd-1.13.2/data.js                                    MIT
+js/libs/jquery/jqueryui-amd-1.13.2/effect.js                                  MIT
+js/libs/jquery/jqueryui-amd-1.13.2/safe-blur.js                               MIT
+js/libs/jquery/jqueryui-amd-1.13.2/form.js                                    MIT
+js/libs/jquery/jqueryui-amd-1.13.2/safe-active-element.js                     MIT
+js/libs/jquery/jqueryui-amd-1.13.2/plugin.js                                  MIT
+js/libs/jquery/jqueryui-amd-1.13.2/widgets/sortable.js                        MIT
+js/libs/jquery/jqueryui-amd-1.13.2/widgets/draggable.js                       MIT
+js/libs/jquery/jqueryui-amd-1.13.2/widgets/mouse.js                           MIT
+js/libs/jquery/jqueryui-amd-1.13.2/vendor/jquery-color/jquery.color.js        MIT
+js/libs/jquery/jqueryui-amd-1.13.2/position.js                                MIT
 js/libs/knockout/knockout-3.5.1.js                                            MIT
-js/libs/oj/v13.0.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
-js/libs/oj/v13.0.0/min/ojexpparser.js (expparser.js)                    MIT
-js/libs/oj/v13.0.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
-js/libs/oj/v13.0.0/min/ojmessagebanner.js (Ramda)                       MIT
-js/libs/oj/v13.0.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
-js/libs/oj/v13.0.0/min/ojtree.js (jsTree.js)                            MIT
-js/libs/oj/v13.0.0/ojL10n.js (requireJS i18n)                           MIT
+js/libs/oj/v13.1.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
+js/libs/oj/v13.1.0/min/ojexpparser.js (expparser.js)                    MIT
+js/libs/oj/v13.1.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
+js/libs/oj/v13.1.0/min/ojmessagebanner.js (Ramda)                       MIT
+js/libs/oj/v13.1.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
+js/libs/oj/v13.1.0/min/ojtree.js (jsTree.js)                            MIT
+js/libs/oj/v13.1.0/ojL10n.js (requireJS i18n)                           MIT
 js/libs/proj4js/dist/proj4.js                                                 Proj4js
 js/libs/require/require.js                                                    MIT
 js/libs/require/text.js                                                       MIT
 js/libs/require-css/css.min.js (require-css)                                  MIT
-scss/oj/v13.0.0/3rdparty/normalize/normalize.scss                       MIT
+scss/oj/v13.1.0/3rdparty/normalize/normalize.scss                       MIT
 js/libs/touchr/touchr.js                                                      MIT
 js/libs/preact/dist/preact.umd.js                                             MIT
 
@@ -259,7 +284,7 @@ the specific language governing permissions and limitations under the Apache Lic
 
 
 
-jQuery UI - v1.12.1 - 2015-03-18
+jQuery UI
 http://jqueryui.com
 Includes: core.js, widget.js, mouse.js, position.js, draggable.js, sortable.js
 

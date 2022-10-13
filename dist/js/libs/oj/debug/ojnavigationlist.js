@@ -142,7 +142,8 @@ var __oj_navigation_list_metadata =
     "ojBeforeExpand": {},
     "ojBeforeSelect": {},
     "ojCollapse": {},
-    "ojExpand": {}
+    "ojExpand": {},
+    "ojSelectionAction": {}
   },
   "extension": {}
 };
@@ -1373,7 +1374,14 @@ var __oj_tab_bar_metadata =
           }
         }
 
+        var previousKey = this.GetOption('selection')[0];
+
         _ojNavigationListView.superclass.HandleMouseClick.apply(this, arguments);
+
+        if (!this.isTabBar() && !this._skipSelectionAction) {
+          this._fireSelectionAction(event, item, previousKey);
+        }
+
         event.preventDefault();
       },
 
@@ -1410,12 +1418,26 @@ var __oj_tab_bar_metadata =
         } else if (keyCode === $.ui.keyCode.DELETE && this.isTabBar()) {
           this._handleRemove(event, current);
         } else {
+          var previousKey = this.GetOption('selection')[0];
+
           var processed = this.HandleSelectionOrActiveKeyDown(event);
           var processExpansion =
               this.m_listHandler.HandleExpandAndCollapseKeys(event, keyCode,
                                                              current, currentItemKey);
           processed = processed || processExpansion ||
             (this.m_dndContext != null && this.m_dndContext.HandleKeyDown(event));
+
+          if (
+            !this.isTabBar() &&
+            (event.keyCode === $.ui.keyCode.ENTER || event.keyCode === $.ui.keyCode.SPACE)
+          ) {
+            this._fireSelectionAction(event, current, previousKey);
+            this._skipSelectionAction = event.keyCode === $.ui.keyCode.ENTER;
+            window.requestAnimationFrame(() => {
+              this._skipSelectionAction = false;
+            });
+          }
+
           if (processed) {
             event.preventDefault();
           }
@@ -1792,6 +1814,14 @@ var __oj_tab_bar_metadata =
           toKey: key,
           fromItem: fromItem,
           fromKey: fromKey
+        });
+      },
+
+      _fireSelectionAction: function (event, item, previousKey) {
+        var key = this.GetKey(item[0]);
+        this.Trigger('selectionAction', event, {
+          value: key,
+          previousValue: previousKey
         });
       },
 
@@ -3698,7 +3728,28 @@ var __oj_tab_bar_metadata =
          * @property {Element} item The list item that was just expanded.
          */
         expand: null,
-        reorder: null
+        reorder: null,
+        /**
+         * Triggered anytime when user performs an action gesture on an item, no matter the item is selected or not. The action gestures include:
+         * <ul>
+         *   <li>User clicks anywhere in an item</li>
+         *   <li>User taps anywhere in an item</li>
+         *   <li>User pressed enter key while an item or its content has focus</li>
+         * </ul>
+         *
+         * @ojshortdesc Triggered when user performs an action gesture on an item.
+         * @expose
+         * @event
+         * @ojbubbles
+         * @memberof oj.ojNavigationList
+         * @instance
+         * @property {any} value the value of new selection.
+         * @property {any} previousValue the value of previous selection, which can have the same as key if user selects the same item.
+         * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
+         *               {target:"Type", value:"K", for:"value", jsdocOverride:true},
+         *               {target:"Type", value:"K", for:"previousValue", jsdocOverride:true}]
+         */
+        selectionAction: null,
       },
 
       /**

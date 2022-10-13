@@ -5695,6 +5695,7 @@ class DvtTreeView extends BaseComponent {
    * @override
    */
   SetOptions(options) {
+    super.SetOptions(options);
     if (options) {
       this.Options = this.Defaults.calcOptions(options);
 
@@ -6697,29 +6698,24 @@ class DvtSunburstEventManager extends DvtTreeEventManager {
   /**
    * @override
    */
-  ProcessKeyboardEvent(event)
-  {
+  ProcessKeyboardEvent(event) {
     var eventConsumed = true;
 
     var keyCode = event.keyCode;
     var node = this.getFocus(); // the item with current keyboard focus
     var sunburst = this.GetView();
-
+    var expandCollapseEnabled = node && node.isExpandCollapseEnabled && node.isExpandCollapseEnabled();
     // expand/collapse
-    if (node.isExpandCollapseEnabled() &&
+    if (expandCollapseEnabled &&
         ((KeyboardEvent.isPlus(event) && !node.isDisclosed()) ||
         (KeyboardEvent.isMinus(event) && node.isDisclosed()) ||
-        (event.ctrlKey && keyCode === KeyboardEvent.ENTER)))
-
-    {
+        (event.ctrlKey && keyCode === KeyboardEvent.ENTER))) {
       sunburst.expandCollapseNode(node.getId());
       EventManager.consumeEvent(event);
-    }
-    // rotation
-    else if (sunburst && sunburst.__isRotationEnabled() &&
+    } else if (sunburst && sunburst.__isRotationEnabled() &&
             (keyCode === KeyboardEvent.LEFT_ARROW || keyCode === KeyboardEvent.RIGHT_ARROW) &&
-            !event.ctrlKey && event.altKey && event.shiftKey)
-    {
+            !event.ctrlKey && event.altKey && event.shiftKey) {
+      // rotation
       var newAngle;
       if (keyCode === KeyboardEvent.LEFT_ARROW)
         newAngle = -5 * (Math.PI / 180);

@@ -1,19 +1,19 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import './flexbox.css';
-import { k as keys_1 } from '../../keys-cb973048.js';
-import '../../_curry1-8b0d63fc.js';
-import '../../_has-77a27fd6.js';
+import { k as keys_1 } from '../../keys-77d2b8e6.js';
+import '../../_curry1-b6f34fc4.js';
+import '../../_has-f370c697.js';
 
 const directionStyles = {
-  row: "rklb1n5",
-  column: "c1l998vu"
+  row: "_6pi910",
+  column: "_fl77vc"
 };
 const wrapStyles = {
-  nowrap: "nphc8w3",
-  wrap: "w1xnl1g6",
-  reverse: "r8ires5",
-  inherit: "ignq9s5",
-  initial: "i1tzicbr"
+  nowrap: "_wlm76g",
+  wrap: "k5phjz",
+  reverse: "_efubwl",
+  inherit: "_7itfo3",
+  initial: "hztuvz"
 };
 const flexboxStyles = {
   direction: directionStyles,

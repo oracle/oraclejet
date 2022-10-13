@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { useRef, useCallback } from 'preact/hooks';
 import { stringLiteralArray } from '../utils/UNSAFE_arrayUtils.js';
 import { containsKey, addKey, removeKey, isKeyDefined } from '../utils/UNSAFE_keys.js';

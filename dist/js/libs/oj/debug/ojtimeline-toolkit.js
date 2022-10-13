@@ -186,7 +186,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (isActionableMode && currentNavigable && (event.keyCode === dvt.KeyboardEvent.ESCAPE || event.keyCode === dvt.KeyboardEvent.F2)) {
         this._eventManager._component.activeInnerElems = null;
         this._eventManager._component.activeInnerElemsNode = null;
-        keyboardUtils.disableAllFocusable(currentNavigable._displayable.getElem(), true);
+        keyboardUtils.disableAllFocusable(currentNavigable._displayable.getElem());
 
         this._eventManager._component._context._parentDiv.focus();
         currentNavigable.hasActiveInnerElems = false;
@@ -690,11 +690,40 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     /**
      * Gets the item bubble padding.
-     * @param {object} options The object containing data and specifications for the component.
-     * @return {number} The bubble padding.
+     * @param {DvtTimelineSeriesNode} item The target item.
+     * @return {object} The bubble padding of shape { top, bottom, start, end }
      */
-    getBubblePadding: (options) => {
-      return DvtTimelineStyleUtils.getNumberFromString(options['styleDefaults']['item']['padding']);
+    getBubblePadding: (item) => {
+      var options = item._timeline.Options;
+      var itemStyleDefaults = options.styleDefaults.item;
+      var hasColorStripe = item.hasColorStripe();
+      var customRenderer = options.itemBubbleContentRenderer;
+      var background = item.getBackground();
+      // In JET 13.1.0, there's no padding around custom content if the item background API is used
+      // In JET 14.0.0, there's no padding around custom content always. So remove the "&& background" condition for 14.0.0.
+      if (customRenderer && background) {
+        return {
+          top: 0,
+          bottom: 0,
+          start: 0,
+          end: 0
+        };
+      }
+      if (hasColorStripe) {
+        return {
+          top: Number(DvtTimelineStyleUtils.getNumberFromString(itemStyleDefaults._withStripePaddingTop)),
+          bottom: Number(DvtTimelineStyleUtils.getNumberFromString(itemStyleDefaults._withStripePaddingBottom)),
+          start: Number(DvtTimelineStyleUtils.getNumberFromString(itemStyleDefaults._withStripePaddingStart)),
+          end: Number(DvtTimelineStyleUtils.getNumberFromString(itemStyleDefaults._withStripePaddingEnd))
+        };
+      }
+      var padding = Number(DvtTimelineStyleUtils.getNumberFromString(itemStyleDefaults.padding));
+      return {
+        top: padding,
+        bottom: padding,
+        start: padding,
+        end: padding
+      };
     },
 
     /**
@@ -829,6 +858,46 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     getItemSelectedStrokeWidth: () => {
       return 2;
+    },
+
+    /**
+     * Gets color stripe margin start.
+     * @returns {number} The color stripe margin start.
+     */
+    getColorStripeMarginStart: (options) => {
+      return Number(DvtTimelineStyleUtils.getNumberFromString(options.styleDefaults.item._stripeMarginStart));
+    },
+
+    /**
+     * Gets color stripe margin top.
+     * @returns {number} The color stripe margin top.
+     */
+    getColorStripeMarginTop: (options) => {
+      return Number(DvtTimelineStyleUtils.getNumberFromString(options.styleDefaults.item._stripeMarginTop));
+    },
+
+    /**
+     * Gets color stripe margin bottom.
+     * @returns {number} The color stripe margin bottom.
+     */
+     getColorStripeMarginBottom: (options) => {
+      return Number(DvtTimelineStyleUtils.getNumberFromString(options.styleDefaults.item._stripeMarginBottom));
+    },
+
+    /**
+     * Gets the color stripe width.
+     * @return {number} The color stripe width.
+     */
+    getColorStripeWidth: (options) => {
+      return Number(DvtTimelineStyleUtils.getNumberFromString(options.styleDefaults.item._stripeWidth));
+    },
+
+    /**
+     * Gets the color stripe border radius.
+     * @return {number} The color stripe border radius.
+     */
+    getColorStripeBorderRadius: (options) => {
+      return Number(DvtTimelineStyleUtils.getNumberFromString(options.styleDefaults.item._stripeBorderRadius));
     },
 
     /**
@@ -1070,7 +1139,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * Returns min width for duration event bubble
      * @return {number} The minimum width of the duration event bubble
      */
-    getMinDurationEvent: () => {
+    getMinDurationEvent: (item) => {
+      var option = item._timeline.Options;
+      var hasColorStripe = item.hasColorStripe();
+      if (hasColorStripe) {
+        return 2 * DvtTimelineStyleUtils.getColorStripeMarginStart(option) + DvtTimelineStyleUtils.getColorStripeWidth(option);
+      }
       return 8;
     },
 
@@ -1144,6 +1218,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._desc = props.desc;
       this._thumbnail = props.thumbnail;
       this._shortDesc = props.shortDesc;
+      this._background = props.background;
 
       this._style = props.style;
       this._data = props.data;
@@ -1211,6 +1286,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       return this._thumbnail;
     }
 
+    getBackground() {
+      return this._background;
+    }
+
     getShortDesc() {
       var shortDesc = this._shortDesc;
       return typeof shortDesc === 'function' ? shortDesc(DvtTimelineSeriesNode.getShortDescContext(this)) : shortDesc;
@@ -1226,6 +1305,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     setStyle(style) {
       this._style = style;
+    }
+
+    /**
+     * Sets the background color of the node.
+     * @param {string} color The background color of the node.
+     * The color enum values are 'red'|'blue'|'orange'|'purple'|'teal'|'green'.
+     */
+    setBackground(color) {
+      this._background = color;
     }
 
     ///////////////////// association of visual parts with node /////////////////////////
@@ -1244,6 +1332,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     setContentBubble(displayableContent) {
       this._displayableContent = displayableContent;
+    }
+
+    getColorStripe() {
+      return this._colorStripe;
+    }
+
+    setColorStripe(colorStripe) {
+      this._colorStripe = colorStripe;
     }
 
     getFeeler() {
@@ -1616,7 +1712,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       // difference between end and start time (or min duration event whichever is larger)
       var durationWidth = this.getItemType() === DvtTimelineSeriesNode.DURATION_EVENT ?
         Math.max(this._timeline.getDatePos(this._endTime) - this._timeline.getDatePos(this._startTime),
-        DvtTimelineStyleUtils.getMinDurationEvent()) : null;
+        DvtTimelineStyleUtils.getMinDurationEvent(this)) : null;
 
       return {
         'data': this.getData(true),
@@ -1624,8 +1720,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         'seriesData': this._series.getData(true),
         'previousState': this._previousState,
         'state': this._state,
-        'durationWidth': durationWidth
+        'durationWidth': durationWidth,
+        'contentWidth': this.getAvailableContentWidth()
       };
+    }
+
+    /**
+     * Gets the available width for content in a duration event bubble.
+     * @param {number=} durationWidth Optional duration width to use (e.g. in discrete navigation mode, the "duration width" may be clipped by the viewport). Otherwise the item's end - start width is used.
+     * @return {number|null} The available width in pixels, or null if not applicable.
+     */
+    getAvailableContentWidth(durationWidth) {
+      var bubbleWidth = (durationWidth != null) ? durationWidth : this._timeline.getDatePos(this._endTime) - this._timeline.getDatePos(this._startTime);
+      var artifactWidth = this.hasColorStripe() ? DvtTimelineStyleUtils.getColorStripeMarginStart(this._timeline.Options) + DvtTimelineStyleUtils.getColorStripeWidth(this._timeline.Options) : 0;
+      var contentWidth = this.getItemType() === DvtTimelineSeriesNode.DURATION_EVENT ? bubbleWidth - artifactWidth : null;
+      return contentWidth;
     }
 
     /**
@@ -1876,8 +1985,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             var adjustedStartPos = this._timeline.getDatePos(this._startTime) - (deltaX * rtlAdjust);
             var adjustedEndPos = this._timeline.getDatePos(this._endTime) - (deltaX * rtlAdjust);
 
-            var allowedStartPos = this._timeline.getDatePos(this._startTime) + DvtTimelineStyleUtils.getMinDurationEvent();
-            var allowedEndPos = this._timeline.getDatePos(this._endTime) - DvtTimelineStyleUtils.getMinDurationEvent();
+            var allowedStartPos = this._timeline.getDatePos(this._startTime) + DvtTimelineStyleUtils.getMinDurationEvent(this);
+            var allowedEndPos = this._timeline.getDatePos(this._endTime) - DvtTimelineStyleUtils.getMinDurationEvent(this);
 
             if (isEndResize && adjustedEndPos > allowedStartPos) {
               var newEndTime = this._timeline.getPosDate(adjustedEndPos);
@@ -2038,6 +2147,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     _enableAllTabElements() {
       this._timeline.getOptions()._keyboardUtils.enableAllFocusable(this._displayable.getElem());
+    }
+
+    /**
+     * Returns whether the item has a color stripe.
+     * @return {boolean} Whether the item has a color stripe.
+     */
+    hasColorStripe() {
+      return !!(this.getBackground() && this.getItemType() === DvtTimelineSeriesNode.DURATION_EVENT && !this._series.isVertical());
     }
   }
   // item-type defs
@@ -2227,13 +2344,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var bubble = itemElem.getChildAt(0);
       var bubbleInner = bubble.getChildAt(0);
       var duration = item.getDurationBar();
-
+      var bubbleFillColor;
+      var bubbleStrokeColor;
+      var bubbleStrokeWidth;
+      var bubbleInnerStrokeColor;
       if (state === this.ACTIVE_SELECTED_STATE_KEY)
       {
-        var bubbleFillColor = DvtTimelineStyleUtils.getItemSelectedFillColor(item);
-        var bubbleStrokeColor = DvtTimelineStyleUtils.getItemSelectedStrokeColor(item);
-        var bubbleStrokeWidth = DvtTimelineStyleUtils.getItemSelectedStrokeWidth();
-        var bubbleInnerStrokeColor = DvtTimelineStyleUtils.getItemInnerActiveStrokeColor();
+        bubbleFillColor = DvtTimelineStyleUtils.getItemSelectedFillColor(item);
+        bubbleStrokeColor = DvtTimelineStyleUtils.getItemSelectedStrokeColor(item);
+        bubbleStrokeWidth = DvtTimelineStyleUtils.getItemSelectedStrokeWidth();
+        bubbleInnerStrokeColor = DvtTimelineStyleUtils.getItemInnerActiveStrokeColor();
       }
       else if (state === this.SELECTED_STATE_KEY)
       {
@@ -2263,15 +2383,30 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       bubble.setStroke(bubbleStroke);
       bubbleInner.setStroke(bubbleInnerStroke);
-
+      const hasColorStripe = item.hasColorStripe();
       if (state === this.HOVER_STATE_KEY) {
         // use overflow background color for temporary shading on hover state
-        var bubbleBackFillColor = DvtTimelineStyleUtils.getContentBubbleBackgroundColor(item._timeline.Options);
+        // There is no shading on hover when color stripe is present according to the Timeline Event Template visual spec.
+        var bubbleBackFillColor = hasColorStripe ? 'transparent' : DvtTimelineStyleUtils.getContentBubbleBackgroundColor(item._timeline.Options);
         bubble.setSolidFill(bubbleBackFillColor);
-        bubbleInner.setSolidFill(bubbleFillColor);
+        bubbleInner.setSolidFill(hasColorStripe ? 'transparent' : bubbleFillColor);
       } else {
         bubble.setSolidFill(bubbleFillColor);
         bubbleInner.setSolidFill(DvtTimelineStyleUtils.getItemInnerFillColor());
+      }
+
+      // Apply bubble background and color stripe styling
+      // Note that any applied "fill" are from CSS classes and will override any fill set on the bubble above.
+      const background = item.getBackground();
+      if (background) {
+        bubble.setClassName(`oj-timeline-item-bubble oj-timeline-item-bubble-bg-${background}`);
+        const colorStripe = item.getColorStripe();
+        if (hasColorStripe && colorStripe) {
+          colorStripe.setClassName(`oj-timeline-item-bubble-stripe oj-timeline-item-bubble-bg-${background}`);
+        }
+      } else {
+        // Remove any previously applied `oj-timeline-item-bubble oj-timeline-item-bubble-bg-${background}` classes
+        bubble.setClassName();
       }
 
       var feeler = item.getFeeler();
@@ -2350,18 +2485,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var context = series.getCtx();
       var isRTL = dvt.Agent.isRightToLeft(context);
 
-      // if padding is specified, use that value. otherwise default to 5.
-      var padding = Number(DvtTimelineStyleUtils.getBubblePadding(item._timeline.Options));
+      var padding = DvtTimelineStyleUtils.getBubblePadding(item);
       var content = DvtTimelineSeriesItemRenderer._getBubbleContent(item, series);
       var customRenderer = item._timeline.getOptions().itemBubbleContentRenderer;
 
       if (customRenderer) {
         // Ensure width is positive
-        width = Math.max(0, content._w + content._x + padding * 2);
-        height = content._h + content._y + padding * 2;
+        width = Math.max(0, content._w + content._x + padding.start + padding.end);
+        height = content._h + content._y + padding.top + padding.bottom;
       } else {
-        width = content._w + padding * 2;
-        height = content._h + padding * 2;
+        width = content._w + padding.start + padding.end;
+        height = content._h + padding.top + padding.bottom;
       }
 
       item.setContentWidth(width);
@@ -2373,7 +2507,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (item.getItemType() === DvtTimelineSeriesNode.DURATION_EVENT) {
         // special duration-event bubble width matches the duration length with min width applied
-        durationWidth = Math.max(endLoc - loc, DvtTimelineStyleUtils.getMinDurationEvent());
+        durationWidth = Math.max(endLoc - loc, DvtTimelineStyleUtils.getMinDurationEvent(item));
 
         if (durationWidth < width) {
           width = durationWidth + width + DvtTimelineStyleUtils.getContentBubbleSpacing();
@@ -2413,10 +2547,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var isRTL = dvt.Agent.isRightToLeft(context);
 
       var id = item.getId();
+      var options = item._timeline.Options;
 
-      // if padding is specified, use that value. otherwise default to 5.
-      var padding = Number(DvtTimelineStyleUtils.getBubblePadding(item._timeline.Options));
-      var borderRadius = Number(DvtTimelineStyleUtils.getBubbleRadius(item._timeline.Options));
+      var padding = DvtTimelineStyleUtils.getBubblePadding(item);
+      var borderRadius = Number(DvtTimelineStyleUtils.getBubbleRadius(options));
       var content = item._content;
 
       var overflowContent = DvtTimelineSeriesItemRenderer._isOverflow(item);
@@ -2517,7 +2651,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         // if overflow, use the contentBubble to hold content. Otherwise, use the bubble
         contentBubble.setTranslateX(contentBubbleAdjust);
         contentBubble.addChild(content);
-        content.setTranslate(padding, padding);
+        var customRenderer = item._timeline.getOptions().itemBubbleContentRenderer;
+        content.setTranslate((isRTL && customRenderer) ? item.getContentWidth() : padding.start, padding.top);
         bubbleContainer.addChild(bubble);
         bubbleContainer.addChild(contentBubble);
       } else {
@@ -2526,15 +2661,31 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         if (item._timeline.isDiscreteNavigationMode() && notInViewport && item.getItemType() === DvtTimelineSeriesNode.DURATION_EVENT) {
           content.setVisible();
         }
-        content.setTranslate(contentPadding, padding);
+        content.setTranslate(contentPadding, padding.top);
         bubble.addChild(content);
         bubbleContainer.addChild(bubble);
       }
       if (ojtimeaxisToolkit.TimeAxisUtils.supportsTouch())
         dvt.ToolkitUtils.setAttrNullNS(bubbleContainer._elem, 'id', bubbleContainer._id);
 
+      // Add color stripe
+      if (item.hasColorStripe()) {
+        var stripeMarginStart = DvtTimelineStyleUtils.getColorStripeMarginStart(options);
+        var stripeMarginTop = DvtTimelineStyleUtils.getColorStripeMarginTop(options);
+        var stripeMarginBottom = DvtTimelineStyleUtils.getColorStripeMarginBottom(options);
+        var stripeWidth = DvtTimelineStyleUtils.getColorStripeWidth(options);
+        var stripeHeight = item.getHeight() - (stripeMarginTop + stripeMarginBottom);
+        var stripeX = isRTL ? nodeWidth - stripeMarginStart - stripeWidth : stripeMarginStart;
+        var stripeY = stripeMarginTop;
+        var stripeBR = DvtTimelineStyleUtils.getColorStripeBorderRadius(options);
+        var colorStripe = new dvt.Rect(context, stripeX, stripeY, stripeWidth, stripeHeight);
+        colorStripe.setCornerRadius(stripeBR);
+        item.setColorStripe(colorStripe);
+        bubbleContainer.addChild(colorStripe);
+      }
+
       bubbleContainer.applyState(DvtTimelineSeriesItem.ENABLED_STATE_KEY);
-      bubbleContainer.setClassName('oj-timeline-item-bubble');
+      bubbleContainer.setClassName('oj-timeline-item-bubble-container');
 
       if (item.getLoc() >= 0)
         container.addChild(bubbleContainer);
@@ -2566,13 +2717,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         item.setResizeHandleStart(startResizeHandle);
         item.setResizeHandleEnd(endResizeHandle);
       }
-      bubble.setClassName('oj-timeline-bubble');
 
       if (item._timeline.isDnDMoveEnabled()) {
-        innerBubble.setClassName('oj-timeline-inner-bubble oj-timeline-move-handle oj-draggable');
+        innerBubble.setClassName('oj-timeline-item-inner-bubble oj-timeline-move-handle oj-draggable');
         series._callbackObj.EventManager.associate(innerBubble, item);
       } else {
-        innerBubble.setClassName('oj-timeline-inner-bubble');
+        innerBubble.setClassName('oj-timeline-item-inner-bubble');
       }
     },
 
@@ -2596,6 +2746,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var bubbleContainer = item.getBubble();
       if (resetState)
         bubbleContainer.applyState(DvtTimelineSeriesItem.ENABLED_STATE_KEY);
+
+      // Remove previously rendered color stripe if there shouldn't be one
+      var colorStripe = item.getColorStripe();
+      if (colorStripe && !item.hasColorStripe()) {
+        bubbleContainer.removeChild(colorStripe);
+        item.setColorStripe(null);
+      }
 
       var transX;
       var transY;
@@ -2774,7 +2931,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           }
           // Temporarily add container to block to grab the dimensions
           var block = series._blocks[series._blocks.length - 1];
-          block.setClassName('oj-timeline-item-bubble');
+          block.setClassName('oj-timeline-item-bubble-container');
 
           block.addChild(container);
           var dimensions = container.getDimensions();
@@ -3240,10 +3397,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var durationInnerBubble = durationBubble.getChildAt(0);
       var contentBubble = item.getContentBubble();
       var nodeHeight = item.getHeight();
-      var durationWidth = Math.max(endLoc - loc, DvtTimelineStyleUtils.getMinDurationEvent());
+      var durationWidth = Math.max(endLoc - loc, DvtTimelineStyleUtils.getMinDurationEvent(item));
       var contentWidth = item.getContentWidth();
       var triangleIconSize = DvtTimelineStyleUtils.getContentBubbleArrow();
       var navMode = item._timeline.isDiscreteNavigationMode();
+      var customRenderer = item._timeline.getOptions().itemBubbleContentRenderer;
 
       // resize the bubble and address overflow content if needed
       if (animator) {
@@ -3293,7 +3451,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         } else {
           content = contentBubble.getChildAt(0);
         }
-        var padding = Number(DvtTimelineStyleUtils.getBubblePadding(item._timeline.Options));
+        var padding = DvtTimelineStyleUtils.getBubblePadding(item);
         var contentPadding = DvtTimelineSeriesItemRenderer.calcPadding(item, isRTL, padding, durationWidth, true, content);
 
         var contentBubbleAdjust = (contentPadding + 15.5) * (flipContentBubble ? -1 : 1);
@@ -3307,17 +3465,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         if (navMode) {
           content.setVisible('visible');
 
-          // reset content padding back to original
-          if (animator) {
-            animator.addProp(dvt.Animator.TYPE_NUMBER, content, content.getTranslateX, content.setTranslateX, padding);
-          } else {
-            content.setTranslateX(padding);
-          }
-
           // turn off draggable class (content is outside of bubble)
           if (item._timeline.isDnDMoveEnabled()) {
-            bubble.setClassName('oj-timeline-item-bubble');
+            bubble.setClassName('oj-timeline-item-bubble-container');
           }
+        }
+
+        var contentX = (isRTL && customRenderer) ? item.getContentWidth() : padding.start;
+        if (animator) {
+          animator.addProp(dvt.Animator.TYPE_NUMBER, content, content.getTranslateX, content.setTranslateX, contentX);
+        } else {
+          content.setTranslateX(contentX);
         }
     } else {
         nodeWidth = durationWidth;
@@ -3330,7 +3488,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         } else {
           content = durationBubble.getChildAt(1);
         }
-        var padding = Number(DvtTimelineStyleUtils.getBubblePadding(item._timeline.Options));
+        var padding = DvtTimelineStyleUtils.getBubblePadding(item);
         var contentPadding = DvtTimelineSeriesItemRenderer.calcPadding(item, isRTL, padding, durationWidth, false, content);
 
         // hide content if it's not in viewport for discrete viewport navigation mode to prevent layering into current viewport
@@ -3340,7 +3498,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
           // turn off draggable classes (content isn't shown)
           if (item._timeline.isDnDMoveEnabled()) {
-            bubble.setClassName('oj-timeline-item-bubble');
+            bubble.setClassName('oj-timeline-item-bubble-container');
           }
         } else {
           content.setVisible('visible');
@@ -3352,23 +3510,36 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
           // turn on draggable classes (content is inside bubble)
           if (item._timeline.isDnDMoveEnabled()) {
-            bubble.setClassName('oj-timeline-item-bubble oj-timeline-move-handle oj-draggable');
+            bubble.setClassName('oj-timeline-item-bubble-container oj-timeline-move-handle oj-draggable');
           }
         }
       }
+
+      var bubbleWidth = Math.max(durationWidth, DvtTimelineStyleUtils.getMinDurationEvent(item));
+      var options = item._timeline.Options;
+      var stripeMarginStart = DvtTimelineStyleUtils.getColorStripeMarginStart(options);
+      var stripeWidth = DvtTimelineStyleUtils.getColorStripeWidth(options);
+      var stripeX = isRTL ? bubbleWidth - stripeMarginStart - stripeWidth : stripeMarginStart;
+      var colorStripe = item.getColorStripe();
 
       if (animator) {
         if (transX) {
           animator.addProp(dvt.Animator.TYPE_NUMBER, bubble, bubble.getTranslateX, bubble.setTranslateX, transX);
         }
+        if (colorStripe) {
+          animator.addProp(dvt.Animator.TYPE_NUMBER, colorStripe, colorStripe.getX, colorStripe.setX, stripeX);
+        }
         animator.addProp(dvt.Animator.TYPE_NUMBER, item, item.getWidth, item.setWidth, nodeWidth);
-        animator.addProp(dvt.Animator.TYPE_NUMBER, item, item.getDurationWidth, item.setDurationWidth, Math.max(durationWidth, DvtTimelineStyleUtils.getMinDurationEvent()));
+        animator.addProp(dvt.Animator.TYPE_NUMBER, item, item.getDurationWidth, item.setDurationWidth, bubbleWidth);
       } else {
         if (transX) {
           bubble.setTranslateX(transX);
         }
+        if (colorStripe) {
+          colorStripe.setX(stripeX);
+        }
         item.setWidth(nodeWidth);
-        item.setDurationWidth(Math.max(durationWidth, DvtTimelineStyleUtils.getMinDurationEvent()));
+        item.setDurationWidth(Math.max(durationWidth, bubbleWidth));
       }
     },
 
@@ -3381,7 +3552,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     _isOverflow: (item) => {
       var contentWidth = item.getContentWidth();
       var durationWidth = item.getDurationWidth();
-      var endViewportCollision = item.getEndViewportCollision();
       var navMode = item._timeline.isDiscreteNavigationMode();
       // no overflow behavior if not duration-event right now
       if (item.getItemType() !== DvtTimelineSeriesNode.DURATION_EVENT) {
@@ -3403,7 +3573,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       // if content is larger than the item, use overflow
       // if item is at viewport edge also use overflow
-      if (durationWidth < contentWidth) {
+      var availableWidth = item.getAvailableContentWidth(durationWidth);
+      if (availableWidth < contentWidth) {
         return true;
       }
       return false;
@@ -3413,19 +3584,26 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * Calculate the padding for the content
      * @param {DvtTimelineSeriesItem} item The item being updated.
      * @param {boolean} isRTL RTL boolean value
-     * @param {Number} padding default value for the bubble padding from the css
+     * @param {object} padding default value for the bubble padding from the css, of shape {top, bottom, start, end}
      * @param {Number} nodeWidth width of the event bubble (either duration or item)
      * @param {boolean} isOverflow boolean if overflow padding should be calculated
      * @param {Container} content content to grab x position
-     * @return {Number} padding value for the content
+     * @return {Number} start padding for the content
      * @private
      */
     calcPadding: (item, isRTL, padding, nodeWidth, isOverflow, content) => {
-      var contentPadding = padding;
+      var startPadding = padding.start;
+      if (item.hasColorStripe() && !isOverflow) {
+        var options = item._timeline.Options;
+        var stripeMarginStart = DvtTimelineStyleUtils.getColorStripeMarginStart(options);
+        var stripeWidth = DvtTimelineStyleUtils.getColorStripeWidth(options);
+        startPadding += stripeMarginStart + stripeWidth;
+      }
+      var contentPadding = startPadding;
       var customRenderer = item._timeline.getOptions().itemBubbleContentRenderer;
 
       if (isRTL && customRenderer) {
-        contentPadding = nodeWidth - padding - 2 * content._x;
+        contentPadding = nodeWidth - startPadding - content._x;
       }
 
       var endViewportCollision = item.getEndViewportCollision();
@@ -3435,10 +3613,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         if (flipContentPadding) {
           nodeWidth = item.getContentWidth();
         }
-        contentPadding = contentPadding + (nodeWidth - padding);
+        if (isRTL && customRenderer) {
+          contentPadding = nodeWidth;
+        } else {
+          contentPadding = contentPadding + (nodeWidth - startPadding);
+        }
       } else {
         if (isRTL && !customRenderer) {
-          contentPadding = Math.max(contentPadding, nodeWidth - padding - content._w);
+          contentPadding = Math.max(padding.start, nodeWidth - startPadding - content._w);
         }
       }
 
@@ -3639,7 +3821,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._clearOpenPopupListeners();
         var keyboardUtils = this._component.getOptions()._keyboardUtils;
         if (this._component.activeInnerElemsNode) {
-          keyboardUtils.disableAllFocusable(this._component.activeInnerElemsNode._displayable.getElem(), true);
+          keyboardUtils.disableAllFocusable(this._component.activeInnerElemsNode._displayable.getElem());
           this._component.activeInnerElemsNode.hasActiveInnerElems = false;
           this._component.activeInnerElems = null;
           this._component.activeInnerElemsNode = null;
@@ -3685,7 +3867,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             return eventConsumed;
           }
           var keyboardUtils = this._component.Options._keyboardUtils;
-          keyboardUtils.disableAllFocusable(this._component.getTimeZoomCanvas().getElem(), true, true);
+          keyboardUtils.disableAllFocusable(this._component.getTimeZoomCanvas().getElem(), true);
       }
       eventConsumed = super.ProcessKeyboardEvent(event);
       return eventConsumed;
@@ -7727,6 +7909,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
                 item.setEndTime(props.endTime);
                 item.setStyle(props.style);
                 item.setData(props.data);
+                item.setBackground(props.background);
               }
               else
               {
@@ -7812,6 +7995,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       ret.desc = data['description'];
       ret.thumbnail = data['thumbnail'];
       ret.shortDesc = data['shortDesc'];
+      ret.background = data['background'];
 
       ret.data = data;
       ret.style = data['style'];

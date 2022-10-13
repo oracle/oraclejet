@@ -1,0 +1,23 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../dvt/themes/redwood/_oj-dvt.scss"; 
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+// ----- end dependencies ---------
+
+@import "_oj-timeline.cssvars.scss";
+
+// scoped cssvars override
+@import "_oj-timeline-ignore.scoped.cssvars.scss"; 
+
+// import classes defined in the base directory
+@import "../base/_oj-timeline.scss"; 
+
+  @include module-include-once("redwood.timeline") {
+  }

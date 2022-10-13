@@ -1,9 +1,9 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var HiddenAccessible = require('./HiddenAccessible-96a2f271.js');
+var HiddenAccessible = require('./HiddenAccessible-12dce52a.js');
 require('preact/jsx-runtime');
 require('identity-obj-proxy');
 

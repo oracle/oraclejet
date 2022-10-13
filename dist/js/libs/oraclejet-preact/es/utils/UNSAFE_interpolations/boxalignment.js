@@ -1,32 +1,32 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import './boxalignment.css';
-import { k as keys_1 } from '../../keys-cb973048.js';
+import { k as keys_1 } from '../../keys-77d2b8e6.js';
 import { sizeToCSS } from '../UNSAFE_size.js';
 import { coerceArray } from '../UNSAFE_arrayUtils.js';
-import '../../_curry1-8b0d63fc.js';
-import '../../_has-77a27fd6.js';
+import '../../_curry1-b6f34fc4.js';
+import '../../_has-f370c697.js';
 import '../UNSAFE_stringUtils.js';
 
 // align, and gap.
 
 const alignStyles = {
-  baseline: "b1hfcv8t",
-  center: "coc1cbu",
-  end: "e48xkrk",
-  start: "skrlc38",
-  inherit: "i13jv0tx",
-  initial: "izwuuu1",
-  stretch: "s12b86de"
+  baseline: "klvue0",
+  center: "_v1pufi",
+  end: "szsgpl",
+  start: "_x69i5n",
+  inherit: "_u6mp9r",
+  initial: "rrxsr6",
+  stretch: "_kkrwzj"
 };
 const justifyStyles = {
-  center: "cwbq0ib",
-  end: "ei13mle",
-  start: "s1bbko6s",
-  inherit: "ipgkr5n",
-  initial: "ihg9slo",
-  around: "a4gorz7",
-  between: "b14ouk2h",
-  evenly: "eolmhjh"
+  center: "ataoye",
+  end: "_awwr4",
+  start: "_xgdc22",
+  inherit: "_t1r35v",
+  initial: "byxkkh",
+  around: "_lk9m3",
+  between: "_3ui4p2",
+  evenly: "y2mpjt"
 };
 const boxAlignmentInterpolations = {
   align: ({

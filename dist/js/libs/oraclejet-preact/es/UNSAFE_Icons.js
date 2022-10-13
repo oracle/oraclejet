@@ -1,7 +1,7 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx } from 'preact/jsx-runtime';
 import { Icon } from './UNSAFE_Icon.js';
-import './tslib.es6-fc945e53.js';
+import './tslib.es6-deee4931.js';
 
 import './utils/UNSAFE_classNames.js';
 import './hooks/UNSAFE_useUser.js';

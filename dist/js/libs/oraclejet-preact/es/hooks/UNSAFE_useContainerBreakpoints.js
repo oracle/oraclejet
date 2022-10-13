@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { useState, useRef, useMemo, useCallback } from 'preact/hooks';
 import { defaultBreakpoints } from './UNSAFE_useBreakpoints.js';
 

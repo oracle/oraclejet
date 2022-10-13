@@ -357,6 +357,7 @@ export namespace ojDataGrid {
             column: K;
             row: K;
         };
+        metadata: any;
         mode: 'edit' | 'navigation';
         parentElement: Element;
         parentKey: K;
@@ -397,6 +398,7 @@ export namespace ojDataGrid {
         isLeaf: boolean;
         key: K;
         level: number;
+        metadata: any;
         parentElement: Element;
         parentKey: K;
         treeDepth: number;
@@ -413,6 +415,7 @@ export namespace ojDataGrid {
         datasource: DataProvider<K, D> | null;
         key: K;
         level: number;
+        metadata: any;
         parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -824,6 +827,7 @@ export namespace DataGridElement {
             column: K;
             row: K;
         };
+        metadata: any;
         mode: 'edit' | 'navigation';
         parentElement: Element;
         parentKey: K;

@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import { useRef, useCallback, useEffect, forwardRef } from 'preact/compat';
 import { Layer } from './UNSAFE_Layer.js';
@@ -45,7 +45,7 @@ const useModal = (props) => {
 };
 
 const styles$2 = {
-  base: "b2xv9nu"
+  base: "_rcy23c"
 };
 
 const ModalBackdrop = () => jsx("div", {
@@ -53,7 +53,7 @@ const ModalBackdrop = () => jsx("div", {
 });
 
 const styles$1 = {
-  base: "b96nxck"
+  base: "_euu00p"
 };
 const ModalContainer = forwardRef(({
   children
@@ -66,7 +66,7 @@ const ModalContainer = forwardRef(({
 ModalContainer.displayName = 'Forwarded<ModalContainer>';
 
 const styles = {
-  base: "bdv30a5"
+  base: "r70myy"
 };
 
 const ModalWrapper = ({

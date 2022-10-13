@@ -1,10 +1,16 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var hooks_UNSAFE_useFloating = require('../index-d49bf124.js');
+var hooks_UNSAFE_useFloating = require('../index-a5277960.js');
 require('preact/hooks');
+require('./UNSAFE_useUser.js');
+require('../UNSAFE_Environment.js');
+require('preact');
+require('preact/jsx-runtime');
+require('../UNSAFE_Layer.js');
+require('preact/compat');
 
 
 

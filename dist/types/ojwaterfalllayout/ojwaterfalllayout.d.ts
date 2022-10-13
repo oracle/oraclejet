@@ -1,4 +1,3 @@
-import { ComponentChildren } from 'preact';
 import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
@@ -154,7 +153,7 @@ export interface WaterfallLayoutElementSettablePropertiesLenient<Key, Data> exte
     [key: string]: any;
 }
 export interface WaterfallLayoutIntrinsicProps extends Partial<Readonly<WaterfallLayoutElementSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
-    children?: ComponentChildren;
+    children?: import('preact').ComponentChildren;
     ondataChanged?: (value: WaterfallLayoutElementEventMap<any, any>['dataChanged']) => void;
     onscrollPolicyChanged?: (value: WaterfallLayoutElementEventMap<any, any>['scrollPolicyChanged']) => void;
     onscrollPolicyOptionsChanged?: (value: WaterfallLayoutElementEventMap<any, any>['scrollPolicyOptionsChanged']) => void;

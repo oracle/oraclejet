@@ -1,6 +1,6 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
-import '../_curry1-8b0d63fc.js';
-import { _ as _curry2_1 } from '../_curry2-6a0eecef.js';
+/* @oracle/oraclejet-preact: 13.1.0 */
+import '../_curry1-b6f34fc4.js';
+import { _ as _curry2_1 } from '../_curry2-255e04d1.js';
 
 var _curry2 =
 

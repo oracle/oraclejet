@@ -14,6 +14,7 @@ declare type State = {
     opened?: boolean;
     id: string;
     viewportResolvedDisplayMode: ResolvedDisplayMode;
+    viewportResolvedDisplayModeVertical: ResolvedDisplayMode;
 };
 declare type Props = ObservedGlobalProps<'role'> & {
     children?: ComponentChildren;
@@ -62,6 +63,7 @@ export declare class DrawerPopup extends Component<ExtendGlobalProps<Props>, Sta
     componentWillUnmount(): void;
     private resizeHandler;
     private getViewportResolvedDisplayMode;
+    private getViewportResolvedDisplayModeVertical;
     handleComponentUpdate(prevState: Readonly<State>): void;
     private registerCloseWithSwipeListener;
     private getSwipeCloseDirection;
@@ -108,7 +110,7 @@ export interface DrawerPopupElementSettablePropertiesLenient extends Partial<Dra
     [key: string]: any;
 }
 export interface DrawerPopupIntrinsicProps extends Partial<Readonly<DrawerPopupElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
-    children?: ComponentChildren;
+    children?: import('preact').ComponentChildren;
     onojBeforeClose?: (value: DrawerPopupElementEventMap['ojBeforeClose']) => void;
     onautoDismissChanged?: (value: DrawerPopupElementEventMap['autoDismissChanged']) => void;
     oncloseGestureChanged?: (value: DrawerPopupElementEventMap['closeGestureChanged']) => void;

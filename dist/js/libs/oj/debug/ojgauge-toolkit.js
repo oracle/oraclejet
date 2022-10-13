@@ -814,6 +814,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
     }
 
     SetOptions(options) {
+      super.SetOptions(options);
       this.Options = options;
 
       if (dvt.Agent.isEnvironmentTest()) {

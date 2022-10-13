@@ -1,14 +1,14 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var tslib_es6 = require('./tslib.es6-5c843188.js');
+var tslib_es6 = require('./tslib.es6-e91f819d.js');
 var jsxRuntime = require('preact/jsx-runtime');
 require('./utils/UNSAFE_classNames.js');
 require('identity-obj-proxy');
 var hooks_UNSAFE_useTranslationBundle = require('./hooks/UNSAFE_useTranslationBundle.js');
-var classNames = require('./classNames-69178ebf.js');
+var classNames = require('./classNames-82bfab52.js');
 require('preact/hooks');
 require('./UNSAFE_Environment.js');
 require('preact');
@@ -120,12 +120,12 @@ const CircleInner = _a => {
 };
 
 const styles = {
-  base: "bn7wf4q",
-  indeterminateOuter: "iv2lv64",
-  indeterminateInner: "i1p1jgv8",
-  determinateInner: "d1d0ra29",
-  track: "tl8cvpa",
-  value: "v1oiv99s"
+  base: "_3lr0d6",
+  indeterminateOuter: "_d7hulw",
+  indeterminateInner: "_3fy22f",
+  determinateInner: "ilt9ry",
+  track: "_fgu73v",
+  value: "bab7ro"
 };
 
 function _getClipPath(percentage) {

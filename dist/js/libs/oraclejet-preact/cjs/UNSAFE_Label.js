@@ -1,32 +1,32 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var tslib_es6 = require('./tslib.es6-5c843188.js');
+var tslib_es6 = require('./tslib.es6-e91f819d.js');
 var jsxRuntime = require('preact/jsx-runtime');
 var hooks_UNSAFE_useFormFieldContext = require('./hooks/UNSAFE_useFormFieldContext.js');
 require('./utils/UNSAFE_classNames.js');
 require('identity-obj-proxy');
 var hooks_UNSAFE_useFormContext = require('./hooks/UNSAFE_useFormContext.js');
-var classNames = require('./classNames-69178ebf.js');
+var classNames = require('./classNames-82bfab52.js');
 require('preact');
 require('preact/hooks');
 
 const labelStyles = {
-  base: "bqpszk1",
-  startBase: "s8tyzhy",
-  topBase: "t1nf0aj6",
-  insideBase: "ibq10wn",
-  insideReadonlyInEnabledForm: "itgrc9d",
-  insideReadonlyNotInEnabledForm: "iurpzj3",
-  insideNonReadonly: "im4lvc5",
-  insideNonReadonlyHasValue: "i3diidy",
-  insideDisabled: "i1jkkk8p",
-  insideFocused: "i1fr54gj",
-  insideError: "ilnjrnk",
-  insideWarning: "i1p5m3qn",
-  noWrap: "n8alcy4"
+  base: "yz8etg",
+  startBase: "_q3agwh",
+  topBase: "_8l2kx4",
+  insideBase: "_1yjqj",
+  insideReadonlyInEnabledForm: "_yokbv",
+  insideReadonlyNotInEnabledForm: "c737yd",
+  insideNonReadonly: "v9odi8",
+  insideNonReadonlyHasValue: "_qzlzu",
+  insideDisabled: "_wmrmyn",
+  insideFocused: "_b1rcmh",
+  insideError: "_gumw1q",
+  insideWarning: "_h7yz0",
+  noWrap: "_g7qdqc"
 };
 
 const StyledLabel = _a => {

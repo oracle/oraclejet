@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { useContext } from 'preact/hooks';
 import { EnvironmentContext } from '../UNSAFE_Environment.js';
 import 'preact';

@@ -18,11 +18,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   /**
    * @private
    */
-  DataCollectionUtils._TAB_INDEX = 'tabIndex';
-
-  /**
-   * @private
-   */
   DataCollectionUtils._DATA_OJ_TABMOD = 'data-oj-tabmod';
 
   /**
@@ -69,16 +64,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   /**
    * Make all focusable elements within the specified element unfocusable
    * @param {Element} element
-   * @param {boolean=} skipVisibilityCheck
    * @param {boolean=} excludeActiveElement
    * @param {boolean=} includeReadonly
    * @return {Element[]} An array of the disabled elements
    * @private
    */
-  DataCollectionUtils.disableAllFocusableElements = function (element, skipVisibilityCheck,
-    excludeActiveElement, includeReadonly) {
-      return ojkeyboardfocusUtils.disableAllFocusableElements(element, skipVisibilityCheck, excludeActiveElement,
-                                         includeReadonly);
+  DataCollectionUtils.disableAllFocusableElements = function (element, excludeActiveElement,
+    includeReadonly) {
+      return ojkeyboardfocusUtils.disableAllFocusableElements(element, excludeActiveElement, includeReadonly);
   };
 
   /**
@@ -121,7 +114,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
       return false;
     } else if (element.hasAttribute(DataCollectionUtils._DATA_OJ_TABMOD)) {
       return true;
-    } else if (parseInt(element.getAttribute(DataCollectionUtils._TAB_INDEX), 10) >= 0) {
+    } else if (element.tabIndex >= 0) {
       return true;
     } else if (DataCollectionUtils._FOCUSABLE_ELEMENTS_TAG.indexOf(element.tagName.toLowerCase())
       > -1) {
@@ -539,7 +532,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
       return { key: itemKey, index: itemIndex };
     }
 
-    var returnKeys = [...initialKeys];
+    var returnKeys = initialKeys.slice();
     var eventKeys = [];
     addEventDetail.keys.forEach(function (key) {
       eventKeys.push(key);

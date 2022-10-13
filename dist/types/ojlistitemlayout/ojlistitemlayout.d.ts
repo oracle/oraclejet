@@ -40,7 +40,7 @@ export interface ListItemLayoutElementSettablePropertiesLenient extends Partial<
     [key: string]: any;
 }
 export interface ListItemLayoutIntrinsicProps extends Partial<Readonly<ListItemLayoutElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
-    children?: ComponentChildren;
+    children?: import('preact').ComponentChildren;
 }
 declare global {
     namespace preact.JSX {

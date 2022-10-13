@@ -36,11 +36,11 @@ module.exports = {
       // path mappings go here
       'knockout': path.resolve(__dirname, './web/js/libs/knockout/knockout-3.5.1.debug'),
       'jquery': path.resolve(__dirname, './web/js/libs/jquery/jquery-3.6.0'),
-      'jqueryui-amd': path.resolve(__dirname, './web/js/libs/jquery/jqueryui-amd-1.13.0'),
+      'jqueryui-amd': path.resolve(__dirname, './web/js/libs/jquery/jqueryui-amd-1.13.2'),
       'hammerjs': path.resolve(__dirname, './web/js/libs/hammer/hammer-2.0.8'),
       'ojdnd': path.resolve(__dirname, './web/js/libs/dnd-polyfill/dnd-polyfill-1.0.2'),
-      'ojs': path.resolve(__dirname, './web/js/libs/oj/13.0.0/debug'),
-      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/13.0.0/resources'),
+      'ojs': path.resolve(__dirname, './web/js/libs/oj/13.1.0/debug'),
+      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/13.1.0/resources'),
       '@oracle/oraclejet-preact': path.resolve(__dirname, './web/js/libs/oraclejet-preact/amd'),
       'signals': path.resolve(__dirname, './web/js/libs/js-signals/signals'),
       'touchr': path.resolve(__dirname, './web/js/libs/touchr/touchr'),
@@ -80,7 +80,7 @@ module.exports = {
           }
         },
         // Point this setting to the root folder for the associated JET distribution (could be a CDN). Used by the oj.Config.getResourceUri() call
-        baseResourceUrl: "./web/js/libs/oj/13.0.0"
+        baseResourceUrl: "./web/js/libs/oj/13.1.0"
       }
     )
 

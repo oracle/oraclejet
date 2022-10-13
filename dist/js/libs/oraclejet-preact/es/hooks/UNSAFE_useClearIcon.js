@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { useCallback, useEffect } from 'preact/hooks';
 import { useToggle } from './UNSAFE_useToggle.js';
 

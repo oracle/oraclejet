@@ -1,15 +1,15 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var tslib_es6 = require('./tslib.es6-5c843188.js');
+var tslib_es6 = require('./tslib.es6-e91f819d.js');
 var jsxRuntime = require('preact/jsx-runtime');
 require('./utils/UNSAFE_classNames.js');
 require('identity-obj-proxy');
 var hooks_UNSAFE_useUser = require('./hooks/UNSAFE_useUser.js');
 var hooks_UNSAFE_useTranslationBundle = require('./hooks/UNSAFE_useTranslationBundle.js');
-var classNames = require('./classNames-69178ebf.js');
+var classNames = require('./classNames-82bfab52.js');
 require('preact/hooks');
 require('./UNSAFE_Environment.js');
 require('preact');
@@ -126,12 +126,12 @@ const BarValue = _a => {
 };
 
 const styles = {
-  base: "b1ivnjsl",
-  value: "vv4ipiv",
-  indeterminate: "i16t7nhx",
-  standalone: "s1bvzqgk",
-  rtl: "r7hk5fg",
-  ltr: "luxx1rg"
+  base: "_f0ixjh",
+  value: "kywy72",
+  indeterminate: "_jlqptl",
+  standalone: "_ilu9sk",
+  rtl: "_2du5hf",
+  ltr: "_6ostrg"
 };
 
 exports.ProgressBar = ProgressBar;

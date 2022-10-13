@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { useRef, useEffect } from 'preact/hooks';
 import { coerceArray } from '../utils/UNSAFE_arrayUtils.js';
 
@@ -37,8 +37,8 @@ const useOutsideClick = ({ isDisabled: disabled = false, ref, handler }) => {
             doc.addEventListener('mousedown', onMouseDown, true);
             doc.addEventListener('mouseup', onMouseUp, true);
             return () => {
-                doc.removeEventListener('mousedown', onMouseDown);
-                doc.removeEventListener('mouseup', onMouseUp);
+                doc.removeEventListener('mousedown', onMouseDown, true);
+                doc.removeEventListener('mouseup', onMouseUp, true);
             };
         }
         return undefined;

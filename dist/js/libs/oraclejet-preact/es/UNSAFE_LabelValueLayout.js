@@ -1,4 +1,4 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 import { jsxs, jsx } from 'preact/jsx-runtime';
 import { classNames } from './utils/UNSAFE_classNames.js';
 import './UNSAFE_LabelValueLayout.css';
@@ -6,36 +6,36 @@ import { Flex } from './UNSAFE_Flex.js';
 import { useFormContext } from './hooks/UNSAFE_useFormContext.js';
 import { useFormFieldContext } from './hooks/UNSAFE_useFormFieldContext.js';
 import { sizeToCSS } from './utils/UNSAFE_size.js';
-import './tslib.es6-fc945e53.js';
+import './tslib.es6-deee4931.js';
 import './utils/UNSAFE_interpolations/dimensions.js';
 import './utils/UNSAFE_arrayUtils.js';
-import './_curry1-8b0d63fc.js';
+import './_curry1-b6f34fc4.js';
 import './utils/UNSAFE_stringUtils.js';
 import './utils/UNSAFE_mergeInterpolations.js';
-import './_curry2-6a0eecef.js';
-import './_has-77a27fd6.js';
+import './_curry2-255e04d1.js';
+import './_has-f370c697.js';
 import './utils/UNSAFE_interpolations/boxalignment.js';
-import './keys-cb973048.js';
+import './keys-77d2b8e6.js';
 import './utils/UNSAFE_interpolations/flexbox.js';
 import './utils/UNSAFE_interpolations/flexitem.js';
 import 'preact';
 import 'preact/hooks';
 
 const labelSlotStyles = {
-  base: "b3rhoif",
-  start: "s1ejed7k",
-  top: "t1hxzyqn",
-  topPureReadonly: "t1oxsith"
+  base: "_679b43",
+  start: "_dhalxg",
+  top: "aa00qt",
+  topPureReadonly: "zf108r"
 };
 const labelInnerStyles = {
   // base is labelEdge 'top'
-  base: "b6iz1xm",
-  start: "sjye8qc",
-  startNotPureReadonly: "s1ri2ukc",
+  base: "_w9jxr",
+  start: "l9bvr2",
+  startNotPureReadonly: "bwq2w7",
   // TODO: Use Text Component instead of CSS
-  noWrap: "n1b91k80"
+  noWrap: "_qu2y3"
 };
-const valueSlotStyles = "v3l5soi";
+const valueSlotStyles = "g03sh4";
 const LabelValueLayout = ({
   label,
   labelEdge,

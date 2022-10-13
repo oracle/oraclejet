@@ -1,0 +1,1 @@
+(function(factory){"use strict";if(typeof define==="function"&&define.amd){define(["jquery"],factory)}else if(typeof module==="object"&&module.exports){module.exports=factory(require("jquery"))}else{factory(jQuery)}})((function($){"use strict";$.ui=$.ui||{};return $.ui.version="1.13.2"}));

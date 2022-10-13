@@ -1,10 +1,10 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var hooks = require('preact/hooks');
-var tslib_es6 = require('../tslib.es6-5c843188.js');
+var tslib_es6 = require('../tslib.es6-e91f819d.js');
 
 /**
  * Converts shorthand translate props into transform string representation.

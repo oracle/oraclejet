@@ -2143,9 +2143,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     SetOptions(options) {
-      // Reset options cache
-      this.getOptionsCache().clearCache();
-
+      super.SetOptions(options);
       if (options) {
         // Combine the user options with the defaults and store
         this.Options = this.Defaults.calcOptions(options);

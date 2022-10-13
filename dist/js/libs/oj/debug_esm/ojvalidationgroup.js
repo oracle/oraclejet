@@ -321,6 +321,11 @@ function ojValidationGroup(context) {
     //  In that case this would immediately get called. It's ok since we will
     // get mutations when the components get upgraded, and they get the valid
     // property.
+    // In a JET 12 review it was pointed out that we now have
+    // _TRACK_CHILDREN = 'nearestCustomElement'; in the componentRegister
+    // and this will make it more predictable in non-knockout mode.
+    // We are keeping the busycontext since it is doing no harm and would take a lot of testing
+    // to ensure it isn't needed.
     var busyContext = Context.getContext(_ojDiv).getBusyContext();
 
     // Create a busy state on the element which is resolved after the valid state
@@ -924,6 +929,7 @@ var __oj_validation_group_metadata =
   "extension": {}
 };
   __oj_validation_group_metadata.extension._CONSTRUCTOR = ojValidationGroup;
+  __oj_validation_group_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
   Object.freeze(__oj_validation_group_metadata);
   oj.CustomElementBridge.register('oj-validation-group',
   { metadata: __oj_validation_group_metadata });

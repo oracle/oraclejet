@@ -66,6 +66,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             endStateToChangeTo: null,
             bottomStateToChangeTo: null,
             viewportResolvedDisplayMode: this.getViewportResolvedDisplayMode(),
+            viewportResolvedDisplayModeVertical: this.getViewportResolvedDisplayModeVertical(),
             lastlyOpenedDrawer: DrawerConstants.stringStart
         };
         this.handleKeyDown = (edge, event) => {
@@ -96,6 +97,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                 this.handleResize = false;
                 setTimeout(() => {
                     this.handleResize = true;
+                    const updatedState = {};
                     if (this.state.viewportResolvedDisplayMode !== this.getViewportResolvedDisplayMode()) {
                         const updatedState = {};
                         [DrawerConstants.stringStart, DrawerConstants.stringEnd].forEach((edge) => {
@@ -103,9 +105,16 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                                 updatedState[this.edgeToShouldChangeDisplayMode(edge)] = true;
                             }
                         });
-                        if (Object.keys(updatedState).length > 0) {
-                            this.setState(updatedState);
+                    }
+                    if (this.state.viewportResolvedDisplayModeVertical !==
+                        this.getViewportResolvedDisplayModeVertical()) {
+                        if (this.isDrawerOpened(DrawerConstants.stringBottom) &&
+                            this.state[this.edgeToDisplayName(DrawerConstants.stringBottom)] === 'auto') {
+                            updatedState[this.edgeToShouldChangeDisplayMode(DrawerConstants.stringBottom)] = true;
                         }
+                    }
+                    if (Object.keys(updatedState).length > 0) {
+                        this.setState(updatedState);
                     }
                 }, DrawerConstants.animationDuration + 50);
             }
@@ -123,23 +132,29 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             if (this.handleResize) {
                 const prevViewportResolvedDisplayMode = this.state.viewportResolvedDisplayMode;
                 const nextViewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
+                const prevViewportResolvedDisplayModeVertical = this.state.viewportResolvedDisplayModeVertical;
+                const nextViewportResolvedDisplayModeVertical = this.getViewportResolvedDisplayModeVertical();
                 this.setBottomOverlayDrawerWidth();
                 let atLeastOneOverlayDrawerNeedsToClose = false;
                 const updatedState = {};
-                if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode) {
+                if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode ||
+                    prevViewportResolvedDisplayModeVertical !== nextViewportResolvedDisplayModeVertical) {
                     this.lockResizeListener();
-                    [
-                        DrawerConstants.stringStart,
-                        DrawerConstants.stringEnd,
-                        DrawerConstants.stringBottom
-                    ].forEach((edge) => {
+                    [DrawerConstants.stringStart, DrawerConstants.stringEnd].forEach((edge) => {
                         if (this.isDrawerOpened(edge) && this.state[this.edgeToDisplayName(edge)] === 'auto') {
                             atLeastOneOverlayDrawerNeedsToClose = true;
                             updatedState[this.edgeToShouldChangeDisplayMode(edge)] = true;
                         }
                     });
+                    if (this.isDrawerOpened(DrawerConstants.stringBottom) &&
+                        this.state[this.edgeToDisplayName(DrawerConstants.stringBottom)] === 'auto') {
+                        atLeastOneOverlayDrawerNeedsToClose = true;
+                        updatedState[this.edgeToShouldChangeDisplayMode(DrawerConstants.stringBottom)] = true;
+                    }
                     if (atLeastOneOverlayDrawerNeedsToClose === false) {
                         updatedState.viewportResolvedDisplayMode = nextViewportResolvedDisplayMode;
+                        updatedState.viewportResolvedDisplayModeVertical =
+                            nextViewportResolvedDisplayModeVertical;
                     }
                 }
                 if (Object.keys(updatedState).length > 0) {
@@ -227,7 +242,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         const resolvedMode = this.getDrawerResolvedDisplayMode(edge);
         const isOverlay = resolvedMode === DrawerConstants.stringOverlay ||
             resolvedMode === DrawerConstants.stringFullOverlay;
-        const roleAttr = this.props.role || (isOverlay && 'dialog');
+        const roleAttr = this.props.role || (isOverlay ? 'dialog' : undefined);
         const tabIndexAttr = isOverlay ? -1 : undefined;
         if (this.isDrawerOpened(edge) ||
             this.wasDrawerOpenedInPrevState(edge) ||
@@ -309,13 +324,27 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
     getDrawerResolvedDisplayMode(edge) {
         const edgeDisplay = this.edgeToDisplayName(edge);
         if (this.state[edgeDisplay] === 'auto') {
+            if (edge === DrawerConstants.stringBottom) {
+                if (this.state.viewportResolvedDisplayModeVertical === DrawerConstants.stringFullOverlay ||
+                    this.state.viewportResolvedDisplayMode === DrawerConstants.stringFullOverlay) {
+                    return DrawerConstants.stringFullOverlay;
+                }
+                if (this.state.viewportResolvedDisplayModeVertical === DrawerConstants.stringOverlay ||
+                    this.state.viewportResolvedDisplayMode === DrawerConstants.stringOverlay) {
+                    return DrawerConstants.stringOverlay;
+                }
+                return DrawerConstants.stringReflow;
+            }
             return this.state.viewportResolvedDisplayMode;
         }
         if (this.state[edgeDisplay] === DrawerConstants.stringReflow) {
             return DrawerConstants.stringReflow;
         }
         if (this.state[edgeDisplay] === DrawerConstants.stringOverlay) {
-            return this.state.viewportResolvedDisplayMode === DrawerConstants.stringFullOverlay
+            const axisDisplayMode = edge === DrawerConstants.stringBottom
+                ? this.state.viewportResolvedDisplayModeVertical
+                : this.state.viewportResolvedDisplayMode;
+            return axisDisplayMode === DrawerConstants.stringFullOverlay
                 ? DrawerConstants.stringFullOverlay
                 : DrawerConstants.stringOverlay;
         }
@@ -328,6 +357,13 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         else if (viewportWidth < DrawerConstants.displayTypeChangeThreshold &&
             viewportWidth >= DrawerConstants.fullWidthDrawerChangeThreshold) {
             return DrawerConstants.stringOverlay;
+        }
+        return DrawerConstants.stringFullOverlay;
+    }
+    getViewportResolvedDisplayModeVertical() {
+        const viewportHeight = DrawerUtils.getViewportHeight();
+        if (viewportHeight >= DrawerConstants.fullHeightDrawerChangeThreshold) {
+            return DrawerConstants.stringReflow;
         }
         return DrawerConstants.stringFullOverlay;
     }
@@ -359,15 +395,10 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             autofocusFirstItem.focus({ preventScroll: true });
             return;
         }
-        const focusables = drawerRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), video');
+        const focusables = DrawerUtils.getFocusables(drawerRef.current);
         let elementToFocus = drawerRef.current;
         if (focusables.length) {
-            for (let i = 0; i < focusables.length; i++) {
-                if (focusables[i].disabled !== true) {
-                    elementToFocus = focusables[i];
-                    break;
-                }
-            }
+            elementToFocus = focusables[0];
         }
         elementToFocus.focus({ preventScroll: true });
     }
@@ -445,6 +476,8 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                     const updatedState = {};
                     updatedState[this.edgeToShouldChangeDisplayMode(edge)] = false;
                     updatedState.viewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
+                    updatedState.viewportResolvedDisplayModeVertical =
+                        this.getViewportResolvedDisplayModeVertical();
                     this.setState(updatedState);
                 }
                 else {
@@ -638,6 +671,8 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             const updatedState = {};
             updatedState[this.edgeToShouldChangeDisplayMode(edge)] = false;
             updatedState.viewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
+            updatedState.viewportResolvedDisplayModeVertical =
+                this.getViewportResolvedDisplayModeVertical();
             this.setState(updatedState);
         }
         else if (status === ZOrderUtils.STATUS.CLOSE && this.isDrawerOpened(edge)) {

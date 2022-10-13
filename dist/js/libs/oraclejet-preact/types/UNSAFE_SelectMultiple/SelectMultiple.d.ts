@@ -52,7 +52,7 @@ declare type Props<K extends string | number, D extends Record<string, any>> = P
     /**
      * Specifies the label.
      */
-    label?: string;
+    label: string;
     /**
      * Specifies where the label is positioned.
      */

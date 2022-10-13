@@ -1,17 +1,17 @@
-/* @oracle/oraclejet-preact: 13.0.0 */
+/* @oracle/oraclejet-preact: 13.1.0 */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
 require('identity-obj-proxy');
-var keys = require('../../keys-4bd017bf.js');
-require('../../_curry1-33165c71.js');
-require('../../_has-2cbf94e8.js');
+var keys = require('../../keys-0a611b24.js');
+require('../../_curry1-94f22a19.js');
+require('../../_has-556488e4.js');
 
 const textAlignStyles = {
-  start: "so5vivr",
-  end: "exraja",
-  right: "rnoefqf"
+  start: "_wibxf",
+  end: "cgdb3m",
+  right: "n4t3gp"
 };
 const textStyles = {
   textAlign: textAlignStyles

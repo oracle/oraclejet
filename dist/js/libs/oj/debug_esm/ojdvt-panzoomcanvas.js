@@ -1904,6 +1904,7 @@ PanZoomCanvas.DEFAULT_PADDING = 20;
  * @override
  */
 SetOptions(options) {
+  super.SetOptions(options);
   this.Options = this.Defaults ? this.Defaults.calcOptions(options) : options;
 }
 

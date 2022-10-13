@@ -1113,7 +1113,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
     }
     _disableAllTabbableElements(items) {
         items.forEach((item) => {
-            disableAllFocusableElements(item.element, true);
+            disableAllFocusableElements(item.element);
         });
     }
     _enterActionableMode() {
@@ -1128,7 +1128,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
     _exitActionableMode() {
         this.actionableMode = false;
         if (this.currentItem) {
-            disableAllFocusableElements(this.currentItem, true);
+            disableAllFocusableElements(this.currentItem);
             this._setFocus(this.currentItem, true);
         }
     }

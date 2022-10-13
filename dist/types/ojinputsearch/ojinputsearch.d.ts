@@ -1,4 +1,3 @@
-import { ComponentChildren } from 'preact';
 import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
@@ -200,7 +199,7 @@ export interface InputSearchElementSettablePropertiesLenient<Key, Data> extends 
 }
 export interface InputSearchIntrinsicProps extends Partial<Readonly<InputSearchElementSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     rawValue?: never;
-    children?: ComponentChildren;
+    children?: import('preact').ComponentChildren;
     onojValueAction?: (value: InputSearchElementEventMap<any, any>['ojValueAction']) => void;
     onplaceholderChanged?: (value: InputSearchElementEventMap<any, any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: InputSearchElementEventMap<any, any>['rawValueChanged']) => void;

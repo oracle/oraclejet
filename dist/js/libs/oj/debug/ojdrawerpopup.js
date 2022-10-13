@@ -36,7 +36,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             this.state = {
                 opened: this.props.opened,
                 id: ojvcomponent.getUniqueId(),
-                viewportResolvedDisplayMode: this.getViewportResolvedDisplayMode()
+                viewportResolvedDisplayMode: this.getViewportResolvedDisplayMode(),
+                viewportResolvedDisplayModeVertical: this.getViewportResolvedDisplayModeVertical()
             };
             this.rootRef = preact.createRef();
             this.isShiftKeyActive = false;
@@ -117,10 +118,19 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 });
             };
             this.resizeHandler = () => {
+                const updatedState = {};
                 const prevViewportResolvedDisplayMode = this.state.viewportResolvedDisplayMode;
                 const nextViewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
                 if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode) {
-                    this.setState({ viewportResolvedDisplayMode: nextViewportResolvedDisplayMode });
+                    updatedState['viewportResolvedDisplayMode'] = nextViewportResolvedDisplayMode;
+                }
+                const prevViewportResolvedDisplayModeVertical = this.state.viewportResolvedDisplayModeVertical;
+                const nextViewportResolvedDisplayModeVertical = this.getViewportResolvedDisplayModeVertical();
+                if (prevViewportResolvedDisplayModeVertical !== nextViewportResolvedDisplayModeVertical) {
+                    updatedState['viewportResolvedDisplayModeVertical'] = nextViewportResolvedDisplayModeVertical;
+                }
+                if (Object.keys(updatedState).length > 0) {
+                    this.setState(updatedState);
                 }
             };
             this.handleSwipeAction = () => {
@@ -247,12 +257,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 const focusables = ojdrawerutils.DrawerUtils.getFocusables(this.rootRef.current);
                 let elementToFocus = this.rootRef.current;
                 if (focusables.length) {
-                    for (let i = 0; i < focusables.length; i++) {
-                        if (focusables[i].disabled !== true) {
-                            elementToFocus = focusables[i];
-                            break;
-                        }
-                    }
+                    elementToFocus = focusables[0];
                 }
                 elementToFocus.focus({ preventScroll: true });
             }
@@ -310,9 +315,18 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         }
         getPopupStyleClasses(edge) {
             const customStyleClassMap = {};
-            if (this.getViewportResolvedDisplayMode() === ojdrawerutils.DrawerConstants.stringFullOverlay) {
-                customStyleClassMap[ojdrawerutils.DrawerConstants.styleDisplayMode(ojdrawerutils.DrawerConstants.stringFullOverlay)] =
-                    true;
+            if (edge === ojdrawerutils.DrawerConstants.stringBottom) {
+                if (this.getViewportResolvedDisplayModeVertical() === ojdrawerutils.DrawerConstants.stringFullOverlay ||
+                    this.getViewportResolvedDisplayMode() === ojdrawerutils.DrawerConstants.stringFullOverlay) {
+                    customStyleClassMap[ojdrawerutils.DrawerConstants.styleDisplayMode(ojdrawerutils.DrawerConstants.stringFullOverlay)] =
+                        true;
+                }
+            }
+            else {
+                if (this.getViewportResolvedDisplayMode() === ojdrawerutils.DrawerConstants.stringFullOverlay) {
+                    customStyleClassMap[ojdrawerutils.DrawerConstants.styleDisplayMode(ojdrawerutils.DrawerConstants.stringFullOverlay)] =
+                        true;
+                }
             }
             return ojdrawerutils.DrawerUtils.getStyleClassesMapAsString(Object.assign(customStyleClassMap, ojdrawerutils.DrawerUtils.getCommonStyleClasses(edge)));
         }
@@ -338,6 +352,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         getViewportResolvedDisplayMode() {
             const viewportWidth = ojdrawerutils.DrawerUtils.getViewportWidth();
             if (viewportWidth >= ojdrawerutils.DrawerConstants.fullWidthDrawerChangeThreshold) {
+                return ojdrawerutils.DrawerConstants.stringOverlay;
+            }
+            return ojdrawerutils.DrawerConstants.stringFullOverlay;
+        }
+        getViewportResolvedDisplayModeVertical() {
+            const viewportHeight = ojdrawerutils.DrawerUtils.getViewportHeight();
+            if (viewportHeight >= ojdrawerutils.DrawerConstants.fullHeightDrawerChangeThreshold) {
                 return ojdrawerutils.DrawerConstants.stringOverlay;
             }
             return ojdrawerutils.DrawerConstants.stringFullOverlay;

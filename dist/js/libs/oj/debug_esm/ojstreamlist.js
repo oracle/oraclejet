@@ -1139,7 +1139,7 @@ let StreamList = StreamList_1 = class StreamList extends Component {
         items.forEach((item) => {
             const busyContext = Context.getContext(item).getBusyContext();
             busyContext.whenReady().then(function () {
-                disableAllFocusableElements(item, true);
+                disableAllFocusableElements(item);
             });
         });
     }
@@ -1156,7 +1156,7 @@ let StreamList = StreamList_1 = class StreamList extends Component {
     _exitActionableMode(shouldFocus) {
         this.actionableMode = false;
         if (this.currentItem) {
-            disableAllFocusableElements(this.currentItem, true);
+            disableAllFocusableElements(this.currentItem);
             this._setFocus(this.currentItem, shouldFocus);
         }
     }

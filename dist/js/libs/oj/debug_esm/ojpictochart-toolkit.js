@@ -1431,7 +1431,7 @@ class PictoChart extends  BaseComponent {
       this.getCtx().removeSizingSvg();
     }
   }
-   
+
   /**
    * Calculates the preferred dimensions for this pictoChart.
    * @param {Number=} width The component width, if defined.
@@ -1564,6 +1564,8 @@ class PictoChart extends  BaseComponent {
    * @override
    */
   SetOptions(options) {
+
+    super.SetOptions(options);
     // DataProvider Support : Must be done before setting this.Options
     // if (options['data'])
     //   options['items'] = options['data'];

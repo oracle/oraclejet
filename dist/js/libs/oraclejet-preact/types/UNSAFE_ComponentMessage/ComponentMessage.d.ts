@@ -12,16 +12,20 @@ export declare type ComponentMessageItem = {
  */
 declare type Props = {
     /**
-     * The severity of the component message
-     */
-    severity?: ComponentMessageItem['severity'];
-    /**
      * The error detail text for the component message
      */
     detail?: ComponentMessageItem['detail'];
+    /**
+     * The label of the field which is showing this error
+     */
+    fieldLabel?: string;
+    /**
+     * The severity of the component message
+     */
+    severity?: ComponentMessageItem['severity'];
 };
 /**
  * The component that renders an individual message for inline component messaging.
  */
-export declare function ComponentMessage({ severity, detail }: Props): import("preact").JSX.Element;
+export declare function ComponentMessage({ detail, fieldLabel, severity }: Props): import("preact").JSX.Element;
 export {};
