@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -32,6 +32,7 @@ const ojMessage = {};
  *
  * @ojsignature {target: "Type", value:"class ojMessage extends JetElement<ojMessageSettableProperties>"}
  *
+ * @ojoracleicon 'oj-ux-ico-message'
  * @ojuxspecs ['messages']
  *
  * @classdesc
@@ -565,26 +566,26 @@ const ojMessage = {};
 // Slots
 // //////
 
-  /**
-   * <p>The <code class="prettyprint">detail</code> slot is for the message's detail area.
-   * The <code class="prettyprint">&lt;oj-message></code> element accepts DOM nodes as children
-   * with the detail slot. This slot is useful to add links or buttons to the detail area. The
-   * default template will just display the text value of 'message.detail' property for any message.
-   *
-   *
-   * @ojslot detail
-   * @ojshortdesc The detail slot accepts DOM nodes as children. It is useful for adding links or buttons to the message's detail area.
-   * @ojmaxitems 1
-   * @memberof oj.ojMessage
-   * @since 6.2.0
-   *
-   * @example <caption>Initialize the message with detail content:</caption>
-   * &lt;oj-message>
-   *   &lt;div slot="detail">Message detail.
-   *     &lt;a href="#">Click here for more info...&lt;/a>
-   *   &lt;/div>
-   * &lt;/oj-message>
-   */
+/**
+ * <p>The <code class="prettyprint">detail</code> slot is for the message's detail area.
+ * The <code class="prettyprint">&lt;oj-message></code> element accepts DOM nodes as children
+ * with the detail slot. This slot is useful to add links or buttons to the detail area. The
+ * default template will just display the text value of 'message.detail' property for any message.
+ *
+ *
+ * @ojslot detail
+ * @ojshortdesc The detail slot accepts DOM nodes as children. It is useful for adding links or buttons to the message's detail area.
+ * @ojmaxitems 1
+ * @memberof oj.ojMessage
+ * @since 6.2.0
+ *
+ * @example <caption>Initialize the message with detail content:</caption>
+ * &lt;oj-message>
+ *   &lt;div slot="detail">Message detail.
+ *     &lt;a href="#">Click here for more info...&lt;/a>
+ *   &lt;/div>
+ * &lt;/oj-message>
+ */
 
 // Events
 // ///////
@@ -787,7 +788,6 @@ const ojMessage = {};
  *  message.
  */
 
-
 var _MESSAGE_VIEW =
   '<div :id="[[containerId]]" :class="[[computedMessageContainerSelectors]]" on-keydown="[[handleKeydown]]">' +
   '  <div class="oj-message-header">' +
@@ -859,8 +859,10 @@ function MessageViewModel(context) {
   this.disconnected = this._disconnected.bind(this);
   this.connected = this._connected.bind(this);
   this.propertyChanged = this._propertyChanged.bind(this);
-  this.messageCreatedTime = new Date().toLocaleTimeString([],
-                                      { hour: '2-digit', minute: '2-digit' });
+  this.messageCreatedTime = new Date().toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
   this.handleKeydown = this._handleKeydown.bind(this);
 
   // Store a reference to the slotCounts which will be later used to determine if message detail is present
@@ -910,10 +912,10 @@ MessageViewModel.prototype._propertyChanged = function (detail) {
       if (subproperty) {
         // set a subproperty via attribute or setProperty("message.xxxx", value)
         var path = [topPropName, subPropName].join('.');
-        return (path === subproperty.path);
+        return path === subproperty.path;
       }
 
-        // set the entire message object
+      // set the entire message object
       var previousValue = _detail.previousValue[subPropName];
       var value = _detail.value[subPropName];
       return value !== previousValue;
@@ -942,8 +944,10 @@ MessageViewModel.prototype._propertyChanged = function (detail) {
     this.computedMessageContainerSelectors(this._computeMessageContainerSelectors());
   }
 
-  if (subPropertyChanged(detail, 'message', 'category') ||
-      subPropertyChanged(detail, 'displayOptions', 'category')) {
+  if (
+    subPropertyChanged(detail, 'message', 'category') ||
+    subPropertyChanged(detail, 'displayOptions', 'category')
+  ) {
     this.computedCategory(this._computeCategory());
     this.computedMessageContainerSelectors(this._computeMessageContainerSelectors());
   }
@@ -990,9 +994,7 @@ MessageViewModel.prototype._registerSwipeHandler = function () {
   if (isTouchSupported() && this._computeCloseAffordance() === 'defaults') {
     var messageContainerElement = $(document.getElementById(this._messagesContainerId));
     var options = {
-      recognizers: [
-        [Swipe, { direction: DIRECTION_ALL }]
-      ],
+      recognizers: [[Swipe, { direction: DIRECTION_ALL }]],
       cssProps: {
         // By default Hammer disables user selection when registering swipe events
         // this is for improving the user interaction in touch based desktops. But, we
@@ -1002,9 +1004,10 @@ MessageViewModel.prototype._registerSwipeHandler = function () {
       }
     };
 
-    var swipeDirections = getReadingDirection() === 'rtl' ?
-      'swipeleft swipeup' : 'swiperight swipeup';
-    this._hammerSwipe = messageContainerElement.ojHammer(options).on(swipeDirections,
+    var swipeDirections =
+      getReadingDirection() === 'rtl' ? 'swipeleft swipeup' : 'swiperight swipeup';
+    this._hammerSwipe = messageContainerElement.ojHammer(options).on(
+      swipeDirections,
       function (event) {
         event.preventDefault();
         // JET-33259 - research the ability to select text in message component while on a touch enabled desktop
@@ -1014,14 +1017,15 @@ MessageViewModel.prototype._registerSwipeHandler = function () {
         if (event.gesture && event.gesture.pointerType !== 'mouse') {
           this._closeMessage();
         }
-      }.bind(this));
+      }.bind(this)
+    );
   }
 };
 
 MessageViewModel.prototype._unregisterSwipeHandler = function () {
   if (isTouchSupported() && this._hammerSwipe) {
-    var swipeDirections = getReadingDirection() === 'rtl' ?
-      'swipeleft swipeup' : 'swiperight swipeup';
+    var swipeDirections =
+      getReadingDirection() === 'rtl' ? 'swipeleft swipeup' : 'swiperight swipeup';
     this._hammerSwipe.off(swipeDirections);
     delete this._hammerSwipe;
   }
@@ -1030,8 +1034,11 @@ MessageViewModel.prototype._unregisterSwipeHandler = function () {
 MessageViewModel.prototype._scheduleAutoClose = function () {
   // Schedule auto-close if applicable
   if (this._computeAutoTimeout() > -1) {
-    this._autoCloseTimer = window.setTimeout(this._closeMessage.bind(this), // @HTMLUpdateOK
-                                             this._computeAutoTimeout());
+    // prettier-ignore
+    this._autoCloseTimer = window.setTimeout( // @HTMLUpdateOK
+      this._closeMessage.bind(this),
+      this._computeAutoTimeout()
+    );
   }
 };
 
@@ -1044,7 +1051,7 @@ MessageViewModel.prototype._clearAutoClose = function () {
 
 MessageViewModel.prototype._isMessageOpen = function () {
   var messageContainerElement = document.getElementById(this._messagesContainerId);
-  return (!!(messageContainerElement && $(messageContainerElement).is(':visible')));
+  return !!(messageContainerElement && $(messageContainerElement).is(':visible'));
 };
 
 MessageViewModel.prototype._closeMessage = function (event) {
@@ -1074,8 +1081,8 @@ MessageViewModel.prototype._closeMessage = function (event) {
     var action = 'close';
     var options = this._getAnimateOptionDefaults(action);
     // eslint-disable-next-line no-undef
-    startAnimation(messageContainerElement, action, options, this._composite)
-      .then(function () {
+    startAnimation(messageContainerElement, action, options, this._composite).then(
+      function () {
         // We will just hide the message container, but not discard it, the ojClose listener
         // could discard it if needed.
         $(messageContainerElement).hide();
@@ -1095,7 +1102,8 @@ MessageViewModel.prototype._closeMessage = function (event) {
         }
 
         this._composite.dispatchEvent(closeEvent);
-      }.bind(this));
+      }.bind(this)
+    );
   }
 };
 
@@ -1109,7 +1117,7 @@ MessageViewModel.prototype._computeSeverity = function () {
   // oj.Message has 'fatal' severity which is no different from 'error', oj-message does not support
   //  'fatal' for this reason. Map 'fatal' to 'error' just to be compatible with cases where the
   //  message stream could come from existing oj.Message sources.
-  return (message.severity === 'fatal') ? 'error' : message.severity;
+  return message.severity === 'fatal' ? 'error' : message.severity;
 };
 
 MessageViewModel.prototype._formatTimestamp = function () {
@@ -1118,8 +1126,9 @@ MessageViewModel.prototype._formatTimestamp = function () {
   if (!oj.StringUtils.isEmptyOrUndefined(message.timestamp)) {
     // loading library could be long running op. Set a busy state.
     var busyContext = Context.getContext(this._composite).getBusyContext();
-    var options =
-      { description: 'oj-message is busy loading required libraries and processing timestamp' };
+    var options = {
+      description: 'oj-message is busy loading required libraries and processing timestamp'
+    };
     var resolve = busyContext.addBusyState(options);
 
     // Our NLS rules restrict that the numerals in the date string should be in latin digits
@@ -1132,20 +1141,22 @@ MessageViewModel.prototype._formatTimestamp = function () {
     //  timestamp is defined.
     var converterPromise = this._getConverterPromise(message.timestamp);
 
-    converterPromise.then(function (converter) {
-      try {
-        var formattedTimestamp = converter.format(message.timestamp);
+    converterPromise.then(
+      function (converter) {
+        try {
+          var formattedTimestamp = converter.format(message.timestamp);
 
-        // fine to update the observable directly with resolved value, it will also be updated
-        //  in propertyChanged() if timestamp was to change
-        this.formattedTimestamp(formattedTimestamp);
-      } catch (e) {
-        // expect oj.ConverterError if supplied value is not valid
-        info(`JET oj-message: Invalid value for message.timestamp: ${message.timestamp}`);
-      } finally {
-        resolve();
-      }
-    }.bind(this));
+          // fine to update the observable directly with resolved value, it will also be updated
+          //  in propertyChanged() if timestamp was to change
+          this.formattedTimestamp(formattedTimestamp);
+        } catch (e) {
+          // expect oj.ConverterError if supplied value is not valid
+          info(`JET oj-message: Invalid value for message.timestamp: ${message.timestamp}`);
+        } finally {
+          resolve();
+        }
+      }.bind(this)
+    );
   }
 
   return undefined;
@@ -1153,20 +1164,24 @@ MessageViewModel.prototype._formatTimestamp = function () {
 
 MessageViewModel.prototype._getConverterPromise = function (timestamp) {
   const dateTimeConverterLoadPromise = import('ojs/ojconverter-datetime');
-  return dateTimeConverterLoadPromise.then(function (__DateTimeConverter) {
-    // use default format as in UX specs
-    var pattern = this._isDateToday(timestamp) ? 'hh:mm a' : 'MM/dd/yy, hh:mm a';
-    return new __DateTimeConverter.IntlDateTimeConverter({ pattern: pattern });
-  }.bind(this));
+  return dateTimeConverterLoadPromise.then(
+    function (__DateTimeConverter) {
+      // use default format as in UX specs
+      var pattern = this._isDateToday(timestamp) ? 'hh:mm a' : 'MM/dd/yy, hh:mm a';
+      return new __DateTimeConverter.IntlDateTimeConverter({ pattern: pattern });
+    }.bind(this)
+  );
 };
 
 MessageViewModel.prototype._isDateToday = function (isoDate) {
   var todayDate = new Date();
   var suppliedDate = new Date(isoDate);
 
-  return todayDate.getUTCFullYear() === suppliedDate.getUTCFullYear() &&
-         todayDate.getUTCMonth() === suppliedDate.getUTCMonth() &&
-         todayDate.getUTCDate() === suppliedDate.getUTCDate();
+  return (
+    todayDate.getUTCFullYear() === suppliedDate.getUTCFullYear() &&
+    todayDate.getUTCMonth() === suppliedDate.getUTCMonth() &&
+    todayDate.getUTCDate() === suppliedDate.getUTCDate()
+  );
 };
 
 // Computes the category value for the bound variable. If category property is not specified, a
@@ -1188,8 +1203,8 @@ MessageViewModel.prototype._computeCategory = function () {
   var severity = this._computeSeverity();
   var translations = this._properties.translations;
 
-  var translatedCategory = (translations && translations.categories) ?
-                            translations.categories[severity] : undefined;
+  var translatedCategory =
+    translations && translations.categories ? translations.categories[severity] : undefined;
 
   if (oj.StringUtils.isEmptyOrUndefined(translatedCategory)) {
     // Ideally the custom element bridge should have set the translations sub-properties in this
@@ -1198,8 +1213,7 @@ MessageViewModel.prototype._computeCategory = function () {
     //  2. Localized value obtained from the bundle
     // However custom element bridge is not doing #2 (discussing with architects), fine to fetch
     //  from bundle in lieu of #2.
-    translatedCategory = getComponentTranslations('oj-ojMessage')
-                          .categories[severity];
+    translatedCategory = getComponentTranslations('oj-ojMessage').categories[severity];
   }
 
   return translatedCategory;
@@ -1364,8 +1378,8 @@ MessageViewModel.prototype._openMessage = function () {
       var options = this._getAnimateOptionDefaults(action);
 
       // eslint-disable-next-line no-undef
-      startAnimation(messageContainerElement, action, options, this._composite)
-        .then(function () {
+      startAnimation(messageContainerElement, action, options, this._composite).then(
+        function () {
           eventParams = {
             bubbles: true,
             cancelable: false,
@@ -1376,7 +1390,8 @@ MessageViewModel.prototype._openMessage = function () {
 
           this._prepareMessageAtOpen();
           this._composite.dispatchEvent(new CustomEvent('ojOpen', eventParams));
-        }.bind(this));
+        }.bind(this)
+      );
     }
   }
 };
@@ -1385,7 +1400,7 @@ MessageViewModel.prototype._isInlinedChildOfOjMessages = function () {
   var messagesAncestor = this._findMessagesAncestor();
   // If messages property is specified on oj-messages, the inlined oj-message children in its
   //  default slot are excluded.
-  return (messagesAncestor && !messagesAncestor.getProperty('messages'));
+  return messagesAncestor && !messagesAncestor.getProperty('messages');
 };
 
 MessageViewModel.prototype._findMessagesAncestor = function () {
@@ -1394,7 +1409,7 @@ MessageViewModel.prototype._findMessagesAncestor = function () {
   for (; ancestor; ancestor = ancestor.parentElement) {
     if (ancestor.nodeName.startsWith('OJ-')) {
       // stop at first ancestor with JET custom tag.
-      return (ancestor.nodeName === 'OJ-MESSAGES') ? ancestor : null;
+      return ancestor.nodeName === 'OJ-MESSAGES' ? ancestor : null;
     }
   }
 
@@ -1418,7 +1433,7 @@ MessageViewModel.prototype._isDetailShown = function () {
   // When both the category and summary is specified, then the summary will be shown in the detail area.
   // So, this case should be treated as a message with detail, otherwise we do not have anything in the
   // message detail area.
-  return (this._computeCategory() !== undefined && this._computeSummary() !== undefined);
+  return this._computeCategory() !== undefined && this._computeSummary() !== undefined;
 };
 
 // Takes care of few additional stuff on the already opened (stamped case)/to-be-opened
@@ -1449,7 +1464,7 @@ MessageViewModel.prototype._handleKeydown = function (event) {
   }
 
   // keyCode is deprecated and it's not supported on some browsers.
-  if ((event.keyCode === $.ui.keyCode.ESCAPE) || event.key === 'Escape') {
+  if (event.keyCode === $.ui.keyCode.ESCAPE || event.key === 'Escape') {
     event.preventDefault();
     this._closeMessage(event);
   }
@@ -1469,18 +1484,24 @@ MessageViewModel.prototype._playSound = function (sound) {
     var promise = audio.play();
 
     if (promise !== undefined) {
-      promise.then(function () {
-        // All is well with autoplay
-      }).catch(function (error) {
-        // Autoplay failed. Possible causes 1. Browser prevents auto-play unless certain rules are
-        // met (which varies by browsers), 2. The audio file resource does not exist or cannot be
-        // loaded.
-        info(`JET oj-message: Failed to play specified sound: '${sound}'. Error: ${error}`);
-      });
+      promise
+        .then(function () {
+          // All is well with autoplay
+        })
+        .catch(function (error) {
+          // Autoplay failed. Possible causes 1. Browser prevents auto-play unless certain rules are
+          // met (which varies by browsers), 2. The audio file resource does not exist or cannot be
+          // loaded.
+          info(
+            `JET oj-message: Failed to play specified sound: '${sound}'. Error: ${error}`
+          );
+        });
     }
   } else if (window.audioContext === undefined) {
     // User agent does not support web audio API
-    info('JET oj-message: Failed to play default sound as the browser does not support Web Audio API');
+    info(
+      'JET oj-message: Failed to play default sound as the browser does not support Web Audio API'
+    );
   } else {
     // Default gain value will be 100% of speaker volume which is fine
     var gainNode = window.audioContext.createGain();
@@ -1565,7 +1586,7 @@ MessageViewModel._DEFAULTS = {
   autoTimeout: 4000,
   animation: {
     open: { effect: 'fadeIn', duration: '300ms' },
-    close: { effect: 'fadeOut', duration: '300ms' },
+    close: { effect: 'fadeOut', duration: '300ms' }
   },
   message: {
     severity: 'none',
@@ -1672,18 +1693,21 @@ OperationMediator.prototype._init = function () {
   // Add a busy state for the pending operation.  The busy state resolver will
   // be invoked when the resolved queue is delivered (operation completes).
   var busyContext = Context.getContext(this._element).getBusyContext();
-  var options = { description: this._getBusyStateDescription.bind(this, this._element,
-    this._operation) };
+  var options = {
+    description: this._getBusyStateDescription.bind(this, this._element, this._operation)
+  };
   var resolve = busyContext.addBusyState(options);
-  this.addPromiseExecutor(function (callback) {
-    // Resolve busyness next-tick.  The ojOpen/ojClose events bubble
-    // up to oj-messages All event processing will be at the parent level.
-    // Keep the busy state until the parent has had a chance to act on
-    // the open/close event.
-    window.setImmediate(function () {
-      callback();
-    });
-  }.bind(this, resolve));
+  this.addPromiseExecutor(
+    function (callback) {
+      // Resolve busyness next-tick.  The ojOpen/ojClose events bubble
+      // up to oj-messages All event processing will be at the parent level.
+      // Keep the busy state until the parent has had a chance to act on
+      // the open/close event.
+      window.setImmediate(function () {
+        callback();
+      });
+    }.bind(this, resolve)
+  );
 };
 
 /**
@@ -1788,15 +1812,26 @@ OperationMediator.prototype.isOperationPending = function (operation, callback) 
   var pendingOperation = this.getPendingOperation();
   if (operation === pendingOperation) {
     // Same request is already pending. Silently fail.
-    info(["JET oj-message: invoked a '", operation,
-      "' operation while pending animation of the same type of operation. ",
-      'The second request will be ignored.'].join(''));
+    info(
+      [
+        "JET oj-message: invoked a '",
+        operation,
+        "' operation while pending animation of the same type of operation. ",
+        'The second request will be ignored.'
+      ].join('')
+    );
     isPending = true;
   } else if (pendingOperation !== 'none') {
-    info(["JET oj-message: invoked a '", operation,
-      "' operation while pending animation of a '", pendingOperation,
-      "' operation. The second request will be invoked after the pending ",
-      'operation completes.'].join(''));
+    info(
+      [
+        "JET oj-message: invoked a '",
+        operation,
+        "' operation while pending animation of a '",
+        pendingOperation,
+        "' operation. The second request will be invoked after the pending ",
+        'operation completes.'
+      ].join('')
+    );
 
     // Queue the operation after the pending operation has completed.
     this.addPromiseExecutor(callback);
@@ -1917,11 +1952,10 @@ var __oj_message_metadata =
 };
 /* global __oj_message_metadata */
 // eslint-disable-next-line no-undef
-register('oj-message',
-  {
-    view: _MESSAGE_VIEW,
-    viewModel: MessageViewModel,
-    metadata: __oj_message_metadata
-  });
+register('oj-message', {
+  view: _MESSAGE_VIEW,
+  viewModel: MessageViewModel,
+  metadata: __oj_message_metadata
+});
 
 export { ojMessage };

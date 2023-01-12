@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -64,14 +64,14 @@ var __oj_masonry_layout_metadata =
     __oj_masonry_layout_metadata.extension._WIDGET_NAME = 'ojMasonryLayout';
     __oj_masonry_layout_metadata.extension._TRACK_CHILDREN = 'immediate';
     oj.CustomElementBridge.register('oj-masonry-layout', { metadata: __oj_masonry_layout_metadata });
-  }());
+  })();
 
   /*
-  ** Important:
-  ** - This file is designed to be shared verbatim among the ADFui products.
-  ** - Do not add framework-specific dependencies in this file (it must be self-contained).
-  ** - Do not change this file without testing it in other ADFui products (ADF Faces, JET, etc.).
-  */
+   ** Important:
+   ** - This file is designed to be shared verbatim among the ADFui products.
+   ** - Do not add framework-specific dependencies in this file (it must be self-contained).
+   ** - Do not change this file without testing it in other ADFui products (ADF Faces, JET, etc.).
+   */
 
   /**
    * Constructor.
@@ -104,13 +104,7 @@ var __oj_masonry_layout_metadata =
    * @ignore
    * @ojtsignore
    */
-  function MasonryLayoutCommon(
-    elem,
-    rtl,
-    automationEnabled,
-    selectors,
-    styles,
-    callbackInfo) {
+  function MasonryLayoutCommon(elem, rtl, automationEnabled, selectors, styles, callbackInfo) {
     // this agent initialization concept copied from adf.shared.impl.animationUtils.transition()
     var mlcClass = MasonryLayoutCommon;
     if (mlcClass._agentTypeAndVersion == null) {
@@ -323,8 +317,10 @@ var __oj_masonry_layout_metadata =
       // don't queue another layout if we're already doing layout and in a phase
       // before the SHOW phase
       var mlcClass = MasonryLayoutCommon;
-      if (this._layoutPhase !== mlcClass._PHASE_HIDE &&
-          this._layoutPhase !== mlcClass._PHASE_LAYOUT) {
+      if (
+        this._layoutPhase !== mlcClass._PHASE_HIDE &&
+        this._layoutPhase !== mlcClass._PHASE_LAYOUT
+      ) {
         this._queueRelayout();
       } else {
         // if not queueing a relayout, need to explicitly set this flag to false
@@ -364,9 +360,7 @@ var __oj_masonry_layout_metadata =
    */
   MasonryLayoutCommon.prototype.resizeNotify = function () {
     // don't respond to resize events when we're already doing layout
-    if (!this._resizingInfolet &&
-        !this._hidingInfolets &&
-        !this._showingInfolets) {
+    if (!this._resizingInfolet && !this._hidingInfolets && !this._showingInfolets) {
       // FIX : add busy state before animating a layout change
       this._busyStateResolveFunc = this._addBusyStateFunc('performing layout (resizeNotify)');
 
@@ -409,10 +403,14 @@ var __oj_masonry_layout_metadata =
         var agentVersion = mlcClass._agentTypeAndVersion[1];
 
         // check whether the agent supports CSS transitions
-        this._animationEnabled = mlcClass._isMinimumAgentMet(agentType, agentVersion,
-          ['gecko', 16,
-            'trident', 6,
-            'webkit', 533.1]);
+        this._animationEnabled = mlcClass._isMinimumAgentMet(agentType, agentVersion, [
+          'gecko',
+          16,
+          'trident',
+          6,
+          'webkit',
+          533.1
+        ]);
       }
       this._cachedAnimationEnabled = true;
     }
@@ -429,8 +427,9 @@ var __oj_masonry_layout_metadata =
     // FIX : when drag and drop reordering, the layoutPhase doesn't
     // get set because we're only running layout itself, so also check whether
     // we're moving tiles
-    return (this._layoutPhase != null ||
-            (this._arMovedInfolets != null && this._arMovedInfolets.length > 0));
+    return (
+      this._layoutPhase != null || (this._arMovedInfolets != null && this._arMovedInfolets.length > 0)
+    );
   };
 
   /**
@@ -469,8 +468,10 @@ var __oj_masonry_layout_metadata =
       this._showTilesTimeout = null;
 
       this._showTiles();
-    } else if (this._layoutPhase === mlcClass._PHASE_LAYOUT ||
-               (this._arMovedInfolets != null && this._arMovedInfolets.length > 0)) {
+    } else if (
+      this._layoutPhase === mlcClass._PHASE_LAYOUT ||
+      (this._arMovedInfolets != null && this._arMovedInfolets.length > 0)
+    ) {
       // FIX : when drag and drop reordering, the layoutPhase doesn't
       // get set because we're only running layout itself, so also check whether
       // we're moving tiles
@@ -493,10 +494,12 @@ var __oj_masonry_layout_metadata =
   MasonryLayoutCommon._getElemSize = function (elem) {
     var mlcClass = MasonryLayoutCommon;
     var computedStyle = mlcClass._getComputedStyle(elem);
-    var extraWidth = mlcClass._getCSSLengthAsInt(computedStyle.marginLeft) +
-                     mlcClass._getCSSLengthAsInt(computedStyle.marginRight);
-    var extraHeight = mlcClass._getCSSLengthAsInt(computedStyle.marginTop) +
-                      mlcClass._getCSSLengthAsInt(computedStyle.marginBottom);
+    var extraWidth =
+      mlcClass._getCSSLengthAsInt(computedStyle.marginLeft) +
+      mlcClass._getCSSLengthAsInt(computedStyle.marginRight);
+    var extraHeight =
+      mlcClass._getCSSLengthAsInt(computedStyle.marginTop) +
+      mlcClass._getCSSLengthAsInt(computedStyle.marginBottom);
     return { w: elem.offsetWidth + extraWidth, h: elem.offsetHeight + extraHeight };
   };
 
@@ -520,7 +523,8 @@ var __oj_masonry_layout_metadata =
       borderLeftWidth: mlcClass._getCSSLengthAsInt(computedStyle.borderLeftWidth),
       borderRightWidth: mlcClass._getCSSLengthAsInt(computedStyle.borderRightWidth),
       borderTopWidth: mlcClass._getCSSLengthAsInt(computedStyle.borderTopWidth),
-      borderBottomWidth: mlcClass._getCSSLengthAsInt(computedStyle.borderBottomWidth) };
+      borderBottomWidth: mlcClass._getCSSLengthAsInt(computedStyle.borderBottomWidth)
+    };
   };
 
   /**
@@ -553,7 +557,7 @@ var __oj_masonry_layout_metadata =
    */
   MasonryLayoutCommon._getCSSLengthAsInt = function (cssLength) {
     // this function copied from AdfAgent.getCSSLengthAsInt
-    if ((cssLength.length) > 0 && (cssLength !== 'auto')) {
+    if (cssLength.length > 0 && cssLength !== 'auto') {
       var intLength = parseInt(cssLength, 10);
 
       if (isNaN(intLength)) {
@@ -596,12 +600,15 @@ var __oj_masonry_layout_metadata =
    * @private
    */
   MasonryLayoutCommon._isMinimumAgentMet = function (
-    actualAgentType, actualAgentVersion, agentRequirements
+    actualAgentType,
+    actualAgentVersion,
+    agentRequirements
   ) {
     // This function was copied from adf.shared.impl.animationUtils
 
     var argCount = agentRequirements.length;
-    if (argCount % 2 === 0) { // even number
+    if (argCount % 2 === 0) {
+      // even number
       // Loop through each requirement pair to see if we match one
       for (var i = 0; i <= argCount - 2; i += 2) {
         var requirementType = agentRequirements[i];
@@ -804,7 +811,7 @@ var __oj_masonry_layout_metadata =
       this._arMovedInfolets = newMovedInfolets;
     }
 
-    var ret = (newMovedInfolets != null && newMovedInfolets.length > 0);
+    var ret = newMovedInfolets != null && newMovedInfolets.length > 0;
 
     if (!this.isAnimationEnabled() && !calledHandleTransitionEnd) {
       this._handleTransitionEnd(null);
@@ -877,8 +884,12 @@ var __oj_masonry_layout_metadata =
         // make sure we have at least 1 column to work with
         // FIX : width available for layout is the offsetWidth minus
         // padding and borders
-        var effectiveWidth = elem.offsetWidth - insets.paddingLeft - insets.paddingRight -
-                             insets.borderLeftWidth - insets.borderRightWidth;
+        var effectiveWidth =
+          elem.offsetWidth -
+          insets.paddingLeft -
+          insets.paddingRight -
+          insets.borderLeftWidth -
+          insets.borderRightWidth;
         this._cols = Math.max(Math.floor(effectiveWidth / cellSize.w), 1);
         this._initOccupancyMap(this._cols, this._rows);
         // FIX : initialize maxColSpan to define width of layout based
@@ -941,16 +952,16 @@ var __oj_masonry_layout_metadata =
 
       if (style) {
         // FIX : define width based on the maxColSpan
-        var width = (maxColSpan * cellSize.w);
-        var height = (this._rows * cellSize.h);
+        var width = maxColSpan * cellSize.w;
+        var height = this._rows * cellSize.h;
 
         // get the current sizeDiv width and height
-        var currWidth = (style.width ?
-                         MasonryLayoutCommon._getCSSLengthAsInt(style.width.toString()) :
-                         0);
-        var currHeight = (style.height ?
-                          MasonryLayoutCommon._getCSSLengthAsInt(style.height.toString()) :
-                          0);
+        var currWidth = style.width
+          ? MasonryLayoutCommon._getCSSLengthAsInt(style.width.toString())
+          : 0;
+        var currHeight = style.height
+          ? MasonryLayoutCommon._getCSSLengthAsInt(style.height.toString())
+          : 0;
         if (currWidth > width || currHeight > height) {
           // temporarily store the new width/height of the sizeDiv
           // this dimensions will be applied only after the layout transition is complete,
@@ -980,9 +991,11 @@ var __oj_masonry_layout_metadata =
         // and it really doesn't make much difference to the user whether they're animated because
         // they're so small
         // FIX : in RTL, position tiles using "right" instead of "left"
-        if ((rtl && (parseInt(newPosition.right, 10) !== parseInt(oldPosition.right, 10))) ||
-            (!rtl && (parseInt(newPosition.left, 10) !== parseInt(oldPosition.left, 10))) ||
-            (parseInt(newPosition.top, 10) !== parseInt(oldPosition.top, 10))) {
+        if (
+          (rtl && parseInt(newPosition.right, 10) !== parseInt(oldPosition.right, 10)) ||
+          (!rtl && parseInt(newPosition.left, 10) !== parseInt(oldPosition.left, 10)) ||
+          parseInt(newPosition.top, 10) !== parseInt(oldPosition.top, 10)
+        ) {
           arMovedInfolets.push(child);
           if (this._layoutTransition) {
             if (mlcClass._arrayIndexOf(this._arInfoletsToResize, child) < 0) {
@@ -1153,7 +1166,12 @@ var __oj_masonry_layout_metadata =
    * @private
    */
   MasonryLayoutCommon.prototype._calcPosition = function (
-    child, col, row, childSpan, cellSize, insets
+    child,
+    col,
+    row,
+    childSpan,
+    cellSize,
+    insets
   ) {
     var colSpan = childSpan.colSpan;
     var rowSpan = childSpan.rowSpan;
@@ -1165,14 +1183,14 @@ var __oj_masonry_layout_metadata =
     }
     // FIX : take padding into account
     var style = {};
-    var newTop = insets.paddingTop + (row * cellSize.h);
+    var newTop = insets.paddingTop + row * cellSize.h;
     style.top = newTop + 'px';
     // FIX : in RTL, position tiles using "right" instead of "left"
     if (this._rtl) {
-      var newRight = insets.paddingRight + (col * cellSize.w);
+      var newRight = insets.paddingRight + col * cellSize.w;
       style.right = newRight + 'px';
     } else {
-      var newLeft = insets.paddingLeft + (col * cellSize.w);
+      var newLeft = insets.paddingLeft + col * cellSize.w;
       style.left = newLeft + 'px';
     }
     return style;
@@ -1611,6 +1629,8 @@ var __oj_masonry_layout_metadata =
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 2
    *
+   * @ojoracleicon 'oj-ux-ico-masonry-layout'
+   *
    * @classdesc
    * <h3 id="masonryLayoutOverview-section">
    *   JET MasonryLayout
@@ -1828,7 +1848,8 @@ var __oj_masonry_layout_metadata =
     var _OJ_HELPER_HIDDEN = 'oj-helper-hidden';
     var _DATA_OJ_COMMAND = 'data-oj-command';
 
-    var _OJ_MASONRYLAYOUT_TILE_TRANSITION_SHOW_FROM_CLASS = 'oj-masonrylayout-tile-transition-show-from';
+    var _OJ_MASONRYLAYOUT_TILE_TRANSITION_SHOW_FROM_CLASS =
+      'oj-masonrylayout-tile-transition-show-from';
 
     // log warning message when "disabled" property set
     var _WARNING_DISABLED_OPTION = "JET MasonryLayout: 'disabled' property not supported";
@@ -1927,7 +1948,6 @@ var __oj_masonry_layout_metadata =
         colSpan: MasonryLayoutCommon._getCSSLengthAsInt(columnIndex),
         rowSpan: MasonryLayoutCommon._getCSSLengthAsInt(rowIndex)
       };
-
 
       return span;
     }
@@ -2042,2532 +2062,2571 @@ var __oj_masonry_layout_metadata =
      */
     // --------------------------------------------------- oj.ojmasonrylayout Styling End -----------------------------------------------------------
 
-    oj.__registerWidget('oj.ojMasonryLayout', $.oj.baseComponent,
-      {
-        defaultElement: '<div>',
-        widgetEventPrefix: 'oj',
+    oj.__registerWidget('oj.ojMasonryLayout', $.oj.baseComponent, {
+      defaultElement: '<div>',
+      widgetEventPrefix: 'oj',
 
-        options:
-        {
-          /**
-           * Specify the selector of the descendant DOM element in a <code class="prettyprint">oj-masonry-layout</code>
-           * child that can be used to reorder the child by drag-and-drop.
-           *
-           * <p>This attribute value is <code class="prettyprint">null</code> by default,
-           * meaning that <code class="prettyprint">oj-masonry-layout</code> children
-           * cannot be reordered.  If each child that can be reordered has an element
-           * with style class <code class="prettyprint">'my-reorder-handle'</code>,
-           * then the <code class="prettyprint">reorder-handle</code> attribute would be specified as
-           * <code class="prettyprint">'.my-reorder-handle'</code>.
-           *
-           * <p>When specifying a <code class="prettyprint">reorder-handle</code>,
-           * the application should also specify a context menu with actions to cut
-           * and paste tiles as an accessible alternative to drag-and-drop reordering.
-           * <p>To specify a context menu, see the documentation of <a href="oj.ojMenu.html">oj-menu</a>.</p>
-           *
-           * @expose
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @type {?string}
-           * @default null
-           * @ojshortdesc Specifies the selector of the child DOM element that can be used to reorder the child.
-           *
-           * @example <caption>Initialize the masonryLayout with the
-           * <code class="prettyprint">reorder-handle</code> attribute specified:</caption>
-           * &lt;oj-masonry-layout reorder-handle='.my-reorder-handle'>
-           *   &lt;div id='child1'>
-           *     &lt;div class='my-reorder-handle'/>
-           *   &lt;/div>
-           *   &lt;div id='child2'>
-           *     &lt;div class='my-reorder-handle'/>
-           *   &lt;/div>
-           *   &lt;!-- additional child elements... -->
-           * &lt;/oj-masonry-layout>
-           *
-           * @example <caption>Get or set the <code class="prettyprint">reorderHandle</code>
-           * property after initialization:</caption>
-           * // getter
-           * var contentParent = myMasonryLayout.reorderHandle;
-           *
-           * // setter
-           * myMasonryLayout.reorderHandle = '.my-reorder-handle';
-           */
-          reorderHandle: null,
-
-          /**
-           * MasonryLayout inherits the <code class="prettyprint">disabled</code>
-           * attribute from its superclass, but does not support it in order to avoid
-           * tight coupling between a MasonryLayout and its contents.  Setting this
-           * attribute on MasonryLayout has no effect.
-           *
-           * <p><b>WARNING:</b> Applications should not depend on this behavior
-           * because we reserve the right to change it in the future in order to
-           * support <code class="prettyprint">disabled</code> and propagate it to
-           * child elements of MasonryLayout.
-           *
-           * @member
-           * @name disabled
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @type {boolean}
-           * @default false
-           * @ignore
-           */
-          // disabled attribute declared in superclass, but we still want the above API doc
-
-          // event callbacks
-          /**
-           * Triggered when a default animation is about to start on the element.
-           *
-           * <p>The default animation can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>,
-           * followed by a call to <code class="prettyprint">event.detail.endCallback()</code>. <code class="prettyprint">event.detail.endCallback()</code>
-           * should be called immediately after <code class="prettyprint">event.preventDefault()</code> if the application merely
-           * wants to cancel animation, or it should be called when the custom animation ends if the application is invoking another animation function.
-           * Failure to call <code class="prettyprint">event.detail.endCallback()</code> may prevent the element from working properly.</p>
-           *
-           * <p>For more information on customizing animations, see the documentation of
-           * <a href="AnimationUtils.html">AnimationUtils</a>.</p>
-           *
-           * <caption>The default animations are controlled via the theme (SCSS) :</caption>
-           * <pre class="prettyprint"><code>
-           * $masonryLayoutInsertAnimation: ((effect: "zoomIn", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out"), "fadeIn") !default;
-           * $masonryLayoutRemoveAnimation: ((effect: "zoomOut", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out"), "fadeOut") !default;
-           * $masonryLayoutMoveAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('top', 'left', 'right')) !default;
-           * $masonryLayoutResizeAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
-           * $masonryLayoutReorderAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDurationFast, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
-           * </code></pre>
-           * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @ojcancelable
-           * @ojshortdesc Event triggered when the default animation of a particular action is about to start. See the Help documentation for more information.
-           * @property {string} action The action that triggers the animation.<br><br>
-           *            Supported values are:
-           *                    <ul>
-           *                      <li>"insert" - when a tile is inserted</li>
-           *                      <li>"move" - when a tile is moved</li>
-           *                      <li>"remove" - when a tile is removed</li>
-           *                      <li>"resize" - when a tile is resized</li>
-           *                      <li>"reorder" - when a tile is reordered</li>
-           *                    </ul>
-           *                    <br>Note that some animation effects may not look appropriate for a
-           *                    given action.
-           * @property {Element} element The element being animated.
-           * @property {function():void} endCallback If the event listener calls
-           *            event.preventDefault to cancel the default animation, it must call the
-           *            endCallback function after it finishes its own animation handling and any
-           *            custom animation has ended.
-           *
-           * @example <caption>Add a listener for the <code class="prettyprint">ojAnimateStart</code> event
-           *          to override the default "insert" animation with a custom animation:</caption>
-           *   myMasonryLayout.addEventListener("ojAnimateStart", function( event )
-           *   {
-           *     if (!$(event.target).is("oj-masonry-layout"))
-           *       return;
-           *     var ui = event.detail;
-           *     // Change the insert animation
-           *     if (ui.action == "insert") {
-           *       event.preventDefault();
-           *       // Invoke new animation and call event.detail.endCallback when it ends
-           *       oj.AnimationUtils.fadeIn(ui.element).then(ui.endCallback);
-           *     }
-           *   });
-           *
-           * @example <caption>Add a listener for the <code class="prettyprint">ojAnimateStart</code> event
-           *          to prevent the default "remove" animation:</caption>
-           *   myMasonryLayout.addEventListener("ojAnimateStart", function( event )
-           *   {
-           *     if (!$(event.target).is("oj-masonry-layout"))
-           *       return;
-           *     var ui = event.detail;
-           *     // Prevent the remove animation
-           *     if (ui.action == "remove") {
-           *       event.preventDefault();
-           *       ui.endCallback();
-           *     }
-           *   });
-           */
-          animateStart: null,
-
-          /**
-           * Triggered when a default animation has ended.
-           * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @ojshortdesc Event triggered when the default animation of a particular action has ended.
-           * @property {string} action The action that triggered the animation.</br></br>
-           *            Supported values are:
-           *                    <ul>
-           *                      <li>"insert" - when a tile is inserted</li>
-           *                      <li>"move" - when a tile is moved</li>
-           *                      <li>"remove" - when a tile is removed</li>
-           *                      <li>"resize" - when a tile is resized</li>
-           *                      <li>"reorder" - when a tile is reordered</li>
-           *                    </ul>
-           * @property {Element} element The element being animated.
-           */
-          animateEnd: null,
-
-          /**
-           * Triggered immediately before a tile is inserted.
-           * This event can be cancelled by calling
-           * <code class="prettyprint">event.preventDefault()</code>.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @ojcancelable
-           * @ojshortdesc Event triggered before a tile is inserted.
-           * @property {Element} tile The tile that is about to be inserted.
-           * @property {number} index The 0-based index into the set of rendered
-           *                                       <code class="prettyprint">oj-masonry-layout</code> children where
-           *                                       the tile will be inserted.
-           */
-          beforeInsert: null,
-
-          /**
-           * Triggered immediately after a tile is inserted.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @ojshortdesc Event triggered after a tile is inserted.
-           * @property {Element} tile  The tile that was inserted.
-           * @property {number} index The 0-based index into the set of rendered
-           *                                       <code class="prettyprint">oj-masonry-layout</code> children where
-           *                                       the tile was inserted.
-           */
-          insert: null,
-
-          /**
-           * Triggered immediately before a tile is removed.
-           * This event can be cancelled by calling
-           * <code class="prettyprint">event.preventDefault()</code>.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @ojcancelable
-           * @ojshortdesc Event triggered before a tile is removed.
-           * @property {Element} tile  The tile that will be removed.
-           */
-          beforeRemove: null,
-
-          /**
-           * Triggered immediately after a tile is removed.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @ojshortdesc Event triggered after a tile is removed.
-           * @property {Element} tile  The tile that was removed.
-           */
-          remove: null,
-
-          /**
-           * Triggered immediately before a tile is resized.
-           * This event can be cancelled by calling
-           * <code class="prettyprint">event.preventDefault()</code>.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @ojcancelable
-           * @ojshortdesc Event triggered before a tile is resized.
-           * @property {Element} tile  The tile that will be resized.
-           * @property {string} previousSizeStyleClass The previous size style
-           *                                           class applied to the tile.
-           * @property {string} sizeStyleClass The new size style class that will
-           *                                   be applied to the tile.
-           */
-          beforeResize: null,
-
-          /**
-           * Triggered immediately after a tile is resized.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @ojshortdesc Event triggered after a tile is resized.
-           * @property {Element} tile  The tile that was resized.
-           * @property {string} previousSizeStyleClass The previous size style
-           *                                           class applied to the tile.
-           * @property {string} sizeStyleClass The new size style class applied
-           *                                   to the tile.
-           */
-          resize: null,
-
-          /**
-           * Triggered immediately before a tile is reordered.
-           * This event can be cancelled by calling
-           * <code class="prettyprint">event.preventDefault()</code>.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @ojcancelable
-           * @ojshortdesc Event triggered before a tile is reordered.
-           * @property {Element} tile  The tile that will be reordered.
-           * @property {number} fromIndex The 0-based index into the set of rendered
-           *                                           <code class="prettyprint">oj-masonry-layout</code> children from
-           *                                           which the tile will be reordered.
-           */
-          beforeReorder: null,
-
-          /**
-           * Triggered immediately after a tile is reordered.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @ojshortdesc Event triggered after a tile is reordered.
-           * @property {Element} tile  The tile that was reordered.
-           * @property {number} fromIndex The 0-based index into the set of rendered
-           *                                           <code class="prettyprint">oj-masonry-layout</code> children from
-           *                                           which the tile was reordered.
-           * @property {number} toIndex   The 0-based index into the set of rendered
-           *                                           <code class="prettyprint">oj-masonry-layout</code> children to
-           *                                            which the tile was reordered.
-           */
-          reorder: null
-
-          /**
-           * Triggered when the masonryLayout is created.
-           *
-           * @event
-           * @name create
-           * @memberof oj.ojMasonryLayout
-           * @instance
-           * @ignore
-           */
-          // create event declared in superclass, but we still want the above API doc
-        },
-
+      options: {
         /**
-         * After _ComponentCreate and _AfterCreate,
-         * the widget should be 100% set up. this._super should be called first.
-         * @return {void}
-         * @override
-         * @protected
-         * @instance
-         * @memberof oj.ojMasonryLayout
-         */
-        _ComponentCreate: function () { // Override of protected base class method.
-          // call superclass first
-          this._super();
-
-          var elem = this.element;
-          elem.addClass('oj-masonrylayout oj-component');
-
-          // log warning message when "disabled" property set
-          var options = this.options;
-          if (options.disabled) {
-            Logger.warn(_WARNING_DISABLED_OPTION);
-          }
-
-          this.reorderHandleEventNamespace = this.eventNamespace + 'ReorderHandle';
-
-          this._menu = {};
-          this._menu.usermenu = false;
-          this._menu.$container = false;
-          this._menu.$elemCut = false;
-          this._menu.$elemPasteBefore = false;
-          this._menu.$elemPasteAfter = false;
-
-          this._initMenu();
-          this._applyMenu();
-
-          this._setup(true);
-        },
-
-        // This method currently runs at create, init, and refresh time (since refresh() is called by _init()).
-        /**
-         * Refreshes the visual state of the masonryLayout. JET elements require a
-         * <code class="prettyprint">refresh()</code> after the DOM is
-         * programmatically changed underneath the element.
+         * Specify the selector of the descendant DOM element in a <code class="prettyprint">oj-masonry-layout</code>
+         * child that can be used to reorder the child by drag-and-drop.
          *
-         * <p>This method does not accept any arguments.
-         * @return {void}
+         * <p>This attribute value is <code class="prettyprint">null</code> by default,
+         * meaning that <code class="prettyprint">oj-masonry-layout</code> children
+         * cannot be reordered.  If each child that can be reordered has an element
+         * with style class <code class="prettyprint">'my-reorder-handle'</code>,
+         * then the <code class="prettyprint">reorder-handle</code> attribute would be specified as
+         * <code class="prettyprint">'.my-reorder-handle'</code>.
+         *
+         * <p>When specifying a <code class="prettyprint">reorder-handle</code>,
+         * the application should also specify a context menu with actions to cut
+         * and paste tiles as an accessible alternative to drag-and-drop reordering.
+         * <p>To specify a context menu, see the documentation of <a href="oj.ojMenu.html">oj-menu</a>.</p>
          *
          * @expose
          * @memberof oj.ojMasonryLayout
          * @instance
-         * @ojshortdesc Refreshes the visual state of the masonryLayout.
+         * @type {?string}
+         * @default null
+         * @ojshortdesc Specifies the selector of the child DOM element that can be used to reorder the child.
          *
-         * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-         * myMasonryLayout.refresh();
+         * @example <caption>Initialize the masonryLayout with the
+         * <code class="prettyprint">reorder-handle</code> attribute specified:</caption>
+         * &lt;oj-masonry-layout reorder-handle='.my-reorder-handle'>
+         *   &lt;div id='child1'>
+         *     &lt;div class='my-reorder-handle'/>
+         *   &lt;/div>
+         *   &lt;div id='child2'>
+         *     &lt;div class='my-reorder-handle'/>
+         *   &lt;/div>
+         *   &lt;!-- additional child elements... -->
+         * &lt;/oj-masonry-layout>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">reorderHandle</code>
+         * property after initialization:</caption>
+         * // getter
+         * var contentParent = myMasonryLayout.reorderHandle;
+         *
+         * // setter
+         * myMasonryLayout.reorderHandle = '.my-reorder-handle';
          */
-        refresh: function () { // Override of public base class method.
-          this._super();
-
-          // if RTL has changed, just destroy and recreate the MasonryLayoutCommon
-          var bRTL = (this._GetReadingDirection() === 'rtl');
-          var bRecreate = (bRTL !== this._bRTL);
-          if (bRecreate) {
-            this._destroyMLCommon();
-          }
-          this._setup(bRecreate);
-        },
+        reorderHandle: null,
 
         /**
-         * Notifies the component that its subtree has been made visible
-         * programmatically after the component has been created.
-         * @return {void}
+         * MasonryLayout inherits the <code class="prettyprint">disabled</code>
+         * attribute from its superclass, but does not support it in order to avoid
+         * tight coupling between a MasonryLayout and its contents.  Setting this
+         * attribute on MasonryLayout has no effect.
+         *
+         * <p><b>WARNING:</b> Applications should not depend on this behavior
+         * because we reserve the right to change it in the future in order to
+         * support <code class="prettyprint">disabled</code> and propagate it to
+         * child elements of MasonryLayout.
+         *
+         * @member
+         * @name disabled
          * @memberof oj.ojMasonryLayout
          * @instance
-         * @protected
-         * @override
+         * @type {boolean}
+         * @default false
+         * @ignore
          */
-        _NotifyShown: function () {
-          this._super();
-          this._setupAsNeeded();
-        },
+        // disabled attribute declared in superclass, but we still want the above API doc
+
+        // event callbacks
+        /**
+         * Triggered when a default animation is about to start on the element.
+         *
+         * <p>The default animation can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>,
+         * followed by a call to <code class="prettyprint">event.detail.endCallback()</code>. <code class="prettyprint">event.detail.endCallback()</code>
+         * should be called immediately after <code class="prettyprint">event.preventDefault()</code> if the application merely
+         * wants to cancel animation, or it should be called when the custom animation ends if the application is invoking another animation function.
+         * Failure to call <code class="prettyprint">event.detail.endCallback()</code> may prevent the element from working properly.</p>
+         *
+         * <p>For more information on customizing animations, see the documentation of
+         * <a href="AnimationUtils.html">AnimationUtils</a>.</p>
+         *
+         * <caption>The default animations are controlled via the theme (SCSS) :</caption>
+         * <pre class="prettyprint"><code>
+         * $masonryLayoutInsertAnimation: ((effect: "zoomIn", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out"), "fadeIn") !default;
+         * $masonryLayoutRemoveAnimation: ((effect: "zoomOut", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out"), "fadeOut") !default;
+         * $masonryLayoutMoveAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('top', 'left', 'right')) !default;
+         * $masonryLayoutResizeAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
+         * $masonryLayoutReorderAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDurationFast, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
+         * </code></pre>
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojMasonryLayout
+         * @instance
+         * @ojcancelable
+         * @ojshortdesc Event triggered when the default animation of a particular action is about to start. See the Help documentation for more information.
+         * @property {string} action The action that triggers the animation.<br><br>
+         *            Supported values are:
+         *                    <ul>
+         *                      <li>"insert" - when a tile is inserted</li>
+         *                      <li>"move" - when a tile is moved</li>
+         *                      <li>"remove" - when a tile is removed</li>
+         *                      <li>"resize" - when a tile is resized</li>
+         *                      <li>"reorder" - when a tile is reordered</li>
+         *                    </ul>
+         *                    <br>Note that some animation effects may not look appropriate for a
+         *                    given action.
+         * @property {Element} element The element being animated.
+         * @property {function():void} endCallback If the event listener calls
+         *            event.preventDefault to cancel the default animation, it must call the
+         *            endCallback function after it finishes its own animation handling and any
+         *            custom animation has ended.
+         *
+         * @example <caption>Add a listener for the <code class="prettyprint">ojAnimateStart</code> event
+         *          to override the default "insert" animation with a custom animation:</caption>
+         *   myMasonryLayout.addEventListener("ojAnimateStart", function( event )
+         *   {
+         *     if (!$(event.target).is("oj-masonry-layout"))
+         *       return;
+         *     var ui = event.detail;
+         *     // Change the insert animation
+         *     if (ui.action == "insert") {
+         *       event.preventDefault();
+         *       // Invoke new animation and call event.detail.endCallback when it ends
+         *       oj.AnimationUtils.fadeIn(ui.element).then(ui.endCallback);
+         *     }
+         *   });
+         *
+         * @example <caption>Add a listener for the <code class="prettyprint">ojAnimateStart</code> event
+         *          to prevent the default "remove" animation:</caption>
+         *   myMasonryLayout.addEventListener("ojAnimateStart", function( event )
+         *   {
+         *     if (!$(event.target).is("oj-masonry-layout"))
+         *       return;
+         *     var ui = event.detail;
+         *     // Prevent the remove animation
+         *     if (ui.action == "remove") {
+         *       event.preventDefault();
+         *       ui.endCallback();
+         *     }
+         *   });
+         */
+        animateStart: null,
 
         /**
-         * Notifies the component that its subtree has been connected to the document
-         * programmatically after the component has been created.
-         * @return {void}
+         * Triggered when a default animation has ended.
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
+         *
+         * @expose
+         * @event
          * @memberof oj.ojMasonryLayout
          * @instance
-         * @protected
-         * @override
+         * @ojshortdesc Event triggered when the default animation of a particular action has ended.
+         * @property {string} action The action that triggered the animation.</br></br>
+         *            Supported values are:
+         *                    <ul>
+         *                      <li>"insert" - when a tile is inserted</li>
+         *                      <li>"move" - when a tile is moved</li>
+         *                      <li>"remove" - when a tile is removed</li>
+         *                      <li>"resize" - when a tile is resized</li>
+         *                      <li>"reorder" - when a tile is reordered</li>
+         *                    </ul>
+         * @property {Element} element The element being animated.
          */
-        _NotifyAttached: function () {
-          this._super();
-          this._setupAsNeeded();
-        },
+        animateEnd: null,
 
         /**
-         * Notifies the component that its context menu is opening.
-         * @return {void}
+         * Triggered immediately before a tile is inserted.
+         * This event can be cancelled by calling
+         * <code class="prettyprint">event.preventDefault()</code>.
+         *
+         * @expose
+         * @event
          * @memberof oj.ojMasonryLayout
          * @instance
-         * @protected
-         * @override
+         * @ojcancelable
+         * @ojshortdesc Event triggered before a tile is inserted.
+         * @property {Element} tile The tile that is about to be inserted.
+         * @property {number} index The 0-based index into the set of rendered
+         *                                       <code class="prettyprint">oj-masonry-layout</code> children where
+         *                                       the tile will be inserted.
          */
-        _NotifyContextMenuGesture: function (menu, event, eventType) {
-          // prepare the context menu here instead of in a context menu "beforeOpen" event
-          this._prepareContextMenuBeforeOpen(event);
-
-          // FIX : only allow reordering if context menu was
-          // launched from reorder handle, so only show context menu if it
-          // contains items that are not hidden (i.e. not cut/paste)
-          var $menuContainer = this._menu.$container;
-          var $menuItems = $menuContainer.children().not('.oj-helper-hidden');
-          if ($menuItems && $menuItems.length > 0) {
-            this._OpenContextMenu(event, eventType,
-                                  { launcher: $(event.target).closest(':tabbable') });
-          }
-        },
+        beforeInsert: null,
 
         /**
-         * Common setup code for _NotifyShown and _NotifyAttached.
-         * @return {void}
+         * Triggered immediately after a tile is inserted.
+         *
+         * @expose
+         * @event
          * @memberof oj.ojMasonryLayout
          * @instance
-         * @private
+         * @ojshortdesc Event triggered after a tile is inserted.
+         * @property {Element} tile  The tile that was inserted.
+         * @property {number} index The 0-based index into the set of rendered
+         *                                       <code class="prettyprint">oj-masonry-layout</code> children where
+         *                                       the tile was inserted.
          */
-        _setupAsNeeded: function () {
-          // perform a deferred layout
+        insert: null,
+
+        /**
+         * Triggered immediately before a tile is removed.
+         * This event can be cancelled by calling
+         * <code class="prettyprint">event.preventDefault()</code>.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojMasonryLayout
+         * @instance
+         * @ojcancelable
+         * @ojshortdesc Event triggered before a tile is removed.
+         * @property {Element} tile  The tile that will be removed.
+         */
+        beforeRemove: null,
+
+        /**
+         * Triggered immediately after a tile is removed.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojMasonryLayout
+         * @instance
+         * @ojshortdesc Event triggered after a tile is removed.
+         * @property {Element} tile  The tile that was removed.
+         */
+        remove: null,
+
+        /**
+         * Triggered immediately before a tile is resized.
+         * This event can be cancelled by calling
+         * <code class="prettyprint">event.preventDefault()</code>.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojMasonryLayout
+         * @instance
+         * @ojcancelable
+         * @ojshortdesc Event triggered before a tile is resized.
+         * @property {Element} tile  The tile that will be resized.
+         * @property {string} previousSizeStyleClass The previous size style
+         *                                           class applied to the tile.
+         * @property {string} sizeStyleClass The new size style class that will
+         *                                   be applied to the tile.
+         */
+        beforeResize: null,
+
+        /**
+         * Triggered immediately after a tile is resized.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojMasonryLayout
+         * @instance
+         * @ojshortdesc Event triggered after a tile is resized.
+         * @property {Element} tile  The tile that was resized.
+         * @property {string} previousSizeStyleClass The previous size style
+         *                                           class applied to the tile.
+         * @property {string} sizeStyleClass The new size style class applied
+         *                                   to the tile.
+         */
+        resize: null,
+
+        /**
+         * Triggered immediately before a tile is reordered.
+         * This event can be cancelled by calling
+         * <code class="prettyprint">event.preventDefault()</code>.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojMasonryLayout
+         * @instance
+         * @ojcancelable
+         * @ojshortdesc Event triggered before a tile is reordered.
+         * @property {Element} tile  The tile that will be reordered.
+         * @property {number} fromIndex The 0-based index into the set of rendered
+         *                                           <code class="prettyprint">oj-masonry-layout</code> children from
+         *                                           which the tile will be reordered.
+         */
+        beforeReorder: null,
+
+        /**
+         * Triggered immediately after a tile is reordered.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojMasonryLayout
+         * @instance
+         * @ojshortdesc Event triggered after a tile is reordered.
+         * @property {Element} tile  The tile that was reordered.
+         * @property {number} fromIndex The 0-based index into the set of rendered
+         *                                           <code class="prettyprint">oj-masonry-layout</code> children from
+         *                                           which the tile was reordered.
+         * @property {number} toIndex   The 0-based index into the set of rendered
+         *                                           <code class="prettyprint">oj-masonry-layout</code> children to
+         *                                            which the tile was reordered.
+         */
+        reorder: null
+
+        /**
+         * Triggered when the masonryLayout is created.
+         *
+         * @event
+         * @name create
+         * @memberof oj.ojMasonryLayout
+         * @instance
+         * @ignore
+         */
+        // create event declared in superclass, but we still want the above API doc
+      },
+
+      /**
+       * After _ComponentCreate and _AfterCreate,
+       * the widget should be 100% set up. this._super should be called first.
+       * @return {void}
+       * @override
+       * @protected
+       * @instance
+       * @memberof oj.ojMasonryLayout
+       */
+      _ComponentCreate: function () {
+        // Override of protected base class method.
+        // call superclass first
+        this._super();
+
+        var elem = this.element;
+        elem.addClass('oj-masonrylayout oj-component');
+
+        // log warning message when "disabled" property set
+        var options = this.options;
+        if (options.disabled) {
+          Logger.warn(_WARNING_DISABLED_OPTION);
+        }
+
+        this.reorderHandleEventNamespace = this.eventNamespace + 'ReorderHandle';
+
+        this._menu = {};
+        this._menu.usermenu = false;
+        this._menu.$container = false;
+        this._menu.$elemCut = false;
+        this._menu.$elemPasteBefore = false;
+        this._menu.$elemPasteAfter = false;
+
+        this._initMenu();
+        this._applyMenu();
+
+        this._setup(true);
+      },
+
+      // This method currently runs at create, init, and refresh time (since refresh() is called by _init()).
+      /**
+       * Refreshes the visual state of the masonryLayout. JET elements require a
+       * <code class="prettyprint">refresh()</code> after the DOM is
+       * programmatically changed underneath the element.
+       *
+       * <p>This method does not accept any arguments.
+       * @return {void}
+       *
+       * @expose
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @ojshortdesc Refreshes the visual state of the masonryLayout.
+       *
+       * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
+       * myMasonryLayout.refresh();
+       */
+      refresh: function () {
+        // Override of public base class method.
+        this._super();
+
+        // if RTL has changed, just destroy and recreate the MasonryLayoutCommon
+        var bRTL = this._GetReadingDirection() === 'rtl';
+        var bRecreate = bRTL !== this._bRTL;
+        if (bRecreate) {
+          this._destroyMLCommon();
+        }
+        this._setup(bRecreate);
+      },
+
+      /**
+       * Notifies the component that its subtree has been made visible
+       * programmatically after the component has been created.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @protected
+       * @override
+       */
+      _NotifyShown: function () {
+        this._super();
+        this._setupAsNeeded();
+      },
+
+      /**
+       * Notifies the component that its subtree has been connected to the document
+       * programmatically after the component has been created.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @protected
+       * @override
+       */
+      _NotifyAttached: function () {
+        this._super();
+        this._setupAsNeeded();
+      },
+
+      /**
+       * Notifies the component that its context menu is opening.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @protected
+       * @override
+       */
+      _NotifyContextMenuGesture: function (menu, event, eventType) {
+        // prepare the context menu here instead of in a context menu "beforeOpen" event
+        this._prepareContextMenuBeforeOpen(event);
+
+        // FIX : only allow reordering if context menu was
+        // launched from reorder handle, so only show context menu if it
+        // contains items that are not hidden (i.e. not cut/paste)
+        var $menuContainer = this._menu.$container;
+        var $menuItems = $menuContainer.children().not('.oj-helper-hidden');
+        if ($menuItems && $menuItems.length > 0) {
+          this._OpenContextMenu(event, eventType, { launcher: $(event.target).closest(':tabbable') });
+        }
+      },
+
+      /**
+       * Common setup code for _NotifyShown and _NotifyAttached.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _setupAsNeeded: function () {
+        // perform a deferred layout
+        if (this._needsSetup) {
+          this._setup(this._needsSetup[0]);
+        } else {
+          // explicitly relayout in case we don't get a resize notification when attached
+          var mlCommon = this._mlCommon;
+          mlCommon.setup(true);
+        }
+      },
+
+      // isInit is true for init (create and re-init), false for refresh
+      /**
+       * Setup the masonryLayout.
+       * @param {boolean} isInit true if _setup is called from _init(), false
+       *        if called from refresh()
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _setup: function (isInit) {
+        // Private, not an override (not in base class).
+        var self = this;
+
+        // if masonryLayout is detached or hidden, we can't layout correctly, so
+        // defer layout until masonryLayout is attached or shown
+        if (!this._canCalculateSizes()) {
+          // want a true value of isInit to take precedence over a false value
+          var oldIsInit = false;
           if (this._needsSetup) {
-            this._setup(this._needsSetup[0]);
-          } else {
-            // explicitly relayout in case we don't get a resize notification when attached
-            var mlCommon = this._mlCommon;
-            mlCommon.setup(true);
+            oldIsInit = this._needsSetup[0];
           }
-        },
+          this._needsSetup = [isInit || oldIsInit];
+          return;
+        }
+        this._needsSetup = null;
 
-        // isInit is true for init (create and re-init), false for refresh
-        /**
-         * Setup the masonryLayout.
-         * @param {boolean} isInit true if _setup is called from _init(), false
-         *        if called from refresh()
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _setup: function (isInit) { // Private, not an override (not in base class).
-          var self = this;
+        this._bRTL = this._GetReadingDirection() === 'rtl';
+        this._bTouchSupported = DomUtils.isTouchSupported();
+        var elem = this.element;
+        var options = this.options;
+        if (isInit) {
+          this._showTileOnEndFunc = function (_elem) {
+            self._showTileOnEnd(_elem);
+          };
+          this._hideTileOnEndFunc = function (_elem) {
+            self._hideTileOnEnd(_elem);
+          };
+          this._startAnimationFunc = function (_elem, action) {
+            return self._startAnimation(_elem, action);
+          };
+          this._layoutOnEndFunc = function () {
+            self._layoutOnEnd();
+          };
+          this._layoutCycleOnStartFunc = function () {
+            self._layoutCycleOnStart();
+          };
+          this._layoutCycleOnEndFunc = function (resolveBusyState) {
+            self._layoutCycleOnEnd(resolveBusyState);
+          };
+          if (!this._mlCommon) {
+            var selectors = { tiles: _TILE_SELECTOR };
+            var styles = {
+              transitionShowFromStyleClass: _OJ_MASONRYLAYOUT_TILE_TRANSITION_SHOW_FROM_CLASS
+            };
+            var callbackInfo = {
+              addStyleClassName: _addStyleClassName,
+              removeStyleClassName: _removeStyleClassName,
+              getSizeStyleClassName: _getSizeStyleClassName,
+              getTileSpan: _getTileSpan,
+              showTileOnEndFunc: this._showTileOnEndFunc,
+              hideTileOnEndFunc: this._hideTileOnEndFunc,
+              startAnimationFunc: this._startAnimationFunc,
+              layoutOnEndFunc: this._layoutOnEndFunc,
+              layoutCycleOnStartFunc: this._layoutCycleOnStartFunc,
+              layoutCycleOnEndFunc: this._layoutCycleOnEndFunc,
+              sortTilesOriginalOrderFunc: _sortTilesOriginalOrder,
+              subtreeAttached: Components.subtreeAttached,
+              subtreeDetached: Components.subtreeDetached,
+              addBusyState: function (description) {
+                return self._addBusyState(description);
+              }
+            };
 
-          // if masonryLayout is detached or hidden, we can't layout correctly, so
-          // defer layout until masonryLayout is attached or shown
-          if (!this._canCalculateSizes()) {
-            // want a true value of isInit to take precedence over a false value
-            var oldIsInit = false;
-            if (this._needsSetup) {
-              oldIsInit = this._needsSetup[0];
-            }
-            this._needsSetup = [isInit || oldIsInit];
-            return;
-          }
-          this._needsSetup = null;
-
-          this._bRTL = (this._GetReadingDirection() === 'rtl');
-          this._bTouchSupported = DomUtils.isTouchSupported();
-          var elem = this.element;
-          var options = this.options;
-          if (isInit) {
-            this._showTileOnEndFunc = function (_elem) {
-              self._showTileOnEnd(_elem);
-            };
-            this._hideTileOnEndFunc = function (_elem) {
-              self._hideTileOnEnd(_elem);
-            };
-            this._startAnimationFunc = function (_elem, action) {
-              return self._startAnimation(_elem, action);
-            };
-            this._layoutOnEndFunc = function () {
-              self._layoutOnEnd();
-            };
-            this._layoutCycleOnStartFunc = function () {
-              self._layoutCycleOnStart();
-            };
-            this._layoutCycleOnEndFunc = function (resolveBusyState) {
-              self._layoutCycleOnEnd(resolveBusyState);
-            };
-            if (!this._mlCommon) {
-              var selectors = { tiles: _TILE_SELECTOR };
-              var styles = {
-                transitionShowFromStyleClass: _OJ_MASONRYLAYOUT_TILE_TRANSITION_SHOW_FROM_CLASS
-              };
-              var callbackInfo = {
-                addStyleClassName: _addStyleClassName,
-                removeStyleClassName: _removeStyleClassName,
-                getSizeStyleClassName: _getSizeStyleClassName,
-                getTileSpan: _getTileSpan,
-                showTileOnEndFunc: this._showTileOnEndFunc,
-                hideTileOnEndFunc: this._hideTileOnEndFunc,
-                startAnimationFunc: this._startAnimationFunc,
-                layoutOnEndFunc: this._layoutOnEndFunc,
-                layoutCycleOnStartFunc: this._layoutCycleOnStartFunc,
-                layoutCycleOnEndFunc: this._layoutCycleOnEndFunc,
-                sortTilesOriginalOrderFunc: _sortTilesOriginalOrder,
-                subtreeAttached: Components.subtreeAttached,
-                subtreeDetached: Components.subtreeDetached,
-                addBusyState: function (description) {
-                  return self._addBusyState(description);
-                }
-              };
-
-              // apply the oj-masonrylayout-tile style class to child tiles
-              this._applyTileStyleClass();
-
-              // save the original order of the tiles, because the DOM order may
-              // change due to layout and we want to always use the original order
-              // for running subsequent layouts
-              this._saveTilesOriginalOrder();
-
-              this._mlCommon = new MasonryLayoutCommon(
-                elem[0],
-                this._bRTL,
-                Config.getAutomationMode() === 'enabled',
-                selectors,
-                styles,
-                callbackInfo);
-            }
-
-            this._handleDragStartFunc = function (event) {
-              self._handleDragStart(event);
-            };
-            this._handleDragEnterFunc = function (event) {
-              self._handleDragEnter(event);
-            };
-            this._handleDragOverFunc = function (event) {
-              self._handleDragOver(event);
-            };
-            this._handleDragLeaveFunc = function (event) {
-              self._handleDragLeave(event);
-            };
-            this._handleDragEndFunc = function (event) {
-              self._handleDragEnd(event);
-            };
-            this._handleDropFunc = function (event) {
-              self._handleDrop(event);
-            };
-            if (options.reorderHandle) {
-              this._setupReorderHandles();
-            }
-          } else {
-            // apply the oj-masonrylayout-tile style class to child tiles that are missing it
+            // apply the oj-masonrylayout-tile style class to child tiles
             this._applyTileStyleClass();
 
-            // FIX : tear down and setup the reorder handles for the
-            // tiles again in case something changed, for example if there are
-            // new tiles
-            var children = elem.children();
-            this._tearDownReorderHandlesForElem(children);
-            this._setupReorderHandlesForElem(children);
+            // save the original order of the tiles, because the DOM order may
+            // change due to layout and we want to always use the original order
+            // for running subsequent layouts
+            this._saveTilesOriginalOrder();
 
-            // make sure that any new tiles have an assigned index in the
-            // original DOM ordering
-            this._checkTilesOriginalOrder();
+            this._mlCommon = new MasonryLayoutCommon(
+              elem[0],
+              this._bRTL,
+              Config.getAutomationMode() === 'enabled',
+              selectors,
+              styles,
+              callbackInfo
+            );
           }
 
-          var mlCommon = this._mlCommon;
-          mlCommon.setup(isInit);
-
-          if (isInit) {
-            // eslint-disable-next-line no-unused-vars
-            this._handleResizeFunc = function (width, height) {
-              self._handleResize();
-            };
-            DomUtils.addResizeListener(elem[0], this._handleResizeFunc,
-                                          _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT);
-          }
-        },
-
-        /**
-         * Destroy the masonryLayout.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @override
-         * @protected
-         */
-        _destroy: function () { // Override of protected base class method.
-          this._clearMenu();
-
-          var elem = this.element;
-          DomUtils.removeResizeListener(elem[0], this._handleResizeFunc);
-          this._handleResizeFunc = null;
-
-          // restore tiles to their original order and delete stored indices
-          this._restoreTilesOriginalOrder();
-          var children = this._getTileElements();
-          var numChildren = children.length;
-          for (var i = 0; i < numChildren; i++) {
-            var child = children[i];
-            delete child._jetDataMasonryOriginalOrder;
-          }
-
-          this._destroyMLCommon();
-
-          elem.removeClass('oj-masonrylayout oj-component');
-          var options = this.options;
+          this._handleDragStartFunc = function (event) {
+            self._handleDragStart(event);
+          };
+          this._handleDragEnterFunc = function (event) {
+            self._handleDragEnter(event);
+          };
+          this._handleDragOverFunc = function (event) {
+            self._handleDragOver(event);
+          };
+          this._handleDragLeaveFunc = function (event) {
+            self._handleDragLeave(event);
+          };
+          this._handleDragEndFunc = function (event) {
+            self._handleDragEnd(event);
+          };
+          this._handleDropFunc = function (event) {
+            self._handleDrop(event);
+          };
           if (options.reorderHandle) {
-            this._tearDownReorderHandles();
-          }
-
-          // remove the oj-masonrylayout-tile style class from child tiles
-          var tiles = elem.children('.' + _OJ_MASONRYLAYOUT_TILE);
-          tiles.removeClass(_OJ_MASONRYLAYOUT_TILE);
-
-          this._handleDragStartFunc = null;
-          this._handleDragEnterFunc = null;
-          this._handleDragOverFunc = null;
-          this._handleDragLeaveFunc = null;
-          this._handleDragEndFunc = null;
-          this._handleDropFunc = null;
-
-          this._showTileOnEndFunc = null;
-          this._hideTileOnEndFunc = null;
-          this._startAnimationFunc = null;
-          this._layoutOnEndFunc = null;
-          this._layoutCycleOnStartFunc = null;
-          this._layoutCycleOnEndFunc = null;
-
-          this._arTilesToInsert = null;
-
-          this._super();
-        },
-
-        /**
-         * Set an option on the masonryLayout.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @override
-         * @protected
-         */
-        _setOption: function (key, value, flags) { // Override of protected base class method.
-          // Method name needn't be quoted since is in externs.js.
-          var bReorderHandle = false;
-          var bRefreshMenu = false;
-          switch (key) {
-            case 'reorderHandle':
-              this._tearDownReorderHandles();
-              bReorderHandle = true;
-              break;
-            case 'disabled':
-              // log warning message when "disabled" property set
-              Logger.warn(_WARNING_DISABLED_OPTION);
-              break;
-            case 'contextMenu':
-              if (!DomUtils.isTouchSupported()) {
-                this._clearMenu();
-                if (value) {
-                  this._initMenu(value);
-                }
-              }
-              break;
-            case 'translations':
-              if (!oj.Object.compareValues(value, this.options[key])) {
-                bRefreshMenu = true;
-              }
-              break;
-            default:
-              break;
-          }
-          this._super(key, value, flags);
-          if (bRefreshMenu) {
-            this._refreshMenu();
-          }
-          if (bReorderHandle && value) {
             this._setupReorderHandles();
           }
-        },
+        } else {
+          // apply the oj-masonrylayout-tile style class to child tiles that are missing it
+          this._applyTileStyleClass();
 
-        /**
-         * Resize a tile in the masonryLayout.
-         * @param {string} selector Selector identifying the tile to resize.
-         * @param {string} sizeStyleClass New size style class to apply to the tile.
-         * @return {void}
-         *
-         * @expose
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @ojshortdesc Resize a tile.
-         *
-         * @example <caption>Invoke the <code class="prettyprint">resizeTile</code> method:</caption>
-         * myMasonryLayout.resizeTile('#tileSelector', 'oj-masonrylayout-tile-2x1');
-         */
-        resizeTile: function (selector, sizeStyleClass) {
-          var mlCommon = this._mlCommon;
-          // FIX : if we're already in a layout cycle, finish it immediately
-          // before processing the resize
-          if (mlCommon.isInLayoutCycle()) {
-            mlCommon.finishLayoutCycle();
-          }
-
-          var jqElem = $(selector);
-          var elem = jqElem[0];
-          // Fix  - throw error if the selector is invalid
-          if (!elem) {
-            throw new Error('JET MasonryLayout: Unable to resize tile because ' +
-                            _WARNING_NO_TILE_FOUND_FOR_SELECTOR + selector);
-          }
-          var prevSizeStyleClass = _getSizeStyleClassName(elem);
-
-          // FIX : if the style class isn't changing, don't do anything;
-          // this prevents the layout from preparing for a resize and then waiting for
-          // the end of a resize animation that won't happen
-          // FIX : throw error if style class isn't changing
-          if (sizeStyleClass === prevSizeStyleClass) {
-            throw new Error('JET MasonryLayout: Unable to resize child ' + selector +
-                            ' to style class ' + sizeStyleClass + ' because ' +
-                            sizeStyleClass + ' is already applied.');
-          }
-
-          // fire beforeResize event
-          var eventData = {
-            /** @expose */
-            tile: jqElem,
-            /** @expose */
-            previousSizeStyleClass: prevSizeStyleClass,
-            /** @expose */
-            sizeStyleClass: sizeStyleClass
-          };
-          var bSuccess = this._trigger('beforeResize', null, eventData);
-
-          if (bSuccess !== false) {
-            if (!this._arResizingTiles) {
-              this._arResizingTiles = [];
-            }
-            var arResizingTiles = this._arResizingTiles;
-            arResizingTiles.push(elem, prevSizeStyleClass, sizeStyleClass);
-
-            mlCommon.resizeTile(selector, sizeStyleClass);
-          }
-        },
-
-        /**
-         * Insert a tile into the masonryLayout.
-         * @param {string} selector Selector identifying the tile to insert.  The tile
-         *        does not need to be a child of the
-         *        <code class="prettyprint">oj-masonry-layout</code> when this method is
-         *        called.  This method will reparent the tile to the
-         *        <code class="prettyprint">oj-masonry-layout</code>.
-         * @param {number} index The 0-based index into the set of rendered
-         *           <code class="prettyprint">oj-masonry-layout</code> children where
-         *           the tile will be inserted.
-         * @return {void}
-         *
-         * @expose
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @ojshortdesc Insert a tile.
-         *
-         * @example <caption>Invoke the <code class="prettyprint">insertTile</code> method:</caption>
-         * myMasonryLayout.insertTile('#tileSelector', 2);
-         */
-        insertTile: function (selector, index) {
-          var mlCommon = this._mlCommon;
-          // FIX : if we're already in a layout cycle, finish it immediately
-          // before processing the insert
-          if (mlCommon.isInLayoutCycle()) {
-            mlCommon.finishLayoutCycle();
-          }
-
-          if (isNaN(index)) {
-            // eslint-disable-next-line no-param-reassign
-            index = -1;
-          }
-
-          var jqElem = $(selector);
-          var elem = jqElem[0];
-          // Fix  - throw error if the selector is invalid
-          if (!elem) {
-            throw new Error('JET MasonryLayout: Unable to insert tile because ' +
-                            _WARNING_NO_TILE_FOUND_FOR_SELECTOR + selector);
-          }
-
-          // add the oj-masonrylayout-tile style class to the inserted tile
-          jqElem.addClass(_OJ_MASONRYLAYOUT_TILE);
-
-          // fire beforeInsert event
-          var eventData = {
-            /** @expose */
-            tile: jqElem,
-            /** @expose */
-            index: index
-          };
-          var bSuccess = this._trigger('beforeInsert', null, eventData);
-
-          if (bSuccess !== false) {
-            elem._jetDataTileInsertIndex = index;
-
-            // only need to initially hide inserts if they will be animated later,
-            // otherwise we can just leave them shown here
-            if (mlCommon.isAnimationEnabled()) {
-              // immediately hide insert in order to show it later with a transition
-              jqElem.addClass(_OJ_MASONRYLAYOUT_TILE_TRANSITION_SHOW_FROM_CLASS);
-            }
-
-            var style = elem.style;
-            style.top = '-1px';
-            // FIX : in RTL, position tiles using "right" instead of "left"
-            if (this._bRTL) {
-              style.right = '-1px';
-            } else {
-              style.left = '-1px';
-            }
-
-            this._insertTileOriginalOrder(elem, index);
-            mlCommon.insertTileDomElem(elem, index);
-            // notify the element that it's been attached to the DOM
-            Components.subtreeAttached(elem);
-
-            if (!this._arTilesToInsert) {
-              this._arTilesToInsert = [];
-            }
-            var arTilesToInsert = this._arTilesToInsert;
-            arTilesToInsert.push(selector);
-          }
-        },
-
-        /**
-         * Remove a tile from the masonryLayout.
-         * @param {string} selector Selector identifying the tile to remove.
-         * @return {void}
-         *
-         * @expose
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @ojshortdesc Remove a tile.
-         *
-         * @example <caption>Invoke the <code class="prettyprint">removeTile</code> method:</caption>
-         * myMasonryLayout.removeTile('#tileSelector');
-         */
-        removeTile: function (selector) {
-          var mlCommon = this._mlCommon;
-          // FIX : if we're already in a layout cycle, finish it immediately
-          // before processing the delete
-          if (mlCommon.isInLayoutCycle()) {
-            mlCommon.finishLayoutCycle();
-          }
-
-          var jqInfolet = $(selector);
-          var infolet = jqInfolet[0];
-          // Fix  - throw error if the selector is invalid
-          if (!infolet) {
-            throw new Error('JET MasonryLayout: Unable to remove tile because ' +
-                            _WARNING_NO_TILE_FOUND_FOR_SELECTOR + selector);
-          }
-
-          // if the infolet being deleted contains the focus, remember that so we can
-          // try to restore focus to the next infolet after layout
-          if (FocusUtils.containsFocus(infolet)) {
-            var children = this._getTileElements(true);
-            var index = children.indexOf(infolet);
-            // save the previous infolet, because this one is being deleted
-            if (index > 0) {
-              this._deletingTileWithFocusPrev = children[index - 1];
-            }
-          }
-
-          // fire beforeRemove event
-          var eventData = {
-            /** @expose */
-            tile: jqInfolet
-          };
-          var bSuccess = this._trigger('beforeRemove', null, eventData);
-
-          if (bSuccess !== false) {
-            mlCommon.hideTile(selector);
-          }
-        },
-
-        /**
-         * Handle a component resize.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _handleResize: function () {
-          if (!this._bDragging && !this._inLayoutCycle) {
-            var mlCommon = this._mlCommon;
-            mlCommon.resizeNotify();
-          }
-        },
-
-        /**
-         * Callback to run after a tile is shown.
-         * @param {Object} elem Tile that was shown.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _showTileOnEnd: function (elem) {
-          var jqElem = $(elem);
-          var index = elem._jetDataTileInsertIndex;
-          // eslint-disable-next-line no-param-reassign
-          delete elem._jetDataTileInsertIndex;
-
-          // FIX : setup the reorder handle for the inserted tile
-          var options = this.options;
-          if (options.reorderHandle) {
-            this._setupReorderHandlesForElem(jqElem);
-          }
-
-          // fire insert event
-          var eventData = {
-            /** @expose */
-            tile: jqElem,
-            /** @expose */
-            index: index
-          };
-          this._eventsToFire.push('insert', eventData);
-        },
-
-        /**
-         * Callback to run after a tile is hidden.
-         * @param {!Element} elem Tile that was hidden.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _hideTileOnEnd: function (elem) {
-          var jqElem = $(elem);
-
-          // FIX : tear down the reorder handle for the removed tile
-          var options = this.options;
-          if (options.reorderHandle) {
-            this._tearDownReorderHandlesForElem(jqElem);
-          }
-
-          // remove the oj-masonrylayout-tile style class from the hidden tile
-          jqElem.removeClass(_OJ_MASONRYLAYOUT_TILE);
-
-          // notify the element that it's been detached from the DOM BEFORE actually
-          // detaching it so that components can save state
-          Components.subtreeDetached(elem);
-
-          var parentNode = elem.parentNode;
-          parentNode.removeChild(elem);
-          // remove the tile from the original order
-          this._removeTileOriginalOrder(elem);
-
-          // fire remove event
-          var eventData = {
-            /** @expose */
-            tile: jqElem
-          };
-          this._eventsToFire.push('remove', eventData);
-        },
-
-        /**
-         * Callback to run to animate a tile.
-         * @param {!Element} elem Tile to be animated.
-         * @param {!string} action Action that starts animation.
-         * @return {Promise} A promise that resolves when the animation ends.
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _startAnimation: function (elem, action) {
-          var defaults = (ThemeUtils.parseJSONFromFontFamily('oj-masonrylayout-option-defaults') || {}).animation;
-          var animation = defaults ? defaults[action] : null;
-          // eslint-disable-next-line no-undef
-          return AnimationUtils.startAnimation(elem, action, animation, this);
-        },
-
-        /**
-         * Callback to run after layout is done.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _layoutOnEnd: function () {
-          var i;
-          if (this._arTilesToInsert) {
-            var mlCommon = this._mlCommon;
-            var arTilesToInsert = this._arTilesToInsert;
-            for (i = 0; i < arTilesToInsert.length; i++) {
-              var selector = arTilesToInsert[i];
-              mlCommon.showTile(selector);
-            }
-            this._arTilesToInsert = null;
-          }
-
-          if (this._arResizingTiles) {
-            var arResizingTiles = this._arResizingTiles;
-            for (i = 0; i < arResizingTiles.length; i += 3) {
-              var elem = arResizingTiles[i];
-              var prevSizeStyleClass = arResizingTiles[i + 1];
-              var sizeStyleClass = arResizingTiles[i + 2];
-
-              // fire resize event
-              var eventData = {
-                /** @expose */
-                tile: $(elem),
-                /** @expose */
-                previousSizeStyleClass: prevSizeStyleClass,
-                /** @expose */
-                sizeStyleClass: sizeStyleClass
-              };
-              this._eventsToFire.push('resize', eventData);
-            }
-            this._arResizingTiles = null;
-          }
-
-          if (this._bDragging) {
-            if (this._bDragMoveTransition) {
-              this._handleDragMoveTransitionEnd();
-            } else if (this._bDragEndTransition) {
-              this._handleDragEndTransitionEnd();
-            }
-          }
-        },
-
-        /**
-         * Callback to run before whole layout cycle starts.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _layoutCycleOnStart: function () {
-          this._inLayoutCycle = true;
-          this._layoutStartActiveDomElem = null;
-
-          // store events to fire when the layout cycle ends
-          if (!this._eventsToFire) {
-            this._eventsToFire = [];
-          }
-
-          var activeDomElem = document.activeElement;
-          // if the currently focused element is a child of the  masonryLayout,
-          // remember that so we can try to restore focus after layout, in case the
-          // child DOM order changes
-          if (activeDomElem) {
-            if (DomUtils.isAncestor(this.element[0], activeDomElem)) {
-              this._layoutStartActiveDomElem = activeDomElem;
-            }
-          }
-        },
-
-        /**
-         * Callback to run after whole layout cycle is done.
-         * @param {function():void} resolveBusyState Resolve function for busy state.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _layoutCycleOnEnd: function (resolveBusyState) {
-          this._inLayoutCycle = false;
-
-          var elem = this.element[0];
-          // if we saved the focus element before layout, try to restore focus now
-          if (this._layoutStartActiveDomElem) {
-            var layoutStartActiveDomElem = this._layoutStartActiveDomElem;
-            this._layoutStartActiveDomElem = null;
-            // after deleting a tile, focus the tile that took its position in the layout
-            if (this._deletingTileWithFocusPrev) {
-              var tile = this._deletingTileWithFocusPrev;
-              this._deletingTileWithFocusPrev = null;
-              if (tile && DomUtils.isAncestor(elem, tile)) {
-                var children = this._getTileElements(elem, true);
-                var index = children.indexOf(tile);
-                // because we saved the id of the prev tile, try to restore focus
-                // to the tile after it, which would have been where the deleted
-                // tile was positioned
-                if (index >= 0 && index < children.length - 1) {
-                  FocusUtils.focusFirstTabStop(children[index + 1]);
-                } else {
-                  FocusUtils.focusFirstTabStop(tile);
-                }
-              }
-            } else if (DomUtils.isAncestor(elem, layoutStartActiveDomElem)) {
-              // restore focus to the element that had focus before layout, or to
-              // the first tabstop in the masonryLayout
-              FocusUtils.focusElement(layoutStartActiveDomElem);
-            } else {
-              FocusUtils.focusFirstTabStop(elem);
-            }
-          }
-
-          // FIX : resolve busy state after laying out, but BEFORE firing events so that when
-          // an app gets an event it doesn't then have to wait for the busy context to be resolved
-          if (resolveBusyState) {
-            resolveBusyState();
-          }
-
-          // fire stored events at end of layout cycle
-          if (this._eventsToFire) {
-            var eventsToFire = this._eventsToFire;
-            this._eventsToFire = [];
-
-            for (var i = 0; i < eventsToFire.length; i += 2) {
-              var eventType = eventsToFire[i];
-              var eventData = eventsToFire[i + 1];
-              this._trigger(eventType, null, eventData);
-            }
-          }
-        },
-
-        /**
-         * Destroy the MasonryLayoutCommon.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _destroyMLCommon: function () {
-          var mlCommon = this._mlCommon;
-          if (mlCommon) {
-            mlCommon.destroy();
-          }
-          this._mlCommon = null;
-        },
-
-        /**
-         * Determine whether the masonryLayout can calculate sizes (when it is
-         * attached to the page DOM and not hidden).
-         * @returns {boolean} true if sizes can be calculated, false if not
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _canCalculateSizes: function () {
-          var div = document.createElement('div');
-          var style = div.style;
-          style.width = '10px';
-          style.height = '10px';
-          var elem = this.element[0];
-          elem.appendChild(div); // @HTMLUpdateOK
-          var bCanCalcSizes = false;
-          try {
-            bCanCalcSizes = div.offsetWidth > 0 && div.offsetHeight > 0;
-          } catch (e) {
-            // do nothing
-          }
-          elem.removeChild(div);
-          return bCanCalcSizes;
-        },
-
-        /**
-         * Get the child tile elements.
-         * @param {boolean} excludeDropSite True to exclude the dropsite, false to
-         *        include it.
-         * @returns {Array} Array of child tile elements.
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _getTileElements: function (excludeDropSite) {
-          var elem = this.element;
-          var children = elem.children(_TILE_SELECTOR);
-          var numChildren = children.length;
-          var arChildren = [];
-          for (var i = 0; i < numChildren; i++) {
-            var child = children[i];
-            if (!excludeDropSite || (child !== this._dropSite)) {
-              var style = child.style;
-              if (style.visibility !== _HIDDEN && style.display !== _NONE) {
-                arChildren.push(child);
-              }
-            }
-          }
-          return arChildren;
-        },
-
-        /**
-         * Save the original DOM order of the tiles.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _saveTilesOriginalOrder: function () {
-          var arTiles = this._getTileElements();
-          if (arTiles) {
-            for (var i = 0; i < arTiles.length; i++) {
-              var tile = arTiles[i];
-              // only assign original index to tile if it hasn't already been assigned,
-              // so that repeated calls to _setup(true) won't overwrite the original
-              // values with current layout order values
-              if (!tile._jetDataMasonryOriginalOrder) {
-                // make original order index 1-based so that we can easily check for
-                // the existence of the attribute on an element
-                // (e.g. "if (tile._jetDataMasonryOriginalOrder)")
-                tile._jetDataMasonryOriginalOrder = i + 1;
-              }
-            }
-          }
-        },
-
-        /**
-         * Check that all tiles have an assigned index in the original DOM
-         * order, in case new tiles have been inserted outside of the
-         * insertTile API and the masonryLayout has been refreshed.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _checkTilesOriginalOrder: function () {
-          var arTiles = this._getTileElements();
-          if (arTiles) {
-            for (var i = 0; i < arTiles.length; i++) {
-              var tile = arTiles[i];
-              // insert the tile at its current index
-              if (!tile._jetDataMasonryOriginalOrder) {
-                this._insertTileOriginalOrder(tile, i);
-              }
-            }
-          }
-        },
-
-        /**
-         * Restore the original DOM order of the tiles.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _restoreTilesOriginalOrder: function () {
-          var children = this._getTileElements();
-          var sortedChildren = this._getTileElements();
-          _sortTilesOriginalOrder(sortedChildren);
-          for (var i = 0; i < children.length; i++) {
-            var child = children[i];
-            var sortedChild = sortedChildren[i];
-            // if the tiles are different, need to rearrange the DOM
-            if (child !== sortedChild) {
-              // notify the element that it's been detached from the DOM BEFORE actually
-              // detaching it so that components can save state
-              Components.subtreeDetached(sortedChild);
-              // insert the tile from the layout order into the DOM at this index
-              var parentNode = child.parentNode;
-              parentNode.insertBefore(sortedChild, child); // @HTMLUpdateOK
-              // notify the element that it's been attached to the DOM
-              Components.subtreeAttached(sortedChild);
-
-              // rearrange the array of children to match the DOM reorder above
-              var sortedChildIndex = children.indexOf(sortedChild);
-              if (sortedChildIndex > i) {
-                children.splice(sortedChildIndex, 1);
-                children.splice(i, 0, sortedChild);
-              }
-            }
-          }
-        },
-
-        /**
-         * Insert a tile into the original DOM order at the given index.
-         * @param {Object} insertedTile Tile to insert.
-         * @param {number} index Index at which to insert.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _insertTileOriginalOrder: function (insertedTile, index) {
-          var arTiles = this._getTileElements();
-          if (index < 0) {
-            // eslint-disable-next-line no-param-reassign
-            index = arTiles.length;
-          }
-          if (arTiles) {
-            for (var i = 0; i < arTiles.length; i++) {
-              var tile = arTiles[i];
-              // increment the index of each shifted tile
-              if (tile._jetDataMasonryOriginalOrder &&
-                  tile._jetDataMasonryOriginalOrder >= index + 1) {
-                tile._jetDataMasonryOriginalOrder += 1;
-              }
-            }
-          }
-          // save the index on the inserted tile AFTER the above loop so that its index
-          // didn't get incremented
-          // eslint-disable-next-line no-param-reassign
-          insertedTile._jetDataMasonryOriginalOrder = index + 1;
-        },
-
-        /**
-         * Remove a tile from the original DOM order.
-         * @param {Object} removedTile Tile to remove.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _removeTileOriginalOrder: function (removedTile) {
-          if (removedTile._jetDataMasonryOriginalOrder) {
-            var arTiles = this._getTileElements();
-            if (arTiles) {
-              for (var i = 0; i < arTiles.length; i++) {
-                var tile = arTiles[i];
-                // decrement the index of each shifted tile
-                if (tile._jetDataMasonryOriginalOrder &&
-                    tile._jetDataMasonryOriginalOrder > removedTile._jetDataMasonryOriginalOrder) {
-                  tile._jetDataMasonryOriginalOrder -= 1;
-                }
-              }
-            }
-            // delete the stored index from the tile
-            // eslint-disable-next-line no-param-reassign
-            delete removedTile._jetDataMasonryOriginalOrder;
-          }
-        },
-
-        /**
-         * Apply the "oj-masonrylayout-tile" style class to any child tile that is missing it.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _applyTileStyleClass: function () {
-          var elem = this.element;
+          // FIX : tear down and setup the reorder handles for the
+          // tiles again in case something changed, for example if there are
+          // new tiles
           var children = elem.children();
-          children = children.not('.' + _OJ_MASONRYLAYOUT_TILE);
-          children = children.filter(function (index, childElem) {
-            var childClasses = childElem.className;
-            return childClasses.match(_OJ_MASONRYLAYOUT_TILE_SIZE_CLASS_PATTERN);
-          });
-          children.addClass(_OJ_MASONRYLAYOUT_TILE);
-        },
+          this._tearDownReorderHandlesForElem(children);
+          this._setupReorderHandlesForElem(children);
 
-        // start functions for context menu reordering ///////////////////////////////
+          // make sure that any new tiles have an assigned index in the
+          // original DOM ordering
+          this._checkTilesOriginalOrder();
+        }
 
-        /**
-         * Initialize the context menu.  This is called on startup, or on option
-         * "contextMenu" change.
-         * @param {Object=} newVal True if called because of an option change.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _initMenu: function (newVal) {
-          var t = null;
-          var menu = this._GetContextMenu();
+        var mlCommon = this._mlCommon;
+        mlCommon.setup(isInit);
 
-          // check for contextmenu attribute on the root element
-          if ((!newVal) && (!menu) && !this._IsCustomElement()) {
-            menu = this.element.attr('contextmenu');
-            if (menu) {
-              this.options.contextMenu = '#' + menu;
+        if (isInit) {
+          // eslint-disable-next-line no-unused-vars
+          this._handleResizeFunc = function (width, height) {
+            self._handleResize();
+          };
+          DomUtils.addResizeListener(
+            elem[0],
+            this._handleResizeFunc,
+            _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT
+          );
+        }
+      },
+
+      /**
+       * Destroy the masonryLayout.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @override
+       * @protected
+       */
+      _destroy: function () {
+        // Override of protected base class method.
+        this._clearMenu();
+
+        var elem = this.element;
+        DomUtils.removeResizeListener(elem[0], this._handleResizeFunc);
+        this._handleResizeFunc = null;
+
+        // restore tiles to their original order and delete stored indices
+        this._restoreTilesOriginalOrder();
+        var children = this._getTileElements();
+        var numChildren = children.length;
+        for (var i = 0; i < numChildren; i++) {
+          var child = children[i];
+          delete child._jetDataMasonryOriginalOrder;
+        }
+
+        this._destroyMLCommon();
+
+        elem.removeClass('oj-masonrylayout oj-component');
+        var options = this.options;
+        if (options.reorderHandle) {
+          this._tearDownReorderHandles();
+        }
+
+        // remove the oj-masonrylayout-tile style class from child tiles
+        var tiles = elem.children('.' + _OJ_MASONRYLAYOUT_TILE);
+        tiles.removeClass(_OJ_MASONRYLAYOUT_TILE);
+
+        this._handleDragStartFunc = null;
+        this._handleDragEnterFunc = null;
+        this._handleDragOverFunc = null;
+        this._handleDragLeaveFunc = null;
+        this._handleDragEndFunc = null;
+        this._handleDropFunc = null;
+
+        this._showTileOnEndFunc = null;
+        this._hideTileOnEndFunc = null;
+        this._startAnimationFunc = null;
+        this._layoutOnEndFunc = null;
+        this._layoutCycleOnStartFunc = null;
+        this._layoutCycleOnEndFunc = null;
+
+        this._arTilesToInsert = null;
+
+        this._super();
+      },
+
+      /**
+       * Set an option on the masonryLayout.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @override
+       * @protected
+       */
+      _setOption: function (key, value, flags) {
+        // Override of protected base class method.
+        // Method name needn't be quoted since is in externs.js.
+        var bReorderHandle = false;
+        var bRefreshMenu = false;
+        switch (key) {
+          case 'reorderHandle':
+            this._tearDownReorderHandles();
+            bReorderHandle = true;
+            break;
+          case 'disabled':
+            // log warning message when "disabled" property set
+            Logger.warn(_WARNING_DISABLED_OPTION);
+            break;
+          case 'contextMenu':
+            if (!DomUtils.isTouchSupported()) {
+              this._clearMenu();
+              if (value) {
+                this._initMenu(value);
+              }
             }
-          }
-
-          if ((!newVal) && (!menu)) {
-            return;
-          }
-
-          menu = newVal || menu;
-          t = $.type(menu);
-          if (t === 'function') {
-            try {
-              // call user's method to get the context menu
-              menu = menu();
-            } catch (e) {
-              menu = null;
+            break;
+          case 'translations':
+            if (!oj.Object.compareValues(value, this.options[key])) {
+              bRefreshMenu = true;
             }
-            t = $.type(menu);
+            break;
+          default:
+            break;
+        }
+        this._super(key, value, flags);
+        if (bRefreshMenu) {
+          this._refreshMenu();
+        }
+        if (bReorderHandle && value) {
+          this._setupReorderHandles();
+        }
+      },
+
+      /**
+       * Resize a tile in the masonryLayout.
+       * @param {string} selector Selector identifying the tile to resize.
+       * @param {string} sizeStyleClass New size style class to apply to the tile.
+       * @return {void}
+       *
+       * @expose
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @ojshortdesc Resize a tile.
+       *
+       * @example <caption>Invoke the <code class="prettyprint">resizeTile</code> method:</caption>
+       * myMasonryLayout.resizeTile('#tileSelector', 'oj-masonrylayout-tile-2x1');
+       */
+      resizeTile: function (selector, sizeStyleClass) {
+        var mlCommon = this._mlCommon;
+        // FIX : if we're already in a layout cycle, finish it immediately
+        // before processing the resize
+        if (mlCommon.isInLayoutCycle()) {
+          mlCommon.finishLayoutCycle();
+        }
+
+        var jqElem = $(selector);
+        var elem = jqElem[0];
+        // Fix  - throw error if the selector is invalid
+        if (!elem) {
+          throw new Error(
+            'JET MasonryLayout: Unable to resize tile because ' +
+              _WARNING_NO_TILE_FOUND_FOR_SELECTOR +
+              selector
+          );
+        }
+        var prevSizeStyleClass = _getSizeStyleClassName(elem);
+
+        // FIX : if the style class isn't changing, don't do anything;
+        // this prevents the layout from preparing for a resize and then waiting for
+        // the end of a resize animation that won't happen
+        // FIX : throw error if style class isn't changing
+        if (sizeStyleClass === prevSizeStyleClass) {
+          throw new Error(
+            'JET MasonryLayout: Unable to resize child ' +
+              selector +
+              ' to style class ' +
+              sizeStyleClass +
+              ' because ' +
+              sizeStyleClass +
+              ' is already applied.'
+          );
+        }
+
+        // fire beforeResize event
+        var eventData = {
+          /** @expose */
+          tile: jqElem,
+          /** @expose */
+          previousSizeStyleClass: prevSizeStyleClass,
+          /** @expose */
+          sizeStyleClass: sizeStyleClass
+        };
+        var bSuccess = this._trigger('beforeResize', null, eventData);
+
+        if (bSuccess !== false) {
+          if (!this._arResizingTiles) {
+            this._arResizingTiles = [];
+          }
+          var arResizingTiles = this._arResizingTiles;
+          arResizingTiles.push(elem, prevSizeStyleClass, sizeStyleClass);
+
+          mlCommon.resizeTile(selector, sizeStyleClass);
+        }
+      },
+
+      /**
+       * Insert a tile into the masonryLayout.
+       * @param {string} selector Selector identifying the tile to insert.  The tile
+       *        does not need to be a child of the
+       *        <code class="prettyprint">oj-masonry-layout</code> when this method is
+       *        called.  This method will reparent the tile to the
+       *        <code class="prettyprint">oj-masonry-layout</code>.
+       * @param {number} index The 0-based index into the set of rendered
+       *           <code class="prettyprint">oj-masonry-layout</code> children where
+       *           the tile will be inserted.
+       * @return {void}
+       *
+       * @expose
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @ojshortdesc Insert a tile.
+       *
+       * @example <caption>Invoke the <code class="prettyprint">insertTile</code> method:</caption>
+       * myMasonryLayout.insertTile('#tileSelector', 2);
+       */
+      insertTile: function (selector, index) {
+        var mlCommon = this._mlCommon;
+        // FIX : if we're already in a layout cycle, finish it immediately
+        // before processing the insert
+        if (mlCommon.isInLayoutCycle()) {
+          mlCommon.finishLayoutCycle();
+        }
+
+        if (isNaN(index)) {
+          // eslint-disable-next-line no-param-reassign
+          index = -1;
+        }
+
+        var jqElem = $(selector);
+        var elem = jqElem[0];
+        // Fix  - throw error if the selector is invalid
+        if (!elem) {
+          throw new Error(
+            'JET MasonryLayout: Unable to insert tile because ' +
+              _WARNING_NO_TILE_FOUND_FOR_SELECTOR +
+              selector
+          );
+        }
+
+        // add the oj-masonrylayout-tile style class to the inserted tile
+        jqElem.addClass(_OJ_MASONRYLAYOUT_TILE);
+
+        // fire beforeInsert event
+        var eventData = {
+          /** @expose */
+          tile: jqElem,
+          /** @expose */
+          index: index
+        };
+        var bSuccess = this._trigger('beforeInsert', null, eventData);
+
+        if (bSuccess !== false) {
+          elem._jetDataTileInsertIndex = index;
+
+          // only need to initially hide inserts if they will be animated later,
+          // otherwise we can just leave them shown here
+          if (mlCommon.isAnimationEnabled()) {
+            // immediately hide insert in order to show it later with a transition
+            jqElem.addClass(_OJ_MASONRYLAYOUT_TILE_TRANSITION_SHOW_FROM_CLASS);
           }
 
-          if (!menu) {
-            return;
-          }
-
-          // get the user's <ul> list
-          var $m = $(menu);
-          if ($m.length > 0) {
-            // ensure it's not visible
-            $m.css('display', _NONE);
-            var dm = this._menu;
-            if (!dm) {
-              return;
-            }
-
-            dm.$container = $m;
-            // have a context menu
-            dm.usermenu = true;
-          }
-
-          // if we have a context menu
-          if (this._menu.usermenu) {
-            // and it is being changed
-            if (newVal) {
-              // complete menu creation/attachment
-              this._applyMenu();
-            }
-          }
-
-          //  If not a new val from options, Menu will be noted at the end of initialization in _start()
-        },
-
-        /**
-         * Replace built in shortcut reorder context menu items with real items and
-         * add listeners to the context menu.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _applyMenu: function () {
-          if (!this._menu || !this._menu.usermenu || !this.options.reorderHandle) {
-            return;
-          }
-
-          // Add our listeners so that we can handle build-in cut/paste, etc
-          var $menuContainer = this._menu.$container;
-          var self = this;
-
-          // Check if the menu container tag name is 'OJ-MENU' for custom element context menu
-          if ($menuContainer[0].tagName === 'OJ-MENU') {
-            // For custom element context menu, attach action listener to handle selection
-            $menuContainer[0].addEventListener('ojAction', this._handleContextMenuSelect.bind(this));
+          var style = elem.style;
+          style.top = '-1px';
+          // FIX : in RTL, position tiles using "right" instead of "left"
+          if (this._bRTL) {
+            style.right = '-1px';
           } else {
-            // For data-bind widget context menu, attach selection listener to handle selection
-            $menuContainer.on('ojselect', this._handleContextMenuSelect.bind(this));
+            style.left = '-1px';
           }
 
-          // If there are any ojMasonryLayout built in menu item ids, construct the menu items
-          var listItems = $menuContainer.find('[data-oj-command]');
-          var bChanged = false;
+          this._insertTileOriginalOrder(elem, index);
+          mlCommon.insertTileDomElem(elem, index);
+          // notify the element that it's been attached to the DOM
+          Components.subtreeAttached(elem);
 
-          listItems.each(function () {
-            var command = $(this).attr(_DATA_OJ_COMMAND);
-            if (command.indexOf('oj-masonrylayout-') >= 0) {
-              command = command.slice('oj-masonrylayout-'.length);
+          if (!this._arTilesToInsert) {
+            this._arTilesToInsert = [];
+          }
+          var arTilesToInsert = this._arTilesToInsert;
+          arTilesToInsert.push(selector);
+        }
+      },
+
+      /**
+       * Remove a tile from the masonryLayout.
+       * @param {string} selector Selector identifying the tile to remove.
+       * @return {void}
+       *
+       * @expose
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @ojshortdesc Remove a tile.
+       *
+       * @example <caption>Invoke the <code class="prettyprint">removeTile</code> method:</caption>
+       * myMasonryLayout.removeTile('#tileSelector');
+       */
+      removeTile: function (selector) {
+        var mlCommon = this._mlCommon;
+        // FIX : if we're already in a layout cycle, finish it immediately
+        // before processing the delete
+        if (mlCommon.isInLayoutCycle()) {
+          mlCommon.finishLayoutCycle();
+        }
+
+        var jqInfolet = $(selector);
+        var infolet = jqInfolet[0];
+        // Fix  - throw error if the selector is invalid
+        if (!infolet) {
+          throw new Error(
+            'JET MasonryLayout: Unable to remove tile because ' +
+              _WARNING_NO_TILE_FOUND_FOR_SELECTOR +
+              selector
+          );
+        }
+
+        // if the infolet being deleted contains the focus, remember that so we can
+        // try to restore focus to the next infolet after layout
+        if (FocusUtils.containsFocus(infolet)) {
+          var children = this._getTileElements(true);
+          var index = children.indexOf(infolet);
+          // save the previous infolet, because this one is being deleted
+          if (index > 0) {
+            this._deletingTileWithFocusPrev = children[index - 1];
+          }
+        }
+
+        // fire beforeRemove event
+        var eventData = {
+          /** @expose */
+          tile: jqInfolet
+        };
+        var bSuccess = this._trigger('beforeRemove', null, eventData);
+
+        if (bSuccess !== false) {
+          mlCommon.hideTile(selector);
+        }
+      },
+
+      /**
+       * Handle a component resize.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _handleResize: function () {
+        if (!this._bDragging && !this._inLayoutCycle) {
+          var mlCommon = this._mlCommon;
+          mlCommon.resizeNotify();
+        }
+      },
+
+      /**
+       * Callback to run after a tile is shown.
+       * @param {Object} elem Tile that was shown.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _showTileOnEnd: function (elem) {
+        var jqElem = $(elem);
+        var index = elem._jetDataTileInsertIndex;
+        // eslint-disable-next-line no-param-reassign
+        delete elem._jetDataTileInsertIndex;
+
+        // FIX : setup the reorder handle for the inserted tile
+        var options = this.options;
+        if (options.reorderHandle) {
+          this._setupReorderHandlesForElem(jqElem);
+        }
+
+        // fire insert event
+        var eventData = {
+          /** @expose */
+          tile: jqElem,
+          /** @expose */
+          index: index
+        };
+        this._eventsToFire.push('insert', eventData);
+      },
+
+      /**
+       * Callback to run after a tile is hidden.
+       * @param {!Element} elem Tile that was hidden.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _hideTileOnEnd: function (elem) {
+        var jqElem = $(elem);
+
+        // FIX : tear down the reorder handle for the removed tile
+        var options = this.options;
+        if (options.reorderHandle) {
+          this._tearDownReorderHandlesForElem(jqElem);
+        }
+
+        // remove the oj-masonrylayout-tile style class from the hidden tile
+        jqElem.removeClass(_OJ_MASONRYLAYOUT_TILE);
+
+        // notify the element that it's been detached from the DOM BEFORE actually
+        // detaching it so that components can save state
+        Components.subtreeDetached(elem);
+
+        var parentNode = elem.parentNode;
+        parentNode.removeChild(elem);
+        // remove the tile from the original order
+        this._removeTileOriginalOrder(elem);
+
+        // fire remove event
+        var eventData = {
+          /** @expose */
+          tile: jqElem
+        };
+        this._eventsToFire.push('remove', eventData);
+      },
+
+      /**
+       * Callback to run to animate a tile.
+       * @param {!Element} elem Tile to be animated.
+       * @param {!string} action Action that starts animation.
+       * @return {Promise} A promise that resolves when the animation ends.
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _startAnimation: function (elem, action) {
+        var defaults = (ThemeUtils.parseJSONFromFontFamily('oj-masonrylayout-option-defaults') || {})
+          .animation;
+        var animation = defaults ? defaults[action] : null;
+        // eslint-disable-next-line no-undef
+        return AnimationUtils.startAnimation(elem, action, animation, this);
+      },
+
+      /**
+       * Callback to run after layout is done.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _layoutOnEnd: function () {
+        var i;
+        if (this._arTilesToInsert) {
+          var mlCommon = this._mlCommon;
+          var arTilesToInsert = this._arTilesToInsert;
+          for (i = 0; i < arTilesToInsert.length; i++) {
+            var selector = arTilesToInsert[i];
+            mlCommon.showTile(selector);
+          }
+          this._arTilesToInsert = null;
+        }
+
+        if (this._arResizingTiles) {
+          var arResizingTiles = this._arResizingTiles;
+          for (i = 0; i < arResizingTiles.length; i += 3) {
+            var elem = arResizingTiles[i];
+            var prevSizeStyleClass = arResizingTiles[i + 1];
+            var sizeStyleClass = arResizingTiles[i + 2];
+
+            // fire resize event
+            var eventData = {
+              /** @expose */
+              tile: $(elem),
+              /** @expose */
+              previousSizeStyleClass: prevSizeStyleClass,
+              /** @expose */
+              sizeStyleClass: sizeStyleClass
+            };
+            this._eventsToFire.push('resize', eventData);
+          }
+          this._arResizingTiles = null;
+        }
+
+        if (this._bDragging) {
+          if (this._bDragMoveTransition) {
+            this._handleDragMoveTransitionEnd();
+          } else if (this._bDragEndTransition) {
+            this._handleDragEndTransitionEnd();
+          }
+        }
+      },
+
+      /**
+       * Callback to run before whole layout cycle starts.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _layoutCycleOnStart: function () {
+        this._inLayoutCycle = true;
+        this._layoutStartActiveDomElem = null;
+
+        // store events to fire when the layout cycle ends
+        if (!this._eventsToFire) {
+          this._eventsToFire = [];
+        }
+
+        var activeDomElem = document.activeElement;
+        // if the currently focused element is a child of the  masonryLayout,
+        // remember that so we can try to restore focus after layout, in case the
+        // child DOM order changes
+        if (activeDomElem) {
+          if (DomUtils.isAncestor(this.element[0], activeDomElem)) {
+            this._layoutStartActiveDomElem = activeDomElem;
+          }
+        }
+      },
+
+      /**
+       * Callback to run after whole layout cycle is done.
+       * @param {function():void} resolveBusyState Resolve function for busy state.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _layoutCycleOnEnd: function (resolveBusyState) {
+        this._inLayoutCycle = false;
+
+        var elem = this.element[0];
+        // if we saved the focus element before layout, try to restore focus now
+        if (this._layoutStartActiveDomElem) {
+          var layoutStartActiveDomElem = this._layoutStartActiveDomElem;
+          this._layoutStartActiveDomElem = null;
+          // after deleting a tile, focus the tile that took its position in the layout
+          if (this._deletingTileWithFocusPrev) {
+            var tile = this._deletingTileWithFocusPrev;
+            this._deletingTileWithFocusPrev = null;
+            if (tile && DomUtils.isAncestor(elem, tile)) {
+              var children = this._getTileElements(elem, true);
+              var index = children.indexOf(tile);
+              // because we saved the id of the prev tile, try to restore focus
+              // to the tile after it, which would have been where the deleted
+              // tile was positioned
+              if (index >= 0 && index < children.length - 1) {
+                FocusUtils.focusFirstTabStop(children[index + 1]);
+              } else {
+                FocusUtils.focusFirstTabStop(tile);
+              }
             }
-            var tagName = ($menuContainer[0].tagName === 'OJ-MENU') ? this.tagName : 'li';
-            var newMenuItem = self._buildContextMenuItem(command, tagName);
+          } else if (DomUtils.isAncestor(elem, layoutStartActiveDomElem)) {
+            // restore focus to the element that had focus before layout, or to
+            // the first tabstop in the masonryLayout
+            FocusUtils.focusElement(layoutStartActiveDomElem);
+          } else {
+            FocusUtils.focusFirstTabStop(elem);
+          }
+        }
 
-            $(this).attr('id', newMenuItem.attr('id'));
-            if (this.tagName === 'OJ-OPTION') {
-              // Just update the content of OJ-OPTION and don't replace that with menu item,
-              // because replacing OJ-OPTION would trigger a detach/attach of custom element
-              this.innerHTML = newMenuItem.get(0).innerHTML; // @HTMLUpdateOK
-              $(this).attr(_DATA_OJ_COMMAND, newMenuItem.attr(_DATA_OJ_COMMAND)); // @HTMLUpdateOK
-            } else {
-              // replace the list item with the new menu item
-              newMenuItem.get(0).className = $(this).get(0).className;
-              $(this).replaceWith(newMenuItem); // @HTMLUpdateOK
+        // FIX : resolve busy state after laying out, but BEFORE firing events so that when
+        // an app gets an event it doesn't then have to wait for the busy context to be resolved
+        if (resolveBusyState) {
+          resolveBusyState();
+        }
+
+        // fire stored events at end of layout cycle
+        if (this._eventsToFire) {
+          var eventsToFire = this._eventsToFire;
+          this._eventsToFire = [];
+
+          for (var i = 0; i < eventsToFire.length; i += 2) {
+            var eventType = eventsToFire[i];
+            var eventData = eventsToFire[i + 1];
+            this._trigger(eventType, null, eventData);
+          }
+        }
+      },
+
+      /**
+       * Destroy the MasonryLayoutCommon.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _destroyMLCommon: function () {
+        var mlCommon = this._mlCommon;
+        if (mlCommon) {
+          mlCommon.destroy();
+        }
+        this._mlCommon = null;
+      },
+
+      /**
+       * Determine whether the masonryLayout can calculate sizes (when it is
+       * attached to the page DOM and not hidden).
+       * @returns {boolean} true if sizes can be calculated, false if not
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _canCalculateSizes: function () {
+        var div = document.createElement('div');
+        var style = div.style;
+        style.width = '10px';
+        style.height = '10px';
+        var elem = this.element[0];
+        elem.appendChild(div); // @HTMLUpdateOK
+        var bCanCalcSizes = false;
+        try {
+          bCanCalcSizes = div.offsetWidth > 0 && div.offsetHeight > 0;
+        } catch (e) {
+          // do nothing
+        }
+        elem.removeChild(div);
+        return bCanCalcSizes;
+      },
+
+      /**
+       * Get the child tile elements.
+       * @param {boolean} excludeDropSite True to exclude the dropsite, false to
+       *        include it.
+       * @returns {Array} Array of child tile elements.
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _getTileElements: function (excludeDropSite) {
+        var elem = this.element;
+        var children = elem.children(_TILE_SELECTOR);
+        var numChildren = children.length;
+        var arChildren = [];
+        for (var i = 0; i < numChildren; i++) {
+          var child = children[i];
+          if (!excludeDropSite || child !== this._dropSite) {
+            var style = child.style;
+            if (style.visibility !== _HIDDEN && style.display !== _NONE) {
+              arChildren.push(child);
             }
-            bChanged = true;
-          });
+          }
+        }
+        return arChildren;
+      },
 
-          if (bChanged) {
+      /**
+       * Save the original DOM order of the tiles.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _saveTilesOriginalOrder: function () {
+        var arTiles = this._getTileElements();
+        if (arTiles) {
+          for (var i = 0; i < arTiles.length; i++) {
+            var tile = arTiles[i];
+            // only assign original index to tile if it hasn't already been assigned,
+            // so that repeated calls to _setup(true) won't overwrite the original
+            // values with current layout order values
+            if (!tile._jetDataMasonryOriginalOrder) {
+              // make original order index 1-based so that we can easily check for
+              // the existence of the attribute on an element
+              // (e.g. "if (tile._jetDataMasonryOriginalOrder)")
+              tile._jetDataMasonryOriginalOrder = i + 1;
+            }
+          }
+        }
+      },
+
+      /**
+       * Check that all tiles have an assigned index in the original DOM
+       * order, in case new tiles have been inserted outside of the
+       * insertTile API and the masonryLayout has been refreshed.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _checkTilesOriginalOrder: function () {
+        var arTiles = this._getTileElements();
+        if (arTiles) {
+          for (var i = 0; i < arTiles.length; i++) {
+            var tile = arTiles[i];
+            // insert the tile at its current index
+            if (!tile._jetDataMasonryOriginalOrder) {
+              this._insertTileOriginalOrder(tile, i);
+            }
+          }
+        }
+      },
+
+      /**
+       * Restore the original DOM order of the tiles.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _restoreTilesOriginalOrder: function () {
+        var children = this._getTileElements();
+        var sortedChildren = this._getTileElements();
+        _sortTilesOriginalOrder(sortedChildren);
+        for (var i = 0; i < children.length; i++) {
+          var child = children[i];
+          var sortedChild = sortedChildren[i];
+          // if the tiles are different, need to rearrange the DOM
+          if (child !== sortedChild) {
+            // notify the element that it's been detached from the DOM BEFORE actually
+            // detaching it so that components can save state
+            Components.subtreeDetached(sortedChild);
+            // insert the tile from the layout order into the DOM at this index
+            var parentNode = child.parentNode;
+            parentNode.insertBefore(sortedChild, child); // @HTMLUpdateOK
+            // notify the element that it's been attached to the DOM
+            Components.subtreeAttached(sortedChild);
+
+            // rearrange the array of children to match the DOM reorder above
+            var sortedChildIndex = children.indexOf(sortedChild);
+            if (sortedChildIndex > i) {
+              children.splice(sortedChildIndex, 1);
+              children.splice(i, 0, sortedChild);
+            }
+          }
+        }
+      },
+
+      /**
+       * Insert a tile into the original DOM order at the given index.
+       * @param {Object} insertedTile Tile to insert.
+       * @param {number} index Index at which to insert.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _insertTileOriginalOrder: function (insertedTile, index) {
+        var arTiles = this._getTileElements();
+        if (index < 0) {
+          // eslint-disable-next-line no-param-reassign
+          index = arTiles.length;
+        }
+        if (arTiles) {
+          for (var i = 0; i < arTiles.length; i++) {
+            var tile = arTiles[i];
+            // increment the index of each shifted tile
+            if (tile._jetDataMasonryOriginalOrder && tile._jetDataMasonryOriginalOrder >= index + 1) {
+              tile._jetDataMasonryOriginalOrder += 1;
+            }
+          }
+        }
+        // save the index on the inserted tile AFTER the above loop so that its index
+        // didn't get incremented
+        // eslint-disable-next-line no-param-reassign
+        insertedTile._jetDataMasonryOriginalOrder = index + 1;
+      },
+
+      /**
+       * Remove a tile from the original DOM order.
+       * @param {Object} removedTile Tile to remove.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _removeTileOriginalOrder: function (removedTile) {
+        if (removedTile._jetDataMasonryOriginalOrder) {
+          var arTiles = this._getTileElements();
+          if (arTiles) {
+            for (var i = 0; i < arTiles.length; i++) {
+              var tile = arTiles[i];
+              // decrement the index of each shifted tile
+              if (
+                tile._jetDataMasonryOriginalOrder &&
+                tile._jetDataMasonryOriginalOrder > removedTile._jetDataMasonryOriginalOrder
+              ) {
+                tile._jetDataMasonryOriginalOrder -= 1;
+              }
+            }
+          }
+          // delete the stored index from the tile
+          // eslint-disable-next-line no-param-reassign
+          delete removedTile._jetDataMasonryOriginalOrder;
+        }
+      },
+
+      /**
+       * Apply the "oj-masonrylayout-tile" style class to any child tile that is missing it.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _applyTileStyleClass: function () {
+        var elem = this.element;
+        var children = elem.children();
+        children = children.not('.' + _OJ_MASONRYLAYOUT_TILE);
+        children = children.filter(function (index, childElem) {
+          var childClasses = childElem.className;
+          return childClasses.match(_OJ_MASONRYLAYOUT_TILE_SIZE_CLASS_PATTERN);
+        });
+        children.addClass(_OJ_MASONRYLAYOUT_TILE);
+      },
+
+      // start functions for context menu reordering ///////////////////////////////
+
+      /**
+       * Initialize the context menu.  This is called on startup, or on option
+       * "contextMenu" change.
+       * @param {Object=} newVal True if called because of an option change.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _initMenu: function (newVal) {
+        var t = null;
+        var menu = this._GetContextMenu();
+
+        // check for contextmenu attribute on the root element
+        if (!newVal && !menu && !this._IsCustomElement()) {
+          menu = this.element.attr('contextmenu');
+          if (menu) {
+            this.options.contextMenu = '#' + menu;
+          }
+        }
+
+        if (!newVal && !menu) {
+          return;
+        }
+
+        menu = newVal || menu;
+        t = $.type(menu);
+        if (t === 'function') {
+          try {
+            // call user's method to get the context menu
+            menu = menu();
+          } catch (e) {
+            menu = null;
+          }
+          t = $.type(menu);
+        }
+
+        if (!menu) {
+          return;
+        }
+
+        // get the user's <ul> list
+        var $m = $(menu);
+        if ($m.length > 0) {
+          // ensure it's not visible
+          $m.css('display', _NONE);
+          var dm = this._menu;
+          if (!dm) {
+            return;
+          }
+
+          dm.$container = $m;
+          // have a context menu
+          dm.usermenu = true;
+        }
+
+        // if we have a context menu
+        if (this._menu.usermenu) {
+          // and it is being changed
+          if (newVal) {
+            // complete menu creation/attachment
+            this._applyMenu();
+          }
+        }
+
+        //  If not a new val from options, Menu will be noted at the end of initialization in _start()
+      },
+
+      /**
+       * Replace built in shortcut reorder context menu items with real items and
+       * add listeners to the context menu.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _applyMenu: function () {
+        if (!this._menu || !this._menu.usermenu || !this.options.reorderHandle) {
+          return;
+        }
+
+        // Add our listeners so that we can handle build-in cut/paste, etc
+        var $menuContainer = this._menu.$container;
+        var self = this;
+
+        // Check if the menu container tag name is 'OJ-MENU' for custom element context menu
+        if ($menuContainer[0].tagName === 'OJ-MENU') {
+          // For custom element context menu, attach action listener to handle selection
+          $menuContainer[0].addEventListener('ojAction', this._handleContextMenuSelect.bind(this));
+        } else {
+          // For data-bind widget context menu, attach selection listener to handle selection
+          $menuContainer.on('ojselect', this._handleContextMenuSelect.bind(this));
+        }
+
+        // If there are any ojMasonryLayout built in menu item ids, construct the menu items
+        var listItems = $menuContainer.find('[data-oj-command]');
+        var bChanged = false;
+
+        listItems.each(function () {
+          var command = $(this).attr(_DATA_OJ_COMMAND);
+          if (command.indexOf('oj-masonrylayout-') >= 0) {
+            command = command.slice('oj-masonrylayout-'.length);
+          }
+          var tagName = $menuContainer[0].tagName === 'OJ-MENU' ? this.tagName : 'li';
+          var newMenuItem = self._buildContextMenuItem(command, tagName);
+
+          $(this).attr('id', newMenuItem.attr('id'));
+          if (this.tagName === 'OJ-OPTION') {
+            // Just update the content of OJ-OPTION and don't replace that with menu item,
+            // because replacing OJ-OPTION would trigger a detach/attach of custom element
+            this.innerHTML = newMenuItem.get(0).innerHTML; // @HTMLUpdateOK
+            $(this).attr(_DATA_OJ_COMMAND, newMenuItem.attr(_DATA_OJ_COMMAND)); // @HTMLUpdateOK
+          } else {
+            // replace the list item with the new menu item
+            newMenuItem.get(0).className = $(this).get(0).className;
+            $(this).replaceWith(newMenuItem); // @HTMLUpdateOK
+          }
+          bChanged = true;
+        });
+
+        if (bChanged) {
+          if ($menuContainer[0].tagName === 'OJ-MENU') {
+            $menuContainer[0].refresh();
+          } else {
+            $menuContainer.ojMenu('refresh');
+          }
+        }
+
+        this._menu.$elemCut = $menuContainer.find('#' + _OJMASONRYLAYOUTCUT);
+        this._menu.$elemPasteBefore = $menuContainer.find('#' + _OJMASONRYLAYOUTPASTEBEFORE);
+        this._menu.$elemPasteAfter = $menuContainer.find('#' + _OJMASONRYLAYOUTPASTEAFTER);
+      },
+
+      /**
+       * Clear out any contextMenu data.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _clearMenu: function () {
+        var menu = this._menu;
+        if (menu && menu.usermenu) {
+          menu.usermenu = false;
+          if (menu.$container[0].tagName === 'OJ-MENU') {
+            menu.$container[0].removeEventListener('ojAction', this._handleContextMenuSelect);
+          } else {
+            menu.$container.off('ojselect');
+          }
+          menu.$container = null;
+        }
+      },
+
+      /**
+       * Refresh the context menu.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _refreshMenu: function () {
+        this._clearMenu();
+        this._initMenu();
+        this._applyMenu();
+      },
+
+      /**
+       * Prepare the context menu before it's opened.
+       * @param {Object} e jQuery event object.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _prepareContextMenuBeforeOpen: function (e) {
+        var elem = this.element;
+
+        // FIX : only allow reordering if context menu was
+        // launched from reorder handle
+        var target = e.originalEvent.target;
+        var options = this.options;
+        var reorderHandle = options.reorderHandle;
+        var reorderAllowed = false;
+        if (reorderHandle) {
+          var closestHandle = $(target).closest(reorderHandle);
+          if (closestHandle && closestHandle.length > 0) {
+            reorderAllowed = true;
+          }
+        }
+
+        var tile = _findContainingTile(target, elem[0]);
+        this._menu.tile = tile;
+
+        var bDisable;
+        // set menu items disabled state
+        if (this._menu.usermenu) {
+          var cutTile = this._menu.cutTile;
+          var bRefreshMenu = false;
+
+          var elemCut = this._menu.$elemCut;
+          if (elemCut) {
+            // FIX : only allow reordering if context menu was
+            // launched from reorder handle
+            var cutHidden = elemCut.hasClass(_OJ_HELPER_HIDDEN);
+            if (!reorderAllowed && !cutHidden) {
+              elemCut.addClass(_OJ_HELPER_HIDDEN);
+              bRefreshMenu = true;
+            } else if (reorderAllowed && cutHidden) {
+              elemCut.removeClass(_OJ_HELPER_HIDDEN);
+              bRefreshMenu = true;
+            }
+
+            var cutDisabled = elemCut.hasClass(_OJ_DISABLED);
+            bDisable = false;
+            // disable "cut" if this tile has already been cut
+            if (cutTile && tile === cutTile) {
+              bDisable = true;
+            }
+
+            if (bDisable && !cutDisabled) {
+              elemCut.addClass(_OJ_DISABLED);
+              bRefreshMenu = true;
+            } else if (!bDisable && cutDisabled) {
+              elemCut.removeClass(_OJ_DISABLED);
+              bRefreshMenu = true;
+            }
+          }
+
+          var elemPasteBefore = this._menu.$elemPasteBefore;
+          if (elemPasteBefore) {
+            // FIX : only allow reordering if context menu was
+            // launched from reorder handle
+            var pasteBeforeHidden = elemPasteBefore.hasClass(_OJ_HELPER_HIDDEN);
+            if (!reorderAllowed && !pasteBeforeHidden) {
+              elemPasteBefore.addClass(_OJ_HELPER_HIDDEN);
+              bRefreshMenu = true;
+            } else if (reorderAllowed && pasteBeforeHidden) {
+              elemPasteBefore.removeClass(_OJ_HELPER_HIDDEN);
+              bRefreshMenu = true;
+            }
+
+            var pasteBeforeDisabled = elemPasteBefore.hasClass(_OJ_DISABLED);
+            bDisable = false;
+            // disable "pasteBefore" if this is the tile that was cut or if the cut
+            // tile is the one before this tile
+            if (!cutTile || tile === cutTile || tile === _getNextElement(cutTile)) {
+              bDisable = true;
+            }
+
+            if (bDisable && !pasteBeforeDisabled) {
+              elemPasteBefore.addClass(_OJ_DISABLED);
+              bRefreshMenu = true;
+            } else if (!bDisable && pasteBeforeDisabled) {
+              elemPasteBefore.removeClass(_OJ_DISABLED);
+              bRefreshMenu = true;
+            }
+          }
+
+          var elemPasteAfter = this._menu.$elemPasteAfter;
+          if (elemPasteAfter) {
+            // FIX : only allow reordering if context menu was
+            // launched from reorder handle
+            var pasteAfterHidden = elemPasteAfter.hasClass(_OJ_HELPER_HIDDEN);
+            if (!reorderAllowed && !pasteAfterHidden) {
+              elemPasteAfter.addClass(_OJ_HELPER_HIDDEN);
+              bRefreshMenu = true;
+            } else if (reorderAllowed && pasteAfterHidden) {
+              elemPasteAfter.removeClass(_OJ_HELPER_HIDDEN);
+              bRefreshMenu = true;
+            }
+
+            var pasteAfterDisabled = elemPasteAfter.hasClass(_OJ_DISABLED);
+            bDisable = false;
+            // disable "pasteAfter" if this is the tile that was cut or if the cut
+            // tile is the one after this tile
+            if (!cutTile || cutTile === tile || cutTile === _getNextElement(tile)) {
+              bDisable = true;
+            }
+
+            if (bDisable && !pasteAfterDisabled) {
+              elemPasteAfter.addClass(_OJ_DISABLED);
+              bRefreshMenu = true;
+            } else if (!bDisable && pasteAfterDisabled) {
+              elemPasteAfter.removeClass(_OJ_DISABLED);
+              bRefreshMenu = true;
+            }
+          }
+
+          if (bRefreshMenu) {
+            var $menuContainer = this._menu.$container;
+
             if ($menuContainer[0].tagName === 'OJ-MENU') {
               $menuContainer[0].refresh();
             } else {
               $menuContainer.ojMenu('refresh');
             }
           }
+        }
+      },
 
-          this._menu.$elemCut = $menuContainer.find('#' + _OJMASONRYLAYOUTCUT);
-          this._menu.$elemPasteBefore = $menuContainer.find('#' + _OJMASONRYLAYOUTPASTEBEFORE);
-          this._menu.$elemPasteAfter = $menuContainer.find('#' + _OJMASONRYLAYOUTPASTEAFTER);
-        },
+      /**
+       * Build a context menu item for a cut/paste command.
+       * @param {string} command Command to execute for item.
+       * @param {string} tagName to use to create the menu item
+       * @returns {jQuery} jQuery list item object.
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _buildContextMenuItem: function (command, tagName) {
+        var id = _MENU_CMD_MAP[command];
+        var item = $(document.createElement(tagName)); // @HTMLUpdateOK
+        item.attr('id', id);
+        item.attr(_DATA_OJ_COMMAND, command); // @HTMLUpdateOK
+        item.append(this._buildContextMenuLabel(command, tagName === 'OJ-OPTION')); // @HTMLUpdateOK
+        return item;
+      },
 
-        /**
-         * Clear out any contextMenu data.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _clearMenu: function () {
-          var menu = this._menu;
-          if (menu && menu.usermenu) {
-            menu.usermenu = false;
-            if (menu.$container[0].tagName === 'OJ-MENU') {
-              menu.$container[0].removeEventListener('ojAction', this._handleContextMenuSelect);
-            } else {
-              menu.$container.off('ojselect');
-            }
-            menu.$container = null;
-          }
-        },
+      /**
+       * Builds a context menu label by looking up command translation
+       * @param {string} command the string to look up translation for
+       * @param {boolean=} useOjOption whether oj-option tag should be used
+       * @return {jQuery|string} a jQuery object with HTML containing a label
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _buildContextMenuLabel: function (command, useOjOption) {
+        // convert to the translation key convention
+        var transKey = _MENU_TRANSLATION_MAP[command];
+        var textNode = document.createTextNode(this.getTranslatedString(transKey));
 
-        /**
-         * Refresh the context menu.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _refreshMenu: function () {
-          this._clearMenu();
-          this._initMenu();
-          this._applyMenu();
-        },
+        // for custom elements, no <a> tag is required
+        if (useOjOption) {
+          return textNode;
+        }
+        return $('<a href="#"></a>').append(textNode); // @HTMLUpdateOK
+      },
 
-        /**
-         * Prepare the context menu before it's opened.
-         * @param {Object} e jQuery event object.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _prepareContextMenuBeforeOpen: function (e) {
-          var elem = this.element;
+      /**
+       * Execute a "cut" command from the context menu.
+       * @param {Object} obj Tile element to cut.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _menuCut: function (obj) {
+        if (obj) {
+          this._menu.cutTile = obj;
+        }
+      },
 
-          // FIX : only allow reordering if context menu was
-          // launched from reorder handle
-          var target = e.originalEvent.target;
-          var options = this.options;
-          var reorderHandle = options.reorderHandle;
-          var reorderAllowed = false;
-          if (reorderHandle) {
-            var closestHandle = $(target).closest(reorderHandle);
-            if (closestHandle && closestHandle.length > 0) {
-              reorderAllowed = true;
-            }
-          }
+      /**
+       * Execute a "paste" command from the context menu.
+       * @param {Object} obj Tile element at paste location.
+       * @param {boolean} pasteBefore True to paste before the given tile, false to
+       *        paste after the given tile.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _menuPaste: function (obj, pasteBefore) {
+        if (obj && this._menu.cutTile) {
+          var cutTile = this._menu.cutTile;
+          this._menu.cutTile = false;
+          this._doPaste(cutTile, obj, pasteBefore);
+        }
+      },
 
-          var tile = _findContainingTile(target, elem[0]);
-          this._menu.tile = tile;
+      /**
+       * Paste the cut tile before or after the given paste tile.
+       * @param {Object} cutTile Tile element to paste.
+       * @param {Object} pasteTile Tile element at paste location.
+       * @param {boolean} pasteBefore True to paste before the given tile, false to
+       *        paste after the given tile.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _doPaste: function (cutTile, pasteTile, pasteBefore) {
+        var fromIndex = cutTile._jetDataMasonryOriginalOrder - 1;
+        var jqCutTile = $(cutTile);
 
-          var bDisable;
-          // set menu items disabled state
-          if (this._menu.usermenu) {
-            var cutTile = this._menu.cutTile;
-            var bRefreshMenu = false;
+        // fire beforeReorder event
+        var beforeEventData = {
+          /** @expose */
+          tile: jqCutTile,
+          /** @expose */
+          fromIndex: fromIndex
+        };
+        var bSuccess = this._trigger('beforeReorder', null, beforeEventData);
 
-            var elemCut = this._menu.$elemCut;
-            if (elemCut) {
-              // FIX : only allow reordering if context menu was
-              // launched from reorder handle
-              var cutHidden = elemCut.hasClass(_OJ_HELPER_HIDDEN);
-              if (!reorderAllowed && !cutHidden) {
-                elemCut.addClass(_OJ_HELPER_HIDDEN);
-                bRefreshMenu = true;
-              } else if (reorderAllowed && cutHidden) {
-                elemCut.removeClass(_OJ_HELPER_HIDDEN);
-                bRefreshMenu = true;
-              }
-
-              var cutDisabled = elemCut.hasClass(_OJ_DISABLED);
-              bDisable = false;
-              // disable "cut" if this tile has already been cut
-              if (cutTile && tile === cutTile) {
-                bDisable = true;
-              }
-
-              if (bDisable && !cutDisabled) {
-                elemCut.addClass(_OJ_DISABLED);
-                bRefreshMenu = true;
-              } else if (!bDisable && cutDisabled) {
-                elemCut.removeClass(_OJ_DISABLED);
-                bRefreshMenu = true;
-              }
-            }
-
-            var elemPasteBefore = this._menu.$elemPasteBefore;
-            if (elemPasteBefore) {
-              // FIX : only allow reordering if context menu was
-              // launched from reorder handle
-              var pasteBeforeHidden = elemPasteBefore.hasClass(_OJ_HELPER_HIDDEN);
-              if (!reorderAllowed && !pasteBeforeHidden) {
-                elemPasteBefore.addClass(_OJ_HELPER_HIDDEN);
-                bRefreshMenu = true;
-              } else if (reorderAllowed && pasteBeforeHidden) {
-                elemPasteBefore.removeClass(_OJ_HELPER_HIDDEN);
-                bRefreshMenu = true;
-              }
-
-              var pasteBeforeDisabled = elemPasteBefore.hasClass(_OJ_DISABLED);
-              bDisable = false;
-              // disable "pasteBefore" if this is the tile that was cut or if the cut
-              // tile is the one before this tile
-              if (!cutTile ||
-                  (tile === cutTile || tile === _getNextElement(cutTile))) {
-                bDisable = true;
-              }
-
-              if (bDisable && !pasteBeforeDisabled) {
-                elemPasteBefore.addClass(_OJ_DISABLED);
-                bRefreshMenu = true;
-              } else if (!bDisable && pasteBeforeDisabled) {
-                elemPasteBefore.removeClass(_OJ_DISABLED);
-                bRefreshMenu = true;
-              }
-            }
-
-            var elemPasteAfter = this._menu.$elemPasteAfter;
-            if (elemPasteAfter) {
-              // FIX : only allow reordering if context menu was
-              // launched from reorder handle
-              var pasteAfterHidden = elemPasteAfter.hasClass(_OJ_HELPER_HIDDEN);
-              if (!reorderAllowed && !pasteAfterHidden) {
-                elemPasteAfter.addClass(_OJ_HELPER_HIDDEN);
-                bRefreshMenu = true;
-              } else if (reorderAllowed && pasteAfterHidden) {
-                elemPasteAfter.removeClass(_OJ_HELPER_HIDDEN);
-                bRefreshMenu = true;
-              }
-
-              var pasteAfterDisabled = elemPasteAfter.hasClass(_OJ_DISABLED);
-              bDisable = false;
-              // disable "pasteAfter" if this is the tile that was cut or if the cut
-              // tile is the one after this tile
-              if (!cutTile ||
-                  (cutTile === tile || cutTile === _getNextElement(tile))) {
-                bDisable = true;
-              }
-
-              if (bDisable && !pasteAfterDisabled) {
-                elemPasteAfter.addClass(_OJ_DISABLED);
-                bRefreshMenu = true;
-              } else if (!bDisable && pasteAfterDisabled) {
-                elemPasteAfter.removeClass(_OJ_DISABLED);
-                bRefreshMenu = true;
-              }
-            }
-
-            if (bRefreshMenu) {
-              var $menuContainer = this._menu.$container;
-
-              if ($menuContainer[0].tagName === 'OJ-MENU') {
-                $menuContainer[0].refresh();
-              } else {
-                $menuContainer.ojMenu('refresh');
-              }
-            }
-          }
-        },
-
-        /**
-         * Build a context menu item for a cut/paste command.
-         * @param {string} command Command to execute for item.
-         * @param {string} tagName to use to create the menu item
-         * @returns {jQuery} jQuery list item object.
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _buildContextMenuItem: function (command, tagName) {
-          var id = _MENU_CMD_MAP[command];
-          var item = $(document.createElement(tagName)); // @HTMLUpdateOK
-          item.attr('id', id);
-          item.attr(_DATA_OJ_COMMAND, command); // @HTMLUpdateOK
-          item.append(this._buildContextMenuLabel(command, tagName === 'OJ-OPTION')); // @HTMLUpdateOK
-          return item;
-        },
-
-        /**
-         * Builds a context menu label by looking up command translation
-         * @param {string} command the string to look up translation for
-         * @param {boolean=} useOjOption whether oj-option tag should be used
-         * @return {jQuery|string} a jQuery object with HTML containing a label
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _buildContextMenuLabel: function (command, useOjOption) {
-          // convert to the translation key convention
-          var transKey = _MENU_TRANSLATION_MAP[command];
-          var textNode = document.createTextNode(this.getTranslatedString(transKey));
-
-          // for custom elements, no <a> tag is required
-          if (useOjOption) {
-            return textNode;
-          }
-          return $('<a href="#"></a>').append(textNode); // @HTMLUpdateOK
-        },
-
-        /**
-         * Execute a "cut" command from the context menu.
-         * @param {Object} obj Tile element to cut.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _menuCut: function (obj) {
-          if (obj) {
-            this._menu.cutTile = obj;
-          }
-        },
-
-        /**
-         * Execute a "paste" command from the context menu.
-         * @param {Object} obj Tile element at paste location.
-         * @param {boolean} pasteBefore True to paste before the given tile, false to
-         *        paste after the given tile.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _menuPaste: function (obj, pasteBefore) {
-          if (obj && this._menu.cutTile) {
-            var cutTile = this._menu.cutTile;
-            this._menu.cutTile = false;
-            this._doPaste(cutTile, obj, pasteBefore);
-          }
-        },
-
-        /**
-         * Paste the cut tile before or after the given paste tile.
-         * @param {Object} cutTile Tile element to paste.
-         * @param {Object} pasteTile Tile element at paste location.
-         * @param {boolean} pasteBefore True to paste before the given tile, false to
-         *        paste after the given tile.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _doPaste: function (cutTile, pasteTile, pasteBefore) {
-          var fromIndex = cutTile._jetDataMasonryOriginalOrder - 1;
-          var jqCutTile = $(cutTile);
-
-          // fire beforeReorder event
-          var beforeEventData = {
-            /** @expose */
-            tile: jqCutTile,
-            /** @expose */
-            fromIndex: fromIndex
-          };
-          var bSuccess = this._trigger('beforeReorder', null, beforeEventData);
-
-          if (bSuccess !== false) {
-            // remove the cutTile from the original ordering before getting the toIndex
-            this._removeTileOriginalOrder(cutTile);
-            var toIndex = pasteTile._jetDataMasonryOriginalOrder - 1;
-            if (!pasteBefore) {
-              toIndex += 1;
-            }
-
-            var elem = this.element[0];
-            if (pasteBefore) {
-              this._insertTileOriginalOrder(cutTile, toIndex);
-              elem.insertBefore(cutTile, pasteTile); // @HTMLUpdateOK
-            } else {
-              var nextElem = _getNextElement(pasteTile);
-              this._insertTileOriginalOrder(cutTile, toIndex);
-              elem.insertBefore(cutTile, nextElem); // @HTMLUpdateOK
-            }
-
-            var mlCommon = this._mlCommon;
-            mlCommon.setup(true);
-
-            // fire reorder event
-            var eventData = {
-              /** @expose */
-              tile: jqCutTile,
-              /** @expose */
-              fromIndex: fromIndex,
-              /** @expose */
-              toIndex: toIndex
-            };
-            this._trigger('reorder', null, eventData);
-          }
-        },
-
-        /**
-         * Handle a context menu select event.
-         * @param {Event|CustomEvent} event event for context menu item selection
-         * @param {Object=} ui an object containing the menu item that was selected
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _handleContextMenuSelect: function (event, ui) {
-          // get the selected menu item from the ui object in the old data-bind syntax widget case,
-          // or from the event target in the custom element case.
-          var item = ui ? ui.item : $(event.target);
-          var id = item.attr('id');
-
-          if (id === _OJMASONRYLAYOUTCUT) {
-            this._menuCut(this._menu.tile);
-          } else if (id === _OJMASONRYLAYOUTPASTEBEFORE) {
-            this._menuPaste(this._menu.tile, true);
-          } else if (id === _OJMASONRYLAYOUTPASTEAFTER) {
-            this._menuPaste(this._menu.tile, false);
-          }
-        },
-
-        // end functions for context menu reordering /////////////////////////////////
-
-        // start functions for drag-and-drop reordering //////////////////////////////
-
-        /**
-         * Get the index of the given child tile.
-         * @param {Object} tile Tile for which to get the index.
-         * @returns {number} Index of the tile.
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _getTileIndex: function (tile) {
-          // index should be with respect to "real" children, not including the dropsite,
-          // so exclude the dropsite from the children array
-          var children = this._getTileElements(true);
-          // need to sort the children because the index is with respect to the original order
-          _sortTilesOriginalOrder(children);
-          var numChildren = children.length;
-          for (var i = 0; i < numChildren; i++) {
-            if (children[i] === tile) {
-              return i;
-            }
-          }
-          return -1;
-        },
-
-        /**
-         * Setup drag and drop on the reorder handles.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _setupReorderHandles: function () {
-          var elem = this.element;
-          var children = elem.children();
-          this._setupReorderHandlesForElem(children);
-          elem
-            .on('dragstart' + this.reorderHandleEventNamespace, this._handleDragStartFunc)
-            .on('dragenter' + this.reorderHandleEventNamespace, this._handleDragEnterFunc)
-            .on('dragover' + this.reorderHandleEventNamespace, this._handleDragOverFunc)
-            .on('dragleave' + this.reorderHandleEventNamespace, this._handleDragLeaveFunc)
-            .on('dragend' + this.reorderHandleEventNamespace, this._handleDragEndFunc)
-            .on('drop' + this.reorderHandleEventNamespace, this._handleDropFunc);
-        },
-
-        /**
-         * Setup drag and drop on the reorder handles.
-         * @param {jQuery} jqElem Elem for which to setup drag and drop on
-         *        the reorder handles.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _setupReorderHandlesForElem: function (jqElem) {
-          var options = this.options;
-          // setup for tiles themselves
-          var tiles = jqElem.filter(options.reorderHandle);
-          tiles
-            .attr(_DRAGGABLE, 'true') // @HTMLUpdateOK
-            .addClass(_OJ_DRAGGABLE);
-          // setup for descendants of tiles
-          var reorderHandles = jqElem.find(options.reorderHandle);
-          reorderHandles
-            .attr(_DRAGGABLE, 'true') // @HTMLUpdateOK
-            .addClass(_OJ_DRAGGABLE);
-        },
-
-        /**
-         * Tear down drag and drop on the reorder handles.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _tearDownReorderHandles: function () {
-          var elem = this.element;
-          var children = elem.children();
-          // tear down reorder handles on the children of the root elem in case
-          // the root elem itself is draggable
-          this._tearDownReorderHandlesForElem(children);
-          elem.off(this.reorderHandleEventNamespace);
-        },
-
-        /**
-         * Tear down drag and drop on the reorder handles.
-         * @param {jQuery} jqElem Elem for which to tear down drag and drop on
-         *        the reorder handles.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _tearDownReorderHandlesForElem: function (jqElem) {
-          var options = this.options;
-          // tear down for tiles themselves
-          var tiles = jqElem.filter(options.reorderHandle);
-          tiles
-            .removeAttr(_DRAGGABLE)
-            .removeClass(_OJ_DRAGGABLE);
-          // tear down for descendants of tiles
-          var reorderHandles = jqElem.find(options.reorderHandle);
-          reorderHandles
-            .removeAttr(_DRAGGABLE)
-            .removeClass(_OJ_DRAGGABLE);
-        },
-
-        /**
-         * Handle a dragstart event.
-         * @param {Event} event jQuery Event
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _handleDragStart: function (event) {
-          var options = this.options;
-          var target;
-
-          // FIX : if drag didn't start on reorder handle, don't
-          // reorder tile
-          target = event.originalEvent.target;
-          var closestHandle = $(target).closest(options.reorderHandle);
-          if (!closestHandle || closestHandle.length < 1) {
-            return;
+        if (bSuccess !== false) {
+          // remove the cutTile from the original ordering before getting the toIndex
+          this._removeTileOriginalOrder(cutTile);
+          var toIndex = pasteTile._jetDataMasonryOriginalOrder - 1;
+          if (!pasteBefore) {
+            toIndex += 1;
           }
 
-
-          // don't try to start another drag while there's already one happening
-          // (in case the previous transition is still running)
-          if (!this._bDragging) {
-            target = event.target;
-            var elem = this.element;
-            var tile = _findContainingTile(target, elem[0]);
-            if (tile) {
-              var index = this._getTileIndex(tile);
-              tile._jetDataMasonryDragSourceIndex = index;
-
-              // fire beforeReorder event
-              var eventData = {
-                /** @expose */
-                tile: $(tile),
-                /** @expose */
-                fromIndex: index
-              };
-              var bSuccess = this._trigger('beforeReorder', null, eventData);
-
-              if (bSuccess !== false) {
-                var originalEvent = event.originalEvent;
-                this._dragStart(tile, originalEvent.pageX, originalEvent.pageY,
-                                originalEvent.dataTransfer);
-              }
-            }
-          }
-        },
-
-        /**
-         * Handle a dragenter event.
-         * @param {Event} event jQuery Event
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _handleDragEnter: function (event) {
-          // FIX : only process drag and drop event if masonryLayout
-          // started the drag
-          if (!this._bDragging) {
-            return;
-          }
-
-          var originalEvent = event.originalEvent;
-          var relatedTarget = originalEvent.relatedTarget;
           var elem = this.element[0];
-          var enteringMasonryLayout = false;
-          if (relatedTarget) {
-            enteringMasonryLayout = (elem !== relatedTarget) &&
-              !DomUtils.isAncestor(elem, relatedTarget);
-          } else if (this._dragLeftMasonryLayout) {
-            // chrome 40.0.2214.111 doesn't set a relatedTarget, so need to use other means
-            // to figure out if we're re-entering the masonryLayout
-            var elemUnderPoint = document.elementFromPoint(originalEvent.clientX,
-                                                           originalEvent.clientY);
-            enteringMasonryLayout = elemUnderPoint &&
-              (elemUnderPoint === elem ||
-               DomUtils.isAncestor(elem, elemUnderPoint));
-          }
-          if (enteringMasonryLayout) {
-            this._dragLeftMasonryLayout = false;
-            if (!this._draggedTile) {
-              var dataTransfer = originalEvent.dataTransfer;
-              dataTransfer.dropEffect = 'none';
-            } else if (this._dropSite) {
-              $(this._dropSite).css('display', '');
-              var mlCommon = this._mlCommon;
-              mlCommon.setup(false, true);
-            }
-          }
-        },
-
-        /**
-         * Handle a dragover event.
-         * @param {Event} event jQuery Event
-         * @returns {boolean} False
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _handleDragOver: function (event) {
-          // FIX : only process drag and drop event if masonryLayout
-          // started the drag
-          if (!this._bDragging) {
-            return false;
-          }
-
-          var originalEvent = event.originalEvent;
-          var dataTransfer = originalEvent.dataTransfer;
-          dataTransfer.dropEffect = 'move';
-
-          this._dragMove(originalEvent.pageX, originalEvent.clientX, originalEvent.clientY);
-
-          // necessary to allow a drop
-          event.preventDefault();
-          return false;
-        },
-
-        /**
-         * Handle a dragleave event.
-         * @param {Event} event jQuery Event
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _handleDragLeave: function (event) {
-          // FIX : only process drag and drop event if masonryLayout
-          // started the drag
-          if (!this._bDragging) {
-            return;
-          }
-
-          var originalEvent = event.originalEvent;
-          var relatedTarget = originalEvent.relatedTarget;
-          var elem = this.element[0];
-          var leavingMasonryLayout = false;
-          if (relatedTarget) {
-            leavingMasonryLayout = (elem !== relatedTarget) &&
-              !DomUtils.isAncestor(elem, relatedTarget);
+          if (pasteBefore) {
+            this._insertTileOriginalOrder(cutTile, toIndex);
+            elem.insertBefore(cutTile, pasteTile); // @HTMLUpdateOK
           } else {
-            // chrome 40.0.2214.111 doesn't set a relatedTarget, so need to use other means
-            // to figure out if we're exiting the masonryLayout
-            var elemUnderPoint = document.elementFromPoint(originalEvent.clientX,
-                                                           originalEvent.clientY);
-            leavingMasonryLayout = elemUnderPoint &&
-              elemUnderPoint !== elem &&
-              !DomUtils.isAncestor(elem, elemUnderPoint);
-          }
-          if (leavingMasonryLayout) {
-            this._dragLeftMasonryLayout = true;
-            if (this._dropSite) {
-              $(this._dropSite).css('display', _NONE);
-              var mlCommon = this._mlCommon;
-              mlCommon.setup(false, true);
-            }
-          }
-        },
-
-        /**
-         * Clear the timeout used to hide the tile at the start of a drag.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _clearDragStartHideTileTimeout: function () {
-          if (this._dragStartHideTileTimeout) {
-            clearTimeout(this._dragStartHideTileTimeout);
-            this._dragStartHideTileTimeout = null;
-            this._busyStateResolveFunc();
-            this._busyStateResolveFunc = null;
-
-            var draggedTile = this._draggedTile;
-            if (draggedTile) {
-              $(draggedTile).removeClass('oj-drag');
-            }
-          }
-        },
-
-        /**
-         * Handle a dragend event.
-         * @param {Event} event jQuery Event
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        // eslint-disable-next-line no-unused-vars
-        _handleDragEnd: function (event) {
-          // FIX : if the drag and drop was a very short duration,
-          // the hide tile timeout may not have fired yet, so clear it now
-          this._clearDragStartHideTileTimeout();
-
-          // FIX : only process drag and drop event if masonryLayout
-          // started the drag
-          if (!this._bDragging) {
-            return;
+            var nextElem = _getNextElement(pasteTile);
+            this._insertTileOriginalOrder(cutTile, toIndex);
+            elem.insertBefore(cutTile, nextElem); // @HTMLUpdateOK
           }
 
-          // only process the dragend if we're not currently processing a drop (for
-          // example if the mouse button was released outside of the masonryLayout)
-          if (!this._bDropping) {
-            var draggedTile = this._draggedTile;
-            if (draggedTile && this._dropSite) {
-              var dropSite = this._dropSite;
-              var elem = this.element[0];
-              // tile was not moved outside
-              if (DomUtils.isAncestor(elem, draggedTile)) {
-                $(dropSite).css('display', '');
-                this._removeTileOriginalOrder(dropSite);
-                var parent = dropSite.parentNode;
-                parent.removeChild(dropSite);
-                $(draggedTile).css('display', '');
-                this._insertTileOriginalOrder(draggedTile,
-                                              draggedTile._jetDataMasonryOriginalOrder - 1);
-                var mlCommon = this._mlCommon;
-                mlCommon.setup(false, true);
-              }
-
-              delete draggedTile._jetDataMasonryDragSourceIndex;
-            }
-            this._draggedTile = null;
-            this._dropSite = null;
-            this._prevTileUnderPoint = null;
-            this._prevCellUnderPoint = null;
-            this._bDragMoveTransition = false;
-            this._bMouseMoved = false;
-            this._dragOffset = null;
-            this._bDragEndTransition = false;
-            this._bDragging = false;
-          }
-        },
-
-        /**
-         * Handle a drop event.
-         * @param {Event} event jQuery Event
-         * @returns {boolean} False
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _handleDrop: function (event) {
-          // FIX : only process drag and drop event if masonryLayout
-          // started the drag
-          if (!this._bDragging) {
-            return false;
-          }
-
-          // FIX : if the drop happens before the drag move layout
-          // animation is done, finish that layout cycle immediately before processing
-          // the drop
           var mlCommon = this._mlCommon;
-          if (mlCommon.isInLayoutCycle()) {
-            mlCommon.finishLayoutCycle();
-          }
-
-          // FIX : if the drag and drop was a very short duration,
-          // the hide tile timeout may not have fired yet, so clear it now
-          this._clearDragStartHideTileTimeout();
-
-          var originalEvent = event.originalEvent;
-          this._drop(this._draggedTile, originalEvent.pageX, originalEvent.pageY);
-
-          // stop the browser from redirecting
-          event.stopPropagation();
-          return false;
-        },
-
-        /**
-         * Start a drag.
-         * @param {!Element} tile Tile being dragged.
-         * @param {number} pageX Page coordinate at which the drag starts.
-         * @param {number} pageY Page coordinate at which the drag starts.
-         * @param {Object} dataTransfer Drag and drop DataTransfer object.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _dragStart: function (tile, pageX, pageY, dataTransfer) {
-          this._bDragging = true;
-          this._bDropping = false;
-          this._bMouseMoved = false;
-          this._bDragStartTileHidden = false;
-          this._draggedTile = tile;
-          var elem = this.element[0];
-
-          var sizeClass = _getSizeStyleClassName(tile);
-          this._dropSite = document.createElement('div');
-          var dropSite = this._dropSite;
-          dropSite._jetDataMasonryOriginalOrder = tile._jetDataMasonryOriginalOrder;
-          dropSite.className = sizeClass + ' oj-drop ' + _OJ_MASONRYLAYOUT_TILE;
-          var style = dropSite.style;
-          var tileStyle = tile.style;
-          style.top = tileStyle.top;
-          // FIX : in RTL, position tiles using "right" instead of "left"
-          if (this._bRTL) {
-            style.right = tileStyle.right;
-          } else {
-            style.left = tileStyle.left;
-          }
-          // need to get the relative position of the tile BEFORE replacing it with
-          // the dropsite and adding it to the elemParent below
-          var offset = _getRelativePosition(tile);
-          elem.insertBefore(dropSite, tile); // @HTMLUpdateOK
-
-          var dragOffset = { left: pageX - offset.left, top: pageY - offset.top };
-          this._dragOffset = dragOffset;
-
-          // add the oj-drag class BEFORE creating the drag feedback image
-          $(tile).addClass('oj-drag');
-
-          // eslint-disable-next-line no-param-reassign
-          dataTransfer.effectAllowed = 'move';
-          dataTransfer.setData('text/html', tile.outerHTML); // @HTMLUpdateOK
-          dataTransfer.setDragImage(tile, dragOffset.left, dragOffset.top);
-
-          // hide the original tile in a timeout AFTER creating the drag feedback image
-          var self = this;
-          this._busyStateResolveFunc = this._addBusyState('Wait for dragStartHideTile timeout');
-          this._dragStartHideTileTimeout = setTimeout(function () {
-            self._bDragStartTileHidden = true;
-            tileStyle.display = _NONE;
-            $(tile).removeClass('oj-drag');
-            self._dragStartHideTileTimeout = null;
-            self._busyStateResolveFunc();
-            self._busyStateResolveFunc = null;
-            // notify the element that it's been hidden
-            Components.subtreeHidden(tile);
-          }, 0);
-        },
-
-        /**
-         * Drag a tile.
-         * @param {number} pageX Page coordinate of the drag move.
-         * @param {number} clientX Client coordinate of the drag move.
-         * @param {number} clientY Client coordinate of the drag move.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _dragMove: function (pageX, clientX, clientY) {
-          this._bMouseMoved = true;
-
-          // FIX : if the dragged tile hasn't been hidden yet, don't
-          // process the drag move because it may layout the dragged tile, which
-          // will leave a visual gap in the layout once the tile is hidden
-          if (!this._bDragStartTileHidden) {
-            return;
-          }
-
-          if (!this._bDragMoveTransition) {
-            var elem = this.element[0];
-            var elemUnderPoint = document.elementFromPoint(clientX, clientY);
-            var tileUnderPoint = _findContainingTile(elemUnderPoint, elem);
-
-            // FIX : only allow reordering if tile has reorder
-            // handle
-            var tileHasReorderHandle = false;
-            if (tileUnderPoint) {
-              var $tileUnderPoint = $(tileUnderPoint);
-              var options = this.options;
-              var reorderHandle = options.reorderHandle;
-              // FIX : the tile has a reorder handle if: 1) the tile
-              // itself is the reorder handle, or 2) the reorder handle is a
-              // descendant of the tile
-              if ($tileUnderPoint.is(reorderHandle)) {
-                tileHasReorderHandle = true;
-              } else {
-                var handleInTile = $tileUnderPoint.find(reorderHandle);
-                tileHasReorderHandle = handleInTile && handleInTile.length > 0;
-              }
-            }
-
-            // FIX :  if the tileUnderPoint is a valid tile and is different than previous
-            // tileUnderPoint, then the reorder animation have shifted a different tile under the mouse.
-            // Check if the cellUnderPoint before the reorder animation is same as after the animation.
-            // If they are same, then skip re-ordering of tiles to prevent recursion.
-            // A different tile under the same cell during a drag move indicates that the reorder animation
-            // have shifted a different tile under the mouse.
-            var bSkipReorder = false;
-            if (tileUnderPoint == null ||
-                tileUnderPoint === this._dropSite ||
-                tileUnderPoint === this._draggedTile) {
-              this._prevTileUnderPoint = null;
-              this._prevCellUnderPoint = null;
-            } else if (this._prevTileUnderPoint && this._prevCellUnderPoint &&
-                       this._prevTileUnderPoint !== tileUnderPoint) {
-              var cellUnderPoint = this._getCellPosition(clientX, clientY);
-              if (cellUnderPoint &&
-                  cellUnderPoint.row === this._prevCellUnderPoint.row &&
-                  cellUnderPoint.col === this._prevCellUnderPoint.col) {
-                bSkipReorder = true;
-              }
-            }
-
-            if (tileUnderPoint && !bSkipReorder &&
-                tileUnderPoint !== this._dropSite &&
-                tileUnderPoint !== this._draggedTile &&
-                tileHasReorderHandle) {
-              var offset = _getRelativePosition(elem);
-              var relX = pageX - offset.left;
-              var oldNextSibling = _getNextElement(this._dropSite);
-              var bRightSide = relX >= tileUnderPoint.offsetLeft + (tileUnderPoint.offsetWidth * 0.5);
-              this._removeTileOriginalOrder(this._dropSite);
-              if ((bRightSide && !this._bRTL) || (!bRightSide && this._bRTL)) {
-                var nextElem = _getNextElement(tileUnderPoint);
-                if (nextElem) {
-                  // insert before the nextElem
-                  this._insertTileOriginalOrder(this._dropSite,
-                                                nextElem._jetDataMasonryOriginalOrder - 1);
-                  elem.insertBefore(this._dropSite, nextElem); // @HTMLUpdateOK
-                } else {
-                  // append to the end
-                  this._insertTileOriginalOrder(this._dropSite,
-                                                tileUnderPoint._jetDataMasonryOriginalOrder);
-                  elem.appendChild(this._dropSite); // @HTMLUpdateOK
-                }
-              } else {
-                // insert before the tileUnderPoint
-                this._insertTileOriginalOrder(this._dropSite,
-                                              tileUnderPoint._jetDataMasonryOriginalOrder - 1);
-                elem.insertBefore(this._dropSite, tileUnderPoint); // @HTMLUpdateOK
-              }
-              var newNextSibling = _getNextElement(this._dropSite);
-              // only need to layout if the dropSite has actually changed order
-              if (oldNextSibling !== newNextSibling) {
-                // only record the start of a drag move transition if the layout
-                // actually changed
-                var mlCommon = this._mlCommon;
-                // save the tileUnderPoint and cellUnderPoint of the current layout
-                // before the call to mlCommon.setup() that computes the relayout.
-                var tmpTileUnderPoint = tileUnderPoint;
-                var tmpCellUnderPoint = this._getCellPosition(clientX, clientY);
-
-                this._bDragMoveTransition = mlCommon.setup(false, true);
-                // if the tile has moved, save tmpTileUnderPoint and tmpCellUnderPoint
-                if (this._bDragMoveTransition) {
-                  this._prevTileUnderPoint = tmpTileUnderPoint;
-                  this._prevCellUnderPoint = tmpCellUnderPoint;
-                }
-              }
-            }
-          }
-        },
-
-        /**
-         * Handle the end of a layout transition while dragging a tile.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _handleDragMoveTransitionEnd: function () {
-          this._bDragMoveTransition = false;
-        },
-
-        /**
-         * Drop a tile.
-         * @param {!Element} tile Tile being dragged.
-         * @param {number} pageX Page coordinate of the drop.
-         * @param {number} pageY Page coordinate of the drop.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _drop: function (tile, pageX, pageY) {
-          this._bDropping = true;
-          var elem = this.element[0];
-          var dropSite = this._dropSite;
-          this._dropSite = null;
-          this._prevTileUnderPoint = null;
-          this._prevCellUnderPoint = null;
-          // notify the element that it's been detached from the DOM BEFORE actually
-          // detaching it so that components can save state
-          Components.subtreeDetached(tile);
-          // FIX : calling DOM replaceChild() seems to break in IE11 on Win7, so instead call
-          // equivalent insertBefore() and removeChild()
-          elem.insertBefore(tile, dropSite); // @HTMLUpdateOK
-          elem.removeChild(dropSite);
-          // notify the element that it's been attached to the DOM
-          Components.subtreeAttached(tile);
-          // eslint-disable-next-line no-param-reassign
-          tile._jetDataMasonryOriginalOrder = dropSite._jetDataMasonryOriginalOrder;
-          var style = tile.style;
-          style.display = '';
-          // notify the element that it's been shown
-          Components.subtreeShown(tile);
-
-          // immediately transform the page absolute coords to ones relative to the
-          // ojmasonrylayout
-          var offset = _getRelativePosition(elem);
-          var dragOffset = this._dragOffset;
-          style.top = (pageY - dragOffset.top - offset.top) + _PX;
-          // FIX : in RTL, position tiles using "right" instead of "left"
-          var newLeft = pageX - dragOffset.left - offset.left;
-          if (this._bRTL) {
-            style.right = (elem.offsetWidth - (newLeft + $(tile).outerWidth(true))) + _PX;
-            style.left = '';
-          } else {
-            style.left = newLeft + _PX;
-          }
-
-          this._dragOffset = null;
-
-          if (this._bMouseMoved) {
-            // transition the tile to its permanent place in the layout
-            var mlCommon = this._mlCommon;
-            this._bDragEndTransition = mlCommon.setup(false, true);
-          } else {
-            this._handleDragEndTransitionEnd();
-          }
-        },
-
-        /**
-         * Handle the end of a layout transition when a tile is dropped.
-         * @return {void}
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _handleDragEndTransitionEnd: function () {
-          this._bDragEndTransition = false;
-          this._bDragging = false;
-          this._bDropping = false;
-          this._bMouseMoved = false;
-          this._bDragStartTileHidden = false;
-
-          var tile = this._draggedTile;
-          this._draggedTile = null;
-          var fromIndex = tile._jetDataMasonryDragSourceIndex;
-          delete tile._jetDataMasonryDragSourceIndex;
-          var toIndex = this._getTileIndex(tile);
+          mlCommon.setup(true);
 
           // fire reorder event
           var eventData = {
             /** @expose */
-            tile: $(tile),
+            tile: jqCutTile,
             /** @expose */
             fromIndex: fromIndex,
             /** @expose */
             toIndex: toIndex
           };
           this._trigger('reorder', null, eventData);
-        },
-
-        /**
-         * Get the grid cell position for the given client coordinates.
-         * Returns an object with col, row properties, or null if it can't figure out.
-         * This will return invalid cell positions if clientX/clientY is outside the component.
-         * So this method should be called only for valid coordinates inside the component.
-         *
-         * @param {number} clientX Client X coordinate
-         * @param {number} clientY Client Y coordinate
-         * @returns {Object|null} cell position
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _getCellPosition: function (clientX, clientY) {
-          var mlCommon = this._mlCommon;
-          var cellSize = mlCommon.getCellSize();
-          var position = null;
-          if (cellSize) {
-            position = {
-              col: parseInt(clientX / cellSize.w, 10),
-              row: parseInt(clientY / cellSize.h, 10) };
-          }
-          return position;
-        },
-
-        // end functions for drag-and-drop reordering ////////////////////////////////
-
-        /**
-         * Add a busy state to the busy context.
-         *
-         * @param {string} description Additional information about busy state.
-         * @returns {Function} Resolve function called by the registrant when the busy state completes.
-         *          The resultant function will throw an error if the busy state is no longer registered.
-         * @memberof oj.ojMasonryLayout
-         * @instance
-         * @private
-         */
-        _addBusyState: function (description) {
-          var element = this.element;
-          var context = Context.getContext(element[0]);
-          var busyContext = context.getBusyContext();
-
-          var desc = 'MasonryLayout';
-          var id = element.attr('id');
-          desc += " (id='" + id + "')";
-          desc += ': ' + description;
-
-          var busyStateOptions = { description: desc };
-          return busyContext.addBusyState(busyStateOptions);
-        },
-
-        // @inheritdoc
-        getNodeBySubId: function (locator) {
-          return this._super(locator);
-        },
-
-        // @inheritdoc
-        getSubIdByNode: function (node) {
-          return this._super(node);
         }
-      }); // end of oj.__registerWidget
-  // end static members and functions ////////////////////////////////////////////
-  }()); // end of MasonryLayout wrapper function
+      },
+
+      /**
+       * Handle a context menu select event.
+       * @param {Event|CustomEvent} event event for context menu item selection
+       * @param {Object=} ui an object containing the menu item that was selected
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _handleContextMenuSelect: function (event, ui) {
+        // get the selected menu item from the ui object in the old data-bind syntax widget case,
+        // or from the event target in the custom element case.
+        var item = ui ? ui.item : $(event.target);
+        var id = item.attr('id');
+
+        if (id === _OJMASONRYLAYOUTCUT) {
+          this._menuCut(this._menu.tile);
+        } else if (id === _OJMASONRYLAYOUTPASTEBEFORE) {
+          this._menuPaste(this._menu.tile, true);
+        } else if (id === _OJMASONRYLAYOUTPASTEAFTER) {
+          this._menuPaste(this._menu.tile, false);
+        }
+      },
+
+      // end functions for context menu reordering /////////////////////////////////
+
+      // start functions for drag-and-drop reordering //////////////////////////////
+
+      /**
+       * Get the index of the given child tile.
+       * @param {Object} tile Tile for which to get the index.
+       * @returns {number} Index of the tile.
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _getTileIndex: function (tile) {
+        // index should be with respect to "real" children, not including the dropsite,
+        // so exclude the dropsite from the children array
+        var children = this._getTileElements(true);
+        // need to sort the children because the index is with respect to the original order
+        _sortTilesOriginalOrder(children);
+        var numChildren = children.length;
+        for (var i = 0; i < numChildren; i++) {
+          if (children[i] === tile) {
+            return i;
+          }
+        }
+        return -1;
+      },
+
+      /**
+       * Setup drag and drop on the reorder handles.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _setupReorderHandles: function () {
+        var elem = this.element;
+        var children = elem.children();
+        this._setupReorderHandlesForElem(children);
+        elem
+          .on('dragstart' + this.reorderHandleEventNamespace, this._handleDragStartFunc)
+          .on('dragenter' + this.reorderHandleEventNamespace, this._handleDragEnterFunc)
+          .on('dragover' + this.reorderHandleEventNamespace, this._handleDragOverFunc)
+          .on('dragleave' + this.reorderHandleEventNamespace, this._handleDragLeaveFunc)
+          .on('dragend' + this.reorderHandleEventNamespace, this._handleDragEndFunc)
+          .on('drop' + this.reorderHandleEventNamespace, this._handleDropFunc);
+      },
+
+      /**
+       * Setup drag and drop on the reorder handles.
+       * @param {jQuery} jqElem Elem for which to setup drag and drop on
+       *        the reorder handles.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _setupReorderHandlesForElem: function (jqElem) {
+        var options = this.options;
+        // setup for tiles themselves
+        var tiles = jqElem.filter(options.reorderHandle);
+        tiles
+          .attr(_DRAGGABLE, 'true') // @HTMLUpdateOK
+          .addClass(_OJ_DRAGGABLE);
+        // setup for descendants of tiles
+        var reorderHandles = jqElem.find(options.reorderHandle);
+        reorderHandles
+          .attr(_DRAGGABLE, 'true') // @HTMLUpdateOK
+          .addClass(_OJ_DRAGGABLE);
+      },
+
+      /**
+       * Tear down drag and drop on the reorder handles.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _tearDownReorderHandles: function () {
+        var elem = this.element;
+        var children = elem.children();
+        // tear down reorder handles on the children of the root elem in case
+        // the root elem itself is draggable
+        this._tearDownReorderHandlesForElem(children);
+        elem.off(this.reorderHandleEventNamespace);
+      },
+
+      /**
+       * Tear down drag and drop on the reorder handles.
+       * @param {jQuery} jqElem Elem for which to tear down drag and drop on
+       *        the reorder handles.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _tearDownReorderHandlesForElem: function (jqElem) {
+        var options = this.options;
+        // tear down for tiles themselves
+        var tiles = jqElem.filter(options.reorderHandle);
+        tiles.removeAttr(_DRAGGABLE).removeClass(_OJ_DRAGGABLE);
+        // tear down for descendants of tiles
+        var reorderHandles = jqElem.find(options.reorderHandle);
+        reorderHandles.removeAttr(_DRAGGABLE).removeClass(_OJ_DRAGGABLE);
+      },
+
+      /**
+       * Handle a dragstart event.
+       * @param {Event} event jQuery Event
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _handleDragStart: function (event) {
+        var options = this.options;
+        var target;
+
+        // FIX : if drag didn't start on reorder handle, don't
+        // reorder tile
+        target = event.originalEvent.target;
+        var closestHandle = $(target).closest(options.reorderHandle);
+        if (!closestHandle || closestHandle.length < 1) {
+          return;
+        }
+
+        // don't try to start another drag while there's already one happening
+        // (in case the previous transition is still running)
+        if (!this._bDragging) {
+          target = event.target;
+          var elem = this.element;
+          var tile = _findContainingTile(target, elem[0]);
+          if (tile) {
+            var index = this._getTileIndex(tile);
+            tile._jetDataMasonryDragSourceIndex = index;
+
+            // fire beforeReorder event
+            var eventData = {
+              /** @expose */
+              tile: $(tile),
+              /** @expose */
+              fromIndex: index
+            };
+            var bSuccess = this._trigger('beforeReorder', null, eventData);
+
+            if (bSuccess !== false) {
+              var originalEvent = event.originalEvent;
+              this._dragStart(
+                tile,
+                originalEvent.pageX,
+                originalEvent.pageY,
+                originalEvent.dataTransfer
+              );
+            }
+          }
+        }
+      },
+
+      /**
+       * Handle a dragenter event.
+       * @param {Event} event jQuery Event
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _handleDragEnter: function (event) {
+        // FIX : only process drag and drop event if masonryLayout
+        // started the drag
+        if (!this._bDragging) {
+          return;
+        }
+
+        var originalEvent = event.originalEvent;
+        var relatedTarget = originalEvent.relatedTarget;
+        var elem = this.element[0];
+        var enteringMasonryLayout = false;
+        if (relatedTarget) {
+          enteringMasonryLayout = elem !== relatedTarget && !DomUtils.isAncestor(elem, relatedTarget);
+        } else if (this._dragLeftMasonryLayout) {
+          // chrome 40.0.2214.111 doesn't set a relatedTarget, so need to use other means
+          // to figure out if we're re-entering the masonryLayout
+          var elemUnderPoint = document.elementFromPoint(
+            originalEvent.clientX,
+            originalEvent.clientY
+          );
+          enteringMasonryLayout =
+            elemUnderPoint && (elemUnderPoint === elem || DomUtils.isAncestor(elem, elemUnderPoint));
+        }
+        if (enteringMasonryLayout) {
+          this._dragLeftMasonryLayout = false;
+          if (!this._draggedTile) {
+            var dataTransfer = originalEvent.dataTransfer;
+            dataTransfer.dropEffect = 'none';
+          } else if (this._dropSite) {
+            $(this._dropSite).css('display', '');
+            var mlCommon = this._mlCommon;
+            mlCommon.setup(false, true);
+          }
+        }
+      },
+
+      /**
+       * Handle a dragover event.
+       * @param {Event} event jQuery Event
+       * @returns {boolean} False
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _handleDragOver: function (event) {
+        // FIX : only process drag and drop event if masonryLayout
+        // started the drag
+        if (!this._bDragging) {
+          return false;
+        }
+
+        var originalEvent = event.originalEvent;
+        var dataTransfer = originalEvent.dataTransfer;
+        dataTransfer.dropEffect = 'move';
+
+        this._dragMove(originalEvent.pageX, originalEvent.clientX, originalEvent.clientY);
+
+        // necessary to allow a drop
+        event.preventDefault();
+        return false;
+      },
+
+      /**
+       * Handle a dragleave event.
+       * @param {Event} event jQuery Event
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _handleDragLeave: function (event) {
+        // FIX : only process drag and drop event if masonryLayout
+        // started the drag
+        if (!this._bDragging) {
+          return;
+        }
+
+        var originalEvent = event.originalEvent;
+        var relatedTarget = originalEvent.relatedTarget;
+        var elem = this.element[0];
+        var leavingMasonryLayout = false;
+        if (relatedTarget) {
+          leavingMasonryLayout = elem !== relatedTarget && !DomUtils.isAncestor(elem, relatedTarget);
+        } else {
+          // chrome 40.0.2214.111 doesn't set a relatedTarget, so need to use other means
+          // to figure out if we're exiting the masonryLayout
+          var elemUnderPoint = document.elementFromPoint(
+            originalEvent.clientX,
+            originalEvent.clientY
+          );
+          leavingMasonryLayout =
+            elemUnderPoint && elemUnderPoint !== elem && !DomUtils.isAncestor(elem, elemUnderPoint);
+        }
+        if (leavingMasonryLayout) {
+          this._dragLeftMasonryLayout = true;
+          if (this._dropSite) {
+            $(this._dropSite).css('display', _NONE);
+            var mlCommon = this._mlCommon;
+            mlCommon.setup(false, true);
+          }
+        }
+      },
+
+      /**
+       * Clear the timeout used to hide the tile at the start of a drag.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _clearDragStartHideTileTimeout: function () {
+        if (this._dragStartHideTileTimeout) {
+          clearTimeout(this._dragStartHideTileTimeout);
+          this._dragStartHideTileTimeout = null;
+          this._busyStateResolveFunc();
+          this._busyStateResolveFunc = null;
+
+          var draggedTile = this._draggedTile;
+          if (draggedTile) {
+            $(draggedTile).removeClass('oj-drag');
+          }
+        }
+      },
+
+      /**
+       * Handle a dragend event.
+       * @param {Event} event jQuery Event
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      // eslint-disable-next-line no-unused-vars
+      _handleDragEnd: function (event) {
+        // FIX : if the drag and drop was a very short duration,
+        // the hide tile timeout may not have fired yet, so clear it now
+        this._clearDragStartHideTileTimeout();
+
+        // FIX : only process drag and drop event if masonryLayout
+        // started the drag
+        if (!this._bDragging) {
+          return;
+        }
+
+        // only process the dragend if we're not currently processing a drop (for
+        // example if the mouse button was released outside of the masonryLayout)
+        if (!this._bDropping) {
+          var draggedTile = this._draggedTile;
+          if (draggedTile && this._dropSite) {
+            var dropSite = this._dropSite;
+            var elem = this.element[0];
+            // tile was not moved outside
+            if (DomUtils.isAncestor(elem, draggedTile)) {
+              $(dropSite).css('display', '');
+              this._removeTileOriginalOrder(dropSite);
+              var parent = dropSite.parentNode;
+              parent.removeChild(dropSite);
+              $(draggedTile).css('display', '');
+              this._insertTileOriginalOrder(
+                draggedTile,
+                draggedTile._jetDataMasonryOriginalOrder - 1
+              );
+              var mlCommon = this._mlCommon;
+              mlCommon.setup(false, true);
+            }
+
+            delete draggedTile._jetDataMasonryDragSourceIndex;
+          }
+          this._draggedTile = null;
+          this._dropSite = null;
+          this._prevTileUnderPoint = null;
+          this._prevCellUnderPoint = null;
+          this._bDragMoveTransition = false;
+          this._bMouseMoved = false;
+          this._dragOffset = null;
+          this._bDragEndTransition = false;
+          this._bDragging = false;
+        }
+      },
+
+      /**
+       * Handle a drop event.
+       * @param {Event} event jQuery Event
+       * @returns {boolean} False
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _handleDrop: function (event) {
+        // FIX : only process drag and drop event if masonryLayout
+        // started the drag
+        if (!this._bDragging) {
+          return false;
+        }
+
+        // FIX : if the drop happens before the drag move layout
+        // animation is done, finish that layout cycle immediately before processing
+        // the drop
+        var mlCommon = this._mlCommon;
+        if (mlCommon.isInLayoutCycle()) {
+          mlCommon.finishLayoutCycle();
+        }
+
+        // FIX : if the drag and drop was a very short duration,
+        // the hide tile timeout may not have fired yet, so clear it now
+        this._clearDragStartHideTileTimeout();
+
+        var originalEvent = event.originalEvent;
+        this._drop(this._draggedTile, originalEvent.pageX, originalEvent.pageY);
+
+        // stop the browser from redirecting
+        event.stopPropagation();
+        return false;
+      },
+
+      /**
+       * Start a drag.
+       * @param {!Element} tile Tile being dragged.
+       * @param {number} pageX Page coordinate at which the drag starts.
+       * @param {number} pageY Page coordinate at which the drag starts.
+       * @param {Object} dataTransfer Drag and drop DataTransfer object.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _dragStart: function (tile, pageX, pageY, dataTransfer) {
+        this._bDragging = true;
+        this._bDropping = false;
+        this._bMouseMoved = false;
+        this._bDragStartTileHidden = false;
+        this._draggedTile = tile;
+        var elem = this.element[0];
+
+        var sizeClass = _getSizeStyleClassName(tile);
+        this._dropSite = document.createElement('div');
+        var dropSite = this._dropSite;
+        dropSite._jetDataMasonryOriginalOrder = tile._jetDataMasonryOriginalOrder;
+        dropSite.className = sizeClass + ' oj-drop ' + _OJ_MASONRYLAYOUT_TILE;
+        var style = dropSite.style;
+        var tileStyle = tile.style;
+        style.top = tileStyle.top;
+        // FIX : in RTL, position tiles using "right" instead of "left"
+        if (this._bRTL) {
+          style.right = tileStyle.right;
+        } else {
+          style.left = tileStyle.left;
+        }
+        // need to get the relative position of the tile BEFORE replacing it with
+        // the dropsite and adding it to the elemParent below
+        var offset = _getRelativePosition(tile);
+        elem.insertBefore(dropSite, tile); // @HTMLUpdateOK
+
+        var dragOffset = { left: pageX - offset.left, top: pageY - offset.top };
+        this._dragOffset = dragOffset;
+
+        // add the oj-drag class BEFORE creating the drag feedback image
+        $(tile).addClass('oj-drag');
+
+        // eslint-disable-next-line no-param-reassign
+        dataTransfer.effectAllowed = 'move';
+        dataTransfer.setData('text/html', tile.outerHTML); // @HTMLUpdateOK
+        dataTransfer.setDragImage(tile, dragOffset.left, dragOffset.top);
+
+        // hide the original tile in a timeout AFTER creating the drag feedback image
+        var self = this;
+        this._busyStateResolveFunc = this._addBusyState('Wait for dragStartHideTile timeout');
+        this._dragStartHideTileTimeout = setTimeout(function () {
+          self._bDragStartTileHidden = true;
+          tileStyle.display = _NONE;
+          $(tile).removeClass('oj-drag');
+          self._dragStartHideTileTimeout = null;
+          self._busyStateResolveFunc();
+          self._busyStateResolveFunc = null;
+          // notify the element that it's been hidden
+          Components.subtreeHidden(tile);
+        }, 0);
+      },
+
+      /**
+       * Drag a tile.
+       * @param {number} pageX Page coordinate of the drag move.
+       * @param {number} clientX Client coordinate of the drag move.
+       * @param {number} clientY Client coordinate of the drag move.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _dragMove: function (pageX, clientX, clientY) {
+        this._bMouseMoved = true;
+
+        // FIX : if the dragged tile hasn't been hidden yet, don't
+        // process the drag move because it may layout the dragged tile, which
+        // will leave a visual gap in the layout once the tile is hidden
+        if (!this._bDragStartTileHidden) {
+          return;
+        }
+
+        if (!this._bDragMoveTransition) {
+          var elem = this.element[0];
+          var elemUnderPoint = document.elementFromPoint(clientX, clientY);
+          var tileUnderPoint = _findContainingTile(elemUnderPoint, elem);
+
+          // FIX : only allow reordering if tile has reorder
+          // handle
+          var tileHasReorderHandle = false;
+          if (tileUnderPoint) {
+            var $tileUnderPoint = $(tileUnderPoint);
+            var options = this.options;
+            var reorderHandle = options.reorderHandle;
+            // FIX : the tile has a reorder handle if: 1) the tile
+            // itself is the reorder handle, or 2) the reorder handle is a
+            // descendant of the tile
+            if ($tileUnderPoint.is(reorderHandle)) {
+              tileHasReorderHandle = true;
+            } else {
+              var handleInTile = $tileUnderPoint.find(reorderHandle);
+              tileHasReorderHandle = handleInTile && handleInTile.length > 0;
+            }
+          }
+
+          // FIX :  if the tileUnderPoint is a valid tile and is different than previous
+          // tileUnderPoint, then the reorder animation have shifted a different tile under the mouse.
+          // Check if the cellUnderPoint before the reorder animation is same as after the animation.
+          // If they are same, then skip re-ordering of tiles to prevent recursion.
+          // A different tile under the same cell during a drag move indicates that the reorder animation
+          // have shifted a different tile under the mouse.
+          var bSkipReorder = false;
+          if (
+            tileUnderPoint == null ||
+            tileUnderPoint === this._dropSite ||
+            tileUnderPoint === this._draggedTile
+          ) {
+            this._prevTileUnderPoint = null;
+            this._prevCellUnderPoint = null;
+          } else if (
+            this._prevTileUnderPoint &&
+            this._prevCellUnderPoint &&
+            this._prevTileUnderPoint !== tileUnderPoint
+          ) {
+            var cellUnderPoint = this._getCellPosition(clientX, clientY);
+            if (
+              cellUnderPoint &&
+              cellUnderPoint.row === this._prevCellUnderPoint.row &&
+              cellUnderPoint.col === this._prevCellUnderPoint.col
+            ) {
+              bSkipReorder = true;
+            }
+          }
+
+          if (
+            tileUnderPoint &&
+            !bSkipReorder &&
+            tileUnderPoint !== this._dropSite &&
+            tileUnderPoint !== this._draggedTile &&
+            tileHasReorderHandle
+          ) {
+            var offset = _getRelativePosition(elem);
+            var relX = pageX - offset.left;
+            var oldNextSibling = _getNextElement(this._dropSite);
+            var bRightSide = relX >= tileUnderPoint.offsetLeft + tileUnderPoint.offsetWidth * 0.5;
+            this._removeTileOriginalOrder(this._dropSite);
+            if ((bRightSide && !this._bRTL) || (!bRightSide && this._bRTL)) {
+              var nextElem = _getNextElement(tileUnderPoint);
+              if (nextElem) {
+                // insert before the nextElem
+                this._insertTileOriginalOrder(
+                  this._dropSite,
+                  nextElem._jetDataMasonryOriginalOrder - 1
+                );
+                elem.insertBefore(this._dropSite, nextElem); // @HTMLUpdateOK
+              } else {
+                // append to the end
+                this._insertTileOriginalOrder(
+                  this._dropSite,
+                  tileUnderPoint._jetDataMasonryOriginalOrder
+                );
+                elem.appendChild(this._dropSite); // @HTMLUpdateOK
+              }
+            } else {
+              // insert before the tileUnderPoint
+              this._insertTileOriginalOrder(
+                this._dropSite,
+                tileUnderPoint._jetDataMasonryOriginalOrder - 1
+              );
+              elem.insertBefore(this._dropSite, tileUnderPoint); // @HTMLUpdateOK
+            }
+            var newNextSibling = _getNextElement(this._dropSite);
+            // only need to layout if the dropSite has actually changed order
+            if (oldNextSibling !== newNextSibling) {
+              // only record the start of a drag move transition if the layout
+              // actually changed
+              var mlCommon = this._mlCommon;
+              // save the tileUnderPoint and cellUnderPoint of the current layout
+              // before the call to mlCommon.setup() that computes the relayout.
+              var tmpTileUnderPoint = tileUnderPoint;
+              var tmpCellUnderPoint = this._getCellPosition(clientX, clientY);
+
+              this._bDragMoveTransition = mlCommon.setup(false, true);
+              // if the tile has moved, save tmpTileUnderPoint and tmpCellUnderPoint
+              if (this._bDragMoveTransition) {
+                this._prevTileUnderPoint = tmpTileUnderPoint;
+                this._prevCellUnderPoint = tmpCellUnderPoint;
+              }
+            }
+          }
+        }
+      },
+
+      /**
+       * Handle the end of a layout transition while dragging a tile.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _handleDragMoveTransitionEnd: function () {
+        this._bDragMoveTransition = false;
+      },
+
+      /**
+       * Drop a tile.
+       * @param {!Element} tile Tile being dragged.
+       * @param {number} pageX Page coordinate of the drop.
+       * @param {number} pageY Page coordinate of the drop.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _drop: function (tile, pageX, pageY) {
+        this._bDropping = true;
+        var elem = this.element[0];
+        var dropSite = this._dropSite;
+        this._dropSite = null;
+        this._prevTileUnderPoint = null;
+        this._prevCellUnderPoint = null;
+        // notify the element that it's been detached from the DOM BEFORE actually
+        // detaching it so that components can save state
+        Components.subtreeDetached(tile);
+        // FIX : calling DOM replaceChild() seems to break in IE11 on Win7, so instead call
+        // equivalent insertBefore() and removeChild()
+        elem.insertBefore(tile, dropSite); // @HTMLUpdateOK
+        elem.removeChild(dropSite);
+        // notify the element that it's been attached to the DOM
+        Components.subtreeAttached(tile);
+        // eslint-disable-next-line no-param-reassign
+        tile._jetDataMasonryOriginalOrder = dropSite._jetDataMasonryOriginalOrder;
+        var style = tile.style;
+        style.display = '';
+        // notify the element that it's been shown
+        Components.subtreeShown(tile);
+
+        // immediately transform the page absolute coords to ones relative to the
+        // ojmasonrylayout
+        var offset = _getRelativePosition(elem);
+        var dragOffset = this._dragOffset;
+        style.top = pageY - dragOffset.top - offset.top + _PX;
+        // FIX : in RTL, position tiles using "right" instead of "left"
+        var newLeft = pageX - dragOffset.left - offset.left;
+        if (this._bRTL) {
+          style.right = elem.offsetWidth - (newLeft + $(tile).outerWidth(true)) + _PX;
+          style.left = '';
+        } else {
+          style.left = newLeft + _PX;
+        }
+
+        this._dragOffset = null;
+
+        if (this._bMouseMoved) {
+          // transition the tile to its permanent place in the layout
+          var mlCommon = this._mlCommon;
+          this._bDragEndTransition = mlCommon.setup(false, true);
+        } else {
+          this._handleDragEndTransitionEnd();
+        }
+      },
+
+      /**
+       * Handle the end of a layout transition when a tile is dropped.
+       * @return {void}
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _handleDragEndTransitionEnd: function () {
+        this._bDragEndTransition = false;
+        this._bDragging = false;
+        this._bDropping = false;
+        this._bMouseMoved = false;
+        this._bDragStartTileHidden = false;
+
+        var tile = this._draggedTile;
+        this._draggedTile = null;
+        var fromIndex = tile._jetDataMasonryDragSourceIndex;
+        delete tile._jetDataMasonryDragSourceIndex;
+        var toIndex = this._getTileIndex(tile);
+
+        // fire reorder event
+        var eventData = {
+          /** @expose */
+          tile: $(tile),
+          /** @expose */
+          fromIndex: fromIndex,
+          /** @expose */
+          toIndex: toIndex
+        };
+        this._trigger('reorder', null, eventData);
+      },
+
+      /**
+       * Get the grid cell position for the given client coordinates.
+       * Returns an object with col, row properties, or null if it can't figure out.
+       * This will return invalid cell positions if clientX/clientY is outside the component.
+       * So this method should be called only for valid coordinates inside the component.
+       *
+       * @param {number} clientX Client X coordinate
+       * @param {number} clientY Client Y coordinate
+       * @returns {Object|null} cell position
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _getCellPosition: function (clientX, clientY) {
+        var mlCommon = this._mlCommon;
+        var cellSize = mlCommon.getCellSize();
+        var position = null;
+        if (cellSize) {
+          position = {
+            col: parseInt(clientX / cellSize.w, 10),
+            row: parseInt(clientY / cellSize.h, 10)
+          };
+        }
+        return position;
+      },
+
+      // end functions for drag-and-drop reordering ////////////////////////////////
+
+      /**
+       * Add a busy state to the busy context.
+       *
+       * @param {string} description Additional information about busy state.
+       * @returns {Function} Resolve function called by the registrant when the busy state completes.
+       *          The resultant function will throw an error if the busy state is no longer registered.
+       * @memberof oj.ojMasonryLayout
+       * @instance
+       * @private
+       */
+      _addBusyState: function (description) {
+        var element = this.element;
+        var context = Context.getContext(element[0]);
+        var busyContext = context.getBusyContext();
+
+        var desc = 'MasonryLayout';
+        var id = element.attr('id');
+        desc += " (id='" + id + "')";
+        desc += ': ' + description;
+
+        var busyStateOptions = { description: desc };
+        return busyContext.addBusyState(busyStateOptions);
+      },
+
+      // @inheritdoc
+      getNodeBySubId: function (locator) {
+        return this._super(locator);
+      },
+
+      // @inheritdoc
+      getSubIdByNode: function (node) {
+        return this._super(node);
+      }
+    }); // end of oj.__registerWidget
+    // end static members and functions ////////////////////////////////////////////
+  })(); // end of MasonryLayout wrapper function
 
 });

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -30,7 +30,7 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
    *              ]
    * @since 0.6.0
    * @see oj.AsyncDateTimeRangeValidator
-  */
+   */
   const DateTimeRangeValidator = function _DateTimeRangeValidator(options) {
     this.Init(options);
   };
@@ -144,7 +144,11 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
     }
 
     // random test to check that the specified translation identity exists; otherwise just use datetime
-    if (!Translations.getTranslatedString('oj-validator.range.' + this._translationKey + '.messageSummary.rangeOverflow')) {
+    if (
+      !Translations.getTranslatedString(
+        'oj-validator.range.' + this._translationKey + '.messageSummary.rangeOverflow'
+      )
+    ) {
       this._translationKey = 'datetime';
     }
   };
@@ -198,9 +202,11 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
 
       if (min !== null && max !== null) {
         // range
-        if ((converterUtils._compareISODates(value, min) >= 0 &&
+        if (
+          (converterUtils._compareISODates(value, min) >= 0 &&
             converterUtils._compareISODates(value, max) <= 0) ||
-            converterUtils._compareISODates(min, max) > 0) {
+          converterUtils._compareISODates(min, max) > 0
+        ) {
           return value;
         }
       } else if (min !== null) {
@@ -218,25 +224,33 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
     var generateValidationError = function (valStr) {
       if (max !== null && ConverterUtilsI18n.IntlConverterUtils._compareISODates(value, max) > 0) {
         params = { value: valStr, max: maxStr };
-        summary = messageSummaryRangeOverflow ||
-          translations.getTranslatedString('oj-validator.range.' + self._translationKey +
-                                           '.messageSummary.rangeOverflow');
-        detail = messageDetailRangeOverflow ?
-          translations.applyParameters(messageDetailRangeOverflow, params) :
-          translations.getTranslatedString('oj-validator.range.' + self._translationKey +
-                                           '.messageDetail.rangeOverflow',
-                                           params);
-      } else if (min !== null &&
-        ConverterUtilsI18n.IntlConverterUtils._compareISODates(value, min) < 0) {
+        summary =
+          messageSummaryRangeOverflow ||
+          translations.getTranslatedString(
+            'oj-validator.range.' + self._translationKey + '.messageSummary.rangeOverflow'
+          );
+        detail = messageDetailRangeOverflow
+          ? translations.applyParameters(messageDetailRangeOverflow, params)
+          : translations.getTranslatedString(
+              'oj-validator.range.' + self._translationKey + '.messageDetail.rangeOverflow',
+              params
+            );
+      } else if (
+        min !== null &&
+        ConverterUtilsI18n.IntlConverterUtils._compareISODates(value, min) < 0
+      ) {
         params = { value: valStr, min: minStr };
-        summary = messageSummaryRangeUnderflow ||
-          translations.getTranslatedString('oj-validator.range.' + self._translationKey +
-                                           '.messageSummary.rangeUnderflow');
-        detail = messageDetailRangeUnderflow ?
-          translations.applyParameters(messageDetailRangeUnderflow, params) :
-          translations.getTranslatedString('oj-validator.range.' + self._translationKey +
-                                           '.messageDetail.rangeUnderflow',
-                                           params);
+        summary =
+          messageSummaryRangeUnderflow ||
+          translations.getTranslatedString(
+            'oj-validator.range.' + self._translationKey + '.messageSummary.rangeUnderflow'
+          );
+        detail = messageDetailRangeUnderflow
+          ? translations.applyParameters(messageDetailRangeUnderflow, params)
+          : translations.getTranslatedString(
+              'oj-validator.range.' + self._translationKey + '.messageDetail.rangeUnderflow',
+              params
+            );
       }
       return [summary, detail];
     };
@@ -274,22 +288,28 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
 
     if (min !== null && max !== null) {
       params = { min: minStr, max: maxStr };
-      hint = hintInRange ?
-        translations.applyParameters(hintInRange, params) :
-        translations.getTranslatedString('oj-validator.range.' + this._translationKey +
-                                         '.hint.inRange', params);
+      hint = hintInRange
+        ? translations.applyParameters(hintInRange, params)
+        : translations.getTranslatedString(
+            'oj-validator.range.' + this._translationKey + '.hint.inRange',
+            params
+          );
     } else if (min !== null) {
       params = { min: minStr };
-      hint = hintMinimum ?
-        translations.applyParameters(hintMinimum, params) :
-        translations.getTranslatedString('oj-validator.range.' + this._translationKey +
-                                         '.hint.min', params);
+      hint = hintMinimum
+        ? translations.applyParameters(hintMinimum, params)
+        : translations.getTranslatedString(
+            'oj-validator.range.' + this._translationKey + '.hint.min',
+            params
+          );
     } else if (max !== null) {
       params = { max: maxStr };
-      hint = hintMaximum ?
-        translations.applyParameters(hintMaximum, params) :
-        translations.getTranslatedString('oj-validator.range.' + this._translationKey +
-                                         '.hint.max', params);
+      hint = hintMaximum
+        ? translations.applyParameters(hintMaximum, params)
+        : translations.getTranslatedString(
+            'oj-validator.range.' + this._translationKey + '.hint.max',
+            params
+          );
     }
 
     return hint;

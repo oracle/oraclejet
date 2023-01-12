@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -62,14 +62,13 @@ var DateTimeConverterFactory = (function () {
       return _createDateTimeConverter(options);
     }
   };
-}()); // notice immediate invocation of anonymous function
+})(); // notice immediate invocation of anonymous function
 
 /** Register the default factory provider function */
 __ValidationFactoryBase.Validation.__registerDefaultConverterFactory(
   __ValidationFactoryBase.ConverterFactory.CONVERTER_TYPE_DATETIME, // factory name
   DateTimeConverterFactory
 );
-
 
 // JET VALIDATOR FACTORIES
 
@@ -116,12 +115,13 @@ var DateTimeRangeValidatorFactory = (function () {
       return _createDateTimeRangeValidator(options);
     }
   };
-}()); // notice immediate invocation of anonymous function
+})(); // notice immediate invocation of anonymous function
 
 /** Register the default factory provider function */
 __ValidationFactoryBase.Validation.__registerDefaultValidatorFactory(
   __ValidationFactoryBase.ValidatorFactory.VALIDATOR_TYPE_DATETIMERANGE,
-  DateTimeRangeValidatorFactory);
+  DateTimeRangeValidatorFactory
+);
 
 /**
  * a factory method to create an instance of the built-in dateRestriction validator of type
@@ -165,12 +165,13 @@ var DateRestrictionValidatorFactory = (function () {
       return _createDateRestrictionValidator(options);
     }
   };
-}()); // notice immediate invocation of anonymous function
+})(); // notice immediate invocation of anonymous function
 
 /** Register the default factory provider function */
 __ValidationFactoryBase.Validation.__registerDefaultValidatorFactory(
   __ValidationFactoryBase.ValidatorFactory.VALIDATOR_TYPE_DATERESTRICTION,
-  DateRestrictionValidatorFactory);
+  DateRestrictionValidatorFactory
+);
 
 
 /* global DateTimeConverterFactory:false, DateTimeRangeValidatorFactory:false, DateRestrictionValidatorFactory:false */

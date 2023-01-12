@@ -270,7 +270,7 @@ template {
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"alta","targetPlatform":"windows","behavior":"alta","jetReleaseVersion":"v13.1.0"}'; }
+  font-family: '{"name":"alta","targetPlatform":"windows","behavior":"alta","jetReleaseVersion":"v14.0.0"}'; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -472,7 +472,7 @@ html[dir="rtl"] .oj-helper-justify-content-left {
   --oj-link-font-weight-active: normal;
   --oj-link-bg-color-active: #ededee;
   --oj-icon-color: black;
-  --oj-icon-color-default: #8a8d8f;
+  --oj-icon-color-default: black;
   --oj-icon-color-hover: #76b8e1;
   --oj-icon-color-active: #027bc7;
   --oj-icon-color-selected: #027bc7;
@@ -1680,7 +1680,7 @@ a:visited.oj-clickable-icon-nocontext,
 .oj-default .oj-clickable-icon,
 .oj-default.oj-clickable-icon,
 .oj-default.oj-clickable-icon-nocontext {
-  color: #8a8d8f; }
+  color: black; }
 
 a:hover .oj-clickable-icon,
 a:hover.oj-clickable-icon,
@@ -2636,8 +2636,15 @@ oj-collapsible {
   color: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
+  flex-grow: 1;
   position: relative;
-  padding: 5px 0 3px 0;
+  margin: 0; }
+
+.oj-collapsible-header-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: var(--oj-core-spacing-1x) 0;
   margin: 0; }
 
 /*
@@ -2672,15 +2679,23 @@ h4.oj-collapsible-header {
   font-size: 1rem; }
 
 /*
+    * ignore original header border, it's moved to the wraper
+    */
+.oj-collapsible-header.oj-header-border {
+  border: 0;
+  padding-top: 0;
+  padding-bottom: 0; }
+
+/*
      * applied to the disabled collapsible header
      */
-.oj-collapsible.oj-disabled > .oj-collapsible-header {
+.oj-collapsible.oj-disabled .oj-collapsible-header {
   color: rgba(0, 0, 0, 0.38); }
 
 /*
      * remove top padding for the first nested collapsible
      */
-.oj-collapsible-content > .oj-collapsible:first-child > .oj-collapsible-header {
+.oj-collapsible-content > .oj-collapsible:first-child > .oj-collapsible-header-wrapper {
   padding-top: 0; }
 
 /* collapsible content transition effects */
@@ -2701,11 +2716,11 @@ h4.oj-collapsible-header {
 
 /* suppress all browser decorations of anchors in the header */
 /* --------------------------------------------------------- */
-.oj-collapsible-header a,
-.oj-collapsible-header a:active,
-.oj-collapsible-header a:visited,
-.oj-collapsible-header a:hover,
-.oj-collapsible-header a:focus {
+.oj-collapsible-header-wrapper a,
+.oj-collapsible-header-wrapper a:active,
+.oj-collapsible-header-wrapper a:visited,
+.oj-collapsible-header-wrapper a:hover,
+.oj-collapsible-header-wrapper a:focus {
   text-decoration: none; }
 
 /* disclosure icons for headers */
@@ -2720,37 +2735,36 @@ h4.oj-collapsible-header {
 /*
      * set hand cursor while over the clickable area
      */
-.oj-collapsible-header.oj-hover,
-.oj-collapsible-header-icon.oj-hover {
+.oj-collapsible-header-wrapper.oj-hover * {
   cursor: pointer; }
 
 /*
      * applied to the disclosure icon
      */
-.oj-collapsible-header .oj-collapsible-header-icon,
-.oj-collapsible-header .oj-collapsible-header-icon:hover {
-  color: #8a8d8f; }
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon,
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon:hover {
+  color: black; }
 
 /*
      * applied to the disclosure icon when it's hovered
      * add .oj-collapsible-header .oj-collapsible-header-icon.oj-hover
      * to override color set in a:hover.oj-clickable-icon-nocontext
      */
-.oj-collapsible-header.oj-hover .oj-collapsible-header-icon,
-.oj-collapsible-header .oj-collapsible-header-icon.oj-hover {
+.oj-collapsible-header-wrapper.oj-hover .oj-collapsible-header-icon,
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon.oj-hover {
   color: #76b8e1; }
 
 /*
      * applied to the disclosure icon when it's active
      */
-.oj-collapsible-header.oj-active .oj-collapsible-header-icon,
-.oj-collapsible-header .oj-collapsible-header-icon.oj-active {
+.oj-collapsible-header-wrapper.oj-active .oj-collapsible-header-icon,
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon.oj-active {
   color: #027bc7; }
 
 /*
      * For disabled header icons
      */
-.oj-collapsible.oj-disabled > .oj-collapsible-header > .oj-collapsible-header-icon {
+.oj-collapsible.oj-disabled > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
   color: #cbcccd;
   opacity: 0.5; }
 
@@ -2786,7 +2800,7 @@ oj-accordion {
 /*
      * applied to the disabled accordion headerd
      */
-.oj-accordion-collapsible.oj-disabled > .oj-collapsible-header {
+.oj-accordion-collapsible.oj-disabled > .oj-collapsible-header-wrapper {
   color: rgba(0, 0, 0, 0.38);
   background-color: #fafafa;
   background-image: none; }
@@ -2800,11 +2814,18 @@ oj-accordion {
 /*
      * applied to the accordion header but not to any nested collapsible headers
      */
-.oj-accordion-collapsible > .oj-collapsible-header {
+.oj-accordion-collapsible > .oj-collapsible-header-wrapper {
   padding-top: 3px;
   padding-bottom: 3px;
   border: 0 solid #e5e6e6;
   border-width: 0 0 1px;
+  font-size: 1.33333rem;
+  background-color: #f2f2f3; }
+
+/*
+     * applied to the accordion header but not to any nested collapsible headers
+     */
+.oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header {
   font-size: 1.33333rem;
   background-color: #f2f2f3;
   background-image: none; }
@@ -2813,18 +2834,18 @@ oj-accordion {
      * need to restore top padding for the first nested collapsible,
      * because it's being reset in collapsible
      */
-.oj-collapsible-content > .oj-accordion-collapsible.oj-collapsible:first-child > .oj-collapsible-header {
+.oj-collapsible-content > .oj-accordion-collapsible.oj-collapsible:first-child > .oj-collapsible-header-wrapper {
   padding-top: 3px; }
 
 /*
      * need to reset margin because it's being set in collapsible to -7px
      */
-.oj-accordion-collapsible > .oj-collapsible-header > .oj-collapsible-header-icon {
+.oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
   padding: 9px;
   outline-offset: -9px; }
-  html:not([dir="rtl"]) .oj-accordion-collapsible > .oj-collapsible-header > .oj-collapsible-header-icon {
+  html:not([dir="rtl"]) .oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
     margin: 0; }
-  html[dir="rtl"] .oj-accordion-collapsible > .oj-collapsible-header > .oj-collapsible-header-icon {
+  html[dir="rtl"] .oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
     margin: 0; }
 
 /*
@@ -2836,13 +2857,13 @@ oj-accordion {
 /*
      * applied to the accordion header border bottom when collapsed
      */
-.oj-accordion-collapsible.oj-collapsed > .oj-collapsible-header {
+.oj-accordion-collapsible.oj-collapsed > .oj-collapsible-header-wrapper {
   border-width: 0 0 1px; }
 
 /*
      * applied to the accordion header border for the last child when collapsed
      */
-.oj-accordion-collapsible.oj-collapsed:last-child > .oj-collapsible-header {
+.oj-accordion-collapsible.oj-collapsed:last-child > .oj-collapsible-header-wrapper {
   border-bottom-width: 1px; }
 
 /* conveyorbelt */
@@ -3298,7 +3319,7 @@ oj-tabs:not(.oj-complete) {
 .oj-tabs-tab .oj-tabs-tab-icon,
 .oj-tabs-tab .oj-tabs-close-icon,
 .oj-tabs-tab .oj-tabs-close-icon:hover {
-  color: #8a8d8f; }
+  color: black; }
 
 /*
      * applied to the icon font in the tab title and close icon when hovered
@@ -5493,7 +5514,7 @@ html[dir="rtl"] .oj-menu-item-end-icon {
   opacity: 0.2; }
 
 .oj-menu-submenu-icon {
-  color: #8a8d8f;
+  color: black;
   position: absolute;
   line-height: 1.8;
   height: auto; }
@@ -8797,7 +8818,7 @@ html[dir="rtl"] .oj-pagingcontrol-nav-arrow-section:first-child {
   font-size: 0;
   border-width: 1px;
   border-style: solid;
-  border-color: #8a8d8f;
+  border-color: black;
   width: 7px;
   height: 7px;
   box-sizing: border-box;
@@ -9997,7 +10018,9 @@ oj-data-grid:not(.oj-complete) {
 .oj-datagrid-header-label:focus,
 .oj-datagrid-end-header-cell:focus,
 .oj-datagrid-scrollers:focus,
-.oj-datagrid-databody:focus {
+.oj-datagrid-databody:focus,
+.oj-datagrid-empty-text:focus,
+.oj-datagrid-no-data-container:focus {
   outline: none; }
 
 /* The default column width should be set here*/
@@ -10413,6 +10436,11 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
   .oj-datagrid.oj-focus .oj-datagrid-end-header-cell.oj-focus-highlight::after {
     right: 1px; }
 
+.oj-datagrid-empty-text:focus,
+.oj-datagrid-no-data-container:focus {
+  outline: dotted 1px black;
+  outline: -webkit-focus-ring-color auto; }
+
 .oj-datagrid.oj-focus .oj-datagrid-column-end-header-cell.oj-focus-highlight::after {
   height: calc(100% - 2px); }
 
@@ -10477,9 +10505,12 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
     transform: translate(-37.5%, -37.5%) scale(0.25); }
 
 /* Styling for the empty data grid text, default only used for positioning */
-.oj-datagrid-empty-text {
+.oj-datagrid-empty-text,
+.oj-datagrid-no-data-container {
+  box-sizing: border-box;
   position: absolute;
-  padding: 0.66667rem; }
+  display: inline-block;
+  margin: 1px; }
 
 /* Styling for the corner between row and column headers and scrollbars */
 .oj-datagrid-row-header-spacer,
@@ -11074,7 +11105,7 @@ html:not([dir="rtl"]) .oj-listview.oj-listview-full-width.oj-listview-card-layou
 .oj-listview-drill-icon {
   width: 16px;
   height: 16px;
-  color: #8a8d8f; }
+  color: black; }
 
 /* Styling for the drill icon when item has focus */
 .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus .oj-listview-drill-icon {
@@ -12581,7 +12612,7 @@ oj-legend {
   fill: none; }
 
 .oj-dvt-button-borderless .oj-dvt-icon {
-  fill: #8a8d8f; }
+  fill: black; }
 
 .oj-dvt-button-borderless.oj-hover .oj-dvt-icon {
   fill: #76b8e1; }
@@ -12716,6 +12747,9 @@ oj-spark-chart {
 .oj-sparkchart.oj-focus-highlight {
   outline: dotted 1px black;
   outline: -webkit-focus-ring-color auto; }
+
+.oj-spark-chart-item {
+  color: #267db3; }
 
 .oj-chart-animation-down {
   fill: #ff3300; }
@@ -12915,7 +12949,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for all summary tasks */
 .oj-gantt-task-summary {
-  fill: #8a8d8f;
+  fill: black;
   filter: none; }
 
 /* Styling related to interactivity */
@@ -13768,7 +13802,7 @@ oj-form-layout {
     text-align: right; }
 
 .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):not(.oj-formlayout-nested-labelvalue) {
-  margin: 0 0 6px 0; }
+  padding: 0 0 6px 0; }
 
 .oj-form.oj-label-value > .oj-flex > .oj-flex-item:first-child {
   margin: 0; }

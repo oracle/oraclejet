@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -17,7 +17,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * @ojtsimport knockout
    * @ojsignature [{
    *                target: "Type",
-   *                value: "interface CoreRouterState<D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any}>",
+   *                value: "interface CoreRouterState<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>",
    *                genericParameters: [{"name": "D", "description": "Detail object for the router state"},
    *                                    {"name": "P", "description": "Parameters object for the router state"}]
    *               }
@@ -165,10 +165,8 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * @name beforeStateChange
    * @memberof CoreRouter
    * @type {CoreRouter.Observable<VetoableState>}
-   * @ojsignature {
-   *   target: 'Type',
-   *   value: 'CoreRouter.Observable<CoreRouter.VetoableState<D, P>>'
-   * }
+   * @ojsignature [{target: 'Type', value: 'CoreRouter.Observable<CoreRouter.VetoableState<D, P>>'},
+   *               {target: 'Type', value: '<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>', for: 'genericTypeParameters'}]
    * @instance
    * @export
    */
@@ -207,10 +205,8 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * @name currentState
    * @memberof CoreRouter
    * @type {CoreRouter.Observable<ActionableState>}
-   * @ojsignature {
-   *   target: 'Type',
-   *   value: 'CoreRouter.Observable<CoreRouter.ActionableState<D, P>>'
-   * }
+   * @ojsignature [{target: 'Type', value: 'CoreRouter.Observable<CoreRouter.ActionableState<D, P>>'},
+   *               {target: 'Type', value: '<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>', for: 'genericTypeParameters'}]
    * @instance
    * @export
    */
@@ -355,8 +351,8 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * @ojtsmodule
    * @ojsignature [{target: "Type",
    *               value: "class CoreRouter<
-   *               D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any},
-   *               ParentD extends {[key: string]: any} = {[key: string]: any}, ParentP extends {[key: string]: any} = {[key: string]: any}>",
+   *               D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>,
+   *               ParentD extends Record<string, any> = Record<string, any>, ParentP extends Record<string, any> = Record<string, any>>",
    *               genericParameters: [{"name": "D", "description": "Detail object for the router state"},
    *                                   {"name": "P", "description": "Parameters object for the router state"},
    *                                   {"name": "ParentD", "description": "Detail object for the parent router state"},
@@ -410,7 +406,6 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
           parentRouter._noHistoryOffset + parentRouter._activeState.pathParams.length + 1;
       }
     }
-
 
     this.childRouter = undefined;
 
@@ -980,7 +975,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * @method
    * @instance
    * @export
-   * @ojsignature [{target:"Type", value:"<ChildD extends {[key: string]: any} = {[key: string]: any}, ChildP extends {[key: string]: any} = {[key: string]: any}>",
+   * @ojsignature [{target:"Type", value:"<ChildD extends Record<string, any> = Record<string, any>, ChildP extends Record<string, any> = Record<string, any>>",
    *               for:"genericTypeParameters",
    *               genericParameters: [{"name": "ChildD", "description": "Detail object for the child router state"},
    *                                   {"name": "ChildP", "description": "Parameters object for the child router state"}]},
@@ -997,9 +992,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
 
     const cs = this._activeState;
     if (!cs) {
-      throw Error(
-        `Router(${this._name}) has no current state. Call sync() on the router first.`
-      );
+      throw Error(`Router(${this._name}) has no current state. Call sync() on the router first.`);
     }
     // Routers can have only one history-tracking child router per state
     if (this.childRouter && options.history !== 'skip') {
@@ -1041,7 +1034,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * and writing router states from/to the browser URL. If not specified, this will
    * default to {@link UrlPathAdapter}.
    * @ojsignature [{target: "Type", value: "UrlAdapter<P>", for: "urlAdapter"},
-   *               {target: "Type", value: "<P = {[key: string]: any}>", for: "genericTypeParameters"}]
+   *               {target: "Type", value: "<P extends Record<string, any> = Record<string, any>>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -1055,7 +1048,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * @property {object=} detail An optional detail object which is passed to
    * the route when it is navigated to.
    * @ojsignature [{target: "Type", value: "D", for: "detail"},
-   *               {target: "Type", value: "<D = {[key: string]: any}>", for: "genericTypeParameters"}]
+   *               {target: "Type", value: "<D extends Record<string, any> = Record<string, any>>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -1078,7 +1071,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * @ojtsnamespace CoreRouter
    * @ojsignature [{
    *                target: "Type",
-   *                value: "interface Route<P extends {[key: string]: any} = {[key: string]: any}>",
+   *                value: "interface Route<P extends Record<string, any> = Record<string, any>>",
    *                genericParameters: [{"name": "P", "description": "Parameters object for the router state"}]
    *               }]
    */
@@ -1126,7 +1119,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * callback is optional, but allows for the subscriber to delay the completion
    * of the router state transition until its own asynchronous activities are done.
    * @ojsignature [{target: "Type", value: "CoreRouterState<D, P>", for: "state"},
-   *               {target: "Type", value: "<D = {[key: string]: any}, P = {[key: string]: any}>", for: "genericTypeParameters"}]
+   *               {target: "Type", value: "<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -1141,7 +1134,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * will veto the state transition; any Promise resolution (or not invoking the
    * callback at all) will accept the transition.
    * @ojsignature [{target: "Type", value: "CoreRouterState<D, P>", for: "state"},
-   *               {target: "Type", value: "<D = {[key: string]: any}, P = {[key: string]: any}>", for: "genericTypeParameters"}]
+   *               {target: "Type", value: "<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -1149,7 +1142,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * browser URL.
    * @interface UrlAdapter
    * @ojtsnamespace CoreRouter
-   * @ojsignature {target: "Type", value: "interface UrlAdapter<P extends {[key: string]: any} = {[key: string]: any}>"}
+   * @ojsignature {target: "Type", value: "interface UrlAdapter<P extends Record<string, any> = Record<string, any>>"}
    */
   /**
    * Build all routes for the given URL. The URL is expected to start with the

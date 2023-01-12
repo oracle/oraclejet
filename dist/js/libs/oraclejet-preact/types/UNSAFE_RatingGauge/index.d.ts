@@ -1,1 +1,0 @@
-export { RatingGauge } from './RatingGauge';

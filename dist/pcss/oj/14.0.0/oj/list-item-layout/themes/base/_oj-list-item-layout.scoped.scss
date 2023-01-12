@@ -1,0 +1,10 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.variables._oj-list-item-layout.scoped") {
+    .oj-listitemlayout-grid {
+        padding-top: var(--oj-collection-list-cell-padding-vertical);    
+        padding-bottom: var(--oj-collection-list-cell-padding-vertical);    
+        padding-inline-start: var(--oj-core-gutter-start, var(--oj-list-view-item-padding-horizontal)); 
+        padding-inline-end: var(--oj-core-gutter-end, var(--oj-list-view-item-padding-horizontal));
+    }
+}

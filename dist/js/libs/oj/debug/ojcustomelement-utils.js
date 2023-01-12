@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -61,8 +61,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
             ElementUtils._UNIQUE_INCR += 1;
             return ret;
         }
-        static comparePropertyValues(metadata, value1, value2) {
-            if (metadata.writeback) {
+        static comparePropertyValues(isWriteback, value1, value2) {
+            if (isWriteback) {
                 return oj.Object.compareValues(value1, value2);
             }
             return value1 === value2;
@@ -209,6 +209,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
         static getGlobalPropForAttr(attr) {
             return _GLOBAL_ATTRS[attr] || attr;
         }
+        static getGlobalValuePropForAttr(attr) {
+            if (attr.toLowerCase() === 'contenteditable') {
+                return 'isContentEditable';
+            }
+            return AttributeUtils.getGlobalPropForAttr(attr);
+        }
     }
     AttributeUtils.attributeToPropertyName = cacheHelper.bind(null, (attr) => attr.toLowerCase().replace(/-(.)/g, (match, group1) => group1.toUpperCase()));
     AttributeUtils.propertyNameToAttribute = cacheHelper.bind(null, (name) => name.replace(/([A-Z])/g, (match) => `-${match.toLowerCase()}`));
@@ -282,10 +288,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
         static getElementProperties(element) {
             return CustomElementUtils.getPropertiesForElementTag(element.tagName);
         }
-        static getPropertiesForElementTag(tagName) {
+        static getMetadata(tagName) {
             var _a, _b;
             const descriptor = CustomElementUtils.getElementDescriptor(tagName);
-            return ((_b = ((_a = descriptor['_metadata']) !== null && _a !== void 0 ? _a : descriptor.metadata)) === null || _b === void 0 ? void 0 : _b.properties) || {};
+            return (_b = (_a = descriptor['_metadata']) !== null && _a !== void 0 ? _a : descriptor.metadata) !== null && _b !== void 0 ? _b : {};
+        }
+        static getPropertiesForElementTag(tagName) {
+            var _a;
+            return (_a = CustomElementUtils.getMetadata(tagName).properties) !== null && _a !== void 0 ? _a : {};
         }
         static getElementInfo(element) {
             if (element) {

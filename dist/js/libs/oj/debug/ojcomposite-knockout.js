@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -31,13 +31,19 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
 
     // Attached is deprecated in 4.2.0 for connected which is called when the view is first attached to the DOM
     // and then each time the component is connected to the DOM after a disconnect
-    CompositeTemplateRenderer.invokeViewModelMethod(element, params.viewModel, 'attached', [params.viewModelContext]);
-    CompositeTemplateRenderer.invokeViewModelMethod(element, params.viewModel, 'connected', [params.viewModelContext]);
+    CompositeTemplateRenderer.invokeViewModelMethod(element, params.viewModel, 'attached', [
+      params.viewModelContext
+    ]);
+    CompositeTemplateRenderer.invokeViewModelMethod(element, params.viewModel, 'connected', [
+      params.viewModelContext
+    ]);
 
     var bindingContext = CompositeTemplateRenderer._getKoBindingContext();
 
     // Null out the parent references since we don't want the composite View to be able to access the outside context
-    var childBindingContext = bindingContext.createChildContext(params.viewModel, undefined,
+    var childBindingContext = bindingContext.createChildContext(
+      params.viewModel,
+      undefined,
       function (ctx) {
         // for upstream dependency we will still rely components being registered on the oj namespace.
         ctx[oj.Composite.__COMPOSITE_PROP] = element;
@@ -58,7 +64,9 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
 
     ko.applyBindingsToDescendants(childBindingContext, element);
 
-    CompositeTemplateRenderer.invokeViewModelMethod(element, params.viewModel, 'bindingsApplied', [params.viewModelContext]);
+    CompositeTemplateRenderer.invokeViewModelMethod(element, params.viewModel, 'bindingsApplied', [
+      params.viewModelContext
+    ]);
   };
 
   /**
@@ -93,8 +101,15 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
       try {
         return ko.ignoreDependencies(handler, model, args);
       } catch (ex) {
-        throw new Error('Error while invoking ' + name + ' callback for ' +
-          elem.tagName.toLowerCase() + " with id '" + elem.id + "'.");
+        throw new Error(
+          'Error while invoking ' +
+            name +
+            ' callback for ' +
+            elem.tagName.toLowerCase() +
+            " with id '" +
+            elem.id +
+            "'."
+        );
       }
     }
     return undefined;
@@ -202,17 +217,13 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
       return newNodes;
     }
 
-    BindingProviderImpl.registerPreprocessor(
-      'oj-bind-slot', _preprocessBindSlot);
+    BindingProviderImpl.registerPreprocessor('oj-bind-slot', _preprocessBindSlot);
 
-    BindingProviderImpl.registerPreprocessor(
-      'oj-slot', _preprocessBindSlot);
+    BindingProviderImpl.registerPreprocessor('oj-slot', _preprocessBindSlot);
 
-    BindingProviderImpl.registerPreprocessor(
-      'oj-bind-template-slot', function (node) {
-        return _preprocessBindSlot(node, true);
-      }
-    );
+    BindingProviderImpl.registerPreprocessor('oj-bind-template-slot', function (node) {
+      return _preprocessBindSlot(node, true);
+    });
 
     function _getExpression(attrValue) {
       if (attrValue != null) {
@@ -225,10 +236,9 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
 
       return null;
     }
-  }());
+  })();
 
-  ko.bindingHandlers._ojNodeStorage_ =
-  {
+  ko.bindingHandlers._ojNodeStorage_ = {
     init: function () {
       return { controlsDescendantBindings: true };
     }
@@ -272,12 +282,13 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
     }
   };
 
-  ko.bindingHandlers._ojBindSlot_ =
-  {
+  ko.bindingHandlers._ojBindSlot_ = {
     init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
       // Add callback so we can move slot content to node storage during cleanup
-      ko.utils.domNodeDisposal
-        .addDisposeCallback(element, SlotUtils.cleanup.bind(null, element, bindingContext));
+      ko.utils.domNodeDisposal.addDisposeCallback(
+        element,
+        SlotUtils.cleanup.bind(null, element, bindingContext)
+      );
 
       var slots = bindingContext.__oj_slots;
 
@@ -340,8 +351,10 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
   ko.bindingHandlers._ojBindTemplateSlot_ = {
     init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
       // Add callback so we can move slot content to node storage during cleanup
-      ko.utils.domNodeDisposal
-        .addDisposeCallback(element, SlotUtils.cleanup.bind(null, element, bindingContext));
+      ko.utils.domNodeDisposal.addDisposeCallback(
+        element,
+        SlotUtils.cleanup.bind(null, element, bindingContext)
+      );
 
       var slots = bindingContext.__oj_slots;
 
@@ -368,10 +381,15 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
         // for upstream dependency we will still rely components being registered on the oj namespace.
         var composite = bindingContext[oj.Composite.__COMPOSITE_PROP];
         if (template.tagName !== 'TEMPLATE') {
-          Logger.error("Slot content for slot '" + slotName + "' under " +
-                          composite.tagName.toLowerCase() +
-                          " with id '" + composite.id +
-                          "' should be wrapped inside a <template> node.");
+          Logger.error(
+            "Slot content for slot '" +
+              slotName +
+              "' under " +
+              composite.tagName.toLowerCase() +
+              " with id '" +
+              composite.id +
+              "' should be wrapped inside a <template> node."
+          );
         }
         // Get the slot value of this oj-bind-template element so we can assign it to its
         // assigned nodes for downstream slotting
@@ -385,8 +403,12 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
           var as = unwrap(values.as);
 
           // Extend the composite's bindingContext for the default template
-          var nodes = engine.execute(isDefaultTemplate ? element : composite,
-              template, data, isDefaultTemplate ? as : null);
+          var nodes = engine.execute(
+            isDefaultTemplate ? element : composite,
+            template,
+            data,
+            isDefaultTemplate ? as : null
+          );
 
           ko.virtualElements.setDomNodeChildren(element, nodes);
         });

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -14,7 +14,7 @@ define(['exports', 'ojs/ojconfig', 'ojs/ojcustomelement-utils'], function (expor
    * @since 6.0.0
    * @hideconstructor
    */
-  const ExpressionUtils = function () { };
+  const ExpressionUtils = function () {};
 
   /**
    * Analyzes a string for a possible JET expression
@@ -53,8 +53,7 @@ define(['exports', 'ojs/ojconfig', 'ojs/ojcustomelement-utils'], function (expor
     try {
       /* jslint evil:true */
       // eslint-disable-next-line no-new-func
-      evaluator = new Function('context', 'with(context){return ' // @HTMLUpdateOK binding expression evaluation
-                  + expressionText + ';}');
+      evaluator = new Function('context', 'with(context){return ' + expressionText + ';}'); // @HTMLUpdateOK binding expression evaluation
     } catch (e) {
       throw new Error(e.message + ' in expression "' + expressionText + '"');
     }

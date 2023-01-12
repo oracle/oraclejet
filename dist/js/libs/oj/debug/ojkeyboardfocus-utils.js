@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -13,7 +13,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
   /**
    * @private
    */
-   const _ARIA_READONLY = 'aria-readonly';
+  const _ARIA_READONLY = 'aria-readonly';
 
   /**
    * @private
@@ -28,13 +28,16 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
   /**
    * @private
    */
-  const _FOCUSABLE_ELEMENTS_QUERY = 'input, select, button, a[href], textarea, object, [tabIndex]:not([tabIndex="-1"]), [tabindex]:not([tabindex="-1"])';
-
+  const _FOCUSABLE_ELEMENTS_QUERY =
+    'input, select, button, a[href], textarea, object, [tabIndex]:not([tabIndex="-1"]), [tabindex]:not([tabindex="-1"])';
   /**
    * @private
    */
   const _ACTIONABLE_ELEMENTS_QUERY = '[' + _DATA_OJ_TABMOD + '], ' + _FOCUSABLE_ELEMENTS_QUERY;
-
+  /**
+   * @private
+   */
+  const _LOGICAL_PARENT = '__oj_logical_parent';
 
   /** ******************* focusable/editable element related methods *****************/
 
@@ -45,8 +48,11 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * @export
    */
   const checkVisibility = function (element) {
-    return !(element.offsetHeight === 0 || element.offsetWidth === 0 ||
-      window.getComputedStyle(element).visibility === 'hidden');
+    return !(
+      element.offsetHeight === 0 ||
+      element.offsetWidth === 0 ||
+      window.getComputedStyle(element).visibility === 'hidden'
+    );
   };
 
   /**
@@ -155,8 +161,11 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * @export
    * @ignore
    */
-  const disableAllFocusableElements = function (element, excludeActiveElement,
-    includeReadonly) {
+  const disableAllFocusableElements = function (
+    element,
+    excludeActiveElement,
+    includeReadonly
+  ) {
     var disabledElems = [];
     // make all focusable elements non-focusable, since we want to manage tab stops
     var focusElems = getFocusableElementsInNode(element, true);
@@ -183,9 +192,8 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
     // make all non-focusable elements focusable again
     var focusElems = element.querySelectorAll('[' + _DATA_OJ_TABMOD + ']');
     for (var i = 0; i < focusElems.length; i++) {
-      var tabIndex =
-        parseInt(focusElems[i].getAttribute(_DATA_OJ_TABMOD), 10);
-        focusElems[i].removeAttribute(_DATA_OJ_TABMOD);
+      var tabIndex = parseInt(focusElems[i].getAttribute(_DATA_OJ_TABMOD), 10);
+      focusElems[i].removeAttribute(_DATA_OJ_TABMOD);
       // restore tabIndex
       focusElems[i].tabIndex = tabIndex;
       if (focusElems[i].hasAttribute(_DATA_OJ_ARIA_READONLY_MOD)) {
@@ -219,6 +227,17 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
         if (oj.ZOrderUtils.getStatus(popupElem) === oj.ZOrderUtils.STATUS.OPEN) {
           return popupElem;
         }
+      }
+    }
+    // also search VDOM popups
+    var newPopups = ojpopupcore.findOpenVPopups();
+    for (var j = 0; j < newPopups.length; j++) {
+      var layerElem = newPopups[j];
+      var launcherElem = layerElem[_LOGICAL_PARENT];
+      // Check if the component contains the launcher
+      if (launcherElem && $(componentElement).has(launcherElem).length > 0) {
+        // the actual popup elem is a child of the layer div
+        return layerElem.firstElementChild;
       }
     }
     return null;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -35,7 +35,7 @@ GlobalChangeQueue.prototype.registerComponentChanges = function (tracker) {
   if (this._trackers.indexOf(tracker) === -1) {
     this._trackers.push(tracker);
     if (!this._delayTimer) {
-      this._delayTimer = setTimeout(oj.Object.createCallback(this, this._deliverChangesImpl), 1);// @HTMLUpdateOK delaying our own callback
+      this._delayTimer = setTimeout(oj.Object.createCallback(this, this._deliverChangesImpl), 1); // @HTMLUpdateOK delaying our own callback
       this._delayPromise = new Promise(
         function (resolve) {
           this._delayPromiseResolver = resolve;
@@ -44,7 +44,6 @@ GlobalChangeQueue.prototype.registerComponentChanges = function (tracker) {
     }
   }
 };
-
 
 GlobalChangeQueue.prototype.deliverChanges = function () {
   if (this._delayTimer) {
@@ -62,7 +61,6 @@ GlobalChangeQueue.prototype._deliverChangesImpl = function () {
   this._resolveDelayPromise();
   var trackers = this._trackers;
   this._trackers = [];
-
 
   for (var i = 0; i < trackers.length; i++) {
     var tracker = trackers[i];
@@ -105,36 +103,38 @@ function _KoCustomBindingProvider() {
 
     var getAccessors = 'getBindingAccessors';
     if (!wrapped[getAccessors]) {
-      error("JET's Knockout bindings are not compatible with the current binding " +
-        'provider since it does not implement getBindingAccessors()');
+      error(
+        "JET's Knockout bindings are not compatible with the current binding " +
+          'provider since it does not implement getBindingAccessors()'
+      );
       return this;
     }
 
-    var custom = { getWrapped: function () { return wrapped; } };
+    var custom = {
+      getWrapped: function () {
+        return wrapped;
+      }
+    };
     provider[instanceName] = custom;
 
     var methodsToWrap = [];
     methodsToWrap.push(getAccessors, 'nodeHasBindings', 'getBindings');
 
-    methodsToWrap.forEach(
-      function (name) {
-        custom[name] = _wrap(wrapped, name,
-          function (n, original) {
-            // _wrap() will be producing a function that always calls the 'wrapped'/original method first
-            // to handle the binding postprocessor case.
-            // Hovewer, for cases when the binding context has been created with  .extendBindingContext(),
-            // we are replacing the binding evaluaror completely, and we do not need to call the original
-            // getAccessors() method. _preWrapGetAccessors() will 'pre-wrap'/replace getAccessors() for that case,
-            // so _wrap() will be wrapping the replaced method, and we will not be creating an evaluator in the original
-            // getAccessors() method just to throw it away
-            if (n !== getAccessors) {
-              return original;
-            }
-            return _preWrapGetAccessors(original, wrapped);
-          }
-        );
-      }
-    );
+    methodsToWrap.forEach(function (name) {
+      custom[name] = _wrap(wrapped, name, function (n, original) {
+        // _wrap() will be producing a function that always calls the 'wrapped'/original method first
+        // to handle the binding postprocessor case.
+        // Hovewer, for cases when the binding context has been created with  .extendBindingContext(),
+        // we are replacing the binding evaluaror completely, and we do not need to call the original
+        // getAccessors() method. _preWrapGetAccessors() will 'pre-wrap'/replace getAccessors() for that case,
+        // so _wrap() will be wrapping the replaced method, and we will not be creating an evaluator in the original
+        // getAccessors() method just to throw it away
+        if (n !== getAccessors) {
+          return original;
+        }
+        return _preWrapGetAccessors(original, wrapped);
+      });
+    });
     custom.preprocessNode = _wrapPreprocessNode(wrapped);
 
     _patchKoRenderTemplateSource();
@@ -147,12 +147,10 @@ function _KoCustomBindingProvider() {
 
   this.addPostprocessor = function (postprocessor) {
     var keys = Object.keys(postprocessor);
-    keys.forEach(
-      function (key) {
-        _postprocessors[key] = _postprocessors[key] || [];
-        _postprocessors[key].push(postprocessor[key]);
-      }
-    );
+    keys.forEach(function (key) {
+      _postprocessors[key] = _postprocessors[key] || [];
+      _postprocessors[key].push(postprocessor[key]);
+    });
   };
 
   this.registerPreprocessor = function (tagName, preprocessor) {
@@ -205,8 +203,10 @@ function _KoCustomBindingProvider() {
     try {
       /* jslint evil:true */
       // eslint-disable-next-line no-new-func
-      evaluator = new Function('$context', 'with($context){with($data||{}){return ' // @HTMLUpdateOK
-        + expressionText + ';}}'); // binding expression evaluation
+      evaluator = new Function( // @HTMLUpdateOK
+        '$context',
+        'with($context){with($data||{}){return ' + expressionText + ';}}'
+      ); // binding expression evaluation
     } catch (e) {
       throw new Error(e.message + ' in expression "' + expressionText + '"');
     }
@@ -214,8 +214,11 @@ function _KoCustomBindingProvider() {
   };
 
   this.createEvaluator = function (expression, bindingContext) {
-    return _createEvaluatorViaCache(this.createBindingExpressionEvaluator,
-      expression, bindingContext);
+    return _createEvaluatorViaCache(
+      this.createBindingExpressionEvaluator,
+      expression,
+      bindingContext
+    );
   };
 
   this.getGlobalChangeQueue = function () {
@@ -223,7 +226,7 @@ function _KoCustomBindingProvider() {
   };
 
   function _wrap(wrapped, name, prewrap) {
-    var isHasBindings = (name === 'nodeHasBindings');
+    var isHasBindings = name === 'nodeHasBindings';
 
     return function (arg0) {
       if (isHasBindings) {
@@ -239,14 +242,12 @@ function _KoCustomBindingProvider() {
 
       if (postprocessHandlers != null) {
         var originalArgs = arguments;
-        postprocessHandlers.forEach(
-          function (handler) {
-            var args = Array.prototype.slice.call(originalArgs);
-            args.push(ret, wrapped);
-            // Ignore dependencies here so that bindings don't get triggered due to contained evaluations
-            ret = ignoreDependencies(handler, null, args);
-          }
-        );
+        postprocessHandlers.forEach(function (handler) {
+          var args = Array.prototype.slice.call(originalArgs);
+          args.push(ret, wrapped);
+          // Ignore dependencies here so that bindings don't get triggered due to contained evaluations
+          ret = ignoreDependencies(handler, null, args);
+        });
       }
       return ret;
     };
@@ -291,7 +292,7 @@ function _KoCustomBindingProvider() {
           // insert the nodes instead of the item at the index i
           ret.splice.apply(ret, [i, 1].concat(insertedNodes));
           // jump over the inserted nodes (-1 represents one node being replaced)
-          i += (insertedNodes.length - 1);
+          i += insertedNodes.length - 1;
         }
       }
       current = next;
@@ -299,7 +300,7 @@ function _KoCustomBindingProvider() {
       var nextIndex = currentIndex + 1;
       currentIndex = current ? newNodes.indexOf(current, nextIndex) : -1;
       // figure out how many virtual children we need to skip (they will be preprocessed after their container is entered)
-      i += (currentIndex - nextIndex); // this value is irrelevent if currentIndex is negative
+      i += currentIndex - nextIndex; // this value is irrelevent if currentIndex is negative
     }
 
     return ret;
@@ -313,26 +314,29 @@ function _KoCustomBindingProvider() {
     var method = 'renderTemplateSource';
     var delegate = proto[method];
 
-    proto[method] =
-      function (templateSource, bindingContext, options, templateDocument) {
-        return delegate.call(this, templateSource, bindingContext,
-          options, templateDocument || document/* use current document if none is provided*/);
-      };
+    proto[method] = function (templateSource, bindingContext, options, templateDocument) {
+      return delegate.call(
+        this,
+        templateSource,
+        bindingContext,
+        options,
+        templateDocument || document /* use current document if none is provided*/
+      );
+    };
   }
 
-    // Patches ko.templateSources.domElement.nodes() method to ensure that custom elements are upgraded synchronously.
-    // This method addresses an issue when JET components are defined inside of an external <template> element.
-    function _patchKoTemplateSourceDomElement() {
-      const proto = templateSources.domElement.prototype;
-      const method = 'nodes';
-      const delegate = proto[method];
+  // Patches ko.templateSources.domElement.nodes() method to ensure that custom elements are upgraded synchronously.
+  // This method addresses an issue when JET components are defined inside of an external <template> element.
+  function _patchKoTemplateSourceDomElement() {
+    const proto = templateSources.domElement.prototype;
+    const method = 'nodes';
+    const delegate = proto[method];
 
-      proto[method] =
-        function () {
-          const nodes = delegate.apply(this, arguments);
-          return nodes && nodes.nodeType === 11 ? document.importNode(nodes, true) : nodes;
-        };
-    }
+    proto[method] = function () {
+      const nodes = delegate.apply(this, arguments);
+      return nodes && nodes.nodeType === 11 ? document.importNode(nodes, true) : nodes;
+    };
+  }
 
   // This method adds custom KO component loader that overrides defaultLoader.loadTemplate().
   // This is done to ensure that the template is parsed with the current document in order
@@ -378,9 +382,9 @@ function _KoCustomBindingProvider() {
         // _createExtendAccessorsViaCache() returns a function that will produce a map of binding accessors.
         // Note that this function is immediately invoked with the bindingcontext and node as parameters.
         // That will pre-bind binding accessors to the values of $context and $element
-        var accessors = bindingsString ?
-          _createExtendAccessorsViaCache(bindingsString,
-            bindingContext)(bindingContext, node) : null;
+        var accessors = bindingsString
+          ? _createExtendAccessorsViaCache(bindingsString, bindingContext)(bindingContext, node)
+          : null;
 
         // Check whether a node is a KO component. We will be using the default evaluator
         // to initialize component binding, while our own evaluator will be handling the
@@ -408,8 +412,9 @@ function _KoCustomBindingProvider() {
       // .preProcessBindings() will produce a string that defines a Function retrurning a map
       // with each key being the bidning name, and each value being an evalutor function for
       // binding value
-      var rewrittenBindings = expressionRewriting.preProcessBindings(expr,
-        { valueAccessors: true });
+      var rewrittenBindings = expressionRewriting.preProcessBindings(expr, {
+        valueAccessors: true
+      });
       return _createReplacementEvaluatorForExtend('{' + rewrittenBindings + '}');
     };
 
@@ -433,8 +438,11 @@ function _KoCustomBindingProvider() {
     try {
       /* jslint evil:true */
       // eslint-disable-next-line no-new-func
-      evaluator = new Function('$context', '$element', 'with($context.$data||{}){with($context){return ' +// @HTMLUpdateOK
-        expressionText + '}}'); // binding expression evaluation
+      evaluator = new Function( // @HTMLUpdateOK
+        '$context',
+        '$element',
+        'with($context.$data||{}){with($context){return ' + expressionText + '}}'
+      ); // binding expression evaluation
     } catch (e) {
       throw new Error(e.message + ' in expression "' + expressionText + '"');
     }
@@ -477,7 +485,7 @@ function _KoCustomBindingProvider() {
 
       case 8: // Comment node
         var match = node.nodeValue.match(/^\s*ko(?:\s+([\s\S]+))?\s*$/);
-        return (match ? match[1] : null);
+        return match ? match[1] : null;
 
       default:
         return null;
@@ -499,8 +507,10 @@ function _patchKoEvaluatorForCSP(cache) {
     }
   }
   if (!patched) {
-    error('Unable to patch KO expression evaluation implementation. ' +
-    'If you have a custom binding provider, make sure it implements the getWrapped() method that returns the default binding provider instance.');
+    error(
+      'Unable to patch KO expression evaluation implementation. ' +
+        'If you have a custom binding provider, make sure it implements the getWrapped() method that returns the default binding provider instance.'
+    );
   }
 }
 

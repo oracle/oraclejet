@@ -1,14 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import oj from 'ojs/ojcore';
 
-const TreeDataProvider = function () {
-};
+const TreeDataProvider = function () {};
 // mapping variable definition, used in a no-require environment. Maps the TreeDataProvider function object to the name used in the require callback.
 // eslint-disable-next-line no-unused-vars
 oj._registerLegacyNamespaceProp('TreeDataProvider', TreeDataProvider);
@@ -135,7 +134,9 @@ oj._registerLegacyNamespaceProp('TreeDataProvider', TreeDataProvider);
  */
 
 /**
- * Fetch rows by keys
+ * Fetch rows by keys.
+ * If this method is called on a DataProvider returned from <code>getChildDataProvider(key)</code>,
+ * the rows will be only those from the children of the <code>key</code>.
  *
  *
  * @since 4.2.0
@@ -157,7 +158,9 @@ oj._registerLegacyNamespaceProp('TreeDataProvider', TreeDataProvider);
  */
 
 /**
- * Check if there are rows containing the specified keys
+ * Check if there are rows containing the specified keys.
+ * If this method is called on a DataProvider returned from <code>getChildDataProvider(key)</code>,
+ * the rows will be only those from the children of the <code>key</code>.
  *
  *
  * @since 4.2.0
@@ -343,6 +346,4 @@ oj._registerLegacyNamespaceProp('TreeDataProvider', TreeDataProvider);
  *               value: "(evt: Event): boolean"}
  */
 
-/**
- * End of jsdoc
- */
+// end of jsdoc

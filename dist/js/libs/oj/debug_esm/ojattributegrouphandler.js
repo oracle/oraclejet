@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -175,7 +175,7 @@ AttributeGroupHandler.prototype.addMatchRule = function (category, attributeValu
  *    'South America': 'violet' });
  * </code>
  * </pre>
-*/
+ */
 const ColorAttributeGroupHandler = function (matchRules) {
   // Create the array of colors for this instance.
   this._attributeValues = [];
@@ -204,22 +204,42 @@ const ColorAttributeGroupHandler = function (matchRules) {
   this.Init(matchRules);
 };
 // eslint-disable-next-line no-undef
-oj.Object.createSubclass(ColorAttributeGroupHandler, AttributeGroupHandler,
-                         'ColorAttributeGroupHandler');
+oj.Object.createSubclass(
+  ColorAttributeGroupHandler,
+  AttributeGroupHandler,
+  'ColorAttributeGroupHandler'
+);
 
 /** @private */
 ColorAttributeGroupHandler._DEFAULT_COLORS = [
-  '#237bb1', '#68c182', '#fad55c', '#ed6647',
-  '#8561c8', '#6ddbdb', '#ffb54d', '#e371b2',
-  '#47bdef', '#a2bf39', '#a75dba', '#f7f37b'
+  '#237bb1',
+  '#68c182',
+  '#fad55c',
+  '#ed6647',
+  '#8561c8',
+  '#6ddbdb',
+  '#ffb54d',
+  '#e371b2',
+  '#47bdef',
+  '#a2bf39',
+  '#a75dba',
+  '#f7f37b'
 ];
 
 /** @private */
 ColorAttributeGroupHandler._STYLE_CLASSES = [
-  'oj-dvt-category1', 'oj-dvt-category2', 'oj-dvt-category3',
-  'oj-dvt-category4', 'oj-dvt-category5', 'oj-dvt-category6',
-  'oj-dvt-category7', 'oj-dvt-category8',
-  'oj-dvt-category9', 'oj-dvt-category10', 'oj-dvt-category11', 'oj-dvt-category12'
+  'oj-dvt-category1',
+  'oj-dvt-category2',
+  'oj-dvt-category3',
+  'oj-dvt-category4',
+  'oj-dvt-category5',
+  'oj-dvt-category6',
+  'oj-dvt-category7',
+  'oj-dvt-category8',
+  'oj-dvt-category9',
+  'oj-dvt-category10',
+  'oj-dvt-category11',
+  'oj-dvt-category12'
 ];
 
 /** @private */
@@ -276,7 +296,7 @@ ColorAttributeGroupHandler.__processAttrDiv = function (attrGpsDiv) {
 
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignoreg
@@ -333,15 +353,27 @@ ColorAttributeGroupHandler.__processAttrDiv = function (attrGpsDiv) {
  *    'South America': 'circle' });
  * </code>
  * </pre>
-*/
+ */
 var ShapeAttributeGroupHandler = function (matchRules) {
   this.Init(matchRules);
 };
 
 // eslint-disable-next-line no-undef
-oj.Object.createSubclass(ShapeAttributeGroupHandler, AttributeGroupHandler, 'ShapeAttributeGroupHandler');
+oj.Object.createSubclass(
+  ShapeAttributeGroupHandler,
+  AttributeGroupHandler,
+  'ShapeAttributeGroupHandler'
+);
 
-ShapeAttributeGroupHandler._attributeValues = ['square', 'circle', 'diamond', 'plus', 'triangleDown', 'triangleUp', 'human'];
+ShapeAttributeGroupHandler._attributeValues = [
+  'square',
+  'circle',
+  'diamond',
+  'plus',
+  'triangleDown',
+  'triangleUp',
+  'human'
+];
 
 /**
  * Returns the array of possible shape values for this attribute group handler.

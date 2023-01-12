@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -54,9 +54,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       this.IsHover = false;
 
-      this._ANIMATION_DELETE_PRIORITY = 0;   // The order in which the delete animation occurs
-      this._ANIMATION_UPDATE_PRIORITY = 1;   // The order in which the update animation occurs
-      this._ANIMATION_INSERT_PRIORITY = 2;   // The order in which the insert animation occurs
+      this._ANIMATION_DELETE_PRIORITY = 0; // The order in which the delete animation occurs
+      this._ANIMATION_UPDATE_PRIORITY = 1; // The order in which the update animation occurs
+      this._ANIMATION_INSERT_PRIORITY = 2; // The order in which the insert animation occurs
 
       this._DEFAULT_TEXT_SIZE = 11;
     }
@@ -68,14 +68,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     setChildNodes(children) {
       // Set this node as the parent of the children
       if (children != null) {
-        for (var i = 0; i < children.length; i++)
-          children[i]._parent = this;
+        for (var i = 0; i < children.length; i++) children[i]._parent = this;
       }
 
       // Store the children
       this._children = children;
     }
-
 
     /**
      * Returns the Array containing all children of this node.
@@ -89,17 +87,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * Returns an Array containing all the descendants of this node
      * @return {Array} The array of descendants of this node
      */
-    getDescendantNodes()
-    {
+    getDescendantNodes() {
       var descendants = [];
       var childDescendants;
       var child;
 
-      if (!this.hasChildren())
-        return descendants;
+      if (!this.hasChildren()) return descendants;
 
-      for (var i = 0; i < this._children.length; i++)
-      {
+      for (var i = 0; i < this._children.length; i++) {
         child = this._children[i];
         childDescendants = child.getDescendantNodes();
         descendants.push(child);
@@ -115,11 +110,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {DvtTreeNode} lastVisited
      * @protected
      */
-    SetLastVisitedChild(lastVisited)
-    {
+    SetLastVisitedChild(lastVisited) {
       this._lastVisitedChild = lastVisited;
     }
-
 
     /**
      * Returns the last visited child
@@ -127,8 +120,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {DvtTreeNode} The last visited child
      * @protected
      */
-    GetLastVisitedChild()
-    {
+    GetLastVisitedChild() {
       return this._lastVisitedChild;
     }
 
@@ -136,27 +128,21 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * Updates the last visited child on the given node's parent to this node
      * @protected
      */
-    MarkAsLastVisitedChild()
-    {
+    MarkAsLastVisitedChild() {
       var parent = this.GetParent();
-      if (parent)
-      {
+      if (parent) {
         parent.SetLastVisitedChild(this);
       }
     }
-
 
     /**
      * Returns true if this node is a descendant of the specified node.
      * @param {DvtTreeNode} node
      */
     isDescendantOf(node) {
-      if (!node || !this.GetParent())
-        return false;
-      else if (this.GetParent() == node)
-        return true;
-      else
-        return this.GetParent().isDescendantOf(node);
+      if (!node || !this.GetParent()) return false;
+      else if (this.GetParent() == node) return true;
+      else return this.GetParent().isDescendantOf(node);
     }
 
     /**
@@ -167,17 +153,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     GetNodesAtDepth(root, depth) {
       var returnArray = [];
-      if (depth < 0)
-        return returnArray;
+      if (depth < 0) return returnArray;
 
-      if (depth == 0)
-        return [this];
-      else if (root.hasChildren())
-      {
+      if (depth == 0) return [this];
+      else if (root.hasChildren()) {
         var children = root.getChildNodes();
         var child;
-        for (var i = 0; i < children.length; i++)
-        {
+        for (var i = 0; i < children.length; i++) {
           child = children[i];
           returnArray = returnArray.concat(child.GetNodesAtDepth(child, depth - 1));
         }
@@ -193,24 +175,19 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {DvtTreeNode} The node with the given id, or null if no node with the given id is found
      */
     static getNodeById(root, id) {
-      if (dvt.Obj.compareValues(root.getView().getCtx(), root.getId(), id))
-      {
+      if (dvt.Obj.compareValues(root.getView().getCtx(), root.getId(), id)) {
         return root;
-      }
-      else
-      {
+      } else {
         // recursively call getNodeById on each of the children
         var node = null;
         var children = root.getChildNodes();
         var length = children.length;
         var child = null;
 
-        for (var i = 0; i < length; i++)
-        {
+        for (var i = 0; i < length; i++) {
           child = children[i];
           node = DvtTreeNode.getNodeById(child, id);
-          if (node)
-          {
+          if (node) {
             // if we found the node, return it, otherwise check the next child
             return node;
           }
@@ -248,8 +225,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     getCategories() {
       //  - default treemap node categories includes artificial node
-      if (this.isArtificialRoot())
-        return [];
+      if (this.isArtificialRoot()) return [];
 
       // Implements function in DvtCategoricalObject
       var categories = this.getOptions()['categories'];
@@ -270,7 +246,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     getId() {
       return this._id;
     }
-
 
     /**
      * Returns the relative size of this node.
@@ -298,8 +273,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var customTooltip = this._view.getOptions()['tooltip'];
       var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
       if (tooltipFunc)
-        return this.getView().getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, this.getDataContext());
-      return dvt.Displayable.resolveShortDesc(this._shortDesc, () => DvtTreeNode.getShortDescContext(this));
+        return this.getView()
+          .getCtx()
+          .getTooltipManager()
+          .getCustomTooltip(tooltipFunc, this.getDataContext());
+      return dvt.Displayable.resolveShortDesc(this._shortDesc, () =>
+        DvtTreeNode.getShortDescContext(this)
+      );
     }
 
     /**
@@ -330,19 +310,18 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (options._noTemplate) {
         itemData = options._itemData;
         data = options._itemData;
-      }
-      else if (options._itemData) {
+      } else if (options._itemData) {
         itemData = options._itemData;
         options = dvt.JsonUtils.clone(options);
         data = options;
         delete options._itemData;
       }
       return {
-        'id': node.getId(),
-        'label': node.getLabel(),
-        'value': node.getSize(),
-        'data': data,
-        'itemData': itemData
+        id: node.getId(),
+        label: node.getLabel(),
+        value: node.getSize(),
+        data: data,
+        itemData: itemData
       };
     }
 
@@ -357,21 +336,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (options._noTemplate) {
         itemData = options._itemData;
         data = options._itemData;
-      }
-      else if (options._itemData) {
+      } else if (options._itemData) {
         itemData = options._itemData;
         options = dvt.JsonUtils.clone(options);
         data = options;
         delete options._itemData;
       }
       return {
-        'id': this.getId(),
-        'label': this.getLabel(),
-        'value': this.getSize(),
-        'color': this.getColor(),
-        'data': data,
-        'itemData': itemData,
-        'component': this.getView().getOptions()['_widgetConstructor']
+        id: this.getId(),
+        label: this.getLabel(),
+        value: this.getSize(),
+        color: this.getColor(),
+        data: data,
+        itemData: itemData,
+        component: this.getView().getOptions()['_widgetConstructor']
       };
     }
 
@@ -393,7 +371,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       return this._alpha;
     }
 
-
     /**
      * Specifies the alpha for this node.
      * @param {number} alpha The alpha for this node.
@@ -402,10 +379,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Note: This API is called by the fadeIn and fadeOut animations
       this._alpha = alpha;
 
-      if (this._shape)
-        this._shape.setAlpha(this._alpha);
+      if (this._shape) this._shape.setAlpha(this._alpha);
     }
-
 
     /**
      * Specifies whether the children of this node are disclosed.
@@ -449,7 +424,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // subclasses should override
     }
 
-
     /**
      * Renders the child nodes of this node.
      * @param {dvt.Container} container The container to render in.
@@ -464,24 +438,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       }
     }
 
-
     /**
      * Default implementation of getNextNavigable. Returns this node as the next navigable.  Subclasses should override
      * @override
      */
-    getNextNavigable(event)
-    {
+    getNextNavigable(event) {
       // subclasses should override
       this.MarkAsLastVisitedChild();
       return this;
     }
 
-
     /**
      * @override
      */
-    getKeyboardBoundingBox()
-    {
+    getKeyboardBoundingBox() {
       // subclasses should override
       return new dvt.Rectangle(0, 0, 0, 0);
     }
@@ -489,8 +459,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     /**
      * @override
      */
-    getTargetElem()
-    {
+    getTargetElem() {
       // subclasses should override
       return null;
     }
@@ -498,36 +467,30 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     /**
      * @override
      */
-    showKeyboardFocusEffect()
-    {
+    showKeyboardFocusEffect() {
       this._isShowingKeyboardFocusEffect = true;
 
       this.showHoverEffect();
-      if (this.handleMouseOver)
-        this.handleMouseOver();
+      if (this.handleMouseOver) this.handleMouseOver();
     }
-
 
     /**
      * @override
      */
-    hideKeyboardFocusEffect()
-    {
+    hideKeyboardFocusEffect() {
       // Hide the hover effect if it was shown in response to keyboard focus
       if (this._isShowingKeyboardFocusEffect) {
         this._isShowingKeyboardFocusEffect = false;
         this.hideHoverEffect();
       }
 
-      if (this.handleMouseOut)
-        this.handleMouseOut();
+      if (this.handleMouseOut) this.handleMouseOut();
     }
 
     /**
      * @override
      */
-    isShowingKeyboardFocusEffect()
-    {
+    isShowingKeyboardFocusEffect() {
       return this._isShowingKeyboardFocusEffect;
     }
 
@@ -676,15 +639,28 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var nodePlayable;
       if (!dvt.ArrayUtils.equals(startState, endState)) {
         // Only create if state changed
-        nodePlayable = new dvt.CustomAnimation(this.getView().getCtx(), this, this.getView().__getAnimDur());
-        nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER_ARRAY, this, this.GetAnimParams, this.SetAnimParams, endState);
+        nodePlayable = new dvt.CustomAnimation(
+          this.getView().getCtx(),
+          this,
+          this.getView().__getAnimDur()
+        );
+        nodePlayable
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_NUMBER_ARRAY,
+            this,
+            this.GetAnimParams,
+            this.SetAnimParams,
+            endState
+          );
 
         // Create the playable
         handler.add(nodePlayable, this._ANIMATION_UPDATE_PRIORITY);
 
         // Determine whether size and color changed.  This must be done before start state is set.
-        var bSizeChanged = (this._size != oldNode._size);
-        var bColorChanged = (dvt.ColorUtils.getRGBA(this._color) != dvt.ColorUtils.getRGBA(oldNode._color));
+        var bSizeChanged = this._size != oldNode._size;
+        var bColorChanged =
+          dvt.ColorUtils.getRGBA(this._color) != dvt.ColorUtils.getRGBA(oldNode._color);
 
         // Initialize the start state
         this.SetAnimParams(startState);
@@ -747,7 +723,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {boolean} true if this node has children.
      */
     hasChildren() {
-      return (this._children != null && this._children.length > 0);
+      return this._children != null && this._children.length > 0;
     }
 
     /**
@@ -768,7 +744,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {boolean} true the node has a pattern set.
      */
     hasPattern() {
-      return (this._pattern && this._pattern != "none");
+      return this._pattern && this._pattern != 'none';
     }
 
     /**
@@ -800,10 +776,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {dvt.Fill}
      */
     GetFill() {
-      if (this.hasPattern())
-        return new dvt.PatternFill(this._pattern, this._color);
-      else
-        return new dvt.SolidFill(this._color);
+      if (this.hasPattern()) return new dvt.PatternFill(this._pattern, this._color);
+      else return new dvt.SolidFill(this._color);
     }
 
     /**
@@ -816,8 +790,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (node.hasPattern()) {
         // Use black for all patterned nodes against white backgrounds
         return '#000000';
-      }
-      else {
+      } else {
         return dvt.ColorUtils.getContrastingTextColor(node._color);
       }
     }
@@ -829,8 +802,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       text.setCSSStyle(this.getMergedLabelTextStyle());
 
       // In high contrast mode, override the app settings and use the default colors
-      if (dvt.Agent.isHighContrast())
-        text.setSolidFill(defaultFillColor);
+      if (dvt.Agent.isHighContrast()) text.setSolidFill(defaultFillColor);
     }
 
     /**
@@ -840,8 +812,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     getMergedLabelTextStyle() {
       var textStyle = [];
       textStyle.push(this._view.getOptions()['nodeDefaults']['labelStyle']);
-      if (this._labelStyle)
-        textStyle.push(this._labelStyle);
+      if (this._labelStyle) textStyle.push(this._labelStyle);
       return dvt.CSSStyle.mergeStyles(textStyle);
     }
 
@@ -862,8 +833,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     getLabelBackgroundColor() {
       var nodeLabelStyle = this._labelStyle;
       var nodeBackgroundColor = nodeLabelStyle ? nodeLabelStyle.getStyle('background-color') : null;
-      if (nodeBackgroundColor)
-        return nodeBackgroundColor;
+      if (nodeBackgroundColor) return nodeBackgroundColor;
       var textStyle = this._view.getOptions()['nodeDefaults']['labelStyle'];
       return textStyle.getStyle('background-color');
     }
@@ -907,11 +877,22 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @protected
      */
     isRootNode() {
-      return dvt.Obj.compareValues(this.getView().getCtx(), this.getId(), this.getView().getRootNode().getId()) || this.isArtificialRoot();
+      return (
+        dvt.Obj.compareValues(
+          this.getView().getCtx(),
+          this.getId(),
+          this.getView().getRootNode().getId()
+        ) || this.isArtificialRoot()
+      );
     }
   }
 
-  DvtTreeNode.__NODE_SELECTED_SHADOW = new dvt.Shadow(Math.sqrt(2), Math.sqrt(2), 5/3, 'rgba(0, 0, 0, 0.5)');
+  DvtTreeNode.__NODE_SELECTED_SHADOW = new dvt.Shadow(
+    Math.sqrt(2),
+    Math.sqrt(2),
+    5 / 3,
+    'rgba(0, 0, 0, 0.5)'
+  );
 
   /**
    * Simple logical object for drilling and tooltip support.
@@ -982,7 +963,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @class
    */
   const DvtTreeUtils = {
-
     /**
      * Returns the maximum depth of the tree rooted at the specified node.
      * @param {DvtTreeNode} node The subtree to find the depth for.
@@ -1034,7 +1014,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {array}
      */
     getAllIds: (node) => {
-      return DvtTreeUtils.getAllNodes(node).map(node => node.getId());
+      return DvtTreeUtils.getAllNodes(node).map((node) => node.getId());
     },
 
     /**
@@ -1069,7 +1049,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       return dvt.ArrayUtils.hasAnyMapItem(categoryMap, nodeOptions['categories']);
     },
 
-
     /**
      * Recursively returns an array containing all nodes in the subtree of a given node.
      * @param {DvtTreeNode} node The root of the subtree whose children will be returned.
@@ -1079,15 +1058,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @private
      */
     _addNodesToArray: (node, ret, bLeafOnly, bRendered) => {
-      if (!node)
-        return;
+      if (!node) return;
 
       var children = node.getChildNodes();
       var childCount = children ? children.length : 0;
 
       // Add this node
-      if ((!bLeafOnly || childCount == 0) && !(bRendered && !node.getDisplayable()))
-        ret.push(node);
+      if ((!bLeafOnly || childCount == 0) && !(bRendered && !node.getDisplayable())) ret.push(node);
 
       // Add its children
       for (var i = 0; i < childCount; i++) {
@@ -1106,13 +1083,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     findRootAndAncestors: (context, nodes, rootId, ancestors) => {
       for (var i = 0; i < nodes.length; i++) {
         if (dvt.Obj.compareValues(context, nodes[i]['id'], rootId)) {
-          return {'root': nodes[i], 'ancestors': ancestors};
-        }
-        else if (nodes[i]['nodes']) {
+          return { root: nodes[i], ancestors: ancestors };
+        } else if (nodes[i]['nodes']) {
           ancestors.unshift(nodes[i]);
-          var result = DvtTreeUtils.findRootAndAncestors(context, nodes[i]['nodes'], rootId, ancestors);
-          if (result != null)
-            return result;
+          var result = DvtTreeUtils.findRootAndAncestors(
+            context,
+            nodes[i]['nodes'],
+            rootId,
+            ancestors
+          );
+          if (result != null) return result;
           ancestors.shift();
         }
       }
@@ -1141,9 +1121,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._oldAncestors = oldAncestors;
 
       // Determine whether this is a drill or data change animation
-      if (DvtTreeAnimationHandler._isAncestor(newAncestors, oldRoot) ||
-          DvtTreeAnimationHandler._isAncestor(oldAncestors, newRoot))
-      {
+      if (
+        DvtTreeAnimationHandler._isAncestor(newAncestors, oldRoot) ||
+        DvtTreeAnimationHandler._isAncestor(oldAncestors, newRoot)
+      ) {
         // Drilling
         this._bDrill = true;
         var oldList = oldRoot.getDescendantNodes();
@@ -1151,8 +1132,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         oldList.push(oldRoot);
         newList.push(newRoot);
         this.constructAnimation(oldList, newList);
-      }
-      else {
+      } else {
         // Data Change Animation
         this.constructAnimation([oldRoot], [newRoot]);
       }
@@ -1174,10 +1154,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     isAncestorInsert(node) {
       if (this._bDrill)
-        return dvt.Obj.compareValues(this.getCtx(), this._oldRoot.getId(), node.getId()) ||
-              DvtTreeAnimationHandler._isAncestor(this._oldAncestors, node);
-      else
-        return false;
+        return (
+          dvt.Obj.compareValues(this.getCtx(), this._oldRoot.getId(), node.getId()) ||
+          DvtTreeAnimationHandler._isAncestor(this._oldAncestors, node)
+        );
+      else return false;
     }
 
     /**
@@ -1187,13 +1168,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {boolean}
      */
     static _isAncestor(ancestors, node) {
-      if (!node || !ancestors)
-        return false;
+      if (!node || !ancestors) return false;
 
       // Iterate through the array and search for the node
       for (var i = 0; i < ancestors.length; i++) {
-        if (ancestors[i]['id'] == node.getId())
-          return true;
+        if (ancestors[i]['id'] == node.getId()) return true;
       }
 
       // No match found
@@ -1206,13 +1185,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @class
    */
   const DvtBreadcrumbsDefaults = {
-
     /**
      * Defaults for version 1.
      */
     VERSION_1: {
-      'labelStyle': dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11 + 'color: #003286;',
-      'disabledLabelStyle': dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11,
+      labelStyle: dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11 + 'color: #003286;',
+      disabledLabelStyle: dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11,
 
       //*********** Internal Attributes *************************************************//
       __labelGap: 4,
@@ -1230,12 +1208,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var defaults = DvtBreadcrumbsDefaults._getDefaults();
 
       // Use defaults if no overrides specified
-      if (!userOptions)
-        return defaults;
-      else // Merge the options object with the defaults
-        return dvt.JsonUtils.merge(userOptions, defaults);
+      if (!userOptions) return defaults;
+      // Merge the options object with the defaults
+      else return dvt.JsonUtils.merge(userOptions, defaults);
     },
-
 
     /**
      * Returns the default options object for the specified version of the component.
@@ -1311,7 +1287,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     getTooltip() {
-      return this._truncated? this._displayableText: null;
+      return this._truncated ? this._displayableText : null;
     }
 
     /**
@@ -1340,14 +1316,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._processBreadcrumbs(this.GetLogicalObject(event.target));
     }
 
-
     /**
      * @override
      */
     HandleTouchClickInternal(event) {
       this._processBreadcrumbs(this.GetLogicalObject(event.target));
     }
-
 
     /**
      * Processes a possible drill event on a breadcrumb.
@@ -1379,18 +1353,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           // Accessibility Support
           this.UpdateActiveElement(this._breadcrumbs.getCrumb(curCrumbIdx));
         }
-      }
-      else if (keyCode == dvt.KeyboardEvent.ENTER) {
+      } else if (keyCode == dvt.KeyboardEvent.ENTER) {
         var crumb = this._breadcrumbs.getCrumb(this._breadcrumbs.getCurrentCrumbIndex());
         this._processBreadcrumbs(this.GetLogicalObject(crumb));
       }
 
       // keystrokes are consumed by default, unless we tab out of the breadcrumbs
-      if (eventConsumed)
-        dvt.EventManager.consumeEvent(event);
+      if (eventConsumed) dvt.EventManager.consumeEvent(event);
 
       return eventConsumed;
-    };
+    }
   }
 
   /**
@@ -1398,7 +1370,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @class
    */
   const DvtBreadcrumbsRenderer = {
-
     /**
      * @private
      */
@@ -1426,7 +1397,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           var textStr = dataItem['label'] ? dataItem['label'] : '';
 
           // Create the text element
-          var label = DvtBreadcrumbsRenderer._createLabel(context, textStr, options, i < dataItems.length - 1);
+          var label = DvtBreadcrumbsRenderer._createLabel(
+            context,
+            textStr,
+            options,
+            i < dataItems.length - 1
+          );
           labels.push(label);
 
           // Create peer for interactivity support
@@ -1445,8 +1421,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Position the labels
       if (dvt.Agent.isRightToLeft(context))
         DvtBreadcrumbsRenderer._positionLabelsBidi(breadcrumbs, container, width, labels, peers);
-      else
-        DvtBreadcrumbsRenderer._positionLabels(breadcrumbs, container, width, labels, peers);
+      else DvtBreadcrumbsRenderer._positionLabels(breadcrumbs, container, width, labels, peers);
     },
 
     /**
@@ -1468,7 +1443,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var padLeft = cssStyle.getPadding(dvt.CSSStyle.PADDING_LEFT);
 
       var labelDims = dvt.DisplayableUtils.getDimensionsForced(context, dvtText);
-      var state = new dvt.Rect(context, 0, 0, labelDims.w + padLeft + padRight, labelDims.h + padTop + padBottom);
+      var state = new dvt.Rect(
+        context,
+        0,
+        0,
+        labelDims.w + padLeft + padRight,
+        labelDims.h + padTop + padBottom
+      );
       state.setInvisibleFill();
       state.setCSSStyle(cssStyle);
       dvtText.setTranslate(padLeft, padTop);
@@ -1500,14 +1481,17 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         label = new dvt.Button(context, ena, ovr, dwn);
         label.setAriaRole('link');
         label.setAriaProperty('label', textStr);
-      }
-      else {
+      } else {
         var labelStyle = bEnabled ? options.labelStyle : options.disabledLabelStyle;
         var cssStyle = new dvt.CSSStyle(labelStyle);
-        if (cssStyle.getPadding(dvt.CSSStyle.PADDING_LEFT) || cssStyle.getPadding(dvt.CSSStyle.PADDING_RIGHT) || cssStyle.getPadding(dvt.CSSStyle.PADDING_TOP) || cssStyle.getPadding(dvt.CSSStyle.PADDING_BOTTOM)) {
+        if (
+          cssStyle.getPadding(dvt.CSSStyle.PADDING_LEFT) ||
+          cssStyle.getPadding(dvt.CSSStyle.PADDING_RIGHT) ||
+          cssStyle.getPadding(dvt.CSSStyle.PADDING_TOP) ||
+          cssStyle.getPadding(dvt.CSSStyle.PADDING_BOTTOM)
+        ) {
           label = DvtBreadcrumbsRenderer._createButtonState(context, textStr, cssStyle);
-        }
-        else {
+        } else {
           label = new dvt.OutputText(context, textStr, 0, 0);
           label.setCSSStyle(cssStyle);
         }
@@ -1527,8 +1511,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         var ena = label.upState;
         text = ena.getChildAt(0);
         return text.getTextString();
-      }
-      else if (label instanceof dvt.Rect) {
+      } else if (label instanceof dvt.Rect) {
         text = label.getChildAt(0);
         return text.getTextString();
       }
@@ -1547,24 +1530,42 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (label instanceof dvt.Button) {
         var ena = label.upState;
         text = ena.getChildAt(0);
-        dvt.TextUtils.fitText(text, Math.max(maxWidth - text.getTranslateX(), 0), Infinity, text.getParent());
+        dvt.TextUtils.fitText(
+          text,
+          Math.max(maxWidth - text.getTranslateX(), 0),
+          Infinity,
+          text.getParent()
+        );
         var ovr = label.overState;
         text = ovr.getChildAt(0);
-        dvt.TextUtils.fitText(text, Math.max(maxWidth - text.getTranslateX(), 0), Infinity, text.getParent());
+        dvt.TextUtils.fitText(
+          text,
+          Math.max(maxWidth - text.getTranslateX(), 0),
+          Infinity,
+          text.getParent()
+        );
         var dwn = label.downState;
         text = dwn.getChildAt(0);
-        dvt.TextUtils.fitText(text, Math.max(maxWidth - text.getTranslateX(), 0), Infinity, text.getParent());
+        dvt.TextUtils.fitText(
+          text,
+          Math.max(maxWidth - text.getTranslateX(), 0),
+          Infinity,
+          text.getParent()
+        );
         return;
-      }
-      else if (label instanceof dvt.Rect) {
+      } else if (label instanceof dvt.Rect) {
         text = label.getChildAt(0);
-        dvt.TextUtils.fitText(text, Math.max(maxWidth - text.getTranslateX(), 0), Infinity, text.getParent());
+        dvt.TextUtils.fitText(
+          text,
+          Math.max(maxWidth - text.getTranslateX(), 0),
+          Infinity,
+          text.getParent()
+        );
         return;
       }
 
       dvt.TextUtils.fitText(label, maxWidth, Infinity, label.getParent());
     },
-
 
     /**
      * Positions the labels into the given container.
@@ -1594,16 +1595,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         // Add and position the label, then calculate the space for the next one
         container.addChild(labels[i]);
         var dims = arDims[i];
-        labels[i].setTranslate(x, .5 * (maxHeight - dims.h));
+        labels[i].setTranslate(x, 0.5 * (maxHeight - dims.h));
 
         // Add a buffer to make the objects easier to interact with on touch devices
         if (dvt.Agent.isTouchDevice()) {
-          var rect = new dvt.Rect(container.getCtx(), -DvtBreadcrumbsRenderer._TOUCH_BUFFER, -DvtBreadcrumbsRenderer._TOUCH_BUFFER,
-              dims.w + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER, dims.h + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER);
+          var rect = new dvt.Rect(
+            container.getCtx(),
+            -DvtBreadcrumbsRenderer._TOUCH_BUFFER,
+            -DvtBreadcrumbsRenderer._TOUCH_BUFFER,
+            dims.w + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER,
+            dims.h + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER
+          );
           rect.setInvisibleFill();
           labels[i].addChild(rect);
-          if (i < peers.length)
-            eventManager.associate(rect, peers[i]);
+          if (i < peers.length) eventManager.associate(rect, peers[i]);
         }
 
         // Truncate if needed
@@ -1612,23 +1617,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           DvtBreadcrumbsRenderer._truncateLabels(labels[i], availWidth - x);
 
           // Add a tooltip
-          if (i < peers.length)
-            peers[i].setTruncated(true);
-          else
-            eventManager.associate(labels[i], new dvt.SimpleObjPeer(labelString));
+          if (i < peers.length) peers[i].setTruncated(true);
+          else eventManager.associate(labels[i], new dvt.SimpleObjPeer(labelString));
 
           // No more space, all done
           return;
-        }
-        else // Update the x
-          x += dims.w + options.__labelGap;
+        } // Update the x
+        else x += dims.w + options.__labelGap;
 
         // Add a separator if there are more labels
         if (i < labels.length - 1) {
           var separator = DvtBreadcrumbsRenderer._newSeparator(breadcrumbs);
           container.addChild(separator);
           var sepDims = separator.getDimensions();
-          separator.setTranslate(x, .5 * (maxHeight - sepDims.h));
+          separator.setTranslate(x, 0.5 * (maxHeight - sepDims.h));
 
           // Check that there is enough space
           var separatorWidth = sepDims.w;
@@ -1641,7 +1643,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         }
       }
     },
-
 
     /**
      * Positions the labels into the given container for BIDI locales
@@ -1664,12 +1665,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         // Add a buffer to make the objects easier to interact with on touch devices
         if (dvt.Agent.isTouchDevice()) {
-          var rect = new dvt.Rect(container.getCtx(), -DvtBreadcrumbsRenderer._TOUCH_BUFFER, -DvtBreadcrumbsRenderer._TOUCH_BUFFER,
-              dims.w + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER, dims.h + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER);
+          var rect = new dvt.Rect(
+            container.getCtx(),
+            -DvtBreadcrumbsRenderer._TOUCH_BUFFER,
+            -DvtBreadcrumbsRenderer._TOUCH_BUFFER,
+            dims.w + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER,
+            dims.h + 2 * DvtBreadcrumbsRenderer._TOUCH_BUFFER
+          );
           rect.setInvisibleFill();
           labels[i].addChild(rect);
-          if (i < peers.length)
-            eventManager.associate(rect, peers[i]);
+          if (i < peers.length) eventManager.associate(rect, peers[i]);
         }
 
         // Truncate if needed
@@ -1679,18 +1684,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           labels[i].setTranslateX(0);
 
           // Add a tooltip
-          if (i < peers.length)
-            peers[i].setTruncated(true);
-          else
-            eventManager.associate(labels[i], new dvt.SimpleObjPeer(labelString));
+          if (i < peers.length) peers[i].setTruncated(true);
+          else eventManager.associate(labels[i], new dvt.SimpleObjPeer(labelString));
 
           // No more space, all done
           return;
-        }
-        else {
+        } else {
           // Position and update the x
           labels[i].setTranslateX(x - dims.w);
-          x -= (dims.w + options.__labelGap);
+          x -= dims.w + options.__labelGap;
         }
 
         // Add a separator if there are more labels
@@ -1703,8 +1705,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           if (x - separatorWidth < 0) {
             container.removeChild(separator);
             return;
-          }
-          else {
+          } else {
             // Enough space, position
             separator.setTranslateX(x - separatorWidth);
             x -= separatorWidth + options.__labelGap;
@@ -1747,7 +1748,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._eventHandler.addListeners(this);
 
       // Make sure the object has an id for clipRect naming
-      this.setId('breadcrumbs' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOK
+      this.setId('breadcrumbs' + 1000 + Math.floor(Math.random() * 1000000000)); //@RandomNumberOK
 
       // index of the breadcrumb with keyboard focus. index is used to find the
       // Object stored in the _data object's item field
@@ -1758,7 +1759,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._crumbs = null;
     }
 
-
     /**
      * Specifies the non-data options for this component.
      * @param {object} options The object containing options specifications for this component.
@@ -1767,7 +1767,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     setOptions(options) {
       this._options = DvtBreadcrumbsDefaults.calcOptions(options);
     }
-
 
     /**
      * Renders the component with the specified data.  If no data is supplied to a component
@@ -1787,7 +1786,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       DvtBreadcrumbsRenderer.render(this, this, width);
     }
 
-
     /**
      * Returns the data object for the component.
      * @return {object} The object containing data for this component.
@@ -1795,7 +1793,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     __getData() {
       return this._data ? this._data : {};
     }
-
 
     /**
      * Returns the evaluated options object, which contains the user specifications
@@ -1805,7 +1802,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     __getOptions() {
       return this._options;
     }
-
 
     /**
      * Returns the dvt.EventManager for this component.
@@ -1861,26 +1857,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     _getUpdatedCrumbIndex(prevIndex, bForward) {
       // Handle initial keyboarding into breadcrumbs
       if (prevIndex == -1) {
-        if (bForward)
-          return 0;
-        else
-          return this._data.items.length - 2;
+        if (bForward) return 0;
+        else return this._data.items.length - 2;
       }
 
       // Handle subsequent tab and shift-tab traversal of breadcrumbs
       if (bForward) {
         if (prevIndex == this._data.items.length - 2)
           return -1; // The last breadcrumb is not actionable so we are actually tabbing out of the breadcrumbs
-        else
-          return ++prevIndex;
+        else return ++prevIndex;
       } else {
-        if (prevIndex == 0)
-          return -1;
-        else
-          return --prevIndex;
+        if (prevIndex == 0) return -1;
+        else return --prevIndex;
       }
     }
-
 
     /**
      * Updates the visual keyboard focus effect
@@ -1888,28 +1878,23 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      *        indicating the next breadcrumb
      * @private
      */
-    _updateKeyboardFocusEffect(nextIdx)
-    {
+    _updateKeyboardFocusEffect(nextIdx) {
       // find the dvt.Text objects corresponding to the prev and next breadcrumbs
       var prevKeyboardFocusRect = this._keyboardFocusRect;
       var nextKeyboardFocusRect = null;
 
       // find the next breadcrumb to apply focus effect to
       var nextCrumbObj = this.getCrumb(nextIdx);
-      if (nextCrumbObj)
-      {
+      if (nextCrumbObj) {
         var peer = this._eventHandler.GetLogicalObject(nextCrumbObj);
-        if (peer && peer.isDrillable && peer.isDrillable())
-        {
+        if (peer && peer.isDrillable && peer.isDrillable()) {
           // create a new focus effect rectangle for the next breadcrumb
           var context = this.getCtx();
           var bounds = nextCrumbObj.getDimensions();
           var matrix = nextCrumbObj.getMatrix();
           nextKeyboardFocusRect = new dvt.KeyboardFocusEffect(context, this, bounds, matrix);
           this._keyboardFocusRect = nextKeyboardFocusRect;
-        }
-        else
-        {
+        } else {
           // we hit the last breadcrumb, which is not drillable. so this tab
           // takes us out of the breadcrumbs
           // clear the reference to the focus rectangle; the focus rectangle
@@ -1918,13 +1903,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         }
       }
 
-      if (prevKeyboardFocusRect)
-        prevKeyboardFocusRect.hide();
+      if (prevKeyboardFocusRect) prevKeyboardFocusRect.hide();
 
-      if (nextKeyboardFocusRect)
-        nextKeyboardFocusRect.show();
+      if (nextKeyboardFocusRect) nextKeyboardFocusRect.show();
     }
-
 
     /**
      * Returns the physical object corresponding to the breadcrumb with
@@ -1934,8 +1916,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     getCrumb(crumbIdx) {
       var crumbs = this.GetCrumbs();
-      if (crumbIdx < 0 || !crumbs || crumbIdx >= crumbs.length)
-        return null;
+      if (crumbIdx < 0 || !crumbs || crumbIdx >= crumbs.length) return null;
       return crumbs[crumbIdx];
     }
 
@@ -1947,8 +1928,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     getCrumbIndex(crumb) {
       var crumbs = this.GetCrumbs();
       for (var i = 0; i < crumbs.length; i++) {
-        if (crumbs[i] == crumb)
-          return i;
+        if (crumbs[i] == crumb) return i;
       }
       return -1;
     }
@@ -1983,14 +1963,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @param {object=} callbackObj
    * @constructor
    */
-   class DvtSunburstIconButton extends dvt.IconButton {
+  class DvtSunburstIconButton extends dvt.IconButton {
     /**
      * @override
      */
     OnMouseOver(event) {
       super.OnMouseOver(event);
       this._callbackObj.showHoverEffect();
-    };
+    }
 
     /**
      * @override
@@ -2015,7 +1995,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       super(sunburst, props);
       var sunburstOptions = this._view.getOptions();
       var nodeDefaults = sunburstOptions['nodeDefaults'];
-      this._labelDisplay = props['labelDisplay'] ? props['labelDisplay'] : nodeDefaults['labelDisplay'];
+      this._labelDisplay = props['labelDisplay']
+        ? props['labelDisplay']
+        : nodeDefaults['labelDisplay'];
       this._evaluateExpanded(sunburst, props);
       this._labelHalign = props['labelHalign'] ? props['labelHalign'] : nodeDefaults['labelHalign'];
 
@@ -2023,7 +2005,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._className = props['className'] || props['svgClassName'];
       this._style = props['style'] || props['svgStyle'];
 
-      this._showDisclosure = props['showDisclosure'] === 'on' || (props['showDisclosure'] !== 'off' && nodeDefaults['showDisclosure'] === 'on');
+      this._showDisclosure =
+        props['showDisclosure'] === 'on' ||
+        (props['showDisclosure'] !== 'off' && nodeDefaults['showDisclosure'] === 'on');
 
       /**
        * Total buffer for both sizes of the label.
@@ -2044,7 +2028,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Relative radius of the center node compared to the other layers
       /** @private @const */
       this._CENTER_ARTIFICIAL_ROOT_RADIUS = 0.25;
-       /** @private @const */
+      /** @private @const */
       this._CENTER_NODE_RADIUS = 0.5;
     }
 
@@ -2053,8 +2037,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     render(container) {
       // If not positioned, don't render
-      if (!this._hasLayout)
-        return;
+      if (!this._hasLayout) return;
 
       // Keep a reference to the container, for use after z-order changes
       this._nodeContainer = container;
@@ -2073,18 +2056,21 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           var backgroundColor = this.getLabelBackgroundColor();
           if (this.hasPattern() || backgroundColor) {
             var txtDims = this._text.getDimensions();
-            this._textBackground = new dvt.Rect(this.getView().getCtx(), txtDims.x, txtDims.y, txtDims.w, txtDims.h);
-            if (backgroundColor)
-              this._textBackground.setSolidFill(backgroundColor);
-            else
-              this._textBackground.setSolidFill('#FFFFFF');
+            this._textBackground = new dvt.Rect(
+              this.getView().getCtx(),
+              txtDims.x,
+              txtDims.y,
+              txtDims.w,
+              txtDims.h
+            );
+            if (backgroundColor) this._textBackground.setSolidFill(backgroundColor);
+            else this._textBackground.setSolidFill('#FFFFFF');
             this._textBackground.setMouseEnabled(false);
             this._shape.addChild(this._textBackground);
 
             // Add the transform for rotated text
             var matrix = this._text.getMatrix();
-            if (!matrix.isIdentity())
-              this._textBackground.setMatrix(matrix);
+            if (!matrix.isIdentity()) this._textBackground.setMatrix(matrix);
 
             // Reorder the text in front of the background rect
             this._shape.addChild(this._text);
@@ -2119,24 +2105,24 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           var angleExtent = children[i]._angleExtent;
 
           //  - rendering issues for funnel/pie/sunburst charts
-          if (angleExtent >= this._MIN_ANGLE_EXTENT){
-          // Skip rendering some of the thin sunburst outer nodes
-          if (hasLargeNodeCount) {
-            var nodeOuterRadius = children[i]._getOuterRadius();
-            var nodeArc = angleExtent * nodeOuterRadius;
-            var endCoord = (children[i]._startAngle + angleExtent) * nodeOuterRadius;
+          if (angleExtent >= this._MIN_ANGLE_EXTENT) {
+            // Skip rendering some of the thin sunburst outer nodes
+            if (hasLargeNodeCount) {
+              var nodeOuterRadius = children[i]._getOuterRadius();
+              var nodeArc = angleExtent * nodeOuterRadius;
+              var endCoord = (children[i]._startAngle + angleExtent) * nodeOuterRadius;
 
-            if (nodeArc < this._MIN_ARC_LENGTH && Math.abs(prevEndCoord - endCoord) < this._MIN_ARC_LENGTH) {
-              render = false;
+              if (
+                nodeArc < this._MIN_ARC_LENGTH &&
+                Math.abs(prevEndCoord - endCoord) < this._MIN_ARC_LENGTH
+              ) {
+                render = false;
+              } else prevEndCoord = endCoord;
             }
-            else
-              prevEndCoord = endCoord;
+            if (render) children[i].render(container);
           }
-          if(render)
-            children[i].render(container);
         }
       }
-    }
     }
 
     /**
@@ -2146,19 +2132,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Delegate to super to store the state
       super.setSelected(selected);
 
-      if (this._shape == null)
-        return;
+      if (this._shape == null) return;
 
       // Update the visual feedback
       if (this.isSelected()) {
-
         // Apply the selection effect to the shape
         this._shape.setSelected(true);
 
         // Move to the front of the z-order
         this.getView().__moveToSelectedLayer(this._shape);
-      }
-      else {
+      } else {
         // Restore the regular effect to the shape
         this._shape.setSelected(false);
 
@@ -2167,7 +2150,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         // the z-order or else the button can get obscured.
         if (dvt.Agent.isTouchDevice() && this._expandButton)
           this.getView().__moveToSelectedLayer(this._shape);
-        else if (this._nodeContainer) // Restore the z-order
+        else if (this._nodeContainer)
+          // Restore the z-order
           this._nodeContainer.addChild(this._shape);
       }
     }
@@ -2176,8 +2160,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     showHoverEffect() {
-      if (!this._shape || !this._hasLayout)
-        return;
+      if (!this._shape || !this._hasLayout) return;
 
       // Apply the hover effect
       this._shape.showHoverEffect();
@@ -2186,8 +2169,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (this.isSelected()) {
         // Move to the front of the selected layer
         this.getView().__moveToSelectedLayer(this._shape);
-      }
-      else {
+      } else {
         // Unselected nodes get moved to the hover layer
         this.getView().__moveToHoverLayer(this._shape);
       }
@@ -2198,16 +2180,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     hideHoverEffect() {
       // Don't continue if the shape isn't defined or if the node is currently focused by the keyboard.
-      if (!this._shape || !this._hasLayout || this.isShowingKeyboardFocusEffect())
-        return;
+      if (!this._shape || !this._hasLayout || this.isShowingKeyboardFocusEffect()) return;
 
       // Hide the hover effect
       this._shape.hideHoverEffect();
 
       // Restore the z-order
-      if (!this.isSelected() && this._nodeContainer)
-        this._nodeContainer.addChild(this._shape);
-    };
+      if (!this.isSelected() && this._nodeContainer) this._nodeContainer.addChild(this._shape);
+    }
 
     /**
      * Returns true if expand/collapse is enabled for this node.
@@ -2217,35 +2197,30 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       return this._showDisclosure;
     }
 
-
     /**
      * @override
      */
-    getNextNavigable(event)
-    {
+    getNextNavigable(event) {
       var keyCode;
       var next;
       var navigables;
       var idx;
       var root;
 
-      if (event.type === dvt.MouseEvent.CLICK)
-      {
+      if (event.type === dvt.MouseEvent.CLICK) {
         return super.getNextNavigable(event);
       }
 
       keyCode = event.keyCode;
 
-      if (keyCode === dvt.KeyboardEvent.SPACE && event.ctrlKey)
-      {
+      if (keyCode === dvt.KeyboardEvent.SPACE && event.ctrlKey) {
         // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
         // care of the selection
         return this;
       }
 
       root = this;
-      while (root.GetParent())
-      {
+      while (root.GetParent()) {
         root = root.GetParent();
       }
 
@@ -2258,81 +2233,68 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var lastVisitedChild;
       var lastVisitedMidAngle;
 
-      switch (keyCode)
-      {
+      switch (keyCode) {
         case dvt.KeyboardEvent.UP_ARROW:
-
           // if at root or upper half of sunburst, go to the last visited child if it is in the upper half of the sunburst
           // otherwise use free-form navigation to select the next child in the "up" direction
-          if (this === root || midAngle > 180)
-          {
+          if (this === root || midAngle > 180) {
             lastVisitedChild = this.GetLastVisitedChild();
-            if (lastVisitedChild)
-            {
+            if (lastVisitedChild) {
               lastVisitedMidAngle = lastVisitedChild._startAngle + lastVisitedChild._angleExtent / 2;
               lastVisitedMidAngle = DvtSunburstNode._normalizedRadToDeg(lastVisitedMidAngle);
-              if (lastVisitedMidAngle > 180)
-              {
+              if (lastVisitedMidAngle > 180) {
                 return lastVisitedChild;
               }
             }
-            next = dvt.KeyboardHandler.getNextAdjacentNavigable(this, event, this.getDescendantNodes());
+            next = dvt.KeyboardHandler.getNextAdjacentNavigable(
+              this,
+              event,
+              this.getDescendantNodes()
+            );
           }
           // lower half of sunburst
-          else
-            next = this._navigateToParent();
+          else next = this._navigateToParent();
 
           break;
 
         case dvt.KeyboardEvent.DOWN_ARROW:
-
           // if at root or lower half of sunburst, go to the last visited child if it is in the lower half of the sunburst
           // otherwise use free-form navigation to select the next child in the "down" direction
-          if (this === root || (midAngle >= 0 && midAngle <= 180))
-          {
+          if (this === root || (midAngle >= 0 && midAngle <= 180)) {
             lastVisitedChild = this.GetLastVisitedChild();
-            if (lastVisitedChild)
-            {
+            if (lastVisitedChild) {
               lastVisitedMidAngle = lastVisitedChild._startAngle + lastVisitedChild._angleExtent / 2;
               lastVisitedMidAngle = DvtSunburstNode._normalizedRadToDeg(lastVisitedMidAngle);
-              if (lastVisitedMidAngle >= 0 && lastVisitedMidAngle <= 180)
-              {
+              if (lastVisitedMidAngle >= 0 && lastVisitedMidAngle <= 180) {
                 return lastVisitedChild;
               }
             }
-            next = dvt.KeyboardHandler.getNextAdjacentNavigable(this, event, this.getDescendantNodes());
+            next = dvt.KeyboardHandler.getNextAdjacentNavigable(
+              this,
+              event,
+              this.getDescendantNodes()
+            );
           }
           // upper half of sunburst
-          else
-            next = this._navigateToParent();
+          else next = this._navigateToParent();
 
           break;
 
         case dvt.KeyboardEvent.LEFT_ARROW:
-          if (navigables.length === 1)
-          {
+          if (navigables.length === 1) {
             next = this;
-          }
-          else
-          {
-            if (idx === 0)
-              next = navigables[navigables.length - 1];
-            else
-              next = navigables[idx - 1];
+          } else {
+            if (idx === 0) next = navigables[navigables.length - 1];
+            else next = navigables[idx - 1];
           }
           break;
 
         case dvt.KeyboardEvent.RIGHT_ARROW:
-          if (navigables.length === 1)
-          {
+          if (navigables.length === 1) {
             next = this;
-          }
-          else
-          {
-            if (idx === navigables.length - 1)
-              next = navigables[0];
-            else
-              next = navigables[idx + 1];
+          } else {
+            if (idx === navigables.length - 1) next = navigables[0];
+            else next = navigables[idx + 1];
           }
           break;
 
@@ -2351,19 +2313,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      *
      * @return {DvtSunburstNode} This node's parent, if it is not the root.  Root otherwise
      */
-    _navigateToParent()
-    {
+    _navigateToParent() {
       // move to the parent, if not the root node
       var parent = this.GetParent();
       var next;
-      if (parent)
-      {
+      if (parent) {
         next = parent;
         // update the grandparent's last visited child to be the current node's parent
         parent.MarkAsLastVisitedChild();
-      }
-      else
-        next = this;
+      } else next = this;
 
       next.MarkAsLastVisitedChild();
       return next;
@@ -2377,33 +2335,25 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {Number} The equivalent angle in degrees
      * @private
      */
-    static _normalizedRadToDeg(rad)
-    {
+    static _normalizedRadToDeg(rad) {
       var deg = dvt.Math.radsToDegrees(rad);
-      if (deg < 0)
-        deg += 360;
-      else if (deg > 360)
-        deg -= 360;
+      if (deg < 0) deg += 360;
+      else if (deg > 360) deg -= 360;
       return deg;
     }
-
 
     /**
      * @override
      */
-    getKeyboardBoundingBox()
-    {
-      if (this._shape)
-      {
+    getKeyboardBoundingBox() {
+      if (this._shape) {
         var bounds = this._shape.getDimensions();
         var point = new dvt.Point(bounds.x, bounds.y);
         point = this._shape.localToStage(point);
         bounds.x = point.x;
         bounds.y = point.y;
         return bounds;
-      }
-      else
-      {
+      } else {
         return new dvt.Rectangle(0, 0, 0, 0);
       }
     }
@@ -2411,15 +2361,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     /**
      * @override
      */
-    getTargetElem()
-    {
-      if (this._shape)
-        return this._shape.getElem();
+    getTargetElem() {
+      if (this._shape) return this._shape.getElem();
       return null;
     }
 
     //**************** End Overridden Functions *****************//
-
 
     /**
      * Sets the result of the layout.
@@ -2444,8 +2391,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     GetFill() {
       if (this.isArtificialRoot())
         return dvt.SolidFill.invisibleFill(); // make it as close to invisible as possible
-      else
-        return super.GetFill();
+      else return super.GetFill();
     }
 
     /**
@@ -2461,15 +2407,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var startAngle = this._startAngle;
       if (endState && !isNaN(endState[2])) {
         var endStartAngle = endState[2];
-        if ((endStartAngle - this._startAngle) > Math.PI) {
+        if (endStartAngle - this._startAngle > Math.PI) {
           startAngle += DvtSunburstNode.TWO_PI;
-        } else if ((this._startAngle - endStartAngle) > Math.PI) {
+        } else if (this._startAngle - endStartAngle > Math.PI) {
           startAngle -= DvtSunburstNode.TWO_PI;
         }
       }
       return [this._innerRadius, this._outerRadius, startAngle, this._angleExtent, r, g, b];
     }
-
 
     /**
      * @override
@@ -2488,21 +2433,22 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this.updateShapes(false);
     }
 
-
     /**
      * @override
      */
     animateUpdate(handler, oldNode) {
-      if (this.isRootNode() && (oldNode._getOuterRadius() !== this._getOuterRadius() || oldNode.getId() !== this.getId()))
+      if (
+        this.isRootNode() &&
+        (oldNode._getOuterRadius() !== this._getOuterRadius() || oldNode.getId() !== this.getId())
+      )
         this._removeRootNodeContentOverlay();
 
       var oldNodeRendered = oldNode._hasLayout && oldNode._angleExtent > 0;
-      var nodeRendered = this._hasLayout && this._angleExtent> 0;
-      if (oldNodeRendered  && nodeRendered) {
+      var nodeRendered = this._hasLayout && this._angleExtent > 0;
+      if (oldNodeRendered && nodeRendered) {
         // Current and old node exist and is visible, show the update animation
         super.animateUpdate(handler, oldNode);
-      }
-      else if (nodeRendered) {
+      } else if (nodeRendered) {
         // Old node did not exist or was not visible, treat as insert
         this.animateInsert(handler);
       } else if (oldNodeRendered) {
@@ -2515,8 +2461,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     animateInsert(handler, oldNode) {
-      if (this.isRootNode())
-        this._removeRootNodeContentOverlay();
+      if (this.isRootNode()) this._removeRootNodeContentOverlay();
 
       super.animateInsert(handler, oldNode);
     }
@@ -2525,33 +2470,28 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     animateDelete(handler, container) {
-      if (this.isRootNode())
-        this._removeRootNodeContentOverlay();
+      if (this.isRootNode()) this._removeRootNodeContentOverlay();
 
       super.animateDelete(handler, container);
     }
-
 
     /**
      * @override
      */
     getNodeUnderPoint(x, y) {
       // Check if the node contains the coords
-      if (this.contains(x, y))
-        return this;
+      if (this.contains(x, y)) return this;
       else {
         var childNodes = this.getChildNodes();
         for (var i = 0; i < childNodes.length; i++) {
           var ret = childNodes[i].getNodeUnderPoint(x, y);
-          if (ret)
-            return ret;
+          if (ret) return ret;
         }
       }
 
       // No node found, return null
       return null;
     }
-
 
     /**
      * @override
@@ -2561,7 +2501,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var angle = DvtSunburstNode._calcAngle(x, y);
       return this.ContainsRadius(radius) && this.ContainsAngle(angle);
     }
-
 
     /**
      * Returns true if this node contains the given angle.
@@ -2579,7 +2518,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         angle -= DvtSunburstNode.TWO_PI;
       }
 
-      return (angle >= this._startAngle) && (angle <= this._startAngle + this._angleExtent);
+      return angle >= this._startAngle && angle <= this._startAngle + this._angleExtent;
     }
 
     /**
@@ -2587,7 +2526,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @protected
      */
     ContainsRadius(radius) {
-      return (radius >= this._innerRadius) && (radius <= this._outerRadius);
+      return radius >= this._innerRadius && radius <= this._outerRadius;
     }
 
     /**
@@ -2598,7 +2537,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     static _calcPointOnArc(radius, angle) {
       var x = Math.cos(angle) * radius;
       var y = Math.sin(angle) * radius;
-      return {x: x, y: y};
+      return { x: x, y: y };
     }
 
     /**
@@ -2613,14 +2552,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var angle = Math.atan2(y, x);
 
       // Adjust, since all node angles are between 0 and 2pi
-      if (angle < 0)
-        angle += DvtSunburstNode.TWO_PI;
-      else if (angle > DvtSunburstNode.TWO_PI)
-        angle -= DvtSunburstNode.TWO_PI;
+      if (angle < 0) angle += DvtSunburstNode.TWO_PI;
+      else if (angle > DvtSunburstNode.TWO_PI) angle -= DvtSunburstNode.TWO_PI;
 
       return angle;
     }
-
 
     /**
      * Returns the radius for a point with the specified coordinates
@@ -2631,7 +2567,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @private
      */
     static _calcRadius(x, y) {
-      return Math.sqrt((x * x) + (y * y));
+      return Math.sqrt(x * x + y * y);
     }
 
     /**
@@ -2641,8 +2577,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     _createShapeNode() {
       // Skip if no angle extent
-      if (!this._angleExtent || this._angleExtent <= 0)
-        return null;
+      if (!this._angleExtent || this._angleExtent <= 0) return null;
 
       // Finally create the shape
       var cmd = this._createPathCmd();
@@ -2661,27 +2596,38 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Get node overrides
       var options = this.getOptions();
       var borderColor = options['borderColor'] || nodeDefaults['borderColor'];
-      var borderWidth = (options['borderWidth'] == null ) ? nodeDefaults['borderWidth'] : options['borderWidth'];
+      var borderWidth =
+        options['borderWidth'] == null ? nodeDefaults['borderWidth'] : options['borderWidth'];
 
       // Apply the border color, border width, selected, and hover strokes
       shape.setStroke(new dvt.Stroke(borderColor, 1, borderWidth));
       if (shape.getCtx().getThemeBehavior() !== 'redwood') {
         shape.setHoverStroke(new dvt.Stroke(nodeDefaults['hoverColor'], 1, 3));
-        shape.setSelectedStroke(new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1.5), new dvt.Stroke(nodeDefaults['selectedOuterColor'], 1, 3.5));
+        shape.setSelectedStroke(
+          new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1.5),
+          new dvt.Stroke(nodeDefaults['selectedOuterColor'], 1, 3.5)
+        );
         shape.setSelectedHoverStroke(new dvt.Stroke(nodeDefaults['hoverColor'], 1, 3));
-      }
-      else {
+      } else {
         var hoverColor = this.getColor();
-        shape.setHoverStroke(new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1), new dvt.Stroke(hoverColor, 1, 3.5));
-        shape.setSelectedStroke(new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1), new dvt.Stroke(nodeDefaults['selectedOuterColor'], 1, 3.5));
-        shape.setSelectedHoverStroke(new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1), new dvt.Stroke(nodeDefaults['selectedOuterColor'], 1, 3.5));
+        shape.setHoverStroke(
+          new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1),
+          new dvt.Stroke(hoverColor, 1, 3.5)
+        );
+        shape.setSelectedStroke(
+          new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1),
+          new dvt.Stroke(nodeDefaults['selectedOuterColor'], 1, 3.5)
+        );
+        shape.setSelectedHoverStroke(
+          new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1),
+          new dvt.Stroke(nodeDefaults['selectedOuterColor'], 1, 3.5)
+        );
       }
       // Allows selection cursor to be shown over nodes if nodeSelection is enabled and node is selectable
       shape.setSelectable(this.isSelectable());
 
       // Set pointer cursor if drillable
-      if (this.isDrillReplaceEnabled())
-        shape.setCursor('pointer');
+      if (this.isDrillReplaceEnabled()) shape.setCursor('pointer');
 
       // Artificial Root Support: The artificial root is hollow and mouse transparent
       if (this.isArtificialRoot()) {
@@ -2701,8 +2647,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var cmd;
       var p1, p2, p3, p4;
 
-      if (this._angleExtent < DvtSunburstNode.TWO_PI)
-      {
+      if (this._angleExtent < DvtSunburstNode.TWO_PI) {
         // Calc the 4 points.  We will draw:
         // 1. Arc from p1 to p2
         // 2. Line/Move from p2 to p3
@@ -2714,30 +2659,79 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         p4 = DvtSunburstNode._calcPointOnArc(this._innerRadius, this._startAngle);
 
         // Create the command and feed it into the path
-        cmd = dvt.PathUtils.moveTo(p1.x, p1.y) +
-              dvt.PathUtils.arcTo(this._outerRadius, this._outerRadius, this._angleExtent, 1, p2.x, p2.y) +
-              dvt.PathUtils.lineTo(p3.x, p3.y) +
-              dvt.PathUtils.arcTo(this._innerRadius, this._innerRadius, this._angleExtent, 0, p4.x, p4.y) +
-              dvt.PathUtils.closePath();
-      }
-      else
-      {
+        cmd =
+          dvt.PathUtils.moveTo(p1.x, p1.y) +
+          dvt.PathUtils.arcTo(
+            this._outerRadius,
+            this._outerRadius,
+            this._angleExtent,
+            1,
+            p2.x,
+            p2.y
+          ) +
+          dvt.PathUtils.lineTo(p3.x, p3.y) +
+          dvt.PathUtils.arcTo(
+            this._innerRadius,
+            this._innerRadius,
+            this._angleExtent,
+            0,
+            p4.x,
+            p4.y
+          ) +
+          dvt.PathUtils.closePath();
+      } else {
         // To work around a chrome/safari bug, we draw two segments around each of the outer and inner arcs
         p1 = DvtSunburstNode._calcPointOnArc(this._outerRadius, this._startAngle);
-        p2 = DvtSunburstNode._calcPointOnArc(this._outerRadius, this._startAngle + this._angleExtent / 2);
+        p2 = DvtSunburstNode._calcPointOnArc(
+          this._outerRadius,
+          this._startAngle + this._angleExtent / 2
+        );
         p3 = DvtSunburstNode._calcPointOnArc(this._innerRadius, this._startAngle);
-        p4 = DvtSunburstNode._calcPointOnArc(this._innerRadius, this._startAngle + this._angleExtent / 2);
+        p4 = DvtSunburstNode._calcPointOnArc(
+          this._innerRadius,
+          this._startAngle + this._angleExtent / 2
+        );
 
         // Create the command and return it
-        cmd = dvt.PathUtils.moveTo(p1.x, p1.y) +
-              dvt.PathUtils.arcTo(this._outerRadius, this._outerRadius, this._angleExtent / 2, 1, p2.x, p2.y) +
-              dvt.PathUtils.arcTo(this._outerRadius, this._outerRadius, this._angleExtent / 2, 1, p1.x, p1.y);
+        cmd =
+          dvt.PathUtils.moveTo(p1.x, p1.y) +
+          dvt.PathUtils.arcTo(
+            this._outerRadius,
+            this._outerRadius,
+            this._angleExtent / 2,
+            1,
+            p2.x,
+            p2.y
+          ) +
+          dvt.PathUtils.arcTo(
+            this._outerRadius,
+            this._outerRadius,
+            this._angleExtent / 2,
+            1,
+            p1.x,
+            p1.y
+          );
 
         // Add the inner segment for a hollow center
         if (this._innerRadius > 0)
-          cmd += dvt.PathUtils.moveTo(p4.x, p4.y) +
-                dvt.PathUtils.arcTo(this._innerRadius, this._innerRadius, this._angleExtent / 2, 0, p3.x, p3.y) +
-                dvt.PathUtils.arcTo(this._innerRadius, this._innerRadius, this._angleExtent / 2, 0, p4.x, p4.y);
+          cmd +=
+            dvt.PathUtils.moveTo(p4.x, p4.y) +
+            dvt.PathUtils.arcTo(
+              this._innerRadius,
+              this._innerRadius,
+              this._angleExtent / 2,
+              0,
+              p3.x,
+              p3.y
+            ) +
+            dvt.PathUtils.arcTo(
+              this._innerRadius,
+              this._innerRadius,
+              this._angleExtent / 2,
+              0,
+              p4.x,
+              p4.y
+            );
 
         cmd += dvt.PathUtils.closePath();
       }
@@ -2753,7 +2747,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     _createExpandCollapseButton(container) {
       var bDisclosed = this.isDisclosed();
-      if (!container || !this.isExpandCollapseEnabled() || (!this.hasChildren() && bDisclosed) || (this.getView().hasDataProvider() && !this.hasDPChildren()))
+      if (
+        !container ||
+        !this.isExpandCollapseEnabled() ||
+        (!this.hasChildren() && bDisclosed) ||
+        (this.getView().hasDataProvider() && !this.hasDPChildren())
+      )
         return null;
 
       // Create the button and add to the container
@@ -2762,9 +2761,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       container.addChild(button);
 
       // Associate a blank peer so the button is not treated as part of the node
-      var tooltip = this.getView().getOptions().translations[this.isDisclosed() ? 'tooltipCollapse' : 'tooltipExpand'];
+      var tooltip =
+        this.getView().getOptions().translations[
+          this.isDisclosed() ? 'tooltipCollapse' : 'tooltipExpand'
+        ];
 
-      this.getView().getEventManager().associate(button, new DvtTreePeer(this, this.getId(), tooltip));
+      this.getView()
+        .getEventManager()
+        .associate(button, new DvtTreePeer(this, this.getId(), tooltip));
 
       return button;
     }
@@ -2775,8 +2779,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @private
      */
     _positionButton(button) {
-      var center = DvtSunburstNode._calcPointOnArc(this._outerRadius, this._startAngle + this._angleExtent / 2);
-      button.setTranslate(center.x - this._EXPAND_ICON_SIZE / 2, center.y - this._EXPAND_ICON_SIZE / 2);
+      var center = DvtSunburstNode._calcPointOnArc(
+        this._outerRadius,
+        this._startAngle + this._angleExtent / 2
+      );
+      button.setTranslate(
+        center.x - this._EXPAND_ICON_SIZE / 2,
+        center.y - this._EXPAND_ICON_SIZE / 2
+      );
     }
 
     /**
@@ -2799,16 +2809,17 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (this._labelDisplay === 'auto') {
         // If labelDisplay is auto, don't use rotated labels for non-IE on windows, since rotated text does not look good
         // in those browsers.
-        bRotated = dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge' || dvt.Agent.os !== 'windows' || dvt.Agent.isEnvironmentTest();
-      }
-      else if (this._labelDisplay === 'rotated')
-        bRotated = true;
+        bRotated =
+          dvt.Agent.browser === 'ie' ||
+          dvt.Agent.browser === 'edge' ||
+          dvt.Agent.os !== 'windows' ||
+          dvt.Agent.isEnvironmentTest();
+      } else if (this._labelDisplay === 'rotated') bRotated = true;
 
       // Don't use rotated labels for the center node or 100% nodes.
       if (bRotated && this._angleExtent < this.getView().__getAngleExtent())
         return this._createTextRotated(container);
-      else
-        return this._createTextHoriz(container);
+      else return this._createTextHoriz(container);
     }
 
     /**
@@ -2819,71 +2830,76 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     _createTextHoriz(container) {
       var textAnchor;
-      if (this._innerRadius === 0)
-        textAnchor = {x: 0, y: 0};
+      if (this._innerRadius === 0) textAnchor = { x: 0, y: 0 };
       else {
         // Calculate the anchor point for the text
-        textAnchor = DvtSunburstNode._calcPointOnArc((this._innerRadius + this._outerRadius) / 2, this._startAngle + this._angleExtent / 2);
+        textAnchor = DvtSunburstNode._calcPointOnArc(
+          (this._innerRadius + this._outerRadius) / 2,
+          this._startAngle + this._angleExtent / 2
+        );
 
         // Using the approx width of the text, decide whether the text won't fit
-        var approxWidth = 3 * this.GetTextSize() / 2;
+        var approxWidth = (3 * this.GetTextSize()) / 2;
         var leftAngle = DvtSunburstNode._calcAngle(textAnchor.x - approxWidth / 2, textAnchor.y);
         var rightAngle = DvtSunburstNode._calcAngle(textAnchor.x + approxWidth / 2, textAnchor.y);
-        if (!(this.ContainsAngle(leftAngle) && this.ContainsAngle(rightAngle)))
-          textAnchor = null;
+        if (!(this.ContainsAngle(leftAngle) && this.ContainsAngle(rightAngle))) textAnchor = null;
       }
 
-      if(!textAnchor)
-        return null;
+      if (!textAnchor) return null;
 
       // Now create the text
-        var text = new dvt.OutputText(this.getView().getCtx(), this._textStr, textAnchor.x, textAnchor.y, null);
-        text.setFontSize(this.GetTextSize());
-        this.ApplyLabelTextStyle(text);
-        text.alignCenter();
-        text.alignMiddle();
-        text.setMouseEnabled(false);
+      var text = new dvt.OutputText(
+        this.getView().getCtx(),
+        this._textStr,
+        textAnchor.x,
+        textAnchor.y,
+        null
+      );
+      text.setFontSize(this.GetTextSize());
+      this.ApplyLabelTextStyle(text);
+      text.alignCenter();
+      text.alignMiddle();
+      text.setMouseEnabled(false);
 
-        // Find the estimated dimensions of the label
-        var textDims = text.getDimensions();
+      // Find the estimated dimensions of the label
+      var textDims = text.getDimensions();
 
+      // Find the largest rectangle that will fit.  The height is accurate, so we only need to check the width.
+      var x1 = textAnchor.x;
+      var x2 = textAnchor.x;
+      var y1 = textAnchor.y - textDims.h / 2;
+      var y2 = textAnchor.y + textDims.h / 2;
 
-        // Find the largest rectangle that will fit.  The height is accurate, so we only need to check the width.
-        var x1 = textAnchor.x;
-        var x2 = textAnchor.x;
-        var y1 = textAnchor.y - textDims.h / 2;
-        var y2 = textAnchor.y + textDims.h / 2;
+      // Calculate the left-most x1 that will fit
+      var fitX1 = true;
+      while (this.contains(x1, y1) && this.contains(x1, y2) && fitX1) {
+        x1--;
+        if (this._angleExtent > Math.PI && textAnchor.x - x1 >= textDims.w) fitX1 = false;
+      }
 
-        // Calculate the left-most x1 that will fit
-        var fitX1 = true;
-        while (this.contains(x1, y1) && this.contains(x1, y2) && fitX1) {
-          x1--;
-          if (this._angleExtent > Math.PI && textAnchor.x - x1 >= textDims.w)
-            fitX1 = false;
-        }
+      // Calculate the right-most x2 that will fit
+      var fitX2 = true;
+      while (this.contains(x2, y1) && this.contains(x2, y2) && fitX2) {
+        x2++;
+        if (this._angleExtent > Math.PI && x2 - textAnchor.x >= textDims.w) fitX2 = false;
+      }
 
-        // Calculate the right-most x2 that will fit
-        var fitX2 = true;
-        while (this.contains(x2, y1) && this.contains(x2, y2) && fitX2) {
-          x2++;
-          if (this._angleExtent > Math.PI && x2 - textAnchor.x >= textDims.w)
-            fitX2 = false;
-        }
+      // Add a 3-pixel buffer on each side (accounts for the potential extra pixel in the while loop on failed check)
+      x1 += 3;
+      x2 -= 3;
 
-        // Add a 3-pixel buffer on each side (accounts for the potential extra pixel in the while loop on failed check)
-        x1 += 3;
-        x2 -= 3;
+      // Adjust the anchor point to the midpoint of available space if truncation would occur centered at current anchor
+      var usableSpace = 2 * Math.min(textAnchor.x - x1, x2 - textAnchor.x);
+      if (usableSpace < textDims.w) {
+        text.setX((x1 + x2) / 2);
+        usableSpace = x2 - x1;
+      }
 
-        // Adjust the anchor point to the midpoint of available space if truncation would occur centered at current anchor
-        var usableSpace = 2 * Math.min(textAnchor.x - x1, x2 - textAnchor.x);
-        if (usableSpace < textDims.w) {
-          text.setX((x1 + x2) / 2);
-          usableSpace = x2 - x1;
-        }
-
-        // Truncate and return the text if it fits in the available space
-        var labelMinLength = this.getView().getOptions()['nodeDefaults']['labelMinLength'];
-        return dvt.TextUtils.fitText(text, usableSpace, textDims.h, container, labelMinLength) ? text : null;
+      // Truncate and return the text if it fits in the available space
+      var labelMinLength = this.getView().getOptions()['nodeDefaults']['labelMinLength'];
+      return dvt.TextUtils.fitText(text, usableSpace, textDims.h, container, labelMinLength)
+        ? text
+        : null;
     }
 
     /**
@@ -2900,11 +2916,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // line. The innerStartCoord is used to provide a buffer for very small inner radii.
       var innerStartCoord = Math.max(this._innerRadius, 10);
       var availWidth = this._outerRadius - innerStartCoord - this.TEXT_BUFFER_HORIZ;
-      var availHeight = this._angleExtent * (innerStartCoord + this.TEXT_BUFFER_HORIZ) * 1.10;
+      var availHeight = this._angleExtent * (innerStartCoord + this.TEXT_BUFFER_HORIZ) * 1.1;
 
       // Skip remaining calculations if availHeight is too small to reasonably fit text
-      if (availHeight <= 6)
-        return null;
+      if (availHeight <= 6) return null;
 
       // Create the text
       var text = new dvt.OutputText(this.getView().getCtx(), this._textStr, 0, 0);
@@ -2914,8 +2929,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this.ApplyLabelTextStyle(text);
 
       // Truncate the text if necessary
-      if (!dvt.TextUtils.fitText(text, availWidth, availHeight, container))
-        return null;
+      if (!dvt.TextUtils.fitText(text, availWidth, availHeight, container)) return null;
 
       // Calculate the anchor point and alignment for the text
       var anchorRadius = (innerStartCoord + this._outerRadius) / 2;
@@ -2930,18 +2944,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           anchorRadius = this._outerRadius - textBuffer - actualTextWidth / 2;
       }
 
-      var textAnchor = DvtSunburstNode._calcPointOnArc(anchorRadius, this._startAngle + this._angleExtent / 2);
+      var textAnchor = DvtSunburstNode._calcPointOnArc(
+        anchorRadius,
+        this._startAngle + this._angleExtent / 2
+      );
       text.alignCenter();
       text.alignMiddle();
 
       // Calc the angle, adjusted to between 0 and 2pi
       var angle = this._startAngle + this._angleExtent / 2;
-      angle = (angle >= DvtSunburstNode.TWO_PI) ? angle - DvtSunburstNode.TWO_PI : angle;
-      angle = (angle < 0) ? angle + DvtSunburstNode.TWO_PI : angle;
+      angle = angle >= DvtSunburstNode.TWO_PI ? angle - DvtSunburstNode.TWO_PI : angle;
+      angle = angle < 0 ? angle + DvtSunburstNode.TWO_PI : angle;
 
       // If the anchor is on the left half, adjust the rotation for readability
-      if (angle > 0.5 * Math.PI && angle < 1.5 * Math.PI)
-        angle += Math.PI;
+      if (angle > 0.5 * Math.PI && angle < 1.5 * Math.PI) angle += Math.PI;
 
       // Finally rotate and position
       text.setRotation(angle);
@@ -2957,12 +2973,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {Number} The index at which this node is found, or -1 if not found
      * @private
      */
-    static _findNodeIndex(node, nodes)
-    {
-      for (var i = 0; i < nodes.length; i++)
-      {
-        if (node === nodes[i])
-          return i;
+    static _findNodeIndex(node, nodes) {
+      for (var i = 0; i < nodes.length; i++) {
+        if (node === nodes[i]) return i;
       }
 
       return -1;
@@ -2973,12 +2986,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     handleMouseOver() {
       // Expand/Collapse: draw button if needed
-      if (!this._expandButton)
-        this._expandButton = this._createExpandCollapseButton(this._shape);
+      if (!this._expandButton) this._expandButton = this._createExpandCollapseButton(this._shape);
 
       super.handleMouseOver();
     }
-
 
     /**
      * Handles a mouse out event on the node.
@@ -2992,14 +3003,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       super.handleMouseOut();
     }
 
-
     /**
      * Updates the shapes of this node for the current layout params.
      * @param {boolean} bRecurse True if the subtree of this node should also be updated.
      */
     updateShapes(bRecurse) {
-      if (!this._shape)
-        return;
+      if (!this._shape) return;
 
       // Update Shape
       var cmd = this._createPathCmd();
@@ -3008,8 +3017,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Update the text.  The current impl just destroys and recreates the text element.
       if (!this._showRootContent()) {
         // Update the text.  The current impl just destroys and recreates the text element.
-        if (this._text)
-          this._shape.removeChild(this._text);
+        if (this._text) this._shape.removeChild(this._text);
 
         this._text = this._createTextNode(this._shape);
 
@@ -3017,32 +3025,32 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         var backgroundColor = this.getLabelBackgroundColor();
         if (this._text && (this.hasPattern() || backgroundColor)) {
           var dims = this._text.getDimensions();
-          if (this._textBackground)
-            this._textBackground.setRect(dims.x, dims.y, dims.w, dims.h);
+          if (this._textBackground) this._textBackground.setRect(dims.x, dims.y, dims.w, dims.h);
           else {
-            this._textBackground = new dvt.Rect(this.getView().getCtx(), dims.x, dims.y, dims.w, dims.h);
-            if (backgroundColor)
-              this._textBackground.setSolidFill(backgroundColor);
-            else
-              this._textBackground.setSolidFill('#FFFFFF');
+            this._textBackground = new dvt.Rect(
+              this.getView().getCtx(),
+              dims.x,
+              dims.y,
+              dims.w,
+              dims.h
+            );
+            if (backgroundColor) this._textBackground.setSolidFill(backgroundColor);
+            else this._textBackground.setSolidFill('#FFFFFF');
             this._textBackground.setMouseEnabled(false);
             this._shape.addChild(this._textBackground);
           }
 
           // Add the transform for rotated text
           var matrix = this._text.getMatrix();
-          if (!matrix.isIdentity())
-            this._textBackground.setMatrix(matrix);
-        }
-        else if (this._textBackground) {
+          if (!matrix.isIdentity()) this._textBackground.setMatrix(matrix);
+        } else if (this._textBackground) {
           this._shape.removeChild(this._textBackground);
           this._textBackground = null;
         }
       }
 
       // Reposition the expandButton, which might be visible while rotating on touch devices
-      if (dvt.Agent.isTouchDevice() && this._expandButton)
-        this._positionButton(this._expandButton);
+      if (dvt.Agent.isTouchDevice() && this._expandButton) this._positionButton(this._expandButton);
 
       // Update the color
       this._shape.setFill(this.GetFill());
@@ -3050,22 +3058,24 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Recurse to the children
       if (bRecurse) {
         var children = this.getChildNodes();
-        for (var i = 0; i < children.length; i++)
-          children[i].updateShapes(true);
+        for (var i = 0; i < children.length; i++) children[i].updateShapes(true);
       }
     }
-
 
     /**
      * @override
      */
     getDropSiteFeedback() {
       if (this._shape instanceof dvt.Circle)
-        return new dvt.Circle(this.getView().getCtx(), this._shape.getCx(), this._shape.getCy(), this._shape.getRadius());
+        return new dvt.Circle(
+          this.getView().getCtx(),
+          this._shape.getCx(),
+          this._shape.getCy(),
+          this._shape.getRadius()
+        );
       else if (this._shape instanceof dvt.Path)
         return new dvt.Path(this.getView().getCtx(), this._shape.getCmds());
-      else
-        return null;
+      else return null;
     }
 
     /**
@@ -3096,7 +3106,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var iconClass = resources[resourceKey];
       var iconStyle = dvt.ToolkitUtils.getIconStyle(context, iconClass);
       // Create button and hook up click listener
-      return new DvtSunburstIconButton(context, 'outlined', {style: iconStyle, size: this._EXPAND_ICON_SIZE}, background, null, this.expandCollapse, this);
+      return new DvtSunburstIconButton(
+        context,
+        'outlined',
+        { style: iconStyle, size: this._EXPAND_ICON_SIZE },
+        background,
+        null,
+        this.expandCollapse,
+        this
+      );
     }
 
     /**
@@ -3106,8 +3124,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     __isIsolated() {
       return this._bIsolated;
     }
-
-
 
     /**
      * Delegate to the view to handle the event
@@ -3133,7 +3149,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @private
      */
     _showRootContent() {
-      return (! this._parent) && this._innerRadius === 0 && this._angleExtent === DvtSunburstNode.TWO_PI;
+      return !this._parent && this._innerRadius === 0 && this._angleExtent === DvtSunburstNode.TWO_PI;
     }
 
     /**
@@ -3141,17 +3157,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {number}
      */
     __getRadius() {
-      if (this._radius != null) // radius explicitly specified
+      if (this._radius != null)
+        // radius explicitly specified
         return Number(this._radius);
       else if (!this.GetParent()) {
         // Root Node
-        if (this.isArtificialRoot())
-          return this._CENTER_ARTIFICIAL_ROOT_RADIUS;
-        else
-          return this._CENTER_NODE_RADIUS;
-      }
-      else
-        return 1;
+        if (this.isArtificialRoot()) return this._CENTER_ARTIFICIAL_ROOT_RADIUS;
+        else return this._CENTER_NODE_RADIUS;
+      } else return 1;
     }
 
     /**
@@ -3166,17 +3179,19 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         states.push(translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
       if (this.isExpandCollapseEnabled())
         states.push(translations[this.isDisclosed() ? 'stateExpanded' : 'stateCollapsed']);
-      if (this.isDrillReplaceEnabled())
-        states.push(translations.stateDrillable);
+      if (this.isDrillReplaceEnabled()) states.push(translations.stateDrillable);
 
-      return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtTreeNode.getShortDescContext(this));
+      return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () =>
+        DvtTreeNode.getShortDescContext(this)
+      );
     }
 
     /**
      * @override
      */
     UpdateAriaLabel() {
-      if (!dvt.Agent.deferAriaCreation() && this._shape) // need the null check bc it may fail in unit test (TreemapSelectionTest)
+      if (!dvt.Agent.deferAriaCreation() && this._shape)
+        // need the null check bc it may fail in unit test (TreemapSelectionTest)
         this._shape.setAriaProperty('label', this.getAriaLabel());
     }
 
@@ -3201,8 +3216,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       this._removeRootNodeContentOverlay();
 
-      if (!rootNodeRenderer)
-        return false;
+      if (!rootNodeRenderer) return false;
 
       var context = sunburst.getCtx();
 
@@ -3216,8 +3230,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (nodeOptions._noTemplate) {
         itemData = nodeOptions._itemData;
         data = nodeOptions._itemData;
-      }
-      else if (nodeOptions._itemData) {
+      } else if (nodeOptions._itemData) {
         itemData = nodeOptions._itemData;
         nodeOptions = dvt.JsonUtils.clone(nodeOptions);
         data = nodeOptions;
@@ -3225,24 +3238,34 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       }
 
       var dataContext = {
-        'outerBounds': {'x': centerCoord.x - outerRadius, 'y': centerCoord.y - outerRadius, 'width': 2 * outerRadius, 'height': 2 * outerRadius },
-        'innerBounds': {'x': (centerCoord.x - innerSquareDimension / 2), 'y': (centerCoord.y - innerSquareDimension / 2), 'width': innerSquareDimension, 'height':innerSquareDimension},
-        'id': this._id,
-        'data': data,
-        'itemData': itemData,
-        'component': options['_widgetConstructor']
+        outerBounds: {
+          x: centerCoord.x - outerRadius,
+          y: centerCoord.y - outerRadius,
+          width: 2 * outerRadius,
+          height: 2 * outerRadius
+        },
+        innerBounds: {
+          x: centerCoord.x - innerSquareDimension / 2,
+          y: centerCoord.y - innerSquareDimension / 2,
+          width: innerSquareDimension,
+          height: innerSquareDimension
+        },
+        id: this._id,
+        data: data,
+        itemData: itemData,
+        component: options['_widgetConstructor']
       };
       dataContext = context.fixRendererContext(dataContext);
 
       var parentDiv = context.getContainer();
       var customContent = rootNodeRenderer(dataContext);
-      if (!customContent)
-        return false;
+      if (!customContent) return false;
       var newOverlay = context.createOverlayDiv();
       if (Array.isArray(customContent)) {
-        customContent.forEach((node) => {newOverlay.appendChild(node);}); // @HTMLUpdateOK
-      }
-      else {
+        customContent.forEach((node) => {
+          newOverlay.appendChild(node); // @HTMLUpdateOK
+        });
+      } else {
         newOverlay.appendChild(customContent); // @HTMLUpdateOK
       }
       sunburst.rootNodeContent = newOverlay;
@@ -3250,8 +3273,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       // Invoke the overlay attached callback if one is available.
       var callback = context.getOverlayAttachedCallback();
-      if (callback)
-        callback(newOverlay);
+      if (callback) callback(newOverlay);
 
       return true;
     }
@@ -3274,8 +3296,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       // Remove existing overlay if there is one
       var existingOverlay = sunburst.rootNodeContent;
-      if (existingOverlay)
-        sunburst.getCtx().getContainer().removeChild(existingOverlay);
+      if (existingOverlay) sunburst.getCtx().getContainer().removeChild(existingOverlay);
       sunburst.rootNodeContent = null;
     }
 
@@ -3289,18 +3310,19 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var options = sunburst.getOptions();
       var expanded = options['expanded'];
       if (!props['bArtificialRoot'] && !props['_expanded']) {
-        if (expanded['has']) { // key set
-          if (!expanded['has'](props['id']))
-            this.setDisclosed(false);
-        }
-        else if (expanded instanceof Array && !dvt.ArrayUtils.hasAnyMapItem(options['_expandedNodes'], [props['id']]))
+        if (expanded['has']) {
+          // key set
+          if (!expanded['has'](props['id'])) this.setDisclosed(false);
+        } else if (
+          expanded instanceof Array &&
+          !dvt.ArrayUtils.hasAnyMapItem(options['_expandedNodes'], [props['id']])
+        )
           this.setDisclosed(false);
       }
     }
-
   }
-   // Constant for efficiency
-   DvtSunburstNode.TWO_PI = (Math.PI * 2);
+  // Constant for efficiency
+  DvtSunburstNode.TWO_PI = Math.PI * 2;
 
   /**
    * Class representing a treemap node.
@@ -3318,27 +3340,38 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var options = this._view.getOptions();
       var nodeDefaults = options['nodeDefaults'];
       var headerDefaults = nodeDefaults['header'];
-      var headerOptions = props['header'] ? props['header'] : {
-      };
+      var headerOptions = props['header'] ? props['header'] : {};
 
-      this._groupLabelDisplay = props['groupLabelDisplay'] ? props['groupLabelDisplay'] : nodeDefaults['groupLabelDisplay'];
-      this._labelDisplay = props['labelDisplay'] ? props['labelDisplay'] : nodeDefaults['labelDisplay'];
+      this._groupLabelDisplay = props['groupLabelDisplay']
+        ? props['groupLabelDisplay']
+        : nodeDefaults['groupLabelDisplay'];
+      this._labelDisplay = props['labelDisplay']
+        ? props['labelDisplay']
+        : nodeDefaults['labelDisplay'];
       this._labelHalign = props['labelHalign'] ? props['labelHalign'] : nodeDefaults['labelHalign'];
       this._labelValign = props['labelValign'] ? props['labelValign'] : nodeDefaults['labelValign'];
 
-      this._headerHalign = headerOptions['labelHalign'] ? headerOptions['labelHalign'] : headerDefaults['labelHalign'];
-      this._headerLabelStyle = headerOptions['labelStyle'] ? new dvt.CSSStyle(headerOptions['labelStyle']) : null;
-      this._bHeaderUseNodeColor = (headerOptions['useNodeColor'] ? headerOptions['useNodeColor'] : headerDefaults['useNodeColor']) === 'on';
+      this._headerHalign = headerOptions['labelHalign']
+        ? headerOptions['labelHalign']
+        : headerDefaults['labelHalign'];
+      this._headerLabelStyle = headerOptions['labelStyle']
+        ? new dvt.CSSStyle(headerOptions['labelStyle'])
+        : null;
+      this._bHeaderUseNodeColor =
+        (headerOptions['useNodeColor']
+          ? headerOptions['useNodeColor']
+          : headerDefaults['useNodeColor']) === 'on';
 
       this._className = props['className'] || props['svgClassName'];
       this._style = props['style'] || props['svgStyle'];
 
       // Isolate Support
       this._isolate = headerOptions['isolate'] ? headerOptions['isolate'] : headerDefaults['isolate'];
-      if (this._isolate === 'auto')
-        this._isolate = dvt.Agent.isTouchDevice() ? 'off' : 'on';
+      if (this._isolate === 'auto') this._isolate = dvt.Agent.isTouchDevice() ? 'off' : 'on';
 
-      this._bIsolated = (options['isolatedNode'] != null && dvt.Obj.compareValues(this.getView().getCtx(), options['isolatedNode'], this.getId()));
+      this._bIsolated =
+        options['isolatedNode'] != null &&
+        dvt.Obj.compareValues(this.getView().getCtx(), options['isolatedNode'], this.getId());
 
       // TODO: reconsider these constants after alta is dropped
       // Text style options
@@ -3347,12 +3380,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this.TEXT_STYLE_OFF = 'off';
 
       // Constants for All Nodes
-      this.TEXT_BUFFER_HORIZ = 5;// Buffer for text alignment
-      this.TEXT_BUFFER_VERT = 2;// Buffer for text alignment
-      this.MIN_TEXT_BUFFER = 2;// Minimum buffer for text (on opposite side of alignment for example)
+      this.TEXT_BUFFER_HORIZ = 5; // Buffer for text alignment
+      this.TEXT_BUFFER_VERT = 2; // Buffer for text alignment
+      this.MIN_TEXT_BUFFER = 2; // Minimum buffer for text (on opposite side of alignment for example)
       this._LINE_FUDGE_FACTOR = 1;
 
-      this._ANIMATION_ISOLATE_DURATION = 0.3;// in seconds
+      this._ANIMATION_ISOLATE_DURATION = 0.3; // in seconds
       // Constants for Group Headers
       this._MIN_TITLE_BAR_HEIGHT = 22;
       this._MIN_TITLE_BAR_HEIGHT_ISOLATE = 22;
@@ -3376,7 +3409,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       this.NODE_HOVER_OPACITY = 1.0;
       this.NODE_SELECTION_WIDTH = 2;
-    };
+    }
 
     //**************** Begin Overridden Functions ***************//
     /**
@@ -3384,8 +3417,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     render(container) {
       // If not positioned, don't render
-      if (!this._hasLayout)
-        return;
+      if (!this._hasLayout) return;
 
       // Create the shape object
       this._shape = this._createShapeNode();
@@ -3406,11 +3438,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           // For pattern nodes, add a background to make the text readable
           if (this._textStyle !== this.TEXT_STYLE_HEADER && (this.hasPattern() || backgroundColor)) {
             var dims = this._text.getDimensions();
-            this._textBackground = new dvt.Rect(this.getView().getCtx(), dims.x, dims.y, dims.w, dims.h);
-            if (backgroundColor)
-              this._textBackground.setSolidFill(backgroundColor);
-            else
-              this._textBackground.setSolidFill('#FFFFFF');
+            this._textBackground = new dvt.Rect(
+              this.getView().getCtx(),
+              dims.x,
+              dims.y,
+              dims.w,
+              dims.h
+            );
+            if (backgroundColor) this._textBackground.setSolidFill(backgroundColor);
+            else this._textBackground.setSolidFill('#FFFFFF');
             this._textBackground.setMouseEnabled(false);
             this._shape.addChild(this._textBackground);
 
@@ -3421,10 +3457,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       }
 
       // WAI-ARIA
-      if (this.hasChildren())
-        this._shape.setAriaRole('group');
-      else
-        this._shape.setAriaRole('img');
+      if (this.hasChildren()) this._shape.setAriaRole('group');
+      else this._shape.setAriaRole('img');
       this.UpdateAriaLabel();
     }
 
@@ -3436,8 +3470,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       super.setSelected(selected);
 
       // If the node isn't displayed, return
-      if (!this._shape)
-        return;
+      if (!this._shape) return;
 
       var nodeDefaults = this.getView().getOptions()['nodeDefaults'];
       var nodeHeaderDefaults = nodeDefaults['header'];
@@ -3450,7 +3483,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         var h = Math.max(this._height - this._LINE_FUDGE_FACTOR, 0);
 
         // Workaround for different pixel drawing behavior between browsers
-        if ((dvt.Agent.browser === 'safari' || dvt.Agent.engine === 'blink'))
+        if (dvt.Agent.browser === 'safari' || dvt.Agent.engine === 'blink')
           y -= this._LINE_FUDGE_FACTOR;
 
         // Clear the selection inner and outer, which may be used by hover
@@ -3460,14 +3493,31 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         this._selectionInner = null;
         var isRedwood = this._shape.getCtx().getThemeBehavior() === 'redwood';
         if (isRedwood && this._textStyle !== this.TEXT_STYLE_HEADER) {
-          this._selectionOuter = new dvt.Rect(this.getView().getCtx(), x + .5, y + .5, Math.max(w - 1, 0), Math.max(h - 1, 0));
-          this._selectionInner = new dvt.Rect(this.getView().getCtx(), x + 1.5, y + 1.5, Math.max(w - 3, 0), Math.max(h - 3, 0));
-        }
-        else {
+          this._selectionOuter = new dvt.Rect(
+            this.getView().getCtx(),
+            x + 0.5,
+            y + 0.5,
+            Math.max(w - 1, 0),
+            Math.max(h - 1, 0)
+          );
+          this._selectionInner = new dvt.Rect(
+            this.getView().getCtx(),
+            x + 1.5,
+            y + 1.5,
+            Math.max(w - 3, 0),
+            Math.max(h - 3, 0)
+          );
+        } else {
           this._selectionOuter = new dvt.Rect(this.getView().getCtx(), x, y, w, h);
-          this._selectionInner = new dvt.Rect(this.getView().getCtx(), x + 1, y + 1, Math.max(w - 2, 0), Math.max(h - 2, 0));
+          this._selectionInner = new dvt.Rect(
+            this.getView().getCtx(),
+            x + 1,
+            y + 1,
+            Math.max(w - 2, 0),
+            Math.max(h - 2, 0)
+          );
         }
-      // Create the shapes, the fill will be set based on node type
+        // Create the shapes, the fill will be set based on node type
         this._selectionOuter.setMouseEnabled(false);
         this._selectionOuter.setFill(null);
         this._selectionOuter.setPixelHinting(true);
@@ -3496,8 +3546,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
           if (dvt.Agent.isTouchDevice())
             this._isolateButton = this._createIsolateRestoreButton(this._shape);
-        }
-        else {
+        } else {
           // Apply the right LAF
           this._selectionOuter.setSolidStroke(nodeDefaults['selectedOuterColor']);
           this._selectionInner.setSolidStroke(nodeDefaults['selectedInnerColor']);
@@ -3511,14 +3560,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           // Move to the front of the z-order
           this.getView().__moveToSelectedLayer(this._shape);
         }
-      }
-      else {
+      } else {
         // !selected
         // Restore the regular effect to the shape
         this._removeChildShape(this._selectionInner);
         this._selectionInner = null;
-        if (dvt.Agent.isTouchDevice())
-          this._removeIsolateRestoreButton();
+        if (dvt.Agent.isTouchDevice()) this._removeIsolateRestoreButton();
 
         if (this._textStyle === this.TEXT_STYLE_HEADER) {
           // If this is a node with header, adjust it
@@ -3530,8 +3577,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
             if (this._text) {
               if (this.isDrillReplaceEnabled())
                 this.ApplyHeaderTextStyle(this._text, '_drillableLabelStyle');
-              else
-                this.ApplyHeaderTextStyle(this._text, 'labelStyle');
+              else this.ApplyHeaderTextStyle(this._text, 'labelStyle');
             }
           }
           if (this._selectionOuter) {
@@ -3542,8 +3588,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
               this._selectionOuter = null;
             }
           }
-        }
-        else {
+        } else {
           // leaf node
           // Remove the selection effects on this node
           this._shape.removeAllDrawEffects();
@@ -3567,8 +3612,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     showHoverEffect() {
-      if (!this._shape || !this._hasLayout)
-        return;
+      if (!this._shape || !this._hasLayout) return;
 
       var nodeDefaults = this.getView().getOptions()['nodeDefaults'];
       var nodeHeaderDefaults = nodeDefaults['header'];
@@ -3577,8 +3621,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // isolated node is selected, it is move to the front of the z-order.  During this move, the node behind it will
       // recieve a mouseOver event, which we should not show a hover effect for.
       var isolatedNode = this._view.__getLastIsolatedNode();
-      if (isolatedNode != null && isolatedNode !== this && !this.isDescendantOf(isolatedNode))
-        return;
+      if (isolatedNode != null && isolatedNode !== this && !this.isDescendantOf(isolatedNode)) return;
 
       // Prepare the array of points and stroke for the hover effect
       var stroke;
@@ -3603,37 +3646,50 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         }
 
         // Apply the formatting based on selection
-        this._selectionOuter.setSolidStroke(this.isSelected() ? nodeHeaderDefaults['selectedOuterColor'] : nodeHeaderDefaults['hoverOuterColor']);
+        this._selectionOuter.setSolidStroke(
+          this.isSelected()
+            ? nodeHeaderDefaults['selectedOuterColor']
+            : nodeHeaderDefaults['hoverOuterColor']
+        );
 
         // Apply the hover effect to the group contents
         x = this._x + this.GROUP_HOVER_INNER_WIDTH / 2;
         y = this._y + this._titleBarHeight + this.GROUP_HOVER_INNER_WIDTH / 2;
         w = this._width - this.GROUP_HOVER_INNER_WIDTH - this._LINE_FUDGE_FACTOR;
-        h = this._height - this._titleBarHeight - this.GROUP_HOVER_INNER_WIDTH - this._LINE_FUDGE_FACTOR;
-        stroke = new dvt.Stroke(nodeHeaderDefaults['hoverInnerColor'], this.GROUP_HOVER_INNER_OPACITY, this.GROUP_HOVER_INNER_WIDTH);
+        h =
+          this._height -
+          this._titleBarHeight -
+          this.GROUP_HOVER_INNER_WIDTH -
+          this._LINE_FUDGE_FACTOR;
+        stroke = new dvt.Stroke(
+          nodeHeaderDefaults['hoverInnerColor'],
+          this.GROUP_HOVER_INNER_OPACITY,
+          this.GROUP_HOVER_INNER_WIDTH
+        );
 
         // Update the text color
         if (this._text) {
           if (this.isDrillReplaceEnabled())
             this.ApplyHeaderTextStyle(this._text, '_drillableHoverLabelStyle');
-          else
-            this.ApplyHeaderTextStyle(this._text, '_hoverLabelStyle');
+          else this.ApplyHeaderTextStyle(this._text, '_hoverLabelStyle');
         }
-      }
-      else {
+      } else {
         if (this._shape.getCtx().getThemeBehavior() === 'redwood') {
           x = this._x + 1.5;
           y = this._y + 1.5;
           w = this._width - 3 - this._LINE_FUDGE_FACTOR;
           h = this._height - 3 - this._LINE_FUDGE_FACTOR;
           stroke = new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1);
-        }
-        else {
+        } else {
           x = this._x + this.NODE_SELECTION_WIDTH / 2;
           y = this._y + this.NODE_SELECTION_WIDTH / 2;
           w = this._width - this.NODE_SELECTION_WIDTH - this._LINE_FUDGE_FACTOR;
           h = this._height - this.NODE_SELECTION_WIDTH - this._LINE_FUDGE_FACTOR;
-          stroke = new dvt.Stroke(nodeDefaults['hoverColor'], this.NODE_HOVER_OPACITY, this.NODE_SELECTION_WIDTH);
+          stroke = new dvt.Stroke(
+            nodeDefaults['hoverColor'],
+            this.NODE_HOVER_OPACITY,
+            this.NODE_SELECTION_WIDTH
+          );
         }
         //  - treemap visualization issues
         h = Math.max(h, 0);
@@ -3648,8 +3704,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     hideHoverEffect() {
-      if (!this._shape || !this._hasLayout)
-        return;
+      if (!this._shape || !this._hasLayout) return;
 
       var nodeDefaults = this.getView().getOptions()['nodeDefaults'];
       var nodeHeaderDefaults = nodeDefaults['header'];
@@ -3667,8 +3722,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
               this.ApplyHeaderTextStyle(this._text, '_selectedLabelStyle');
             }
           }
-        }
-        else {
+        } else {
           this.ApplyHeaderStyle(this._shape, this._innerShape);
           if (this._selectionOuter) {
             this._shape.removeChild(this._selectionOuter);
@@ -3678,8 +3732,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           if (this._text) {
             if (this.isDrillReplaceEnabled())
               this.ApplyHeaderTextStyle(this._text, '_drillableLabelStyle');
-            else
-              this.ApplyHeaderTextStyle(this._text, 'labelStyle');
+            else this.ApplyHeaderTextStyle(this._text, 'labelStyle');
           }
         }
       }
@@ -3694,17 +3747,18 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Treemap node children are nested displayables, so we can't highlight the entire object.
       if (this.hasChildren()) {
         // Dim the text for group nodes
-        if (this._text)
-          this._text.setAlpha(alpha);
+        if (this._text) this._text.setAlpha(alpha);
 
         // Also dim the header if it's displaying the node color. Normal headers are not dimmed because of the border impl,
         // which causes the nodes to appear darker when alpha is applied.
-        if (this._textStyle === this.TEXT_STYLE_HEADER && this._bHeaderUseNodeColor && this._innerShape)
+        if (
+          this._textStyle === this.TEXT_STYLE_HEADER &&
+          this._bHeaderUseNodeColor &&
+          this._innerShape
+        )
           this._innerShape.setAlpha(alpha);
-      }
-      else
-        super.highlight(bDimmed, alpha);
-    };
+      } else super.highlight(bDimmed, alpha);
+    }
 
     /**
      * Returns true if isolate is enabled for this node.
@@ -3736,38 +3790,39 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       }
 
       // if alt held, or a bracket, move focus up or down one level in tree
-      if ((keyCode === dvt.KeyboardEvent.UP_ARROW && event.altKey) || keyCode === dvt.KeyboardEvent.CLOSE_BRACKET) {
+      if (
+        (keyCode === dvt.KeyboardEvent.UP_ARROW && event.altKey) ||
+        keyCode === dvt.KeyboardEvent.CLOSE_BRACKET
+      ) {
         // move up one level in the tree
         parent = this.GetParent();
 
         // we can move up one level if the parent is not the current root
-        if (parent && (parent.getId() !== this.getView().getRootNode().getId())) {
+        if (parent && parent.getId() !== this.getView().getRootNode().getId()) {
           next = parent;
 
           // update the grandparent's last visited child to be the current node's parent
           // updating the parent's (i.e. next node's) last visited child to point to the current node is
           // done at the end of this sequence of if, else-if statements
           parent.MarkAsLastVisitedChild();
-        }
-        else {
+        } else {
           next = this;
         }
-      }
-      else if ((keyCode === dvt.KeyboardEvent.DOWN_ARROW && event.altKey) || keyCode === dvt.KeyboardEvent.OPEN_BRACKET) {
+      } else if (
+        (keyCode === dvt.KeyboardEvent.DOWN_ARROW && event.altKey) ||
+        keyCode === dvt.KeyboardEvent.OPEN_BRACKET
+      ) {
         // move down one level in the tree
         lastChild = this.GetLastVisitedChild();
         if (lastChild) {
           next = lastChild;
-        }
-        else if (this.hasChildren()) {
+        } else if (this.hasChildren()) {
           next = this.getView().__getDefaultNavigable(this.getChildNodes());
-        }
-        else // leaf node
-        {
+        } // leaf node
+        else {
           next = this;
         }
-      }
-      else {
+      } else {
         // otherwise, stay in the same level
         var root = this.getView().__getLastIsolatedNode();
         var depth = 0;
@@ -3785,8 +3840,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
               parent = parent.GetParent();
             }
           }
-        }
-        else {
+        } else {
           root = this;
           while (root.GetParent()) {
             root = root.GetParent();
@@ -3815,8 +3869,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     getTargetElem() {
-      if (this._shape)
-        return this._shape.getElem();
+      if (this._shape) return this._shape.getElem();
       return null;
     }
 
@@ -3839,8 +3892,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     setLayoutParams(x, y, width, height) {
       // Nothing to render if either dimension is 0px
-      if (width <= 0 || height <= 0)
-        return undefined;
+      if (width <= 0 || height <= 0) return undefined;
 
       // Set a flag indicating layout has been performed
       this._hasLayout = true;
@@ -3855,14 +3907,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._height = height ? height : 0;
 
       // Determine the text style for this node
-      if (this.hasChildren())
-        this._textStyle = this._groupLabelDisplay;
-      else
-        this._textStyle = this._labelDisplay;
+      if (this.hasChildren()) this._textStyle = this._groupLabelDisplay;
+      else this._textStyle = this._labelDisplay;
 
       // If text not specified, same as off
-      if (!this._textStr)
-        this._textStyle = this.TEXT_STYLE_OFF;
+      if (!this._textStr) this._textStyle = this.TEXT_STYLE_OFF;
 
       // Return the subsection to allocate to children, ignored for leaf nodes
       if (this._textStyle === this.TEXT_STYLE_HEADER) {
@@ -3885,10 +3934,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         var hh = this._height - this._titleBarHeight;
 
         // If there is enough space, then return the rectangle
-        if (ww >= 0 && hh >= 0)
-          return new dvt.Rectangle(xx, yy, ww, hh);
-        else
-          this._textStyle = null;// Not enough space, don't show header
+        if (ww >= 0 && hh >= 0) return new dvt.Rectangle(xx, yy, ww, hh);
+        else this._textStyle = null; // Not enough space, don't show header
       }
 
       return new dvt.Rectangle(this._x, this._y, this._width, this._height);
@@ -3902,13 +3949,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (this.contains(x, y) || !this._hasLayout) {
         var childNodes = this.getChildNodes();
         for (var i = 0; i < childNodes.length; i++) {
-          if (childNodes[i].contains(x, y))
-            return childNodes[i].getNodeUnderPoint(x, y);
+          if (childNodes[i].contains(x, y)) return childNodes[i].getNodeUnderPoint(x, y);
         }
 
         // No child found, return the current node
-        if (this._hasLayout)
-          return this;
+        if (this._hasLayout) return this;
       }
 
       // No node found, return null
@@ -3919,7 +3964,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     contains(x, y) {
-      return x >= this._x && x <= this._x + this._width && y >= this._y && y <= this._y + this._height;
+      return (
+        x >= this._x && x <= this._x + this._width && y >= this._y && y <= this._y + this._height
+      );
     }
 
     /**
@@ -3931,7 +3978,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var b = dvt.ColorUtils.getBlue(this._color);
 
       // Force bevel removal during animation for leaf nodes by passing an additional random number to force animation.
-      return [this._x, this._y, this._width, this._height, r, g, b, this.hasChildren() ? 0 : Math.random()];//Random Number used to force animation @RandomNumberOK
+      return [
+        this._x,
+        this._y,
+        this._width,
+        this._height,
+        r,
+        g,
+        b,
+        this.hasChildren() ? 0 : Math.random() // Random Number used to force animation @RandomNumberOK
+      ];
     }
 
     /**
@@ -3973,16 +4029,26 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     _getIsolateAnimation() {
       if (this._oldState) {
         // Create the playable to animate to the new layout state
-        var playable = new dvt.CustomAnimation(this.getView().getCtx(), this, this._ANIMATION_ISOLATE_DURATION);
-        playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER_ARRAY, this, this.GetAnimParams, this.SetAnimParams, this.GetAnimParams());
+        var playable = new dvt.CustomAnimation(
+          this.getView().getCtx(),
+          this,
+          this._ANIMATION_ISOLATE_DURATION
+        );
+        playable
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_NUMBER_ARRAY,
+            this,
+            this.GetAnimParams,
+            this.SetAnimParams,
+            this.GetAnimParams()
+          );
 
         // Initialize the old state
         this.SetAnimParams(this._oldState);
 
         return playable;
-      }
-      else
-        return null;
+      } else return null;
     }
 
     /**
@@ -3992,12 +4058,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._removeAllNodeContent();
       var oldNodeRendered = oldNode._hasLayout && oldNode._width > 0 && oldNode._height > 0;
       var nodeRendered = this._hasLayout && this._width > 0 && this._height > 0;
-      if (this.GetDepth() === 0 || ( oldNodeRendered && nodeRendered)) {
+      if (this.GetDepth() === 0 || (oldNodeRendered && nodeRendered)) {
         // Current and old node exist and is visible, show the update animation
         // this.GetDepth() check since root will not have a size
         return super.animateUpdate(handler, oldNode);
-      }
-      else if (nodeRendered) {
+      } else if (nodeRendered) {
         // Old node did not exist or was not visible, treat as insert
         return this.animateInsert(handler);
       } else if (oldNodeRendered) {
@@ -4040,17 +4105,40 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         if (bNodeGaps) {
           var rects = this._getGeometriesWithGaps();
 
-          shape = new dvt.Rect(context, rects._shape.x, rects._shape.y, rects._shape.w, rects._shape.h);
-          this._innerShape = new dvt.Rect(context, rects._innerShape.x, rects._innerShape.y, rects._innerShape.w, rects._innerShape.h);
+          shape = new dvt.Rect(
+            context,
+            rects._shape.x,
+            rects._shape.y,
+            rects._shape.w,
+            rects._shape.h
+          );
+          this._innerShape = new dvt.Rect(
+            context,
+            rects._innerShape.x,
+            rects._innerShape.y,
+            rects._innerShape.w,
+            rects._innerShape.h
+          );
 
           // Also draw a background shape to prevent bleed through during isolate
-          this._backgroundShape = new dvt.Rect(context, rects._backgroundShape.x, rects._backgroundShape.y, rects._backgroundShape.w, rects._backgroundShape.h);
+          this._backgroundShape = new dvt.Rect(
+            context,
+            rects._backgroundShape.x,
+            rects._backgroundShape.y,
+            rects._backgroundShape.w,
+            rects._backgroundShape.h
+          );
           this._backgroundShape.setSolidFill('#FFFFFF');
           shape.addChild(this._backgroundShape);
-        }
-        else {
+        } else {
           shape = new dvt.Rect(context, this._x, this._y, this._width, this._height);
-          this._innerShape = new dvt.Rect(context, this._x + 1, this._y + 1, this._width - 2, this._height - 2);
+          this._innerShape = new dvt.Rect(
+            context,
+            this._x + 1,
+            this._y + 1,
+            this._width - 2,
+            this._height - 2
+          );
         }
 
         // Apply the style attributes to the header
@@ -4060,21 +4148,24 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         shape.addChild(this._innerShape);
 
         // Isolate Support
-        if (this.__isIsolated())
-          this._isolateButton = this._createIsolateRestoreButton(shape);
-      }
-      else {
+        if (this.__isIsolated()) this._isolateButton = this._createIsolateRestoreButton(shape);
+      } else {
         // Non-header node.
         var fill = this.GetFill();
         if (bNodeGaps) {
           var rectsGaps = this._getGeometriesWithGaps();
-          shape = new dvt.Rect(context, rectsGaps._shape.x, rectsGaps._shape.y, rectsGaps._shape.w, rectsGaps._shape.h);
+          shape = new dvt.Rect(
+            context,
+            rectsGaps._shape.x,
+            rectsGaps._shape.y,
+            rectsGaps._shape.w,
+            rectsGaps._shape.h
+          );
 
           // If the non-header node has children, use invisible fill so that the gaps on the
           // children don't bleed through.
           shape.setFill(this.hasChildren() ? dvt.SolidFill.invisibleFill() : fill);
-        }
-        else {
+        } else {
           // All bevels: {shape: topLeftBevel, secondShape: bottomRightBevel, thirdShape: fill}
           // Bottom right bevel only: {shape: bottomRightBevel, secondShape: fill}
           // No bevels: {firstShape: fill}
@@ -4084,11 +4175,23 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
           // Create the bevel effect for the node: Disabled on phones/tablets for 1000+ nodes for performance reasons.
           var bVisualEffects = this.getView().__getNodeCount() < 1000 || !dvt.Agent.isTouchDevice();
-          if (bVisualEffects && this._width >= this.MIN_SIZE_FOR_BORDER && this._height >= this.MIN_SIZE_FOR_BORDER) {
+          if (
+            bVisualEffects &&
+            this._width >= this.MIN_SIZE_FOR_BORDER &&
+            this._height >= this.MIN_SIZE_FOR_BORDER
+          ) {
             // Retrieve the bevel colors and blend with the fill color to get the desired effect
             var fillColor = this.getColor();
-            var topLeftColor = dvt.ColorUtils.interpolateColor(this.DEFAULT_NODE_TOP_BORDER_COLOR, fillColor, 1 - this.DEFAULT_NODE_BORDER_OPACITY);
-            var bottomRightColor = dvt.ColorUtils.interpolateColor(this.DEFAULT_NODE_BOTTOM_BORDER_COLOR, fillColor, 1 - this.DEFAULT_NODE_BORDER_OPACITY);
+            var topLeftColor = dvt.ColorUtils.interpolateColor(
+              this.DEFAULT_NODE_TOP_BORDER_COLOR,
+              fillColor,
+              1 - this.DEFAULT_NODE_BORDER_OPACITY
+            );
+            var bottomRightColor = dvt.ColorUtils.interpolateColor(
+              this.DEFAULT_NODE_BOTTOM_BORDER_COLOR,
+              fillColor,
+              1 - this.DEFAULT_NODE_BORDER_OPACITY
+            );
 
             // Creation of bevels varies based on the minimum of the width and height of the node:
             // 0: Won't reach this code
@@ -4103,33 +4206,48 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
               shape.setSolidFill(bottomRightColor);
 
               // topLeftShape hides all but the bottomRight bevel
-              this._topLeftShape = new dvt.Rect(context, this._x, this._y, this._width - 1, this._height - 1);
+              this._topLeftShape = new dvt.Rect(
+                context,
+                this._x,
+                this._y,
+                this._width - 1,
+                this._height - 1
+              );
               this._topLeftShape.setSolidFill(topLeftColor);
               this._topLeftShape.setMouseEnabled(false);
               shape.addChild(this._topLeftShape);
 
               // fillShape exposes both bevels
-              this._fillShape = new dvt.Rect(context, this._x + 1, this._y + 1, this._width - 2, this._height - 2);
+              this._fillShape = new dvt.Rect(
+                context,
+                this._x + 1,
+                this._y + 1,
+                this._width - 2,
+                this._height - 2
+              );
               this._fillShape.setFill(fill);
               this._fillShape.setMouseEnabled(false);
               shape.addChild(this._fillShape);
-            }
-            else if (minDim >= 2) {
+            } else if (minDim >= 2) {
               // Bottom Right Bevel
               // shape is the bottomRight bevel in this case
               shape.setSolidFill(bottomRightColor);
 
               // fillShape exposes the bevel
-              this._fillShape = new dvt.Rect(context, this._x, this._y, this._width - 1, this._height - 1);
+              this._fillShape = new dvt.Rect(
+                context,
+                this._x,
+                this._y,
+                this._width - 1,
+                this._height - 1
+              );
               this._fillShape.setFill(fill);
               this._fillShape.setMouseEnabled(false);
               shape.addChild(this._fillShape);
-            }
-            else // No bevels
-              shape.setFill(fill);
-          }
-          else // No bevels
-            shape.setFill(fill);
+            } // No bevels
+            else shape.setFill(fill);
+          } // No bevels
+          else shape.setFill(fill);
         }
         shape.setStyle(this._style);
         shape.setClassName(this._className);
@@ -4140,12 +4258,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       // Allows selection cursor to be shown over nodes if nodeSelection is enabled and node is selectable
       // Unselectable nodes explicitly set as default so correct pointer appears if un-selectable node is drawn inside selectable node
-      if (this.isSelectable())
-        shape.setSelectable(true);
-      else if (this.isDrillReplaceEnabled())
-        shape.setCursor('pointer');
-      else
-        shape.setCursor('default');
+      if (this.isSelectable()) shape.setSelectable(true);
+      else if (this.isDrillReplaceEnabled()) shape.setCursor('pointer');
+      else shape.setCursor('default');
 
       shape.zIndex = this._zIndex;
       return shape;
@@ -4158,8 +4273,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @private
      */
     _createIsolateRestoreButton(container) {
-      if (this._textStyle !== this.TEXT_STYLE_HEADER || !this.isIsolateEnabled())
-        return null;
+      if (this._textStyle !== this.TEXT_STYLE_HEADER || !this.isIsolateEnabled()) return null;
 
       var button = null;
       var x1 = this._x;
@@ -4171,20 +4285,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         // Create the button and add to the container
         button = this.__isIsolated() ? this._getRestoreButton() : this._getIsolateButton();
         var transX;
-        if (dvt.Agent.isRightToLeft(container.getCtx()))
-          transX = x1 + this._ISOLATE_GAP_SIZE;
-        else
-          transX = x2 - this._ISOLATE_ICON_SIZE - this._ISOLATE_GAP_SIZE;
+        if (dvt.Agent.isRightToLeft(container.getCtx())) transX = x1 + this._ISOLATE_GAP_SIZE;
+        else transX = x2 - this._ISOLATE_ICON_SIZE - this._ISOLATE_GAP_SIZE;
         button.setTranslate(transX, (y2 + y1 - this._ISOLATE_ICON_SIZE) / 2);
         container.addChild(button);
 
         // Add a buffer to make the objects easier to interact with on touch devices
         if (dvt.Agent.isTouchDevice()) {
-          var rect = new dvt.Rect(container.getCtx(),
-          - this._ISOLATE_TOUCH_BUFFER,
-          - this._ISOLATE_TOUCH_BUFFER,
-          this._ISOLATE_ICON_SIZE + 2 * this._ISOLATE_TOUCH_BUFFER,
-          this._ISOLATE_ICON_SIZE + 2 * this._ISOLATE_TOUCH_BUFFER);
+          var rect = new dvt.Rect(
+            container.getCtx(),
+            -this._ISOLATE_TOUCH_BUFFER,
+            -this._ISOLATE_TOUCH_BUFFER,
+            this._ISOLATE_ICON_SIZE + 2 * this._ISOLATE_TOUCH_BUFFER,
+            this._ISOLATE_ICON_SIZE + 2 * this._ISOLATE_TOUCH_BUFFER
+          );
           rect.setInvisibleFill();
           button.addChild(rect);
         }
@@ -4223,16 +4337,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Approximate whether the text could fit vertically
       var availHeight = this._height;
       var textHeight = this.GetTextSize();
-      if (textHeight > availHeight)
-        return null;
+      if (textHeight > availHeight) return null;
 
       // Figure out the horizontal alignment
-      var hAlign = (this._textStyle === this.TEXT_STYLE_NODE) ? this._labelHalign : this._headerHalign;
+      var hAlign = this._textStyle === this.TEXT_STYLE_NODE ? this._labelHalign : this._headerHalign;
       if (isRTL) {
-        if (hAlign === 'start')
-          hAlign = 'end';
-        else if (hAlign === 'end')
-          hAlign = 'start';
+        if (hAlign === 'start') hAlign = 'end';
+        else if (hAlign === 'end') hAlign = 'start';
       }
 
       // Approximate whether the text could fit horizontally (conservative)
@@ -4240,43 +4351,37 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var isolateWidth = 0;
       if (this.isIsolateEnabled()) {
         isolateWidth = this._ISOLATE_ICON_SIZE + this._ISOLATE_GAP_SIZE;
-        if (hAlign === 'center')
-          availWidth -= 2 * isolateWidth;// center aligned text should always be centered, meaning space is reserved on either size for the button
-        else
-          availWidth -= isolateWidth;
+        if (hAlign === 'center') availWidth -= 2 * isolateWidth;
+        // center aligned text should always be centered, meaning space is reserved on either size for the button
+        else availWidth -= isolateWidth;
       }
 
-      if (availWidth <= 0)
-        return null;
-
+      if (availWidth <= 0) return null;
 
       // Create the text object. Use multiline for node text when there is space for multiple lines and not enough width to fit the label.
       var text;
       var computedTextStyle = this.getMergedLabelTextStyle();
-      if (this._textStyle === this.TEXT_STYLE_NODE && availHeight > textHeight * 2 && computedTextStyle.getStyle(dvt.CSSStyle.WHITE_SPACE) !== 'nowrap' &&
-          dvt.TextUtils.getTextStringWidth(this.getView().getCtx(), this._textStr, computedTextStyle) > availWidth) {
+      if (
+        this._textStyle === this.TEXT_STYLE_NODE &&
+        availHeight > textHeight * 2 &&
+        computedTextStyle.getStyle(dvt.CSSStyle.WHITE_SPACE) !== 'nowrap' &&
+        dvt.TextUtils.getTextStringWidth(this.getView().getCtx(), this._textStr, computedTextStyle) >
+          availWidth
+      ) {
         text = new dvt.MultilineText(this.getView().getCtx(), this._textStr);
-      }
-      else
-        text = new dvt.OutputText(this.getView().getCtx(), this._textStr);
+      } else text = new dvt.OutputText(this.getView().getCtx(), this._textStr);
 
       // Calculate the horizontal text position
       if (hAlign === 'start') {
-        if (isRTL)
-          text.setX(this._x + this.TEXT_BUFFER_HORIZ + isolateWidth);
-        else
-          text.setX(this._x + this.TEXT_BUFFER_HORIZ);
+        if (isRTL) text.setX(this._x + this.TEXT_BUFFER_HORIZ + isolateWidth);
+        else text.setX(this._x + this.TEXT_BUFFER_HORIZ);
         text.alignLeft();
-      }
-      else if (hAlign === 'center') {
-        text.setX(this._x + (this._width / 2));
+      } else if (hAlign === 'center') {
+        text.setX(this._x + this._width / 2);
         text.alignCenter();
-      }
-      else if (hAlign === 'end') {
-        if (isRTL)
-          text.setX(this._x + this._width - this.TEXT_BUFFER_HORIZ);
-        else
-          text.setX(this._x + this._width - this.TEXT_BUFFER_HORIZ - isolateWidth);
+      } else if (hAlign === 'end') {
+        if (isRTL) text.setX(this._x + this._width - this.TEXT_BUFFER_HORIZ);
+        else text.setX(this._x + this._width - this.TEXT_BUFFER_HORIZ - isolateWidth);
         text.alignRight();
       }
 
@@ -4286,46 +4391,60 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         // Set the correct available height
         availHeight = this._height - this.TEXT_BUFFER_VERT * 2;
-      }
-      else if (this._textStyle === this.TEXT_STYLE_HEADER) {
+      } else if (this._textStyle === this.TEXT_STYLE_HEADER) {
         // Note: No need to worry about available height here.  Headers are sized based on the text size.
-        var chromeAdjustment = (dvt.Agent.browser === 'safari' || dvt.Agent.engine === 'blink') ? this._LINE_FUDGE_FACTOR : 0;
-        text.setY(this._y + this.DEFAULT_HEADER_BORDER_WIDTH + this._titleBarHeight / 2 + chromeAdjustment);
+        var chromeAdjustment =
+          dvt.Agent.browser === 'safari' || dvt.Agent.engine === 'blink'
+            ? this._LINE_FUDGE_FACTOR
+            : 0;
+        text.setY(
+          this._y + this.DEFAULT_HEADER_BORDER_WIDTH + this._titleBarHeight / 2 + chromeAdjustment
+        );
         text.alignMiddle();
         this.ApplyHeaderTextStyle(text, 'labelStyle');
       }
 
-        if (this._textStyle === this.TEXT_STYLE_HEADER && this.isDrillReplaceEnabled()) {
-          // Drillable text link
-          this.ApplyHeaderTextStyle(text, '_drillableLabelStyle');
-          text.setCursor('pointer');
+      if (this._textStyle === this.TEXT_STYLE_HEADER && this.isDrillReplaceEnabled()) {
+        // Drillable text link
+        this.ApplyHeaderTextStyle(text, '_drillableLabelStyle');
+        text.setCursor('pointer');
 
-          // Associate with a DvtTreePeer to handle drilling
-          var peer = new DvtTreePeer(this, this.getId(), null, this.getDatatip.bind(this), this.getDatatipColor.bind(this));
-          peer.setDrillable(true);
-          this.getView().getEventManager().associate(text, peer);
-        }
-        else // Parent node will handle all events
-          text.setMouseEnabled(false);
+        // Associate with a DvtTreePeer to handle drilling
+        var peer = new DvtTreePeer(
+          this,
+          this.getId(),
+          null,
+          this.getDatatip.bind(this),
+          this.getDatatipColor.bind(this)
+        );
+        peer.setDrillable(true);
+        this.getView().getEventManager().associate(text, peer);
+      } // Parent node will handle all events
+      else text.setMouseEnabled(false);
 
-        // Truncate the text if necessary
-        var labelMinLength = this.getView().getOptions()['nodeDefaults']['labelMinLength'];
-        var renderText = dvt.TextUtils.fitText(text, availWidth, availHeight, container, labelMinLength);
+      // Truncate the text if necessary
+      var labelMinLength = this.getView().getOptions()['nodeDefaults']['labelMinLength'];
+      var renderText = dvt.TextUtils.fitText(
+        text,
+        availWidth,
+        availHeight,
+        container,
+        labelMinLength
+      );
 
-        // Calculate the vertical text position after the fitText call
-        if (this._textStyle === this.TEXT_STYLE_NODE) {
-          // Get the text height
-          var textHeightDim = text.getDimensions().h;
+      // Calculate the vertical text position after the fitText call
+      if (this._textStyle === this.TEXT_STYLE_NODE) {
+        // Get the text height
+        var textHeightDim = text.getDimensions().h;
 
-          // Vertical Alignment
-          if (this._labelValign === 'top')
-            text.setY(this._y + this.TEXT_BUFFER_VERT);
-          else if (this._labelValign === 'center')
-            text.setY(this._y + this._height / 2 - textHeightDim / 2);
-          else if (this._labelValign === 'bottom')
-            text.setY(this._y + this._height - this.TEXT_BUFFER_VERT - textHeightDim);
-        }
-        return renderText ? text : null;
+        // Vertical Alignment
+        if (this._labelValign === 'top') text.setY(this._y + this.TEXT_BUFFER_VERT);
+        else if (this._labelValign === 'center')
+          text.setY(this._y + this._height / 2 - textHeightDim / 2);
+        else if (this._labelValign === 'bottom')
+          text.setY(this._y + this._height - this.TEXT_BUFFER_VERT - textHeightDim);
+      }
+      return renderText ? text : null;
     }
 
     /**
@@ -4338,17 +4457,19 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (this._bHeaderUseNodeColor) {
         var fillColor = this.getColor();
         innerShape.setSolidFill(fillColor);
-        var borderColor = dvt.ColorUtils.interpolateColor(nodeHeaderDefaults['borderColor'], fillColor, 1 - this.DEFAULT_HEADER_WITH_NODE_COLOR_ALPHA);
+        var borderColor = dvt.ColorUtils.interpolateColor(
+          nodeHeaderDefaults['borderColor'],
+          fillColor,
+          1 - this.DEFAULT_HEADER_WITH_NODE_COLOR_ALPHA
+        );
         shape.setSolidFill(borderColor);
-      }
-      else {
+      } else {
         shape.setSolidFill(nodeHeaderDefaults['borderColor']);
         innerShape.setSolidFill(nodeHeaderDefaults['backgroundColor']);
       }
 
       // Also update the background shape if one exists.
-      if (this._backgroundShape)
-        this._backgroundShape.setFill(innerShape.getFill());
+      if (this._backgroundShape) this._backgroundShape.setFill(innerShape.getFill());
     }
 
     /**
@@ -4364,20 +4485,24 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         textStyle.push(new dvt.CSSStyle('font-weight:bold;'));
 
       // Header style defaults from CSS
-      textStyle.push(this.getView().getOptions()['nodeDefaults']['header']["_labelStyle"]);
+      textStyle.push(this.getView().getOptions()['nodeDefaults']['header']['_labelStyle']);
 
       // Header Default styles
       textStyle.push(this.getView().getOptions()['nodeDefaults']['header'][styleType]);
 
       // Header Label Style
-      if (this._headerLabelStyle)
-        textStyle.push(this._headerLabelStyle);
+      if (this._headerLabelStyle) textStyle.push(this._headerLabelStyle);
 
       //User defined Options
-      textStyle.push(new dvt.CSSStyle(this.getView().getOptions()['nodeDefaults']['header']["labelStyle"]));
+      textStyle.push(
+        new dvt.CSSStyle(this.getView().getOptions()['nodeDefaults']['header']['labelStyle'])
+      );
 
       // Header UseNodeColor for Non-Hover/Selected Labels
-      if (this._bHeaderUseNodeColor && (styleType === 'labelStyle' || styleType === '_drillableLabelStyle'))
+      if (
+        this._bHeaderUseNodeColor &&
+        (styleType === 'labelStyle' || styleType === '_drillableLabelStyle')
+      )
         textStyle.push(new dvt.CSSStyle('color: ' + DvtTreeNode.GetNodeTextColor(this)));
 
       text.setCSSStyle(dvt.CSSStyle.mergeStyles(textStyle));
@@ -4412,17 +4537,25 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var ret = {};
       if (this._textStyle === this.TEXT_STYLE_HEADER) {
         ret._shape = new dvt.Rectangle(this._x, this._y, this._width - 1, this._titleBarHeight);
-        ret._innerShape = new dvt.Rectangle(this._x + 1, this._y + 1, this._width - 3, this._titleBarHeight - 1);
+        ret._innerShape = new dvt.Rectangle(
+          this._x + 1,
+          this._y + 1,
+          this._width - 3,
+          this._titleBarHeight - 1
+        );
 
         //  - treemap visualization issues
         var adjustedBackgroundShapeWidth = Math.max(this._width - 1, 0);
         var adjustedBackgroundShapeHeight = Math.max(this._height - this._titleBarHeight - 1, 0);
-        ret._backgroundShape = new dvt.Rectangle(this._x, this._y + this._titleBarHeight, adjustedBackgroundShapeWidth, adjustedBackgroundShapeHeight);
-      }
-      else {
+        ret._backgroundShape = new dvt.Rectangle(
+          this._x,
+          this._y + this._titleBarHeight,
+          adjustedBackgroundShapeWidth,
+          adjustedBackgroundShapeHeight
+        );
+      } else {
         // Non-header node with children, make 0 height so it doesn't bleed through the gaps.
-        if (this.hasChildren())
-          ret._shape = new dvt.Rectangle(this._x, this._y, 0, 0);
+        if (this.hasChildren()) ret._shape = new dvt.Rectangle(this._x, this._y, 0, 0);
         else {
           // Allocate the gaps from the right and bottom sides.
           var adjustedWidth = Math.max(this._width - 1, 0);
@@ -4438,8 +4571,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @private
      */
     _updateShapes() {
-      if (!this._shape)
-        return;
+      if (!this._shape) return;
 
       var options = this.getView().getOptions();
       var bNodeGaps = options['nodeSeparators'] === 'gaps';
@@ -4447,13 +4579,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         var rects = this._getGeometriesWithGaps();
         this._shape.setRect(rects._shape);
 
-        if (this._innerShape)
-          this._innerShape.setRect(rects._innerShape);
+        if (this._innerShape) this._innerShape.setRect(rects._innerShape);
 
-        if (this._backgroundShape)
-          this._backgroundShape.setRect(rects._backgroundShape);
-      }
-      else {
+        if (this._backgroundShape) this._backgroundShape.setRect(rects._backgroundShape);
+      } else {
         // Update the shape
         this._shape.setRect(this._x, this._y, this._width, this._height);
         if (this._innerShape)
@@ -4465,8 +4594,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         this._shape.setFill(this.GetFill());
       }
 
-      if (this.isSelected())
-        this.setSelected(false);
+      if (this.isSelected()) this.setSelected(false);
 
       // Clear all border effects.  They will be restored in the animationEnd listener.
       this._removeChildShape(this._fillShape);
@@ -4478,18 +4606,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._removeIsolateRestoreButton();
 
       // Handle the node content
-      if (options['nodeContent'] && options['nodeContent']['renderer'] && this._textStyle !== this.TEXT_STYLE_HEADER) {
+      if (
+        options['nodeContent'] &&
+        options['nodeContent']['renderer'] &&
+        this._textStyle !== this.TEXT_STYLE_HEADER
+      ) {
         this._removeAllNodeContent();
-      }
-      else {
+      } else {
         // No template, update the text
         // Remove the text background
         this._removeChildShape(this._textBackground);
         this._textBackground = null;
 
         // Update the text.  This implementation simply removes and repaints it.
-        if (this._text)
-          this._text.getParent().removeChild(this._text);// necessary because the parent may not be the shape
+        if (this._text) this._text.getParent().removeChild(this._text); // necessary because the parent may not be the shape
         this._text = this._createTextNode(this._shape);
       }
     }
@@ -4499,10 +4629,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     getDropSiteFeedback() {
       if (this._shape) {
-        return new dvt.Rect(this.getView().getCtx(), this._shape.getX(), this._shape.getY(), this._shape.getWidth(), this._shape.getHeight());
-      }
-      else
-        return null;
+        return new dvt.Rect(
+          this.getView().getCtx(),
+          this._shape.getX(),
+          this._shape.getY(),
+          this._shape.getWidth(),
+          this._shape.getHeight()
+        );
+      } else return null;
     }
 
     /**
@@ -4512,8 +4646,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     _addChildText(text) {
       if (this._textStyle === this.TEXT_STYLE_NODE && this.hasChildren())
         this.getView().__getGroupTextLayer().addChild(text);
-      else
-        this._shape.addChild(text);
+      else this._shape.addChild(text);
     }
 
     /**
@@ -4522,8 +4655,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @private
      */
     _removeChildShape(childShape) {
-      if (childShape)
-        this._shape.removeChild(childShape);
+      if (childShape) this._shape.removeChild(childShape);
     }
 
     /**
@@ -4552,7 +4684,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var iconClass = resources[resourceKey];
       var iconStyle = dvt.ToolkitUtils.getIconStyle(context, iconClass);
       // Create button and hook up click listener
-      var button = new dvt.IconButton(context, 'borderless', {style: iconStyle, size: this._ISOLATE_ICON_SIZE});
+      var button = new dvt.IconButton(context, 'borderless', {
+        style: iconStyle,
+        size: this._ISOLATE_ICON_SIZE
+      });
       button.addEvtListener(dvt.MouseEvent.CLICK, callback, false, this);
       return button;
     }
@@ -4580,8 +4715,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this.UpdateAriaLabel();
 
       // Stop propagation to prevent selection from changing
-      if (event)
-        event.stopPropagation();
+      if (event) event.stopPropagation();
     }
 
     /**
@@ -4598,8 +4732,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this.UpdateAriaLabel();
 
       // Stop propagation to prevent selection from changing
-      if (event)
-        event.stopPropagation();
+      if (event) event.stopPropagation();
     }
 
     /**
@@ -4614,8 +4747,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     getDatatip(target, x, y) {
-      if (target && target instanceof dvt.IconButton)
-        return null;// tooltip is displayed for isolate button
+      if (target && target instanceof dvt.IconButton) return null; // tooltip is displayed for isolate button
       return super.getDatatip(target, x, y);
     }
 
@@ -4623,8 +4755,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     getDatatipColor(target) {
-      if (target && target instanceof dvt.IconButton)
-        return null;// tooltip is displayed for isolate button
+      if (target && target instanceof dvt.IconButton) return null; // tooltip is displayed for isolate button
       return super.getDatatipColor(target);
     }
 
@@ -4633,9 +4764,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     getTooltip(target) {
       if (target && target instanceof dvt.IconButton)
-        return this.getView().getOptions().translations[this.__isIsolated() ? 'tooltipRestore' : 'tooltipIsolate'];
-      else
-        return null;
+        return this.getView().getOptions().translations[
+          this.__isIsolated() ? 'tooltipRestore' : 'tooltipIsolate'
+        ];
+      else return null;
     }
 
     /**
@@ -4648,19 +4780,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var states = [];
       if (this.isSelectable())
         states.push(translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
-      if (this.__isIsolated())
-        states.push(translations.stateIsolated);
-      if (this.isDrillReplaceEnabled())
-        states.push(translations.stateDrillable);
+      if (this.__isIsolated()) states.push(translations.stateIsolated);
+      if (this.isDrillReplaceEnabled()) states.push(translations.stateDrillable);
 
-      return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtTreeNode.getShortDescContext(this));
+      return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () =>
+        DvtTreeNode.getShortDescContext(this)
+      );
     }
 
     /**
      * @override
      */
     UpdateAriaLabel() {
-      if (!dvt.Agent.deferAriaCreation() && this._shape)// need the null check bc it may fail in unit test (TreemapSelectionTest)
+      if (!dvt.Agent.deferAriaCreation() && this._shape)
+        // need the null check bc it may fail in unit test (TreemapSelectionTest)
         this._shape.setAriaProperty('label', this.getAriaLabel());
     }
 
@@ -4676,20 +4809,21 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._removeNodeContent(id);
 
       var nodeRenderer = options['nodeContent']['renderer'];
-      if (!nodeRenderer || this.hasChildren())
-        return false;
+      if (!nodeRenderer || this.hasChildren()) return false;
 
       var isolatedNodes = treemap.getIsolatedNodes();
-      if (isolatedNodes.length <= 0 || this.isDescendantOf(isolatedNodes[treemap._isolatedNodes.length - 1])) {
+      if (
+        isolatedNodes.length <= 0 ||
+        this.isDescendantOf(isolatedNodes[treemap._isolatedNodes.length - 1])
+      ) {
         var context = treemap.getCtx();
         var nodeOptions = this.getOptions();
         var itemData;
         var data = nodeOptions;
-        if (nodeOptions._noTemplate)   {
+        if (nodeOptions._noTemplate) {
           itemData = nodeOptions._itemData;
           data = nodeOptions._itemData;
-          }
-        else if (nodeOptions._itemData) {
+        } else if (nodeOptions._itemData) {
           itemData = nodeOptions._itemData;
           nodeOptions = dvt.JsonUtils.clone(nodeOptions);
           data = nodeOptions;
@@ -4697,23 +4831,28 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         }
 
         var dataContext = {
-          'bounds': {'x': this._x, 'y': this._y, 'width': this._width - this.DEFAULT_NODE_BORDER_WIDTH, 'height': this._height - this.DEFAULT_NODE_BORDER_WIDTH},
-          'id': id,
-          'data': data,
-          'itemData': itemData,
-          'component': nodeOptions['_widgetConstructor']
+          bounds: {
+            x: this._x,
+            y: this._y,
+            width: this._width - this.DEFAULT_NODE_BORDER_WIDTH,
+            height: this._height - this.DEFAULT_NODE_BORDER_WIDTH
+          },
+          id: id,
+          data: data,
+          itemData: itemData,
+          component: nodeOptions['_widgetConstructor']
         };
         dataContext = context.fixRendererContext(dataContext);
 
         var parentDiv = context.getContainer();
         var customContent = nodeRenderer(dataContext);
-        if (!customContent)
-          return false;
+        if (!customContent) return false;
         var newOverlay = context.createOverlayDiv();
         if (Array.isArray(customContent)) {
-          customContent.forEach((node) => {newOverlay.appendChild(node);}); // @HTMLUpdateOK
-        }
-        else {
+          customContent.forEach((node) => {
+            newOverlay.appendChild(node); // @HTMLUpdateOK
+          });
+        } else {
           newOverlay.appendChild(customContent); // @HTMLUpdateOK
         }
         var nodeContent = treemap.getNodeContent();
@@ -4722,8 +4861,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         // Invoke the overlay attached callback if one is available.
         var callback = context.getOverlayAttachedCallback();
-        if (callback)
-          callback(newOverlay);
+        if (callback) callback(newOverlay);
       }
       return true;
     }
@@ -4756,12 +4894,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   }
 
   /**
-    *  Provides automation services for treemap/sunburst.  To obtain a
-    *  @class  DvtTreeAutomation
-    *  @param {DvtTreeView} treeView
-    *  @implements {dvt.Automation}
-    *  @constructor
-    */
+   *  Provides automation services for treemap/sunburst.  To obtain a
+   *  @class  DvtTreeAutomation
+   *  @param {DvtTreeView} treeView
+   *  @implements {dvt.Automation}
+   *  @constructor
+   */
   class DvtTreeAutomation extends dvt.Automation {
     /**
      * Valid subIds inlcude:
@@ -4775,14 +4913,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var rootNode = this._comp.getRootNode();
 
       // check if we have a button
-      var isButton = (displayable instanceof dvt.Button || displayable instanceof dvt.IconButton);
+      var isButton = displayable instanceof dvt.Button || displayable instanceof dvt.IconButton;
       var parent = displayable.getParent();
       if (parent instanceof dvt.Button || parent instanceof dvt.IconButton) {
         displayable = parent;
         isButton = true;
       }
 
-      if (!logicalObj) { // could be a breadcrumb
+      if (!logicalObj) {
+        // could be a breadcrumb
         parent = displayable.getParent();
         if (parent instanceof DvtBreadcrumbs)
           return 'breadcrumbs[' + parent.getCrumbIndex(displayable) + ']';
@@ -4790,35 +4929,31 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       }
 
       var nodeSubId = null;
-      if (logicalObj instanceof DvtTreePeer && isButton) {  // sunburst expand/collapse buttons
+      if (logicalObj instanceof DvtTreePeer && isButton) {
+        // sunburst expand/collapse buttons
         var node = logicalObj._node;
         nodeSubId = this.GetSubIdForDomElement(node.getDisplayable());
         return this._getSubIdForButton(nodeSubId, node, displayable);
-      }
-      else if (logicalObj instanceof DvtTreeNode)
-      {
+      } else if (logicalObj instanceof DvtTreeNode) {
         var currentNode = logicalObj;
         var indices = '';
 
         if (!rootNode.isArtificialRoot()) {
           // If logicalObj represents real root node, return default subId
           // Else include index for real root as first index in string of indices
-          if (currentNode == rootNode)
-            return 'node[0]';
-          else
-            indices += '[0]';
+          if (currentNode == rootNode) return 'node[0]';
+          else indices += '[0]';
         }
         // Indices for nodes beyond the root
         var childIndices = this._getIndicesFromNode(currentNode, rootNode.getChildNodes());
         indices = childIndices ? indices + childIndices : indices;
 
-        if (indices.length > 0)
-          nodeSubId = 'node' + indices;
+        if (indices.length > 0) nodeSubId = 'node' + indices;
 
-        if (isButton) // treemap isolate/restore buttons
+        if (isButton)
+          // treemap isolate/restore buttons
           return this._getSubIdForButton(nodeSubId, logicalObj, displayable);
-        else
-          return nodeSubId;
+        else return nodeSubId;
       }
 
       return null;
@@ -4839,10 +4974,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           // so we have to check the displayable aria properties to determine the button's state
           var ariaLabel = displayable.getAriaProperty('label');
           var isolatedText = node.getView().getOptions().translations.stateIsolated;
-          return (ariaLabel.indexOf(isolatedText) >= 0) ? 'restore' : nodeSubId + ':isolate';
-        }
-        else if (node instanceof DvtSunburstNode)
-          return nodeSubId + ':disclosure';
+          return ariaLabel.indexOf(isolatedText) >= 0 ? 'restore' : nodeSubId + ':isolate';
+        } else if (node instanceof DvtSunburstNode) return nodeSubId + ':disclosure';
       }
 
       return null;
@@ -4859,12 +4992,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // If there are sections in this options object, recurse through the section object
       if (children && children.length > 0) {
         for (var n = 0; n < children.length; n++) {
-          if (children[n] == node)
-            return '[' + n + ']';
+          if (children[n] == node) return '[' + n + ']';
           else {
             var nodeIndex = this._getIndicesFromNode(node, children[n].getChildNodes());
-            if (nodeIndex)
-              return '[' + n + ']' + nodeIndex;
+            if (nodeIndex) return '[' + n + ']' + nodeIndex;
           }
         }
       }
@@ -4880,14 +5011,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @override
      */
     getDomElementForSubId(subId) {
-      if (!subId)
-        return null;
+      if (!subId) return null;
 
       var rootNode = this._comp.getRootNode();
 
       // tooltip
-      if (subId == dvt.Automation.TOOLTIP_SUBID)
-        return this.GetTooltipElement(this._comp);
+      if (subId == dvt.Automation.TOOLTIP_SUBID) return this.GetTooltipElement(this._comp);
 
       // treemap breadcrumbs
       if (subId.indexOf('breadcrumbs') == 0) {
@@ -4899,8 +5028,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // treemap restore button
       if (subId == 'restore') {
         var restoreNode = this._comp._restoreNode || this._comp.__getLastIsolatedNode();
-        if (restoreNode)
-          return restoreNode.getIsolateRestoreButton().getElem();
+        if (restoreNode) return restoreNode.getIsolateRestoreButton().getElem();
       }
 
       // If root is real remove first index from subId because we begin searching at the root
@@ -4910,7 +5038,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // If no more indices exist in the string at this point, the desired node is the root node.
       // If not, find the node.
       var nextOpenParen = subId.indexOf('[');
-      var foundNode = (nextOpenParen == -1) ? rootNode : this._getNodeFromSubId(rootNode, subId);
+      var foundNode = nextOpenParen == -1 ? rootNode : this._getNodeFromSubId(rootNode, subId);
 
       if (foundNode) {
         // Check if the subId is for a child element of the node
@@ -4921,19 +5049,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           // sunburst expand/collapse buttons
           if (foundNode instanceof DvtSunburstNode && subId == 'disclosure') {
             var expandCollapseBtn = foundNode.getExpandCollapseButton();
-            if (expandCollapseBtn)
-              return expandCollapseBtn.getElem();
+            if (expandCollapseBtn) return expandCollapseBtn.getElem();
           }
 
           // treemap isolate buttons
           if (foundNode instanceof DvtTreemapNode && subId == 'isolate') {
             var isolateRestoreBtn = foundNode.getIsolateRestoreButton();
-            if (isolateRestoreBtn)
-              return isolateRestoreBtn.getElem();
+            if (isolateRestoreBtn) return isolateRestoreBtn.getElem();
           }
-        }
-        else // return the node element
-          return foundNode.getDisplayable().getElem();
+        } // return the node element
+        else return foundNode.getDisplayable().getElem();
       }
 
       return null;
@@ -4959,9 +5084,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         if (childNode && nextOpenParen >= 0 && nextCloseParen >= 0) {
           // If there is another index layer recurse into the child node at that index
           return this._getNodeFromSubId(childNode, subId);
-        }
-        else // If we are at the last index return the child node at that index
-          return childNode;
+        } // If we are at the last index return the child node at that index
+        else return childNode;
       }
       return null;
     }
@@ -4978,14 +5102,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var index = path.shift();
 
       var childNode = DvtTreeAutomation._getNodeByIndex(node.getChildNodes(), index);
-      if (path.length == 0) // If this is the last index return child node at that position
+      if (path.length == 0)
+        // If this is the last index return child node at that position
         return childNode;
-      else if (path.length > 0)
-        return this._getNodeFromPath(childNode, path);
+      else if (path.length > 0) return this._getNodeFromPath(childNode, path);
 
       return null;
     }
-
 
     /**
      * Returns an object containing data for a tree node. Used for verification.
@@ -5007,19 +5130,18 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       }
 
       // If the root is real, remove first element of subIdPath since we already start searching at the root
-      if (!rootNode.isArtificialRoot() && subIdPath[0] == 0)
-        subIdPath.shift();
+      if (!rootNode.isArtificialRoot() && subIdPath[0] == 0) subIdPath.shift();
 
       // If root index was the only element of subIdPath, set the node to get data for as the root, else search for the correct node
-      var node = (subIdPath.length == 0) ? rootNode : this._getNodeFromPath(rootNode, subIdPath);
+      var node = subIdPath.length == 0 ? rootNode : this._getNodeFromPath(rootNode, subIdPath);
 
       if (node) {
         return {
-          'color': node.getColor(),
-          'label': node.getLabel(),
-          'selected': node.isSelected() == undefined ? false : node.isSelected(),
-          'size': node.getSize(),
-          'tooltip': node.getShortDesc()
+          color: node.getColor(),
+          label: node.getLabel(),
+          selected: node.isSelected() == undefined ? false : node.isSelected(),
+          size: node.getSize(),
+          tooltip: node.getShortDesc()
         };
       }
 
@@ -5035,8 +5157,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     static _getNodeByIndex(nodes, index) {
       for (var i = 0; i < nodes.length; i++) {
-        if (index == nodes[i].getIndex())
-          return nodes[i];
+        if (index == nodes[i].getIndex()) return nodes[i];
       }
 
       // None found, return null
@@ -5049,7 +5170,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @class
    */
   const DvtTreeBreadcrumbsRenderer = {
-
     _COMPONENT_GAP: 6,
     _ENABLED_INLINE_STYLE: 'color: #003286;',
 
@@ -5078,15 +5198,25 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var disabledStyle = dvt.CSSStyle.mergeStyles(disabledStyleArray).toString();
 
       // Create the breadcrumbs component and temporarily add to the component
-      var options = {labelStyle: enabledStyle, labelStyleOver: enabledStyleOver, labelStyleDown: enabledStyleOver, disabledLabelStyle: disabledStyle};
-      var breadcrumbs = new DvtBreadcrumbs(context, treeView.__processBreadcrumbsEvent, treeView, options);
+      var options = {
+        labelStyle: enabledStyle,
+        labelStyleOver: enabledStyleOver,
+        labelStyleDown: enabledStyleOver,
+        disabledLabelStyle: disabledStyle
+      };
+      var breadcrumbs = new DvtBreadcrumbs(
+        context,
+        treeView.__processBreadcrumbsEvent,
+        treeView,
+        options
+      );
       treeView.addChild(breadcrumbs);
 
       // Create the data object for the breadcrumbs.  Use the reverse of the ancestors array, since
       // the most distant ancestor is rendered first.
       var dataItems = ancestors.slice(0).reverse();
-      dataItems.push({'label': rootLabel});
-      var data = {'items': dataItems};
+      dataItems.push({ label: rootLabel });
+      var data = { items: dataItems };
       breadcrumbs.render(data, availSpace.w);
 
       // Figure out the height used and reduce availSpace
@@ -5159,7 +5289,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         this._highlightDescendants(obj);
       } else {
         // Perform the highlighting
-        dvt.CategoryRolloverHandler.highlight(options['highlightedCategories'], DvtTreeUtils.getAllNodes(tree.getRootNode()), options['highlightMatch'] == 'any');
+        dvt.CategoryRolloverHandler.highlight(
+          options['highlightedCategories'],
+          DvtTreeUtils.getAllNodes(tree.getRootNode()),
+          options['highlightMatch'] == 'any'
+        );
       }
     }
   }
@@ -5193,12 +5327,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     OnDblClickInternal(event) {
       // Done if there is no object
       var obj = this.GetLogicalObject(event.target);
-      if (!obj)
-        return;
+      if (!obj) return;
 
       // Only double click to drill if selectable. Otherwise, drill with single click.
-      if (obj.isSelectable && obj.isSelectable())
-        this._processDrill(obj, event.shiftKey);
+      if (obj.isSelectable && obj.isSelectable()) this._processDrill(obj, event.shiftKey);
     }
 
     /**
@@ -5212,8 +5344,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._processNodeLabel(obj);
 
       // Only drill if not selectable. If selectable, drill with double click.
-      if (obj && !(obj.isSelectable && obj.isSelectable()))
-        this._processDrill(obj, event.shiftKey);
+      if (obj && !(obj.isSelectable && obj.isSelectable())) this._processDrill(obj, event.shiftKey);
     }
 
     /**
@@ -5224,11 +5355,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       // Additional mouse over support
       var obj = this.GetLogicalObject(event.target);
-      if (!obj)
-        return;
+      if (!obj) return;
 
-      if (obj.handleMouseOver)
-        obj.handleMouseOver();
+      if (obj.handleMouseOver) obj.handleMouseOver();
     }
 
     /**
@@ -5239,14 +5368,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       // Additional mouse out support
       var obj = this.GetLogicalObject(event.target);
-      if (!obj)
-        return;
+      if (!obj) return;
 
       // Don't hide on mouseOut to object belonging to same node (expand button for example)
       if (obj.handleMouseOut) {
         var relatedObj = this.GetLogicalObject(event.relatedTarget);
         var relatedId = relatedObj && relatedObj.getId ? relatedObj.getId() : null;
-        if ((obj.getId() == null) || !dvt.Obj.compareValues(this.getCtx(), relatedId, obj.getId()))
+        if (obj.getId() == null || !dvt.Obj.compareValues(this.getCtx(), relatedId, obj.getId()))
           obj.handleMouseOut();
       }
     }
@@ -5254,20 +5382,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     /**
      * @override
      */
-    ProcessKeyboardEvent(event)
-    {
+    ProcessKeyboardEvent(event) {
       var eventConsumed = false;
       var keyCode = event.keyCode;
 
-      if (keyCode == dvt.KeyboardEvent.ENTER && !event.ctrlKey)
-      {
+      if (keyCode == dvt.KeyboardEvent.ENTER && !event.ctrlKey) {
         // handle drill operations
         var obj = this.getFocus();
-        if (obj.isDrillReplaceEnabled && obj.isDrillReplaceEnabled())
-        {
+        if (obj.isDrillReplaceEnabled && obj.isDrillReplaceEnabled()) {
           // SHIFT+ENTER means drill up from the current root, even if the node with keyboard focus is not the current root
-          if (event.shiftKey)
-            obj = this._view.getRootNode();
+          if (event.shiftKey) obj = this._view.getRootNode();
 
           // Delegate to the view to fire a drill event
           this._view.__drill(obj.getId(), event.shiftKey);
@@ -5275,9 +5399,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         dvt.EventManager.consumeEvent(event);
         eventConsumed = true;
-      }
-      else
-      {
+      } else {
         eventConsumed = super.ProcessKeyboardEvent(event);
       }
 
@@ -5299,8 +5421,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         }
       }
 
-      if (!obj)
-        return;
+      if (!obj) return;
 
       if (obj instanceof DvtTreeNode) {
         if (this._currentHoverItem != obj) {
@@ -5310,8 +5431,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       }
 
       // Only drill if not selectable. If selectable, drill with double click.
-      if (!(obj.isSelectable && obj.isSelectable()))
-        this._processDrill(obj, event.shiftKey);
+      if (!(obj.isSelectable && obj.isSelectable())) this._processDrill(obj, event.shiftKey);
     }
 
     /**
@@ -5320,12 +5440,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     HandleTouchDblClickInternal(event) {
       var targetObj = event.target;
       var obj = this.GetLogicalObject(targetObj);
-      if (!obj)
-        return;
+      if (!obj) return;
 
       // Only double click to drill if selectable. Otherwise, drill with single click.
-      if (obj.isSelectable && obj.isSelectable())
-        this._processDrill(obj, false);
+      if (obj.isSelectable && obj.isSelectable()) this._processDrill(obj, false);
     }
 
     /**
@@ -5360,8 +5478,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     ProcessRolloverEvent(event, obj, bOver) {
       // Don't continue if not enabled
       var options = this._view.getOptions();
-      if (options['hoverBehavior'] != 'dim')
-        return;
+      if (options['hoverBehavior'] != 'dim') return;
 
       this._currentHoverItem = bOver ? obj : null;
 
@@ -5370,12 +5487,19 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       options['highlightedCategories'] = bOver ? categories.slice() : null;
 
       // Fire the event to the rollover handler, who will fire to the component callback.
-      var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
+      var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(
+        options['highlightedCategories'],
+        bOver
+      );
       var nodes = DvtTreeUtils.getAllNodes(this.GetView().getRootNode());
       var hoverBehaviorDelay = dvt.CSSStyle.getTimeMilliseconds(options['hoverBehaviorDelay']);
-      this.RolloverHandler.processEvent(rolloverEvent, nodes, hoverBehaviorDelay, options['highlightMatch'] == 'any');
+      this.RolloverHandler.processEvent(
+        rolloverEvent,
+        nodes,
+        hoverBehaviorDelay,
+        options['highlightMatch'] == 'any'
+      );
     }
-
 
     /**
      * @override
@@ -5396,32 +5520,30 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     GetTouchResponse() {
       return this._view.getOptions()['touchResponse'];
-    };
+    }
   }
 
   /*---------------------------------------------------------------------------------*/
   /*  DvtTreeKeyboardHandler     Keyboard handler for Sunburst                   */
   /*---------------------------------------------------------------------------------*/
   /**
-    *  @param {dvt.EventManager} manager The owning dvt.EventManager
-    *  @class DvtTreeKeyboardHandler
-    *  @extends {dvt.KeyboardHandler}
-    *  @constructor
-    */
+   *  @param {dvt.EventManager} manager The owning dvt.EventManager
+   *  @class DvtTreeKeyboardHandler
+   *  @extends {dvt.KeyboardHandler}
+   *  @constructor
+   */
   class DvtTreeKeyboardHandler extends dvt.KeyboardHandler {
     /**
      * @override
      */
-    isSelectionEvent(event)
-    {
+    isSelectionEvent(event) {
       return this.isNavigationEvent(event) && !event.ctrlKey;
     }
 
     /**
      * @override
      */
-    isMultiSelectEvent(event)
-    {
+    isMultiSelectEvent(event) {
       return event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey;
     }
   }
@@ -5431,7 +5553,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @class
    */
   const DvtTreeLegendRenderer = {
-
     /** @private @const **/
     _LEGEND_GAP: 4,
     /** @private @const **/
@@ -5450,7 +5571,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var options = treeView.getOptions();
       var sizeValueStr = options['sizeLabel'];
       var colorValueStr = options['colorLabel'];
-      if ((sizeValueStr == null || sizeValueStr == "") && (colorValueStr == null || colorValueStr == ""))
+      if (
+        (sizeValueStr == null || sizeValueStr == '') &&
+        (colorValueStr == null || colorValueStr == '')
+      )
         return null;
 
       var context = treeView.getCtx();
@@ -5460,17 +5584,25 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       treeView.addChild(legend);
 
       // Size/Color Labels
-      var labelContainer = DvtTreeLegendRenderer._renderLabels(context, treeView, legend, availSpace.w, sizeValueStr, colorValueStr);
+      var labelContainer = DvtTreeLegendRenderer._renderLabels(
+        context,
+        treeView,
+        legend,
+        availSpace.w,
+        sizeValueStr,
+        colorValueStr
+      );
 
       // Position the sections horizontally
       var labelDims = labelContainer ? labelContainer.getDimensions() : null;
-      if (labelContainer) // Only labels, center
+      if (labelContainer)
+        // Only labels, center
         labelContainer.setTranslateX(availSpace.y + (availSpace.w - labelDims.w) / 2);
 
       // Figure out the height used and reduce availSpace
       var legendDims = legend.getDimensions();
       legend.setTranslateY(availSpace.y + availSpace.h - legendDims.h);
-      availSpace.h -= (legendDims.h + DvtTreeLegendRenderer._LEGEND_GAP);
+      availSpace.h -= legendDims.h + DvtTreeLegendRenderer._LEGEND_GAP;
 
       // Remove the legend so that it can be added under the right parent.
       treeView.removeChild(legend);
@@ -5553,7 +5685,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           colorValueLabelWidth = colorValueLabel.getDimensions().w;
 
           // Size section width
-          colorWidth = colorLabelWidth + colorValueLabelWidth + DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
+          colorWidth =
+            colorLabelWidth + colorValueLabelWidth + DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
         }
 
         // Reduce size to fit if needed
@@ -5562,49 +5695,57 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           var widthPerSection = availWidth / 2;
           if (sizeWidth > widthPerSection && colorWidth > widthPerSection) {
             // Both don't fit, truncate and reposition
-            var sizeValueSpace = isNaN(sizeLabelWidth) ? 0 : widthPerSection - sizeLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
+            var sizeValueSpace = isNaN(sizeLabelWidth)
+              ? 0
+              : widthPerSection - sizeLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
             if (dvt.TextUtils.fitText(sizeValueLabel, sizeValueSpace, Infinity, labelContainer)) {
               sizeValueLabelWidth = sizeValueLabel.getDimensions().w;
               eventManager.associate(sizeValueLabel, new dvt.SimpleObjPeer(sizeValueStr));
-            }
-            else {
+            } else {
               labelContainer.removeChild(sizeLabel);
               labelContainer.removeChild(sizeValueLabel);
               sizeValueLabel = null;
               sizeValueLabelWidth = 0;
             }
 
-            var colorValueSpace = widthPerSection - colorLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
+            var colorValueSpace =
+              widthPerSection - colorLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
             if (dvt.TextUtils.fitText(colorValueLabel, colorValueSpace, Infinity, labelContainer)) {
               colorValueLabelWidth = colorValueLabel.getDimensions().w;
               eventManager.associate(colorValueLabel, new dvt.SimpleObjPeer(colorValueStr));
-            }
-            else {
+            } else {
               labelContainer.removeChild(colorLabel);
               labelContainer.removeChild(colorValueLabel);
               colorValueLabel = null;
               colorValueLabelWidth = 0;
             }
-          }
-          else if (sizeWidth > colorWidth) { // Reduce the size label size
-            if (dvt.TextUtils.fitText(sizeValueLabel, availWidth - colorWidth - sizeLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP, Infinity, labelContainer)) {
+          } else if (sizeWidth > colorWidth) {
+            // Reduce the size label size
+            if (
+              dvt.TextUtils.fitText(
+                sizeValueLabel,
+                availWidth - colorWidth - sizeLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP,
+                Infinity,
+                labelContainer
+              )
+            ) {
               sizeValueLabelWidth = sizeValueLabel.getDimensions().w;
               eventManager.associate(sizeValueLabel, new dvt.SimpleObjPeer(sizeValueStr));
-            }
-            else {
+            } else {
               labelContainer.removeChild(sizeLabel);
               labelContainer.removeChild(sizeValueLabel);
               sizeValueLabel = null;
               sizeValueLabelWidth = 0;
             }
-          }
-          else { // Reduce the color label size
-            var colorLabelSize = isNaN(colorLabelWidth) ? 0 : availWidth - sizeWidth - colorLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
+          } else {
+            // Reduce the color label size
+            var colorLabelSize = isNaN(colorLabelWidth)
+              ? 0
+              : availWidth - sizeWidth - colorLabelWidth - DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
             if (dvt.TextUtils.fitText(colorValueLabel, colorLabelSize, Infinity, labelContainer)) {
               colorValueLabelWidth = colorValueLabel.getDimensions().w;
               eventManager.associate(colorValueLabel, new dvt.SimpleObjPeer(colorValueStr));
-            }
-            else {
+            } else {
               labelContainer.removeChild(colorLabel);
               labelContainer.removeChild(colorValueLabel);
               colorValueLabel = null;
@@ -5628,8 +5769,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
             x += sizeValueLabelWidth + DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
             sizeLabel.setX(x);
           }
-        }
-        else {
+        } else {
           if (sizeLabel && sizeValueLabel) {
             sizeLabel.setX(x);
             x += sizeLabelWidth + DvtTreeLegendRenderer._LEGEND_LABEL_GAP;
@@ -5708,15 +5848,18 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         if (this.Options['rootNode']) {
           this.Options['_ancestors'] = null;
-          var rootAndAncestors = DvtTreeUtils.findRootAndAncestors(this.getCtx(), this.Options['nodes'], this.Options['rootNode'], []);
+          var rootAndAncestors = DvtTreeUtils.findRootAndAncestors(
+            this.getCtx(),
+            this.Options['nodes'],
+            this.Options['rootNode'],
+            []
+          );
           if (rootAndAncestors && rootAndAncestors['root'])
             this.Options['nodes'] = [rootAndAncestors['root']];
           if (rootAndAncestors && rootAndAncestors['ancestors'])
             this.Options['_ancestors'] = rootAndAncestors['ancestors'];
         }
-      }
-      else if (!this.Options)
-        this.Options = this.GetDefaults();
+      } else if (!this.Options) this.Options = this.GetDefaults();
     }
 
     /**
@@ -5727,16 +5870,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {number} width The width of the component.
      * @param {number} height The height of the component.
      */
-    render(options, width, height)
-    {
+    render(options, width, height) {
       // Update if a new options object has been provided or initialize with defaults if needed.
-      var bNewOptions = (options || !this.Options);
+      var bNewOptions = options || !this.Options;
       this.SetOptions(options);
 
       if (bNewOptions) {
         // Process the options object
         var root = this._processNodes();
-        this.ApplyParsedProps({root: root});
+        this.ApplyParsedProps({ root: root });
       }
 
       // Update the width and height if provided
@@ -5746,8 +5888,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       }
 
       // Hide any currently shown tooltips
-      if (this.EventManager)
-        this.EventManager.hideTooltip();
+      if (this.EventManager) this.EventManager.hideTooltip();
 
       // Relayout the component (for resize or new data)
       var availSpace = new dvt.Rectangle(0, 0, this.Width, this.Height);
@@ -5769,15 +5910,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var bBlackBoxUpdate = false; // true if this is a black box update animation
       if (!this._container) {
         this.Animation = this.GetDisplayAnim(container, bounds);
-      }
-      else if (animationOnDataChange && bNewOptions) {
+      } else if (animationOnDataChange && bNewOptions) {
         // AnimationOnDataChange
         if (dvt.BlackBoxAnimationHandler.isSupported(animationOnDataChange)) {
           // Black Box Animation
-          this.Animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(this.getCtx(), animationOnDataChange, this._container, container, bounds, this.AnimationDuration);
+          this.Animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(
+            this.getCtx(),
+            animationOnDataChange,
+            this._container,
+            container,
+            bounds,
+            this.AnimationDuration
+          );
           bBlackBoxUpdate = true;
-        }
-        else if (this._oldRoot && animationOnDataChange == 'auto') {
+        } else if (this._oldRoot && animationOnDataChange == 'auto') {
           // Data Change Animation
           // Create the animation handler, calc, and play the animation
           this._deleteContainer = this.GetDeleteContainer();
@@ -5806,8 +5952,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // up after animation is complete.  Otherwise, remove immediately.
       if (bBlackBoxUpdate) {
         this._oldContainer = this._container;
-      }
-      else if (this._container) {
+      } else if (this._container) {
         // Not black box animation, so clean up the old contents
         this.removeChild(this._container);
       }
@@ -5820,17 +5965,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         // Update the selection manager with the initial selections.  This must be done after
         // the shapes are created to apply the selection effects.
         this._processInitialSelections();
-      }
-      else
-        this.ReselectNodes(); // Resize or Rerender: Reselect the nodes using the selection handler's state
+      } else this.ReselectNodes(); // Resize or Rerender: Reselect the nodes using the selection handler's state
 
       // Update the event manager with the initial focus
       this._processInitialFocus(!this.Animation);
 
       // Process the highlightedCategories. We'll also do this in the animation end listener to avoid conflicts with insert
       // animations.
-      if (!this.Animation)
-        this._processInitialHighlighting();
+      if (!this.Animation) this._processInitialHighlighting();
 
       this.UpdateAriaAttributes();
 
@@ -5849,7 +5991,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // subclasses should override
       return null;
     }
-
 
     /**
      * Performs layout for the component.
@@ -5894,10 +6035,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         if (this._breadcrumbs)
           this.EventManager.removeComponentKeyboardHandler(this._breadcrumbs.getEventManager());
 
-        this._breadcrumbs = DvtTreeBreadcrumbsRenderer.render(this, availSpace, this._ancestors, rootLabel);
+        this._breadcrumbs = DvtTreeBreadcrumbsRenderer.render(
+          this,
+          availSpace,
+          this._ancestors,
+          rootLabel
+        );
         this.EventManager.addComponentKeyboardHandlerAt(this._breadcrumbs.getEventManager(), 0);
-      }
-      else {
+      } else {
         if (this._breadcrumbs)
           this.EventManager.removeComponentKeyboardHandler(this._breadcrumbs.getEventManager());
 
@@ -5949,10 +6094,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     RenderEmptyText(container) {
       var options = this.getOptions();
       var emptyText = options['emptyText'];
-      if (!emptyText)
-        emptyText = options.translations.labelNoData;
+      if (!emptyText) emptyText = options.translations.labelNoData;
 
-      this.renderEmptyText(container, emptyText, new dvt.Rectangle(0, 0, this.Width, this.Height), this.getEventManager(), options['_statusMessageStyle']);
+      this.renderEmptyText(
+        container,
+        emptyText,
+        new dvt.Rectangle(0, 0, this.Width, this.Height),
+        this.getEventManager(),
+        options['_statusMessageStyle']
+      );
     }
 
     /**
@@ -5961,7 +6111,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @protected
      */
     HasValidData() {
-      return (this._root && this._root.getSize() > 0);
+      return this._root && this._root.getSize() > 0;
     }
 
     /**
@@ -5974,9 +6124,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     GetDisplayAnim(container, bounds) {
       var animationOnDisplay = this.getOptions()['animationOnDisplay'];
       if (dvt.BlackBoxAnimationHandler.isSupported(animationOnDisplay))
-        return dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), animationOnDisplay, container, bounds, this.AnimationDuration);
-      else
-        return null;
+        return dvt.BlackBoxAnimationHandler.getInAnimation(
+          this.getCtx(),
+          animationOnDisplay,
+          container,
+          bounds,
+          this.AnimationDuration
+        );
+      else return null;
     }
 
     /**
@@ -6005,8 +6160,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Process the highlightedCategories
       this._processInitialHighlighting();
 
-      if (!this.AnimationStopped)
-        this.RenderComplete();
+      if (!this.AnimationStopped) this.RenderComplete();
 
       // Reset animation flags
       this.Animation = null;
@@ -6028,8 +6182,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {dvt.KeyboardHandler}
      * @protected
      */
-    CreateKeyboardHandler(manager)
-    {
+    CreateKeyboardHandler(manager) {
       return new DvtTreeKeyboardHandler(manager);
     }
 
@@ -6042,8 +6195,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {dvt.EventManager}
      * @protected
      */
-    CreateEventManager(view, context, callback, callbackObj)
-    {
+    CreateEventManager(view, context, callback, callbackObj) {
       return new DvtTreeEventManager(view, context, callback, callbackObj);
     }
 
@@ -6053,12 +6205,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {DvtTreeNode}
      * @protected
      */
-    GetInitialFocusedItem(root)
-    {
+    GetInitialFocusedItem(root) {
       if (root && root.isArtificialRoot()) {
         var nodes = root.getChildNodes();
-        if (nodes && nodes.length > 0)
-          return nodes[0];
+        if (nodes && nodes.length > 0) return nodes[0];
       }
       return root;
     }
@@ -6071,7 +6221,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this.getOptions()['highlightedCategories'] = dvt.JsonUtils.clone(categories);
 
       // Perform the highlighting
-      dvt.CategoryRolloverHandler.highlight(categories, DvtTreeUtils.getAllNodes(this._root), this.getOptions()['highlightMatch'] == 'any');
+      dvt.CategoryRolloverHandler.highlight(
+        categories,
+        DvtTreeUtils.getAllNodes(this._root),
+        this.getOptions()['highlightMatch'] == 'any'
+      );
     }
 
     /**
@@ -6129,19 +6283,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._styles = props.styles ? props.styles : {};
 
       // Selection Support
-      if (options['selectionMode'] == 'none')
-        this._nodeSelection = null;
+      if (options['selectionMode'] == 'none') this._nodeSelection = null;
       else if (options['selectionMode'] == 'single')
         this._nodeSelection = dvt.SelectionHandler.TYPE_SINGLE;
-      else
-        this._nodeSelection = dvt.SelectionHandler.TYPE_MULTIPLE;
+      else this._nodeSelection = dvt.SelectionHandler.TYPE_MULTIPLE;
 
       if (this._nodeSelection) {
         this._selectionHandler = new dvt.SelectionHandler(this.getCtx(), this._nodeSelection);
         this._initialSelection = options['selection'];
-      }
-      else
-        this._selectionHandler = null;
+      } else this._selectionHandler = null;
 
       // Event Handler delegates to other handlers
       this.EventManager.setSelectionHandler(this._selectionHandler);
@@ -6159,8 +6309,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     ReselectNodes() {
       var selectedNodes = this._selectionHandler ? this._selectionHandler.getSelection() : [];
-      for (var i = 0; i < selectedNodes.length; i++)
-        selectedNodes[i].setSelected(true);
+      for (var i = 0; i < selectedNodes.length; i++) selectedNodes[i].setSelected(true);
     }
 
     /**
@@ -6192,25 +6341,21 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @private
      */
     _processInitialFocus(applyVisualEffects) {
-
       var initialFocus = null;
       var id = this.__getNavigableIdToFocus();
 
-      if (id)
-      {
+      if (id) {
         initialFocus = DvtTreeNode.getNodeById(this._root, id);
         this.EventManager.setFocus(initialFocus);
       }
 
-      if (applyVisualEffects)
-      {
+      if (applyVisualEffects) {
         // if we are applying visual effects in response to an event that caused a re-render or animation, and this
         // event specified a non-default node to set keyboard focus on, clear that value now that we've used it
         this.__setNavigableIdToFocus(null);
       }
 
-      if (!initialFocus)
-      {
+      if (!initialFocus) {
         // set the item that has initial keyboard focus to a default if none was previously defined
         initialFocus = this.GetInitialFocusedItem(this._root);
         this.EventManager.setFocus(initialFocus);
@@ -6219,9 +6364,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // have the event manager apply any needed visual effects
       // however, do this only if we are not animating so as to prevent the focus visual effect
       // from appearing during the duration of the animation
-      if (applyVisualEffects)
-        this.setFocused(this.isFocused());
-
+      if (applyVisualEffects) this.setFocused(this.isFocused());
     }
 
     /**
@@ -6229,19 +6372,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      *
      * @param {boolean} isFocused
      */
-    setFocused(isFocused)
-    {
+    setFocused(isFocused) {
       this._hasFocus = isFocused;
       this.EventManager.setFocused(isFocused);
     }
-
 
     /**
      * Returns true if the view currently has keyboard focus
      * @return {boolean}
      */
-    isFocused()
-    {
+    isFocused() {
       return this._hasFocus;
     }
 
@@ -6270,12 +6410,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     __isDragAvailable(clientIds) {
       // Drag and drop supported when selection is enabled, only 1 drag source
-      if (this._selectionHandler)
-        return clientIds[0];
-      else
-        return null;
+      if (this._selectionHandler) return clientIds[0];
+      else return null;
     }
-
 
     /**
      * Returns the row keys for the current drag.
@@ -6299,7 +6436,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       return rowKeys;
     }
 
-
     /**
      * Returns the displayables to use for drag feedback for the current drag.
      * @return {array} The displayables for the current drag.
@@ -6315,7 +6451,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       return displayables;
     }
-
 
     /**
      * Displays drop site feedback for the specified node.
@@ -6334,7 +6469,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         this._dropSiteFeedback = node.getDropSiteFeedback();
         if (this._dropSiteFeedback) {
           var styleDefaults = this.getOptions()['styleDefaults'];
-          this._dropSiteFeedback.setSolidFill(styleDefaults['_dropSiteFillColor'], styleDefaults['_dropSiteOpacity']);
+          this._dropSiteFeedback.setSolidFill(
+            styleDefaults['_dropSiteFillColor'],
+            styleDefaults['_dropSiteOpacity']
+          );
           this._dropSiteFeedback.setSolidStroke(styleDefaults['_dropSiteBorderColor']);
           this.addChild(this._dropSiteFeedback);
         }
@@ -6347,8 +6485,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {object} event
      */
     __processBreadcrumbsEvent(event) {
-      if (event.type === 'breadcrumbsDrill')
-        this.__drill(event.id, false);
+      if (event.type === 'breadcrumbsDrill') this.__drill(event.id, false);
     }
 
     /**
@@ -6364,31 +6501,47 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         this.__setNavigableIdToFocus(id);
 
         // Drill up only supported on the root node
-        this.dispatchEvent(dvt.EventFactory.newTreeDrillEvent(this._ancestors[0].id, DvtTreeUtils.findRootAndAncestors(this.getCtx(), this.getOptions()['_nodes'], this._ancestors[0].id, [])['root'], component));
-      }
-      else if (!bDrillUp) // Fire the event
-        this.dispatchEvent(dvt.EventFactory.newTreeDrillEvent(id, DvtTreeUtils.findRootAndAncestors(this.getCtx(), this.getOptions()['_nodes'], id, [])['root'], component));
+        this.dispatchEvent(
+          dvt.EventFactory.newTreeDrillEvent(
+            this._ancestors[0].id,
+            DvtTreeUtils.findRootAndAncestors(
+              this.getCtx(),
+              this.getOptions()['_nodes'],
+              this._ancestors[0].id,
+              []
+            )['root'],
+            component
+          )
+        );
+      } else if (!bDrillUp)
+        // Fire the event
+        this.dispatchEvent(
+          dvt.EventFactory.newTreeDrillEvent(
+            id,
+            DvtTreeUtils.findRootAndAncestors(this.getCtx(), this.getOptions()['_nodes'], id, [])[
+              'root'
+            ],
+            component
+          )
+        );
 
       // Hide any tooltips being shown
       this.getCtx().getTooltipManager().hideTooltip();
     }
-
 
     /**
      * Returns the logical object corresponding to the physical target
      * @param {Object} target
      * @return {Object}
      */
-    getLogicalObject(target)
-    {
+    getLogicalObject(target) {
       return this.EventManager.GetLogicalObject(target);
     }
 
     /**
      * @return {DvtTreeNode} the root tree node.
      */
-    getRootNode()
-    {
+    getRootNode() {
       return this._root;
     }
 
@@ -6399,8 +6552,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      *
      * @return {String} the id of the node that should receive keyboard focus
      */
-    __getNavigableIdToFocus()
-    {
+    __getNavigableIdToFocus() {
       return this._navigableIdToFocus;
     }
 
@@ -6411,16 +6563,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      *
      * @param {String} id The id of the node that should receive keyboard focus
      */
-    __setNavigableIdToFocus(id)
-    {
+    __setNavigableIdToFocus(id) {
       this._navigableIdToFocus = id;
     }
 
     /**
      * @return {String} whether nodeSelection is multiple, single, or null.
      */
-    __getNodeSelection()
-    {
+    __getNodeSelection() {
       return this._nodeSelection;
     }
 
@@ -6460,8 +6610,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     _processNodes() {
       var options = this.getOptions();
-      if (options['nodes'] == null || options['displayLevels'] == 0)
-        return null;
+      if (options['nodes'] == null || options['displayLevels'] == 0) return null;
 
       // Create each of the root level nodes
       var rootNodes = [];
@@ -6475,13 +6624,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         // Recursively process the node
         var rootNode = this._processNode(hiddenCategories, nodeOptions, options['displayLevels']);
-        if (rootNode)
-          rootNodes.push(rootNode);
+        if (rootNode) rootNodes.push(rootNode);
       }
 
       // Ensure that there's a single root, creating an artificial one if needed
-      if (rootNodes.length == 1)
-        return rootNodes[0];
+      if (rootNodes.length == 1) return rootNodes[0];
       else {
         // Calculate the sum of the child sizes
         var size = 0;
@@ -6490,7 +6637,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         }
 
         // Create the actual node and set the children
-        var props = {'value': size, bArtificialRoot: true, 'id' : this._id};
+        var props = { value: size, bArtificialRoot: true, id: this._id };
         var artificialRoot = this.CreateNode(props);
         artificialRoot.setChildNodes(rootNodes);
         return artificialRoot;
@@ -6507,8 +6654,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     _processNode(hiddenCategories, nodeOptions, depth) {
       // Don't create if node is hidden
-      if (DvtTreeUtils.isHiddenNode(hiddenCategories, nodeOptions))
-        return null;
+      if (DvtTreeUtils.isHiddenNode(hiddenCategories, nodeOptions)) return null;
 
       // Create the node
       var node = this.CreateNode(nodeOptions);
@@ -6521,9 +6667,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         for (var childIndex = 0; childIndex < childOptions.length; childIndex++) {
           var childNodeOptions = childOptions[childIndex];
           childNodeOptions['_index'] = childIndex;
-          var childNode = this._processNode(hiddenCategories, childNodeOptions, depth != null ? depth - 1 : depth);
-          if (childNode)
-            childNodes.push(childNode);
+          var childNode = this._processNode(
+            hiddenCategories,
+            childNodeOptions,
+            depth != null ? depth - 1 : depth
+          );
+          if (childNode) childNodes.push(childNode);
         }
         node.setChildNodes(childNodes);
       }
@@ -6542,7 +6691,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         var nodes = DvtTreeUtils.getAllVisibleNodes(root);
         for (var i = 0; i < nodes.length - 1; i++) {
           // Set the aria flowto property of the current node to the next node's id
-          var id = this.getId() + (nodes[i + 1].getId() ? nodes[i + 1].getId() : nodes[i + 1].getLabel());
+          var id =
+            this.getId() + (nodes[i + 1].getId() ? nodes[i + 1].getId() : nodes[i + 1].getLabel());
           // VoiceOver doesn't work well if there are spaces in the id so remove all spaces first
           id = id.replace(/\s+/g, '');
           nodes[i + 1].getDisplayable().setId(id, true);
@@ -6568,41 +6718,43 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    */
   class DvtTreeDefaults extends dvt.BaseComponentDefaults {
     constructor(defaultsMap, context) {
-
       /**
        * Defaults for version 1. This component was exposed after the Alta skin, so no earlier defaults are provided.
        */
       const SKIN_ALTA = {
-        'skin': dvt.CSSStyle.SKIN_ALTA,
+        skin: dvt.CSSStyle.SKIN_ALTA,
 
         // Note, only attributes that are different than the XML defaults need
         // to be listed here, at least until the XML API is replaced.
-        'animationDuration': 500,
-        'animationOnDataChange': 'none',
-        'animationOnDisplay': 'none',
-        'drilling': 'off',
-        'displayLevels': Number.MAX_VALUE,
-        'highlightMatch' : 'all',
-        'hoverBehavior': 'none', 'hoverBehaviorDelay': 200,
-        'nodeDefaults': {
-          'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11),
-          'labelMinLength': 1
+        animationDuration: 500,
+        animationOnDataChange: 'none',
+        animationOnDisplay: 'none',
+        drilling: 'off',
+        displayLevels: Number.MAX_VALUE,
+        highlightMatch: 'all',
+        hoverBehavior: 'none',
+        hoverBehaviorDelay: 200,
+        nodeDefaults: {
+          labelStyle: new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11),
+          labelMinLength: 1
         },
-        'selectionMode': 'multiple',
-        'sorting': 'off',
-        '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
-        'styleDefaults': {
-          '_attributeTypeTextStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12 + 'color:#4F4F4F'),
-          '_attributeValueTextStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12),
-          '_currentTextStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12),
-          '_drillTextStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12),
-          '_labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)
+        selectionMode: 'multiple',
+        sorting: 'off',
+        _statusMessageStyle: new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
+        styleDefaults: {
+          _attributeTypeTextStyle: new dvt.CSSStyle(
+            dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12 + 'color:#4F4F4F'
+          ),
+          _attributeValueTextStyle: new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12),
+          _currentTextStyle: new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12),
+          _drillTextStyle: new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12),
+          _labelStyle: new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)
         },
-        'touchResponse' : 'auto',
+        touchResponse: 'auto',
 
-        '_resources': {}
+        _resources: {}
       };
-      super({'alta': dvt.JsonUtils.merge(defaultsMap['alta'], SKIN_ALTA)}, context);
+      super({ alta: dvt.JsonUtils.merge(defaultsMap['alta'], SKIN_ALTA) }, context);
     }
   }
 
@@ -6622,19 +6774,19 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         // Note, only attributes that are different than the XML defaults need
         // to be listed here, at least until the XML API is replaced.
 
-        'nodeDefaults': {
-          'borderColor': 'rgba(255,255,255,0.3)',
-          'borderWidth': 1,
-          'hoverColor': '#FFFFFF',
-          'labelDisplay': 'auto',
-          'labelHalign': 'center',
-          'selectedInnerColor': '#FFFFFF',
-          'selectedOuterColor': '#000000'
+        nodeDefaults: {
+          borderColor: 'rgba(255,255,255,0.3)',
+          borderWidth: 1,
+          hoverColor: '#FFFFFF',
+          labelDisplay: 'auto',
+          labelHalign: 'center',
+          selectedInnerColor: '#FFFFFF',
+          selectedOuterColor: '#000000'
         },
-        'rootNodeContent': {},
-        'rotation': 'on',
-        'expanded': 'all',
-        'startAngle': 90
+        rootNodeContent: {},
+        rotation: 'on',
+        expanded: 'all',
+        startAngle: 90
       };
       super({ alta: SKIN_ALTA }, context);
     }
@@ -6661,14 +6813,17 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     OnMouseDown(event) {
       // Rotation Support
       var obj = this.GetLogicalObject(event.target);
-      if (obj && obj.getId && obj.getId() === DvtSunburstEventManager.ROTATION_ID && !this._bRotating) {
+      if (
+        obj &&
+        obj.getId &&
+        obj.getId() === DvtSunburstEventManager.ROTATION_ID &&
+        !this._bRotating
+      ) {
         this._bRotating = true;
 
         var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
         this.GetView().__startRotation(relPos.x, relPos.y);
-      }
-      else
-        super.OnMouseDown(event);
+      } else super.OnMouseDown(event);
     }
 
     /**
@@ -6678,9 +6833,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (this._bRotating) {
         var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
         this.GetView().__continueRotation(relPos.x, relPos.y);
-      }
-      else
-        super.OnMouseMove(event);
+      } else super.OnMouseMove(event);
     }
 
     /**
@@ -6690,9 +6843,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (this._bRotating) {
         this._bRotating = false;
         this.GetView().__endRotation();
-      }
-      else
-        super.OnMouseUp(event);
+      } else super.OnMouseUp(event);
     }
 
     /**
@@ -6704,31 +6855,35 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var keyCode = event.keyCode;
       var node = this.getFocus(); // the item with current keyboard focus
       var sunburst = this.GetView();
-      var expandCollapseEnabled = node && node.isExpandCollapseEnabled && node.isExpandCollapseEnabled();
+      var expandCollapseEnabled =
+        node && node.isExpandCollapseEnabled && node.isExpandCollapseEnabled();
       // expand/collapse
-      if (expandCollapseEnabled &&
-          ((dvt.KeyboardEvent.isPlus(event) && !node.isDisclosed()) ||
+      if (
+        expandCollapseEnabled &&
+        ((dvt.KeyboardEvent.isPlus(event) && !node.isDisclosed()) ||
           (dvt.KeyboardEvent.isMinus(event) && node.isDisclosed()) ||
-          (event.ctrlKey && keyCode === dvt.KeyboardEvent.ENTER))) {
+          (event.ctrlKey && keyCode === dvt.KeyboardEvent.ENTER))
+      ) {
         sunburst.expandCollapseNode(node.getId());
         dvt.EventManager.consumeEvent(event);
-      } else if (sunburst && sunburst.__isRotationEnabled() &&
-              (keyCode === dvt.KeyboardEvent.LEFT_ARROW || keyCode === dvt.KeyboardEvent.RIGHT_ARROW) &&
-              !event.ctrlKey && event.altKey && event.shiftKey) {
+      } else if (
+        sunburst &&
+        sunburst.__isRotationEnabled() &&
+        (keyCode === dvt.KeyboardEvent.LEFT_ARROW || keyCode === dvt.KeyboardEvent.RIGHT_ARROW) &&
+        !event.ctrlKey &&
+        event.altKey &&
+        event.shiftKey
+      ) {
         // rotation
         var newAngle;
-        if (keyCode === dvt.KeyboardEvent.LEFT_ARROW)
-          newAngle = -5 * (Math.PI / 180);
-        else
-          newAngle = 5 * (Math.PI / 180);
+        if (keyCode === dvt.KeyboardEvent.LEFT_ARROW) newAngle = -5 * (Math.PI / 180);
+        else newAngle = 5 * (Math.PI / 180);
 
         sunburst.__setRotationAnchor(0);
         sunburst.__rotate(newAngle);
         sunburst.__endRotation();
         dvt.EventManager.consumeEvent(event);
-      }
-      else
-      {
+      } else {
         eventConsumed = super.ProcessKeyboardEvent(event);
       }
 
@@ -6738,7 +6893,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     HandleImmediateTouchStartInternal(event) {
       var obj = this.GetLogicalObject(event.target);
       if (obj && obj.getId && obj.getId() === DvtSunburstEventManager.ROTATION_ID) {
-        this.TouchManager.processAssociatedTouchAttempt(event, this.ROTATE_KEY, this.RotateStartTouch, this);
+        this.TouchManager.processAssociatedTouchAttempt(
+          event,
+          this.ROTATE_KEY,
+          this.RotateStartTouch,
+          this
+        );
       }
     }
 
@@ -6753,14 +6913,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     RotateStartTouch(event, touch) {
       var touchIds = this.TouchManager.getTouchIdsForObj(this.ROTATE_KEY);
       if (touchIds.length <= 1) {
-        this.TouchManager.saveProcessedTouch(touch.identifier,
+        this.TouchManager.saveProcessedTouch(
+          touch.identifier,
           this.ROTATE_KEY,
           null,
           this.ROTATE_KEY,
           this.ROTATE_KEY,
           this.RotateMoveTouch,
           this.RotateEndTouch,
-          this);
+          this
+        );
         this.TouchManager.setTooltipEnabled(touch.identifier, false);
         var pos = this._context.pageToStageCoords(touch.pageX, touch.pageY);
         this.GetView().__startRotation(pos.x, pos.y);
@@ -6785,7 +6947,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @class
    */
   const DvtSunburstLayout = {
-
     /**
      * Performs layout for the sunburst.
      * @param {number} totalRadius The total radius of the sunburst.
@@ -6794,8 +6955,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {number} angleExtent The extent of this node in radians.
      * @param {string} sorting "on" if sorting by size is enabled.
      */
-    layout: (totalRadius, root, startAngle, angleExtent, sorting) =>
-    {
+    layout: (totalRadius, root, startAngle, angleExtent, sorting) => {
       // Calculate the longest branch radius and radius per unit of depth
       var longestRadius = DvtSunburstLayout._calcLargestRadius(root);
       var radiusPerDepth = totalRadius / longestRadius;
@@ -6813,8 +6973,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {string} sorting "on" if sorting by size is enabled.
      * @param {number} innerRadius The inner radius of the node to layout.
      */
-    _layout: (radiusPerDepth, node, startAngle, angleExtent, sorting, innerRadius) =>
-    {
+    _layout: (radiusPerDepth, node, startAngle, angleExtent, sorting, innerRadius) => {
       // First layout the node itself
       var outerRadius = innerRadius + node.__getRadius() * radiusPerDepth;
       node.setLayoutParams(innerRadius, outerRadius, startAngle, angleExtent);
@@ -6828,12 +6987,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         if (sorting === 'on') {
           // Copy and sort by decreasing size
           children = children.slice(0);
-          children.sort((a, b) => { return b.getSize() - a.getSize(); });
+          children.sort((a, b) => {
+            return b.getSize() - a.getSize();
+          });
         }
 
         // BIDI Support: For horizontal layout, reverse the order of the nodes
-        if (dvt.Agent.isRightToLeft(node.getView().getCtx()))
-          children = children.slice(0).reverse();
+        if (dvt.Agent.isRightToLeft(node.getView().getCtx())) children = children.slice(0).reverse();
 
         // Find the total of the children
         var i;
@@ -6846,16 +7006,23 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           var child = children[i];
 
           // Ignore negative and zero sized nodes
-          if (child.getSize() > 0){
-          // Calculate the bounds of the child
-          var sizeRatio = child.getSize() / total;
-          var childAngleExtent = sizeRatio * angleExtent;
+          if (child.getSize() > 0) {
+            // Calculate the bounds of the child
+            var sizeRatio = child.getSize() / total;
+            var childAngleExtent = sizeRatio * angleExtent;
 
-          // Recursively layout the child
-          DvtSunburstLayout._layout(radiusPerDepth, child, childStartAngle, childAngleExtent, sorting, outerRadius);
+            // Recursively layout the child
+            DvtSunburstLayout._layout(
+              radiusPerDepth,
+              child,
+              childStartAngle,
+              childAngleExtent,
+              sorting,
+              outerRadius
+            );
 
-          // Update the start angle
-          childStartAngle += childAngleExtent;
+            // Update the start angle
+            childStartAngle += childAngleExtent;
           }
         }
       }
@@ -6878,8 +7045,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           maxRadius = Math.max(maxRadius, childRadius);
         }
         return maxRadius + node.__getRadius();
-      }
-      else {
+      } else {
         // Use 1 for default if not specified
         return node.__getRadius();
       }
@@ -6926,21 +7092,17 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       var options = this.getOptions();
 
-      if ((dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge')) {
+      if (dvt.Agent.browser === 'ie' || dvt.Agent.browser === 'edge') {
         // -- ie doesn't support cursor image positioning
         this._rotateCursor = 'url(' + options['_resources']['rotateCursor'] + '), auto';
-      }
-      else
-        this._rotateCursor = 'url(' + options['_resources']['rotateCursor'] + ') 8 8, auto';
+      } else this._rotateCursor = 'url(' + options['_resources']['rotateCursor'] + ') 8 8, auto';
 
       // Calculate the start angle.  Use a value from -PI to PI
-      this._startAngle = ((360 - options['startAngle']) * DvtSunburstNode.TWO_PI / 360);
-      if (this._startAngle > Math.PI)
-        this._startAngle -= DvtSunburstNode.TWO_PI;
+      this._startAngle = ((360 - options['startAngle']) * DvtSunburstNode.TWO_PI) / 360;
+      if (this._startAngle > Math.PI) this._startAngle -= DvtSunburstNode.TWO_PI;
 
       // animationOnDisplay: auto defaults to fan
-      if (options['animationOnDisplay'] === 'auto')
-        options['animationOnDisplay'] = 'fan';
+      if (options['animationOnDisplay'] === 'auto') options['animationOnDisplay'] = 'fan';
     }
 
     /**
@@ -6948,7 +7110,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     Layout(availSpace) {
       // Update available space
-      var bufferSpace = Math.max(Math.ceil(this._BUFFER_SPACE * Math.min(availSpace.w, availSpace.h) / 400), this._MIN_BUFFER_SPACE);
+      var bufferSpace = Math.max(
+        Math.ceil((this._BUFFER_SPACE * Math.min(availSpace.w, availSpace.h)) / 400),
+        this._MIN_BUFFER_SPACE
+      );
       availSpace.x += bufferSpace;
       availSpace.y += bufferSpace;
       availSpace.w -= 2 * bufferSpace;
@@ -6963,7 +7128,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       // Layout the nodes
       if (this._root)
-        DvtSunburstLayout.layout(this._totalRadius, this._root, this._startAngle, this._angleExtent, this.getOptions()['sorting']);
+        DvtSunburstLayout.layout(
+          this._totalRadius,
+          this._root,
+          this._startAngle,
+          this._angleExtent,
+          this.getOptions()['sorting']
+        );
     }
 
     /**
@@ -6984,14 +7155,24 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       // Rotation Support
       if (this.__isRotationEnabled() && this.HasValidData()) {
-        var buffer = (dvt.Agent.isTouchDevice()) ? this._ROTATION_SHAPE_RADIUS_TOUCH : this._ROTATION_SHAPE_RADIUS;
-        var rotationShape = new dvt.Circle(this.getCtx(), bounds.x + bounds.w / 2, bounds.y + bounds.h / 2, this._totalRadius + buffer);
+        var buffer = dvt.Agent.isTouchDevice()
+          ? this._ROTATION_SHAPE_RADIUS_TOUCH
+          : this._ROTATION_SHAPE_RADIUS;
+        var rotationShape = new dvt.Circle(
+          this.getCtx(),
+          bounds.x + bounds.w / 2,
+          bounds.y + bounds.h / 2,
+          this._totalRadius + buffer
+        );
         rotationShape.setInvisibleFill();
         rotationShape.setCursor(this._rotateCursor);
         container.addChild(rotationShape);
 
         // Associate for event handling
-        this.getEventManager().associate(rotationShape, new DvtTreePeer(null, DvtSunburstEventManager.ROTATION_ID));
+        this.getEventManager().associate(
+          rotationShape,
+          new DvtTreePeer(null, DvtSunburstEventManager.ROTATION_ID)
+        );
       }
 
       // Create a node container, which will contain all nodes.
@@ -7014,19 +7195,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         // Prepare the hover effect
         this._hoverLayer = new dvt.Container(this.getCtx());
         nodeContainer.addChild(this._hoverLayer);
-      }
-      else {
+      } else {
         // Display the empty text message
         this.RenderEmptyText(container);
       }
     }
 
-
     /**
      * @override
      */
-    CreateEventManager(view, context, callback, callbackObj)
-    {
+    CreateEventManager(view, context, callback, callbackObj) {
       return new DvtSunburstEventManager(view, context, callback, callbackObj);
     }
 
@@ -7040,11 +7218,17 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         // Create and return the animation
         var anim = new dvt.CustomAnimation(this.getCtx(), this, this.AnimationDuration);
-        anim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this, this.__getAngleExtent, this._animateAngleExtent, 2 * Math.PI);
+        anim
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_NUMBER,
+            this,
+            this.__getAngleExtent,
+            this._animateAngleExtent,
+            2 * Math.PI
+          );
         return anim;
-      }
-      else
-        return super.GetDisplayAnim(container, bounds);
+      } else return super.GetDisplayAnim(container, bounds);
     }
 
     /**
@@ -7074,13 +7258,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         // Reselect the nodes using the selection handler's state
         var selectedNodes = this._selectionHandler ? this._selectionHandler.getSelection() : [];
-        for (var i = 0; i < selectedNodes.length; i++)
-          selectedNodes[i].setSelected(true);
+        for (var i = 0; i < selectedNodes.length; i++) selectedNodes[i].setSelected(true);
       }
 
       // : Force full angle extent in case the display animation didn't complete
-      if (this._angleExtent < 2 * Math.PI)
-        this._animateAngleExtent(2 * Math.PI);
+      if (this._angleExtent < 2 * Math.PI) this._animateAngleExtent(2 * Math.PI);
 
       // Delegate to the superclass to clear common things
       super.OnAnimationEnd();
@@ -7130,8 +7312,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       var bounds = new dvt.Rectangle(0, 0, this.Width, this.Height);
       this.Layout(bounds);
-      if (this._root)
-        this._root.updateShapes(true);
+      if (this._root) this._root.updateShapes(true);
     }
 
     /**
@@ -7159,7 +7340,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this.addChild(this._rotationMask);
 
       // Associate for event handling
-      this.getEventManager().associate(this._rotationMask, new DvtTreePeer(null, DvtSunburstEventManager.ROTATION_ID));
+      this.getEventManager().associate(
+        this._rotationMask,
+        new DvtTreePeer(null, DvtSunburstEventManager.ROTATION_ID)
+      );
     }
 
     /**
@@ -7182,7 +7366,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._updateStartAngle(change);
 
       // Fire the intermediate rotation event
-      var degrees = 360 - Math.round(this._startAngle * 180 / Math.PI);
+      var degrees = 360 - Math.round((this._startAngle * 180) / Math.PI);
       this.dispatchEvent(dvt.EventFactory.newSunburstRotationEvent(degrees, false));
     }
 
@@ -7198,7 +7382,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._rotationMask = null;
 
       // Fire events to update ADF state, convert to degrees API (reversed from SVG)
-      var degrees = 360 - Math.round(this._startAngle * 180 / Math.PI);
+      var degrees = 360 - Math.round((this._startAngle * 180) / Math.PI);
       this.dispatchEvent(dvt.EventFactory.newSunburstRotationEvent(degrees, false));
       this.dispatchEvent(dvt.EventFactory.newSunburstRotationEvent(degrees, true));
     }
@@ -7208,7 +7392,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     SetOptions(options) {
       super.SetOptions(options);
-      if (this.Options['expanded'] instanceof Array) { // not a KeySet or 'all'
+      if (this.Options['expanded'] instanceof Array) {
+        // not a KeySet or 'all'
         this.Options['_expandedNodes'] = dvt.ArrayUtils.createBooleanMap(this.Options['expanded']);
       }
     }
@@ -7233,19 +7418,30 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       }
 
       if (expanded instanceof Array) {
-        if (bDisclosed)
-          expanded.push(id);
+        if (bDisclosed) expanded.push(id);
         else {
           var index = expanded.indexOf(id);
-          if (index > -1)
-            expanded.splice(index, 1);
+          if (index > -1) expanded.splice(index, 1);
         }
-      }
-      else if (expanded['has']) // key set
+      } else if (expanded['has'])
+        // key set
         expanded = bDisclosed ? expanded['add']([id]) : expanded['delete']([id]);
 
-      var rootAndAncestors = DvtTreeUtils.findRootAndAncestors(this.getCtx(), this.getOptions()['_nodes'], id, [])['root'];
-      this.dispatchEvent(new dvt.EventFactory.newExpandCollapseEvent(bDisclosed ? 'expand' : 'collapse', id, rootAndAncestors, this.getOptions()['_widgetConstructor'], expanded));
+      var rootAndAncestors = DvtTreeUtils.findRootAndAncestors(
+        this.getCtx(),
+        this.getOptions()['_nodes'],
+        id,
+        []
+      )['root'];
+      this.dispatchEvent(
+        new dvt.EventFactory.newExpandCollapseEvent(
+          bDisclosed ? 'expand' : 'collapse',
+          id,
+          rootAndAncestors,
+          this.getOptions()['_widgetConstructor'],
+          expanded
+        )
+      );
       this.__setNavigableIdToFocus(id);
     }
 
@@ -7268,16 +7464,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     _updateStartAngle(change) {
       // Update start angle and constrain to -PI to PI
       this._startAngle += change;
-      if (this._startAngle < -Math.PI)
-        this._startAngle += 2 * Math.PI;
-      else if (this._startAngle > Math.PI)
-        this._startAngle -= 2 * Math.PI;
+      if (this._startAngle < -Math.PI) this._startAngle += 2 * Math.PI;
+      else if (this._startAngle > Math.PI) this._startAngle -= 2 * Math.PI;
 
       // Relayout and update shapes
       var bounds = new dvt.Rectangle(0, 0, this.Width, this.Height);
       this.Layout(bounds);
-      if (this._root)
-        this._root.updateShapes(true);
+      if (this._root) this._root.updateShapes(true);
     }
 
     /**
@@ -7303,8 +7496,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * Returns true if Sunburst rotation is enabled
      * @return {Boolean} true if rotation is enabled, false otherwise
      */
-    __isRotationEnabled()
-    {
+    __isRotationEnabled() {
       return this.getOptions()['rotation'] !== 'off';
     }
 
@@ -7339,40 +7531,42 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       const SKIN_ALTA = {
         // Note, only attributes that are different than the XML defaults need
         // to be listed here, at least until the XML API is replaced.
-        'groupGaps': 'outer',
+        groupGaps: 'outer',
 
-        'nodeDefaults': {
-          'header': {
-            'backgroundColor': '#FFFFFF',
-            'borderColor': '#d6dfe6',
-            'hoverBackgroundColor': '#ebeced',
-            'hoverOuterColor': '#ebeced',
-            'hoverInnerColor': '#d6d7d8',
-            'isolate': 'auto',
-            'labelHalign': 'start',
-            '_labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#252525;'),
-            'selectedBackgroundColor': '#dae9f5',
-            'selectedInnerColor': '#FFFFFF',
-            'selectedOuterColor': '#000000',
-            'useNodeColor': 'off',
+        nodeDefaults: {
+          header: {
+            backgroundColor: '#FFFFFF',
+            borderColor: '#d6dfe6',
+            hoverBackgroundColor: '#ebeced',
+            hoverOuterColor: '#ebeced',
+            hoverInnerColor: '#d6d7d8',
+            isolate: 'auto',
+            labelHalign: 'start',
+            _labelStyle: new dvt.CSSStyle(
+              dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#252525;'
+            ),
+            selectedBackgroundColor: '#dae9f5',
+            selectedInnerColor: '#FFFFFF',
+            selectedOuterColor: '#000000',
+            useNodeColor: 'off',
 
-            '_hoverLabelStyle': new dvt.CSSStyle('color:#252525;'),
-            '_selectedLabelStyle': new dvt.CSSStyle('color:#252525;'),
+            _hoverLabelStyle: new dvt.CSSStyle('color:#252525;'),
+            _selectedLabelStyle: new dvt.CSSStyle('color:#252525;'),
 
-            '_drillableLabelStyle': new dvt.CSSStyle('color:#145c9e;'),
-            '_drillableHoverLabelStyle': new dvt.CSSStyle('color:#145c9e;'),
-            '_drillableSelectedLabelStyle': new dvt.CSSStyle('color:#145c9e;')
+            _drillableLabelStyle: new dvt.CSSStyle('color:#145c9e;'),
+            _drillableHoverLabelStyle: new dvt.CSSStyle('color:#145c9e;'),
+            _drillableSelectedLabelStyle: new dvt.CSSStyle('color:#145c9e;')
           },
-          'hoverColor': '#ebeced',
-          'groupLabelDisplay': 'header',
-          'labelDisplay': 'node',
-          'labelHalign': 'center',
-          'labelValign': 'center',
-          'selectedInnerColor': '#FFFFFF',
-          'selectedOuterColor': '#000000'
+          hoverColor: '#ebeced',
+          groupLabelDisplay: 'header',
+          labelDisplay: 'node',
+          labelHalign: 'center',
+          labelValign: 'center',
+          selectedInnerColor: '#FFFFFF',
+          selectedOuterColor: '#000000'
         },
-        'nodeSeparators': 'gaps',
-        'nodeContent': {}
+        nodeSeparators: 'gaps',
+        nodeContent: {}
       };
       super({ alta: SKIN_ALTA }, context);
     }
@@ -7392,26 +7586,19 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     /**
      * @override
      */
-    ProcessKeyboardEvent(event)
-    {
+    ProcessKeyboardEvent(event) {
       var eventConsumed = true;
       var keyCode = event.keyCode;
 
-      if (keyCode === dvt.KeyboardEvent.ENTER && event.ctrlKey)
-      {
+      if (keyCode === dvt.KeyboardEvent.ENTER && event.ctrlKey) {
         // isolate or restore
         var node = this.getFocus();
-        if (node.isIsolateEnabled())
-        {
-          if (node.__isIsolated())
-            node.__restoreNode();
-          else
-            node.__isolateNode();
+        if (node.isIsolateEnabled()) {
+          if (node.__isIsolated()) node.__restoreNode();
+          else node.__isolateNode();
         }
         dvt.EventManager.consumeEvent(event);
-      }
-      else
-      {
+      } else {
         eventConsumed = super.ProcessKeyboardEvent(event);
       }
 
@@ -7423,25 +7610,21 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   /*  DvtTreemapKeyboardHandler     Keyboard handler for Treemap                     */
   /*---------------------------------------------------------------------------------*/
   /**
-    *  @param {dvt.EventManager} manager The owning dvt.EventManager
-    *  @class DvtTreemapKeyboardHandler
-    *  @extends {DvtTreeKeyboardHandler}
-    *  @constructor
-    */
+   *  @param {dvt.EventManager} manager The owning dvt.EventManager
+   *  @class DvtTreemapKeyboardHandler
+   *  @extends {DvtTreeKeyboardHandler}
+   *  @constructor
+   */
   class DvtTreemapKeyboardHandler extends DvtTreeKeyboardHandler {
-
     /**
      * @override
      */
-    isNavigationEvent(event)
-    {
+    isNavigationEvent(event) {
       var isNavigable = super.isNavigationEvent(event);
 
-      if (!isNavigable)
-      {
+      if (!isNavigable) {
         var keyCode = event.keyCode;
-        if (keyCode === dvt.KeyboardEvent.OPEN_BRACKET ||
-            keyCode === dvt.KeyboardEvent.CLOSE_BRACKET)
+        if (keyCode === dvt.KeyboardEvent.OPEN_BRACKET || keyCode === dvt.KeyboardEvent.CLOSE_BRACKET)
           isNavigable = true;
       }
 
@@ -7472,8 +7655,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {number} height The height of this node.
      * @param {boolean} bShowRoot True if the root node should be displayed.
      */
-    layout(view, root, x, y, width, height, bShowRoot)
-    {
+    layout(view, root, x, y, width, height, bShowRoot) {
       // subclasses should override
     }
 
@@ -7487,8 +7669,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {boolean} isRoot true if this node is the root of the tree.
      * @return {dvt.Rectangle} The rectangle indicating the area to allocate to the children of this node.
      */
-    setNodeBounds(node, x, y, width, height, isRoot)
-    {
+    setNodeBounds(node, x, y, width, height, isRoot) {
       // Set the relative zIndex of the node and increment
       node.setZIndex(this._zIndex);
       this._zIndex++;
@@ -7506,8 +7687,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         // Set the rectangle on the node and get the bounds available to its children
         var availBounds = node.setLayoutParams(xx, yy, ww, hh);
-        if (availBounds)
-          return availBounds;
+        if (availBounds) return availBounds;
       }
 
       // If no explicit bounds returned, use the entire space
@@ -7523,13 +7703,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     getGapSize(view, depth) {
       var groupGaps = view.getOptions()['groupGaps'];
       if (groupGaps === 'outer')
-        return (depth === 1 && view.__getMaxDepth() >= 2) ? this._GROUP_GAP : 0;
-      else if (groupGaps === 'all')
-        return (depth < view.__getMaxDepth()) ? this._GROUP_GAP : 0;
-      else // none
-        return 0;
+        return depth === 1 && view.__getMaxDepth() >= 2 ? this._GROUP_GAP : 0;
+      else if (groupGaps === 'all') return depth < view.__getMaxDepth() ? this._GROUP_GAP : 0;
+      // none
+      else return 0;
     }
-  };
+  }
 
   /**
    * Layout class for treemaps.  This layout allocates space across a single dimension for each layer,
@@ -7566,8 +7745,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {boolean} isRoot true if this node is the root of the tree.
      * @private
      */
-    _layout(isHoriz, view, node, x, y, width, height, isRoot)
-    {
+    _layout(isHoriz, view, node, x, y, width, height, isRoot) {
       var options = view.getOptions();
 
       // Set the bounds on the current node and get the space available for its children
@@ -7593,33 +7771,30 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         if (options['sorting'] === 'on') {
           // Copy and sort by decreasing size
           children = children.slice(0);
-          children.sort((a, b) => { return b.getSize() - a.getSize(); });
+          children.sort((a, b) => {
+            return b.getSize() - a.getSize();
+          });
         }
 
         // BIDI Support: For horizontal layout, reverse the order of the nodes
-        if (isHoriz && dvt.Agent.isRightToLeft(view.getCtx()))
-          children = children.slice(0).reverse();
+        if (isHoriz && dvt.Agent.isRightToLeft(view.getCtx())) children = children.slice(0).reverse();
 
         for (i = 0; i < children.length; i++) {
           var child = children[i];
 
           // Ignore negative and zero sized nodes
-          if (child.getSize() > 0){
-          // Calculate the bounds of the child
-          var sizeRatio = child.getSize() / total;
-          if (isHoriz)
-            childWidth = availBounds.w * sizeRatio;
-          else
-            childHeight = availBounds.h * sizeRatio;
+          if (child.getSize() > 0) {
+            // Calculate the bounds of the child
+            var sizeRatio = child.getSize() / total;
+            if (isHoriz) childWidth = availBounds.w * sizeRatio;
+            else childHeight = availBounds.h * sizeRatio;
 
-          // Recursively layout the child
-          this._layout(!isHoriz, view, child, childX, childY, childWidth, childHeight, false);
+            // Recursively layout the child
+            this._layout(!isHoriz, view, child, childX, childY, childWidth, childHeight, false);
 
-          // Update the x and y
-          if (isHoriz)
-            childX += childWidth;
-          else
-            childY += childHeight;
+            // Update the x and y
+            if (isHoriz) childX += childWidth;
+            else childY += childHeight;
           }
         }
       }
@@ -7643,7 +7818,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._layout(root, x, y, width, height, isRoot);
     }
 
-
     /**
      * Performs layout for the specified node in the tree.
      * @param {DvtTreemapNode} node the root of the tree
@@ -7653,8 +7827,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {number} height The height of this node.
      * @param {boolean} isRoot true if this node is the root of the tree.
      */
-    _layout(node, x, y, width, height, isRoot)
-    {
+    _layout(node, x, y, width, height, isRoot) {
       // Set the bounds on the current node and get the space available for its children
       var availBounds = this.setNodeBounds(node, x, y, width, height, isRoot);
 
@@ -7666,7 +7839,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         // Make a copy of the children array and sort ascending by size.
         // The ascending sort is used because squarify will move from back to front
-        children = children.slice(0).sort((a,b) => {return a.getSize() - b.getSize()});
+        children = children.slice(0).sort((a, b) => {
+          return a.getSize() - b.getSize();
+        });
 
         var w = Math.min(availBounds.w, availBounds.h);
         var r = new dvt.Rectangle(availBounds.x, availBounds.y, availBounds.w, availBounds.h);
@@ -7687,7 +7862,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         total += children[i].getSize() > 0 ? children[i].getSize() : 0; // ignore negatives, which skew child size calc
 
       // Then set the size
-      var factor = (area === 0) ? 0 : area / total;
+      var factor = area === 0 ? 0 : area / total;
       for (var j = 0; j < children.length; j++) {
         var child = children[j];
         child.__pxSize = child.getSize() * factor;
@@ -7735,14 +7910,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           r = this._layoutRow(row, w, r);
           this._squarify(children, [], Math.min(r.w, r.h), r, Infinity);
           return;
-        }
-        else if (children.length === 0) {
+        } else if (children.length === 0) {
           // No more children to allocate.  Assign layout and finish
           this._layoutRow(row, w, r);
           return;
-        }
-        else // update the worst field
-          worst = newWorst;
+        } // update the worst field
+        else worst = newWorst;
       }
     }
 
@@ -7777,13 +7950,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {dvt.Rectangle} A rectangle containing the unallocated space.
      * @private
      */
-    _layoutRow(row, w, r)
-    {
+    _layoutRow(row, w, r) {
       // Calculate the sum of the row areas
       var total = 0;
       var i;
-      for (i = 0; i < row.length; i++)
-        total += row[i].__pxSize;
+      for (i = 0; i < row.length; i++) total += row[i].__pxSize;
 
       // Assign positions to the row nodes
       var x = r.x;
@@ -7791,21 +7962,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var width, height;
       if (w === r.w) {
         // Horizontal Layout
-        height = (w === 0) ? 0 : total / w;
+        height = w === 0 ? 0 : total / w;
         for (i = 0; i < row.length; i++) {
-          width = row[i].__pxSize / height;  // equivalent to w*size/total
+          width = row[i].__pxSize / height; // equivalent to w*size/total
           this._layout(row[i], x, y, width, height, false); // Set and recurse
           x += width;
         }
 
         // Return the remaining space
         return new dvt.Rectangle(r.x, r.y + height, r.w, r.h - height);
-      }
-      else {
+      } else {
         // Vertical Layout
-        width = (w === 0) ? 0 : total / w;
+        width = w === 0 ? 0 : total / w;
         for (i = 0; i < row.length; i++) {
-          height = row[i].__pxSize / width;  // equivalent to w*size/total
+          height = row[i].__pxSize / width; // equivalent to w*size/total
           this._layout(row[i], x, y, width, height, false); // Set and recurse
           y += height;
         }
@@ -7834,7 +8004,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._nodeContent = {};
 
       // Make sure the object has an id for accessibility 
-      this.setId('treemap' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOK
+      this.setId('treemap' + 1000 + Math.floor(Math.random() * 1000000000)); //@RandomNumberOK
 
       /** @const @private **/
       this._MIN_BUFFER_SPACE = 1; // Minimum buffer for very small treemaps
@@ -7851,26 +8021,26 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         this._layout = new DvtTreemapLayoutSliceAndDice(true);
       else if (options['layout'] === 'sliceAndDiceVertical')
         this._layout = new DvtTreemapLayoutSliceAndDice(false);
-      else
-        this._layout = new DvtTreemapLayoutSquarifying();
+      else this._layout = new DvtTreemapLayoutSquarifying();
 
       // Isolate Support
       this._isolatedNodes = [];
       this._processInitialIsolate(options['isolatedNode']);
 
       // animationOnDisplay: auto defaults to fan
-      if (options['animationOnDisplay'] === 'auto')
-        options['animationOnDisplay'] = 'alphaFade';
+      if (options['animationOnDisplay'] === 'auto') options['animationOnDisplay'] = 'alphaFade';
     }
 
     /**
      * @override
      */
     Layout(availSpace) {
-
       // Allocate buffer space for the container. The minimum buffer is used for JET, where no default border is shown.
       var bufferSpace = this._MIN_BUFFER_SPACE;
-      bufferSpace = Math.max(Math.ceil(bufferSpace * Math.min(availSpace.w, availSpace.h) / 400), this._MIN_BUFFER_SPACE);
+      bufferSpace = Math.max(
+        Math.ceil((bufferSpace * Math.min(availSpace.w, availSpace.h)) / 400),
+        this._MIN_BUFFER_SPACE
+      );
       availSpace.x += bufferSpace;
       availSpace.y += bufferSpace;
       availSpace.w -= 2 * bufferSpace;
@@ -7893,16 +8063,39 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (numIsolated > 0 && this._isolateRestoreLayout) {
         // Isolate or Restore Action: Don't layout unchanged, since it would affect animation
         var lastIsolated = this._isolatedNodes[numIsolated - 1];
-        this._layout.layout(this, lastIsolated, availSpace.x, availSpace.y, availSpace.w, availSpace.h, true);
-      }
-      else {
+        this._layout.layout(
+          this,
+          lastIsolated,
+          availSpace.x,
+          availSpace.y,
+          availSpace.w,
+          availSpace.h,
+          true
+        );
+      } else {
         // Standard Layout: Layer the isolated nodes so that they can be peeled back like a stack.
         if (this._root)
-          this._layout.layout(this, this._root, availSpace.x, availSpace.y, availSpace.w, availSpace.h, false);
+          this._layout.layout(
+            this,
+            this._root,
+            availSpace.x,
+            availSpace.y,
+            availSpace.w,
+            availSpace.h,
+            false
+          );
 
         for (var i = 0; i < numIsolated; i++) {
           var layoutRoot = this._isolatedNodes[i];
-          this._layout.layout(this, layoutRoot, availSpace.x, availSpace.y, availSpace.w, availSpace.h, true);
+          this._layout.layout(
+            this,
+            layoutRoot,
+            availSpace.x,
+            availSpace.y,
+            availSpace.w,
+            availSpace.h,
+            true
+          );
         }
       }
     }
@@ -7928,10 +8121,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         // Render the nodes.  The root node is not rendered unless it's a singleton
         // This creates the shape objects, but does not render them yet.
-        if (this._isolatedNode)
-          this._isolatedNode.render(container);
-        else if (!this._root.hasChildren())
-          this._root.render(container);
+        if (this._isolatedNode) this._isolatedNode.render(container);
+        else if (!this._root.hasChildren()) this._root.render(container);
         else {
           this._root.renderChildren(container);
           this.UpdateAriaNavigation(this._root);
@@ -7961,8 +8152,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           var displayable = this._isolatedNodes[i].getDisplayable();
           this._isolatedLayer.addChild(displayable);
         }
-      }
-      else {
+      } else {
         // Display the empty text message
         this.RenderEmptyText(container);
       }
@@ -8003,41 +8193,34 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           var lastIsolated = this._isolatedNodes[this._isolatedNodes.length - 1];
           if (selectedNodes[i] === lastIsolated || selectedNodes[i].isDescendantOf(lastIsolated))
             selectedNodes[i].setSelected(true);
-        }
-        else
-          selectedNodes[i].setSelected(true);
+        } else selectedNodes[i].setSelected(true);
       }
     }
 
     /**
      * @override
      */
-    CreateKeyboardHandler(manager)
-    {
+    CreateKeyboardHandler(manager) {
       return new DvtTreemapKeyboardHandler(manager);
     }
 
     /**
      * @override
      */
-    CreateEventManager(view, context, callback, callbackObj)
-    {
+    CreateEventManager(view, context, callback, callbackObj) {
       return new DvtTreemapEventManager(view, context, callback, callbackObj);
     }
 
     /**
      * @override
      */
-    GetInitialFocusedItem(root)
-    {
+    GetInitialFocusedItem(root) {
       var isolatedRootNode = this.__getLastIsolatedNode();
 
       if (isolatedRootNode)
         return this.__getDefaultNavigable(DvtTreeUtils.getLeafNodes(isolatedRootNode));
-      else if (root)
-        return this.__getDefaultNavigable(DvtTreeUtils.getLeafNodes(root));
-      else
-        return null;
+      else if (root) return this.__getDefaultNavigable(DvtTreeUtils.getLeafNodes(root));
+      else return null;
     }
 
     /**
@@ -8080,15 +8263,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var numChildren = this._selectedLayer.getNumChildren();
       for (var i = 0; i < numChildren; i++) {
         var child = this._selectedLayer.getChildAt(i);
-        if (rect.zIndex > child.zIndex)
-          newIndex = i + 1;
+        if (rect.zIndex > child.zIndex) newIndex = i + 1;
       }
 
       // Add the object
-      if (newIndex < numChildren)
-        this._selectedLayer.addChildAt(rect, newIndex);
-      else
-        this._selectedLayer.addChild(rect);
+      if (newIndex < numChildren) this._selectedLayer.addChildAt(rect, newIndex);
+      else this._selectedLayer.addChild(rect);
     }
 
     /**
@@ -8099,9 +8279,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (this._isolatedNodes.length > 0) {
         var lastIsolated = this._isolatedNodes[this._isolatedNodes.length - 1];
         return lastIsolated.getNodeUnderPoint(x, y);
-      }
-      else
-        return this._root.getNodeUnderPoint(x, y);
+      } else return this._root.getNodeUnderPoint(x, y);
     }
 
     /**
@@ -8110,8 +8288,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     __isolate(node) {
       var currentNavigable = this.getEventManager().getFocus();
-      if (currentNavigable)
-        currentNavigable.hideKeyboardFocusEffect();
+      if (currentNavigable) currentNavigable.hideKeyboardFocusEffect();
 
       // Keep track of the isolated node
       this._isolatedNodes.push(node);
@@ -8140,11 +8317,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._restoreNode = this._isolatedNodes.pop(); // store the node for automation purposes
 
       // Update the options state
-      this.getOptions()['isolatedNode'] = (this._isolatedNodes.length > 0) ? this._isolatedNodes[this._isolatedNodes.length - 1].getId() : null;
+      this.getOptions()['isolatedNode'] =
+        this._isolatedNodes.length > 0
+          ? this._isolatedNodes[this._isolatedNodes.length - 1].getId()
+          : null;
 
       var currentNavigable = this.getEventManager().getFocus();
-      if (currentNavigable)
-        currentNavigable.hideKeyboardFocusEffect();
+      if (currentNavigable) currentNavigable.hideKeyboardFocusEffect();
 
       // after we restore the full tree, set keyboard focus on the node that was previously isolated
       this.__setNavigableIdToFocus(this._restoreNode.getId());
@@ -8167,12 +8346,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      *
      * @return {DvtTreemapNode}
      */
-    __getLastIsolatedNode()
-    {
+    __getLastIsolatedNode() {
       if (this._isolatedNodes && this._isolatedNodes.length > 0)
         return this._isolatedNodes[this._isolatedNodes.length - 1];
-      else
-        return null;
+      else return null;
     }
 
     /**
@@ -8200,8 +8377,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         // Start the animation
         this.Animation.play();
-      }
-      else {
+      } else {
         // : the true prevents the options object from being evaluated, so that the isolated node will not
         // be cleared.  This is necessary until we remove the xml layer, after which we can remove the true param.
         this.render(null, this.Width, this.Height, true);
@@ -8233,15 +8409,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {Array} navigableItems An array of DvtNavigableItems that could receive keyboard focus
      * @return {DvtKeyboardNavigable}
      */
-    __getDefaultNavigable(navigableItems)
-    {
+    __getDefaultNavigable(navigableItems) {
       var keyboardHandler = this.getEventManager().getKeyboardHandler();
-      if (keyboardHandler)
-        return keyboardHandler.getDefaultNavigable(navigableItems);
-      else if (navigableItems && navigableItems.length > 0)
-        return navigableItems[0];
-      else
-        return null;
+      if (keyboardHandler) return keyboardHandler.getDefaultNavigable(navigableItems);
+      else if (navigableItems && navigableItems.length > 0) return navigableItems[0];
+      else return null;
     }
 
     /**

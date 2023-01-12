@@ -10,13 +10,14 @@ let classDoclet;
 function generateDoclets(metaUtilObj) {
     result = [];
     classDoclet = getClassDoclet(metaUtilObj);
-    result.push(classDoclet);
     return [
-        ...result,
+        classDoclet,
         ...getPropertyDoclets(metaUtilObj.fullMetadata.properties, classDoclet, metaUtilObj),
         ...getMethodDoclets(metaUtilObj, classDoclet),
         ...getEventDoclets(metaUtilObj, classDoclet),
-        ...getSlotDoclets(metaUtilObj, classDoclet)
+        ...getSlotDoclets(metaUtilObj, classDoclet),
+        ...getGestureFragments(classDoclet),
+        ...result
     ];
 }
 exports.generateDoclets = generateDoclets;
@@ -39,10 +40,13 @@ function getClassDoclet(metaUtilObj) {
     if (metaUtilObj.fullMetadata['jsdoc']) {
         vcompdoclet['classdesc'] =
             metaUtilObj.fullMetadata['jsdoc'].description || metaUtilObj.fullMetadata.description || '';
-        result = [...result, ...getGestureFragments(vcompdoclet['description'], vcompdoclet)];
+        if (metaUtilObj.fullMetadata['jsdoc']['ignore']) {
+            vcompdoclet['ojhidden'] = true;
+        }
     }
     vcompdoclet['scope'] = 'static';
-    const typeParameters = metaUtilObj.fullMetadata['classTypeParamsDeclaration'] || '';
+    const typeParamsDeclaration = metaUtilObj.fullMetadata['classTypeParamsDeclaration'] || '';
+    const typeParamsRef = metaUtilObj.fullMetadata['classTypeParams'] || '';
     vcompdoclet['tagWithoutBrackets'] = custElemName;
     vcompdoclet['tagWithBrackets'] = `<${custElemName}>`;
     vcompdoclet['domInterface'] = metaUtilObj.fullMetadata.implements[0];
@@ -54,16 +58,16 @@ function getClassDoclet(metaUtilObj) {
     vcompdoclet['ojtsvcomponent'] = true;
     let signExpr = {
         target: 'Type',
-        value: `interface ${vcompdoclet['domInterface']}${typeParameters} extends JetElement<${vcompName}ElementSettableProperties${typeParameters}>`
+        value: `interface ${vcompdoclet['domInterface']}${typeParamsDeclaration} extends JetElement<${vcompName}ElementSettableProperties${typeParamsRef}>`
     };
-    if (typeParameters) {
+    if (typeParamsDeclaration) {
         signExpr['genericParameters'] = metaUtilObj.fullMetadata['jsdoc']['typeparams'];
     }
     vcompdoclet['tstype'] = signExpr;
     vcompdoclet['ojsignature'] = [signExpr];
     vcompdoclet['since'] = metaUtilObj.fullMetadata['since'];
     if (metaUtilObj.fullMetadata.status) {
-        vcompdoclet['tsdeprecated'] = metaUtilObj.fullMetadata.status.filter((stat) => stat.type === 'deprecated');
+        vcompdoclet['tsdeprecated'] = [...metaUtilObj.fullMetadata.status];
     }
     if (metaUtilObj.fullMetadata.extension && metaUtilObj.fullMetadata.extension['themes']) {
         vcompdoclet['ojunsupportedthemes'] =
@@ -73,6 +77,9 @@ function getClassDoclet(metaUtilObj) {
     const dirName = vcompdoclet['meta']['path'];
     const arrDirs = path_1.default.resolve(dirName).split(path_1.default.sep);
     vcompdoclet['ojmodule'] = arrDirs[arrDirs.length - 1];
+    if (!pack && arrDirs[arrDirs.length - 1] === metaUtilObj.fullMetadata.version) {
+        vcompdoclet['ojmodule'] = arrDirs[arrDirs.length - 2];
+    }
     return vcompdoclet;
 }
 function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased = false) {
@@ -103,6 +110,9 @@ function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased 
         doclet['description'] = prop.description || '';
         if (prop['jsdoc']) {
             doclet['description'] = prop['jsdoc']['description'] || doclet['description'];
+            if (prop['jsdoc']['ignore']) {
+                doclet['ojhidden'] = true;
+            }
         }
         doclet['meta'] = metaUtilObj.fullMetadata['jsdoc']['meta'];
         if (prop.status) {
@@ -119,7 +129,7 @@ function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased 
                 });
             }
         }
-        if (prop.value) {
+        if (prop.value !== undefined) {
             let defaultValue = prop.value;
             if (typeof defaultValue === 'string') {
                 const match = defaultValue.match(/(.+)([\s]as[\s])(.+)/);
@@ -128,17 +138,30 @@ function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased 
                 }
             }
             else if (Array.isArray(defaultValue)) {
-                defaultValue = `[${defaultValue}]`;
+                if (prop['type'] === 'Array<string>') {
+                    defaultValue = `[${defaultValue.map((x) => `"${x}"`).join(', ')}]`;
+                }
+                else {
+                    defaultValue = `[${defaultValue.join(', ')}]`;
+                }
             }
-            doclet['defaultvalue'] = defaultValue;
+            doclet['defaultvalue'] = prop['type'] === 'string' ? `"${defaultValue}"` : defaultValue;
         }
         doclet['type'] = { names: [prop['type']] };
         if (prop['reftype']) {
             if (!prop.properties) {
                 doclet['tstype'] = [{ target: 'Type', value: prop['reftype'], jsdocOverride: true }];
+                if (prop['type'] === 'function' && prop['jsdoc'] && prop['jsdoc']['params']) {
+                    let parameters = prop['jsdoc']['params'];
+                    parameters.forEach((param) => {
+                        if (isPotentialTypeDef(param)) {
+                            createTypedef(param, metaUtilObj);
+                        }
+                    });
+                }
             }
             else {
-                doclet['type'] = { names: ['Object.<string, any>'] };
+                doclet['type'] = { names: ['Object'] };
             }
         }
         if (isPotentialTypeDef(prop)) {
@@ -149,7 +172,8 @@ function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased 
             typeIsTypedef = true;
         }
         if (prop.enumValues) {
-            doclet['type'] = { names: prop.enumValues };
+            doclet['type'] = { names: prop.enumValues.map((x) => `"${x}"`) };
+            delete doclet['tstype'];
         }
         doclets.push(doclet);
         if (typeIsTypedef) {
@@ -178,6 +202,7 @@ function getMethodDoclets(metaUtilObj, parentDoclet) {
         const method = methods[key];
         const name = key;
         const longName = `${parentDoclet.longname}#${name}`;
+        let rtnDescription;
         doclet['id'] = longName;
         doclet['name'] = name;
         doclet['kind'] = 'function';
@@ -185,6 +210,10 @@ function getMethodDoclets(metaUtilObj, parentDoclet) {
         doclet['description'] = method.description || '';
         if (method['jsdoc']) {
             doclet['description'] = method['jsdoc']['description'] || doclet['description'];
+            rtnDescription = method['jsdoc']['returns'];
+            if (method['jsdoc']['ignore']) {
+                doclet['ojhidden'] = true;
+            }
         }
         doclet['meta'] = metaUtilObj.fullMetadata['jsdoc']['meta'];
         doclet['scope'] = 'instance';
@@ -193,6 +222,9 @@ function getMethodDoclets(metaUtilObj, parentDoclet) {
             doclet['tsdeprecated'] = method.status.filter((stat) => stat.type === 'deprecated');
         }
         doclet['returns'] = [{ type: { names: [method.return] } }];
+        if (rtnDescription) {
+            doclet['returns'][0]['description'] = rtnDescription;
+        }
         doclets = doclets.concat(doclet);
     }
     return doclets;
@@ -217,6 +249,9 @@ function getSlotDoclets(metaUtilObj, parentDoclet) {
         doclet['description'] = slot.description || '';
         if (slot['jsdoc']) {
             doclet['description'] = slot['jsdoc']['description'] || doclet['description'];
+            if (slot['jsdoc']['ignore']) {
+                doclet['ojhidden'] = true;
+            }
         }
         doclet['meta'] = metaUtilObj.fullMetadata['jsdoc']['meta'];
         doclet['scope'] = 'instance';
@@ -249,6 +284,9 @@ function getEventDoclets(metaUtilObj, parentDoclet) {
         doclet['description'] = event.description || '';
         if (event['jsdoc']) {
             doclet['description'] = event['jsdoc']['description'] || doclet['description'];
+            if (event['jsdoc']['ignore']) {
+                doclet['ojhidden'] = true;
+            }
         }
         doclet['meta'] = metaUtilObj.fullMetadata['jsdoc']['meta'];
         doclet['scope'] = 'instance';
@@ -272,6 +310,9 @@ function processComplexProperties(properties, metaUtilObj) {
         mappedProp['description'] = prop['description'];
         if (prop['jsdoc']) {
             mappedProp['description'] = prop['jsdoc']['description'] || mappedProp['description'];
+            if (prop['jsdoc']['ignore']) {
+                mappedProp['ojhidden'] = true;
+            }
         }
         mappedProp['optional'] = prop['optional'];
         mappedProp['type'] = { names: [prop['type']] };
@@ -282,7 +323,7 @@ function processComplexProperties(properties, metaUtilObj) {
                 ];
             }
             else {
-                mappedProp['type'] = { names: ['Object.<string, any>'] };
+                mappedProp['type'] = { names: ['Object'] };
             }
         }
         if (isPotentialTypeDef(prop)) {
@@ -304,9 +345,14 @@ function processComplexProperties(properties, metaUtilObj) {
                 }
             }
             else if (Array.isArray(defaultValue)) {
-                defaultValue = `[${defaultValue}]`;
+                if (prop['type'] === 'Array<string>') {
+                    defaultValue = `[${defaultValue.map((x) => `"${x}"`).join(', ')}]`;
+                }
+                else {
+                    defaultValue = `[${defaultValue.join(', ')}]`;
+                }
             }
-            mappedProp['defaultvalue'] = defaultValue;
+            mappedProp['defaultvalue'] = prop['type'] === 'string' ? `"${defaultValue}"` : defaultValue;
         }
         if (prop.status) {
             mappedProp['tsdeprecated'] = prop.status.filter((stat) => stat.type === 'deprecated');
@@ -342,7 +388,8 @@ function processComplexProperties(properties, metaUtilObj) {
 function createTypedef(prop, metaUtilObj) {
     let doclet = {};
     doclet['memberof'] = classDoclet.longname;
-    const typeDefName = prop['jsdoc']['typedef'];
+    const typeDefMD = prop['jsdoc']['typedef'];
+    const typeDefName = typeDefMD['name'];
     const typeDefLongName = `${doclet['memberof']}.${typeDefName}`;
     doclet['id'] = typeDefLongName;
     const existingDoclet = getExistingDefinition(typeDefLongName);
@@ -353,7 +400,19 @@ function createTypedef(prop, metaUtilObj) {
     doclet['kind'] = 'typedef';
     doclet['longname'] = typeDefLongName;
     doclet['scope'] = 'static';
-    doclet['type'] = { names: ['Object.<string, any>'] };
+    doclet['description'] = typeDefMD['description'] || '';
+    if (typeDefMD['ignore']) {
+        doclet['ojhidden'] = true;
+    }
+    let genericTypeParams = typeDefMD['genericsDeclaration'];
+    if (genericTypeParams) {
+        doclet['tsgenerictype'] = {
+            target: 'Type',
+            value: genericTypeParams,
+            for: 'genericTypeParameters'
+        };
+    }
+    doclet['type'] = { names: ['Object'] };
     doclet['meta'] = metaUtilObj.fullMetadata['jsdoc']['meta'];
     if (prop.properties || isArrayOfObjects(prop)) {
         const subprops = prop.properties ? prop.properties : prop.extension['vbdt'].itemProperties;
@@ -374,8 +433,9 @@ function isPotentialTypeDef(prop) {
 function getExistingDefinition(id) {
     return result.find((doclet) => doclet['id'] === id);
 }
-function getGestureFragments(description, parentDoclet) {
+function getGestureFragments(parentDoclet) {
     let fragments = [];
+    const description = parentDoclet['classdesc'];
     const createDoclet = function (markertext, isKeyboardDoc) {
         let doclet;
         let begin = description.indexOf(markertext);

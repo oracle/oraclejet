@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -95,7 +95,7 @@ KnockoutUtils.map = function (m, callback, array) {
           }
           if (m.comparator) {
             koObject[KnockoutUtils.underUpdateProp] = true;
-                    // These could have been resorted--need to alter the observable array
+            // These could have been resorted--need to alter the observable array
             koObject.sort(function (a, b) {
               return KnockoutUtils._callSort(a, b, m.comparator, m, this);
             });
@@ -108,8 +108,11 @@ KnockoutUtils.map = function (m, callback, array) {
     };
     if (array && koObject.subscribe) {
       koObject[KnockoutUtils.updatingCollectionFunc] = updateCollection;
-      koObject[KnockoutUtils.subscriptionProp] =
-        koObject.subscribe(updateCollection, null, 'arrayChange');
+      koObject[KnockoutUtils.subscriptionProp] = koObject.subscribe(
+        updateCollection,
+        null,
+        'arrayChange'
+      );
     }
 
     var updateObservableArrayRemove = function (model, collection, options) {
@@ -140,9 +143,11 @@ KnockoutUtils.map = function (m, callback, array) {
               // First, make sure there's enough room, that index actually exists in koObject...
               var currLen = Array.isArray(koObject) ? koObject.length : koObject().length;
               for (var ii = currLen; ii < _index; ii++) {
-                koObject.splice(ii, 0,
-                                KnockoutUtils.map(collection._atInternal(ii, null, true, false),
-                                                     callback));
+                koObject.splice(
+                  ii,
+                  0,
+                  KnockoutUtils.map(collection._atInternal(ii, null, true, false), callback)
+                );
               }
               // If we're just filling in on a virtual collection, for example, then just set don't add
               koObject.splice(_index, 1, newObservable);
@@ -169,8 +174,11 @@ KnockoutUtils.map = function (m, callback, array) {
             }
             koObject.removeAll();
             if (koObject[KnockoutUtils.updatingCollectionFunc]) {
-              koObject.subscribe(koObject[KnockoutUtils.updatingCollectionFunc],
-                                 null, 'arrayChange');
+              koObject.subscribe(
+                koObject[KnockoutUtils.updatingCollectionFunc],
+                null,
+                'arrayChange'
+              );
             }
           } else {
             koObject = [];
@@ -200,14 +208,28 @@ KnockoutUtils.map = function (m, callback, array) {
     };
 
     // Register these, ignoring the silent flags from normal API calls--knockout always needs to be updated
-    m.OnInternal(Events.EventType.ADD, updateObservableArrayAdd,
-                 undefined, undefined, true);
-    m.OnInternal(Events.EventType.REMOVE, updateObservableArrayRemove,
-                 undefined, undefined, true);
-    m.OnInternal(Events.EventType.RESET, updateObservableArrayReset,
-                 undefined, undefined, true);
-    m.OnInternal(Events.EventType.SORT, updateObservableArraySort,
-                 undefined, undefined, true);
+    m.OnInternal(Events.EventType.ADD, updateObservableArrayAdd, undefined, undefined, true);
+    m.OnInternal(
+      Events.EventType.REMOVE,
+      updateObservableArrayRemove,
+      undefined,
+      undefined,
+      true
+    );
+    m.OnInternal(
+      Events.EventType.RESET,
+      updateObservableArrayReset,
+      undefined,
+      undefined,
+      true
+    );
+    m.OnInternal(
+      Events.EventType.SORT,
+      updateObservableArraySort,
+      undefined,
+      undefined,
+      true
+    );
   } else {
     if (m === undefined) {
       return undefined;
@@ -276,17 +298,22 @@ KnockoutUtils._getModel = function (val) {
 };
 
 KnockoutUtils._callSort = function (a, b, comparator, collection, caller) {
-  return Collection.SortFunc(KnockoutUtils._getModel(a),
-                                KnockoutUtils._getModel(b),
-                                comparator, collection, caller);
+  return Collection.SortFunc(
+    KnockoutUtils._getModel(a),
+    KnockoutUtils._getModel(b),
+    comparator,
+    collection,
+    caller
+  );
 };
-
 
 // Attempt to hide original object from enumeration of properties
 KnockoutUtils._storeOriginalObject = function (object, value) {
   // Store any callback along with model for use in event-driven mapping of new additions
-  Object.defineProperty(object, KnockoutUtils.internalObjectProperty,
-                        { value: value, enumerable: false });
+  Object.defineProperty(object, KnockoutUtils.internalObjectProperty, {
+    value: value,
+    enumerable: false
+  });
 };
 
 const map = KnockoutUtils.map;

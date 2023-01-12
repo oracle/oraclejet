@@ -1,12 +1,12 @@
 {
   "name": "@oracle/oraclejet-icu-l10n",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "JET ICU Message Format Parser",
   "main": "l10nBundleBuilder.js",
   "scripts": {
     "clean": "rimraf test/built test_results",
-    "test": "jest",
-    "test:debug": "yarn run --inspect-brk jest -i"
+    "test": "jest -c test/jest.config.js",
+    "test:debug": "yarn run --inspect jest -i"
   },
   "author": "",
   "license": "ISC",
@@ -15,28 +15,14 @@
     "fs-extra": "^10.1.0",
     "glob": "7.1.1",
     "make-plural-compiler": "^5.1.0",
-    "typescript": "4.6.4"
+    "typescript": "4.8.4"
   },
   "devDependencies": {
-    "jest": "~27.5.1",
-    "jest-junit": "~13.2.0",
-    "rimraf": "^3.0.2"
+    "@oracle/oraclejet-test-utils": "workspace:^",
+    "jest": "27.5.1",
+    "rimraf": "3.0.2"
   },
   "bin": {
     "l10nBundleBuilder": "./l10nBundleBuilder.js"
-  },
-  "jest": {
-    "testMatch": [
-      "**/test/*.js"
-    ],
-    "reporters": [
-      "default",
-      [
-        "jest-junit",
-        {
-          "outputName": "./test_results/jest-junit.xml"
-        }
-      ]
-    ]
   }
 }

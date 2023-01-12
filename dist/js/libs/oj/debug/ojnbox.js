@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -512,7 +512,7 @@ var __oj_n_box_metadata =
         'style-defaults.node-defaults.indicator-icon-defaults.shape': true
       })
     });
-  }());
+  })();
 var __oj_n_box_node_metadata = 
 {
   "properties": {
@@ -708,7 +708,7 @@ var __oj_n_box_node_metadata =
         'indicator-icon.shape': true
       })
     });
-  }());
+  })();
 
   /**
    * @ojcomponent oj.ojNBox
@@ -735,6 +735,7 @@ var __oj_n_box_node_metadata =
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 12
    *
+   * @ojoracleicon 'oj-ux-ico-chart-nbox'
    * @ojuxspecs ['data-visualization-nbox']
    *
    * @classdesc
@@ -812,1675 +813,1684 @@ var __oj_n_box_node_metadata =
   const OJ_NBOX_TOOLTIP = 'oj-nbox-tooltip';
   const BORDER_COLOR = 'border-color';
 
-  oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
-    {
-      widgetEventPrefix: 'oj',
+  oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent, {
+    widgetEventPrefix: 'oj',
 
-      options: {
+    options: {
+      /**
+       * Specifies the animation that is applied on data changes.
+       * @expose
+       * @name animationOnDataChange
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "auto"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      animationOnDataChange: 'none',
+
+      /**
+       * Specifies the animation that is shown on initial display.
+       * @expose
+       * @name animationOnDisplay
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "auto"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      animationOnDisplay: 'none',
+
+      /**
+       * An alias for the $current context variable when referenced inside nodeTemplate when using a DataProvider.
+       * @expose
+       * @name as
+       * @ojshortdesc Specifies the alias for the current item when referenced inside the nodeTemplate.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @default ''
+       * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
+       **/
+      as: '',
+
+      /**
+       * The content the cells will display. "auto" switches between nodes and cell counts based on available space. "counts" forces the NBox to always render cell counts.
+       * @expose
+       * @name cellContent
+       * @ojshortdesc Specifies the content displayed in cells. See the Help documentation for more information.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "counts"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      cellContent: 'auto',
+
+      /**
+       * Whether or not the cell maximize/de-maximize gestures are enabled.
+       * @expose
+       * @name cellMaximize
+       * @ojshortdesc Specifies whether cell maximize/de-maximize gestures are enabled.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "on"
+       * @default "on"
+       */
+      cellMaximize: 'on',
+
+      /**
+       * The list of cells. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
+       * @expose
+       * @name cells
+       * @ojshortdesc Specifies the list of cells. Also accepts a Promise for deferred data rendering.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {(Array.<Object>|Promise|null)=}
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojNBox.Cell>>|null",
+       *                                           SetterType: "Array<oj.ojNBox.Cell>|Promise<Array<oj.ojNBox.Cell>>|null"},
+       *                                           jsdocOverride: true}
+       * @default null
+       * @ojtsexample <caption>set or get
+       * <code class="prettyprint">cells</code> property:</caption>
+       * let elem = document.getElementById('nbox') as ojNBox<string, object>;
+       * //set cells to Promise. Assuming that getCells is a method which returns type Promise<Array<ojNBox.Cell>>
+       * elem.cells = getCells();
+       * //or
+       * elem.set('cells', getCells());
+       *
+       * //set cells to an array of ojNBox.Cell
+       * //elem.cells = [{row: '0', column: '0', label: '(0, 0)'},
+       * //              {row: '0', column: '1', label: '(0, 1)'}]; Please note this wont compile. Use the format below
+       * elem.set('cells', [{row: '0', column: '0', label: '(0, 0)'},
+       *                    {row: '0', column: '1', label: '(0, 1)'}]);
+       *
+       * //get cells property value
+       * let cells = elem.cells; //This is guaranteed to be of the type Promise<Array<ojNBox.Cell>>|null
+       *
+       * //reset the value of cells to its default,
+       * elem.unset('cells');
+       */
+      cells: null,
+
+      /**
+       * The list of columns. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
+       * @expose
+       * @name columns
+       * @ojshortdesc Specifies the list of columns. Also accepts a Promise for deferred data rendering.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {Array.<Object>|Promise|null}
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojNBox.Column>>|null",
+       *                                           SetterType: "Array<oj.ojNBox.Column>|Promise<Array<oj.ojNBox.Column>>|null"},
+       *                                           jsdocOverride: true}
+       * @ojtsexample <caption>set or get
+       * <code class="prettyprint">columns</code> property:</caption>
+       * let elem = document.getElementById('nbox') as ojNBox<string, object>;
+       * //set columns to Promise. Assuming that getColumns is a method which returns type Promise<Array<ojNBox.Column>>
+       * elem.columns = getColumns();
+       * //or
+       * elem.set('columns', getColumns());
+       *
+       * //set columns to an array of ojNBox.Column
+       * //elem.columns = [{id: '0'},{id: '1'}]; Please note this wont compile. Use the format below
+       * elem.set('columns', [{id: '0'},{id: '1'}]);
+       *
+       * //get columns property value
+       * let columns = elem.columns; //This is guaranteed to be of the type Promise<Array<ojNBox.Column>>|null
+       *
+       * //reset the value of columns to its default,
+       * elem.unset('columns');
+       * @default null
+       */
+      columns: null,
+
+      /**
+       * The text for the title on the column edge.
+       * @expose
+       * @name columnsTitle
+       * @ojtranslatable
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @default ""
+       */
+      columnsTitle: '',
+
+      /**
+       * A function that returns custom text for the cell count labels (extra info displayed after primary labels).
+       * @expose
+       * @ojshortdesc A function that returns custom text for the cell count labels.
+       * @name countLabel
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {(function(Object)|null)=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((context: oj.ojNBox.CountLabelContext) => (string|null))", jsdocOverride: true}
+       */
+      countLabel: null,
+
+      /**
+       * The DataProvider for the NBox. It should provide rows where each row corresponds to a single NBox node.
+       * The DataProvider can either have an arbitrary data shape, in which case an <oj-n-box-node> element must be specified in the itemTemplate slot or it can have [oj.ojNBox.Node]{@link oj.ojNBox.Node} as its data shape, in which case no template is required.
+       * @expose
+       * @name data
+       * @ojshortdesc Specifies the data provider for the NBox. See the Help documentation for more information.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {Object|null}
+       * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
+       * @default null
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
+       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+       *
+       * @example <caption>Initialize the NBox with the
+       * <code class="prettyprint">data</code> attribute specified:</caption>
+       * &lt;oj-n-box data='[[dataProvider]]'>&lt;/oj-n-box>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">data</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myNBox.data;
+       *
+       * // setter
+       * myNBox.data = dataProvider;
+       */
+      data: null,
+
+      /**
+       * Specifies how nodes should be grouped.
+       * @expose
+       * @name groupBehavior
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "acrossCells"
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "withinCell"
+       * @default "withinCell"
+       */
+      groupBehavior: 'withinCell',
+
+      /**
+       * An array of attributes to style the group nodes with. Any attributes not listed will be ignored.
+       * @expose
+       * @name groupAttributes
+       * @ojshortdesc An array of attributes for styling the group nodes.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {Array.<string>=}
+       * @ojvalue {string} "color"
+       * @ojvalue {string} "indicatorColor"
+       * @ojvalue {string} "indicatorIconColor"
+       * @ojvalue {string} "indicatorIconPattern"
+       * @ojvalue {string} "indicatorIconShape"
+       * @default ["color", "indicatorColor", "indicatorIconShape", "indicatorIconColor", "indicatorIconPattern"]
+       */
+      groupAttributes: [
+        'color',
+        'indicatorColor',
+        'indicatorIconColor',
+        'indicatorIconPattern',
+        'indicatorIconShape'
+      ],
+
+      /**
+       * An array of category strings used for category filtering. Data items with a category in hiddenCategories will be filtered.
+       * @expose
+       * @name hiddenCategories
+       * @ojshortdesc An array of category strings used for filtering. Data items with any category matching an item in this array will be filtered.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {Array.<string>=}
+       * @default []
+       * @ojwriteback
+       */
+      hiddenCategories: [],
+
+      /**
+       * Defines the behavior applied when hovering over data items.
+       * @expose
+       * @name hoverBehavior
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "dim"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      hoverBehavior: 'none',
+
+      /**
+       * An array of category strings used for category highlighting. Data items matching categories in highlightedCategories will be highlighted.
+       * @expose
+       * @name highlightedCategories
+       * @ojshortdesc An array of category strings used for highlighting. Data items matching categories in this array will be highlighted.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {Array.<string>=}
+       * @default []
+       * @ojwriteback
+       */
+      highlightedCategories: [],
+
+      /**
+       * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
+       * @expose
+       * @name highlightMatch
+       * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "any"
+       * @ojvalue {string} "all"
+       * @default "all"
+       */
+      highlightMatch: 'all',
+
+      /**
+       * Determines node label truncation behavior. Labels are always truncated if limited by container (e.g. cell, dialog) width. Optionally, NBox can further truncate node labels to increase the number of nodes visible to the user. "on" allows label truncation to increase number of visible nodes. "ifRequired" only allows truncation when limited by container width.
+       * @expose
+       * @name labelTruncation
+       * @ojshortdesc Specifies node label truncation behavior. See the Help documentation for more information.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "ifRequired"
+       * @ojvalue {string} "on"
+       * @default "on"
+       */
+      labelTruncation: 'on',
+
+      /**
+       * The id of the column to be maximized.
+       * @expose
+       * @name maximizedColumn
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @default ""
+       * @ojwriteback
+       */
+      maximizedColumn: '',
+
+      /**
+       * The id of the row to be maximized.
+       * @expose
+       * @name maximizedRow
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @default ""
+       * @ojwriteback
+       */
+      maximizedRow: '',
+
+      /**
+       * The list of nodes. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
+       * @expose
+       * @ojtsignore
+       * @name nodes
+       * @ojshortdesc The list of nodes. Also accepts a Promise for deferred data rendering.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {(Array.<Object>|Promise|null)=}
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojNBox.Node<K>>|null",
+       *                                           SetterType: "Array<oj.ojNBox.Node<K>>|Promise<Array<oj.ojNBox.Node<K>>>|null"},
+       *                                           jsdocOverride: true}
+       * @default null
+       */
+      nodes: null,
+
+      /**
+       * The color for the "other" group nodes which aggregate any group nodes that fall below the otherThreshold, if specified.  The default value varies based on theme.
+       * @expose
+       * @ojshortdesc The color for the "other" group nodes. See the Help documentation for more information.
+       * @name otherColor
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @ojformat color
+       */
+      otherColor: '#636363',
+
+      /**
+       * A percentage (0-1) of the nodes collection size that determines the value beneath which any groups will be aggregated into an "other" node.
+       * @expose
+       * @ojshortdesc The threshold for aggregating nodes into an "other" group node. See the Help documentation for more information.
+       * @name otherThreshold
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {number=}
+       * @default 0
+       */
+      otherThreshold: 0,
+
+      /**
+       * The list of rows. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
+       * @expose
+       * @name rows
+       * @ojshortdesc The list of rows. Also accepts a Promise for deferred data rendering.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {Array.<Object>|Promise|null}
+       * @default null
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojNBox.Row>>|null",
+       *                                           SetterType: "Array<oj.ojNBox.Row>|Promise<Array<oj.ojNBox.Row>>|null"},
+       *                                           jsdocOverride: true}
+       * @ojtsexample <caption>set or get
+       * <code class="prettyprint">rows</code> property:</caption>
+       * let elem = document.getElementById('nbox') as ojNBox<string, object>;
+       * //set rows to Promise. Assuming that getRows is a method which returns type Promise<Array<ojNBox.Row>>
+       * elem.rows = getRows();
+       * //or
+       * elem.set('rows', getRows());
+       *
+       * //set rows to an array of ojNBox.Row
+       * //elem.rows = [{id: '0'},{id: '1'}]; Please note this wont compile. Use the format below
+       * elem.set('rows', [{id: '0'},{id: '1'}]);
+       *
+       * //get rows property value
+       * let rows = elem.rows; //This is guaranteed to be of the type Promise<Array<ojNBox.Row>>|null
+       *
+       * //reset the value of rows to its default,
+       * elem.unset('rows');
+       */
+      rows: null,
+
+      /**
+       * The text for the title on the row edge.
+       * @expose
+       * @name rowsTitle
+       * @memberof oj.ojNBox
+       * @ojtranslatable
+       * @instance
+       * @type {string=}
+       * @default ""
+       */
+      rowsTitle: '',
+
+      /**
+       * An array containing the ids of the selected nodes.
+       * @expose
+       * @name selection
+       * @ojshortdesc Specifies the ids of the selected nodes.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {Array.<any>=}
+       * @ojsignature [{target: "Type", value: "Array<K>"}]
+       * @default []
+       * @ojwriteback
+       * @ojeventgroup common
+       */
+      selection: [],
+
+      /**
+       * <p>The type of selection behavior that is enabled on the NBox. This attribute controls the number of selections that can be made via selection gestures at any given time.
+       *
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the NBox's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the NBox's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
+       * @expose
+       * @name selectionMode
+       * @memberof oj.ojNBox
+       * @ojshortdesc Specifies the selection behavior on the NBox. See the Help documentation for more information.
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single item can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
+       * @default "multiple"
+       */
+      selectionMode: 'multiple',
+
+      /**
+       * An object defining the style defaults for this NBox.
+       * @expose
+       * @name styleDefaults
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {Object=}
+       */
+      styleDefaults: {
         /**
-         * Specifies the animation that is applied on data changes.
+         * The duration of the animations in milliseconds.  The default value comes from the CSS and varies based on theme.
          * @expose
-         * @name animationOnDataChange
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "auto"
-         * @ojvalue {string} "none"
-         * @default "none"
-         */
-        animationOnDataChange: 'none',
-
-        /**
-         * Specifies the animation that is shown on initial display.
-         * @expose
-         * @name animationOnDisplay
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "auto"
-         * @ojvalue {string} "none"
-         * @default "none"
-         */
-        animationOnDisplay: 'none',
-
-        /**
-        * An alias for the $current context variable when referenced inside nodeTemplate when using a DataProvider.
-        * @expose
-        * @name as
-        * @ojshortdesc Specifies the alias for the current item when referenced inside the nodeTemplate.
-        * @memberof oj.ojNBox
-        * @instance
-        * @type {string=}
-        * @default ''
-        * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
-        **/
-        as: '',
-
-        /**
-         * The content the cells will display. "auto" switches between nodes and cell counts based on available space. "counts" forces the NBox to always render cell counts.
-         * @expose
-         * @name cellContent
-         * @ojshortdesc Specifies the content displayed in cells. See the Help documentation for more information.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "counts"
-         * @ojvalue {string} "auto"
-         * @default "auto"
-         */
-        cellContent: 'auto',
-
-        /**
-         * Whether or not the cell maximize/de-maximize gestures are enabled.
-         * @expose
-         * @name cellMaximize
-         * @ojshortdesc Specifies whether cell maximize/de-maximize gestures are enabled.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "off"
-         * @ojvalue {string} "on"
-         * @default "on"
-         */
-        cellMaximize: 'on',
-
-        /**
-         * The list of cells. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
-         * @expose
-         * @name cells
-         * @ojshortdesc Specifies the list of cells. Also accepts a Promise for deferred data rendering.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {(Array.<Object>|Promise|null)=}
-         * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojNBox.Cell>>|null",
-         *                                           SetterType: "Array<oj.ojNBox.Cell>|Promise<Array<oj.ojNBox.Cell>>|null"},
-         *                                           jsdocOverride: true}
-         * @default null
-         * @ojtsexample <caption>set or get
-         * <code class="prettyprint">cells</code> property:</caption>
-         * let elem = document.getElementById('nbox') as ojNBox<string, object>;
-         * //set cells to Promise. Assuming that getCells is a method which returns type Promise<Array<ojNBox.Cell>>
-         * elem.cells = getCells();
-         * //or
-         * elem.set('cells', getCells());
-         *
-         * //set cells to an array of ojNBox.Cell
-         * //elem.cells = [{row: '0', column: '0', label: '(0, 0)'},
-         * //              {row: '0', column: '1', label: '(0, 1)'}]; Please note this wont compile. Use the format below
-         * elem.set('cells', [{row: '0', column: '0', label: '(0, 0)'},
-         *                    {row: '0', column: '1', label: '(0, 1)'}]);
-         *
-         * //get cells property value
-         * let cells = elem.cells; //This is guaranteed to be of the type Promise<Array<ojNBox.Cell>>|null
-         *
-         * //reset the value of cells to its default,
-         * elem.unset('cells');
-         */
-        cells: null,
-
-        /**
-         * The list of columns. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
-         * @expose
-         * @name columns
-         * @ojshortdesc Specifies the list of columns. Also accepts a Promise for deferred data rendering.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {Array.<Object>|Promise|null}
-         * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojNBox.Column>>|null",
-         *                                           SetterType: "Array<oj.ojNBox.Column>|Promise<Array<oj.ojNBox.Column>>|null"},
-         *                                           jsdocOverride: true}
-         * @ojtsexample <caption>set or get
-         * <code class="prettyprint">columns</code> property:</caption>
-         * let elem = document.getElementById('nbox') as ojNBox<string, object>;
-         * //set columns to Promise. Assuming that getColumns is a method which returns type Promise<Array<ojNBox.Column>>
-         * elem.columns = getColumns();
-         * //or
-         * elem.set('columns', getColumns());
-         *
-         * //set columns to an array of ojNBox.Column
-         * //elem.columns = [{id: '0'},{id: '1'}]; Please note this wont compile. Use the format below
-         * elem.set('columns', [{id: '0'},{id: '1'}]);
-         *
-         * //get columns property value
-         * let columns = elem.columns; //This is guaranteed to be of the type Promise<Array<ojNBox.Column>>|null
-         *
-         * //reset the value of columns to its default,
-         * elem.unset('columns');
-         * @default null
-         */
-        columns: null,
-
-        /**
-         * The text for the title on the column edge.
-         * @expose
-         * @name columnsTitle
-         * @ojtranslatable
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @default ""
-         */
-        columnsTitle: '',
-
-        /**
-         * A function that returns custom text for the cell count labels (extra info displayed after primary labels).
-         * @expose
-         * @ojshortdesc A function that returns custom text for the cell count labels.
-         * @name countLabel
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {(function(Object)|null)=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((context: oj.ojNBox.CountLabelContext) => (string|null))", jsdocOverride: true}
-         */
-        countLabel: null,
-
-        /**
-        * The DataProvider for the NBox. It should provide rows where each row corresponds to a single NBox node.
-        * The DataProvider can either have an arbitrary data shape, in which case an <oj-n-box-node> element must be specified in the itemTemplate slot or it can have [oj.ojNBox.Node]{@link oj.ojNBox.Node} as its data shape, in which case no template is required.
-        * @expose
-        * @name data
-        * @ojshortdesc Specifies the data provider for the NBox. See the Help documentation for more information.
-        * @memberof oj.ojNBox
-        * @instance
-        * @type {Object|null}
-        * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
-        * @default null
-        * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
-        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
-        *
-        * @example <caption>Initialize the NBox with the
-        * <code class="prettyprint">data</code> attribute specified:</caption>
-        * &lt;oj-n-box data='[[dataProvider]]'>&lt;/oj-n-box>
-        *
-        * @example <caption>Get or set the <code class="prettyprint">data</code>
-        * property after initialization:</caption>
-        * // getter
-        * var value = myNBox.data;
-        *
-        * // setter
-        * myNBox.data = dataProvider;
-        */
-        data: null,
-
-        /**
-         * Specifies how nodes should be grouped.
-         * @expose
-         * @name groupBehavior
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "acrossCells"
-         * @ojvalue {string} "none"
-         * @ojvalue {string} "withinCell"
-         * @default "withinCell"
-         */
-        groupBehavior: 'withinCell',
-
-        /**
-         * An array of attributes to style the group nodes with. Any attributes not listed will be ignored.
-         * @expose
-         * @name groupAttributes
-         * @ojshortdesc An array of attributes for styling the group nodes.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {Array.<string>=}
-         * @ojvalue {string} "color"
-         * @ojvalue {string} "indicatorColor"
-         * @ojvalue {string} "indicatorIconColor"
-         * @ojvalue {string} "indicatorIconPattern"
-         * @ojvalue {string} "indicatorIconShape"
-         * @default ["color", "indicatorColor", "indicatorIconShape", "indicatorIconColor", "indicatorIconPattern"]
-         */
-        groupAttributes: ['color', 'indicatorColor', 'indicatorIconColor', 'indicatorIconPattern', 'indicatorIconShape'],
-
-        /**
-         * An array of category strings used for category filtering. Data items with a category in hiddenCategories will be filtered.
-         * @expose
-         * @name hiddenCategories
-         * @ojshortdesc An array of category strings used for filtering. Data items with any category matching an item in this array will be filtered.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {Array.<string>=}
-         * @default []
-         * @ojwriteback
-         */
-        hiddenCategories: [],
-
-        /**
-         * Defines the behavior applied when hovering over data items.
-         * @expose
-         * @name hoverBehavior
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "dim"
-         * @ojvalue {string} "none"
-         * @default "none"
-         */
-        hoverBehavior: 'none',
-
-        /**
-         * An array of category strings used for category highlighting. Data items matching categories in highlightedCategories will be highlighted.
-         * @expose
-         * @name highlightedCategories
-         * @ojshortdesc An array of category strings used for highlighting. Data items matching categories in this array will be highlighted.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {Array.<string>=}
-         * @default []
-         * @ojwriteback
-         */
-        highlightedCategories: [],
-
-        /**
-         * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
-         * @expose
-         * @name highlightMatch
-         * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "any"
-         * @ojvalue {string} "all"
-         * @default "all"
-         */
-        highlightMatch: 'all',
-
-        /**
-         * Determines node label truncation behavior. Labels are always truncated if limited by container (e.g. cell, dialog) width. Optionally, NBox can further truncate node labels to increase the number of nodes visible to the user. "on" allows label truncation to increase number of visible nodes. "ifRequired" only allows truncation when limited by container width.
-         * @expose
-         * @name labelTruncation
-         * @ojshortdesc Specifies node label truncation behavior. See the Help documentation for more information.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "ifRequired"
-         * @ojvalue {string} "on"
-         * @default "on"
-         */
-        labelTruncation: 'on',
-
-        /**
-         * The id of the column to be maximized.
-         * @expose
-         * @name maximizedColumn
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @default ""
-         * @ojwriteback
-         */
-        maximizedColumn: '',
-
-        /**
-         * The id of the row to be maximized.
-         * @expose
-         * @name maximizedRow
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @default ""
-         * @ojwriteback
-         */
-        maximizedRow: '',
-
-        /**
-         * The list of nodes. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
-         * @expose
-         * @ojtsignore
-         * @name nodes
-         * @ojshortdesc The list of nodes. Also accepts a Promise for deferred data rendering.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {(Array.<Object>|Promise|null)=}
-         * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojNBox.Node<K>>|null",
-         *                                           SetterType: "Array<oj.ojNBox.Node<K>>|Promise<Array<oj.ojNBox.Node<K>>>|null"},
-         *                                           jsdocOverride: true}
-         * @default null
-         */
-        nodes: null,
-
-        /**
-         * The color for the "other" group nodes which aggregate any group nodes that fall below the otherThreshold, if specified.  The default value varies based on theme.
-         * @expose
-         * @ojshortdesc The color for the "other" group nodes. See the Help documentation for more information.
-         * @name otherColor
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {string=}
-         * @ojformat color
-         */
-        otherColor: '#636363',
-
-        /**
-         * A percentage (0-1) of the nodes collection size that determines the value beneath which any groups will be aggregated into an "other" node.
-         * @expose
-         * @ojshortdesc The threshold for aggregating nodes into an "other" group node. See the Help documentation for more information.
-         * @name otherThreshold
-         * @memberof oj.ojNBox
+         * @name styleDefaults.animationDuration
+         * @ojshortdesc The duration of the animations in milliseconds.
+         * @memberof! oj.ojNBox
          * @instance
          * @type {number=}
-         * @default 0
+         * @ojunits milliseconds
          */
-        otherThreshold: 0,
+        animationDuration: undefined,
 
         /**
-         * The list of rows. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
+         * An object defining the style defaults for cells.
          * @expose
-         * @name rows
-         * @ojshortdesc The list of rows. Also accepts a Promise for deferred data rendering.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {Array.<Object>|Promise|null}
-         * @default null
-         * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojNBox.Row>>|null",
-         *                                           SetterType: "Array<oj.ojNBox.Row>|Promise<Array<oj.ojNBox.Row>>|null"},
-         *                                           jsdocOverride: true}
-         * @ojtsexample <caption>set or get
-         * <code class="prettyprint">rows</code> property:</caption>
-         * let elem = document.getElementById('nbox') as ojNBox<string, object>;
-         * //set rows to Promise. Assuming that getRows is a method which returns type Promise<Array<ojNBox.Row>>
-         * elem.rows = getRows();
-         * //or
-         * elem.set('rows', getRows());
-         *
-         * //set rows to an array of ojNBox.Row
-         * //elem.rows = [{id: '0'},{id: '1'}]; Please note this wont compile. Use the format below
-         * elem.set('rows', [{id: '0'},{id: '1'}]);
-         *
-         * //get rows property value
-         * let rows = elem.rows; //This is guaranteed to be of the type Promise<Array<ojNBox.Row>>|null
-         *
-         * //reset the value of rows to its default,
-         * elem.unset('rows');
-         */
-        rows: null,
-
-        /**
-         * The text for the title on the row edge.
-         * @expose
-         * @name rowsTitle
-         * @memberof oj.ojNBox
-         * @ojtranslatable
-         * @instance
-         * @type {string=}
-         * @default ""
-         */
-        rowsTitle: '',
-
-        /**
-         * An array containing the ids of the selected nodes.
-         * @expose
-         * @name selection
-         * @ojshortdesc Specifies the ids of the selected nodes.
-         * @memberof oj.ojNBox
-         * @instance
-         * @type {Array.<any>=}
-         * @ojsignature [{target: "Type", value: "Array<K>"}]
-         * @default []
-         * @ojwriteback
-         * @ojeventgroup common
-         */
-        selection: [],
-
-        /**
-         * <p>The type of selection behavior that is enabled on the NBox. This attribute controls the number of selections that can be made via selection gestures at any given time.
-         *
-         * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the NBox's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
-         * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the NBox's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
-         *
-         * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
-         *
-         * @expose
-         * @name selectionMode
-         * @memberof oj.ojNBox
-         * @ojshortdesc Specifies the selection behavior on the NBox. See the Help documentation for more information.
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "none" Selection is disabled.
-         * @ojvalue {string} "single" Only a single item can be selected at a time.
-         * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
-         * @default "multiple"
-         */
-        selectionMode: 'multiple',
-
-        /**
-         * An object defining the style defaults for this NBox.
-         * @expose
-         * @name styleDefaults
-         * @memberof oj.ojNBox
+         * @name styleDefaults.cellDefaults
+         * @memberof! oj.ojNBox
          * @instance
          * @type {Object=}
          */
-        styleDefaults: {
+        cellDefaults: {
           /**
-           * The duration of the animations in milliseconds.  The default value comes from the CSS and varies based on theme.
+           * The horizontal alignment value for the cell label.
            * @expose
-           * @name styleDefaults.animationDuration
-           * @ojshortdesc The duration of the animations in milliseconds.
+           * @name styleDefaults.cellDefaults.labelHalign
+           * @ojdisplayname Label Horizontal Alignment
            * @memberof! oj.ojNBox
            * @instance
-           * @type {number=}
-           * @ojunits milliseconds
+           * @type {string=}
+           * @ojvalue {string} "center"
+           * @ojvalue {string} "end"
+           * @ojvalue {string} "start"
+           * @default "start"
            */
-          animationDuration: undefined,
+          labelHalign: 'start',
 
           /**
-           * An object defining the style defaults for cells.
-           * @expose
-           * @name styleDefaults.cellDefaults
-           * @memberof! oj.ojNBox
-           * @instance
-           * @type {Object=}
-           */
-          cellDefaults: {
-            /**
-             * The horizontal alignment value for the cell label.
-             * @expose
-             * @name styleDefaults.cellDefaults.labelHalign
-             * @ojdisplayname Label Horizontal Alignment
-             * @memberof! oj.ojNBox
-             * @instance
-             * @type {string=}
-             * @ojvalue {string} "center"
-             * @ojvalue {string} "end"
-             * @ojvalue {string} "start"
-             * @default "start"
-             */
-            labelHalign: 'start',
-
-            /**
-             * The CSS style object defining the style of the cell labels.
-             * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
-             * The default value comes from the CSS and varies based on theme.
-             * @expose
-             * @name styleDefaults.cellDefaults.labelStyle
-             * @ojshortdesc The CSS style object defining the style of the cell labels.
-             * @memberof! oj.ojNBox
-             * @instance
-             * @type {Object=}
-             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-             */
-            labelStyle: undefined,
-
-            /**
-             * The CSS style object defining the styles of the cell background and border when the cell is maximized.
-             * Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
-             * @expose
-             * @name styleDefaults.cellDefaults.maximizedSvgStyle
-             * @ojshortdesc The CSS style object defining the styles of the cell background and border when the cell is maximized.
-             * @memberof! oj.ojNBox
-             * @instance
-             * @type {Object=}
-             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-             */
-            maximizedSvgStyle: undefined,
-
-            /**
-             * The CSS style object defining the styles of the cell background and border when the cell is minimized.
-             * Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
-             * @expose
-             * @name styleDefaults.cellDefaults.minimizedSvgStyle
-             * @ojshortdesc The CSS style object defining the styles of the cell background and border when the cell is minimized.
-             * @memberof! oj.ojNBox
-             * @instance
-             * @type {Object=}
-             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-             */
-            minimizedSvgStyle: undefined,
-
-            /**
-             * Determines when to display the cell count label (extra info displayed after primary cell label). "off" never show the count label. "on" always show the count label. Show countLabel value if specified, otherwise use a simple node count. "auto" show the count label if countLabel attribute is defined.
-             * @expose
-             * @ojshortdesc Specifies when to display the cell count label. See the Help documentation for more information.
-             * @name styleDefaults.cellDefaults.showCount
-             * @memberof! oj.ojNBox
-             * @instance
-             * @type {string=}
-             * @ojvalue {string} "on"
-             * @ojvalue {string} "off"
-             * @ojvalue {string} "auto"
-             * @default "auto"
-             */
-            showCount: 'auto',
-
-            /**
-             * The CSS style object defining the styles of the cell background and border.
-             * Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
-             * @expose
-             * @name styleDefaults.cellDefaults.svgStyle
-             * @ojshortdesc The CSS style object defining the styles of the cell background and border.
-             * @memberof! oj.ojNBox
-             * @instance
-             * @type {Object=}
-             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-             */
-            svgStyle: undefined
-          },
-
-          /**
-           * The CSS style object defining the style of the column labels.
+           * The CSS style object defining the style of the cell labels.
            * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
            * The default value comes from the CSS and varies based on theme.
            * @expose
-           * @name styleDefaults.columnLabelStyle
-           * @ojshortdesc The CSS style object defining the style of the column labels.
+           * @name styleDefaults.cellDefaults.labelStyle
+           * @ojshortdesc The CSS style object defining the style of the cell labels.
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object=}
            * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            */
-          columnLabelStyle: undefined,
+          labelStyle: undefined,
 
           /**
-           * The CSS style object defining the style of the columns title.
-           * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
-           * The default value comes from the CSS and varies based on theme.
+           * The CSS style object defining the styles of the cell background and border when the cell is maximized.
+           * Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
            * @expose
-           * @name styleDefaults.columnsTitleStyle
-           * @ojshortdesc The CSS style object defining the style of the columns title.
+           * @name styleDefaults.cellDefaults.maximizedSvgStyle
+           * @ojshortdesc The CSS style object defining the styles of the cell background and border when the cell is maximized.
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object=}
            * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            */
-          columnsTitleStyle: undefined,
+          maximizedSvgStyle: undefined,
 
           /**
-           * Specifies initial hover delay in milliseconds for highlighting data items.
+           * The CSS style object defining the styles of the cell background and border when the cell is minimized.
+           * Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
            * @expose
-           * @name styleDefaults.hoverBehaviorDelay
+           * @name styleDefaults.cellDefaults.minimizedSvgStyle
+           * @ojshortdesc The CSS style object defining the styles of the cell background and border when the cell is minimized.
+           * @memberof! oj.ojNBox
+           * @instance
+           * @type {Object=}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+           */
+          minimizedSvgStyle: undefined,
+
+          /**
+           * Determines when to display the cell count label (extra info displayed after primary cell label). "off" never show the count label. "on" always show the count label. Show countLabel value if specified, otherwise use a simple node count. "auto" show the count label if countLabel attribute is defined.
+           * @expose
+           * @ojshortdesc Specifies when to display the cell count label. See the Help documentation for more information.
+           * @name styleDefaults.cellDefaults.showCount
+           * @memberof! oj.ojNBox
+           * @instance
+           * @type {string=}
+           * @ojvalue {string} "on"
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "auto"
+           */
+          showCount: 'auto',
+
+          /**
+           * The CSS style object defining the styles of the cell background and border.
+           * Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
+           * @expose
+           * @name styleDefaults.cellDefaults.svgStyle
+           * @ojshortdesc The CSS style object defining the styles of the cell background and border.
+           * @memberof! oj.ojNBox
+           * @instance
+           * @type {Object=}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+           */
+          svgStyle: undefined
+        },
+
+        /**
+         * The CSS style object defining the style of the column labels.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+         * The default value comes from the CSS and varies based on theme.
+         * @expose
+         * @name styleDefaults.columnLabelStyle
+         * @ojshortdesc The CSS style object defining the style of the column labels.
+         * @memberof! oj.ojNBox
+         * @instance
+         * @type {Object=}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+         */
+        columnLabelStyle: undefined,
+
+        /**
+         * The CSS style object defining the style of the columns title.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+         * The default value comes from the CSS and varies based on theme.
+         * @expose
+         * @name styleDefaults.columnsTitleStyle
+         * @ojshortdesc The CSS style object defining the style of the columns title.
+         * @memberof! oj.ojNBox
+         * @instance
+         * @type {Object=}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+         */
+        columnsTitleStyle: undefined,
+
+        /**
+         * Specifies initial hover delay in milliseconds for highlighting data items.
+         * @expose
+         * @name styleDefaults.hoverBehaviorDelay
+         * @memberof! oj.ojNBox
+         * @instance
+         * @type {number=}
+         * @default 200
+         * @ojunits milliseconds
+         */
+        hoverBehaviorDelay: 200,
+
+        /**
+         * An object defining the style defaults for nodes.
+         * @expose
+         * @name styleDefaults.nodeDefaults
+         * @memberof! oj.ojNBox
+         * @instance
+         * @type {Object=}
+         */
+        nodeDefaults: {
+          /**
+           * The default color of the node borders.  The default value varies based on theme.
+           * @expose
+           * @name styleDefaults.nodeDefaults.borderColor
+           * @memberof! oj.ojNBox
+           * @instance
+           * @type {string=}
+           * @ojformat color
+           */
+          borderColor: '',
+
+          /**
+           * The default width of the node borders.  The default value varies based on theme.
+           * @expose
+           * @name styleDefaults.nodeDefaults.borderWidth
            * @memberof! oj.ojNBox
            * @instance
            * @type {number=}
-           * @default 200
-           * @ojunits milliseconds
+           * @ojunits pixels
            */
-          hoverBehaviorDelay: 200,
+          borderWidth: 0,
 
           /**
-           * An object defining the style defaults for nodes.
+           * The default background color of the nodes.  The default value comes from the CSS and varies based on theme.
            * @expose
-           * @name styleDefaults.nodeDefaults
+           * @name styleDefaults.nodeDefaults.color
+           * @ojshortdesc The default background color of the nodes.
+           * @memberof! oj.ojNBox
+           * @instance
+           * @type {string=}
+           * @ojformat color
+           */
+          color: undefined,
+
+          /**
+           * An object defining the style defaults for the node icons.
+           * @expose
+           * @name styleDefaults.nodeDefaults.iconDefaults
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object=}
            */
-          nodeDefaults: {
+          iconDefaults: {
             /**
-             * The default color of the node borders.  The default value varies based on theme.
+             * The default border color of the node icons.  The default value varies based on theme.
              * @expose
-             * @name styleDefaults.nodeDefaults.borderColor
+             * @name styleDefaults.nodeDefaults.iconDefaults.borderColor
              * @memberof! oj.ojNBox
              * @instance
              * @type {string=}
              * @ojformat color
              */
-            borderColor: '',
+            borderColor: '#000000',
 
             /**
-             * The default width of the node borders.  The default value varies based on theme.
+             * The default border radius of the node icons. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.  The default value varies based on theme.
              * @expose
-             * @name styleDefaults.nodeDefaults.borderWidth
+             * @name styleDefaults.nodeDefaults.iconDefaults.borderRadius
+             * @ojshortdesc The default border radius of the node icons. See the Help documentation for more information.
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {string=}
+             */
+            borderRadius: 0,
+
+            /**
+             * The default border width of the node icons.  The default value varies based on theme.
+             * @expose
+             * @name styleDefaults.nodeDefaults.iconDefaults.borderWidth
              * @memberof! oj.ojNBox
              * @instance
              * @type {number=}
-             * @ojunits pixels
              */
             borderWidth: 0,
 
             /**
-             * The default background color of the nodes.  The default value comes from the CSS and varies based on theme.
+             * The default fill color of the node icons.
              * @expose
-             * @name styleDefaults.nodeDefaults.color
-             * @ojshortdesc The default background color of the nodes.
-             * @memberof! oj.ojNBox
-             * @instance
-             * @type {string=}
-             * @ojformat color
-             */
-            color: undefined,
-
-            /**
-             * An object defining the style defaults for the node icons.
-             * @expose
-             * @name styleDefaults.nodeDefaults.iconDefaults
-             * @memberof! oj.ojNBox
-             * @instance
-             * @type {Object=}
-             */
-            iconDefaults: {
-              /**
-               * The default border color of the node icons.  The default value varies based on theme.
-               * @expose
-               * @name styleDefaults.nodeDefaults.iconDefaults.borderColor
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               * @ojformat color
-               */
-              borderColor: '#000000',
-
-              /**
-               * The default border radius of the node icons. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.  The default value varies based on theme.
-               * @expose
-               * @name styleDefaults.nodeDefaults.iconDefaults.borderRadius
-               * @ojshortdesc The default border radius of the node icons. See the Help documentation for more information.
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               */
-              borderRadius: 0,
-
-              /**
-               * The default border width of the node icons.  The default value varies based on theme.
-               * @expose
-               * @name styleDefaults.nodeDefaults.iconDefaults.borderWidth
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {number=}
-               */
-              borderWidth: 0,
-
-              /**
-               * The default fill color of the node icons.
-               * @expose
-               * @name styleDefaults.nodeDefaults.iconDefaults.color
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               * @ojformat color
-               * @default ""
-               */
-              color: '',
-
-              /**
-               * The default height of the node icons. If the value is 0, the height will be automatically based on the remaining node contents.
-               * @expose
-               * @name styleDefaults.nodeDefaults.iconDefaults.height
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {number=}
-               * @default 0
-               * @ojunits pixels
-               */
-              height: 0,
-
-              /**
-               * The default opacity of the node icons.
-               * @expose
-               * @name styleDefaults.nodeDefaults.iconDefaults.opacity
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {number=}
-               * @default 1
-               */
-              opacity: 1,
-
-              /**
-               * The default fill pattern of the node icons.
-               * @expose
-               * @name styleDefaults.nodeDefaults.iconDefaults.pattern
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               * @ojvalue {string} "smallChecker"
-               * @ojvalue {string} "smallCrosshatch"
-               * @ojvalue {string} "smallDiagonalLeft"
-               * @ojvalue {string} "smallDiagonalRight"
-               * @ojvalue {string} "smallDiamond"
-               * @ojvalue {string} "smallTriangle"
-               * @ojvalue {string} "largeChecker"
-               * @ojvalue {string} "largeCrosshatch"
-               * @ojvalue {string} "largeDiagonalLeft"
-               * @ojvalue {string} "largeDiagonalRight"
-               * @ojvalue {string} "largeDiamond"
-               * @ojvalue {string} "largeTriangle"
-               * @ojvalue {string} "none"
-               * @default "none"
-               */
-              pattern: 'none',
-
-              /**
-               * The default shape of the node icons. Can take the name of a built-in shape or the SVG path commands for a custom shape.
-               * @expose
-               * @name styleDefaults.nodeDefaults.iconDefaults.shape
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               * @ojvalue {string=} "circle"
-               * @ojvalue {string=} "ellipse"
-               * @ojvalue {string=} "square"
-               * @ojvalue {string=} "plus"
-               * @ojvalue {string=} "diamond"
-               * @ojvalue {string=} "triangleUp"
-               * @ojvalue {string=} "triangleDown"
-               * @ojvalue {string=} "human"
-               * @ojvalue {string=} "rectangle"
-               * @ojvalue {string=} "star"
-               * @default "square"
-               */
-              shape: 'square',
-
-              /**
-               * The URL of an image to display by default for the node icons.
-               * @expose
-               * @name styleDefaults.nodeDefaults.iconDefaults.source
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               * @default ""
-               */
-              source: '',
-
-               /**
-               * The URL of an image to display by default for the node icons.
-               * @expose
-               * @name styleDefaults.nodeDefaults.iconDefaults.background
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               * @ojvalue {string=} "neutral"
-               * @ojvalue {string=} "red"
-               * @ojvalue {string=} "orange"
-               * @ojvalue {string=} "forest"
-               * @ojvalue {string=} "green"
-               * @ojvalue {string=} "teal"
-               * @ojvalue {string=} "blue"
-               * @ojvalue {string=} "slate"
-               * @ojvalue {string=} "pink"
-               * @ojvalue {string=} "mauve"
-               * @ojvalue {string=} "purple"
-               * @ojvalue {string=} "lilac"
-               * @ojvalue {string=} "gray"
-               * @ojdeprecated [{target:'propertyValue', for:"red", since: "10.0.0", description: "This value will be removed in the future. Please use other colors."},
-               *                {target:'propertyValue', for:"forest", since: "10.0.0", description: "This value will be removed in the future. Please use other colors."},
-               *                {target:'propertyValue', for:"mauve", since: "10.0.0", description: "This value will be removed in the future. Please use other colors."}]
-               * @default "neutral"
-               */
-              background: 'neutral',
-
-              /**
-               * The default width of the node icons.  If the value is 0, the width will be automatically based on the remaining node contents.
-               * @expose
-               * @name styleDefaults.nodeDefaults.iconDefaults.width
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {number=}
-               * @default 0
-               */
-              width: 0
-            },
-
-            /**
-             * The default background color of the node indicator sections.
-             * @expose
-             * @name styleDefaults.nodeDefaults.indicatorColor
+             * @name styleDefaults.nodeDefaults.iconDefaults.color
              * @memberof! oj.ojNBox
              * @instance
              * @type {string=}
              * @ojformat color
              * @default ""
              */
-            indicatorColor: '',
+            color: '',
 
             /**
-             * An object defining the style defaults for the node indicator icons.
+             * The default height of the node icons. If the value is 0, the height will be automatically based on the remaining node contents.
              * @expose
-             * @name styleDefaults.nodeDefaults.indicatorIconDefaults
+             * @name styleDefaults.nodeDefaults.iconDefaults.height
              * @memberof! oj.ojNBox
              * @instance
-             * @type {Object=}
+             * @type {number=}
+             * @default 0
+             * @ojunits pixels
              */
-            indicatorIconDefaults: {
-              /**
-               * The default border color of the node indicator icons.  The default value varies based on theme.
-               * @expose
-               * @name styleDefaults.nodeDefaults.indicatorIconDefaults.borderColor
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               * @ojformat color
-               */
-              borderColor: '#000000',
-
-              /**
-               * The default border radius of the node indicator icons. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.  The default value varies based on theme.
-               * @expose
-               * @name styleDefaults.nodeDefaults.indicatorIconDefaults.borderRadius
-               * @ojshortdesc The default border radius of the node indicator icons. See the Help documentation for more information.
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               */
-              borderRadius: 0,
-
-              /**
-               * The default border width of the node indicator icons.  The default value varies based on theme.
-               * @expose
-               * @name styleDefaults.nodeDefaults.indicatorIconDefaults.borderWidth
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {number=}
-               */
-              borderWidth: 0,
-
-              /**
-               * The default fill color of the node indicator icons.
-               * @expose
-               * @name styleDefaults.nodeDefaults.indicatorIconDefaults.color
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               * @ojformat color
-               * @default ""
-               */
-              color: '',
-
-              /**
-               * The default height of the node indicator icons.  The default value varies based on theme.
-               * @expose
-               * @name styleDefaults.nodeDefaults.indicatorIconDefaults.height
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {number=}
-               * @ojunits pixels
-               */
-              height: 10,
-
-              /**
-               * The default opacity of the node indicator icons.
-               * @expose
-               * @name styleDefaults.nodeDefaults.indicatorIconDefaults.opacity
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {number=}
-               * @default 1
-               */
-              opacity: 1,
-
-              /**
-               * The default fill pattern of the node indicator icons.
-               * @expose
-               * @name styleDefaults.nodeDefaults.indicatorIconDefaults.pattern
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               * @ojvalue {string} "smallChecker"
-               * @ojvalue {string} "smallCrosshatch"
-               * @ojvalue {string} "smallDiagonalLeft"
-               * @ojvalue {string} "smallDiagonalRight"
-               * @ojvalue {string} "smallDiamond"
-               * @ojvalue {string} "smallTriangle"
-               * @ojvalue {string} "largeChecker"
-               * @ojvalue {string} "largeCrosshatch"
-               * @ojvalue {string} "largeDiagonalLeft"
-               * @ojvalue {string} "largeDiagonalRight"
-               * @ojvalue {string} "largeDiamond"
-               * @ojvalue {string} "largeTriangle"
-               * @ojvalue {string} "none"
-               * @default "none"
-               */
-              pattern: 'none',
-
-              /**
-               * The default shape of the node indicator icons. Can take the name of a built-in shape or the SVG path commands for a custom shape.
-               * @expose
-               * @name styleDefaults.nodeDefaults.indicatorIconDefaults.shape
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               * @ojvalue {string=} "circle"
-               * @ojvalue {string=} "ellipse"
-               * @ojvalue {string=} "square"
-               * @ojvalue {string=} "plus"
-               * @ojvalue {string=} "diamond"
-               * @ojvalue {string=} "triangleUp"
-               * @ojvalue {string=} "triangleDown"
-               * @ojvalue {string=} "human"
-               * @ojvalue {string=} "rectangle"
-               * @ojvalue {string=} "star"
-               * @default "square"
-               */
-              shape: 'square',
-
-              /**
-               * The URL of an image to display by default for the node indicator icons.
-               * @expose
-               * @name styleDefaults.nodeDefaults.indicatorIconDefaults.source
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {string=}
-               * @default null
-               */
-              source: '',
-
-              /**
-               * The default width of the node indicator icons.  The default value varies based on theme.
-               * @expose
-               * @name styleDefaults.nodeDefaults.indicatorIconDefaults.width
-               * @memberof! oj.ojNBox
-               * @instance
-               * @type {number=}
-               * @ojunits pixels
-               */
-              width: 10
-            },
+            height: 0,
 
             /**
-             * The CSS style object defining the style of the node labels.
-             * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
-             * The default value comes from the CSS and varies based on theme.
+             * The default opacity of the node icons.
              * @expose
-             * @name styleDefaults.nodeDefaults.labelStyle
-             * @ojshortdesc The CSS style object defining the style of the node labels.
+             * @name styleDefaults.nodeDefaults.iconDefaults.opacity
              * @memberof! oj.ojNBox
              * @instance
-             * @type {Object=}
-             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+             * @type {number=}
+             * @default 1
              */
-            labelStyle: undefined,
+            opacity: 1,
 
             /**
-             * The CSS style object defining the style of the node secondary labels.
-             * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
-             * The default value comes from the CSS and varies based on theme.
+             * The default fill pattern of the node icons.
              * @expose
-             * @name styleDefaults.nodeDefaults.secondaryLabelStyle
-             * @ojshortdesc The CSS style object defining the style of the node secondary labels.
+             * @name styleDefaults.nodeDefaults.iconDefaults.pattern
              * @memberof! oj.ojNBox
              * @instance
-             * @type {Object=}
-             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+             * @type {string=}
+             * @ojvalue {string} "smallChecker"
+             * @ojvalue {string} "smallCrosshatch"
+             * @ojvalue {string} "smallDiagonalLeft"
+             * @ojvalue {string} "smallDiagonalRight"
+             * @ojvalue {string} "smallDiamond"
+             * @ojvalue {string} "smallTriangle"
+             * @ojvalue {string} "largeChecker"
+             * @ojvalue {string} "largeCrosshatch"
+             * @ojvalue {string} "largeDiagonalLeft"
+             * @ojvalue {string} "largeDiagonalRight"
+             * @ojvalue {string} "largeDiamond"
+             * @ojvalue {string} "largeTriangle"
+             * @ojvalue {string} "none"
+             * @default "none"
              */
-            secondaryLabelStyle: undefined
+            pattern: 'none',
+
+            /**
+             * The default shape of the node icons. Can take the name of a built-in shape or the SVG path commands for a custom shape.
+             * @expose
+             * @name styleDefaults.nodeDefaults.iconDefaults.shape
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {string=}
+             * @ojvalue {string=} "circle"
+             * @ojvalue {string=} "ellipse"
+             * @ojvalue {string=} "square"
+             * @ojvalue {string=} "plus"
+             * @ojvalue {string=} "diamond"
+             * @ojvalue {string=} "triangleUp"
+             * @ojvalue {string=} "triangleDown"
+             * @ojvalue {string=} "human"
+             * @ojvalue {string=} "rectangle"
+             * @ojvalue {string=} "star"
+             * @default "square"
+             */
+            shape: 'square',
+
+            /**
+             * The URL of an image to display by default for the node icons.
+             * @expose
+             * @name styleDefaults.nodeDefaults.iconDefaults.source
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {string=}
+             * @default ""
+             */
+            source: '',
+
+            /**
+             * The URL of an image to display by default for the node icons.
+             * @expose
+             * @name styleDefaults.nodeDefaults.iconDefaults.background
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {string=}
+             * @ojvalue {string=} "neutral"
+             * @ojvalue {string=} "red"
+             * @ojvalue {string=} "orange"
+             * @ojvalue {string=} "forest"
+             * @ojvalue {string=} "green"
+             * @ojvalue {string=} "teal"
+             * @ojvalue {string=} "blue"
+             * @ojvalue {string=} "slate"
+             * @ojvalue {string=} "pink"
+             * @ojvalue {string=} "mauve"
+             * @ojvalue {string=} "purple"
+             * @ojvalue {string=} "lilac"
+             * @ojvalue {string=} "gray"
+             * @ojdeprecated [{target:'propertyValue', for:"red", since: "10.0.0", description: "This value will be removed in the future. Please use other colors."},
+             *                {target:'propertyValue', for:"forest", since: "10.0.0", description: "This value will be removed in the future. Please use other colors."},
+             *                {target:'propertyValue', for:"mauve", since: "10.0.0", description: "This value will be removed in the future. Please use other colors."}]
+             * @default "neutral"
+             */
+            background: 'neutral',
+
+            /**
+             * The default width of the node icons.  If the value is 0, the width will be automatically based on the remaining node contents.
+             * @expose
+             * @name styleDefaults.nodeDefaults.iconDefaults.width
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {number=}
+             * @default 0
+             */
+            width: 0
           },
 
           /**
-           * The CSS style object defining the style of the row labels.
+           * The default background color of the node indicator sections.
+           * @expose
+           * @name styleDefaults.nodeDefaults.indicatorColor
+           * @memberof! oj.ojNBox
+           * @instance
+           * @type {string=}
+           * @ojformat color
+           * @default ""
+           */
+          indicatorColor: '',
+
+          /**
+           * An object defining the style defaults for the node indicator icons.
+           * @expose
+           * @name styleDefaults.nodeDefaults.indicatorIconDefaults
+           * @memberof! oj.ojNBox
+           * @instance
+           * @type {Object=}
+           */
+          indicatorIconDefaults: {
+            /**
+             * The default border color of the node indicator icons.  The default value varies based on theme.
+             * @expose
+             * @name styleDefaults.nodeDefaults.indicatorIconDefaults.borderColor
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {string=}
+             * @ojformat color
+             */
+            borderColor: '#000000',
+
+            /**
+             * The default border radius of the node indicator icons. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.  The default value varies based on theme.
+             * @expose
+             * @name styleDefaults.nodeDefaults.indicatorIconDefaults.borderRadius
+             * @ojshortdesc The default border radius of the node indicator icons. See the Help documentation for more information.
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {string=}
+             */
+            borderRadius: 0,
+
+            /**
+             * The default border width of the node indicator icons.  The default value varies based on theme.
+             * @expose
+             * @name styleDefaults.nodeDefaults.indicatorIconDefaults.borderWidth
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {number=}
+             */
+            borderWidth: 0,
+
+            /**
+             * The default fill color of the node indicator icons.
+             * @expose
+             * @name styleDefaults.nodeDefaults.indicatorIconDefaults.color
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {string=}
+             * @ojformat color
+             * @default ""
+             */
+            color: '',
+
+            /**
+             * The default height of the node indicator icons.  The default value varies based on theme.
+             * @expose
+             * @name styleDefaults.nodeDefaults.indicatorIconDefaults.height
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {number=}
+             * @ojunits pixels
+             */
+            height: 10,
+
+            /**
+             * The default opacity of the node indicator icons.
+             * @expose
+             * @name styleDefaults.nodeDefaults.indicatorIconDefaults.opacity
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {number=}
+             * @default 1
+             */
+            opacity: 1,
+
+            /**
+             * The default fill pattern of the node indicator icons.
+             * @expose
+             * @name styleDefaults.nodeDefaults.indicatorIconDefaults.pattern
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {string=}
+             * @ojvalue {string} "smallChecker"
+             * @ojvalue {string} "smallCrosshatch"
+             * @ojvalue {string} "smallDiagonalLeft"
+             * @ojvalue {string} "smallDiagonalRight"
+             * @ojvalue {string} "smallDiamond"
+             * @ojvalue {string} "smallTriangle"
+             * @ojvalue {string} "largeChecker"
+             * @ojvalue {string} "largeCrosshatch"
+             * @ojvalue {string} "largeDiagonalLeft"
+             * @ojvalue {string} "largeDiagonalRight"
+             * @ojvalue {string} "largeDiamond"
+             * @ojvalue {string} "largeTriangle"
+             * @ojvalue {string} "none"
+             * @default "none"
+             */
+            pattern: 'none',
+
+            /**
+             * The default shape of the node indicator icons. Can take the name of a built-in shape or the SVG path commands for a custom shape.
+             * @expose
+             * @name styleDefaults.nodeDefaults.indicatorIconDefaults.shape
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {string=}
+             * @ojvalue {string=} "circle"
+             * @ojvalue {string=} "ellipse"
+             * @ojvalue {string=} "square"
+             * @ojvalue {string=} "plus"
+             * @ojvalue {string=} "diamond"
+             * @ojvalue {string=} "triangleUp"
+             * @ojvalue {string=} "triangleDown"
+             * @ojvalue {string=} "human"
+             * @ojvalue {string=} "rectangle"
+             * @ojvalue {string=} "star"
+             * @default "square"
+             */
+            shape: 'square',
+
+            /**
+             * The URL of an image to display by default for the node indicator icons.
+             * @expose
+             * @name styleDefaults.nodeDefaults.indicatorIconDefaults.source
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {string=}
+             * @default null
+             */
+            source: '',
+
+            /**
+             * The default width of the node indicator icons.  The default value varies based on theme.
+             * @expose
+             * @name styleDefaults.nodeDefaults.indicatorIconDefaults.width
+             * @memberof! oj.ojNBox
+             * @instance
+             * @type {number=}
+             * @ojunits pixels
+             */
+            width: 10
+          },
+
+          /**
+           * The CSS style object defining the style of the node labels.
            * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
            * The default value comes from the CSS and varies based on theme.
            * @expose
-           * @name styleDefaults.rowLabelStyle
-           * @ojshortdesc The CSS style object defining the style of the row labels.
+           * @name styleDefaults.nodeDefaults.labelStyle
+           * @ojshortdesc The CSS style object defining the style of the node labels.
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object=}
            * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            */
-          rowLabelStyle: undefined,
+          labelStyle: undefined,
 
           /**
-           * The CSS style object defining the style of the rows title.
+           * The CSS style object defining the style of the node secondary labels.
            * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+           * The default value comes from the CSS and varies based on theme.
            * @expose
-           * @name styleDefaults.rowsTitleStyle
-           * @ojshortdesc The CSS style object defining the style of the rows title.
+           * @name styleDefaults.nodeDefaults.secondaryLabelStyle
+           * @ojshortdesc The CSS style object defining the style of the node secondary labels.
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object=}
            * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-           * @default null
            */
-          rowsTitleStyle: undefined
+          secondaryLabelStyle: undefined
         },
 
         /**
-         * An object containing an optional callback function for tooltip customization.
+         * The CSS style object defining the style of the row labels.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+         * The default value comes from the CSS and varies based on theme.
          * @expose
-         * @name tooltip
-         * @memberof oj.ojNBox
+         * @name styleDefaults.rowLabelStyle
+         * @ojshortdesc The CSS style object defining the style of the row labels.
+         * @memberof! oj.ojNBox
          * @instance
          * @type {Object=}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          */
-        tooltip: {
-          /**
-          *
-          * A function that returns a custom tooltip for the NBox nodes. The function takes a dataContext argument,
-          * provided by the NBox. The function should return an Object that contains only one of the two properties:
-          *  <ul>
-          *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
-          *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
-          *  </ul>
-          * @expose
-          * @name tooltip.renderer
-          * @ojshortdesc A function that returns a custom tooltip. See the Help documentation for more information.
-          * @memberof! oj.ojNBox
-          * @instance
-          * @type {function(Object)|null}
-          * @default null
-          * @ojsignature {target: "Type", value: "((context: oj.ojNBox.TooltipContext<K>) => ({insert: Element|string}|{preventDefault: boolean}))|null", jsdocOverride: true}
-          */
-          renderer: null
-        },
+        rowLabelStyle: undefined,
 
         /**
-         * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events if the element does not require an internal feature that requires a touch start gesture like scrolling. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
+         * The CSS style object defining the style of the rows title.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
          * @expose
-         * @name touchResponse
-         * @ojshortdesc Specifies configuration options for touch and hold delays on mobile devices. See the Help documentation for more information.
-         * @memberof oj.ojNBox
+         * @name styleDefaults.rowsTitleStyle
+         * @ojshortdesc The CSS style object defining the style of the rows title.
+         * @memberof! oj.ojNBox
          * @instance
-         * @type {string=}
-         * @ojvalue {string} "touchStart"
-         * @ojvalue {string} "auto"
-         * @default "auto"
+         * @type {Object=}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+         * @default null
          */
-        touchResponse: 'auto'
+        rowsTitleStyle: undefined
       },
 
-
-      _CreateDvtComponent: function (context, callback, callbackObj) {
-        return new ojnboxToolkit.NBox(context, callback, callbackObj);
+      /**
+       * An object containing an optional callback function for tooltip customization.
+       * @expose
+       * @name tooltip
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {Object=}
+       */
+      tooltip: {
+        /**
+         *
+         * A function that returns a custom tooltip for the NBox nodes. The function takes a dataContext argument,
+         * provided by the NBox. The function should return an Object that contains only one of the two properties:
+         *  <ul>
+         *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
+         *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
+         *  </ul>
+         * @expose
+         * @name tooltip.renderer
+         * @ojshortdesc A function that returns a custom tooltip. See the Help documentation for more information.
+         * @memberof! oj.ojNBox
+         * @instance
+         * @type {function(Object)|null}
+         * @default null
+         * @ojsignature {target: "Type", value: "((context: oj.ojNBox.TooltipContext<K>) => ({insert: Element|string}|{preventDefault: boolean}))|null", jsdocOverride: true}
+         */
+        renderer: null
       },
 
+      /**
+       * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events if the element does not require an internal feature that requires a touch start gesture like scrolling. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
+       * @expose
+       * @name touchResponse
+       * @ojshortdesc Specifies configuration options for touch and hold delays on mobile devices. See the Help documentation for more information.
+       * @memberof oj.ojNBox
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "touchStart"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      touchResponse: 'auto'
+    },
 
-      _ConvertLocatorToSubId: function (locator) {
-        var subId = locator.subId;
+    _CreateDvtComponent: function (context, callback, callbackObj) {
+      return new ojnboxToolkit.NBox(context, callback, callbackObj);
+    },
 
-        // Convert the supported locators
-        if (subId === OJ_NBOX_CELL) {
-          // cell[row,column]
-          subId = 'cell[' + locator.row + ',' + locator.column + ']';
-        } else if (subId === OJ_NBOX_DIALOG) {
-          subId = 'dialog';
-        } else if (subId === OJ_NBOX_DIALOG_CLOSE_BUTTON) {
-          subId = 'dialog#closeButton';
-        } else if (subId === OJ_NBOX_GROUP_NODE) {
-          // groupNode[groupCategory] or cell[row,column]#groupNode[groupCategory]
-          if (locator.row && locator.column) {
-            subId = 'cell[' + locator.row + ',' + locator.column + ']#groupNode[';
-          } else {
-            subId = 'groupNode[';
-          }
+    _ConvertLocatorToSubId: function (locator) {
+      var subId = locator.subId;
 
-          subId += locator.groupCategory + ']';
-        } else if (subId === OJ_NBOX_NODE) {
-          var index;
-          subId = '';
-
-          var id = locator.id;
-          var auto = this._component.getAutomation();
-          index = auto.getNodeIndexFromId(id);
-          subId += 'node[' + index + ']';
-        } else if (subId === OJ_NBOX_OVERFLOW) {
-          // cell[row,col]#overflow
-          subId = 'cell[' + locator.row + ',' + locator.column + ']#overflow';
-        } else if (subId === OJ_NBOX_TOOLTIP) {
-          subId = 'tooltip';
+      // Convert the supported locators
+      if (subId === OJ_NBOX_CELL) {
+        // cell[row,column]
+        subId = 'cell[' + locator.row + ',' + locator.column + ']';
+      } else if (subId === OJ_NBOX_DIALOG) {
+        subId = 'dialog';
+      } else if (subId === OJ_NBOX_DIALOG_CLOSE_BUTTON) {
+        subId = 'dialog#closeButton';
+      } else if (subId === OJ_NBOX_GROUP_NODE) {
+        // groupNode[groupCategory] or cell[row,column]#groupNode[groupCategory]
+        if (locator.row && locator.column) {
+          subId = 'cell[' + locator.row + ',' + locator.column + ']#groupNode[';
+        } else {
+          subId = 'groupNode[';
         }
 
-        // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
-        // support for the old subId syntax in 1.2.0.
-        return subId;
-      },
+        subId += locator.groupCategory + ']';
+      } else if (subId === OJ_NBOX_NODE) {
+        var index;
+        subId = '';
 
-
-      _ConvertSubIdToLocator: function (subId) {
-        var locator = {};
-
-        if (subId.indexOf('node') === 0) {
-          locator.subId = OJ_NBOX_NODE;
-
-          var index = this._GetFirstIndex(subId);
-          var auto = this._component.getAutomation();
-          locator.id = auto.getNodeIdFromIndex(index);
-        } else if (subId.indexOf('cell') === 0) {
-          // cell[row,column] or cell[row,column]#groupNode[groupCategory] or cell[row,column]#node[index]
-          var cellIds = this._GetFirstBracketedString(subId);
-          var commaIndex = cellIds.indexOf(',');
-          locator.row = cellIds.substring(0, commaIndex);
-          locator.column = cellIds.substring(commaIndex + 1);
-
-          var poundIndex = subId.indexOf('#');
-          if (subId.indexOf('#groupNode') >= 0) {
-            locator.subId = OJ_NBOX_GROUP_NODE;
-            locator.groupCategory = this._GetFirstBracketedString(subId.substring(poundIndex));
-          } else if (subId.indexOf('#overflow') >= 0) {
-            locator.subId = OJ_NBOX_OVERFLOW;
-          } else {
-            locator.subId = OJ_NBOX_CELL;
-          }
-        } else if (subId.indexOf('dialog') === 0) {
-          if (subId.indexOf('#closeButton') >= 0) {
-            // dialog#closeButton
-            locator.subId = OJ_NBOX_DIALOG_CLOSE_BUTTON;
-          } else {
-            locator.subId = OJ_NBOX_DIALOG;
-          }
-        } else if (subId.indexOf('groupNode') === 0) {
-          // groupNode[groupCategory] or cell[row,column]#groupNode[groupCategory]
-          locator.subId = OJ_NBOX_GROUP_NODE;
-          locator.groupCategory = this._GetFirstBracketedString(subId);
-        } else if (subId === 'tooltip') {
-          locator.subId = OJ_NBOX_TOOLTIP;
-        }
-
-        return locator;
-      },
-
-
-      _GetComponentStyleClasses: function () {
-        var styleClasses = this._super();
-        styleClasses.push('oj-nbox');
-        return styleClasses;
-      },
-
-
-      _GetChildStyleClasses: function () {
-        var styleClasses = this._super();
-        styleClasses['oj-dvtbase oj-nbox'] = {
-          path: 'styleDefaults/animationDuration',
-          property: 'ANIM_DUR'
-        };
-        styleClasses['oj-nbox-container'] = {
-          path: '__layout/cellGap',
-          property: 'grid-gap'
-        };
-        styleClasses['oj-nbox-columns-title'] = {
-          path: 'styleDefaults/columnsTitleStyle',
-          property: 'TEXT'
-        };
-        styleClasses['oj-nbox-rows-title'] = {
-          path: 'styleDefaults/rowsTitleStyle',
-          property: 'TEXT'
-        };
-        styleClasses['oj-nbox-column-label'] = {
-          path: 'styleDefaults/columnLabelStyle',
-          property: 'TEXT'
-        };
-        styleClasses['oj-nbox-row-label'] = {
-          path: 'styleDefaults/rowLabelStyle',
-          property: 'TEXT'
-        };
-
-        styleClasses[OJ_NBOX_CELL] = [{
-          path: 'styleDefaults/cellDefaults/_style',
-          property: 'BACKGROUND'
-        }, {
-          path: 'styleDefaults/cellDefaults/_borderRadius',
-          property: 'border-radius'
-        }, {
-          path: '__layout/gridGap',
-          property: 'grid-gap'
-        }, {
-          path: '__layout/cellInnerPadding',
-          property: 'padding'
-        }, {
-          path: '__layout/minimumCellSize',
-          property: 'height'
-        }];
-        styleClasses['oj-nbox-cell oj-minimized'] = {
-          path: 'styleDefaults/cellDefaults/_minimizedStyle',
-          property: 'BACKGROUND'
-        };
-        styleClasses['oj-nbox-cell oj-maximized'] = {
-          path: 'styleDefaults/cellDefaults/_maximizedStyle',
-          property: 'BACKGROUND'
-        };
-
-        styleClasses['oj-nbox-cell-label'] = {
-          path: 'styleDefaults/cellDefaults/labelStyle',
-          property: 'TEXT'
-        };
-        styleClasses['oj-nbox-cell-label oj-minimized'] = {
-          path: 'styleDefaults/cellDefaults/_labelMinimizedStyle',
-          property: 'TEXT'
-        };
-        styleClasses['oj-nbox-cell-label oj-maximized'] = {
-          path: 'styleDefaults/cellDefaults/_labelMaximizedStyle',
-          property: 'TEXT'
-        };
-        styleClasses['oj-nbox-cell-countlabel'] = {
-          path: 'styleDefaults/cellDefaults/bodyCountLabelStyle',
-          property: 'TEXT'
-        };
-        styleClasses['oj-nbox-cell-countlabel oj-nbox-cell-header'] = {
-          path: 'styleDefaults/cellDefaults/countLabelStyle',
-          property: 'TEXT'
-        };
-        styleClasses['oj-nbox-cell-shadow'] = {
-          path: 'styleDefaults/cellDefaults/_panelShadow',
-          property: 'box-shadow'
-        };
-        styleClasses[OJ_NBOX_NODE] = [{
-          path: 'styleDefaults/nodeDefaults/color',
-          property: 'background-color'
-        }, {
-          path: 'styleDefaults/nodeDefaults/_borderRadius',
-          property: 'border-radius'
-        }, {
-          path: '__layout/minimumLabelWidth',
-          property: 'min-width'
-        }, {
-          path: '__layout/maximumLabelWidth',
-          property: 'max-width'
-        }];
-        styleClasses['oj-nbox-node oj-hover'] = {
-          path: 'styleDefaults/nodeDefaults/hoverColor',
-          property: BORDER_COLOR
-        };
-        styleClasses['oj-nbox-node oj-selected'] = {
-          path: 'styleDefaults/nodeDefaults/selectionColor',
-          property: BORDER_COLOR
-        };
-        styleClasses['oj-nbox-node-no-label'] = {
-          path: 'styleDefaults/nodeDefaults/iconDefaults/preferredSizeNoLabel',
-          property: 'height'
-        };
-        styleClasses['oj-nbox-node-one-label-padding'] = {
-          path: '__layout/nodeSingleLabelGap',
-          property: 'padding'
-        };
-        styleClasses['oj-nbox-node-two-label-padding'] = {
-          path: '__layout/nodeDualLabelGap',
-          property: 'padding'
-        };
-        styleClasses['oj-nbox-node-label'] = {
-          path: 'styleDefaults/nodeDefaults/labelStyle',
-          property: 'TEXT'
-        };
-        styleClasses['oj-nbox-node-secondarylabel'] = {
-          path: 'styleDefaults/nodeDefaults/secondaryLabelStyle',
-          property: 'TEXT'
-        };
-        styleClasses['oj-nbox-node-initials-background'] = {
-          path: 'styleDefaults/nodeDefaults/iconDefaults/backgroundSize',
-          property: 'width'
-        };
-        styleClasses['oj-nbox-node-categorylabel'] = {
-          path: 'styleDefaults/_categoryNodeDefaults/labelStyle',
-          property: 'TEXT'
-        };
-        styleClasses[OJ_NBOX_DIALOG] = [
-          { path: 'styleDefaults/_drawerDefaults/background',
-            property: 'background-color'
-          },
-          { path: 'styleDefaults/_drawerDefaults/borderColor',
-            property: BORDER_COLOR
-          }
-        ];
-        styleClasses['oj-nbox-dialog-label'] = {
-          path: 'styleDefaults/_drawerDefaults/labelStyle',
-          property: 'TEXT'
-        };
-        styleClasses['oj-nbox-dialog-countlabel'] = {
-          path: 'styleDefaults/_drawerDefaults/countLabelStyle',
-          property: 'TEXT'
-        };
-
-        return styleClasses;
-      },
-
-
-      _GetEventTypes: function () {
-        return ['optionChange'];
-      },
-
-
-      _LoadResources: function () {
-        // Ensure the resources object exists
-        if (this.options._resources == null) { this.options._resources = {}; }
-
-        var resources = this.options._resources;
-        resources.overflow = {
-          class: 'oj-fwk-icon oj-fwk-icon-dots-horizontal',
-          width: 34,
-          height: 9
-        };
-        resources.close = {
-          class: 'oj-fwk-icon oj-fwk-icon-cross',
-          width: 16,
-          height: 16
-        };
-        resources.background_neutral = {
-          src: 'oj-nbox-node-initials-neutral',
-          width: 44,
-          height: 44
-        };
-        resources.background_teal = {
-          src: 'oj-nbox-node-initials-teal',
-          width: 44,
-          height: 44
-        };
-        resources.background_red = {
-          src: 'oj-nbox-node-initials-red',
-          width: 44,
-          height: 44
-        };
-        resources.background_green = {
-          src: 'oj-nbox-node-initials-green',
-          width: 44,
-          height: 44
-        };
-        resources.background_orange = {
-          src: 'oj-nbox-node-initials-orange',
-          width: 44,
-          height: 44
-        };
-        resources.background_mauve = {
-          src: 'oj-nbox-node-initials-mauve',
-          width: 44,
-          height: 44
-        };
-        resources.background_pink = {
-          src: 'oj-nbox-node-initials-pink',
-          width: 44,
-          height: 44
-        };
-        resources.background_forest = {
-          src: 'oj-nbox-node-initials-forest',
-          width: 44,
-          height: 44
-        };
-        resources.background_purple = {
-          src: 'oj-nbox-node-initials-purple',
-          width: 44,
-          height: 44
-        };
-        resources.background_blue = {
-          src: 'oj-nbox-node-initials-blue',
-          width: 44,
-          height: 44
-        };
-        resources.background_slate = {
-          src: 'oj-nbox-node-initials-slate',
-          width: 44,
-          height: 44
-        };
-        resources.background_lilac = {
-          src: 'oj-nbox-node-initials-lilac',
-          width: 44,
-          height: 44
-        };
-        resources.background_gray = {
-          src: 'oj-nbox-node-initials-gray',
-          width: 44,
-          height: 44
-        };
-      },
-
-      _GetComponentNoClonePaths: function () {
-        var noClonePaths = this._super();
-        noClonePaths.data = true;
-        noClonePaths.nodes = true;
-        return noClonePaths;
-      },
-
-      getNodeBySubId: function (locator) {
-        return this._super(locator);
-      },
-
-
-      getSubIdByNode: function (node) {
-        return this._super(node);
-      },
-
-      /**
-       * Get the NBox rows title.
-       * @return {String} NBox rows title.
-       * @expose
-       * @memberof oj.ojNBox
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @instance
-       */
-      getRowsTitle: function () {
+        var id = locator.id;
         var auto = this._component.getAutomation();
-        return auto.getData('rowsTitle');
-      },
-
-      /**
-       * Get the NBox row count.
-       * @return {Number} NBox row count.
-       * @expose
-       * @memberof oj.ojNBox
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @instance
-       */
-      getRowCount: function () {
-        var auto = this._component.getAutomation();
-        return auto.getData('rowCount');
-      },
-
-      /**
-       * Returns an object with the following properties for automation testing verification of the NBox row at the
-       * specified value.
-       *
-       * @param {string} rowValue The id of the row.
-       * @property {string} label The label of the row.
-       * @return {Object|null} An object containing properties for the row, or null if none exists.
-       * @expose
-       * @memberof oj.ojNBox
-       * @ojshortdesc Returns information for automation testing verification of a specified NBox row.
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @instance
-       */
-      getRow: function (rowValue) {
-        var auto = this._component.getAutomation();
-        return auto.getData('row', rowValue);
-      },
-
-
-      /**
-       * Get the NBox columns title.
-       * @return {String} NBox columns title.
-       * @expose
-       * @memberof oj.ojNBox
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @instance
-       */
-      getColumnsTitle: function () {
-        var auto = this._component.getAutomation();
-        return auto.getData('columnsTitle');
-      },
-
-      /**
-       * Get the NBox column count.
-       * @return {Number} NBox column count.
-       * @expose
-       * @memberof oj.ojNBox
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @instance
-       */
-      getColumnCount: function () {
-        var auto = this._component.getAutomation();
-        return auto.getData('columnCount');
-      },
-
-      /**
-       * Returns an object with the following properties for automation testing verification of the NBox column at the
-       * specified value.
-       *
-       * @param {string} columnValue The id of the column.
-       * @property {string} label The label of the column.
-       * @return {Object|null} An object containing properties for the column, or null if none exists.
-       * @expose
-       * @memberof oj.ojNBox
-       * @ojshortdesc Returns information for automation testing verification of a specified NBox column.
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @instance
-       */
-      getColumn: function (columnValue) {
-        var auto = this._component.getAutomation();
-        return auto.getData('column', columnValue);
-      },
-
-      /**
-       * Returns an object with the following properties for automation testing verification of the NBox cell at the
-       * specified row and column values.
-       *
-       * @param {string} rowValue The id of the containing row.
-       * @param {string} columnValue The id of the containing column.
-       * @property {string} background The background of the cell.
-       * @property {string} label The label of the cell.
-       * @property {Function(string)} getGroupNode A function taking a group category string and returning the corresponding group node.
-       * @property {string} getGroupNode.color The color of the group node.
-       * @property {string} getGroupNode.indicatorColor The color of the group node indicator section.
-       * @property {Object} getGroupNode.indicatorIcon The indicator marker for the group node.
-       * @property {string} getGroupNode.indicatorIcon.color The color of the indicator marker.
-       * @property {string} getGroupNode.indicatorIcon.shape The shape of the indicator marker.
-       * @property {boolean} getGroupNode.selected Whether or not the group node is selected.
-       * @property {number} getGroupNode.size The number of nodes the group node represents.
-       * @property {string} getGroupNode.tooltip The tooltip of the group node.
-       * @property {Function(number)} getNode A function taking the node index that returns an object with properties for the specified node, or null if none exists.
-       * @property {string} getNode.color The color of the node.
-       * @property {Object} getNode.icon The icon marker for the node.
-       * @property {string} getNode.icon.color The color of the icon marker.
-       * @property {string} getNode.icon.shape The shape of the icon marker.
-       * @property {string} getNode.indicatorColor The color of the node indicator section.
-       * @property {Object} getNode.indicatorIcon The indicator marker for the node.
-       * @property {string} getNode.indicatorIcon.color The color of the indicator marker.
-       * @property {string} getNode.indicatorIcon.shape The shape of the indicator marker.
-       * @property {string} getNode.label The label of the node.
-       * @property {string} getNode.secondaryLabel The secondary label of the node.
-       * @property {boolean} getNode.selected Whether or not the node is selected.
-       * @property {string} getNode.tooltip The tooltip of the node.
-       * @property {Function} getNodeCount A function that returns the number of nodes in the cell.
-       * @return {Object|null} An object containing properties for the cell, or null if none exists.
-       * @expose
-       * @memberof oj.ojNBox
-       * @ojshortdesc Returns information for automation testing verification of a specified NBox cell.
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @instance
-       */
-      getCell: function (rowValue, columnValue) {
-        var auto = this._component.getAutomation();
-        var ret = auto.getCell(rowValue, columnValue);
-        if (ret) {
-          ret.getGroupNode = function (groupMap) {
-            return auto.getCellGroupNode(ret, groupMap);
-          };
-          ret.getNode = function (nodeIndex) {
-            return auto.getCellNode(ret, nodeIndex);
-          };
-        }
-        return ret;
-      },
-
-      /**
-       * Get the NBox group behavior.
-       * @return {String} group behavior The group behavior of the NBox ('withinCell', 'acrossCells', 'none').
-       * @expose
-       * @memberof oj.ojNBox
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @instance
-       */
-      getGroupBehavior: function () {
-        var auto = this._component.getAutomation();
-        return auto.getData('groupBehavior');
-      },
-
-      /**
-       * Returns an object with the following properties for automation testing verification of the NBox group node with the
-       * specified group category string.
-       *
-       * @param {String} groupCategory A string corresponding to the groupCategory value of the nodes represented by this group node.
-       * @property {string} color The color of the group node.
-       * @property {string} indicatorColor The indicator color of the group node.
-       * @property {Object} indicatorIcon The indicator marker for the group node, or null if none exists.
-       * @property {string} indicatorIcon.color The color of the indicator marker.
-       * @property {string} indicatorIcon.shape The shape of the indicator marker.
-       * @property {boolean} selected Whether or not the group node is selected.
-       * @property {number} size The number of nodes the group node represents.
-       * @property {string} tooltip The tooltip of the group node.
-       * @return {Object|null} An object containing properties for the group node, or null if none exists.
-       * @expose
-       * @memberof oj.ojNBox
-       * @ojshortdesc Returns information for automation testing verification of a specified NBox group node.
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @instance
-       */
-      getGroupNode: function (groupCategory) {
-        var auto = this._component.getAutomation();
-        return auto.getGroupNode(groupCategory);
-      },
-
-      /**
-       * Returns an object with the following properties for automation testing verification of the currently active NBox
-       * dialog.
-       *
-       * @property {string} label The label of the dialog.
-       * @property {Function(number)} getNode A function taking the node index that returns an object with properties for the specified node, or null if none exists.
-       * @property {boolean} getNode.selected
-       * @property {string} getNode.color The color of the node.
-       * @property {Object} getNode.icon The icon marker for the node, or null if none exists.
-       * @property {string} getNode.icon.color The color of the icon marker.
-       * @property {string} getNode.icon.shape The shape of the icon marker.
-       * @property {string} getNode.indicatorColor The indicator color of the node.
-       * @property {Object} getNode.indicatorIcon The indicator icon for the node, or null if none exists.
-       * @property {string} getNode.indicatorIcon.color The color of the indicator icon.
-       * @property {string} getNode.indicatorIcon.shape The shape of the indicator icon.
-       * @property {string} getNode.label The label of the node.
-       * @property {string} getNode.secondaryLabel The secondary label of the node.
-       * @property {string} getNode.tooltip The tooltip of the node.
-       * @property {Function} getNodeCount A function that returns the number of nodes in the cell.
-       * @return {Object|null} An object containing properties for the dialog, or null if none exists.
-       * @expose
-       * @memberof oj.ojNBox
-       * @ojshortdesc Returns information for automation testing verification of the currently active NBox dialog.
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @instance
-       */
-      getDialog: function () {
-        var auto = this._component.getAutomation();
-        var ret = auto.getDialog();
-        if (ret) {
-          ret.getNode = function (nodeIndex) {
-            return auto.getDialogNode(nodeIndex);
-          };
-        }
-        return ret;
-      },
-
-      /**
-       * {@ojinclude "name":"nodeContextDoc"}
-       * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
-       * @ojsignature {target: "Type", value: "oj.ojNBox.NodeContext<K>|oj.ojNBox.CellContext|oj.ojNBox.DialogContext|oj.ojNBox.GroupNodeContext|null", jsdocOverride: true, for: "returns"}
-       * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-       *
-       * @example {@ojinclude "name":"nodeContextExample"}
-       *
-       * @expose
-       * @instance
-       * @memberof oj.ojNBox
-       * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
-       */
-      getContextByNode: function (node) {
-        // context objects are documented with @ojnodecontext
-        var context = this.getSubIdByNode(node);
-        if (context && context.subId !== OJ_NBOX_TOOLTIP &&
-            context.subId !== OJ_NBOX_DIALOG_CLOSE_BUTTON &&
-            context.subId !== OJ_NBOX_OVERFLOW) {
-          return context;
-        }
-
-        return null;
-      },
-
-
-      _GetComponentDeferredDataPaths: function () {
-        return { root: ['cells', 'rows', 'columns', 'nodes', 'data'] };
-      },
-
-
-      _GetSimpleDataProviderConfigs: function () {
-        return {
-          data: { templateName: 'nodeTemplate', templateElementName: 'oj-n-box-node', resultPath: 'nodes' }
-        };
+        index = auto.getNodeIndexFromId(id);
+        subId += 'node[' + index + ']';
+      } else if (subId === OJ_NBOX_OVERFLOW) {
+        // cell[row,col]#overflow
+        subId = 'cell[' + locator.row + ',' + locator.column + ']#overflow';
+      } else if (subId === OJ_NBOX_TOOLTIP) {
+        subId = 'tooltip';
       }
 
-    });
+      // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
+      // support for the old subId syntax in 1.2.0.
+      return subId;
+    },
+
+    _ConvertSubIdToLocator: function (subId) {
+      var locator = {};
+
+      if (subId.indexOf('node') === 0) {
+        locator.subId = OJ_NBOX_NODE;
+
+        var index = this._GetFirstIndex(subId);
+        var auto = this._component.getAutomation();
+        locator.id = auto.getNodeIdFromIndex(index);
+      } else if (subId.indexOf('cell') === 0) {
+        // cell[row,column] or cell[row,column]#groupNode[groupCategory] or cell[row,column]#node[index]
+        var cellIds = this._GetFirstBracketedString(subId);
+        var commaIndex = cellIds.indexOf(',');
+        locator.row = cellIds.substring(0, commaIndex);
+        locator.column = cellIds.substring(commaIndex + 1);
+
+        var poundIndex = subId.indexOf('#');
+        if (subId.indexOf('#groupNode') >= 0) {
+          locator.subId = OJ_NBOX_GROUP_NODE;
+          locator.groupCategory = this._GetFirstBracketedString(subId.substring(poundIndex));
+        } else if (subId.indexOf('#overflow') >= 0) {
+          locator.subId = OJ_NBOX_OVERFLOW;
+        } else {
+          locator.subId = OJ_NBOX_CELL;
+        }
+      } else if (subId.indexOf('dialog') === 0) {
+        if (subId.indexOf('#closeButton') >= 0) {
+          // dialog#closeButton
+          locator.subId = OJ_NBOX_DIALOG_CLOSE_BUTTON;
+        } else {
+          locator.subId = OJ_NBOX_DIALOG;
+        }
+      } else if (subId.indexOf('groupNode') === 0) {
+        // groupNode[groupCategory] or cell[row,column]#groupNode[groupCategory]
+        locator.subId = OJ_NBOX_GROUP_NODE;
+        locator.groupCategory = this._GetFirstBracketedString(subId);
+      } else if (subId === 'tooltip') {
+        locator.subId = OJ_NBOX_TOOLTIP;
+      }
+
+      return locator;
+    },
+
+    _GetComponentStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses.push('oj-nbox');
+      return styleClasses;
+    },
+
+    _GetChildStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses['oj-dvtbase oj-nbox'] = {
+        path: 'styleDefaults/animationDuration',
+        property: 'ANIM_DUR'
+      };
+      styleClasses['oj-nbox-container'] = {
+        path: '__layout/cellGap',
+        property: 'grid-gap'
+      };
+      styleClasses['oj-nbox-columns-title'] = {
+        path: 'styleDefaults/columnsTitleStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-rows-title'] = {
+        path: 'styleDefaults/rowsTitleStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-column-label'] = {
+        path: 'styleDefaults/columnLabelStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-row-label'] = {
+        path: 'styleDefaults/rowLabelStyle',
+        property: 'TEXT'
+      };
+
+      styleClasses[OJ_NBOX_CELL] = [
+        {
+          path: 'styleDefaults/cellDefaults/_style',
+          property: 'BACKGROUND'
+        },
+        {
+          path: 'styleDefaults/cellDefaults/_borderRadius',
+          property: 'border-radius'
+        },
+        {
+          path: '__layout/gridGap',
+          property: 'grid-gap'
+        },
+        {
+          path: '__layout/cellInnerPadding',
+          property: 'padding'
+        },
+        {
+          path: '__layout/minimumCellSize',
+          property: 'height'
+        }
+      ];
+      styleClasses['oj-nbox-cell oj-minimized'] = {
+        path: 'styleDefaults/cellDefaults/_minimizedStyle',
+        property: 'BACKGROUND'
+      };
+      styleClasses['oj-nbox-cell oj-maximized'] = {
+        path: 'styleDefaults/cellDefaults/_maximizedStyle',
+        property: 'BACKGROUND'
+      };
+
+      styleClasses['oj-nbox-cell-label'] = {
+        path: 'styleDefaults/cellDefaults/labelStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-cell-label oj-minimized'] = {
+        path: 'styleDefaults/cellDefaults/_labelMinimizedStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-cell-label oj-maximized'] = {
+        path: 'styleDefaults/cellDefaults/_labelMaximizedStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-cell-countlabel'] = {
+        path: 'styleDefaults/cellDefaults/bodyCountLabelStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-cell-countlabel oj-nbox-cell-header'] = {
+        path: 'styleDefaults/cellDefaults/countLabelStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-cell-shadow'] = {
+        path: 'styleDefaults/cellDefaults/_panelShadow',
+        property: 'box-shadow'
+      };
+      styleClasses[OJ_NBOX_NODE] = [
+        {
+          path: 'styleDefaults/nodeDefaults/color',
+          property: 'background-color'
+        },
+        {
+          path: 'styleDefaults/nodeDefaults/_borderRadius',
+          property: 'border-radius'
+        },
+        {
+          path: '__layout/minimumLabelWidth',
+          property: 'min-width'
+        },
+        {
+          path: '__layout/maximumLabelWidth',
+          property: 'max-width'
+        }
+      ];
+      styleClasses['oj-nbox-node oj-hover'] = {
+        path: 'styleDefaults/nodeDefaults/hoverColor',
+        property: BORDER_COLOR
+      };
+      styleClasses['oj-nbox-node oj-selected'] = {
+        path: 'styleDefaults/nodeDefaults/selectionColor',
+        property: BORDER_COLOR
+      };
+      styleClasses['oj-nbox-node-no-label'] = {
+        path: 'styleDefaults/nodeDefaults/iconDefaults/preferredSizeNoLabel',
+        property: 'height'
+      };
+      styleClasses['oj-nbox-node-one-label-padding'] = {
+        path: '__layout/nodeSingleLabelGap',
+        property: 'padding'
+      };
+      styleClasses['oj-nbox-node-two-label-padding'] = {
+        path: '__layout/nodeDualLabelGap',
+        property: 'padding'
+      };
+      styleClasses['oj-nbox-node-label'] = {
+        path: 'styleDefaults/nodeDefaults/labelStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-node-secondarylabel'] = {
+        path: 'styleDefaults/nodeDefaults/secondaryLabelStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-node-initials-background'] = {
+        path: 'styleDefaults/nodeDefaults/iconDefaults/backgroundSize',
+        property: 'width'
+      };
+      styleClasses['oj-nbox-node-categorylabel'] = {
+        path: 'styleDefaults/_categoryNodeDefaults/labelStyle',
+        property: 'TEXT'
+      };
+      styleClasses[OJ_NBOX_DIALOG] = [
+        { path: 'styleDefaults/_drawerDefaults/background', property: 'background-color' },
+        { path: 'styleDefaults/_drawerDefaults/borderColor', property: BORDER_COLOR }
+      ];
+      styleClasses['oj-nbox-dialog-label'] = {
+        path: 'styleDefaults/_drawerDefaults/labelStyle',
+        property: 'TEXT'
+      };
+      styleClasses['oj-nbox-dialog-countlabel'] = {
+        path: 'styleDefaults/_drawerDefaults/countLabelStyle',
+        property: 'TEXT'
+      };
+
+      return styleClasses;
+    },
+
+    _GetEventTypes: function () {
+      return ['optionChange'];
+    },
+
+    _LoadResources: function () {
+      // Ensure the resources object exists
+      if (this.options._resources == null) {
+        this.options._resources = {};
+      }
+
+      var resources = this.options._resources;
+      resources.overflow = {
+        class: 'oj-fwk-icon oj-fwk-icon-dots-horizontal',
+        width: 34,
+        height: 9
+      };
+      resources.close = {
+        class: 'oj-fwk-icon oj-fwk-icon-cross',
+        width: 16,
+        height: 16
+      };
+      resources.background_neutral = {
+        src: 'oj-nbox-node-initials-neutral',
+        width: 44,
+        height: 44
+      };
+      resources.background_teal = {
+        src: 'oj-nbox-node-initials-teal',
+        width: 44,
+        height: 44
+      };
+      resources.background_red = {
+        src: 'oj-nbox-node-initials-red',
+        width: 44,
+        height: 44
+      };
+      resources.background_green = {
+        src: 'oj-nbox-node-initials-green',
+        width: 44,
+        height: 44
+      };
+      resources.background_orange = {
+        src: 'oj-nbox-node-initials-orange',
+        width: 44,
+        height: 44
+      };
+      resources.background_mauve = {
+        src: 'oj-nbox-node-initials-mauve',
+        width: 44,
+        height: 44
+      };
+      resources.background_pink = {
+        src: 'oj-nbox-node-initials-pink',
+        width: 44,
+        height: 44
+      };
+      resources.background_forest = {
+        src: 'oj-nbox-node-initials-forest',
+        width: 44,
+        height: 44
+      };
+      resources.background_purple = {
+        src: 'oj-nbox-node-initials-purple',
+        width: 44,
+        height: 44
+      };
+      resources.background_blue = {
+        src: 'oj-nbox-node-initials-blue',
+        width: 44,
+        height: 44
+      };
+      resources.background_slate = {
+        src: 'oj-nbox-node-initials-slate',
+        width: 44,
+        height: 44
+      };
+      resources.background_lilac = {
+        src: 'oj-nbox-node-initials-lilac',
+        width: 44,
+        height: 44
+      };
+      resources.background_gray = {
+        src: 'oj-nbox-node-initials-gray',
+        width: 44,
+        height: 44
+      };
+    },
+
+    _GetComponentNoClonePaths: function () {
+      var noClonePaths = this._super();
+      noClonePaths.data = true;
+      noClonePaths.nodes = true;
+      return noClonePaths;
+    },
+
+    getNodeBySubId: function (locator) {
+      return this._super(locator);
+    },
+
+    getSubIdByNode: function (node) {
+      return this._super(node);
+    },
+
+    /**
+     * Get the NBox rows title.
+     * @return {String} NBox rows title.
+     * @expose
+     * @memberof oj.ojNBox
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @instance
+     */
+    getRowsTitle: function () {
+      var auto = this._component.getAutomation();
+      return auto.getData('rowsTitle');
+    },
+
+    /**
+     * Get the NBox row count.
+     * @return {Number} NBox row count.
+     * @expose
+     * @memberof oj.ojNBox
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @instance
+     */
+    getRowCount: function () {
+      var auto = this._component.getAutomation();
+      return auto.getData('rowCount');
+    },
+
+    /**
+     * Returns an object with the following properties for automation testing verification of the NBox row at the
+     * specified value.
+     *
+     * @param {string} rowValue The id of the row.
+     * @property {string} label The label of the row.
+     * @return {Object|null} An object containing properties for the row, or null if none exists.
+     * @expose
+     * @memberof oj.ojNBox
+     * @ojshortdesc Returns information for automation testing verification of a specified NBox row.
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @instance
+     */
+    getRow: function (rowValue) {
+      var auto = this._component.getAutomation();
+      return auto.getData('row', rowValue);
+    },
+
+    /**
+     * Get the NBox columns title.
+     * @return {String} NBox columns title.
+     * @expose
+     * @memberof oj.ojNBox
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @instance
+     */
+    getColumnsTitle: function () {
+      var auto = this._component.getAutomation();
+      return auto.getData('columnsTitle');
+    },
+
+    /**
+     * Get the NBox column count.
+     * @return {Number} NBox column count.
+     * @expose
+     * @memberof oj.ojNBox
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @instance
+     */
+    getColumnCount: function () {
+      var auto = this._component.getAutomation();
+      return auto.getData('columnCount');
+    },
+
+    /**
+     * Returns an object with the following properties for automation testing verification of the NBox column at the
+     * specified value.
+     *
+     * @param {string} columnValue The id of the column.
+     * @property {string} label The label of the column.
+     * @return {Object|null} An object containing properties for the column, or null if none exists.
+     * @expose
+     * @memberof oj.ojNBox
+     * @ojshortdesc Returns information for automation testing verification of a specified NBox column.
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @instance
+     */
+    getColumn: function (columnValue) {
+      var auto = this._component.getAutomation();
+      return auto.getData('column', columnValue);
+    },
+
+    /**
+     * Returns an object with the following properties for automation testing verification of the NBox cell at the
+     * specified row and column values.
+     *
+     * @param {string} rowValue The id of the containing row.
+     * @param {string} columnValue The id of the containing column.
+     * @property {string} background The background of the cell.
+     * @property {string} label The label of the cell.
+     * @property {Function(string)} getGroupNode A function taking a group category string and returning the corresponding group node.
+     * @property {string} getGroupNode.color The color of the group node.
+     * @property {string} getGroupNode.indicatorColor The color of the group node indicator section.
+     * @property {Object} getGroupNode.indicatorIcon The indicator marker for the group node.
+     * @property {string} getGroupNode.indicatorIcon.color The color of the indicator marker.
+     * @property {string} getGroupNode.indicatorIcon.shape The shape of the indicator marker.
+     * @property {boolean} getGroupNode.selected Whether or not the group node is selected.
+     * @property {number} getGroupNode.size The number of nodes the group node represents.
+     * @property {string} getGroupNode.tooltip The tooltip of the group node.
+     * @property {Function(number)} getNode A function taking the node index that returns an object with properties for the specified node, or null if none exists.
+     * @property {string} getNode.color The color of the node.
+     * @property {Object} getNode.icon The icon marker for the node.
+     * @property {string} getNode.icon.color The color of the icon marker.
+     * @property {string} getNode.icon.shape The shape of the icon marker.
+     * @property {string} getNode.indicatorColor The color of the node indicator section.
+     * @property {Object} getNode.indicatorIcon The indicator marker for the node.
+     * @property {string} getNode.indicatorIcon.color The color of the indicator marker.
+     * @property {string} getNode.indicatorIcon.shape The shape of the indicator marker.
+     * @property {string} getNode.label The label of the node.
+     * @property {string} getNode.secondaryLabel The secondary label of the node.
+     * @property {boolean} getNode.selected Whether or not the node is selected.
+     * @property {string} getNode.tooltip The tooltip of the node.
+     * @property {Function} getNodeCount A function that returns the number of nodes in the cell.
+     * @return {Object|null} An object containing properties for the cell, or null if none exists.
+     * @expose
+     * @memberof oj.ojNBox
+     * @ojshortdesc Returns information for automation testing verification of a specified NBox cell.
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @instance
+     */
+    getCell: function (rowValue, columnValue) {
+      var auto = this._component.getAutomation();
+      var ret = auto.getCell(rowValue, columnValue);
+      if (ret) {
+        ret.getGroupNode = function (groupMap) {
+          return auto.getCellGroupNode(ret, groupMap);
+        };
+        ret.getNode = function (nodeIndex) {
+          return auto.getCellNode(ret, nodeIndex);
+        };
+      }
+      return ret;
+    },
+
+    /**
+     * Get the NBox group behavior.
+     * @return {String} group behavior The group behavior of the NBox ('withinCell', 'acrossCells', 'none').
+     * @expose
+     * @memberof oj.ojNBox
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @instance
+     */
+    getGroupBehavior: function () {
+      var auto = this._component.getAutomation();
+      return auto.getData('groupBehavior');
+    },
+
+    /**
+     * Returns an object with the following properties for automation testing verification of the NBox group node with the
+     * specified group category string.
+     *
+     * @param {String} groupCategory A string corresponding to the groupCategory value of the nodes represented by this group node.
+     * @property {string} color The color of the group node.
+     * @property {string} indicatorColor The indicator color of the group node.
+     * @property {Object} indicatorIcon The indicator marker for the group node, or null if none exists.
+     * @property {string} indicatorIcon.color The color of the indicator marker.
+     * @property {string} indicatorIcon.shape The shape of the indicator marker.
+     * @property {boolean} selected Whether or not the group node is selected.
+     * @property {number} size The number of nodes the group node represents.
+     * @property {string} tooltip The tooltip of the group node.
+     * @return {Object|null} An object containing properties for the group node, or null if none exists.
+     * @expose
+     * @memberof oj.ojNBox
+     * @ojshortdesc Returns information for automation testing verification of a specified NBox group node.
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @instance
+     */
+    getGroupNode: function (groupCategory) {
+      var auto = this._component.getAutomation();
+      return auto.getGroupNode(groupCategory);
+    },
+
+    /**
+     * Returns an object with the following properties for automation testing verification of the currently active NBox
+     * dialog.
+     *
+     * @property {string} label The label of the dialog.
+     * @property {Function(number)} getNode A function taking the node index that returns an object with properties for the specified node, or null if none exists.
+     * @property {boolean} getNode.selected
+     * @property {string} getNode.color The color of the node.
+     * @property {Object} getNode.icon The icon marker for the node, or null if none exists.
+     * @property {string} getNode.icon.color The color of the icon marker.
+     * @property {string} getNode.icon.shape The shape of the icon marker.
+     * @property {string} getNode.indicatorColor The indicator color of the node.
+     * @property {Object} getNode.indicatorIcon The indicator icon for the node, or null if none exists.
+     * @property {string} getNode.indicatorIcon.color The color of the indicator icon.
+     * @property {string} getNode.indicatorIcon.shape The shape of the indicator icon.
+     * @property {string} getNode.label The label of the node.
+     * @property {string} getNode.secondaryLabel The secondary label of the node.
+     * @property {string} getNode.tooltip The tooltip of the node.
+     * @property {Function} getNodeCount A function that returns the number of nodes in the cell.
+     * @return {Object|null} An object containing properties for the dialog, or null if none exists.
+     * @expose
+     * @memberof oj.ojNBox
+     * @ojshortdesc Returns information for automation testing verification of the currently active NBox dialog.
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @instance
+     */
+    getDialog: function () {
+      var auto = this._component.getAutomation();
+      var ret = auto.getDialog();
+      if (ret) {
+        ret.getNode = function (nodeIndex) {
+          return auto.getDialogNode(nodeIndex);
+        };
+      }
+      return ret;
+    },
+
+    /**
+     * {@ojinclude "name":"nodeContextDoc"}
+     * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+     * @ojsignature {target: "Type", value: "oj.ojNBox.NodeContext<K>|oj.ojNBox.CellContext|oj.ojNBox.DialogContext|oj.ojNBox.GroupNodeContext|null", jsdocOverride: true, for: "returns"}
+     * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+     *
+     * @example {@ojinclude "name":"nodeContextExample"}
+     *
+     * @expose
+     * @instance
+     * @memberof oj.ojNBox
+     * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
+     */
+    getContextByNode: function (node) {
+      // context objects are documented with @ojnodecontext
+      var context = this.getSubIdByNode(node);
+      if (
+        context &&
+        context.subId !== OJ_NBOX_TOOLTIP &&
+        context.subId !== OJ_NBOX_DIALOG_CLOSE_BUTTON &&
+        context.subId !== OJ_NBOX_OVERFLOW
+      ) {
+        return context;
+      }
+
+      return null;
+    },
+
+    _GetComponentDeferredDataPaths: function () {
+      return { root: ['cells', 'rows', 'columns', 'nodes', 'data'] };
+    },
+
+    _GetSimpleDataProviderConfigs: function () {
+      return {
+        data: {
+          templateName: 'nodeTemplate',
+          templateElementName: 'oj-n-box-node',
+          resultPath: 'nodes'
+        }
+      };
+    }
+  });
 
   /**
    * <table class="keyboard-table">
@@ -2523,7 +2533,7 @@ var __oj_n_box_node_metadata =
    *       <td><kbd>Double Tap</kbd></td>
    *       <td>Open group node dialog.</td>
    *     </tr>
-    *     <tr>
+   *     <tr>
    *       <td rowspan="2"><kbd>Press & Hold</kbd></td>
    *       <td>Display tooltip.</td>
    *     </tr>
@@ -2637,7 +2647,7 @@ var __oj_n_box_node_metadata =
    * @memberof oj.ojNBox
    */
 
-   // PROPERTY TYPEDEFS
+  // PROPERTY TYPEDEFS
   /**
    * @typedef {Object} oj.ojNBox.Node
    * @property {any=} id The node id. The node id should be set by the application if the DataProvider is not being used.
@@ -2736,19 +2746,19 @@ var __oj_n_box_node_metadata =
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
    */
-   /**
+  /**
    * @typedef {Object} oj.ojNBox.CellContext Context for NBox cell with specified row and column values.
    * @property {string} row The id of the row.
    * @property {string} column The id of the column.
    * @property {"oj-nbox-cell"} subId Identifies the type of the associated DOM node.
    */
 
-   /**
+  /**
    * @typedef {Object} oj.ojNBox.DialogContext Context for NBox group node dialog.
    * @property {"oj-nbox-dialog"} subId Identifies the type of the associated DOM node.
    */
 
-   /**
+  /**
    * @typedef {Object} oj.ojNBox.GroupNodeContext Context for NBox node with specified id.
    * @property {string} row The id of the row of the associated cell, if one exists.
    * @property {string} column The id of the column of the associated cell, if one exists.
@@ -2878,41 +2888,41 @@ var __oj_n_box_node_metadata =
    * var nodes = myNBox.getNodeBySubId( {'subId': 'oj-nbox-tooltip'} );
    */
 
-    // Slots
-   /**
-    * <p> The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for creating each node of the NBox when a DataProvider
-    * has been specified with the data attribute. The slot content must be a single &lt;template> element.
-    * <p>When the template is executed for each node, it will have access to the NBox's binding context and the following properties:</p>
-    * <ul>
-    *   <li>$current - an object that contains information for the current node. (See [oj.ojNBox.NodeTemplateContext]{@link oj.ojNBox.NodeTemplateContext} or the table below for a list of properties available on $current) </li>
-    * </li>
-    * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
-    * </li>
-    * </ul>
-    *
-    * <p>The content of the template should only be one &lt;oj-n-box-node> element. See the [oj-n-box-node]{@link oj.ojNBoxNode.html} doc for more details.</p>
-    *
-    *
-    * @ojslot nodeTemplate
-    * @ojmaxitems 1
-    * @ojshortdesc The nodeTemplate slot is used to specify the template for creating each node of the NBox. See the Help documentation for more information.
-    * @ojpreferredcontent ["NBoxNodeElement"]
-    *
-    * @memberof oj.ojNBox
-    * @ojtemplateslotprops oj.ojNBox.NodeTemplateContext
-    * @example <caption>Initialize the NBox with an inline node template specified:</caption>
-    * &lt;oj-n-box data='[[dataProvider]]'>
-    *  &lt;template slot='nodeTemplate'>
-    *    &lt;oj-n-box-node
-    *        row='[[$current.data.potential]]'
-    *        column='[[$current.data.performance]]'
-    *        short-desc='[[$current.data.shortDesc]]'
-    *        label='[[$current.data.name]]'
-    *        secondary-label='[[$current.data.position]]'
-    *        icon.source='[[$current.data.image]]'>
-    *    &lt;/oj-n-box-node>
-    *  &lt;/template>
-    * &lt;/oj-n-box>
+  // Slots
+  /**
+   * <p> The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for creating each node of the NBox when a DataProvider
+   * has been specified with the data attribute. The slot content must be a single &lt;template> element.
+   * <p>When the template is executed for each node, it will have access to the NBox's binding context and the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current node. (See [oj.ojNBox.NodeTemplateContext]{@link oj.ojNBox.NodeTemplateContext} or the table below for a list of properties available on $current) </li>
+   * </li>
+   * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+   * </li>
+   * </ul>
+   *
+   * <p>The content of the template should only be one &lt;oj-n-box-node> element. See the [oj-n-box-node]{@link oj.ojNBoxNode.html} doc for more details.</p>
+   *
+   *
+   * @ojslot nodeTemplate
+   * @ojmaxitems 1
+   * @ojshortdesc The nodeTemplate slot is used to specify the template for creating each node of the NBox. See the Help documentation for more information.
+   * @ojpreferredcontent ["NBoxNodeElement"]
+   *
+   * @memberof oj.ojNBox
+   * @ojtemplateslotprops oj.ojNBox.NodeTemplateContext
+   * @example <caption>Initialize the NBox with an inline node template specified:</caption>
+   * &lt;oj-n-box data='[[dataProvider]]'>
+   *  &lt;template slot='nodeTemplate'>
+   *    &lt;oj-n-box-node
+   *        row='[[$current.data.potential]]'
+   *        column='[[$current.data.performance]]'
+   *        short-desc='[[$current.data.shortDesc]]'
+   *        label='[[$current.data.name]]'
+   *        secondary-label='[[$current.data.position]]'
+   *        icon.source='[[$current.data.image]]'>
+   *    &lt;/oj-n-box-node>
+   *  &lt;/template>
+   * &lt;/oj-n-box>
    */
   /**
    * @typedef {Object} oj.ojNBox.NodeTemplateContext
@@ -2922,7 +2932,7 @@ var __oj_n_box_node_metadata =
    * @property {any} key The key of the current node.
    */
 
-    /**
+  /**
    * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.  The slot content must be a single &lt;template> element.
    * This slot takes precedence over the tooltip.renderer property if specified.
    * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
@@ -2992,7 +3002,7 @@ var __oj_n_box_node_metadata =
    * @ojstylevariable oj-n-box-cell-bg-color {description: "Nbox cell background color", formats: ["color"], help: "#css-variables"}
    * @ojstylevariable oj-n-box-cell-bg-color-maximized {description: "Nbox maximized cell background color",formats: ["color"], help: "#css-variables"}
    * @memberof oj.ojNBox
-  */
+   */
 
   /**
    * @ojcomponent oj.ojNBoxNode
@@ -3793,6 +3803,6 @@ var __oj_n_box_node_metadata =
    * @ojstylevariableset oj-n-box-node-css-set1
    * @ojstylevariable oj-n-box-node-bg-color {description: "Nbox node background color", formats: ["color"], help: "#css-variables"}
    * @memberof! oj.ojNBoxNode
-  */
+   */
 
 });

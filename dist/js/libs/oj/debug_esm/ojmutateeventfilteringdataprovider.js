@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -14,7 +14,7 @@ import 'ojs/ojdataprovider';
 
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -143,9 +143,7 @@ import 'ojs/ojdataprovider';
  * @name dispatchEvent
  */
 
-/**
- * End of jsdoc
- */
+// end of jsdoc
 
 class MutateEventFilteringDataProvider {
     constructor(dataProvider) {
@@ -172,13 +170,27 @@ class MutateEventFilteringDataProvider {
                 this.cache = cache;
             }
             ['next']() {
+                var _b;
                 let self = this;
-                return this.asyncIterator.next().then((result) => {
-                    if (!(self._parent.dataProvider instanceof CachedIteratorResultsDataProvider) &&
-                        !(self._parent.dataProvider instanceof DedupDataProvider)) {
-                        self._parent.cache.addListResult(result);
+                const signal = (_b = this.params) === null || _b === void 0 ? void 0 : _b.signal;
+                if (signal && signal.aborted) {
+                    const reason = signal.reason;
+                    return Promise.reject(new DOMException(reason, 'AbortError'));
+                }
+                return new Promise((resolve, reject) => {
+                    if (signal) {
+                        const reason = signal.reason;
+                        signal.addEventListener('abort', (e) => {
+                            return reject(new DOMException(reason, 'AbortError'));
+                        });
                     }
-                    return result;
+                    return resolve(this.asyncIterator.next().then((result) => {
+                        if (!(self._parent.dataProvider instanceof CachedIteratorResultsDataProvider) &&
+                            !(self._parent.dataProvider instanceof DedupDataProvider)) {
+                            self._parent.cache.addListResult(result);
+                        }
+                        return result;
+                    }));
                 });
             }
         };
@@ -238,10 +250,36 @@ class MutateEventFilteringDataProvider {
         return this.dataProvider.containsKeys(params);
     }
     fetchByKeys(params) {
-        return this.dataProvider.fetchByKeys(params);
+        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        if (signal && signal.aborted) {
+            const reason = signal.reason;
+            return Promise.reject(new DOMException(reason, 'AbortError'));
+        }
+        return new Promise((resolve, reject) => {
+            if (signal) {
+                const reason = signal.reason;
+                signal.addEventListener('abort', (e) => {
+                    return reject(new DOMException(reason, 'AbortError'));
+                });
+            }
+            return resolve(this.dataProvider.fetchByKeys(params));
+        });
     }
     fetchByOffset(params) {
-        return this.dataProvider.fetchByOffset(params);
+        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        if (signal && signal.aborted) {
+            const reason = signal.reason;
+            return Promise.reject(new DOMException(reason, 'AbortError'));
+        }
+        return new Promise((resolve, reject) => {
+            if (signal) {
+                const reason = signal.reason;
+                signal.addEventListener('abort', (e) => {
+                    return reject(new DOMException(reason, 'AbortError'));
+                });
+            }
+            return resolve(this.dataProvider.fetchByOffset(params));
+        });
     }
     fetchFirst(params) {
         const asyncIterable = this.dataProvider.fetchFirst(params);

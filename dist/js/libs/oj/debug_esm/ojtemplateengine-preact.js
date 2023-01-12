@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,12 +20,7 @@ class PreactTemplateEngine {
         throw new Error(`The render property is expected on the template for component ${componentElement.id}`);
     }
     clean(node) {
-        let vdomTemplateRoots = node && node.querySelectorAll
-            ? Array.from(node.querySelectorAll('[data-oj-vdom-template-root=""]'))
-            : [];
-        if (node && node.hasAttribute && node.hasAttribute('data-oj-vdom-template-root')) {
-            vdomTemplateRoots.push(node);
-        }
+        let vdomTemplateRoots = PreactTemplate.findTemplateRoots(node);
         vdomTemplateRoots.forEach((root) => {
             PreactTemplate.clean(root);
         });

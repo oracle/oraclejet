@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -146,11 +146,16 @@ DomScroller.prototype.destroy = function () {
  * @instance
  */
 DomScroller.prototype.checkViewport = function (forceFetch) {
-  if (this._asyncIterator && this._element.clientHeight > 0 &&
-      (forceFetch || !this.isOverflow() || this._isEndReached())) {
+  if (
+    this._asyncIterator &&
+    this._element.clientHeight > 0 &&
+    (forceFetch || !this.isOverflow() || this._isEndReached())
+  ) {
     this._checkViewportCount += 1;
     if (this._checkViewportCount === CHECKVIEWPORT_THRESHOLD) {
-      warn('Viewport not satisfied after multiple fetch, make sure the component is height constrained or specify a scroller.');
+      warn(
+        'Viewport not satisfied after multiple fetch, make sure the component is height constrained or specify a scroller.'
+      );
     }
     if (this._beforeFetchCallback(this._element.scrollTop, true)) {
       return this._fetchMoreRows();
@@ -171,22 +176,25 @@ DomScroller.prototype._doFetch = function (scrollTop) {
     this._lastFetchTrigger = scrollTop;
 
     var isMouseWheel = self._isScrollTriggeredByMouseWheel;
-    this._fetchPromise = this._fetchMoreRows().then(function (result) {
-      if (self._successCallback) {
-        // eslint-disable-next-line no-param-reassign
-        result.isMouseWheel = isMouseWheel;
-        self._successCallback(result);
-        self._fetchPromise = null;
-        // re-calculated on next scroll
-        self._nextFetchTrigger = undefined;
+    this._fetchPromise = this._fetchMoreRows().then(
+      function (result) {
+        if (self._successCallback) {
+          // eslint-disable-next-line no-param-reassign
+          result.isMouseWheel = isMouseWheel;
+          self._successCallback(result);
+          self._fetchPromise = null;
+          // re-calculated on next scroll
+          self._nextFetchTrigger = undefined;
+        }
+      },
+      function (reason) {
+        if (self._errorCallback) {
+          self._errorCallback(reason);
+          self._fetchPromise = null;
+          self._nextFetchTrigger = undefined;
+        }
       }
-    }, function (reason) {
-      if (self._errorCallback) {
-        self._errorCallback(reason);
-        self._fetchPromise = null;
-        self._nextFetchTrigger = undefined;
-      }
-    });
+    );
   } else {
     // items not rendered yet, reset nextFetchTrigger so it gets calculated again
     this._nextFetchTrigger = undefined;
@@ -196,7 +204,7 @@ DomScroller.prototype._doFetch = function (scrollTop) {
 DomScroller.prototype._handleExternalScrollerScrollTop = function (scrollTop, scrollerHeight) {
   if (!this._fetchPromise && this._asyncIterator) {
     var bounds = this._contentElement.getBoundingClientRect();
-    var bottom = bounds.bottom - this._fetchTrigger - (bounds.height * this._fetchThreshold);
+    var bottom = bounds.bottom - this._fetchTrigger - bounds.height * this._fetchThreshold;
     if (bottom <= scrollerHeight) {
       this._doFetch(scrollTop);
     }
@@ -214,8 +222,10 @@ DomScroller.prototype._handleScrollerScrollTop = function (scrollTop, maxScrollT
       this._lastMaxScrollTop = maxScrollTop;
     }
 
-    if (this._nextFetchTrigger != null &&
-        scrollTop - this._lastFetchTrigger > this._nextFetchTrigger) {
+    if (
+      this._nextFetchTrigger != null &&
+      scrollTop - this._lastFetchTrigger > this._nextFetchTrigger
+    ) {
       this._doFetch(scrollTop);
 
       // note beforeFetchCallback would return false if the render queue is non-empty
@@ -250,8 +260,9 @@ DomScroller.prototype.isOverflow = function () {
     return this._isOverflowCallback();
   }
 
-  var scrollHeight = this._contentElement ? this._contentElement.scrollHeight :
-    this._element.scrollHeight;
+  var scrollHeight = this._contentElement
+    ? this._contentElement.scrollHeight
+    : this._element.scrollHeight;
   var diff = scrollHeight - (this._element.clientHeight + this._fetchTrigger);
   if (diff === 1 && oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE) {
     // hitting Edge , see https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/21405284/
@@ -259,15 +270,17 @@ DomScroller.prototype.isOverflow = function () {
     diff = 0;
   }
 
-  return (diff > 0);
+  return diff > 0;
 };
 
 /**
  * @private
  */
 DomScroller.prototype._isEndReached = function () {
-  if ((this._element.scrollHeight - this._element.clientHeight - this._element.scrollTop)
-    < Math.max(1, this._fetchTrigger)) {
+  if (
+    this._element.scrollHeight - this._element.clientHeight - this._element.scrollTop <
+    Math.max(1, this._fetchTrigger)
+  ) {
     // this could happen if the offsetTop is not correct
     return true;
   }
@@ -386,9 +399,7 @@ DomScroller.prototype._handleDataRowAddedOrRemoved = function (keys, indexes, ca
     for (var i = 0; i < indexes.length; i++) {
       var rowIdx = indexes[i];
       // we only care if the row is in our range
-      if (rowIdx !== undefined &&
-          this._rowCount > 0 &&
-          rowIdx <= this._rowCount) {
+      if (rowIdx !== undefined && this._rowCount > 0 && rowIdx <= this._rowCount) {
         callback();
       }
     }
@@ -424,8 +435,10 @@ DomScroller.prototype._registerDataSourceEventListeners = function () {
     var i;
     var ev;
     for (i = 0; i < this._dataProviderEventHandlers.length; i++) {
-      ev = data.addEventListener(this._dataProviderEventHandlers[i].eventType,
-                                 this._dataProviderEventHandlers[i].eventHandler);
+      ev = data.addEventListener(
+        this._dataProviderEventHandlers[i].eventType,
+        this._dataProviderEventHandlers[i].eventHandler
+      );
       if (ev) {
         this._dataProviderEventHandlers[i].eventHandler = ev;
       }
@@ -443,8 +456,10 @@ DomScroller.prototype._unregisterDataSourceEventListeners = function () {
   if (this._dataProviderEventHandlers != null && data != null) {
     var i;
     for (i = 0; i < this._dataProviderEventHandlers.length; i++) {
-      data.removeEventListener(this._dataProviderEventHandlers[i].eventType,
-                               this._dataProviderEventHandlers[i].eventHandler);
+      data.removeEventListener(
+        this._dataProviderEventHandlers[i].eventType,
+        this._dataProviderEventHandlers[i].eventHandler
+      );
     }
   }
 };

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1523,7 +1523,7 @@
        //a property, parameter or property value is deprecated using ojdeprecated
        allOfDeprecations = doc.tsdeprecated;
        allOfDeprecations.forEach((deprecation) => {
-         if (deprecation.target === 'property' || deprecation.target === 'parameter' || deprecation.target === 'propertyValue') {
+         if (!deprecation.target || deprecation.target === 'property' || deprecation.target === 'parameter' || deprecation.target === 'propertyValue') {
            //yes the whole doclet is deprecated.
 
            since = deprecation.since;

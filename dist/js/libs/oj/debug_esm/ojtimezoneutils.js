@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,15 +20,14 @@ import 'ojs/ojtimezonedata';
 /**
  * Gets the timezones supported by the JET converters for the current Locale. The data comes from CLDR.
  * <p>
- * If you want to display a list of all supported timezones, then you can use this api.
+ * If you want to display a list of supported, translated timezone names, then you can use this api.
  * NOTE: This module automatically imports 'ojs/ojtimezonedata' which is a module with a large amount of data.
  * If you want to format a date in the user's local timezone, do not use this api. Instead you
  * should use a iso string that is local to the user's system.
  * For convenience, you can use IntlConverterUtils.dateToLocalIsoDateString or
  * IntlConverterUtils.dateToLocalIso.
- * Or you can get the user's local timezone offset and pass that
- * to the datetime converter.
- * timeZone: IntlConverterUtils.getLocalTimeZoneOffset()
+ * IntlDateTimeConverter defaults to the user's local timezone, so there is no need to pass in a timezone if that
+ * is what you want to show.
  * </p>
  * <p>
  * The returned value is an array of AvailableTimeZoneType objects.

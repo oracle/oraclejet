@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -130,19 +130,45 @@ function isVNode(obj) {
   return Object.prototype.hasOwnProperty.call(obj, '$$typeof');
 }
 
-MetadataUtils.getPropertyMetadata = function (propName, metadata) {
-  let propMeta = metadata;
-  if (propMeta && propName) {
-    const namePath = propName.split('.');
+/**
+ * Gets property metadata for the specified property or subproperty.
+ * @param {*} propPath
+ * @param {*} metadata
+ * @returns {object}
+ * @ignore
+ */
+MetadataUtils.getPropertyMetadata = function (propPath, metadata) {
+  const { subProp } = MetadataUtils.getComplexPropertyMetadata(propPath, metadata);
+  return subProp;
+};
+
+/**
+ * Retrieves an object that contains two values - metadata for the top level property and for the subproperty.
+ * The top level property is needed for writeback and readonly checks for complex properties.
+ * The values will be identical if the property is already top level.
+ * @param {*} propPath
+ * @param {*} metadata
+ * @returns {object}
+ * @ignore
+ */
+MetadataUtils.getComplexPropertyMetadata = function (propPath, metadata) {
+  let subProp = metadata;
+  let prop = metadata;
+
+  if (subProp && propPath) {
+    const namePath = propPath.split('.');
     for (let i = 0; i < namePath.length; i++) {
-      propMeta = propMeta[namePath[i]];
-      if (!propMeta || namePath.length === 1 || i === namePath.length - 1 || !propMeta.properties) {
+      subProp = subProp[namePath[i]];
+      if (i === 0) {
+        prop = subProp;
+      }
+      if (!subProp || namePath.length === 1 || i === namePath.length - 1 || !subProp.properties) {
         break;
       }
-      propMeta = propMeta.properties;
+      subProp = subProp.properties;
     }
   }
-  return propMeta;
+  return { prop, subProp };
 };
 
 /**
@@ -204,7 +230,8 @@ const getDefaultValue = MetadataUtils.getDefaultValue;
 const getDefaultValues = MetadataUtils.getDefaultValues;
 const deepFreeze = MetadataUtils.deepFreeze;
 const getPropertyMetadata = MetadataUtils.getPropertyMetadata;
+const getComplexPropertyMetadata = MetadataUtils.getComplexPropertyMetadata;
 const checkEnumValues = MetadataUtils.checkEnumValues;
 const getFlattenedAttributes = MetadataUtils.getFlattenedAttributes;
 
-export { checkEnumValues, deepFreeze, getDefaultValue, getDefaultValues, getFlattenedAttributes, getPropertyMetadata };
+export { checkEnumValues, deepFreeze, getComplexPropertyMetadata, getDefaultValue, getDefaultValues, getFlattenedAttributes, getPropertyMetadata };

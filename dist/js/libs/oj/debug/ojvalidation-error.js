@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -42,7 +42,8 @@ define(['exports', 'ojs/ojcore', 'ojs/ojmessaging'], function (exports, oj, Mess
     var message = {
       summary: summary,
       detail: detail,
-      severity: Message.SEVERITY_LEVEL.ERROR };
+      severity: Message.SEVERITY_LEVEL.ERROR
+    };
     this.Init(message);
   };
 

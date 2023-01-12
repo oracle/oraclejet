@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,6 +8,7 @@
 import { subtreeHidden, subtreeShown } from 'ojs/ojcomponentcore';
 import 'ojs/ojcustomelement';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import oj from 'ojs/ojcore-base';
 
 /**
  * @ojcomponent oj.ojSwitcher
@@ -23,6 +24,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
  *
+ * @ojoracleicon 'oj-ux-ico-switcher'
+ *
  * @classdesc The switcher element dynamically decides which child element should be made visible. It will make a child element visible only if its <code class="prettyprint">slot</code> attribute's value matches with switcher's <code class="prettyprint">value</code> property.
  * <p> If child content is expensive to render, use <a href="oj.ojDefer.html">oj-defer</a> to defer rendering until child element is made visible.
  * <pre class="prettyprint">
@@ -35,7 +38,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
  * &lt;/oj-switcher>
  * </code></pre>
  */
-
 
 /**
  * Sets a property or a single subproperty for complex properties and notifies the component
@@ -106,7 +108,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
  * @example <caption>Change value property:</caption>
  * mySwitcher.value = 'settings';
  */
-
 
 /**
  * @constructor
@@ -203,7 +204,9 @@ const ojSwitcher = function (context) {
         _applyValueToItem(item, key);
       }
     }
-    if (isInitialRender) { isInitialRender = false; }
+    if (isInitialRender) {
+      isInitialRender = false;
+    }
   };
 
   function _applyValueToItem(item, itemSlotAttributeValue) {
@@ -241,4 +244,4 @@ var __oj_switcher_metadata =
   __oj_switcher_metadata.extension._CONSTRUCTOR = ojSwitcher;
   __oj_switcher_metadata.extension._CONTROLS_SUBTREE_HIDDEN = true;
   oj.CustomElementBridge.register('oj-switcher', { metadata: __oj_switcher_metadata });
-}());
+})();

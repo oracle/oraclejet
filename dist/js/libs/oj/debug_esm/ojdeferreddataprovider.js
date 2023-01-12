@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -25,8 +25,8 @@ import { DataProviderFeatureChecker } from 'ojs/ojcomponentcore';
  * @ojtsmodule
  * @classdesc This class implements {@link DataProvider}.
  *            This object represents a data provider that is created with deferred data and can be used by any component that requires a data provider that will be created with data from a Promise.
- * @param {Promise.<DataProvider>} dataProvider A promise that resolves to an DataProvider
- * @param {Function} capabilityFunc An function that implements {@link DataProvider#getCapability}.
+ * @param {Promise.<DataProvider>} dataProvider A promise that resolves to a DataProvider
+ * @param {Function} capabilityFunc A function that implements {@link DataProvider#getCapability}.
  * @ojsignature [{target: "Type",
  *               value: "class DeferredDataProvider<K, D> implements DataProvider<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
@@ -39,20 +39,22 @@ import { DataProviderFeatureChecker } from 'ojs/ojcomponentcore';
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
  *   "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
  *   "FetchListResult","FetchListParameters"]}
- * @example
- * // DeferredDataProvider is used in cases where the data for the data provider will be
+ * @ojtsexample
+ * // DeferredDataProvider is used in cases where the data for the DataProvider will be
  * // provided asynchronously. In the example below, let getDeferredData() be any function
  * // that returns a Promise that will resolve to the final data.
- * var deferredDataPromise = getDeferredData();
+ * const deferredDataPromise = getDeferredData();
  *
- * // Create a Promise that will resolve to a data provider containing the resolved data
- * var dataProviderPromise = deferredDataPromise.then(function(resolvedData){
+ * // Create a Promise that will resolve to an ArrayDataProvider containing the resolved data
+ * const dataProviderPromise = deferredDataPromise.then((resolvedData) => {
  *  return new ArrayDataProvider(resolvedData);
  * });
  *
- * // Then create a DeferredDataProvider object with the promise that will resolve to a data provider,
- * // and an implemenation of {@link DataProvider#getCapability}
- * var dataprovider = new DeferredDataProvider(dataProviderPromise, capabilityFunc);
+ * // Then create a DeferredDataProvider object with the promise that will resolve to a DataProvider,
+ * // and an implemenation of {@link DataProvider#getCapability}.
+ * const dataprovider = new DeferredDataProvider(dataProviderPromise, capabilityFunc);
+ * // or you may pass in ArrayDataProvider's static getCapability function as
+ * const dataprovider = new DeferredDataProvider(dataProviderPromise, ArrayDataProvider.getCapability);
  */
 
 /**
@@ -166,9 +168,7 @@ import { DataProviderFeatureChecker } from 'ojs/ojcomponentcore';
  * @name dispatchEvent
  */
 
-/**
- * End of jsdoc
- */
+// end of jsdoc
 
 class DeferredDataProvider {
     constructor(_dataProvider, _capabilityFunc) {
@@ -187,12 +187,27 @@ class DeferredDataProvider {
             Symbol.asyncIterator,
             _a);
         this.AsyncIterator = class {
-            constructor(_asyncIteratorPromise) {
+            constructor(_asyncIteratorPromise, _params) {
                 this._asyncIteratorPromise = _asyncIteratorPromise;
+                this._params = _params;
             }
             ['next']() {
-                return this._asyncIteratorPromise.then((asyncIterator) => {
-                    return asyncIterator['next']();
+                var _a;
+                const signal = (_a = this._params) === null || _a === void 0 ? void 0 : _a.signal;
+                if (signal && signal.aborted) {
+                    const reason = signal.reason;
+                    return Promise.reject(new DOMException(reason, 'AbortError'));
+                }
+                return new Promise((resolve, reject) => {
+                    if (signal) {
+                        const reason = signal.reason;
+                        signal.addEventListener('abort', (e) => {
+                            return reject(new DOMException(reason, 'AbortError'));
+                        });
+                    }
+                    return resolve(this._asyncIteratorPromise.then((asyncIterator) => {
+                        return asyncIterator['next']();
+                    }));
                 });
             }
         };
@@ -204,13 +219,39 @@ class DeferredDataProvider {
         return new this.AsyncIterable(new this.AsyncIterator(asyncIteratorPromise));
     }
     fetchByKeys(params) {
-        return this._getDataProvider().then((dataProvider) => {
-            return dataProvider.fetchByKeys(params);
+        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        if (signal && signal.aborted) {
+            const reason = signal.reason;
+            return Promise.reject(new DOMException(reason, 'AbortError'));
+        }
+        return new Promise((resolve, reject) => {
+            if (signal) {
+                const reason = signal.reason;
+                signal.addEventListener('abort', (e) => {
+                    return reject(new DOMException(reason, 'AbortError'));
+                });
+            }
+            return resolve(this._getDataProvider().then((dataProvider) => {
+                return dataProvider.fetchByKeys(params);
+            }));
         });
     }
     containsKeys(params) {
-        return this._getDataProvider().then((dataProvider) => {
-            return dataProvider.containsKeys(params);
+        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        if (signal && signal.aborted) {
+            const reason = signal.reason;
+            return Promise.reject(new DOMException(reason, 'AbortError'));
+        }
+        return new Promise((resolve, reject) => {
+            if (signal) {
+                const reason = signal.reason;
+                signal.addEventListener('abort', (e) => {
+                    return reject(new DOMException(reason, 'AbortError'));
+                });
+            }
+            resolve(this._getDataProvider().then((dataProvider) => {
+                return dataProvider.containsKeys(params);
+            }));
         });
     }
     fetchByOffset(params) {
@@ -252,8 +293,9 @@ class DeferredDataProvider {
     _getDataProvider() {
         return this._dataProvider.then((dataProvider) => {
             if (DataProviderFeatureChecker.isDataProvider(dataProvider)) {
-                if (!this[this._DATAPROVIDER])
+                if (!this[this._DATAPROVIDER]) {
                     this[this._DATAPROVIDER] = dataProvider;
+                }
                 return dataProvider;
             }
             else

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -121,7 +121,6 @@ ResponsiveUtils.FRAMEWORK_QUERY_KEY = {
   LG_DOWN: 'lg-down',
   XL_DOWN: 'xl-down',
   HIGH_RESOLUTION: 'high-resolution'
-
 };
 
 // used by the compare function
@@ -131,7 +130,6 @@ ResponsiveUtils._RANGE[ResponsiveUtils.SCREEN_RANGE.MD] = 1;
 ResponsiveUtils._RANGE[ResponsiveUtils.SCREEN_RANGE.LG] = 2;
 ResponsiveUtils._RANGE[ResponsiveUtils.SCREEN_RANGE.XL] = 3;
 ResponsiveUtils._RANGE[ResponsiveUtils.SCREEN_RANGE.XXL] = 4;
-
 
 /**
  * This idea/code is from zurb foundation, thanks zurb!
@@ -211,14 +209,15 @@ ResponsiveUtils.getFrameworkQuery = function (frameworkQueryKey) {
   var query = ResponsiveUtils._getMediaQueryFromClass(selector);
 
   if (query === 'null') {
-    warn('Framework query not found. Please check that the value of the theming variable' +
-                '$includeResponsiveMediaQueryClasses is set to true, if it' +
-                'is set to false the media queries are not sent down to the browser.');
+    warn(
+      'Framework query not found. Please check that the value of the theming variable' +
+        '$includeResponsiveMediaQueryClasses is set to true, if it' +
+        'is set to false the media queries are not sent down to the browser.'
+    );
     return null;
   }
   return query;
 };
-
 
 /**
  * <p> Compare can be used in conjunction with
@@ -264,12 +263,18 @@ ResponsiveUtils.compare = function (size1, size2) {
   var range2 = ResponsiveUtils._RANGE[size2];
 
   if (range1 == null) {
-    throw new Error('size1 param ' + size1 +
-                    ' illegal, please use one of the screen size constants like oj.ResponsiveUtils.SCREEN_RANGE.MD');
+    throw new Error(
+      'size1 param ' +
+        size1 +
+        ' illegal, please use one of the screen size constants like oj.ResponsiveUtils.SCREEN_RANGE.MD'
+    );
   }
   if (range2 == null) {
-    throw new Error('size2 param ' + size2 +
-                    ' illegal, please use one of the screen size constants like oj.ResponsiveUtils.SCREEN_RANGE.MD');
+    throw new Error(
+      'size2 param ' +
+        size2 +
+        ' illegal, please use one of the screen size constants like oj.ResponsiveUtils.SCREEN_RANGE.MD'
+    );
   }
 
   return range1 - range2;

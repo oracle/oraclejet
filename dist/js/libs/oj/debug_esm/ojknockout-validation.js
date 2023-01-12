@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -65,15 +65,15 @@ import { isWriteableObservable, isObservable } from 'knockout';
  *        // before calling methods on it.
  *        if (trackerObj instanceof oj.InvalidComponentTracker)
  *        {
-*           // showMessages first
-*           // (this will show any hidden messages, if any)
-*           trackerObj.showMessages();
-*           // focusOnFirstInvalid will focus on the first component
-*           // that is invalid, if any.
-*           trackerObj.focusOnFirstInvalid();
-*         }
-*       }
-*     }
+ *           // showMessages first
+ *           // (this will show any hidden messages, if any)
+ *           trackerObj.showMessages();
+ *           // focusOnFirstInvalid will focus on the first component
+ *           // that is invalid, if any.
+ *           trackerObj.focusOnFirstInvalid();
+ *         }
+ *       }
+ *     }
  * }
  * &lt;/script>
  * Note: Make sure you have included the 'ojs/ojknockout-validation' dependency in your require list,
@@ -126,7 +126,6 @@ oj.Object.createSubclass(InvalidComponentTracker, oj.Object, 'oj.InvalidComponen
  * @expose
  * @memberof oj.InvalidComponentTracker
  */
-
 
 /**
  * prevent preceding jsdoc from applying to following line of code
@@ -224,8 +223,9 @@ InvalidComponentTracker.prototype.focusOnFirstInvalid = function () {
 
   // we don't always have a element associated, so this is on the page level context
   var busyContext = Context.getPageContext().getBusyContext();
-  var resolveBusyState = busyContext.addBusyState(
-    { description: 'Setting Focus to first invalid component.' });
+  var resolveBusyState = busyContext.addBusyState({
+    description: 'Setting Focus to first invalid component.'
+  });
 
   if (this.invalidShown) {
     firstInvalid = this._getFirstInvalidComponent();
@@ -238,9 +238,10 @@ InvalidComponentTracker.prototype.focusOnFirstInvalid = function () {
     // yet. Or the invalid states could have changed in between the timer being set and the
     // callback being called.
     // TODO: talk to Pavitra regarding this logic, it seems unnecessary.
-    firstInvalid = (updateCounter === self._updateCounter) ?
-                   firstInvalid || self._getFirstInvalidComponent() :
-                   self._getFirstInvalidComponent();
+    firstInvalid =
+      updateCounter === self._updateCounter
+        ? firstInvalid || self._getFirstInvalidComponent()
+        : self._getFirstInvalidComponent();
 
     if (firstInvalid) {
       // Get the widget instance for the firstInvalid so we can call protected methods directly.
@@ -283,7 +284,7 @@ InvalidComponentTracker.prototype.showMessages = function () {
     var len = this._invalidHidden.length;
     for (var index = 0; index < len; index++) {
       if (this._invalidHidden[index]) {
-        tr = (this._tracked[index].component).call(tr, 'showMessages');
+        tr = this._tracked[index].component.call(tr, 'showMessages');
       }
     }
   }
@@ -326,7 +327,7 @@ InvalidComponentTracker.prototype._getFirstInvalidComponent = function () {
     var elementB = b.element;
     // If elementA precedes elementB in dom order, return -1
     // eslint-disable-next-line no-bitwise
-    return (elementA.compareDocumentPosition(elementB) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+    return elementA.compareDocumentPosition(elementB) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
   });
 
   // invalidComponents is sorted now by document order, so return the first one.
@@ -365,7 +366,6 @@ InvalidComponentTracker.prototype._remove = function (component) {
   return mutated;
 };
 
-
 /**
  * Updates the internal properties to reflect the current validity state of the component, using
  * new messages.
@@ -397,7 +397,6 @@ InvalidComponentTracker.prototype._update = function (component, element, option
   switch (option) {
     case InvalidComponentTracker._OPTION_MESSAGES_SHOWN:
     case InvalidComponentTracker._OPTION_MESSAGES_HIDDEN:
-
       result = false;
       if (value) {
         // start tracking component if not already doing it.
@@ -421,10 +420,16 @@ InvalidComponentTracker.prototype._update = function (component, element, option
               // E.g., disabled component can be initialized with messagesCustom making it invalid and
               // disabled.
 
-              var isDisabled = component.call(component, 'option',
-                                              InvalidComponentTracker._OPTION_DISABLED);
-              var isReadOnly = component.call(component, 'option',
-                                              InvalidComponentTracker._OPTION_READONLY);
+              var isDisabled = component.call(
+                component,
+                'option',
+                InvalidComponentTracker._OPTION_DISABLED
+              );
+              var isReadOnly = component.call(
+                component,
+                'option',
+                InvalidComponentTracker._OPTION_READONLY
+              );
               result = !(isDisabled || isReadOnly);
             }
           }
@@ -446,7 +451,6 @@ InvalidComponentTracker.prototype._update = function (component, element, option
 
     case InvalidComponentTracker._OPTION_DISABLED:
     case InvalidComponentTracker._OPTION_READONLY:
-
       // when component goes from enabled to disabled (or to readOnly) tracker updates invalidShown
       // to be false, since the component cannot be showing errors visually. Same goes for
       // invalidHidden.
@@ -457,10 +461,17 @@ InvalidComponentTracker.prototype._update = function (component, element, option
 
       mutated = false;
       if (value) {
-        mutated = this._updateInvalidTracker(InvalidComponentTracker._OPTION_MESSAGES_SHOWN,
-                trackedIndex || 0, false);
-        mutated = this._updateInvalidTracker(InvalidComponentTracker._OPTION_MESSAGES_HIDDEN,
-                trackedIndex || 0, false) || mutated;
+        mutated = this._updateInvalidTracker(
+          InvalidComponentTracker._OPTION_MESSAGES_SHOWN,
+          trackedIndex || 0,
+          false
+        );
+        mutated =
+          this._updateInvalidTracker(
+            InvalidComponentTracker._OPTION_MESSAGES_HIDDEN,
+            trackedIndex || 0,
+            false
+          ) || mutated;
         this._updateInvalidProperties();
       }
       break;
@@ -487,11 +498,17 @@ InvalidComponentTracker.prototype._update = function (component, element, option
 InvalidComponentTracker.prototype._initializeInvalidTrackers = function (trackedIndex, result) {
   if (this._invalid[trackedIndex] === undefined) {
     this._updateInvalidTracker(
-      InvalidComponentTracker._OPTION_MESSAGES_SHOWN, trackedIndex, result);
+      InvalidComponentTracker._OPTION_MESSAGES_SHOWN,
+      trackedIndex,
+      result
+    );
   }
   if (this._invalidHidden[trackedIndex] === undefined) {
     this._updateInvalidTracker(
-      InvalidComponentTracker._OPTION_MESSAGES_HIDDEN, trackedIndex, result);
+      InvalidComponentTracker._OPTION_MESSAGES_HIDDEN,
+      trackedIndex,
+      result
+    );
   }
 };
 
@@ -519,35 +536,34 @@ InvalidComponentTracker.prototype._updateInvalidProperties = function () {
  * @param {boolean} value true or false
  * @returns {boolean} whether or not this._invalid or this._invalidHidden was mutated
  */
-InvalidComponentTracker.prototype._updateInvalidTracker =
-  function (option, trackedIndex, value) {
-    var arr;
-    var mutated = false;
+InvalidComponentTracker.prototype._updateInvalidTracker = function (option, trackedIndex, value) {
+  var arr;
+  var mutated = false;
 
-    if (option === InvalidComponentTracker._OPTION_MESSAGES_SHOWN) {
-      arr = this._invalid;
-    } else if (option === InvalidComponentTracker._OPTION_MESSAGES_HIDDEN) {
-      arr = this._invalidHidden;
-    } else {
-      arr = [];
+  if (option === InvalidComponentTracker._OPTION_MESSAGES_SHOWN) {
+    arr = this._invalid;
+  } else if (option === InvalidComponentTracker._OPTION_MESSAGES_HIDDEN) {
+    arr = this._invalidHidden;
+  } else {
+    arr = [];
+  }
+
+  // updates or pushes the value into the appropriate array
+  if (trackedIndex >= 0 && arr[trackedIndex] !== undefined) {
+    // mark component as invalid or invalidHidden to match the trackedIndex; update only if value
+    // changes
+    mutated = arr[trackedIndex] !== value;
+    if (mutated) {
+      arr[trackedIndex] = value;
     }
+  } else {
+    // new
+    arr.push(value);
+    mutated = true;
+  }
 
-    // updates or pushes the value into the appropriate array
-    if (trackedIndex >= 0 && arr[trackedIndex] !== undefined) {
-      // mark component as invalid or invalidHidden to match the trackedIndex; update only if value
-      // changes
-      mutated = arr[trackedIndex] !== value;
-      if (mutated) {
-        arr[trackedIndex] = value;
-      }
-    } else {
-      // new
-      arr.push(value);
-      mutated = true;
-    }
-
-    return mutated;
-  };
+  return mutated;
+};
 
 /**
  * helper to determine if we have invalid messages among the list of messages that are currently
@@ -579,7 +595,6 @@ InvalidComponentTracker._hasInvalidMessages = function (messages) {
  */
 const ValueBinding = function () {};
 oj._registerLegacyNamespaceProp('ValueBinding', ValueBinding);
-
 
 /**
  * <p>When this attribute is bound to an observable, the framework pushes
@@ -633,15 +648,15 @@ oj._registerLegacyNamespaceProp('ValueBinding', ValueBinding);
  *        // before calling methods on it.
  *        if (trackerObj instanceof InvalidComponentTracker)
  *        {
-*           // showMessages first
-*           // (this will show any hidden messages, if any)
-*           trackerObj.showMessages();
-*           // focusOnFirstInvalid will focus on the first component
-*           // that is invalid, if any.
-*           trackerObj.focusOnFirstInvalid();
-*         }
-*       }
-*     }
+ *           // showMessages first
+ *           // (this will show any hidden messages, if any)
+ *           trackerObj.showMessages();
+ *           // focusOnFirstInvalid will focus on the first component
+ *           // that is invalid, if any.
+ *           trackerObj.focusOnFirstInvalid();
+ *         }
+ *       }
+ *     }
  * }
  * &lt;/script>
  *
@@ -675,7 +690,6 @@ ValueBinding._OPTION_MESSAGES_HIDDEN = 'messagesHidden';
 // options that are managed primarily to detect changes for tracker to be notified.
 ValueBinding._OPTION_DISABLED = 'disabled';
 ValueBinding._OPTION_READONLY = 'readOnly';
-
 
 // callback called when managed attribute is being updated
 ValueBinding._update = function (name, value, element, component, valueAccessor) {
@@ -727,10 +741,12 @@ ValueBinding._afterCreate = function (property, element, component, valueAccesso
     if (isICTOptionSet) {
       // register a writeback for invalidComponentTracker property by registering an event listener
       //  for the optionChange event.
-      ValueBinding._registerInvalidComponentTrackerWriteback(property,
-                                                                optionsSet,
-                                                                element,
-                                                                component);
+      ValueBinding._registerInvalidComponentTrackerWriteback(
+        property,
+        optionsSet,
+        element,
+        component
+      );
     }
   }
 
@@ -750,8 +766,7 @@ ValueBinding._beforeDestroy = function (property, element, component, valueAcces
   var ictObs = options[property];
 
   if (property === ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER) {
-    jelem.off(ValueBinding._EVENT_OPTIONCHANGE,
-              ValueBinding._updateInvalidComponentTracker);
+    jelem.off(ValueBinding._EVENT_OPTIONCHANGE, ValueBinding._updateInvalidComponentTracker);
     if (ictObs && isWriteableObservable(ictObs)) {
       icTracker = ictObs.peek();
       // remove component from tracker
@@ -780,8 +795,10 @@ ValueBinding._updateInvalidComponentTracker = function (event) {
   var option = payload.option;
   var msgs = payload.value;
 
-  if (option === ValueBinding._OPTION_MESSAGES_SHOWN ||
-      option === ValueBinding._OPTION_MESSAGES_HIDDEN) {
+  if (
+    option === ValueBinding._OPTION_MESSAGES_SHOWN ||
+    option === ValueBinding._OPTION_MESSAGES_HIDDEN
+  ) {
     if (ictObs && isWriteableObservable(ictObs)) {
       icTracker = ictObs.peek();
       if (icTracker && icTracker._update.call(icTracker, component, element, option, msgs)) {
@@ -792,7 +809,6 @@ ValueBinding._updateInvalidComponentTracker = function (event) {
   }
 };
 
-
 /**
  * Register a default callback for the 'optionChange' event. The callback writes the component and
  * its validity to the invalidComponentTracker observable.
@@ -802,59 +818,79 @@ ValueBinding._updateInvalidComponentTracker = function (event) {
  * @param {Function=} component
  * @private
  */
-ValueBinding._registerInvalidComponentTrackerWriteback =
-  function (property, options, element, component) {
-    var ictObs = options[property];
-    var icTracker;
-    var jElem = $(element);
+ValueBinding._registerInvalidComponentTrackerWriteback = function (
+  property,
+  options,
+  element,
+  component
+) {
+  var ictObs = options[property];
+  var icTracker;
+  var jElem = $(element);
 
-    // Create new intsance of InvalidComponentTracker if the observable is not set.
-    if (isObservable(ictObs)) {
-      icTracker = ictObs.peek();
-      // push new instance of oj.InvalidComponentTracker onto observable if none present.
-      if (icTracker == null) { // null or undefined
-        icTracker = new InvalidComponentTracker();
-        ictObs(icTracker);
-      }
-    } else {
-      // tracker object is not an observable.
-      throw new Error('Binding attribute ' + ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER +
-                      ' should be bound to a ko observable.');
+  // Create new intsance of InvalidComponentTracker if the observable is not set.
+  if (isObservable(ictObs)) {
+    icTracker = ictObs.peek();
+    // push new instance of oj.InvalidComponentTracker onto observable if none present.
+    if (icTracker == null) {
+      // null or undefined
+      icTracker = new InvalidComponentTracker();
+      ictObs(icTracker);
     }
+  } else {
+    // tracker object is not an observable.
+    throw new Error(
+      'Binding attribute ' +
+        ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER +
+        ' should be bound to a ko observable.'
+    );
+  }
 
-    // update icTracker initial state using component's latest option values
-    if (isWriteableObservable(ictObs)) {
-      // EditableValue's messagesShown option is an Array of messages currently shown on component.
-      var messagesShown = component.call(component, 'option',
-                                          ValueBinding._OPTION_MESSAGES_SHOWN);
-      // EditableValue's messagesHidden option is an Array of messages currently hidden on component
-      var messagesHidden = component.call(component, 'option',
-                                          ValueBinding._OPTION_MESSAGES_HIDDEN);
+  // update icTracker initial state using component's latest option values
+  if (isWriteableObservable(ictObs)) {
+    // EditableValue's messagesShown option is an Array of messages currently shown on component.
+    var messagesShown = component.call(component, 'option', ValueBinding._OPTION_MESSAGES_SHOWN);
+    // EditableValue's messagesHidden option is an Array of messages currently hidden on component
+    var messagesHidden = component.call(component, 'option', ValueBinding._OPTION_MESSAGES_HIDDEN);
 
-      icTracker._update.call(icTracker, component, element,
-                              ValueBinding._OPTION_MESSAGES_SHOWN, messagesShown);
-      icTracker._update.call(icTracker, component, element,
-                              ValueBinding._OPTION_MESSAGES_HIDDEN, messagesHidden);
-      ictObs.valueHasMutated();
-    }
+    icTracker._update.call(
+      icTracker,
+      component,
+      element,
+      ValueBinding._OPTION_MESSAGES_SHOWN,
+      messagesShown
+    );
+    icTracker._update.call(
+      icTracker,
+      component,
+      element,
+      ValueBinding._OPTION_MESSAGES_HIDDEN,
+      messagesHidden
+    );
+    ictObs.valueHasMutated();
+  }
 
-    // register listener for optionChange event for future changes to messages* options
-    var eventData = { tracker: ictObs, component: component, element: element };
-    jElem.on(ValueBinding._EVENT_OPTIONCHANGE, eventData,
-              ValueBinding._updateInvalidComponentTracker);
-  };
+  // register listener for optionChange event for future changes to messages* options
+  var eventData = { tracker: ictObs, component: component, element: element };
+  jElem.on(
+    ValueBinding._EVENT_OPTIONCHANGE,
+    eventData,
+    ValueBinding._updateInvalidComponentTracker
+  );
+};
 
 /**
  * editableValue Behavior Definition and Injection
  */
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
-  {
-    for: 'editableValue',
-    attributes: [ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER,
-      ValueBinding._OPTION_DISABLED,
-      ValueBinding._OPTION_READONLY],
-    init: ValueBinding._init,
-    update: ValueBinding._update,
-    afterCreate: ValueBinding._afterCreate,
-    beforeDestroy: ValueBinding._beforeDestroy
-  });
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  for: 'editableValue',
+  attributes: [
+    ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER,
+    ValueBinding._OPTION_DISABLED,
+    ValueBinding._OPTION_READONLY
+  ],
+  init: ValueBinding._init,
+  update: ValueBinding._update,
+  afterCreate: ValueBinding._afterCreate,
+  beforeDestroy: ValueBinding._beforeDestroy
+});

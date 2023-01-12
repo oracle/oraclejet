@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -33,7 +33,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
       // : we should ignore oj-module component since it is not a relevant enclosing composite for this call
       if (_node && _node.nodeName.toLowerCase() !== 'oj-module') {
         // eslint-disable-next-line no-bitwise
-        if (stopBelow && !(node.compareDocumentPosition(stopBelow) & 16/* contained by*/)) {
+        if (stopBelow && !((node.compareDocumentPosition(stopBelow) & 16) /* contained by*/)) {
           break;
         }
         composite = _node;
@@ -69,7 +69,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    */
   CompositeElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
 
-
   /** @ignore */
   CompositeElementBridge.DESC_KEY_CSS = 'css';
   /** @ignore */
@@ -81,467 +80,489 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
   /** @ignore */
   CompositeElementBridge.SUBID_MAP = 'data-oj-subid-map';
 
-  oj.CollectionUtils.copyInto(CompositeElementBridge.proto,
-    {
-      beforePropertyChangedEvent: function (element, property, detail) {
-        var vmContext = { property: property };
-        oj.CollectionUtils.copyInto(vmContext, detail);
-        oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL,
-                                                           'propertyChanged',
-                                                           [vmContext]);
-      },
+  oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
+    beforePropertyChangedEvent: function (element, property, detail) {
+      var vmContext = { property: property };
+      oj.CollectionUtils.copyInto(vmContext, detail);
+      oj.CompositeTemplateRenderer.invokeViewModelMethod(
+        element,
+        this._VIEW_MODEL,
+        'propertyChanged',
+        [vmContext]
+      );
+    },
 
-      AddComponentMethods: function (proto) {
-        // Add subproperty getter/setter
-        var setPropertyHelper = function (element, bridge, prop, value, propertyBag, isOuterSet) {
-          if (!bridge.SaveEarlyPropertySet(element, prop, value)) {
-            var setResult = bridge.SetProperty(element, prop, value, propertyBag, isOuterSet);
-            if (setResult.propertySet) {
-              if (setResult.isSubproperty) {
-                // Retrieve the property tracker for the top level property and notify that a subproperty has
-                // changed so any View bound subproperties will trigger a View update
-                var propertyTracker = CompositeElementBridge._getPropertyTracker(bridge,
-                  setResult.property);
-                propertyTracker.valueHasMutated();
-              }
+    AddComponentMethods: function (proto) {
+      // Add subproperty getter/setter
+      var setPropertyHelper = function (element, bridge, prop, value, propertyBag, isOuterSet) {
+        if (!bridge.SaveEarlyPropertySet(element, prop, value)) {
+          var setResult = bridge.SetProperty(element, prop, value, propertyBag, isOuterSet);
+          if (setResult.propertySet) {
+            if (setResult.isSubproperty) {
+              // Retrieve the property tracker for the top level property and notify that a subproperty has
+              // changed so any View bound subproperties will trigger a View update
+              var propertyTracker = CompositeElementBridge._getPropertyTracker(
+                bridge,
+                setResult.property
+              );
+              propertyTracker.valueHasMutated();
             }
           }
-        };
-        // eslint-disable-next-line no-param-reassign
-        proto.setProperty = function (prop, value) {
-          var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
-          setPropertyHelper(this, bridge, prop, value, this, true);
-        };
-        // eslint-disable-next-line no-param-reassign
-        proto.getProperty = function (prop) {
-          var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
-          return bridge.GetProperty(this, prop, this);
-        };
-        // eslint-disable-next-line no-param-reassign
-        proto._propsProto.setProperty = function (prop, value) {
-          // 'this' is the property object we pass to the ViewModel to track internal property changes
-          setPropertyHelper(this._ELEMENT, this._BRIDGE, prop, value, this, false);
-        };
-        // eslint-disable-next-line no-param-reassign
-        proto._propsProto.getProperty = function (prop) {
-          // 'this' is the property object we pass to the ViewModel to track internal property changes
-          return this._BRIDGE.GetProperty(this._ELEMENT, prop, this);
-        };
-        // Always add automation methods, but if the ViewModel defines overrides, wrap the overrides
-        // and pass the default implementation in as the last parameter to the ViewModel's method.
-        // eslint-disable-next-line no-param-reassign
-        proto.getNodeBySubId = function (locator) {
-          var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
-          var viewModel = bridge._getViewModel();
-          if (viewModel.getNodeBySubId) {
-            return viewModel.getNodeBySubId(locator, bridge._getNodeBySubId.bind(this));
-          }
-          return bridge._getNodeBySubId.bind(this)(locator);
-        };
-        // eslint-disable-next-line no-param-reassign
-        proto.getSubIdByNode = function (node) {
-          var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
-          var viewModel = bridge._getViewModel();
-          if (viewModel.getSubIdByNode) {
-            return viewModel.getSubIdByNode(node, bridge._getSubIdByNode.bind(this));
-          }
-          return bridge._getSubIdByNode.bind(this)(node);
-        };
-      },
-
-      CreateComponent: function (element) {
-        const state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
-        const slotMap = state.getSlotMap();
-        // Setup the ViewModel context to pass to lifecycle listeners
-        var slotNodeCounts = {};
-        // Generate slot map before we update DOM with view nodes
-        var slots = Object.keys(slotMap);
-        for (var i = 0; i < slots.length; i++) {
-          var slot = slots[i];
-          slotNodeCounts[slot] = slotMap[slot].length;
         }
-        var unique = ojcustomelementUtils.ElementUtils.getUniqueId();
-        var vmContext = {
-          element: element,
-          props: Promise.resolve(this._PROPS),
-          properties: this._PROPS,
-          slotNodeCounts: Promise.resolve(slotNodeCounts),
-          slotCounts: slotNodeCounts,
-          unique: unique
-        };
-        vmContext.uniqueId = element.id ? element.id : unique;
-        this._VM_CONTEXT = vmContext;
-
-        var model = ojcustomelementUtils.CustomElementUtils
-          .getElementDescriptor(element.tagName)[CompositeElementBridge.DESC_KEY_VIEW_MODEL];
-        if (typeof model === 'function') {
-          // eslint-disable-next-line new-cap
-          model = new model(vmContext);
-        } else {
-          // The initialize callback is deprecated in 5.0.0. If the function returns a value, use it as the new model instance.
-          model = oj.CompositeTemplateRenderer.invokeViewModelMethod(element, model,
-          'initialize', [vmContext]) || model;
+      };
+      // eslint-disable-next-line no-param-reassign
+      proto.setProperty = function (prop, value) {
+        var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
+        setPropertyHelper(this, bridge, prop, value, this, true);
+      };
+      // eslint-disable-next-line no-param-reassign
+      proto.getProperty = function (prop) {
+        var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
+        return bridge.GetProperty(this, prop, this);
+      };
+      // eslint-disable-next-line no-param-reassign
+      proto._propsProto.setProperty = function (prop, value) {
+        // 'this' is the property object we pass to the ViewModel to track internal property changes
+        setPropertyHelper(this._ELEMENT, this._BRIDGE, prop, value, this, false);
+      };
+      // eslint-disable-next-line no-param-reassign
+      proto._propsProto.getProperty = function (prop) {
+        // 'this' is the property object we pass to the ViewModel to track internal property changes
+        return this._BRIDGE.GetProperty(this._ELEMENT, prop, this);
+      };
+      // Always add automation methods, but if the ViewModel defines overrides, wrap the overrides
+      // and pass the default implementation in as the last parameter to the ViewModel's method.
+      // eslint-disable-next-line no-param-reassign
+      proto.getNodeBySubId = function (locator) {
+        var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
+        var viewModel = bridge._getViewModel();
+        if (viewModel.getNodeBySubId) {
+          return viewModel.getNodeBySubId(locator, bridge._getNodeBySubId.bind(this));
         }
-        this._VIEW_MODEL = model;
+        return bridge._getNodeBySubId.bind(this)(locator);
+      };
+      // eslint-disable-next-line no-param-reassign
+      proto.getSubIdByNode = function (node) {
+        var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
+        var viewModel = bridge._getViewModel();
+        if (viewModel.getSubIdByNode) {
+          return viewModel.getSubIdByNode(node, bridge._getSubIdByNode.bind(this));
+        }
+        return bridge._getSubIdByNode.bind(this)(node);
+      };
+    },
 
-        // This method can return a Promise which will delay additional lifecycle phases until it is resolved.
-        var activatedPromise = oj.CompositeTemplateRenderer.invokeViewModelMethod(element, model,
-          'activated', [vmContext]) || Promise.resolve(true);
+    CreateComponent: function (element) {
+      const state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
+      const slotMap = state.getSlotMap();
+      // Setup the ViewModel context to pass to lifecycle listeners
+      var slotNodeCounts = {};
+      // Generate slot map before we update DOM with view nodes
+      var slots = Object.keys(slotMap);
+      for (var i = 0; i < slots.length; i++) {
+        var slot = slots[i];
+        slotNodeCounts[slot] = slotMap[slot].length;
+      }
+      var unique = ojcustomelementUtils.ElementUtils.getUniqueId();
+      var vmContext = {
+        element: element,
+        props: Promise.resolve(this._PROPS),
+        properties: this._PROPS,
+        slotNodeCounts: Promise.resolve(slotNodeCounts),
+        slotCounts: slotNodeCounts,
+        unique: unique
+      };
+      vmContext.uniqueId = element.id ? element.id : unique;
+      this._VM_CONTEXT = vmContext;
 
-        var bridge = this;
-        return activatedPromise.then(function () {
-          var params = {
-            props: bridge._PROPS,
-            slotMap: slotMap,
-            slotNodeCounts: slotNodeCounts,
-            unique: bridge._VM_CONTEXT.unique,
-            uniqueId: bridge._VM_CONTEXT.uniqueId,
-            viewModel: bridge._VIEW_MODEL,
-            viewModelContext: bridge._VM_CONTEXT
-          };
+      var model = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(element.tagName)[
+        CompositeElementBridge.DESC_KEY_VIEW_MODEL
+      ];
+      if (typeof model === 'function') {
+        // eslint-disable-next-line new-cap
+        model = new model(vmContext);
+      } else {
+        // The initialize callback is deprecated in 5.0.0. If the function returns a value, use it as the new model instance.
+        model =
+          oj.CompositeTemplateRenderer.invokeViewModelMethod(element, model, 'initialize', [
+            vmContext
+          ]) || model;
+      }
+      this._VIEW_MODEL = model;
 
-          // Store the name of the binding provider on the element when we are about
-          // to insert the view. This will allow custom elements within the view to look
-          // up the binding provider used by the composite (currently only KO).
-          // eslint-disable-next-line no-param-reassign
-          element[ojcustomelementUtils.CHILD_BINDING_PROVIDER] = 'knockout';
-          // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-          if (oj.Components) {
-            oj.Components.unmarkPendingSubtreeHidden(element);
-          }
+      // This method can return a Promise which will delay additional lifecycle phases until it is resolved.
+      var activatedPromise =
+        oj.CompositeTemplateRenderer.invokeViewModelMethod(element, model, 'activated', [
+          vmContext
+        ]) || Promise.resolve(true);
 
-          var cache = ojcustomelementUtils.CustomElementUtils.getElementRegistration(element.tagName).cache;
-          // Need to clone nodes first
-          var view = CompositeElementBridge._getDomNodes(cache.view, element);
-          oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
-        });
-      },
+      var bridge = this;
+      return activatedPromise.then(function () {
+        var params = {
+          props: bridge._PROPS,
+          slotMap: slotMap,
+          slotNodeCounts: slotNodeCounts,
+          unique: bridge._VM_CONTEXT.unique,
+          uniqueId: bridge._VM_CONTEXT.uniqueId,
+          viewModel: bridge._VIEW_MODEL,
+          viewModelContext: bridge._VM_CONTEXT
+        };
 
-      DefineMethodCallback: function (proto, method, methodMeta) {
+        // Store the name of the binding provider on the element when we are about
+        // to insert the view. This will allow custom elements within the view to look
+        // up the binding provider used by the composite (currently only KO).
         // eslint-disable-next-line no-param-reassign
-        proto[method] = function () {
-          var methodName = methodMeta.internalName || method;
-          var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
-          var viewModel = bridge._getViewModel();
-          return viewModel[methodName].apply(viewModel, arguments);
-        };
-      },
-
-      DefinePropertyCallback: function (proto, property, propertyMeta) {
-        var set = function (value, bOuterSet) {
-          // Properties can be set before the component is created. These early
-          // sets are actually saved until after component creation and played back.
-          if (!this._BRIDGE.SaveEarlyPropertySet(this._ELEMENT, property, value)) {
-            if (bOuterSet) {
-              // eslint-disable-next-line no-param-reassign
-              value = ojcustomelementUtils.transformPreactValue(this._ELEMENT, propertyMeta, value);
-            }
-            // Property trackers are observables are referenced when the property is set or retrieved,
-            // which allows us to automatically update the View when the property is mutated.
-            var propertyTracker = CompositeElementBridge._getPropertyTracker(this._BRIDGE,
-                                                                                property);
-            var previousValue = propertyTracker.peek();
-            if (!ojcustomelementUtils.ElementUtils.comparePropertyValues(propertyMeta, value, previousValue)) {
-              // We should consider supporting custom comparators
-              // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
-              if (bOuterSet) {
-                // eslint-disable-next-line no-param-reassign
-                value = this._BRIDGE.ValidatePropertySet(this._ELEMENT, property, value);
-              }
-
-              if (propertyMeta._eventListener) {
-                this._BRIDGE.SetEventListenerProperty(this._ELEMENT, property, value);
-              }
-              propertyTracker(value);
-
-              if (!propertyMeta._derived) {
-                var updatedFrom = bOuterSet ? 'external' : 'internal';
-                oj.BaseCustomElementBridge.__FirePropertyChangeEvent(this._ELEMENT,
-                  property, value, previousValue, updatedFrom);
-                this._BRIDGE.State.dirtyProps.add(property);
-              }
-            } else {
-              Logger.info(ojcustomelementUtils.CustomElementUtils.getElementInfo(this._ELEMENT) + ": Ignoring property set for property '" +
-                property + "' with same value.");
-            }
-          }
-        };
-
-        // Called on the ViewModel props object
-        var innerSet = function (value) {
-          set.bind(this)(value, false);
-        };
-
-        // Called on the custom element
-        var outerSet = function (value) {
-          var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
-          set.bind(bridge._PROPS)(value, true);
-        };
-
-        var get = function (bOuterSet) {
-          var propertyTracker = CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
-          // If the attribute has not been set, return the default value
-          // Calling .peek() lets us check the propertyTracker value without creating a dependency
-          var value = bOuterSet ? propertyTracker.peek() : propertyTracker();
-          if (value === undefined) {
-            value = MetadataUtils.getDefaultValue(propertyMeta);
-            propertyTracker(value);
-          }
-          return value;
-        };
-
-        // Called on the ViewModel props object
-        var innerGet = function () {
-          return get.bind(this, false)();
-        };
-
-        // Called on the custom element
-        var outerGet = function () {
-          var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
-          return get.bind(bridge._PROPS, true)();
-        };
-
-        // Don't add event listener properties for inner props
-        if (!propertyMeta._derived) {
-          oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto._propsProto,
-                                                                   property,
-                                                                   innerGet,
-                                                                   innerSet);
-        }
-        oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
-      },
-
-      GetMetadata: function (descriptor) {
-        // Composites have a public getMetadata API so we cannot directly modify the
-        // original metadata object when we add additional info for on[PropertyName] properties
-        return descriptor._metadata || {};
-      },
-
-      HandleDetached: function (element) {
-        // Invoke callback on the superclass
-        oj.BaseCustomElementBridge.proto.HandleDetached.call(this, element);
-
-        // Detached is deprecated in 4.2.0 for disconnected
-        oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL,
-          'detached', [element]);
-        oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL,
-          'disconnected', [element]);
-      },
-
-      HandleReattached: function (element) {
-        // Invoke callback on the superclass
-        oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
-
-        oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL,
-                                                           'connected',
-                                                           [this._VM_CONTEXT]);
-      },
-
-      InitializeElement: function (element) {
-        // Invoke callback on the superclass
-        oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
-
+        element[ojcustomelementUtils.CHILD_BINDING_PROVIDER] = 'knockout';
         // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
         if (oj.Components) {
-          oj.Components.markPendingSubtreeHidden(element);
+          oj.Components.unmarkPendingSubtreeHidden(element);
         }
 
-        var descriptor;
-
-        // Cache the View
         var cache = ojcustomelementUtils.CustomElementUtils.getElementRegistration(element.tagName).cache;
-        if (!cache.view) {
-          descriptor = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(element.tagName);
+        // Need to clone nodes first
+        var view = CompositeElementBridge._getDomNodes(cache.view, element);
+        oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
+      });
+    },
 
-          var view = descriptor[CompositeElementBridge.DESC_KEY_VIEW];
-          // when multiple instances of the same CCA are on the same page, because of the async
-          // nature, we could end up with multiple promises created on the same view. The first
-          // resolved promise will set up cache.view, all others should just use the cached
-          // view instead of parsing it again. So here we check existence of cache in the resolve
-          // callback to avoid parsing the view multiple times.
-          if (!cache.view) {
-            if (typeof (view) === 'string') {
-              cache.view = CompositeElementBridge._getDomNodes(view, element);
-            } else {
-              cache.view = view;
-            }
+    DefineMethodCallback: function (proto, method, methodMeta) {
+      // eslint-disable-next-line no-param-reassign
+      proto[method] = function () {
+        var methodName = methodMeta.internalName || method;
+        var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
+        var viewModel = bridge._getViewModel();
+        return viewModel[methodName].apply(viewModel, arguments);
+      };
+    },
+
+    DefinePropertyCallback: function (proto, property, propertyMeta) {
+      var set = function (value, bOuterSet) {
+        // Properties can be set before the component is created. These early
+        // sets are actually saved until after component creation and played back.
+        if (!this._BRIDGE.SaveEarlyPropertySet(this._ELEMENT, property, value)) {
+          if (bOuterSet) {
+            // eslint-disable-next-line no-param-reassign
+            value = ojcustomelementUtils.transformPreactValue(this._ELEMENT, propertyMeta, value);
           }
-        }
-
-        // Cache the CSS
-        if (!cache.css) {
-          if (!descriptor) {
-            descriptor = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(element.tagName);
-          }
-          // The CSS Promise will be null if loaded by the require-css plugin
-          var css = descriptor[CompositeElementBridge.DESC_KEY_CSS];
-          // CSS is optional so we need to check if it was provided
-          if (css) {
-            var style = document.createElement('style');
-            style.type = 'text/css';
-            if (style.styleSheet) { // for IE
-              style.styleSheet.cssText = css;
-            } else {
-              style.appendChild(document.createTextNode(css)); // @HTMLUpdateOK
-            }
-            document.head.appendChild(style); // @HTMLUpdateOK
-            // Set a flag that we've already processed and appended the style to the
-            // document head so we only do this once for all composite instances
-            cache.css = true;
-          }
-        }
-
-        // Loop through all element attributes to get initial properties
-        oj.BaseCustomElementBridge.__InitProperties(element, element);
-      },
-
-      InitializePrototype: function (proto) {
-        // Invoke callback on the superclass
-        oj.BaseCustomElementBridge.proto.InitializePrototype.call(this, proto);
-
-        Object.defineProperty(proto, '_propsProto', { value: {} });
-      },
-
-      initializeBridge: function (element, descriptor) {
-        // Invoke callback on the superclass
-        oj.BaseCustomElementBridge.proto.initializeBridge.call(this, element, descriptor);
-
-        if (element._propsProto) {
-          this._PROPS = Object.create(element._propsProto);
-          this._PROPS._BRIDGE = this;
-          this._PROPS._ELEMENT = element;
-        }
-      },
-
-      ShouldRemoveDisabled: function () {
-        // Composite components can opt in to have their disabled attribute removed.
-        var ext = this.METADATA.extension;
-        return ext ? ext._SHOULD_REMOVE_DISABLED === true : false;
-      },
-
-      _getNodeBySubId: function (locator) {
-        // The locator subId can fall into one of 3 categories below:
-        // 1) The target node belongs to a JET component or composite with a subId map
-        // 2) The target node maps directly to a subId
-        // 3) The composite does not have a match for the subId
-
-        // The returned subId map the following key/value pairs:
-        // {
-        //    [subId]: {
-        //      alias: [alias or null for non JET components],
-        //      node: [node]
-        //    }
-        // }
-        var map = CompositeElementBridge.__GetSubIdMap(this);
-        var match = map[locator.subId];
-        if (match) {
-          if (match.alias) { // Case #1
-            var clone = oj.CollectionUtils.copyInto({}, locator, undefined, true);
-            clone.subId = match.alias;
-            var component = match.node;
-            // Check to see if we should call the method on the element or widget
-            if (component.getNodeBySubId) {
-              return component.getNodeBySubId(clone);
+          // Property trackers are observables are referenced when the property is set or retrieved,
+          // which allows us to automatically update the View when the property is mutated.
+          var propertyTracker = CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
+          var previousValue = propertyTracker.peek();
+          if (!ojcustomelementUtils.ElementUtils.comparePropertyValues(propertyMeta.writeback, value, previousValue)) {
+            // We should consider supporting custom comparators
+            // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
+            if (bOuterSet) {
+              // eslint-disable-next-line no-param-reassign
+              value = this._BRIDGE.ValidatePropertySet(this._ELEMENT, property, value);
             }
 
-            // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-            return oj.Components.__GetWidgetConstructor(component)('getNodeBySubId', clone);
-          }
-
-          return match.node; // Case #2
-        }
-
-        return null; // Case #3
-      },
-
-      _getSubIdByNode: function (node) {
-        // The node can fall into one of 3 categories below:
-        // 1) The node is not a child of this composite.
-        // 2) The node is a child of an inner composite and we need to convert its aliased subId
-        // 3) The node is a child of this composite
-        // 3a) The node is mapped directly to a subId
-        // 3b) The node is owned by an element that has a getSubIdByNode method and we need to convert its aliased subId
-
-        // Case #1
-        if (!this.contains(node)) {
-          return null;
-        }
-
-        // The returned node map has the following key/value pairs where nodeKey is
-        // the value of the node's data-oj-subid[-map] attribute:
-        // [nodeKey]: { map: [subIdMap], node: [node] }
-        var nodeMap = CompositeElementBridge.__GetNodeMap(this);
-        var nodeKey;
-        var match;
-        var locator;
-
-        // Case #2
-        var composite = CompositeInternal.getContainingComposite(node, this);
-        if (composite != null) {
-          nodeKey = composite.node.getAttribute(CompositeElementBridge.SUBID_MAP);
-          match = nodeMap[nodeKey];
-          if (match) {
-            if (composite.getSubIdByNode) {
-              locator = composite.getSubIdByNode(node);
-              if (locator) {
-                var alias = match.map[locator.subId];
-                locator.subId = alias;
-                return locator;
-              }
+            if (propertyMeta._eventListener) {
+              this._BRIDGE.SetEventListenerProperty(this._ELEMENT, property, value);
             }
-          }
-          // Return null if we did not expose the node even though the inner composite does
-          return null;
-        }
+            propertyTracker(value);
 
-        // Case #3
-        // Walk up DOM tree until we find the containing node with the subId mapping
-        var curNode = node;
-        while (curNode !== this) {
-          // We do not support an element having both attributes. If both are specified, -map takes precedence.
-          nodeKey = curNode.getAttribute(CompositeElementBridge.SUBID_MAP)
-            || curNode.getAttribute('data-oj-subid');
-          if (nodeKey) {
-            break;
-          }
-          curNode = curNode.parentNode;
-        }
-
-        match = nodeMap[nodeKey];
-        if (match) {
-          var map = match.map;
-          if (!map) { // Case #3a
-            return { subId: nodeKey };
-          }
-
-          var component = match.node;
-          // Check to see if we should call the method on the element or widget
-          if (component.getSubIdByNode) {
-            locator = component.getSubIdByNode(node);
+            if (!propertyMeta._derived) {
+              var updatedFrom = bOuterSet ? 'external' : 'internal';
+              oj.BaseCustomElementBridge.__FirePropertyChangeEvent(
+                this._ELEMENT,
+                property,
+                value,
+                previousValue,
+                updatedFrom
+              );
+              this._BRIDGE.State.dirtyProps.add(property);
+            }
           } else {
-            // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-            locator = oj.Components.__GetWidgetConstructor(component)('getSubIdByNode', node);
-          }
-
-          if (locator) {
-            locator.subId = match.map[locator.subId];
-            return locator;
+            Logger.info(
+              ojcustomelementUtils.CustomElementUtils.getElementInfo(this._ELEMENT) +
+                ": Ignoring property set for property '" +
+                property +
+                "' with same value."
+            );
           }
         }
+      };
 
-        return null;
-      },
+      // Called on the ViewModel props object
+      var innerSet = function (value) {
+        set.bind(this)(value, false);
+      };
 
-      _getViewModel: function () {
-        if (!this._VIEW_MODEL) {
-          throw new ojcustomelementUtils.JetElementError(
-            this._ELEMENT, 'Cannot access methods before element is upgraded.'
-          );
+      // Called on the custom element
+      var outerSet = function (value) {
+        var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
+        set.bind(bridge._PROPS)(value, true);
+      };
+
+      var get = function (bOuterSet) {
+        var propertyTracker = CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
+        // If the attribute has not been set, return the default value
+        // Calling .peek() lets us check the propertyTracker value without creating a dependency
+        var value = bOuterSet ? propertyTracker.peek() : propertyTracker();
+        if (value === undefined) {
+          value = MetadataUtils.getDefaultValue(propertyMeta);
+          propertyTracker(value);
         }
-        return this._VIEW_MODEL;
+        return value;
+      };
+
+      // Called on the ViewModel props object
+      var innerGet = function () {
+        return get.bind(this, false)();
+      };
+
+      // Called on the custom element
+      var outerGet = function () {
+        var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
+        return get.bind(bridge._PROPS, true)();
+      };
+
+      // Don't add event listener properties for inner props
+      if (!propertyMeta._derived) {
+        oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(
+          proto._propsProto,
+          property,
+          innerGet,
+          innerSet
+        );
+      }
+      oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
+    },
+
+    GetMetadata: function (descriptor) {
+      // Composites have a public getMetadata API so we cannot directly modify the
+      // original metadata object when we add additional info for on[PropertyName] properties
+      return descriptor._metadata || {};
+    },
+
+    HandleDetached: function (element) {
+      // Invoke callback on the superclass
+      oj.BaseCustomElementBridge.proto.HandleDetached.call(this, element);
+
+      // Detached is deprecated in 4.2.0 for disconnected
+      oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL, 'detached', [
+        element
+      ]);
+      oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL, 'disconnected', [
+        element
+      ]);
+    },
+
+    HandleReattached: function (element) {
+      // Invoke callback on the superclass
+      oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
+
+      oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL, 'connected', [
+        this._VM_CONTEXT
+      ]);
+    },
+
+    InitializeElement: function (element) {
+      // Invoke callback on the superclass
+      oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
+
+      // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
+      if (oj.Components) {
+        oj.Components.markPendingSubtreeHidden(element);
       }
 
-    });
+      var descriptor;
+
+      // Cache the View
+      var cache = ojcustomelementUtils.CustomElementUtils.getElementRegistration(element.tagName).cache;
+      if (!cache.view) {
+        descriptor = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(element.tagName);
+
+        var view = descriptor[CompositeElementBridge.DESC_KEY_VIEW];
+        // when multiple instances of the same CCA are on the same page, because of the async
+        // nature, we could end up with multiple promises created on the same view. The first
+        // resolved promise will set up cache.view, all others should just use the cached
+        // view instead of parsing it again. So here we check existence of cache in the resolve
+        // callback to avoid parsing the view multiple times.
+        if (!cache.view) {
+          if (typeof view === 'string') {
+            cache.view = CompositeElementBridge._getDomNodes(view, element);
+          } else {
+            cache.view = view;
+          }
+        }
+      }
+
+      // Cache the CSS
+      if (!cache.css) {
+        if (!descriptor) {
+          descriptor = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(element.tagName);
+        }
+        // The CSS Promise will be null if loaded by the require-css plugin
+        var css = descriptor[CompositeElementBridge.DESC_KEY_CSS];
+        // CSS is optional so we need to check if it was provided
+        if (css) {
+          var style = document.createElement('style');
+          style.type = 'text/css';
+          if (style.styleSheet) {
+            // for IE
+            style.styleSheet.cssText = css;
+          } else {
+            style.appendChild(document.createTextNode(css)); // @HTMLUpdateOK
+          }
+          document.head.appendChild(style); // @HTMLUpdateOK
+          // Set a flag that we've already processed and appended the style to the
+          // document head so we only do this once for all composite instances
+          cache.css = true;
+        }
+      }
+
+      // Loop through all element attributes to get initial properties
+      oj.BaseCustomElementBridge.__InitProperties(element, element);
+    },
+
+    InitializePrototype: function (proto) {
+      // Invoke callback on the superclass
+      oj.BaseCustomElementBridge.proto.InitializePrototype.call(this, proto);
+
+      Object.defineProperty(proto, '_propsProto', { value: {} });
+    },
+
+    initializeBridge: function (element, descriptor) {
+      // Invoke callback on the superclass
+      oj.BaseCustomElementBridge.proto.initializeBridge.call(this, element, descriptor);
+
+      if (element._propsProto) {
+        this._PROPS = Object.create(element._propsProto);
+        this._PROPS._BRIDGE = this;
+        this._PROPS._ELEMENT = element;
+      }
+    },
+
+    ShouldRemoveDisabled: function () {
+      // Composite components can opt in to have their disabled attribute removed.
+      var ext = this.METADATA.extension;
+      return ext ? ext._SHOULD_REMOVE_DISABLED === true : false;
+    },
+
+    _getNodeBySubId: function (locator) {
+      // The locator subId can fall into one of 3 categories below:
+      // 1) The target node belongs to a JET component or composite with a subId map
+      // 2) The target node maps directly to a subId
+      // 3) The composite does not have a match for the subId
+
+      // The returned subId map the following key/value pairs:
+      // {
+      //    [subId]: {
+      //      alias: [alias or null for non JET components],
+      //      node: [node]
+      //    }
+      // }
+      var map = CompositeElementBridge.__GetSubIdMap(this);
+      var match = map[locator.subId];
+      if (match) {
+        if (match.alias) {
+          // Case #1
+          var clone = oj.CollectionUtils.copyInto({}, locator, undefined, true);
+          clone.subId = match.alias;
+          var component = match.node;
+          // Check to see if we should call the method on the element or widget
+          if (component.getNodeBySubId) {
+            return component.getNodeBySubId(clone);
+          }
+
+          // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
+          return oj.Components.__GetWidgetConstructor(component)('getNodeBySubId', clone);
+        }
+
+        return match.node; // Case #2
+      }
+
+      return null; // Case #3
+    },
+
+    _getSubIdByNode: function (node) {
+      // The node can fall into one of 3 categories below:
+      // 1) The node is not a child of this composite.
+      // 2) The node is a child of an inner composite and we need to convert its aliased subId
+      // 3) The node is a child of this composite
+      // 3a) The node is mapped directly to a subId
+      // 3b) The node is owned by an element that has a getSubIdByNode method and we need to convert its aliased subId
+
+      // Case #1
+      if (!this.contains(node)) {
+        return null;
+      }
+
+      // The returned node map has the following key/value pairs where nodeKey is
+      // the value of the node's data-oj-subid[-map] attribute:
+      // [nodeKey]: { map: [subIdMap], node: [node] }
+      var nodeMap = CompositeElementBridge.__GetNodeMap(this);
+      var nodeKey;
+      var match;
+      var locator;
+
+      // Case #2
+      var composite = CompositeInternal.getContainingComposite(node, this);
+      if (composite != null) {
+        nodeKey = composite.node.getAttribute(CompositeElementBridge.SUBID_MAP);
+        match = nodeMap[nodeKey];
+        if (match) {
+          if (composite.getSubIdByNode) {
+            locator = composite.getSubIdByNode(node);
+            if (locator) {
+              var alias = match.map[locator.subId];
+              locator.subId = alias;
+              return locator;
+            }
+          }
+        }
+        // Return null if we did not expose the node even though the inner composite does
+        return null;
+      }
+
+      // Case #3
+      // Walk up DOM tree until we find the containing node with the subId mapping
+      var curNode = node;
+      while (curNode !== this) {
+        // We do not support an element having both attributes. If both are specified, -map takes precedence.
+        nodeKey =
+          curNode.getAttribute(CompositeElementBridge.SUBID_MAP) ||
+          curNode.getAttribute('data-oj-subid');
+        if (nodeKey) {
+          break;
+        }
+        curNode = curNode.parentNode;
+      }
+
+      match = nodeMap[nodeKey];
+      if (match) {
+        var map = match.map;
+        if (!map) {
+          // Case #3a
+          return { subId: nodeKey };
+        }
+
+        var component = match.node;
+        // Check to see if we should call the method on the element or widget
+        if (component.getSubIdByNode) {
+          locator = component.getSubIdByNode(node);
+        } else {
+          // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
+          locator = oj.Components.__GetWidgetConstructor(component)('getSubIdByNode', node);
+        }
+
+        if (locator) {
+          locator.subId = match.map[locator.subId];
+          return locator;
+        }
+      }
+
+      return null;
+    },
+
+    _getViewModel: function () {
+      if (!this._VIEW_MODEL) {
+        throw new ojcustomelementUtils.JetElementError(this._ELEMENT, 'Cannot access methods before element is upgraded.');
+      }
+      return this._VIEW_MODEL;
+    }
+  });
 
   /** ***********************/
   /* PUBLIC STATIC METHODS */
@@ -554,18 +575,26 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    */
   CompositeElementBridge.register = function (tagName, descriptor) {
     var descrip = {};
-    descrip[oj.BaseCustomElementBridge.DESC_KEY_META] =
-      CompositeElementBridge._getResource(tagName, descriptor,
-        oj.BaseCustomElementBridge.DESC_KEY_META);
-    descrip[CompositeElementBridge.DESC_KEY_VIEW] =
-      CompositeElementBridge._getResource(tagName, descriptor,
-        CompositeElementBridge.DESC_KEY_VIEW);
-    descrip[CompositeElementBridge.DESC_KEY_CSS] =
-      CompositeElementBridge._getResource(tagName, descriptor,
-        CompositeElementBridge.DESC_KEY_CSS);
-    descrip[CompositeElementBridge.DESC_KEY_VIEW_MODEL] =
-      CompositeElementBridge._getResource(tagName, descriptor,
-        CompositeElementBridge.DESC_KEY_VIEW_MODEL);
+    descrip[oj.BaseCustomElementBridge.DESC_KEY_META] = CompositeElementBridge._getResource(
+      tagName,
+      descriptor,
+      oj.BaseCustomElementBridge.DESC_KEY_META
+    );
+    descrip[CompositeElementBridge.DESC_KEY_VIEW] = CompositeElementBridge._getResource(
+      tagName,
+      descriptor,
+      CompositeElementBridge.DESC_KEY_VIEW
+    );
+    descrip[CompositeElementBridge.DESC_KEY_CSS] = CompositeElementBridge._getResource(
+      tagName,
+      descriptor,
+      CompositeElementBridge.DESC_KEY_CSS
+    );
+    descrip[CompositeElementBridge.DESC_KEY_VIEW_MODEL] = CompositeElementBridge._getResource(
+      tagName,
+      descriptor,
+      CompositeElementBridge.DESC_KEY_VIEW_MODEL
+    );
     descrip[CompositeElementBridge.DESC_KEY_PARSE_FUN] =
       descriptor[CompositeElementBridge.DESC_KEY_PARSE_FUN];
 
@@ -589,8 +618,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
 
     // __ProcessEventListeners returns a copy of the metadata so we're not updating the original here.
     descrip._metadata = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, false);
-    ojcustomelementUtils.CustomElementUtils.registerElement(tagName, registration,
-      CompositeElementBridge.proto.getClass(descrip));
+    ojcustomelementUtils.CustomElementUtils.registerElement(
+      tagName,
+      registration,
+      CompositeElementBridge.proto.getClass(descrip)
+    );
   };
 
   /** ***************************/
@@ -621,7 +653,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
     }
     // TODO update this error message once we remove support for Array of DOM nodes and DocumentFragment
     throw new ojcustomelementUtils.JetElementError(
-      element, 'The composite View is not one of the following supported types: string, Array of DOM nodes, DocumentFragment'
+      element,
+      'The composite View is not one of the following supported types: string, Array of DOM nodes, DocumentFragment'
     );
   };
 
@@ -657,8 +690,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
     if (!node.hasAttribute('slot')) {
       CompositeElementBridge._addNodeToSubIdMap(subIdMap, nodeMap, node);
       // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-      if (!ojcustomelementUtils.CustomElementUtils.isElementRegistered(node.tagName) &&
-          !oj.Components.__GetWidgetConstructor(node)) {
+      if (
+        !ojcustomelementUtils.CustomElementUtils.isElementRegistered(node.tagName) &&
+        !oj.Components.__GetWidgetConstructor(node)
+      ) {
         var children = node.children;
         for (var i = 0; i < children.length; i++) {
           CompositeElementBridge._walkSubtree(subIdMap, nodeMap, children[i]);
@@ -752,10 +787,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
       if (hasOwnProperty.call(resource, 'inline')) {
         return resource.inline;
       } else if (hasOwnProperty.call(resource, 'promise')) {
-        throw new Error('Error while registering ' + tagName +
-                        ". The resource type for descriptor key '" + key +
-                        "' is no longer supported." +
-                        ' The resource should be passed directly as the value instead.');
+        throw new Error(
+          'Error while registering ' +
+            tagName +
+            ". The resource type for descriptor key '" +
+            key +
+            "' is no longer supported." +
+            ' The resource should be passed directly as the value instead.'
+        );
       } else {
         return resource;
       }
@@ -891,7 +930,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
   Composite.__COMPOSITE_PROP = '__oj_composite';
 
   /**
-   * @ojoverviewdoc ComponentPackOverview - [7]JET Pack Metadata
+   * @ojoverviewdoc ComponentPackOverview - [9]JET Pack Metadata
    * @classdesc
    * {@ojinclude "name":"componentPackOverviewDoc"}
    */
@@ -1730,7 +1769,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    */
 
   /**
-   * @ojoverviewdoc MetadataOverview - [6]JET Metadata
+   * @ojoverviewdoc MetadataOverview - [8]JET Metadata
    * @classdesc
    * {@ojinclude "name":"metadataOverviewDoc"}
    */
@@ -1911,6 +1950,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    * @ojpropertylayout {propertyGroup: "common", items: ["index", "name"]}
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 1
+   *
+   * @ojoracleicon 'oj-ux-ico-binding-control'
    *
    * @classdesc
    * <h3 id="overview-section">
@@ -2218,6 +2259,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 1
    *
+   * @ojoracleicon 'oj-ux-ico-binding-control'
+   *
    * @classdesc
    * <h3 id="overview-section">
    *   Template Slot Binding
@@ -2334,7 +2377,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    * </pre>
    */
 
-
   /**
    * An optional alias for $current that can be referenced inside the default template DOM. Note
    * that application $current aliasing should be done with the
@@ -2396,7 +2438,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    * &lt;/oj-bind-template-slot>
    */
 
-   /**
+  /**
    * <p>The <code class="prettyprint">oj-bind-template-slot</code> default slot
    * is used to specify a fallback template that will be used to stamp child
    * DOM if the slot has no assigned template nodes.  While assigned template

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -454,7 +454,7 @@ var __oj_thematic_map_metadata =
         'style-defaults.data-marker-defaults.shape': true
       })
     });
-  }());
+  })();
 
 var __oj_thematic_map_area_metadata = 
 {
@@ -510,7 +510,7 @@ var __oj_thematic_map_area_metadata =
     oj.CustomElementBridge.register('oj-thematic-map-area', {
       metadata: __oj_thematic_map_area_metadata
     });
-  }());
+  })();
 
 var __oj_thematic_map_link_metadata = 
 {
@@ -592,8 +592,7 @@ var __oj_thematic_map_link_metadata =
     oj.CustomElementBridge.register('oj-thematic-map-link', {
       metadata: __oj_thematic_map_link_metadata
     });
-  }());
-
+  })();
 
 var __oj_thematic_map_marker_metadata = 
 {
@@ -721,7 +720,7 @@ var __oj_thematic_map_marker_metadata =
       metadata: __oj_thematic_map_marker_metadata,
       parseFunction: DvtAttributeUtils.shapeParseFunction({ shape: true }, _MARKER_SHAPE_ENUMS)
     });
-  }());
+  })();
 
   /**
    * @ojcomponent oj.ojThematicMap
@@ -752,6 +751,7 @@ var __oj_thematic_map_marker_metadata =
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 6
    *
+   * @ojoracleicon 'oj-ux-ico-thematic-map'
    * @ojuxspecs ['data-visualization-thematic-map']
    *
    * @classdesc
@@ -828,1066 +828,990 @@ var __oj_thematic_map_marker_metadata =
    *   project the coordinates to the map projection before passing as x and y properties to the marker object.
    * </p>
    */
-  oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
-    {
-      widgetEventPrefix: 'oj',
-      options: {
+  oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent, {
+    widgetEventPrefix: 'oj',
+    options: {
+      /**
+       * We recommend using the component CSS classes to set component wide styling. This API should be used
+       * only for styling a specific instance of the component. The default values come from the CSS classes and
+       * varies based on theme. The duration of the animations in milliseconds.
+       * @expose
+       * @name animationDuration
+       * @ojshortdesc The duration of the animations in milliseconds. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {number=}
+       * @ojunits "milliseconds"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">animation-duration</code> attribute specified:</caption>
+       * &lt;oj-thematic-map animation-duration='200'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">animationDuration</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.animationDuration;
+       *
+       * // setter
+       * myThematicMap.animationDuration=200;
+       */
+      animationDuration: undefined,
+      /**
+       * The type of animation to apply when the element is initially displayed.
+       * @expose
+       * @name animationOnDisplay
+       * @ojshortdesc Specifies the animation that is shown on initial display.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "auto"
+       * @ojvalue {string} "none"
+       * @default "none"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">animation-on-display</code> attribute specified:</caption>
+       * &lt;oj-thematic-map animation-on-display='auto'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">animationOnDisplay</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.animationOnDisplay;
+       *
+       * // setter
+       * myThematicMap.animationOnDisplay="auto";
+       */
+      animationOnDisplay: 'none',
+      /**
+       * The DataProvider for the areas of the thematic map. It should provide data rows where each row will map data
+       * for a single thematic map data area. The row key will be used as the id for thematic map areas. Note that when
+       * using this attribute, a template for the <a href="#areaTemplate">areaTemplate</a> slot should be provided.
+       * The DataProvider can either have an arbitrary data shape, in which case an <oj-thematic-map-area> element must be specified in the areaTemplate slot or it can have [oj.ojThematicMap.Area]{@link oj.ojThematicMap.Area} as its data shape, in which case no template is required.
+       * @expose
+       * @name areaData
+       * @ojshortdesc Specifies the DataProvider for the areas of the thematic map. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {(Object|null)=}
+       * @ojsignature {target: "Type", value: "DataProvider<K1, D1>|null", jsdocOverride:true}
+       * @default null
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
+       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">area-data</code> attribute specified:</caption>
+       * &lt;oj-thematic-map area-data='[[areaDataProvider]]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">areaData</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.areaData;
+       *
+       * // setter
+       * myThematicMap.areaData = areaDataProvider;
+       */
+      areaData: null,
+      /**
+       * An array of objects that define a row of data for an area data layer.
+       * Also accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the
+       * set value type, we will wrap and return a Promise when accessing the areas property.
+       * @expose
+       * @ojtsignore
+       * @name areas
+       * @ojshortdesc An array of objects that define area data layers. Also accepts a Promise for deferred data rendering. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {(Array.<Object>|Promise|null)=}
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojThematicMap.Area<K1>>>|null",
+       *                                           SetterType: "Array<oj.ojThematicMap.Area<K1>>|Promise<Array<oj.ojThematicMap.Area<K1>>>|null"},
+       *                                           jsdocOverride: true}
+       * @default null
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">areas</code> attribute specified:</caption>
+       * &lt;oj-thematic-map areas='[{"id": "a1", "color": "red", "location": "FRA"},
+       *                             ...
+       *                             {"id": "a27", "color": "green", "location": "USA"}]'>
+       * &lt;/oj-thematic-map>
+       *
+       * &lt;oj-thematic-map areas='[[areasPromise]]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">areas</code>
+       * property after initialization:</caption>
+       *
+       * // Get all (The areas getter always returns a Promise so there is no "get one" syntax)
+       * var values = myThematicMap.areas;
+       *
+       * // Set all (There is no permissible "set one" syntax.)
+       * myThematicMap.areas=[{"id": "a1", "color": "red", "location": "FRA"},
+       *              ...
+       *              {"id": "a27", "color": "green", "location": "USA"}];
+       */
+      areas: null,
+      /**
+       * An alias for the $current context variable passed to slot content for the areaTemplate, markerTemplate, or linkTemplate slots.
+       * @expose
+       * @name as
+       * @ojshortdesc An alias for the '$current' context variable passed to slot content for the areaTemplate, markerTemplate, or linkTemplate slots.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @default ""
+       * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
+       */
+      as: '',
+      /**
+       * An optional callback function to update the data item in response to changes in keyboard focus state.
+       * @expose
+       * @name focusRenderer
+       * @ojshortdesc An optional callback function to update the data item in response to changes in keyboard focus state. The function takes a context argument, provided by the thematic map. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {(function(Object):(Object|void)|null)=}
+       * @ojsignature {target: "Type", value: "((context: oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+       * @default null
+       */
+      focusRenderer: null,
+      /**
+       * An array of category strings used for category filtering. Data items with a category in
+       * hiddenCategories will be filtered.
+       * @expose
+       * @name hiddenCategories
+       * @ojshortdesc An array of category strings used for filtering. Data items matching categories in this array will be filtered.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @ojwriteback
+       * @type {(Array.<string>)=}
+       * @default []
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">hidden-categories</code> attribute specified:</caption>
+       * &lt;oj-thematic-map hidden-categories='["soda", "water"]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">hiddenCategories</code>
+       * property after initialization:</caption>
+       * // Get one
+       * var value = myThematicMap.hiddenCategories[0];
+       *
+       * // Get all
+       * var values = myThematicMap.hiddenCategories;
+       *
+       * // Set all (There is no permissible "set one" syntax.)
+       * myThematicMap.hiddenCategories=["soda", "water"];
+       */
+      hiddenCategories: [],
+      /**
+       * An array of category strings used for category highlighting. Data items with a category in
+       * highlightedCategories will be highlighted.
+       * @expose
+       * @name highlightedCategories
+       * @ojshortdesc An array of category strings used for highlighting. Data items matching categories in this array will be highlighted.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @ojwriteback
+       * @type {(Array.<string>)=}
+       * @default []
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">highlighted-categories</code> attribute specified:</caption>
+       * &lt;oj-thematic-map highlighted-categories='["soda", "water"]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">highlightedCategories</code>
+       * property after initialization:</caption>
+       * // Get one
+       * var value = myThematicMap.highlightedCategories[0];
+       *
+       * // Get all
+       * var values = myThematicMap.highlightedCategories;
+       *
+       * // Set all (There is no permissible "set one" syntax.)
+       * myThematicMap.highlightedCategories=["soda", "water"];
+       */
+      highlightedCategories: [],
+      /**
+       * The matching condition for the highlightedCategories option. By default, highlightMatch is
+       * 'all' and only items whose categories match all of the values specified in the highlightedCategories
+       * array will be highlighted. If highlightMatch is 'any', then items that match at least one of the
+       * highlightedCategories values will be highlighted.
+       * @expose
+       * @name highlightMatch
+       * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "any"
+       * @ojvalue {string} "all"
+       * @default "all"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">highlight-match</code> attribute specified:</caption>
+       * &lt;oj-thematic-map highlight-match='any'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">highlightMatch</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.highlightMatch;
+       *
+       * // setter
+       * myThematicMap.highlightMatch="any";
+       */
+      highlightMatch: 'all',
+      /**
+       * Defines the behavior applied when hovering over data items.
+       * @expose
+       * @name hoverBehavior
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "dim"
+       * @ojvalue {string} "none"
+       * @default "none"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">hover-behavior</code> attribute specified:</caption>
+       * &lt;oj-thematic-map hover-behavior='dim'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">hoverBehavior</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.hoverBehavior;
+       *
+       * // setter
+       * myThematicMap.hoverBehavior="dim";
+       */
+      hoverBehavior: 'none',
+      /**
+       * An optional callback function to update the node in response to changes in hover state.
+       * @expose
+       * @name hoverRenderer
+       * @ojshortdesc An optional callback function to update the node in response to changes in hover state. The function takes a context argument, provided by the thematic map. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {(function(Object):(Object|void)|null)=}
+       * @ojsignature {target: "Type", value: "((context: oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+       * @default null
+       */
+      hoverRenderer: null,
+      /**
+       * Specifies whether the map will zoom to fit the data objects on initial render.
+       * @expose
+       * @name initialZooming
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "auto"
+       * @ojvalue {string} "none"
+       * @default "none"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">initial-zooming</code> attribute specified:</caption>
+       * &lt;oj-thematic-map initial-zooming='auto'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">initialZooming</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.initialZooming;
+       *
+       * // setter
+       * myThematicMap.initialZooming="auto";
+       */
+      initialZooming: 'none',
+      /**
+       * The id for the isolated area of this area data layer. If set, only the isolated area will be displayed.
+       * @expose
+       * @name isolatedItem
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {any=}
+       * @ojsignature {target:"Type", value:"K1"}
+       * @default null
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">isolated-item</code> attribute specified:</caption>
+       * &lt;oj-thematic-map isolated-item='a2'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">isolatedItem</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.isolatedItem;
+       *
+       * // setter
+       * myThematicMap.isolatedItem="a2";
+       */
+      isolatedItem: null,
+      /**
+       * Specifies how labels for this layer should be displayed.
+       * @expose
+       * @name labelDisplay
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto" Renders the label if it fits within the area bounds.
+       * @default "off"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">label-display</code> attribute specified:</caption>
+       * &lt;oj-thematic-map label-display='auto'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">labelDisplay</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.labelDisplay;
+       *
+       * // setter
+       * myThematicMap.labelDisplay="auto";
+       */
+      labelDisplay: 'off',
+      /**
+       * Specifies which type of map labels to display.
+       * @expose
+       * @name labelType
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "long"
+       * @ojvalue {string} "short"
+       * @default "short"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">label-display</code> attribute specified:</caption>
+       * &lt;oj-thematic-map label-type='long'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">labelType</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.labelType;
+       *
+       * // setter
+       * myThematicMap.labelType="long";
+       */
+      labelType: 'short',
+      /**
+       * The DataProvider for the links of the thematic map. It should provide data rows where each row will map data
+       * for a single thematic map data link. The row key will be used as the id for thematic map links. Note that when
+       * using this attribute, a template for the <a href="#linkTemplate">linkTemplate</a> slot should be provided.
+       * The DataProvider can either have an arbitrary data shape, in which case an <oj-thematic-map-link> element
+       * must be specified in the linkTemplate slot or it can have [oj.ojThematicMap.Link]{@link oj.ojThematicMap.Link} as its data shape,
+       * in which case no template is required.
+       * @expose
+       * @name linkData
+       * @ojshortdesc Specifies the DataProvider for the links of the thematic map. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {(Object|null)=}
+       * @ojsignature {target: "Type", value: "DataProvider<K2, D2>|null", jsdocOverride:true}
+       * @default null
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
+       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">link-data</code> attribute specified:</caption>
+       * &lt;oj-thematic-map link-data='[[linkDataProvider]]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">linkData</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.linkData;
+       *
+       * // setter
+       * myThematicMap.linkData = linkDataProvider;
+       */
+      linkData: null,
+      /**
+       * An array of objects that define the data for links.
+       * Also accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the
+       * set value type, we will wrap and return a Promise when accessing the links property.
+       * @expose
+       * @ojtsignore
+       * @name links
+       * @ojshortdesc An array of objects that define the map links. Also accepts a Promise for deferred data rendering. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {(Array.<Object>|Promise|null)=}
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojThematicMap.Link<K2,K1|K3,D2>>>|null",
+       *                                           SetterType: "Array<oj.ojThematicMap.Link<K2,K1|K3,D2>>|Promise<Array<oj.ojThematicMap.Link<K2,K1|K3,D2>>>|null"},
+       *                                           jsdocOverride: true}
+       * @default null
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">links</code> attribute specified:</caption>
+       * &lt;oj-thematic-map links='[{"id": "l1", "startLocation": {"id": "m2"}, "endLocation": {"id": "m29"}},
+       *                             ...
+       *                             {"id": "l7", "startLocation": {"id": "m17"}, "endLocation": {"id": "m9"}}]'>
+       * &lt;/oj-thematic-map>
+       *
+       * &lt;oj-thematic-map links='[[markersPromise]]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">links</code>
+       * property after initialization:</caption>
+       *
+       * // Get all (The links getter always returns a Promise so there is no "get one" syntax)
+       * var values = myThematicMap.links;
+       *
+       * // Set all (There is no permissible "set one" syntax.)
+       * myThematicMap.links=[{"id": "l1", "startLocation": {"id": "m2"}, "endLocation": {"id": "m29"}},
+       *              ...
+       *              {"id": "l7", "startLocation": {"id": "m17"}, "endLocation": {"id": "m9"}}];
+       */
+      links: null,
+      /**
+       * An object with the following properties, used to define a custom map.
+       * @expose
+       * @name mapProvider
+       * @ojshortdesc An object defining a custom map.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {Object}
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">map-provider</code> attribute specified:</caption>
+       * <!-- Using dot notation -->
+       * &lt;oj-thematic-map map-provider.geo='[[geoJsonObj]]'
+       *   map-provider.properties-keys='{"id": "country", "shortLabel": "iso_a3", "longLabel": "country"}'>
+       * &lt;/oj-thematic-map>
+       *
+       * &lt;oj-thematic-map mapProvider='[[{"geo": geoJsonObj,
+       *                                     "propertiesKeys": {"id": "country",
+       *                                                        "shortLabel": "iso_a3",
+       *                                                        "longLabel": "country"}]]'>
+       * &lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">mapProvider</code>
+       * property after initialization:</caption>
+       * // Get one
+       * var value = myThematicMap.mapProvider.geo;
+       *
+       * // Get all
+       * var values = myThematicMap.mapProvider;
+       *
+       * // Set one, leaving the others intact. Always use the setProperty API for
+       * // subproperties rather than setting a subproperty directly.
+       * myThematicMap.setProperty('mapProvider.geo', geoJsonObj);
+       *
+       * // Set all. Must list every resource key, as those not listed are lost.
+       * myThematicMap.mapProvider={'geo': geoJsonObj};
+       */
+      mapProvider: {
         /**
-         * We recommend using the component CSS classes to set component wide styling. This API should be used
-         * only for styling a specific instance of the component. The default values come from the CSS classes and
-         * varies based on theme. The duration of the animations in milliseconds.
+         * The GeoJSON object containing custom area coordinates. Only GeoJSON objects of "type" Feature or
+         * FeatureCollection and Feature "geometry" objects of "type" Polygon or MultiPolygon are currently
+         * supported. Each Feature object will contain a thematic map area and each Feature's "properties"
+         * object will at a minimum need to contain a key, which can be defined in the propertiesKeys object,
+         * that will be used as the ID of the area.
          * @expose
-         * @name animationDuration
-         * @ojshortdesc The duration of the animations in milliseconds. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
+         * @name mapProvider.geo
+         * @ojshortdesc An object defining a custom area's coordinates and "properties" object. See the Help documentation for more information.
+         * @memberof! oj.ojThematicMap
          * @instance
-         * @type {number=}
-         * @ojunits "milliseconds"
+         * @type {Object}
+         * @default {}
+         * @ojsignature {target: "Type", value: "GeoJSON.Feature<GeoJSON.Polygon|GeoJSON.MultiPolygon>|GeoJSON.FeatureCollection<GeoJSON.Polygon|GeoJSON.MultiPolygon>", jsdocOverride:true}
          *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">animation-duration</code> attribute specified:</caption>
-         * &lt;oj-thematic-map animation-duration='200'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">animationDuration</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.animationDuration;
-         *
-         * // setter
-         * myThematicMap.animationDuration=200;
+         * @example <caption>See the <a href="#mapProvider">mapProvider</a> attribute for usage examples.</caption>
          */
-        animationDuration: undefined,
+        geo: {},
         /**
-         * The type of animation to apply when the element is initially displayed.
+         * The object specifying the GeoJSON Feature "properties" object keys to use for the custom
+         * area id, short label, and long label mappings.
          * @expose
-         * @name animationOnDisplay
-         * @ojshortdesc Specifies the animation that is shown on initial display.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "auto"
-         * @ojvalue {string} "none"
-         * @default "none"
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">animation-on-display</code> attribute specified:</caption>
-         * &lt;oj-thematic-map animation-on-display='auto'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">animationOnDisplay</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.animationOnDisplay;
-         *
-         * // setter
-         * myThematicMap.animationOnDisplay="auto";
-         */
-        animationOnDisplay: 'none',
-        /**
-         * The DataProvider for the areas of the thematic map. It should provide data rows where each row will map data
-         * for a single thematic map data area. The row key will be used as the id for thematic map areas. Note that when
-         * using this attribute, a template for the <a href="#areaTemplate">areaTemplate</a> slot should be provided.
-         * The DataProvider can either have an arbitrary data shape, in which case an <oj-thematic-map-area> element must be specified in the areaTemplate slot or it can have [oj.ojThematicMap.Area]{@link oj.ojThematicMap.Area} as its data shape, in which case no template is required.
-         * @expose
-         * @name areaData
-         * @ojshortdesc Specifies the DataProvider for the areas of the thematic map. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {(Object|null)=}
-         * @ojsignature {target: "Type", value: "DataProvider<K1, D1>|null", jsdocOverride:true}
-         * @default null
-         * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
-         *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">area-data</code> attribute specified:</caption>
-         * &lt;oj-thematic-map area-data='[[areaDataProvider]]'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">areaData</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.areaData;
-         *
-         * // setter
-         * myThematicMap.areaData = areaDataProvider;
-         */
-        areaData: null,
-        /**
-         * An array of objects that define a row of data for an area data layer.
-         * Also accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the
-         * set value type, we will wrap and return a Promise when accessing the areas property.
-         * @expose
-         * @ojtsignore
-         * @name areas
-         * @ojshortdesc An array of objects that define area data layers. Also accepts a Promise for deferred data rendering. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {(Array.<Object>|Promise|null)=}
-         * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojThematicMap.Area<K1>>>|null",
-         *                                           SetterType: "Array<oj.ojThematicMap.Area<K1>>|Promise<Array<oj.ojThematicMap.Area<K1>>>|null"},
-         *                                           jsdocOverride: true}
-         * @default null
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">areas</code> attribute specified:</caption>
-         * &lt;oj-thematic-map areas='[{"id": "a1", "color": "red", "location": "FRA"},
-         *                             ...
-         *                             {"id": "a27", "color": "green", "location": "USA"}]'>
-         * &lt;/oj-thematic-map>
-         *
-         * &lt;oj-thematic-map areas='[[areasPromise]]'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">areas</code>
-         * property after initialization:</caption>
-         *
-         * // Get all (The areas getter always returns a Promise so there is no "get one" syntax)
-         * var values = myThematicMap.areas;
-         *
-         * // Set all (There is no permissible "set one" syntax.)
-         * myThematicMap.areas=[{"id": "a1", "color": "red", "location": "FRA"},
-         *              ...
-         *              {"id": "a27", "color": "green", "location": "USA"}];
-         */
-        areas: null,
-        /**
-         * An alias for the $current context variable passed to slot content for the areaTemplate, markerTemplate, or linkTemplate slots.
-         * @expose
-         * @name as
-         * @ojshortdesc An alias for the '$current' context variable passed to slot content for the areaTemplate, markerTemplate, or linkTemplate slots.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {string=}
-         * @default ""
-         * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
-         */
-        as: '',
-        /**
-         * An optional callback function to update the data item in response to changes in keyboard focus state.
-         * @expose
-         * @name focusRenderer
-         * @ojshortdesc An optional callback function to update the data item in response to changes in keyboard focus state. The function takes a context argument, provided by the thematic map. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {(function(Object):(Object|void)|null)=}
-         * @ojsignature {target: "Type", value: "((context: oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
-         * @default null
-         */
-        focusRenderer: null,
-        /**
-         * An array of category strings used for category filtering. Data items with a category in
-         * hiddenCategories will be filtered.
-         * @expose
-         * @name hiddenCategories
-         * @ojshortdesc An array of category strings used for filtering. Data items matching categories in this array will be filtered.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @ojwriteback
-         * @type {(Array.<string>)=}
-         * @default []
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">hidden-categories</code> attribute specified:</caption>
-         * &lt;oj-thematic-map hidden-categories='["soda", "water"]'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">hiddenCategories</code>
-         * property after initialization:</caption>
-         * // Get one
-         * var value = myThematicMap.hiddenCategories[0];
-         *
-         * // Get all
-         * var values = myThematicMap.hiddenCategories;
-         *
-         * // Set all (There is no permissible "set one" syntax.)
-         * myThematicMap.hiddenCategories=["soda", "water"];
-         */
-        hiddenCategories: [],
-        /**
-         * An array of category strings used for category highlighting. Data items with a category in
-         * highlightedCategories will be highlighted.
-         * @expose
-         * @name highlightedCategories
-         * @ojshortdesc An array of category strings used for highlighting. Data items matching categories in this array will be highlighted.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @ojwriteback
-         * @type {(Array.<string>)=}
-         * @default []
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">highlighted-categories</code> attribute specified:</caption>
-         * &lt;oj-thematic-map highlighted-categories='["soda", "water"]'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">highlightedCategories</code>
-         * property after initialization:</caption>
-         * // Get one
-         * var value = myThematicMap.highlightedCategories[0];
-         *
-         * // Get all
-         * var values = myThematicMap.highlightedCategories;
-         *
-         * // Set all (There is no permissible "set one" syntax.)
-         * myThematicMap.highlightedCategories=["soda", "water"];
-         */
-        highlightedCategories: [],
-        /**
-         * The matching condition for the highlightedCategories option. By default, highlightMatch is
-         * 'all' and only items whose categories match all of the values specified in the highlightedCategories
-         * array will be highlighted. If highlightMatch is 'any', then items that match at least one of the
-         * highlightedCategories values will be highlighted.
-         * @expose
-         * @name highlightMatch
-         * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "any"
-         * @ojvalue {string} "all"
-         * @default "all"
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">highlight-match</code> attribute specified:</caption>
-         * &lt;oj-thematic-map highlight-match='any'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">highlightMatch</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.highlightMatch;
-         *
-         * // setter
-         * myThematicMap.highlightMatch="any";
-         */
-        highlightMatch: 'all',
-        /**
-         * Defines the behavior applied when hovering over data items.
-         * @expose
-         * @name hoverBehavior
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "dim"
-         * @ojvalue {string} "none"
-         * @default "none"
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">hover-behavior</code> attribute specified:</caption>
-         * &lt;oj-thematic-map hover-behavior='dim'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">hoverBehavior</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.hoverBehavior;
-         *
-         * // setter
-         * myThematicMap.hoverBehavior="dim";
-         */
-        hoverBehavior: 'none',
-        /**
-         * An optional callback function to update the node in response to changes in hover state.
-         * @expose
-         * @name hoverRenderer
-         * @ojshortdesc An optional callback function to update the node in response to changes in hover state. The function takes a context argument, provided by the thematic map. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {(function(Object):(Object|void)|null)=}
-         * @ojsignature {target: "Type", value: "((context: oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
-         * @default null
-         */
-        hoverRenderer: null,
-        /**
-         * Specifies whether the map will zoom to fit the data objects on initial render.
-         * @expose
-         * @name initialZooming
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "auto"
-         * @ojvalue {string} "none"
-         * @default "none"
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">initial-zooming</code> attribute specified:</caption>
-         * &lt;oj-thematic-map initial-zooming='auto'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">initialZooming</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.initialZooming;
-         *
-         * // setter
-         * myThematicMap.initialZooming="auto";
-         */
-        initialZooming: 'none',
-        /**
-         * The id for the isolated area of this area data layer. If set, only the isolated area will be displayed.
-         * @expose
-         * @name isolatedItem
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {any=}
-         * @ojsignature {target:"Type", value:"K1"}
-         * @default null
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">isolated-item</code> attribute specified:</caption>
-         * &lt;oj-thematic-map isolated-item='a2'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">isolatedItem</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.isolatedItem;
-         *
-         * // setter
-         * myThematicMap.isolatedItem="a2";
-         */
-        isolatedItem: null,
-        /**
-         * Specifies how labels for this layer should be displayed.
-         * @expose
-         * @name labelDisplay
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "on"
-         * @ojvalue {string} "off"
-         * @ojvalue {string} "auto" Renders the label if it fits within the area bounds.
-         * @default "off"
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">label-display</code> attribute specified:</caption>
-         * &lt;oj-thematic-map label-display='auto'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">labelDisplay</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.labelDisplay;
-         *
-         * // setter
-         * myThematicMap.labelDisplay="auto";
-         */
-        labelDisplay: 'off',
-        /**
-         * Specifies which type of map labels to display.
-         * @expose
-         * @name labelType
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "long"
-         * @ojvalue {string} "short"
-         * @default "short"
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">label-display</code> attribute specified:</caption>
-         * &lt;oj-thematic-map label-type='long'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">labelType</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.labelType;
-         *
-         * // setter
-         * myThematicMap.labelType="long";
-         */
-        labelType: 'short',
-        /**
-         * The DataProvider for the links of the thematic map. It should provide data rows where each row will map data
-         * for a single thematic map data link. The row key will be used as the id for thematic map links. Note that when
-         * using this attribute, a template for the <a href="#linkTemplate">linkTemplate</a> slot should be provided.
-         * The DataProvider can either have an arbitrary data shape, in which case an <oj-thematic-map-link> element
-         * must be specified in the linkTemplate slot or it can have [oj.ojThematicMap.Link]{@link oj.ojThematicMap.Link} as its data shape,
-         * in which case no template is required.
-         * @expose
-         * @name linkData
-         * @ojshortdesc Specifies the DataProvider for the links of the thematic map. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {(Object|null)=}
-         * @ojsignature {target: "Type", value: "DataProvider<K2, D2>|null", jsdocOverride:true}
-         * @default null
-         * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
-         *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">link-data</code> attribute specified:</caption>
-         * &lt;oj-thematic-map link-data='[[linkDataProvider]]'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">linkData</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.linkData;
-         *
-         * // setter
-         * myThematicMap.linkData = linkDataProvider;
-         */
-        linkData: null,
-        /**
-         * An array of objects that define the data for links.
-         * Also accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the
-         * set value type, we will wrap and return a Promise when accessing the links property.
-         * @expose
-         * @ojtsignore
-         * @name links
-         * @ojshortdesc An array of objects that define the map links. Also accepts a Promise for deferred data rendering. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {(Array.<Object>|Promise|null)=}
-         * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojThematicMap.Link<K2,K1|K3,D2>>>|null",
-         *                                           SetterType: "Array<oj.ojThematicMap.Link<K2,K1|K3,D2>>|Promise<Array<oj.ojThematicMap.Link<K2,K1|K3,D2>>>|null"},
-         *                                           jsdocOverride: true}
-         * @default null
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">links</code> attribute specified:</caption>
-         * &lt;oj-thematic-map links='[{"id": "l1", "startLocation": {"id": "m2"}, "endLocation": {"id": "m29"}},
-         *                             ...
-         *                             {"id": "l7", "startLocation": {"id": "m17"}, "endLocation": {"id": "m9"}}]'>
-         * &lt;/oj-thematic-map>
-         *
-         * &lt;oj-thematic-map links='[[markersPromise]]'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">links</code>
-         * property after initialization:</caption>
-         *
-         * // Get all (The links getter always returns a Promise so there is no "get one" syntax)
-         * var values = myThematicMap.links;
-         *
-         * // Set all (There is no permissible "set one" syntax.)
-         * myThematicMap.links=[{"id": "l1", "startLocation": {"id": "m2"}, "endLocation": {"id": "m29"}},
-         *              ...
-         *              {"id": "l7", "startLocation": {"id": "m17"}, "endLocation": {"id": "m9"}}];
-         */
-        links: null,
-        /**
-         * An object with the following properties, used to define a custom map.
-         * @expose
-         * @name mapProvider
-         * @ojshortdesc An object defining a custom map.
-         * @memberof oj.ojThematicMap
+         * @name mapProvider.propertiesKeys
+         * @ojshortdesc An object specifying "properties" object keys to use for custom area id and label mappings.
+         * @memberof! oj.ojThematicMap
          * @instance
          * @type {Object}
          *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">map-provider</code> attribute specified:</caption>
-         * <!-- Using dot notation -->
-         * &lt;oj-thematic-map map-provider.geo='[[geoJsonObj]]'
-         *   map-provider.properties-keys='{"id": "country", "shortLabel": "iso_a3", "longLabel": "country"}'>
-         * &lt;/oj-thematic-map>
-         *
-         * &lt;oj-thematic-map mapProvider='[[{"geo": geoJsonObj,
-         *                                     "propertiesKeys": {"id": "country",
-         *                                                        "shortLabel": "iso_a3",
-         *                                                        "longLabel": "country"}]]'>
-         * &lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">mapProvider</code>
-         * property after initialization:</caption>
-         * // Get one
-         * var value = myThematicMap.mapProvider.geo;
-         *
-         * // Get all
-         * var values = myThematicMap.mapProvider;
-         *
-         * // Set one, leaving the others intact. Always use the setProperty API for
-         * // subproperties rather than setting a subproperty directly.
-         * myThematicMap.setProperty('mapProvider.geo', geoJsonObj);
-         *
-         * // Set all. Must list every resource key, as those not listed are lost.
-         * myThematicMap.mapProvider={'geo': geoJsonObj};
+         * @example <caption>See the <a href="#mapProvider">mapProvider</a> attribute for usage examples.</caption>
          */
-        mapProvider: {
+        propertiesKeys: {
           /**
-           * The GeoJSON object containing custom area coordinates. Only GeoJSON objects of "type" Feature or
-           * FeatureCollection and Feature "geometry" objects of "type" Polygon or MultiPolygon are currently
-           * supported. Each Feature object will contain a thematic map area and each Feature's "properties"
-           * object will at a minimum need to contain a key, which can be defined in the propertiesKeys object,
-           * that will be used as the ID of the area.
+           * The required name of the "properties" key to use as the location id that will map a data item to a map area.<br>
+           * <b>
+           *   Note that the key used for map area ids must always be populated and correspond to a unique string value.
+           *   Map areas without this key will not be rendered.
+           *   <br>
+           * </b>
+           * See the [location]{@link oj.ojThematicMapArea#location} attribute of oj-thematic-map-area for additional information.
            * @expose
-           * @name mapProvider.geo
-           * @ojshortdesc An object defining a custom area's coordinates and "properties" object. See the Help documentation for more information.
+           * @name mapProvider.propertiesKeys.id
            * @memberof! oj.ojThematicMap
            * @instance
-           * @type {Object}
-           * @default {}
-           * @ojsignature {target: "Type", value: "GeoJSON.Feature<GeoJSON.Polygon|GeoJSON.MultiPolygon>|GeoJSON.FeatureCollection<GeoJSON.Polygon|GeoJSON.MultiPolygon>", jsdocOverride:true}
+           * @type {string}
+           * @ojrequired
+           * @default ""
            *
            * @example <caption>See the <a href="#mapProvider">mapProvider</a> attribute for usage examples.</caption>
            */
-          geo: {},
+          id: '',
           /**
-           * The object specifying the GeoJSON Feature "properties" object keys to use for the custom
-           * area id, short label, and long label mappings.
+           * The optional name of the "properties" key to use for rendering area labels when labelType is set to "short".
            * @expose
-           * @name mapProvider.propertiesKeys
-           * @ojshortdesc An object specifying "properties" object keys to use for custom area id and label mappings.
+           * @name mapProvider.propertiesKeys.shortLabel
            * @memberof! oj.ojThematicMap
            * @instance
-           * @type {Object}
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @default ""
            *
            * @example <caption>See the <a href="#mapProvider">mapProvider</a> attribute for usage examples.</caption>
            */
-          propertiesKeys: {
-            /**
-             * The required name of the "properties" key to use as the location id that will map a data item to a map area.<br>
-             * <b>
-             *   Note that the key used for map area ids must always be populated and correspond to a unique string value.
-             *   Map areas without this key will not be rendered.
-             *   <br>
-             * </b>
-             * See the [location]{@link oj.ojThematicMapArea#location} attribute of oj-thematic-map-area for additional information.
-             * @expose
-             * @name mapProvider.propertiesKeys.id
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {string}
-             * @ojrequired
-             * @default ""
-             *
-             * @example <caption>See the <a href="#mapProvider">mapProvider</a> attribute for usage examples.</caption>
-             */
-            id: '',
-            /**
-             * The optional name of the "properties" key to use for rendering area labels when labelType is set to "short".
-             * @expose
-             * @name mapProvider.propertiesKeys.shortLabel
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {string}
-             * @ojsignature {target: "Type", value: "?"}
-             * @default ""
-             *
-             * @example <caption>See the <a href="#mapProvider">mapProvider</a> attribute for usage examples.</caption>
-             */
-            shortLabel: '',
-            /**
-             * The optional name of the "properties" key to use for rendering area labels when labelType is set to "long".
-             * @expose
-             * @name mapProvider.propertiesKeys.longLabel
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {string}
-             * @ojsignature {target: "Type", value: "?"}
-             * @default ""
-             *
-             * @example <caption>See the <a href="#mapProvider">mapProvider</a> attribute for usage examples.</caption>
-             */
-            longLabel: ''
-          }
-        },
+          shortLabel: '',
+          /**
+           * The optional name of the "properties" key to use for rendering area labels when labelType is set to "long".
+           * @expose
+           * @name mapProvider.propertiesKeys.longLabel
+           * @memberof! oj.ojThematicMap
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @default ""
+           *
+           * @example <caption>See the <a href="#mapProvider">mapProvider</a> attribute for usage examples.</caption>
+           */
+          longLabel: ''
+        }
+      },
+      /**
+       * The DataProvider for the markers of the thematic map. It should provide data rows where each row will map data
+       * for a single thematic map data marker. The row key will be used as the id for thematic map markers. Note that when
+       * using this attribute, a template for the <a href="#markerTemplate">markerTemplate</a> slot should be provided.
+       * The DataProvider can either have an arbitrary data shape, in which case an <oj-thematic-map-marker> element
+       * must be specified in the markerTemplate slot or it can have [oj.ojThematicMap.Marker]{@link oj.ojThematicMap.Marker} as its data shape,
+       * in which case no template is required.
+       * @expose
+       * @name markerData
+       * @ojshortdesc Specifies the DataProvider for the markers of the thematic map. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {(Object|null)=}
+       * @ojsignature {target: "Type", value: "DataProvider<K3, D3>|null", jsdocOverride:true}
+       * @default null
+       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
+       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">marker-data</code> attribute specified:</caption>
+       * &lt;oj-thematic-map marker-data='[[markerDataProvider]]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">markerData</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.markerData;
+       *
+       * // setter
+       * myThematicMap.markerData = markerDataProvider;
+       */
+      markerData: null,
+      /**
+       * An array of objects that define a row of data for a data layer.
+       * Also accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the
+       * set value type, we will wrap and return a Promise when accessing the markers property.
+       * @expose
+       * @ojtsignore
+       * @name markers
+       * @ojshortdesc An array of objects that define marker data layers. Also accepts a Promise for deferred data rendering. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {(Array.<Object>|Promise|null)=}
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojThematicMap.Marker<K3>>>|null",
+       *                                           SetterType: "Array<oj.ojThematicMap.Marker<K3>>|Promise<Array<oj.ojThematicMap.Marker<K3>>>|null"},
+       *                                           jsdocOverride: true}
+       * @default null
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">markers</code> attribute specified:</caption>
+       * &lt;oj-thematic-map markers='[{"id": "m1", "color": "red", "shape": "circle", x": 2102, "y": 910},
+       *                             ...
+       *                             {"id": "m27", "color": "green", "shape": "circle", "x": 4820, "y": 277}]'>
+       * &lt;/oj-thematic-map>
+       *
+       * &lt;oj-thematic-map markers='[[markersPromise]]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">markers</code>
+       * property after initialization:</caption>
+       *
+       * // Get all (The markers getter always returns a Promise so there is no "get one" syntax)
+       * var values = myThematicMap.markers;
+       *
+       * // Set all (There is no permissible "set one" syntax.)
+       * myThematicMap.markers=[{"id": "m1", "color": "red", "shape": "circle", x": 2102, "y": 910},
+       *                ...
+       *                {"id": "m27", "color": "green", "shape": "circle", "x": 4820, "y": 277}];
+       */
+      markers: null,
+      /**
+       * Specifies marker behavior on zoom.
+       * @expose
+       * @name markerZoomBehavior
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "zoom"
+       * @ojvalue {string} "fixed"
+       * @default "fixed"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">marker-zoom-behavior</code> attribute specified:</caption>
+       * &lt;oj-thematic-map marker-zoom-behavior='zoom'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">markerZoomBehavior</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.markerZoomBehavior;
+       *
+       * // setter
+       * myThematicMap.markerZoomBehavior="zoom";
+       */
+      markerZoomBehavior: 'fixed',
+      /**
+       * Specifies the maximum zoom level for this element. This can be any number greater than or equal to 1.0
+       * which indicates the maximum point to which the map can be scaled. A value of 2.0 implies that
+       * the map can be zoomed in until it reaches twice the viewport size. A maxZoom of 1.0 indicates
+       * that the user cannot zoom the map beyond the viewport size.
+       * @expose
+       * @name maxZoom
+       * @ojshortdesc Specifies the maximum zoom level for this element. Must be greater than or equal to 1.0. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {number=}
+       * @default 6.0
+       * @ojmin 1.0
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">max-zoom</code> attribute specified:</caption>
+       * &lt;oj-thematic-map max-zoom='10'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">maxZoom</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.maxZoom;
+       *
+       * // setter
+       * myThematicMap.maxZoom=10;
+       */
+      maxZoom: 6.0,
+      /**
+       * Specifies whether element panning is allowed.
+       * @expose
+       * @name panning
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "auto"
+       * @ojvalue {string} "none"
+       * @default "none"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">panning</code> attribute specified:</caption>
+       * &lt;oj-thematic-map panning='auto'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">panning</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.panning;
+       *
+       * // setter
+       * myThematicMap.panning="auto";
+       */
+      panning: 'none',
+      /**
+       * A callback function used to stamp custom SVG elements for a data layer.
+       * @expose
+       * @name renderer
+       * @ojshortdesc An optional callback function to stamp custom SVG elements for a data layer. The function takes a context argument, provided by the thematic map. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {(function(Object):(Object|void)|null)=}
+       * @ojsignature {target: "Type", value: "((context: oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+       * @default null
+       */
+      renderer: null,
+      /**
+       * An array of id strings, used to define the selected data items.
+       * @expose
+       * @name selection
+       * @ojshortdesc An array of strings containing the ids of the selected data items.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {(Array.<any>)=}
+       * @ojsignature {target:"Type", value:"Array<K1|K2|K3>"}
+       * @default []
+       * @ojwriteback
+       * @ojeventgroup common
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">selection</code> attribute specified:</caption>
+       * &lt;oj-thematic-map selection='["area1", "area2", "marker2"]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">selection</code>
+       * property after initialization:</caption>
+       * // Get one
+       * var value = myThematicMap.selection[0];
+       *
+       * // Get all
+       * var values = myThematicMap.selection;
+       *
+       * // Set all (There is no permissible "set one" syntax.)
+       * myThematicMap.selection=["area1", "area2", "marker2"];
+       */
+      selection: [],
+      /**
+       * <p>The type of selection behavior that is enabled on the thematic map. This attribute controls the number of selections that can be made via selection gestures at any given time.
+       *
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the thematic map's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the thematic map's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+       *
+       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+       *
+       * @expose
+       * @name selectionMode
+       * @ojshortdesc Specifies the selection mode.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "none" Selection is disabled.
+       * @ojvalue {string} "single" Only a single item can be selected at a time.
+       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
+       * @default "none"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">selection-mode</code> attribute specified:</caption>
+       * &lt;oj-thematic-map selection-mode='multiple'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">selectionMode</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.selectionMode;
+       *
+       * // setter
+       * myThematicMap.selectionMode="multiple";
+       */
+      selectionMode: 'none',
+      /**
+       * An optional callback function to update the data item in response to changes in selection state.
+       * @expose
+       * @name selectionRenderer
+       * @ojshortdesc An optional callback function to update the data item in response to changes in selection state. The function takes a context argument, provided by the thematic map. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {(function(Object):(Object|void)|null)=}
+       * @ojsignature {target: "Type", value: "((context: oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+       * @default null
+       */
+      selectionRenderer: null,
+      /**
+       * We recommend using the component CSS classes to set component wide styling. This API should be used
+       * only for styling a specific instance of the component. Properties specified on this object may
+       * be overridden by specifications on the data item. The default values come from the CSS classes and
+       * varies based on theme.
+       * @expose
+       * @name styleDefaults
+       * @ojshortdesc An object defining the style defaults for this thematic map. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {Object=}
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">style-defaults</code> attribute specified:</caption>
+       * <!-- Using dot notation -->
+       * &lt;oj-thematic-map style-defaults.animation-duration='200'>&lt;/oj-thematic-map>
+       *
+       * <!-- Using JSON notation -->
+       * &lt;oj-thematic-map style-defaults='{"animationDuration": 200, "areaSvgStyle": {"fill": "url(someURL@filterId)"}'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">styleDefaults</code>
+       * property after initialization:</caption>
+       * // Get one
+       * var value = myThematicMap.styleDefaults.animationDuration;
+       *
+       * // Get all
+       * var values = myThematicMap.styleDefaults;
+       *
+       * // Set one, leaving the others intact. Always use the setProperty API for
+       * // subproperties rather than setting a subproperty directly.
+       * myThematicMap.setProperty('styleDefaults.areaSvgStyle', {'fill': 'url(someURL#filterId)'});
+       *
+       * // Set all. Must list every resource key, as those not listed are lost.
+       * myThematicMap.styleDefaults={'fill': 'url("someURL#filterId")'};
+       */
+      styleDefaults: {
         /**
-         * The DataProvider for the markers of the thematic map. It should provide data rows where each row will map data
-         * for a single thematic map data marker. The row key will be used as the id for thematic map markers. Note that when
-         * using this attribute, a template for the <a href="#markerTemplate">markerTemplate</a> slot should be provided.
-         * The DataProvider can either have an arbitrary data shape, in which case an <oj-thematic-map-marker> element
-         * must be specified in the markerTemplate slot or it can have [oj.ojThematicMap.Marker]{@link oj.ojThematicMap.Marker} as its data shape,
-         * in which case no template is required.
+         * The CSS style object defining the style of the area layer areas. The default value comes from the CSS and varies based on theme.
+         * Only SVG CSS style properties are supported.
          * @expose
-         * @name markerData
-         * @ojshortdesc Specifies the DataProvider for the markers of the thematic map. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {(Object|null)=}
-         * @ojsignature {target: "Type", value: "DataProvider<K3, D3>|null", jsdocOverride:true}
-         * @default null
-         * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
-         *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">marker-data</code> attribute specified:</caption>
-         * &lt;oj-thematic-map marker-data='[[markerDataProvider]]'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">markerData</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.markerData;
-         *
-         * // setter
-         * myThematicMap.markerData = markerDataProvider;
-         */
-        markerData: null,
-        /**
-         * An array of objects that define a row of data for a data layer.
-         * Also accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the
-         * set value type, we will wrap and return a Promise when accessing the markers property.
-         * @expose
-         * @ojtsignore
-         * @name markers
-         * @ojshortdesc An array of objects that define marker data layers. Also accepts a Promise for deferred data rendering. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {(Array.<Object>|Promise|null)=}
-         * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojThematicMap.Marker<K3>>>|null",
-         *                                           SetterType: "Array<oj.ojThematicMap.Marker<K3>>|Promise<Array<oj.ojThematicMap.Marker<K3>>>|null"},
-         *                                           jsdocOverride: true}
-         * @default null
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">markers</code> attribute specified:</caption>
-         * &lt;oj-thematic-map markers='[{"id": "m1", "color": "red", "shape": "circle", x": 2102, "y": 910},
-         *                             ...
-         *                             {"id": "m27", "color": "green", "shape": "circle", "x": 4820, "y": 277}]'>
-         * &lt;/oj-thematic-map>
-         *
-         * &lt;oj-thematic-map markers='[[markersPromise]]'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">markers</code>
-         * property after initialization:</caption>
-         *
-         * // Get all (The markers getter always returns a Promise so there is no "get one" syntax)
-         * var values = myThematicMap.markers;
-         *
-         * // Set all (There is no permissible "set one" syntax.)
-         * myThematicMap.markers=[{"id": "m1", "color": "red", "shape": "circle", x": 2102, "y": 910},
-         *                ...
-         *                {"id": "m27", "color": "green", "shape": "circle", "x": 4820, "y": 277}];
-         */
-        markers: null,
-        /**
-         * Specifies marker behavior on zoom.
-         * @expose
-         * @name markerZoomBehavior
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "zoom"
-         * @ojvalue {string} "fixed"
-         * @default "fixed"
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">marker-zoom-behavior</code> attribute specified:</caption>
-         * &lt;oj-thematic-map marker-zoom-behavior='zoom'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">markerZoomBehavior</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.markerZoomBehavior;
-         *
-         * // setter
-         * myThematicMap.markerZoomBehavior="zoom";
-         */
-        markerZoomBehavior: 'fixed',
-        /**
-         * Specifies the maximum zoom level for this element. This can be any number greater than or equal to 1.0
-         * which indicates the maximum point to which the map can be scaled. A value of 2.0 implies that
-         * the map can be zoomed in until it reaches twice the viewport size. A maxZoom of 1.0 indicates
-         * that the user cannot zoom the map beyond the viewport size.
-         * @expose
-         * @name maxZoom
-         * @ojshortdesc Specifies the maximum zoom level for this element. Must be greater than or equal to 1.0. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {number=}
-         * @default 6.0
-         * @ojmin 1.0
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">max-zoom</code> attribute specified:</caption>
-         * &lt;oj-thematic-map max-zoom='10'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">maxZoom</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.maxZoom;
-         *
-         * // setter
-         * myThematicMap.maxZoom=10;
-         */
-        maxZoom: 6.0,
-        /**
-         * Specifies whether element panning is allowed.
-         * @expose
-         * @name panning
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "auto"
-         * @ojvalue {string} "none"
-         * @default "none"
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">panning</code> attribute specified:</caption>
-         * &lt;oj-thematic-map panning='auto'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">panning</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.panning;
-         *
-         * // setter
-         * myThematicMap.panning="auto";
-         */
-        panning: 'none',
-        /**
-         * A callback function used to stamp custom SVG elements for a data layer.
-         * @expose
-         * @name renderer
-         * @ojshortdesc An optional callback function to stamp custom SVG elements for a data layer. The function takes a context argument, provided by the thematic map. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {(function(Object):(Object|void)|null)=}
-         * @ojsignature {target: "Type", value: "((context: oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
-         * @default null
-         */
-        renderer: null,
-        /**
-         * An array of id strings, used to define the selected data items.
-         * @expose
-         * @name selection
-         * @ojshortdesc An array of strings containing the ids of the selected data items.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {(Array.<any>)=}
-         * @ojsignature {target:"Type", value:"Array<K1|K2|K3>"}
-         * @default []
-         * @ojwriteback
-         * @ojeventgroup common
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">selection</code> attribute specified:</caption>
-         * &lt;oj-thematic-map selection='["area1", "area2", "marker2"]'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">selection</code>
-         * property after initialization:</caption>
-         * // Get one
-         * var value = myThematicMap.selection[0];
-         *
-         * // Get all
-         * var values = myThematicMap.selection;
-         *
-         * // Set all (There is no permissible "set one" syntax.)
-         * myThematicMap.selection=["area1", "area2", "marker2"];
-         */
-        selection: [],
-        /**
-         * <p>The type of selection behavior that is enabled on the thematic map. This attribute controls the number of selections that can be made via selection gestures at any given time.
-         *
-         * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the thematic map's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
-         * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the thematic map's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
-         *
-         * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
-         *
-         * @expose
-         * @name selectionMode
-         * @ojshortdesc Specifies the selection mode.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "none" Selection is disabled.
-         * @ojvalue {string} "single" Only a single item can be selected at a time.
-         * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
-         * @default "none"
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">selection-mode</code> attribute specified:</caption>
-         * &lt;oj-thematic-map selection-mode='multiple'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">selectionMode</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.selectionMode;
-         *
-         * // setter
-         * myThematicMap.selectionMode="multiple";
-         */
-        selectionMode: 'none',
-        /**
-         * An optional callback function to update the data item in response to changes in selection state.
-         * @expose
-         * @name selectionRenderer
-         * @ojshortdesc An optional callback function to update the data item in response to changes in selection state. The function takes a context argument, provided by the thematic map. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {(function(Object):(Object|void)|null)=}
-         * @ojsignature {target: "Type", value: "((context: oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
-         * @default null
-         */
-        selectionRenderer: null,
-        /**
-         * We recommend using the component CSS classes to set component wide styling. This API should be used
-         * only for styling a specific instance of the component. Properties specified on this object may
-         * be overridden by specifications on the data item. The default values come from the CSS classes and
-         * varies based on theme.
-         * @expose
-         * @name styleDefaults
-         * @ojshortdesc An object defining the style defaults for this thematic map. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
+         * @name styleDefaults.areaSvgStyle
+         * @ojshortdesc The CSS style object defining the style of the area layer areas.
+         * @memberof! oj.ojThematicMap
          * @instance
          * @type {Object=}
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">style-defaults</code> attribute specified:</caption>
-         * <!-- Using dot notation -->
-         * &lt;oj-thematic-map style-defaults.animation-duration='200'>&lt;/oj-thematic-map>
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+         * @default {}
          *
-         * <!-- Using JSON notation -->
-         * &lt;oj-thematic-map style-defaults='{"animationDuration": 200, "areaSvgStyle": {"fill": "url(someURL@filterId)"}'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">styleDefaults</code>
-         * property after initialization:</caption>
-         * // Get one
-         * var value = myThematicMap.styleDefaults.animationDuration;
-         *
-         * // Get all
-         * var values = myThematicMap.styleDefaults;
-         *
-         * // Set one, leaving the others intact. Always use the setProperty API for
-         * // subproperties rather than setting a subproperty directly.
-         * myThematicMap.setProperty('styleDefaults.areaSvgStyle', {'fill': 'url(someURL#filterId)'});
-         *
-         * // Set all. Must list every resource key, as those not listed are lost.
-         * myThematicMap.styleDefaults={'fill': 'url("someURL#filterId")'};
+         * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
          */
-        styleDefaults: {
+        /**
+         * An object defining the default styles for data areas. Properties specified on this object
+         * may be overridden by specifications on the data object.
+         * @expose
+         * @name styleDefaults.dataAreaDefaults
+         * @ojshortdesc An object defining the default styles for data areas.
+         * @memberof! oj.ojThematicMap
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default {}
+         *
+         * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+         */
+        dataAreaDefaults: {
           /**
-           * The CSS style object defining the style of the area layer areas. The default value comes from the CSS and varies based on theme.
-           * Only SVG CSS style properties are supported.
+           * The area stroke color for the area data layer. The default value comes from the CSS and varies based on theme.
            * @expose
-           * @name styleDefaults.areaSvgStyle
-           * @ojshortdesc The CSS style object defining the style of the area layer areas.
+           * @name styleDefaults.dataAreaDefaults.borderColor
+           * @ojshortdesc The area stroke color for the area data layer.
            * @memberof! oj.ojThematicMap
            * @instance
-           * @type {Object=}
-           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-           * @default {}
-           *
-           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-           */
-          /**
-           * An object defining the default styles for data areas. Properties specified on this object
-           * may be overridden by specifications on the data object.
-           * @expose
-           * @name styleDefaults.dataAreaDefaults
-           * @ojshortdesc An object defining the default styles for data areas.
-           * @memberof! oj.ojThematicMap
-           * @instance
-           * @type {Object}
-           * @ojsignature {target: "Type", value: "?"}
-           * @default {}
-           *
-           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-           */
-          dataAreaDefaults: {
-            /**
-             * The area stroke color for the area data layer. The default value comes from the CSS and varies based on theme.
-             * @expose
-             * @name styleDefaults.dataAreaDefaults.borderColor
-             * @ojshortdesc The area stroke color for the area data layer.
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {string}
-             * @ojformat color
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            borderColor: undefined,
-            /**
-             * The hover data area border color. The default value comes from the CSS and varies based on theme.
-             * @expose
-             * @name styleDefaults.dataAreaDefaults.hoverColor
-             * @ojshortdesc The hover data area border color.
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {string}
-             * @ojformat color
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            hoverColor: undefined,
-            /**
-             * The inner selected data area border color. The default value comes from the CSS and varies based on theme.
-             * @expose
-             * @name styleDefaults.dataAreaDefaults.selectedInnerColor
-             * @ojshortdesc The inner selected data area border color.
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {string}
-             * @ojformat color
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            selectedInnerColor: undefined,
-            /**
-             * The outer selected data area border color. The default value comes from the CSS and varies based on theme.
-             * @expose
-             * @name styleDefaults.dataAreaDefaults.selectedOuterColor
-             * @ojshortdesc The outer selected data area border color.
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {string}
-             * @ojformat color
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            selectedOuterColor: undefined
-          },
-          /**
-           * An object defining the default styles for data markers. Properties specified on this object may be
-           * overridden by specifications on the data object.
-           * @expose
-           * @name styleDefaults.dataMarkerDefaults
-           * @ojshortdesc An object defining the default styles for data markers.
-           * @memberof! oj.ojThematicMap
-           * @instance
-           * @type {Object}
+           * @type {string}
+           * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            *
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
            */
-          dataMarkerDefaults: {
-            /**
-             * The border color. The default value comes from the CSS and varies based on theme.
-             * @expose
-             * @name styleDefaults.dataMarkerDefaults.borderColor
-             * @ojshortdesc The border color.
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {string}
-             * @ojformat color
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            borderColor: undefined,
-            /**
-             * The border width in pixels.
-             * @expose
-             * @name styleDefaults.dataMarkerDefaults.borderWidth
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {number}
-             * @ojsignature {target: "Type", value: "?"}
-             * @default 0.5
-             * @ojunits "pixels"
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            borderWidth: 0.5,
-            /**
-             * The border style.
-             * @expose
-             * @name styleDefaults.dataMarkerDefaults.borderStyle
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {string}
-             * @ojvalue {string} "none"
-             * @ojvalue {string} "solid"
-             * @default "solid"
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            borderStyle: 'solid',
-            /**
-             * The fill color of a marker. The default value comes from the CSS and varies based on theme.
-             * @expose
-             * @name styleDefaults.dataMarkerDefaults.color
-             * @ojshortdesc The fill color of a marker.
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {string}
-             * @ojformat color
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            color: undefined,
-            /**
-             * The default marker pixel height. Note that this option will be ignored if a value is provided to calculate marker sizes.
-             * @expose
-             * @name styleDefaults.dataMarkerDefaults.height
-             * @ojshortdesc The default marker pixel height.
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {number}
-             * @default 8
-             * @ojunits "pixels"
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            height: 8,
-            /**
-             * The CSS style object for a marker label.
-             * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
-             * @expose
-             * @name styleDefaults.dataMarkerDefaults.labelStyle
-             * @ojshortdesc The CSS style object defining the style of the marker label.
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {Object=}
-             * @default  {}
-             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            labelStyle: {},
-            /**
-             * The default marker opacity.
-             * @expose
-             * @name styleDefaults.dataMarkerDefaults.opacity
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {number}
-             * @default 1
-             * @ojmin 0.0
-             * @ojmax 1.0
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            opacity: 1,
-            /**
-             * The default marker shape. Can take the name of a built-in shape or the SVG path commands for a custom shape.
-             * @expose
-             * @name styleDefaults.dataMarkerDefaults.shape
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {"circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string}
-             * @ojsignature {target: "Type", value: "?"}
-             * @default "circle"
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            shape: 'circle',
-            /**
-             * The default marker pixel width. Note that this option will be ignored if a value is provided to calculate marker sizes.
-             * @expose
-             * @name styleDefaults.dataMarkerDefaults.width
-             * @ojshortdesc The default marker pixel width.
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {number}
-             * @default 8
-             * @ojunits "pixels"
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            width: 8
-          },
+          borderColor: undefined,
           /**
-           * Specifies initial hover delay in milliseconds for highlighting data items.
+           * The hover data area border color. The default value comes from the CSS and varies based on theme.
            * @expose
-           * @name styleDefaults.hoverBehaviorDelay
+           * @name styleDefaults.dataAreaDefaults.hoverColor
+           * @ojshortdesc The hover data area border color.
+           * @memberof! oj.ojThematicMap
+           * @instance
+           * @type {string}
+           * @ojformat color
+           * @ojsignature {target: "Type", value: "?"}
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+           */
+          hoverColor: undefined,
+          /**
+           * The inner selected data area border color. The default value comes from the CSS and varies based on theme.
+           * @expose
+           * @name styleDefaults.dataAreaDefaults.selectedInnerColor
+           * @ojshortdesc The inner selected data area border color.
+           * @memberof! oj.ojThematicMap
+           * @instance
+           * @type {string}
+           * @ojformat color
+           * @ojsignature {target: "Type", value: "?"}
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+           */
+          selectedInnerColor: undefined,
+          /**
+           * The outer selected data area border color. The default value comes from the CSS and varies based on theme.
+           * @expose
+           * @name styleDefaults.dataAreaDefaults.selectedOuterColor
+           * @ojshortdesc The outer selected data area border color.
+           * @memberof! oj.ojThematicMap
+           * @instance
+           * @type {string}
+           * @ojformat color
+           * @ojsignature {target: "Type", value: "?"}
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+           */
+          selectedOuterColor: undefined
+        },
+        /**
+         * An object defining the default styles for data markers. Properties specified on this object may be
+         * overridden by specifications on the data object.
+         * @expose
+         * @name styleDefaults.dataMarkerDefaults
+         * @ojshortdesc An object defining the default styles for data markers.
+         * @memberof! oj.ojThematicMap
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         *
+         * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+         */
+        dataMarkerDefaults: {
+          /**
+           * The border color. The default value comes from the CSS and varies based on theme.
+           * @expose
+           * @name styleDefaults.dataMarkerDefaults.borderColor
+           * @ojshortdesc The border color.
+           * @memberof! oj.ojThematicMap
+           * @instance
+           * @type {string}
+           * @ojformat color
+           * @ojsignature {target: "Type", value: "?"}
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+           */
+          borderColor: undefined,
+          /**
+           * The border width in pixels.
+           * @expose
+           * @name styleDefaults.dataMarkerDefaults.borderWidth
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {number}
-           * @default 200
-           * @ojunits "milliseconds"
+           * @ojsignature {target: "Type", value: "?"}
+           * @default 0.5
+           * @ojunits "pixels"
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+           */
+          borderWidth: 0.5,
+          /**
+           * The border style.
+           * @expose
+           * @name styleDefaults.dataMarkerDefaults.borderStyle
+           * @memberof! oj.ojThematicMap
+           * @instance
+           * @type {string}
+           * @ojvalue {string} "none"
+           * @ojvalue {string} "solid"
+           * @default "solid"
            * @ojsignature {target: "Type", value: "?"}
            *
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
            */
-          hoverBehaviorDelay: 200,
+          borderStyle: 'solid',
           /**
-           * The CSS style object for the area layer labels.
+           * The fill color of a marker. The default value comes from the CSS and varies based on theme.
+           * @expose
+           * @name styleDefaults.dataMarkerDefaults.color
+           * @ojshortdesc The fill color of a marker.
+           * @memberof! oj.ojThematicMap
+           * @instance
+           * @type {string}
+           * @ojformat color
+           * @ojsignature {target: "Type", value: "?"}
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+           */
+          color: undefined,
+          /**
+           * The default marker pixel height. Note that this option will be ignored if a value is provided to calculate marker sizes.
+           * @expose
+           * @name styleDefaults.dataMarkerDefaults.height
+           * @ojshortdesc The default marker pixel height.
+           * @memberof! oj.ojThematicMap
+           * @instance
+           * @type {number}
+           * @default 8
+           * @ojunits "pixels"
+           * @ojsignature {target: "Type", value: "?"}
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+           */
+          height: 8,
+          /**
+           * The CSS style object for a marker label.
            * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
            * @expose
-           * @name styleDefaults.labelStyle
-           * @ojshortdesc The CSS style object defining the style of the area layer labels.
+           * @name styleDefaults.dataMarkerDefaults.labelStyle
+           * @ojshortdesc The CSS style object defining the style of the marker label.
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {Object=}
@@ -1895,1198 +1819,1331 @@ var __oj_thematic_map_marker_metadata =
            * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            *
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
            */
           labelStyle: {},
           /**
-           * An object defining the default styles for data links. Properties specified on this object may be
-           * overridden by specifications on the data object.
+           * The default marker opacity.
            * @expose
-           * @name styleDefaults.linkDefaults
-           * @ojshortdesc An object defining the default styles for data links.
+           * @name styleDefaults.dataMarkerDefaults.opacity
            * @memberof! oj.ojThematicMap
            * @instance
-           * @type {Object}
+           * @type {number}
+           * @default 1
+           * @ojmin 0.0
+           * @ojmax 1.0
            * @ojsignature {target: "Type", value: "?"}
            *
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
            */
-          linkDefaults: {
-            /**
-             * The stroke color for links. The default value comes from the CSS and varies based on theme.
-             * @expose
-             * @name styleDefaults.linkDefaults.color
-             * @ojshortdesc The stroke color for links.
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {string}
-             * @ojformat color
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            color: undefined,
-            /**
-             * The stroke width for links in pixels.
-             * @expose
-             * @name styleDefaults.linkDefaults.width
-             * @memberof! oj.ojThematicMap
-             * @instance
-             * @type {number}
-             * @default  2
-             * @ojunits "pixels"
-             * @ojsignature {target: "Type", value: "?"}
-             *
-             * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
-             */
-            width: 2,
-          }
-        },
-        /**
-         * An object containing an optional callback function for tooltip customization.
-         * @expose
-         * @name tooltip
-         * @memberof oj.ojThematicMap
-         * @instance
-         * @type {Object=}
-         *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">tooltip</code> attribute specified:</caption>
-         * <!-- Using dot notation -->
-         * &lt;oj-thematic-map tooltip.renderer='[[tooltipFun]]'>&lt;/oj-thematic-map>
-         *
-         * &lt;oj-thematic-map tooltip='[[{"renderer": tooltipFun}]]'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">hiddenCategories</code>
-         * property after initialization:</caption>
-         * // Get one
-         * var value = myThematicMap.tooltip.renderer;
-         *
-         * // Get all
-         * var values = myThematicMap.tooltip;
-         *
-         * // Set one, leaving the others intact. Always use the setProperty API for
-         * // subproperties rather than setting a subproperty directly.
-         * myThematicMap.setProperty('tooltip.renderer', tooltipFun);
-         *
-         * // Set all. Must list every resource key, as those not listed are lost.
-         * myThematicMap.tooltip={'renderer': tooltipFun};
-         */
-        tooltip: {
+          opacity: 1,
           /**
-           * A function that returns a custom tooltip.
+           * The default marker shape. Can take the name of a built-in shape or the SVG path commands for a custom shape.
            * @expose
-           * @name tooltip.renderer
-           * @ojshortdesc A function that returns a custom tooltip. The function takes a context argument, provided by the thematic map. See the Help documentation for more information.
+           * @name styleDefaults.dataMarkerDefaults.shape
            * @memberof! oj.ojThematicMap
            * @instance
-           * @type {function(Object):Object|null}
-           * @default null
-           * @ojsignature {target: "Type", value: "((context: oj.ojThematicMap.TooltipContext<K1, K2, K3, D1, D2, D3>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
-           * @example <caption>See the <a href="#tooltip">tooltip</a> attribute for usage examples.</caption>
+           * @type {"circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @default "circle"
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
            */
-          renderer: null
+          shape: 'circle',
+          /**
+           * The default marker pixel width. Note that this option will be ignored if a value is provided to calculate marker sizes.
+           * @expose
+           * @name styleDefaults.dataMarkerDefaults.width
+           * @ojshortdesc The default marker pixel width.
+           * @memberof! oj.ojThematicMap
+           * @instance
+           * @type {number}
+           * @default 8
+           * @ojunits "pixels"
+           * @ojsignature {target: "Type", value: "?"}
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+           */
+          width: 8
         },
         /**
-         * Specifies the tooltip behavior of the thematic map.
+         * Specifies initial hover delay in milliseconds for highlighting data items.
          * @expose
-         * @name tooltipDisplay
-         * @memberof oj.ojThematicMap
+         * @name styleDefaults.hoverBehaviorDelay
+         * @memberof! oj.ojThematicMap
          * @instance
-         * @type {string=}
-         * @ojvalue {string} "auto"
-         * @ojvalue {string} "labelAndShortDesc"
-         * @ojvalue {string} "none"
-         * @ojvalue {string} "shortDesc"
-         * @default "auto"
+         * @type {number}
+         * @default 200
+         * @ojunits "milliseconds"
+         * @ojsignature {target: "Type", value: "?"}
          *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">tooltip-display</code> attribute specified:</caption>
-         * &lt;oj-thematic-map tooltip-display='none'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">tooltipDisplay</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.tooltipDisplay;
-         *
-         * // setter
-         * myThematicMap.tooltipDisplay="none";
+         * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
          */
-        tooltipDisplay: 'auto',
+        hoverBehaviorDelay: 200,
         /**
-         * Data visualizations require a press and hold delay before triggering tooltips and
-         * rollover effects on mobile devices to avoid interfering with page panning, but these
-         * hold delays can make applications seem slower and less responsive. For a better user
-         * experience, the application can remove the touch and hold delay when data visualizations
-         * are used within a non scrolling container or if there is sufficient space outside of the
-         * visualization for panning. If touchResponse is touchStart the element will instantly
-         * trigger the touch gesture and consume the page pan events if the element does not require
-         * an internal feature that requires a touch start gesture like panning or zooming.
-         * If touchResponse is auto, the element will behave like touchStart if it determines that
-         * it is not rendered within scrolling content and if element panning is not available for
-         * those elements that support the feature.
+         * The CSS style object for the area layer labels.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
          * @expose
-         * @name touchResponse
-         * @ojshortdesc Specifies configuration options for touch and hold delays on mobile devices. See the Help documentation for more information.
-         * @memberof oj.ojThematicMap
+         * @name styleDefaults.labelStyle
+         * @ojshortdesc The CSS style object defining the style of the area layer labels.
+         * @memberof! oj.ojThematicMap
          * @instance
-         * @type {string=}
-         * @ojvalue {string} "touchStart"
-         * @ojvalue {string} "auto"
-         * @default "auto"
+         * @type {Object=}
+         * @default  {}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">touch-response</code> attribute specified:</caption>
-         * &lt;oj-thematic-map touch-response='touchStart'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">touchResponse</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.touchResponse;
-         *
-         * // setter
-         * myThematicMap.touchResponse="touchStart";
+         * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
          */
-        touchResponse: 'auto',
+        labelStyle: {},
         /**
-         * Specifies whether element zooming is allowed.
+         * An object defining the default styles for data links. Properties specified on this object may be
+         * overridden by specifications on the data object.
          * @expose
-         * @name zooming
-         * @memberof oj.ojThematicMap
+         * @name styleDefaults.linkDefaults
+         * @ojshortdesc An object defining the default styles for data links.
+         * @memberof! oj.ojThematicMap
          * @instance
-         * @type {string=}
-         * @ojvalue {string} "auto"
-         * @ojvalue {string} "none"
-         * @default "none"
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
          *
-         * @example <caption>Initialize the thematic map with the
-         * <code class="prettyprint">zooming</code> attribute specified:</caption>
-         * &lt;oj-thematic-map zooming='auto'>&lt;/oj-thematic-map>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">zooming</code>
-         * property after initialization:</caption>
-         * // getter
-         * var value = myThematicMap.zooming;
-         *
-         * // setter
-         * myThematicMap.zooming="auto";
+         * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
          */
-        zooming: 'none'
-      },
-      _currentLocale: '',
-      _loadedBasemaps: [],
-      _basemapPath: 'resources/internal-deps/dvt/thematicMap/basemaps/',
-      _supportedLocales: {
-        ar: 'ar',
-        cs: 'cs',
-        da: 'da',
-        de: 'de',
-        el: 'el',
-        es: 'es',
-        fi: 'fi',
-        fr: 'fr',
-        'fr-ca': 'fr_CA',
-        he: 'iw',
-        hu: 'hu',
-        it: 'it',
-        ja: 'ja',
-        ko: 'ko',
-        nl: 'nl',
-        no: 'no',
-        pl: 'pl',
-        pt: 'pt_BR',
-        'pt-pt': 'pt',
-        ro: 'ro',
-        ru: 'ru',
-        sk: 'sk',
-        sv: 'sv',
-        th: 'th',
-        tr: 'tr',
-        'zh-hans': 'zh_CN',
-        'zh-hant': 'zh_TW' },
-
-      // @inheritdoc
-      _ComponentCreate: function () {
-        this._super();
-        this._checkBasemaps = [];
-        this._initiallyRendered = false;
-        this._dataLayersToUpdate = [];
-      },
-
-      // @inheritdoc
-      _CreateDvtComponent: function (context, callback, callbackObj) {
-        return new ojthematicmapToolkit.ThematicMap(context, callback, callbackObj);
-      },
-
-      // @inheritdoc
-      _ConvertLocatorToSubId: function (locator) {
-        var subId = locator.subId;
-
-        // Convert the supported locators
-        if (subId === 'oj-thematicmap-area') {
-          // dataLayerId:area[index]
-          subId = this._getDataLayerId(locator.dataLayer, locator.index, 'area') +
-            ':area[' + locator.index + ']';
-        } else if (subId === 'oj-thematicmap-marker') {
-          // dataLayerId:marker[index]
-          subId = this._getDataLayerId(locator.dataLayer, locator.index, 'marker') +
-            ':marker[' + locator.index + ']';
-        } else if (subId === 'oj-thematicmap-link') {
-          // dataLayerId:link[index]
-          subId = this._getDataLayerId(locator.dataLayer, locator.index, 'link') +
-            ':link[' + locator.index + ']';
-        } else if (subId === 'oj-thematicmap-tooltip') {
-          subId = 'tooltip';
+        linkDefaults: {
+          /**
+           * The stroke color for links. The default value comes from the CSS and varies based on theme.
+           * @expose
+           * @name styleDefaults.linkDefaults.color
+           * @ojshortdesc The stroke color for links.
+           * @memberof! oj.ojThematicMap
+           * @instance
+           * @type {string}
+           * @ojformat color
+           * @ojsignature {target: "Type", value: "?"}
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+           */
+          color: undefined,
+          /**
+           * The stroke width for links in pixels.
+           * @expose
+           * @name styleDefaults.linkDefaults.width
+           * @memberof! oj.ojThematicMap
+           * @instance
+           * @type {number}
+           * @default  2
+           * @ojunits "pixels"
+           * @ojsignature {target: "Type", value: "?"}
+           *
+           * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
+           */
+          width: 2
         }
-        // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
-        // support for the old subId syntax in 1.2.0.
-        return subId;
       },
+      /**
+       * An object containing an optional callback function for tooltip customization.
+       * @expose
+       * @name tooltip
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {Object=}
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">tooltip</code> attribute specified:</caption>
+       * <!-- Using dot notation -->
+       * &lt;oj-thematic-map tooltip.renderer='[[tooltipFun]]'>&lt;/oj-thematic-map>
+       *
+       * &lt;oj-thematic-map tooltip='[[{"renderer": tooltipFun}]]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">hiddenCategories</code>
+       * property after initialization:</caption>
+       * // Get one
+       * var value = myThematicMap.tooltip.renderer;
+       *
+       * // Get all
+       * var values = myThematicMap.tooltip;
+       *
+       * // Set one, leaving the others intact. Always use the setProperty API for
+       * // subproperties rather than setting a subproperty directly.
+       * myThematicMap.setProperty('tooltip.renderer', tooltipFun);
+       *
+       * // Set all. Must list every resource key, as those not listed are lost.
+       * myThematicMap.tooltip={'renderer': tooltipFun};
+       */
+      tooltip: {
+        /**
+         * A function that returns a custom tooltip.
+         * @expose
+         * @name tooltip.renderer
+         * @ojshortdesc A function that returns a custom tooltip. The function takes a context argument, provided by the thematic map. See the Help documentation for more information.
+         * @memberof! oj.ojThematicMap
+         * @instance
+         * @type {function(Object):Object|null}
+         * @default null
+         * @ojsignature {target: "Type", value: "((context: oj.ojThematicMap.TooltipContext<K1, K2, K3, D1, D2, D3>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @example <caption>See the <a href="#tooltip">tooltip</a> attribute for usage examples.</caption>
+         */
+        renderer: null
+      },
+      /**
+       * Specifies the tooltip behavior of the thematic map.
+       * @expose
+       * @name tooltipDisplay
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "auto"
+       * @ojvalue {string} "labelAndShortDesc"
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "shortDesc"
+       * @default "auto"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">tooltip-display</code> attribute specified:</caption>
+       * &lt;oj-thematic-map tooltip-display='none'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">tooltipDisplay</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.tooltipDisplay;
+       *
+       * // setter
+       * myThematicMap.tooltipDisplay="none";
+       */
+      tooltipDisplay: 'auto',
+      /**
+       * Data visualizations require a press and hold delay before triggering tooltips and
+       * rollover effects on mobile devices to avoid interfering with page panning, but these
+       * hold delays can make applications seem slower and less responsive. For a better user
+       * experience, the application can remove the touch and hold delay when data visualizations
+       * are used within a non scrolling container or if there is sufficient space outside of the
+       * visualization for panning. If touchResponse is touchStart the element will instantly
+       * trigger the touch gesture and consume the page pan events if the element does not require
+       * an internal feature that requires a touch start gesture like panning or zooming.
+       * If touchResponse is auto, the element will behave like touchStart if it determines that
+       * it is not rendered within scrolling content and if element panning is not available for
+       * those elements that support the feature.
+       * @expose
+       * @name touchResponse
+       * @ojshortdesc Specifies configuration options for touch and hold delays on mobile devices. See the Help documentation for more information.
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "touchStart"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">touch-response</code> attribute specified:</caption>
+       * &lt;oj-thematic-map touch-response='touchStart'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">touchResponse</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.touchResponse;
+       *
+       * // setter
+       * myThematicMap.touchResponse="touchStart";
+       */
+      touchResponse: 'auto',
+      /**
+       * Specifies whether element zooming is allowed.
+       * @expose
+       * @name zooming
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "auto"
+       * @ojvalue {string} "none"
+       * @default "none"
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">zooming</code> attribute specified:</caption>
+       * &lt;oj-thematic-map zooming='auto'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">zooming</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.zooming;
+       *
+       * // setter
+       * myThematicMap.zooming="auto";
+       */
+      zooming: 'none'
+    },
+    _currentLocale: '',
+    _loadedBasemaps: [],
+    _basemapPath: 'resources/internal-deps/dvt/thematicMap/basemaps/',
+    _supportedLocales: {
+      ar: 'ar',
+      cs: 'cs',
+      da: 'da',
+      de: 'de',
+      el: 'el',
+      es: 'es',
+      fi: 'fi',
+      fr: 'fr',
+      'fr-ca': 'fr_CA',
+      he: 'iw',
+      hu: 'hu',
+      it: 'it',
+      ja: 'ja',
+      ko: 'ko',
+      nl: 'nl',
+      no: 'no',
+      pl: 'pl',
+      pt: 'pt_BR',
+      'pt-pt': 'pt',
+      ro: 'ro',
+      ru: 'ru',
+      sk: 'sk',
+      sv: 'sv',
+      th: 'th',
+      tr: 'tr',
+      'zh-hans': 'zh_CN',
+      'zh-hant': 'zh_TW'
+    },
 
-      // @inheritdoc
-      _ConvertSubIdToLocator: function (subId) {
-        var locator = {};
+    // @inheritdoc
+    _ComponentCreate: function () {
+      this._super();
+      this._checkBasemaps = [];
+      this._initiallyRendered = false;
+      this._dataLayersToUpdate = [];
+    },
 
-        if (subId.indexOf(':area') >= 0) {
-          // dataLayerId:area[index]
-          locator.subId = 'oj-thematicmap-area';
-          if (!this._IsCustomElement()) {
-            locator.dataLayer = subId.substring(0, subId.indexOf(':'));
-          }
-          locator.index = this._GetFirstIndex(subId);
-        } else if (subId.indexOf(':marker') >= 0) {
-          // dataLayerId:marker[index]
-          locator.subId = 'oj-thematicmap-marker';
-          if (!this._IsCustomElement()) {
-            locator.dataLayer = subId.substring(0, subId.indexOf(':'));
-          }
-          locator.index = this._GetFirstIndex(subId);
-        } else if (subId.indexOf(':link') >= 0) {
-          // dataLayerId:link[index]
-          locator.subId = 'oj-thematicmap-link';
-          if (!this._IsCustomElement()) {
-            locator.dataLayer = subId.substring(0, subId.indexOf(':'));
-          }
-          locator.index = this._GetFirstIndex(subId);
-        } else if (subId === 'tooltip') {
-          locator.subId = 'oj-thematicmap-tooltip';
+    // @inheritdoc
+    _CreateDvtComponent: function (context, callback, callbackObj) {
+      return new ojthematicmapToolkit.ThematicMap(context, callback, callbackObj);
+    },
+
+    // @inheritdoc
+    _ConvertLocatorToSubId: function (locator) {
+      var subId = locator.subId;
+
+      // Convert the supported locators
+      if (subId === 'oj-thematicmap-area') {
+        // dataLayerId:area[index]
+        subId =
+          this._getDataLayerId(locator.dataLayer, locator.index, 'area') +
+          ':area[' +
+          locator.index +
+          ']';
+      } else if (subId === 'oj-thematicmap-marker') {
+        // dataLayerId:marker[index]
+        subId =
+          this._getDataLayerId(locator.dataLayer, locator.index, 'marker') +
+          ':marker[' +
+          locator.index +
+          ']';
+      } else if (subId === 'oj-thematicmap-link') {
+        // dataLayerId:link[index]
+        subId =
+          this._getDataLayerId(locator.dataLayer, locator.index, 'link') +
+          ':link[' +
+          locator.index +
+          ']';
+      } else if (subId === 'oj-thematicmap-tooltip') {
+        subId = 'tooltip';
+      }
+      // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
+      // support for the old subId syntax in 1.2.0.
+      return subId;
+    },
+
+    // @inheritdoc
+    _ConvertSubIdToLocator: function (subId) {
+      var locator = {};
+
+      if (subId.indexOf(':area') >= 0) {
+        // dataLayerId:area[index]
+        locator.subId = 'oj-thematicmap-area';
+        if (!this._IsCustomElement()) {
+          locator.dataLayer = subId.substring(0, subId.indexOf(':'));
         }
+        locator.index = this._GetFirstIndex(subId);
+      } else if (subId.indexOf(':marker') >= 0) {
+        // dataLayerId:marker[index]
+        locator.subId = 'oj-thematicmap-marker';
+        if (!this._IsCustomElement()) {
+          locator.dataLayer = subId.substring(0, subId.indexOf(':'));
+        }
+        locator.index = this._GetFirstIndex(subId);
+      } else if (subId.indexOf(':link') >= 0) {
+        // dataLayerId:link[index]
+        locator.subId = 'oj-thematicmap-link';
+        if (!this._IsCustomElement()) {
+          locator.dataLayer = subId.substring(0, subId.indexOf(':'));
+        }
+        locator.index = this._GetFirstIndex(subId);
+      } else if (subId === 'tooltip') {
+        locator.subId = 'oj-thematicmap-tooltip';
+      }
 
-        return locator;
-      },
+      return locator;
+    },
 
-      // @inheritdoc
-      _GetComponentStyleClasses: function () {
-        var styleClasses = this._super();
-        styleClasses.push('oj-thematicmap');
-        return styleClasses;
-      },
+    // @inheritdoc
+    _GetComponentStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses.push('oj-thematicmap');
+      return styleClasses;
+    },
 
-      // @inheritdoc
-      _GetChildStyleClasses: function () {
-        var styleClasses = this._super();
-        styleClasses['oj-dvtbase oj-thematicmap'] = {
-          path: 'animationDuration',
-          property: 'ANIM_DUR'
-        };
-        styleClasses['oj-thematicmap-arealayer'] = [
-          {
-            path: 'styleDefaults/areaSvgStyle',
-            property: 'BACKGROUND' },
-          {
-            path: 'styleDefaults/labelStyle',
-            property: 'TEXT'
-          }
-        ];
-        styleClasses['oj-thematicmap-area'] = {
-          path: 'styleDefaults/dataAreaDefaults/borderColor',
+    // @inheritdoc
+    _GetChildStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses['oj-dvtbase oj-thematicmap'] = {
+        path: 'animationDuration',
+        property: 'ANIM_DUR'
+      };
+      styleClasses['oj-thematicmap-arealayer'] = [
+        {
+          path: 'styleDefaults/areaSvgStyle',
+          property: 'BACKGROUND'
+        },
+        {
+          path: 'styleDefaults/labelStyle',
+          property: 'TEXT'
+        }
+      ];
+      styleClasses['oj-thematicmap-area'] = {
+        path: 'styleDefaults/dataAreaDefaults/borderColor',
+        property: 'border-top-color'
+      };
+      styleClasses['oj-thematicmap-area oj-hover'] = {
+        path: 'styleDefaults/dataAreaDefaults/hoverColor',
+        property: 'border-top-color'
+      };
+      styleClasses['oj-thematicmap-area oj-selected'] = [
+        {
+          path: 'styleDefaults/dataAreaDefaults/selectedInnerColor',
           property: 'border-top-color'
-        };
-        styleClasses['oj-thematicmap-area oj-hover'] = {
-          path: 'styleDefaults/dataAreaDefaults/hoverColor',
+        },
+        {
+          path: 'styleDefaults/dataAreaDefaults/selectedOuterColor',
+          property: 'border-bottom-color'
+        }
+      ];
+      styleClasses['oj-thematicmap-marker'] = [
+        {
+          path: 'styleDefaults/dataMarkerDefaults/labelStyle',
+          property: 'TEXT'
+        },
+        {
+          path: 'styleDefaults/dataMarkerDefaults/color',
+          property: 'background-color'
+        },
+        {
+          path: 'styleDefaults/dataMarkerDefaults/opacity',
+          property: 'opacity'
+        },
+        {
+          path: 'styleDefaults/dataMarkerDefaults/borderColor',
           property: 'border-top-color'
-        };
-        styleClasses['oj-thematicmap-area oj-selected'] = [
-          {
-            path: 'styleDefaults/dataAreaDefaults/selectedInnerColor',
-            property: 'border-top-color'
-          },
-          {
-            path: 'styleDefaults/dataAreaDefaults/selectedOuterColor',
-            property: 'border-bottom-color'
-          }];
-        styleClasses['oj-thematicmap-marker'] = [
-          {
-            path: 'styleDefaults/dataMarkerDefaults/labelStyle',
-            property: 'TEXT'
-          },
-          {
-            path: 'styleDefaults/dataMarkerDefaults/color',
-            property: 'background-color'
-          },
-          {
-            path: 'styleDefaults/dataMarkerDefaults/opacity',
-            property: 'opacity'
-          },
-          {
-            path: 'styleDefaults/dataMarkerDefaults/borderColor',
-            property: 'border-top-color'
-          }
-        ];
-        styleClasses['oj-thematicmap-marker oj-hover'] = [
+        }
+      ];
+      styleClasses['oj-thematicmap-marker oj-hover'] = [
         { path: 'styleDefaults/dataMarkerDefaults/_hoverColor', property: 'border-color' }
-        ];
-        styleClasses['oj-thematicmap-marker oj-selected'] = {
-          path: 'styleDefaults/dataMarkerDefaults/_selectionColor',
-          property: 'border-color'
+      ];
+      styleClasses['oj-thematicmap-marker oj-selected'] = {
+        path: 'styleDefaults/dataMarkerDefaults/_selectionColor',
+        property: 'border-color'
+      };
+      styleClasses['oj-thematicmap-link'] = {
+        path: 'styleDefaults/linkDefaults/color',
+        property: 'color'
+      };
+      styleClasses['oj-thematicmap-link oj-hover'] = {
+        path: 'styleDefaults/linkDefaults/_hoverColor',
+        property: 'color'
+      };
+      styleClasses['oj-thematicmap-link oj-selected'] = {
+        path: 'styleDefaults/linkDefaults/_selectedColor',
+        property: 'border-color'
+      };
+      return styleClasses;
+    },
+
+    // @inheritdoc
+    _GetEventTypes: function () {
+      return ['optionChange'];
+    },
+
+    _InitOptions: function (originalDefaults, constructorOptions) {
+      this._super(originalDefaults, constructorOptions);
+
+      // styleDefaults subproperty defaults are dynamically generated
+      // so we need to retrieve it here and override the dynamic getter by
+      // setting the returned object as the new value.
+      var styleDefaults = this.options.styleDefaults;
+      this.options.styleDefaults = styleDefaults;
+    },
+
+    // @inheritdoc
+    _setOptions: function (options, flags) {
+      // determine if option change is a data layer update and save data to call data layer update API instead of render in _Render
+      var numUpdates = Object.keys(options).length;
+      var newAreaLayers = options.areaLayers;
+      var oldAreaLayers = this.options.areaLayers;
+      var pointDataLayers = options.pointDataLayers;
+      var i;
+      if (numUpdates === 1 && newAreaLayers && oldAreaLayers && oldAreaLayers.length > 0) {
+        for (i = 0; i < newAreaLayers.length; i++) {
+          var newAreaLayer = newAreaLayers[i];
+          var currAreaLayer = oldAreaLayers[i];
+          var updateDataLayer = true;
+          var areaLayerKeys = Object.keys(newAreaLayer);
+          for (var k = 0; k < areaLayerKeys.length; k++) {
+            var areaLayerKey = areaLayerKeys[k];
+            // check to see if option update is a data layer update by seeing if any other area layer property is changed
+            if (
+              areaLayerKey !== 'areaDataLayer' &&
+              newAreaLayer[areaLayerKey] !== currAreaLayer[areaLayerKey]
+            ) {
+              updateDataLayer = false;
+            }
+          }
+          if (
+            updateDataLayer &&
+            !oj.Object.compareValues(currAreaLayer.areaDataLayer, newAreaLayer.areaDataLayer)
+          ) {
+            this._dataLayersToUpdate.push({
+              options: newAreaLayer.areaDataLayer,
+              parentLayer: newAreaLayer.layer,
+              isADL: true
+            });
+          }
+        }
+      } else if (
+        numUpdates === 1 &&
+        pointDataLayers &&
+        this.options.pointDataLayers &&
+        this.options.pointDataLayers.length > 0
+      ) {
+        for (i = 0; i < pointDataLayers.length; i++) {
+          if (!oj.Object.compareValues(this.options.pointDataLayers[i], pointDataLayers[i])) {
+            this._dataLayersToUpdate.push({
+              options: pointDataLayers[i],
+              parentLayer: pointDataLayers[i].id,
+              isADL: false
+            });
+          }
+        }
+      }
+      this._super(options, flags);
+    },
+
+    // @inheritdoc
+    _GetComponentRendererOptions: function () {
+      return [
+        { path: 'tooltip/renderer', slot: 'tooltipTemplate' },
+        { path: '_tooltip/renderer' },
+        { path: 'renderer', slot: 'markerContentTemplate' },
+        { path: 'focusRenderer', slot: 'markerContentTemplate' },
+        { path: 'hoverRenderer', slot: 'markerContentTemplate' },
+        { path: 'selectionRenderer', slot: 'markerContentTemplate' }
+      ];
+    },
+
+    _LoadResources: function () {
+      // Ensure the resources object exists
+      if (this.options._resources == null) {
+        this.options._resources = {};
+      }
+    },
+
+    // @inheritdoc
+    _ProcessOptions: function () {
+      this._super();
+
+      // wrap tooltip function in try catch
+      var tooltipObj = this.options.tooltip;
+      var tooltipFun = tooltipObj ? tooltipObj.renderer : null;
+      if (tooltipFun) {
+        var self = this;
+        this.options._tooltip = {
+          renderer: function (context) {
+            var defaultTooltip = self._IsCustomElement()
+              ? { insert: context.tooltip }
+              : context.tooltip;
+            try {
+              var tooltip = tooltipFun(context);
+              return tooltip || defaultTooltip;
+            } catch (error) {
+              Logger.warn('Showing default tooltip. ' + error);
+              return defaultTooltip;
+            }
+          }
         };
-        styleClasses['oj-thematicmap-link'] = {
-          path: 'styleDefaults/linkDefaults/color',
-          property: 'color'
-        };
-        styleClasses['oj-thematicmap-link oj-hover'] = {
-          path: 'styleDefaults/linkDefaults/_hoverColor',
-          property: 'color'
-        };
-        styleClasses['oj-thematicmap-link oj-selected'] = {
-          path: 'styleDefaults/linkDefaults/_selectedColor',
-          property: 'border-color'
-        };
-        return styleClasses;
-      },
+      }
 
-      // @inheritdoc
-      _GetEventTypes: function () {
-        return ['optionChange'];
-      },
-
-
-      _InitOptions: function (originalDefaults, constructorOptions) {
-        this._super(originalDefaults, constructorOptions);
-
-        // styleDefaults subproperty defaults are dynamically generated
-        // so we need to retrieve it here and override the dynamic getter by
-        // setting the returned object as the new value.
-        var styleDefaults = this.options.styleDefaults;
-        this.options.styleDefaults = styleDefaults;
-      },
-
-      // @inheritdoc
-      _setOptions: function (options, flags) {
-        // determine if option change is a data layer update and save data to call data layer update API instead of render in _Render
-        var numUpdates = Object.keys(options).length;
-        var newAreaLayers = options.areaLayers;
-        var oldAreaLayers = this.options.areaLayers;
-        var pointDataLayers = options.pointDataLayers;
-        var i;
-        if (numUpdates === 1 && newAreaLayers && oldAreaLayers && oldAreaLayers.length > 0) {
-          for (i = 0; i < newAreaLayers.length; i++) {
-            var newAreaLayer = newAreaLayers[i];
-            var currAreaLayer = oldAreaLayers[i];
-            var updateDataLayer = true;
-            var areaLayerKeys = Object.keys(newAreaLayer);
-            for (var k = 0; k < areaLayerKeys.length; k++) {
-              var areaLayerKey = areaLayerKeys[k];
-              // check to see if option update is a data layer update by seeing if any other area layer property is changed
-              if (areaLayerKey !== 'areaDataLayer' &&
-                  newAreaLayer[areaLayerKey] !== currAreaLayer[areaLayerKey]) {
-                updateDataLayer = false;
-              }
-            }
-            if (updateDataLayer &&
-                !oj.Object.compareValues(currAreaLayer.areaDataLayer, newAreaLayer.areaDataLayer)) {
-              this._dataLayersToUpdate.push({
-                options: newAreaLayer.areaDataLayer,
-                parentLayer: newAreaLayer.layer,
-                isADL: true
-              });
-            }
-          }
-        } else if (numUpdates === 1 &&
-                   pointDataLayers &&
-                   this.options.pointDataLayers &&
-                   this.options.pointDataLayers.length > 0) {
-          for (i = 0; i < pointDataLayers.length; i++) {
-            if (!oj.Object.compareValues(this.options.pointDataLayers[i], pointDataLayers[i])) {
-              this._dataLayersToUpdate.push({
-                options: pointDataLayers[i],
-                parentLayer: pointDataLayers[i].id,
-                isADL: false
-              });
+      var areaLayers = this.options.areaLayers;
+      var i;
+      var renderer;
+      // call custom renderers
+      if (areaLayers) {
+        for (i = 0; i < areaLayers.length; i++) {
+          var areaDataLayer = areaLayers[i].areaDataLayer;
+          if (areaDataLayer) {
+            renderer = areaDataLayer._templateRenderer;
+            if (renderer) {
+              areaDataLayer.renderer = this._GetTemplateDataRenderer(renderer, 'area');
             }
           }
         }
-        this._super(options, flags);
-      },
-
-      // @inheritdoc
-      _GetComponentRendererOptions: function () {
-        return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
-                { path: '_tooltip/renderer' },
-                { path: 'renderer', slot: 'markerContentTemplate' },
-                { path: 'focusRenderer', slot: 'markerContentTemplate' },
-                { path: 'hoverRenderer', slot: 'markerContentTemplate' },
-                { path: 'selectionRenderer', slot: 'markerContentTemplate' }];
-      },
-
-
-      _LoadResources: function () {
-        // Ensure the resources object exists
-        if (this.options._resources == null) {
-          this.options._resources = {};
-        }
-      },
-
-      // @inheritdoc
-      _ProcessOptions: function () {
-        this._super();
-
-        // wrap tooltip function in try catch
-        var tooltipObj = this.options.tooltip;
-        var tooltipFun = tooltipObj ? tooltipObj.renderer : null;
-        if (tooltipFun) {
-          var self = this;
-          this.options._tooltip = {
-            renderer: function (context) {
-              var defaultTooltip = self._IsCustomElement() ?
-                  { insert: context.tooltip } : context.tooltip;
-              try {
-                var tooltip = tooltipFun(context);
-                return tooltip || defaultTooltip;
-              } catch (error) {
-                Logger.warn('Showing default tooltip. ' + error);
-                return defaultTooltip;
-              }
-            }
-          };
-        }
-
-        var areaLayers = this.options.areaLayers;
-        var i;
-        var renderer;
-        // call custom renderers
-        if (areaLayers) {
-          for (i = 0; i < areaLayers.length; i++) {
-            var areaDataLayer = areaLayers[i].areaDataLayer;
-            if (areaDataLayer) {
-              renderer = areaDataLayer._templateRenderer;
-              if (renderer) {
-                areaDataLayer.renderer = this._GetTemplateDataRenderer(renderer, 'area');
-              }
+      }
+      var pointDataLayers = this.options.pointDataLayers;
+      if (pointDataLayers) {
+        for (i = 0; i < pointDataLayers.length; i++) {
+          var pointDataLayer = pointDataLayers[i];
+          if (pointDataLayer) {
+            renderer = pointDataLayer._templateRenderer;
+            if (renderer) {
+              pointDataLayer.renderer = this._GetTemplateDataRenderer(renderer, 'point');
             }
           }
         }
-        var pointDataLayers = this.options.pointDataLayers;
-        if (pointDataLayers) {
-          for (i = 0; i < pointDataLayers.length; i++) {
-            var pointDataLayer = pointDataLayers[i];
-            if (pointDataLayer) {
-              renderer = pointDataLayer._templateRenderer;
-              if (renderer) {
-                pointDataLayer.renderer = this._GetTemplateDataRenderer(renderer, 'point');
-              }
-            }
-          }
-        }
+      }
 
-        // callback function for getting the context needed for custom renderers
-        this.options._contextHandler = this._getContextHandler();
-      },
+      // callback function for getting the context needed for custom renderers
+      this.options._contextHandler = this._getContextHandler();
+    },
 
-      // @inheritdoc
-      _Render: function () {
-        this._NotReady();
+    // @inheritdoc
+    _Render: function () {
+      this._NotReady();
 
-        var areaLayers = this.options.areaLayers;
-        var i;
-        // Don't render unless a basemap and area layer or at least a mapProvider for custom element are provided
-        if (this._IsCustomElement()) {
-          if (!this.options.mapProvider.geo.type) {
-            this._MakeReady();
-            return;
-          }
-        } else {
-          var basemap = this.options.basemap;
-          if (!basemap || !areaLayers || areaLayers.length < 1) {
-            this._MakeReady();
-            return;
-          }
-
-          // For thematic map, we must ensure that all basemaps are loaded before rendering.  If basemaps are still loading,
-          // return and wait for the load listener to call _Render again.
-          this._loadBasemap(basemap, areaLayers);
-          for (i = 0; i < this._checkBasemaps.length; i++) {
-            if (!this._loadedBasemaps[this._checkBasemaps[i]]) {
-              return;
-            }
-          }
-          this._checkBasemaps = [];
-        }
-
-        // do data layer updates only if we've already initially rendered the thematic map
-        if (this._initiallyRendered && this._dataLayersToUpdate.length > 0) {
-          // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
-          // getBBox calls will not return the correct values.
-          // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
-          if (this._context.isReadyToRender()) {
-            for (i = 0; i < this._dataLayersToUpdate.length; i++) {
-              var dl = this._dataLayersToUpdate[i];
-              var isAdl = dl.isADL;
-              if (isAdl) {
-                this._CleanTemplate('area');
-              } else {
-                this._CleanTemplate('point');
-              }
-              this._component.updateLayer(dl.options, dl.parentLayer, isAdl);
-            }
-            this._dataLayersToUpdate = [];
-          }
+      var areaLayers = this.options.areaLayers;
+      var i;
+      // Don't render unless a basemap and area layer or at least a mapProvider for custom element are provided
+      if (this._IsCustomElement()) {
+        if (!this.options.mapProvider.geo.type) {
           this._MakeReady();
-        } else {
-          // Delegate to the super to call the shared JS component for actual rendering.
-          this._super();
-          this._initiallyRendered = true;
+          return;
         }
-      },
-
-      // @inheritdoc
-      _RenderComponent: function (options, isResize) {
-        // Map old to new APIs right before render so we handle deferred data case as well
-        if (this._IsCustomElement()) {
-          this._mapCustomElementOptions(options);
-        }
-        // parse the top level selection map and populate data layer selection option
-        this._updateDataLayerSelection(options);
-
-        this._super(options, isResize);
-      },
-
-      /**
-       * Creates a callback function that will be used by a data item to populate context for its custom renderer
-       * @return {Function} context handler callback used to create context for a custom renderer
-       * @private
-       * @instance
-       * @memberof oj.ojThematicMap
-       */
-      _getContextHandler: function () {
-        var thisRef = this;
-        var contextHandlerFunc = function (parentElement, rootElement, data, itemData,
-          state, previousState) {
-          var context = {
-            component: Components.__GetWidgetConstructor(thisRef.element),
-            parentElement: parentElement,
-            rootElement: rootElement,
-            data: data,
-            itemData: itemData,
-            state: state,
-            previousState: previousState,
-            id: data.id,
-            label: data.label,
-            color: data.color,
-            location: data.location,
-            x: data.x,
-            y: data.y
-          };
-          if (thisRef._IsCustomElement()) {
-            context.renderDefaultHover = thisRef.renderDefaultHover.bind(thisRef, context);
-            context.renderDefaultSelection = thisRef.renderDefaultSelection.bind(thisRef, context);
-            context.renderDefaultFocus = thisRef.renderDefaultFocus.bind(thisRef, context);
-          }
-          return thisRef._FixRendererContext(context);
-        };
-        return contextHandlerFunc;
-      },
-
-      /**
-       * Renders the default hover effect for a data item.
-       * @ojsignature {target: "Type", value: "oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>", jsdocOverride: true}
-       * @param {Object} context A context object.
-       * @return {void}
-       * @expose
-       * @ignore
-       * @instance
-       * @memberof oj.ojThematicMap
-       */
-      renderDefaultHover: function (context) {
-        if (!context.previousState || context.state.hovered !== context.previousState.hovered) {
-          this._component.processDefaultHoverEffect(context.id, context.state.hovered);
-        }
-      },
-
-      /**
-       * Renders the default selection effect for a data item.
-       * @ojsignature {target: "Type", value: "oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>", jsdocOverride: true}
-       * @param {Object} context A context object.
-       * @return {void}
-       * @expose
-       * @ignore
-       * @instance
-       * @memberof oj.ojThematicMap
-       */
-      renderDefaultSelection: function (context) {
-        if (!context.previousState || context.state.selected !== context.previousState.selected) {
-          this._component.processDefaultSelectionEffect(context.id, context.state.selected);
-        }
-      },
-
-      /**
-       * Renders the default focus effect for a data item.
-       * @ojsignature {target: "Type", value: "oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>", jsdocOverride: true}
-       * @param {Object} context A context object.
-       * @return {void}
-       * @expose
-       * @ignore
-       * @instance
-       * @memberof oj.ojThematicMap
-       */
-      renderDefaultFocus: function (context) {
-        if (!context.previousState || context.state.focused !== context.previousState.focused) {
-          this._component.processDefaultFocusEffect(context.id, context.state.focused);
-        }
-      },
-
-      /**
-       * Loads the basemaps and resource bundles.
-       * @private
-       */
-      _loadBasemap: function (basemap, areaLayers) {
-        var locale = Config.getLocale();
-        if (locale !== this._currentLocale) {
-          this._currentLocale = locale;
-          this._loadedBasemaps = [];
-        }
-
-        // Track basemaps that need to be loaded before rendering
-        for (var i = 0; i < areaLayers.length; i++) {
-          var layer = areaLayers[i].layer;
-          if (layer) {
-            this._loadBasemapHelper(basemap, layer, locale);
-          }
-        }
-
-        // load city basemap
-        var pointDataLayers = this.options.pointDataLayers;
-        // Don't try and load cities basemap if mapProvider is used
-        if (!this.options.mapProvider.geo.type && pointDataLayers && pointDataLayers.length > 0) {
-          this._loadBasemapHelper(basemap, 'cities', locale);
-        }
-      },
-
-      /**
-       * Utility function for loading resource bundles by url.
-       * @param {string} url The url of the resource to load
-       * @param {boolean} bRenderOnFail True if we should render even if resource fails to load
-       * @private
-       */
-      _loadResourceByUrl: function (url, bRenderOnFail) {
-        // resource is already loaded or function tried to load this resource but failed
-        if (this._loadedBasemaps[url]) {
+      } else {
+        var basemap = this.options.basemap;
+        if (!basemap || !areaLayers || areaLayers.length < 1) {
+          this._MakeReady();
           return;
         }
 
-        var thisRef = this;
-        var renderCallback = function () {
-          thisRef._loadedBasemaps[url] = true;
-          thisRef._Render();
-        };
-        // Builtin basemaps for ojThematicMap are not supported when the ojs/ojthematicmap module has been bundled by Webpack
-        /* ojWebpackError: 'Internal loading of base maps not supported when the application is bundled by Webpack' */
-        new Promise(function (resolve, reject) { require(['../' + Config.getResourceUrl(url)], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(renderCallback, bRenderOnFail ? renderCallback : null);
-      },
-
-      /**
-       * Helper function to load a single layer basemap and resource bundle.
-       * @private
-       */
-      _loadBasemapHelper: function (basemap, layer, locale) {
-        var isLoaded = true;
-        try {
-          // If the basemap is not loaded in DvtBaseMapManager then we'll get an error thrown
-          // so we need to catch and load the basemap
-          isLoaded =
-            Object.keys(ojthematicmapToolkit.ThematicMap.DvtBaseMapManager.getLayerIds(basemap, layer)).length > 0;
-        } catch (err) {
-          isLoaded = false;
-        }
-
-        if (!isLoaded) {
-          // Don't need to wait for loaded basemaps if using mapProvider
-          if (!this.options.mapProvider.geo.type) {
-            var relativeUrl = this._basemapPath + 'ojthematicmap-' + basemap + '-' + layer + '.js';
-            if (this._checkBasemaps.indexOf(relativeUrl) === -1) {
-              this._checkBasemaps.push(relativeUrl);
-              this._loadResourceByUrl(relativeUrl, false);
-            }
+        // For thematic map, we must ensure that all basemaps are loaded before rendering.  If basemaps are still loading,
+        // return and wait for the load listener to call _Render again.
+        this._loadBasemap(basemap, areaLayers);
+        for (i = 0; i < this._checkBasemaps.length; i++) {
+          if (!this._loadedBasemaps[this._checkBasemaps[i]]) {
+            return;
           }
         }
-
-        if (locale.indexOf('en') === -1) {
-          /*
-           * Split locale by subtags and try to load resource bundle that satisfies
-           * Locale syntax defined by BCP 47 and should be one of the following formats:
-           * 1)language_script_region
-           * 2)language_region
-           * 3)language_script
-           * 4)language
-           * 5)default (en)
-           */
-          var splitLocale = locale.toLowerCase().split('-');
-          var localeList = [splitLocale[0]];
-          if (splitLocale.length > 1) {
-            localeList.unshift(splitLocale[0] + '-' + splitLocale[1]);
-          }
-          if (splitLocale.length > 2) {
-            localeList.unshift(splitLocale[0] + '-' + splitLocale[2], splitLocale[0] + '-' +
-                               splitLocale[1] + '-' + splitLocale[2]);
-          }
-
-          // eslint-disable-next-line no-param-reassign
-          basemap = basemap.charAt(0).toUpperCase() + basemap.slice(1);
-          // eslint-disable-next-line no-param-reassign
-          layer = layer.charAt(0).toUpperCase() + layer.slice(1);
-          var bundleName = this._basemapPath + 'resourceBundles/' + basemap + layer + 'Bundle_';
-          // Go thru list of supported DVT languages
-          for (var i = 0; i < localeList.length; i++) {
-            if (this._supportedLocales[localeList[i]]) {
-              var bundleUrl = bundleName + this._supportedLocales[localeList[i]] + '.js';
-              if (this._checkBasemaps.indexOf(bundleUrl) === -1) {
-                this._checkBasemaps.push(bundleUrl);
-                this._loadResourceByUrl(bundleUrl, true);
-              }
-              break;
-            }
-          }
-        }
-      },
-
-      // @inheritdoc
-      _HandleEvent: function (event) {
-        var type = event.type;
-        if (type === 'selection') {
-          var selection;
-          var id = event.clientId;
-          var currentSelection = this.options.selection;
-          var newSelection = event.selection;
-          if (this._IsCustomElement()) {
-            this._selectionDataLayerMap[id] = newSelection;
-            selection = this._selectionDataLayerMap.adl1.concat(this._selectionDataLayerMap.pdl1);
-          } else {
-            selection = {};
-            selection[id] = newSelection;
-            if (currentSelection) {
-              var dataLayerIds = Object.keys(currentSelection);
-              for (var i = 0; i < dataLayerIds.length; i++) {
-                var dataLayerId = dataLayerIds[i];
-                if (id !== dataLayerId) {
-                  selection[dataLayerId] = currentSelection[dataLayerId];
-                }
-              }
-            }
-          }
-          this._UserOptionChange('selection', selection);
-        } else {
-          this._super(event);
-        }
-      },
-
-      /**
-       * Updates the options object with the current data layer selection states
-       * @param {Object} options The options object to update
-       * @memberof oj.ojThematicMap
-       * @instance
-       * @private
-       */
-      _updateDataLayerSelection: function (options) {
-        var selection = options.selection;
-        var hasSelection = (this._IsCustomElement() ?
-                            selection.length :
-                            Object.keys(selection).length) > 0;
-        // Assume ids are unique amongst all data items for custom elements
-        // so just same selection array on all data layers
-        if (selection && hasSelection) {
-          var pdls = options.pointDataLayers;
-          if (pdls) {
-            if (this._IsCustomElement() && pdls[0]) {
-              pdls[0].selection = selection;
-            } else {
-              for (var i = 0; i < pdls.length; i++) {
-                if (selection[pdls[i].id]) {
-                  pdls[i].selection = selection[pdls[i].id];
-                }
-              }
-            }
-          }
-
-          var als = options.areaLayers;
-          if (als && als[0]) {
-            // JET thematic map does not support nesting of point data layers within an area layer
-            var adl = als[0].areaDataLayer;
-            if (this._IsCustomElement() && adl) {
-              adl.selection = selection;
-            } else if (adl && selection[adl.id]) {
-              adl.selection = selection[adl.id];
-            }
-          }
-        }
-      },
-
-      /**
-       * Returns an object for automation testing verification of an area with
-       * the specified index in the areas property.
-       * @param {number} index The index of the area in the areas Array.
-       * @ojsignature {target: "Type", value: "oj.ojThematicMap.DataContext|null", jsdocOverride: true, for: "returns"}
-       * @return {Object|null} An object containing properties for the area, or null if none exists.
-       * @expose
-       * @instance
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @memberof oj.ojThematicMap
-       * @ojshortdesc Returns an object for automation testing verification of the specified area.
-       */
-      getArea: function (index) {
-        if (this._IsCustomElement()) {
-          return this._component.getAutomation()
-            .getData(this._getDataLayerId(null, index, 'area'), 'area', index);
-        }
-        return this._component.getAutomation().getData(arguments[0], 'area', arguments[1]);
-      },
-
-      /**
-       * Returns an object for automation testing verification of a marker with
-       * the specified index in the markers property.
-       * @param {number} index The index of the marker in the markers Array.
-       * @ojsignature {target: "Type", value: "oj.ojThematicMap.DataContext|null", jsdocOverride: true, for: "returns"}
-       * @return {Object|null} An object containing properties for the marker, or null if none exists.
-       * @expose
-       * @instance
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @memberof oj.ojThematicMap
-       * @ojshortdesc Returns an object for automation testing verification of the specified marker.
-       */
-      getMarker: function (index) {
-        if (this._IsCustomElement()) {
-          return this._component.getAutomation()
-            .getData(this._getDataLayerId(null, index, 'marker'), 'marker', index);
-        }
-        return this._component.getAutomation().getData(arguments[0], 'marker', arguments[1]);
-      },
-
-      /**
-       * Returns an object for automation testing verification of a link with
-       * the specified index in the links property.
-       * @param {number} index The index of the link in the links Array.
-       * @ojsignature {target: "Type", value: "oj.ojThematicMap.DataContext|null", jsdocOverride: true, for: "returns"}
-       * @return {Object|null} An object containing properties for the link, or null if none exists.
-       * @expose
-       * @instance
-       * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-       * @ojtsignore
-       * @memberof oj.ojThematicMap
-       * @ojshortdesc Returns an object for automation testing verification of the specified link.
-       */
-      getLink: function (index) {
-        if (this._IsCustomElement()) {
-          return this._component.getAutomation()
-            .getData(this._getDataLayerId(null, index, 'link'), 'link', index);
-        }
-        return this._component.getAutomation().getData(arguments[0], 'link', arguments[1]);
-      },
-
-      /**
-       * {@ojinclude "name":"nodeContextDoc"}
-       * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
-       * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-       * @ojsignature {target: "Type", value: "oj.ojThematicMap.NodeContext|null", jsdocOverride: true, for: "returns"}
-       *
-       * @example {@ojinclude "name":"nodeContextExample"}
-       *
-       * @expose
-       * @instance
-       * @memberof oj.ojThematicMap
-       * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
-       */
-      getContextByNode: function (node) {
-        // context objects are documented with @ojnodecontext
-        var context = this.getSubIdByNode(node);
-        if (context) {
-          if (this._IsCustomElement()) {
-            delete context.dataLayer;
-          }
-          if (context.subId !== 'oj-thematicmap-tooltip') {
-            return context;
-          }
-        }
-
-        return null;
-      },
-
-      // @inheritdoc
-      _GetComponentDeferredDataPaths: function () {
-        if (this._IsCustomElement()) {
-          return { root: ['areas', 'markers', 'links', 'areaData', 'markerData', 'linkData'] };
-        }
-        return {
-          areaLayers: ['areaDataLayer/areas', 'areaDataLayer/markers', 'areaDataLayer/links'],
-          pointDataLayers: ['markers', 'links']
-        };
-      },
-
-      // @inheritdoc
-      _GetComponentNoClonePaths: function () {
-        // For custom elements we want to skip cloning for data and also the mapProvider object so we can
-        // internally do === checks and perform animations when the mapProvider changes
-        if (this._IsCustomElement()) {
-          var noClonePaths = this._super();
-          noClonePaths.mapProvider = true;
-          return noClonePaths;
-        }
-        return {
-          mapProvider: true,
-          areaLayers: { areaDataLayer: { areas: true, markers: true, links: true } },
-          pointDataLayers: { markers: true, links: true }
-        };
-      },
-
-      // @inheritdoc
-      _GetDataContext: function (options) {
-        if (this._IsCustomElement()) {
-          return this._super();
-        }
-          // Need to use this.options instead of options because the options
-          // passed in will actually be an areaLayer or pointDataLayer options object
-        var basemap = this.options.basemap;
-        var layer = options.layer ? options.layer : 'cities';
-        return {
-          basemap: basemap,
-          layer: layer,
-          ids: ojthematicmapToolkit.DvtBaseMapManager.getLayerIds(basemap, layer)
-        };
-      },
-
-      /**
-       * Map custom element APIs to the widget APIs and return an object containing
-       * the new area and point data layers for rendering purposes.
-       * @param {string} options The options to map
-       * @private
-       * @instance
-       * @memberof oj.ojThematicMap
-       */
-      _mapCustomElementOptions: function (options) {
-        // AnimationOnMapChange is not exposed, map animationOnDisplay to that property instead
-        // eslint-disable-next-line no-param-reassign
-        options.animationOnMapChange = options.animationOnDisplay;
-
-        // Create areaLayers and pointDataLayers objects for data items
-        // We will use a static id for these data layers for automation lookup
-        var areaDataLayerId = 'adl1';
-        var pointDataLayerId = 'pdl1';
-        var areaLayers = [{}];
-        // eslint-disable-next-line no-param-reassign
-        options.areaLayers = areaLayers;
-        var areaLayer = areaLayers[0];
-        var adl = { id: areaDataLayerId }; // need id for automation lookup
-        areaLayer.areaDataLayer = adl;
-
-        var pointDataLayers = [{ id: pointDataLayerId }]; // need id for automation lookup
-        // eslint-disable-next-line no-param-reassign
-        options.pointDataLayers = pointDataLayers;
-        var pdl = pointDataLayers[0];
-
-        // New top level properties that should be mapped to the areaLayer
-        var props = ['labelDisplay', 'labelType'];
-        this._mapOptionHelper(options, props, [areaLayer]);
-
-        // New top level properties that should be mapped to the area/pointDataLayers
-        props = ['animationOnDataChange', 'focusRenderer', 'hoverRenderer', 'renderer', 'selectionMode', 'selectionRenderer'];
-        this._mapOptionHelper(options, props, [adl, pdl]);
-
-        // New top level properties that should be mapped to the areaDataLayer
-        props = ['areas', 'isolatedItem'];
-        this._mapOptionHelper(options, props, [adl]);
-
-        // We need to split up selection ids to their data layers
-        // so we can keep track of events from different data layers.
-        if (!this._selectionDataLayerMap) {
-          this._selectionDataLayerMap = { adl1: [], pdl1: [] };
-        }
-        // Convert selection array to map for faster lookup
-        var selection = options.selection;
-        var selectionMap = {};
-        var i;
-        for (i = 0; i < selection.length; i++) {
-          selectionMap[selection[i]] = true;
-        }
-
-        // Create a map of area/marker ids to data layer ids
-        this._idToDataLayerMap = {};
-        var areas = options.areas;
-        if (areas) {
-          for (i = 0; i < areas.length; i++) {
-            var area = areas[i];
-            this._idToDataLayerMap[area.id] = areaDataLayerId;
-            var id = area.id;
-            if (selectionMap[id]) {
-              this._selectionDataLayerMap[areaDataLayerId].push(id);
-            }
-          }
-        }
-
-        // For markers and links we need to check whether they belong to an
-        // area/pointDataLayer by checking if location is defined.
-        // Save the old array index to the new data layer mapping for constructing
-        // and deconstructing subIds. Custom element subIds lack the dataLayerId.
-        var markers = options.markers;
-        var dlId;
-        if (markers) {
-          this._markerToDataLayerMap = [];
-          var areaMarkers = [];
-          var pointMarkers = [];
-          for (i = 0; i < markers.length; i++) {
-            var marker = markers[i];
-            if (marker.location) {
-              areaMarkers.push(marker);
-              dlId = areaDataLayerId;
-            } else if (marker.x && marker.y) {
-              pointMarkers.push(marker);
-              dlId = pointDataLayerId;
-            }
-            if (dlId) {
-              this._markerToDataLayerMap[i] = dlId;
-              this._idToDataLayerMap[marker.id] = dlId;
-              if (selectionMap[marker.id]) {
-                this._selectionDataLayerMap[dlId].push(marker.id);
-              }
-            }
-          }
-
-          if (areaMarkers.length > 0) {
-            adl.markers = areaMarkers;
-          }
-          if (pointMarkers.length > 0) {
-            pdl.markers = pointMarkers;
-          }
-        }
-
-        var links = options.links;
-        if (links) {
-          this._linkToDataLayerMap = [];
-          var areaLinks = [];
-          var pointLinks = [];
-          for (i = 0; i < links.length; i++) {
-            var link = links[i];
-            var linkStart = link.startLocation;
-            if (linkStart) {
-              // Just check the startLocation, further validation of endLocation
-              // occurs in toolkit impl
-              if (linkStart.location) {
-                this._linkToDataLayerMap[i] = areaDataLayerId;
-                areaLinks.push(link);
-              } else if (linkStart.x && linkStart.y) {
-                pointLinks.push(link);
-                this._linkToDataLayerMap[i] = pointDataLayerId;
-              } else if (linkStart.id) {
-                // If id is specified, find whether it maps to an area or marker.
-                // Ids should be unique so we can stop at the first match.
-                dlId = this._idToDataLayerMap[linkStart.id];
-                this._linkToDataLayerMap[i] = dlId;
-                if (dlId === areaDataLayerId) {
-                  areaLinks.push(link);
-                } else {
-                  pointLinks.push(link);
-                }
-              }
-            }
-
-            dlId = this._idToDataLayerMap[link.id];
-            if (dlId) {
-              if (selectionMap[link.id]) {
-                this._selectionDataLayerMap[dlId].push(link.id);
-              }
-            }
-          }
-
-          if (areaLinks.length > 0) {
-            adl.links = areaLinks;
-          }
-          if (pointLinks.length > 0) {
-            pdl.links = pointLinks;
-          }
-        }
-      },
-
-      /**
-       * Helper method to map an custom element API to the old API.
-       * @private
-       * @instance
-       * @memberof oj.ojThematicMap
-       */
-      _mapOptionHelper: function (options, props, optionObjs) {
-        for (var i = 0; i < props.length; i++) {
-          var key = props[i];
-          var value = options[key];
-          if (value) {
-            for (var j = 0; j < optionObjs.length; j++) {
-              // eslint-disable-next-line no-param-reassign
-              optionObjs[j][key] = value;
-            }
-          }
-        }
-      },
-
-      /**
-       * Returns the dataLayerId used for a subId.
-       * @param  {string} dataLayer The data layer or null if known
-       * @param  {number} index The data item index
-       * @param  {string} dataItemType Enum of type area, marker or link
-       * @return {string}
-       * @private
-       */
-      _getDataLayerId: function (dataLayer, index, dataItemType) {
-        if (this._IsCustomElement()) {
-          switch (dataItemType) {
-            case 'area':
-              return 'adl1';
-            case 'marker':
-              return this._markerToDataLayerMap[index];
-            case 'link':
-              return this._linkToDataLayerMap[index];
-            default:
-              return '';
-          }
-        } else {
-          return dataLayer;
-        }
-      },
-
-      _GetSimpleDataProviderConfigs: function () {
-        return {
-          areaData: { templateName: 'areaTemplate', templateElementName: 'oj-thematic-map-area', resultPath: 'areas' },
-          linkData: { templateName: 'linkTemplate', templateElementName: 'oj-thematic-map-link', resultPath: 'links' },
-          markerData: { templateName: 'markerTemplate', templateElementName: 'oj-thematic-map-marker', resultPath: 'markers' }
-        };
-      },
-
-
-      _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {
-        var getDefaultWrapperFunction = function (defaultFunc) {
-          return function (context) {
-            context[defaultFunc]();
-            return origRenderer(context);
-          };
-        };
-        if (option === 'focusRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-focus')) {
-          return getDefaultWrapperFunction('renderDefaultFocus');
-        }
-        if (option === 'hoverRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-hover')) {
-          return getDefaultWrapperFunction('renderDefaultHover');
-        }
-        if (option === 'selectionRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-selection')) {
-          return getDefaultWrapperFunction('renderDefaultSelection');
-        }
-
-        return origRenderer;
+        this._checkBasemaps = [];
       }
-    });
+
+      // do data layer updates only if we've already initially rendered the thematic map
+      if (this._initiallyRendered && this._dataLayersToUpdate.length > 0) {
+        // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
+        // getBBox calls will not return the correct values.
+        // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
+        if (this._context.isReadyToRender()) {
+          for (i = 0; i < this._dataLayersToUpdate.length; i++) {
+            var dl = this._dataLayersToUpdate[i];
+            var isAdl = dl.isADL;
+            if (isAdl) {
+              this._CleanTemplate('area');
+            } else {
+              this._CleanTemplate('point');
+            }
+            this._component.updateLayer(dl.options, dl.parentLayer, isAdl);
+          }
+          this._dataLayersToUpdate = [];
+        }
+        this._MakeReady();
+      } else {
+        // Delegate to the super to call the shared JS component for actual rendering.
+        this._super();
+        this._initiallyRendered = true;
+      }
+    },
+
+    // @inheritdoc
+    _RenderComponent: function (options, isResize) {
+      // Map old to new APIs right before render so we handle deferred data case as well
+      if (this._IsCustomElement()) {
+        this._mapCustomElementOptions(options);
+      }
+      // parse the top level selection map and populate data layer selection option
+      this._updateDataLayerSelection(options);
+
+      this._super(options, isResize);
+    },
+
+    /**
+     * Creates a callback function that will be used by a data item to populate context for its custom renderer
+     * @return {Function} context handler callback used to create context for a custom renderer
+     * @private
+     * @instance
+     * @memberof oj.ojThematicMap
+     */
+    _getContextHandler: function () {
+      var thisRef = this;
+      var contextHandlerFunc = function (
+        parentElement,
+        rootElement,
+        data,
+        itemData,
+        state,
+        previousState
+      ) {
+        var context = {
+          component: Components.__GetWidgetConstructor(thisRef.element),
+          parentElement: parentElement,
+          rootElement: rootElement,
+          data: data,
+          itemData: itemData,
+          state: state,
+          previousState: previousState,
+          id: data.id,
+          label: data.label,
+          color: data.color,
+          location: data.location,
+          x: data.x,
+          y: data.y
+        };
+        if (thisRef._IsCustomElement()) {
+          context.renderDefaultHover = thisRef.renderDefaultHover.bind(thisRef, context);
+          context.renderDefaultSelection = thisRef.renderDefaultSelection.bind(thisRef, context);
+          context.renderDefaultFocus = thisRef.renderDefaultFocus.bind(thisRef, context);
+        }
+        return thisRef._FixRendererContext(context);
+      };
+      return contextHandlerFunc;
+    },
+
+    /**
+     * Renders the default hover effect for a data item.
+     * @ojsignature {target: "Type", value: "oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>", jsdocOverride: true}
+     * @param {Object} context A context object.
+     * @return {void}
+     * @expose
+     * @ignore
+     * @instance
+     * @memberof oj.ojThematicMap
+     */
+    renderDefaultHover: function (context) {
+      if (!context.previousState || context.state.hovered !== context.previousState.hovered) {
+        this._component.processDefaultHoverEffect(context.id, context.state.hovered);
+      }
+    },
+
+    /**
+     * Renders the default selection effect for a data item.
+     * @ojsignature {target: "Type", value: "oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>", jsdocOverride: true}
+     * @param {Object} context A context object.
+     * @return {void}
+     * @expose
+     * @ignore
+     * @instance
+     * @memberof oj.ojThematicMap
+     */
+    renderDefaultSelection: function (context) {
+      if (!context.previousState || context.state.selected !== context.previousState.selected) {
+        this._component.processDefaultSelectionEffect(context.id, context.state.selected);
+      }
+    },
+
+    /**
+     * Renders the default focus effect for a data item.
+     * @ojsignature {target: "Type", value: "oj.ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>", jsdocOverride: true}
+     * @param {Object} context A context object.
+     * @return {void}
+     * @expose
+     * @ignore
+     * @instance
+     * @memberof oj.ojThematicMap
+     */
+    renderDefaultFocus: function (context) {
+      if (!context.previousState || context.state.focused !== context.previousState.focused) {
+        this._component.processDefaultFocusEffect(context.id, context.state.focused);
+      }
+    },
+
+    /**
+     * Loads the basemaps and resource bundles.
+     * @private
+     */
+    _loadBasemap: function (basemap, areaLayers) {
+      var locale = Config.getLocale();
+      if (locale !== this._currentLocale) {
+        this._currentLocale = locale;
+        this._loadedBasemaps = [];
+      }
+
+      // Track basemaps that need to be loaded before rendering
+      for (var i = 0; i < areaLayers.length; i++) {
+        var layer = areaLayers[i].layer;
+        if (layer) {
+          this._loadBasemapHelper(basemap, layer, locale);
+        }
+      }
+
+      // load city basemap
+      var pointDataLayers = this.options.pointDataLayers;
+      // Don't try and load cities basemap if mapProvider is used
+      if (!this.options.mapProvider.geo.type && pointDataLayers && pointDataLayers.length > 0) {
+        this._loadBasemapHelper(basemap, 'cities', locale);
+      }
+    },
+
+    /**
+     * Utility function for loading resource bundles by url.
+     * @param {string} url The url of the resource to load
+     * @param {boolean} bRenderOnFail True if we should render even if resource fails to load
+     * @private
+     */
+    _loadResourceByUrl: function (url, bRenderOnFail) {
+      // resource is already loaded or function tried to load this resource but failed
+      if (this._loadedBasemaps[url]) {
+        return;
+      }
+
+      var thisRef = this;
+      var renderCallback = function () {
+        thisRef._loadedBasemaps[url] = true;
+        thisRef._Render();
+      };
+      // Builtin basemaps for ojThematicMap are not supported when the ojs/ojthematicmap module has been bundled by Webpack
+      /* ojWebpackError: 'Internal loading of base maps not supported when the application is bundled by Webpack' */
+      new Promise(function (resolve, reject) { require(['../' + Config.getResourceUrl(url)], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(
+        renderCallback,
+        bRenderOnFail ? renderCallback : null
+      );
+    },
+
+    /**
+     * Helper function to load a single layer basemap and resource bundle.
+     * @private
+     */
+    _loadBasemapHelper: function (basemap, layer, locale) {
+      var isLoaded = true;
+      try {
+        // If the basemap is not loaded in DvtBaseMapManager then we'll get an error thrown
+        // so we need to catch and load the basemap
+        isLoaded = Object.keys(ojthematicmapToolkit.ThematicMap.DvtBaseMapManager.getLayerIds(basemap, layer)).length > 0;
+      } catch (err) {
+        isLoaded = false;
+      }
+
+      if (!isLoaded) {
+        // Don't need to wait for loaded basemaps if using mapProvider
+        if (!this.options.mapProvider.geo.type) {
+          var relativeUrl = this._basemapPath + 'ojthematicmap-' + basemap + '-' + layer + '.js';
+          if (this._checkBasemaps.indexOf(relativeUrl) === -1) {
+            this._checkBasemaps.push(relativeUrl);
+            this._loadResourceByUrl(relativeUrl, false);
+          }
+        }
+      }
+
+      if (locale.indexOf('en') === -1) {
+        /*
+         * Split locale by subtags and try to load resource bundle that satisfies
+         * Locale syntax defined by BCP 47 and should be one of the following formats:
+         * 1)language_script_region
+         * 2)language_region
+         * 3)language_script
+         * 4)language
+         * 5)default (en)
+         */
+        var splitLocale = locale.toLowerCase().split('-');
+        var localeList = [splitLocale[0]];
+        if (splitLocale.length > 1) {
+          localeList.unshift(splitLocale[0] + '-' + splitLocale[1]);
+        }
+        if (splitLocale.length > 2) {
+          localeList.unshift(
+            splitLocale[0] + '-' + splitLocale[2],
+            splitLocale[0] + '-' + splitLocale[1] + '-' + splitLocale[2]
+          );
+        }
+
+        // eslint-disable-next-line no-param-reassign
+        basemap = basemap.charAt(0).toUpperCase() + basemap.slice(1);
+        // eslint-disable-next-line no-param-reassign
+        layer = layer.charAt(0).toUpperCase() + layer.slice(1);
+        var bundleName = this._basemapPath + 'resourceBundles/' + basemap + layer + 'Bundle_';
+        // Go thru list of supported DVT languages
+        for (var i = 0; i < localeList.length; i++) {
+          if (this._supportedLocales[localeList[i]]) {
+            var bundleUrl = bundleName + this._supportedLocales[localeList[i]] + '.js';
+            if (this._checkBasemaps.indexOf(bundleUrl) === -1) {
+              this._checkBasemaps.push(bundleUrl);
+              this._loadResourceByUrl(bundleUrl, true);
+            }
+            break;
+          }
+        }
+      }
+    },
+
+    // @inheritdoc
+    _HandleEvent: function (event) {
+      var type = event.type;
+      if (type === 'selection') {
+        var selection;
+        var id = event.clientId;
+        var currentSelection = this.options.selection;
+        var newSelection = event.selection;
+        if (this._IsCustomElement()) {
+          this._selectionDataLayerMap[id] = newSelection;
+          selection = this._selectionDataLayerMap.adl1.concat(this._selectionDataLayerMap.pdl1);
+        } else {
+          selection = {};
+          selection[id] = newSelection;
+          if (currentSelection) {
+            var dataLayerIds = Object.keys(currentSelection);
+            for (var i = 0; i < dataLayerIds.length; i++) {
+              var dataLayerId = dataLayerIds[i];
+              if (id !== dataLayerId) {
+                selection[dataLayerId] = currentSelection[dataLayerId];
+              }
+            }
+          }
+        }
+        this._UserOptionChange('selection', selection);
+      } else {
+        this._super(event);
+      }
+    },
+
+    /**
+     * Updates the options object with the current data layer selection states
+     * @param {Object} options The options object to update
+     * @memberof oj.ojThematicMap
+     * @instance
+     * @private
+     */
+    _updateDataLayerSelection: function (options) {
+      var selection = options.selection;
+      var hasSelection =
+        (this._IsCustomElement() ? selection.length : Object.keys(selection).length) > 0;
+      // Assume ids are unique amongst all data items for custom elements
+      // so just same selection array on all data layers
+      if (selection && hasSelection) {
+        var pdls = options.pointDataLayers;
+        if (pdls) {
+          if (this._IsCustomElement() && pdls[0]) {
+            pdls[0].selection = selection;
+          } else {
+            for (var i = 0; i < pdls.length; i++) {
+              if (selection[pdls[i].id]) {
+                pdls[i].selection = selection[pdls[i].id];
+              }
+            }
+          }
+        }
+
+        var als = options.areaLayers;
+        if (als && als[0]) {
+          // JET thematic map does not support nesting of point data layers within an area layer
+          var adl = als[0].areaDataLayer;
+          if (this._IsCustomElement() && adl) {
+            adl.selection = selection;
+          } else if (adl && selection[adl.id]) {
+            adl.selection = selection[adl.id];
+          }
+        }
+      }
+    },
+
+    /**
+     * Returns an object for automation testing verification of an area with
+     * the specified index in the areas property.
+     * @param {number} index The index of the area in the areas Array.
+     * @ojsignature {target: "Type", value: "oj.ojThematicMap.DataContext|null", jsdocOverride: true, for: "returns"}
+     * @return {Object|null} An object containing properties for the area, or null if none exists.
+     * @expose
+     * @instance
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @memberof oj.ojThematicMap
+     * @ojshortdesc Returns an object for automation testing verification of the specified area.
+     */
+    getArea: function (index) {
+      if (this._IsCustomElement()) {
+        return this._component
+          .getAutomation()
+          .getData(this._getDataLayerId(null, index, 'area'), 'area', index);
+      }
+      return this._component.getAutomation().getData(arguments[0], 'area', arguments[1]);
+    },
+
+    /**
+     * Returns an object for automation testing verification of a marker with
+     * the specified index in the markers property.
+     * @param {number} index The index of the marker in the markers Array.
+     * @ojsignature {target: "Type", value: "oj.ojThematicMap.DataContext|null", jsdocOverride: true, for: "returns"}
+     * @return {Object|null} An object containing properties for the marker, or null if none exists.
+     * @expose
+     * @instance
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @memberof oj.ojThematicMap
+     * @ojshortdesc Returns an object for automation testing verification of the specified marker.
+     */
+    getMarker: function (index) {
+      if (this._IsCustomElement()) {
+        return this._component
+          .getAutomation()
+          .getData(this._getDataLayerId(null, index, 'marker'), 'marker', index);
+      }
+      return this._component.getAutomation().getData(arguments[0], 'marker', arguments[1]);
+    },
+
+    /**
+     * Returns an object for automation testing verification of a link with
+     * the specified index in the links property.
+     * @param {number} index The index of the link in the links Array.
+     * @ojsignature {target: "Type", value: "oj.ojThematicMap.DataContext|null", jsdocOverride: true, for: "returns"}
+     * @return {Object|null} An object containing properties for the link, or null if none exists.
+     * @expose
+     * @instance
+     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+     * @ojtsignore
+     * @memberof oj.ojThematicMap
+     * @ojshortdesc Returns an object for automation testing verification of the specified link.
+     */
+    getLink: function (index) {
+      if (this._IsCustomElement()) {
+        return this._component
+          .getAutomation()
+          .getData(this._getDataLayerId(null, index, 'link'), 'link', index);
+      }
+      return this._component.getAutomation().getData(arguments[0], 'link', arguments[1]);
+    },
+
+    /**
+     * {@ojinclude "name":"nodeContextDoc"}
+     * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+     * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+     * @ojsignature {target: "Type", value: "oj.ojThematicMap.NodeContext|null", jsdocOverride: true, for: "returns"}
+     *
+     * @example {@ojinclude "name":"nodeContextExample"}
+     *
+     * @expose
+     * @instance
+     * @memberof oj.ojThematicMap
+     * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
+     */
+    getContextByNode: function (node) {
+      // context objects are documented with @ojnodecontext
+      var context = this.getSubIdByNode(node);
+      if (context) {
+        if (this._IsCustomElement()) {
+          delete context.dataLayer;
+        }
+        if (context.subId !== 'oj-thematicmap-tooltip') {
+          return context;
+        }
+      }
+
+      return null;
+    },
+
+    // @inheritdoc
+    _GetComponentDeferredDataPaths: function () {
+      if (this._IsCustomElement()) {
+        return { root: ['areas', 'markers', 'links', 'areaData', 'markerData', 'linkData'] };
+      }
+      return {
+        areaLayers: ['areaDataLayer/areas', 'areaDataLayer/markers', 'areaDataLayer/links'],
+        pointDataLayers: ['markers', 'links']
+      };
+    },
+
+    // @inheritdoc
+    _GetComponentNoClonePaths: function () {
+      // For custom elements we want to skip cloning for data and also the mapProvider object so we can
+      // internally do === checks and perform animations when the mapProvider changes
+      if (this._IsCustomElement()) {
+        var noClonePaths = this._super();
+        noClonePaths.mapProvider = true;
+        return noClonePaths;
+      }
+      return {
+        mapProvider: true,
+        areaLayers: { areaDataLayer: { areas: true, markers: true, links: true } },
+        pointDataLayers: { markers: true, links: true }
+      };
+    },
+
+    // @inheritdoc
+    _GetDataContext: function (options) {
+      if (this._IsCustomElement()) {
+        return this._super();
+      }
+      // Need to use this.options instead of options because the options
+      // passed in will actually be an areaLayer or pointDataLayer options object
+      var basemap = this.options.basemap;
+      var layer = options.layer ? options.layer : 'cities';
+      return {
+        basemap: basemap,
+        layer: layer,
+        ids: ojthematicmapToolkit.DvtBaseMapManager.getLayerIds(basemap, layer)
+      };
+    },
+
+    /**
+     * Map custom element APIs to the widget APIs and return an object containing
+     * the new area and point data layers for rendering purposes.
+     * @param {string} options The options to map
+     * @private
+     * @instance
+     * @memberof oj.ojThematicMap
+     */
+    _mapCustomElementOptions: function (options) {
+      // AnimationOnMapChange is not exposed, map animationOnDisplay to that property instead
+      // eslint-disable-next-line no-param-reassign
+      options.animationOnMapChange = options.animationOnDisplay;
+
+      // Create areaLayers and pointDataLayers objects for data items
+      // We will use a static id for these data layers for automation lookup
+      var areaDataLayerId = 'adl1';
+      var pointDataLayerId = 'pdl1';
+      var areaLayers = [{}];
+      // eslint-disable-next-line no-param-reassign
+      options.areaLayers = areaLayers;
+      var areaLayer = areaLayers[0];
+      var adl = { id: areaDataLayerId }; // need id for automation lookup
+      areaLayer.areaDataLayer = adl;
+
+      var pointDataLayers = [{ id: pointDataLayerId }]; // need id for automation lookup
+      // eslint-disable-next-line no-param-reassign
+      options.pointDataLayers = pointDataLayers;
+      var pdl = pointDataLayers[0];
+
+      // New top level properties that should be mapped to the areaLayer
+      var props = ['labelDisplay', 'labelType'];
+      this._mapOptionHelper(options, props, [areaLayer]);
+
+      // New top level properties that should be mapped to the area/pointDataLayers
+      props = [
+        'animationOnDataChange',
+        'focusRenderer',
+        'hoverRenderer',
+        'renderer',
+        'selectionMode',
+        'selectionRenderer'
+      ];
+      this._mapOptionHelper(options, props, [adl, pdl]);
+
+      // New top level properties that should be mapped to the areaDataLayer
+      props = ['areas', 'isolatedItem'];
+      this._mapOptionHelper(options, props, [adl]);
+
+      // We need to split up selection ids to their data layers
+      // so we can keep track of events from different data layers.
+      if (!this._selectionDataLayerMap) {
+        this._selectionDataLayerMap = { adl1: [], pdl1: [] };
+      }
+      // Convert selection array to map for faster lookup
+      var selection = options.selection;
+      var selectionMap = {};
+      var i;
+      for (i = 0; i < selection.length; i++) {
+        selectionMap[selection[i]] = true;
+      }
+
+      // Create a map of area/marker ids to data layer ids
+      this._idToDataLayerMap = {};
+      var areas = options.areas;
+      if (areas) {
+        for (i = 0; i < areas.length; i++) {
+          var area = areas[i];
+          this._idToDataLayerMap[area.id] = areaDataLayerId;
+          var id = area.id;
+          if (selectionMap[id]) {
+            this._selectionDataLayerMap[areaDataLayerId].push(id);
+          }
+        }
+      }
+
+      // For markers and links we need to check whether they belong to an
+      // area/pointDataLayer by checking if location is defined.
+      // Save the old array index to the new data layer mapping for constructing
+      // and deconstructing subIds. Custom element subIds lack the dataLayerId.
+      var markers = options.markers;
+      var dlId;
+      if (markers) {
+        this._markerToDataLayerMap = [];
+        var areaMarkers = [];
+        var pointMarkers = [];
+        for (i = 0; i < markers.length; i++) {
+          var marker = markers[i];
+          if (marker.location) {
+            areaMarkers.push(marker);
+            dlId = areaDataLayerId;
+          } else if (marker.x && marker.y) {
+            pointMarkers.push(marker);
+            dlId = pointDataLayerId;
+          }
+          if (dlId) {
+            this._markerToDataLayerMap[i] = dlId;
+            this._idToDataLayerMap[marker.id] = dlId;
+            if (selectionMap[marker.id]) {
+              this._selectionDataLayerMap[dlId].push(marker.id);
+            }
+          }
+        }
+
+        if (areaMarkers.length > 0) {
+          adl.markers = areaMarkers;
+        }
+        if (pointMarkers.length > 0) {
+          pdl.markers = pointMarkers;
+        }
+      }
+
+      var links = options.links;
+      if (links) {
+        this._linkToDataLayerMap = [];
+        var areaLinks = [];
+        var pointLinks = [];
+        for (i = 0; i < links.length; i++) {
+          var link = links[i];
+          var linkStart = link.startLocation;
+          if (linkStart) {
+            // Just check the startLocation, further validation of endLocation
+            // occurs in toolkit impl
+            if (linkStart.location) {
+              this._linkToDataLayerMap[i] = areaDataLayerId;
+              areaLinks.push(link);
+            } else if (linkStart.x && linkStart.y) {
+              pointLinks.push(link);
+              this._linkToDataLayerMap[i] = pointDataLayerId;
+            } else if (linkStart.id) {
+              // If id is specified, find whether it maps to an area or marker.
+              // Ids should be unique so we can stop at the first match.
+              dlId = this._idToDataLayerMap[linkStart.id];
+              this._linkToDataLayerMap[i] = dlId;
+              if (dlId === areaDataLayerId) {
+                areaLinks.push(link);
+              } else {
+                pointLinks.push(link);
+              }
+            }
+          }
+
+          dlId = this._idToDataLayerMap[link.id];
+          if (dlId) {
+            if (selectionMap[link.id]) {
+              this._selectionDataLayerMap[dlId].push(link.id);
+            }
+          }
+        }
+
+        if (areaLinks.length > 0) {
+          adl.links = areaLinks;
+        }
+        if (pointLinks.length > 0) {
+          pdl.links = pointLinks;
+        }
+      }
+    },
+
+    /**
+     * Helper method to map an custom element API to the old API.
+     * @private
+     * @instance
+     * @memberof oj.ojThematicMap
+     */
+    _mapOptionHelper: function (options, props, optionObjs) {
+      for (var i = 0; i < props.length; i++) {
+        var key = props[i];
+        var value = options[key];
+        if (value) {
+          for (var j = 0; j < optionObjs.length; j++) {
+            // eslint-disable-next-line no-param-reassign
+            optionObjs[j][key] = value;
+          }
+        }
+      }
+    },
+
+    /**
+     * Returns the dataLayerId used for a subId.
+     * @param  {string} dataLayer The data layer or null if known
+     * @param  {number} index The data item index
+     * @param  {string} dataItemType Enum of type area, marker or link
+     * @return {string}
+     * @private
+     */
+    _getDataLayerId: function (dataLayer, index, dataItemType) {
+      if (this._IsCustomElement()) {
+        switch (dataItemType) {
+          case 'area':
+            return 'adl1';
+          case 'marker':
+            return this._markerToDataLayerMap[index];
+          case 'link':
+            return this._linkToDataLayerMap[index];
+          default:
+            return '';
+        }
+      } else {
+        return dataLayer;
+      }
+    },
+
+    _GetSimpleDataProviderConfigs: function () {
+      return {
+        areaData: {
+          templateName: 'areaTemplate',
+          templateElementName: 'oj-thematic-map-area',
+          resultPath: 'areas'
+        },
+        linkData: {
+          templateName: 'linkTemplate',
+          templateElementName: 'oj-thematic-map-link',
+          resultPath: 'links'
+        },
+        markerData: {
+          templateName: 'markerTemplate',
+          templateElementName: 'oj-thematic-map-marker',
+          resultPath: 'markers'
+        }
+      };
+    },
+
+    _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {
+      var getDefaultWrapperFunction = function (defaultFunc) {
+        return function (context) {
+          context[defaultFunc]();
+          return origRenderer(context);
+        };
+      };
+      if (
+        option === 'focusRenderer' &&
+        this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-focus')
+      ) {
+        return getDefaultWrapperFunction('renderDefaultFocus');
+      }
+      if (
+        option === 'hoverRenderer' &&
+        this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-hover')
+      ) {
+        return getDefaultWrapperFunction('renderDefaultHover');
+      }
+      if (
+        option === 'selectionRenderer' &&
+        this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-selection')
+      ) {
+        return getDefaultWrapperFunction('renderDefaultSelection');
+      }
+
+      return origRenderer;
+    }
+  });
 
   // Conditionally set the defaults for custom element vs widget syntax since we expose different APIs
   Components.setDefaultOptions({
@@ -3098,7 +3155,7 @@ var __oj_thematic_map_marker_metadata =
           };
         }
         return {};
-      }),
+      })
     }
   });
 
@@ -3255,7 +3312,6 @@ var __oj_thematic_map_marker_metadata =
    * @memberof oj.ojThematicMap
    */
 
-
   // PROPERTY TYPEDEFS
 
   /**
@@ -3401,7 +3457,7 @@ var __oj_thematic_map_marker_metadata =
    * @property {string} tooltip The default tooltip string constructed by the element if any.
    * @property {number} x The x coordinate of the hovered item which can be null if location is set instead.
    * @property {number} y The y coordinate of the hovered item which can be null if location is set instead.
-    * @ojsignature [{target: "Type", value: "K1|K2|K3|null", for: "id"},
+   * @ojsignature [{target: "Type", value: "K1|K2|K3|null", for: "id"},
    *               {target: "Type", value: "oj.ojThematicMap.Area<K1,D1>|oj.ojThematicMap.Link<K2,K1|K3,D2>|oj.ojThematicMap.Marker<K3,D3>|null", for: "data"},
    *               {target: "Type", value: "D1|D2|D3|null", for: "itemData"},
    *               {target: "Type", value: "<K1,K2,K3,D1,D2,D3>", for: "genericTypeParameters"}]
@@ -3531,7 +3587,7 @@ var __oj_thematic_map_marker_metadata =
    * @memberof oj.ojThematicMap
    */
 
-   // Slots
+  // Slots
   /**
    * <p>
    *  The <code class="prettyprint">areaTemplate</code> slot is used to specify the template for
@@ -3687,13 +3743,13 @@ var __oj_thematic_map_marker_metadata =
    *  &lt;/template>
    * &lt;/oj-thematic-map>
    */
-   /**
-    * @typedef {Object} oj.ojThematicMap.LinkTemplateContext
-    * @property {Element} componentElement The &lt;oj-thematic-map> custom element
-    * @property {Object} data The data object for the current link
-    * @property {number} index The zero-based index of the current link
-    * @property {any} key The key of the current link
-    */
+  /**
+   * @typedef {Object} oj.ojThematicMap.LinkTemplateContext
+   * @property {Element} componentElement The &lt;oj-thematic-map> custom element
+   * @property {Object} data The data object for the current link
+   * @property {number} index The zero-based index of the current link
+   * @property {any} key The key of the current link
+   */
 
   /**
    * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content. The slot content must be a single &lt;template> element.
@@ -3726,7 +3782,7 @@ var __oj_thematic_map_marker_metadata =
    * @ojstylevariable oj-thematic-map-bg-color {description: "Thematic map background color", formats: ["color"], help: "#css-variables"}
    * @ojstylevariable oj-thematic-map-border-color {description: "Thematic map border color",formats: ["color"], help: "#css-variables"}
    * @memberof oj.ojThematicMap
-  */
+   */
 
   /**
    * @ojcomponent oj.ojThematicMapArea
@@ -4009,7 +4065,7 @@ var __oj_thematic_map_marker_metadata =
    *
    * &lt;oj-thematic-map-link end-location='[[$current.data.end]]>&lt;/oj-thematic-map-link>
    */
-   /**
+  /**
    * The marker or area id to be used as the end point.
    * @expose
    * @name endLocation.id
@@ -4019,7 +4075,7 @@ var __oj_thematic_map_marker_metadata =
    *
    * @example <caption>See the <a href="#endLocation">endLocation</a> attribute for usage examples.</caption>
    */
-   /**
+  /**
    * An identifier corresponding to a Feature provided in the mapProvider geo object
    * to be used as the end point.
    * @expose
@@ -4031,7 +4087,7 @@ var __oj_thematic_map_marker_metadata =
    *
    * @example <caption>See the <a href="#endLocation">endLocation</a> attribute for usage examples.</caption>
    */
-   /**
+  /**
    * The x coordinate which can represent latitude of the end point.
    * @expose
    * @name endLocation.x
@@ -4041,7 +4097,7 @@ var __oj_thematic_map_marker_metadata =
    *
    * @example <caption>See the <a href="#endLocation">endLocation</a> attribute for usage examples.</caption>
    */
-   /**
+  /**
    * The y coordinate which can represent longitude of the end point.
    * @expose
    * @name endLocation.y
@@ -4096,7 +4152,7 @@ var __oj_thematic_map_marker_metadata =
    *
    * &lt;oj-thematic-map-link start-location='[[$current.data.start]]>&lt;/oj-thematic-map-link>
    */
-   /**
+  /**
    * The marker id to be used as the start point.
    * @expose
    * @name startLocation.id
@@ -4106,7 +4162,7 @@ var __oj_thematic_map_marker_metadata =
    *
    * @example <caption>See the <a href="#startLocation">startLocation</a> attribute for usage examples.</caption>
    */
-   /**
+  /**
    * An identifier corresponding to a Feature provided in the mapProvider geo object
    * to be used as the start point.
    * @expose
@@ -4118,7 +4174,7 @@ var __oj_thematic_map_marker_metadata =
    *
    * @example <caption>See the <a href="#startLocation">startLocation</a> attribute for usage examples.</caption>
    */
-   /**
+  /**
    * The x coordinate which can represent latitude of the start point.
    * @expose
    * @name startLocation.x
@@ -4128,7 +4184,7 @@ var __oj_thematic_map_marker_metadata =
    *
    * @example <caption>See the <a href="#startLocation">startLocation</a> attribute for usage examples.</caption>
    */
-   /**
+  /**
    * The y coordinate which can represent longitude of the start point.
    * @expose
    * @name startLocation.y
@@ -4187,7 +4243,7 @@ var __oj_thematic_map_marker_metadata =
    * @ojstylevariableset oj-thematic-map-link-css-set1
    * @ojstylevariable oj-thematic-map-link-color {description: "Thematic map link color", formats: ["color"], help: "#css-variables"}
    * @memberof! oj.ojThematicMapLink
-  */
+   */
 
   /**
    * @ojcomponent oj.ojThematicMapMarker
@@ -4595,6 +4651,6 @@ var __oj_thematic_map_marker_metadata =
    * @ojstylevariable oj-thematic-map-marker-bg-color {description: "Thematic map marker background color", formats: ["color"], help: "#css-variables"}
    * @ojstylevariable oj-thematic-map-marker-border-color {description: "Thematic map marker border color",formats: ["color"], help: "#css-variables"}
    * @memberof! oj.ojThematicMapMarker
-  */
+   */
 
 });

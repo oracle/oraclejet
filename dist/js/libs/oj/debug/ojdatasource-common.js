@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -84,7 +84,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcore'], function (exports, oj$1, oj
    * @private
    */
   oj$2.Object.createSubclass(DataGridDataSource, oj$2.DataSource, 'oj.DataGridDataSource');
-
 
   /**
    * Returns the total number of rows or columns.  If the value return is not >= 0 then it is automatically assumed
@@ -251,6 +250,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcore'], function (exports, oj$1, oj
    * @final
    * @since 3.0
    * @ojtsignore
+   * @ojdeprecated {since: '14.0.0', description: 'DiagramDataSource has been deprecated with the oj-diagram data property,
+   * use DataProvider on nodeData and linkData oj-diagram attributes instead.'}
    */
   const DiagramDataSource = function (data) {
     DiagramDataSource.superclass.constructor.call(this, data);
@@ -349,14 +350,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcore'], function (exports, oj$1, oj
    * @instance
    */
 
-   /**
+  /**
    * @export
    * Event types
    * @enum {string}
    * @memberof DiagramDataSource
    */
-  DiagramDataSource.EventType =
-  {
+  DiagramDataSource.EventType = {
     /**
      * Triggered when nodes or links are added to DiagramDataSource.<p>
      * The event payload contains.<p>
@@ -597,7 +597,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcore'], function (exports, oj$1, oj
    * @instance
    */
 
-
   /**
    * Return the total size of data available, including server side if not local.
    * @returns {number} total size of data
@@ -623,7 +622,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcore'], function (exports, oj$1, oj
     return 'actual';
   };
 
-   /**
+  /**
    * Row Data returned by methods like, at/get.
    * @typedef {Object} TableDataSource.RowData
    * @property {Object} data The raw row data.
@@ -631,7 +630,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcore'], function (exports, oj$1, oj
    * @property {any} key The key value for the row.
    */
 
-   /**
+  /**
    * Row Datas returned by fetch method.
    * @typedef {Object} TableDataSource.RowDatas
    * @property {Array.<Object>} data An array of raw row data.
@@ -647,90 +646,89 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcore'], function (exports, oj$1, oj
    * @enum {string}
    * @memberof TableDataSource
    */
-  TableDataSource.EventType =
-  {
-      /** Triggered when a Row has been added to a TableDataSource<p>
-       * The event payload contains:<p>
-       * <table cellspacing="0" style="border-collapse: collapse;">
-       * <tbody>
-       * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
-       * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
-       * <tr><td><b>indexes</b></td><td>An array of index values for the rows in post-insert sorted order</td></tr>
-       * </tbody>
-       * </table>
-       */
+  TableDataSource.EventType = {
+    /** Triggered when a Row has been added to a TableDataSource<p>
+     * The event payload contains:<p>
+     * <table cellspacing="0" style="border-collapse: collapse;">
+     * <tbody>
+     * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
+     * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
+     * <tr><td><b>indexes</b></td><td>An array of index values for the rows in post-insert sorted order</td></tr>
+     * </tbody>
+     * </table>
+     */
     ADD: 'add',
-      /** Triggered when a Row has been removed from a TableDataSource<p>
-       * The event payload contains:<p>
-       * <table cellspacing="0" style="border-collapse: collapse;">
-       * <tbody>
-       * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
-       * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
-       * <tr><td><b>indexes</b></td><td>An array of index values for the rows in pre-remove sorted order</td></tr>
-       * </tbody>
-       * </table>
-       */
+    /** Triggered when a Row has been removed from a TableDataSource<p>
+     * The event payload contains:<p>
+     * <table cellspacing="0" style="border-collapse: collapse;">
+     * <tbody>
+     * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
+     * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
+     * <tr><td><b>indexes</b></td><td>An array of index values for the rows in pre-remove sorted order</td></tr>
+     * </tbody>
+     * </table>
+     */
     REMOVE: 'remove',
-      /** Triggered when a TableDataSource has been reset */
+    /** Triggered when a TableDataSource has been reset */
     RESET: 'reset',
-      /** Triggered when a TableDataSource has been refreshed */
+    /** Triggered when a TableDataSource has been refreshed */
     REFRESH: 'refresh',
-      /** Triggered when a TableDataSource has been sorted<p>
-       * The event payload contains:<p>
-       * <table cellspacing="0" style="border-collapse: collapse;">
-       * <tbody>
-       * <tr><td><b>header</b></td><td>the key of the header which was sorted on</td></tr>
-       * <tr><td><b>direction</b></td><td>the direction of the sort ascending/descending</td></tr>
-       * </tbody>
-       * </table>
-       */
+    /** Triggered when a TableDataSource has been sorted<p>
+     * The event payload contains:<p>
+     * <table cellspacing="0" style="border-collapse: collapse;">
+     * <tbody>
+     * <tr><td><b>header</b></td><td>the key of the header which was sorted on</td></tr>
+     * <tr><td><b>direction</b></td><td>the direction of the sort ascending/descending</td></tr>
+     * </tbody>
+     * </table>
+     */
     SORT: 'sort',
-      /** Triggered when a Row's attributes have been changed<p>
-       * The event payload contains:<p>
-       * <table cellspacing="0" style="border-collapse: collapse;">
-       * <tbody>
-       * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
-       * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
-       * <tr><td><b>indexes</b></td><td>An array of index values for the rows</td></tr>
-       * </tbody>
-       * </table>
-       */
+    /** Triggered when a Row's attributes have been changed<p>
+     * The event payload contains:<p>
+     * <table cellspacing="0" style="border-collapse: collapse;">
+     * <tbody>
+     * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
+     * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
+     * <tr><td><b>indexes</b></td><td>An array of index values for the rows</td></tr>
+     * </tbody>
+     * </table>
+     */
     CHANGE: 'change',
-      /** Triggered when a TableDataSource has sent a fetch request. It is expected that
-       * a component using TableDataSource will go into a busy state upon receiving
-       * this event.
-       * The event payload contains:<p>
-       * <table cellspacing="0" style="border-collapse: collapse;">
-       * <tbody>
-       * <tr><td><b>startIndex</b></td><td>The start index at which the fetch was invoked</td></tr>
-       * </tbody>
-       * </table>
-       */
+    /** Triggered when a TableDataSource has sent a fetch request. It is expected that
+     * a component using TableDataSource will go into a busy state upon receiving
+     * this event.
+     * The event payload contains:<p>
+     * <table cellspacing="0" style="border-collapse: collapse;">
+     * <tbody>
+     * <tr><td><b>startIndex</b></td><td>The start index at which the fetch was invoked</td></tr>
+     * </tbody>
+     * </table>
+     */
     REQUEST: 'request',
-      /** Triggered when a TableDataSource has been updated by a fetch. It is expected that
-       * a component using TableDataSource will exit busy state upon completion of rendering
-       * after receiving this event.<p>
-       * The event payload contains:<p>
-       * <table cellspacing="0" style="border-collapse: collapse;">
-       * <tbody>
-       * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
-       * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
-       * <tr><td><b>startIndex</b></td><td>The start index at which the fetch occurred</td></tr>
-       * </tbody>
-       * </table>
-       */
+    /** Triggered when a TableDataSource has been updated by a fetch. It is expected that
+     * a component using TableDataSource will exit busy state upon completion of rendering
+     * after receiving this event.<p>
+     * The event payload contains:<p>
+     * <table cellspacing="0" style="border-collapse: collapse;">
+     * <tbody>
+     * <tr><td><b>data</b></td><td>An array of raw row data</td></tr>
+     * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
+     * <tr><td><b>startIndex</b></td><td>The start index at which the fetch occurred</td></tr>
+     * </tbody>
+     * </table>
+     */
     SYNC: 'sync',
-      /** Triggered when an error occurred on the TableDataSource */
+    /** Triggered when an error occurred on the TableDataSource */
     ERROR: 'error'
   };
 
   /**
    * @private
    */
-  TableDataSource._LOGGER_MSG =
-  {
+  TableDataSource._LOGGER_MSG = {
     _ERR_TABLE_DATASOURCE_INSTANTIATED_SUMMARY: 'oj.TableDataSource constructor called.',
-    _ERR_TABLE_DATASOURCE_INSTANTIATED_DETAIL: 'Please do not instantiate oj.TableDataSource. Please use one of the subclasses instead such as oj.ArrayTableDataSource or oj.CollectionTableDataSource.',
+    _ERR_TABLE_DATASOURCE_INSTANTIATED_DETAIL:
+      'Please do not instantiate oj.TableDataSource. Please use one of the subclasses instead such as oj.ArrayTableDataSource or oj.CollectionTableDataSource.',
     _ERR_DATA_INVALID_TYPE_SUMMARY: 'Invalid data type.',
     _ERR_DATA_INVALID_TYPE_DETAIL: 'Please specify the appropriate data type.'
   };

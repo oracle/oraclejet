@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -70,7 +70,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojconfig'], function (exports, oj, Co
    * @export
    */
   Translations.applyParameters = function (pattern, parameters) {
-    return (pattern == null) ? '' : Translations._format(pattern, parameters);
+    return pattern == null ? '' : Translations._format(pattern, parameters);
   };
 
   /**
@@ -127,7 +127,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojconfig'], function (exports, oj, Co
 
     return Translations.applyParameters(val, params);
   };
-
 
   /**
    * Provides a key-to-value map of the translated resources for a given component name
@@ -186,14 +185,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojconfig'], function (exports, oj, Co
 
     var token = null;
 
-
     var escaped = false;
     var isToken = false;
     var isGroup = false;
     var isExcluded = false;
 
     var tokenTerminated; // this will be set to true when a comma or space is
-                         // encountered in teh token
+    // encountered in teh token
     var i;
 
     for (i = 0; i < formatLength; i++) {
@@ -220,7 +218,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojconfig'], function (exports, oj, Co
           case '}':
             if (isToken && token.length > 0) {
               var val = parameters[token.join('')];
-              buffer.push((val === undefined) ? 'null' : val);
+              buffer.push(val === undefined ? 'null' : val);
             }
             isToken = false;
             break;
@@ -267,7 +265,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojconfig'], function (exports, oj, Co
     // Use the javascript StringBuffer technique for toString()
     return buffer.join('');
   };
-
 
   Translations._getBundle = function () {
     var b = Translations._bundle;

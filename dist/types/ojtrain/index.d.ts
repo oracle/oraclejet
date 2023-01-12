@@ -4,6 +4,19 @@ import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, 
 export interface ojTrain extends baseComponent<ojTrainSettableProperties> {
     selectedStep: string;
     steps: ojTrain.Step[];
+    translations: {
+        stepCurrent?: string;
+        stepDisabled?: string;
+        stepInfo?: string;
+        stepMessageConfirmation?: string;
+        stepMessageError?: string;
+        stepMessageInfo?: string;
+        stepMessageType?: string;
+        stepMessageWarning?: string;
+        stepNotVisited?: string;
+        stepStatus?: string;
+        stepVisited?: string;
+    };
     addEventListener<T extends keyof ojTrainEventMap>(type: T, listener: (this: HTMLElement, ev: ojTrainEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojTrainSettableProperties>(property: T): ojTrain[T];
@@ -72,6 +85,19 @@ export interface ojTrainEventMap extends baseComponentEventMap<ojTrainSettablePr
 export interface ojTrainSettableProperties extends baseComponentSettableProperties {
     selectedStep: string;
     steps: ojTrain.Step[];
+    translations: {
+        stepCurrent?: string;
+        stepDisabled?: string;
+        stepInfo?: string;
+        stepMessageConfirmation?: string;
+        stepMessageError?: string;
+        stepMessageInfo?: string;
+        stepMessageType?: string;
+        stepMessageWarning?: string;
+        stepNotVisited?: string;
+        stepStatus?: string;
+        stepVisited?: string;
+    };
 }
 export interface ojTrainSettablePropertiesLenient extends Partial<ojTrainSettableProperties> {
     [key: string]: any;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -36,7 +36,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
 
     return themeMap.name;
   };
-
 
   /**
    * <p>Get the target platform of the current theme. </p>
@@ -84,7 +83,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
     ThemeUtils._cache = null;
     ThemeUtils._cssVarCache = null;
   };
-
 
   /**
    *
@@ -167,7 +165,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
       // 'HelveticaNeue',Helvetica,Arial,sans-serif' off of our generated element.
       // So save off the font family from the head
       // element to compare to what we read off our generated element.
-      ThemeUtils._headfontstring = window.getComputedStyle(document.head).getPropertyValue('font-family');
+      ThemeUtils._headfontstring = window
+        .getComputedStyle(document.head)
+        .getPropertyValue('font-family');
     }
 
     // see if we already have a map for this component's option defaults
@@ -179,7 +179,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
     } else if (jsonval != null) {
       return jsonval;
     }
-
 
     // there's nothing cached, so we need to create a dom element to apply the class to.
     // We're creating a meta element,
@@ -199,11 +198,16 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
       // font value then log a warning that no value was sent down.
 
       if (rawfontstring === ThemeUtils._headfontstring) {
-        Logger.warn('parseJSONFromFontFamily: When the selector ', selector,
-          ' is applied the font-family read off the dom element is ', rawfontstring,
+        Logger.warn(
+          'parseJSONFromFontFamily: When the selector ',
+          selector,
+          ' is applied the font-family read off the dom element is ',
+          rawfontstring,
           '. The parent dom elment has the same font-family value.',
           ' This is interpreted to mean that no value was sent down for selector ',
-          selector, '. Null will be returned.');
+          selector,
+          '. Null will be returned.'
+        );
       } else {
         // remove inconsistent quotes
         var fontstring = rawfontstring.replace(/^['"]+|\s+|\\|(;\s?})+|['"]$/g, '');
@@ -232,8 +236,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
             }
 
             if (reparseSuccess === false) {
-              Logger.error('Error parsing json for selector ' + selector +
-                              '.\nString being parsed is ' + fontstring + '. Error is:\n', e);
+              Logger.error(
+                'Error parsing json for selector ' +
+                  selector +
+                  '.\nString being parsed is ' +
+                  fontstring +
+                  '. Error is:\n',
+                e
+              );
 
               // remove the meta tag
               document.head.removeChild(elem);
@@ -264,13 +274,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
    * @return {string} The property value for the key
    * @memberof oj.ThemeUtils
    */
-  const getRootCssVarValue = ((key) => {
+  const getRootCssVarValue = (key) => {
     if (!ThemeUtils._rootCSSStyles) {
       ThemeUtils._rootCSSStyles = window.getComputedStyle(document.documentElement);
     }
     // remove inconsistent quotes
-    return ThemeUtils._rootCSSStyles.getPropertyValue(key).replace(/^['"\s]+|\s+|\\|(;\s?})+|['"\s]$/g, '');
-    });
+    return ThemeUtils._rootCSSStyles
+      .getPropertyValue(key)
+      .replace(/^['"\s]+|\s+|\\|(;\s?})+|['"\s]$/g, '');
+  };
   /**
    * Returns the css var values
    * @private
@@ -279,17 +291,16 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
    * @return {string} The property value for the key
    * @memberof oj.ThemeUtils
    */
-  var getCachedValueForKey = ((key) => {
+  var getCachedValueForKey = (key) => {
     if (!ThemeUtils._cssVarCache) {
       ThemeUtils._cssVarCache = new Map();
     }
     if (!ThemeUtils._cssVarCache.has(key)) {
-      ThemeUtils._cssVarCache.set(key,
-        getRootCssVarValue(key));
+      ThemeUtils._cssVarCache.set(key, getRootCssVarValue(key));
     }
     return ThemeUtils._cssVarCache.get(key);
-    });
-    /**
+  };
+  /**
    * Returns the css var values
    * @ignore
    * @static
@@ -298,9 +309,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
    * @return {Array} An Array containing the computed values of the css vars in the cssVarArray
    * @memberof oj.ThemeUtils
    */
-  ThemeUtils.getCachedCSSVarValues = ((cssVarArray) => {
-    return cssVarArray.map(cssVar => getCachedValueForKey(cssVar));
-    });
+  ThemeUtils.getCachedCSSVarValues = (cssVarArray) => {
+    return cssVarArray.map((cssVar) => getCachedValueForKey(cssVar));
+  };
 
   /**
    * Validates the CSS version against the JS version the first time it's called.

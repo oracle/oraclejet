@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -36,12 +36,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlocaledata'], function (exports, oj
    * @memberof! TimeUtils
    */
   TimeUtils.getPosition = function (time, rangeStartTime, rangeEndTime, rangeWidth) {
-    var _time = (new Date(time)).getTime();
-    var _rangeStartTime = (new Date(rangeStartTime)).getTime();
-    var _rangeEndTime = (new Date(rangeEndTime)).getTime();
+    var _time = new Date(time).getTime();
+    var _rangeStartTime = new Date(rangeStartTime).getTime();
+    var _rangeEndTime = new Date(rangeEndTime).getTime();
 
     var numerator = (_time - _rangeStartTime) * rangeWidth;
-    var denominator = (_rangeEndTime - _rangeStartTime);
+    var denominator = _rangeEndTime - _rangeStartTime;
     if (numerator === 0 || denominator === 0) {
       return 0;
     }
@@ -63,10 +63,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlocaledata'], function (exports, oj
    * @memberof! TimeUtils
    */
   TimeUtils.getLength = function (startTime, endTime, rangeStartTime, rangeEndTime, rangeWidth) {
-    var _startTime = (new Date(startTime)).getTime();
-    var _endTime = (new Date(endTime)).getTime();
-    var _rangeStartTime = (new Date(rangeStartTime)).getTime();
-    var _rangeEndTime = (new Date(rangeEndTime)).getTime();
+    var _startTime = new Date(startTime).getTime();
+    var _endTime = new Date(endTime).getTime();
+    var _rangeStartTime = new Date(rangeStartTime).getTime();
+    var _rangeEndTime = new Date(rangeEndTime).getTime();
 
     var startPos = TimeUtils.getPosition(_startTime, _rangeStartTime, _rangeEndTime, rangeWidth);
     var endPos = TimeUtils.getPosition(_endTime, _rangeStartTime, _rangeEndTime, rangeWidth);
@@ -85,14 +85,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlocaledata'], function (exports, oj
    * @memberof! TimeUtils
    */
   TimeUtils.getDate = function (pos, rangeStartTime, rangeEndTime, rangeWidth) {
-    var _rangeStartTime = (new Date(rangeStartTime)).getTime();
-    var _rangeEndTime = (new Date(rangeEndTime)).getTime();
+    var _rangeStartTime = new Date(rangeStartTime).getTime();
+    var _rangeEndTime = new Date(rangeEndTime).getTime();
 
     var number = pos * (_rangeEndTime - _rangeStartTime);
     if (number === 0 || rangeWidth === 0) {
       return _rangeStartTime;
     }
-    return (number / rangeWidth) + _rangeStartTime;
+    return number / rangeWidth + _rangeStartTime;
   };
 
   /**
@@ -120,22 +120,22 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlocaledata'], function (exports, oj
     const weekeendEnd = LocaleData.getWeekendEnd();
 
     // Number of days in weekend
-    const weekendLength = weekeendEnd >= weekendStart ?
-                          (weekeendEnd - weekendStart) + 1 :
-                          ((weekeendEnd + 7) - weekendStart) + 1;
+    const weekendLength =
+      weekeendEnd >= weekendStart
+        ? weekeendEnd - weekendStart + 1
+        : weekeendEnd + 7 - weekendStart + 1;
 
     // Weekend duration in ms
     const weekendDuration = weekendLength * dayDuration;
 
     const startDay = startDate.getDay();
-    const weekendStartOffset = weekendStart >= startDay ?
-                              weekendStart - startDay :
-                              (weekendStart + 7) - startDay;
-    const firstWeekendTime = startDate.setHours(0, 0, 0, 0) + (weekendStartOffset * dayDuration);
+    const weekendStartOffset =
+      weekendStart >= startDay ? weekendStart - startDay : weekendStart + 7 - startDay;
+    const firstWeekendTime = startDate.setHours(0, 0, 0, 0) + weekendStartOffset * dayDuration;
 
     const referenceObjects = [];
     for (let refStartTime = firstWeekendTime; refStartTime <= endTime; refStartTime += weekDuration) {
-      const refEndTime = (refStartTime + weekendDuration) - 1;
+      const refEndTime = refStartTime + weekendDuration - 1;
 
       referenceObjects.push({
         type: 'area',

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -47,8 +47,11 @@ oj.CollectionPagingDataSource = function (collection) {
 };
 
 // Subclass from oj.DataSource
-oj.Object.createSubclass(oj.CollectionPagingDataSource, oj.DataSource,
-                         'oj.CollectionPagingDataSource');
+oj.Object.createSubclass(
+  oj.CollectionPagingDataSource,
+  oj.DataSource,
+  'oj.CollectionPagingDataSource'
+);
 
 /**
  * Initializes the instance.
@@ -60,7 +63,6 @@ oj.CollectionPagingDataSource.prototype.Init = function () {
   oj.CollectionPagingDataSource.superclass.Init.call(this);
 };
 
-
 oj.CollectionPagingDataSource.prototype._getSize = function () {
   if (!this._hasMore()) {
     // Return a size representing only what's left if we'd go over the bounds
@@ -71,10 +73,11 @@ oj.CollectionPagingDataSource.prototype._getSize = function () {
 };
 
 oj.CollectionPagingDataSource.prototype._refreshDataWindow = function () {
-    // Reinit the array
+  // Reinit the array
   this.dataWindow = new Array(this._getSize());
   var self = this;
-  return this.collection.IterativeAt(this.current, this.current + this.dataWindow.length)
+  return this.collection
+    .IterativeAt(this.current, this.current + this.dataWindow.length)
     .then(function (array) {
       // Copy from the source data
       for (var i = 0; i < array.length; i++) {
@@ -154,9 +157,11 @@ oj.CollectionPagingDataSource.prototype.setPage = function (value, options) {
   // eslint-disable-next-line no-param-reassign
   value = parseInt(value, 10);
   try {
-    oj.CollectionPagingDataSource.superclass.handleEvent
-      .call(this, oj.PagingModel.EventType.BEFOREPAGE,
-            { page: value, previousPage: this._page });
+    oj.CollectionPagingDataSource.superclass.handleEvent.call(
+      this,
+      oj.PagingModel.EventType.BEFOREPAGE,
+      { page: value, previousPage: this._page }
+    );
   } catch (err) {
     return Promise.reject(err);
   }
@@ -169,17 +174,22 @@ oj.CollectionPagingDataSource.prototype.setPage = function (value, options) {
   var self = this;
 
   return new Promise(function (resolve, reject) {
-    self._fetchInternal(options).then(function () {
-      oj.CollectionPagingDataSource.superclass.handleEvent
-        .call(self, oj.PagingModel.EventType.PAGE,
-              { page: self._page, previousPage: previousPage });
-      resolve(null);
-    }, function (err) {
-      // restore old page
-      self._page = previousPage;
-      self._startIndex = self._page * self.pageSize;
-      reject(err);
-    });
+    self._fetchInternal(options).then(
+      function () {
+        oj.CollectionPagingDataSource.superclass.handleEvent.call(
+          self,
+          oj.PagingModel.EventType.PAGE,
+          { page: self._page, previousPage: previousPage }
+        );
+        resolve(null);
+      },
+      function (err) {
+        // restore old page
+        self._page = previousPage;
+        self._startIndex = self._page * self.pageSize;
+        reject(err);
+      }
+    );
   });
 };
 
@@ -276,12 +286,14 @@ oj.CollectionPagingDataSource.prototype._fetchInternal = function (options) {
     // Call collection fetch, and refresh the window on success
     // Allow for the fact that this collection might not be backed by a rest service
     try {
-      self.collection.fetch({ success: function () {
-        self._refreshDataWindow().then(function () {
-          self._processSuccess(opts);
-          resolve({ data: self.getWindow(), startIndex: self.current });
-        });
-      } });
+      self.collection.fetch({
+        success: function () {
+          self._refreshDataWindow().then(function () {
+            self._processSuccess(opts);
+            resolve({ data: self.getWindow(), startIndex: self.current });
+          });
+        }
+      });
     } catch (e) {
       self._refreshDataWindow().then(function () {
         self._processSuccess(opts);

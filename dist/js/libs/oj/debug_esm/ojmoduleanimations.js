@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -139,33 +139,33 @@ ModuleAnimations._createViewParent = function (oldView) {
 };
 
 /**
-  * Create and return a ModuleAnimation implementation that combines base effects from {@link AnimationUtils}
-  *
-  * @param {null|string|Object|function} oldViewEffect - an animation effect for the outgoing view.<br><br>
-  *                              If this is null, no animation will be applied.<br>
-  *                              If this is a function, it should return a Promise that resolves when the animation ends.<br>
-  *                              If this is a string, it should be one of the effect method names in AnimationUtils.<br>
-  *                              If this is an object, it should describe the effect:
-  * @param {string} oldViewEffect.effect - the name of an effect method in AnimationUtils
-  * @param {*=} oldViewEffect.effectOption - any option applicable to the specific animation effect<br><br>
-  *                                                 Replace <i>effectOption</i> with the actual option name.  More than one option can be specified.
-  *                                                 Refer to the method description in {@link AnimationUtils} for available options.
-  * @param {null|string|Object|function} newViewEffect - an animation effect for the incoming view.<br><br>
-  *                                             This is in the same format as oldViewEffect.
-  * @param {boolean} newViewOnTop - specify true to initially create the new view on top of the old view.
-  *                  This is needed for certain effects such as sliding the new view in to cover the old view.
-  *                  Default is false.
-  * @return {Object} an implementation of the ModuleAnimation interface
-  * @export
-  *@ojsignature [
-  *  { target: "Type", for: "oldViewEffect", value: "{effect: AnimationUtils.AnimationMethods, [key:string]: any}|AnimationUtils.AnimationMethods|((param0: Element) => Promise<void>)|null"},
-  *  { target: "Type", for: "newViewEffect", value: "{effect: AnimationUtils.AnimationMethods, [key:string]: any}|AnimationUtils.AnimationMethods|((param0: Element) => Promise<void>)|null"},
-  *  { target: "Type", for: "returns", value: "ModuleElementAnimation"}
-  * ]
-  *
-  * @example <caption>Create a custom ModuleAnimation that fades out old view by 50% and slides in the new view:</caption>
-  * var customAnimation = ModuleAnimations.createAnimation({"effect":"fadeOut", "endOpacity":0.5}, {"effect":"slideIn", "direction":"end"}, true);
-  */
+ * Create and return a ModuleAnimation implementation that combines base effects from {@link AnimationUtils}
+ *
+ * @param {null|string|Object|function} oldViewEffect - an animation effect for the outgoing view.<br><br>
+ *                              If this is null, no animation will be applied.<br>
+ *                              If this is a function, it should return a Promise that resolves when the animation ends.<br>
+ *                              If this is a string, it should be one of the effect method names in AnimationUtils.<br>
+ *                              If this is an object, it should describe the effect:
+ * @param {string} oldViewEffect.effect - the name of an effect method in AnimationUtils
+ * @param {*=} oldViewEffect.effectOption - any option applicable to the specific animation effect<br><br>
+ *                                                 Replace <i>effectOption</i> with the actual option name.  More than one option can be specified.
+ *                                                 Refer to the method description in {@link AnimationUtils} for available options.
+ * @param {null|string|Object|function} newViewEffect - an animation effect for the incoming view.<br><br>
+ *                                             This is in the same format as oldViewEffect.
+ * @param {boolean} newViewOnTop - specify true to initially create the new view on top of the old view.
+ *                  This is needed for certain effects such as sliding the new view in to cover the old view.
+ *                  Default is false.
+ * @return {Object} an implementation of the ModuleAnimation interface
+ * @export
+ *@ojsignature [
+ *  { target: "Type", for: "oldViewEffect", value: "{effect: AnimationUtils.AnimationMethods, [key:string]: any}|AnimationUtils.AnimationMethods|((param0: Element) => Promise<void>)|null"},
+ *  { target: "Type", for: "newViewEffect", value: "{effect: AnimationUtils.AnimationMethods, [key:string]: any}|AnimationUtils.AnimationMethods|((param0: Element) => Promise<void>)|null"},
+ *  { target: "Type", for: "returns", value: "ModuleElementAnimation"}
+ * ]
+ *
+ * @example <caption>Create a custom ModuleAnimation that fades out old view by 50% and slides in the new view:</caption>
+ * var customAnimation = ModuleAnimations.createAnimation({"effect":"fadeOut", "endOpacity":0.5}, {"effect":"slideIn", "direction":"end"}, true);
+ */
 ModuleAnimations.createAnimation = function (oldViewEffect, newViewEffect, newViewOnTop) {
   return {
     canAnimate: ModuleAnimations._defaultCanAnimate,
@@ -213,11 +213,13 @@ ModuleAnimations.createAnimation = function (oldViewEffect, newViewEffect, newVi
 
       var animatePromise = Promise.all(promises);
 
-      return animatePromise.then(function () {
-        ModuleAnimations._postAnimationProcess(context);
-      }).catch(function () {
-        ModuleAnimations._postAnimationProcess(context);
-      });
+      return animatePromise
+        .then(function () {
+          ModuleAnimations._postAnimationProcess(context);
+        })
+        .catch(function () {
+          ModuleAnimations._postAnimationProcess(context);
+        });
     }
   };
 };
@@ -243,8 +245,9 @@ ModuleAnimations._postAnimationProcess = function (context) {
 
 ModuleAnimations._getModuleEffect = function (animateName) {
   if (ModuleAnimations._moduleEffects == null) {
-    ModuleAnimations._moduleEffects =
-      parseJSONFromFontFamily('oj-animation-module-effects');
+    ModuleAnimations._moduleEffects = parseJSONFromFontFamily(
+      'oj-animation-module-effects'
+    );
   }
 
   if (ModuleAnimations._moduleEffects) {
@@ -257,9 +260,11 @@ ModuleAnimations._getModuleEffect = function (animateName) {
 ModuleAnimations._getImplementation = function (animateName) {
   var descriptor = ModuleAnimations._getModuleEffect(animateName);
   if (descriptor) {
-    return ModuleAnimations.createAnimation(descriptor.oldViewEffect,
-                                               descriptor.newViewEffect,
-                                               descriptor.newViewOnTop);
+    return ModuleAnimations.createAnimation(
+      descriptor.oldViewEffect,
+      descriptor.newViewEffect,
+      descriptor.newViewOnTop
+    );
   }
 
   return null;
@@ -267,8 +272,9 @@ ModuleAnimations._getImplementation = function (animateName) {
 
 ModuleAnimations._getNavigateMethod = function (context, navigationType) {
   if (ModuleAnimations._navigateMethods == null) {
-    ModuleAnimations._navigateMethods =
-      parseJSONFromFontFamily('oj-animation-navigate-methods');
+    ModuleAnimations._navigateMethods = parseJSONFromFontFamily(
+      'oj-animation-navigate-methods'
+    );
   }
 
   if (ModuleAnimations._navigateMethods) {
@@ -281,8 +287,10 @@ ModuleAnimations._getNavigateMethod = function (context, navigationType) {
 ModuleAnimations._navigateCanAnimate = function (context, navigationType) {
   var animateName = ModuleAnimations._getNavigateMethod(context, navigationType);
   if (ModuleAnimations[animateName]) {
-    return ModuleAnimations[animateName].canAnimate == null ||
-           ModuleAnimations[animateName].canAnimate(context);
+    return (
+      ModuleAnimations[animateName].canAnimate == null ||
+      ModuleAnimations[animateName].canAnimate(context)
+    );
   }
 
   return false;
@@ -366,9 +374,10 @@ ModuleAnimations.revealRight = ModuleAnimations._getImplementation('revealRight'
  * @ojsignature {target: "Type", value: "ModuleElementAnimation"}
  * @memberof ModuleAnimations
  */
-ModuleAnimations.coverStart = getReadingDirection() === 'rtl' ?
-                                 ModuleAnimations.coverRight :
-                                 ModuleAnimations.coverLeft;
+ModuleAnimations.coverStart =
+  getReadingDirection() === 'rtl'
+    ? ModuleAnimations.coverRight
+    : ModuleAnimations.coverLeft;
 
 /**
  * ModuleAnimation implementation for changing views by
@@ -380,9 +389,10 @@ ModuleAnimations.coverStart = getReadingDirection() === 'rtl' ?
  * @ojsignature {target: "Type", value: "ModuleElementAnimation"}
  * @memberof ModuleAnimations
  */
-ModuleAnimations.revealEnd = getReadingDirection() === 'rtl' ?
-                                ModuleAnimations.revealLeft :
-                                ModuleAnimations.revealRight;
+ModuleAnimations.revealEnd =
+  getReadingDirection() === 'rtl'
+    ? ModuleAnimations.revealLeft
+    : ModuleAnimations.revealRight;
 
 /**
  * ModuleAnimation implementation for changing views by
@@ -572,29 +582,28 @@ ModuleAnimations.navSiblingEarlier =
  * @example <caption>Set the default in the theme (SCSS) :</caption>
  * $animationNavSiblingLaterDefault:  pushStart  !default;
  */
-ModuleAnimations.navSiblingLater =
-  ModuleAnimations._getNavigateImplementation('navSiblingLater');
+ModuleAnimations.navSiblingLater = ModuleAnimations._getNavigateImplementation('navSiblingLater');
 
 /**
-  * Returns an implementation of ModuleAnimation interface that switches between different animation implementations
-  *
-  * @param {Function} callback - a callback function whose return value should be a string containing one of the animation types
-  * supported by ModuleAnimations. The function will be passed a context object with the keys detailed below:
-  * <ul>
-  * <li>node - a DOM node where the ojModule binding is attached. This may be a virtual/comment node</li>
-  * <li>valueAccessor - value accessor for the binding</li>
-  * <li>isInitial  - true if the initial View is about to be displayed, false otherwise</li>
-  * <li>oldViewModel - the instance of the ViewModel for the old View</li>
-  * <li>newViewModel  - the instance of the ViewModel for the new View</li>
-  * </ul>
-  *
-  * @return {Object} switching implementation of the ModuleAnimation interface
-  * @ojsignature [
-  *    {target:"Type", for: "callback", value: "(param0: ModuleAnimations.SwitcherCallBackParam) => ModuleAnimations.Animations"},
-  *    {target:"Type", for: "returns", value: "ModuleElementAnimation"}
-  *  ]
-  * @export
-  */
+ * Returns an implementation of ModuleAnimation interface that switches between different animation implementations
+ *
+ * @param {Function} callback - a callback function whose return value should be a string containing one of the animation types
+ * supported by ModuleAnimations. The function will be passed a context object with the keys detailed below:
+ * <ul>
+ * <li>node - a DOM node where the ojModule binding is attached. This may be a virtual/comment node</li>
+ * <li>valueAccessor - value accessor for the binding</li>
+ * <li>isInitial  - true if the initial View is about to be displayed, false otherwise</li>
+ * <li>oldViewModel - the instance of the ViewModel for the old View</li>
+ * <li>newViewModel  - the instance of the ViewModel for the new View</li>
+ * </ul>
+ *
+ * @return {Object} switching implementation of the ModuleAnimation interface
+ * @ojsignature [
+ *    {target:"Type", for: "callback", value: "(param0: ModuleAnimations.SwitcherCallBackParam) => ModuleAnimations.Animations"},
+ *    {target:"Type", for: "returns", value: "ModuleElementAnimation"}
+ *  ]
+ * @export
+ */
 ModuleAnimations.switcher = function (callback) {
   /**
    * @constructor
@@ -616,7 +625,7 @@ ModuleAnimations.switcher = function (callback) {
     this[_canAnimate] = function (context) {
       // Get the 'delegate' animation
       var type = callback(context);
-      _delegate = (type == null ? null : ModuleAnimations[type]);
+      _delegate = type == null ? null : ModuleAnimations[type];
       if (!_delegate) {
         return false;
       }

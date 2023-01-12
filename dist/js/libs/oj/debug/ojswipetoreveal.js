@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -106,11 +106,18 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojoffcanva
     outerWrapper._touchStartListener = function (event) {
       drawerShown = false;
       // prevent click event from firing when tapping on outer wrapper (like list item) while offcanvas is still open
-      if (event.cancelable && drawer.hasClass('oj-offcanvas-open') && drawer[0].offsetWidth > 0 && !drawer[0].contains(event.target)) {
+      if (
+        event.cancelable &&
+        drawer.hasClass('oj-offcanvas-open') &&
+        drawer[0].offsetWidth > 0 &&
+        !drawer[0].contains(event.target)
+      ) {
         event.preventDefault();
       }
     };
-    outerWrapper[0].addEventListener('touchstart', outerWrapper._touchStartListener, { passive: false });
+    outerWrapper[0].addEventListener('touchstart', outerWrapper._touchStartListener, {
+      passive: false
+    });
 
     drawer
       .on('ojpanstart', function (event, ui) {
@@ -141,8 +148,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojoffcanva
           busyContext = Context.getContext(outerWrapper.get(0)).getBusyContext();
           busyContext.whenReady().then(function () {
             // setup default style class, must be done before outerWidth is calculated
-            drawer.children().addClass('oj-swipetoreveal-action')
-                             .css('min-width', '');
+            drawer.children().addClass('oj-swipetoreveal-action').css('min-width', '');
 
             // find if there's any default action item specified
             defaultAction = drawer.children('.oj-swipetoreveal-default').get(0);
@@ -171,7 +177,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojoffcanva
           });
 
           // used to determine if it's a quick swipe
-          checkpoint = (new Date()).getTime();
+          checkpoint = new Date().getTime();
         }
       })
       .on('ojpanmove', function (event, ui) {
@@ -206,7 +212,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojoffcanva
         // if pan pass the minimum threshold position, keep the toolbar open
         if (distance < minimum) {
           // check if this is a swipe, the time should be < 200ms and the distance must be > 10px
-          if ((new Date()).getTime() - checkpoint > 200 || distance < 10) {
+          if (new Date().getTime() - checkpoint > 200 || distance < 10) {
             event.preventDefault();
           }
         }
@@ -244,7 +250,9 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojoffcanva
 
     // remove touchstart listener
     if (outerWrapper != null && outerWrapper.length > 0) {
-      outerWrapper[0].removeEventListener('touchstart', outerWrapper._touchStartListener, { passive: false });
+      outerWrapper[0].removeEventListener('touchstart', outerWrapper._touchStartListener, {
+        passive: false
+      });
       delete outerWrapper._touchStartListener;
     }
   };

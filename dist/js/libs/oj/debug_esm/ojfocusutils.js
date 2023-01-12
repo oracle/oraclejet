@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -76,7 +76,11 @@ FocusUtils.isFirstActiveElement = function (element) {
   // of the same radio set.
   // If this is the case, then return true.
   //
-  if (first.name === document.activeElement.name && first.type === 'radio' && document.activeElement.type === 'radio') {
+  if (
+    first.name === document.activeElement.name &&
+    first.type === 'radio' &&
+    document.activeElement.type === 'radio'
+  ) {
     return true;
   }
   return false;
@@ -102,7 +106,11 @@ FocusUtils.isLastActiveElement = function (element) {
   // of the same radio set.
   // If this is the case, then return true.
   //
-  if (last.name === document.activeElement.name && last.type === 'radio' && document.activeElement.type === 'radio') {
+  if (
+    last.name === document.activeElement.name &&
+    last.type === 'radio' &&
+    document.activeElement.type === 'radio'
+  ) {
     return true;
   }
   return false;
@@ -179,8 +187,11 @@ FocusUtils.isFocusable = function (element) {
   if ($(element).is(':focusable')) {
     // An anchor element in safari will not take focus unless it has a tabindex.
     // http://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#Clicking_and_focus
-    if (element.nodeName === 'A' && !element.hasAttribute('tabindex') &&
-        oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI) {
+    if (
+      element.nodeName === 'A' &&
+      !element.hasAttribute('tabindex') &&
+      oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI
+    ) {
       return false;
     }
     return true;

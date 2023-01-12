@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateStatementsFromText = exports.getValueFromNode = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isAnyOrUnknownType = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.addArgumentsToRegisterCustomElementCall = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.stringToJS = exports.writebackCallbackToProperty = exports.tagNameToElementName = exports.tagNameToElementInterfaceName = void 0;
+exports.generateStatementsFromText = exports.getValueFromNode = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isTypeTreatedAsAny = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.updateFunctionalVCompNode = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.stringToJS = exports.writebackCallbackToProperty = exports.tagNameToElementName = exports.tagNameToElementInterfaceName = void 0;
 const ts = __importStar(require("typescript"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
@@ -66,8 +66,7 @@ function stringToJS(memberName, type, value, metaUtilObj) {
         }
     }
     catch (ex) {
-        const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName);
-        console.log(`${logHeader} Unable to convert the default value '${value}' to JSON for property '${memberName}'.`);
+        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.CANNOT_CONVERT_TO_JSON, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Unable to convert the default value '${value}' to JSON for property '${memberName}'.`);
         return undefined;
     }
 }
@@ -97,6 +96,7 @@ function getGenericTypeParameters(propsTypeNode) {
 }
 exports.getGenericTypeParameters = getGenericTypeParameters;
 function getTypeParametersFromType(type, checker) {
+    var _a;
     let typeParamsSignature;
     let typeArgs;
     if (type.aliasSymbol) {
@@ -109,9 +109,10 @@ function getTypeParametersFromType(type, checker) {
         typeParamsSignature = '<';
         for (let i = 0; i < typeArgs.length; i++) {
             const typeArg = typeArgs[i];
-            const typeArgName = TypeUtils.getTypeNameFromType(typeArg);
+            const typeArgName = (_a = TypeUtils.getTypeNameFromType(typeArg)) !== null && _a !== void 0 ? _a : checker.typeToString(typeArg);
             typeParamsSignature += typeArgName;
-            if (typeArg.typeArguments && typeArg.typeArguments.length) {
+            if ((typeArg.typeArguments && typeArg.typeArguments.length) ||
+                (typeArg.aliasTypeArguments && typeArg.aliasTypeArguments.length)) {
                 typeParamsSignature += getTypeParametersFromType(typeArg, checker);
             }
             if (i < typeArgs.length - 1) {
@@ -133,17 +134,21 @@ const _METADATA_ARRAYS = [
     'styleClasses',
     'styleVariables'
 ];
-function getDtMetadata(objWithJsDoc, metaUtilObj, flags = MetaTypes.GETMD_FLAGS_NONE) {
-    let dt = {};
-    let tags = ts.getJSDocTags(objWithJsDoc);
-    tags.forEach((tag) => {
+function getDtMetadata(objWithJsDoc, flags, propertyPath, metaUtilObj) {
+    const dt = {};
+    const tags = ts.getJSDocTags(objWithJsDoc);
+    for (const tag of tags) {
         if (ts.idText(tag.tagName) === _METADATA_TAG) {
             let [mdKey, mdVal] = _getDtMetadataNameValue(tag, metaUtilObj);
             if (mdKey) {
-                let isClassMetadata = ts.isClassDeclaration(objWithJsDoc);
-                if (mdKey === 'value' && !(flags & MetaTypes.GETMD_FLAGS_RO_WRITEBACK)) {
-                    throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `The default value for this VComponent property cannot be specified by a JSDoc annotation.
-Instead, specify the default value in the class's static "defaultProps" field.`, tag);
+                if (mdKey === 'value') {
+                    if (!(flags & MetaTypes.MDFlags.PROP)) {
+                        continue;
+                    }
+                    else if (!(flags & (MetaTypes.MDFlags.PROP_RO_WRITEBACK | MetaTypes.MDFlags.EXT_ITEMPROPS))) {
+                        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_OJMETADATA_VALUE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `${_generateDefaultValueWarning(metaUtilObj.componentInfo, propertyPath)}`, tag);
+                        continue;
+                    }
                 }
                 if (mdKey === 'styleVariableSet') {
                     if (mdVal.styleVariables && Array.isArray(mdVal.styleVariables)) {
@@ -151,11 +156,11 @@ Instead, specify the default value in the class's static "defaultProps" field.`,
                         mdVal = mdVal.styleVariables.slice();
                     }
                     else {
-                        const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName, tag);
-                        console.log(`${logHeader} Invalid 'styleVariableSet' DT metadata specified: ${mdVal}`);
+                        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_STYLEVARIABLESET, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Invalid 'styleVariableSet' DT metadata specified: ${mdVal}`, tag);
                     }
                 }
-                if ((isClassMetadata && ['version', 'jetVersion'].indexOf(mdKey) > -1) || !dt[mdKey]) {
+                if ((flags & MetaTypes.MDFlags.COMP && ['version', 'jetVersion'].indexOf(mdKey) > -1) ||
+                    !dt[mdKey]) {
                     if (_METADATA_ARRAYS.indexOf(mdKey) > -1 && !Array.isArray(mdVal)) {
                         mdVal = [mdVal];
                     }
@@ -167,6 +172,9 @@ Instead, specify the default value in the class's static "defaultProps" field.`,
                                 if (Object.getOwnPropertyNames(sc.extension).length == 0) {
                                     delete sc.extension;
                                 }
+                            }
+                            if (sc.scope == 'protected') {
+                                delete sc.help;
                             }
                         });
                     }
@@ -187,7 +195,7 @@ Instead, specify the default value in the class's static "defaultProps" field.`,
         }
         else if (ts.idText(tag.tagName) === 'classdesc' || ts.idText(tag.tagName) === 'description') {
             dt['jsdoc'] = dt['jsdoc'] || {};
-            dt['jsdoc']['description'] = ts.getTextOfJSDocComment(tag.comment);
+            dt['jsdoc']['description'] = removeQuotes(ts.getTextOfJSDocComment(tag.comment));
         }
         else if (ts.idText(tag.tagName) === 'example') {
             dt['jsdoc'] = dt['jsdoc'] || {};
@@ -200,13 +208,21 @@ Instead, specify the default value in the class's static "defaultProps" field.`,
             let [mdKey, mdVal] = _getDtMetadataNameValue(tag, metaUtilObj);
             dt['jsdoc']['typeparams'].push({ name: mdKey, description: mdVal });
         }
-    });
+        else if (ts.idText(tag.tagName) === 'returns' || ts.idText(tag.tagName) === 'return') {
+            dt['jsdoc'] = dt['jsdoc'] || {};
+            dt['jsdoc']['returns'] = ts.getTextOfJSDocComment(tag.comment);
+        }
+        else if (ts.idText(tag.tagName) === 'ignore') {
+            dt['jsdoc'] = dt['jsdoc'] || {};
+            dt['jsdoc']['ignore'] = true;
+        }
+    }
     if (!dt['jsdoc'] || !dt['jsdoc']['description']) {
         if (objWithJsDoc['jsDoc']) {
             let commentNode = objWithJsDoc['jsDoc'][0];
             if (commentNode && commentNode.kind === ts.SyntaxKind.JSDocComment && commentNode.comment) {
                 dt['jsdoc'] = dt['jsdoc'] || {};
-                dt['jsdoc']['description'] = ts.getTextOfJSDocComment(commentNode.comment);
+                dt['jsdoc']['description'] = removeQuotes(ts.getTextOfJSDocComment(commentNode.comment));
             }
         }
     }
@@ -218,24 +234,27 @@ function addMetadataToClassNode(vcompClassInfo, metadata) {
     let additionalPropDecls = [];
     if (Object.keys(metadata).length > 0) {
         const metadataNode = _metadataToAstNodes(metadata);
-        additionalPropDecls.push(ts.factory.createPropertyDeclaration(undefined, ts.factory.createModifiersFromModifierFlags(ts.ModifierFlags.Static), 'metadata', undefined, undefined, metadataNode));
+        additionalPropDecls.push(ts.factory.createPropertyDeclaration(ts.factory.createModifiersFromModifierFlags(ts.ModifierFlags.Static), '_metadata', undefined, undefined, metadataNode));
     }
     if (vcompClassInfo.translationBundleMapExpression) {
-        additionalPropDecls.push(ts.factory.createPropertyDeclaration(undefined, ts.factory.createModifiersFromModifierFlags(ts.ModifierFlags.Static), 'translationBundleMap', undefined, undefined, vcompClassInfo.translationBundleMapExpression));
+        additionalPropDecls.push(ts.factory.createPropertyDeclaration(ts.factory.createModifiersFromModifierFlags(ts.ModifierFlags.Static), '_translationBundleMap', undefined, undefined, vcompClassInfo.translationBundleMapExpression));
+    }
+    if (vcompClassInfo.consumedContextsExpression) {
+        additionalPropDecls.push(ts.factory.createPropertyDeclaration(ts.factory.createModifiersFromModifierFlags(ts.ModifierFlags.Static), '_consumedContexts', undefined, undefined, vcompClassInfo.consumedContextsExpression));
     }
     if (additionalPropDecls.length === 0) {
         return classNode;
     }
     else {
         const updatedMembers = classNode.members.concat(additionalPropDecls);
-        return ts.factory.updateClassDeclaration(classNode, classNode.decorators, classNode.modifiers, classNode.name, classNode.typeParameters, classNode.heritageClauses, updatedMembers);
+        return ts.factory.updateClassDeclaration(classNode, classNode.modifiers, classNode.name, classNode.typeParameters, classNode.heritageClauses, updatedMembers);
     }
 }
 exports.addMetadataToClassNode = addMetadataToClassNode;
-function addArgumentsToRegisterCustomElementCall(functionalCompNode, vcompFunctionInfo, metaUtilObj) {
+function updateFunctionalVCompNode(functionalCompNode, vcompFunctionInfo, metaUtilObj) {
     var _a, _b;
     const rtMetadata = metaUtilObj.rtMetadata;
-    const needPlaceholderArgs = !!vcompFunctionInfo.translationBundleMapExpression;
+    const needPlaceholderArgs = !!vcompFunctionInfo.translationBundleMapExpression || !!vcompFunctionInfo.contextsExpression;
     const defDisplayNameExpression = ts.factory.createStringLiteral((_a = vcompFunctionInfo.componentName) !== null && _a !== void 0 ? _a : `VComponent(${(_b = vcompFunctionInfo.functionName) !== null && _b !== void 0 ? _b : vcompFunctionInfo.elementName})`);
     const compRegisterCall = vcompFunctionInfo.compRegisterCall;
     const updatedCallArgs = [
@@ -258,6 +277,12 @@ function addArgumentsToRegisterCustomElementCall(functionalCompNode, vcompFuncti
     if (vcompFunctionInfo.translationBundleMapExpression) {
         updatedCallArgs.push(vcompFunctionInfo.translationBundleMapExpression);
     }
+    else if (vcompFunctionInfo.contextsExpression) {
+        updatedCallArgs.push(ts.factory.createIdentifier('undefined'));
+    }
+    if (vcompFunctionInfo.contextsExpression) {
+        updatedCallArgs.push(vcompFunctionInfo.contextsExpression);
+    }
     const updatedCompRegisterCall = ts.factory.updateCallExpression(compRegisterCall, compRegisterCall.expression, compRegisterCall.typeArguments, updatedCallArgs);
     if (ts.isVariableStatement(functionalCompNode)) {
         const updatedVarDeclArray = functionalCompNode.declarationList.declarations.map((varDecl, i) => {
@@ -275,7 +300,7 @@ function addArgumentsToRegisterCustomElementCall(functionalCompNode, vcompFuncti
         return ts.factory.updateExpressionStatement(functionalCompNode, updatedCompRegisterCall);
     }
 }
-exports.addArgumentsToRegisterCustomElementCall = addArgumentsToRegisterCustomElementCall;
+exports.updateFunctionalVCompNode = updateFunctionalVCompNode;
 function getPropsInfo(compType, componentName, typeRef, vexportToAlias, checker) {
     var _a, _b, _c;
     let rtnInfo = null;
@@ -567,7 +592,7 @@ function getWrappedReadonlyType(type, typeNode, componentName, checker) {
                     if (foundOGP) {
                         const aliasDecl = _getScopedSymbolDeclaration(typeNode, checker);
                         const errNode = (_d = aliasDecl.name) !== null && _d !== void 0 ? _d : typeNode;
-                        throw new TransformerError_1.TransformerError(componentName, `An unsupported ObservedGlobalProps instance was detected within a Readonly Props intersection type.
+                        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_OBSERVEDGLOBALPROPS_INSTANCE, TransformerError_1.ExceptionType.THROW_ERROR, componentName, `An unsupported ObservedGlobalProps instance was detected within a Readonly Props intersection type.
 Remove the ObservedGlobalProps instance from the intersection type, and instead have it intersect with the Readonly Props type.`, errNode);
                     }
                 }
@@ -624,10 +649,10 @@ function isObjectType(type) {
     return !!(type['flags'] & ts.TypeFlags.Object);
 }
 exports.isObjectType = isObjectType;
-function isAnyOrUnknownType(type) {
+function isTypeTreatedAsAny(type) {
     return !!(type['flags'] & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
 }
-exports.isAnyOrUnknownType = isAnyOrUnknownType;
+exports.isTypeTreatedAsAny = isTypeTreatedAsAny;
 exports._UNION_SPLITTER = /\s*\|\s*/;
 function isConditionalTypeNodeDetected(typeNode, seen, metaUtilObj) {
     var _a;
@@ -804,13 +829,20 @@ function updateCompilerCompMetadata(vcompInfo, metaUtilObj) {
             metaUtilObj.fullMetadata['classTypeParams'] = genericsInfo === null || genericsInfo === void 0 ? void 0 : genericsInfo.genericsTypeParams;
         }
         const classDecorators = DecoratorUtils.getDecorators(classNode, metaUtilObj.aliasToNamedExport);
-        const consumedDecorator = classDecorators[metaUtilObj.namedExportToAlias.consumedBindings];
-        if (consumedDecorator) {
-            metaUtilObj.classConsumedBindingsDecorator = consumedDecorator;
+        const consumedBindingsDecorator = classDecorators[metaUtilObj.namedExportToAlias.consumedBindings];
+        if (consumedBindingsDecorator) {
+            metaUtilObj.classConsumedBindingsDecorator = consumedBindingsDecorator;
         }
-        const providedDecorator = classDecorators[metaUtilObj.namedExportToAlias.providedBindings];
-        if (providedDecorator) {
-            metaUtilObj.classProvidedBindingsDecorator = providedDecorator;
+        const providedBindingsDecorator = classDecorators[metaUtilObj.namedExportToAlias.providedBindings];
+        if (providedBindingsDecorator) {
+            metaUtilObj.classProvidedBindingsDecorator = providedBindingsDecorator;
+        }
+        const consumedContextsDecorator = classDecorators[metaUtilObj.namedExportToAlias.consumedContexts];
+        if (consumedContextsDecorator) {
+            const args = DecoratorUtils.getDecoratorArguments(consumedContextsDecorator);
+            if (args.length === 1) {
+                vcompInfo.consumedContextsExpression = args[0];
+            }
         }
     }
     else {
@@ -873,6 +905,7 @@ function pruneCompilerMetadata(metaUtilObj) {
     delete metaUtilObj.fullMetadata['jsdoc'];
     delete metaUtilObj.fullMetadata['additionalImports'];
     delete metaUtilObj.fullMetadata['useComponentPropsForSettableProperties'];
+    delete metaUtilObj.fullMetadata['funcVCompMethodSignatures'];
     pruneMetadata(metaUtilObj.fullMetadata.properties);
     pruneMetadata(metaUtilObj.fullMetadata.methods);
     pruneMetadata(metaUtilObj.fullMetadata.events);
@@ -941,16 +974,30 @@ function getValueFromNode(exp) {
 exports.getValueFromNode = getValueFromNode;
 function generateStatementsFromText(text) {
     let tmpNode = ts.createSourceFile('temp.ts', text, ts.ScriptTarget.Latest, false, ts.ScriptKind.TSX);
-    fixSingleQuoteAndFlagsRecursively(tmpNode);
+    _fixSingleQuoteAndNodeFlagsRecursively(tmpNode);
+    tmpNode.statements.forEach((stmt) => ts.setEmitFlags(stmt, ts.EmitFlags.NoNestedComments));
     return tmpNode.statements;
 }
 exports.generateStatementsFromText = generateStatementsFromText;
-function fixSingleQuoteAndFlagsRecursively(node) {
+function _fixSingleQuoteAndNodeFlagsRecursively(node) {
     if (node.kind == ts.SyntaxKind.StringLiteral && !node['singleQuote']) {
         node['singleQuote'] = true;
     }
     node.flags |= ts.NodeFlags.Synthesized;
-    node.forEachChild((child) => fixSingleQuoteAndFlagsRecursively(child));
+    node.forEachChild((child) => _fixSingleQuoteAndNodeFlagsRecursively(child));
+}
+function _generateDefaultValueWarning(componentInfo, propertyPath) {
+    let msg;
+    const propPath = (propertyPath === null || propertyPath === void 0 ? void 0 : propertyPath.length) ? propertyPath.join('.') : '<unknown>';
+    msg = `Property '${propPath}' - ignored JSDoc annotation specifying a default value.`;
+    if (MetaTypes.isFunctionInfo(componentInfo)) {
+        msg +=
+            '\nSpecify the default value using an object binding pattern for the Props argument of the function component.';
+    }
+    else {
+        msg += "\nSpecify the default value in the component class's static 'defaultProps' field.";
+    }
+    return msg;
 }
 function _pruneSubPropMetadata(metaelement, validSubPropMap) {
     for (let metaprop in metaelement) {
@@ -1028,8 +1075,7 @@ function _getDtMetadataNameValue(tag, metaUtilObj) {
                 mdVal = _execBundle(mdVal);
             }
             catch (e) {
-                const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName, tag);
-                console.log(`${logHeader} Malformed metadata value ${mdVal} for key ${mdKey}.`);
+                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.MALFORMED_METADATA_VALUE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Malformed metadata value '${mdVal}' for key '${mdKey}'.`, tag);
             }
         }
         else {
@@ -1066,8 +1112,7 @@ function _normalizeDtMetadataValue(key, value, tag, metaUtilObj) {
         if ((start === '"' || start === "'") && start !== end) {
             const matchingEndQuoteIndex = value.lastIndexOf(start);
             if (matchingEndQuoteIndex > 0) {
-                const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName, tag);
-                console.log(`${logHeader} ${key} text beyond the matching quote character was trimmed for metadata value: ${value}`);
+                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.TRIMMED_METADATA_STRING, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'${key}' text beyond the matching quote character was trimmed for metadata value: ${value}`, tag);
                 value = value.substring(0, matchingEndQuoteIndex + 1);
             }
         }
@@ -1114,5 +1159,11 @@ function _execBundle(src) {
         }
     }));
     return result;
+}
+function removeQuotes(str) {
+    if (str) {
+        return str.replace(/^['"]/g, '').replace(/['"]$/g, '');
+    }
+    return str;
 }
 //# sourceMappingURL=MetadataUtils.js.map

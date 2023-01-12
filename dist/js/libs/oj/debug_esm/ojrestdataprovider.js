@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -29,7 +29,12 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  *            Object representing data available from a JSON-based REST service.
  *            This dataprovider can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
  *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
- *            See the RESTDataProvider demos for examples.<br><br>
+ * RESTDataProvider is an implementation of DataProvider for fetching data from a JSON-based REST API using the Fetch API . RESTDataProvider fetch calls are based on transforms which are specified as an option to the RESTDataProvider constructor. For each fetch method (fetchFirst, fetchByOffset and fetchByKeys), they define the following functions:
+ * <ul>
+ * <li>request : function that returns a Promise that resolves to a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Request">Request</a> object to use for the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API">Fetch API</a> call to the the REST API. This is where any required query parameters for paging, filtering, sorting and more can be applied to the URL which can then be used to create a request. Other request options, such as headers , body and method can also be added to the request if needed. If written in Typescript, the function can be defined using async which automatically wraps the return value in a Promise . Otherwise, a Promise has to be explicitly returned e.g return Promise.resolve(new Request(...)) . </li>
+ * <li>response : function that extracts the data and other relevant values from the response body and returns a Promise that resolves to those values. The function must at least return an object with a data property that is an array of items of shape D (generic passed into RESTDataProvider class). If written in Typescript, the function can be defined using async which automatically wraps the return value in a Promise . Otherwise, a Promise has to be explicitly returned e.g return Promise.resolve({ data }) .</li>
+ * </ul>
+ * Please navigate to the corresponding demos for details of how to define transforms to accomplish various fetch tasks. <br><br>
  *
  * <h3 id="events-section">
  *   Events
@@ -95,9 +100,9 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  *       return new Request(url.href);
  *     },
  *     response: async ({ body }) => {
- *       // The mock server sends back a response body with shape { hasMore, keys, totalSzie, data} so
+ *       // The mock server sends back a response body with shape { hasMore, keys, totalSize, data} so
  *       // we need to extract and return them. "keys" is optional, it is needed when the REST endpoint
- *       // returns the set of keys associated with the data. When not avaialbe, RESTDataProvider generates
+ *       // returns the set of keys associated with the data. When not available, RESTDataProvider generates
  *       // the keys from the data based on keyAttributes. Again, note that the function needs to return a
  *       // Promise hence the use of async which automatically wraps the return value in one
  *       const { data, keys, totalSize, hasMore } = body;
@@ -129,9 +134,9 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  *       return Promise.resolve(new Request(url.href));
  *     },
  *     response: ({ body }) => {
- *       // The mock server sends back a response body with shape { hasMore, keys, totalSzie, data} so
+ *       // The mock server sends back a response body with shape { hasMore, keys, totalSize, data} so
  *       // we need to extract and return them. "keys" is optional, it is needed when the REST endpoint
- *       // returns the set of keys associated with the data. When not avaialbe, RESTDataProvider generates
+ *       // returns the set of keys associated with the data. When not available, RESTDataProvider generates
  *       // the keys from the data based on keyAttributes. Again, note that the function needs to return a
  *       // Promise
  *       return Promise.resolve({ data: body.data, totalSize: body.totalSize, hasMore: body.hasMore });
@@ -144,42 +149,42 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  */
 
 /**
-* @typedef {Object} RESTDataProvider.Options
-* @property {string} url - URL of the REST endpoint to fetch data from.
-* @property {string} keyAttributes - The field name which stores the key in the data. Can be a string denoting a single key attribute or an array
-* of strings for multiple key attributes.
-* @property {Object} transforms - Object which defines functions that transform the request when fetchFirst, fetchByOffset and fetchByKeys ared called.
-* @property {Object=} capabilities - Object which defines the capabilities of the RESTDataProvider instance based on the REST service is fetches data from.
-* @property {Array=} implicitSort - Array of {@link SortCriterion} used to specify sort information when the fetched data is already sorted.
-* For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
-* This option is not used for cases where we want the RESTDataProvider to apply a sort on initial fetch.
-* @property {Array=} textFilterAttributes - Specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified.
-* @property {number=} iterationLimit - Specify the maximum number of rows to fetch when iterating through the data. This is particularly useful when fetchByKeys
-* delegates to fetchFirst (because the fetchByKeys capability has not be set with an implementation of "lookup" or "batchLookup"). In the fetchByKeys case,
-* fetchFirst has to iterate through all the data in search of rows corresponding to the provided keys. Without an iteration limit, the iteration can continue
-* for a long time if the provided keys are invalid or the corresponding rows are at the end of the dataset.
-* @ojsignature [
-*  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
-*  {target: "Type", value: "string | string[]", for: "keyAttributes"},
-*  {target: "Type", value: "Transforms<K, D>", for: "transforms"},
-*  {target: "Type", value: "Capabilities", for: "capabilities"},
-*  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
-*  {target: "Type", value: "string[]", for: "textFilterAttributes"}
-* ]
-*/
+ * @typedef {Object} RESTDataProvider.Options
+ * @property {string} url - URL of the REST endpoint to fetch data from.
+ * @property {string} keyAttributes - The field name which stores the key in the data. Can be a string denoting a single key attribute or an array
+ * of strings for multiple key attributes.
+ * @property {Object} transforms - Object which defines functions that transform the request when fetchFirst, fetchByOffset and fetchByKeys are called.
+ * @property {Object=} capabilities - Object which defines the capabilities of the RESTDataProvider instance based on the REST service is fetches data from.
+ * @property {Array=} implicitSort - Array of {@link SortCriterion} used to specify sort information when the fetched data is already sorted.
+ * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
+ * This option is not used for cases where we want the RESTDataProvider to apply a sort on initial fetch.
+ * @property {Array=} textFilterAttributes - Specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified.
+ * @property {number=} iterationLimit - Specify the maximum number of rows to fetch when iterating through the data. This is particularly useful when fetchByKeys
+ * delegates to fetchFirst (because the fetchByKeys capability has not be set with an implementation of "lookup" or "batchLookup"). In the fetchByKeys case,
+ * fetchFirst has to iterate through all the data in search of rows corresponding to the provided keys. Without an iteration limit, the iteration can continue
+ * for a long time if the provided keys are invalid or the corresponding rows are at the end of the dataset.
+ * @ojsignature [
+ *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+ *  {target: "Type", value: "string | string[]", for: "keyAttributes"},
+ *  {target: "Type", value: "Transforms<K, D>", for: "transforms"},
+ *  {target: "Type", value: "Capabilities", for: "capabilities"},
+ *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
+ *  {target: "Type", value: "string[]", for: "textFilterAttributes"}
+ * ]
+ */
 
 /**
-* @typedef {Object} RESTDataProvider.Transforms
-* @property {Object=} fetchFirst - Object which specifies transforms for fetchFirst calls
-* @property {Object=} fetchByOffset - Object which specifies transforms for fetchByOffset calls
-* @property {Object=} fetchByKeys - Object which specifies transforms for fetchByKeys calls
-* @ojsignature [
-*  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
-*  {target: "Type", value: "FetchByOffsetTransforms<K, D>", for: "fetchFirst"},
-*  {target: "Type", value: "FetchByOffsetTransforms<K, D>", for: "fetchByOffset"},
-*  {target: "Type", value: "FetchByKeysTransforms<K, D>", for: "fetchByKeys"}
-* ]
-*/
+ * @typedef {Object} RESTDataProvider.Transforms
+ * @property {Object=} fetchFirst - Object which specifies transforms for fetchFirst calls
+ * @property {Object=} fetchByOffset - Object which specifies transforms for fetchByOffset calls
+ * @property {Object=} fetchByKeys - Object which specifies transforms for fetchByKeys calls
+ * @ojsignature [
+ *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+ *  {target: "Type", value: "FetchByOffsetTransforms<K, D>", for: "fetchFirst"},
+ *  {target: "Type", value: "FetchByOffsetTransforms<K, D>", for: "fetchByOffset"},
+ *  {target: "Type", value: "FetchByKeysTransforms<K, D>", for: "fetchByKeys"}
+ * ]
+ */
 
 /**
  * @typedef {Object} RESTDataProvider.FetchByOffsetTransforms
@@ -204,101 +209,101 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  */
 
 /**
-* @typedef {Function} RESTDataProvider.FetchByOffsetRequestTransform
-* @ojsignature [
-*   {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
-*   {target: "Type", value: "(options: FetchByOffsetRequestTransformOptions<K, D>) => Promise<Request>"}
-* ]
-*/
+ * @typedef {Function} RESTDataProvider.FetchByOffsetRequestTransform
+ * @ojsignature [
+ *   {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+ *   {target: "Type", value: "(options: FetchByOffsetRequestTransformOptions<K, D>) => Promise<Request>"}
+ * ]
+ */
 
 /**
-* @typedef {Object} RESTDataProvider.FetchByOffsetRequestTransformOptions
-* @property {string} url - url to use for fetch call
-* @property {Object} fetchParameters - fetch parameters of the called fetch method
-* @property {string} fetchType - fetch method called
-* @property {Object} fetchOptions - fetch options passed into constructor such as textFilterAttributes
-* @ojsignature [
-*  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
-*  {target: "Type", value: "FetchByOffsetParameters<D>", for: "fetchParameters"},
-*  {target: "Type", value: "'fetchFirst' | 'fetchByOffset'", for: "fetchType"},
-*  {target: "Type", value: "{ textFilterAttributes?: Options<K, D>['textFilterAttributes'] }", for: "fetchOptions"}
-* ]
-*/
+ * @typedef {Object} RESTDataProvider.FetchByOffsetRequestTransformOptions
+ * @property {string} url - url to use for fetch call
+ * @property {Object} fetchParameters - fetch parameters of the called fetch method
+ * @property {string} fetchType - fetch method called
+ * @property {Object} fetchOptions - fetch options passed into constructor such as textFilterAttributes
+ * @ojsignature [
+ *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+ *  {target: "Type", value: "FetchByOffsetParameters<D>", for: "fetchParameters"},
+ *  {target: "Type", value: "'fetchFirst' | 'fetchByOffset'", for: "fetchType"},
+ *  {target: "Type", value: "{ textFilterAttributes?: Options<K, D>['textFilterAttributes'] }", for: "fetchOptions"}
+ * ]
+ */
 
 /**
-* @typedef {Function} RESTDataProvider.FetchByKeysRequestTransform
-* @ojsignature [
-*   {target: "Type", value: "<K>", for: "genericTypeParameters"},
-*   {target: "Type", value: "(options: FetchByKeysRequestTransformOptions<K>) => Promise<Request>"}
-* ]
-*/
+ * @typedef {Function} RESTDataProvider.FetchByKeysRequestTransform
+ * @ojsignature [
+ *   {target: "Type", value: "<K>", for: "genericTypeParameters"},
+ *   {target: "Type", value: "(options: FetchByKeysRequestTransformOptions<K>) => Promise<Request>"}
+ * ]
+ */
 
 /**
-* @typedef {Object} RESTDataProvider.FetchByKeysRequestTransformOptions
-* @property {string} url - url to use for fetch call
-* @property {Object} fetchParameters - fetch parameters of the called fetch method
-* @property {string} fetchType - fetch method called
-* @ojsignature [
-*  {target: "Type", value: "<K>", for: "genericTypeParameters"},
-*  {target: "Type", value: "FetchByKeysParameters<K>", for: "fetchParameters"},
-*  {target: "Type", value: "'fetchByKeys'", for: "fetchType"}
-* ]
-*/
+ * @typedef {Object} RESTDataProvider.FetchByKeysRequestTransformOptions
+ * @property {string} url - url to use for fetch call
+ * @property {Object} fetchParameters - fetch parameters of the called fetch method
+ * @property {string} fetchType - fetch method called
+ * @ojsignature [
+ *  {target: "Type", value: "<K>", for: "genericTypeParameters"},
+ *  {target: "Type", value: "FetchByKeysParameters<K>", for: "fetchParameters"},
+ *  {target: "Type", value: "'fetchByKeys'", for: "fetchType"}
+ * ]
+ */
 
 /**
-* @typedef {Function} RESTDataProvider.FetchResponseTransform
-* @ojsignature [
-*   {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
-*   {target: "Type", value: "(options: FetchResponseTransformOptions) => Promise<FetchResponseTransformResult<K, D>>"}
-* ]
-*/
+ * @typedef {Function} RESTDataProvider.FetchResponseTransform
+ * @ojsignature [
+ *   {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+ *   {target: "Type", value: "(options: FetchResponseTransformOptions) => Promise<FetchResponseTransformResult<K, D>>"}
+ * ]
+ */
 
 /**
-* @typedef {Object} RESTDataProvider.FetchResponseTransformOptions
-* @property {number} status - response status number
-* @property {Object} headers - response headers object
-* @property {Object} body - response body
-* @ojsignature [
-*  {target: "Type", value: "Headers", for: "headers"},
-*  {target: "Type", value: "any", for: "body"}
-* ]
-*/
+ * @typedef {Object} RESTDataProvider.FetchResponseTransformOptions
+ * @property {number} status - response status number
+ * @property {Object} headers - response headers object
+ * @property {Object} body - response body
+ * @ojsignature [
+ *  {target: "Type", value: "Headers", for: "headers"},
+ *  {target: "Type", value: "any", for: "body"}
+ * ]
+ */
 
 /**
-* @typedef {Object} RESTDataProvider.FetchResponseTransformResult
-* @property {Array} data - fetched data
-* @property {Array=} keys - keys associated with fetched data. If keys is returned but not metadata,
-* the metadata will be generated from the keys
-* @property {Array=} metadata - metadata associated with fetched data. If metadata is returned
-* but not keys, the keys will be extracted from the metadata
-* @property {number=} totalSize - total number of rows available
-* @property {boolean=} hasMore - whether there are more rows available to be fetched
-* @ojsignature [
-*  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
-*  {target: "Type", value: "D[]", for: "data"},
-*  {target: "Type", value: "K[]", for: "keys"},
-*  {target: "Type", value: "ItemMetadata<K>[]", for: "metadata"}
-* ]
-*/
+ * @typedef {Object} RESTDataProvider.FetchResponseTransformResult
+ * @property {Array} data - fetched data
+ * @property {Array=} keys - keys associated with fetched data. If keys is returned but not metadata,
+ * the metadata will be generated from the keys
+ * @property {Array=} metadata - metadata associated with fetched data. If metadata is returned
+ * but not keys, the keys will be extracted from the metadata
+ * @property {number=} totalSize - total number of rows available
+ * @property {boolean=} hasMore - whether there are more rows available to be fetched
+ * @ojsignature [
+ *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+ *  {target: "Type", value: "D[]", for: "data"},
+ *  {target: "Type", value: "K[]", for: "keys"},
+ *  {target: "Type", value: "ItemMetadata<K>[]", for: "metadata"}
+ * ]
+ */
 
 /**
-* @typedef {Object} RESTDataProvider.Capabilities
-* @property {FetchByKeysCapability=} fetchByKeys - Optional FetchByKeysCapability object. If not set or if the implementation is "iteration", fetchByKeys
-* calls will delegate to fetchFirst which is not efficient. If the implementation is "lookup", individual requests will be made for each key and then
-* combined. If the implementation is "batchLookup", a single request will be made for all keys. Please see {@link RESTDataProvider.Transforms}
-* for how requests should be transformed for fetchByKeys calls.
-* @property {FetchByOffsetCapability=} fetchByOffset - Optional FetchByOffsetCapability object. If not set or if the implementation is "iteration",
-* fetchByOffset calls will delegate to fetchFirst which is not efficient. When implementation is "randomAccess", data can be fetched from any offset
-* and in order and not just from sequentially from the beginning.
-* @property {FilterCapability=} filter - Optional FilterCapability object which specifies the type of filtering supported by the REST service.
-* @property {SortCapability=} sort - Optional SortCapability object which specifies the type of sorting supported by the REST service.
-* @ojsignature [
-*  {target: "Type", value: "FetchByKeysCapability", for: "fetchByKeys"},
-*  {target: "Type", value: "FetchByOffsetCapability", for: "fetchByOffset"},
-*  {target: "Type", value: "FilterCapability", for: "filter"},
-*  {target: "Type", value: "SortCapability", for: "sort"}
-* ]
-*/
+ * @typedef {Object} RESTDataProvider.Capabilities
+ * @property {FetchByKeysCapability=} fetchByKeys - Optional FetchByKeysCapability object. If not set or if the implementation is "iteration", fetchByKeys
+ * calls will delegate to fetchFirst which is not efficient. If the implementation is "lookup", individual requests will be made for each key and then
+ * combined. If the implementation is "batchLookup", a single request will be made for all keys. Please see {@link RESTDataProvider.Transforms}
+ * for how requests should be transformed for fetchByKeys calls.
+ * @property {FetchByOffsetCapability=} fetchByOffset - Optional FetchByOffsetCapability object. If not set or if the implementation is "iteration",
+ * fetchByOffset calls will delegate to fetchFirst which is not efficient. When implementation is "randomAccess", data can be fetched from any offset
+ * and in order and not just from sequentially from the beginning.
+ * @property {FilterCapability=} filter - Optional FilterCapability object which specifies the type of filtering supported by the REST service.
+ * @property {SortCapability=} sort - Optional SortCapability object which specifies the type of sorting supported by the REST service.
+ * @ojsignature [
+ *  {target: "Type", value: "FetchByKeysCapability", for: "fetchByKeys"},
+ *  {target: "Type", value: "FetchByOffsetCapability", for: "fetchByOffset"},
+ *  {target: "Type", value: "FilterCapability", for: "filter"},
+ *  {target: "Type", value: "SortCapability", for: "sort"}
+ * ]
+ */
 
 /**
  * @inheritdoc
@@ -438,9 +443,7 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  * dataprovider.refresh();
  */
 
-/**
- * End of jsdoc
- */
+// end of jsdoc
 
 var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -458,7 +461,8 @@ class RESTHelper {
     fetch() {
         return __awaiter(this, void 0, void 0, function* () {
             const request = yield this._createRequest();
-            const response = yield fetch(request);
+            const signal = this.options.fetchParameters.signal;
+            const response = yield fetch(request, { signal: signal });
             return this._parseResponse(response);
         });
     }
@@ -701,7 +705,11 @@ class RESTDataProvider {
         this.dispatchEvent(new DataProviderMutationEvent(detail));
     }
     _fetchFrom(fetchType, fetchParameters, offset, hasMore) {
+        var _a;
         return __awaiter$1(this, void 0, void 0, function* () {
+            if ((_a = fetchParameters.signal) === null || _a === void 0 ? void 0 : _a.aborted) {
+                throw new DOMException('Signal was previously aborted.', 'AbortError');
+            }
             if (hasMore) {
                 const convertedFetchParameters = this._convertFetchListToFetchByOffsetParameters(fetchParameters, offset);
                 const fetchSize = this._getFetchSize(convertedFetchParameters);
@@ -783,7 +791,11 @@ class RESTDataProvider {
         });
     }
     _fetchByKeysLookup(fetchParameters) {
+        var _a;
         return __awaiter$1(this, void 0, void 0, function* () {
+            if ((_a = fetchParameters.signal) === null || _a === void 0 ? void 0 : _a.aborted) {
+                throw new DOMException('Signal was previously aborted.', 'AbortError');
+            }
             const fetchPromises = [];
             const fetchedData = [];
             const fetchedDataMetadata = [];
@@ -810,7 +822,11 @@ class RESTDataProvider {
         });
     }
     _fetchByKeysBatchLookup(fetchParameters) {
+        var _a;
         return __awaiter$1(this, void 0, void 0, function* () {
+            if ((_a = fetchParameters.signal) === null || _a === void 0 ? void 0 : _a.aborted) {
+                throw new DOMException('Signal was previously aborted.', 'AbortError');
+            }
             const restHelper = new RESTHelper({
                 fetchType: _FETCHBYKEYS,
                 fetchParameters,
@@ -826,6 +842,9 @@ class RESTDataProvider {
     _fetchByOffsetRandomAccess(fetchParameters, offset) {
         return __awaiter$1(this, void 0, void 0, function* () {
             const fetchResult = yield this._fetchFrom(_FETCHBYOFFSET, this._convertFetchByOffsetToFetchListParameters(fetchParameters), offset, true);
+            if (fetchResult.hasNoMore) {
+                fetchResult.result.done = true;
+            }
             const { value, done } = fetchResult.result;
             const { data, metadata } = value;
             const results = data.map((value, index) => ({ metadata: metadata[index], data: value }));
@@ -926,7 +945,8 @@ class RESTDataProvider {
             sortCriteria: fetchParameters.sortCriteria,
             filterCriterion: fetchParameters.filterCriterion,
             attributes: fetchParameters.attributes,
-            clientId: fetchParameters.clientId
+            clientId: fetchParameters.clientId,
+            signal: fetchParameters.signal
         };
     }
     _convertFetchListToFetchByOffsetParameters(fetchParameters, offset) {
@@ -936,12 +956,14 @@ class RESTDataProvider {
             sortCriteria: fetchParameters.sortCriteria,
             filterCriterion: fetchParameters.filterCriterion,
             attributes: fetchParameters.attributes,
-            clientId: fetchParameters.clientId
+            clientId: fetchParameters.clientId,
+            signal: fetchParameters.signal
         };
     }
     _convertFetchByKeysToFetchListParameters(fetchParameters) {
         return {
-            attributes: fetchParameters.attributes
+            attributes: fetchParameters.attributes,
+            signal: fetchParameters.signal
         };
     }
     _createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataMetadata) {

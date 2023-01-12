@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
  * @license
- * Copyright (c) 2019 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2019 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  *
@@ -88,7 +88,8 @@ const ExpParser = function () {
   function _gobbleExpression(context) {
     var expr = context.expr;
     var test = _gobbleBinaryExpression(context),
-      consequent, alternate;
+      consequent,
+      alternate;
     _gobbleSpaces(context);
     if (expr.charCodeAt(context.index) === QUMARK_CODE) {
       // Ternary expression: test ? consequent : alternate
@@ -130,11 +131,12 @@ const ExpParser = function () {
       // Don't accept a binary op when it is an identifier.
       // Binary ops that start with a identifier-valid character must be followed
       // by a non identifier-part valid character
-      if (_binary_ops[to_check] && (
-        !_isIdentifierStart(expr.charCodeAt(context.index)) ||
-        (context.index + to_check.length < expr.length &&
-        !_isIdentifierPart(expr.charCodeAt(context.index + to_check.length)))
-      )) {
+      if (
+        _binary_ops[to_check] &&
+        (!_isIdentifierStart(expr.charCodeAt(context.index)) ||
+          (context.index + to_check.length < expr.length &&
+            !_isIdentifierPart(expr.charCodeAt(context.index + to_check.length))))
+      ) {
         context.index += tc_len;
         return to_check;
       }
@@ -146,15 +148,7 @@ const ExpParser = function () {
   // This function is responsible for gobbling an individual expression,
   // e.g. `1`, `1+2`, `a+(b*2)-Math.sqrt(2)`
   function _gobbleBinaryExpression(context) {
-    var node,
-      biop,
-      prec,
-      stack,
-      biop_info,
-      left,
-      right,
-      i,
-      cur_biop;
+    var node, biop, prec, stack, biop_info, left, right, i, cur_biop;
 
     // First, try to get the leftmost thing
     // Then, check to see if there's a binary operator operating on that leftmost thing
@@ -188,7 +182,7 @@ const ExpParser = function () {
 
       cur_biop = biop;
       // Reduce: make a binary expression from the three topmost entries.
-      while ((stack.length > 2) && (prec <= stack[stack.length - 2].prec)) {
+      while (stack.length > 2 && prec <= stack[stack.length - 2].prec) {
         right = stack.pop();
         biop = stack.pop().value;
         left = stack.pop();
@@ -236,11 +230,12 @@ const ExpParser = function () {
       // Don't accept an unary op when it is an identifier.
       // Unary ops that start with a identifier-valid character must be followed
       // by a non identifier-part valid character
-      if ((to_check in _unary_ops) && (
-        !_isIdentifierStart(expr.charCodeAt(context.index)) ||
-        (context.index + to_check.length < expr.length &&
-          !_isIdentifierPart(expr.charCodeAt(context.index + to_check.length)))
-      )) {
+      if (
+        to_check in _unary_ops &&
+        (!_isIdentifierStart(expr.charCodeAt(context.index)) ||
+          (context.index + to_check.length < expr.length &&
+            !_isIdentifierPart(expr.charCodeAt(context.index + to_check.length))))
+      ) {
         context.index += tc_len;
         return {
           type: 5, // 'UnaryExpression'
@@ -254,16 +249,19 @@ const ExpParser = function () {
 
     var start = context.index;
     var funcEnd = context.index + 8;
-    if (expr.substring(start, funcEnd) === 'function' && !_isIdentifierPart(expr.charCodeAt(funcEnd))) {
+    if (
+      expr.substring(start, funcEnd) === 'function' &&
+      !_isIdentifierPart(expr.charCodeAt(funcEnd))
+    ) {
       context.index = funcEnd;
       return _gobbleFunction(context);
     }
 
-    if (_isIdentifierStart(ch) || ch === OPAREN_CODE) { // open parenthesis
+    if (_isIdentifierStart(ch) || ch === OPAREN_CODE) {
+      // open parenthesis
       // `foo`, `bar.baz`
       return _gobbleVariable(context);
     }
-
 
     return false;
   }
@@ -279,7 +277,8 @@ const ExpParser = function () {
       number += expr.charAt(context.index++);
     }
 
-    if (expr.charCodeAt(context.index) === PERIOD_CODE) { // can start with a decimal marker
+    if (expr.charCodeAt(context.index) === PERIOD_CODE) {
+      // can start with a decimal marker
       number += expr.charAt(context.index++);
 
       while (_isDecimalDigit(expr.charCodeAt(context.index))) {
@@ -288,25 +287,33 @@ const ExpParser = function () {
     }
 
     ch = expr.charAt(context.index);
-    if (ch === 'e' || ch === 'E') { // exponent marker
+    if (ch === 'e' || ch === 'E') {
+      // exponent marker
       number += expr.charAt(context.index++);
       ch = expr.charAt(context.index);
-      if (ch === '+' || ch === '-') { // exponent sign
+      if (ch === '+' || ch === '-') {
+        // exponent sign
         number += expr.charAt(context.index++);
       }
-      while (_isDecimalDigit(expr.charCodeAt(context.index))) { // exponent itself
+      while (_isDecimalDigit(expr.charCodeAt(context.index))) {
+        // exponent itself
         number += expr.charAt(context.index++);
       }
       if (!_isDecimalDigit(expr.charCodeAt(context.index - 1))) {
-        _throwError('Expected exponent (' + number + expr.charAt(context.index) + ')', context.index);
+        _throwError(
+          'Expected exponent (' + number + expr.charAt(context.index) + ')',
+          context.index
+        );
       }
     }
 
     chCode = expr.charCodeAt(context.index);
     // Check to make sure this isn't a variable name that start with a number (123abc)
     if (_isIdentifierStart(chCode)) {
-      _throwError('Variable names cannot start with a number (' +
-        number + expr.charAt(context.index) + ')', context.index);
+      _throwError(
+        'Variable names cannot start with a number (' + number + expr.charAt(context.index) + ')',
+        context.index
+      );
     } else if (chCode === PERIOD_CODE) {
       _throwError('Unexpected period', context.index);
     }
@@ -337,13 +344,26 @@ const ExpParser = function () {
         // Check for all of the common escape codes
         ch = expr.charAt(context.index++);
         switch (ch) {
-          case 'n': str += '\n'; break;
-          case 'r': str += '\r'; break;
-          case 't': str += '\t'; break;
-          case 'b': str += '\b'; break;
-          case 'f': str += '\f'; break;
-          case 'v': str += '\x0B'; break;
-          default: str += ch;
+          case 'n':
+            str += '\n';
+            break;
+          case 'r':
+            str += '\r';
+            break;
+          case 't':
+            str += '\t';
+            break;
+          case 'b':
+            str += '\b';
+            break;
+          case 'f':
+            str += '\f';
+            break;
+          case 'v':
+            str += '\x0B';
+            break;
+          default:
+            str += ch;
         }
       } else {
         str += ch;
@@ -367,7 +387,9 @@ const ExpParser = function () {
   // (e.g. `true`, `false`, `null`) or `this`
   function _gobbleIdentifier(context, bMemberExpr) {
     var expr = context.expr;
-    var ch = expr.charCodeAt(context.index), start = context.index, identifier;
+    var ch = expr.charCodeAt(context.index),
+      start = context.index,
+      identifier;
 
     if (_isIdentifierStart(ch)) {
       context.index++;
@@ -392,8 +414,11 @@ const ExpParser = function () {
       _gobbleSpaces(context);
       var constructorNode = _gobbleVariable(context, 4); // stop at CallExpression type
       if (constructorNode.type !== 4) {
-        _throwError('Expression of type: ' + constructorNode.type +
-          ' not supported for constructor expression');
+        _throwError(
+          'Expression of type: ' +
+            constructorNode.type +
+            ' not supported for constructor expression'
+        );
       }
       return {
         type: 12, // 'ConstructorExpression'
@@ -431,17 +456,20 @@ const ExpParser = function () {
     while (context.index < length) {
       _gobbleSpaces(context);
       ch_i = expr.charCodeAt(context.index);
-      if (ch_i === termination) { // done parsing
+      if (ch_i === termination) {
+        // done parsing
         closed = true;
         context.index++;
         if (termination === CPAREN_CODE && separator_count && separator_count >= args.length) {
           _throwError('Unexpected token ' + String.fromCharCode(termination), context.index);
         }
         break;
-      } else if (ch_i === COMMA_CODE) { // between expressions
+      } else if (ch_i === COMMA_CODE) {
+        // between expressions
         context.index++;
         separator_count++;
-        if (separator_count !== args.length) { // missing argument
+        if (separator_count !== args.length) {
+          // missing argument
           if (termination === CPAREN_CODE) {
             _throwError('Unexpected token ,', context.index);
           } else if (termination === CBRACK_CODE) {
@@ -474,8 +502,7 @@ const ExpParser = function () {
   // e.g. `Math.acos(obj.angle)`
   function _gobbleVariable(context, stopAtType) {
     var expr = context.expr;
-    var ch_i,
-      node;
+    var ch_i, node;
     ch_i = expr.charCodeAt(context.index);
 
     if (ch_i === OPAREN_CODE) {
@@ -493,8 +520,12 @@ const ExpParser = function () {
 
     _gobbleSpaces(context);
     ch_i = expr.charCodeAt(context.index);
-    while (ch_i === PERIOD_CODE || ch_i === OBRACK_CODE || ch_i === OPAREN_CODE ||
-      _isOptionalChaining(context)) {
+    while (
+      ch_i === PERIOD_CODE ||
+      ch_i === OBRACK_CODE ||
+      ch_i === OPAREN_CODE ||
+      _isOptionalChaining(context)
+    ) {
       context.index++;
       if (ch_i === PERIOD_CODE) {
         _gobbleSpaces(context);
@@ -580,7 +611,6 @@ const ExpParser = function () {
   function _gobbleFunction(context) {
     var expr = context.expr;
 
-
     _gobbleSpaces(context);
     var ch_i = expr.charCodeAt(context.index);
     if (ch_i !== OPAREN_CODE) {
@@ -639,13 +669,16 @@ const ExpParser = function () {
     while (context.index < length && !closed) {
       _gobbleSpaces(context);
       var ch_i = expr.charCodeAt(context.index);
-      if (ch_i === CBRACE_CODE) { // done parsing
+      if (ch_i === CBRACE_CODE) {
+        // done parsing
         closed = true;
         context.index++;
-      } else if (ch_i === COMMA_CODE) { // between expressions
+      } else if (ch_i === COMMA_CODE) {
+        // between expressions
         context.index++;
         separator_count++;
-        if (separator_count !== props.length) { // missing argument
+        if (separator_count !== props.length) {
+          // missing argument
           _throwError('Unexpected token ,', context.index);
         }
       } else {
@@ -659,7 +692,7 @@ const ExpParser = function () {
         _gobbleSpaces(context);
         ch_i = expr.charCodeAt(context.index);
         if (ch_i !== COLON_CODE) {
-          _throwError('Expected \':\'. Found ' + String.fromCharCode(ch_i), context.index);
+          _throwError("Expected ':'. Found " + String.fromCharCode(ch_i), context.index);
         }
         context.index++;
 
@@ -723,7 +756,6 @@ const ExpParser = function () {
     }, 0);
   }
 
-
   // Operations
   // ----------
   // Set `t` to `true` to save space (when minified, not gzipped)
@@ -780,9 +812,9 @@ const ExpParser = function () {
   // Also note that `a && b` and `a || b` are *logical* expressions, not binary expressions
   function _createBinaryExpression(operator, left, right, context) {
     if (operator === '=' && !context.writer) {
-      _throwError('Unexpected operator \'=\'', context.index);
+      _throwError("Unexpected operator '='", context.index);
     }
-    var type = (operator === '||' || operator === '&&') ? 7 : 6; // ? 'LogicalExpression' : 'BinaryExpression'
+    var type = operator === '||' || operator === '&&' ? 7 : 6; // ? 'LogicalExpression' : 'BinaryExpression'
     return {
       type: type,
       operator: operator,
@@ -796,32 +828,40 @@ const ExpParser = function () {
   // 'a?.b' (optional chaining) and 'a?.3:0' (ternary operator)
   function _isOptionalChaining(context) {
     var expr = context.expr;
-    if (expr.charCodeAt(context.index) === QUMARK_CODE &&
-        expr.charCodeAt(context.index + 1) === PERIOD_CODE &&
-        !_isDecimalDigit(expr.charCodeAt(context.index + 2))) {
-          return true;
-        }
+    if (
+      expr.charCodeAt(context.index) === QUMARK_CODE &&
+      expr.charCodeAt(context.index + 1) === PERIOD_CODE &&
+      !_isDecimalDigit(expr.charCodeAt(context.index + 2))
+    ) {
+      return true;
+    }
     return false;
   }
 
   // `ch` is a character code in the next three functions
   function _isDecimalDigit(ch) {
-    return (ch >= 48 && ch <= 57); // 0...9
+    return ch >= 48 && ch <= 57; // 0...9
   }
 
   function _isIdentifierStart(ch) {
-    return (ch === 36) || (ch === 95) || // `$` and `_`
+    return (
+      ch === 36 ||
+      ch === 95 || // `$` and `_`
       (ch >= 65 && ch <= 90) || // A...Z
       (ch >= 97 && ch <= 122) || // a...z
-      (ch >= 128 && !_binary_ops[String.fromCharCode(ch)]); // any non-ASCII that is not an operator
+      (ch >= 128 && !_binary_ops[String.fromCharCode(ch)])
+    ); // any non-ASCII that is not an operator
   }
 
   function _isIdentifierPart(ch) {
-    return (ch === 36) || (ch === 95) || // `$` and `_`
+    return (
+      ch === 36 ||
+      ch === 95 || // `$` and `_`
       (ch >= 65 && ch <= 90) || // A...Z
       (ch >= 97 && ch <= 122) || // a...z
       (ch >= 48 && ch <= 57) || // 0...9
-      (ch >= 128 && !_binary_ops[String.fromCharCode(ch)]); // any non-ASCII that is not an operator
+      (ch >= 128 && !_binary_ops[String.fromCharCode(ch)])
+    ); // any non-ASCII that is not an operator
   }
 
   function _throwError(message, index) {

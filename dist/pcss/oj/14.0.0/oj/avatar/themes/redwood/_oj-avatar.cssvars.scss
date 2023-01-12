@@ -1,0 +1,24 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.avatar") {
+:root {
+
+  // avatar
+  // ----------------------------
+  --oj-avatar-bg-color:                       rgb(var(--oj-palette-neutral-rgb-130));
+  --oj-avatar-text-color:                     var(--oj-core-neutral-contrast);
+  --oj-avatar-pattern-display:                block;
+
+  --oj-avatar-size:                        4.5rem;
+  --oj-avatar-border-radius:               var(--oj-core-border-radius-xl);
+  --oj-avatar-initials-font-size:          var(--oj-typography-heading-lg-font-size);
+  --oj-avatar-initials-font-weight:        lighter;
+  --oj-avatar-icon-font-size:              2rem;
+
+  --oj-private-avatar-global-shape-default:         square;
+
+}
+
+}

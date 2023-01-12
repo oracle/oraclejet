@@ -71,6 +71,7 @@ export declare class WaterfallLayout<K extends string | number, D> extends Compo
     private _handleNewData;
     componentDidUpdate(oldProps: Readonly<Props<K, D>>, oldState: Readonly<State>): void;
     componentWillUnmount(): void;
+    private _isRenderedDataSizeChanged;
     private _delayShowSkeletons;
     private _updatePositionsForSkeletons;
     private _getOptionDefaults;

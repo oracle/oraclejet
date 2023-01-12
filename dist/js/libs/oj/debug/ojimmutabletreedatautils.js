@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -528,7 +528,7 @@ define(['exports'], function (exports) { 'use strict';
        }
        if (newPath.length === 0) {
            if (pointer.length === 1) {
-               pointer = [];
+               pointer = pointer.splice(0, 1);
            }
            else {
                if (removedItem === -1) {

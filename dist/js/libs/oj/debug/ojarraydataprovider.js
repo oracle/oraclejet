@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -313,7 +313,22 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
      */
 
     /**
-     * End of jsdoc
+     * A static method that determines whether this DataProvider defines a certain feature.
+     *
+     * @since 14.0.0
+     * @param {string} capabilityName capability name. Defined capability names are:
+     *                  "dedup", "eventFiltering", "fetchByKeys", "fetchByOffset", "fetchCapability", "fetchFirst", "filter", and "sort".
+     * @return {Object} capability information or null if undefined
+     * @export
+     * @expose
+     * @instance
+     * @memberof ArrayDataProvider
+     * @name getCapability
+     * @static
+     * @method
+     * @ojsignature {target: "Type",
+     *               value: "(capabilityName: string): any"}
+     *
      */
 
     class ArrayDataProvider {
@@ -352,13 +367,17 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 }
             };
             this.FetchByOffsetResults = class {
-                constructor(fetchParameters, results, done) {
+                constructor(fetchParameters, results, done, totalFilteredRowCount) {
                     this.fetchParameters = fetchParameters;
                     this.results = results;
                     this.done = done;
+                    this.totalFilteredRowCount = totalFilteredRowCount;
                     this[ArrayDataProvider._FETCHPARAMETERS] = fetchParameters;
                     this[ArrayDataProvider._RESULTS] = results;
                     this[ArrayDataProvider._DONE] = done;
+                    if ((fetchParameters === null || fetchParameters === void 0 ? void 0 : fetchParameters.includeFilteredRowCount) === 'enabled') {
+                        this[ArrayDataProvider._TOTALFILTEREDROWCOUNR] = totalFilteredRowCount;
+                    }
                 }
             };
             this.FetchListParameters = class {
@@ -394,11 +413,12 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 Symbol.asyncIterator,
                 _a);
             this.AsyncIterator = class {
-                constructor(_parent, _nextFunc, _params, _offset) {
+                constructor(_parent, _nextFunc, _params, _offset, _signal) {
                     this._parent = _parent;
                     this._nextFunc = _nextFunc;
                     this._params = _params;
                     this._offset = _offset;
+                    this._signal = _signal;
                     this._clientId = (_params && _params.clientId) || Symbol();
                     _parent._mapClientIdToIteratorInfo.set(this._clientId, {
                         offset: _offset,
@@ -412,58 +432,59 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     this._cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] = _parent._mutationSequenceNum;
                 }
                 ['next']() {
-                    var _a, _b, _c, _d, _e, _f;
-                    const cachedIteratorInfo = this._parent._mapClientIdToIteratorInfo.get(this._clientId);
-                    const cachedOffset = cachedIteratorInfo ? cachedIteratorInfo.offset : null;
-                    const resultObj = this._nextFunc(this._params, cachedOffset, false, this._cacheObj);
-                    Object.defineProperty(resultObj.result.value, 'totalFilteredRowCount', {
-                        get: () => {
-                            return this._getTotalFilteredRowCount();
-                        },
-                        enumerable: true
-                    });
-                    const lastRowKey = ((_a = resultObj.result.value.metadata) === null || _a === void 0 ? void 0 : _a.length) > 0
-                        ? (_b = resultObj.result.value.metadata[resultObj.result.value.metadata.length - 1]) === null || _b === void 0 ? void 0 : _b.key
-                        : null;
-                    const lastData = ((_c = resultObj.result.value.data) === null || _c === void 0 ? void 0 : _c.length) > 0
-                        ? resultObj.result.value.data[resultObj.result.value.data.length - 1]
-                        : null;
-                    const rowKeyArray = (_d = resultObj.result.value.metadata) === null || _d === void 0 ? void 0 : _d.map((itemMetadata) => itemMetadata.key);
-                    this._parent._mapClientIdToIteratorInfo.set(this._clientId, {
-                        offset: resultObj.offset,
-                        rowKey: lastRowKey,
-                        data: lastData,
-                        filterCriterion: (_e = this._params) === null || _e === void 0 ? void 0 : _e.filterCriterion,
-                        sortCriteria: (_f = this._params) === null || _f === void 0 ? void 0 : _f.sortCriteria,
-                        fetchedRowKeys: rowKeyArray
-                            ? (cachedIteratorInfo === null || cachedIteratorInfo === void 0 ? void 0 : cachedIteratorInfo.fetchedRowKeys)
-                                ? cachedIteratorInfo.fetchedRowKeys.concat(rowKeyArray)
-                                : rowKeyArray
-                            : []
-                    });
-                    return Promise.resolve(resultObj.result);
-                }
-                _getTotalFilteredRowCount() {
-                    if (this._totalFilteredRowCount === undefined) {
-                        const rowData = this._parent._getRowData();
-                        const filterDef = this._params ? this._params[ArrayDataProvider._FILTERCRITERION] : null;
-                        if (filterDef) {
-                            this._totalFilteredRowCount = 0;
-                            let filterCriterion = ojdataprovider.FilterFactory.getFilter({
-                                filterDef: filterDef,
-                                filterOptions: this._parent.options
-                            });
-                            for (let i = 0; i < rowData.length; i++) {
-                                if (filterCriterion.filter(rowData[i])) {
-                                    ++this._totalFilteredRowCount;
-                                }
-                            }
-                        }
-                        else {
-                            this._totalFilteredRowCount = rowData.length;
+                    const signal = this._signal;
+                    if (this._signal) {
+                        const reason = this._signal.reason;
+                        if (this._signal.aborted) {
+                            return Promise.reject(new DOMException(reason, 'AbortError'));
                         }
                     }
-                    return this._totalFilteredRowCount;
+                    return new Promise((resolve, reject) => {
+                        var _a, _b, _c, _d, _e, _f;
+                        if (signal) {
+                            const reason = signal.reason;
+                            signal.addEventListener('abort', (e) => {
+                                return reject(new DOMException(reason, 'AbortError'));
+                            });
+                        }
+                        const cachedIteratorInfo = this._parent._mapClientIdToIteratorInfo.get(this._clientId);
+                        const cachedOffset = cachedIteratorInfo ? cachedIteratorInfo.offset : null;
+                        const resultObj = this._nextFunc(this._params, cachedOffset, false, this._cacheObj);
+                        Object.defineProperty(resultObj.result.value, 'totalFilteredRowCount', {
+                            get: () => {
+                                var _a;
+                                if (((_a = this._params) === null || _a === void 0 ? void 0 : _a.includeFilteredRowCount) === 'enabled') {
+                                    if (this._totalFilteredRowCount === undefined ||
+                                        this._parent._resetTotalFilteredRowCount) {
+                                        this._totalFilteredRowCount = this._parent._getTotalFilteredRowCount(this._params);
+                                        this._parent._resetTotalFilteredRowCount = false;
+                                    }
+                                    return this._totalFilteredRowCount;
+                                }
+                            },
+                            enumerable: true
+                        });
+                        const lastRowKey = ((_a = resultObj.result.value.metadata) === null || _a === void 0 ? void 0 : _a.length) > 0
+                            ? (_b = resultObj.result.value.metadata[resultObj.result.value.metadata.length - 1]) === null || _b === void 0 ? void 0 : _b.key
+                            : null;
+                        const lastData = ((_c = resultObj.result.value.data) === null || _c === void 0 ? void 0 : _c.length) > 0
+                            ? resultObj.result.value.data[resultObj.result.value.data.length - 1]
+                            : null;
+                        const rowKeyArray = (_d = resultObj.result.value.metadata) === null || _d === void 0 ? void 0 : _d.map((itemMetadata) => itemMetadata.key);
+                        this._parent._mapClientIdToIteratorInfo.set(this._clientId, {
+                            offset: resultObj.offset,
+                            rowKey: lastRowKey,
+                            data: lastData,
+                            filterCriterion: (_e = this._params) === null || _e === void 0 ? void 0 : _e.filterCriterion,
+                            sortCriteria: (_f = this._params) === null || _f === void 0 ? void 0 : _f.sortCriteria,
+                            fetchedRowKeys: rowKeyArray
+                                ? (cachedIteratorInfo === null || cachedIteratorInfo === void 0 ? void 0 : cachedIteratorInfo.fetchedRowKeys)
+                                    ? cachedIteratorInfo.fetchedRowKeys.concat(rowKeyArray)
+                                    : rowKeyArray
+                                : []
+                        });
+                        return resolve(resultObj.result);
+                    });
                 }
             };
             this.AsyncIteratorYieldResult = class {
@@ -545,74 +566,130 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             });
         }
         fetchByKeys(params) {
-            this._generateKeysIfNeeded();
-            const results = new ojMap();
-            const keys = this._getKeys();
-            const fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
-            let findKeyIndex, i = 0;
-            if (params) {
-                const rowData = this._getRowData();
-                params[ArrayDataProvider._KEYS].forEach((searchKey) => {
-                    findKeyIndex = null;
-                    for (i = 0; i < keys.length; i++) {
-                        if (oj.Object.compareValues(keys[i], searchKey)) {
-                            findKeyIndex = i;
-                            break;
-                        }
-                    }
-                    if (findKeyIndex != null && findKeyIndex >= 0) {
-                        let row = rowData[findKeyIndex];
-                        if (fetchAttributes && fetchAttributes.length > 0) {
-                            const updatedData = {};
-                            this._filterRowAttributes(fetchAttributes, row, updatedData);
-                            row = updatedData;
-                        }
-                        results.set(searchKey, new this.Item(new this.ItemMetadata(searchKey), row));
-                    }
-                });
-                return Promise.resolve(new this.FetchByKeysResults(params, results));
+            const signal = params ? params.signal : undefined;
+            if (signal) {
+                const reason = signal.reason;
+                if (signal.aborted) {
+                    return Promise.reject(new DOMException(reason, 'AbortError'));
+                }
             }
-            else {
-                return Promise.reject('Keys are a required parameter');
-            }
+            return new Promise((resolve, reject) => {
+                if (signal) {
+                    const reason = signal.reason;
+                    signal.addEventListener('abort', (e) => {
+                        return reject(new DOMException(reason, 'AbortError'));
+                    });
+                }
+                this._generateKeysIfNeeded();
+                const results = new ojMap();
+                const keys = this._getKeys();
+                const fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
+                let findKeyIndex, i = 0;
+                if (params) {
+                    const rowData = this._getRowData();
+                    params[ArrayDataProvider._KEYS].forEach((searchKey) => {
+                        findKeyIndex = null;
+                        for (i = 0; i < keys.length; i++) {
+                            if (oj.Object.compareValues(keys[i], searchKey)) {
+                                findKeyIndex = i;
+                                break;
+                            }
+                        }
+                        if (findKeyIndex != null && findKeyIndex >= 0) {
+                            let row = rowData[findKeyIndex];
+                            if (fetchAttributes && fetchAttributes.length > 0) {
+                                const updatedData = {};
+                                this._filterRowAttributes(fetchAttributes, row, updatedData);
+                                row = updatedData;
+                            }
+                            results.set(searchKey, new this.Item(new this.ItemMetadata(searchKey), row));
+                        }
+                    });
+                    return resolve(new this.FetchByKeysResults(params, results));
+                }
+                else {
+                    reject('Keys are a required parameter');
+                }
+            });
         }
         fetchByOffset(params) {
-            const size = params != null ? params[ArrayDataProvider._SIZE] : -1;
-            const sortCriteria = params != null ? params[ArrayDataProvider._SORTCRITERIA] : null;
-            const offset = params != null
-                ? params[ArrayDataProvider._OFFSET] > 0
-                    ? params[ArrayDataProvider._OFFSET]
-                    : 0
-                : 0;
-            const fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
-            const filterCriterion = params != null ? params[ArrayDataProvider._FILTERCRITERION] : null;
-            this._generateKeysIfNeeded();
-            let resultsArray = [];
-            let done = true;
-            if (params) {
-                const fetchParams = new this.FetchListParameters(size, sortCriteria, filterCriterion, fetchAttributes);
-                const iteratorResults = this._fetchFrom(fetchParams, offset, true).result;
-                if (fetchParams[ArrayDataProvider._SORTCRITERIA]) {
-                    params[ArrayDataProvider._SORTCRITERIA] = fetchParams[ArrayDataProvider._SORTCRITERIA];
+            const signal = params ? params.signal : undefined;
+            if (signal) {
+                const reason = signal.reason;
+                if (signal.aborted) {
+                    return Promise.reject(new DOMException(reason, 'AbortError'));
                 }
-                const value = iteratorResults[ArrayDataProvider._VALUE];
-                done = iteratorResults[ArrayDataProvider._DONE];
-                const data = value[ArrayDataProvider._DATA];
-                const keys = value[ArrayDataProvider._METADATA].map((value) => {
-                    return value[ArrayDataProvider._KEY];
+            }
+            return new Promise((resolve, reject) => {
+                if (signal) {
+                    const reason = signal.reason;
+                    signal.addEventListener('abort', (e) => {
+                        return reject(new DOMException(reason, 'AbortError'));
+                    });
+                }
+                const size = params != null ? params[ArrayDataProvider._SIZE] : -1;
+                const sortCriteria = params != null ? params[ArrayDataProvider._SORTCRITERIA] : null;
+                const offset = params != null
+                    ? params[ArrayDataProvider._OFFSET] > 0
+                        ? params[ArrayDataProvider._OFFSET]
+                        : 0
+                    : 0;
+                const fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
+                const filterCriterion = params != null ? params[ArrayDataProvider._FILTERCRITERION] : null;
+                this._generateKeysIfNeeded();
+                let resultsArray = [];
+                let done = true;
+                let totalFilteredRowCount;
+                if (params) {
+                    const fetchParams = new this.FetchListParameters(size, sortCriteria, filterCriterion, fetchAttributes);
+                    const iteratorResults = this._fetchFrom(fetchParams, offset, true).result;
+                    if (fetchParams[ArrayDataProvider._SORTCRITERIA]) {
+                        params[ArrayDataProvider._SORTCRITERIA] = fetchParams[ArrayDataProvider._SORTCRITERIA];
+                    }
+                    const value = iteratorResults[ArrayDataProvider._VALUE];
+                    done = iteratorResults[ArrayDataProvider._DONE];
+                    const data = value[ArrayDataProvider._DATA];
+                    const keys = value[ArrayDataProvider._METADATA].map((value) => {
+                        return value[ArrayDataProvider._KEY];
+                    });
+                    resultsArray = data.map((value, index) => {
+                        return new this.Item(new this.ItemMetadata(keys[index]), value);
+                    });
+                    if (params.includeFilteredRowCount === 'enabled') {
+                        totalFilteredRowCount = this._getTotalFilteredRowCount(params);
+                    }
+                    return resolve(new this.FetchByOffsetResults(params, resultsArray, done, totalFilteredRowCount));
+                }
+                else {
+                    reject('Offset is a required parameter');
+                }
+            });
+        }
+        _getTotalFilteredRowCount(params) {
+            const rowData = this._getRowData();
+            const filterDef = params ? params[ArrayDataProvider._FILTERCRITERION] : null;
+            let totalFilteredRowCount = -1;
+            if (filterDef) {
+                totalFilteredRowCount = 0;
+                let filterCriterion = ojdataprovider.FilterFactory.getFilter({
+                    filterDef: filterDef,
+                    filterOptions: this.options
                 });
-                resultsArray = data.map((value, index) => {
-                    return new this.Item(new this.ItemMetadata(keys[index]), value);
-                });
-                return Promise.resolve(new this.FetchByOffsetResults(params, resultsArray, done));
+                for (let i = 0; i < rowData.length; i++) {
+                    if (filterCriterion.filter(rowData[i])) {
+                        ++totalFilteredRowCount;
+                    }
+                }
             }
             else {
-                return Promise.reject('Offset is a required parameter');
+                totalFilteredRowCount = rowData.length;
             }
+            return totalFilteredRowCount;
         }
         fetchFirst(params) {
             const offset = 0;
-            return new this.AsyncIterable(new this.AsyncIterator(this, this._fetchFrom.bind(this), params, offset));
+            const signal = params ? params.signal : undefined;
+            return new this.AsyncIterable(new this.AsyncIterator(this, this._fetchFrom.bind(this), params, offset, signal));
         }
         getCapability(capabilityName) {
             return ArrayDataProvider.getCapability(capabilityName);
@@ -639,7 +716,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 return Object.assign({ implementation: 'lookup' }, ArrayDataProvider._getFetchCapability());
             }
             else if (capabilityName === 'fetchByOffset') {
-                return Object.assign({ implementation: 'randomAccess' }, ArrayDataProvider._getFetchCapability());
+                return Object.assign({ implementation: 'randomAccess', totalFilteredRowCount: 'exact' }, ArrayDataProvider._getFetchCapability());
             }
             else if (capabilityName === 'fetchFirst') {
                 return Object.assign({ iterationSpeed: 'immediate', totalFilteredRowCount: 'exact' }, ArrayDataProvider._getFetchCapability());
@@ -779,6 +856,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     this._mutationSequenceNum++;
                     let onlyAdds = true;
                     let onlyDeletes = true;
+                    this._resetTotalFilteredRowCount = true;
                     changes.forEach((change) => {
                         if (change['status'] === 'deleted') {
                             onlyAdds = false;
@@ -1216,21 +1294,6 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 if (sortCriteria == null) {
                     return implicitSort;
                 }
-                const mergedSortCriteria = sortCriteria.slice(0);
-                let i, j, found;
-                for (i = 0; i < implicitSort.length; i++) {
-                    found = false;
-                    for (j = 0; j < mergedSortCriteria.length; j++) {
-                        if (mergedSortCriteria[j][ArrayDataProvider._ATTRIBUTE] ===
-                            implicitSort[i][ArrayDataProvider._ATTRIBUTE]) {
-                            found = true;
-                        }
-                    }
-                    if (!found) {
-                        mergedSortCriteria.push(implicitSort[i]);
-                    }
-                }
-                return mergedSortCriteria;
             }
             else {
                 return sortCriteria;
@@ -1366,6 +1429,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
     ArrayDataProvider._ATDEFAULT = '@default';
     ArrayDataProvider._MUTATIONSEQUENCENUM = 'mutationSequenceNum';
     ArrayDataProvider._PARENT = '_parent';
+    ArrayDataProvider._TOTALFILTEREDROWCOUNR = 'totalFilteredRowCount';
     ojeventtarget.EventTargetMixin.applyMixin(ArrayDataProvider);
     oj._registerLegacyNamespaceProp('ArrayDataProvider', ArrayDataProvider);
 

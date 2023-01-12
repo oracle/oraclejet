@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -338,9 +338,11 @@ var DvtGanttStyleUtils = {
    */
   getActualTaskHeight: (options, context) => {
     if (context.getThemeBehavior() === 'alta') {
-      return DvtGanttStyleUtils.getStandaloneTaskHeight(options)
-        - DvtGanttStyleUtils.getBaselineMarginTop(options)
-        - DvtGanttStyleUtils.getBaselineTaskHeight(options);
+      return (
+        DvtGanttStyleUtils.getStandaloneTaskHeight(options) -
+        DvtGanttStyleUtils.getBaselineMarginTop(options) -
+        DvtGanttStyleUtils.getBaselineTaskHeight(options)
+      );
     }
     return DvtGanttStyleUtils.getStandaloneTaskHeight(options);
   },
@@ -365,10 +367,13 @@ var DvtGanttStyleUtils = {
    */
   getBaselineTaskHeight: (options) => {
     var resources = options ? options['_resources'] : null;
-    if (resources && resources['taskDefaults']
-        && resources['taskDefaults']['baseline']
-        && resources['taskDefaults']['baseline']['height'] != null) {
-          return DvtGanttStyleUtils.getSizeInPixels(resources['taskDefaults']['baseline']['height']);
+    if (
+      resources &&
+      resources['taskDefaults'] &&
+      resources['taskDefaults']['baseline'] &&
+      resources['taskDefaults']['baseline']['height'] != null
+    ) {
+      return DvtGanttStyleUtils.getSizeInPixels(resources['taskDefaults']['baseline']['height']);
     }
     return DvtGanttStyleUtils._DEFAULT_BASELINE_TASK_HEIGHT;
   },
@@ -529,8 +534,7 @@ var DvtGanttStyleUtils = {
    */
   getTimeAxisHeight: (options, axisProp) => {
     var axisOptions = options[axisProp];
-    if (axisOptions && axisOptions['height'])
-      return axisOptions['height'];
+    if (axisOptions && axisOptions['height']) return axisOptions['height'];
 
     var resources = options['_resources'];
     if (resources && resources[axisProp] && resources[axisProp]['height'] != null)
@@ -547,8 +551,7 @@ var DvtGanttStyleUtils = {
   getMajorAxisLabelStyle: (options) => {
     var resources = options['_resources'];
     var labelStyleString = DvtGanttStyleUtils._DEFAULT_TIMEAXES_LABEL_STYLE;
-    if (resources)
-      labelStyleString = resources['majorAxisLabelFontProp'];
+    if (resources) labelStyleString = resources['majorAxisLabelFontProp'];
     return new CSSStyle(labelStyleString);
   },
 
@@ -560,8 +563,7 @@ var DvtGanttStyleUtils = {
   getMinorAxisLabelStyle: (options) => {
     var resources = options['_resources'];
     var labelStyleString = DvtGanttStyleUtils._DEFAULT_TIMEAXES_LABEL_STYLE;
-    if (resources)
-      labelStyleString = resources['minorAxisLabelFontProp'];
+    if (resources) labelStyleString = resources['minorAxisLabelFontProp'];
     return new CSSStyle(labelStyleString);
   },
 
@@ -691,8 +693,7 @@ var DvtGanttStyleUtils = {
   getTaskLabelStyle: (options) => {
     var resources = options['_resources'];
     var labelStyleString = '';
-    if (resources)
-      labelStyleString = resources['taskLabelFontProp'];
+    if (resources) labelStyleString = resources['taskLabelFontProp'];
     return new CSSStyle(labelStyleString);
   },
 
@@ -704,8 +705,7 @@ var DvtGanttStyleUtils = {
   getRowLabelStyle: (options) => {
     var resources = options['_resources'];
     var labelStyleString = '';
-    if (resources)
-      labelStyleString = resources['rowLabelFontProp'];
+    if (resources) labelStyleString = resources['rowLabelFontProp'];
     return new CSSStyle(labelStyleString);
   },
 
@@ -714,7 +714,7 @@ var DvtGanttStyleUtils = {
    * @param {object} options The object containing data and specifications for the component.
    * @return {number} The row label (container) start padding.
    */
-   getRowLabelPaddingStart: (options) => {
+  getRowLabelPaddingStart: (options) => {
     var resources = options ? options['_resources'] : null;
     if (resources && resources['rowLabelPaddingStart'] != null) {
       return DvtGanttStyleUtils.getSizeInPixels(resources['rowLabelPaddingStart']);
@@ -727,7 +727,7 @@ var DvtGanttStyleUtils = {
    * @param {object} options The object containing data and specifications for the component.
    * @return {number} The row label (container) end padding.
    */
-   getRowLabelPaddingEnd: (options) => {
+  getRowLabelPaddingEnd: (options) => {
     var resources = options ? options['_resources'] : null;
     if (resources && resources['rowLabelPaddingEnd'] != null) {
       return DvtGanttStyleUtils.getSizeInPixels(resources['rowLabelPaddingEnd']);
@@ -770,8 +770,7 @@ var DvtGanttStyleUtils = {
       var chartStyle = resources['chartArea'];
       if (chartStyle) {
         var strokeWidth = chartStyle['strokeWidth'];
-        if (strokeWidth)
-          return CSSStyle.toNumber(strokeWidth);
+        if (strokeWidth) return CSSStyle.toNumber(strokeWidth);
       }
     }
     return 1; // default for browsers is 1px when not specified
@@ -796,7 +795,9 @@ var DvtGanttStyleUtils = {
    * @return {number} The horizontal gridline width in px.
    */
   getHorizontalGridlineWidth: (options) => {
-    return options['_resources'] ? CSSStyle.toNumber(options['_resources']['horizontalGridlineWidth']) : 1; // default for browsers is 1px when not specified
+    return options['_resources']
+      ? CSSStyle.toNumber(options['_resources']['horizontalGridlineWidth'])
+      : 1; // default for browsers is 1px when not specified
   },
 
   /**
@@ -806,7 +807,7 @@ var DvtGanttStyleUtils = {
    */
   getAnimationDuration: (options) => {
     var animationDuration = DvtGanttStyleUtils._DEFAULT_ANIMATION_DURATION,
-        customAnimationDuration;
+      customAnimationDuration;
 
     // Override with animation duration from CSS if possible
     if (options['_resources']) {
@@ -841,8 +842,8 @@ var DvtGanttStyleUtils = {
    */
   getTaskResizeHandleWidth: () => {
     return !Agent.isTouchDevice()
-            ? DvtGanttStyleUtils._DEFAULT_TASK_RESIZE_HANDLE_WIDTH
-            : DvtGanttStyleUtils._DEFAULT_TASK_RESIZE_HANDLE_WIDTH_TOUCH;
+      ? DvtGanttStyleUtils._DEFAULT_TASK_RESIZE_HANDLE_WIDTH
+      : DvtGanttStyleUtils._DEFAULT_TASK_RESIZE_HANDLE_WIDTH_TOUCH;
   },
 
   /**
@@ -852,22 +853,29 @@ var DvtGanttStyleUtils = {
    * @return {number} The size of the subcomponent in pixels.
    */
   getSizeInPixels: (size, totalSize) => {
-    if (typeof(size) === 'string') {
-      if (size.slice(-1) === '%')
-        return totalSize * Number(size.slice(0, -1)) / 100;
-      else if (size.slice(-2) === 'px')
-        return Number(size.slice(0, -2));
-      else
-        size = Number(size);
+    if (typeof size === 'string') {
+      if (size.slice(-1) === '%') return (totalSize * Number(size.slice(0, -1))) / 100;
+      else if (size.slice(-2) === 'px') return Number(size.slice(0, -2));
+      else size = Number(size);
     }
 
-    if (typeof(size) === 'number') {
-      if (size <= 1 && totalSize != null) // assume to be ratio
+    if (typeof size === 'number') {
+      if (size <= 1 && totalSize != null)
+        // assume to be ratio
         return totalSize * size;
-      else // assume to be absolute size in pixels
-        return size;
-    } else
-      return 0;
+      // assume to be absolute size in pixels
+      else return size;
+    } else return 0;
+  },
+
+  /**
+   * Determines whether the given displayable contains the given className.
+   * @param {Displayable} displayable
+   * @param {string} className
+   * @return {boolean} Whether the given displayable contains the given className.
+   */
+  hasClass: (displayable, className) => {
+    return displayable.getElem().classList.contains(className);
   }
 };
 
@@ -878,7 +886,7 @@ var DvtGanttStyleUtils = {
  * @constructor
  * @implements {DvtKeyboardNavigable}
  */
- class DvtGanttDependencyNode extends Container {
+class DvtGanttDependencyNode extends Container {
   constructor(gantt) {
     super(gantt.getCtx(), null);
 
@@ -971,25 +979,59 @@ var DvtGanttStyleUtils = {
    */
   static _getTaskStart(taskNode, toEdge) {
     var isRTL = Agent.isRightToLeft(taskNode.getGantt().getCtx()),
-        options = taskNode.getGantt().getOptions(),
-        taskMainShape = taskNode.getTask().getShape('main'),
-        taskLabel = taskNode.getTaskLabel(),
-        taskLabelOutputText = taskLabel.getLabelOutputText(),
-        labelPosition = taskLabel.getEffectiveLabelPosition(),
-        labelMargin = DvtGanttStyleUtils.getTaskLabelMargin(options),
-        taskMargin = toEdge ? 0 : DvtGanttStyleUtils.getTaskMargin(options);
+      options = taskNode.getGantt().getOptions(),
+      taskMainShape = taskNode.getTask().getShape('main'),
+      taskLabel = taskNode.getTaskLabel(),
+      taskLabelOutputText = taskLabel.getLabelOutputText(),
+      labelPosition = taskLabel.getEffectiveLabelPosition(),
+      labelMargin = DvtGanttStyleUtils.getTaskLabelMargin(options),
+      taskMargin = toEdge ? 0 : DvtGanttStyleUtils.getTaskMargin(options);
 
     if (isRTL) {
-      if (!toEdge && taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition === 'end') {
-        return (taskNode.getFinalX() + taskMainShape.getFinalX()) - taskMainShape.getFinalWidth() - taskMainShape.getPhysicalEndOffset() - taskLabelOutputText.getDimensions().w - labelMargin * 2; // padding before + after
+      if (
+        !toEdge &&
+        taskLabelOutputText != null &&
+        taskLabelOutputText.getParent() != null &&
+        labelPosition === 'end'
+      ) {
+        return (
+          taskNode.getFinalX() +
+          taskMainShape.getFinalX() -
+          taskMainShape.getFinalWidth() -
+          taskMainShape.getPhysicalEndOffset() -
+          taskLabelOutputText.getDimensions().w -
+          labelMargin * 2
+        ); // padding before + after
       } else {
-        return (taskNode.getFinalX() + taskMainShape.getFinalX()) - taskMainShape.getFinalWidth() - taskMainShape.getPhysicalEndOffset() - taskMargin;
+        return (
+          taskNode.getFinalX() +
+          taskMainShape.getFinalX() -
+          taskMainShape.getFinalWidth() -
+          taskMainShape.getPhysicalEndOffset() -
+          taskMargin
+        );
       }
     } else {
-      if (!toEdge && taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition === 'start') {
-        return (taskNode.getFinalX() + taskMainShape.getFinalX()) - taskMainShape.getPhysicalStartOffset() - taskLabelOutputText.getDimensions().w - labelMargin * 2;
+      if (
+        !toEdge &&
+        taskLabelOutputText != null &&
+        taskLabelOutputText.getParent() != null &&
+        labelPosition === 'start'
+      ) {
+        return (
+          taskNode.getFinalX() +
+          taskMainShape.getFinalX() -
+          taskMainShape.getPhysicalStartOffset() -
+          taskLabelOutputText.getDimensions().w -
+          labelMargin * 2
+        );
       } else {
-        return (taskNode.getFinalX() + taskMainShape.getFinalX()) - taskMainShape.getPhysicalStartOffset() - taskMargin;
+        return (
+          taskNode.getFinalX() +
+          taskMainShape.getFinalX() -
+          taskMainShape.getPhysicalStartOffset() -
+          taskMargin
+        );
       }
     }
   }
@@ -1004,8 +1046,15 @@ var DvtGanttStyleUtils = {
     var task = taskNode.getTask();
     var taskMainShape = task.getShape('main');
     var theme = taskNode.getGantt().getCtx().getThemeBehavior();
-    var availableShapeHeight = (task.isSummary('main') && theme === 'alta') ? taskNode.getLayoutObject()['height'] : taskMainShape.getFinalHeight();
-    return DvtGanttDependencyNode._getTaskTop(taskNode) + taskMainShape.getFinalY() + Math.round(availableShapeHeight / 2);
+    var availableShapeHeight =
+      task.isSummary('main') && theme === 'alta'
+        ? taskNode.getLayoutObject()['height']
+        : taskMainShape.getFinalHeight();
+    return (
+      DvtGanttDependencyNode._getTaskTop(taskNode) +
+      taskMainShape.getFinalY() +
+      Math.round(availableShapeHeight / 2)
+    );
   }
 
   /**
@@ -1017,25 +1066,59 @@ var DvtGanttStyleUtils = {
    */
   static _getTaskEnd(taskNode, toEdge) {
     var isRTL = Agent.isRightToLeft(taskNode.getGantt().getCtx()),
-        options = taskNode.getGantt().getOptions(),
-        taskMainShape = taskNode.getTask().getShape('main'),
-        taskLabel = taskNode.getTaskLabel(),
-        taskLabelOutputText = taskLabel.getLabelOutputText(),
-        labelPosition = taskLabel.getEffectiveLabelPosition(),
-        labelMargin = DvtGanttStyleUtils.getTaskLabelMargin(options),
-        taskMargin = toEdge ? 0 : DvtGanttStyleUtils.getTaskMargin(options);
+      options = taskNode.getGantt().getOptions(),
+      taskMainShape = taskNode.getTask().getShape('main'),
+      taskLabel = taskNode.getTaskLabel(),
+      taskLabelOutputText = taskLabel.getLabelOutputText(),
+      labelPosition = taskLabel.getEffectiveLabelPosition(),
+      labelMargin = DvtGanttStyleUtils.getTaskLabelMargin(options),
+      taskMargin = toEdge ? 0 : DvtGanttStyleUtils.getTaskMargin(options);
 
     if (isRTL) {
-      if (!toEdge && taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition === 'start') {
-        return (taskNode.getFinalX() + taskMainShape.getFinalX()) + taskMainShape.getPhysicalStartOffset() + taskLabelOutputText.getDimensions().w + labelMargin * 2;
+      if (
+        !toEdge &&
+        taskLabelOutputText != null &&
+        taskLabelOutputText.getParent() != null &&
+        labelPosition === 'start'
+      ) {
+        return (
+          taskNode.getFinalX() +
+          taskMainShape.getFinalX() +
+          taskMainShape.getPhysicalStartOffset() +
+          taskLabelOutputText.getDimensions().w +
+          labelMargin * 2
+        );
       } else {
-        return (taskNode.getFinalX() + taskMainShape.getFinalX()) + taskMainShape.getPhysicalStartOffset() + taskMargin;
+        return (
+          taskNode.getFinalX() +
+          taskMainShape.getFinalX() +
+          taskMainShape.getPhysicalStartOffset() +
+          taskMargin
+        );
       }
     } else {
-      if (!toEdge && taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition === 'end') {
-        return (taskNode.getFinalX() + taskMainShape.getFinalX()) + taskMainShape.getFinalWidth() + taskMainShape.getPhysicalEndOffset() + taskLabelOutputText.getDimensions().w + labelMargin * 2;
+      if (
+        !toEdge &&
+        taskLabelOutputText != null &&
+        taskLabelOutputText.getParent() != null &&
+        labelPosition === 'end'
+      ) {
+        return (
+          taskNode.getFinalX() +
+          taskMainShape.getFinalX() +
+          taskMainShape.getFinalWidth() +
+          taskMainShape.getPhysicalEndOffset() +
+          taskLabelOutputText.getDimensions().w +
+          labelMargin * 2
+        );
       } else {
-        return (taskNode.getFinalX() + taskMainShape.getFinalX()) + taskMainShape.getFinalWidth() + taskMainShape.getPhysicalEndOffset() + taskMargin;
+        return (
+          taskNode.getFinalX() +
+          taskMainShape.getFinalX() +
+          taskMainShape.getFinalWidth() +
+          taskMainShape.getPhysicalEndOffset() +
+          taskMargin
+        );
       }
     }
   }
@@ -1069,8 +1152,12 @@ var DvtGanttStyleUtils = {
    * @private
    */
   static _isValidType(type) {
-    return (type === DvtGanttDependencyNode.START_START || type === DvtGanttDependencyNode.START_FINISH ||
-            type === DvtGanttDependencyNode.FINISH_START || type === DvtGanttDependencyNode.FINISH_FINISH);
+    return (
+      type === DvtGanttDependencyNode.START_START ||
+      type === DvtGanttDependencyNode.START_FINISH ||
+      type === DvtGanttDependencyNode.FINISH_START ||
+      type === DvtGanttDependencyNode.FINISH_FINISH
+    );
   }
 
   /**
@@ -1088,13 +1175,20 @@ var DvtGanttStyleUtils = {
    * @return {object} The renderer context
    */
   getRendererContext(state) {
-   var options = this._gantt.getOptions();
+    var options = this._gantt.getOptions();
     var context = this._gantt.getCtx();
     var type = this.getValue('type');
     var predecessorNode = this.getPredecessorNode();
     var successorNode = this.getSuccessorNode();
     var typeState = DvtGanttDependencyNode._getRenderingTypeState(context, type);
-    var endPoints = DvtGanttDependencyNode._getEndPoints(predecessorNode, successorNode, typeState.isTypeBeginFinish, typeState.isTypeEndFinish, true, true);
+    var endPoints = DvtGanttDependencyNode._getEndPoints(
+      predecessorNode,
+      successorNode,
+      typeState.isTypeBeginFinish,
+      typeState.isTypeEndFinish,
+      true,
+      true
+    );
     var dataContext = {
       data: this.getLayoutObject().data,
       itemData: options.dependencyData ? this.getLayoutObject()._itemData : null,
@@ -1115,7 +1209,7 @@ var DvtGanttStyleUtils = {
    * @private
    */
   _renderCustomContent(state) {
-   var gantt = this.getGantt();
+    var gantt = this.getGantt();
     var options = gantt.getOptions();
     if (this._content) {
       this.removeChild(this._content);
@@ -1146,8 +1240,7 @@ var DvtGanttStyleUtils = {
   render(container, bUpdateCustomContent) {
     var bUpdateCustomContent = bUpdateCustomContent !== false;
 
-    if (this.getParent() != container)
-      container.addChild(this);
+    if (this.getParent() != container) container.addChild(this);
 
     this.setAriaRole('img');
 
@@ -1172,16 +1265,21 @@ var DvtGanttStyleUtils = {
     } else {
       // due to IE bug https://connect.microsoft.com/IE/feedback/details/781964/,
       // which happens only on older versions of Windows (<10), we'll need to re-render the path instead of just updating its command
-      if ((Agent.browser === 'ie' || Agent.browser === 'edge')) {
+      if (Agent.browser === 'ie' || Agent.browser === 'edge') {
         this._cleanup();
       }
 
       if (this._line != null) {
         // update dependency line
-        this._line.setCmds(DvtGanttDependencyNode._calcDepLine(context, predecessorNode, successorNode, type));
+        this._line.setCmds(
+          DvtGanttDependencyNode._calcDepLine(context, predecessorNode, successorNode, type)
+        );
         var elem = this._line.getElem();
       } else {
-        var line = new Path(context, DvtGanttDependencyNode._calcDepLine(context, predecessorNode, successorNode, type));
+        var line = new Path(
+          context,
+          DvtGanttDependencyNode._calcDepLine(context, predecessorNode, successorNode, type)
+        );
         // If arc radius > 0, then leave pixel hinting--otherwise they look weird and pixelated.
         // Otherwise, the lines are rectilinear, and should be crisp.
         if (DvtGanttStyleUtils.getDependencyLineArcRadius(context) === 0) {
@@ -1193,7 +1291,11 @@ var DvtGanttStyleUtils = {
         this.addChild(line);
 
         // set keyboard focus stroke
-        var his = new Stroke(DvtGanttStyleUtils.getFocusedDependencyLineInnerColor(), 1, DvtGanttStyleUtils.getFocusedDependencyLineInnerWidth());
+        var his = new Stroke(
+          DvtGanttStyleUtils.getFocusedDependencyLineInnerColor(),
+          1,
+          DvtGanttStyleUtils.getFocusedDependencyLineInnerWidth()
+        );
         // the outer color won't matter since it will be override by style class
         var hos = new Stroke('#000', 1, 1);
         line.setHoverStroke(his, hos);
@@ -1236,8 +1338,7 @@ var DvtGanttStyleUtils = {
       var styleClass = this.getValue('svgClassName');
       if (styleClass)
         ToolkitUtils.setAttrNullNS(elem, 'class', defaultStyleClass + ' ' + styleClass);
-      else
-        ToolkitUtils.setAttrNullNS(elem, 'class', defaultStyleClass);
+      else ToolkitUtils.setAttrNullNS(elem, 'class', defaultStyleClass);
     }
   }
 
@@ -1279,14 +1380,23 @@ var DvtGanttStyleUtils = {
     var type = this.getValue('type');
 
     // checks if there's any dependency line rendered already that have the predecessor as its successor
-    var deps = this.getGantt().getNavigableDependencyLinesForTask(this.getPredecessorNode(), 'predecessor');
+    var deps = this.getGantt().getNavigableDependencyLinesForTask(
+      this.getPredecessorNode(),
+      'predecessor'
+    );
     if (deps != null) {
       for (var i = 0; i < deps.length; i++) {
         var depType = deps[i].getValue('type');
-        if (((type === DvtGanttDependencyNode.START_START || type === DvtGanttDependencyNode.START_FINISH) &&
-            (depType === DvtGanttDependencyNode.START_START || depType === DvtGanttDependencyNode.FINISH_START)) ||
-            ((type === DvtGanttDependencyNode.FINISH_FINISH || type === DvtGanttDependencyNode.FINISH_START) &&
-            (depType === DvtGanttDependencyNode.FINISH_FINISH || depType === DvtGanttDependencyNode.START_FINISH))) {
+        if (
+          ((type === DvtGanttDependencyNode.START_START ||
+            type === DvtGanttDependencyNode.START_FINISH) &&
+            (depType === DvtGanttDependencyNode.START_START ||
+              depType === DvtGanttDependencyNode.FINISH_START)) ||
+          ((type === DvtGanttDependencyNode.FINISH_FINISH ||
+            type === DvtGanttDependencyNode.FINISH_START) &&
+            (depType === DvtGanttDependencyNode.FINISH_FINISH ||
+              depType === DvtGanttDependencyNode.START_FINISH))
+        ) {
           predecessorConflict = true;
         }
       }
@@ -1297,22 +1407,25 @@ var DvtGanttStyleUtils = {
     if (deps != null) {
       for (var i = 0; i < deps.length; i++) {
         depType = deps[i].getValue('type');
-        if (((type === DvtGanttDependencyNode.START_START || type === DvtGanttDependencyNode.FINISH_START) &&
-            (depType === DvtGanttDependencyNode.START_START || depType === DvtGanttDependencyNode.START_FINISH)) ||
-            ((type === DvtGanttDependencyNode.FINISH_FINISH || type === DvtGanttDependencyNode.START_FINISH) &&
-            (depType === DvtGanttDependencyNode.FINISH_FINISH || depType === DvtGanttDependencyNode.FINISH_START))) {
+        if (
+          ((type === DvtGanttDependencyNode.START_START ||
+            type === DvtGanttDependencyNode.FINISH_START) &&
+            (depType === DvtGanttDependencyNode.START_START ||
+              depType === DvtGanttDependencyNode.START_FINISH)) ||
+          ((type === DvtGanttDependencyNode.FINISH_FINISH ||
+            type === DvtGanttDependencyNode.START_FINISH) &&
+            (depType === DvtGanttDependencyNode.FINISH_FINISH ||
+              depType === DvtGanttDependencyNode.FINISH_START))
+        ) {
           successorConflict = true;
         }
       }
     }
 
-    if (predecessorConflict && successorConflict)
-      return DvtGanttDependencyNode.CONFLICT_BOTH;
+    if (predecessorConflict && successorConflict) return DvtGanttDependencyNode.CONFLICT_BOTH;
     else {
-      if (predecessorConflict)
-        return DvtGanttDependencyNode.CONFLICT_PREDECESSOR;
-      else if (successorConflict)
-        return DvtGanttDependencyNode.CONFLICT_SUCCESSOR;
+      if (predecessorConflict) return DvtGanttDependencyNode.CONFLICT_PREDECESSOR;
+      else if (successorConflict) return DvtGanttDependencyNode.CONFLICT_SUCCESSOR;
     }
 
     return DvtGanttDependencyNode.CONFLICT_NONE;
@@ -1329,12 +1442,29 @@ var DvtGanttStyleUtils = {
    * @return {object} An object containing the predecessorX/Y and successorX/Y endpoints
    * @private
    */
-  static _getEndPoints(predecessorNode, successorNode, isTypeBeginFinish, isTypeEndFinish, toEdge, toVerticalMiddle) {
+  static _getEndPoints(
+    predecessorNode,
+    successorNode,
+    isTypeBeginFinish,
+    isTypeEndFinish,
+    toEdge,
+    toVerticalMiddle
+  ) {
     return {
-      predecessorX: isTypeBeginFinish ? DvtGanttDependencyNode._getTaskEnd(predecessorNode, toEdge) : DvtGanttDependencyNode._getTaskStart(predecessorNode, toEdge),
-      predecessorY: (toVerticalMiddle || predecessorNode.getTask().isMilestone('main')) ? DvtGanttDependencyNode._getTaskMiddle(predecessorNode) : DvtGanttDependencyNode._getTaskBottom(predecessorNode, true),
-      successorX: isTypeEndFinish ? DvtGanttDependencyNode._getTaskEnd(successorNode, toEdge) : DvtGanttDependencyNode._getTaskStart(successorNode, toEdge),
-      successorY: (toVerticalMiddle || successorNode.getTask().isMilestone('main')) ? DvtGanttDependencyNode._getTaskMiddle(successorNode) : DvtGanttDependencyNode._getTaskTop(successorNode)
+      predecessorX: isTypeBeginFinish
+        ? DvtGanttDependencyNode._getTaskEnd(predecessorNode, toEdge)
+        : DvtGanttDependencyNode._getTaskStart(predecessorNode, toEdge),
+      predecessorY:
+        toVerticalMiddle || predecessorNode.getTask().isMilestone('main')
+          ? DvtGanttDependencyNode._getTaskMiddle(predecessorNode)
+          : DvtGanttDependencyNode._getTaskBottom(predecessorNode, true),
+      successorX: isTypeEndFinish
+        ? DvtGanttDependencyNode._getTaskEnd(successorNode, toEdge)
+        : DvtGanttDependencyNode._getTaskStart(successorNode, toEdge),
+      successorY:
+        toVerticalMiddle || successorNode.getTask().isMilestone('main')
+          ? DvtGanttDependencyNode._getTaskMiddle(successorNode)
+          : DvtGanttDependencyNode._getTaskTop(successorNode)
     };
   }
 
@@ -1398,9 +1528,19 @@ var DvtGanttStyleUtils = {
     var options = gantt.getOptions();
     var shape = options.dependencyLineShape;
     if (shape === 'straight') {
-      return DvtGanttDependencyNode._calcStraightLine(predecessorNode, successorNode, typeState.isTypeBeginFinish, typeState.isTypeEndFinish);
+      return DvtGanttDependencyNode._calcStraightLine(
+        predecessorNode,
+        successorNode,
+        typeState.isTypeBeginFinish,
+        typeState.isTypeEndFinish
+      );
     }
-    return DvtGanttDependencyNode._calcRectilinearLine(predecessorNode, successorNode, typeState.isTypeBeginFinish, typeState.isTypeEndFinish);
+    return DvtGanttDependencyNode._calcRectilinearLine(
+      predecessorNode,
+      successorNode,
+      typeState.isTypeBeginFinish,
+      typeState.isTypeEndFinish
+    );
   }
 
   /**
@@ -1413,7 +1553,14 @@ var DvtGanttStyleUtils = {
    * @private
    */
   static _calcStraightLine(predecessorNode, successorNode, isTypeBeginFinish, isTypeEndFinish) {
-    var endPoints = DvtGanttDependencyNode._getEndPoints(predecessorNode, successorNode, isTypeBeginFinish, isTypeEndFinish, true, false);
+    var endPoints = DvtGanttDependencyNode._getEndPoints(
+      predecessorNode,
+      successorNode,
+      isTypeBeginFinish,
+      isTypeEndFinish,
+      true,
+      false
+    );
     var x1 = endPoints.predecessorX;
     var x2 = endPoints.successorX;
     var y1 = endPoints.predecessorY;
@@ -1437,7 +1584,14 @@ var DvtGanttStyleUtils = {
     var r = DvtGanttStyleUtils.getDependencyLineArcRadius(gantt.getCtx());
     var taskFlankLength = DvtGanttStyleUtils.getDependencyLineTaskFlankLength();
 
-    var endPoints = DvtGanttDependencyNode._getEndPoints(predecessorNode, successorNode, isTypeBeginFinish, isTypeEndFinish, false, true);
+    var endPoints = DvtGanttDependencyNode._getEndPoints(
+      predecessorNode,
+      successorNode,
+      isTypeBeginFinish,
+      isTypeEndFinish,
+      false,
+      true
+    );
     var x1 = endPoints.predecessorX;
     var x2 = endPoints.successorX;
     var y1 = endPoints.predecessorY;
@@ -1445,7 +1599,10 @@ var DvtGanttStyleUtils = {
 
     var options = gantt.getOptions();
     var dependencyLineGap = DvtGanttStyleUtils.getDependencyLineTaskGap(options);
-    var y_intermediate = y2 >= y1 ? DvtGanttDependencyNode._getTaskBottom(predecessorNode) + dependencyLineGap : DvtGanttDependencyNode._getTaskTop(predecessorNode) - dependencyLineGap;
+    var y_intermediate =
+      y2 >= y1
+        ? DvtGanttDependencyNode._getTaskBottom(predecessorNode) + dependencyLineGap
+        : DvtGanttDependencyNode._getTaskTop(predecessorNode) - dependencyLineGap;
 
     // Lock values at .5 px grid to ensure consistent SVG rendering of crispedges across browsers
     x1 = Math.round(x1) + 0.5;
@@ -1470,20 +1627,48 @@ var DvtGanttStyleUtils = {
           // Vertical line down
           line += PathUtils.verticalLineTo(y2 - r);
           // Arc left (typeBegin == finish) or right (typeBegin == start)
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x1_flank + (isTypeBeginFinish ? -1 : 1) * r, y2);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 1 : 0,
+            x1_flank + (isTypeBeginFinish ? -1 : 1) * r,
+            y2
+          );
         } else {
           // Vertical line down
           line += PathUtils.verticalLineTo(y_intermediate - r);
           // Arc left (typeBegin == finish) or right (typeBegin == start)
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x1_flank + (isTypeBeginFinish ? -1 : 1) * r, y_intermediate);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 1 : 0,
+            x1_flank + (isTypeBeginFinish ? -1 : 1) * r,
+            y_intermediate
+          );
           // Horizontal line left (typeBegin == finish) or right (typeBegin == start)
           line += PathUtils.horizontalLineTo(x2_flank + (isTypeBeginFinish ? 1 : -1) * r);
           // Arc down
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x2_flank, y_intermediate + r);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 0 : 1,
+            x2_flank,
+            y_intermediate + r
+          );
           // Vertical line down
           line += PathUtils.verticalLineTo(y2 - r);
           // Arc right (typeBegin == finish) or left (typeBegin == start)
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x2_flank + (isTypeBeginFinish ? 1 : -1) * r, y2);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 0 : 1,
+            x2_flank + (isTypeBeginFinish ? 1 : -1) * r,
+            y2
+          );
         }
       } else if (y2 < y1) {
         // Arc up
@@ -1492,20 +1677,48 @@ var DvtGanttStyleUtils = {
           // Vertical line up
           line += PathUtils.verticalLineTo(y2 + r);
           // Arc left (typeBegin == finish) or right (typeBegin == start)
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x1_flank + (isTypeBeginFinish ? -1 : 1) * r, y2);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 0 : 1,
+            x1_flank + (isTypeBeginFinish ? -1 : 1) * r,
+            y2
+          );
         } else {
           // Vertical line up
           line += PathUtils.verticalLineTo(y_intermediate + r);
           // Arc left (typeBegin == finish) or right (typeBegin == start)
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x1_flank + (isTypeBeginFinish ? -1 : 1) * r, y_intermediate);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 0 : 1,
+            x1_flank + (isTypeBeginFinish ? -1 : 1) * r,
+            y_intermediate
+          );
           // Horizontal line left (typeBegin == finish) or right (typeBegin == start)
           line += PathUtils.horizontalLineTo(x2_flank + (isTypeBeginFinish ? 1 : -1) * r);
           // Arc up
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x2_flank, y_intermediate - r);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 1 : 0,
+            x2_flank,
+            y_intermediate - r
+          );
           // Vertical line up
           line += PathUtils.verticalLineTo(y2 + r);
           // Arc right (typeBegin == finish) or left (typeBegin == start)
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x2_flank + (isTypeBeginFinish ? 1 : -1) * r, y2);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 1 : 0,
+            x2_flank + (isTypeBeginFinish ? 1 : -1) * r,
+            y2
+          );
         }
       } else {
         // Arc down
@@ -1513,11 +1726,25 @@ var DvtGanttStyleUtils = {
         // Vertical line down
         line += PathUtils.verticalLineTo(y_intermediate - r);
         // Arc left (typeBegin == finish) or right (typeBegin == start)
-        line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x1_flank + (isTypeBeginFinish ? -1 : 1) * r, y_intermediate);
+        line += PathUtils.arcTo(
+          r,
+          r,
+          Math.PI / 2,
+          isTypeBeginFinish ? 1 : 0,
+          x1_flank + (isTypeBeginFinish ? -1 : 1) * r,
+          y_intermediate
+        );
         // Horizontal line left (typeBegin == finish) or right (typeBegin == start)
         line += PathUtils.horizontalLineTo(x2_flank + (isTypeBeginFinish ? 1 : -1) * r);
         // Arc up
-        line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x2_flank, y_intermediate - r);
+        line += PathUtils.arcTo(
+          r,
+          r,
+          Math.PI / 2,
+          isTypeBeginFinish ? 1 : 0,
+          x2_flank,
+          y_intermediate - r
+        );
         // Vertical line up
         line += PathUtils.verticalLineTo(y2 + r);
         if (isTypeEndFinish) {
@@ -1562,19 +1789,47 @@ var DvtGanttStyleUtils = {
           // Horizontal line right (typeBegin == finish) or left (typeBegin == start)
           line += PathUtils.horizontalLineTo(x1_flank + (isTypeBeginFinish ? -1 : 1) * r);
           // Arc down
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 1 : 0, x1_flank, y1 + r);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 1 : 0,
+            x1_flank,
+            y1 + r
+          );
           // Vertical line down
           line += PathUtils.verticalLineTo(y_intermediate - r);
           // Arc right (typeBegin == finish) or left (typeBegin == start)
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x1_flank + (isTypeBeginFinish ? 1 : -1) * r, y_intermediate);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 0 : 1,
+            x1_flank + (isTypeBeginFinish ? 1 : -1) * r,
+            y_intermediate
+          );
           // Horizontal line  right (typeBegin == finish) or left (typeBegin == start)
           line += PathUtils.horizontalLineTo(x2_flank - r);
           // Arc up
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x2_flank, y_intermediate - r);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 0 : 1,
+            x2_flank,
+            y_intermediate - r
+          );
           // Vertical line up
           line += PathUtils.verticalLineTo(y2 + r);
           // Arc left
-          line += PathUtils.arcTo(r, r, Math.PI / 2, isTypeBeginFinish ? 0 : 1, x2_flank + (isTypeBeginFinish ? -1 : 1) * r, y2);
+          line += PathUtils.arcTo(
+            r,
+            r,
+            Math.PI / 2,
+            isTypeBeginFinish ? 0 : 1,
+            x2_flank + (isTypeBeginFinish ? -1 : 1) * r,
+            y2
+          );
         }
       }
     }
@@ -1588,14 +1843,16 @@ var DvtGanttStyleUtils = {
    * @override
    */
   getNextNavigable(event) {
-    if (event.keyCode === KeyboardEvent.UP_ARROW || event.keyCode === KeyboardEvent.DOWN_ARROW) {
+    if (
+      event.keyCode === KeyboardEvent.UP_ARROW ||
+      event.keyCode === KeyboardEvent.DOWN_ARROW
+    ) {
       // this logic is identical to Diagram and TMap
       // if the dependency line got focus via keyboard, get the task where the focus came from
       // we'll navigate around that task
       // if the focus was set through mouse click, set predecessor as a center of navigation
       var task = this.getKeyboardFocusTask();
-      if (!task)
-        task = this.getPredecessorNode();
+      if (!task) task = this.getPredecessorNode();
 
       // go to the previous/next dependency line
       var nextDependencyLine = this;
@@ -1603,16 +1860,28 @@ var DvtGanttStyleUtils = {
       if (keyboardHandler && keyboardHandler.getNextNavigableDependencyLine) {
         var type = task === this.getPredecessorNode() ? 'successor' : 'predecessor';
         var dependencyLines = this.getGantt().getNavigableDependencyLinesForTask(task, type);
-        nextDependencyLine = keyboardHandler.getNextNavigableDependencyLine(task, this, event, dependencyLines);
+        nextDependencyLine = keyboardHandler.getNextNavigableDependencyLine(
+          task,
+          this,
+          event,
+          dependencyLines
+        );
       }
 
       nextDependencyLine.setKeyboardFocusTask(task);
       return nextDependencyLine;
-    } else if (event.keyCode === KeyboardEvent.RIGHT_ARROW || event.keyCode === KeyboardEvent.LEFT_ARROW) {
+    } else if (
+      event.keyCode === KeyboardEvent.RIGHT_ARROW ||
+      event.keyCode === KeyboardEvent.LEFT_ARROW
+    ) {
       if (Agent.isRightToLeft(this.getGantt().getCtx()))
-        return event.keyCode === KeyboardEvent.LEFT_ARROW ? this.getSuccessorNode() : this.getPredecessorNode();
+        return event.keyCode === KeyboardEvent.LEFT_ARROW
+          ? this.getSuccessorNode()
+          : this.getPredecessorNode();
       else
-        return event.keyCode === KeyboardEvent.RIGHT_ARROW ? this.getSuccessorNode() : this.getPredecessorNode();
+        return event.keyCode === KeyboardEvent.RIGHT_ARROW
+          ? this.getSuccessorNode()
+          : this.getPredecessorNode();
     } else if (event.type === MouseEvent.CLICK) {
       return this;
     }
@@ -1771,9 +2040,10 @@ class DvtGanttRowLabelContent {
     var rowData = rowObj['data'];
     this._labelString = rowData['label'] != null ? rowData['label'] : '';
     var shortDesc = rowData['shortDesc'] != null ? rowData['shortDesc'] : '';
-    this._shortDesc = typeof shortDesc === 'function'
-      ? shortDesc({ data: rowObj.data, itemData: rowObj.data._itemData })
-      : shortDesc;
+    this._shortDesc =
+      typeof shortDesc === 'function'
+        ? shortDesc({ data: rowObj.data, itemData: rowObj.data._itemData })
+        : shortDesc;
     var isRTL = Agent.isRightToLeft(this._gantt.getCtx());
     var availableWidth = this._rowAxis.getAvailableWidth();
 
@@ -1790,10 +2060,15 @@ class DvtGanttRowLabelContent {
     }
 
     if (!this._content) {
-      this._content = this._contentType === 'custom' ? this._getCustomContent(rowObj, availableWidth) : this._getTextContent(rowObj);
+      this._content =
+        this._contentType === 'custom'
+          ? this._getCustomContent(rowObj, availableWidth)
+          : this._getTextContent(rowObj);
     }
     if (!this._contentDisplayable) {
-      this._contentDisplayable = this._gantt.isRowsHierarchical() ? this._addExpandCollapseButton(this._content, rowObj) : this._content;
+      this._contentDisplayable = this._gantt.isRowsHierarchical()
+        ? this._addExpandCollapseButton(this._content, rowObj)
+        : this._content;
       this._gantt.getEventManager().associate(this._contentDisplayable, this, true);
     }
     if (!this._contentDisplayable.getParent()) {
@@ -1854,11 +2129,15 @@ class DvtGanttRowLabelContent {
 
     // maxWidth in the renderer context should be -1 if width is unbounded AND max-width is unbounded. Otherwise, width is bounded in some way, so give them that value in px
     var maxWidthOption = this._gantt.getRowAxisMaxWidth();
-    if (availableWidth['width'] === -1 && (maxWidthOption != null && maxWidthOption === 'none')) {
+    if (availableWidth['width'] === -1 && maxWidthOption != null && maxWidthOption === 'none') {
       var contextMaxWidth = -1;
     } else if (this._gantt.isRowsHierarchical()) {
       // some space reserved for hierarchical indentation and expand/collapse button and padding
-      contextMaxWidth = Math.max(0, availableWidth['calculatedWidth'] - this._rowAxis.getLabelContentIndentSize(rowObj)) - totalPadding;
+      contextMaxWidth =
+        Math.max(
+          0,
+          availableWidth['calculatedWidth'] - this._rowAxis.getLabelContentIndentSize(rowObj)
+        ) - totalPadding;
     } else {
       // some space reserved for padding
       contextMaxWidth = Math.max(0, availableWidth['calculatedWidth'] - totalPadding);
@@ -1866,7 +2145,9 @@ class DvtGanttRowLabelContent {
 
     var availableHeight = rowObj['height'];
     var parentElement = content.getContainerElem();
-    var customContent = renderer(this.getRendererContext(rowObj, contextMaxWidth, availableHeight, parentElement));
+    var customContent = renderer(
+      this.getRendererContext(rowObj, contextMaxWidth, availableHeight, parentElement)
+    );
 
     if (customContent) {
       if (Array.isArray(customContent)) {
@@ -1922,19 +2203,24 @@ class DvtGanttRowLabelContent {
     container.addChild(content);
     this._rowAxis.addLabelContent(container);
 
-    if (rowObj['expanded'] != null) // if not leaf
-    {
+    if (rowObj['expanded'] != null) {
+      // if not leaf
       var buttonSize = DvtGanttStyleUtils.getRowLabelButtonSize();
       var gapSize = DvtGanttStyleUtils.getRowLabelButtonContentGapSize();
       var buttonX = indentSize - (buttonSize + gapSize);
       buttonX = isRTL ? -(buttonX + buttonSize) : buttonX;
       var buttonY = (content.getDimensions().h - buttonSize) / 2;
       var em = this._gantt.getEventManager();
-      var button = this._createExpandCollapseButton(this._gantt.getCtx(),
-                                                    this._gantt.getOptions()['_resources'],
-                                                    rowObj['expanded'] ? 'open' : 'closed',
-                                                    buttonX, buttonY, buttonSize,
-                                                    em.onExpandCollapseButtonClick, em);
+      var button = this._createExpandCollapseButton(
+        this._gantt.getCtx(),
+        this._gantt.getOptions()['_resources'],
+        rowObj['expanded'] ? 'open' : 'closed',
+        buttonX,
+        buttonY,
+        buttonSize,
+        em.onExpandCollapseButtonClick,
+        em
+      );
       this._button = button;
       container.addChild(button);
     } else {
@@ -1959,7 +2245,15 @@ class DvtGanttRowLabelContent {
    */
   _createExpandCollapseButton(context, resources, prefix, x, y, size, callback, callbackObj) {
     var iconStyle = ToolkitUtils.getIconStyle(context, resources[prefix]);
-    var button = new IconButton(context, 'borderless', {style: iconStyle, size: size}, null, null, callback, callbackObj);
+    var button = new IconButton(
+      context,
+      'borderless',
+      { style: iconStyle, size: size },
+      null,
+      null,
+      callback,
+      callbackObj
+    );
     button.setTranslate(x, y);
 
     button.setAriaRole('button');
@@ -1992,16 +2286,16 @@ class DvtGanttRowLabelContent {
 
     var parentRowObj = dataLayoutManager.getParentRowObj(rowObj);
     var dataContext = {
-      'component': options['_widgetConstructor'],
-      'parentElement': parentElement,
-      'rowData': TimeComponent.sanitizeData(rowData, 'row'),
-      'itemData': isUsingDataProvider ? itemData : null,
-      'maxWidth': maxWidth,
-      'maxHeight': maxHeight,
-      'data': options['rowData'] ? rowData['_itemData'] : null,
-      'depth': rowObj['depth'],
-      'leaf': rowObj['expanded'] == null,
-      'parentKey': parentRowObj ? parentRowObj['id'] : null
+      component: options['_widgetConstructor'],
+      parentElement: parentElement,
+      rowData: TimeComponent.sanitizeData(rowData, 'row'),
+      itemData: isUsingDataProvider ? itemData : null,
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+      data: options['rowData'] ? rowData['_itemData'] : null,
+      depth: rowObj['depth'],
+      leaf: rowObj['expanded'] == null,
+      parentKey: parentRowObj ? parentRowObj['id'] : null
     };
     return this._gantt.getCtx().fixRendererContext(dataContext);
   }
@@ -2100,10 +2394,8 @@ class DvtGanttRowLabelContent {
    * @return {number}
    */
   getX() {
-    if (this.getDisplayableType() === 'text')
-      return this._contentDisplayable.getX();
-    else
-      return this._contentDisplayable.getTranslateX();
+    if (this.getDisplayableType() === 'text') return this._contentDisplayable.getX();
+    else return this._contentDisplayable.getTranslateX();
   }
 
   /**
@@ -2111,10 +2403,8 @@ class DvtGanttRowLabelContent {
    * @param {number} x The desired x position
    */
   setX(x) {
-    if (this.getDisplayableType() === 'text')
-      this._contentDisplayable.setX(x);
-    else
-      this._contentDisplayable.setTranslateX(x);
+    if (this.getDisplayableType() === 'text') this._contentDisplayable.setX(x);
+    else this._contentDisplayable.setTranslateX(x);
   }
 
   /**
@@ -2122,10 +2412,8 @@ class DvtGanttRowLabelContent {
    * @return {number}
    */
   getY() {
-    if (this.getDisplayableType() === 'text')
-      return this._contentDisplayable.getY();
-    else
-      return this._contentDisplayable.getTranslateY();
+    if (this.getDisplayableType() === 'text') return this._contentDisplayable.getY();
+    else return this._contentDisplayable.getTranslateY();
   }
 
   /**
@@ -2133,10 +2421,8 @@ class DvtGanttRowLabelContent {
    * @param {number} y The desired y position
    */
   setY(y) {
-    if (this.getDisplayableType() === 'text')
-      this._contentDisplayable.setY(y);
-    else
-      this._contentDisplayable.setTranslateY(y);
+    if (this.getDisplayableType() === 'text') this._contentDisplayable.setY(y);
+    else this._contentDisplayable.setTranslateY(y);
   }
 
   /**
@@ -2217,10 +2503,9 @@ class DvtGanttRowLabelContent {
 
     // Navigating to task
     if (
-      event.altKey && (
-        (!isRTL && event.keyCode === KeyboardEvent.RIGHT_ARROW) ||
-        (isRTL && event.keyCode === KeyboardEvent.LEFT_ARROW)
-      )
+      event.altKey &&
+      ((!isRTL && event.keyCode === KeyboardEvent.RIGHT_ARROW) ||
+        (isRTL && event.keyCode === KeyboardEvent.LEFT_ARROW))
     ) {
       // If row is empty, do nothing and stay on this row label.
       if (rowObj.taskObjs.length === 0) {
@@ -2231,7 +2516,11 @@ class DvtGanttRowLabelContent {
       var lastFocusedTask = eventManager.getLastFocusedTask();
       if (
         lastFocusedTask &&
-        Obj.compareValues(this._gantt.getCtx(), lastFocusedTask.getLayoutObject().rowObj.id, rowObj.id)
+        Obj.compareValues(
+          this._gantt.getCtx(),
+          lastFocusedTask.getLayoutObject().rowObj.id,
+          rowObj.id
+        )
       ) {
         dataLayoutManager.ensureInDOM(lastFocusedTask.getLayoutObject(), 'task');
         return lastFocusedTask;
@@ -2351,7 +2640,7 @@ class DvtGanttRowLabelContent {
  * @class
  * @constructor
  */
- class DvtGanttTaskShape extends Path {
+class DvtGanttTaskShape extends Path {
   /**
    * @param {dvt.Context} context
    * @param {number} x position
@@ -2394,24 +2683,24 @@ class DvtGanttRowLabelContent {
     this._isHighlighted = false;
     this._renderState = 'add';
     this._typeCmdGeneratorMap = {
-      'main': this._generateRepShapeCmd,
-      'mainBackground': this._generateRepShapeCmd,
-      'mainSelect': this._generateRepShapeCmd,
-      'mainHover': this._generateRepShapeCmd,
-      'mainFocus': this._generateRepShapeCmd,
-      'mainDragFeedback': this._generateRepShapeCmd,
-      'mainResizeHandleStart': this._generateRectCmd,
-      'mainResizeHandleEnd': this._generateRectCmd,
-      'mainResizeHandleDragFeedback': this._generateRectCmd,
-      'progress': this._generateRectCmd,
-      'progressZero': this._generateRectCmd,
-      'progressFull': this._generateRectCmd,
-      'baseline': this._generateRepShapeCmd,
-      'baselineSelect': this._generateRepShapeCmd,
-      'baselineHover': this._generateRepShapeCmd,
-      'overtime': this._generateRectCmd,
-      'downtime': this._generateRectCmd,
-      'attribute': this._generateRectCmd
+      main: this._generateRepShapeCmd,
+      mainBackground: this._generateRepShapeCmd,
+      mainSelect: this._generateRepShapeCmd,
+      mainHover: this._generateRepShapeCmd,
+      mainFocus: this._generateRepShapeCmd,
+      mainDragFeedback: this._generateRepShapeCmd,
+      mainResizeHandleStart: this._generateRectCmd,
+      mainResizeHandleEnd: this._generateRectCmd,
+      mainResizeHandleDragFeedback: this._generateRectCmd,
+      progress: this._generateRectCmd,
+      progressZero: this._generateRectCmd,
+      progressFull: this._generateRectCmd,
+      baseline: this._generateRepShapeCmd,
+      baselineSelect: this._generateRepShapeCmd,
+      baselineHover: this._generateRepShapeCmd,
+      overtime: this._generateRectCmd,
+      downtime: this._generateRectCmd,
+      attribute: this._generateRectCmd
     };
 
     cmds = this.generateCmd(this._x, this._y, this._w, this._h, this._r);
@@ -2451,9 +2740,11 @@ class DvtGanttRowLabelContent {
    */
   _generateRepShapeCmd(x, y, w, h, r) {
     var isRTL = Agent.isRightToLeft(this._context);
-    var margin = (DvtGanttTaskShape.MAIN_EFFECT_TYPES.indexOf(this._type) > -1 ||
-                  DvtGanttTaskShape.BASELINE_EFFECT_TYPES.indexOf(this._type) > -1) * DvtGanttStyleUtils.getTaskEffectMargin(),
-        diamondMargin;
+    var margin =
+        (DvtGanttTaskShape.MAIN_EFFECT_TYPES.indexOf(this._type) > -1 ||
+          DvtGanttTaskShape.BASELINE_EFFECT_TYPES.indexOf(this._type) > -1) *
+        DvtGanttStyleUtils.getTaskEffectMargin(),
+      diamondMargin;
 
     // In non-alta themes, hover effects don't have margin
     if (this._context.getThemeBehavior() !== 'alta' && this._type === 'mainHover') {
@@ -2461,13 +2752,20 @@ class DvtGanttRowLabelContent {
     }
 
     // Diamond shape for milestone
-    if (this._task.isMilestone(this._type) && (w === 0)) {
+    if (this._task.isMilestone(this._type) && w === 0) {
       diamondMargin = margin * Math.sqrt(2);
       return this._generateDiamondCmd(x, y - diamondMargin, h + 2 * diamondMargin, r);
     } else if (this._task.isSummary(this._type) && this._type === 'main') {
       return this._generateSummaryCmd(x, y, w, h, r);
-    } else { // bar shape otherwise
-      return this._generateRectCmd(!isRTL ? x - margin : x + margin, y - margin, w + 2 * margin, h + 2 * margin, r);
+    } else {
+      // bar shape otherwise
+      return this._generateRectCmd(
+        !isRTL ? x - margin : x + margin,
+        y - margin,
+        w + 2 * margin,
+        h + 2 * margin,
+        r
+      );
     }
   }
 
@@ -2490,11 +2788,13 @@ class DvtGanttRowLabelContent {
     // generate the path.
     if (r === '0' || r === '0px') {
       // In LTR, reference point is at top left corner; top right in RTL
-      return PathUtils.moveTo(x, y) +
-            PathUtils.horizontalLineTo(isRTL ? x - w : x + w) +
-            PathUtils.verticalLineTo(y + h) +
-            PathUtils.horizontalLineTo(x) +
-            PathUtils.closePath();
+      return (
+        PathUtils.moveTo(x, y) +
+        PathUtils.horizontalLineTo(isRTL ? x - w : x + w) +
+        PathUtils.verticalLineTo(y + h) +
+        PathUtils.horizontalLineTo(x) +
+        PathUtils.closePath()
+      );
     }
     return PathUtils.rectangleWithBorderRadius(x - isRTL * w, y, w, h, r, Math.min(w, h), '0');
   }
@@ -2519,39 +2819,84 @@ class DvtGanttRowLabelContent {
       if (r === '0' || r === '0px') {
         if (w > 2 * thickness) {
           // In LTR, reference is at top left corner, top right in RTL
-          return PathUtils.moveTo(x, y + h) +
-                PathUtils.verticalLineTo(y) +
-                PathUtils.horizontalLineTo(isRTL ? x - w : x + w) +
-                PathUtils.verticalLineTo(y + h) +
-                PathUtils.horizontalLineTo(isRTL ? x - w + thickness : x + w - thickness) +
-                PathUtils.verticalLineTo(y + thickness) +
-                PathUtils.horizontalLineTo(isRTL ? x - thickness : x + thickness) +
-                PathUtils.verticalLineTo(y + h) +
-                PathUtils.closePath();
+          return (
+            PathUtils.moveTo(x, y + h) +
+            PathUtils.verticalLineTo(y) +
+            PathUtils.horizontalLineTo(isRTL ? x - w : x + w) +
+            PathUtils.verticalLineTo(y + h) +
+            PathUtils.horizontalLineTo(isRTL ? x - w + thickness : x + w - thickness) +
+            PathUtils.verticalLineTo(y + thickness) +
+            PathUtils.horizontalLineTo(isRTL ? x - thickness : x + thickness) +
+            PathUtils.verticalLineTo(y + h) +
+            PathUtils.closePath()
+          );
         }
         return this._generateRectCmd(x, y, w, h, r);
       }
 
       // Only support same radius for the top left and top right corners for summary tasks
-      var outerBr = Math.min(new CSSStyle({'border-radius': r}).getBorderRadius(), Math.min(w, h));
+      var outerBr = Math.min(
+        new CSSStyle({ 'border-radius': r }).getBorderRadius(),
+        Math.min(w, h)
+      );
       var innerBr = Math.max(outerBr - thickness, 0);
       if (w > 2 * thickness) {
         // In LTR, reference is at top left corner, top right in RTL
-        return PathUtils.moveTo(x, y + h) +
-              PathUtils.verticalLineTo(y + outerBr) +
-              PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, isRTL ? 0 : 1, isRTL ? x - outerBr : x + outerBr, y) +
-              PathUtils.horizontalLineTo(isRTL ? x - w + outerBr : x + w - outerBr) +
-              PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, isRTL ? 0 : 1, isRTL ? x - w : x + w, y + outerBr) +
-              PathUtils.verticalLineTo(y + h) +
-              PathUtils.horizontalLineTo(isRTL ? x - w + thickness : x + w - thickness) +
-              PathUtils.verticalLineTo(y + thickness + innerBr) +
-              PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, isRTL ? 1 : 0, isRTL ? x - w + thickness + innerBr : x + w - thickness - innerBr, y + thickness) +
-              PathUtils.horizontalLineTo(isRTL ? x - thickness - innerBr : x + thickness + innerBr) +
-              PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, isRTL ? 1 : 0, isRTL ? x - thickness : x + thickness, y + thickness + innerBr) +
-              PathUtils.verticalLineTo(y + h) +
-              PathUtils.closePath();
+        return (
+          PathUtils.moveTo(x, y + h) +
+          PathUtils.verticalLineTo(y + outerBr) +
+          PathUtils.arcTo(
+            outerBr,
+            outerBr,
+            Math.PI / 2,
+            isRTL ? 0 : 1,
+            isRTL ? x - outerBr : x + outerBr,
+            y
+          ) +
+          PathUtils.horizontalLineTo(isRTL ? x - w + outerBr : x + w - outerBr) +
+          PathUtils.arcTo(
+            outerBr,
+            outerBr,
+            Math.PI / 2,
+            isRTL ? 0 : 1,
+            isRTL ? x - w : x + w,
+            y + outerBr
+          ) +
+          PathUtils.verticalLineTo(y + h) +
+          PathUtils.horizontalLineTo(isRTL ? x - w + thickness : x + w - thickness) +
+          PathUtils.verticalLineTo(y + thickness + innerBr) +
+          PathUtils.arcTo(
+            innerBr,
+            innerBr,
+            Math.PI / 2,
+            isRTL ? 1 : 0,
+            isRTL ? x - w + thickness + innerBr : x + w - thickness - innerBr,
+            y + thickness
+          ) +
+          PathUtils.horizontalLineTo(
+            isRTL ? x - thickness - innerBr : x + thickness + innerBr
+          ) +
+          PathUtils.arcTo(
+            innerBr,
+            innerBr,
+            Math.PI / 2,
+            isRTL ? 1 : 0,
+            isRTL ? x - thickness : x + thickness,
+            y + thickness + innerBr
+          ) +
+          PathUtils.verticalLineTo(y + h) +
+          PathUtils.closePath()
+        );
       }
-      return PathUtils.rectangleWithBorderRadius(x - isRTL * w, y, w, h, outerBr + 'px ' + outerBr + 'px 0px 0px', Math.min(w, h), '0');
+      return PathUtils.rectangleWithBorderRadius(
+        x - isRTL * w,
+        y,
+        w,
+        h,
+        outerBr + 'px ' + outerBr + 'px 0px 0px',
+        Math.min(w, h),
+        '0'
+      );
     }
     // New design is to render summary bars just like normal task bars (but with different colors).
     return this._generateRectCmd(x, y, w, h, r);
@@ -2570,25 +2915,33 @@ class DvtGanttRowLabelContent {
     var half_h = h / 2;
     // For our default 0px border radius case, skip the parsing and generate the path.
     if (r === '0' || r === '0px') {
-      return PathUtils.moveTo(x, y) +
-            PathUtils.lineTo(x + half_h, y + half_h) +
-            PathUtils.lineTo(x, y + h) +
-            PathUtils.lineTo(x - half_h, y + half_h) +
-            PathUtils.closePath();
+      return (
+        PathUtils.moveTo(x, y) +
+        PathUtils.lineTo(x + half_h, y + half_h) +
+        PathUtils.lineTo(x, y + h) +
+        PathUtils.lineTo(x - half_h, y + half_h) +
+        PathUtils.closePath()
+      );
     }
     // Only support 4 corner with the same radius for milestone diamond
-    var br = Math.min((new CSSStyle({'border-radius': r})).getBorderRadius(), h / (2 * Math.sqrt(2))),
-        r_over_root2 = br / Math.sqrt(2),
-        rx = br, ry = br;
-    return PathUtils.moveTo(x - r_over_root2, y + r_over_root2) +
-          PathUtils.arcTo(rx, ry, 0, 1, x + r_over_root2, y + r_over_root2) +
-          PathUtils.lineTo(x + half_h - r_over_root2, y + half_h - r_over_root2) +
-          PathUtils.arcTo(rx, ry, 0, 1, x + half_h - r_over_root2, y + half_h + r_over_root2) +
-          PathUtils.lineTo(x + r_over_root2, y + h - r_over_root2) +
-          PathUtils.arcTo(rx, ry, 0, 1, x - r_over_root2, y + h - r_over_root2) +
-          PathUtils.lineTo(x - half_h + r_over_root2, y + half_h + r_over_root2) +
-          PathUtils.arcTo(rx, ry, 0, 1, x - half_h + r_over_root2, y + half_h - r_over_root2) +
-          PathUtils.closePath();
+    var br = Math.min(
+        new CSSStyle({ 'border-radius': r }).getBorderRadius(),
+        h / (2 * Math.sqrt(2))
+      ),
+      r_over_root2 = br / Math.sqrt(2),
+      rx = br,
+      ry = br;
+    return (
+      PathUtils.moveTo(x - r_over_root2, y + r_over_root2) +
+      PathUtils.arcTo(rx, ry, 0, 1, x + r_over_root2, y + r_over_root2) +
+      PathUtils.lineTo(x + half_h - r_over_root2, y + half_h - r_over_root2) +
+      PathUtils.arcTo(rx, ry, 0, 1, x + half_h - r_over_root2, y + half_h + r_over_root2) +
+      PathUtils.lineTo(x + r_over_root2, y + h - r_over_root2) +
+      PathUtils.arcTo(rx, ry, 0, 1, x - r_over_root2, y + h - r_over_root2) +
+      PathUtils.lineTo(x - half_h + r_over_root2, y + half_h + r_over_root2) +
+      PathUtils.arcTo(rx, ry, 0, 1, x - half_h + r_over_root2, y + half_h - r_over_root2) +
+      PathUtils.closePath()
+    );
   }
 
   /**
@@ -2638,7 +2991,8 @@ class DvtGanttRowLabelContent {
         if (this._task.isMilestone(this._type) && this._w === 0) {
           styleClass += ' ' + milestoneDefaultClass;
         } else {
-          styleClass += ' ' + (this._task.isSummary(this._type) ? summaryDefaultClass : barDefaultClass);
+          styleClass +=
+            ' ' + (this._task.isSummary(this._type) ? summaryDefaultClass : barDefaultClass);
 
           if (this._type === 'main' && this._task.getProgressValue() != null) {
             styleClass += ' ' + gantt.GetStyleClass('taskUnprogress');
@@ -2673,7 +3027,9 @@ class DvtGanttRowLabelContent {
       case 'overtime':
       case 'downtime':
       case 'attribute':
-        styleClass = gantt.GetStyleClass(`task${this._type[0].toUpperCase()}${this._type.slice(1)}`);
+        styleClass = gantt.GetStyleClass(
+          `task${this._type[0].toUpperCase()}${this._type.slice(1)}`
+        );
         if (taskDraggable) {
           styleClass += ' ' + gantt.GetStyleClass('draggable');
         }
@@ -2684,7 +3040,8 @@ class DvtGanttRowLabelContent {
         break;
       case 'mainResizeHandleStart':
       case 'mainResizeHandleEnd':
-        styleClass = gantt.GetStyleClass('taskResizeHandle') + ' ' + gantt.GetStyleClass('draggable');
+        styleClass =
+          gantt.GetStyleClass('taskResizeHandle') + ' ' + gantt.GetStyleClass('draggable');
         break;
       case 'baseline':
       case 'baselineSelect':
@@ -2711,8 +3068,11 @@ class DvtGanttRowLabelContent {
    */
   applyStyleClasses(svgClassName) {
     // In alta only, effect stroke colors reflect task fill
-    if ((this._type === 'mainHover' || this._type === 'mainFocus') && this._context.getThemeBehavior() === 'alta') {
-      const style = {'fill': 'none'};
+    if (
+      (this._type === 'mainHover' || this._type === 'mainFocus') &&
+      this._context.getThemeBehavior() === 'alta'
+    ) {
+      const style = { fill: 'none' };
       const taskFillColor = this._task.getFillColor();
       if (taskFillColor != null) {
         this.setStroke(SelectionEffectUtils.createSelectingStroke(taskFillColor['fill']));
@@ -2726,7 +3086,9 @@ class DvtGanttRowLabelContent {
 
     this._svgClassName = svgClassName;
     const defaultStyleClasses = this.getDefaultStyleClasses();
-    this.setClassName(svgClassName ? `${defaultStyleClasses} ${svgClassName}` : defaultStyleClasses);
+    this.setClassName(
+      svgClassName ? `${defaultStyleClasses} ${svgClassName}` : defaultStyleClasses
+    );
   }
 
   /**
@@ -2780,7 +3142,10 @@ class DvtGanttRowLabelContent {
    */
   unhighlight() {
     // See note in hightlight() method regarding this._elem vs this.getElem()
-    ToolkitUtils.removeClassName(this._elem, this._task.getGantt().GetStyleClass('taskHighlight'));
+    ToolkitUtils.removeClassName(
+      this._elem,
+      this._task.getGantt().GetStyleClass('taskHighlight')
+    );
     this._isHighlighted = false;
   }
 
@@ -2812,7 +3177,9 @@ class DvtGanttRowLabelContent {
     // In most use cases, there are only a few possible task class and style varieties.
     // Useful for improving initial render performance of task labels with inner positions that need contrast color calculations.
     const cache = this._task.getGantt().getCache();
-    const key = `FILL_(${JSON.stringify(this.getClassName()) || ''})_${JSON.stringify(this.getStyle()) || ''}`;
+    const key = `FILL_(${JSON.stringify(this.getClassName()) || ''})_${
+      JSON.stringify(this.getStyle()) || ''
+    }`;
     const cachedFillColor = cache.getFromCache(key);
     if (cachedFillColor) {
       this._fillColor = cachedFillColor;
@@ -2833,10 +3200,10 @@ class DvtGanttRowLabelContent {
       fill = computedStyle.fill;
       fillOpacity = Number(computedStyle.fillOpacity);
       filter = computedStyle.filter;
-      if (!String.prototype.startsWith) // internet explorer 11 doesn't support startsWith() yet...
+      if (!String.prototype.startsWith)
+        // internet explorer 11 doesn't support startsWith() yet...
         isUrlFill = fill.indexOf('url(') === 0;
-      else
-        isUrlFill = fill.startsWith('url(');
+      else isUrlFill = fill.startsWith('url(');
 
       if (!isUrlFill) {
         // Artificially calculate actual color after filter is applied, since that is not available through computedStyle
@@ -2856,7 +3223,13 @@ class DvtGanttRowLabelContent {
         if (fillOpacity !== 1 && !Number.isNaN(fillOpacity)) {
           computedFill = ColorUtils.getBrighter(computedFill, 1 - fillOpacity);
         }
-        fillColor = {'fill': fill, 'computedFill': computedFill, 'filter': filter, 'stroke': computedStyle.stroke, 'fromShapeCache': false};
+        fillColor = {
+          fill: fill,
+          computedFill: computedFill,
+          filter: filter,
+          stroke: computedStyle.stroke,
+          fromShapeCache: false
+        };
       }
     } finally {
       svgRoot.removeChild(elem);
@@ -2907,9 +3280,11 @@ class DvtGanttRowLabelContent {
    * @return {number} the offset
    */
   getPhysicalStartOffset() {
-    if ((DvtGanttTaskShape.MAIN_TYPES.indexOf(this._type) > -1 ||
+    if (
+      (DvtGanttTaskShape.MAIN_TYPES.indexOf(this._type) > -1 ||
         DvtGanttTaskShape.BASELINE_TYPES.indexOf(this._type) > -1) &&
-        this._task.isMilestone(this._type)) {
+      this._task.isMilestone(this._type)
+    ) {
       return this._finalHeight / 2;
     }
     return 0;
@@ -2932,9 +3307,11 @@ class DvtGanttRowLabelContent {
    * @return {number} the offset
    */
   getPhysicalEndOffset() {
-    if ((DvtGanttTaskShape.MAIN_TYPES.indexOf(this._type) > -1 ||
+    if (
+      (DvtGanttTaskShape.MAIN_TYPES.indexOf(this._type) > -1 ||
         DvtGanttTaskShape.BASELINE_TYPES.indexOf(this._type) > -1) &&
-        this._task.isMilestone(this._type)) {
+      this._task.isMilestone(this._type)
+    ) {
       return this._finalHeight / 2;
     }
     return 0;
@@ -2993,9 +3370,11 @@ class DvtGanttRowLabelContent {
     var cmds;
     // For main/baseline case, the shape can change from bar to diamond and vice versa, e.g. during animation and interactivity
     // Need to update style classes during these width/shape transitions
-    if ((DvtGanttTaskShape.MAIN_TYPES.indexOf(this._type) > -1 ||
+    if (
+      (DvtGanttTaskShape.MAIN_TYPES.indexOf(this._type) > -1 ||
         DvtGanttTaskShape.BASELINE_TYPES.indexOf(this._type) > -1) &&
-        (this._w === 0 || width === 0)) {
+      (this._w === 0 || width === 0)
+    ) {
       this._w = width;
       this.applyStyleClasses(this._svgClassName);
     }
@@ -3135,7 +3514,7 @@ class DvtGanttRowLabelContent {
    */
   setBorderRadius(r) {
     var cmds;
-    this._r = r != null ? r : "0";
+    this._r = r != null ? r : '0';
     cmds = this.generateCmd(this._x, this._y, this._w, this._h, this._r);
     this.setCmds(cmds);
   }
@@ -3152,9 +3531,11 @@ class DvtGanttRowLabelContent {
     var cmds;
     // For task case, the shape can change from bar to diamond and vice versa, e.g. during animation and interactivity
     // Need to update style classes during these width/shape transitions
-    if ((DvtGanttTaskShape.MAIN_TYPES.indexOf(this._type) > -1 ||
+    if (
+      (DvtGanttTaskShape.MAIN_TYPES.indexOf(this._type) > -1 ||
         DvtGanttTaskShape.BASELINE_TYPES.indexOf(this._type) > -1) &&
-        (this._w === 0 || w === 0)) {
+      (this._w === 0 || w === 0)
+    ) {
       this._w = w;
       this.applyStyleClasses(this._svgClassName);
     }
@@ -3198,7 +3579,7 @@ DvtGanttTaskShape.BASELINE_EFFECT_TYPES = ['baselineSelect', 'baselineHover'];
  * The 'progress' types.
  * @type {array}
  */
- DvtGanttTaskShape.PROGRESS_TYPES = ['progress', 'progressZero', 'progressFull'];
+DvtGanttTaskShape.PROGRESS_TYPES = ['progress', 'progressZero', 'progressFull'];
 
 /**
  * Utility functions for Gantt tooltips.
@@ -3236,8 +3617,16 @@ var DvtGanttTooltipUtils = {
     if (gantt.getEventManager().isKeyboardDnDScaleChanged()) {
       // No valueFormats support for scale change info, so type is left as empty string for now
       var navigationScale = gantt.getEventManager().getKeyboardDnDNavigationScale();
-      var defaultNavigationLabel = gantt.getEventManager().getKeyboardDnDMode() === 'move' ? 'MoveBy' : 'ResizeBy';
-      var navigationScaleDesc = DvtGanttTooltipUtils._addDatatipRow('', gantt, '', defaultNavigationLabel, navigationScale.charAt(0).toUpperCase() + navigationScale.slice(1), isTabular);
+      var defaultNavigationLabel =
+        gantt.getEventManager().getKeyboardDnDMode() === 'move' ? 'MoveBy' : 'ResizeBy';
+      var navigationScaleDesc = DvtGanttTooltipUtils._addDatatipRow(
+        '',
+        gantt,
+        '',
+        defaultNavigationLabel,
+        navigationScale.charAt(0).toUpperCase() + navigationScale.slice(1),
+        isTabular
+      );
       return DvtGanttTooltipUtils._processDatatip(navigationScaleDesc, gantt, isTabular);
     }
 
@@ -3247,14 +3636,15 @@ var DvtGanttTooltipUtils = {
 
     if (isTabular && tooltipFunc) {
       var tooltipManager = gantt.getCtx().getTooltipManager();
-      var dataContext = gantt.getEventManager().isDnDDragging() ? taskNode.getSandboxDataContext() : taskNode.getDataContext();
+      var dataContext = gantt.getEventManager().isDnDDragging()
+        ? taskNode.getSandboxDataContext()
+        : taskNode.getDataContext();
       return tooltipManager.getCustomTooltip(tooltipFunc, dataContext);
     }
 
     // Custom Tooltip via Short Desc
     var shortDesc = taskNode.getValue('shortDesc');
-    if (shortDesc != null)
-      return shortDesc;
+    if (shortDesc != null) return shortDesc;
 
     // TODO: Remove this block and the isAria param when we can remove the translation strings that were supported
     // before the shortDesc/valueFormats/tooltip API (before 2.3.0). At the time of writing, we plan to deprecate
@@ -3280,32 +3670,48 @@ var DvtGanttTooltipUtils = {
 
         if (validActualTask) {
           if (isMainMilestone) {
-            var time = gantt.getTimeAxis().formatDate(new Date(((start != null) ? start : end)), null, 'general');
+            var time = gantt
+              .getTimeAxis()
+              .formatDate(new Date(start != null ? start : end), null, 'general');
             var taskDesc = ResourceUtils.format(translations.accessibleMilestoneInfo, [time]);
           } else {
             var startTime = gantt.getTimeAxis().formatDate(new Date(start), null, 'general');
             var endTime = gantt.getTimeAxis().formatDate(new Date(end), null, 'general');
             var duration = taskNode.getDuration(start, end);
-            taskDesc = ResourceUtils.format(translations.accessibleTaskInfo, [startTime, endTime, duration]);
+            taskDesc = ResourceUtils.format(translations.accessibleTaskInfo, [
+              startTime,
+              endTime,
+              duration
+            ]);
           }
         }
 
         if (validBaselineTask) {
           if (isBaselineMilestone) {
-            var baselineTime = gantt.getTimeAxis().formatDate(new Date(((baselineStart != null) ? baselineStart : baselineEnd)), null, 'general');
+            var baselineTime = gantt
+              .getTimeAxis()
+              .formatDate(
+                new Date(baselineStart != null ? baselineStart : baselineEnd),
+                null,
+                'general'
+              );
             var baselineDesc = translations.labelBaselineDate + ': ' + baselineTime;
           } else {
-            var baselineStartTime = gantt.getTimeAxis().formatDate(new Date(baselineStart), null, 'general');
-            var baselineEndTime = gantt.getTimeAxis().formatDate(new Date(baselineEnd), null, 'general');
+            var baselineStartTime = gantt
+              .getTimeAxis()
+              .formatDate(new Date(baselineStart), null, 'general');
+            var baselineEndTime = gantt
+              .getTimeAxis()
+              .formatDate(new Date(baselineEnd), null, 'general');
             baselineDesc = translations.labelBaselineStart + ': ' + baselineStartTime;
-            baselineDesc = baselineDesc + '; ' + translations.labelBaselineEnd + ': ' + baselineEndTime;
+            baselineDesc =
+              baselineDesc + '; ' + translations.labelBaselineEnd + ': ' + baselineEndTime;
           }
         }
 
         if (validActualTask) {
           var label = taskNode.getValue('label');
-          if (label != null)
-            var labelDesc = translations.labelLabel + ': ' + label;
+          if (label != null) var labelDesc = translations.labelLabel + ': ' + label;
 
           if (progressValue != null) {
             var resources = options['_resources'];
@@ -3322,19 +3728,14 @@ var DvtGanttTooltipUtils = {
 
         var row = taskNode.getRowNode();
         var rowLabel = row.getLabel();
-        if (rowLabel == null)
-          rowLabel = row.getIndex() + 1;
+        if (rowLabel == null) rowLabel = row.getIndex() + 1;
         var rowDesc = ResourceUtils.format(translations.accessibleRowInfo, [rowLabel]);
 
         var desc = rowDesc;
-        if (taskDesc)
-          desc = desc + '; ' + taskDesc;
-        if (baselineDesc)
-          desc = desc + '; ' + baselineDesc;
-        if (labelDesc)
-          desc = desc + '; ' + labelDesc;
-        if (progressDesc)
-          desc = desc + '; ' + progressDesc;
+        if (taskDesc) desc = desc + '; ' + taskDesc;
+        if (baselineDesc) desc = desc + '; ' + baselineDesc;
+        if (labelDesc) desc = desc + '; ' + labelDesc;
+        if (progressDesc) desc = desc + '; ' + progressDesc;
         return desc;
       }
     }
@@ -3357,8 +3758,7 @@ var DvtGanttTooltipUtils = {
    */
   _processDatatip: (datatip, gantt, isTabular) => {
     // Don't render tooltip if empty
-    if (datatip === '')
-      return null;
+    if (datatip === '') return null;
 
     // Add outer table tags
     // Note: Unlike Charts, we're not going to create a table start tag with
@@ -3372,7 +3772,7 @@ var DvtGanttTooltipUtils = {
     // dvt.HtmlTooltipManager._showTextAtPosition(),
     // and that method makes sure all parsable HTML tags are disabled/handled
     if (isTabular)
-      return '<table class=\"' + gantt.GetStyleClass('tooltipTable') + '\">' + datatip + '<\/table>';
+      return '<table class="' + gantt.GetStyleClass('tooltipTable') + '">' + datatip + '</table>';
 
     return datatip;
   },
@@ -3394,8 +3794,7 @@ var DvtGanttTooltipUtils = {
     }
 
     var rowLabel = row.getLabel();
-    if (rowLabel == null)
-      rowLabel = row.getIndex() + 1;
+    if (rowLabel == null) rowLabel = row.getIndex() + 1;
     return DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'row', 'Row', rowLabel, isTabular);
   },
 
@@ -3409,7 +3808,9 @@ var DvtGanttTooltipUtils = {
    */
   _addTaskDatatip: (datatip, taskNode, isTabular) => {
     var gantt = taskNode.getGantt();
-    var valueGetter = gantt.getEventManager().isDnDDragging() ? taskNode.getSandboxValue : taskNode.getValue;
+    var valueGetter = gantt.getEventManager().isDnDDragging()
+      ? taskNode.getSandboxValue
+      : taskNode.getValue;
     var task = taskNode.getTask();
 
     var start = valueGetter.call(taskNode, 'start');
@@ -3418,7 +3819,10 @@ var DvtGanttTooltipUtils = {
     var overtimeEnd = valueGetter.call(taskNode, 'overtime', 'end');
     var downtimeStart = valueGetter.call(taskNode, 'downtime', 'start');
     var downtimeEnd = valueGetter.call(taskNode, 'downtime', 'end');
-    var attributeValue = valueGetter.call(taskNode, 'attribute', 'rendered') === 'on' ? valueGetter.call(taskNode, 'attribute', 'shortDesc') : null;
+    var attributeValue =
+      valueGetter.call(taskNode, 'attribute', 'rendered') === 'on'
+        ? valueGetter.call(taskNode, 'attribute', 'shortDesc')
+        : null;
     var baselineStart = valueGetter.call(taskNode, 'baseline', 'start');
     var baselineEnd = valueGetter.call(taskNode, 'baseline', 'end');
     var label = valueGetter.call(taskNode, 'label');
@@ -3434,48 +3838,202 @@ var DvtGanttTooltipUtils = {
 
     if (validActualTask) {
       if (isMainMilestone) {
-        datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'date', 'Date', start != null ? start : end, isTabular);
+        datatip = DvtGanttTooltipUtils._addDatatipRow(
+          datatip,
+          gantt,
+          'date',
+          'Date',
+          start != null ? start : end,
+          isTabular
+        );
         if (isBaselineMilestone) {
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'baselineDate', 'BaselineDate', baselineStart != null ? baselineStart : baselineEnd, isTabular);
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'baselineDate',
+            'BaselineDate',
+            baselineStart != null ? baselineStart : baselineEnd,
+            isTabular
+          );
         } else if (validBaselineTask) {
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'baselineStart', 'BaselineStart', baselineStart, isTabular);
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'baselineEnd', 'BaselineEnd', baselineEnd, isTabular);
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'baselineStart',
+            'BaselineStart',
+            baselineStart,
+            isTabular
+          );
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'baselineEnd',
+            'BaselineEnd',
+            baselineEnd,
+            isTabular
+          );
         }
       } else {
         if (isBaselineMilestone) {
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'start', 'Start', start, isTabular);
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'end', 'End', end, isTabular);
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'baselineDate', 'BaselineDate', baselineStart != null ? baselineStart : baselineEnd, isTabular);
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'start',
+            'Start',
+            start,
+            isTabular
+          );
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'end',
+            'End',
+            end,
+            isTabular
+          );
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'baselineDate',
+            'BaselineDate',
+            baselineStart != null ? baselineStart : baselineEnd,
+            isTabular
+          );
         } else if (validBaselineTask) {
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'start', 'Start', start, isTabular);
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'baselineStart', 'BaselineStart', baselineStart, isTabular);
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'end', 'End', end, isTabular);
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'baselineEnd', 'BaselineEnd', baselineEnd, isTabular);
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'start',
+            'Start',
+            start,
+            isTabular
+          );
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'baselineStart',
+            'BaselineStart',
+            baselineStart,
+            isTabular
+          );
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'end',
+            'End',
+            end,
+            isTabular
+          );
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'baselineEnd',
+            'BaselineEnd',
+            baselineEnd,
+            isTabular
+          );
         } else {
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'start', 'Start', start, isTabular);
-          datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'end', 'End', end, isTabular);
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'start',
+            'Start',
+            start,
+            isTabular
+          );
+          datatip = DvtGanttTooltipUtils._addDatatipRow(
+            datatip,
+            gantt,
+            'end',
+            'End',
+            end,
+            isTabular
+          );
         }
       }
 
       if (validOvertime) {
-        datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'overtimeStart', 'OvertimeStart', overtimeStart, isTabular);
-        datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'overtimeEnd', 'OvertimeEnd', overtimeEnd, isTabular);
+        datatip = DvtGanttTooltipUtils._addDatatipRow(
+          datatip,
+          gantt,
+          'overtimeStart',
+          'OvertimeStart',
+          overtimeStart,
+          isTabular
+        );
+        datatip = DvtGanttTooltipUtils._addDatatipRow(
+          datatip,
+          gantt,
+          'overtimeEnd',
+          'OvertimeEnd',
+          overtimeEnd,
+          isTabular
+        );
       }
       if (validDowntime) {
-        datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'downtimeStart', 'DowntimeStart', downtimeStart, isTabular);
-        datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'downtimeEnd', 'DowntimeEnd', downtimeEnd, isTabular);
+        datatip = DvtGanttTooltipUtils._addDatatipRow(
+          datatip,
+          gantt,
+          'downtimeStart',
+          'DowntimeStart',
+          downtimeStart,
+          isTabular
+        );
+        datatip = DvtGanttTooltipUtils._addDatatipRow(
+          datatip,
+          gantt,
+          'downtimeEnd',
+          'DowntimeEnd',
+          downtimeEnd,
+          isTabular
+        );
       }
       if (validAttribute) {
-        datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'attribute', 'Attribute', attributeValue, isTabular);
+        datatip = DvtGanttTooltipUtils._addDatatipRow(
+          datatip,
+          gantt,
+          'attribute',
+          'Attribute',
+          attributeValue,
+          isTabular
+        );
       }
 
-      datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'label', 'Label', label, isTabular);
+      datatip = DvtGanttTooltipUtils._addDatatipRow(
+        datatip,
+        gantt,
+        'label',
+        'Label',
+        label,
+        isTabular
+      );
       if (progress != null) {
-        datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'progress', 'Progress', progress, isTabular);
+        datatip = DvtGanttTooltipUtils._addDatatipRow(
+          datatip,
+          gantt,
+          'progress',
+          'Progress',
+          progress,
+          isTabular
+        );
       }
     } else if (validBaselineTask) {
-      datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'baselineStart', 'BaselineStart', baselineStart, isTabular);
-      datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'baselineEnd', 'BaselineEnd', baselineEnd, isTabular);
+      datatip = DvtGanttTooltipUtils._addDatatipRow(
+        datatip,
+        gantt,
+        'baselineStart',
+        'BaselineStart',
+        baselineStart,
+        isTabular
+      );
+      datatip = DvtGanttTooltipUtils._addDatatipRow(
+        datatip,
+        gantt,
+        'baselineEnd',
+        'BaselineEnd',
+        baselineEnd,
+        isTabular
+      );
     }
 
     return datatip;
@@ -3494,25 +4052,20 @@ var DvtGanttTooltipUtils = {
    * @private
    */
   _addDatatipRow: (datatip, gantt, type, defaultLabel, value, isTabular, index) => {
-    if (value == null || value === '')
-      return datatip;
+    if (value == null || value === '') return datatip;
 
     var valueFormat = DvtGanttTooltipUtils.getValueFormat(gantt, type);
     var tooltipDisplay = valueFormat['tooltipDisplay'];
 
-    if (tooltipDisplay === 'off')
-      return datatip;
+    if (tooltipDisplay === 'off') return datatip;
 
     // Create tooltip label
     var tooltipLabel;
-    if (typeof valueFormat['tooltipLabel'] === 'string')
-      tooltipLabel = valueFormat['tooltipLabel'];
+    if (typeof valueFormat['tooltipLabel'] === 'string') tooltipLabel = valueFormat['tooltipLabel'];
 
     if (tooltipLabel == null) {
-      if (defaultLabel == null)
-        tooltipLabel = '';
-      else
-        tooltipLabel = gantt.getOptions().translations['label' + defaultLabel];
+      if (defaultLabel == null) tooltipLabel = '';
+      else tooltipLabel = gantt.getOptions().translations['label' + defaultLabel];
     }
 
     // Create tooltip value
@@ -3533,16 +4086,31 @@ var DvtGanttTooltipUtils = {
       // and that last method makes sure all parsable HTML tags are disabled/handled
       var tooltipLabelClass = gantt.GetStyleClass('tooltipLabel');
       var tooltipValueClass = gantt.GetStyleClass('tooltipValue');
-      return datatip +
-          '<tr>' +
-          '<td class=\"' + tooltipLabelClass + '\">' + tooltipLabel + '<\/td>' +
-          '<td class=\"' + tooltipValueClass + '\">' + value + '<\/td>' +
-          '<\/tr>';
+      return (
+        datatip +
+        '<tr>' +
+        '<td class="' +
+        tooltipLabelClass +
+        '">' +
+        tooltipLabel +
+        '</td>' +
+        '<td class="' +
+        tooltipValueClass +
+        '">' +
+        value +
+        '</td>' +
+        '</tr>'
+      );
     } else {
-      if (datatip.length > 0)
-        datatip += '<br>';
+      if (datatip.length > 0) datatip += '<br>';
 
-      return datatip + ResourceUtils.format(gantt.getOptions().translations.labelAndValue, [tooltipLabel, value]);
+      return (
+        datatip +
+        ResourceUtils.format(gantt.getOptions().translations.labelAndValue, [
+          tooltipLabel,
+          value
+        ])
+      );
     }
   },
 
@@ -3554,8 +4122,7 @@ var DvtGanttTooltipUtils = {
    */
   getValueFormat: (gantt, type) => {
     var valueFormats = gantt.getOptions()['valueFormats'];
-    if (!valueFormats)
-      return {};
+    if (!valueFormats) return {};
     else if (valueFormats instanceof Array) {
       // TODO remove deprecated array support
       // Convert the deprecated array syntax to object syntax
@@ -3568,8 +4135,7 @@ var DvtGanttTooltipUtils = {
       valueFormats = obj;
     }
 
-    if (valueFormats[type])
-      return valueFormats[type];
+    if (valueFormats[type]) return valueFormats[type];
 
     return {};
   },
@@ -3586,22 +4152,21 @@ var DvtGanttTooltipUtils = {
     var converter = valueFormat['converter'];
 
     if (
-      type === 'start'
-      || type === 'end'
-      || type === 'date'
-      || type === 'baselineStart'
-      || type === 'baselineEnd'
-      || type === 'baselineDate'
-      || type === 'overtimeStart'
-      || type === 'overtimeEnd'
-      || type === 'downtimeStart'
-      || type === 'downtimeEnd'
+      type === 'start' ||
+      type === 'end' ||
+      type === 'date' ||
+      type === 'baselineStart' ||
+      type === 'baselineEnd' ||
+      type === 'baselineDate' ||
+      type === 'overtimeStart' ||
+      type === 'overtimeEnd' ||
+      type === 'downtimeStart' ||
+      type === 'downtimeEnd'
     ) {
       return gantt.getTimeAxis().formatDate(new Date(value), converter, 'general');
     }
 
-    if (converter && converter['format'])
-      return converter['format'](value);
+    if (converter && converter['format']) return converter['format'](value);
 
     if (type === 'progress') {
       var resources = gantt.getOptions()['_resources'];
@@ -3623,26 +4188,34 @@ var DvtGanttTooltipUtils = {
  * @extends {TimeComponentEventManager}
  * @constructor
  */
- class DvtGanttEventManager extends TimeComponentEventManager {
+class DvtGanttEventManager extends TimeComponentEventManager {
   constructor(gantt) {
     super(gantt);
-      // Drag & Drop Support
+    // Drag & Drop Support
 
-      /**
-       * Scale jump ramp for high level DnD navigation
-       * @type {array}
-       * @private
-       */
-      this._HIGH_LEVEL_DND_NAVIGATION_SCALES = ['milliseconds', 'seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'quarters', 'years'];
-      /**
-       * Milliseconds to wait before rendering the drag feedback between animation frames
-       * Essentially, this causes the feedback to show up at (1000/(this value)) FPS.
-       * This throttling should only be done at high viewport density, for better drag over performance.
-       * @type {number}
-       * @private
-       */
-      this._DND_DRAGOVER_FEEDBACK_THROTTLE_DELAY = 100;
-    }
+    /**
+     * Scale jump ramp for high level DnD navigation
+     * @type {array}
+     * @private
+     */
+    this._HIGH_LEVEL_DND_NAVIGATION_SCALES = [
+      'milliseconds',
+      'seconds',
+      'minutes',
+      'hours',
+      'days',
+      'weeks',
+      'months',
+      'quarters',
+      'years'
+    ];
+    /**
+     * The amount of mouse movement post mouse down necessary to be conisdered a high level DnD drag.
+     * @type {number}
+     * @private
+     */
+    this._HIGH_LEVEL_DND_DRAGSTART_DELTA_THRESHOLD = 2;
+  }
   /**
    * Returns the DvtKeyboardNavigable item with the current keyboard focus
    * @override
@@ -3655,13 +4228,32 @@ var DvtGanttTooltipUtils = {
       var navigableObj = navigable.getLayoutObject();
       var rowObj = navigableObj['rowObj'];
       var dataLayoutManager = this._comp.getDataLayoutManager();
-      while (navigableObj == null || (!dataLayoutManager.isRoot(rowObj) && dataLayoutManager.isHiddenCollapsed(rowObj))) {
+      while (
+        navigableObj == null ||
+        (!dataLayoutManager.isRoot(rowObj) && dataLayoutManager.isHiddenCollapsed(rowObj))
+      ) {
         rowObj = dataLayoutManager.getParentRowObj(rowObj);
         var taskObjs = rowObj['taskObjs'];
         navigableObj = taskObjs.length > 0 ? taskObjs[0] : null;
       }
       if (navigableObj) {
-        return navigableObj['node'];
+        // At this point, navigableObj is potentially from the previous render prior to the row collapse.
+        // E.g. if a task is focused, its parent is collapsed, and then the parent is expanded again right after, then the reference here
+        // is stale. Stale references should have renderState === 'delete'.
+        // In that case, a new navigableObj for the same task is created for the current render post collapse, so
+        // we need to find it and return its node as the navigable:
+        if (navigableObj.renderState !== 'delete') {
+          return navigableObj.node;
+        }
+        const rowObjs = dataLayoutManager.getRowObjs();
+        for (let i = 0; i < rowObjs.length; i++) {
+          if (Obj.compareValues(this._comp.getCtx(), rowObjs[i].id, rowObj.id)) {
+            const activeRowObj = rowObjs[i];
+            const activeTaskObjs = activeRowObj.taskObjs;
+            const activeNavigableObj = activeTaskObjs[0];
+            return activeNavigableObj.node;
+          }
+        }
       }
       return null;
     }
@@ -3720,10 +4312,19 @@ var DvtGanttTooltipUtils = {
         this._initSelectionTargets = event.ctrlKey ? selectionHandler.getSelection() : [];
       } else if (event.subtype === 'move') {
         var localPos = this._comp.getMarqueeArtifactsContainer().stageToLocal(event._relPos);
-        this._comp.autoPanOnEdgeDrag(localPos, DvtGanttStyleUtils.getAutoPanEdgeThreshold(), false, false);
+        this._comp.autoPanOnEdgeDrag(
+          localPos,
+          DvtGanttStyleUtils.getAutoPanEdgeThreshold(),
+          false,
+          false
+        );
 
-        var layoutObjs = this._comp.getDataLayoutManager().getLayoutObjectsInBBox(new Rectangle(event.x, event.y, event.w, event.h));
-        var targets = layoutObjs.taskObjs.map((taskObj) => { return taskObj['node']; });
+        var layoutObjs = this._comp
+          .getDataLayoutManager()
+          .getLayoutObjectsInBBox(new Rectangle(event.x, event.y, event.w, event.h));
+        var targets = layoutObjs.taskObjs.map((taskObj) => {
+          return taskObj['node'];
+        });
 
         selectionHandler.processInitialSelections(this._initSelection, this._initSelectionTargets);
         selectionHandler.processGroupSelection(targets, true);
@@ -3765,6 +4366,7 @@ var DvtGanttTooltipUtils = {
     // until no longer drag and dropping
     this._comp.getReferenceLinesContainer().setMouseEnabled(false);
     this._comp.getReferenceAreasContainer().setMouseEnabled(false);
+    this._comp.getRowReferenceObjectsContainer().setMouseEnabled(false);
     if (this._comp.getDependenciesContainer()) {
       this._comp.getDependenciesContainer().setMouseEnabled(false);
     }
@@ -3802,6 +4404,7 @@ var DvtGanttTooltipUtils = {
     // Re-enable pointer-events on reference objects and deplines
     this._comp.getReferenceLinesContainer().setMouseEnabled(true);
     this._comp.getReferenceAreasContainer().setMouseEnabled(true);
+    this._comp.getRowReferenceObjectsContainer().setMouseEnabled(true);
     if (this._comp.getDependenciesContainer()) {
       this._comp.getDependenciesContainer().setMouseEnabled(true);
     }
@@ -3818,9 +4421,11 @@ var DvtGanttTooltipUtils = {
    */
   _dropCleanup() {
     // Fire viewport change event if viewport changed
-    if (this._dragInitialViewportStart != null &&
-        (this._dragInitialViewportStart !== this._comp.getViewportStartTime() ||
-          this._dragInitialViewportEnd !== this._comp.getViewportEndTime())) {
+    if (
+      this._dragInitialViewportStart != null &&
+      (this._dragInitialViewportStart !== this._comp.getViewportStartTime() ||
+        this._dragInitialViewportEnd !== this._comp.getViewportEndTime())
+    ) {
       this._comp.dispatchEvent(this._comp.createViewportChangeEvent());
     }
 
@@ -3832,6 +4437,7 @@ var DvtGanttTooltipUtils = {
     // Re-enable pointer-events on reference objects and dep lines
     this._comp.getReferenceLinesContainer().setMouseEnabled(true);
     this._comp.getReferenceAreasContainer().setMouseEnabled(true);
+    this._comp.getRowReferenceObjectsContainer().setMouseEnabled(true);
     if (this._comp.getDependenciesContainer()) {
       this._comp.getDependenciesContainer().setMouseEnabled(true);
     }
@@ -3856,7 +4462,13 @@ var DvtGanttTooltipUtils = {
    * @param {Object} translationProperties Translation properties to use for accessibility
    * @private
    */
-  _handleKeyboardDnDInitiation(event, sourceObj, draggedObj, feedbackPosReference, translationProperties) {
+  _handleKeyboardDnDInitiation(
+    event,
+    sourceObj,
+    draggedObj,
+    feedbackPosReference,
+    translationProperties
+  ) {
     var isRTL = Agent.isRightToLeft(this._comp.getCtx());
     var orientationFactor = isRTL ? -1 : 1;
     this._isDndDragging = true;
@@ -3870,17 +4482,29 @@ var DvtGanttTooltipUtils = {
     var glassPaneAdded = this._comp.installGlassPane();
 
     // Set navigation scale to whatever the scale of the (minor) time axis is
-    this._keyboardDnDScaleRampIndex = this._HIGH_LEVEL_DND_NAVIGATION_SCALES.indexOf(this._comp.getTimeAxis().getScale());
+    this._keyboardDnDScaleRampIndex = this._HIGH_LEVEL_DND_NAVIGATION_SCALES.indexOf(
+      this._comp.getTimeAxis().getScale()
+    );
 
     sourceObj.setDraggedObject(draggedObj);
     sourceObj.dragStartSetup();
 
     var stagePos = sourceObj.localToStage({
-      x: mainShape.getFinalX() + (feedbackPosReference === 'end') * orientationFactor * mainShape.getFinalWidth(),
+      x:
+        mainShape.getFinalX() +
+        (feedbackPosReference === 'end') * orientationFactor * mainShape.getFinalWidth(),
       y: mainShape.getFinalY()
     });
-    this._keyboardDnDFeedbackLocalPos = this._comp.getDnDArtifactsContainer().stageToLocal(stagePos);
-    sourceObj.showDragFeedback(event, this._keyboardDnDFeedbackLocalPos, sourceObj.getRowNode(), {x: 0, y: 0}, true);
+    this._keyboardDnDFeedbackLocalPos = this._comp
+      .getDnDArtifactsContainer()
+      .stageToLocal(stagePos);
+    sourceObj.showDragFeedback(
+      event,
+      this._keyboardDnDFeedbackLocalPos,
+      sourceObj.getRowNode(),
+      { x: 0, y: 0 },
+      true
+    );
     // As a result of bringing up the glass pane, if the mouse happens to be over the Gantt, a mouseout event is fired, which
     // tries to hide tooltips. Result--the drag tooltip is not shown, which is not desirable.
     // Flag that the feedback tooltip shouldn't be hidden no matter what stray mouse events fired in this scenario.
@@ -3898,10 +4522,10 @@ var DvtGanttTooltipUtils = {
     var baselineEndTime = sourceObj.getValue('baseline', 'end') || null;
 
     this._keyboardDnDFeedbackTime = {
-      'start': startTime,
-      'end': endTime,
-      'baselineStart': baselineStartTime,
-      'baselineEnd': baselineEndTime
+      start: startTime,
+      end: endTime,
+      baselineStart: baselineStartTime,
+      baselineEnd: baselineEndTime
     };
 
     // Update the aria live region with text that the screenreader should read.
@@ -3910,7 +4534,11 @@ var DvtGanttTooltipUtils = {
     if (this._comp.isSelectionSupported() && this._keyboardDnDSourceObj.isSelected()) {
       var totalSelected = this._comp.getSelectionHandler().getSelectedCount();
       if (totalSelected > 1) {
-        initiationDesc += '. ' + ResourceUtils.format(translations[translationProperties.selectionInfo], [totalSelected - 1]);
+        initiationDesc +=
+          '. ' +
+          ResourceUtils.format(translations[translationProperties.selectionInfo], [
+            totalSelected - 1
+          ]);
       }
     }
     initiationDesc += '. ' + translations[translationProperties.instruction] + '.';
@@ -3926,9 +4554,9 @@ var DvtGanttTooltipUtils = {
     this._keyboardDnDMode = DvtGanttEventManager.KEYBOARD_MOVE;
     var draggedObj = sourceObj.getTask().getShape('main');
     var translationProperties = {
-      'initiated': 'taskMoveInitiated',
-      'selectionInfo': 'taskMoveSelectionInfo',
-      'instruction': 'taskMoveInitiatedInstruction'
+      initiated: 'taskMoveInitiated',
+      selectionInfo: 'taskMoveSelectionInfo',
+      instruction: 'taskMoveInitiatedInstruction'
     };
     this._handleKeyboardDnDInitiation(event, sourceObj, draggedObj, 'start', translationProperties);
   }
@@ -3942,9 +4570,9 @@ var DvtGanttTooltipUtils = {
     this._keyboardDnDMode = DvtGanttEventManager.KEYBOARD_RESIZE_START;
     var draggedObj = sourceObj.getTask().getShape('mainResizeHandleStart');
     var translationProperties = {
-      'initiated': 'taskResizeStartInitiated',
-      'selectionInfo': 'taskResizeSelectionInfo',
-      'instruction': 'taskResizeInitiatedInstruction'
+      initiated: 'taskResizeStartInitiated',
+      selectionInfo: 'taskResizeSelectionInfo',
+      instruction: 'taskResizeInitiatedInstruction'
     };
     this._handleKeyboardDnDInitiation(event, sourceObj, draggedObj, 'start', translationProperties);
   }
@@ -3958,9 +4586,9 @@ var DvtGanttTooltipUtils = {
     this._keyboardDnDMode = DvtGanttEventManager.KEYBOARD_RESIZE_END;
     var draggedObj = sourceObj.getTask().getShape('mainResizeHandleEnd');
     var translationProperties = {
-      'initiated': 'taskResizeEndInitiated',
-      'selectionInfo': 'taskResizeSelectionInfo',
-      'instruction': 'taskResizeInitiatedInstruction'
+      initiated: 'taskResizeEndInitiated',
+      selectionInfo: 'taskResizeSelectionInfo',
+      instruction: 'taskResizeInitiatedInstruction'
     };
     this._handleKeyboardDnDInitiation(event, sourceObj, draggedObj, 'end', translationProperties);
   }
@@ -3973,45 +4601,102 @@ var DvtGanttTooltipUtils = {
    */
   _handleKeyboardDnDChronologically(event, direction) {
     var isRTL = Agent.isRightToLeft(this._comp.getCtx());
-    var navigationScale = this.getKeyboardDnDNavigationScale();;
+    var navigationScale = this.getKeyboardDnDNavigationScale();
     var ganttMinTime = this._comp.getStartTime();
     var ganttMaxTime = this._comp.getEndTime();
     var ganttWidth = this._comp.getContentLength();
 
     var timeAxis = this._comp.getTimeAxis();
     var adjacencyDirection = direction === 'forward' ? 'next' : 'previous';
-    var newStart = timeAxis.getAdjacentDate(this._keyboardDnDFeedbackTime['start'], navigationScale, adjacencyDirection).getTime();
-    var newEnd = timeAxis.getAdjacentDate(this._keyboardDnDFeedbackTime['end'], navigationScale, adjacencyDirection).getTime();
+    var newStart = timeAxis
+      .getAdjacentDate(this._keyboardDnDFeedbackTime['start'], navigationScale, adjacencyDirection)
+      .getTime();
+    var newEnd = timeAxis
+      .getAdjacentDate(this._keyboardDnDFeedbackTime['end'], navigationScale, adjacencyDirection)
+      .getTime();
 
-    var currentPos, previousPos, scrollIntoViewXPriority = 'auto';
+    var currentPos,
+      previousPos,
+      scrollIntoViewXPriority = 'auto';
     switch (this._keyboardDnDMode) {
       case DvtGanttEventManager.KEYBOARD_MOVE:
-        if ((direction === 'forward' && newStart <= ganttMaxTime) || (direction === 'backward' && newEnd >= ganttMinTime)) {
-          previousPos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, this._keyboardDnDFeedbackTime['start'], ganttWidth);
+        if (
+          (direction === 'forward' && newStart <= ganttMaxTime) ||
+          (direction === 'backward' && newEnd >= ganttMinTime)
+        ) {
+          previousPos = TimeAxisUtils.getDatePosition(
+            ganttMinTime,
+            ganttMaxTime,
+            this._keyboardDnDFeedbackTime['start'],
+            ganttWidth
+          );
           this._keyboardDnDFeedbackTime['start'] = newStart;
           this._keyboardDnDFeedbackTime['end'] = newEnd;
           if (this._keyboardDnDFeedbackTime['baselineStart']) {
-            this._keyboardDnDFeedbackTime['baselineStart'] = timeAxis.getAdjacentDate(this._keyboardDnDFeedbackTime['baselineStart'], navigationScale, adjacencyDirection).getTime();
-            this._keyboardDnDFeedbackTime['baselineEnd'] = timeAxis.getAdjacentDate(this._keyboardDnDFeedbackTime['baselineEnd'], navigationScale, adjacencyDirection).getTime();
+            this._keyboardDnDFeedbackTime['baselineStart'] = timeAxis
+              .getAdjacentDate(
+                this._keyboardDnDFeedbackTime['baselineStart'],
+                navigationScale,
+                adjacencyDirection
+              )
+              .getTime();
+            this._keyboardDnDFeedbackTime['baselineEnd'] = timeAxis
+              .getAdjacentDate(
+                this._keyboardDnDFeedbackTime['baselineEnd'],
+                navigationScale,
+                adjacencyDirection
+              )
+              .getTime();
           }
-          currentPos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, this._keyboardDnDFeedbackTime['start'], ganttWidth);
+          currentPos = TimeAxisUtils.getDatePosition(
+            ganttMinTime,
+            ganttMaxTime,
+            this._keyboardDnDFeedbackTime['start'],
+            ganttWidth
+          );
         }
         break;
       case DvtGanttEventManager.KEYBOARD_RESIZE_START:
         var sourceEndTime = this._keyboardDnDSourceObj.getValue('end');
-        if ((direction === 'forward' && newStart <= sourceEndTime) || (direction === 'backward' && newStart >= ganttMinTime)) {
-          previousPos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, this._keyboardDnDFeedbackTime['start'], ganttWidth);
+        if (
+          (direction === 'forward' && newStart <= sourceEndTime) ||
+          (direction === 'backward' && newStart >= ganttMinTime)
+        ) {
+          previousPos = TimeAxisUtils.getDatePosition(
+            ganttMinTime,
+            ganttMaxTime,
+            this._keyboardDnDFeedbackTime['start'],
+            ganttWidth
+          );
           this._keyboardDnDFeedbackTime['start'] = newStart;
-          currentPos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, this._keyboardDnDFeedbackTime['start'], ganttWidth);
+          currentPos = TimeAxisUtils.getDatePosition(
+            ganttMinTime,
+            ganttMaxTime,
+            this._keyboardDnDFeedbackTime['start'],
+            ganttWidth
+          );
         }
         scrollIntoViewXPriority = 'start';
         break;
       case DvtGanttEventManager.KEYBOARD_RESIZE_END:
         var sourceStartTime = this._keyboardDnDSourceObj.getValue('start');
-        if ((direction === 'forward' && newEnd <= ganttMaxTime) || (direction === 'backward' && newEnd >= sourceStartTime)) {
-          previousPos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, this._keyboardDnDFeedbackTime['end'], ganttWidth);
+        if (
+          (direction === 'forward' && newEnd <= ganttMaxTime) ||
+          (direction === 'backward' && newEnd >= sourceStartTime)
+        ) {
+          previousPos = TimeAxisUtils.getDatePosition(
+            ganttMinTime,
+            ganttMaxTime,
+            this._keyboardDnDFeedbackTime['end'],
+            ganttWidth
+          );
           this._keyboardDnDFeedbackTime['end'] = newEnd;
-          currentPos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, this._keyboardDnDFeedbackTime['end'], ganttWidth);
+          currentPos = TimeAxisUtils.getDatePosition(
+            ganttMinTime,
+            ganttMaxTime,
+            this._keyboardDnDFeedbackTime['end'],
+            ganttWidth
+          );
         }
         scrollIntoViewXPriority = 'end';
         break;
@@ -4023,12 +4708,22 @@ var DvtGanttTooltipUtils = {
     }
 
     // Update and show feedback
-    this._keyboardDnDSourceObj.showDragFeedback(event, this._keyboardDnDFeedbackLocalPos, this._keyboardDnDTargetObj, {x: 0, y: 0}, true);
+    this._keyboardDnDSourceObj.showDragFeedback(
+      event,
+      this._keyboardDnDFeedbackLocalPos,
+      this._keyboardDnDTargetObj,
+      { x: 0, y: 0 },
+      true
+    );
     // scroll to feedback
     this._keyboardDnDSourceObj.scrollIntoView(scrollIntoViewXPriority, 'auto');
 
     // Update the aria live region with text that the screenreader should read.
-    this._comp.updateLiveRegionText(AriaUtils.processAriaLabel(DvtGanttTooltipUtils.getDatatip(this._keyboardDnDSourceObj, false)));
+    this._comp.updateLiveRegionText(
+      AriaUtils.processAriaLabel(
+        DvtGanttTooltipUtils.getDatatip(this._keyboardDnDSourceObj, false)
+      )
+    );
   }
 
   /**
@@ -4055,14 +4750,30 @@ var DvtGanttTooltipUtils = {
    */
   _handleKeyboardDnDScaleChange(event, step) {
     this._isKeyboardDnDScaleChanged = true;
-    this._keyboardDnDScaleRampIndex = Math.max(0, Math.min(this._keyboardDnDScaleRampIndex + step, this._HIGH_LEVEL_DND_NAVIGATION_SCALES.length - 1));
+    this._keyboardDnDScaleRampIndex = Math.max(
+      0,
+      Math.min(
+        this._keyboardDnDScaleRampIndex + step,
+        this._HIGH_LEVEL_DND_NAVIGATION_SCALES.length - 1
+      )
+    );
 
     // Update and show feedback
-    this._keyboardDnDSourceObj.showDragFeedback(event, this._keyboardDnDFeedbackLocalPos, this._keyboardDnDTargetObj, {x: 0, y: 0}, true);
+    this._keyboardDnDSourceObj.showDragFeedback(
+      event,
+      this._keyboardDnDFeedbackLocalPos,
+      this._keyboardDnDTargetObj,
+      { x: 0, y: 0 },
+      true
+    );
 
     // Update the aria live region with text that the screenreader should read.
     // Tooltip should be showing the navigation scale at this point, so can just grab that text
-    this._comp.updateLiveRegionText(AriaUtils.processAriaLabel(DvtGanttTooltipUtils.getDatatip(this._keyboardDnDSourceObj, false)));
+    this._comp.updateLiveRegionText(
+      AriaUtils.processAriaLabel(
+        DvtGanttTooltipUtils.getDatatip(this._keyboardDnDSourceObj, false)
+      )
+    );
     this._isKeyboardDnDScaleChanged = false;
   }
 
@@ -4118,16 +4829,31 @@ var DvtGanttTooltipUtils = {
       this._keyboardDnDTargetObj = newTargetRowObj['node'];
       // Only calculate and update new y position
       var options = this._comp.getOptions();
-      var stagePos = this._keyboardDnDTargetObj.localToStage({x: 0, y: this._keyboardDnDTargetObj.getFinalY() + DvtGanttStyleUtils.getRowPaddingTop(options)});
-      this._keyboardDnDFeedbackLocalPos.y = this._comp.getDnDArtifactsContainer().stageToLocal(stagePos).y;
+      var stagePos = this._keyboardDnDTargetObj.localToStage({
+        x: 0,
+        y: this._keyboardDnDTargetObj.getFinalY() + DvtGanttStyleUtils.getRowPaddingTop(options)
+      });
+      this._keyboardDnDFeedbackLocalPos.y = this._comp
+        .getDnDArtifactsContainer()
+        .stageToLocal(stagePos).y;
     }
     // Update and show feedback
-    this._keyboardDnDSourceObj.showDragFeedback(event, this._keyboardDnDFeedbackLocalPos, this._keyboardDnDTargetObj, {x: 0, y: 0}, true);
+    this._keyboardDnDSourceObj.showDragFeedback(
+      event,
+      this._keyboardDnDFeedbackLocalPos,
+      this._keyboardDnDTargetObj,
+      { x: 0, y: 0 },
+      true
+    );
     // scroll to feedback
     this._keyboardDnDSourceObj.scrollIntoView('auto', direction === 'below' ? 'bottom' : 'top');
 
     // Update the aria live region with text that the screenreader should read.
-    this._comp.updateLiveRegionText(AriaUtils.processAriaLabel(DvtGanttTooltipUtils.getDatatip(this._keyboardDnDSourceObj, false)));
+    this._comp.updateLiveRegionText(
+      AriaUtils.processAriaLabel(
+        DvtGanttTooltipUtils.getDatatip(this._keyboardDnDSourceObj, false)
+      )
+    );
   }
 
   /**
@@ -4160,14 +4886,31 @@ var DvtGanttTooltipUtils = {
       taskContexts = this._getDragDataContexts(this._keyboardDnDSourceObj);
       start = new Date(this._keyboardDnDFeedbackTime['start']).toISOString();
       end = new Date(this._keyboardDnDFeedbackTime['end']).toISOString();
-      var baselineStart = this._keyboardDnDFeedbackTime['baselineStart'] == null ? null : new Date(this._keyboardDnDFeedbackTime['baselineStart']).toISOString();
-      var baselineEnd = this._keyboardDnDFeedbackTime['baselineEnd'] == null ? null : new Date(this._keyboardDnDFeedbackTime['baselineEnd']).toISOString();
+      var baselineStart =
+        this._keyboardDnDFeedbackTime['baselineStart'] == null
+          ? null
+          : new Date(this._keyboardDnDFeedbackTime['baselineStart']).toISOString();
+      var baselineEnd =
+        this._keyboardDnDFeedbackTime['baselineEnd'] == null
+          ? null
+          : new Date(this._keyboardDnDFeedbackTime['baselineEnd']).toISOString();
       value = start;
       var rowContexts = this._keyboardDnDTargetObj.getDataContext();
 
-      evt = EventFactory.newGanttMoveEvent(taskContexts, value, start, end, baselineStart, baselineEnd, rowContexts);
+      evt = EventFactory.newGanttMoveEvent(
+        taskContexts,
+        value,
+        start,
+        end,
+        baselineStart,
+        baselineEnd,
+        rowContexts
+      );
       ariaText = translations.taskMoveFinalized;
-    } else if (this._keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_END || this._keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_START) {
+    } else if (
+      this._keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_END ||
+      this._keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_START
+    ) {
       taskContexts = this._getDragDataContexts(this._keyboardDnDSourceObj).map((data) => {
         return data.dataContext;
       });
@@ -4201,12 +4944,24 @@ var DvtGanttTooltipUtils = {
     if (this._keyboardDnDMode === DvtGanttEventManager.KEYBOARD_MOVE) {
       // Update the aria live region with text that the screenreader should read.
       this._comp.updateLiveRegionText(translations.taskMoveCancelled);
-    } else if (this._keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_END || this._keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_START) {
+    } else if (
+      this._keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_END ||
+      this._keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_START
+    ) {
       this._comp.updateLiveRegionText(translations.taskResizeCancelled);
     }
 
     this._dragCancelCleanup();
     this._keyboardDnDCleanup();
+  }
+
+  /**
+   * Handles cancelling a high level mouse DnD dragging operation (e.g. via Esc key during drag)
+   * @param {dvt.KeyboardEvent} event The keyboard event that triggered this.
+   */
+  handleHighLevelMouseDnDCancel(event) {
+    this._onDnDDragEnd(event);
+    this._highLevelDnDEndExecuted = true;
   }
 
   /**
@@ -4252,7 +5007,7 @@ var DvtGanttTooltipUtils = {
    * @override
    */
   GetDragSourceType(event) {
-   switch (this._keyboardDnDMode) {
+    switch (this._keyboardDnDMode) {
       case DvtGanttEventManager.KEYBOARD_MOVE:
         return this.IsDragSupported('tasks') ? 'tasks' : null;
       case DvtGanttEventManager.KEYBOARD_RESIZE_END:
@@ -4271,9 +5026,11 @@ var DvtGanttTooltipUtils = {
         var clientY = nativeEvent.clientY;
         var offsetX = nativeEvent.offsetX;
         var offsetY = nativeEvent.offsetY;
-        var isTest = (clientX == null && clientY == null)
-                      || ((Agent.browser === 'ie' || Agent.browser === 'edge')
-                          && (isNaN(offsetX) && isNaN(offsetY)));
+        var isTest =
+          (clientX == null && clientY == null) ||
+          ((Agent.browser === 'ie' || Agent.browser === 'edge') &&
+            isNaN(offsetX) &&
+            isNaN(offsetY));
         if (isTest) {
           var taskSource = event.target ? event.target : obj.getTask().getShape('main');
           obj.setDraggedObject(taskSource);
@@ -4301,19 +5058,22 @@ var DvtGanttTooltipUtils = {
       if (sourceType != null) {
         var getDragContext = (obj) => {
           var dataContext = obj.getDataContext();
-          if (bSanitize)
-            ToolkitUtils.cleanDragDataContext(dataContext);
+          if (bSanitize) ToolkitUtils.cleanDragDataContext(dataContext);
           switch (taskShapeType) {
             case 'mainResizeHandleStart':
-              return {'dataContext': dataContext, 'type': 'start'};
+              return { dataContext: dataContext, type: 'start' };
             case 'mainResizeHandleEnd':
-              return {'dataContext': dataContext, 'type': 'end'};
+              return { dataContext: dataContext, type: 'end' };
           }
           return dataContext;
         };
 
         var contexts = [getDragContext(obj)];
-        if (this._comp.isSelectionSupported() && obj.isSelected() && this._comp.getSelectionHandler().getSelectedCount() > 1) {
+        if (
+          this._comp.isSelectionSupported() &&
+          obj.isSelected() &&
+          this._comp.getSelectionHandler().getSelectedCount() > 1
+        ) {
           var selection = this._comp.getSelectionHandler().getSelection();
           for (var i = 0; i < selection.length; i++) {
             var selectionObj = selection[i];
@@ -4332,7 +5092,7 @@ var DvtGanttTooltipUtils = {
    * @override
    */
   GetDragDataContexts(bSanitize) {
-   var obj = this.DragSource.getDragObject();
+    var obj = this.DragSource.getDragObject();
     return this._getDragDataContexts(obj, bSanitize);
   }
 
@@ -4340,7 +5100,7 @@ var DvtGanttTooltipUtils = {
    * @override
    */
   GetDropOffset(event) {
-   var obj = this.DragSource.getDragObject();
+    var obj = this.DragSource.getDragObject();
 
     if (obj && obj.nodeType === 'task') {
       var sourceType = this.getDnDTaskSubType(obj.getDraggedObject());
@@ -4366,16 +5126,22 @@ var DvtGanttTooltipUtils = {
    * @private
    */
   _getDropObject(event) {
-   if (event) {
+    if (event) {
       var obj = this.GetLogicalObject(event.target);
 
       // If dropped on task, but high level interaction enabled and no additional low level configuration for task as drop target specified, then
       // consider the drop target the underlying row instead
       var options = this._comp.getOptions();
-      var dnd = options['dnd'];
-      var highLevelInteractionEnabled = this._comp.isTaskMoveEnabled() || this._comp.isTaskResizeEnabled();
-      var lowLevelTaskDropSpecified = dnd['drop']['tasks'] && (dnd['drop']['tasks']['dataTypes'] || dnd['drop']['tasks']['drop']);
-      if (obj && obj.nodeType === 'task' && highLevelInteractionEnabled && !lowLevelTaskDropSpecified) {
+      var dnd = options.dnd;
+      var highLevelInteractionEnabled = this._comp.isHighLevelDnDEnabled();
+      var lowLevelTaskDropSpecified =
+        dnd & dnd.drop && dnd.drop.tasks && (dnd.drop.tasks.dataTypes || dnd.drop.tasks.drop);
+      if (
+        obj &&
+        obj.nodeType === 'task' &&
+        highLevelInteractionEnabled &&
+        !lowLevelTaskDropSpecified
+      ) {
         this._dropObj = obj.getRowNode();
       } else {
         this._dropObj = obj;
@@ -4388,7 +5154,7 @@ var DvtGanttTooltipUtils = {
    * @override
    */
   GetDropTargetType(event) {
-   var obj = this._getDropObject(event);
+    var obj = this._getDropObject(event);
 
     if (obj == null) {
       return null;
@@ -4413,7 +5179,9 @@ var DvtGanttTooltipUtils = {
     // NOTE: The drop offset is stored in dataTransfer, so it's only accessible from "drop" event. It can't be
     //       accessed from "dragEnter", "dragOver", and "dragLeave".
     var dataTransfer = event.getNativeEvent().dataTransfer;
-    var offsetStart = Number(dataTransfer.getData(EventManager.DROP_OFFSET_X_DATA_TYPE)) || 0;
+    var offsetStart = dataTransfer
+      ? Number(dataTransfer.getData(EventManager.DROP_OFFSET_X_DATA_TYPE)) || 0
+      : this._dropOffset.x;
 
     var isRTL = Agent.isRightToLeft(this._comp.getCtx());
     var dropObj = this._getDropObject(event);
@@ -4429,12 +5197,19 @@ var DvtGanttTooltipUtils = {
       var ganttEndTime = this._comp.getEndTime();
       var ganttContentLength = this._comp.getContentLength();
       var payload = {
-        'value': new Date(TimeAxisUtils.getPositionDate(ganttStartTime, ganttEndTime, isRTL ? ganttContentLength - relPosLocal.x : relPosLocal.x, ganttContentLength)).toISOString(),
-        'start': null,
-        'end': null,
-        'baselineStart': null,
-        'baselineEnd': null,
-        'dataContext': dropObj.getDataContext()
+        value: new Date(
+          TimeAxisUtils.getPositionDate(
+            ganttStartTime,
+            ganttEndTime,
+            isRTL ? ganttContentLength - relPosLocal.x : relPosLocal.x,
+            ganttContentLength
+          )
+        ).toISOString(),
+        start: null,
+        end: null,
+        baselineStart: null,
+        baselineEnd: null,
+        dataContext: dropObj.getDataContext()
       };
 
       var dragObj = this.DragSource.getDragObject();
@@ -4449,11 +5224,22 @@ var DvtGanttTooltipUtils = {
         var dragSourceType = this.getDnDTaskSubType(taskSource);
 
         if (dragSourceType === 'tasks') {
-          payload['start'] = TimeAxisUtils.getPositionDate(ganttStartTime, ganttEndTime, isRTL ? ganttContentLength - (relPosLocal.x + offsetStart) : (relPosLocal.x + offsetStart), ganttContentLength);
+          payload['start'] = TimeAxisUtils.getPositionDate(
+            ganttStartTime,
+            ganttEndTime,
+            isRTL
+              ? ganttContentLength - (relPosLocal.x + offsetStart)
+              : relPosLocal.x + offsetStart,
+            ganttContentLength
+          );
           payload['end'] = payload['start'] + (endTime - startTime);
           if (!(baselineStartTime == null && baselineEndTime == null)) {
-            payload['baselineStart'] = new Date(baselineStartTime - startTime + payload['start']).toISOString();
-            payload['baselineEnd'] = new Date(baselineEndTime - endTime + payload['end']).toISOString();
+            payload['baselineStart'] = new Date(
+              baselineStartTime - startTime + payload['start']
+            ).toISOString();
+            payload['baselineEnd'] = new Date(
+              baselineEndTime - endTime + payload['end']
+            ).toISOString();
           }
           payload['start'] = new Date(payload['start']).toISOString();
           payload['end'] = new Date(payload['end']).toISOString();
@@ -4461,9 +5247,11 @@ var DvtGanttTooltipUtils = {
           var taskShapeType = taskSource.getType ? taskSource.getType() : null;
           if (taskShapeType === 'mainResizeHandleEnd') {
             payload['start'] = new Date(startTime).toISOString();
-            payload['end'] = (new Date(payload['value']).getTime() - startTime) < 0 ? startTime : payload['value'];
+            payload['end'] =
+              new Date(payload['value']).getTime() - startTime < 0 ? startTime : payload['value'];
           } else {
-            payload['start'] = (endTime - new Date(payload['value']).getTime()) < 0 ? endTime : payload['value'];
+            payload['start'] =
+              endTime - new Date(payload['value']).getTime() < 0 ? endTime : payload['value'];
             payload['end'] = new Date(endTime).toISOString();
           }
         }
@@ -4477,42 +5265,54 @@ var DvtGanttTooltipUtils = {
    * @override
    */
   ShowDropEffect(event) {
-    var prevActiveDropObj = this._activeDropObj;
-    var dropObj = this._getDropObject(event);
+    const prevActiveDropObj = this._activeDropObj;
+    const dropObj = this._getDropObject(event);
     this._activeDropObj = dropObj;
-    if (this._comp.isTaskResizeEnabled()) {
-      var obj = this.DragSource.getDragObject();
-      if (obj && obj.nodeType === 'task') {
-        var taskSource = obj.getDraggedObject();
-        var sourceType = this.getDnDTaskSubType(taskSource);
-        if (sourceType === 'taskResizeHandles') {
-          return; // Don't show any effects for task resize case
-        }
+
+    // According to spec, the move cursor should be shown during drag move,
+    // and the resize cursor should be shown during drag resize.
+    // Note this is only relevant on desktop because the cursor is irrelevant on mobile.
+    // We achieve this by setting the appropriate cursor (by applying classes) on the
+    // target element under the mouse.
+    // More specifically, we ensure we only apply the cursor once when entering a new target
+    // and we unset the cursor on the target we left:
+    const sourceType = this._currDragSourceType;
+    const prevDragCursorTarget = this._currDropEffectCursorTarget;
+    this._currDropEffectCursorTarget = event.target;
+    if (
+      !Agent.isTouchDevice() &&
+      this._comp.isHighLevelDnDEnabled() &&
+      event.target !== prevDragCursorTarget
+    ) {
+      if (
+        prevDragCursorTarget &&
+        DvtGanttStyleUtils.hasClass(prevDragCursorTarget, this._currDropEffectCursorStyleClass)
+      ) {
+        // See comment below about ClearDropEffect not invoked sometimes on some platforms
+        prevDragCursorTarget.removeClassName(this._currDropEffectCursorStyleClass);
+      }
+      if (!DvtGanttStyleUtils.hasClass(event.target, this._currDropEffectCursorStyleClass)) {
+        event.target.addClassName(this._currDropEffectCursorStyleClass);
       }
     }
+
+    const isTaskResizeEnabled = this._comp.isTaskResizeEnabled();
+    if (isTaskResizeEnabled && sourceType === 'taskResizeHandles') {
+      return; // Don't show any effects for task resize case
+    }
+
     // If the previous active drop row is the same as the current one, skip updating the row highlight
     if (dropObj && dropObj.nodeType === 'row' && dropObj !== prevActiveDropObj) {
-      // In firefox (and sometimes on mobile), when one drags a task
-      // to the edge such that the gantt starts panning, the drop effect doesn't clear
-      // from previous rows (normally the ClearDropEffect is invoked to clear them,
-      // but that's not happening in Firefox, perhaps because it couldn't handle the the conflicting
-      // speed at which mouse events are fired and the speed at which the viewport rerenders).
-      // Just for those platforms, iterate all rows in the viewport
-      // and ensure the drop effects are removed.
-      if (Agent.browser === 'firefox' || TimeAxisUtils.supportsTouch()) {
-        var rowLayoutObjects = this._comp.getRowLayoutObjs();
-        var viewportYBounds = this._comp.getViewportYBounds();
-        var viewportRowIndRange = this._comp.getDataLayoutManager().findRowIndRange(
-          rowLayoutObjects, viewportYBounds.yMin, viewportYBounds.yMax);
-        for (var i = 0; i < rowLayoutObjects.length; i++) {
-          var rowNode = rowLayoutObjects[i].node;
-          if (rowNode && rowNode !== dropObj) {
-            rowNode.removeEffect('invalidDrop');
-            rowNode.removeEffect('activeDrop');
-          }
-        }
+      if (prevActiveDropObj && prevActiveDropObj.nodeType === 'row') {
+        // In firefox (and sometimes on mobile), when one drags a task
+        // to the edge such that the gantt starts panning, the drop effect doesn't clear
+        // from previous rows (normally the ClearDropEffect is invoked to clear them,
+        // but that's not happening in Firefox, perhaps because it couldn't handle the the conflicting
+        // speed at which mouse events are fired and the speed at which the viewport rerenders).
+        // In any case, remove the effects here in case ClearDropEffect is not invoked.
+        prevActiveDropObj.removeEffect('invalidDrop');
+        prevActiveDropObj.removeEffect('activeDrop');
       }
-
       dropObj.showEffect('activeDrop');
     }
   }
@@ -4524,42 +5324,39 @@ var DvtGanttTooltipUtils = {
     var prevActiveDropObj = this._activeDropObj;
     var dropObj = this._getDropObject(event);
     this._activeDropObj = dropObj;
-    // If the previous active drop row is the same as the current one, skip updating the row highlight
-    if (dropObj && dropObj.nodeType === 'row' && dropObj === prevActiveDropObj) {
-      return;
+
+    this._currDropEffectCursorTarget = event.target;
+
+    if (this._comp.isTaskResizeEnabled() && this._currDragSourceType === 'taskResizeHandles') {
+      return; // Don't show any effects for task resize case
     }
 
-    if (this._comp.isTaskResizeEnabled()) {
-      var obj = this.DragSource.getDragObject();
-      if (obj && obj.nodeType === 'task') {
-        var taskSource = obj.getDraggedObject();
-        var sourceType = this.getDnDTaskSubType(taskSource);
-        if (sourceType === 'taskResizeHandles') {
-          return; // Don't show any effects for task resize case
-        }
-      }
-    }
-    if (dropObj && dropObj.nodeType === 'row') {
+    // If the previous active drop row is the same as the current one, skip updating the row highlight
+    if (dropObj && dropObj.nodeType === 'row' && dropObj !== prevActiveDropObj) {
       dropObj.showEffect('invalidDrop');
-    };
+    }
   }
 
   /**
    * @override
    */
-  ClearDropEffect(event) {
-    // According to spec,
-    // dragleave (leaving the old thing) is always preceded by dragenter (entering the new thing)
-    // If this clear is triggered by dragleave, then at this point
-    // dropObj is the obj we're leaving (dragleave),
-    // and this._activeDropObj is the obj we're entering (dragenter)
-    // If they're the same object (e.g. leaving a task, and entering within the same row),
-    // no need to clear the (e.g. row highlight) effect.
-    var dropObj = this._getDropObject();
-    if (event.type === 'dragleave' && dropObj && dropObj.nodeType === 'row' && dropObj === this._activeDropObj) {
-      return;
+  ClearDropEffect() {
+    // Unset any move/resize related cursors that were set during drag:
+    if (
+      !Agent.isTouchDevice() &&
+      this._comp.isHighLevelDnDEnabled() &&
+      this._currDropEffectCursorTarget &&
+      DvtGanttStyleUtils.hasClass(
+        this._currDropEffectCursorTarget,
+        this._currDropEffectCursorStyleClass
+      )
+    ) {
+      this._currDropEffectCursorTarget.removeClassName(this._currDropEffectCursorStyleClass);
     }
+    this._currDropEffectCursorTarget = null;
 
+    // Clear any previously applied drop effects:
+    const dropObj = this._getDropObject();
     if (dropObj && dropObj.nodeType === 'row') {
       dropObj.removeEffect('invalidDrop');
       dropObj.removeEffect('activeDrop');
@@ -4568,11 +5365,11 @@ var DvtGanttTooltipUtils = {
   }
 
   /**
-   * @override
+   * Handles DnD drag start.
+   * @param {dvt.BaseEvent|dvt.MouseEvent} event HTML5 DnD event, or mouse event
+   * @private
    */
-  OnDndDragStart(event) {
-    super.OnDndDragStart(event);
-
+  _onDndDragStart(event) {
     // At this point, isDnDDragging should be false. If true, then something else initiated a drag, e.g. keyboard move,
     // There should only be one set of things dragging at any give time, so cancel this one.
     if (this._isDndDragging) {
@@ -4587,7 +5384,19 @@ var DvtGanttTooltipUtils = {
       if (obj && obj.nodeType === 'task') {
         obj.dragStartSetup(event);
         var dataTransfer = nativeEvent.dataTransfer;
-        this._dropOffset = new Point(Number(dataTransfer.getData(EventManager.DROP_OFFSET_X_DATA_TYPE)) || 0, Number(dataTransfer.getData(EventManager.DROP_OFFSET_Y_DATA_TYPE)) || 0);
+        this._dropOffset = dataTransfer
+          ? new Point(
+              Number(dataTransfer.getData(EventManager.DROP_OFFSET_X_DATA_TYPE)) || 0,
+              Number(dataTransfer.getData(EventManager.DROP_OFFSET_Y_DATA_TYPE)) || 0
+            )
+          : this.GetDropOffset(
+              this._highLevelDnDDragStartPagePoint
+                ? {
+                    pageX: this._highLevelDnDDragStartPagePoint.x,
+                    pageY: this._highLevelDnDDragStartPagePoint.y
+                  }
+                : event
+            );
       } else {
         this._dropOffset = new Point(0, 0);
       }
@@ -4599,63 +5408,78 @@ var DvtGanttTooltipUtils = {
   }
 
   /**
-   * @override
+   * Handles DnD drag over.
+   * @param {dvt.BaseEvent|dvt.MouseEvent} event HTML5 DnD event, or mouse event
+   * @private
    */
-  OnDndDragOver(event) {
-    super.OnDndDragOver(event);
-
-    // Redrawing the drag feedback image every time the dragover event is fired (every 350ms or so, even when the mouse didn't move)
+  _onDnDDragOver(event) {
+    // Redrawing the drag feedback image every time the dragover is fired (every 350ms or so, even when the mouse didn't move) or mousemove is fired
     // affects performance, especially when the viewport refreshes on edge auto panning. Throttle the feedback drawing using
     // requestAnimationFrame similar to the example outlined in https://developer.mozilla.org/en-US/docs/Web/Events/scroll#Example
     var self = this;
     this._lastKnownDragOverEvent = event;
     self._isDndDragging = true;
     // Only requestAnimationFrame if one is not requested already, and if the mouse moved (no need to update feedback if mouse didn't move).
-    if (!this._isDragOverTicking &&
-        (!this._lastProcessedDragOverEvent ||
-          this._lastKnownDragOverEvent.pageX !== this._lastProcessedDragOverEvent.pageX ||
-          this._lastKnownDragOverEvent.pageY !== this._lastProcessedDragOverEvent.pageY)) {
-      requestAnimationFrame((timestamp) => {
+    if (
+      !this._isDragOverTicking &&
+      (!this._lastProcessedDragOverEvent ||
+        this._lastKnownDragOverEvent.pageX !== this._lastProcessedDragOverEvent.pageX ||
+        this._lastKnownDragOverEvent.pageY !== this._lastProcessedDragOverEvent.pageY)
+    ) {
+      requestAnimationFrame(() => {
         self._isDragOverTicking = false;
-        if (self._startDnDDragOver === undefined) {
-          self._startDnDDragOver = timestamp;
-        }
-        const elapsed = timestamp - self._startDnDDragOver;
-        // At high viewport density, throttle the drag feedback update by 100ms between requestAnimationFrame
-        if (elapsed < self._DND_DRAGOVER_FEEDBACK_THROTTLE_DELAY && self._comp.getViewportDensity() > 1) {
-          return;
-        }
-        self._startDnDDragOver = timestamp;
 
         // Need to do this here instead of onDndDrag because the drag event doesn't have pageX/Y on FF for some reason.
         var obj = self.DragSource.getDragObject();
         if (obj && obj.nodeType === 'task' && self._isDndDragging) {
-          if (self._lastKnownDragOverEvent.getNativeEvent().defaultPrevented) {
-            var stagePos = self._comp.getCtx().pageToStageCoords(self._lastKnownDragOverEvent.pageX, self._lastKnownDragOverEvent.pageY);
+          var isValidDrop =
+            self._lastKnownDragOverEvent.type !== 'dragover' ||
+            self._lastKnownDragOverEvent.getNativeEvent().defaultPrevented;
+          if (isValidDrop) {
+            var stagePos = self._comp
+              .getCtx()
+              .pageToStageCoords(
+                self._lastKnownDragOverEvent.pageX,
+                self._lastKnownDragOverEvent.pageY
+              );
             // Note, "local" here means in the reference of the affordance container coord system
             var localPos = self._comp.getDnDArtifactsContainer().stageToLocal(stagePos);
-            obj.showDragFeedback(self._lastKnownDragOverEvent, localPos, self._getDropObject(), self._dropOffset);
+            obj.showDragFeedback(
+              self._lastKnownDragOverEvent,
+              localPos,
+              self._getDropObject(),
+              self._dropOffset
+            );
 
             // For touch devices with screenreader, we're using passthru gesture (in iOS VoiceOVer, double tap and hold until tone, then drag) to perform real HTML5 drag and drop.
             // Update the aria live region with position information if the position changed due to drag.
             if (Agent.isTouchDevice()) {
               // Only update the aria live region if what we want to be read out changed,
               // e.g. the finger may have stopped, but moved 1px by accident and we don't want what's currently being read be interrupted.
-              var screenReaderDragText = AriaUtils.processAriaLabel(DvtGanttTooltipUtils.getDatatip(obj, false));
+              var screenReaderDragText = AriaUtils.processAriaLabel(
+                DvtGanttTooltipUtils.getDatatip(obj, false)
+              );
               if (self._comp.isSelectionSupported() && obj.isSelected()) {
                 var totalSelected = self._comp.getSelectionHandler().getSelectedCount();
                 if (totalSelected > 1) {
-                  screenReaderDragText += '. ' + ResourceUtils.format(self._comp.getOptions().translations.taskMoveSelectionInfo, [totalSelected - 1]);
+                  screenReaderDragText +=
+                    '. ' +
+                    ResourceUtils.format(
+                      self._comp.getOptions().translations.taskMoveSelectionInfo,
+                      [totalSelected - 1]
+                    );
                 }
               }
 
-              if (!self._prevScreenReaderDragText || self._prevScreenReaderDragText !== screenReaderDragText) {
+              if (
+                !self._prevScreenReaderDragText ||
+                self._prevScreenReaderDragText !== screenReaderDragText
+              ) {
                 self._comp.updateLiveRegionText(screenReaderDragText);
               }
               self._prevScreenReaderDragText = screenReaderDragText;
             }
-          } else
-            obj.removeDragFeedbacks();
+          } else obj.removeDragFeedbacks();
         }
         self._lastProcessedDragOverEvent = self._lastKnownDragOverEvent;
       });
@@ -4664,24 +5488,33 @@ var DvtGanttTooltipUtils = {
   }
 
   /**
-   * @override
+   * Handles DnD drag end.
+   * @param {dvt.BaseEvent|dvt.MouseEvent} event HTML5 DnD event, or mouse event
+   * @private
    */
-  OnDndDragEnd(event) {
-    super.OnDndDragEnd(event);
-
-    var obj = this.DragSource.getDragObject();
+  _onDnDDragEnd(event) {
+    const obj = this.DragSource.getDragObject();
     if (obj && obj.nodeType === 'task') {
       obj.dragEndCleanup();
     }
 
     this._isDndDragging = false;
+    this._highLevelDnDDragStartPagePoint = null;
+    this._activeDropObj = null;
+    this._currDragSourceType = null;
+    this._currDropEffectCursorStyleClass = null;
     this._dropOffset = new Point(0, 0);
 
-    // If mouse dragging, but keyboard Esc pressed to cancel, then dropEffect is 'none'
+    // If keyboard event triggered this, then this is a high level DnD drag cancel.
+    // If low level DnD dragging, but keyboard Esc pressed to cancel, then dropEffect is 'none'
     // This is the recommended way to detect drag cancelling according to MDN:
     // https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Drag_operations#dragend
     // "If the dropEffect property has the value none during a dragend, then the drag was cancelled. Otherwise, the effect specifies which operation was performed."
-    if (event.getNativeEvent().dataTransfer.dropEffect === 'none') {
+    if (
+      event.keyCode != null ||
+      (event.type === 'dragend' && event.getNativeEvent().dataTransfer.dropEffect === 'none')
+    ) {
+      this.ClearDropEffect();
       this.handleKeyboardDnDCancel();
     }
 
@@ -4699,18 +5532,20 @@ var DvtGanttTooltipUtils = {
   }
 
   /**
-   * @override
+   * Handles DnD drop.
+   * @param {dvt.BaseEvent|dvt.MouseEvent} event HTML5 DnD event, or mouse event
+   * @private
    */
-  OnDndDrop(event) {
-    super.OnDndDrop(event);
-
+  _onDnDDrop(event) {
     // Viewport adjustments need to be done before handling move callback (rerender may happen after move callback)
     this._dropCleanup();
 
     var nativeEvent = event.getNativeEvent();
-    if (nativeEvent.defaultPrevented) {
+    if (event.type !== 'drop' || nativeEvent.defaultPrevented) {
       var dragObj = this.DragSource.getDragObject();
-      var sourceType = dragObj.getDraggedObject ? this.getDnDTaskSubType(dragObj.getDraggedObject()) : 'tasks';
+      var sourceType = dragObj.getDraggedObject
+        ? this.getDnDTaskSubType(dragObj.getDraggedObject())
+        : 'tasks';
       if (this._comp.isTaskMoveEnabled() && sourceType === 'tasks') {
         // For touch devices with screenreader, we're using passthru gesture (in iOS VoiceOVer, double tap and hold until tone, then drag) to perform real HTML5 drag and drop.
         // Update the aria live region when drop happened (i.e. in VO, when the finger is lifted to end passthru gesture);
@@ -4719,14 +5554,27 @@ var DvtGanttTooltipUtils = {
         }
 
         var dropPayload = this.GetDropEventPayload(event);
-        var taskContexts = JSON.parse(nativeEvent.dataTransfer.getData(DvtGanttEventManager.MOVE_TASKS_DATA_TYPE));
+        var taskContexts =
+          event.type !== 'drop'
+            ? this.GetDragDataContexts()
+            : JSON.parse(
+                nativeEvent.dataTransfer.getData(DvtGanttEventManager.MOVE_TASKS_DATA_TYPE)
+              );
         var value = dropPayload['value'];
         var start = dropPayload['start'];
         var end = dropPayload['end'];
         var baselineStart = dropPayload['baselineStart'];
         var baselineEnd = dropPayload['baselineEnd'];
         var rowContexts = dropPayload['dataContext'];
-        var evt = EventFactory.newGanttMoveEvent(taskContexts, value, start, end, baselineStart, baselineEnd, rowContexts);
+        var evt = EventFactory.newGanttMoveEvent(
+          taskContexts,
+          value,
+          start,
+          end,
+          baselineStart,
+          baselineEnd,
+          rowContexts
+        );
         this._comp.dispatchEvent(evt);
       } else if (this._comp.isTaskResizeEnabled() && sourceType === 'taskResizeHandles') {
         // Update the aria live region when drop happened (i.e. in VO, when the finger is lifted to end passthru gesture);
@@ -4734,7 +5582,12 @@ var DvtGanttTooltipUtils = {
           this._comp.updateLiveRegionText(this._comp.getOptions().translations.taskResizeFinalized);
         }
         var dropPayload = this.GetDropEventPayload(event);
-        var dragData = JSON.parse(nativeEvent.dataTransfer.getData(DvtGanttEventManager.RESIZE_TASKS_DATA_TYPE));
+        var dragData =
+          event.type !== 'drop'
+            ? this.GetDragDataContexts()
+            : JSON.parse(
+                nativeEvent.dataTransfer.getData(DvtGanttEventManager.RESIZE_TASKS_DATA_TYPE)
+              );
         var type = dragData[0]['type'];
         var taskContexts = dragData.map((data) => {
           return data.dataContext;
@@ -4749,16 +5602,61 @@ var DvtGanttTooltipUtils = {
   }
 
   /**
+   * @override
+   */
+  OnDndDragStart(event) {
+    super.OnDndDragStart(event);
+    this._onDndDragStart(event);
+  }
+
+  /**
+   * @override
+   */
+  OnDndDragOver(event) {
+    super.OnDndDragOver(event);
+    this._onDnDDragOver(event);
+  }
+
+  /**
+   * @override
+   */
+  OnDndDragEnd(event) {
+    super.OnDndDragEnd(event);
+    this._onDnDDragEnd(event);
+  }
+
+  /**
+   * @override
+   */
+  OnDndDrop(event) {
+    super.OnDndDrop(event);
+    this._onDnDDrop(event);
+  }
+
+  /**
    * Helper function that checks if a given source type is draggable
    * @param {string} type
    * @return {boolean} true if the source type can be dragged
    * @protected
    */
   IsDragSupported(type) {
-   if (this.isDndSupported()) {
+    // High level DnD
+    if (type === 'tasks' && this._comp.isTaskMoveEnabled()) {
+      return true;
+    }
+    if (type === 'taskResizeHandles' && this._comp.isTaskResizeEnabled()) {
+      return true;
+    }
+    // Low level DnD
+    if (this.isDndSupported()) {
       var options = this._comp.getOptions();
       var dragConfig = options['dnd'] && options['dnd']['drag'] ? options['dnd']['drag'] : null;
-      return dragConfig && dragConfig[type] && dragConfig[type]['dataTypes'] && dragConfig[type]['dataTypes'].length > 0;
+      return (
+        dragConfig &&
+        dragConfig[type] &&
+        dragConfig[type]['dataTypes'] &&
+        dragConfig[type]['dataTypes'].length > 0
+      );
     }
     return false;
   }
@@ -4770,7 +5668,12 @@ var DvtGanttTooltipUtils = {
    * @protected
    */
   IsDropSupported(type) {
-   if (this.isDndSupported()) {
+    // High level DnD
+    if (type === 'rows' && this._comp.isHighLevelDnDEnabled()) {
+      return true;
+    }
+    // Low level DnD
+    if (this.isDndSupported()) {
       var options = this._comp.getOptions();
       var drogConfig = options['dnd'] && options['dnd']['drop'] ? options['dnd']['drop'] : null;
       return drogConfig && drogConfig[type] && drogConfig[type]['dataTypes'];
@@ -4779,16 +5682,35 @@ var DvtGanttTooltipUtils = {
   }
 
   /**
-   * @override
+   * Handles DnD pre pointer down.
+   * @param {dvt.MouseEvent} event event from PreOnMouseDown.
+   * @private
    */
-  OnMouseDown(event) {
-   var objAndDisp = this.GetLogicalObjectAndDisplayable(event.target);
-    // If draggable, prevent drag panning
+  _onDnDPrePointerDown(event) {
+    var objAndDisp = this.GetLogicalObjectAndDisplayable(event.target);
     if (objAndDisp.logicalObject && objAndDisp.logicalObject.nodeType === 'task') {
       var sourceType = this.getDnDTaskSubType(objAndDisp.displayable);
       if (this.IsDragSupported(sourceType)) {
+        // If draggable, prevent drag panning
         this._comp.SetPanningEnabled(false);
         this._comp.SetMarqueeEnabled(false);
+
+        // On Desktop high level DnD, we need the same cursor to persist during the drag
+        // Determine and save the appropriate cursor style classes to apply at the start of the drag here.
+        // The classes will be applied to (and removed from) the elements directly under the cursor
+        // in the ShowDropEffect()/ClearDropEffect() methods.
+        const isTaskMoveEnabled = this._comp.isTaskMoveEnabled();
+        const isTaskResizeEnabled = this._comp.isTaskResizeEnabled();
+        this._currDragSourceType = sourceType;
+        if (isTaskMoveEnabled && sourceType === 'tasks') {
+          this._currDropEffectCursorStyleClass = this._comp.GetStyleClass(
+            'highLevelDnDMoveDroppable'
+          );
+        } else if (isTaskResizeEnabled && sourceType === 'taskResizeHandles') {
+          this._currDropEffectCursorStyleClass = this._comp.GetStyleClass(
+            'highLevelDnDResizeDroppable'
+          );
+        }
 
         // Normally this can be handled on dragstart event, but
         // IE11 is stupid. dragstart events fire after the mouse/touch drags
@@ -4799,7 +5721,156 @@ var DvtGanttTooltipUtils = {
         objAndDisp.logicalObject.setDraggedObject(objAndDisp.displayable);
       }
     }
+  }
+
+  /**
+   * Handles high level DnD pointer down.
+   * @param {dvt.MouseEvent} event event from OnMouseDown.
+   * @private
+   */
+  _onHighLevelDnDPointerDown(event) {
+    const relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
+    const dragTransferable = this.DragSource.getDragTransferable(relPos.x, relPos.y);
+    const dragSourceType = this.GetDragSourceType(event);
+    if (dragTransferable == null || dragSourceType == null) {
+      return;
+    }
+    this._highLevelDnDDragStartPagePoint = new Point(event.pageX, event.pageY);
+    this._isDndDragging = false; // confirm drag after sufficient mousemove
+  }
+
+  /**
+   * Handles high level DnD pointer over.
+   * @param {dvt.MouseEvent} event event from OnMouseOver.
+   * @private
+   */
+  _onHighLevelDnDPrePointerOver(event) {
+    const dropTargetType = this.GetDropTargetType(event);
+    const dropRejected = dropTargetType == null;
+    if (dropRejected) {
+      this.ShowRejectedDropEffect(event);
+      return;
+    }
+    this.ShowDropEffect(event);
+  }
+
+  /**
+   * Handles high level DnD pointer out.
+   * @param {dvt.MouseEvent} event event from OnMouseOut.
+   * @private
+   */
+  _onHighLevelDnDPrePointerOut(event) {
+    this.ClearDropEffect();
+  }
+
+  /**
+   * Handles high level DnD pointer move.
+   * @param {dvt.MouseEvent} event event from OnMouseMove.
+   * @private
+   */
+  _onHighLevelDnDPointerMove(event) {
+    if (
+      !this._isDndDragging &&
+      this._highLevelDnDDragStartPagePoint &&
+      (Math.abs(event.pageX - this._highLevelDnDDragStartPagePoint.x) >
+        this._HIGH_LEVEL_DND_DRAGSTART_DELTA_THRESHOLD ||
+        Math.abs(event.pageY - this._highLevelDnDDragStartPagePoint.y) >
+          this._HIGH_LEVEL_DND_DRAGSTART_DELTA_THRESHOLD)
+    ) {
+      this._context.getTooltipManager().hideTooltip();
+
+      const obj = this.DragSource.getDragObject();
+      this.ProcessSelectionEventHelper(obj, event.ctrlKey);
+
+      if (obj.hideHoverEffect) obj.hideHoverEffect();
+      this._onDndDragStart(event);
+    }
+
+    if (this._isDndDragging) {
+      const dropTargetType = this.GetDropTargetType(event);
+      const dropRejected = dropTargetType == null;
+      if (dropRejected) {
+        this.ShowRejectedDropEffect(event);
+        return;
+      }
+      this.ShowDropEffect(event);
+      this._onDnDDragOver(event);
+    }
+  }
+
+  /**
+   * Handles high level DnD pointer up.
+   * @param {dvt.MouseEvent} event event from OnMouseUp.
+   * @private
+   */
+  _onHighLevelDnDPointerUp(event) {
+    this._highLevelDnDDragStartPagePoint = null;
+    if (this._isDndDragging) {
+      this._highLevelDnDEndExecuted = true;
+      // Handle Drop
+      const dropTargetType = this.GetDropTargetType(event);
+      this.ClearDropEffect();
+
+      const dropRejected = dropTargetType == null;
+      if (!dropRejected) {
+        this._onDnDDrop(event);
+      }
+
+      // Handle Drag End
+      this.DragSource.setDragCandidate(null);
+      this._onDnDDragEnd(event);
+      return;
+    }
+    // Reenable panning/marquee
+    this._comp.SetPanningEnabled(true);
+    this._comp.SetMarqueeEnabled(true);
+  }
+
+  /**
+   * @override
+   */
+  PreOnMouseDown(event) {
+    this._onDnDPrePointerDown(event);
+    super.PreOnMouseDown(event);
+  }
+
+  /**
+   * @override
+   */
+  OnMouseDown(event) {
     super.OnMouseDown(event);
+
+    this._highLevelDnDEndExecuted = false;
+    // Only allow plain left-click mouse to start the drag
+    if (
+      event.button === 0 &&
+      !(event.ctrlKey || event.shiftKey) &&
+      this._comp.isHighLevelDnDEnabled()
+    ) {
+      this._onHighLevelDnDPointerDown(event);
+    }
+  }
+
+  /**
+   * @override
+   */
+  PreOnMouseOver(event) {
+    if (this._isDndDragging && this._comp.isHighLevelDnDEnabled()) {
+      this._onHighLevelDnDPrePointerOver(event);
+      return;
+    }
+    super.PreOnMouseOver(event);
+  }
+
+  /**
+   * @override
+   */
+  PreOnMouseOut(event) {
+    if (this._isDndDragging && this._comp.isHighLevelDnDEnabled()) {
+      this._onHighLevelDnDPrePointerOut(event);
+      return;
+    }
+    super.PreOnMouseOut(event);
   }
 
   /**
@@ -4817,7 +5888,13 @@ var DvtGanttTooltipUtils = {
    * @override
    */
   OnMouseMove(event) {
+    if (this._comp.isHighLevelDnDEnabled()) {
+      this._onHighLevelDnDPointerMove(event);
+      if (this._isDndDragging) return;
+    }
+
     super.OnMouseMove(event);
+
     if (this._comp.IsTimeCursorEnabled()) {
       var timeCursor = this._comp.getTimeCursor();
       if (timeCursor) {
@@ -4828,14 +5905,45 @@ var DvtGanttTooltipUtils = {
         var ganttContentLength = this._comp.getContentLength();
         var stagePos = this._comp.getCtx().pageToStageCoords(event.pageX, event.pageY);
         var localPos = timeCursorContainer.stageToLocal(stagePos);
-        var time = TimeAxisUtils.getPositionDate(ganttStartTime, ganttEndTime, isRTL ? ganttContentLength - localPos.x : localPos.x, ganttContentLength);
-        timeCursor.updateRefObjs([{
-          type: 'line',
-          value: new Date(time).toISOString()
-        }]);
+        var time = TimeAxisUtils.getPositionDate(
+          ganttStartTime,
+          ganttEndTime,
+          isRTL ? ganttContentLength - localPos.x : localPos.x,
+          ganttContentLength
+        );
+        timeCursor.updateRefObjs([
+          {
+            type: 'line',
+            value: new Date(time).toISOString()
+          }
+        ]);
         timeCursor.show();
       }
     }
+  }
+
+  /**
+   * @override
+   */
+  OnMouseUp(event) {
+    if (this._comp.isHighLevelDnDEnabled()) {
+      this._onHighLevelDnDPointerUp(event);
+      if (this._highLevelDnDEndExecuted) return;
+    }
+    this._highLevelDnDEndExecuted = false;
+    super.OnMouseUp(event);
+  }
+
+  /**
+   * @override
+   */
+  OnClick(event) {
+    if (this._highLevelDnDEndExecuted) {
+      // If this click event was due to a mouseup at the end of high level DnD, then bail.
+      this._highLevelDnDEndExecuted = false;
+      return;
+    }
+    super.OnClick(event);
   }
 
   /**
@@ -4844,7 +5952,7 @@ var DvtGanttTooltipUtils = {
    * @param {dvt.IconButton} button The button that calls the method.
    */
   onExpandCollapseButtonClick(event, button) {
-   var labelContent = this.GetLogicalObject(button);
+    var labelContent = this.GetLogicalObject(button);
     var rowObj = labelContent.getRowLayoutObject();
     this.toggleRowExpandCollapse(event, rowObj);
   }
@@ -4855,7 +5963,8 @@ var DvtGanttTooltipUtils = {
    * @param {Object} rowObj
    */
   toggleRowExpandCollapse(event, rowObj) {
-   if (rowObj['expanded'] == null) { // leaf
+    if (rowObj['expanded'] == null) {
+      // leaf
       return;
     }
 
@@ -4889,15 +5998,20 @@ var DvtGanttTooltipUtils = {
 
     // Fire event to trigger a rerender. Save state so that the next render can be smart about it.
     this._comp.setRenderState({
-      'state': type,
-      'payload': rowObj
+      state: type,
+      payload: rowObj
     });
 
     // Need to clear selection before render to clear selection effects--selection will be restored on next render
-    if (this._comp.isSelectionSupported())
-      this._comp.getSelectionHandler().clearSelection();
+    if (this._comp.isSelectionSupported()) this._comp.getSelectionHandler().clearSelection();
 
-    var evt = EventFactory.newGanttExpandCollapseEvent(type, key, rowData, itemData, newExpandedKeySet);
+    var evt = EventFactory.newGanttExpandCollapseEvent(
+      type,
+      key,
+      rowData,
+      itemData,
+      newExpandedKeySet
+    );
     this._comp.dispatchEvent(evt);
   }
 
@@ -4905,24 +6019,8 @@ var DvtGanttTooltipUtils = {
    * @override
    */
   HandleImmediateTouchStartInternal(event) {
-    // If draggable, prevent drag panning
     if (event.targetTouches.length === 1) {
-      var objAndDisp = this.GetLogicalObjectAndDisplayable(event.target);
-      if (objAndDisp.logicalObject && objAndDisp.logicalObject.nodeType === 'task') {
-        var sourceType = this.getDnDTaskSubType(objAndDisp.displayable);
-        if (this.IsDragSupported(sourceType)) {
-          this._comp.SetPanningEnabled(false);
-          this._comp.SetMarqueeEnabled(false);
-
-          // Normally this can be handled on dragstart event, but
-          // IE11 is stupid. dragstart events fire after the mouse/touch drags
-          // a certain px away from the initiation point, and in all browsers
-          // except IE11, the dragstart event targets the element at the initiation point.
-          // IE11's dragstart, however, targets the element at the point where dragstart
-          // event fires, which can be different from that of the initiation point.
-          objAndDisp.logicalObject.setDraggedObject(objAndDisp.displayable);
-        }
-      }
+      this._onDnDPrePointerDown(event);
     }
   }
 
@@ -4951,9 +6049,9 @@ var DvtGanttTooltipUtils = {
 DvtGanttEventManager.MOVE_TASKS_DATA_TYPE = 'text/_dvtdndmovetasks';
 
 /**
-* DataType for high level dnd resize tasks source
-* @type {string}
-*/
+ * DataType for high level dnd resize tasks source
+ * @type {string}
+ */
 DvtGanttEventManager.RESIZE_TASKS_DATA_TYPE = 'text/_dvtdndresizetasks';
 
 /**
@@ -4982,7 +6080,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
  * @extends {TimeComponentKeyboardHandler}
  * @constructor
  */
- class DvtGanttKeyboardHandler extends TimeComponentKeyboardHandler {
+class DvtGanttKeyboardHandler extends TimeComponentKeyboardHandler {
   constructor(gantt, manager) {
     super(manager);
     this._gantt = gantt;
@@ -5001,9 +6099,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
   static _findPreviousTask(gantt, rowObjs, currentRowObj, currentRowIndex, currentNavigable) {
     var taskObjs = currentRowObj['taskObjs'];
     if (taskObjs.length === 0) {
-      if (currentRowIndex === 0)
-        return currentNavigable;
-      return DvtGanttKeyboardHandler._findPreviousTask(gantt, rowObjs, rowObjs[currentRowIndex - 1], currentRowIndex - 1, currentNavigable);
+      if (currentRowIndex === 0) return currentNavigable;
+      return DvtGanttKeyboardHandler._findPreviousTask(
+        gantt,
+        rowObjs,
+        rowObjs[currentRowIndex - 1],
+        currentRowIndex - 1,
+        currentNavigable
+      );
     }
 
     var taskObj = taskObjs[taskObjs.length - 1];
@@ -5024,10 +6127,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
   static _findNextTask(gantt, rowObjs, currentRowObj, currentRowIndex, currentNavigable) {
     var taskObjs = currentRowObj['taskObjs'];
     if (taskObjs.length === 0) {
-      if (currentRowIndex === rowObjs.length - 1)
-        return currentNavigable;
+      if (currentRowIndex === rowObjs.length - 1) return currentNavigable;
       else
-        return DvtGanttKeyboardHandler._findNextTask(gantt, rowObjs, rowObjs[currentRowIndex + 1], currentRowIndex + 1, currentNavigable);
+        return DvtGanttKeyboardHandler._findNextTask(
+          gantt,
+          rowObjs,
+          rowObjs[currentRowIndex + 1],
+          currentRowIndex + 1,
+          currentNavigable
+        );
     } else {
       var taskObj = taskObjs[0];
       gantt.getDataLayoutManager().ensureInDOM(taskObj, 'task');
@@ -5055,14 +6163,24 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var isRTL = Agent.isRightToLeft(gantt.getCtx());
     var rowIndex = currentRow.getIndex();
     switch (event.keyCode) {
-      case (!isRTL ? KeyboardEvent.LEFT_ARROW : KeyboardEvent.RIGHT_ARROW):
-        var taskIndex = taskObjs.map((t) => { return t['node']; }).indexOf(currentNavigable);
+      case !isRTL ? KeyboardEvent.LEFT_ARROW : KeyboardEvent.RIGHT_ARROW:
+        var taskIndex = taskObjs
+          .map((t) => {
+            return t['node'];
+          })
+          .indexOf(currentNavigable);
         // check if it's the first task in the row
         if (taskIndex === 0) {
           // go to the last task of the previous row
           if (rowIndex > 0) {
             // find the previous row with task
-            return DvtGanttKeyboardHandler._findPreviousTask(gantt, rowObjs, rowObjs[rowIndex - 1], rowIndex - 1, currentNavigable);
+            return DvtGanttKeyboardHandler._findPreviousTask(
+              gantt,
+              rowObjs,
+              rowObjs[rowIndex - 1],
+              rowIndex - 1,
+              currentNavigable
+            );
           }
         } else {
           var taskObj = taskObjs[taskIndex - 1];
@@ -5070,13 +6188,23 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           return taskObj['node'];
         }
         break;
-      case (!isRTL ? KeyboardEvent.RIGHT_ARROW : KeyboardEvent.LEFT_ARROW):
-        taskIndex = taskObjs.map((t) => { return t['node']; }).indexOf(currentNavigable);
+      case !isRTL ? KeyboardEvent.RIGHT_ARROW : KeyboardEvent.LEFT_ARROW:
+        taskIndex = taskObjs
+          .map((t) => {
+            return t['node'];
+          })
+          .indexOf(currentNavigable);
         if (taskIndex === taskObjs.length - 1) {
           // go to the first task of the next row
           if (rowIndex < rowObjs.length - 1) {
             // find the next row with task
-            return DvtGanttKeyboardHandler._findNextTask(gantt, rowObjs, rowObjs[rowIndex + 1], rowIndex + 1, currentNavigable);
+            return DvtGanttKeyboardHandler._findNextTask(
+              gantt,
+              rowObjs,
+              rowObjs[rowIndex + 1],
+              rowIndex + 1,
+              currentNavigable
+            );
           }
         } else {
           var taskObj = taskObjs[taskIndex + 1];
@@ -5086,7 +6214,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         break;
       case KeyboardEvent.UP_ARROW:
         if (rowIndex > 0) {
-          currentNavigable = DvtGanttKeyboardHandler._findPreviousTask(gantt, rowObjs, rowObjs[rowIndex - 1], rowIndex - 1, currentNavigable);
+          currentNavigable = DvtGanttKeyboardHandler._findPreviousTask(
+            gantt,
+            rowObjs,
+            rowObjs[rowIndex - 1],
+            rowIndex - 1,
+            currentNavigable
+          );
           if (currentNavigable != null) {
             // returns the first task of the previous row
             var taskObj = currentNavigable.getRowNode().getTaskObjs()[0];
@@ -5097,7 +6231,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         break;
       case KeyboardEvent.DOWN_ARROW:
         if (rowIndex < rowObjs.length - 1) {
-          currentNavigable = DvtGanttKeyboardHandler._findNextTask(gantt, rowObjs, rowObjs[rowIndex + 1], rowIndex + 1, currentNavigable);
+          currentNavigable = DvtGanttKeyboardHandler._findNextTask(
+            gantt,
+            rowObjs,
+            rowObjs[rowIndex + 1],
+            rowIndex + 1,
+            currentNavigable
+          );
           if (currentNavigable != null) {
             // returns the first task of the next row
             var taskObj = currentNavigable.getRowNode().getTaskObjs()[0];
@@ -5141,12 +6281,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var predecessor = dep.getPredecessorNode();
     var successor = dep.getSuccessorNode();
 
-    var date1 = (type === DvtGanttDependencyNode.START_START || type === DvtGanttDependencyNode.START_FINISH) ? predecessor.getValue('start') : predecessor.getValue('end');
+    var date1 =
+      type === DvtGanttDependencyNode.START_START || type === DvtGanttDependencyNode.START_FINISH
+        ? predecessor.getValue('start')
+        : predecessor.getValue('end');
 
     if (type === DvtGanttDependencyNode.START_START || type === DvtGanttDependencyNode.FINISH_START)
       var date2 = successor.getValue('start');
-    else
-      date2 = successor.getValue('end');
+    else date2 = successor.getValue('end');
 
     return Math.abs(date2 - date1);
   }
@@ -5163,12 +6305,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       var distance1 = self._getDistance(dep1);
       var distance2 = self._getDistance(dep2);
 
-      if (distance1 < distance2)
-        return -1;
-      else if (distance1 > distance2)
-        return 1;
-      else
-        return 0;
+      if (distance1 < distance2) return -1;
+      else if (distance1 > distance2) return 1;
+      else return 0;
     };
     return comparator;
   }
@@ -5183,8 +6322,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
   getFirstNavigableDependencyLine(task, event, listOfLines) {
     var ctx = this._gantt.getCtx();
     var direction = event.keyCode;
-    if (!listOfLines || listOfLines.length < 1 || !task)
-      return null;
+    if (!listOfLines || listOfLines.length < 1 || !task) return null;
 
     var isRTL = Agent.isRightToLeft(this._gantt.getCtx());
     var first = null;
@@ -5193,13 +6331,16 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       var dependencyLine = listOfLines[i];
 
       if (direction === KeyboardEvent.CLOSE_ANGLED_BRACKET)
-        var taskToCompare = isRTL ? dependencyLine.getValue('predecessorTaskId') : dependencyLine.getValue('successorTaskId');
+        var taskToCompare = isRTL
+          ? dependencyLine.getValue('predecessorTaskId')
+          : dependencyLine.getValue('successorTaskId');
       else
-        taskToCompare = isRTL ? dependencyLine.getValue('successorTaskId') : dependencyLine.getValue('predecessorTaskId');
+        taskToCompare = isRTL
+          ? dependencyLine.getValue('successorTaskId')
+          : dependencyLine.getValue('predecessorTaskId');
 
       // sanity check...
-      if (Obj.compareValues(ctx, task.getId(), taskToCompare))
-        continue;
+      if (Obj.compareValues(ctx, task.getId(), taskToCompare)) continue;
 
       var dist = this._getDistance(dependencyLine);
       if (first == null || dist < min) {
@@ -5221,26 +6362,21 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @return {DvtGanttDependencyNode} next navigable dependency line
    */
   getNextNavigableDependencyLine(task, currentDependencyLine, event, listOfLines) {
-    if (!listOfLines)
-      return null;
+    if (!listOfLines) return null;
 
-    if (!currentDependencyLine)
-      return listOfLines[0];
+    if (!currentDependencyLine) return listOfLines[0];
 
-    if (!task)
-      return currentDependencyLine;
+    if (!task) return currentDependencyLine;
 
     listOfLines.sort(this._getDependencyComparator());
 
-    var bForward = (event.keyCode === KeyboardEvent.DOWN_ARROW) ? true : false;
+    var bForward = event.keyCode === KeyboardEvent.DOWN_ARROW ? true : false;
     var index = 0;
     for (var i = 0; i < listOfLines.length; i++) {
       var dependencyLine = listOfLines[i];
       if (dependencyLine === currentDependencyLine) {
-        if (bForward)
-          index = (i === listOfLines.length - 1) ? 0 : i + 1;
-        else
-          index = (i === 0) ? listOfLines.length - 1 : i - 1;
+        if (bForward) index = i === listOfLines.length - 1 ? 0 : i + 1;
+        else index = i === 0 ? listOfLines.length - 1 : i - 1;
         break;
       }
     }
@@ -5299,7 +6435,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   isDnDForwardEvent(event) {
     var isRTL = Agent.isRightToLeft(this._gantt.getCtx());
-    return this._eventManager.getKeyboardDnDMode() && event.keyCode === (isRTL ? KeyboardEvent.LEFT_ARROW : KeyboardEvent.RIGHT_ARROW);
+    return (
+      this._eventManager.getKeyboardDnDMode() &&
+      event.keyCode === (isRTL ? KeyboardEvent.LEFT_ARROW : KeyboardEvent.RIGHT_ARROW)
+    );
   }
 
   /**
@@ -5309,7 +6448,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   isDnDBackwardEvent(event) {
     var isRTL = Agent.isRightToLeft(this._gantt.getCtx());
-    return this._eventManager.getKeyboardDnDMode() && event.keyCode === (isRTL ? KeyboardEvent.RIGHT_ARROW : KeyboardEvent.LEFT_ARROW);
+    return (
+      this._eventManager.getKeyboardDnDMode() &&
+      event.keyCode === (isRTL ? KeyboardEvent.RIGHT_ARROW : KeyboardEvent.LEFT_ARROW)
+    );
   }
 
   /**
@@ -5318,7 +6460,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @return {boolean} whether key strokes equate to moving up a row during move
    */
   isMoveRowAboveEvent(event) {
-    return this._eventManager.getKeyboardDnDMode() === DvtGanttEventManager.KEYBOARD_MOVE && event.keyCode === KeyboardEvent.UP_ARROW;
+    return (
+      this._eventManager.getKeyboardDnDMode() === DvtGanttEventManager.KEYBOARD_MOVE &&
+      event.keyCode === KeyboardEvent.UP_ARROW
+    );
   }
 
   /**
@@ -5327,7 +6472,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @return {boolean} whether key strokes equate to moving down a row during move
    */
   isMoveRowBelowEvent(event) {
-    return this._eventManager.getKeyboardDnDMode() === DvtGanttEventManager.KEYBOARD_MOVE && event.keyCode === KeyboardEvent.DOWN_ARROW;
+    return (
+      this._eventManager.getKeyboardDnDMode() === DvtGanttEventManager.KEYBOARD_MOVE &&
+      event.keyCode === KeyboardEvent.DOWN_ARROW
+    );
   }
 
   /**
@@ -5340,14 +6488,27 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
   }
 
   /**
-   * Whether keyboard event equates to cancelling a (high level) DnD dragging operation (dragging via keyboard)
-   * Note that the cancelling a DnD drag (dragging via mouse) via keyboard Esc is detected in dragEnd event instead of
-   * through keyboard events, which are not fired.
+   * Whether keyboard event equates to cancelling a high level keyboard DnD dragging operation.
    * @param {dvt.KeyboardEvent} event keyboard event
    * @return {boolean} whether key strokes equate to cancelling a move
    */
   isDnDCancelEvent(event) {
     return this._eventManager.getKeyboardDnDMode() && event.keyCode === KeyboardEvent.ESCAPE;
+  }
+
+  /**
+   * Whether keyboard event equates to cancelling a high level mouse DnD dragging operation.
+   * Note that cancelling a low level HTML5 DnD drag via keyboard Esc is detected in dragEnd event instead of
+   * through keyboard events, which are not fired.
+   * @param {dvt.KeyboardEvent} event keyboard event
+   * @returns {boolean} whether key strokes equate to cancelling a move during high level mouse DnD
+   */
+  isHighLevelMouseDnDCancelEvent(event) {
+    return (
+      this._eventManager.isDnDDragging() &&
+      this._eventManager.getKeyboardDnDMode() == null &&
+      event.keyCode === KeyboardEvent.ESCAPE
+    );
   }
 
   /**
@@ -5378,8 +6539,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     }
     if (this.isMoveInitiationEvent(event)) {
       var currentNavigable = this._eventManager.getFocus();
-      var isSelectedTask = currentNavigable && currentNavigable.nodeType === 'task' && currentNavigable.isSelected();
-      if (isSelectedTask && this._gantt.isTaskMoveEnabled() && !this._eventManager.isDnDDragging()) {
+      var isSelectedTask =
+        currentNavigable && currentNavigable.nodeType === 'task' && currentNavigable.isSelected();
+      if (
+        isSelectedTask &&
+        this._gantt.isTaskMoveEnabled() &&
+        !this._eventManager.isDnDDragging()
+      ) {
         this._eventManager.handleKeyboardMoveInitiation(event, currentNavigable);
         EventManager.consumeEvent(event);
         return null;
@@ -5387,8 +6553,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     }
     if (this.isResizeStartInitiationEvent(event)) {
       var currentNavigable = this._eventManager.getFocus();
-      var isSelectedTask = currentNavigable && currentNavigable.nodeType === 'task' && currentNavigable.isSelected();
-      if (isSelectedTask && this._gantt.isTaskResizeEnabled() && !this._eventManager.isDnDDragging()) {
+      var isSelectedTask =
+        currentNavigable && currentNavigable.nodeType === 'task' && currentNavigable.isSelected();
+      if (
+        isSelectedTask &&
+        this._gantt.isTaskResizeEnabled() &&
+        !this._eventManager.isDnDDragging()
+      ) {
         this._eventManager.handleKeyboardResizeStartInitiation(event, currentNavigable);
         EventManager.consumeEvent(event);
         return null;
@@ -5396,8 +6567,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     }
     if (this.isResizeEndInitiationEvent(event)) {
       var currentNavigable = this._eventManager.getFocus();
-      var isSelectedTask = currentNavigable && currentNavigable.nodeType === 'task' && currentNavigable.isSelected();
-      if (isSelectedTask && this._gantt.isTaskResizeEnabled() && !this._eventManager.isDnDDragging()) {
+      var isSelectedTask =
+        currentNavigable && currentNavigable.nodeType === 'task' && currentNavigable.isSelected();
+      if (
+        isSelectedTask &&
+        this._gantt.isTaskResizeEnabled() &&
+        !this._eventManager.isDnDDragging()
+      ) {
         this._eventManager.handleKeyboardResizeEndInitiation(event, currentNavigable);
         EventManager.consumeEvent(event);
         return null;
@@ -5443,6 +6619,11 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       EventManager.consumeEvent(event);
       return null;
     }
+    if (this.isHighLevelMouseDnDCancelEvent(event)) {
+      this._eventManager.handleHighLevelMouseDnDCancel(event);
+      EventManager.consumeEvent(event);
+      return null;
+    }
 
     // Expand/collapse row from task
     // Note: Won't conflict with multiselect (ctrl + space) because that's normally handled in superclass method below.
@@ -5450,13 +6631,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       var currentNavigable = this._eventManager.getFocus();
       if (currentNavigable && currentNavigable.nodeType === 'task') {
         EventManager.consumeEvent(event);
-        this._eventManager.toggleRowExpandCollapse(event, currentNavigable.getLayoutObject()['rowObj']);
+        this._eventManager.toggleRowExpandCollapse(
+          event,
+          currentNavigable.getLayoutObject()['rowObj']
+        );
         return null;
       }
     }
 
     // Expand row from row label
-    if (keyCode === (isRTL ? KeyboardEvent.LEFT_ARROW : KeyboardEvent.RIGHT_ARROW) && event.ctrlKey) {
+    if (
+      keyCode === (isRTL ? KeyboardEvent.LEFT_ARROW : KeyboardEvent.RIGHT_ARROW) &&
+      event.ctrlKey
+    ) {
       var currentNavigable = this._eventManager.getFocus();
       var dataLayoutManager = this._gantt.getDataLayoutManager();
       if (currentNavigable && currentNavigable.nodeType === 'rowLabel') {
@@ -5471,7 +6658,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     }
 
     // Collapse row from row label
-    if (keyCode === (isRTL ? KeyboardEvent.RIGHT_ARROW : KeyboardEvent.LEFT_ARROW) && event.ctrlKey) {
+    if (
+      keyCode === (isRTL ? KeyboardEvent.RIGHT_ARROW : KeyboardEvent.LEFT_ARROW) &&
+      event.ctrlKey
+    ) {
       var currentNavigable = this._eventManager.getFocus();
       if (currentNavigable && currentNavigable.nodeType === 'rowLabel') {
         var rowObj = currentNavigable.getRowLayoutObject();
@@ -5491,7 +6681,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
 
     return super.processKeyDown(event);
   }
- }
+}
 
 /**
  * Class representing task content to be overlayed over the main task shape.
@@ -5500,7 +6690,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
  * @class
  * @constructor
  */
- class DvtGanttTaskContent extends Container {
+class DvtGanttTaskContent extends Container {
   constructor(gantt, task) {
     super(gantt.getCtx(), null);
 
@@ -5527,7 +6717,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     const customContent = renderer(dataContext);
     if (customContent) {
       if (Array.isArray(customContent)) {
-        customContent.forEach( (node) => {
+        customContent.forEach((node) => {
           ToolkitUtils.appendChildElem(parentElem, node);
         });
       } else {
@@ -5580,7 +6770,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       itemData: itemData || null,
       content: {
         height: mainShape.getHeight(),
-        width: mainShape.getWidth() + mainShape.getPhysicalStartOffset() + mainShape.getPhysicalEndOffset()
+        width:
+          mainShape.getWidth() +
+          mainShape.getPhysicalStartOffset() +
+          mainShape.getPhysicalEndOffset()
       },
       state: {
         expanded: !!rowObj.expanded,
@@ -5598,17 +6791,23 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
   highlight() {
     this._isHighlighted = true;
     if (this._content) {
-      ToolkitUtils.addClassName(this._content.getElem(), this._gantt.GetStyleClass('taskHighlight'));
+      ToolkitUtils.addClassName(
+        this._content.getElem(),
+        this._gantt.GetStyleClass('taskHighlight')
+      );
     }
   }
 
   /**
-    * "Un-Highights" the task, i.e. for when selection-behavior is "highlightDependencies".
-    */
+   * "Un-Highights" the task, i.e. for when selection-behavior is "highlightDependencies".
+   */
   unhighlight() {
     this._isHighlighted = false;
     if (this._content) {
-      ToolkitUtils.removeClassName(this._content.getElem(), this._gantt.GetStyleClass('taskHighlight'));
+      ToolkitUtils.removeClassName(
+        this._content.getElem(),
+        this._gantt.GetStyleClass('taskHighlight')
+      );
     }
   }
 
@@ -5624,15 +6823,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     const isRTL = Agent.isRightToLeft(this._gantt.getCtx());
 
     const refX = 0;
-    const refW = (dim.w != null) ? dim.w : mainShape.getWidth();
+    const refW = dim.w != null ? dim.w : mainShape.getWidth();
     return {
-      x: isRTL ? (refX - refW - mainShape.getPhysicalEndOffset()) : (refX - mainShape.getPhysicalStartOffset()),
-      translateX: isRTL ? (refX + mainShape.getPhysicalStartOffset()) : (refX - mainShape.getPhysicalStartOffset()),
+      x: isRTL
+        ? refX - refW - mainShape.getPhysicalEndOffset()
+        : refX - mainShape.getPhysicalStartOffset(),
+      translateX: isRTL
+        ? refX + mainShape.getPhysicalStartOffset()
+        : refX - mainShape.getPhysicalStartOffset(),
       y: 0,
       translateY: 0,
       w: refW + mainShape.getPhysicalStartOffset() + mainShape.getPhysicalEndOffset(),
-      h: (dim.h != null) ? dim.h : mainShape.getHeight(),
-      r: (dim.r != null) ? dim.r : mainShape.getBorderRadius()
+      h: dim.h != null ? dim.h : mainShape.getHeight(),
+      r: dim.r != null ? dim.r : mainShape.getBorderRadius()
     };
   }
 
@@ -5721,7 +6924,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
  * @class
  * @constructor
  */
- class DvtGanttTask {
+class DvtGanttTask {
   constructor(gantt, container) {
     this._gantt = gantt;
     this._container = container;
@@ -5839,15 +7042,17 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       // In RTL the mainShape's path contains negative values, so apply
       // a transformed equivalent path with all positive values instead.
       var width = this._mainShape.getWidth();
-      this._mainContainer.setStyle({ clipPath: `path('${this._mainShape.generateCmd(
-        this._mainShape.getX() + width,
-        this._mainShape.getY(),
-        width,
-        this._mainShape.getHeight(),
-        this._mainShape.getBorderRadius()
-      )}')` });
+      this._mainContainer.setStyle({
+        clipPath: `path('${this._mainShape.generateCmd(
+          this._mainShape.getX() + width,
+          this._mainShape.getY(),
+          width,
+          this._mainShape.getHeight(),
+          this._mainShape.getBorderRadius()
+        )}')`
+      });
     }
-  };
+  }
 
   /**
    * Whether the task element should be shown as a milestone
@@ -5855,13 +7060,17 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @return {boolean} whether the task element should be shown as a milestone
    */
   isMilestone(elementType) {
-    var start, end,
-        type = this._container.getValue('type');
+    var start,
+      end,
+      type = this._container.getValue('type');
 
     if (type === 'milestone') {
       return true;
     } else if (type === 'auto') {
-      if (elementType === 'mainDragFeedback' || DvtGanttTaskShape.MAIN_TYPES.indexOf(elementType) > -1) {
+      if (
+        elementType === 'mainDragFeedback' ||
+        DvtGanttTaskShape.MAIN_TYPES.indexOf(elementType) > -1
+      ) {
         start = this._container.getValue('start');
         end = this._container.getValue('end');
       } else if (DvtGanttTaskShape.BASELINE_TYPES.indexOf(elementType) > -1) {
@@ -5891,10 +7100,11 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   getTimeSpanDimensions(start, end) {
     var ganttMinTime = this._gantt.getStartTime(),
-        ganttMaxTime = this._gantt.getEndTime(),
-        ganttWidth = this._gantt.getContentLength(),
-        isRTL = Agent.isRightToLeft(this._gantt.getCtx()),
-        startPos, endPos;
+      ganttMaxTime = this._gantt.getEndTime(),
+      ganttWidth = this._gantt.getContentLength(),
+      isRTL = Agent.isRightToLeft(this._gantt.getCtx()),
+      startPos,
+      endPos;
 
     if (!(start == null && end == null)) {
       startPos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, start, ganttWidth);
@@ -5905,7 +7115,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         endPos = ganttWidth - endPos;
       }
 
-      return {'startPos': startPos, 'endPos': endPos, 'distance': endPos - startPos};
+      return { startPos: startPos, endPos: endPos, distance: endPos - startPos };
     }
     return null;
   }
@@ -5981,7 +7191,11 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     this.renderOvertime();
     this.renderDowntime();
     this.renderAttribute();
-    if (this._container.getValue('type') === 'summary' && this._mainShape && this._gantt.getCtx().getThemeBehavior() === 'alta') {
+    if (
+      this._container.getValue('type') === 'summary' &&
+      this._mainShape &&
+      this._gantt.getCtx().getThemeBehavior() === 'alta'
+    ) {
       // summary shapes should be on top of all non-custom content (in Alta only)
       this._container.addChild(this._mainShape);
     }
@@ -6033,17 +7247,32 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   renderBaseline(progressHeight) {
     var isMilestone,
-        options = this._gantt.getOptions(),
-        baselineProps = this._container.getValue('baseline'), baselineStart, baselineEnd,
-        yOffset,
-        self = this, finalStates, offsetDim,
-        onRenderEnd, baselineDim, x, y, width, height, borderRadius;
+      options = this._gantt.getOptions(),
+      baselineProps = this._container.getValue('baseline'),
+      baselineStart,
+      baselineEnd,
+      yOffset,
+      self = this,
+      finalStates,
+      offsetDim,
+      onRenderEnd,
+      baselineDim,
+      x,
+      y,
+      width,
+      height,
+      borderRadius;
 
     if (baselineProps) {
       // If type is "milestone", and if 'start' and 'end' values are specified and unequal, the 'start' value is used to evaluate position.
       baselineStart = this._container.getValue('baseline', 'start');
       baselineEnd = this._container.getValue('baseline', 'end');
-      baselineDim = this.getTimeSpanDimensions(baselineStart, (this._container.getValue('type') === 'milestone' && baselineStart != baselineEnd) ? baselineStart : baselineEnd);
+      baselineDim = this.getTimeSpanDimensions(
+        baselineStart,
+        this._container.getValue('type') === 'milestone' && baselineStart != baselineEnd
+          ? baselineStart
+          : baselineEnd
+      );
       if (baselineDim) {
         // Determine offset from main element
         offsetDim = this.getTimeSpanDimensions(this._container.getValue('start'), baselineStart);
@@ -6055,14 +7284,27 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         width = Math.abs(baselineDim['distance']);
         height = this._container.getValue('baseline', 'height');
         yOffset = isMilestone
-                  ? Math.max(this._container.getValue('height'), height) + DvtGanttStyleUtils.getMilestoneBaselineYOffset(options) - height
-                  : this._container.getValue('height') + DvtGanttStyleUtils.getBaselineMarginTop(options);
+          ? Math.max(this._container.getValue('height'), height) +
+            DvtGanttStyleUtils.getMilestoneBaselineYOffset(options) -
+            height
+          : this._container.getValue('height') + DvtGanttStyleUtils.getBaselineMarginTop(options);
         y = Math.max(0, (progressHeight - this._container.getValue('height')) / 2) + yOffset;
-        borderRadius = !isMilestone ? baselineProps['borderRadius'] : options._resources.milestoneBaselineBorderRadius;
+        borderRadius = !isMilestone
+          ? baselineProps['borderRadius']
+          : options._resources.milestoneBaselineBorderRadius;
 
         // element doesn't exist in DOM already
         if (this._baselineShape == null) {
-          this._baselineShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'baseline');
+          this._baselineShape = new DvtGanttTaskShape(
+            this._gantt.getCtx(),
+            x,
+            y,
+            width,
+            height,
+            borderRadius,
+            this,
+            'baseline'
+          );
           if (isMilestone) {
             // Ensure baseline milestone is behind actual milestone. Slight performance hit to ensure this, so don't bother for bar case.
             this._container.addChildAt(this._baselineShape, 0);
@@ -6072,8 +7314,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           this._baselineShape.setRenderState('add');
         } else {
           this._baselineShape.setRenderState('exist');
-          if (isMilestone) // case where was bar baseline, but turned to milestone baseline on rerender, then make sure it's behind everything
-          {
+          if (isMilestone) {
+            // case where was bar baseline, but turned to milestone baseline on rerender, then make sure it's behind everything
             this._container.addChildAt(this._baselineShape, 0);
           }
         }
@@ -6091,13 +7333,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         };
 
         finalStates = {
-          'x': x,
-          'y': y,
-          'w': width,
-          'h': height,
-          'r': borderRadius
+          x: x,
+          y: y,
+          w: width,
+          h: height,
+          r: borderRadius
         };
-        this._gantt.getAnimationManager().preAnimateTaskBaseline(this, this._baselineShape, finalStates, onRenderEnd);
+        this._gantt
+          .getAnimationManager()
+          .preAnimateTaskBaseline(this, this._baselineShape, finalStates, onRenderEnd);
       } else {
         this.removeBaseline();
       }
@@ -6110,13 +7354,16 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * Removes the baseline shape.
    */
   removeBaseline() {
-    var self = this, onRemoveEnd;
+    var self = this,
+      onRemoveEnd;
     if (this._baselineShape) {
       onRemoveEnd = () => {
         self._container.removeChild(self._baselineShape);
         self._baselineShape = null;
       };
-      this._gantt.getAnimationManager().preAnimateTaskBaselineRemove(this._baselineShape, onRemoveEnd);
+      this._gantt
+        .getAnimationManager()
+        .preAnimateTaskBaselineRemove(this._baselineShape, onRemoveEnd);
     }
   }
 
@@ -6127,48 +7374,68 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   renderMain(progressHeight, bUpdateCustomContent) {
     var taskProps = this._container.getData(),
-        taskHeight = this._container.getValue('height'),
-        start = this._container.getValue('start'),
-        end = this._container.getValue('end'),
-        context = this._gantt.getCtx(),
-        isRTL = Agent.isRightToLeft(context),
-        theme = context.getThemeBehavior(),
-        self = this, finalStates,
-        options = this._gantt.getOptions(),
-        onRenderEnd, mainDim,
-        x, y, width, height, borderRadius,
-        isMilestone, rawBorderRadius, aggregationState,
-        isViewportDensityHigh;
+      taskHeight = this._container.getValue('height'),
+      start = this._container.getValue('start'),
+      end = this._container.getValue('end'),
+      context = this._gantt.getCtx(),
+      isRTL = Agent.isRightToLeft(context),
+      theme = context.getThemeBehavior(),
+      self = this,
+      finalStates,
+      options = this._gantt.getOptions(),
+      onRenderEnd,
+      mainDim,
+      x,
+      y,
+      width,
+      height,
+      borderRadius,
+      isMilestone,
+      rawBorderRadius,
+      aggregationState,
+      isViewportDensityHigh;
 
     if (taskProps) {
       // If type is "milestone", and if 'start' and 'end' values are specified and unequal, the 'start' value is used to evaluate position.
-      mainDim = this.getTimeSpanDimensions(start, (this._container.getValue('type') === 'milestone' && start != end) ? start : end);
+      mainDim = this.getTimeSpanDimensions(
+        start,
+        this._container.getValue('type') === 'milestone' && start != end ? start : end
+      );
       if (mainDim) {
         // Calculate final dimensions
         x = 0;
         y = Math.max(0, (progressHeight - taskHeight) / 2);
         width = Math.abs(mainDim['distance']);
         // (Alta only) Summary task case, want the summary task shape to take on the full height
-        height = this.isSummary('main') && theme === 'alta' ? this._container.getFinalHeight(true) : taskHeight;
+        height =
+          this.isSummary('main') && theme === 'alta'
+            ? this._container.getFinalHeight(true)
+            : taskHeight;
         isMilestone = this.isMilestone('main');
         isViewportDensityHigh = this._gantt.getViewportDensity() > 1;
 
         // Get border radius. If task aggregation is on, assume given border radius is a singular value rather than a multi value shorthand, and override accordingly:
         // If viewport density is high though, turn off border radius for better performance.
-        rawBorderRadius = !isMilestone ? this._container.getValue('borderRadius') : options._resources.milestoneBorderRadius;
+        rawBorderRadius = !isMilestone
+          ? this._container.getValue('borderRadius')
+          : options._resources.milestoneBorderRadius;
         if (rawBorderRadius === '0' || rawBorderRadius === '0px' || isViewportDensityHigh) {
           borderRadius = '0';
         } else {
           aggregationState = this._container.getLayoutObject().aggregation;
           switch (aggregationState) {
             case 'stackStart':
-              borderRadius = !isRTL ? `${rawBorderRadius} 0px 0px ${rawBorderRadius}` : `0px ${rawBorderRadius} ${rawBorderRadius} 0px`;
+              borderRadius = !isRTL
+                ? `${rawBorderRadius} 0px 0px ${rawBorderRadius}`
+                : `0px ${rawBorderRadius} ${rawBorderRadius} 0px`;
               break;
             case 'stackMiddle':
               borderRadius = '0';
               break;
             case 'stackEnd':
-              borderRadius = !isRTL ? `0px ${rawBorderRadius} ${rawBorderRadius} 0px` : `${rawBorderRadius} 0px 0px ${rawBorderRadius}`;
+              borderRadius = !isRTL
+                ? `0px ${rawBorderRadius} ${rawBorderRadius} 0px`
+                : `${rawBorderRadius} 0px 0px ${rawBorderRadius}`;
               break;
             case 'stackSolo':
             default: // no aggregation
@@ -6176,13 +7443,32 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           }
         }
 
-        if (this._mainShape == null) { // element doesn't exist in DOM already
+        if (this._mainShape == null) {
+          // element doesn't exist in DOM already
           // If viewport density is high, don't render the white background for better performance.
           if (theme !== 'alta' && !isViewportDensityHigh) {
-            this._mainBackgroundShape = new DvtGanttTaskShape(context, x, y, width, height, borderRadius, this, 'mainBackground');
+            this._mainBackgroundShape = new DvtGanttTaskShape(
+              context,
+              x,
+              y,
+              width,
+              height,
+              borderRadius,
+              this,
+              'mainBackground'
+            );
             this._container.addChild(this._mainBackgroundShape);
           }
-          this._mainShape = new DvtGanttTaskShape(context, x, y, width, height, borderRadius, this, 'main');
+          this._mainShape = new DvtGanttTaskShape(
+            context,
+            x,
+            y,
+            width,
+            height,
+            borderRadius,
+            this,
+            'main'
+          );
           this._container.addChild(this._mainShape);
           this._mainShape.setRenderState('add');
 
@@ -6205,8 +7491,20 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
               }
             } else if (!this._mainBackgroundShape) {
               // If viewport density is low, but there's no white background, add it right behind the main shape
-              this._mainBackgroundShape = new DvtGanttTaskShape(context, x, y, width, height, borderRadius, this, 'mainBackground');
-              this._container.addChildAt(this._mainBackgroundShape, this._container.getChildIndex(this._mainShape));
+              this._mainBackgroundShape = new DvtGanttTaskShape(
+                context,
+                x,
+                y,
+                width,
+                height,
+                borderRadius,
+                this,
+                'mainBackground'
+              );
+              this._container.addChildAt(
+                this._mainBackgroundShape,
+                this._container.getChildIndex(this._mainShape)
+              );
             }
           }
         }
@@ -6216,18 +7514,29 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         // Only do this if applicable; otherwise the empty containers aggravate performance.
         var hasAttribute = this._container.getValue('attribute', 'rendered') === 'on';
         var hasProgress = this.getProgressValue() != null;
-        var hasDowntime = this._container.getValue('downtime', 'start') != null || this._container.getValue('downtime', 'end') != null;
-        var hasOvertime = this._container.getValue('overtime', 'start') != null || this._container.getValue('overtime', 'end') != null;
-        if (theme !== 'alta'
-          && !isMilestone
-          && borderRadius !== '0'
-          && (hasAttribute || hasProgress || hasDowntime || hasOvertime)
+        var hasDowntime =
+          this._container.getValue('downtime', 'start') != null ||
+          this._container.getValue('downtime', 'end') != null;
+        var hasOvertime =
+          this._container.getValue('overtime', 'start') != null ||
+          this._container.getValue('overtime', 'end') != null;
+        if (
+          theme !== 'alta' &&
+          !isMilestone &&
+          borderRadius !== '0' &&
+          (hasAttribute || hasProgress || hasDowntime || hasOvertime)
         ) {
           if (this._mainContainer == null) {
             this._mainContainer = new Container(context);
             // for CSS clip-path to work as expected, the this._mainContainer's bounding box need to match the mainShape's bounding box.
             // To ensure this, render a hidden rect that matches the expected bounding box.
-            this._mainContainerSupport = new Rect(this._gantt.getCtx(), isRTL ? -width : 0, 0, width, height);
+            this._mainContainerSupport = new Rect(
+              this._gantt.getCtx(),
+              isRTL ? -width : 0,
+              0,
+              width,
+              height
+            );
             this._mainContainerSupport.setVisible(false);
             this._mainContainer.addChild(this._mainContainerSupport);
             this._applyMainContainerClippath();
@@ -6253,17 +7562,21 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           self._applyStyles(self._mainShape);
 
           // Render final custom content
-          if (bUpdateCustomContent && self._mainCustomContent && self._mainShape.getRenderState() === 'exist') {
+          if (
+            bUpdateCustomContent &&
+            self._mainCustomContent &&
+            self._mainShape.getRenderState() === 'exist'
+          ) {
             self._mainCustomContent.render(false);
           }
         };
 
         finalStates = {
-          'x': x,
-          'y': y,
-          'w': width,
-          'h': height,
-          'r': borderRadius
+          x: x,
+          y: y,
+          w: width,
+          h: height,
+          r: borderRadius
         };
         this._gantt.getAnimationManager().preAnimateTaskMain(this, finalStates, onRenderEnd);
       } else {
@@ -6281,22 +7594,26 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
   showMainEffect(effectType) {
     // Get main shape dimensions
     var x = this._mainShape.getX(),
-        y = this._mainShape.getY(),
-        w = this._mainShape.getWidth(),
-        h = this._mainShape.getHeight(),
-        r = this._mainShape.getBorderRadius();
+      y = this._mainShape.getY(),
+      w = this._mainShape.getWidth(),
+      h = this._mainShape.getHeight(),
+      r = this._mainShape.getBorderRadius();
 
     // Layer given task node over all other tasks,
     // while keeping all tasks with overlap behavior 'overlay' at the very top
     var floatTaskToTop = (taskNode) => {
+      var taskNodeParent = taskNode.getParent();
+      // The task may be out of view and not in the DOM, in which case there's no need to float it to the top
+      if (taskNodeParent == null) {
+        return;
+      }
       var rowNode = taskNode.getRowNode();
       var rowObj = rowNode.getLayoutObject();
       var taskObj = taskNode.getLayoutObject();
       var earliestOverlayTaskObj = rowObj['earliestOverlayTaskObj'];
-      var taskNodeParent = taskNode.getParent();
       if (earliestOverlayTaskObj && taskObj['_overlayBehavior'] !== 'overlay') {
         var earliestOverlayTaskNode = earliestOverlayTaskObj['node'];
-        if (earliestOverlayTaskNode.getParent()) {
+        if (earliestOverlayTaskNode && earliestOverlayTaskNode.getParent()) {
           var earliestOverlayTaskNodeInd = taskNodeParent.getChildIndex(earliestOverlayTaskNode);
           taskNodeParent.addChildAt(taskNode, earliestOverlayTaskNodeInd - 1);
         } else {
@@ -6310,7 +7627,16 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
 
     if (effectType === 'selected') {
       if (this._mainSelectShape == null) {
-        this._mainSelectShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, w, h, r, this, 'mainSelect');
+        this._mainSelectShape = new DvtGanttTaskShape(
+          this._gantt.getCtx(),
+          x,
+          y,
+          w,
+          h,
+          r,
+          this,
+          'mainSelect'
+        );
 
         // must be inserted before the main shape
         this._container.addChildAt(this._mainSelectShape, 0);
@@ -6326,11 +7652,23 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     } else if (effectType === 'hover' || effectType === 'focus') {
       if (this._mainHoverShape == null) {
         var shapeType = effectType === 'hover' ? 'mainHover' : 'mainFocus';
-        this._mainHoverShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, w, h, r, this, shapeType);
+        this._mainHoverShape = new DvtGanttTaskShape(
+          this._gantt.getCtx(),
+          x,
+          y,
+          w,
+          h,
+          r,
+          this,
+          shapeType
+        );
 
         // must be inserted before the shape and after selected effect (if any)
         // easiest way to gaurantee this would be to insert immediately before main shape
-        this._container.addChildAt(this._mainHoverShape, this._container.getChildIndex(this._mainShape));
+        this._container.addChildAt(
+          this._mainHoverShape,
+          this._container.getChildIndex(this._mainShape)
+        );
 
         // Rerender custom content if any
         if (this._mainCustomContent) {
@@ -6362,7 +7700,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   removeMainEffect(effectType, enforceDOMLayering) {
     var isTaskAggregationMode = this._gantt.getOptions().taskAggregation === 'on';
-    enforceDOMLayering = (enforceDOMLayering === undefined ? true : enforceDOMLayering) && !isTaskAggregationMode;
+    enforceDOMLayering =
+      (enforceDOMLayering === undefined ? true : enforceDOMLayering) && !isTaskAggregationMode;
 
     if (effectType === 'selected') {
       if (this._mainSelectShape != null) {
@@ -6598,7 +7937,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * Removes the main shape
    */
   removeMain() {
-    var self = this, onRemoveEnd;
+    var self = this,
+      onRemoveEnd;
     if (this._mainShape) {
       onRemoveEnd = () => {
         // Remove any custom content
@@ -6622,15 +7962,17 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           self._mainContainer = null;
         }
       };
-      this._gantt.getAnimationManager().preAnimateTaskMainRemove(
-        this._mainShape,
-        this._mainBackgroundShape,
-        this._mainSelectShape,
-        this._mainHoverShape,
-        this._mainCustomContent,
-        this._mainContainer,
-        onRemoveEnd
-      );
+      this._gantt
+        .getAnimationManager()
+        .preAnimateTaskMainRemove(
+          this._mainShape,
+          this._mainBackgroundShape,
+          this._mainSelectShape,
+          this._mainHoverShape,
+          this._mainCustomContent,
+          this._mainContainer,
+          onRemoveEnd
+        );
     }
   }
 
@@ -6653,9 +7995,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   renderProgress(progressHeight) {
     var taskHeight = this._container.getValue('height'),
-        progressValue = this.getProgressValue(),
-        self = this, onRenderEnd, finalStates,
-        x, y, width, borderRadius, type;
+      progressValue = this.getProgressValue(),
+      self = this,
+      onRenderEnd,
+      finalStates,
+      x,
+      y,
+      width,
+      borderRadius,
+      type;
 
     if (progressValue !== null && this._mainShape && !this.isMilestone('main')) {
       // Calculate final dimensions
@@ -6671,9 +8019,18 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         type = 'progressFull';
       }
 
-      if (this._progressShape == null) // element doesn't exist in DOM already
-      {
-        this._progressShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, progressHeight, borderRadius, this, type);
+      if (this._progressShape == null) {
+        // element doesn't exist in DOM already
+        this._progressShape = new DvtGanttTaskShape(
+          this._gantt.getCtx(),
+          x,
+          y,
+          width,
+          progressHeight,
+          borderRadius,
+          this,
+          type
+        );
         this._progressShape.setRenderState('add');
       } else {
         this._progressShape.setType(type);
@@ -6693,13 +8050,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       };
 
       finalStates = {
-        'x': x,
-        'y': y,
-        'w': width,
-        'h': progressHeight,
-        'r': borderRadius
+        x: x,
+        y: y,
+        w: width,
+        h: progressHeight,
+        r: borderRadius
       };
-      this._gantt.getAnimationManager().preAnimateTaskProgress(this, this._progressShape, finalStates, onRenderEnd);
+      this._gantt
+        .getAnimationManager()
+        .preAnimateTaskProgress(this, this._progressShape, finalStates, onRenderEnd);
     } else {
       this.removeProgress();
     }
@@ -6709,7 +8068,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * Removes the progress shape.
    */
   removeProgress() {
-    var self = this, onRemoveEnd;
+    var self = this,
+      onRemoveEnd;
     if (this._progressShape) {
       onRemoveEnd = () => {
         if (self._progressShape) {
@@ -6717,7 +8077,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           self._progressShape = null;
         }
       };
-      this._gantt.getAnimationManager().preAnimateTaskProgressRemove(this._progressShape, onRemoveEnd);
+      this._gantt
+        .getAnimationManager()
+        .preAnimateTaskProgressRemove(this._progressShape, onRemoveEnd);
     }
   }
 
@@ -6740,9 +8102,18 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         var width = Math.abs(dim['distance']);
         var borderRadius = '0';
 
-        if (this._overtimeShape == null) // element doesn't exist in DOM already
-        {
-          this._overtimeShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'overtime');
+        if (this._overtimeShape == null) {
+          // element doesn't exist in DOM already
+          this._overtimeShape = new DvtGanttTaskShape(
+            this._gantt.getCtx(),
+            x,
+            y,
+            width,
+            height,
+            borderRadius,
+            this,
+            'overtime'
+          );
           this._overtimeShape.setRenderState('add');
         } else {
           this._overtimeShape.setRenderState('exist');
@@ -6761,13 +8132,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         };
 
         var finalStates = {
-          'x': x,
-          'y': y,
-          'w': width,
-          'h': height,
-          'r': borderRadius
+          x: x,
+          y: y,
+          w: width,
+          h: height,
+          r: borderRadius
         };
-        this._gantt.getAnimationManager().preAnimateTaskOvertime(this, this._overtimeShape, finalStates, onRenderEnd);
+        this._gantt
+          .getAnimationManager()
+          .preAnimateTaskOvertime(this, this._overtimeShape, finalStates, onRenderEnd);
       } else {
         this.removeOvertime();
       }
@@ -6780,7 +8153,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * Removes the overtime shape.
    */
   removeOvertime() {
-    var self = this, onRemoveEnd;
+    var self = this,
+      onRemoveEnd;
     if (this._overtimeShape) {
       onRemoveEnd = () => {
         if (self._overtimeShape) {
@@ -6788,7 +8162,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           self._overtimeShape = null;
         }
       };
-      this._gantt.getAnimationManager().preAnimateTaskOvertimeRemove(this._overtimeShape, onRemoveEnd);
+      this._gantt
+        .getAnimationManager()
+        .preAnimateTaskOvertimeRemove(this._overtimeShape, onRemoveEnd);
     }
   }
 
@@ -6813,8 +8189,18 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         var r = options._resources.taskDowntimeBorderRadius;
         var borderRadius = `${r} ${r} 0px 0px`;
 
-        if (this._downtimeShape == null) { // element doesn't exist in DOM already
-          this._downtimeShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'downtime');
+        if (this._downtimeShape == null) {
+          // element doesn't exist in DOM already
+          this._downtimeShape = new DvtGanttTaskShape(
+            this._gantt.getCtx(),
+            x,
+            y,
+            width,
+            height,
+            borderRadius,
+            this,
+            'downtime'
+          );
           this._downtimeShape.setRenderState('add');
         } else {
           this._downtimeShape.setRenderState('exist');
@@ -6833,13 +8219,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         };
 
         var finalStates = {
-          'x': x,
-          'y': y,
-          'w': width,
-          'h': height,
-          'r': borderRadius
+          x: x,
+          y: y,
+          w: width,
+          h: height,
+          r: borderRadius
         };
-        this._gantt.getAnimationManager().preAnimateTaskDowntime(this, this._downtimeShape, finalStates, onRenderEnd);
+        this._gantt
+          .getAnimationManager()
+          .preAnimateTaskDowntime(this, this._downtimeShape, finalStates, onRenderEnd);
       } else {
         this.removeDowntime();
       }
@@ -6852,7 +8240,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * Removes the downtime shape.
    */
   removeDowntime() {
-    var self = this, onRemoveEnd;
+    var self = this,
+      onRemoveEnd;
     if (this._downtimeShape) {
       onRemoveEnd = () => {
         if (self._downtimeShape) {
@@ -6860,7 +8249,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           self._downtimeShape = null;
         }
       };
-      this._gantt.getAnimationManager().preAnimateTaskDowntimeRemove(this._downtimeShape, onRemoveEnd);
+      this._gantt
+        .getAnimationManager()
+        .preAnimateTaskDowntimeRemove(this._downtimeShape, onRemoveEnd);
     }
   }
 
@@ -6879,9 +8270,18 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       var width = this._mainShape.getFinalWidth();
       var borderRadius = '0';
 
-      if (this._attributeShape == null) // element doesn't exist in DOM already
-      {
-        this._attributeShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'attribute');
+      if (this._attributeShape == null) {
+        // element doesn't exist in DOM already
+        this._attributeShape = new DvtGanttTaskShape(
+          this._gantt.getCtx(),
+          x,
+          y,
+          width,
+          height,
+          borderRadius,
+          this,
+          'attribute'
+        );
         this._attributeShape.setRenderState('add');
       } else {
         this._attributeShape.setRenderState('exist');
@@ -6900,13 +8300,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       };
 
       var finalStates = {
-        'x': x,
-        'y': y,
-        'w': width,
-        'h': height,
-        'r': borderRadius
+        x: x,
+        y: y,
+        w: width,
+        h: height,
+        r: borderRadius
       };
-      this._gantt.getAnimationManager().preAnimateTaskAttribute(this, this._attributeShape, finalStates, onRenderEnd);
+      this._gantt
+        .getAnimationManager()
+        .preAnimateTaskAttribute(this, this._attributeShape, finalStates, onRenderEnd);
     } else {
       this.removeAttribute();
     }
@@ -6916,7 +8318,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * Removes the attribute shape.
    */
   removeAttribute() {
-    var self = this, onRemoveEnd;
+    var self = this,
+      onRemoveEnd;
     if (this._attributeShape) {
       onRemoveEnd = () => {
         if (self._attributeShape) {
@@ -6924,7 +8327,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           self._attributeShape = null;
         }
       };
-      this._gantt.getAnimationManager().preAnimateTaskAttributeRemove(this._attributeShape, onRemoveEnd);
+      this._gantt
+        .getAnimationManager()
+        .preAnimateTaskAttributeRemove(this._attributeShape, onRemoveEnd);
     }
   }
 
@@ -6934,27 +8339,46 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   renderMainResizeHandles(container) {
     var orientationFactor = Agent.isRightToLeft(this._gantt.getCtx()) ? -1 : 1,
-        handleWidth, x, y, w, h;
+      handleWidth,
+      x,
+      y,
+      w,
+      h;
 
     if (this._mainShape) {
       handleWidth = DvtGanttStyleUtils.getTaskResizeHandleWidth();
       x = this._mainShape.getX() - orientationFactor * this._mainShape.getPhysicalStartOffset();
       y = this._mainShape.getY();
-      w = this._mainShape.getWidth() + this._mainShape.getPhysicalStartOffset() + this._mainShape.getPhysicalEndOffset();
+      w =
+        this._mainShape.getWidth() +
+        this._mainShape.getPhysicalStartOffset() +
+        this._mainShape.getPhysicalEndOffset();
       h = this._mainShape.getHeight();
 
       var self = this;
       var setHandleAriaProperties = (handle, type) => {
         if (Agent.isTouchDevice() || Agent.isEnvironmentTest()) {
           var translations = self._gantt.getOptions().translations;
-          var ariaLabel = type === 'start' ? translations.taskResizeStartHandle : translations.taskResizeEndHandle;
+          var ariaLabel =
+            type === 'start'
+              ? translations.taskResizeStartHandle
+              : translations.taskResizeEndHandle;
           handle.setAriaRole('img');
           handle.setAriaProperty('label', ariaLabel);
         }
       };
 
       if (!this._mainHandleStart) {
-        this._mainHandleStart = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, handleWidth, h, '0', this, 'mainResizeHandleStart');
+        this._mainHandleStart = new DvtGanttTaskShape(
+          this._gantt.getCtx(),
+          x,
+          y,
+          handleWidth,
+          h,
+          '0',
+          this,
+          'mainResizeHandleStart'
+        );
         setHandleAriaProperties(this._mainHandleStart, 'start');
       } else {
         this._mainHandleStart.setDimensions(x, y, handleWidth, h, '0');
@@ -6962,10 +8386,25 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       container.addChild(this._mainHandleStart);
 
       if (!this._mainHandleEnd) {
-        this._mainHandleEnd = new DvtGanttTaskShape(this._gantt.getCtx(), x + orientationFactor * (w - handleWidth), y, handleWidth, h, '0', this, 'mainResizeHandleEnd');
+        this._mainHandleEnd = new DvtGanttTaskShape(
+          this._gantt.getCtx(),
+          x + orientationFactor * (w - handleWidth),
+          y,
+          handleWidth,
+          h,
+          '0',
+          this,
+          'mainResizeHandleEnd'
+        );
         setHandleAriaProperties(this._mainHandleEnd, 'end');
       } else {
-        this._mainHandleEnd.setDimensions(x + orientationFactor * (w - handleWidth), y, handleWidth, h, '0');
+        this._mainHandleEnd.setDimensions(
+          x + orientationFactor * (w - handleWidth),
+          y,
+          handleWidth,
+          h,
+          '0'
+        );
       }
       container.addChild(this._mainHandleEnd);
     }
@@ -7020,8 +8459,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
   }
 
   /**
-    * "Un-Highights" the task, i.e. for when selection-behavior is "highlightDependencies".
-    */
+   * "Un-Highights" the task, i.e. for when selection-behavior is "highlightDependencies".
+   */
   unhighlight() {
     if (this._mainShape) {
       this._mainShape.unhighlight();
@@ -7061,7 +8500,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
  * @class
  * @constructor
  */
- class DvtGanttTaskLabel {
+class DvtGanttTaskLabel {
   constructor(gantt, container, associatedShape) {
     this._gantt = gantt;
     this._container = container;
@@ -7141,7 +8580,11 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   _applyStyles(labelStyle, labelCSSStyle) {
     // If labelStyle is {} or labelStyle same as current styles, don't bother processing it.
-    if (labelStyle != null && Object.keys(labelStyle).length > 0 && this._labelOutputText.getStyle() !== labelStyle) {
+    if (
+      labelStyle != null &&
+      Object.keys(labelStyle).length > 0 &&
+      this._labelOutputText.getStyle() !== labelStyle
+    ) {
       this._labelOutputText.setStyle(labelStyle); // works if style is object
     }
     // necessary for getDimension/fitText to obtain CSS style of the text
@@ -7157,49 +8600,60 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   _placeLabel(effectiveLabelPosition) {
     var labelDimensions = this._labelOutputText.getDimensions(),
-        isRTL = Agent.isRightToLeft(this._gantt.getCtx()),
-        shapeLeftOffset, shapeRightOffset, shapeWidth,
-        options = this._gantt.getOptions(),
-        padding = DvtGanttStyleUtils.getTaskPadding(options),
-        margin = DvtGanttStyleUtils.getTaskLabelMargin(options),
-        innerPadding = padding + margin,
-        x, y, associatedShapeHeight;
+      isRTL = Agent.isRightToLeft(this._gantt.getCtx()),
+      shapeLeftOffset,
+      shapeRightOffset,
+      shapeWidth,
+      options = this._gantt.getOptions(),
+      padding = DvtGanttStyleUtils.getTaskPadding(options),
+      margin = DvtGanttStyleUtils.getTaskLabelMargin(options),
+      innerPadding = padding + margin,
+      x,
+      y,
+      associatedShapeHeight;
 
     if (effectiveLabelPosition === 'progress' || effectiveLabelPosition === 'progressStart') {
       this.setAssociatedShape(this._container.getTask().getShape('progress'));
     }
 
     // Determine y position
-    associatedShapeHeight = (this._associatedShape.getType() === 'main' && this._container.getTask().isSummary('main') && this._gantt.getCtx().getThemeBehavior() === 'alta')
-      ? this._container.getLayoutObject()['height']
-      : this._associatedShape.getFinalHeight();
-    y = this._associatedShape.getFinalY() + ((associatedShapeHeight - labelDimensions.h) / 2);
+    associatedShapeHeight =
+      this._associatedShape.getType() === 'main' &&
+      this._container.getTask().isSummary('main') &&
+      this._gantt.getCtx().getThemeBehavior() === 'alta'
+        ? this._container.getLayoutObject()['height']
+        : this._associatedShape.getFinalHeight();
+    y = this._associatedShape.getFinalY() + (associatedShapeHeight - labelDimensions.h) / 2;
     this.setFinalY(y);
 
     // Determine x position (calculate LTR version, then flip for RTL)
     shapeWidth = this._associatedShape.getFinalWidth();
-    shapeLeftOffset = (!isRTL) ? this._associatedShape.getPhysicalStartOffset() : this._associatedShape.getPhysicalEndOffset();
-    shapeRightOffset = (!isRTL) ? this._associatedShape.getPhysicalEndOffset() : this._associatedShape.getPhysicalStartOffset();
+    shapeLeftOffset = !isRTL
+      ? this._associatedShape.getPhysicalStartOffset()
+      : this._associatedShape.getPhysicalEndOffset();
+    shapeRightOffset = !isRTL
+      ? this._associatedShape.getPhysicalEndOffset()
+      : this._associatedShape.getPhysicalStartOffset();
     switch (effectiveLabelPosition) {
       case 'end':
-        (!isRTL) ? this._labelOutputText.alignLeft() : this._labelOutputText.alignRight();
+        !isRTL ? this._labelOutputText.alignLeft() : this._labelOutputText.alignRight();
         x = shapeWidth + shapeRightOffset + margin;
         break;
       case 'progress':
-        (!isRTL) ? this._labelOutputText.alignRight() : this._labelOutputText.alignLeft();
+        !isRTL ? this._labelOutputText.alignRight() : this._labelOutputText.alignLeft();
         x = shapeWidth - innerPadding;
         break;
       case 'oProgress':
-        (!isRTL) ? this._labelOutputText.alignLeft() : this._labelOutputText.alignRight();
+        !isRTL ? this._labelOutputText.alignLeft() : this._labelOutputText.alignRight();
         x = this._container.getTask().getShape('progress').getFinalWidth() + innerPadding;
         break;
       case 'innerStart':
       case 'progressStart':
-        (!isRTL) ? this._labelOutputText.alignLeft() : this._labelOutputText.alignRight();
+        !isRTL ? this._labelOutputText.alignLeft() : this._labelOutputText.alignRight();
         x = -shapeLeftOffset + innerPadding;
         break;
       case 'innerEnd':
-        (!isRTL) ? this._labelOutputText.alignRight() : this._labelOutputText.alignLeft();
+        !isRTL ? this._labelOutputText.alignRight() : this._labelOutputText.alignLeft();
         x = shapeWidth + shapeRightOffset - innerPadding;
         break;
       case 'innerCenter':
@@ -7207,7 +8661,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         x = shapeWidth / 2;
         break;
       case 'start':
-        (!isRTL) ? this._labelOutputText.alignRight() : this._labelOutputText.alignLeft();
+        !isRTL ? this._labelOutputText.alignRight() : this._labelOutputText.alignLeft();
         x = -(shapeLeftOffset + margin);
         break;
     }
@@ -7227,21 +8681,37 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @private
    */
   _getAvailableWidth(position) {
-    var startBarrier, endBarrier, taskObj = this._container.getLayoutObject(),
-        previousAdjacentTaskObj, nextAdjacentTaskObj, task = this._container.getTask(),
-        nextAdjacentMilestoneBaselineTaskObj, previousAdjacentMilestoneBaselineTaskObj,
-        previousAdjacentTaskNode, nextAdjacentTaskNode,
-        nextAdjacentMilestoneBaselineTaskNode, previousAdjacentMilestoneBaselineTaskNode,
-        taskMainBounds, progressShape, progressWidth, progressHeight, insideWidth, oProgressWidth,
-        availableWidth, effectivePosition, labelDimensions,
-        padding = DvtGanttStyleUtils.getTaskPadding(this._gantt.getOptions()),
-        margin = DvtGanttStyleUtils.getTaskLabelMargin(this._gantt.getOptions()),
-        innerPadding = padding + margin,
-        shouldConsiderProgress, isMilestone,
-        isRTL = Agent.isRightToLeft(this._gantt.getCtx()),
-        ganttWidth = this._gantt.getContentLength(),
-        ganttStartPos, ganttEndPos,
-        isPositionBlocked = false;
+    var startBarrier,
+      endBarrier,
+      taskObj = this._container.getLayoutObject(),
+      previousAdjacentTaskObj,
+      nextAdjacentTaskObj,
+      task = this._container.getTask(),
+      nextAdjacentMilestoneBaselineTaskObj,
+      previousAdjacentMilestoneBaselineTaskObj,
+      previousAdjacentTaskNode,
+      nextAdjacentTaskNode,
+      nextAdjacentMilestoneBaselineTaskNode,
+      previousAdjacentMilestoneBaselineTaskNode,
+      taskMainBounds,
+      progressShape,
+      progressWidth,
+      progressHeight,
+      insideWidth,
+      oProgressWidth,
+      availableWidth,
+      effectivePosition,
+      labelDimensions,
+      padding = DvtGanttStyleUtils.getTaskPadding(this._gantt.getOptions()),
+      margin = DvtGanttStyleUtils.getTaskLabelMargin(this._gantt.getOptions()),
+      innerPadding = padding + margin,
+      shouldConsiderProgress,
+      isMilestone,
+      isRTL = Agent.isRightToLeft(this._gantt.getCtx()),
+      ganttWidth = this._gantt.getContentLength(),
+      ganttStartPos,
+      ganttEndPos,
+      isPositionBlocked = false;
 
     // Calculate Gantt bounds
     ganttStartPos = !isRTL ? 0 : ganttWidth;
@@ -7256,15 +8726,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         nextAdjacentMilestoneBaselineTaskObj = taskObj.nextAdjMilestoneBaselineTaskObj;
 
         // The case where row height is set and overlapping task staggering is disabled, and the position is blocked
-        if (nextAdjacentTaskObj &&
-            nextAdjacentTaskObj.startTime < taskObj.endTime &&
-            nextAdjacentTaskObj.endTime > taskObj.endTime) {
+        if (
+          nextAdjacentTaskObj &&
+          nextAdjacentTaskObj.startTime < taskObj.endTime &&
+          nextAdjacentTaskObj.endTime > taskObj.endTime
+        ) {
           availableWidth = 0;
           break;
         }
-        while (nextAdjacentTaskObj &&
-              nextAdjacentTaskObj.startTime < taskObj.endTime &&
-              nextAdjacentTaskObj.endTime < taskObj.endTime) {
+        while (
+          nextAdjacentTaskObj &&
+          nextAdjacentTaskObj.startTime < taskObj.endTime &&
+          nextAdjacentTaskObj.endTime < taskObj.endTime
+        ) {
           nextAdjacentTaskObj = nextAdjacentTaskObj.nextAdjacentTaskObj;
         }
 
@@ -7272,29 +8746,56 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           nextAdjacentTaskNode = nextAdjacentTaskObj.node;
           if (nextAdjacentTaskNode && nextAdjacentTaskNode.getParent()) {
             endBarrier = nextAdjacentTaskNode.getTaskShapePhysicalBounds('main')['startPos'];
-          } else if (!(nextAdjacentTaskObj.startTime == null && nextAdjacentTaskObj.endTime == null)) {
+          } else if (
+            !(nextAdjacentTaskObj.startTime == null && nextAdjacentTaskObj.endTime == null)
+          ) {
             // else next node not in DOM; estimate the end barrier.
             // Unless next node is a milestone, the estimation is basically the true endBarrier value.
-            var nextAdjacentDim = task.getTimeSpanDimensions(nextAdjacentTaskObj.startTime, nextAdjacentTaskObj.endTime);
+            var nextAdjacentDim = task.getTimeSpanDimensions(
+              nextAdjacentTaskObj.startTime,
+              nextAdjacentTaskObj.endTime
+            );
             endBarrier = nextAdjacentDim.startPos;
           }
         }
         if (nextAdjacentMilestoneBaselineTaskObj) {
           nextAdjacentMilestoneBaselineTaskNode = nextAdjacentMilestoneBaselineTaskObj.node;
-          if (nextAdjacentMilestoneBaselineTaskNode && nextAdjacentMilestoneBaselineTaskNode.getParent()) {
-            endBarrier = isRTL ?
-                      Math.max(endBarrier, nextAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')['startPos']) :
-                      Math.min(endBarrier, nextAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')['startPos']);
-          } else if (!(nextAdjacentMilestoneBaselineTaskObj.startTime == null && nextAdjacentMilestoneBaselineTaskObj.endTime == null)) {
+          if (
+            nextAdjacentMilestoneBaselineTaskNode &&
+            nextAdjacentMilestoneBaselineTaskNode.getParent()
+          ) {
+            endBarrier = isRTL
+              ? Math.max(
+                  endBarrier,
+                  nextAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')[
+                    'startPos'
+                  ]
+                )
+              : Math.min(
+                  endBarrier,
+                  nextAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')[
+                    'startPos'
+                  ]
+                );
+          } else if (
+            !(
+              nextAdjacentMilestoneBaselineTaskObj.startTime == null &&
+              nextAdjacentMilestoneBaselineTaskObj.endTime == null
+            )
+          ) {
             // else next node not in DOM; estimate the end barrier.
-            var adjacentMilestoneBaselineStartPos = task.getTimeSpanDimensions(nextAdjacentMilestoneBaselineTaskObj.baselineStartTime,
-              nextAdjacentMilestoneBaselineTaskObj.baselineEndTime).startPos;
-            endBarrier = isRTL ?
-                      Math.max(endBarrier, adjacentMilestoneBaselineStartPos) :
-                      Math.min(endBarrier, adjacentMilestoneBaselineStartPos);
+            var adjacentMilestoneBaselineStartPos = task.getTimeSpanDimensions(
+              nextAdjacentMilestoneBaselineTaskObj.baselineStartTime,
+              nextAdjacentMilestoneBaselineTaskObj.baselineEndTime
+            ).startPos;
+            endBarrier = isRTL
+              ? Math.max(endBarrier, adjacentMilestoneBaselineStartPos)
+              : Math.min(endBarrier, adjacentMilestoneBaselineStartPos);
           }
         }
-        availableWidth = Math.abs(this._container.getTaskShapePhysicalBounds('main')['endPos'] - endBarrier) - 2 * margin;
+        availableWidth =
+          Math.abs(this._container.getTaskShapePhysicalBounds('main')['endPos'] - endBarrier) -
+          2 * margin;
         break;
       case 'innerCenter':
       case 'innerStart':
@@ -7305,7 +8806,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         nextAdjacentTaskObj = taskObj.nextAdjacentTaskObj;
         if (nextAdjacentTaskObj) {
           if (position === 'innerCenter')
-            isPositionBlocked = nextAdjacentTaskObj.startTime < (taskObj.startTime + ((taskObj.endTime - taskObj.startTime) / 2));
+            isPositionBlocked =
+              nextAdjacentTaskObj.startTime <
+              taskObj.startTime + (taskObj.endTime - taskObj.startTime) / 2;
           else if (position === 'innerEnd')
             isPositionBlocked = nextAdjacentTaskObj.startTime < taskObj.endTime;
         }
@@ -7313,13 +8816,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       case 'innerStart_ABSOLUTE':
       case 'innerEnd_ABSOLUTE':
         // normalize the _ABSOLUTE positions to the effective position name
-        if (position.slice(-9) === '_ABSOLUTE')
-          position = position.slice(0, -9);
+        if (position.slice(-9) === '_ABSOLUTE') position = position.slice(0, -9);
 
         // Progress space evaluation requires this._labeOutputText to exist
         // If this._labelOutputText doesn't exist (yet), then this method is called for initial conservative estimation purposes (for performance)
         // in which case we don't need to evaluate the progress space anyway to be conservative.
-        shouldConsiderProgress = this._labelOutputText && typeof this._container.getValue('progress', 'value') === 'number';
+        shouldConsiderProgress =
+          this._labelOutputText &&
+          typeof this._container.getValue('progress', 'value') === 'number';
         isMilestone = task.isMilestone('main');
         if (!isMilestone) {
           if (isPositionBlocked) {
@@ -7360,12 +8864,12 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
             }
 
             // If 'innerCenter', or 'innerStart'/'innerEnd' can't be honored due to lack of space, do smart behavior
-            if (labelDimensions.h <= progressHeight && progressWidth > oProgressWidth) // Label inside progress condition
-            {
+            if (labelDimensions.h <= progressHeight && progressWidth > oProgressWidth) {
+              // Label inside progress condition
               availableWidth = progressWidth - 2 * innerPadding;
               effectivePosition = 'progress';
-            } else // Label inside oProgress condition
-            {
+            } // Label inside oProgress condition
+            else {
               availableWidth = oProgressWidth - 2 * innerPadding;
               effectivePosition = 'oProgress';
             }
@@ -7386,9 +8890,11 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         previousAdjacentMilestoneBaselineTaskObj = taskObj.previousAdjacentMilestoneBaselineTaskObj;
 
         // The case where row height is set and overlapping task staggering is disabled, and the position is blocked
-        if (previousAdjacentTaskObj &&
-            previousAdjacentTaskObj.endTime > taskObj.startTime &&
-            previousAdjacentTaskObj.startTime < taskObj.startTime) {
+        if (
+          previousAdjacentTaskObj &&
+          previousAdjacentTaskObj.endTime > taskObj.startTime &&
+          previousAdjacentTaskObj.startTime < taskObj.startTime
+        ) {
           availableWidth = 0;
           break;
         }
@@ -7396,29 +8902,58 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         if (previousAdjacentTaskObj) {
           previousAdjacentTaskNode = previousAdjacentTaskObj.node;
           if (previousAdjacentTaskNode && previousAdjacentTaskNode.getParent()) {
-            startBarrier = previousAdjacentTaskNode.getTaskShapePhysicalBounds('main', true)['endPos'];
-          } else if (!(previousAdjacentTaskObj.startTime == null && previousAdjacentTaskObj.endTime == null)) {
+            startBarrier = previousAdjacentTaskNode.getTaskShapePhysicalBounds('main', true)[
+              'endPos'
+            ];
+          } else if (
+            !(previousAdjacentTaskObj.startTime == null && previousAdjacentTaskObj.endTime == null)
+          ) {
             // else previous node not in DOM; estimate the start barrier.
-            var previousAdjacentDim = task.getTimeSpanDimensions(previousAdjacentTaskObj.startTime, previousAdjacentTaskObj.endTime);
+            var previousAdjacentDim = task.getTimeSpanDimensions(
+              previousAdjacentTaskObj.startTime,
+              previousAdjacentTaskObj.endTime
+            );
             startBarrier = previousAdjacentDim.endPos;
           }
         }
         if (previousAdjacentMilestoneBaselineTaskObj) {
           previousAdjacentMilestoneBaselineTaskNode = previousAdjacentMilestoneBaselineTaskObj.node;
-          if (previousAdjacentMilestoneBaselineTaskNode && previousAdjacentMilestoneBaselineTaskNode.getParent()) {
-            startBarrier = isRTL ?
-                        Math.min(startBarrier, previousAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')['endPos']) :
-                        Math.max(startBarrier, previousAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')['endPos']);
-          } else if (!(previousAdjacentMilestoneBaselineTaskObj.startTime == null && previousAdjacentMilestoneBaselineTaskObj.endTime == null)) {
+          if (
+            previousAdjacentMilestoneBaselineTaskNode &&
+            previousAdjacentMilestoneBaselineTaskNode.getParent()
+          ) {
+            startBarrier = isRTL
+              ? Math.min(
+                  startBarrier,
+                  previousAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')[
+                    'endPos'
+                  ]
+                )
+              : Math.max(
+                  startBarrier,
+                  previousAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')[
+                    'endPos'
+                  ]
+                );
+          } else if (
+            !(
+              previousAdjacentMilestoneBaselineTaskObj.startTime == null &&
+              previousAdjacentMilestoneBaselineTaskObj.endTime == null
+            )
+          ) {
             // else next node not in DOM; estimate the end barrier.
-            var adjacentMilestoneBaselineEndPos = task.getTimeSpanDimensions(previousAdjacentMilestoneBaselineTaskObj.baselineStartTime,
-              previousAdjacentMilestoneBaselineTaskObj.baselineEndTime).endPos;
-            startBarrier = isRTL ?
-                      Math.max(startBarrier, adjacentMilestoneBaselineEndPos) :
-                      Math.min(startBarrier, adjacentMilestoneBaselineEndPos);
+            var adjacentMilestoneBaselineEndPos = task.getTimeSpanDimensions(
+              previousAdjacentMilestoneBaselineTaskObj.baselineStartTime,
+              previousAdjacentMilestoneBaselineTaskObj.baselineEndTime
+            ).endPos;
+            startBarrier = isRTL
+              ? Math.max(startBarrier, adjacentMilestoneBaselineEndPos)
+              : Math.min(startBarrier, adjacentMilestoneBaselineEndPos);
           }
         }
-        availableWidth = Math.abs(startBarrier - this._container.getTaskShapePhysicalBounds('main')['startPos']) - 2 * margin;
+        availableWidth =
+          Math.abs(startBarrier - this._container.getTaskShapePhysicalBounds('main')['startPos']) -
+          2 * margin;
         break;
       default:
         return null;
@@ -7478,10 +9013,11 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @private
    */
   _evaluatePosition(labelPosition) {
-    var traversalCache = {}, effectivePosition,
-        availableWidth,
-        labelDimensions = this._labelOutputText.getDimensions(),
-        labelWidth = labelDimensions.w;
+    var traversalCache = {},
+      effectivePosition,
+      availableWidth,
+      labelDimensions = this._labelOutputText.getDimensions(),
+      labelWidth = labelDimensions.w;
 
     var largestPosition;
     var largestAvailableWidth = 0;
@@ -7531,7 +9067,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     // Truncate label if necessary
     let labelShown = true;
     if (labelWidth > availableWidth) {
-      labelShown = TextUtils.fitText(this._labelOutputText, availableWidth, Infinity, this._container, 1);
+      labelShown = TextUtils.fitText(
+        this._labelOutputText,
+        availableWidth,
+        Infinity,
+        this._container,
+        1
+      );
     }
 
     if (!labelShown) {
@@ -7547,13 +9089,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   render() {
     var context = this._gantt.getCtx(),
-        label = this._container.getValue('label'),
-        labelPosition = this._container.getValue('labelPosition'),
-        labelStyle = this._container.getValue('labelStyle'),
-        finalStates,
-        isPositionFeasible,
-        self = this, onRenderEnd,
-        styleClass = this._gantt.GetStyleClass('taskLabel');
+      label = this._container.getValue('label'),
+      labelPosition = this._container.getValue('labelPosition'),
+      labelStyle = this._container.getValue('labelStyle'),
+      finalStates,
+      isPositionFeasible,
+      self = this,
+      onRenderEnd,
+      styleClass = this._gantt.GetStyleClass('taskLabel');
 
     this._renderState = 'exist';
 
@@ -7562,7 +9105,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       const processedLabelPosition = this._preprocessLabelPosition(labelPosition);
       // If labelPosition from options is not an array, conservatively guess-timate whether the text
       // definitely fits in the available space or not; early return if definitely not for performance reasons.
-      if (processedLabelPosition.length === 1 && processedLabelPosition[0].slice(-9) === '_ABSOLUTE') {
+      if (
+        processedLabelPosition.length === 1 &&
+        processedLabelPosition[0].slice(-9) === '_ABSOLUTE'
+      ) {
         const availableWidth = this._getAvailableWidth(processedLabelPosition[0])[1];
         if (availableWidth <= 0) {
           this.remove();
@@ -7579,8 +9125,12 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
             return;
           }
           // If even the smallest possible result of truncation ("|...") doesn't fit, then bail.
-          const ellipsisWidth = TextUtils.getTextStringWidth(context, TextUtils.ELLIPSIS, labelCSSStyle);
-          if ((conservativeCharWidth + ellipsisWidth) > availableWidth) {
+          const ellipsisWidth = TextUtils.getTextStringWidth(
+            context,
+            TextUtils.ELLIPSIS,
+            labelCSSStyle
+          );
+          if (conservativeCharWidth + ellipsisWidth > availableWidth) {
             this.remove();
             return;
           }
@@ -7618,7 +9168,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
             case 'progress':
             case 'oProgress':
               const fillColor = self._associatedShape.getFillColor();
-              if (fillColor && !fillColor.fromShapeCache) {
+              if (fillColor && !fillColor.fromShapeCache && (!labelStyle || !labelStyle.color)) {
                 const labelColor = ColorUtils.getContrastingTextColor(fillColor.computedFill);
                 self._labelOutputText.setFill(new SolidFill(labelColor));
               }
@@ -7627,15 +9177,17 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         };
 
         finalStates = {
-          'x': this.getFinalX(),
-          'y': this.getFinalY()
+          x: this.getFinalX(),
+          y: this.getFinalY()
         };
-        this._gantt.getAnimationManager().preAnimateTaskLabel(this._container, finalStates, onRenderEnd);
+        this._gantt
+          .getAnimationManager()
+          .preAnimateTaskLabel(this._container, finalStates, onRenderEnd);
       } else {
         this.remove();
       }
-    } else // if label not specified/empty/invalid or labelPosition == 'none', don't render anything. If something there before, remove it.
-    {
+    } // if label not specified/empty/invalid or labelPosition == 'none', don't render anything. If something there before, remove it.
+    else {
       this.remove();
     }
   }
@@ -7644,14 +9196,17 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * Removes the task label
    */
   remove() {
-    var self = this, onRemoveEnd;
+    var self = this,
+      onRemoveEnd;
     if (this._labelOutputText) {
       onRemoveEnd = () => {
         self._container.removeChild(self._labelOutputText);
         self._labelOutputText = null;
         self._effectiveLabelPosition = null;
       };
-      this._gantt.getAnimationManager().preAnimateTaskLabelRemove(this._labelOutputText, onRemoveEnd);
+      this._gantt
+        .getAnimationManager()
+        .preAnimateTaskLabelRemove(this._labelOutputText, onRemoveEnd);
     }
   }
 
@@ -7660,7 +9215,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   highlight() {
     if (this._labelOutputText) {
-      ToolkitUtils.addClassName(this._labelOutputText.getElem(), this._gantt.GetStyleClass('taskHighlight'));
+      ToolkitUtils.addClassName(
+        this._labelOutputText.getElem(),
+        this._gantt.GetStyleClass('taskHighlight')
+      );
     }
   }
 
@@ -7669,7 +9227,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   unhighlight() {
     if (this._labelOutputText) {
-      ToolkitUtils.removeClassName(this._labelOutputText.getElem(), this._gantt.GetStyleClass('taskHighlight'));
+      ToolkitUtils.removeClassName(
+        this._labelOutputText.getElem(),
+        this._gantt.GetStyleClass('taskHighlight')
+      );
     }
   }
 
@@ -7715,7 +9276,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
  * @implements {DvtSelectable}
  * @implements {DvtDraggable}
  */
- class DvtGanttTaskNode extends Container {
+class DvtGanttTaskNode extends Container {
   constructor(gantt) {
     super(gantt.getCtx(), null);
 
@@ -7801,7 +9362,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
               value = this._taskObj['baselineEndTime'];
               break;
             default:
-              value = value[subProperty] != null ? value[subProperty] : taskDefaults['baseline'][subProperty];
+              value =
+                value[subProperty] != null
+                  ? value[subProperty]
+                  : taskDefaults['baseline'][subProperty];
           }
         }
         break;
@@ -7816,7 +9380,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
               value = this._taskObj['overtimeEndTime'];
               break;
             default:
-              value = value[subProperty] != null ? value[subProperty] : taskDefaults['overtime'][subProperty];
+              value =
+                value[subProperty] != null
+                  ? value[subProperty]
+                  : taskDefaults['overtime'][subProperty];
           }
         }
         break;
@@ -7831,14 +9398,20 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
               value = this._taskObj['downtimeEndTime'];
               break;
             default:
-              value = value[subProperty] != null ? value[subProperty] : taskDefaults['downtime'][subProperty];
+              value =
+                value[subProperty] != null
+                  ? value[subProperty]
+                  : taskDefaults['downtime'][subProperty];
           }
         }
         break;
       case 'attribute':
         value = this._taskObj['data']['attribute'];
         if (value && subProperty != null) {
-          value = value[subProperty] != null ? value[subProperty] : taskDefaults['attribute'][subProperty];
+          value =
+            value[subProperty] != null
+              ? value[subProperty]
+              : taskDefaults['attribute'][subProperty];
           if (subProperty === 'shortDesc' && typeof value === 'function') {
             return value(DvtGanttTaskNode.getShortDescContext(this));
           }
@@ -7851,11 +9424,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         }
         value = this._taskObj['data']['progress'];
         if (value && subProperty != null) {
-          value = value[subProperty] != null ? value[subProperty] : taskDefaults['progress'][subProperty];
+          value =
+            value[subProperty] != null ? value[subProperty] : taskDefaults['progress'][subProperty];
         }
         break;
       default: // assume top level property access
-        value = this._taskObj['data'][property] != null ? this._taskObj['data'][property] : taskDefaults[property];
+        value =
+          this._taskObj['data'][property] != null
+            ? this._taskObj['data'][property]
+            : taskDefaults[property];
     }
     if (property === 'shortDesc' && typeof value === 'function') {
       return value(DvtGanttTaskNode.getShortDescContext(this));
@@ -7891,7 +9468,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   getSandboxData() {
     if (!this._sandboxData) {
-      this._sandboxData = JsonUtils.clone(TimeComponent.sanitizeData(this._taskObj['data'], 'task'));
+      this._sandboxData = JsonUtils.clone(
+        TimeComponent.sanitizeData(this._taskObj['data'], 'task')
+      );
       this._sandboxData['_rowNode'] = this.getRowNode();
       this._sandboxData['start'] = this._taskObj['startTime'];
       this._sandboxData['end'] = this._taskObj['endTime'];
@@ -7901,6 +9480,16 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         sandboxBaseline['start'] = this._taskObj['baselineStartTime'];
         sandboxBaseline['end'] = this._taskObj['baselineEndTime'];
         sandboxBaseline['height'] = this._taskObj['baselineHeight'];
+      }
+      var sandboxOvertime = this._sandboxData.overtime;
+      if (sandboxOvertime) {
+        sandboxOvertime.start = this._taskObj.overtimeStartTime;
+        sandboxOvertime.end = this._taskObj.overtimeEndTime;
+      }
+      var sandboxDowntime = this._sandboxData.downtime;
+      if (sandboxDowntime) {
+        sandboxDowntime.start = this._taskObj.downtimeStartTime;
+        sandboxDowntime.end = this._taskObj.downtimeEndTime;
       }
       var sandboxProgress = this._sandboxData['progress'];
       if (sandboxProgress) {
@@ -7987,14 +9576,20 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       if (labelOutputText && labelOutputText.getParent() != null) {
         var labelPosition = this._taskLabel.getEffectiveLabelPosition();
         if (labelPosition === 'end') {
-          endPos = endPos + orientationFactor * (DvtGanttStyleUtils.getTaskLabelMargin(options) + labelOutputText.getDimensions().w);
+          endPos =
+            endPos +
+            orientationFactor *
+              (DvtGanttStyleUtils.getTaskLabelMargin(options) + labelOutputText.getDimensions().w);
         } else if (labelPosition === 'start') {
-          startPos = startPos - orientationFactor * (DvtGanttStyleUtils.getTaskLabelMargin(options) + labelOutputText.getDimensions().w);
+          startPos =
+            startPos -
+            orientationFactor *
+              (DvtGanttStyleUtils.getTaskLabelMargin(options) + labelOutputText.getDimensions().w);
         }
       }
     }
 
-    return {'startPos': startPos, 'endPos': endPos};
+    return { startPos: startPos, endPos: endPos };
   }
 
   /**
@@ -8013,11 +9608,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
 
     var keyboardDnDMode = this._gantt.getEventManager().getKeyboardDnDMode();
     var targetShape, referenceFrame;
-    if (keyboardDnDMode === DvtGanttEventManager.KEYBOARD_MOVE && this._mainDragFeedbacks && this._mainDragFeedbacks.length > 0) {
+    if (
+      keyboardDnDMode === DvtGanttEventManager.KEYBOARD_MOVE &&
+      this._mainDragFeedbacks &&
+      this._mainDragFeedbacks.length > 0
+    ) {
       targetShape = this._mainDragFeedbacks[0].getTask().getShape('main');
       referenceFrame = this._mainDragFeedbacks[0];
-    } else if ((keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_START || keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_END)
-              && this._mainResizeHandleDragFeedbacks && this._mainResizeHandleDragFeedbacks.length > 0) {
+    } else if (
+      (keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_START ||
+        keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_END) &&
+      this._mainResizeHandleDragFeedbacks &&
+      this._mainResizeHandleDragFeedbacks.length > 0
+    ) {
       targetShape = this._mainResizeHandleDragFeedbacks[0].getTask().getShape('main');
       referenceFrame = this._mainResizeHandleDragFeedbacks[0];
     } else {
@@ -8025,13 +9628,23 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       targetShape = targetShape ? targetShape : this.getTask().getShape('baseline');
       referenceFrame = this;
     }
-    w = targetShape.getWidth() + targetShape.getPhysicalStartOffset() + targetShape.getPhysicalEndOffset();
+    w =
+      targetShape.getWidth() +
+      targetShape.getPhysicalStartOffset() +
+      targetShape.getPhysicalEndOffset();
     h = targetShape.getHeight();
-    x = !isRTL ? targetShape.getX() - targetShape.getPhysicalStartOffset() : targetShape.getX() - w + targetShape.getPhysicalStartOffset();
+    x = !isRTL
+      ? targetShape.getX() - targetShape.getPhysicalStartOffset()
+      : targetShape.getX() - w + targetShape.getPhysicalStartOffset();
     y = targetShape.getY();
-    var posInDataBody = dataBody.stageToLocal(referenceFrame.localToStage({x: x, y: y}));
+    var posInDataBody = dataBody.stageToLocal(referenceFrame.localToStage({ x: x, y: y }));
     var region = new Rectangle(posInDataBody.x, posInDataBody.y, w, h);
-    this._gantt.scrollIntoView(region, xPriority, yPriority, DvtGanttStyleUtils.getRowPaddingTop(options));
+    this._gantt.scrollIntoView(
+      region,
+      xPriority,
+      yPriority,
+      DvtGanttStyleUtils.getRowPaddingTop(options)
+    );
   }
 
   /**
@@ -8123,8 +9736,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         var selectionObj = selection[i];
         if (selectionObj && selectionObj.nodeType === 'task') {
           selectionObj.show();
-          selectionObj.getPredecessorDependencies().forEach(dep => dep.show());
-          selectionObj.getSuccessorDependencies().forEach(dep => dep.show());
+          selectionObj.getPredecessorDependencies().forEach((dep) => dep.show());
+          selectionObj.getSuccessorDependencies().forEach((dep) => dep.show());
         }
       }
     }
@@ -8161,6 +9774,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     // Shallow clone of task object
     var clonedTaskObj = Object.assign({}, this._taskObj);
     clonedTaskObj.node = taskNode;
+    clonedTaskObj._overtimeOffset =
+      clonedTaskObj.overtimeStartTime != null
+        ? clonedTaskObj.overtimeStartTime - clonedTaskObj.startTime
+        : 0;
+    clonedTaskObj._downtimeOffset =
+      clonedTaskObj.downtimeStartTime != null
+        ? clonedTaskObj.downtimeStartTime - clonedTaskObj.startTime
+        : 0;
     taskNode.setLayoutObject(clonedTaskObj);
     // Temporarily disable animation and render
     var animationManager = this._gantt.getAnimationManager();
@@ -8188,14 +9809,16 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
   _renderOutlineClone(container) {
     var task = this.getTask();
     var referenceMainShape = task.getShape('main');
-    var outline = new DvtGanttTaskShape(this._gantt.getCtx(),
-                                        this.getTranslateX() + referenceMainShape.getFinalX(),
-                                        this.getTranslateY() + referenceMainShape.getFinalY(),
-                                        referenceMainShape.getFinalWidth(),
-                                        referenceMainShape.getFinalHeight(),
-                                        referenceMainShape.getBorderRadius(),
-                                        task,
-                                        'mainDragFeedback');
+    var outline = new DvtGanttTaskShape(
+      this._gantt.getCtx(),
+      this.getTranslateX() + referenceMainShape.getFinalX(),
+      this.getTranslateY() + referenceMainShape.getFinalY(),
+      referenceMainShape.getFinalWidth(),
+      referenceMainShape.getFinalHeight(),
+      referenceMainShape.getBorderRadius(),
+      task,
+      'mainDragFeedback'
+    );
     // Should always be behind everything else
     container.addChildAt(outline, 0);
     return outline;
@@ -8214,13 +9837,33 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var ganttContentLength = this._gantt.getContentLength();
 
     var startPos = isRTL ? ganttContentLength - this.getTranslateX() : this.getTranslateX();
-    var startTime = TimeAxisUtils.getPositionDate(ganttStartTime, ganttEndTime, startPos, ganttContentLength);
+    var startTime = TimeAxisUtils.getPositionDate(
+      ganttStartTime,
+      ganttEndTime,
+      startPos,
+      ganttContentLength
+    );
     var endPos = this.getTranslateX() - orientationFactor * width;
     endPos = isRTL ? ganttContentLength - endPos : endPos;
-    var endTime = TimeAxisUtils.getPositionDate(ganttStartTime, ganttEndTime, endPos, ganttContentLength);
+    var endTime = TimeAxisUtils.getPositionDate(
+      ganttStartTime,
+      ganttEndTime,
+      endPos,
+      ganttContentLength
+    );
 
     this._taskObj.startTime = startTime;
     this._taskObj.endTime = endTime;
+    if (this._taskObj.overtimeStartTime) {
+      var overtimeDiff = this._taskObj.overtimeEndTime - this._taskObj.overtimeStartTime;
+      this._taskObj.overtimeStartTime = startTime + this._taskObj._overtimeOffset;
+      this._taskObj.overtimeEndTime = this._taskObj.overtimeStartTime + overtimeDiff;
+    }
+    if (this._taskObj.downtimeStartTime) {
+      var downtimeDiff = this._taskObj.downtimeEndTime - this._taskObj.downtimeStartTime;
+      this._taskObj.downtimeStartTime = startTime + this._taskObj._downtimeOffset;
+      this._taskObj.downtimeEndTime = this._taskObj.downtimeStartTime + downtimeDiff;
+    }
     this._taskObj.x = this.getTranslateX();
     this._taskObj.y = this.getTranslateY();
 
@@ -8289,12 +9932,23 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       var ganttContentLength = this._gantt.getContentLength();
 
       var panDelta, referenceFinalLocalX, referenceFinalLocalY;
-      var feedbackStartTimePos, feedbackStartTime, feedbackEndTimePos, feedbackEndTime, feedbackRowNode;
+      var feedbackStartTimePos,
+        feedbackStartTime,
+        feedbackEndTimePos,
+        feedbackEndTime,
+        feedbackRowNode;
 
       switch (dragSourceType) {
         case 'tasks':
           // Pan to make room if dragging to edge
-          panDelta = !autoPanOff ? this._gantt.autoPanOnEdgeDrag(localPos, DvtGanttStyleUtils.getAutoPanEdgeThreshold(), false, false) : {deltaX: 0, deltaY: 0};
+          panDelta = !autoPanOff
+            ? this._gantt.autoPanOnEdgeDrag(
+                localPos,
+                DvtGanttStyleUtils.getAutoPanEdgeThreshold(),
+                false,
+                false
+              )
+            : { deltaX: 0, deltaY: 0 };
           referenceFinalLocalX = dropOffset.x + localPos.x + panDelta.deltaX;
           referenceFinalLocalY = dropOffset.y + localPos.y + panDelta.deltaY;
 
@@ -8303,44 +9957,106 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
               feedbackRowNode = dropObj;
             } else if (dropObj && dropObj.nodeType === 'task') {
               feedbackRowNode = dropObj.getRowNode();
+            } else {
+              return;
             }
+          } else {
+            return;
           }
 
           // render feedback
-          this._renderTaskMoveDragFeedback(referenceFinalLocalX, referenceFinalLocalY, artifactsContainer, feedbackRowNode);
+          this._renderTaskMoveDragFeedback(
+            referenceFinalLocalX,
+            referenceFinalLocalY,
+            artifactsContainer,
+            feedbackRowNode
+          );
           this._renderDependencyLinesDragFeedback(this._mainDragFeedbacks, artifactsContainer);
 
           // Show tooltip
           var referenceMainShape = this.getTask().getShape('main');
-          feedbackStartTimePos = isRTL ? ganttContentLength - referenceFinalLocalX : referenceFinalLocalX;
-          feedbackEndTimePos = isRTL ? ganttContentLength - (referenceFinalLocalX - referenceMainShape.getFinalWidth()) : referenceFinalLocalX + referenceMainShape.getFinalWidth();
-          feedbackStartTime = TimeAxisUtils.getPositionDate(ganttStartTime, ganttEndTime, feedbackStartTimePos, ganttContentLength);
-          feedbackEndTime = TimeAxisUtils.getPositionDate(ganttStartTime, ganttEndTime, feedbackEndTimePos, ganttContentLength);
-          this._showDragFeedbackTooltip(event, feedbackStartTime, feedbackEndTime, this._mainDragFeedbacks[0], 'center', feedbackRowNode);
+          feedbackStartTimePos = isRTL
+            ? ganttContentLength - referenceFinalLocalX
+            : referenceFinalLocalX;
+          feedbackEndTimePos = isRTL
+            ? ganttContentLength - (referenceFinalLocalX - referenceMainShape.getFinalWidth())
+            : referenceFinalLocalX + referenceMainShape.getFinalWidth();
+          feedbackStartTime = TimeAxisUtils.getPositionDate(
+            ganttStartTime,
+            ganttEndTime,
+            feedbackStartTimePos,
+            ganttContentLength
+          );
+          feedbackEndTime = TimeAxisUtils.getPositionDate(
+            ganttStartTime,
+            ganttEndTime,
+            feedbackEndTimePos,
+            ganttContentLength
+          );
+          this._showDragFeedbackTooltip(
+            event,
+            feedbackStartTime,
+            feedbackEndTime,
+            this._mainDragFeedbacks[0],
+            'center',
+            feedbackRowNode
+          );
           break;
         case 'taskResizeHandles':
           // Pan (horizontally only) to make room if dragging to edge
-          panDelta = !autoPanOff ? this._gantt.autoPanOnEdgeDrag(localPos, DvtGanttStyleUtils.getAutoPanEdgeThreshold(), false, true) : {deltaX: 0, deltaY: 0};
+          panDelta = !autoPanOff
+            ? this._gantt.autoPanOnEdgeDrag(
+                localPos,
+                DvtGanttStyleUtils.getAutoPanEdgeThreshold(),
+                false,
+                true
+              )
+            : { deltaX: 0, deltaY: 0 };
           referenceFinalLocalX = localPos.x + panDelta.deltaX;
 
           // render feedback
           this._renderTaskResizeDragFeedback(referenceFinalLocalX, artifactsContainer);
-          this._renderDependencyLinesDragFeedback(this._mainResizeHandleDragFeedbacks, artifactsContainer);
+          this._renderDependencyLinesDragFeedback(
+            this._mainResizeHandleDragFeedbacks,
+            artifactsContainer
+          );
 
           // Show tooltip
           var isEndResize = this._draggedObj.getType() === 'mainResizeHandleEnd';
           if (isEndResize) {
             feedbackStartTime = this.getValue('start');
-            feedbackEndTimePos = this._mainResizeHandleDragFeedbacks[0].getTranslateX() - orientationFactor * this._mainResizeHandleDragFeedbacks[0]._getWidth();
-            feedbackEndTimePos = isRTL ? ganttContentLength - feedbackEndTimePos : feedbackEndTimePos;
-            feedbackEndTime = TimeAxisUtils.getPositionDate(ganttStartTime, ganttEndTime, feedbackEndTimePos, ganttContentLength);
+            feedbackEndTimePos =
+              this._mainResizeHandleDragFeedbacks[0].getTranslateX() -
+              orientationFactor * this._mainResizeHandleDragFeedbacks[0]._getWidth();
+            feedbackEndTimePos = isRTL
+              ? ganttContentLength - feedbackEndTimePos
+              : feedbackEndTimePos;
+            feedbackEndTime = TimeAxisUtils.getPositionDate(
+              ganttStartTime,
+              ganttEndTime,
+              feedbackEndTimePos,
+              ganttContentLength
+            );
           } else {
             feedbackStartTimePos = this._mainResizeHandleDragFeedbacks[0].getTranslateX();
-            feedbackStartTimePos = isRTL ? ganttContentLength - feedbackStartTimePos : feedbackStartTimePos;
-            feedbackStartTime = TimeAxisUtils.getPositionDate(ganttStartTime, ganttEndTime, feedbackStartTimePos, ganttContentLength);
+            feedbackStartTimePos = isRTL
+              ? ganttContentLength - feedbackStartTimePos
+              : feedbackStartTimePos;
+            feedbackStartTime = TimeAxisUtils.getPositionDate(
+              ganttStartTime,
+              ganttEndTime,
+              feedbackStartTimePos,
+              ganttContentLength
+            );
             feedbackEndTime = this.getValue('end');
           }
-          this._showDragFeedbackTooltip(event, feedbackStartTime, feedbackEndTime, this._mainResizeHandleDragFeedbacks[0], isEndResize ? 'end' : 'start');
+          this._showDragFeedbackTooltip(
+            event,
+            feedbackStartTime,
+            feedbackEndTime,
+            this._mainResizeHandleDragFeedbacks[0],
+            isEndResize ? 'end' : 'start'
+          );
           break;
       }
     }
@@ -8356,29 +10072,58 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {DvtGanttRowNode=} feedbackRowNode Optional row node if row is different from that of the one the task currently belongs to.
    * @private
    */
-  _showDragFeedbackTooltip(event, feedbackStartTime, feedbackEndTime, feedbackObj, position, feedbackRowNode) {
+  _showDragFeedbackTooltip(
+    event,
+    feedbackStartTime,
+    feedbackEndTime,
+    feedbackObj,
+    position,
+    feedbackRowNode
+  ) {
     var isRTL = Agent.isRightToLeft(this._gantt.getCtx());
     var sandboxData = this.getSandboxData();
-    if (feedbackRowNode)
-      sandboxData['_rowNode'] = feedbackRowNode;
+    if (feedbackRowNode) sandboxData['_rowNode'] = feedbackRowNode;
+
+    var start = sandboxData.start;
     sandboxData['start'] = feedbackStartTime;
     sandboxData['end'] = feedbackEndTime;
+
+    if (sandboxData.overtime && sandboxData.overtime.start) {
+      var overtimeOffset = sandboxData.overtime.start - start;
+      var overtimeDiff = sandboxData.overtime.end - sandboxData.overtime.start;
+      sandboxData.overtime.start = sandboxData.start + overtimeOffset;
+      sandboxData.overtime.end = sandboxData.overtime.start + overtimeDiff;
+    }
+    if (sandboxData.downtime && sandboxData.downtime.start) {
+      var downtimeOffset = sandboxData.downtime.start - start;
+      var downtimeDiff = sandboxData.downtime.end - sandboxData.downtime.start;
+      sandboxData.downtime.start = sandboxData.start + downtimeOffset;
+      sandboxData.downtime.end = sandboxData.downtime.start + downtimeDiff;
+    }
 
     var feedbackDimensions = feedbackObj.getDimensions(this.getCtx().getStage());
     var coords;
     switch (position) {
       case 'start':
-        coords = new Point(feedbackDimensions.x + isRTL * feedbackDimensions.w, feedbackDimensions.y);
+        coords = new Point(
+          feedbackDimensions.x + isRTL * feedbackDimensions.w,
+          feedbackDimensions.y
+        );
         break;
       case 'end':
-        coords = new Point(feedbackDimensions.x + (!isRTL) * feedbackDimensions.w, feedbackDimensions.y);
+        coords = new Point(
+          feedbackDimensions.x + !isRTL * feedbackDimensions.w,
+          feedbackDimensions.y
+        );
         break;
       default:
         coords = feedbackDimensions.getCenter();
     }
 
     var pageCoords = this.getCtx().stageToPageCoords(coords.x, coords.y);
-    this._gantt.getEventManager().ProcessObjectTooltip(event, pageCoords.x, pageCoords.y, this, feedbackObj.getElem());
+    this._gantt
+      .getEventManager()
+      .ProcessObjectTooltip(event, pageCoords.x, pageCoords.y, this, feedbackObj.getElem());
   }
 
   /**
@@ -8389,7 +10134,12 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {DvtGanttRowNode} targetRowNode current row node that's dragged over
    * @private
    */
-  _renderTaskMoveDragFeedback(referenceFinalLocalX, referenceFinalLocalY, container, targetRowNode) {
+  _renderTaskMoveDragFeedback(
+    referenceFinalLocalX,
+    referenceFinalLocalY,
+    container,
+    targetRowNode
+  ) {
     var options = this._gantt.getOptions();
     var isRTL = Agent.isRightToLeft(this._gantt.getCtx());
     var ganttStartTime = this._gantt.getStartTime();
@@ -8397,7 +10147,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var ganttContentLength = this._gantt.getContentLength();
 
     var referenceMainShape = this.getTask().getShape('main');
-    var dropStagePos = targetRowNode.localToStage({x: 0, y: targetRowNode.getFinalY() + DvtGanttStyleUtils.getRowPaddingTop(options)});
+    var dropOutlineFeedbackRowTopOffset =
+      options.rowDefaults.height != null
+        ? (options.rowDefaults.height - referenceMainShape.getFinalHeight()) / 2
+        : DvtGanttStyleUtils.getRowPaddingTop(options);
+    var dropStagePos = targetRowNode.localToStage({
+      x: 0,
+      y: targetRowNode.getFinalY() + dropOutlineFeedbackRowTopOffset
+    });
     var dropFeedbackY = this._gantt.getDnDArtifactsContainer().stageToLocal(dropStagePos).y;
 
     var setTranslate = (feedback, x, y) => {
@@ -8420,10 +10177,12 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           dropOutlineFeedback.setY(dropFeedbackY);
         }
 
-        this._mainDragFeedbackStartTimes[i] = TimeAxisUtils.getPositionDate(ganttStartTime,
-                                                                          ganttEndTime,
-                                                                          isRTL ? ganttContentLength - newFeedbackX : newFeedbackX,
-                                                                          ganttContentLength);
+        this._mainDragFeedbackStartTimes[i] = TimeAxisUtils.getPositionDate(
+          ganttStartTime,
+          ganttEndTime,
+          isRTL ? ganttContentLength - newFeedbackX : newFeedbackX,
+          ganttContentLength
+        );
       }
     } else {
       // First feedback corresponds to the task where drag was initiated. Other feedbacks are drawn for other selected tasks if applicable.
@@ -8442,14 +10201,24 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       // time information is necessary for updating the feedback, e.g. in case the Gantt resized during move the feedback needs to be placed correctly under the new time axis.
       this._mainDragFeedbackStartTimes = [this.getValue('start')];
 
-      if (this._gantt.isSelectionSupported() && this.isSelected() && this._gantt.getSelectionHandler().getSelectedCount() > 1) {
+      if (
+        this._gantt.isSelectionSupported() &&
+        this.isSelected() &&
+        this._gantt.getSelectionHandler().getSelectedCount() > 1
+      ) {
         var selection = this._gantt.getSelectionHandler().getSelection();
         for (i = 0; i < selection.length; i++) {
           var selectionObj = selection[i];
           if (selectionObj && selectionObj.nodeType === 'task' && selectionObj !== this) {
             var mainShape = selectionObj.getTask().getShape('main');
-            var offsetFromReferenceX = mainShape.getX() + selectionObj.getTranslateX() - (referenceMainShape.getX() + this.getTranslateX());
-            var offsetFromReferenceY = mainShape.getY() + selectionObj.getTranslateY() - (referenceMainShape.getY() + this.getTranslateY());
+            var offsetFromReferenceX =
+              mainShape.getX() +
+              selectionObj.getTranslateX() -
+              (referenceMainShape.getX() + this.getTranslateX());
+            var offsetFromReferenceY =
+              mainShape.getY() +
+              selectionObj.getTranslateY() -
+              (referenceMainShape.getY() + this.getTranslateY());
             var dragFeedbackLocalX = referenceFinalLocalX + offsetFromReferenceX;
             var dragFeedbackLocalY = referenceFinalLocalY + offsetFromReferenceY;
             selectionObj.hide(true);
@@ -8458,7 +10227,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
             setTranslate(dragFeedback, dragFeedbackLocalX, dragFeedbackLocalY);
             this._mainDragFeedbacks.push(dragFeedback);
             this._mainDragOutlineFeedbacks.push(dragOutlineFeedback);
-            this._mainDragFeedbackOffsets.push(new Point(offsetFromReferenceX, offsetFromReferenceY));
+            this._mainDragFeedbackOffsets.push(
+              new Point(offsetFromReferenceX, offsetFromReferenceY)
+            );
             this._mainDragFeedbackStartTimes.push(selectionObj.getValue('start'));
           }
         }
@@ -8482,10 +10253,17 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     if (isEndResize) {
       anchorX = referenceMainShape.getFinalX() + this.getTranslateX();
       // DvtGanttTaskShape rects takes care of RTL internally, so x is always the start position
-      finalLocalX = isRTL ? Math.min(referenceFinalLocalX, anchorX) : Math.max(referenceFinalLocalX, anchorX);
+      finalLocalX = isRTL
+        ? Math.min(referenceFinalLocalX, anchorX)
+        : Math.max(referenceFinalLocalX, anchorX);
     } else {
-      anchorX = referenceMainShape.getFinalX() - orientationFactor * referenceMainShape.getFinalWidth() + this.getTranslateX();
-      finalLocalX = isRTL ? Math.max(referenceFinalLocalX, anchorX) : Math.min(referenceFinalLocalX, anchorX);
+      anchorX =
+        referenceMainShape.getFinalX() -
+        orientationFactor * referenceMainShape.getFinalWidth() +
+        this.getTranslateX();
+      finalLocalX = isRTL
+        ? Math.max(referenceFinalLocalX, anchorX)
+        : Math.min(referenceFinalLocalX, anchorX);
     }
     var finalReferenceWidth = Math.abs(finalLocalX - anchorX);
     var deltaWidth = finalReferenceWidth - referenceMainShape.getFinalWidth();
@@ -8502,7 +10280,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         var dragSourceShape = dragSourceNode.getTask().getShape('main');
         var newFeedbackWidth = Math.max(0, dragSourceShape.getFinalWidth() + deltaWidth);
         if (!isEndResize) {
-          var dragSourceAnchorX = dragSourceShape.getFinalX() - orientationFactor * dragSourceShape.getFinalWidth() + dragSourceNode.getTranslateX();
+          var dragSourceAnchorX =
+            dragSourceShape.getFinalX() -
+            orientationFactor * dragSourceShape.getFinalWidth() +
+            dragSourceNode.getTranslateX();
           dragFeedback.setTranslateX(dragSourceAnchorX + orientationFactor * newFeedbackWidth);
           dragFeedback._taskObj.x = dragFeedback.getTranslateX();
         }
@@ -8511,11 +10292,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     } else {
       this.hide();
       var referenceDragFeedback = this._renderClone(container);
-      setTranslate(referenceDragFeedback, isEndResize ? anchorX : finalLocalX, referenceMainShape.getFinalY() + this.getTranslateY());
+      setTranslate(
+        referenceDragFeedback,
+        isEndResize ? anchorX : finalLocalX,
+        referenceMainShape.getFinalY() + this.getTranslateY()
+      );
       this._mainResizeHandleDragFeedbacks = [referenceDragFeedback];
       this._mainResizeHandleDragFeedbackSources = [this];
 
-      if (this._gantt.isSelectionSupported() && this.isSelected() && this._gantt.getSelectionHandler().getSelectedCount() > 1) {
+      if (
+        this._gantt.isSelectionSupported() &&
+        this.isSelected() &&
+        this._gantt.getSelectionHandler().getSelectedCount() > 1
+      ) {
         var selection = this._gantt.getSelectionHandler().getSelection();
         for (i = 0; i < selection.length; i++) {
           var selectionObj = selection[i];
@@ -8523,14 +10312,21 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
             var mainShape = selectionObj.getTask().getShape('main');
             var feedbackWidth = mainShape.getFinalWidth() + deltaWidth;
             var feedbackX;
-            if (isEndResize)
-              feedbackX = mainShape.getFinalX() + selectionObj.getTranslateX();
+            if (isEndResize) feedbackX = mainShape.getFinalX() + selectionObj.getTranslateX();
             else
-              feedbackX = mainShape.getFinalX() - orientationFactor * mainShape.getFinalWidth() + selectionObj.getTranslateX() + orientationFactor * feedbackWidth;
+              feedbackX =
+                mainShape.getFinalX() -
+                orientationFactor * mainShape.getFinalWidth() +
+                selectionObj.getTranslateX() +
+                orientationFactor * feedbackWidth;
 
             selectionObj.hide();
             dragFeedback = selectionObj._renderClone(container);
-            setTranslate(dragFeedback, feedbackX, mainShape.getFinalY() + selectionObj.getTranslateY());
+            setTranslate(
+              dragFeedback,
+              feedbackX,
+              mainShape.getFinalY() + selectionObj.getTranslateY()
+            );
             this._mainResizeHandleDragFeedbacks.push(dragFeedback);
             this._mainResizeHandleDragFeedbackSources.push(selectionObj);
           }
@@ -8548,7 +10344,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   _renderDependencyLinesDragFeedback(dragFeedbacks, container) {
     if (this._mainDependencyLineDragFeedbacks) {
-      this._mainDependencyLineDragFeedbacks.forEach(clonedDepLine => clonedDepLine.render(container, true));
+      this._mainDependencyLineDragFeedbacks.forEach((clonedDepLine) =>
+        clonedDepLine.render(container, true)
+      );
     } else {
       this._mainDependencyLineDragFeedbacks = [];
 
@@ -8556,14 +10354,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       const depObjsCloneMap = new Map();
       if (this._gantt.isSelectionSupported() && this.isSelected()) {
         const selection = this._gantt.getSelectionHandler().getSelection();
-        selection.forEach(selectionObj => {
+        selection.forEach((selectionObj) => {
           const predecessorDepNodes = selectionObj.getPredecessorDependencies();
           const successorDepNodes = selectionObj.getSuccessorDependencies();
-          predecessorDepNodes.forEach(dep => {
+          predecessorDepNodes.forEach((dep) => {
             dep.hide();
             depObjsCloneMap.set(dep.getLayoutObject(), Object.assign({}, dep.getLayoutObject()));
           });
-          successorDepNodes.forEach(dep => {
+          successorDepNodes.forEach((dep) => {
             dep.hide();
             depObjsCloneMap.set(dep.getLayoutObject(), Object.assign({}, dep.getLayoutObject()));
           });
@@ -8571,14 +10369,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       }
 
       // Fix clone layout object references
-      dragFeedbacks.forEach(clonedTaskNode => {
+      dragFeedbacks.forEach((clonedTaskNode) => {
         const clonedTaskObj = clonedTaskNode.getLayoutObject();
-        clonedTaskObj.predecessorDepObjs = clonedTaskObj.predecessorDepObjs.map(depObj => {
+        clonedTaskObj.predecessorDepObjs = clonedTaskObj.predecessorDepObjs.map((depObj) => {
           const clonedDepObj = depObjsCloneMap.get(depObj);
           clonedDepObj.successorTaskObj = clonedTaskObj;
           return clonedDepObj;
         });
-        clonedTaskObj.successorDepObjs = clonedTaskObj.successorDepObjs.map(depObj => {
+        clonedTaskObj.successorDepObjs = clonedTaskObj.successorDepObjs.map((depObj) => {
           const clonedDepObj = depObjsCloneMap.get(depObj);
           clonedDepObj.predecessorTaskObj = clonedTaskObj;
           return clonedDepObj;
@@ -8610,12 +10408,22 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var dragFeedback, dragFeedbackX, dragOutlineFeedback, dropOutlineFeedback;
 
     if (this._mainDragFeedbacks) {
-      var newReferenceX = TimeAxisUtils.getDatePosition(ganttStartTime, ganttEndTime, this._mainDragFeedbackStartTimes[0], ganttContentLength);
+      var newReferenceX = TimeAxisUtils.getDatePosition(
+        ganttStartTime,
+        ganttEndTime,
+        this._mainDragFeedbackStartTimes[0],
+        ganttContentLength
+      );
       newReferenceX = isRTL ? ganttContentLength - newReferenceX : newReferenceX;
       for (var i = 0; i < this._mainDragFeedbacks.length; i++) {
         dragFeedback = this._mainDragFeedbacks[i];
         dragOutlineFeedback = this._mainDragOutlineFeedbacks[i];
-        dragFeedbackX = TimeAxisUtils.getDatePosition(ganttStartTime, ganttEndTime, this._mainDragFeedbackStartTimes[i], ganttContentLength);
+        dragFeedbackX = TimeAxisUtils.getDatePosition(
+          ganttStartTime,
+          ganttEndTime,
+          this._mainDragFeedbackStartTimes[i],
+          ganttContentLength
+        );
         dragFeedbackX = isRTL ? ganttContentLength - dragFeedbackX : dragFeedbackX;
 
         this._mainDragFeedbackOffsets[i].x = dragFeedbackX - newReferenceX; // recalculate x positional offsets
@@ -8643,8 +10451,18 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     if (this._mainResizeHandleDragFeedbacks) {
       for (var i = 0; i < this._mainResizeHandleDragFeedbacks; i++) {
         dragFeedback = this._mainResizeHandleDragFeedbacks[i];
-        var dragFeedbackStartX = TimeAxisUtils.getDatePosition(ganttStartTime, ganttEndTime, this._mainResizeHandleDragFeedbackSources[i].getValue('start'), ganttContentLength);
-        var dragFeedbackEndX = TimeAxisUtils.getDatePosition(ganttStartTime, ganttEndTime, this._mainResizeHandleDragFeedbackSources[i].getValue('end'), ganttContentLength);
+        var dragFeedbackStartX = TimeAxisUtils.getDatePosition(
+          ganttStartTime,
+          ganttEndTime,
+          this._mainResizeHandleDragFeedbackSources[i].getValue('start'),
+          ganttContentLength
+        );
+        var dragFeedbackEndX = TimeAxisUtils.getDatePosition(
+          ganttStartTime,
+          ganttEndTime,
+          this._mainResizeHandleDragFeedbackSources[i].getValue('end'),
+          ganttContentLength
+        );
         dragFeedbackX = isRTL ? ganttContentLength - dragFeedbackStartX : dragFeedbackStartX;
 
         dragFeedback.setTranslateX(dragFeedbackX);
@@ -8657,7 +10475,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       }
     }
     if (this._mainDependencyLineDragFeedbacks) {
-      this._mainDependencyLineDragFeedbacks.forEach(clonedDepLine => clonedDepLine.render(clonedDepLine.getParent(), true));
+      this._mainDependencyLineDragFeedbacks.forEach((clonedDepLine) =>
+        clonedDepLine.render(clonedDepLine.getParent(), true)
+      );
     }
   }
 
@@ -8668,7 +10488,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     if (this._mainDragFeedbacks) {
       for (var i = 0; i < this._mainDragFeedbacks.length; i++) {
         this._mainDragFeedbacks[i].getParent().removeChild(this._mainDragFeedbacks[i]);
-        this._mainDragOutlineFeedbacks[i].getParent().removeChild(this._mainDragOutlineFeedbacks[i]);
+        this._mainDragOutlineFeedbacks[i]
+          .getParent()
+          .removeChild(this._mainDragOutlineFeedbacks[i]);
       }
       // Only one drop outline for drag source task
       this._mainDropOutlineFeedbacks[0].getParent().removeChild(this._mainDropOutlineFeedbacks[0]);
@@ -8681,13 +10503,17 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     }
     if (this._mainDependencyLineDragFeedbacks) {
       for (var i = 0; i < this._mainDependencyLineDragFeedbacks.length; i++) {
-        this._mainDependencyLineDragFeedbacks[i].getParent().removeChild(this._mainDependencyLineDragFeedbacks[i]);
+        this._mainDependencyLineDragFeedbacks[i]
+          .getParent()
+          .removeChild(this._mainDependencyLineDragFeedbacks[i]);
       }
       this._mainDependencyLineDragFeedbacks = null;
     }
     if (this._mainResizeHandleDragFeedbacks) {
       for (var i = 0; i < this._mainResizeHandleDragFeedbacks.length; i++) {
-        this._mainResizeHandleDragFeedbacks[i].getParent().removeChild(this._mainResizeHandleDragFeedbacks[i]);
+        this._mainResizeHandleDragFeedbacks[i]
+          .getParent()
+          .removeChild(this._mainResizeHandleDragFeedbacks[i]);
       }
       this._mainResizeHandleDragFeedbacks = null;
       this._mainResizeHandleDragFeedbackSources = null;
@@ -8737,8 +10563,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     if (this.isSelectable() && this.getCursor() !== selectingCursor)
       this.setCursor(selectingCursor);
 
-    if (this.getParent() != container)
-      container.addChild(this);
+    if (this.getParent() != container) container.addChild(this);
 
     // Render task elements (labels will be rendered later, see DvtGanttRowNode.render())
     // If resize enabled, handles will be rendered after labels are rendered (see DvtGanttRowNode.render())
@@ -8752,8 +10577,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     this._updateDragFeedbacks();
 
     finalStates = {
-      'x': this.getFinalX(),
-      'y': this.getFinalY()
+      x: this.getFinalX(),
+      y: this.getFinalY()
     };
     this._gantt.getAnimationManager().preAnimateTaskNode(this, finalStates);
   }
@@ -8762,7 +10587,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * Removes the task node
    */
   remove() {
-    var onEnd, self = this;
+    var onEnd,
+      self = this;
 
     onEnd = () => {
       self.getRowNode().removeChild(self);
@@ -8777,14 +10603,12 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   getPredecessorDependencies() {
     var dataLayoutManager = this._gantt.getDataLayoutManager();
-    return this._taskObj.predecessorDepObjs.map(
-       (depObj) => {
-        if (!depObj.node) {
-          dataLayoutManager.ensureInDOM(depObj, 'dependency');
-        }
-        return depObj.node;
+    return this._taskObj.predecessorDepObjs.map((depObj) => {
+      if (!depObj.node) {
+        dataLayoutManager.ensureInDOM(depObj, 'dependency');
       }
-    );
+      return depObj.node;
+    });
   }
 
   /**
@@ -8793,14 +10617,12 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   getSuccessorDependencies() {
     var dataLayoutManager = this._gantt.getDataLayoutManager();
-    return this._taskObj.successorDepObjs.map(
-      (depObj) => {
-        if (!depObj.node) {
-          dataLayoutManager.ensureInDOM(depObj, 'dependency');
-        }
-        return depObj.node;
+    return this._taskObj.successorDepObjs.map((depObj) => {
+      if (!depObj.node) {
+        dataLayoutManager.ensureInDOM(depObj, 'dependency');
       }
-    );
+      return depObj.node;
+    });
   }
 
   /**
@@ -8868,8 +10690,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     // return a simplified label consisting of the row label and expanded/collapsed state.
     if (this._gantt.getRenderState() != null) {
       var rowLabel = rowObj['data']['label'];
-      if (rowLabel == null)
-        rowLabel = translations.labelRow + ' ' + rowObj['index'] + 1;
+      if (rowLabel == null) rowLabel = translations.labelRow + ' ' + rowObj['index'] + 1;
       rowLabel = treeLevelDesc + rowLabel;
       if (rowObj['expanded'] != null)
         states.push(translations[rowObj['expanded'] ? 'stateExpanded' : 'stateCollapsed']);
@@ -8880,14 +10701,18 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       states.push(translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
     var rowObj = this.getLayoutObject()['rowObj'];
     if (rowObj['expanded'] != null)
-      states.push(translations.labelRow + ' ' + translations[rowObj['expanded'] ? 'stateExpanded' : 'stateCollapsed']);
+      states.push(
+        translations.labelRow +
+          ' ' +
+          translations[rowObj['expanded'] ? 'stateExpanded' : 'stateCollapsed']
+      );
 
     var shortDesc = DvtGanttTooltipUtils.getDatatip(this, false, true);
-    if (this._task.isMilestone('main')) // note doesn't really make a difference if we query 'main' or 'baseline'
-    {
+    if (this._task.isMilestone('main')) {
+      // note doesn't really make a difference if we query 'main' or 'baseline'
       shortDesc = translations.accessibleTaskTypeMilestone + ', ' + shortDesc;
-    } else if (this._task.isSummary('main')) // note doesn't really make a difference if we query 'main' or 'baseline'
-    {
+    } else if (this._task.isSummary('main')) {
+      // note doesn't really make a difference if we query 'main' or 'baseline'
       shortDesc = translations.accessibleTaskTypeSummary + ', ' + shortDesc;
     }
     shortDesc = treeLevelDesc + shortDesc;
@@ -8898,7 +10723,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     if (predecessorDepObjs.length > 0 || successorDepObjs.length > 0) {
       var depDesc = '';
       if (predecessorDepObjs.length > 0) {
-        depDesc = ResourceUtils.format(translations.accessiblePredecessorInfo, [predecessorDepObjs.length]);
+        depDesc = ResourceUtils.format(translations.accessiblePredecessorInfo, [
+          predecessorDepObjs.length
+        ]);
 
         // for VoiceOver/Talkback we'll need to include the full detail of the dependency in the task since we can't
         // navigate to the dependency line directly
@@ -8909,9 +10736,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       }
 
       if (successorDepObjs.length > 0) {
-        if (depDesc.length > 0)
-          depDesc = depDesc + ', ';
-        depDesc = depDesc + ResourceUtils.format(translations.accessibleSuccessorInfo, [successorDepObjs.length]);
+        if (depDesc.length > 0) depDesc = depDesc + ', ';
+        depDesc =
+          depDesc +
+          ResourceUtils.format(translations.accessibleSuccessorInfo, [successorDepObjs.length]);
 
         if (TimeAxisUtils.supportsTouch() || Agent.isEnvironmentTest()) {
           for (i = 0; i < successorDepObjs.length; i++)
@@ -8919,17 +10747,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         }
       }
 
-      if (depDesc.length > 0)
-        shortDesc = shortDesc + ', ' + depDesc;
+      if (depDesc.length > 0) shortDesc = shortDesc + ', ' + depDesc;
     }
 
     var ariaLabel = Displayable.generateAriaLabel(shortDesc, states);
     var currentAriaLabel = this.getAriaProperty('label');
     // coming from setActiveElement() and nothing changed, must have been updated through selection, skipped
-    if (currentAriaLabel != null && currentAriaLabel.indexOf(ariaLabel) > -1)
-      return null;
-    else
-      return ariaLabel;
+    if (currentAriaLabel != null && currentAriaLabel.indexOf(ariaLabel) > -1) return null;
+    else return ariaLabel;
   }
 
   /**
@@ -8978,11 +10803,11 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var itemData = data['_itemData'];
     var fillColor = this.getTask().getFillColor();
     return {
-      'data': this.getData(true),
-      'rowData': this.getRowNode().getData(true),
-      'itemData': itemData ? itemData : null,
-      'color': fillColor ? fillColor.fill : null,
-      'component': this._gantt.getOptions()['_widgetConstructor']
+      data: this.getData(true),
+      rowData: this.getRowNode().getData(true),
+      itemData: itemData ? itemData : null,
+      color: fillColor ? fillColor.fill : null,
+      component: this._gantt.getOptions()['_widgetConstructor']
     };
   }
 
@@ -8994,9 +10819,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
   static getShortDescContext(node) {
     var itemData = node.getData()['_itemData'];
     return {
-      'data': node.getData(true),
-      'rowData': node.getRowNode().getData(true),
-      'itemData': itemData ? itemData : null
+      data: node.getData(true),
+      rowData: node.getRowNode().getData(true),
+      itemData: itemData ? itemData : null
     };
   }
 
@@ -9014,18 +10839,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     if (data['baseline']) {
       var baselineStart = data['baseline']['start'];
       var baselineEnd = data['baseline']['end'];
-      data['baseline']['start'] = baselineStart != null ? new Date(baselineStart).toISOString() : null;
+      data['baseline']['start'] =
+        baselineStart != null ? new Date(baselineStart).toISOString() : null;
       data['baseline']['end'] = baselineEnd != null ? new Date(baselineEnd).toISOString() : null;
     }
 
     var itemData = this._taskObj['data']['_itemData'];
     var rowNode = data['_rowNode'];
     return {
-      'data': data,
-      'rowData': rowNode.getData(true),
-      'itemData': itemData ? itemData : null,
-      'color': DvtGanttTooltipUtils.getDatatipColor(this),
-      'component': this._gantt.getOptions()['_widgetConstructor']
+      data: data,
+      rowData: rowNode.getData(true),
+      itemData: itemData ? itemData : null,
+      color: DvtGanttTooltipUtils.getDatatipColor(this),
+      component: this._gantt.getOptions()['_widgetConstructor']
     };
   }
 
@@ -9059,7 +10885,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     // In the animation case, we want to skip the logic below, rely on the condition below to perform renderViewportDependencyLines(),
     // which effectively clears the dependency lines, and allow the viewport to refresh properly on animation end
     // via DvtGanttAnimationManager._onAnimationEnd().
-    if (options.dependencyLineShape === 'straight' && options.selectionBehavior !== 'highlightDependencies') {
+    if (
+      options.dependencyLineShape === 'straight' &&
+      options.selectionBehavior !== 'highlightDependencies'
+    ) {
       var dependenciesContainer = this._gantt.getDependenciesContainer();
       var predecessorLines = this.getPredecessorDependencies();
       predecessorLines.forEach((line) => {
@@ -9076,7 +10905,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     if (!isInitial && options.selectionBehavior === 'highlightDependencies') {
       var viewport = this._gantt.getViewPort();
       var dataLayoutManager = this._gantt.getDataLayoutManager();
-      dataLayoutManager.renderViewportDependencyLines(viewport, 'vpc_translate', { taskObj: this.getLayoutObject(), isSelected: selected });
+      dataLayoutManager.renderViewportDependencyLines(viewport, 'vpc_translate', {
+        taskObj: this.getLayoutObject(),
+        isSelected: selected
+      });
     }
   }
 
@@ -9095,15 +10927,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @override
    */
   getDatatip() {
-   return DvtGanttTooltipUtils.getDatatip(this, true);
+    return DvtGanttTooltipUtils.getDatatip(this, true);
   }
 
   /**
    * @override
    */
   getDatatipColor() {
-   return DvtGanttTooltipUtils.getDatatipColor(this);
-  };
+    return DvtGanttTooltipUtils.getDatatipColor(this);
+  }
   //---------------------------------------------------------------------//
   // Selection Support: DvtSelectable impl                               //
   //---------------------------------------------------------------------//
@@ -9163,17 +10995,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
 
     // Navigating to dependency line
     if (
-      event.altKey && (
-        (event.keyCode === KeyboardEvent.OPEN_ANGLED_BRACKET) ||
-        (event.keyCode === KeyboardEvent.CLOSE_ANGLED_BRACKET)
-      ) &&
-      keyboardHandler && keyboardHandler.getFirstNavigableDependencyLine
+      event.altKey &&
+      (event.keyCode === KeyboardEvent.OPEN_ANGLED_BRACKET ||
+        event.keyCode === KeyboardEvent.CLOSE_ANGLED_BRACKET) &&
+      keyboardHandler &&
+      keyboardHandler.getFirstNavigableDependencyLine
     ) {
       var type;
       if (Agent.isRightToLeft(this.getGantt().getCtx())) {
-        type = event.keyCode === KeyboardEvent.CLOSE_ANGLED_BRACKET ? 'predecessor' : 'successor';
+        type =
+          event.keyCode === KeyboardEvent.CLOSE_ANGLED_BRACKET ? 'predecessor' : 'successor';
       } else {
-        type = event.keyCode === KeyboardEvent.OPEN_ANGLED_BRACKET ? 'predecessor' : 'successor';
+        type =
+          event.keyCode === KeyboardEvent.OPEN_ANGLED_BRACKET ? 'predecessor' : 'successor';
       }
       var dependencyLines = this._gantt.getNavigableDependencyLinesForTask(this, type);
       var next = keyboardHandler.getFirstNavigableDependencyLine(this, event, dependencyLines);
@@ -9186,17 +11020,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     // Navigating to row label
     if (
       this._gantt.isRowAxisEnabled() &&
-      event.altKey && (
-        (!isRTL && event.keyCode === KeyboardEvent.LEFT_ARROW) ||
-        (isRTL && event.keyCode === KeyboardEvent.RIGHT_ARROW)
-      )
+      event.altKey &&
+      ((!isRTL && event.keyCode === KeyboardEvent.LEFT_ARROW) ||
+        (isRTL && event.keyCode === KeyboardEvent.RIGHT_ARROW))
     ) {
       var rowNode = this.getRowNode();
       return rowNode.getRowLabelContent();
     }
 
     // The normal navigation keys (up/down/right/left arrows) have different meanings in keyboard DnD mode, and handled separately in keyboardHandler
-    if (keyboardHandler.isNavigationEvent(event) && this._gantt.getEventManager().getKeyboardDnDMode() == null) {
+    if (
+      keyboardHandler.isNavigationEvent(event) &&
+      this._gantt.getEventManager().getKeyboardDnDMode() == null
+    ) {
       return DvtGanttKeyboardHandler.getNextNavigable(this._gantt, this, event);
     }
 
@@ -9231,7 +11067,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     this.scrollIntoView();
 
     // fire viewport change event if attempting to scroll into view causes viewport change
-    if (this._gantt.getViewportStartTime() !== previousViewportStart || this._gantt.getViewportEndTime() !== previousViewportEnd) {
+    if (
+      this._gantt.getViewportStartTime() !== previousViewportStart ||
+      this._gantt.getViewportEndTime() !== previousViewportEnd
+    ) {
       this._gantt.dispatchEvent(this._gantt.createViewportChangeEvent());
     }
   }
@@ -9260,14 +11099,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @override
    */
   isDragAvailable(clientIds) {
-   return true;
+    return true;
   }
 
   /**
    * @override
    */
   getDragTransferable(mouseX, mouseY) {
-   return [this.getId()];
+    return [this.getId()];
   }
 
   /**
@@ -9285,7 +11124,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
  * @class
  * @constructor
  */
- class DvtGanttRowNode extends Container {
+class DvtGanttRowNode extends Container {
   constructor(gantt) {
     super(gantt.getCtx(), null);
 
@@ -9376,9 +11215,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var eventManager = this._gantt.getEventManager();
     var lastFocused = eventManager.getFocus();
     if (
-      this._rowLabelContent !== lastFocused
-      && lastFocused instanceof DvtGanttRowLabelContent
-      && lastFocused.getRow() === this
+      this._rowLabelContent !== lastFocused &&
+      lastFocused instanceof DvtGanttRowLabelContent &&
+      lastFocused.getRow() === this
     ) {
       eventManager.setFocus(rowLabelContent);
       rowLabelContent.showKeyboardFocusEffect();
@@ -9426,13 +11265,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   getRenderOrderTaskObjs(subsetTaskObjs) {
     var taskObjs = subsetTaskObjs
-      ? subsetTaskObjs.sort( (a, b) => { return a.startTime - b.startTime; })
+      ? subsetTaskObjs.sort((a, b) => {
+          return a.startTime - b.startTime;
+        })
       : this._rowObj['taskObjs']; // taskObjs should already be sorted in chronological order
 
     if (this._rowObj['earliestOverlayTaskObj']) {
       var overlayTasks = [];
       var nonOverlayTasks = [];
-      taskObjs.forEach( (taskObj) => {
+      taskObjs.forEach((taskObj) => {
         if (taskObj['overlapBehavior'] === 'overlay') {
           overlayTasks.push(taskObj);
         } else {
@@ -9453,7 +11294,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
   _renderTasks(subsetRenderOperations) {
     // Remove Tasks
     if (subsetRenderOperations) {
-      subsetRenderOperations.tasksDelete.forEach( (taskObj) => {
+      subsetRenderOperations.tasksDelete.forEach((taskObj) => {
         taskObj.node.remove();
       });
     }
@@ -9465,7 +11306,11 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     //      only explicitly appendChild to put it on top if:
     //        1) it overlaps with previous task.
     //        2) the previous task is newly added. Otherwise it's already layered correctly so no need to touch it.
-    var taskObjs = this.getRenderOrderTaskObjs(subsetRenderOperations ? [...subsetRenderOperations.tasksAdd, ...subsetRenderOperations.tasksUpdate] : null);
+    var taskObjs = this.getRenderOrderTaskObjs(
+      subsetRenderOperations
+        ? [...subsetRenderOperations.tasksAdd, ...subsetRenderOperations.tasksUpdate]
+        : null
+    );
     var taskObjsAdd = subsetRenderOperations ? subsetRenderOperations.tasksAdd : new Set();
     var shouldUpdateRender = !subsetRenderOperations || subsetRenderOperations.updateRender;
     var prevTaskObj;
@@ -9482,9 +11327,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       var isTaskAdd = taskObjsAdd.has(taskObj);
       if (shouldUpdateRender || isTaskAdd) {
         var task = taskNode.getTask();
-        var taskRepBounds = task.getTimeSpanDimensions(taskNode.getValue('start'), taskNode.getValue('end'));
+        var taskRepBounds = task.getTimeSpanDimensions(
+          taskNode.getValue('start'),
+          taskNode.getValue('end')
+        );
         if (!taskRepBounds) {
-          taskRepBounds = task.getTimeSpanDimensions(taskNode.getValue('baseline', 'start'), taskNode.getValue('baseline', 'end'));
+          taskRepBounds = task.getTimeSpanDimensions(
+            taskNode.getValue('baseline', 'start'),
+            taskNode.getValue('baseline', 'end')
+          );
         }
         // eslint-disable-next-line no-param-reassign
         taskObj.x = taskRepBounds.startPos;
@@ -9524,12 +11375,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       //    - (the else if) task is newly added, but next adjacent tasks not marked for update. The added task can cause a necessary cascade of label positioning updates.
       if (shouldUpdateRender || isTaskAdd) {
         // If current task is added, and previous adjacent task in DOM, then additionally update the previous task's label rendering in case it should truncate/move.
-        if (isTaskAdd &&
-            !shouldUpdateRender &&
-            taskObj.previousAdjacentTaskObj &&
-            !taskObjsAdd.has(taskObj.previousAdjacentTaskObj) &&
-            taskObj.previousAdjacentTaskObj.node &&
-            taskObj.previousAdjacentTaskObj.node.getParent()) {
+        if (
+          isTaskAdd &&
+          !shouldUpdateRender &&
+          taskObj.previousAdjacentTaskObj &&
+          !taskObjsAdd.has(taskObj.previousAdjacentTaskObj) &&
+          taskObj.previousAdjacentTaskObj.node &&
+          taskObj.previousAdjacentTaskObj.node.getParent()
+        ) {
           renderLabelAndHandles(taskObj.previousAdjacentTaskObj);
         }
         renderLabelAndHandles(taskObj);
@@ -9540,7 +11393,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           var taskLabel = currTaskObj.node.getTaskLabel();
           var prevLabelPosition = taskLabel.getEffectiveLabelPosition();
           renderLabelAndHandles(currTaskObj);
-          currTaskObj = prevLabelPosition === taskLabel.getEffectiveLabelPosition() ? null : currTaskObj.nextAdjacentTaskObj;
+          currTaskObj =
+            prevLabelPosition === taskLabel.getEffectiveLabelPosition()
+              ? null
+              : currTaskObj.nextAdjacentTaskObj;
         }
       }
     }
@@ -9586,7 +11442,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         labelDisplayable.setTextString(labelDisplayable.getUntruncatedTextString());
 
       // Truncate label to fit
-      TextUtils.fitText(labelDisplayable, rowAxis.getWidth() - totalPadding, height, labelDisplayable.getParent(), 1);
+      TextUtils.fitText(
+        labelDisplayable,
+        rowAxis.getWidth() - totalPadding,
+        height,
+        labelDisplayable.getParent(),
+        1
+      );
 
       // Always start align labels
       if (isRTL) {
@@ -9597,18 +11459,18 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       }
     }
 
-    var y = top - labelContent.getYTopOffset() + ((height - labelContent.getHeight()) / 2);
+    var y = top - labelContent.getYTopOffset() + (height - labelContent.getHeight()) / 2;
     labelContent.setRow(this);
 
     var finalStates = {
-      'x': x,
-      'y': y,
+      x: x,
+      y: y,
       // Reduce the rect size by 0.5 on all sides to ensure consistent rendering in all browsers
       // Otherwise one or more sides of the rect may go "outside" the component by 1px (e.g. in Chrome)
-      'backgroundX': 0.5,
-      'backgroundY': this._rowObj.y + 0.5,
-      'backgroundWidth': rowAxis.getWidth() - 0.5,
-      'backgroundHeight': this._rowObj.height - 0.5
+      backgroundX: 0.5,
+      backgroundY: this._rowObj.y + 0.5,
+      backgroundWidth: rowAxis.getWidth() - 0.5,
+      backgroundHeight: this._rowObj.height - 0.5
     };
 
     // set "previous states" (current implementation, labels are new and have no knowledge of previous positions)
@@ -9640,10 +11502,11 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   _renderBackground(gantt, container) {
     var x = 0,
-        y = this._rowObj['y'],
-        w = gantt.getContentLength(),
-        h = this._rowObj['height'],
-        renderState = 'exist', finalStates;
+      y = this._rowObj['y'],
+      w = gantt.getContentLength(),
+      h = this._rowObj['height'],
+      renderState = 'exist',
+      finalStates;
 
     if (!this._background) {
       this._background = new Rect(gantt.getCtx(), x, y, w, h);
@@ -9657,11 +11520,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     container.addChild(this._background);
 
     finalStates = {
-      'y': y,
-      'w': w,
-      'h': h
+      y: y,
+      w: w,
+      h: h
     };
-    this._gantt.getAnimationManager().preAnimateRowBackground(this._background, finalStates, renderState);
+    this._gantt
+      .getAnimationManager()
+      .preAnimateRowBackground(this._background, finalStates, renderState);
   }
 
   /**
@@ -9686,12 +11551,12 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     }
 
     // Remove previous reference objects
-    this._referenceObjects.forEach(refObj => container.removeChild(refObj));
+    this._referenceObjects.forEach((refObj) => container.removeChild(refObj));
 
     // Render reference objects
     this._referenceObjects = gantt.generateReferenceObjects(refObjsData, 'area');
 
-    this._referenceObjects.forEach(refObj => {
+    this._referenceObjects.forEach((refObj) => {
       eventManager.associate(refObj, this);
       refObj.render(container, prevY1, prevY2);
       animationManager.preAnimateRowReferenceObject(refObj, { y1, y2 });
@@ -9713,14 +11578,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @private
    */
   _renderHorizontalGridline(gantt, container) {
-    var x1, x2, y1, y2, renderState = 'exist', finalStates,
-        gridlineStyleClass = gantt.GetStyleClass('hgridline'),
-        horizontalLineWidth = DvtGanttStyleUtils.getHorizontalGridlineWidth(gantt.getOptions()),
-        // due to pixel hinting, odd value stroke width needs it's position to be offset by 0.5 to ensure consistent behavior across browsers
-        // e.g. stroke-width of 1px means 0.5px above and below the reference coordinate. With pixel hinting, some browsers
-        // renders 1px above the reference, some renders 1px below the reference. If we offset the reference by 0.5px, the stroke location
-        // becomes unambiguous (it'll lock onto whole pixel grid) so all browsers will render this consistently.
-        yOffset = (horizontalLineWidth % 2) * 0.5;
+    var x1,
+      x2,
+      y1,
+      y2,
+      renderState = 'exist',
+      finalStates,
+      gridlineStyleClass = gantt.GetStyleClass('hgridline'),
+      horizontalLineWidth = DvtGanttStyleUtils.getHorizontalGridlineWidth(gantt.getOptions()),
+      // due to pixel hinting, odd value stroke width needs it's position to be offset by 0.5 to ensure consistent behavior across browsers
+      // e.g. stroke-width of 1px means 0.5px above and below the reference coordinate. With pixel hinting, some browsers
+      // renders 1px above the reference, some renders 1px below the reference. If we offset the reference by 0.5px, the stroke location
+      // becomes unambiguous (it'll lock onto whole pixel grid) so all browsers will render this consistently.
+      yOffset = (horizontalLineWidth % 2) * 0.5;
     var rowAxis = this._gantt.getRowAxis();
     var bRowAxisEnabled = this._gantt.isRowAxisEnabled() && rowAxis;
 
@@ -9740,35 +11610,45 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       }
 
       finalStates = {
-        'x1': x1,
-        'x2': x2,
-        'y1': y1,
-        'y2': y2
+        x1: x1,
+        x2: x2,
+        y1: y1,
+        y2: y2
       };
-      this._gantt.getAnimationManager().preAnimateHorizontalGridline(this._horizontalLine, finalStates, renderState);
+      this._gantt
+        .getAnimationManager()
+        .preAnimateHorizontalGridline(this._horizontalLine, finalStates, renderState);
 
       // horizontal grid line in row axis
       if (bRowAxisEnabled) {
         var rowAxisHorizontalLineFinalStates = {
-          'x1': x1,
-          'x2': rowAxis.getWidth(),
-          'y1': y1,
-          'y2': y2
+          x1: x1,
+          x2: rowAxis.getWidth(),
+          y1: y1,
+          y2: y2
         };
 
         if (!this._rowAxisHorizontalLine) {
-          this._rowAxisHorizontalLine = new Line(this._gantt.getCtx(),
-                                                    this._horizontalLine.getX1(),
-                                                    this._horizontalLine.getY1(),
-                                                    rowAxisHorizontalLineFinalStates['x2'],
-                                                    this._horizontalLine.getY2());
+          this._rowAxisHorizontalLine = new Line(
+            this._gantt.getCtx(),
+            this._horizontalLine.getX1(),
+            this._horizontalLine.getY1(),
+            rowAxisHorizontalLineFinalStates['x2'],
+            this._horizontalLine.getY2()
+          );
           this._rowAxisHorizontalLine.setPixelHinting(true);
           this._rowAxisHorizontalLine.setClassName(gridlineStyleClass, true);
         }
         // row axis is cleared on rerender, so line would not be in DOM
         rowAxis.addHorizontalLine(this._rowAxisHorizontalLine);
 
-        this._gantt.getAnimationManager().preAnimateHorizontalGridline(this._rowAxisHorizontalLine, rowAxisHorizontalLineFinalStates, renderState);
+        this._gantt
+          .getAnimationManager()
+          .preAnimateHorizontalGridline(
+            this._rowAxisHorizontalLine,
+            rowAxisHorizontalLineFinalStates,
+            renderState
+          );
       }
     } else {
       // TODO: Animate this?
@@ -9789,12 +11669,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {string} effectType The effect type (selected, activeDrop)
    */
   showEffect(effectType) {
-    ToolkitUtils.addClassName(this._background.getElem(), this._gantt.GetStyleClass(effectType));
-    var rowLabelContent = this.getRowLabelContent();
+    const effectStyleClass = this._gantt.GetStyleClass(effectType);
+    if (this._background) {
+      // Skip adding effect class if it's already there.
+      if (DvtGanttStyleUtils.hasClass(this._background, effectStyleClass)) {
+        return;
+      }
+      this._background.addClassName(effectStyleClass);
+    }
+    const rowLabelContent = this.getRowLabelContent();
     if (rowLabelContent) {
-      var rowLabelBackground = rowLabelContent.getBackground();
+      const rowLabelBackground = rowLabelContent.getBackground();
       if (rowLabelBackground) {
-        ToolkitUtils.addClassName(rowLabelBackground.getElem(), this._gantt.GetStyleClass(effectType));
+        rowLabelBackground.addClassName(effectStyleClass);
       }
     }
   }
@@ -9804,12 +11691,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {string} effectType The effect type (selected, activeDrop)
    */
   removeEffect(effectType) {
-    ToolkitUtils.removeClassName(this._background.getElem(), this._gantt.GetStyleClass(effectType));
-    var rowLabelContent = this.getRowLabelContent();
+    const effectStyleClass = this._gantt.GetStyleClass(effectType);
+    if (this._background) {
+      // Skip removing effect class if it's not already there.
+      if (!DvtGanttStyleUtils.hasClass(this._background, effectStyleClass)) {
+        return;
+      }
+      this._background.removeClassName(effectStyleClass);
+    }
+    const rowLabelContent = this.getRowLabelContent();
     if (rowLabelContent) {
-      var rowLabelBackground = rowLabelContent.getBackground();
+      const rowLabelBackground = rowLabelContent.getBackground();
       if (rowLabelBackground) {
-        ToolkitUtils.removeClassName(rowLabelBackground.getElem(), this._gantt.GetStyleClass(effectType));
+        rowLabelBackground.removeClassName(effectStyleClass);
       }
     }
   }
@@ -9834,7 +11728,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * Removes itself.
    */
   remove() {
-    var onEnd, self = this;
+    var onEnd,
+      self = this;
 
     onEnd = () => {
       // Remove background, which belongs to databodyBackground container
@@ -9861,8 +11756,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   _removeRowLabel() {
     var rowLabelContent = this.getRowLabelContent(),
-        rowAxis = this._gantt.getRowAxis(),
-        rowLabelDisplayable, onEnd, self = this;
+      rowAxis = this._gantt.getRowAxis(),
+      rowLabelDisplayable,
+      onEnd,
+      self = this;
 
     if (rowLabelContent && rowAxis) {
       rowLabelDisplayable = rowLabelContent.getDisplayable();
@@ -9881,7 +11778,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           rowAxis.removeHorizontalLine(self._rowAxisHorizontalLine);
         };
 
-        this._gantt.getAnimationManager().preAnimateRowLabelRemove(rowLabelContent, this._rowAxisHorizontalLine, onEnd);
+        this._gantt
+          .getAnimationManager()
+          .preAnimateRowLabelRemove(rowLabelContent, this._rowAxisHorizontalLine, onEnd);
       }
     }
   }
@@ -9892,8 +11791,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   getDataContext() {
     return {
-      'rowData': this.getData(true),
-      'component': this._gantt.getOptions()['_widgetConstructor']
+      rowData: this.getData(true),
+      component: this._gantt.getOptions()['_widgetConstructor']
     };
   }
 
@@ -9903,7 +11802,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
   scrollIntoView() {
     var viewportRect = this._gantt.getViewportDimensions();
     var deltaYTopVisible = Math.min(this._rowObj.y - viewportRect.y, 0);
-    var deltaYBottomVisible = Math.max(0, (this._rowObj.y + this._rowObj.height) - (viewportRect.y + viewportRect.h));
+    var deltaYBottomVisible = Math.max(
+      0,
+      this._rowObj.y + this._rowObj.height - (viewportRect.y + viewportRect.h)
+    );
     var deltaY = deltaYTopVisible < 0 ? deltaYTopVisible : deltaYBottomVisible;
     this._gantt.panBy(0, deltaY);
   }
@@ -9915,7 +11817,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
  * @class
  * @constructor
  */
- class DvtGanttDataLayoutManager {
+class DvtGanttDataLayoutManager {
   constructor(gantt) {
     this._gantt = gantt;
     this._ctx = gantt.getCtx();
@@ -9975,8 +11877,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @private
    */
   _getTime(date) {
-    if (date == null || date === '')
-      return null;
+    if (date == null || date === '') return null;
     var time = new Date(date).getTime();
     return isNaN(time) ? null : time;
   }
@@ -10006,7 +11907,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    */
   _isOverlap(taskObj1, taskObj2) {
     // Open interval comparison: if interval 1 ends at the same time interval 2 starts, they are still NOT overlapping.
-    return this._isIntervalOverlap(taskObj1['overallStartTime'], taskObj1['overallEndTime'], taskObj2['overallStartTime'], taskObj2['overallEndTime'], false);
+    return this._isIntervalOverlap(
+      taskObj1['overallStartTime'],
+      taskObj1['overallEndTime'],
+      taskObj2['overallStartTime'],
+      taskObj2['overallEndTime'],
+      false
+    );
   }
 
   /**
@@ -10028,15 +11935,31 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var taskHeight = taskProps['height'] != null ? taskProps['height'] : taskDefaults['height'];
     var baselineHeight = 0;
     var baselineMarginTop = DvtGanttStyleUtils.getBaselineMarginTop(options);
-    if (baselineProps && !(taskObj['baselineStartTime'] == null && taskObj['baselineEndTime'] == null)) {
-      baselineHeight = baselineProps['height'] != null ? baselineProps['height'] : taskDefaults['baseline']['height'];
-      isBaselineMilestone = (taskType === 'milestone') || (taskType === 'auto' && (taskObj['baselineStartTime'] === taskObj['baselineEndTime']));
+    if (
+      baselineProps &&
+      !(taskObj['baselineStartTime'] == null && taskObj['baselineEndTime'] == null)
+    ) {
+      baselineHeight =
+        baselineProps['height'] != null
+          ? baselineProps['height']
+          : taskDefaults['baseline']['height'];
+      isBaselineMilestone =
+        taskType === 'milestone' ||
+        (taskType === 'auto' && taskObj['baselineStartTime'] === taskObj['baselineEndTime']);
       // If app didn't set a height value on the baseline or on the task defaults, then use the default height
-      if (baselineProps['height'] == null && taskDefaults['baseline']['height'] === DvtGanttStyleUtils.getBaselineTaskHeight(options)) {
-        baselineHeight = isBaselineMilestone ? DvtGanttStyleUtils.getActualTaskHeight(options, context) : taskDefaults['baseline']['height'];
+      if (
+        baselineProps['height'] == null &&
+        taskDefaults['baseline']['height'] === DvtGanttStyleUtils.getBaselineTaskHeight(options)
+      ) {
+        baselineHeight = isBaselineMilestone
+          ? DvtGanttStyleUtils.getActualTaskHeight(options, context)
+          : taskDefaults['baseline']['height'];
       }
       // If app didn't set a height value on the task or on the task defaults, then use the default height for when the baseline is present
-      if (taskProps['height'] == null && taskDefaults['height'] === DvtGanttStyleUtils.getStandaloneTaskHeight(options)) {
+      if (
+        taskProps['height'] == null &&
+        taskDefaults['height'] === DvtGanttStyleUtils.getStandaloneTaskHeight(options)
+      ) {
         taskHeight = DvtGanttStyleUtils.getActualTaskHeight(options, context);
       }
     }
@@ -10049,20 +11972,33 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var baselineBarMarginTop = baselineHeight > 0 ? baselineMarginTop : 0;
 
     var heightTaskToptoBaselineBottom = isBaselineMilestone
-                                        ? DvtGanttStyleUtils.getMilestoneBaselineYOffset(options)
-                                        + Math.max(baselineHeight, taskHeight)
-                                        : taskHeight + baselineBarMarginTop + baselineHeight;
+      ? DvtGanttStyleUtils.getMilestoneBaselineYOffset(options) +
+        Math.max(baselineHeight, taskHeight)
+      : taskHeight + baselineBarMarginTop + baselineHeight;
     taskObj['overallHeightNoProgress'] = heightTaskToptoBaselineBottom;
     taskObj['overallHeight'] = heightTaskToptoBaselineBottom;
     taskObj['progressHeight'] = 0;
 
-    var isTaskMilestone = (taskType === 'milestone') || (taskType === 'auto' && (taskObj['startTime'] === taskObj['endTime']) && taskObj['startTime'] != null);
+    var isTaskMilestone =
+      taskType === 'milestone' ||
+      (taskType === 'auto' &&
+        taskObj['startTime'] === taskObj['endTime'] &&
+        taskObj['startTime'] != null);
     if (!isTaskMilestone && progressProps && typeof progressProps['value'] === 'number') {
-      var progressHeight = progressProps['height'] != null ? progressProps['height'] : taskDefaults['progress']['height'];
-      progressHeight = progressHeight === '100%' ? taskHeight : DvtGanttStyleUtils.getSizeInPixels(progressHeight, taskHeight);
+      var progressHeight =
+        progressProps['height'] != null
+          ? progressProps['height']
+          : taskDefaults['progress']['height'];
+      progressHeight =
+        progressHeight === '100%'
+          ? taskHeight
+          : DvtGanttStyleUtils.getSizeInPixels(progressHeight, taskHeight);
       taskObj['progressHeight'] = progressHeight;
       if (taskHeight < progressHeight) {
-        taskObj['overallHeight'] = Math.max(progressHeight, (progressHeight - taskHeight) / 2 + heightTaskToptoBaselineBottom);
+        taskObj['overallHeight'] = Math.max(
+          progressHeight,
+          (progressHeight - taskHeight) / 2 + heightTaskToptoBaselineBottom
+        );
       }
     }
   }
@@ -10097,14 +12033,16 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       var taskDefaults = this._gantt.getOptions()['taskDefaults'];
       var taskProps = taskObj['data'];
       var taskType = taskProps['type'] ? taskProps['type'] : taskDefaults['type'];
-      var isBaselineMilestone = (taskType === 'milestone') || (taskType === 'auto' && (taskObj['baselineStartTime'] === taskObj['baselineEndTime']));
+      var isBaselineMilestone =
+        taskType === 'milestone' ||
+        (taskType === 'auto' && taskObj['baselineStartTime'] === taskObj['baselineEndTime']);
       if (isBaselineMilestone) {
         rowLevelBaselineMilestonesObjs[taskObj['_rowLevel']].push(taskObj);
       }
     }
     for (var j = 0; j < numRowLevels; j++) {
       rowLevelBaselineMilestonesObjs[j].sort((a, b) => {
-        return b['baselineStartTime'] - a['baselineStartTime'] // descending order by time
+        return b['baselineStartTime'] - a['baselineStartTime']; // descending order by time
       });
     }
     for (var i = 0; i < taskObjs.length; i++) {
@@ -10119,9 +12057,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         if (baselineTime < currentTaskObjStartTime) {
           taskObj['prevAdjMilestoneBaselineTaskObj'] = taskObjWithBaseline;
           baselineMilestoneObjs.pop();
-        } else if (baselineTime > currentTaskObjEndTime && taskObj['nextAdjMilestoneBaselineTaskObj'] == null) {
+        } else if (
+          baselineTime > currentTaskObjEndTime &&
+          taskObj['nextAdjMilestoneBaselineTaskObj'] == null
+        ) {
           taskObj['nextAdjMilestoneBaselineTaskObj'] = taskObjWithBaseline;
-        } else if (baselineTime === currentTaskObjStartTime || baselineTime === currentTaskObjEndTime) {
+        } else if (
+          baselineTime === currentTaskObjStartTime ||
+          baselineTime === currentTaskObjEndTime
+        ) {
           baselineMilestoneObjs.pop();
         }
       }
@@ -10150,8 +12094,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       this._clearAdjacency(taskObj);
       var taskData = taskObj['data'];
       var taskOverlapBehavior = taskData['overlap'] ? taskData['overlap']['behavior'] : null;
-      var overlapBehavior = taskOverlapBehavior != null ? taskOverlapBehavior : defaultOverlapBehavior;
-      overlapBehavior = overlapBehavior === 'auto' ? (rowDefaultsHeight == null ? 'stack' : 'stagger') : overlapBehavior;
+      var overlapBehavior =
+        taskOverlapBehavior != null ? taskOverlapBehavior : defaultOverlapBehavior;
+      overlapBehavior =
+        overlapBehavior === 'auto'
+          ? rowDefaultsHeight == null
+            ? 'stack'
+            : 'stagger'
+          : overlapBehavior;
       taskObj['overlapBehavior'] = overlapBehavior;
       var overlapOffset = defaultOverlapOffset; // right now, task cannot override default overlap offset
 
@@ -10209,10 +12159,12 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
             taskObj['_rowLevel'] = previousTaskObj['_rowLevel'];
             rowLevelRecentTaskObjs[previousTaskObj['_rowLevel']] = taskObj;
 
-            taskObj['_staggerDirection'] = previousTaskObj['_staggerDirection'] != null
-                                          ? -previousTaskObj['_staggerDirection']
-                                          : -1;
-            taskObj['y'] = previousTaskObj['y'] - (taskObj['_staggerDirection'] * effectiveOverlapOffset);
+            taskObj['_staggerDirection'] =
+              previousTaskObj['_staggerDirection'] != null
+                ? -previousTaskObj['_staggerDirection']
+                : -1;
+            taskObj['y'] =
+              previousTaskObj['y'] - taskObj['_staggerDirection'] * effectiveOverlapOffset;
           } else {
             rowLevelRecentTaskObjs[rowLevel] = taskObj;
             taskObj['_staggerDirection'] = 1;
@@ -10238,33 +12190,37 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     // In alta only, rowheight = row paddings + OVERALL task height (including baseline)
     // Otherwise, the baseline is not included in row height calculation
     // i.e. rowheight = row paddings + task height excluding baseline
-    var taskHeightProp = this._gantt.getCtx().getThemeBehavior() === 'alta'
-      ? 'overallHeight'
-      : 'height';
+    var taskHeightProp =
+      this._gantt.getCtx().getThemeBehavior() === 'alta' ? 'overallHeight' : 'height';
 
     if (rowDefaultsHeight == null) {
       // Figure out offset based on row level height
       if (overlapOffset == null) {
-        var rowLevelHeights = rowLevelRecentTaskObjs.map( () => {return 0;});
-        taskObjs.forEach( (taskObj) => {
+        var rowLevelHeights = rowLevelRecentTaskObjs.map(() => {
+          return 0;
+        });
+        taskObjs.forEach((taskObj) => {
           if (taskObj[taskHeightProp] > rowLevelHeights[taskObj['_rowLevel']]) {
             rowLevelHeights[taskObj['_rowLevel']] = taskObj[taskHeightProp];
           }
         });
-        var rowLevelCumHeightsWithPadding = rowLevelHeights.map( (rowLevelHeight) => {
-          return rowLevelHeight + rowPaddingTop + rowPaddingBottom;
-        }).reduce( (acc, curr, i) => {
-          acc.push((acc[i - 1] || 0) + curr);
-          return acc;
-        }, []);
-        taskObjs.forEach( (taskObj) => {
-          taskObj['y'] += (rowLevelCumHeightsWithPadding[taskObj['_rowLevel'] - 1] || 0) + rowPaddingTop;
+        var rowLevelCumHeightsWithPadding = rowLevelHeights
+          .map((rowLevelHeight) => {
+            return rowLevelHeight + rowPaddingTop + rowPaddingBottom;
+          })
+          .reduce((acc, curr, i) => {
+            acc.push((acc[i - 1] || 0) + curr);
+            return acc;
+          }, []);
+        taskObjs.forEach((taskObj) => {
+          taskObj['y'] +=
+            (rowLevelCumHeightsWithPadding[taskObj['_rowLevel'] - 1] || 0) + rowPaddingTop;
         });
 
         // TODO: Consider moving this calculation call to when row rendering actually happens to alleviate layout calculation time
         this._trackRowLevelBaselineMilestones(rowObj, rowLevelRecentTaskObjs.length);
       } else {
-        taskObjs.forEach( (taskObj) => {
+        taskObjs.forEach((taskObj) => {
           if (taskObj['_rowLevel'] === 0) {
             taskObj['y'] += rowPaddingTop;
           }
@@ -10272,9 +12228,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       }
     }
 
-    var overlapChainHeights = overlapChains.map( (chain) => {
+    var overlapChainHeights = overlapChains.map((chain) => {
       var chainHeight = 0;
-      chain.forEach( (chainTaskObj) => {
+      chain.forEach((chainTaskObj) => {
         var distanceFromBottomToRowTop = chainTaskObj['y'] + chainTaskObj[taskHeightProp];
         if (distanceFromBottomToRowTop > chainHeight) {
           chainHeight = distanceFromBottomToRowTop;
@@ -10286,42 +12242,45 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     if (rowDefaultsHeight == null) {
       // If no tasks in the row, still show empty row with height as if a single task is there.
       if (taskObjs.length === 0) {
-        rowObj['height'] = DvtGanttStyleUtils.getStandaloneTaskHeight(options) + rowPaddingTop + rowPaddingBottom;
+        rowObj['height'] =
+          DvtGanttStyleUtils.getStandaloneTaskHeight(options) + rowPaddingTop + rowPaddingBottom;
         return;
       }
       // Grow the row height to accommodate everything
-      rowObj['height'] = overlapChainHeights.reduce( (a, b) => { return Math.max(a, b); })
-                        + rowPaddingTop;
+      rowObj['height'] =
+        overlapChainHeights.reduce((a, b) => {
+          return Math.max(a, b);
+        }) + rowPaddingTop;
       // If no overlapping offset specified: Mid align task within its row level
       if (overlapOffset == null) {
-        overlapChains.forEach( (chain, i) => {
-          chain.forEach( (taskObj) => {
+        overlapChains.forEach((chain, i) => {
+          chain.forEach((taskObj) => {
             var rowLevelHeight = rowLevelHeights[taskObj['_rowLevel']];
-            taskObj['y'] += ((rowLevelHeight - taskObj['overallHeight']) / 2) + rowObj['y'];
+            taskObj['y'] += (rowLevelHeight - taskObj['overallHeight']) / 2 + rowObj['y'];
           });
         });
-      } else { // Otherwise align all tasks to top (with offset)
-        overlapChains.forEach( (chain, i) => {
-          chain.forEach( (taskObj) => {
+      } else {
+        // Otherwise align all tasks to top (with offset)
+        overlapChains.forEach((chain, i) => {
+          chain.forEach((taskObj) => {
             taskObj['y'] += rowObj['y'];
           });
         });
       }
-
     } else {
       // Fix the row height and mid align everything
       rowObj['height'] = rowDefaultsHeight - horizontalLineHeightOffset;
-      overlapChains.forEach( (chain, i) => {
+      overlapChains.forEach((chain, i) => {
         var chainHeight = overlapChainHeights[i];
         var minTaskY = Number.MAX_VALUE;
-        chain.forEach( (taskObj) => {
+        chain.forEach((taskObj) => {
           taskObj['y'] += Math.floor((rowObj['height'] - taskObj[taskHeightProp]) / 2);
           if (taskObj['y'] < minTaskY) {
             minTaskY = taskObj['y'];
           }
         });
         var offsetFromRowCenter = Math.floor((rowObj['height'] - chainHeight) / 2) - minTaskY;
-        chain.forEach( (taskObj) => {
+        chain.forEach((taskObj) => {
           if (taskObj['overlapBehavior'] === 'overlay') {
             taskObj['y'] += rowObj['y'];
           } else {
@@ -10342,10 +12301,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     // tasks are stacked if the next task starts exactly when the current task ends
     // and if they're both non-milestones and of the same height and border radius
     var isSameStack = (taskObj, nextTaskObj) => {
-      return (taskObj['endTime'] === nextTaskObj['startTime'])
-          && (taskObj['startTime'] !== taskObj['endTime']) && (nextTaskObj['startTime'] !== nextTaskObj['endTime'])
-          && (taskObj['height'] == nextTaskObj['height']) // '==' for mixed null and undefined equality
-          && (taskObj['data']['borderRadius'] == nextTaskObj['data']['borderRadius']);
+      return (
+        taskObj['endTime'] === nextTaskObj['startTime'] &&
+        taskObj['startTime'] !== taskObj['endTime'] &&
+        nextTaskObj['startTime'] !== nextTaskObj['endTime'] &&
+        taskObj['height'] == nextTaskObj['height'] && // '==' for mixed null and undefined equality
+        taskObj['data']['borderRadius'] == nextTaskObj['data']['borderRadius']
+      );
     };
 
     var taskObjs = rowObj['taskObjs'];
@@ -10369,7 +12331,12 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
 
     // first and last task
     taskObjs[0]['aggregation'] = isSameStack(taskObjs[0], taskObjs[1]) ? 'stackStart' : 'stackSolo';
-    taskObjs[taskObjs.length - 1]['aggregation'] = isSameStack(taskObjs[taskObjs.length - 2], taskObjs[taskObjs.length - 1]) ? 'stackEnd' : 'stackSolo';
+    taskObjs[taskObjs.length - 1]['aggregation'] = isSameStack(
+      taskObjs[taskObjs.length - 2],
+      taskObjs[taskObjs.length - 1]
+    )
+      ? 'stackEnd'
+      : 'stackSolo';
 
     for (var i = 1; i < taskObjs.length - 1; i++) {
       var prevTaskObj = taskObjs[i - 1];
@@ -10407,17 +12374,18 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       var tasks = row['tasks'];
       if (tasks != null) {
         var rowObj = {
-          'id': row['id'] != null ? row['id'] : (tasks.length > 0 ? tasks[0]['id'] : null),
-          'data': row,
-          'index': i,
-          'y': top,
-          'renderState': 'add'
+          id: row['id'] != null ? row['id'] : tasks.length > 0 ? tasks[0]['id'] : null,
+          data: row,
+          index: i,
+          y: top,
+          renderState: 'add'
         };
         // Hierarchical data case
         if (row['_depth'] != null) {
           rowObj['depth'] = row['_depth'];
           rowObj['expanded'] = row['_expanded'];
-          rowObj['parentRowIndex'] = row['_parentFlatIndex'];
+          // child rows are always below its parent row, so at this point it must be that the parent row index < rowObjs.length
+          rowObj['parent'] = row['_parentFlatIndex'] == null ? null : rowObjs[row['_parentFlatIndex']];
           row['_depth'] = undefined;
           row['_expanded'] = undefined;
           row['_parentFlatIndex'] = undefined;
@@ -10428,29 +12396,41 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         for (var j = 0; j < tasks.length; j++) {
           var task = tasks[j];
           var taskObj = {
-            'id': task['id'],
-            'data': task,
-            'startTime': (task['start'] && task['start'] !== '') ? this._getTime(task['start']) : this._getTime(task['end']),
-            'endTime': (task['end'] && task['end'] !== '') ? this._getTime(task['end']) : this._getTime(task['start']),
-            'rowObj': rowObj,
-            'predecessorDepObjs': [],
-            'successorDepObjs': [],
-            'renderState': 'add'
+            id: task['id'],
+            data: task,
+            startTime:
+              task['start'] && task['start'] !== ''
+                ? this._getTime(task['start'])
+                : this._getTime(task['end']),
+            endTime:
+              task['end'] && task['end'] !== ''
+                ? this._getTime(task['end'])
+                : this._getTime(task['start']),
+            rowObj: rowObj,
+            predecessorDepObjs: [],
+            successorDepObjs: [],
+            renderState: 'add'
           };
 
           var overallStartTime = taskObj['startTime'];
           var overallEndTime = taskObj['endTime'];
           var baseline = task['baseline'];
           if (baseline) {
-            var baselineStartTime = (baseline['start'] && baseline['start'] !== '') ? this._getTime(baseline['start']) : this._getTime(baseline['end']);
-            var baselineEndTime = (baseline['end'] && baseline['end'] !== '') ? this._getTime(baseline['end']) : this._getTime(baseline['start']);
+            var baselineStartTime =
+              baseline['start'] && baseline['start'] !== ''
+                ? this._getTime(baseline['start'])
+                : this._getTime(baseline['end']);
+            var baselineEndTime =
+              baseline['end'] && baseline['end'] !== ''
+                ? this._getTime(baseline['end'])
+                : this._getTime(baseline['start']);
             if (!(baselineStartTime == null && baselineEndTime == null)) {
               taskObj['baselineStartTime'] = baselineStartTime;
               taskObj['baselineEndTime'] = baselineEndTime;
-              if ((baselineStartTime < overallStartTime) || overallStartTime == null) {
+              if (baselineStartTime < overallStartTime || overallStartTime == null) {
                 overallStartTime = baselineStartTime;
               }
-              if ((baselineEndTime > overallEndTime) || overallEndTime == null) {
+              if (baselineEndTime > overallEndTime || overallEndTime == null) {
                 overallEndTime = baselineEndTime;
               }
             }
@@ -10458,8 +12438,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           var overtime = task['overtime'];
           if (overtime) {
             // overtime must span within the containing task
-            var overtimeStartTime = (overtime['start'] && taskObj['startTime']) ? Math.max(this._getTime(overtime['start']), taskObj['startTime']) : null;
-            var overtimeEndTime = (overtime['end'] && taskObj['endTime']) ? Math.min(this._getTime(overtime['end']), taskObj['endTime']) : null;
+            var overtimeStartTime =
+              overtime['start'] && taskObj['startTime']
+                ? Math.max(this._getTime(overtime['start']), taskObj['startTime'])
+                : null;
+            var overtimeEndTime =
+              overtime['end'] && taskObj['endTime']
+                ? Math.min(this._getTime(overtime['end']), taskObj['endTime'])
+                : null;
             if (!(overtimeStartTime == null && overtimeEndTime == null)) {
               taskObj['overtimeStartTime'] = overtimeStartTime;
               taskObj['overtimeEndTime'] = overtimeEndTime;
@@ -10471,8 +12457,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           var downtime = task['downtime'];
           if (downtime) {
             // downtime must span within the containing task
-            var downtimeStartTime = (downtime['start'] && taskObj['startTime']) ? Math.max(this._getTime(downtime['start']), taskObj['startTime']) : null;
-            var downtimeEndTime = (downtime['end'] && taskObj['endTime']) ? Math.min(this._getTime(downtime['end']), taskObj['endTime']) : null;
+            var downtimeStartTime =
+              downtime['start'] && taskObj['startTime']
+                ? Math.max(this._getTime(downtime['start']), taskObj['startTime'])
+                : null;
+            var downtimeEndTime =
+              downtime['end'] && taskObj['endTime']
+                ? Math.min(this._getTime(downtime['end']), taskObj['endTime'])
+                : null;
             if (!(downtimeStartTime == null && downtimeEndTime == null)) {
               taskObj['downtimeStartTime'] = downtimeStartTime;
               taskObj['downtimeEndTime'] = downtimeEndTime;
@@ -10524,15 +12516,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       var dependency = dependencies[i];
       var predecessorId = dependency['predecessorTaskId'];
       var successorId = dependency['successorTaskId'];
-      var type = dependency['type'] == null ? DvtGanttDependencyNode.FINISH_START : dependency['type'];
+      var type =
+        dependency['type'] == null ? DvtGanttDependencyNode.FINISH_START : dependency['type'];
 
       var isPredecessorIdValid = predecessorId != null && idTaskObjMap.has(predecessorId);
       var isSuccessorIdValid = successorId != null && idTaskObjMap.has(successorId);
 
       // make sure all the mandatory fields are available and valid
-      if (DvtGanttDependencyNode._isValidType(type) &&
-          isPredecessorIdValid && isSuccessorIdValid &&
-          !Obj.compareValues(this._ctx, predecessorId, successorId)) {
+      if (
+        DvtGanttDependencyNode._isValidType(type) &&
+        isPredecessorIdValid &&
+        isSuccessorIdValid &&
+        !Obj.compareValues(this._ctx, predecessorId, successorId)
+      ) {
         var predecessorTaskObj = idTaskObjMap.get(predecessorId);
         var successorTaskObj = idTaskObjMap.get(successorId);
         var rowObj1 = predecessorTaskObj['rowObj'];
@@ -10555,19 +12551,23 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         if (desc == null) {
           var translations = this._gantt.getOptions().translations;
           var key = translations[type + 'DependencyAriaDesc'];
-          desc = ResourceUtils.format(translations.accessibleDependencyInfo, [key, predecessorId, successorId]);
+          desc = ResourceUtils.format(translations.accessibleDependencyInfo, [
+            key,
+            predecessorId,
+            successorId
+          ]);
         }
 
         var dependencyObj = {
-          'id': dependency['id'],
-          'data': dependency,
-          'index': i,
-          'type': type,
-          'predecessorTaskObj': predecessorTaskObj,
-          'successorTaskObj': successorTaskObj,
-          'rowObjTop': rowObjTop,
-          'rowObjBottom': rowObjBottom,
-          'ariaLabel': desc
+          id: dependency['id'],
+          data: dependency,
+          index: i,
+          type: type,
+          predecessorTaskObj: predecessorTaskObj,
+          successorTaskObj: successorTaskObj,
+          rowObjTop: rowObjTop,
+          rowObjBottom: rowObjBottom,
+          ariaLabel: desc
         };
         predecessorTaskObj.successorDepObjs.push(dependencyObj);
         successorTaskObj.predecessorDepObjs.push(dependencyObj);
@@ -10675,7 +12675,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           var newSubObj = newSubObjs[j];
           var entangledOldSubObj = oldIdObjsMap.get(newSubObj['id']);
           if (entangledOldSubObj) {
-            if (Obj.compareValues(this._ctx, entangledOldSubObj['rowObj']['id'], newObj['id'])) {
+            if (
+              Obj.compareValues(this._ctx, entangledOldSubObj['rowObj']['id'], newObj['id'])
+            ) {
               newSubObj['renderState'] = 'exist';
             } else {
               newSubObj['renderState'] = 'migrate';
@@ -10683,7 +12685,11 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
               // If not animating and task node migrates, explicitly remove from the original row.
               // Normally if the final new row exists, adding the task node to the new row would automatically remove it
               // from the original row. However, the new row may not be in the DOM, so we should explicitly remove it.
-              if (subNode && subNode.getParent() && this._gantt.getAnimationManager().getAnimationMode() === 'none') {
+              if (
+                subNode &&
+                subNode.getParent() &&
+                this._gantt.getAnimationManager().getAnimationMode() === 'none'
+              ) {
                 subNode.getRowNode().removeChild(subNode);
               }
             }
@@ -10706,7 +12712,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {Object=} taskObj task layout object associated with the row known to participate in animation.
    * @private
    */
-  _addAnimationFinalStateRowObjs (rowObj, taskObj) {
+  _addAnimationFinalStateRowObjs(rowObj, taskObj) {
     // Keys: rowObjs, Values: Set( specific taskObjs participating in animation if known )
     this._animationFinalStateRowObjs = this._animationFinalStateRowObjs || new Map();
     if (!this._animationFinalStateRowObjs.has(rowObj)) {
@@ -10746,7 +12752,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {*} newTaskIdObjsMap
    * @private
    */
-  _prepareAnimationDOM(newRowObjs, oldRowIdObjsMap, newRowIdObjsMap, oldTaskIdObjsMap, newTaskIdObjsMap) {
+  _prepareAnimationDOM(
+    newRowObjs,
+    oldRowIdObjsMap,
+    newRowIdObjsMap,
+    oldTaskIdObjsMap,
+    newTaskIdObjsMap
+  ) {
     var animationManager = this._gantt.getAnimationManager();
     var animationMode = animationManager.getAnimationMode();
 
@@ -10760,7 +12772,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var initialContentHeight = this._contentHeight;
     var newLastRowObj = newRowObjs[newRowObjs.length - 1];
     this._contentHeight = newLastRowObj['y'] + newLastRowObj['height'];
-    var finalTranslateY = this._gantt.scrollPositionToTranslateY(this._gantt.getOptions()['scrollPosition']);
+    var finalTranslateY = this._gantt.scrollPositionToTranslateY(
+      this._gantt.getOptions()['scrollPosition']
+    );
     var viewportYBounds = this._gantt.getViewportYBounds(finalTranslateY);
     var yMin = viewportYBounds['yMin'];
     var yMax = viewportYBounds['yMax'];
@@ -10893,8 +12907,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var ganttRenderState = this._gantt.getRenderState();
     if (ganttRenderState == null) {
       var newTaskIdObjsMap = this._calcRowsLayout(options);
-    } else { // For now, renderState is only non-null for expand/collapse case
-      this._expandCollapseRowObject(options, ganttRenderState['state'], ganttRenderState['payload']);
+    } else {
+      // For now, renderState is only non-null for expand/collapse case
+      this._expandCollapseRowObject(
+        options,
+        ganttRenderState['state'],
+        ganttRenderState['payload']
+      );
     }
 
     if (this._rowObjs.length > 0) {
@@ -10957,7 +12976,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
 
       // Ensure DOM is complete enough to be able to show progression of initial to final states.
       if (this._gantt.getAnimationManager().getAnimationMode() !== 'none') {
-        this._prepareAnimationDOM(newRowObjs, oldRowIdObjsMap, newRowIdObjsMap, oldTaskIdObjsMap, newTaskIdObjsMap);
+        this._prepareAnimationDOM(
+          newRowObjs,
+          oldRowIdObjsMap,
+          newRowIdObjsMap,
+          oldTaskIdObjsMap,
+          newTaskIdObjsMap
+        );
       }
 
       // Associate nodes with the new layout objects. This is done after old nodes rendering in the animation case above
@@ -11072,18 +13097,31 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     row['_expanded'] = rowObj['expanded'];
     applyRenderState(this._rowObjs, 'exist', 0, this._rowObjs.length);
     if (type === 'expand') {
-      var flattenedChildrenRows = this._flattenRows(rowChildren, expandedKeySet, rowObj['index'] + 1, rowObj['depth'] + 1);
+      var flattenedChildrenRows = this._flattenRows(
+        rowChildren,
+        expandedKeySet,
+        0,
+        rowObj['depth'] + 1
+      );
       var flattenedChildrenRowObjs = this._generateRowObjs(flattenedChildrenRows);
+      // Any children rows with null parents should point to the current rowObj that triggered the collapse:
+      flattenedChildrenRowObjs.forEach(r => r.parent = r.parent || rowObj);
       applyRenderState(flattenedChildrenRowObjs, 'add', 0, flattenedChildrenRowObjs.length);
       if (isAnimationOn) {
         addShiftedRowsToFinalState(this._rowObjs, index, oldViewportHeight);
       }
-      this._rowObjs = this._rowObjs.slice(0, index + 1).concat(flattenedChildrenRowObjs, this._rowObjs.slice(index + 1, this._rowObjs.length));
+      this._rowObjs = this._rowObjs
+        .slice(0, index + 1)
+        .concat(flattenedChildrenRowObjs, this._rowObjs.slice(index + 1, this._rowObjs.length));
     } else {
       var flattenedChildrenRowsLength = this._calcFlattenedRowsLength(rowChildren, expandedKeySet);
       applyRenderState(this._rowObjs, 'delete', index + 1, index + 1 + flattenedChildrenRowsLength);
       if (isAnimationOn) {
-        addShiftedRowsToFinalState(this._rowObjs, index + 1 + flattenedChildrenRowsLength, oldViewportHeight);
+        addShiftedRowsToFinalState(
+          this._rowObjs,
+          index + 1 + flattenedChildrenRowsLength,
+          oldViewportHeight
+        );
       }
       var removedChildren = this._rowObjs.splice(index + 1, flattenedChildrenRowsLength);
       if (isAnimationOn) {
@@ -11115,7 +13153,9 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       // rows in final viewport should also be added to final state
       var lastRowObj = this._rowObjs[this._rowObjs.length - 1];
       this._contentHeight = lastRowObj['y'] + lastRowObj['height'];
-      var finalTranslateY = this._gantt.scrollPositionToTranslateY(this._gantt.getOptions()['scrollPosition']);
+      var finalTranslateY = this._gantt.scrollPositionToTranslateY(
+        this._gantt.getOptions()['scrollPosition']
+      );
       var finalViewportYBounds = this._gantt.getViewportYBounds(finalTranslateY);
       var finalYMin = finalViewportYBounds['yMin'];
       var finalYMax = finalViewportYBounds['yMax'];
@@ -11157,7 +13197,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         if (rowChildren) {
           if (expandedKeySet.has(row['id'])) {
             row['_expanded'] = true;
-            return flattenedRows.concat(row, flattenRows(rowChildren, expandedKeySet, row, depth + 1));
+            return flattenedRows.concat(
+              row,
+              flattenRows(rowChildren, expandedKeySet, row, depth + 1)
+            );
           }
           row['_expanded'] = false;
         } else {
@@ -11201,7 +13244,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @return {boolean}
    */
   isRoot(rowObj) {
-    return rowObj['parentRowIndex'] == null;
+    return rowObj['parent'] == null;
   }
 
   /**
@@ -11210,8 +13253,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @return {boolean}
    */
   isHiddenCollapsed(rowObj) {
-    for (var i = 0; i < this._rowObjs; i++) {
-      if (this._rowObjs[i] === rowObj) {
+    for (var i = 0; i < this._rowObjs.length; i++) {
+      if (Obj.compareValues(this._ctx, this._rowObjs[i].id, rowObj.id)) {
         return false;
       }
     }
@@ -11224,11 +13267,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @return {Object}
    */
   getParentRowObj(rowObj) {
-    var parentRowIndex = rowObj['parentRowIndex'];
-    if (parentRowIndex != null) {
-      return this._rowObjs[parentRowIndex];
-    }
-    return null;
+    return rowObj['parent'];
   }
 
   /**
@@ -11275,8 +13314,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {boolean=} lazy Whether to render only if it doesn't exist in the DOM already. Default false.
    * @private
    */
-  _renderTaskObj (taskObj, lazy) {
-   var rowObj = taskObj.rowObj;
+  _renderTaskObj(taskObj, lazy) {
+    var rowObj = taskObj.rowObj;
     var rowNode = rowObj.node;
     var taskNode = taskObj.node;
 
@@ -11285,9 +13324,17 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     }
 
     // Add the task to the row
-    this._renderRowObj(rowObj,
-      { rowObj: rowObj, tasksAdd: new Set([ taskObj ]), tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: !lazy },
-      rowNode && rowNode.getParent() ? 'update' : 'add');
+    this._renderRowObj(
+      rowObj,
+      {
+        rowObj: rowObj,
+        tasksAdd: new Set([taskObj]),
+        tasksUpdate: new Set(),
+        tasksDelete: new Set(),
+        updateRender: !lazy
+      },
+      rowNode && rowNode.getParent() ? 'update' : 'add'
+    );
   }
 
   /**
@@ -11298,7 +13345,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @private
    */
   _renderDependencyObj(dependencyObj, bLazyTaskRender) {
-   var dependenciesContainer = this._gantt.getDependenciesContainer();
+    var dependenciesContainer = this._gantt.getDependenciesContainer();
     var dependencyNode = dependencyObj['node'];
     if (dependencyNode && dependencyNode.getParent()) {
       return false;
@@ -11319,10 +13366,16 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       // because ensureInDOM doesn't skip rendering for animation case
       var predecessorRowObj = predecessorObj.rowObj;
       var successorRowObj = successorObj.rowObj;
-      if (!this._animationFinalStateRowObjs.has(predecessorRowObj) || !this._animationFinalStateRowObjs.get(predecessorRowObj).has(predecessorObj)) {
+      if (
+        !this._animationFinalStateRowObjs.has(predecessorRowObj) ||
+        !this._animationFinalStateRowObjs.get(predecessorRowObj).has(predecessorObj)
+      ) {
         this.ensureInDOM(predecessorObj, 'task', bLazyTaskRender);
       }
-      if (!this._animationFinalStateRowObjs.has(successorRowObj) || !this._animationFinalStateRowObjs.get(successorRowObj).has(successorObj)) {
+      if (
+        !this._animationFinalStateRowObjs.has(successorRowObj) ||
+        !this._animationFinalStateRowObjs.get(successorRowObj).has(successorObj)
+      ) {
         this.ensureInDOM(successorObj, 'task', bLazyTaskRender);
       }
     } else {
@@ -11364,7 +13417,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         // Render the row just enough to include the label
         this._renderRowObj(
           obj,
-          { rowObj: obj, tasksAdd: new Set(), tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: false },
+          {
+            rowObj: obj,
+            tasksAdd: new Set(),
+            tasksUpdate: new Set(),
+            tasksDelete: new Set(),
+            updateRender: false
+          },
           'add'
         );
         return;
@@ -11386,25 +13445,29 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @private
    */
   _binarySearchLeftMost(array, target, approximateMode, property, subProperty) {
-    if (array.length === 0)
-      return 0;
+    if (array.length === 0) return 0;
 
     var L = 0;
     var R = array.length;
     while (L < R) {
       var m = Math.floor((L + R) / 2);
-      var value = property ? (subProperty ? array[m][property][subProperty] : array[m][property]) : array[m];
-      if (value < target)
-        L = m + 1;
-      else
-        R = m;
+      var value = property
+        ? subProperty
+          ? array[m][property][subProperty]
+          : array[m][property]
+        : array[m];
+      if (value < target) L = m + 1;
+      else R = m;
     }
     // If target is not in the array, then L at this point is the rank of the target in the array,
     // i.e. the number of elements in the array that are less than the target.
     if (L < array.length) {
-      value = property ? (subProperty ? array[L][property][subProperty] : array[L][property]) : array[L];
-      if (value === target || approximateMode === 'successor')
-        return L;
+      value = property
+        ? subProperty
+          ? array[L][property][subProperty]
+          : array[L][property]
+        : array[L];
+      if (value === target || approximateMode === 'successor') return L;
     }
     // L - 1 would give the index of the rightmost element less than the target (predecessor)
     return L > 0 ? L - 1 : 0;
@@ -11431,7 +13494,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         break;
       }
     }
-    return {'minRowInd': minRowInd, 'maxRowInd': maxRowInd};
+    return { minRowInd: minRowInd, maxRowInd: maxRowInd };
   }
 
   /**
@@ -11444,12 +13507,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @return {Array} An array of taskObjs
    */
   findTaskObjsRange(rowObj, startTime, startInclusive, endTime, endInclusive) {
-   var relevantTaskObjs = [];
+    var relevantTaskObjs = [];
     var taskObjs = rowObj.taskObjs;
 
     for (var i = 0; i < taskObjs.length; i++) {
       var taskObj = taskObjs[i];
-      if (this._isIntervalOverlap(taskObj.overallStartTime, taskObj.overallEndTime, startTime, endTime)) {
+      if (
+        this._isIntervalOverlap(
+          taskObj.overallStartTime,
+          taskObj.overallEndTime,
+          startTime,
+          endTime
+        )
+      ) {
         if (startInclusive && endInclusive) {
           relevantTaskObjs.push(taskObj);
         } else if (!startInclusive && !endInclusive) {
@@ -11477,7 +13547,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {number} endTime The range end time
    * @return {Array} An array of taskObjs
    */
-  findBufferTaskObjsRange(rowObj, startTime, endTime) {   // Buffer tasks ("|" delineates the viewport boundaries, [] are tasks in the viewport, [B] are buffer tasks):
+  findBufferTaskObjsRange(rowObj, startTime, endTime) {
+    // Buffer tasks ("|" delineates the viewport boundaries, [] are tasks in the viewport, [B] are buffer tasks):
     // ... [ B ]   |   [  ]     [  ] ... [  ]   |    [ B ] ...
     // ... [ B ] [ |  ]  [  ]  [  ] ... [  ]    |   [ B ] ...
     // ... [ B ]   |  [  ]     [  ] ... [       |  ]    [ B ] ...
@@ -11497,20 +13568,31 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       var nextAdjacentTaskObj = taskObj.nextAdjacentTaskObj;
 
       // Only task in row level, and out of viewport
-      var isLoner = (!previousAdjacentTaskObj && !nextAdjacentTaskObj
-        && !this._isIntervalOverlap(taskObj.overallStartTime, taskObj.overallEndTime, startTime, endTime));
+      var isLoner =
+        !previousAdjacentTaskObj &&
+        !nextAdjacentTaskObj &&
+        !this._isIntervalOverlap(
+          taskObj.overallStartTime,
+          taskObj.overallEndTime,
+          startTime,
+          endTime
+        );
 
       // Start buffer: task ends before viewport start
       // AND (there's no next task
       // OR if the next task ends after viewport start (even if next task is not in viewport))
-      var isStartBuffer = (taskObj.overallEndTime < startTime
-        && (!nextAdjacentTaskObj || (nextAdjacentTaskObj && nextAdjacentTaskObj.overallEndTime >= startTime)));
+      var isStartBuffer =
+        taskObj.overallEndTime < startTime &&
+        (!nextAdjacentTaskObj ||
+          (nextAdjacentTaskObj && nextAdjacentTaskObj.overallEndTime >= startTime));
 
       // End buffer: task starts after viewport end,
       // AND (there's no previous task
       // OR previous task starts before viewport end (even if previous task is not in viewport))
-      var isEndBuffer = (taskObj.overallStartTime > endTime
-        && (!previousAdjacentTaskObj || (previousAdjacentTaskObj && previousAdjacentTaskObj.overallStartTime <= endTime)));
+      var isEndBuffer =
+        taskObj.overallStartTime > endTime &&
+        (!previousAdjacentTaskObj ||
+          (previousAdjacentTaskObj && previousAdjacentTaskObj.overallStartTime <= endTime));
 
       if (isLoner || isStartBuffer || isEndBuffer) {
         bufferTaskObjs.push(taskObj);
@@ -11534,14 +13616,18 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     var ganttEndTime = this._gantt.getEndTime();
     var ganttContentLength = this._gantt.getContentLength();
     // In RTL, the bbox right is the start; in LTR the bbox left is the start
-    var bboxStartTime = TimeAxisUtils.getPositionDate(ganttStartTime,
-                                                      ganttEndTime,
-                                                      isRTL ? ganttContentLength - (bbox.x + bbox.w): bbox.x,
-                                                      ganttContentLength);
-    var bboxEndTime = TimeAxisUtils.getPositionDate(ganttStartTime,
-                                                    ganttEndTime,
-                                                    isRTL ? ganttContentLength - bbox.x : (bbox.x + bbox.w),
-                                                    ganttContentLength);
+    var bboxStartTime = TimeAxisUtils.getPositionDate(
+      ganttStartTime,
+      ganttEndTime,
+      isRTL ? ganttContentLength - (bbox.x + bbox.w) : bbox.x,
+      ganttContentLength
+    );
+    var bboxEndTime = TimeAxisUtils.getPositionDate(
+      ganttStartTime,
+      ganttEndTime,
+      isRTL ? ganttContentLength - bbox.x : bbox.x + bbox.w,
+      ganttContentLength
+    );
 
     var relevantRowObjs = [];
     var relevantTaskObjs = [];
@@ -11552,14 +13638,26 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       var taskObjs = rowObj['taskObjs'];
       for (var j = 0; j < taskObjs.length; j++) {
         var taskObj = taskObjs[j];
-        if (this._isIntervalOverlap(taskObj['overallStartTime'], taskObj['overallEndTime'], bboxStartTime, bboxEndTime)
-            && this._isIntervalOverlap(taskObj['y'], taskObj['y'] + taskObj['height'], bbox.y, bbox.y + bbox.h)) {
+        if (
+          this._isIntervalOverlap(
+            taskObj['overallStartTime'],
+            taskObj['overallEndTime'],
+            bboxStartTime,
+            bboxEndTime
+          ) &&
+          this._isIntervalOverlap(
+            taskObj['y'],
+            taskObj['y'] + taskObj['height'],
+            bbox.y,
+            bbox.y + bbox.h
+          )
+        ) {
           relevantTaskObjs.push(taskObjs[j]);
         }
       }
     }
 
-    return { 'rowObjs': relevantRowObjs, 'taskObjs': relevantTaskObjs };
+    return { rowObjs: relevantRowObjs, taskObjs: relevantTaskObjs };
   }
 
   /**
@@ -11572,15 +13670,20 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @returns {Object} { taskObjs: Array(taskObjs), dependencyObjs: Set(depObjs) }
    * @private
    */
-  _getSelectionDependencies (action, targetTask) {
+  _getSelectionDependencies(action, targetTask) {
     var idTaskObjMap = this._createIdObjMap(this._rowObjs, 'taskObjs');
     var taskObjsSelected;
     if (action === DvtGanttDataLayoutManager.VPC_REFRESH) {
       // If due to (re)-render, selectionHandler.getSelection() is not up to date at this point
       var selection = this._gantt.getOptions()['selection'];
-      taskObjsSelected = selection.map(id => idTaskObjMap.get(id)).filter(taskObj => taskObj !== undefined);
+      taskObjsSelected = selection
+        .map((id) => idTaskObjMap.get(id))
+        .filter((taskObj) => taskObj !== undefined);
     } else {
-      taskObjsSelected = this._gantt.getSelectionHandler().getSelection().map(taskNode => taskNode.getLayoutObject());
+      taskObjsSelected = this._gantt
+        .getSelectionHandler()
+        .getSelection()
+        .map((taskNode) => taskNode.getLayoutObject());
     }
 
     if (targetTask) {
@@ -11589,7 +13692,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       if (targetTask.isSelected) {
         taskObjsSelected.push(targetTask.taskObj);
       } else {
-        taskObjsSelected = taskObjsSelected.filter(t => t !== targetTask.taskObj);
+        taskObjsSelected = taskObjsSelected.filter((t) => t !== targetTask.taskObj);
       }
     }
 
@@ -11600,24 +13703,30 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       visitedTaskObjs.add(taskObj);
       var taskObjNeighbors;
       if (direction === 'up') {
-        taskObjNeighbors = taskObj.predecessorDepObjs.map(d => d.predecessorTaskObj);
-        taskObj.predecessorDepObjs.forEach(d => visitedDependencyObjs.add(d));
+        taskObjNeighbors = taskObj.predecessorDepObjs.map((d) => d.predecessorTaskObj);
+        taskObj.predecessorDepObjs.forEach((d) => visitedDependencyObjs.add(d));
       } else {
-        taskObjNeighbors = taskObj.successorDepObjs.map(d => d.successorTaskObj);
-        taskObj.successorDepObjs.forEach(d => visitedDependencyObjs.add(d));
+        taskObjNeighbors = taskObj.successorDepObjs.map((d) => d.successorTaskObj);
+        taskObj.successorDepObjs.forEach((d) => visitedDependencyObjs.add(d));
       }
-      taskObjNeighbors.forEach(t => traverse(t, direction, visitedTaskObjs, visitedDependencyObjs));
+      taskObjNeighbors.forEach((t) =>
+        traverse(t, direction, visitedTaskObjs, visitedDependencyObjs)
+      );
     };
 
     // Start with each selected task and traverse its dependencies upstream and downstream
     var visitedTaskObjs = new Set();
     var visitedDependencyObjs = new Set();
-    taskObjsSelected.forEach(taskObj => traverse(taskObj, 'up', visitedTaskObjs, visitedDependencyObjs));
+    taskObjsSelected.forEach((taskObj) =>
+      traverse(taskObj, 'up', visitedTaskObjs, visitedDependencyObjs)
+    );
     // New set for tracking visited downstream tasks
     var visitedDownstreamTaskObjs = new Set();
-    taskObjsSelected.forEach(taskObj => traverse(taskObj, 'down', visitedDownstreamTaskObjs, visitedDependencyObjs));
+    taskObjsSelected.forEach((taskObj) =>
+      traverse(taskObj, 'down', visitedDownstreamTaskObjs, visitedDependencyObjs)
+    );
     // merge upstream and downstream tasks objs
-    visitedDownstreamTaskObjs.forEach(t => visitedTaskObjs.add(t));
+    visitedDownstreamTaskObjs.forEach((t) => visitedTaskObjs.add(t));
 
     return { taskObjs: Array.from(visitedTaskObjs), dependencyObjs: visitedDependencyObjs };
   }
@@ -11627,6 +13736,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {Array} taskObjs The task layout objects associated with the tasks to be highlighted
    */
   highlightTasks(taskObjs) {
+    if (this._gantt.getEventManager().isDnDDragging()) {
+      return;
+    }
+
     var databody = this._gantt.getDatabody();
     if (!databody) {
       return;
@@ -11640,14 +13753,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
     }
 
     // un-highlight previous set
-    this._prevHighlightedTaskObjs.forEach(taskObj => {
+    this._prevHighlightedTaskObjs.forEach((taskObj) => {
       if (taskObj.node) {
         taskObj.node.unhighlight();
       }
     });
 
     // highlight current set
-    taskObjs.forEach(taskObj => {
+    taskObjs.forEach((taskObj) => {
       if (taskObj.node) {
         taskObj.node.highlight();
       }
@@ -11663,8 +13776,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {Object=} targetTask The task that got selected (or de-selected) by the user that triggered this call (optional).
    *     This should be of the shape { taskObj: taskObj, isSelected: boolean }
    */
-  renderViewportDependencyLines (viewport, action, targetTask) {
-   var dependenciesContainer = this._gantt.getDependenciesContainer();
+  renderViewportDependencyLines(viewport, action, targetTask) {
+    var dependenciesContainer = this._gantt.getDependenciesContainer();
     if (dependenciesContainer) {
       dependenciesContainer.removeChildren();
     }
@@ -11715,12 +13828,19 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
         return this._isIntervalOverlap(
           Math.min(t1, t2),
           Math.max(t1, t2),
-          viewport.viewStartTime, viewport.viewEndTime
-        )
+          viewport.viewStartTime,
+          viewport.viewEndTime
+        );
       };
 
       // Find first dependency from the top with bottom row below upper viewport bound
-      var referenceDependencyInd = this._binarySearchLeftMost(this._dependencyObjs, viewport.minRowInd, 'successor', 'rowObjBottom', 'index');
+      var referenceDependencyInd = this._binarySearchLeftMost(
+        this._dependencyObjs,
+        viewport.minRowInd,
+        'successor',
+        'rowObjBottom',
+        'index'
+      );
       var referenceDependencyObj = this._dependencyObjs[referenceDependencyInd];
       var referencePrevTopDependencyObj = referenceDependencyObj['prevTopDependencyObj'];
 
@@ -11728,13 +13848,21 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       // In refresh case, also lazy render,
       // so that custom content is only regenerated if they're not there already.
       // update render for all other actions.
-      var bLazyTaskRender = action === DvtGanttDataLayoutManager.VPC_TRANSLATE || action === DvtGanttDataLayoutManager.VPC_REFRESH;
+      var bLazyTaskRender =
+        action === DvtGanttDataLayoutManager.VPC_TRANSLATE ||
+        action === DvtGanttDataLayoutManager.VPC_REFRESH;
 
       // All subsequent dependencies with top row below the reference dep's top row but above the lower viewport bound must be visible.
       // Any dependencies with top row below the lower viewport bound are definitely not visible and so not considered.
       // Also skip rendering any lines that don't cross the viewport horizontally.
-      while (referenceDependencyObj && referenceDependencyObj['rowObjTop']['index'] <= viewport.maxRowInd) {
-        if (dependencyObjs.has(referenceDependencyObj) && isOverlapHorizontalViewport(referenceDependencyObj, viewport)) {
+      while (
+        referenceDependencyObj &&
+        referenceDependencyObj['rowObjTop']['index'] <= viewport.maxRowInd
+      ) {
+        if (
+          dependencyObjs.has(referenceDependencyObj) &&
+          isOverlapHorizontalViewport(referenceDependencyObj, viewport)
+        ) {
           this._renderDependencyObj(referenceDependencyObj, bLazyTaskRender);
         }
         referenceDependencyObj = referenceDependencyObj['nextTopDependencyObj'];
@@ -11743,7 +13871,11 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       // Iterate up from the reference dependency to find any lines we missed
       while (referencePrevTopDependencyObj) {
         var rowBottomInd = referencePrevTopDependencyObj['rowObjBottom']['index'];
-        if (rowBottomInd >= viewport.minRowInd && dependencyObjs.has(referencePrevTopDependencyObj) && isOverlapHorizontalViewport(referencePrevTopDependencyObj, viewport)) {
+        if (
+          rowBottomInd >= viewport.minRowInd &&
+          dependencyObjs.has(referencePrevTopDependencyObj) &&
+          isOverlapHorizontalViewport(referencePrevTopDependencyObj, viewport)
+        ) {
           this._renderDependencyObj(referencePrevTopDependencyObj, bLazyTaskRender);
         }
         referencePrevTopDependencyObj = referencePrevTopDependencyObj['prevTopDependencyObj'];
@@ -11756,10 +13888,10 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {Object} rowObj Row layout object.
    * @private
    */
-  _detachRowObjNode (rowObj) {
-   var rowNode = rowObj.node;
+  _detachRowObjNode(rowObj) {
+    var rowNode = rowObj.node;
     if (rowNode) {
-      rowObj.taskObjs.forEach( (taskObj) => {
+      rowObj.taskObjs.forEach((taskObj) => {
         var taskNode = taskObj.node;
         if (taskNode) {
           taskNode.remove();
@@ -11775,8 +13907,8 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {string} action The action that triggered the viewport change. One of the DvtGanttDataLayoutManager.VPC_X strings.
    * @private
    */
-  _prepareViewport (viewport, action) {
-   var databody = this._gantt.getDatabody();
+  _prepareViewport(viewport, action) {
+    var databody = this._gantt.getDatabody();
     if (action === DvtGanttDataLayoutManager.VPC_REFRESH) {
       // Clear previous viewport
       // Note that we have to perform diffing for all other actions because:
@@ -11791,8 +13923,14 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       this._gantt.getRowReferenceObjectsContainer().removeChildren();
     }
     var rowAxis = this._gantt.getRowAxis();
-    if (this._gantt.isRowAxisEnabled() && rowAxis
-        && !(action === DvtGanttDataLayoutManager.VPC_TRANSLATE || action === DvtGanttDataLayoutManager.VPC_SCALE)) {
+    if (
+      this._gantt.isRowAxisEnabled() &&
+      rowAxis &&
+      !(
+        action === DvtGanttDataLayoutManager.VPC_TRANSLATE ||
+        action === DvtGanttDataLayoutManager.VPC_SCALE
+      )
+    ) {
       // Don't clear row axis when: Panning/scrolling/zooming cases; we rely on row diffing later.
       // Clear row axis when: Refresh/Animation. In animation case, labels are added back later with care.
       rowAxis.clear();
@@ -11808,7 +13946,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    *    where updateRender signifies whether the tasks in tasksUpdate should be fully re-rendered or not.
    * @private
    */
-  _computeViewportRenderOperations (viewport, action) {
+  _computeViewportRenderOperations(viewport, action) {
     var rowsDelete = [];
     var rowsAdd = [];
     var rowsUpdate = [];
@@ -11816,37 +13954,69 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       // Viewport is empty; just add the rows and tasks for the current viewport
       for (var i = viewport.minRowInd; i <= viewport.maxRowInd; i++) {
         var rowObj = this._rowObjs[i];
-        var viewportTaskObjs = this.findTaskObjsRange(rowObj, viewport.viewStartTime, true, viewport.viewEndTime, true);
-        var bufferTaskObjs = this.findBufferTaskObjsRange(rowObj, viewport.viewStartTime, viewport.viewEndTime);
-        bufferTaskObjs.forEach( (taskObj) => {
+        var viewportTaskObjs = this.findTaskObjsRange(
+          rowObj,
+          viewport.viewStartTime,
+          true,
+          viewport.viewEndTime,
+          true
+        );
+        var bufferTaskObjs = this.findBufferTaskObjsRange(
+          rowObj,
+          viewport.viewStartTime,
+          viewport.viewEndTime
+        );
+        bufferTaskObjs.forEach((taskObj) => {
           viewportTaskObjs.push(taskObj);
         });
-        rowsAdd.push({ rowObj: rowObj, tasksAdd: new Set(viewportTaskObjs), tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: true });
+        rowsAdd.push({
+          rowObj: rowObj,
+          tasksAdd: new Set(viewportTaskObjs),
+          tasksUpdate: new Set(),
+          tasksDelete: new Set(),
+          updateRender: true
+        });
       }
     } else if (action === DvtGanttDataLayoutManager.VPC_ANIMATE) {
       // Don't delete anything from the old viewport; those elements are initial states
       // Render the curated particpating rows (which may include more than what's in the viewport)
-      this._animationFinalStateRowObjs.forEach( (taskObjsSet, rowObj) => {
+      this._animationFinalStateRowObjs.forEach((taskObjsSet, rowObj) => {
         var tasksAdd = new Set();
-        var viewportTaskObjs = this.findTaskObjsRange(rowObj, viewport.viewStartTime, true, viewport.viewEndTime, true);
-        var bufferTaskObjs = this.findBufferTaskObjsRange(rowObj, viewport.viewStartTime, viewport.viewEndTime);
-        viewportTaskObjs.forEach( (taskObj) => {
+        var viewportTaskObjs = this.findTaskObjsRange(
+          rowObj,
+          viewport.viewStartTime,
+          true,
+          viewport.viewEndTime,
+          true
+        );
+        var bufferTaskObjs = this.findBufferTaskObjsRange(
+          rowObj,
+          viewport.viewStartTime,
+          viewport.viewEndTime
+        );
+        viewportTaskObjs.forEach((taskObj) => {
           if (!taskObjsSet.has(taskObj)) {
             tasksAdd.add(taskObj);
           }
         });
-        bufferTaskObjs.forEach( (taskObj) => {
+        bufferTaskObjs.forEach((taskObj) => {
           if (!taskObjsSet.has(taskObj)) {
             tasksAdd.add(taskObj);
           }
         });
-        taskObjsSet.forEach( (taskObj) => {
+        taskObjsSet.forEach((taskObj) => {
           tasksAdd.add(taskObj);
         });
         // update this._animationFinalStateRowObjs tasks set for proper dependency rendering in renderViewportDependencyLines -> _renderDependencyObj
         this._animationFinalStateRowObjs.set(rowObj, tasksAdd);
 
-        rowsAdd.push({ rowObj: rowObj, tasksAdd: tasksAdd, tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: true });
+        rowsAdd.push({
+          rowObj: rowObj,
+          tasksAdd: tasksAdd,
+          tasksUpdate: new Set(),
+          tasksDelete: new Set(),
+          updateRender: true
+        });
       }, this);
       // Also, for old rows with row labels, restore them to DOM to show initial state (row axis DOM is cleared at this point)
       var rowAxis = this._gantt.getRowAxis();
@@ -11869,49 +14039,105 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       // someone tries to drag something for large distances. Subsequent zoom and vertical scrolling will reset the DOM,
       // and as in the typical usecase when the drop triggers a data change rerender.
       var eventManager = this._gantt.getEventManager();
-      var bMobileDnDDragging = TimeAxisUtils.supportsTouch() && eventManager && eventManager.isDnDDragging();
+      var bMobileDnDDragging =
+        TimeAxisUtils.supportsTouch() && eventManager && eventManager.isDnDDragging();
 
       // Any previous rows above the current viewport should be removed
-      for (var i = this._prevViewport.minRowInd; i < Math.min(viewport.minRowInd, this._prevViewport.maxRowInd); i++) {
+      for (
+        var i = this._prevViewport.minRowInd;
+        i < Math.min(viewport.minRowInd, this._prevViewport.maxRowInd);
+        i++
+      ) {
         rowsDelete.push(this._rowObjs[i]);
       }
 
       // Any previous rows below the current viewport should be removed
-      for (var i = Math.max(viewport.maxRowInd + 1, this._prevViewport.minRowInd); i <= this._prevViewport.maxRowInd; i++) {
+      for (
+        var i = Math.max(viewport.maxRowInd + 1, this._prevViewport.minRowInd);
+        i <= this._prevViewport.maxRowInd;
+        i++
+      ) {
         rowsDelete.push(this._rowObjs[i]);
       }
 
       // Any current rows above the previous viewport should be added
-      for (var i = viewport.minRowInd; i < Math.min(this._prevViewport.minRowInd, viewport.maxRowInd); i++) {
+      for (
+        var i = viewport.minRowInd;
+        i < Math.min(this._prevViewport.minRowInd, viewport.maxRowInd);
+        i++
+      ) {
         var rowObj = this._rowObjs[i];
-        var viewportTaskObjs = this.findTaskObjsRange(rowObj, viewport.viewStartTime, true, viewport.viewEndTime, true);
-        var bufferTaskObjs = this.findBufferTaskObjsRange(rowObj, viewport.viewStartTime, viewport.viewEndTime);
-        bufferTaskObjs.forEach( (taskObj) => {
+        var viewportTaskObjs = this.findTaskObjsRange(
+          rowObj,
+          viewport.viewStartTime,
+          true,
+          viewport.viewEndTime,
+          true
+        );
+        var bufferTaskObjs = this.findBufferTaskObjsRange(
+          rowObj,
+          viewport.viewStartTime,
+          viewport.viewEndTime
+        );
+        bufferTaskObjs.forEach((taskObj) => {
           viewportTaskObjs.push(taskObj);
         });
-        rowsAdd.push({ rowObj: rowObj, tasksAdd: new Set(viewportTaskObjs), tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: true });
+        rowsAdd.push({
+          rowObj: rowObj,
+          tasksAdd: new Set(viewportTaskObjs),
+          tasksUpdate: new Set(),
+          tasksDelete: new Set(),
+          updateRender: true
+        });
       }
 
       // Any current rows below the previous viewport should be added
-      for (var i = Math.max(this._prevViewport.maxRowInd + 1, viewport.minRowInd); i <= viewport.maxRowInd; i++) {
+      for (
+        var i = Math.max(this._prevViewport.maxRowInd + 1, viewport.minRowInd);
+        i <= viewport.maxRowInd;
+        i++
+      ) {
         var rowObj = this._rowObjs[i];
-        var viewportTaskObjs = this.findTaskObjsRange(rowObj, viewport.viewStartTime, true, viewport.viewEndTime, true);
-        var bufferTaskObjs = this.findBufferTaskObjsRange(rowObj, viewport.viewStartTime, viewport.viewEndTime);
-        bufferTaskObjs.forEach( (taskObj) => {
+        var viewportTaskObjs = this.findTaskObjsRange(
+          rowObj,
+          viewport.viewStartTime,
+          true,
+          viewport.viewEndTime,
+          true
+        );
+        var bufferTaskObjs = this.findBufferTaskObjsRange(
+          rowObj,
+          viewport.viewStartTime,
+          viewport.viewEndTime
+        );
+        bufferTaskObjs.forEach((taskObj) => {
           viewportTaskObjs.push(taskObj);
         });
-        rowsAdd.push({ rowObj: rowObj, tasksAdd: new Set(viewportTaskObjs), tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: true });
+        rowsAdd.push({
+          rowObj: rowObj,
+          tasksAdd: new Set(viewportTaskObjs),
+          tasksUpdate: new Set(),
+          tasksDelete: new Set(),
+          updateRender: true
+        });
       }
 
       // Rows intersecting previous and current viewport should be updated
       // Only update task rendering in the zoom case. No need for pan/scroll.
       var updateRender = action === DvtGanttDataLayoutManager.VPC_SCALE;
-      if (this._prevViewport.maxRowInd >= viewport.minRowInd && this._prevViewport.minRowInd <= viewport.maxRowInd) {
+      if (
+        this._prevViewport.maxRowInd >= viewport.minRowInd &&
+        this._prevViewport.minRowInd <= viewport.maxRowInd
+      ) {
         var prevStart = this._prevViewport.viewStartTime;
         var prevEnd = this._prevViewport.viewEndTime;
         var currStart = viewport.viewStartTime;
         var currEnd = viewport.viewEndTime;
-        for (var i = Math.max(viewport.minRowInd, this._prevViewport.minRowInd); i <= Math.min(viewport.maxRowInd, this._prevViewport.maxRowInd); i++) {
+        for (
+          var i = Math.max(viewport.minRowInd, this._prevViewport.minRowInd);
+          i <= Math.min(viewport.maxRowInd, this._prevViewport.maxRowInd);
+          i++
+        ) {
           var rowObj = this._rowObjs[i];
           var tasksDelete = new Set();
           var tasksAdd = new Set();
@@ -11919,42 +14145,82 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
 
           // Any previous tasks outside the current viewport should be removed
           if (prevStart < currStart) {
-            this.findTaskObjsRange(rowObj, prevStart, true, Math.min(currStart, prevEnd), prevEnd < currStart).forEach( (taskObj) => {
+            this.findTaskObjsRange(
+              rowObj,
+              prevStart,
+              true,
+              Math.min(currStart, prevEnd),
+              prevEnd < currStart
+            ).forEach((taskObj) => {
               tasksDelete.add(taskObj);
             });
           }
           if (prevEnd > currEnd) {
-            this.findTaskObjsRange(rowObj, Math.max(currEnd, prevStart), prevStart > currEnd, prevEnd, true).forEach( (taskObj) => {
+            this.findTaskObjsRange(
+              rowObj,
+              Math.max(currEnd, prevStart),
+              prevStart > currEnd,
+              prevEnd,
+              true
+            ).forEach((taskObj) => {
               tasksDelete.add(taskObj);
             });
           }
 
           // Any current tasks outside the previous viewport should be added
           if (currStart < prevStart) {
-            this.findTaskObjsRange(rowObj, currStart, true, Math.min(currEnd, prevStart), currEnd < prevStart).forEach( (taskObj) => {
+            this.findTaskObjsRange(
+              rowObj,
+              currStart,
+              true,
+              Math.min(currEnd, prevStart),
+              currEnd < prevStart
+            ).forEach((taskObj) => {
               tasksAdd.add(taskObj);
             });
           }
           if (currEnd > prevEnd) {
-            this.findTaskObjsRange(rowObj, Math.max(prevEnd, currStart), currStart > prevEnd, currEnd, true).forEach( (taskObj) => {
+            this.findTaskObjsRange(
+              rowObj,
+              Math.max(prevEnd, currStart),
+              currStart > prevEnd,
+              currEnd,
+              true
+            ).forEach((taskObj) => {
               tasksAdd.add(taskObj);
             });
           }
 
           // Intersection should be updated
           if (prevEnd >= currStart && prevStart <= currEnd) {
-            tasksUpdate = new Set(this.findTaskObjsRange(rowObj, Math.max(currStart, prevStart), true, Math.min(currEnd, prevEnd), true));
+            tasksUpdate = new Set(
+              this.findTaskObjsRange(
+                rowObj,
+                Math.max(currStart, prevStart),
+                true,
+                Math.min(currEnd, prevEnd),
+                true
+              )
+            );
           }
 
           // Previous buffer tasks should be removed
-          var prevBufferTaskObjs = this.findBufferTaskObjsRange(rowObj, this._prevViewport.viewStartTime, this._prevViewport.viewEndTime);
-          prevBufferTaskObjs.forEach( (taskObj) => {
+          var prevBufferTaskObjs = this.findBufferTaskObjsRange(
+            rowObj,
+            this._prevViewport.viewStartTime,
+            this._prevViewport.viewEndTime
+          );
+          prevBufferTaskObjs.forEach((taskObj) => {
             tasksDelete.add(taskObj);
           });
 
           // Current buffer tasks should be added
-          var bufferTaskObjs = this.findBufferTaskObjsRange(rowObj, viewport.viewStartTime, viewport.viewEndTime);
-          bufferTaskObjs.forEach( (taskObj) => {
+          var bufferTaskObjs = this.findBufferTaskObjsRange(
+            rowObj,
+            viewport.viewStartTime,
+            viewport.viewEndTime
+          );
+          bufferTaskObjs.forEach((taskObj) => {
             tasksAdd.add(taskObj);
           });
 
@@ -11962,12 +14228,12 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
           // At the time of writing, I find conflicting information regarding the safety (and performance)
           // of removing elements from a set while iterating it. It's safest to just store and delete after:
           var deleteAndAdd = [];
-          tasksDelete.forEach( (taskObj) => {
+          tasksDelete.forEach((taskObj) => {
             if (tasksAdd.has(taskObj)) {
               deleteAndAdd.push(taskObj);
             }
           });
-          deleteAndAdd.forEach( (taskObj) => {
+          deleteAndAdd.forEach((taskObj) => {
             tasksUpdate.add(taskObj);
             tasksDelete.delete(taskObj);
             tasksAdd.delete(taskObj);
@@ -11978,7 +14244,13 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
             tasksDelete = new Set();
           }
 
-          rowsUpdate.push({ rowObj: rowObj, tasksAdd: tasksAdd, tasksUpdate: tasksUpdate, tasksDelete: tasksDelete, updateRender: updateRender });
+          rowsUpdate.push({
+            rowObj: rowObj,
+            tasksAdd: tasksAdd,
+            tasksUpdate: tasksUpdate,
+            tasksDelete: tasksDelete,
+            updateRender: updateRender
+          });
         }
       }
     }
@@ -11988,7 +14260,7 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
       rowsDelete = [];
     }
 
-    return { rowsDelete: rowsDelete, rowsAdd: rowsAdd, rowsUpdate: rowsUpdate }
+    return { rowsDelete: rowsDelete, rowsAdd: rowsAdd, rowsUpdate: rowsUpdate };
   }
 
   /**
@@ -11996,12 +14268,12 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {Object} renderOperations See return shape of _computeViewportRenderOperations()
    * @private
    */
-  _executeViewportRenderOperations (renderOperations) {
-   renderOperations.rowsDelete.forEach(this._detachRowObjNode, this);
-    renderOperations.rowsAdd.forEach( (op) => {
+  _executeViewportRenderOperations(renderOperations) {
+    renderOperations.rowsDelete.forEach(this._detachRowObjNode, this);
+    renderOperations.rowsAdd.forEach((op) => {
       this._renderRowObj(op.rowObj, op, 'add');
     }, this);
-    renderOperations.rowsUpdate.forEach( (op) => {
+    renderOperations.rowsUpdate.forEach((op) => {
       this._renderRowObj(op.rowObj, op, 'update');
     }, this);
   }
@@ -12011,13 +14283,15 @@ DvtGanttEventManager.KEYBOARD_RESIZE_END = 'resizeEnd';
    * @param {Object} viewport Object describing the viewport, of shape {minRowInd: number, maxRowInd: number, viewStartTime: number, viewEndTime: number}
    * @param {string} action The action that triggered the viewport change. One of the DvtGanttDataLayoutManager.VPC_X strings.
    */
-  renderViewport (viewport, action) {
+  renderViewport(viewport, action) {
     this._prepareViewport(viewport, action);
     var renderOperations = this._computeViewportRenderOperations(viewport, action);
 
     // Number of tasks in the viewport = number of task adds + number of task updates
     var accViewportTasks = (acc, rowOp) => acc + rowOp.tasksAdd.size + rowOp.tasksUpdate.size;
-    this._numViewportTasks = renderOperations.rowsAdd.reduce(accViewportTasks, 0) + renderOperations.rowsUpdate.reduce(accViewportTasks, 0);
+    this._numViewportTasks =
+      renderOperations.rowsAdd.reduce(accViewportTasks, 0) +
+      renderOperations.rowsUpdate.reduce(accViewportTasks, 0);
 
     // Apply any appropriate shape and text rendering performance optimizations to the databody
     // before updating the viewport
@@ -12063,13 +14337,13 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
  * Viewport change due to animation rerender
  * @type {string}
  */
- DvtGanttDataLayoutManager.VPC_ANIMATE = 'vpc_animate';
+DvtGanttDataLayoutManager.VPC_ANIMATE = 'vpc_animate';
 
 /**
  * Viewport refresh action (i.e. clear everything and render viewport from scratch)
  * @type {string}
  */
- DvtGanttDataLayoutManager.VPC_REFRESH = 'vpc_refresh';
+DvtGanttDataLayoutManager.VPC_REFRESH = 'vpc_refresh';
 
 /**
  * Animation manager for Gantt
@@ -12077,7 +14351,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
  * @class
  * @constructor
  */
- class DvtGanttAnimationManager {
+class DvtGanttAnimationManager {
   constructor(gantt) {
     this._gantt = gantt;
   }
@@ -12096,19 +14370,24 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
     this._animationDuration = DvtGanttStyleUtils.getAnimationDuration(this._gantt.getOptions());
 
     // Figure out animation mode
-    if (this._gantt.isInitialRender()) { // initial render/display
-      if (this._gantt.isIRAnimationEnabled)
-        this._animationMode = 'onDisplay';
-    } else { // data change
-      if (this._gantt.isDCAnimationEnabled)
-        this._animationMode = 'dataChange';
+    if (this._gantt.isInitialRender()) {
+      // initial render/display
+      if (this._gantt.isIRAnimationEnabled) this._animationMode = 'onDisplay';
+    } else {
+      // data change
+      if (this._gantt.isDCAnimationEnabled) this._animationMode = 'dataChange';
     }
 
     // Initialize appropriate animators depending on animation mode
     if (this._animationMode === 'onDisplay') {
       // For animating fade in
       this.fadeInElemsIR = [];
-      this.fadeInPlayableIR = new AnimFadeIn(context, this.fadeInElemsIR, this._animationDuration, 0);
+      this.fadeInPlayableIR = new AnimFadeIn(
+        context,
+        this.fadeInElemsIR,
+        this._animationDuration,
+        0
+      );
 
       // Playable for animating dimension changes
       this.dimensionsPlayableIR = this._createCustomPlayable(Easing.linear);
@@ -12118,9 +14397,19 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
     } else if (this._animationMode === 'dataChange') {
       // For animating fade in and out
       this.fadeInElemsDC = [];
-      this.fadeInPlayableDC = new AnimFadeIn(context, this.fadeInElemsDC, this._animationDuration, 0);
+      this.fadeInPlayableDC = new AnimFadeIn(
+        context,
+        this.fadeInElemsDC,
+        this._animationDuration,
+        0
+      );
       this.fadeOutElemsDC = [];
-      this.fadeOutPlayableDC = new AnimFadeOut(context, this.fadeOutElemsDC, this._animationDuration, 0);
+      this.fadeOutPlayableDC = new AnimFadeOut(
+        context,
+        this.fadeOutElemsDC,
+        this._animationDuration,
+        0
+      );
 
       // For animating dimension changes
       this.dimensionsPlayableDC = this._createCustomPlayable(Easing.linear);
@@ -12176,12 +14465,31 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
     // Plan the animation
     if (this._animationMode === 'onDisplay') {
       // Parallel: Fade in all elements, animate any dimension changes
-      subPlayables = [this.fadeInPlayableIR, this.translationsPlayableIR, this.dimensionsPlayableIR];
-      this._gantt.Animation = new ParallelPlayable(context, subPlayables, this._animationDuration, 0);
+      subPlayables = [
+        this.fadeInPlayableIR,
+        this.translationsPlayableIR,
+        this.dimensionsPlayableIR
+      ];
+      this._gantt.Animation = new ParallelPlayable(
+        context,
+        subPlayables,
+        this._animationDuration,
+        0
+      );
     } else if (this._animationMode === 'dataChange') {
       // Parallel: Fade in elements, translate elements, animate dimension changes, fade out elements
-      subPlayables = [this.fadeInPlayableDC, this.translationsPlayableDC, this.dimensionsPlayableDC, this.fadeOutPlayableDC];
-      this._gantt.Animation = new ParallelPlayable(context, subPlayables, this._animationDuration, 0);
+      subPlayables = [
+        this.fadeInPlayableDC,
+        this.translationsPlayableDC,
+        this.dimensionsPlayableDC,
+        this.fadeOutPlayableDC
+      ];
+      this._gantt.Animation = new ParallelPlayable(
+        context,
+        subPlayables,
+        this._animationDuration,
+        0
+      );
     }
 
     // If an animation was created, play it
@@ -12218,8 +14526,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    */
   _hideDepLines() {
     var deplines = this._gantt.getDependenciesContainer();
-    if (deplines != null)
-      ToolkitUtils.setAttrNullNS(deplines.getElem(), 'display', 'none');
+    if (deplines != null) ToolkitUtils.setAttrNullNS(deplines.getElem(), 'display', 'none');
   }
 
   /**
@@ -12228,8 +14535,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    */
   _showDepLines() {
     var deplines = this._gantt.getDependenciesContainer();
-    if (deplines != null)
-      ToolkitUtils.removeAttrNullNS(deplines.getElem(), 'display');
+    if (deplines != null) ToolkitUtils.removeAttrNullNS(deplines.getElem(), 'display');
   }
 
   /**
@@ -12238,12 +14544,10 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    */
   _onAnimationEnd() {
     // Fire ready event saying animation is finished.
-    if (!this._gantt.AnimationStopped)
-      this._gantt.RenderComplete();
+    if (!this._gantt.AnimationStopped) this._gantt.RenderComplete();
 
     // Restore event listeners if removed
-    if (this._bListenersRemoved)
-      this._gantt.EventManager.addListeners(this._gantt);
+    if (this._bListenersRemoved) this._gantt.EventManager.addListeners(this._gantt);
 
     // Reset animation flags
     this._gantt.Animation = null;
@@ -12280,7 +14584,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    */
   preAnimateTaskNode(taskNode, finalStates) {
     var translationsAnimator,
-        renderState = taskNode.getRenderState();
+      renderState = taskNode.getRenderState();
 
     if (this._animationMode === 'dataChange') {
       if (renderState === 'add') {
@@ -12290,10 +14594,23 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       } else if (renderState === 'exist' || renderState === 'migrate') {
         // Translate, then finalize render at the end of animation
         translationsAnimator = this.translationsPlayableDC.getAnimator();
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, taskNode, taskNode.getTranslateX, taskNode.setTranslateX, finalStates['x']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, taskNode, taskNode.getTranslateY, taskNode.setTranslateY, finalStates['y']);
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          taskNode,
+          taskNode.getTranslateX,
+          taskNode.setTranslateX,
+          finalStates['x']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          taskNode,
+          taskNode.getTranslateY,
+          taskNode.setTranslateY,
+          finalStates['y']
+        );
       }
-    } else { // No animation; finalize render immediately
+    } else {
+      // No animation; finalize render immediately
       taskNode.setTranslate(finalStates['x'], finalStates['y']);
     }
   }
@@ -12308,7 +14625,8 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       // Fade out, then finalize render at the end of animation
       this.fadeOutElemsDC.push(taskNode);
       this._onEnds.push(onEnd);
-    } else { // No animation; just execute onEnd callback immediately to finalize render
+    } else {
+      // No animation; just execute onEnd callback immediately to finalize render
       onEnd();
     }
   }
@@ -12321,40 +14639,96 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    * @param {function} onEnd callback that finalizes rendering
    */
   preAnimateTaskBaseline(task, baselineShape, finalStates, onEnd) {
-    var dimensionsAnimator, translationsAnimator,
-        renderState = task.getRenderState('baseline');
+    var dimensionsAnimator,
+      translationsAnimator,
+      renderState = task.getRenderState('baseline');
 
     if (this._animationMode === 'onDisplay') {
       // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-      baselineShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+      baselineShape.setDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        0,
+        finalStates['h'],
+        finalStates['r']
+      );
       onEnd();
 
       dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getWidth, baselineShape.setWidth, finalStates['w']);
+      dimensionsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        baselineShape,
+        baselineShape.getWidth,
+        baselineShape.setWidth,
+        finalStates['w']
+      );
     } else if (this._animationMode === 'dataChange') {
       if (renderState === 'add') {
         // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-        baselineShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+        baselineShape.setDimensions(
+          finalStates['x'],
+          finalStates['y'],
+          0,
+          finalStates['h'],
+          finalStates['r']
+        );
         onEnd();
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getWidth, baselineShape.setWidth, finalStates['w']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          baselineShape,
+          baselineShape.getWidth,
+          baselineShape.setWidth,
+          finalStates['w']
+        );
       } else if (renderState === 'exist') {
         // Animate translation and dimensional changes, finalize render at the end of animation
         translationsAnimator = this.translationsPlayableDC.getAnimator();
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getX, baselineShape.setX, finalStates['x']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getY, baselineShape.setY, finalStates['y']);
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          baselineShape,
+          baselineShape.getX,
+          baselineShape.setX,
+          finalStates['x']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          baselineShape,
+          baselineShape.getY,
+          baselineShape.setY,
+          finalStates['y']
+        );
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getWidth, baselineShape.setWidth, finalStates['w']);
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getHeight, baselineShape.setHeight, finalStates['h']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          baselineShape,
+          baselineShape.getWidth,
+          baselineShape.setWidth,
+          finalStates['w']
+        );
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          baselineShape,
+          baselineShape.getHeight,
+          baselineShape.setHeight,
+          finalStates['h']
+        );
 
         baselineShape.setBorderRadius(finalStates['r']);
 
         this._onEnds.push(onEnd);
       }
-    } else { // No animation; finalize render immediately
-      baselineShape.setDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
+    } else {
+      // No animation; finalize render immediately
+      baselineShape.setDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        finalStates['w'],
+        finalStates['h'],
+        finalStates['r']
+      );
       onEnd();
     }
   }
@@ -12369,7 +14743,8 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       // Fade out element, finalize render at the end of animation
       this.fadeOutElemsDC.push(baselineShape);
       this._onEnds.push(onEnd);
-    } else { // No animation; just execute onEnd callback immediately to finalize render
+    } else {
+      // No animation; just execute onEnd callback immediately to finalize render
       onEnd();
     }
   }
@@ -12381,40 +14756,96 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    * @param {function} onEnd callback that finalizes rendering
    */
   preAnimateTaskMain(task, finalStates, onEnd) {
-    var dimensionsAnimator, translationsAnimator,
-        renderState = task.getRenderState('main');
+    var dimensionsAnimator,
+      translationsAnimator,
+      renderState = task.getRenderState('main');
 
     if (this._animationMode === 'onDisplay') {
       // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-      task.setMainDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+      task.setMainDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        0,
+        finalStates['h'],
+        finalStates['r']
+      );
       onEnd();
 
       dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainWidth, task.setMainWidth, finalStates['w']);
+      dimensionsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        task,
+        task.getMainWidth,
+        task.setMainWidth,
+        finalStates['w']
+      );
     } else if (this._animationMode === 'dataChange') {
       if (renderState === 'add') {
         // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-        task.setMainDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+        task.setMainDimensions(
+          finalStates['x'],
+          finalStates['y'],
+          0,
+          finalStates['h'],
+          finalStates['r']
+        );
         onEnd();
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainWidth, task.setMainWidth, finalStates['w']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          task,
+          task.getMainWidth,
+          task.setMainWidth,
+          finalStates['w']
+        );
       } else if (renderState === 'exist') {
         // Animate translation and dimensional changes, finalize render at the end of animation
         translationsAnimator = this.translationsPlayableDC.getAnimator();
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainX, task.setMainX, finalStates['x']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainY, task.setMainY, finalStates['y']);
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          task,
+          task.getMainX,
+          task.setMainX,
+          finalStates['x']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          task,
+          task.getMainY,
+          task.setMainY,
+          finalStates['y']
+        );
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainWidth, task.setMainWidth, finalStates['w']);
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainHeight, task.setMainHeight, finalStates['h']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          task,
+          task.getMainWidth,
+          task.setMainWidth,
+          finalStates['w']
+        );
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          task,
+          task.getMainHeight,
+          task.setMainHeight,
+          finalStates['h']
+        );
 
         task.setMainBorderRadius(finalStates['r']);
 
         this._onEnds.push(onEnd);
       }
-    } else { // No animation; finalize render immediately
-      task.setMainDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
+    } else {
+      // No animation; finalize render immediately
+      task.setMainDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        finalStates['w'],
+        finalStates['h'],
+        finalStates['r']
+      );
       onEnd();
     }
   }
@@ -12429,7 +14860,15 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    * @param {dvt.Container} elementsContainer
    * @param {function} onEnd callback that finalizes rendering
    */
-  preAnimateTaskMainRemove(mainShape, mainBackgroundShape, selectShape, hoverShape, customContent, elementsContainer, onEnd) {
+  preAnimateTaskMainRemove(
+    mainShape,
+    mainBackgroundShape,
+    selectShape,
+    hoverShape,
+    customContent,
+    elementsContainer,
+    onEnd
+  ) {
     if (this._animationMode === 'dataChange') {
       // Fade out elements related to the main shape, finalize render at the end of animation
       this.fadeOutElemsDC.push(mainShape);
@@ -12449,7 +14888,8 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
         this.fadeOutElemsDC.push(elementsContainer);
       }
       this._onEnds.push(onEnd);
-    } else { // No animation; just execute onEnd callback immediately to finalize render
+    } else {
+      // No animation; just execute onEnd callback immediately to finalize render
       onEnd();
     }
   }
@@ -12462,40 +14902,96 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    * @param {function} onEnd callback that finalizes rendering
    */
   preAnimateTaskProgress(task, progressShape, finalStates, onEnd) {
-    var dimensionsAnimator, translationsAnimator,
-        renderState = task.getRenderState('progress');
+    var dimensionsAnimator,
+      translationsAnimator,
+      renderState = task.getRenderState('progress');
 
     if (this._animationMode === 'onDisplay') {
       // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-      progressShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+      progressShape.setDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        0,
+        finalStates['h'],
+        finalStates['r']
+      );
       onEnd();
 
       dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getWidth, progressShape.setWidth, finalStates['w']);
+      dimensionsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        progressShape,
+        progressShape.getWidth,
+        progressShape.setWidth,
+        finalStates['w']
+      );
     } else if (this._animationMode === 'dataChange') {
       if (renderState === 'add') {
         // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-        progressShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+        progressShape.setDimensions(
+          finalStates['x'],
+          finalStates['y'],
+          0,
+          finalStates['h'],
+          finalStates['r']
+        );
         onEnd();
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getWidth, progressShape.setWidth, finalStates['w']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          progressShape,
+          progressShape.getWidth,
+          progressShape.setWidth,
+          finalStates['w']
+        );
       } else if (renderState === 'exist') {
         // Animate translation and dimensional changes, finalize render at the end of animation
         translationsAnimator = this.translationsPlayableDC.getAnimator();
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getX, progressShape.setX, finalStates['x']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getY, progressShape.setY, finalStates['y']);
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          progressShape,
+          progressShape.getX,
+          progressShape.setX,
+          finalStates['x']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          progressShape,
+          progressShape.getY,
+          progressShape.setY,
+          finalStates['y']
+        );
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getWidth, progressShape.setWidth, finalStates['w']);
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getHeight, progressShape.setHeight, finalStates['h']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          progressShape,
+          progressShape.getWidth,
+          progressShape.setWidth,
+          finalStates['w']
+        );
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          progressShape,
+          progressShape.getHeight,
+          progressShape.setHeight,
+          finalStates['h']
+        );
 
         progressShape.setBorderRadius(finalStates['r']);
 
         this._onEnds.push(onEnd);
       }
-    } else { // No animation; finalize render immediately
-      progressShape.setDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
+    } else {
+      // No animation; finalize render immediately
+      progressShape.setDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        finalStates['w'],
+        finalStates['h'],
+        finalStates['r']
+      );
       onEnd();
     }
   }
@@ -12510,7 +15006,8 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       // Fade out element, finalize render at the end of animation
       this.fadeOutElemsDC.push(progressShape);
       this._onEnds.push(onEnd);
-    } else { // No animation; just execute onEnd callback immediately to finalize render
+    } else {
+      // No animation; just execute onEnd callback immediately to finalize render
       onEnd();
     }
   }
@@ -12523,40 +15020,96 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    * @param {function} onEnd callback that finalizes rendering
    */
   preAnimateTaskOvertime(task, overtimeShape, finalStates, onEnd) {
-    var dimensionsAnimator, translationsAnimator,
-        renderState = task.getRenderState('overtime');
+    var dimensionsAnimator,
+      translationsAnimator,
+      renderState = task.getRenderState('overtime');
 
     if (this._animationMode === 'onDisplay') {
       // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-      overtimeShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+      overtimeShape.setDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        0,
+        finalStates['h'],
+        finalStates['r']
+      );
       onEnd();
 
       dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, overtimeShape, overtimeShape.getWidth, overtimeShape.setWidth, finalStates['w']);
+      dimensionsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        overtimeShape,
+        overtimeShape.getWidth,
+        overtimeShape.setWidth,
+        finalStates['w']
+      );
     } else if (this._animationMode === 'dataChange') {
       if (renderState === 'add') {
         // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-        overtimeShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+        overtimeShape.setDimensions(
+          finalStates['x'],
+          finalStates['y'],
+          0,
+          finalStates['h'],
+          finalStates['r']
+        );
         onEnd();
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, overtimeShape, overtimeShape.getWidth, overtimeShape.setWidth, finalStates['w']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          overtimeShape,
+          overtimeShape.getWidth,
+          overtimeShape.setWidth,
+          finalStates['w']
+        );
       } else if (renderState === 'exist') {
         // Animate translation and dimensional changes, finalize render at the end of animation
         translationsAnimator = this.translationsPlayableDC.getAnimator();
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, overtimeShape, overtimeShape.getX, overtimeShape.setX, finalStates['x']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, overtimeShape, overtimeShape.getY, overtimeShape.setY, finalStates['y']);
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          overtimeShape,
+          overtimeShape.getX,
+          overtimeShape.setX,
+          finalStates['x']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          overtimeShape,
+          overtimeShape.getY,
+          overtimeShape.setY,
+          finalStates['y']
+        );
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, overtimeShape, overtimeShape.getWidth, overtimeShape.setWidth, finalStates['w']);
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, overtimeShape, overtimeShape.getHeight, overtimeShape.setHeight, finalStates['h']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          overtimeShape,
+          overtimeShape.getWidth,
+          overtimeShape.setWidth,
+          finalStates['w']
+        );
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          overtimeShape,
+          overtimeShape.getHeight,
+          overtimeShape.setHeight,
+          finalStates['h']
+        );
 
         overtimeShape.setBorderRadius(finalStates['r']);
 
         this._onEnds.push(onEnd);
       }
-    } else { // No animation; finalize render immediately
-      overtimeShape.setDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
+    } else {
+      // No animation; finalize render immediately
+      overtimeShape.setDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        finalStates['w'],
+        finalStates['h'],
+        finalStates['r']
+      );
       onEnd();
     }
   }
@@ -12571,7 +15124,8 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       // Fade out element, finalize render at the end of animation
       this.fadeOutElemsDC.push(progressShape);
       this._onEnds.push(onEnd);
-    } else { // No animation; just execute onEnd callback immediately to finalize render
+    } else {
+      // No animation; just execute onEnd callback immediately to finalize render
       onEnd();
     }
   }
@@ -12584,40 +15138,96 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    * @param {function} onEnd callback that finalizes rendering
    */
   preAnimateTaskDowntime(task, downtimeShape, finalStates, onEnd) {
-    var dimensionsAnimator, translationsAnimator,
-        renderState = task.getRenderState('downtime');
+    var dimensionsAnimator,
+      translationsAnimator,
+      renderState = task.getRenderState('downtime');
 
     if (this._animationMode === 'onDisplay') {
       // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-      downtimeShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+      downtimeShape.setDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        0,
+        finalStates['h'],
+        finalStates['r']
+      );
       onEnd();
 
       dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, downtimeShape, downtimeShape.getWidth, downtimeShape.setWidth, finalStates['w']);
+      dimensionsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        downtimeShape,
+        downtimeShape.getWidth,
+        downtimeShape.setWidth,
+        finalStates['w']
+      );
     } else if (this._animationMode === 'dataChange') {
       if (renderState === 'add') {
         // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-        downtimeShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+        downtimeShape.setDimensions(
+          finalStates['x'],
+          finalStates['y'],
+          0,
+          finalStates['h'],
+          finalStates['r']
+        );
         onEnd();
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, downtimeShape, downtimeShape.getWidth, downtimeShape.setWidth, finalStates['w']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          downtimeShape,
+          downtimeShape.getWidth,
+          downtimeShape.setWidth,
+          finalStates['w']
+        );
       } else if (renderState === 'exist') {
         // Animate translation and dimensional changes, finalize render at the end of animation
         translationsAnimator = this.translationsPlayableDC.getAnimator();
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, downtimeShape, downtimeShape.getX, downtimeShape.setX, finalStates['x']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, downtimeShape, downtimeShape.getY, downtimeShape.setY, finalStates['y']);
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          downtimeShape,
+          downtimeShape.getX,
+          downtimeShape.setX,
+          finalStates['x']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          downtimeShape,
+          downtimeShape.getY,
+          downtimeShape.setY,
+          finalStates['y']
+        );
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, downtimeShape, downtimeShape.getWidth, downtimeShape.setWidth, finalStates['w']);
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, downtimeShape, downtimeShape.getHeight, downtimeShape.setHeight, finalStates['h']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          downtimeShape,
+          downtimeShape.getWidth,
+          downtimeShape.setWidth,
+          finalStates['w']
+        );
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          downtimeShape,
+          downtimeShape.getHeight,
+          downtimeShape.setHeight,
+          finalStates['h']
+        );
 
         downtimeShape.setBorderRadius(finalStates['r']);
 
         this._onEnds.push(onEnd);
       }
-    } else { // No animation; finalize render immediately
-      downtimeShape.setDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
+    } else {
+      // No animation; finalize render immediately
+      downtimeShape.setDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        finalStates['w'],
+        finalStates['h'],
+        finalStates['r']
+      );
       onEnd();
     }
   }
@@ -12632,7 +15242,8 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       // Fade out element, finalize render at the end of animation
       this.fadeOutElemsDC.push(downtimeShape);
       this._onEnds.push(onEnd);
-    } else { // No animation; just execute onEnd callback immediately to finalize render
+    } else {
+      // No animation; just execute onEnd callback immediately to finalize render
       onEnd();
     }
   }
@@ -12645,40 +15256,96 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    * @param {function} onEnd callback that finalizes rendering
    */
   preAnimateTaskAttribute(task, attributeShape, finalStates, onEnd) {
-    var dimensionsAnimator, translationsAnimator,
-        renderState = task.getRenderState('attribute');
+    var dimensionsAnimator,
+      translationsAnimator,
+      renderState = task.getRenderState('attribute');
 
     if (this._animationMode === 'onDisplay') {
       // Finalize render, start off the height to be 0, and grow the height dimension to its final height
-      attributeShape.setDimensions(finalStates['x'], finalStates['y'], finalStates['w'], 0, finalStates['r']);
+      attributeShape.setDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        finalStates['w'],
+        0,
+        finalStates['r']
+      );
       onEnd();
 
       dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, attributeShape, attributeShape.getHeight, attributeShape.setHeight, finalStates['h']);
+      dimensionsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        attributeShape,
+        attributeShape.getHeight,
+        attributeShape.setHeight,
+        finalStates['h']
+      );
     } else if (this._animationMode === 'dataChange') {
       if (renderState === 'add') {
         // Finalize render, start off the height to be 0, and grow the height dimension to its final height
-        attributeShape.setDimensions(finalStates['x'], finalStates['y'], finalStates['w'], 0, finalStates['r']);
+        attributeShape.setDimensions(
+          finalStates['x'],
+          finalStates['y'],
+          finalStates['w'],
+          0,
+          finalStates['r']
+        );
         onEnd();
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, attributeShape, attributeShape.getHeight, attributeShape.setHeight, finalStates['h']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          attributeShape,
+          attributeShape.getHeight,
+          attributeShape.setHeight,
+          finalStates['h']
+        );
       } else if (renderState === 'exist') {
         // Animate translation and dimensional changes, finalize render at the end of animation
         translationsAnimator = this.translationsPlayableDC.getAnimator();
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, attributeShape, attributeShape.getX, attributeShape.setX, finalStates['x']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, attributeShape, attributeShape.getY, attributeShape.setY, finalStates['y']);
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          attributeShape,
+          attributeShape.getX,
+          attributeShape.setX,
+          finalStates['x']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          attributeShape,
+          attributeShape.getY,
+          attributeShape.setY,
+          finalStates['y']
+        );
 
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, attributeShape, attributeShape.getWidth, attributeShape.setWidth, finalStates['w']);
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, attributeShape, attributeShape.getHeight, attributeShape.setHeight, finalStates['h']);
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          attributeShape,
+          attributeShape.getWidth,
+          attributeShape.setWidth,
+          finalStates['w']
+        );
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          attributeShape,
+          attributeShape.getHeight,
+          attributeShape.setHeight,
+          finalStates['h']
+        );
 
         attributeShape.setBorderRadius(finalStates['r']);
 
         this._onEnds.push(onEnd);
       }
-    } else { // No animation; finalize render immediately
-      attributeShape.setDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
+    } else {
+      // No animation; finalize render immediately
+      attributeShape.setDimensions(
+        finalStates['x'],
+        finalStates['y'],
+        finalStates['w'],
+        finalStates['h'],
+        finalStates['r']
+      );
       onEnd();
     }
   }
@@ -12693,7 +15360,8 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       // Fade out element, finalize render at the end of animation
       this.fadeOutElemsDC.push(attributeShape);
       this._onEnds.push(onEnd);
-    } else { // No animation; just execute onEnd callback immediately to finalize render
+    } else {
+      // No animation; just execute onEnd callback immediately to finalize render
       onEnd();
     }
   }
@@ -12706,11 +15374,11 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    */
   preAnimateTaskLabel(taskNode, finalStates, onEnd) {
     var translationsAnimator,
-        task = taskNode.getTask(),
-        taskLabel = taskNode.getTaskLabel(),
-        labelOutputText = taskLabel.getLabelOutputText(),
-        renderState = taskLabel.getRenderState(),
-        taskMainRenderState = task.getRenderState('main');
+      task = taskNode.getTask(),
+      taskLabel = taskNode.getTaskLabel(),
+      labelOutputText = taskLabel.getLabelOutputText(),
+      renderState = taskLabel.getRenderState(),
+      taskMainRenderState = task.getRenderState('main');
 
     if (this._animationMode === 'onDisplay') {
       // Finalize render, start off the label x to match main task shape's x (should be at 0 width at this point), animate translation
@@ -12718,8 +15386,20 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       labelOutputText.setY(finalStates['y']);
       labelOutputText.setX(task.getShape('main').getX());
       translationsAnimator = this.translationsPlayableIR.getAnimator();
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getX, labelOutputText.setX, finalStates['x']);
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getY, labelOutputText.setY, finalStates['y']);
+      translationsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        labelOutputText,
+        labelOutputText.getX,
+        labelOutputText.setX,
+        finalStates['x']
+      );
+      translationsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        labelOutputText,
+        labelOutputText.getY,
+        labelOutputText.setY,
+        finalStates['y']
+      );
     } else if (this._animationMode === 'dataChange') {
       if (renderState === 'add') {
         // Finalize render
@@ -12731,8 +15411,20 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
           // Start off the label x to match main task shape's x (should be at 0 width at this point), animate translation
           labelOutputText.setX(task.getShape('main').getX());
           translationsAnimator = this.translationsPlayableDC.getAnimator();
-          translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getX, labelOutputText.setX, finalStates['x']);
-          translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getY, labelOutputText.setY, finalStates['y']);
+          translationsAnimator.addProp(
+            Animator.TYPE_NUMBER,
+            labelOutputText,
+            labelOutputText.getX,
+            labelOutputText.setX,
+            finalStates['x']
+          );
+          translationsAnimator.addProp(
+            Animator.TYPE_NUMBER,
+            labelOutputText,
+            labelOutputText.getY,
+            labelOutputText.setY,
+            finalStates['y']
+          );
         } else if (taskMainRenderState === 'exist') {
           // Fade in
           this.fadeInElemsDC.push(labelOutputText);
@@ -12740,11 +15432,24 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       } else if (renderState === 'exist') {
         // Translate animation
         translationsAnimator = this.translationsPlayableDC.getAnimator();
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getX, labelOutputText.setX, finalStates['x']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getY, labelOutputText.setY, finalStates['y']);
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          labelOutputText,
+          labelOutputText.getX,
+          labelOutputText.setX,
+          finalStates['x']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          labelOutputText,
+          labelOutputText.getY,
+          labelOutputText.setY,
+          finalStates['y']
+        );
         this._onEnds.push(onEnd);
       }
-    } else { // No animation; just execute onEnd callback immediately to finalize render
+    } else {
+      // No animation; just execute onEnd callback immediately to finalize render
       labelOutputText.setX(finalStates['x']);
       labelOutputText.setY(finalStates['y']);
       onEnd();
@@ -12761,7 +15466,8 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       // Fade out, finalize render at the end of animation
       this.fadeOutElemsDC.push(labelOutputText);
       this._onEnds.push(onEnd);
-    } else { // No animation; just execute onEnd callback immediately to finalize render
+    } else {
+      // No animation; just execute onEnd callback immediately to finalize render
       onEnd();
     }
   }
@@ -12787,12 +15493,37 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       } else if (renderState === 'exist') {
         // Translation animation
         translationsAnimator = this.translationsPlayableDC.getAnimator();
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getX1, line.setX1, finalStates['x1']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getX2, line.setX2, finalStates['x2']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getY1, line.setY1, finalStates['y1']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getY2, line.setY2, finalStates['y2']);
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          line,
+          line.getX1,
+          line.setX1,
+          finalStates['x1']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          line,
+          line.getX2,
+          line.setX2,
+          finalStates['x2']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          line,
+          line.getY1,
+          line.setY1,
+          finalStates['y1']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          line,
+          line.getY2,
+          line.setY2,
+          finalStates['y2']
+        );
       }
-    } else { // No animation; finalize render immediately
+    } else {
+      // No animation; finalize render immediately
       line.setY1(finalStates['y1']);
       line.setY2(finalStates['y2']);
       line.setX1(finalStates['x1']);
@@ -12816,12 +15547,31 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
 
       // Animate dimension and translation changes
       dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, background, background.getHeight, background.setHeight, finalStates['h']);
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, background, background.getWidth, background.setWidth, finalStates['w']);
+      dimensionsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        background,
+        background.getHeight,
+        background.setHeight,
+        finalStates['h']
+      );
+      dimensionsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        background,
+        background.getWidth,
+        background.setWidth,
+        finalStates['w']
+      );
 
       translationsAnimator = this.translationsPlayableDC.getAnimator();
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, background, background.getY, background.setY, finalStates['y']);
-    } else { // No animation; finalize render immediately
+      translationsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        background,
+        background.getY,
+        background.setY,
+        finalStates['y']
+      );
+    } else {
+      // No animation; finalize render immediately
       background.setY(finalStates['y']);
       background.setHeight(finalStates['h']);
       background.setWidth(finalStates['w']);
@@ -12839,8 +15589,15 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
     if (this._animationMode === 'dataChange') {
       // Animate height changes
       dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, refObj, refObj.getY2, refObj.setY2, finalStates['y2']);
-    } else { // No animation; finalize render immediately
+      dimensionsAnimator.addProp(
+        Animator.TYPE_NUMBER,
+        refObj,
+        refObj.getY2,
+        refObj.setY2,
+        finalStates['y2']
+      );
+    } else {
+      // No animation; finalize render immediately
       refObj.updateRefObjs(refObj._refObjs, finalStates['y1'], finalStates['y2']);
     }
   }
@@ -12856,7 +15613,8 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       this.fadeOutElemsDC.push(rowNode);
       this.fadeOutElemsDC.push(rowNode.getBackground());
       this._onEnds.push(onEnd);
-    } else { // No animation; just execute onEnd callback immediately to finalize render
+    } else {
+      // No animation; just execute onEnd callback immediately to finalize render
       onEnd();
     }
   }
@@ -12869,8 +15627,9 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    */
   preAnimateRowLabel(rowNode, labelContent, finalStates) {
     var rowRenderState = rowNode.getRenderState(),
-        labelBackground = labelContent.getBackground(),
-        translationsAnimator, dimensionsAnimator;
+      labelBackground = labelContent.getBackground(),
+      translationsAnimator,
+      dimensionsAnimator;
 
     if (this._animationMode === 'dataChange') {
       if (rowRenderState === 'add') {
@@ -12890,18 +15649,54 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       } else if (rowRenderState === 'exist') {
         // Label translation animation
         translationsAnimator = this.translationsPlayableDC.getAnimator();
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, labelContent, labelContent.getX, labelContent.setX, finalStates['x']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, labelContent, labelContent.getY, labelContent.setY, finalStates['y']);
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          labelContent,
+          labelContent.getX,
+          labelContent.setX,
+          finalStates['x']
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          labelContent,
+          labelContent.getY,
+          labelContent.setY,
+          finalStates['y']
+        );
 
         // Background dimension and translation changes
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, labelBackground, labelBackground.getX, labelBackground.setX, finalStates.backgroundX);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, labelBackground, labelBackground.getY, labelBackground.setY, finalStates.backgroundY);
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          labelBackground,
+          labelBackground.getX,
+          labelBackground.setX,
+          finalStates.backgroundX
+        );
+        translationsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          labelBackground,
+          labelBackground.getY,
+          labelBackground.setY,
+          finalStates.backgroundY
+        );
         dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, labelBackground, labelBackground.getWidth, labelBackground.setWidth, finalStates.backgroundWidth);
-        dimensionsAnimator.addProp(Animator.TYPE_NUMBER, labelBackground, labelBackground.getHeight, labelBackground.setHeight, finalStates.backgroundHeight);
-
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          labelBackground,
+          labelBackground.getWidth,
+          labelBackground.setWidth,
+          finalStates.backgroundWidth
+        );
+        dimensionsAnimator.addProp(
+          Animator.TYPE_NUMBER,
+          labelBackground,
+          labelBackground.getHeight,
+          labelBackground.setHeight,
+          finalStates.backgroundHeight
+        );
       }
-    } else { // No animation; finalize render immediately
+    } else {
+      // No animation; finalize render immediately
       labelContent.setY(finalStates['y']);
       labelContent.setX(finalStates['x']);
 
@@ -12927,7 +15722,8 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
       this.fadeOutElemsDC.push(labelContent.getDisplayable());
       this.fadeOutElemsDC.push(horizontalLine);
       this._onEnds.push(onEnd);
-    } else { // No animation; just execute onEnd callback immediately to finalize render
+    } else {
+      // No animation; just execute onEnd callback immediately to finalize render
       onEnd();
     }
   }
@@ -12941,7 +15737,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
  * @constructor
  */
 
- class DvtGanttAutomation extends Automation {
+class DvtGanttAutomation extends Automation {
   /**
    * Valid subIds inlcude:
    * <ul>
@@ -12952,17 +15748,21 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    */
   GetSubIdForDomElement(displayable) {
     var logicalObj = this._comp.getEventManager().GetLogicalObject(displayable);
-    if (logicalObj && (logicalObj instanceof DvtGanttTaskNode)) {
+    if (logicalObj && logicalObj instanceof DvtGanttTaskNode) {
       var taskObj = logicalObj.getLayoutObject();
       var rowObj = taskObj['rowObj'];
       var rowIndex = rowObj['index'];
       // Albeit not as efficient, simple one liner below should be sufficiently fast for most usecases.
-      var taskIndex = rowObj['taskObjs'].map((t) => { return t['node']; }).indexOf(logicalObj);
+      var taskIndex = rowObj['taskObjs']
+        .map((t) => {
+          return t['node'];
+        })
+        .indexOf(logicalObj);
       return 'taskbar[' + rowIndex + '][' + taskIndex + ']';
-    } else if (logicalObj && (logicalObj instanceof DvtGanttRowLabelContent)) {
+    } else if (logicalObj && logicalObj instanceof DvtGanttRowLabelContent) {
       var rowIndex = logicalObj.getRowIndex();
       return 'rowLabel[' + rowIndex + ']';
-    } else if (logicalObj && (logicalObj instanceof DvtGanttDependencyNode)) {
+    } else if (logicalObj && logicalObj instanceof DvtGanttDependencyNode) {
       var dependencyObj = logicalObj.getLayoutObject();
       var dependencyIndex = dependencyObj['index'];
       return dependencyIndex;
@@ -12981,8 +15781,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
    */
   getDomElementForSubId(subId) {
     // TOOLTIP
-    if (subId === Automation.TOOLTIP_SUBID)
-      return this.GetTooltipElement(this._comp);
+    if (subId === Automation.TOOLTIP_SUBID) return this.GetTooltipElement(this._comp);
 
     var openParen1 = subId.indexOf('[');
     var closeParen1 = subId.indexOf(']');
@@ -12995,8 +15794,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
         if (openParen2 > -1 && closeParen2 > -1) {
           var rowIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
           var taskIndex = parseInt(subId.substring(openParen2 + 1, closeParen2));
-          if (isNaN(rowIndex) || isNaN(taskIndex))
-            return null;
+          if (isNaN(rowIndex) || isNaN(taskIndex)) return null;
 
           var rowObjs = this._comp.getRowLayoutObjs();
           if (rowObjs.length > rowIndex) {
@@ -13006,8 +15804,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
               this._comp.getDataLayoutManager().ensureInDOM(taskObj, 'task', true);
               var taskNode = taskObj['node'];
               var repShape = taskNode.getTask().getShape('main');
-              if (repShape != null)
-                return repShape.getElem();
+              if (repShape != null) return repShape.getElem();
             }
           }
         }
@@ -13018,8 +15815,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
           var rowObj = rowObjs[rowIndex];
           this._comp.getDataLayoutManager().ensureInDOM(rowObj, 'rowLabel');
           var rowLabelContent = rowObj['node'].getRowLabelContent();
-          if (rowLabelContent != null)
-            return rowLabelContent.getDisplayable().getElem();
+          if (rowLabelContent != null) return rowLabelContent.getDisplayable().getElem();
         }
       } else if (component === 'dependency') {
         var dependencyIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
@@ -13030,8 +15826,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
             if (dependencyObj['index'] === dependencyIndex) {
               this._comp.getDataLayoutManager().ensureInDOM(dependencyObj, 'dependency');
               var dependencyNode = dependencyObj['node'];
-              if (dependencyNode != null)
-                return dependencyNode.getElem();
+              if (dependencyNode != null) return dependencyNode.getElem();
             }
           }
         }
@@ -13039,7 +15834,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
     }
     return null;
   }
- }
+}
 
 /**
  * Default values and utility functions for component versioning.
@@ -13048,13 +15843,13 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
  * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
- class DvtGanttDefaults extends BaseComponentDefaults {
+class DvtGanttDefaults extends BaseComponentDefaults {
   constructor(context) {
     /**
      * Contains overrides for version 1.
      * @const
      */
-     const VERSION_1 = {
+    const VERSION_1 = {
       axisPosition: 'top',
       animationOnDataChange: 'none',
       animationOnDisplay: 'none',
@@ -13067,7 +15862,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
         vertical: 'visible'
       },
       selectionMode: 'none',
-      scrollPosition: {y: 0},
+      scrollPosition: { y: 0 },
       rowDefaults: {
         height: null
       },
@@ -13092,7 +15887,7 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
         width: 'max-content',
         maxWidth: 'none'
       }
-      };
+    };
     super({ alta: VERSION_1 }, context);
   }
 
@@ -13134,10 +15929,10 @@ DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
         start: { converter: true }
       },
       _resources: {
-      converter: true,
-      defaultDateConverter: true,
-      defaultDateTimeConverter: true,
-      percentConverter: true
+        converter: true,
+        defaultDateConverter: true,
+        defaultDateTimeConverter: true,
+        percentConverter: true
       }
     };
   }
@@ -13172,9 +15967,8 @@ const DvtGanttParser = {
       // TODO: Remove number type support after complete
       // deprecation in future release
       if (optionType === 'number' || optionType === 'string') {
-        var time = (new Date(options[key]).getTime());
-        if (!isNaN(time))
-          return time;
+        var time = new Date(options[key]).getTime();
+        if (!isNaN(time)) return time;
       }
       return null;
     };
@@ -13182,21 +15976,17 @@ const DvtGanttParser = {
     ret.start = parseDateOption('start');
     ret.end = parseDateOption('end');
 
-    if (options['viewportStart'])
-      ret.viewStart = parseDateOption('viewportStart');
-    if (options['viewportEnd'])
-      ret.viewEnd = parseDateOption('viewportEnd');
+    if (options['viewportStart']) ret.viewStart = parseDateOption('viewportStart');
+    if (options['viewportEnd']) ret.viewEnd = parseDateOption('viewportEnd');
 
     ret.rows = options['rows'];
     ret.dependencies = options['dependencies'];
 
     ret.axisPosition = 'top';
-    if (options['axisPosition'] != null)
-      ret.axisPosition = options['axisPosition'];
+    if (options['axisPosition'] != null) ret.axisPosition = options['axisPosition'];
 
     ret.selectionMode = 'none';
-    if (options['selectionMode'] != null)
-      ret.selectionMode = options['selectionMode'];
+    if (options['selectionMode'] != null) ret.selectionMode = options['selectionMode'];
 
     ret.horizontalGridline = 'hidden';
     ret.verticalGridline = 'hidden';
@@ -13211,11 +16001,9 @@ const DvtGanttParser = {
     ret.xScrollbar = 'off';
     ret.yScrollbar = 'off';
     if (options['scrollbars']) {
-      if (options['scrollbars']['horizontal'])
-        ret.xScrollbar = options['scrollbars']['horizontal'];
+      if (options['scrollbars']['horizontal']) ret.xScrollbar = options['scrollbars']['horizontal'];
 
-      if (options['scrollbars']['vertical'])
-        ret.yScrollbar = options['scrollbars']['vertical'];
+      if (options['scrollbars']['vertical']) ret.yScrollbar = options['scrollbars']['vertical'];
     }
 
     ret.isIRAnimationEnabled = options['animationOnDisplay'] === 'auto';
@@ -13242,7 +16030,7 @@ const DvtGanttParser = {
  * @class
  * @constructor
  */
- class DvtGanttRowAxis extends Container {
+class DvtGanttRowAxis extends Container {
   constructor(gantt) {
     super(gantt.getCtx());
     this._gantt = gantt;
@@ -13305,8 +16093,7 @@ const DvtGanttParser = {
    */
   getLabelContentType() {
     var options = this._gantt.getOptions()['rowAxis'];
-    if (options['label'] && options['label']['renderer'])
-      return 'custom';
+    if (options['label'] && options['label']['renderer']) return 'custom';
     return 'text';
   }
 
@@ -13322,14 +16109,24 @@ const DvtGanttParser = {
     var maxWidth, widthDemanded;
 
     if (maxWidthOption != null && maxWidthOption !== 'none')
-      maxWidth = Math.min(DvtGanttStyleUtils.getSizeInPixels(maxWidthOption, totalAvailWidth), totalAvailWidth);
+      maxWidth = Math.min(
+        DvtGanttStyleUtils.getSizeInPixels(maxWidthOption, totalAvailWidth),
+        totalAvailWidth
+      );
     maxWidth = maxWidth != null && !isNaN(maxWidth) ? maxWidth : totalAvailWidth;
 
     if (widthOption != null && widthOption !== 'max-content')
-      widthDemanded = DvtGanttStyleUtils.getSizeInPixels(this._gantt.getRowAxisWidth(), totalAvailWidth);
+      widthDemanded = DvtGanttStyleUtils.getSizeInPixels(
+        this._gantt.getRowAxisWidth(),
+        totalAvailWidth
+      );
     widthDemanded = widthDemanded != null && !isNaN(widthDemanded) ? widthDemanded : -1;
 
-    return {'maxWidth': maxWidth, 'width': widthDemanded, 'calculatedWidth': widthDemanded !== -1 ? Math.min(widthDemanded, maxWidth) : maxWidth}
+    return {
+      maxWidth: maxWidth,
+      width: widthDemanded,
+      calculatedWidth: widthDemanded !== -1 ? Math.min(widthDemanded, maxWidth) : maxWidth
+    };
   }
 
   /**
@@ -13382,11 +16179,13 @@ const DvtGanttParser = {
       var style = cssStyle[i];
       var textWidth = TextUtils.getTextStringWidth(context, textString, style);
       // Leaf with empty string labels--don't account for indent. It looks better.
-      var indentSize = (rowObjs[i]['expanded'] == null && textString.length === 0) ? 0 : this.getLabelContentIndentSize(rowObjs[i]);
+      var indentSize =
+        rowObjs[i]['expanded'] == null && textString.length === 0
+          ? 0
+          : this.getLabelContentIndentSize(rowObjs[i]);
       var contentWidth = indentSize + textWidth;
 
-      if (contentWidth > maxContentWidth)
-        maxContentWidth = contentWidth;
+      if (contentWidth > maxContentWidth) maxContentWidth = contentWidth;
     }
     return maxContentWidth;
   }
@@ -13410,8 +16209,8 @@ const DvtGanttParser = {
     var contentType = this.getLabelContentType();
     var rowObjs = this._gantt.getRowLayoutObjs();
 
-
-    if (this._availableWidth['width'] === -1) { // row axis width determined by content width
+    if (this._availableWidth['width'] === -1) {
+      // row axis width determined by content width
       // If text content, cheaply calculate just the width of the biggest text, and defer actual rendering to when rows are rendered
       if (contentType === 'text') {
         var textStringArray = [];
@@ -13424,7 +16223,11 @@ const DvtGanttParser = {
           cssStyleArray.push(cssStyle);
           this._rowLabelContents.push(null);
         }
-        this._width = this._getMaxTextContentWidth(this._gantt.getCtx(), textStringArray, cssStyleArray);
+        this._width = this._getMaxTextContentWidth(
+          this._gantt.getCtx(),
+          textStringArray,
+          cssStyleArray
+        );
       }
       // If custom content, then we need to render all the contents to determine width to allocate
       else if (contentType === 'custom') {
@@ -13441,8 +16244,9 @@ const DvtGanttParser = {
       var options = this._gantt.getOptions();
       var startPadding = DvtGanttStyleUtils.getRowLabelPaddingStart(options);
       var endPadding = DvtGanttStyleUtils.getRowLabelPaddingEnd(options);
-      this._width += (startPadding + endPadding);
-    } else { // row axis width is not dependent on content width; defer actual content rendering to when rows are rendered
+      this._width += startPadding + endPadding;
+    } else {
+      // row axis width is not dependent on content width; defer actual content rendering to when rows are rendered
       this._width = this._availableWidth['calculatedWidth'];
       for (var i = 0; i < rowObjs.length; i++) {
         this._rowLabelContents.push(null);
@@ -13548,10 +16352,15 @@ const DvtGanttParser = {
     var isRTL = Agent.isRightToLeft(this._gantt.getCtx());
     var width = this._width;
     var height = this._gantt.getCanvasSize() - this._gantt.getAxesHeight();
-    var componentStartPadding = DvtGanttStyleUtils.getComponentPaddingStart(this._gantt.getOptions());
+    var componentStartPadding = DvtGanttStyleUtils.getComponentPaddingStart(
+      this._gantt.getOptions()
+    );
 
     var x = isRTL
-      ? this._gantt.getStartXOffset() + this._gantt.getCanvasLength() + this._gantt.getBorderWidth() + DvtGanttStyleUtils.getRowAxisGap()
+      ? this._gantt.getStartXOffset() +
+        this._gantt.getCanvasLength() +
+        this._gantt.getBorderWidth() +
+        DvtGanttStyleUtils.getRowAxisGap()
       : componentStartPadding;
     this.setTranslateX(x);
 
@@ -13570,7 +16379,10 @@ const DvtGanttParser = {
     this._backgroundContainer.setClipPath(backgroundCp);
 
     if (this._backgroundDivider) {
-      var dividerY = this._gantt.getDatabodyStart() + this._gantt.getStartYOffset() + (this._gantt.getAxisPosition() !== 'top') * (this._gantt.getDatabodyHeight() + 1);
+      var dividerY =
+        this._gantt.getDatabodyStart() +
+        this._gantt.getStartYOffset() +
+        (this._gantt.getAxisPosition() !== 'top') * (this._gantt.getDatabodyHeight() + 1);
       this._backgroundDivider.setY1(dividerY);
       this._backgroundDivider.setY2(dividerY);
     }
@@ -13596,7 +16408,7 @@ const DvtGanttParser = {
  * @constructor
  * @implements {DvtTooltipSource}
  */
- class DvtGanttReferenceObjects extends Container {
+class DvtGanttReferenceObjects extends Container {
   constructor(gantt, type, refObjs) {
     super(gantt.getCtx(), null);
     this._gantt = gantt;
@@ -13631,9 +16443,8 @@ const DvtGanttParser = {
       default:
         defaultStyleClass = this._gantt.GetStyleClass('referenceObjectLine');
     }
-    var styleClass = svgClassName != null
-      ? defaultStyleClass + ' ' + svgClassName
-      : defaultStyleClass;
+    var styleClass =
+      svgClassName != null ? defaultStyleClass + ' ' + svgClassName : defaultStyleClass;
     this._ref.setClassName(styleClass, true);
   }
 
@@ -13660,8 +16471,7 @@ const DvtGanttParser = {
           pos = width - pos;
         }
 
-        cmds += PathUtils.moveTo(pos, y1)
-          + PathUtils.verticalLineTo(y2);
+        cmds += PathUtils.moveTo(pos, y1) + PathUtils.verticalLineTo(y2);
       }, this);
     } else {
       this._refObjs.forEach((refObj) => {
@@ -13672,11 +16482,12 @@ const DvtGanttParser = {
         var leftPos = isRTL ? width - endPos : startPos;
         var rightPos = isRTL ? width - startPos : endPos;
 
-        cmds += PathUtils.moveTo(leftPos, y1)
-          + PathUtils.horizontalLineTo(rightPos)
-          + PathUtils.verticalLineTo(y2)
-          + PathUtils.horizontalLineTo(leftPos)
-          + PathUtils.verticalLineTo(y1);
+        cmds +=
+          PathUtils.moveTo(leftPos, y1) +
+          PathUtils.horizontalLineTo(rightPos) +
+          PathUtils.verticalLineTo(y2) +
+          PathUtils.horizontalLineTo(leftPos) +
+          PathUtils.verticalLineTo(y1);
       }, this);
     }
 
@@ -13695,13 +16506,18 @@ const DvtGanttParser = {
     }
 
     this._y1 = y1 == null ? this._gantt.getDatabodyStart() : y1;
-    this._y2 = y2 == null ? this._gantt.getDatabodyStart() + this._gantt._canvasSize - this._gantt.getAxesHeight() : y2;
+    this._y2 =
+      y2 == null
+        ? this._gantt.getDatabodyStart() + this._gantt._canvasSize - this._gantt.getAxesHeight()
+        : y2;
 
     this._ref = new Path(this._gantt.getCtx(), this._calcCmds(this._y1, this._y2, 0));
     if (this._type === 'line' || this._type === 'timeCursor') {
       // For reference lines, there's a light "border" counterpart for contrast
       this._partnerRef = new Path(this._gantt.getCtx(), this._calcCmds(this._y1, this._y2, 1));
-      var innerLineClassName = this._gantt.GetStyleClass(this._type === 'timeCursor' ? 'timeCursorInnerLine' : 'referenceObjectInnerLine');
+      var innerLineClassName = this._gantt.GetStyleClass(
+        this._type === 'timeCursor' ? 'timeCursorInnerLine' : 'referenceObjectInnerLine'
+      );
       this._partnerRef.setClassName(innerLineClassName, true);
       this.addChild(this._partnerRef);
     }
@@ -13801,8 +16617,7 @@ const DvtGanttRenderer = {
       DvtGanttRenderer._renderRowReferenceObjectsContainer(gantt, timeZoomCanvas);
       DvtGanttRenderer._renderReferenceObjects(gantt, timeZoomCanvas, 'area');
       DvtGanttRenderer._renderVerticalGridline(gantt, timeZoomCanvas);
-      if (gantt.isRowAxisEnabled())
-        gantt.getRowAxis().adjustPosition();
+      if (gantt.isRowAxisEnabled()) gantt.getRowAxis().adjustPosition();
 
       DvtGanttRenderer._renderData(gantt, timeZoomCanvas, DvtGanttDataLayoutManager.VPC_REFRESH);
 
@@ -13862,28 +16677,53 @@ const DvtGanttRenderer = {
     if (!document.getElementById(DvtGanttStyleUtils.getTaskTintFilterId())) {
       // overlay fill with rgba(255, 255, 255, tintAlpha);
       var tintAlpha = DvtGanttStyleUtils.getTaskTintAlpha();
-      var taskTintFilter = SvgShapeUtils.createElement('filter', DvtGanttStyleUtils.getTaskTintFilterId());
+      var taskTintFilter = SvgShapeUtils.createElement(
+        'filter',
+        DvtGanttStyleUtils.getTaskTintFilterId()
+      );
       var taskTintColorMatrix = SvgShapeUtils.createElement('feColorMatrix');
       taskTintColorMatrix.setAttribute('color-interpolation-filters', 'sRGB');
       taskTintColorMatrix.setAttribute('type', 'matrix');
-      taskTintColorMatrix.setAttribute('values',
-          (1 - tintAlpha) + ' 0 0 0 ' + tintAlpha +
-          ' 0 ' + (1 - tintAlpha) + ' 0 0 ' + tintAlpha +
-          ' 0 0 ' + (1 - tintAlpha) + ' 0 ' + tintAlpha +
-          ' 0 0 0 1 0');
+      taskTintColorMatrix.setAttribute(
+        'values',
+        1 -
+          tintAlpha +
+          ' 0 0 0 ' +
+          tintAlpha +
+          ' 0 ' +
+          (1 - tintAlpha) +
+          ' 0 0 ' +
+          tintAlpha +
+          ' 0 0 ' +
+          (1 - tintAlpha) +
+          ' 0 ' +
+          tintAlpha +
+          ' 0 0 0 1 0'
+      );
       taskTintFilter.appendChild(taskTintColorMatrix);
 
       // overlay fill with rgba(0, 0, 0, shadeAlpha);
       var shadeAlpha = DvtGanttStyleUtils.getTaskShadeAlpha();
-      var taskShadeFilter = SvgShapeUtils.createElement('filter', DvtGanttStyleUtils.getTaskShadeFilterId());
+      var taskShadeFilter = SvgShapeUtils.createElement(
+        'filter',
+        DvtGanttStyleUtils.getTaskShadeFilterId()
+      );
       var taskShadeColorMatrix = SvgShapeUtils.createElement('feColorMatrix');
       taskShadeColorMatrix.setAttribute('color-interpolation-filters', 'sRGB');
       taskShadeColorMatrix.setAttribute('type', 'matrix');
-      taskShadeColorMatrix.setAttribute('values',
-          (1 - shadeAlpha) + ' 0 0 0 0' +
-          ' 0 ' + (1 - shadeAlpha) + ' 0 0 0' +
-          ' 0 0 ' + (1 - shadeAlpha) + ' 0 0' +
-          ' 0 0 0 1 0');
+      taskShadeColorMatrix.setAttribute(
+        'values',
+        1 -
+          shadeAlpha +
+          ' 0 0 0 0' +
+          ' 0 ' +
+          (1 - shadeAlpha) +
+          ' 0 0 0' +
+          ' 0 0 ' +
+          (1 - shadeAlpha) +
+          ' 0 0' +
+          ' 0 0 0 1 0'
+      );
       taskShadeFilter.appendChild(taskShadeColorMatrix);
 
       // Add the filters to the shared defs
@@ -13922,7 +16762,14 @@ const DvtGanttRenderer = {
     var height = availSpace.h;
     gantt.setContentDirScrollbar(new SimpleScrollbar(gantt.getCtx(), gantt.HandleEvent, gantt));
     container.addChild(gantt.contentDirScrollbar);
-    LayoutUtils.position(availSpace, Agent.isRightToLeft(gantt.getCtx()) ? 'left' : 'right', gantt.contentDirScrollbar, width, height, 0);
+    LayoutUtils.position(
+      availSpace,
+      Agent.isRightToLeft(gantt.getCtx()) ? 'left' : 'right',
+      gantt.contentDirScrollbar,
+      width,
+      height,
+      0
+    );
     return new Dimension(width, height);
   },
 
@@ -13936,8 +16783,7 @@ const DvtGanttRenderer = {
     var databody = gantt.getDatabody();
     if (databody == null) {
       // Remove any previously rendered scrollbars
-      if (gantt._scrollbarsCanvas != null)
-        gantt._scrollbarsCanvas.removeChildren();
+      if (gantt._scrollbarsCanvas != null) gantt._scrollbarsCanvas.removeChildren();
       return;
     }
 
@@ -13947,25 +16793,36 @@ const DvtGanttRenderer = {
     if (gantt._scrollbarsCanvas == null) {
       gantt._scrollbarsCanvas = new Container(context, 'g', 'sbCanvas');
       container.addChild(gantt._scrollbarsCanvas);
-    } else
-      gantt._scrollbarsCanvas.removeChildren();
+    } else gantt._scrollbarsCanvas.removeChildren();
 
     if (gantt.isTimeDirScrollbarOn()) {
       var availSpaceWidth = gantt.getCanvasLength();
       var availSpaceHeight = gantt.Height - scrollbarPadding;
-      var timeDirScrollbarDim = DvtGanttRenderer._prerenderTimeDirScrollbar(gantt, gantt._scrollbarsCanvas, new Rectangle(0, 0, availSpaceWidth, availSpaceHeight));
+      var timeDirScrollbarDim = DvtGanttRenderer._prerenderTimeDirScrollbar(
+        gantt,
+        gantt._scrollbarsCanvas,
+        new Rectangle(0, 0, availSpaceWidth, availSpaceHeight)
+      );
     }
     if (gantt.isContentDirScrollbarOn()) {
       availSpaceWidth = gantt.Width - scrollbarPadding;
       availSpaceHeight = gantt.getCanvasSize() - gantt.getAxesHeight();
-      var scrollbarXOffset = Agent.isRightToLeft(gantt.getCtx()) ? gantt.getScrollbarPadding() : 0;
-      var contentDirScrollbarDim = DvtGanttRenderer._prerenderContentDirScrollbar(gantt, gantt._scrollbarsCanvas, new Rectangle(scrollbarXOffset, 0, availSpaceWidth - scrollbarXOffset, availSpaceHeight));
+      var scrollbarXOffset = Agent.isRightToLeft(gantt.getCtx())
+        ? gantt.getScrollbarPadding()
+        : 0;
+      var contentDirScrollbarDim = DvtGanttRenderer._prerenderContentDirScrollbar(
+        gantt,
+        gantt._scrollbarsCanvas,
+        new Rectangle(scrollbarXOffset, 0, availSpaceWidth - scrollbarXOffset, availSpaceHeight)
+      );
     }
 
     if (gantt.timeDirScrollbar && timeDirScrollbarDim) {
       var sbOptions = {};
       sbOptions['color'] = gantt.timeDirScrollbarStyles.getStyle(CSSStyle.COLOR);
-      sbOptions['backgroundColor'] = gantt.timeDirScrollbarStyles.getStyle(CSSStyle.BACKGROUND_COLOR);
+      sbOptions['backgroundColor'] = gantt.timeDirScrollbarStyles.getStyle(
+        CSSStyle.BACKGROUND_COLOR
+      );
       sbOptions['min'] = gantt._start;
       sbOptions['max'] = gantt._end;
       sbOptions['isHorizontal'] = true;
@@ -13978,18 +16835,28 @@ const DvtGanttRenderer = {
     if (gantt.contentDirScrollbar && contentDirScrollbarDim) {
       sbOptions = {};
       sbOptions['color'] = gantt.contentDirScrollbarStyles.getStyle(CSSStyle.COLOR);
-      sbOptions['backgroundColor'] = gantt.contentDirScrollbarStyles.getStyle(CSSStyle.BACKGROUND_COLOR);
-      sbOptions['min'] = -(Math.max(gantt.getContentHeight(), contentDirScrollbarDim.h) - databodyStart);
+      sbOptions['backgroundColor'] = gantt.contentDirScrollbarStyles.getStyle(
+        CSSStyle.BACKGROUND_COLOR
+      );
+      sbOptions['min'] = -(
+        Math.max(gantt.getContentHeight(), contentDirScrollbarDim.h) - databodyStart
+      );
       sbOptions['max'] = databodyStart;
       sbOptions['isHorizontal'] = false;
       sbOptions['isReversed'] = true;
       gantt.contentDirScrollbar.setTranslateY(databodyStart + gantt.getStartYOffset());
-      gantt.contentDirScrollbar.render(sbOptions, contentDirScrollbarDim.w, contentDirScrollbarDim.h);
+      gantt.contentDirScrollbar.render(
+        sbOptions,
+        contentDirScrollbarDim.w,
+        contentDirScrollbarDim.h
+      );
 
       var bottomOffset = 0;
-      if (gantt.getAxisPosition() === 'bottom')
-        bottomOffset = gantt.getAxesHeight();
-      gantt.contentDirScrollbar.setViewportRange(databody.getTranslateY() - (gantt.getCanvasSize() - databodyStart - bottomOffset), databody.getTranslateY());
+      if (gantt.getAxisPosition() === 'bottom') bottomOffset = gantt.getAxesHeight();
+      gantt.contentDirScrollbar.setViewportRange(
+        databody.getTranslateY() - (gantt.getCanvasSize() - databodyStart - bottomOffset),
+        databody.getTranslateY()
+      );
     }
   },
 
@@ -14006,9 +16873,17 @@ const DvtGanttRenderer = {
 
     var isRTL = Agent.isRightToLeft(ctx);
     // Refer to comment block in DvtGanttRenderer._renderVerticalGridline on why there's the 0.5 rounding in LTR case
-    var x = isRTL ? gantt.getStartXOffset() + gantt.getCanvasLength() : Math.round(gantt.getStartXOffset()) + 0.5;
+    var x = isRTL
+      ? gantt.getStartXOffset() + gantt.getCanvasLength()
+      : Math.round(gantt.getStartXOffset()) + 0.5;
     if (!gantt._rowAxisVerticalDivider) {
-      gantt._rowAxisVerticalDivider = new Line(ctx, x, gantt.getStartYOffset(), x, gantt._canvasSize + 2 * gantt.getBorderWidth());
+      gantt._rowAxisVerticalDivider = new Line(
+        ctx,
+        x,
+        gantt.getStartYOffset(),
+        x,
+        gantt._canvasSize + 2 * gantt.getBorderWidth()
+      );
       gantt._rowAxisVerticalDivider.setPixelHinting(true);
       gantt._rowAxisVerticalDivider.setClassName(gantt.GetStyleClass('majorvgridline'), true);
       container.addChild(gantt._rowAxisVerticalDivider);
@@ -14033,8 +16908,8 @@ const DvtGanttRenderer = {
         gantt.setRowAxis(rowAxis);
         rowAxis.setBackgroundContainer(new Container(gantt.getCtx()));
       }
-      if (container) // null on resize case
-      {
+      if (container) {
+        // null on resize case
         container.addChild(rowAxis);
         gantt.getParent().addChildAt(rowAxis.getBackgroundContainer(), 0);
       }
@@ -14057,7 +16932,13 @@ const DvtGanttRenderer = {
       rowAxis.setBackgroundDivider();
 
       // row axis backgrond rect. extra 1px to hide border touching the gantt.
-      var rowAxisBackground = new Rect(gantt.getCtx(), 0, 0, rowAxisWidth + 1, gantt._backgroundHeight);
+      var rowAxisBackground = new Rect(
+        gantt.getCtx(),
+        0,
+        0,
+        rowAxisWidth + 1,
+        gantt._backgroundHeight
+      );
       rowAxisBackground.setClassName(gantt.GetStyleClass('databody'));
       rowAxisBackground.setPixelHinting(true);
       rowAxisBackgroundContainer.addChild(rowAxisBackground);
@@ -14113,8 +16994,7 @@ const DvtGanttRenderer = {
     cp.addRect(gantt._widthOffset, 0, width, height);
     gantt._background.setClipPath(cp);
 
-    if (gantt._background.getParent() != gantt)
-      gantt.addChild(gantt._background);
+    if (gantt._background.getParent() != gantt) gantt.addChild(gantt._background);
   },
 
   /**
@@ -14134,7 +17014,9 @@ const DvtGanttRenderer = {
     }
     if (gantt.getDatabody() == null) {
       // Initial state: honor scroll position
-      databodyBackground.setTranslateY(gantt.scrollPositionToTranslateY(gantt.getOptions()['scrollPosition']));
+      databodyBackground.setTranslateY(
+        gantt.scrollPositionToTranslateY(gantt.getOptions()['scrollPosition'])
+      );
     }
 
     var cp = new ClipPath();
@@ -14173,7 +17055,8 @@ const DvtGanttRenderer = {
    */
   _renderDnDArtifactsContainer: (gantt, container) => {
     var databody = gantt.getDatabody();
-    if (databody) { // don't bother in the no data case -- there's nothing to drag and drop
+    if (databody) {
+      // don't bother in the no data case -- there's nothing to drag and drop
       var artifactsContainer = gantt.getDnDArtifactsContainer();
       if (artifactsContainer == null) {
         artifactsContainer = new Container(gantt.getCtx());
@@ -14221,11 +17104,24 @@ const DvtGanttRenderer = {
     var eventManager = gantt.getEventManager();
     // Marquee Select
     if (gantt.getOptions()['selectionMode'] === 'multiple') {
-      var bounds = new Rectangle(1, 1, gantt.getContentLength() - 1, gantt.getContentHeight() - 1);
+      var bounds = new Rectangle(
+        1,
+        1,
+        gantt.getContentLength() - 1,
+        gantt.getContentHeight() - 1
+      );
       // Placeholders, dvt.MarqueeHandler will set the appropriate css class
-      var marqueeFill = new SolidFill("");
-      var marqueeStroke = new Stroke("");
-      var marqueeHandler = new MarqueeHandler(artifactsContainer, bounds, bounds, marqueeFill, marqueeStroke, true, true);
+      var marqueeFill = new SolidFill('');
+      var marqueeStroke = new Stroke('');
+      var marqueeHandler = new MarqueeHandler(
+        artifactsContainer,
+        bounds,
+        bounds,
+        marqueeFill,
+        marqueeStroke,
+        true,
+        true
+      );
       eventManager.setMarqueeSelectHandler(marqueeHandler);
     }
   },
@@ -14236,8 +17132,7 @@ const DvtGanttRenderer = {
    * @private
    */
   _renderScrollableCanvas: (gantt) => {
-    if (gantt._canvas)
-      return;
+    if (gantt._canvas) return;
     gantt._canvas = new Container(gantt.getCtx(), 'g', 'canvas');
     gantt.addChild(gantt._canvas);
   },
@@ -14260,12 +17155,28 @@ const DvtGanttRenderer = {
     if (axisPosition === 'top') {
       var axisStart = 0;
       if (majorAxis) {
-        DvtGanttRenderer._renderAxis(gantt, container, majorAxis, axisStart, gantt.getAxisHeight(options, 'majorAxis'), [], throttle);
+        DvtGanttRenderer._renderAxis(
+          gantt,
+          container,
+          majorAxis,
+          axisStart,
+          gantt.getAxisHeight(options, 'majorAxis'),
+          [],
+          throttle
+        );
         axisStart += majorAxis.getSize();
       }
 
       if (minorAxis) {
-        DvtGanttRenderer._renderAxis(gantt, container, minorAxis, axisStart, gantt.getAxisHeight(options, 'minorAxis'), referenceObjects, throttle);
+        DvtGanttRenderer._renderAxis(
+          gantt,
+          container,
+          minorAxis,
+          axisStart,
+          gantt.getAxisHeight(options, 'minorAxis'),
+          referenceObjects,
+          throttle
+        );
         axisStart += minorAxis.getSize();
       }
 
@@ -14275,14 +17186,30 @@ const DvtGanttRenderer = {
 
       if (majorAxis) {
         // _renderAxis needs to be called before calling timeAxis.getSize:
-        DvtGanttRenderer._renderAxis(gantt, container, majorAxis, null, gantt.getAxisHeight(options, 'majorAxis'), [], throttle);
+        DvtGanttRenderer._renderAxis(
+          gantt,
+          container,
+          majorAxis,
+          null,
+          gantt.getAxisHeight(options, 'majorAxis'),
+          [],
+          throttle
+        );
         axisStart -= majorAxis.getSize();
         DvtGanttRenderer._positionAxis(majorAxis, axisStart);
       }
 
       if (minorAxis) {
         // _renderAxis needs to be called before calling timeAxis.getSize:
-        DvtGanttRenderer._renderAxis(gantt, container, minorAxis, axisStart, gantt.getAxisHeight(options, 'minorAxis'), referenceObjects, throttle);
+        DvtGanttRenderer._renderAxis(
+          gantt,
+          container,
+          minorAxis,
+          axisStart,
+          gantt.getAxisHeight(options, 'minorAxis'),
+          referenceObjects,
+          throttle
+        );
         axisStart -= minorAxis.getSize();
         DvtGanttRenderer._positionAxis(minorAxis, axisStart);
       }
@@ -14304,22 +17231,24 @@ const DvtGanttRenderer = {
    * @private
    */
   _renderAxis: (gantt, container, timeAxis, axisStart, axisSize, referenceObjects, throttle) => {
-    if (timeAxis.getParent() !== container)
-      container.addChild(timeAxis);
+    if (timeAxis.getParent() !== container) container.addChild(timeAxis);
 
-    timeAxis.render({
-      _viewStartTime: gantt._viewStartTime,
-      _viewEndTime: gantt._viewEndTime,
-      _referenceObjects: {
-        referenceObjects,
-        defaultStyleClass: gantt.GetStyleClass('referenceObjectLine'),
-        defaultStroke: null
+    timeAxis.render(
+      {
+        _viewStartTime: gantt._viewStartTime,
+        _viewEndTime: gantt._viewEndTime,
+        _referenceObjects: {
+          referenceObjects,
+          defaultStyleClass: gantt.GetStyleClass('referenceObjectLine'),
+          defaultStroke: null
+        },
+        _throttle: throttle
       },
-      _throttle: throttle
-    }, gantt.getContentLength(), axisSize);
+      gantt.getContentLength(),
+      axisSize
+    );
 
-    if (axisStart != null)
-      DvtGanttRenderer._positionAxis(timeAxis, axisStart);
+    if (axisStart != null) DvtGanttRenderer._positionAxis(timeAxis, axisStart);
   },
 
   /**
@@ -14344,35 +17273,43 @@ const DvtGanttRenderer = {
     var isRTL = Agent.isRightToLeft(context);
 
     var zoomControlProperties = {
-      'zoomInProps': {
-        'imageSize': 16,
-        'class': resources['zoomIn']
+      zoomInProps: {
+        imageSize: 16,
+        class: resources['zoomIn']
       },
-      'zoomOutProps': {
-        'imageSize': 16,
-        'class': resources['zoomOut']
+      zoomOutProps: {
+        imageSize: 16,
+        class: resources['zoomOut']
       }
     };
 
     if (isRTL)
       var transX = gantt.getStartXOffset() + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING;
     else
-      transX = (gantt.getCanvasLength() + gantt.getStartXOffset()) - (DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER);
+      transX =
+        gantt.getCanvasLength() +
+        gantt.getStartXOffset() -
+        (DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING +
+          DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER);
 
     zoomControlProperties['zoomInProps']['posX'] = transX;
     zoomControlProperties['zoomOutProps']['posX'] = transX;
 
     var yOffset = gantt._startY + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING;
-    if (gantt.getAxisPosition() === 'top')
-      var transY = yOffset;
-    else
-      transY = gantt._backgroundHeight - yOffset;
+    if (gantt.getAxisPosition() === 'top') var transY = yOffset;
+    else transY = gantt._backgroundHeight - yOffset;
 
     if (gantt.getAxisPosition() === 'top') {
       var zoomInPosY = transY;
-      var zoomOutPosY = transY + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_SPACING;
+      var zoomOutPosY =
+        transY +
+        DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER +
+        DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_SPACING;
     } else {
-      zoomInPosY = transY - DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER * 2 - DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_SPACING;
+      zoomInPosY =
+        transY -
+        DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER * 2 -
+        DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_SPACING;
       zoomOutPosY = transY - DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER;
     }
 
@@ -14413,14 +17350,18 @@ const DvtGanttRenderer = {
     }
 
     var axesHeight = gantt.getAxesHeight();
-    var text = gantt.renderEmptyText(gantt._canvas, emptyTextStr,
-        new Rectangle(
-          gantt.getStartXOffset(),
-          gantt.getStartYOffset() + (axesHeight * (gantt.getAxisPosition() === 'top')),
-          gantt.getCanvasLength(),
-          gantt.getCanvasSize() - axesHeight
-        ),
-        gantt.EventManager, null);
+    var text = gantt.renderEmptyText(
+      gantt._canvas,
+      emptyTextStr,
+      new Rectangle(
+        gantt.getStartXOffset(),
+        gantt.getStartYOffset() + axesHeight * (gantt.getAxisPosition() === 'top'),
+        gantt.getCanvasLength(),
+        gantt.getCanvasSize() - axesHeight
+      ),
+      gantt.EventManager,
+      null
+    );
     text.setClassName(gantt.GetStyleClass('nodata'));
 
     gantt.setEmptyText(text);
@@ -14476,9 +17417,15 @@ const DvtGanttRenderer = {
       const ganttWidth = gantt.getContentLength();
 
       // minor time axis required, major optional
-    const computeLineDates = (minorTimeAxis, majorTimeAxis) => {
-      const majorViewportDates = majorTimeAxis ? majorTimeAxis.getViewportDates(majorTimeAxis.getScale(), ganttMinTime, ganttMaxTime) : [];
-      const minorViewportDates = minorTimeAxis.getViewportDates(minorTimeAxis.getScale(), ganttMinTime, ganttMaxTime);
+      const computeLineDates = (minorTimeAxis, majorTimeAxis) => {
+        const majorViewportDates = majorTimeAxis
+          ? majorTimeAxis.getViewportDates(majorTimeAxis.getScale(), ganttMinTime, ganttMaxTime)
+          : [];
+        const minorViewportDates = minorTimeAxis.getViewportDates(
+          minorTimeAxis.getScale(),
+          ganttMinTime,
+          ganttMaxTime
+        );
 
         // Alta behavior is to only render major lines. If major not available, then render minor lines.
         if (gantt.getCtx().getThemeBehavior() === 'alta') {
@@ -14490,11 +17437,19 @@ const DvtGanttRenderer = {
 
         // If major dates is a subset of minor dates, then the two grids line up. Don't render the minor dates at overlap (due to opacity, minor line would show through major line otherwise).
         // Otherwise the major and minor axis do not "line up" (e.g. months and weeks scale together). Render minor lines only.
-        const majorViewportDatesSet = new Set(majorViewportDates.map(d => d.getTime()));
-        const minorViewportDatesSet = new Set(minorViewportDates.map(d => d.getTime()));
+        const majorViewportDatesSet = new Set(majorViewportDates.map((d) => d.getTime()));
+        const minorViewportDatesSet = new Set(minorViewportDates.map((d) => d.getTime()));
         // only consider major dates that are in range (e.g. first and/or last ticks may be out of range)
-        const showMajorLines = majorViewportDates.filter(d => (d.getTime() > ganttMinTime && d.getTime() < ganttMaxTime) && !minorViewportDatesSet.has(d.getTime())).length === 0;
-        const finalMinorViewportDates = showMajorLines ? minorViewportDates.filter(d => !majorViewportDatesSet.has(d.getTime())) : minorViewportDates;
+        const showMajorLines =
+          majorViewportDates.filter(
+            (d) =>
+              d.getTime() > ganttMinTime &&
+              d.getTime() < ganttMaxTime &&
+              !minorViewportDatesSet.has(d.getTime())
+          ).length === 0;
+        const finalMinorViewportDates = showMajorLines
+          ? minorViewportDates.filter((d) => !majorViewportDatesSet.has(d.getTime()))
+          : minorViewportDates;
 
         return {
           major: showMajorLines ? majorViewportDates : [],
@@ -14502,12 +17457,17 @@ const DvtGanttRenderer = {
         };
       };
 
-    const renderVLines = (linesContainer, dates, styleClass) => {
-      var context = gantt.getCtx();
-      var isRTL = Agent.isRightToLeft(context);
+      const renderVLines = (linesContainer, dates, styleClass) => {
+        var context = gantt.getCtx();
+        var isRTL = Agent.isRightToLeft(context);
 
         dates.forEach((d, i) => {
-          let pos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, d.getTime(), ganttWidth);
+          let pos = TimeAxisUtils.getDatePosition(
+            ganttMinTime,
+            ganttMaxTime,
+            d.getTime(),
+            ganttWidth
+          );
           if (isRTL) {
             pos = ganttWidth - pos;
           }
@@ -14524,7 +17484,13 @@ const DvtGanttRenderer = {
             pos = Math.round(pos) + 0.5;
           }
 
-          const gridLine = new Line(context, pos, gantt.getDatabodyStart(), pos, gantt.getDatabodyStart() + gantt._canvasSize - gantt.getAxesHeight());
+          const gridLine = new Line(
+            context,
+            pos,
+            gantt.getDatabodyStart(),
+            pos,
+            gantt.getDatabodyStart() + gantt._canvasSize - gantt.getAxesHeight()
+          );
           gridLine.setPixelHinting(true);
           gridLine.setMouseEnabled(false);
           gridLine.setClassName(styleClass, true);
@@ -14551,9 +17517,8 @@ const DvtGanttRenderer = {
    * @private
    */
   _renderReferenceObjects: (gantt, container, type) => {
-    var referenceObjectsContainer = type === 'line'
-                                    ? gantt.getReferenceLinesContainer()
-                                    : gantt.getReferenceAreasContainer();
+    var referenceObjectsContainer =
+      type === 'line' ? gantt.getReferenceLinesContainer() : gantt.getReferenceAreasContainer();
     if (referenceObjectsContainer == null) {
       referenceObjectsContainer = new Container(gantt.getCtx());
       container.addChild(referenceObjectsContainer);
@@ -14566,9 +17531,9 @@ const DvtGanttRenderer = {
     // Remove any previously rendered reference lines
     referenceObjectsContainer.removeChildren();
 
-  var isValidDate = (value) => {
-    return value != null && !isNaN(new Date(value).getTime());
-  };
+    var isValidDate = (value) => {
+      return value != null && !isNaN(new Date(value).getTime());
+    };
 
     var referenceObjects = gantt.getReferenceObjects().filter((refObj) => {
       if (type === 'line') {
@@ -14579,7 +17544,7 @@ const DvtGanttRenderer = {
     });
 
     var refObjs = gantt.generateReferenceObjects(referenceObjects, type);
-    refObjs.forEach(refObj => refObj.render(referenceObjectsContainer));
+    refObjs.forEach((refObj) => refObj.render(referenceObjectsContainer));
   },
 
   /**
@@ -14598,10 +17563,12 @@ const DvtGanttRenderer = {
 
     timeCursorContainer.removeChildren();
 
-    var timeCursor = new DvtGanttReferenceObjects(gantt, 'timeCursor', [{
-      type: 'line',
-      value: new Date(gantt.getStartTime()).toISOString()
-    }]);
+    var timeCursor = new DvtGanttReferenceObjects(gantt, 'timeCursor', [
+      {
+        type: 'line',
+        value: new Date(gantt.getStartTime()).toISOString()
+      }
+    ]);
     timeCursor.render(timeCursorContainer);
     timeCursor.setMouseEnabled(false);
     timeCursor.hide();
@@ -14625,18 +17592,24 @@ const DvtGanttRenderer = {
     }
 
     DvtGanttRenderer._renderDatabody(gantt, container);
-    if (dependencyObjs.length > 0)
-      DvtGanttRenderer._renderDependenciesContainer(gantt, container);
+    if (dependencyObjs.length > 0) DvtGanttRenderer._renderDependenciesContainer(gantt, container);
 
     // Cache the base task label style dvt.CSSStyle object; it's expensive to instantiate one
     // each time we render a task label.
     if (!gantt.getCache().getFromCache('baseTaskLabelCSSStyle'))
-      gantt.getCache().putToCache('baseTaskLabelCSSStyle', DvtGanttStyleUtils.getTaskLabelStyle(options));
+      gantt
+        .getCache()
+        .putToCache('baseTaskLabelCSSStyle', DvtGanttStyleUtils.getTaskLabelStyle(options));
 
     // Ensure the row dependent content containers' translateY is within bounds
     // and render the viewport
-    gantt.setDataRegionTranslateY(gantt.getBoundedContentTranslateY(gantt.getDatabody().getTranslateY()));
-    var isAnimating = !gantt.isInitialRender() && gantt.isLastRenderValid() && gantt.getAnimationManager().getAnimationMode() !== 'none';
+    gantt.setDataRegionTranslateY(
+      gantt.getBoundedContentTranslateY(gantt.getDatabody().getTranslateY())
+    );
+    var isAnimating =
+      !gantt.isInitialRender() &&
+      gantt.isLastRenderValid() &&
+      gantt.getAnimationManager().getAnimationMode() !== 'none';
     gantt.renderViewport(isAnimating ? DvtGanttDataLayoutManager.VPC_ANIMATE : action, true);
   },
 
@@ -14671,7 +17644,9 @@ const DvtGanttRenderer = {
    * @private
    */
   _prepareDependencyMarkers: (gantt) => {
-    var angleMarkerId = document.getElementById(DvtGanttStyleUtils.getDependencyLineAngleMarkerId());
+    var angleMarkerId = document.getElementById(
+      DvtGanttStyleUtils.getDependencyLineAngleMarkerId()
+    );
     if (angleMarkerId) {
       return;
     }
@@ -14697,7 +17672,7 @@ const DvtGanttRenderer = {
     var width = DvtGanttStyleUtils.getDependencyLineTriangleMarkerWidth();
     var height = DvtGanttStyleUtils.getDependencyLineTriangleMarkerHeight();
     var className = gantt.GetStyleClass('dependencyLineConnector');
-    var pathCmd = 'M0,0L' + width + ',' + (height / 2) + ',' + '0,' + height + 'V0Z';
+    var pathCmd = 'M0,0L' + width + ',' + height / 2 + ',' + '0,' + height + 'V0Z';
     return DvtGanttRenderer._createMarker(gantt, id, width, height, pathCmd, className);
   },
 
@@ -14712,7 +17687,7 @@ const DvtGanttRenderer = {
     var width = DvtGanttStyleUtils.getDependencyLineAngleMarkerWidth();
     var height = DvtGanttStyleUtils.getDependencyLineAngleMarkerHeight();
     var className = gantt.GetStyleClass('dependencyRectilinearLineArrowConnector');
-    var pathCmd = 'M0,0L' + width + ',' + (height / 2) + ',' + '0,' + height;
+    var pathCmd = 'M0,0L' + width + ',' + height / 2 + ',' + '0,' + height;
     return DvtGanttRenderer._createMarker(gantt, id, width, height, pathCmd, className);
   },
 
@@ -14817,7 +17792,7 @@ const DvtGanttRenderer = {
  * @constructor
  * @extends {TimeComponent}
  */
- class Gantt extends TimeComponent {
+class Gantt extends TimeComponent {
   constructor(context, callback, callbackObj) {
     super(context, callback, callbackObj);
     this._isInitialRender = true;
@@ -14831,8 +17806,7 @@ const DvtGanttRenderer = {
     if (!Agent.isTouchDevice()) {
       this._keyboardHandler = new DvtGanttKeyboardHandler(this, this.EventManager);
       this.EventManager.setKeyboardHandler(this._keyboardHandler);
-    } else
-      this._keyboardHandler = null;
+    } else this._keyboardHandler = null;
   }
 
   /**
@@ -14840,16 +17814,15 @@ const DvtGanttRenderer = {
    */
   SetOptions(options) {
     // Set defaults to certain styling properties before merging with defaults
-    if (options['taskDefaults'] == null)
-      options['taskDefaults'] = { baseline: {} };
-    if (options['taskDefaults']['baseline'] == null)
-      options['taskDefaults']['baseline'] = {};
+    if (options['taskDefaults'] == null) options['taskDefaults'] = { baseline: {} };
+    if (options['taskDefaults']['baseline'] == null) options['taskDefaults']['baseline'] = {};
 
     if (options['taskDefaults']['height'] == null) {
       options['taskDefaults']['height'] = DvtGanttStyleUtils.getStandaloneTaskHeight(options);
     }
     if (options['taskDefaults']['baseline']['height'] == null) {
-      options['taskDefaults']['baseline']['height'] = DvtGanttStyleUtils.getBaselineTaskHeight(options);
+      options['taskDefaults']['baseline']['height'] =
+        DvtGanttStyleUtils.getBaselineTaskHeight(options);
     }
 
     super.SetOptions(options);
@@ -14857,10 +17830,12 @@ const DvtGanttRenderer = {
     // initial setup
     this.setSelectionMode(this.Options['selectionMode']);
 
-    // If high level DnD api specified, set the equivalent low level DnD configuration.
+    // High level DnD:
+    // On desktop, for performance reasons, use normal mouse events for DnD.
+    // On mobile, HTML5 DnD is fast; set the equivalent low level DnD configuration to leverage it.
     var dndMoveEnabled = this.isTaskMoveEnabled();
     var taskResizeEnabled = this.isTaskResizeEnabled();
-    if (dndMoveEnabled || taskResizeEnabled) {
+    if ((dndMoveEnabled || taskResizeEnabled) && Agent.isTouchDevice()) {
       var lowLevelDnD = {
         drag: {
           tasks: { dataTypes: [] },
@@ -14893,8 +17868,7 @@ const DvtGanttRenderer = {
 
       if (taskResizeEnabled)
         setupDragDataTypes(DvtGanttEventManager.RESIZE_TASKS_DATA_TYPE, 'taskResizeHandles');
-      if (dndMoveEnabled)
-        setupDragDataTypes(DvtGanttEventManager.MOVE_TASKS_DATA_TYPE, 'tasks');
+      if (dndMoveEnabled) setupDragDataTypes(DvtGanttEventManager.MOVE_TASKS_DATA_TYPE, 'tasks');
     }
   }
 
@@ -14902,8 +17876,7 @@ const DvtGanttRenderer = {
    * @return {DvtGanttAutomation} the automation object
    */
   getAutomation() {
-    if (!this.Automation)
-      this.Automation = new DvtGanttAutomation(this);
+    if (!this.Automation) this.Automation = new DvtGanttAutomation(this);
     return this.Automation;
   }
 
@@ -14917,8 +17890,7 @@ const DvtGanttRenderer = {
     var context = this.getCtx();
     var styleClasses = context['styleClasses'];
     // TODO: in PhantomJS tests this is not populated
-    if (styleClasses != null)
-      return styleClasses[key];
+    if (styleClasses != null) return styleClasses[key];
     return key;
   }
 
@@ -14982,10 +17954,8 @@ const DvtGanttRenderer = {
 
     if (options[axis]) {
       var axisOptions = options[axis];
-      if (axisOptions['scale'])
-        retOptions['scale'] = axisOptions['scale'];
-      if (axisOptions['converter'])
-        retOptions['converter'] = axisOptions['converter'];
+      if (axisOptions['scale']) retOptions['scale'] = axisOptions['scale'];
+      if (axisOptions['converter']) retOptions['converter'] = axisOptions['converter'];
 
       retOptions.zoomOrder = axisOptions.zoomOrder || [axisOptions.scale];
       const isAlta = this.getCtx().getThemeBehavior() === 'alta';
@@ -15000,7 +17970,7 @@ const DvtGanttRenderer = {
           weeks: 'center',
           months: 'center',
           quarters: 'center',
-          years: 'center',
+          years: 'center'
         };
         // alignment along perpendicular axis (keys are time axis type/orientation)
         retOptions._labelAlignment = {
@@ -15036,10 +18006,8 @@ const DvtGanttRenderer = {
     }
 
     var labelStyle;
-    if (axis === 'majorAxis')
-      labelStyle = DvtGanttStyleUtils.getMajorAxisLabelStyle(options);
-    else if (axis === 'minorAxis')
-      labelStyle = DvtGanttStyleUtils.getMinorAxisLabelStyle(options);
+    if (axis === 'majorAxis') labelStyle = DvtGanttStyleUtils.getMajorAxisLabelStyle(options);
+    else if (axis === 'minorAxis') labelStyle = DvtGanttStyleUtils.getMinorAxisLabelStyle(options);
     retOptions['labelStyle'] = labelStyle;
 
     return retOptions;
@@ -15085,8 +18053,7 @@ const DvtGanttRenderer = {
     this._animationManager.prepareForAnimations();
 
     // Calculate certain layout information before any actual rendering
-    if (!this._dataLayoutManager)
-      this._dataLayoutManager = new DvtGanttDataLayoutManager(this);
+    if (!this._dataLayoutManager) this._dataLayoutManager = new DvtGanttDataLayoutManager(this);
     this._dataLayoutManager.calcLayout();
 
     DvtGanttRenderer.renderRowAxis(this, this.getParent());
@@ -15105,22 +18072,24 @@ const DvtGanttRenderer = {
           var showAxesInterfaceBorder = this.getCtx().getThemeBehavior() === 'alta';
           if (axisPosition === 'top')
             this._majorAxis.setBorderVisibility(false, false, showAxesInterfaceBorder, false);
-          else
-            this._majorAxis.setBorderVisibility(showAxesInterfaceBorder, false, false, false);
+          else this._majorAxis.setBorderVisibility(showAxesInterfaceBorder, false, false, false);
           this._slaveAxis = this._majorAxis;
         }
 
         // TimeComponent's TimeAxis._canvasSize should always be null on initial render
         this._majorAxis.setCanvasSize(null);
-        var majorPreferredLength = this._majorAxis.getPreferredLength(axisOptions, this._canvasLength);
+        var majorPreferredLength = this._majorAxis.getPreferredLength(
+          axisOptions,
+          this._canvasLength
+        );
 
         if (preferredLength && majorPreferredLength > preferredLength) {
           this._masterAxis = this._majorAxis;
           this._slaveAxis = this._minorAxis;
           preferredLength = majorPreferredLength;
         }
-      } else // if there WAS a major axis, but rerender WITHOUT major axis, make sure to set it to null
-        this._majorAxis = null;
+      } // if there WAS a major axis, but rerender WITHOUT major axis, make sure to set it to null
+      else this._majorAxis = null;
     }
 
     var minor = options['minorAxis'];
@@ -15133,8 +18102,7 @@ const DvtGanttRenderer = {
         this._minorAxis = new TimeAxis(this.getCtx(), null, null);
         if (axisPosition === 'top')
           this._minorAxis.setBorderVisibility(false, false, showAxisChartInterfaceBorder, false);
-        else
-          this._minorAxis.setBorderVisibility(showAxisChartInterfaceBorder, false, false, false);
+        else this._minorAxis.setBorderVisibility(showAxisChartInterfaceBorder, false, false, false);
         this._masterAxis = this._minorAxis;
       }
 
@@ -15143,13 +18111,11 @@ const DvtGanttRenderer = {
       preferredLength = this._minorAxis.getPreferredLength(axisOptions, this._canvasLength);
     }
 
-    if (preferredLength)
-      this.setContentLength(preferredLength);
+    if (preferredLength) this.setContentLength(preferredLength);
 
     // Minor axis is required, and preparing viewport length depends on it having valid options
     // Major axis options checking happens later in hasValidOptions()
-    if (this._minorAxis && this._minorAxis.hasValidOptions())
-      this.prepareViewportLength();
+    if (this._minorAxis && this._minorAxis.hasValidOptions()) this.prepareViewportLength();
 
     DvtGanttRenderer.renderGantt(this);
 
@@ -15192,9 +18158,10 @@ const DvtGanttRenderer = {
     // so look for whether expanded is set with a JS Set in a test environment.
     var options = this.getOptions();
     var dp = options['rowData'] || options['taskData'];
-    return (dp && dp['getChildDataProvider']) ||
-          (Agent.isEnvironmentTest() &&
-          this.getOptions()['expanded'] instanceof Set);
+    return (
+      (dp && dp['getChildDataProvider']) ||
+      (Agent.isEnvironmentTest() && this.getOptions()['expanded'] instanceof Set)
+    );
   }
 
   /**
@@ -15221,7 +18188,10 @@ const DvtGanttRenderer = {
   getViewPort() {
     var viewportYBounds = this.getViewportYBounds();
     var viewportRowIndRange = this._dataLayoutManager.findRowIndRange(
-      this.getRowLayoutObjs(), viewportYBounds.yMin, viewportYBounds.yMax);
+      this.getRowLayoutObjs(),
+      viewportYBounds.yMin,
+      viewportYBounds.yMax
+    );
     var viewport = {
       minRowInd: viewportRowIndRange.minRowInd,
       maxRowInd: viewportRowIndRange.maxRowInd,
@@ -15237,7 +18207,7 @@ const DvtGanttRenderer = {
    */
   getViewportDensity() {
     if (this._viewportDensity !== undefined) {
-      return this._viewportDensity
+      return this._viewportDensity;
     }
     var numViewportTasks = this._dataLayoutManager.getNumViewportTasks();
     if (numViewportTasks < 2000) {
@@ -15257,7 +18227,7 @@ const DvtGanttRenderer = {
    * Generally the lower the rendering precision, the better the rendering performance at the expense of accuracy.
    * @return {number|null} number of decimal places to round to. null means values should not be rounded, and the full precision should be used.
    */
-   getRenderingPrecision() {
+  getRenderingPrecision() {
     if (this._renderingPrecision !== undefined) {
       return this._renderingPrecision;
     }
@@ -15279,7 +18249,7 @@ const DvtGanttRenderer = {
    * @return {number}
    */
   round(n, precision) {
-    return Math.round(n * 10**precision) / 10**precision;
+    return Math.round(n * 10 ** precision) / 10 ** precision;
   }
 
   /**
@@ -15355,9 +18325,18 @@ const DvtGanttRenderer = {
    * @override
    */
   isDndEnabled() {
-    var dndMoveEnabled = this.isTaskMoveEnabled();
-    var taskResizeEnabled = this.isTaskResizeEnabled();
-    return this.getEventManager().isDndSupported() && (dndMoveEnabled || taskResizeEnabled);
+    const isHighLevelDnDEnabled = this.isHighLevelDnDEnabled();
+    return this.getEventManager().isDndSupported() && isHighLevelDnDEnabled;
+  }
+
+  /**
+   * Returns whether high level task move or task resize is enabled.
+   * @returns Whether high level DnD is enabled.
+   */
+  isHighLevelDnDEnabled() {
+    const dndMoveEnabled = this.isTaskMoveEnabled();
+    const taskResizeEnabled = this.isTaskResizeEnabled();
+    return dndMoveEnabled || taskResizeEnabled;
   }
 
   /**
@@ -15389,7 +18368,10 @@ const DvtGanttRenderer = {
       var translateY = this.scrollPositionToTranslateY(scrollPosition);
 
       if (this.isContentDirScrollbarOn() && this.contentDirScrollbar)
-        this.contentDirScrollbar.setViewportRange(translateY - this.getDatabodyHeight(), translateY);
+        this.contentDirScrollbar.setViewportRange(
+          translateY - this.getDatabodyHeight(),
+          translateY
+        );
 
       this.setDataRegionTranslateY(translateY);
       this.renderViewport(DvtGanttDataLayoutManager.VPC_TRANSLATE, true);
@@ -15445,10 +18427,8 @@ const DvtGanttRenderer = {
    */
   setDataRegionTranslateY(translateY) {
     // Translate relevant data regions
-    if (this._databody)
-      this._databody.setTranslateY(translateY);
-    if (this._databodyBackground)
-      this._databodyBackground.setTranslateY(translateY);
+    if (this._databody) this._databody.setTranslateY(translateY);
+    if (this._databodyBackground) this._databodyBackground.setTranslateY(translateY);
     if (this._rowReferenceObjectsContainer)
       this._rowReferenceObjectsContainer.setTranslateY(translateY);
     if (this.isMarqueeSelectEnabled() && this._marqueeArtifactsContainer)
@@ -15457,8 +18437,7 @@ const DvtGanttRenderer = {
       this._dndArtifactsContainer.setTranslateY(translateY);
     if (this.isRowAxisEnabled())
       this.getRowAxis().setTranslateY(translateY + this.getStartYOffset());
-    if (this._dependenciesContainer)
-      this._dependenciesContainer.setTranslateY(translateY);
+    if (this._dependenciesContainer) this._dependenciesContainer.setTranslateY(translateY);
   }
 
   /**
@@ -15476,7 +18455,10 @@ const DvtGanttRenderer = {
       var newMax = event.newMax;
       this.setDataRegionTranslateY(newMax, true);
     }
-    this.renderViewport(DvtGanttDataLayoutManager.VPC_TRANSLATE, component === this.contentDirScrollbar);
+    this.renderViewport(
+      DvtGanttDataLayoutManager.VPC_TRANSLATE,
+      component === this.contentDirScrollbar
+    );
   }
 
   /**
@@ -15487,7 +18469,12 @@ const DvtGanttRenderer = {
   createViewportChangeEvent() {
     var majorAxisScale = this._majorAxis ? this._majorAxis.getScale() : null;
     var minorAxisScale = this._minorAxis ? this._minorAxis.getScale() : null;
-    return EventFactory.newGanttViewportChangeEvent(this._viewStartTime, this._viewEndTime, majorAxisScale, minorAxisScale);
+    return EventFactory.newGanttViewportChangeEvent(
+      this._viewStartTime,
+      this._viewEndTime,
+      majorAxisScale,
+      minorAxisScale
+    );
   }
 
   /**
@@ -15514,8 +18501,7 @@ const DvtGanttRenderer = {
     if (hasValidOptions) {
       this.renderTimeZoomCanvas(this._canvas);
 
-      if (this.isRowAxisEnabled())
-        this.getRowAxis().adjustPosition();
+      if (this.isRowAxisEnabled()) this.getRowAxis().adjustPosition();
 
       var timeZoomCanvas = this.getTimeZoomCanvas();
       DvtGanttRenderer._renderAxes(this, timeZoomCanvas);
@@ -15534,13 +18520,11 @@ const DvtGanttRenderer = {
         DvtGanttRenderer._renderMarqueeArtifactsContainer(this, timeZoomCanvas);
       }
 
-      if (this.isDndEnabled())
-        DvtGanttRenderer._renderDnDArtifactsContainer(this, timeZoomCanvas);
+      if (this.isDndEnabled()) DvtGanttRenderer._renderDnDArtifactsContainer(this, timeZoomCanvas);
 
       if (this.isTimeDirScrollbarOn() || this.isContentDirScrollbarOn())
         DvtGanttRenderer._renderScrollbars(this, this);
-    } else
-      DvtGanttRenderer._renderEmptyText(this);
+    } else DvtGanttRenderer._renderEmptyText(this);
 
     DvtGanttRenderer.renderRowAxisVerticalDivider(this, this._canvas);
 
@@ -15568,12 +18552,15 @@ const DvtGanttRenderer = {
     this._backgroundHeight = this.Height;
 
     if (this.isTimeDirScrollbarOn())
-      this._backgroundHeight = this._backgroundHeight - CSSStyle.toNumber(this.timeDirScrollbarStyles.getHeight()) - 3 * scrollbarPadding;
+      this._backgroundHeight =
+        this._backgroundHeight -
+        CSSStyle.toNumber(this.timeDirScrollbarStyles.getHeight()) -
+        3 * scrollbarPadding;
     if (this.isContentDirScrollbarOn()) {
-      var widthOffset = 3 * scrollbarPadding + CSSStyle.toNumber(this.contentDirScrollbarStyles.getWidth());
+      var widthOffset =
+        3 * scrollbarPadding + CSSStyle.toNumber(this.contentDirScrollbarStyles.getWidth());
       this._backgroundWidth -= widthOffset;
-      if (isRTL)
-        this._widthOffset = widthOffset;
+      if (isRTL) this._widthOffset = widthOffset;
     }
 
     this.setStartXOffset(this._widthOffset + this._borderWidth);
@@ -15610,8 +18597,12 @@ const DvtGanttRenderer = {
     if (this.hasValidOptions()) {
       // not ctrl key pressed and not touch device; check if should scroll
       if (event && !event.ctrlKey && !Agent.isTouchDevice()) {
-        var wheelDeltaY = event.wheelDelta ? event.wheelDelta * TimeComponent.SCROLL_LINE_HEIGHT : 0;
-        var wheelDeltaX = event.wheelDeltaX ? event.wheelDeltaX * TimeComponent.SCROLL_LINE_HEIGHT : 0;
+        var wheelDeltaY = event.wheelDelta
+          ? event.wheelDelta * TimeComponent.SCROLL_LINE_HEIGHT
+          : 0;
+        var wheelDeltaX = event.wheelDeltaX
+          ? event.wheelDeltaX * TimeComponent.SCROLL_LINE_HEIGHT
+          : 0;
         this.panBy(-wheelDeltaX, -wheelDeltaY);
 
         // panning horizontally changes the viewport, and panBy doesn't trigger anything
@@ -15621,7 +18612,8 @@ const DvtGanttRenderer = {
           var evt = this.createViewportChangeEvent();
           this.dispatchEvent(evt);
         }
-      } else { // ctrl key pressed or touch device; check if should zoom
+      } else {
+        // ctrl key pressed or touch device; check if should zoom
         if (event.zoomWheelDelta) {
           // only zoom if mouse inside chart/graphical area
           var relPos = this.getCtx().pageToStageCoords(event.pageX, event.pageY);
@@ -15652,19 +18644,20 @@ const DvtGanttRenderer = {
     if (newLength > this._masterAxis.getMaxContentLength()) {
       newLength = this._masterAxis.getMaxContentLength();
       this.disableZoomButton(true);
-    } else
-      this.enableZoomButton(true);
+    } else this.enableZoomButton(true);
     if (this._canvasLength > newLength) {
       newLength = this._canvasLength;
       this.disableZoomButton(false);
-    } else
-      this.enableZoomButton(false);
+    } else this.enableZoomButton(false);
     var zoomIn = this.getContentLength() <= newLength;
     super.handleZoomWheel(newLength, time, compLoc, triggerViewportChangeEvent);
 
     var zoomLevelLengths = this._masterAxis.getZoomLevelLengths();
     if (zoomIn) {
-      while (this._masterAxis.getZoomLevelOrder() > 0 && (this._slaveAxis ? this._slaveAxis.getZoomLevelOrder() > 0 : true)) {
+      while (
+        this._masterAxis.getZoomLevelOrder() > 0 &&
+        (this._slaveAxis ? this._slaveAxis.getZoomLevelOrder() > 0 : true)
+      ) {
         var minLength = zoomLevelLengths[this._masterAxis.getZoomLevelOrder() - 1];
         if (this.getContentLength() >= minLength) {
           this._masterAxis.setZoomLevelOrder(this._masterAxis.getZoomLevelOrder() - 1);
@@ -15674,11 +18667,15 @@ const DvtGanttRenderer = {
             this._slaveAxis.setZoomLevelOrder(this._slaveAxis.getZoomLevelOrder() - 1);
             this._slaveAxis.decreaseScale();
           }
-        } else
-          break;
+        } else break;
       }
     } else {
-      while (this._masterAxis.getZoomLevelOrder() < zoomLevelLengths.length - 1 && (this._slaveAxis ? this._slaveAxis.getZoomLevelOrder() < this._slaveAxis.getZoomLevelLengths().length - 1 : true)) {
+      while (
+        this._masterAxis.getZoomLevelOrder() < zoomLevelLengths.length - 1 &&
+        (this._slaveAxis
+          ? this._slaveAxis.getZoomLevelOrder() < this._slaveAxis.getZoomLevelLengths().length - 1
+          : true)
+      ) {
         minLength = zoomLevelLengths[this._masterAxis.getZoomLevelOrder()];
         if (this.getContentLength() < minLength) {
           this._masterAxis.setZoomLevelOrder(this._masterAxis.getZoomLevelOrder() + 1);
@@ -15688,8 +18685,7 @@ const DvtGanttRenderer = {
             this._slaveAxis.setZoomLevelOrder(this._slaveAxis.getZoomLevelOrder() + 1);
             this._slaveAxis.increaseScale();
           }
-        } else
-          break;
+        } else break;
       }
     }
 
@@ -15711,8 +18707,7 @@ const DvtGanttRenderer = {
       DvtGanttRenderer._renderMarqueeArtifactsContainer(this, timeZoomCanvas);
     }
 
-    if (this.isDndEnabled())
-        DvtGanttRenderer._renderDnDArtifactsContainer(this, timeZoomCanvas);
+    if (this.isDndEnabled()) DvtGanttRenderer._renderDnDArtifactsContainer(this, timeZoomCanvas);
 
     if (triggerViewportChangeEvent) {
       var evt = this.createViewportChangeEvent();
@@ -15742,8 +18737,7 @@ const DvtGanttRenderer = {
    * @override
    */
   getTimeAxis() {
-    if (this._minorAxis)
-      return this._minorAxis;
+    if (this._minorAxis) return this._minorAxis;
     return this._majorAxis;
   }
 
@@ -16113,7 +19107,7 @@ const DvtGanttRenderer = {
    * @return {boolean} true if horizontal gridlines are visible, false otherwise
    */
   isHorizontalGridlinesVisible() {
-    return (this._horizontalGridline === 'visible');
+    return this._horizontalGridline === 'visible';
   }
 
   /**
@@ -16121,7 +19115,7 @@ const DvtGanttRenderer = {
    * @return {boolean} true if vertical gridlines are visible, false otherwise
    */
   isVerticalGridlinesVisible() {
-    return (this._verticalGridline === 'visible');
+    return this._verticalGridline === 'visible';
   }
 
   /**
@@ -16194,7 +19188,12 @@ const DvtGanttRenderer = {
    * @return {dvt.Rectangle} the current bounding box of the viewport
    */
   getViewportDimensions() {
-    return new Rectangle(this.getStartXOffset() - this.getTimeZoomCanvas().getTranslateX(), this._databodyStart - this._databody.getTranslateY(), this._canvasLength, this._canvasSize - this.getAxesHeight());
+    return new Rectangle(
+      this.getStartXOffset() - this.getTimeZoomCanvas().getTranslateX(),
+      this._databodyStart - this._databody.getTranslateY(),
+      this._canvasLength,
+      this._canvasSize - this.getAxesHeight()
+    );
   }
 
   /**
@@ -16206,15 +19205,19 @@ const DvtGanttRenderer = {
    */
   scrollIntoView(region, xPriority, yPriority, overShoot) {
     var isRTL = Agent.isRightToLeft(this.getCtx()),
-        viewportRect = this.getViewportDimensions(),
-        deltaX = 0, deltaY = 0;
+      viewportRect = this.getViewportDimensions(),
+      deltaX = 0,
+      deltaY = 0;
 
     xPriority = xPriority || 'auto';
     yPriority = yPriority || 'auto';
     overShoot = overShoot || 0;
 
     var deltaXLeftVisible = Math.min(region.x - viewportRect.x - overShoot, 0);
-    var deltaXRightVisible = Math.max(0, (region.x + region.w) - (viewportRect.x + viewportRect.w) + overShoot);
+    var deltaXRightVisible = Math.max(
+      0,
+      region.x + region.w - (viewportRect.x + viewportRect.w) + overShoot
+    );
     var deltaXStartVisible = isRTL ? deltaXRightVisible : deltaXLeftVisible;
     var deltaXEndVisible = isRTL ? deltaXLeftVisible : deltaXRightVisible;
 
@@ -16226,11 +19229,16 @@ const DvtGanttRenderer = {
         deltaX = deltaXEndVisible;
         break;
       default:
-        deltaX = (!isRTL ? deltaXEndVisible > 0 : deltaXEndVisible < 0) ? deltaXEndVisible : deltaXStartVisible; // 'end' wins if just 'end', or both sides, require panning. 'start' otherwise.
+        deltaX = (!isRTL ? deltaXEndVisible > 0 : deltaXEndVisible < 0)
+          ? deltaXEndVisible
+          : deltaXStartVisible; // 'end' wins if just 'end', or both sides, require panning. 'start' otherwise.
     }
 
     var deltaYTopVisible = Math.min(region.y - viewportRect.y - overShoot, 0);
-    var deltaYBottomVisible = Math.max(0, (region.y + region.h) - (viewportRect.y + viewportRect.h) + overShoot);
+    var deltaYBottomVisible = Math.max(
+      0,
+      region.y + region.h - (viewportRect.y + viewportRect.h) + overShoot
+    );
 
     switch (yPriority) {
       case 'top':
@@ -16279,11 +19287,17 @@ const DvtGanttRenderer = {
         deltaY = Math.max(deltaY, -viewportRect.y);
       } else if (distanceFromBottomEdge < edgeThreshold) {
         deltaY = edgeThreshold - distanceFromBottomEdge;
-        if ((this.getContentHeight() + this._databodyStart) >= this._canvasSize) {
+        if (this.getContentHeight() + this._databodyStart >= this._canvasSize) {
           if (this.getAxisPosition() === 'bottom') {
-            deltaY = Math.min(deltaY, this._databody.getTranslateY() + this.getContentHeight() - viewportRect.h);
+            deltaY = Math.min(
+              deltaY,
+              this._databody.getTranslateY() + this.getContentHeight() - viewportRect.h
+            );
           } else {
-            deltaY = Math.min(deltaY, this._databody.getTranslateY() + this.getContentHeight() - this._canvasSize);
+            deltaY = Math.min(
+              deltaY,
+              this._databody.getTranslateY() + this.getContentHeight() - this._canvasSize
+            );
           }
         } else {
           deltaY = Math.min(deltaY, -viewportRect.y);
@@ -16306,9 +19320,11 @@ const DvtGanttRenderer = {
       return;
     }
 
-    diagonal = typeof diagonal !== 'undefined' ? diagonal : this.getCtx().getThemeBehavior() !== 'alta';
-    var bHorizontal = deltaX !== 0 && (diagonal || (Math.abs(deltaX) > Math.abs(deltaY)));
-    var bVertical = this._databody && deltaY !== 0 && (diagonal || (Math.abs(deltaY) > Math.abs(deltaX)));
+    diagonal =
+      typeof diagonal !== 'undefined' ? diagonal : this.getCtx().getThemeBehavior() !== 'alta';
+    var bHorizontal = deltaX !== 0 && (diagonal || Math.abs(deltaX) > Math.abs(deltaY));
+    var bVertical =
+      this._databody && deltaY !== 0 && (diagonal || Math.abs(deltaY) > Math.abs(deltaX));
 
     // pan horizontally
     if (bHorizontal) {
@@ -16320,7 +19336,10 @@ const DvtGanttRenderer = {
       var newTranslateY = this.getBoundedContentTranslateY(this._databody.getTranslateY() - deltaY);
 
       if (this.isContentDirScrollbarOn())
-        this.contentDirScrollbar.setViewportRange(newTranslateY - this.getDatabodyHeight(), newTranslateY);
+        this.contentDirScrollbar.setViewportRange(
+          newTranslateY - this.getDatabodyHeight(),
+          newTranslateY
+        );
 
       this.setDataRegionTranslateY(newTranslateY, true);
     }
@@ -16345,7 +19364,8 @@ const DvtGanttRenderer = {
    */
   getBoundedContentTranslateY(proposedTranslateY) {
     var contentHeight = this.getContentHeight();
-    if (contentHeight == null) // Initial render; proposed translate Y is always within bounds
+    if (contentHeight == null)
+      // Initial render; proposed translate Y is always within bounds
       return proposedTranslateY;
 
     var databodyHeight = this.getDatabodyHeight();
@@ -16371,7 +19391,10 @@ const DvtGanttRenderer = {
    */
   endDragPan(compX, compY) {
     // check whether we should dispatch viewport change event
-    if (this._currentViewStartTime === this._viewStartTime && this._currentViewEndTime === this._viewEndTime)
+    if (
+      this._currentViewStartTime === this._viewStartTime &&
+      this._currentViewEndTime === this._viewEndTime
+    )
       this._triggerViewportChange = false;
 
     super.endDragPan(compX, compY);
@@ -16385,8 +19408,7 @@ const DvtGanttRenderer = {
    */
   setTaskBrightness(task, dim) {
     task = this.findTaskNodeById(task.getId());
-    if (task != null)
-      dim ? task.darken() : task.brighten();
+    if (task != null) dim ? task.darken() : task.brighten();
   }
 
   /**
@@ -16401,8 +19423,7 @@ const DvtGanttRenderer = {
       for (var i = 0; i < rows.length; i++) {
         var tasks = rows[i].getTasks();
         for (var j = 0; j < tasks.length; j++) {
-          if (Obj.compareValues(ctx, id, tasks[j].getId()))
-            return tasks[j];
+          if (Obj.compareValues(ctx, id, tasks[j].getId())) return tasks[j];
         }
       }
     }
@@ -16417,12 +19438,24 @@ const DvtGanttRenderer = {
   hasValidOptions() {
     var hasValidMajorScale = this._majorAxis ? this._majorAxis.hasValidOptions() : true; // major axis optional
     var hasValidMinorScale = this._minorAxis && this._minorAxis.hasValidOptions();
-    var hasValidStartAndEnd = this._start && this._end && (this._end > this._start);
-    var hasValidViewport = (this._viewStartTime && this._viewEndTime) ? this._viewEndTime > this._viewStartTime : true;
-    var hasValidViewStart = this._viewStartTime ? (this._viewStartTime >= this._start && this._viewStartTime < this._end) : true;
-    var hasValidViewEnd = this._viewEndTime ? (this._viewEndTime > this._start && this._viewEndTime <= this._end) : true;
+    var hasValidStartAndEnd = this._start && this._end && this._end > this._start;
+    var hasValidViewport =
+      this._viewStartTime && this._viewEndTime ? this._viewEndTime > this._viewStartTime : true;
+    var hasValidViewStart = this._viewStartTime
+      ? this._viewStartTime >= this._start && this._viewStartTime < this._end
+      : true;
+    var hasValidViewEnd = this._viewEndTime
+      ? this._viewEndTime > this._start && this._viewEndTime <= this._end
+      : true;
 
-    return (hasValidMajorScale && hasValidMinorScale && hasValidStartAndEnd && hasValidViewport && hasValidViewStart && hasValidViewEnd);
+    return (
+      hasValidMajorScale &&
+      hasValidMinorScale &&
+      hasValidStartAndEnd &&
+      hasValidViewport &&
+      hasValidViewStart &&
+      hasValidViewEnd
+    );
   }
 
   /** ****************** Selection **********************/
@@ -16439,7 +19472,7 @@ const DvtGanttRenderer = {
    * @return {boolean} True if selection is turned on and false otherwise.
    */
   isSelectionSupported() {
-    return (this._selectionHandler ? true : false);
+    return this._selectionHandler ? true : false;
   }
 
   /**
@@ -16448,11 +19481,16 @@ const DvtGanttRenderer = {
    */
   setSelectionMode(selectionMode) {
     if (selectionMode === 'single')
-      this._selectionHandler = new SelectionHandler(this.getCtx(), SelectionHandler.TYPE_SINGLE);
+      this._selectionHandler = new SelectionHandler(
+        this.getCtx(),
+        SelectionHandler.TYPE_SINGLE
+      );
     else if (selectionMode === 'multiple')
-      this._selectionHandler = new SelectionHandler(this.getCtx(), SelectionHandler.TYPE_MULTIPLE);
-    else
-      this._selectionHandler = null;
+      this._selectionHandler = new SelectionHandler(
+        this.getCtx(),
+        SelectionHandler.TYPE_MULTIPLE
+      );
+    else this._selectionHandler = null;
 
     // Event Handler delegates to other handlers
     this.getEventManager().setSelectionHandler(this._selectionHandler);
@@ -16477,8 +19515,7 @@ const DvtGanttRenderer = {
    */
   _processInitialSelections() {
     var selection = this.Options['selection'];
-    if (selection == null || selection.length === 0)
-      return;
+    if (selection == null || selection.length === 0) return;
 
     if (this.isSelectionSupported()) {
       var keySet = new this._context.KeySetImpl(selection);
@@ -16543,7 +19580,9 @@ const DvtGanttRenderer = {
    * @return {DvtGanttDependencyNode[]} array of predecessors or successors for the specified task
    */
   getNavigableDependencyLinesForTask(task, type) {
-    return type === 'successor' ? task.getSuccessorDependencies() : task.getPredecessorDependencies();
+    return type === 'successor'
+      ? task.getSuccessorDependencies()
+      : task.getPredecessorDependencies();
   }
 
   // should be in super
@@ -16551,8 +19590,7 @@ const DvtGanttRenderer = {
    * Handle touch start event
    * @param {object} event
    */
-  HandleTouchStart(event) {
-  }
+  HandleTouchStart(event) {}
 }
 
 export { Gantt };

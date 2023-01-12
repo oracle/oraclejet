@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -44,13 +44,15 @@ var Validation = {};
  * Internal properties to hold all factory provider callbacks or instances by name
  * @private
  */
-Validation._converterFactories = {}; Validation._validatorFactories = {};
+Validation._converterFactories = {};
+Validation._validatorFactories = {};
 
 /**
  * Internal properties to hold the default factory instances.
  * @private
  */
-Validation._defaultConverterFactories = {}; Validation._defaultValidatorFactories = {};
+Validation._defaultConverterFactories = {};
+Validation._defaultValidatorFactories = {};
 
 /**
  * Method to register and retrieve converter factory instances by name.
@@ -145,11 +147,15 @@ Validation.converterFactory = function (type, instance) {
     }
   } else if (type && instance) {
     // setter
-    retValue = Validation._registerFactory(type,
-                                              instance,
-                                              Validation._converterFactories,
-                                              Validation._CONTRACTS.converter);
-    Logger.error('Registering a custom type or overriding the standard types is no longer supported. Please directly set the converter on the component. Please consult the Release Notes for further information.');
+    retValue = Validation._registerFactory(
+      type,
+      instance,
+      Validation._converterFactories,
+      Validation._CONTRACTS.converter
+    );
+    Logger.error(
+      'Registering a custom type or overriding the standard types is no longer supported. Please directly set the converter on the component. Please consult the Release Notes for further information.'
+    );
   }
 
   return retValue;
@@ -243,11 +249,15 @@ Validation.validatorFactory = function (type, instance) {
     }
   } else if (type && instance) {
     // setter
-    retValue = Validation._registerFactory(type,
-                                              instance,
-                                              Validation._validatorFactories,
-                                              Validation._CONTRACTS.validator);
-    Logger.error('Registering a custom type or overriding the standard types is no longer supported. Please directly set the converter on the component. Please consult the Release Notes for further information.');
+    retValue = Validation._registerFactory(
+      type,
+      instance,
+      Validation._validatorFactories,
+      Validation._CONTRACTS.validator
+    );
+    Logger.error(
+      'Registering a custom type or overriding the standard types is no longer supported. Please directly set the converter on the component. Please consult the Release Notes for further information.'
+    );
   }
 
   return retValue;
@@ -309,12 +319,8 @@ Validation.getDefaultValidatorFactory = function (type) {
 Validation.__registerDefaultConverterFactory = function (name, instance) {
   // save to both factories
   var contractDef = Validation._CONTRACTS.converter;
-  Validation._registerFactory(name, instance,
-                                 Validation._defaultConverterFactories,
-                                 contractDef);
-  Validation._registerFactory(name, instance,
-                                 Validation._converterFactories,
-                                 contractDef);
+  Validation._registerFactory(name, instance, Validation._defaultConverterFactories, contractDef);
+  Validation._registerFactory(name, instance, Validation._converterFactories, contractDef);
 };
 
 /**
@@ -327,14 +333,9 @@ Validation.__registerDefaultConverterFactory = function (name, instance) {
 Validation.__registerDefaultValidatorFactory = function (name, instance) {
   // save to both factories
   var contractDef = Validation._CONTRACTS.validator;
-  Validation._registerFactory(name, instance,
-                                 Validation._defaultValidatorFactories,
-                                 contractDef);
-  Validation._registerFactory(name, instance,
-                                 Validation._validatorFactories,
-                                 contractDef);
+  Validation._registerFactory(name, instance, Validation._defaultValidatorFactories, contractDef);
+  Validation._registerFactory(name, instance, Validation._validatorFactories, contractDef);
 };
-
 
 /**
  * Checks that the instance implements the interface type. If it doesn't it throws an error.
@@ -348,7 +349,10 @@ Validation._doImplementsCheck = function (instance, type, typeName) {
   if (type) {
     // Check that instance duck types providerType
     if (!Validation._quacksLike(instance, type)) {
-      throw new Error('Factory instance does not implement the methods expected by the factory of type ' + typeName);
+      throw new Error(
+        'Factory instance does not implement the methods expected by the factory of type ' +
+          typeName
+      );
     }
   }
 };
@@ -377,7 +381,7 @@ Validation._getFactory = function (name, factories) {
  * @param {Object} thingie the object to test.
  * @param {Object} duck The archetypal object, or 'duck', that the test is against.
  * @private
-*/
+ */
 Validation._quacksLike = function (thingie, duck) {
   var valid = true;
 
@@ -388,8 +392,10 @@ Validation._quacksLike = function (thingie, duck) {
   for (var i = 0; i < properties.length; i++) {
     var property = properties[i];
     // Ensure that thingie defines the same functions as duck. We don't care about other properties
-    if (typeof duck[property] === 'function' &&
-        (!thingie[property] || typeof thingie[property] !== 'function')) {
+    if (
+      typeof duck[property] === 'function' &&
+      (!thingie[property] || typeof thingie[property] !== 'function')
+    ) {
       valid = false;
       break;
     }
@@ -474,117 +480,116 @@ Validation._registerFactory = function (name, instance, factories, contractDef) 
  * @see oj.DateTimeConverterFactory
  * @see oj.ColorConverterFactory
  */
-var ConverterFactory =
-  {
-    /**
-     * Default type for a factory used to create number converters. This type is passed to the
-     * [Validation.converterFactory]{@link oj.Validation.converterFactory} method to retrieve the
-     * number converter factory of type {@link oj.NumberConverterFactory}.
-     * @example <caption>Create a JET number converter with options</caption>
-     * var convFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER);
-     * var converter  =  convFactory.createConverter({
-     *  style: 'currency',
-     *  currency: 'USD',
-     *  currencyDisplay: 'symbol',
-     *  pattern: '¤ ##,##0.00'});
-     * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
-     * @expose
-     * @const
-     * @member
-     * @memberof oj.ConverterFactory
-     * @type {string}
-     */
-    CONVERTER_TYPE_NUMBER: 'number',
+var ConverterFactory = {
+  /**
+   * Default type for a factory used to create number converters. This type is passed to the
+   * [Validation.converterFactory]{@link oj.Validation.converterFactory} method to retrieve the
+   * number converter factory of type {@link oj.NumberConverterFactory}.
+   * @example <caption>Create a JET number converter with options</caption>
+   * var convFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER);
+   * var converter  =  convFactory.createConverter({
+   *  style: 'currency',
+   *  currency: 'USD',
+   *  currencyDisplay: 'symbol',
+   *  pattern: '¤ ##,##0.00'});
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @expose
+   * @const
+   * @member
+   * @memberof oj.ConverterFactory
+   * @type {string}
+   */
+  CONVERTER_TYPE_NUMBER: 'number',
 
-    /**
-     * Default type for a factory used to create datetime converters. This type is passed to the
-     * [Validation.converterFactory]{@link oj.Validation.converterFactory} method to retrieve the
-     * datetime converter factory of type {@link oj.DateTimeConverterFactory}.
-     * @example <caption>Create a JET dateTime converter with options</caption>
-     * var dateTimeCvtr = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
-     * var dateOptions = {day: 'numeric', month: 'numeric'};
-     * var dayMonthConverter = dateTimeCvtr.createConverter(dateOptions);
-     * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
-     * @expose
-     * @const
-     * @member
-     * @memberof oj.ConverterFactory
-     * @type {string}
-     */
+  /**
+   * Default type for a factory used to create datetime converters. This type is passed to the
+   * [Validation.converterFactory]{@link oj.Validation.converterFactory} method to retrieve the
+   * datetime converter factory of type {@link oj.DateTimeConverterFactory}.
+   * @example <caption>Create a JET dateTime converter with options</caption>
+   * var dateTimeCvtr = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
+   * var dateOptions = {day: 'numeric', month: 'numeric'};
+   * var dayMonthConverter = dateTimeCvtr.createConverter(dateOptions);
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @expose
+   * @const
+   * @member
+   * @memberof oj.ConverterFactory
+   * @type {string}
+   */
 
-    CONVERTER_TYPE_DATETIME: 'datetime',
+  CONVERTER_TYPE_DATETIME: 'datetime',
 
-    /**
-     * Default type for a factory used to create color converters. This type is passed to the
-     * [Validation.converterFactory]{@link oj.Validation.converterFactory} method to retrieve the
-     * color converter factory of type {@link oj.ColorConverterFactory}.
-     * @example <caption>Create a JET color converter with options</caption>
-     * this._convFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);
-     * this._convHex  =  this._convFactory.createConverter({"format": "hex"})
-     * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
-     * @expose
-     * @const
-     * @member
-     * @memberof oj.ConverterFactory
-     * @type {string}
-     */
-    CONVERTER_TYPE_COLOR: 'color',
+  /**
+   * Default type for a factory used to create color converters. This type is passed to the
+   * [Validation.converterFactory]{@link oj.Validation.converterFactory} method to retrieve the
+   * color converter factory of type {@link oj.ColorConverterFactory}.
+   * @example <caption>Create a JET color converter with options</caption>
+   * this._convFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);
+   * this._convHex  =  this._convFactory.createConverter({"format": "hex"})
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @expose
+   * @const
+   * @member
+   * @memberof oj.ConverterFactory
+   * @type {string}
+   */
+  CONVERTER_TYPE_COLOR: 'color',
 
-    /**
-     * Creates an immutable converter instance of the type the factory implements.
-     *
-     * @param {Object=} options an object literal containing properties required by the converter
-     * for its initialization. The properties provided in the options is implementation specific.
-     *
-     * @return {oj.Converter} a converter instance.
-     * @memberof oj.ConverterFactory
-     * @ojsignature {target: "Type",
-     *               value: "(options?: O): Converter<V> | Promise.<Converter<V>>"}
-     * @instance
-     * @throws {TypeError} if an unrecognized type was provided
-     * @expose
-     *
-     * @example <caption>Create a JET dateTime converter with options</caption>
-     * var dateTimeCvtr = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
-     * var dateOptions = {day: 'numeric', month: 'numeric'};
-     * var dayMonthConverter = dateTimeCvtr.createConverter(dateOptions);
-     * @example <caption>Create your own ConverterFactory and Converter, register the Converter on your
-     * ConverterFactory, and use it when displaying relative date information
-     * on the page to the user.</caption>
-     * ----- Javascript -----
-     * // Define new ConverterFactory
-     * RelativeDateTimeConverterFactory = (function () {
-     *   function _createRelativeDateTimeConverter(options)
-     *   {
-     *     // this is a custom converter See the Converter API or
-     *     // Custom Converter JET demo for details on
-     *     // how to create a custom converter.
-     *     return new RelativeDateTimeConverter(options);
-     *   }
-     *   return {
-     *     'createConverter': function (options) {
-     *       return _createRelativeDateTimeConverter(options);
-     *     }
-     *   };
-     * }());
-     * // Register the custom factory with the new type
-     * oj.Validation.converterFactory("relativeDate", RelativeDateTimeConverterFactory);
-     * // Get the custom factory using the new type.
-     * var rdConverter =  oj.Validation.converterFactory("relativeDate")
-     * .createConverter({relativeField: 'day', year: "numeric", month: "numeric", day: "numeric"});
-     *  ...
-     *  // Our custom converter's format function returns an object with 'value' and 'title'.
-     *  // We put the 'value' in innerHTML so the user can read it. E.g., Today or Tomorrow.
-     *  // And we put the actual date in the title. The user can read it when they hover over
-     *  // the word Today or Tomorrow.
-     *  content = rdConverter.format(context.row.ScheduleFor);
-     *  span.setAttribute('title', content.title);
-     *  span.innerHTML = content.value;
-     * ...
-     */
-    // eslint-disable-next-line no-unused-vars
-    createConverter: function (options) {}
-  };
+  /**
+   * Creates an immutable converter instance of the type the factory implements.
+   *
+   * @param {Object=} options an object literal containing properties required by the converter
+   * for its initialization. The properties provided in the options is implementation specific.
+   *
+   * @return {oj.Converter} a converter instance.
+   * @memberof oj.ConverterFactory
+   * @ojsignature {target: "Type",
+   *               value: "(options?: O): Converter<V> | Promise.<Converter<V>>"}
+   * @instance
+   * @throws {TypeError} if an unrecognized type was provided
+   * @expose
+   *
+   * @example <caption>Create a JET dateTime converter with options</caption>
+   * var dateTimeCvtr = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
+   * var dateOptions = {day: 'numeric', month: 'numeric'};
+   * var dayMonthConverter = dateTimeCvtr.createConverter(dateOptions);
+   * @example <caption>Create your own ConverterFactory and Converter, register the Converter on your
+   * ConverterFactory, and use it when displaying relative date information
+   * on the page to the user.</caption>
+   * ----- Javascript -----
+   * // Define new ConverterFactory
+   * RelativeDateTimeConverterFactory = (function () {
+   *   function _createRelativeDateTimeConverter(options)
+   *   {
+   *     // this is a custom converter See the Converter API or
+   *     // Custom Converter JET demo for details on
+   *     // how to create a custom converter.
+   *     return new RelativeDateTimeConverter(options);
+   *   }
+   *   return {
+   *     'createConverter': function (options) {
+   *       return _createRelativeDateTimeConverter(options);
+   *     }
+   *   };
+   * }());
+   * // Register the custom factory with the new type
+   * oj.Validation.converterFactory("relativeDate", RelativeDateTimeConverterFactory);
+   * // Get the custom factory using the new type.
+   * var rdConverter =  oj.Validation.converterFactory("relativeDate")
+   * .createConverter({relativeField: 'day', year: "numeric", month: "numeric", day: "numeric"});
+   *  ...
+   *  // Our custom converter's format function returns an object with 'value' and 'title'.
+   *  // We put the 'value' in innerHTML so the user can read it. E.g., Today or Tomorrow.
+   *  // And we put the actual date in the title. The user can read it when they hover over
+   *  // the word Today or Tomorrow.
+   *  content = rdConverter.format(context.row.ScheduleFor);
+   *  span.setAttribute('title', content.title);
+   *  span.innerHTML = content.value;
+   * ...
+   */
+  // eslint-disable-next-line no-unused-vars
+  createConverter: function (options) {}
+};
 
 /**
  * Contract for a ValidatorFactory that provides a factory method to create a validator instance for
@@ -636,150 +641,149 @@ var ConverterFactory =
  * @see oj.RegExpValidatorFactory
  * @see oj.RequiredValidatorFactory
  */
-var ValidatorFactory =
-  {
-    /**
-     * Default type for a factory used to create required validators. This type is passed to the
-     * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
-     * required validator factory of type {@link oj.RequiredValidatorFactory}.
-     * @example <caption>Create a JET required validator</caption>
-     * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED);
-     * var options = {'hint' : 'a value is required for this field'};
-     * var requiredValidator = rvf.createValidator(options);
-     * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
-     * @expose
-     * @const
-     * @member
-     * @memberof oj.ValidatorFactory
-     * @type {string}
-     */
-    VALIDATOR_TYPE_REQUIRED: 'required',
+var ValidatorFactory = {
+  /**
+   * Default type for a factory used to create required validators. This type is passed to the
+   * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
+   * required validator factory of type {@link oj.RequiredValidatorFactory}.
+   * @example <caption>Create a JET required validator</caption>
+   * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED);
+   * var options = {'hint' : 'a value is required for this field'};
+   * var requiredValidator = rvf.createValidator(options);
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @expose
+   * @const
+   * @member
+   * @memberof oj.ValidatorFactory
+   * @type {string}
+   */
+  VALIDATOR_TYPE_REQUIRED: 'required',
 
-    /**
-     * Default type for a factory used to create regExp validators. This type is passed to the
-     * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
-     * regExp validator factory of type {@link oj.RegExpValidatorFactory}.
-     * @example <caption>Create a JET regexp validator</caption>
-     * var validatorFactory =
-     * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP);
-     * var options =
-     * {pattern: '[a-zA-Z0-9]{3,}',
-     * hint: 'enter at least 3 letters or numbers.',
-     * messageDetail: 'You must enter at least 3 letters or numbers.'}
-     * var validator = validatorFactory.createValidator(options);
-     * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
-     * @expose
-     * @const
-     * @member
-     * @memberof oj.ValidatorFactory
-     * @type {string}
-     */
-    VALIDATOR_TYPE_REGEXP: 'regexp',
+  /**
+   * Default type for a factory used to create regExp validators. This type is passed to the
+   * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
+   * regExp validator factory of type {@link oj.RegExpValidatorFactory}.
+   * @example <caption>Create a JET regexp validator</caption>
+   * var validatorFactory =
+   * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP);
+   * var options =
+   * {pattern: '[a-zA-Z0-9]{3,}',
+   * hint: 'enter at least 3 letters or numbers.',
+   * messageDetail: 'You must enter at least 3 letters or numbers.'}
+   * var validator = validatorFactory.createValidator(options);
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @expose
+   * @const
+   * @member
+   * @memberof oj.ValidatorFactory
+   * @type {string}
+   */
+  VALIDATOR_TYPE_REGEXP: 'regexp',
 
-    /**
-     * Default type for a factory used to create numberRange validators. This type is passed to the
-     * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
-     * numberRange validator factory of type {@link oj.NumberRangeValidatorFactory}.
-     * @example <caption>Create a JET numberrange validator</caption>
-     * var validatorFactory =
-     * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE);
-     * var options = {min: 10000.05, max: 25000.95,
-     * hint: {inRange: 'Enter a value between {min} and {max}.'}};
-     * var validator = validatorFactory.createValidator(options);
-     * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
-     * @expose
-     * @const
-     * @member
-     * @memberof oj.ValidatorFactory
-     * @type {string}
-     */
-    VALIDATOR_TYPE_NUMBERRANGE: 'numberRange',
+  /**
+   * Default type for a factory used to create numberRange validators. This type is passed to the
+   * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
+   * numberRange validator factory of type {@link oj.NumberRangeValidatorFactory}.
+   * @example <caption>Create a JET numberrange validator</caption>
+   * var validatorFactory =
+   * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE);
+   * var options = {min: 10000.05, max: 25000.95,
+   * hint: {inRange: 'Enter a value between {min} and {max}.'}};
+   * var validator = validatorFactory.createValidator(options);
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @expose
+   * @const
+   * @member
+   * @memberof oj.ValidatorFactory
+   * @type {string}
+   */
+  VALIDATOR_TYPE_NUMBERRANGE: 'numberRange',
 
-    /**
-     * Default type for a factory used to create length validators. This type is passed to the
-     * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
-     * length validator factory of type {@link oj.LengthValidatorFactory}.
-     * @example <caption>Create a JET length validator</caption>
-     * var validatorFactory =
-     * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_LENGTH);
-     * var options = {min: 5, max: 10};
-     * var validator = validatorFactory.createValidator(options);
-     * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
-     * @expose
-     * @const
-     * @member
-     * @memberof oj.ValidatorFactory
-     * @type {string}
-     */
-    VALIDATOR_TYPE_LENGTH: 'length',
+  /**
+   * Default type for a factory used to create length validators. This type is passed to the
+   * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
+   * length validator factory of type {@link oj.LengthValidatorFactory}.
+   * @example <caption>Create a JET length validator</caption>
+   * var validatorFactory =
+   * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_LENGTH);
+   * var options = {min: 5, max: 10};
+   * var validator = validatorFactory.createValidator(options);
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @expose
+   * @const
+   * @member
+   * @memberof oj.ValidatorFactory
+   * @type {string}
+   */
+  VALIDATOR_TYPE_LENGTH: 'length',
 
-    /**
-     * Default type for a factory used to create required validators. This type is passed to the
-     * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
-     * dateTimeRange validator factory of type {@link oj.DateTimeRangeValidatorFactory}.
-     * @example <caption>Create a JET datetime validator</caption>
-     * var validator =
-     * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATETIMERANGE)
-     * .createValidator({{max: oj.IntlConverterUtils.dateToLocalIso(new Date()),
-     * min: oj.IntlConverterUtils.dateToLocalIso(new Date(2000, 00, 01)),
-     * hint: {'inRange': 'Enter a date that falls in the current millennium.'}});
-     * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
-     * @expose
-     * @const
-     * @member
-     * @memberof oj.ValidatorFactory
-     * @type {string}
-     */
-    VALIDATOR_TYPE_DATETIMERANGE: 'dateTimeRange',
+  /**
+   * Default type for a factory used to create required validators. This type is passed to the
+   * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
+   * dateTimeRange validator factory of type {@link oj.DateTimeRangeValidatorFactory}.
+   * @example <caption>Create a JET datetime validator</caption>
+   * var validator =
+   * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATETIMERANGE)
+   * .createValidator({{max: oj.IntlConverterUtils.dateToLocalIso(new Date()),
+   * min: oj.IntlConverterUtils.dateToLocalIso(new Date(2000, 00, 01)),
+   * hint: {'inRange': 'Enter a date that falls in the current millennium.'}});
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @expose
+   * @const
+   * @member
+   * @memberof oj.ValidatorFactory
+   * @type {string}
+   */
+  VALIDATOR_TYPE_DATETIMERANGE: 'dateTimeRange',
 
-    /**
-     * Default type for a factory used to create date restriction validators. This type is passed to
-     * the [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
-     * dateRestriction validator factory of type {@link oj.DateRestrictionValidatorFactory}.
-     * @example <caption>Create a JET dateRestriction validator</caption>
-     * var validatorFactory =
-     * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATERESTRICTION);
-     * var options = {dayFormatter : self.aprilFoolsFormatter, // your own formatter code
-     * message : {messageDayMetaData : 'You can\'t fool me! Try a different date.'}};
-     * var validator = validatorFactory.createValidator(options);
-     * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
-     * @expose
-     * @const
-     * @member
-     * @memberof oj.ValidatorFactory
-     * @type {string}
-     */
-    VALIDATOR_TYPE_DATERESTRICTION: 'dateRestriction',
+  /**
+   * Default type for a factory used to create date restriction validators. This type is passed to
+   * the [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
+   * dateRestriction validator factory of type {@link oj.DateRestrictionValidatorFactory}.
+   * @example <caption>Create a JET dateRestriction validator</caption>
+   * var validatorFactory =
+   * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATERESTRICTION);
+   * var options = {dayFormatter : self.aprilFoolsFormatter, // your own formatter code
+   * message : {messageDayMetaData : 'You can\'t fool me! Try a different date.'}};
+   * var validator = validatorFactory.createValidator(options);
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @expose
+   * @const
+   * @member
+   * @memberof oj.ValidatorFactory
+   * @type {string}
+   */
+  VALIDATOR_TYPE_DATERESTRICTION: 'dateRestriction',
 
-    /**
-     * Creates an immutable validator instance of the type the factory implements.
-     * For the specific options parameters, see the Validator jsdoc for the validator you
-     * are creating, e.g., oj.RequiredValidator if you are creating a required validator.
-     *
-     * @example <caption>create an instance of the required validator using the factory</caption>
-     * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED);
-     * var options = {'hint' : 'a value is required for this field'};
-     * var requiredValidator = rvf.createValidator(options);
-     * @param {(Object|null)} options an object literal containing properties required by the validator
-     * for its initialization. The properties provided in the options is implementation specific.
-     * @return {Object} a validator instance.
-     * @throws {TypeError} if an unrecognized type was provided
-     * @memberof oj.ValidatorFactory
-     * @ojsignature { target: "Type",
-     *                value: "oj.Validator<V> | oj.AsyncValidator<V>",
-     *                for: "returns"}
-     * @instance
-     * @expose
-     * @see oj.DateRestrictionValidator
-     * @see oj.DateTimeRangeValidator
-     * @see oj.LengthValidator
-     * @see oj.NumberRangeValidator
-     * @see oj.RegExpValidator
-     * @see oj.RequiredValidator
-     */
-    // eslint-disable-next-line no-unused-vars
-    createValidator: function (options) {}
-  };
+  /**
+   * Creates an immutable validator instance of the type the factory implements.
+   * For the specific options parameters, see the Validator jsdoc for the validator you
+   * are creating, e.g., oj.RequiredValidator if you are creating a required validator.
+   *
+   * @example <caption>create an instance of the required validator using the factory</caption>
+   * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED);
+   * var options = {'hint' : 'a value is required for this field'};
+   * var requiredValidator = rvf.createValidator(options);
+   * @param {(Object|null)} options an object literal containing properties required by the validator
+   * for its initialization. The properties provided in the options is implementation specific.
+   * @return {Object} a validator instance.
+   * @throws {TypeError} if an unrecognized type was provided
+   * @memberof oj.ValidatorFactory
+   * @ojsignature { target: "Type",
+   *                value: "oj.Validator<V> | oj.AsyncValidator<V>",
+   *                for: "returns"}
+   * @instance
+   * @expose
+   * @see oj.DateRestrictionValidator
+   * @see oj.DateTimeRangeValidator
+   * @see oj.LengthValidator
+   * @see oj.NumberRangeValidator
+   * @see oj.RegExpValidator
+   * @see oj.RequiredValidator
+   */
+  // eslint-disable-next-line no-unused-vars
+  createValidator: function (options) {}
+};
 
 /**
  * Internal property that identifies the type that is the contract for conveters and validators.
@@ -791,18 +795,18 @@ Validation._CONTRACTS = {
 };
 
 /**
-     * A ducktype for accessing validator created and/ registered by referring to {@link oj.Validation.validatorFactory}
-     * @typedef {object} oj.Validation.RegisteredValidator
-     * @property {string} type the name of the factory registered validator
-     * @property {Object=} options options to the validator
-     */
+ * A ducktype for accessing validator created and/ registered by referring to {@link oj.Validation.validatorFactory}
+ * @typedef {object} oj.Validation.RegisteredValidator
+ * @property {string} type the name of the factory registered validator
+ * @property {Object=} options options to the validator
+ */
 
 /**
-* A ducktype for accessing converter created and/ registered by referring to {@link oj.Validation.converterFactory}
-* @typedef {object} oj.Validation.RegisteredConverter
-* @property {string} type the name of the factory registered converter
-* @property {Object=} options options to the converter
-*/
+ * A ducktype for accessing converter created and/ registered by referring to {@link oj.Validation.converterFactory}
+ * @typedef {object} oj.Validation.RegisteredConverter
+ * @property {string} type the name of the factory registered converter
+ * @property {Object=} options options to the converter
+ */
 
 
 
@@ -854,11 +858,13 @@ var ColorConverterFactory = (function () {
       return _createColorConverter(options);
     }
   };
-}()); // notice immediate invocation of anonymous function
+})(); // notice immediate invocation of anonymous function
 
 /** Register the default factory provider function */
-Validation.__registerDefaultConverterFactory(ConverterFactory.CONVERTER_TYPE_COLOR, // factory name
-                                                ColorConverterFactory);
+Validation.__registerDefaultConverterFactory(
+  ConverterFactory.CONVERTER_TYPE_COLOR, // factory name
+  ColorConverterFactory
+);
 
 // JET VALIDATOR FACTORIES
 
@@ -904,11 +910,13 @@ var RequiredValidatorFactory = (function () {
       return _createRequiredValidator(options);
     }
   };
-}()); // notice immediate invocation of anonymous function
+})(); // notice immediate invocation of anonymous function
 
 /** Register the default factory provider function */
-Validation.__registerDefaultValidatorFactory(ValidatorFactory.VALIDATOR_TYPE_REQUIRED,
-                                                RequiredValidatorFactory);
+Validation.__registerDefaultValidatorFactory(
+  ValidatorFactory.VALIDATOR_TYPE_REQUIRED,
+  RequiredValidatorFactory
+);
 
 /**
  * A factory implementation that creates an instance of the built-in regExp validator of type
@@ -956,12 +964,13 @@ var RegExpValidatorFactory = (function () {
       return _createRegExpValidator(options);
     }
   };
-}()); // notice immediate invocation of anonymous function
+})(); // notice immediate invocation of anonymous function
 
 /** Register the default factory provider function */
-Validation.__registerDefaultValidatorFactory(ValidatorFactory.VALIDATOR_TYPE_REGEXP,
-                                                RegExpValidatorFactory);
-
+Validation.__registerDefaultValidatorFactory(
+  ValidatorFactory.VALIDATOR_TYPE_REGEXP,
+  RegExpValidatorFactory
+);
 
 /**
  * Returns an instance of oj.LengthValidatorFactory that provides a factory method to create an
@@ -1005,11 +1014,13 @@ var LengthValidatorFactory = (function () {
       return _createLengthValidator(options);
     }
   };
-}()); // notice immediate invocation of anonymous function
+})(); // notice immediate invocation of anonymous function
 
 /** Register the default factory provider function */
-Validation.__registerDefaultValidatorFactory(ValidatorFactory.VALIDATOR_TYPE_LENGTH,
-                                                LengthValidatorFactory);
+Validation.__registerDefaultValidatorFactory(
+  ValidatorFactory.VALIDATOR_TYPE_LENGTH,
+  LengthValidatorFactory
+);
 
 
 /* global Validation:false, ValidatorFactory:false, ConverterFactory:false */

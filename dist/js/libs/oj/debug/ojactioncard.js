@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -28,9 +28,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdo
                 }
             };
             this._handleUpEnd = (event) => {
-                var _a, _b;
                 if (!this._isFromActiveSource(event) && this.state.active) {
                     this.setState({ active: false });
+                }
+            };
+            this._handleClick = (event) => {
+                var _a, _b;
+                if (!this._isFromActiveSource(event)) {
                     (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
                 }
             };
@@ -79,7 +83,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdo
                 classString += ' oj-focus-highlight';
             }
             const tabIndex = (_a = props.tabIndex) !== null && _a !== void 0 ? _a : 0;
-            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ tabIndex: tabIndex, class: classString, role: "button", onKeyUp: this._handleKeyup, onMouseUp: this._handleUpEnd, onKeyDown: this._handleKeydown, onMouseDown: this._handleStart, onTouchStart: this._handleStart, onTouchEnd: this._handleUpEnd, onTouchCancel: this._handleTouchcancel, onTouchMove: this._handleMove, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout }, {
+            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ tabIndex: tabIndex, class: classString, role: "button", onKeyUp: this._handleKeyup, onMouseUp: this._handleUpEnd, onKeyDown: this._handleKeydown, onMouseDown: this._handleStart, onTouchStart: this._handleStart, onTouchEnd: this._handleUpEnd, onTouchCancel: this._handleTouchcancel, onTouchMove: this._handleMove, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._handleClick }, {
                 onojAction: this._handleOjAction
             }, { ref: this._rootRef }, { children: this.props.children })));
         }
@@ -95,7 +99,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdo
             return DataCollectionUtils.isEventClickthroughDisabled(event, this._rootRef.current);
         }
     };
-    exports.ActionCard.metadata = { "slots": { "": {} }, "events": { "ojAction": { "bubbles": true } }, "extension": { "_OBSERVED_GLOBAL_PROPS": ["tabIndex", "role"] } };
+    exports.ActionCard._metadata = { "slots": { "": {} }, "events": { "ojAction": { "bubbles": true } }, "extension": { "_OBSERVED_GLOBAL_PROPS": ["tabIndex", "role"] } };
     exports.ActionCard = __decorate([
         ojvcomponent.customElement('oj-action-card')
     ], exports.ActionCard);

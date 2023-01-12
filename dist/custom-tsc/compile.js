@@ -32,23 +32,42 @@ const decoratorTransformer_1 = __importDefault(require("./decoratorTransformer")
 const importTransformer_1 = __importDefault(require("./importTransformer"));
 const dtsTransformer_1 = __importDefault(require("./dtsTransformer"));
 const dtsTransformer_2 = require("./dtsTransformer");
+const __SUPPORTED_TS_VERSION = '4.8.4';
+const [__SUPPORTED_TS_MAJOR, __SUPPORTED_TS_MINOR] = __SUPPORTED_TS_VERSION
+    .split('.', 2)
+    .map((str) => Number.parseInt(str));
 function compile({ tsconfigJson, buildOptions }) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     const parsedJsonConfig = ts.parseJsonConfigFileContent(tsconfigJson, ts.sys, '.');
     const parsedTsconfigJson = {
         compilerOptions: parsedJsonConfig.options,
         files: parsedJsonConfig.fileNames
     };
+    const errors = [];
+    const [bldTsMajor, bldTsMinor] = ts.version.split('.', 2).map((str) => Number.parseInt(str));
+    if (bldTsMajor < __SUPPORTED_TS_MAJOR ||
+        (bldTsMajor === __SUPPORTED_TS_MAJOR && bldTsMinor < __SUPPORTED_TS_MINOR)) {
+        const error = new Error(`Unsupported TypeScript version detected: ${ts.version}
+Upgrade your JET project to TypeScript version ${__SUPPORTED_TS_VERSION}
+`);
+        errors.push(error);
+        return { errors, parsedTsconfigJson };
+    }
     const _buildOptions = Object.assign({}, buildOptions);
+    _buildOptions.parentDirToPackInfo = {};
     if ((_b = (_a = parsedJsonConfig === null || parsedJsonConfig === void 0 ? void 0 : parsedJsonConfig.raw) === null || _a === void 0 ? void 0 : _a.compilerOptions) === null || _b === void 0 ? void 0 : _b['_JET_translationBundleIds']) {
         _buildOptions.translationBundleIds = [
             ...parsedJsonConfig.raw.compilerOptions['_JET_translationBundleIds']
         ];
     }
+    if ((_d = (_c = parsedJsonConfig === null || parsedJsonConfig === void 0 ? void 0 : parsedJsonConfig.raw) === null || _c === void 0 ? void 0 : _c.compilerOptions) === null || _d === void 0 ? void 0 : _d['_JET_disabledExceptionKeys']) {
+        _buildOptions.disabledExceptionKeys = [
+            ...parsedJsonConfig.raw.compilerOptions['_JET_disabledExceptionKeys']
+        ];
+    }
     const compilerHost = ts.createCompilerHost(parsedTsconfigJson.compilerOptions);
     const program = ts.createProgram(parsedTsconfigJson.files, parsedTsconfigJson.compilerOptions, compilerHost);
     let emitResult;
-    const errors = [];
     const EmitOptions = {
         before: [
             (0, metadataTransformer_1.default)(program, _buildOptions),

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -84,14 +84,16 @@ ModuleElementUtils.createView = function (options) {
     return Promise.resolve([]);
   }
 
-  return new Promise(function (resolve, reject) {
-    var requireFunc = options.require ? options.require : require;
-    requireFunc(['text!' + options.viewPath], resolve, reject);
-  })
-  // NOTE: Do not put any calls referencing imported modules in this method. They
-  // will cause issues during Webpack. The post-processing of the view HTML text
-  // using HtmlUtils is moved to _processViewText because of this.
-  .then(ModuleElementUtils._processViewText);
+  return (
+    new Promise(function (resolve, reject) {
+      var requireFunc = options.require ? options.require : require;
+      requireFunc(['text!' + options.viewPath], resolve, reject);
+    })
+      // NOTE: Do not put any calls referencing imported modules in this method. They
+      // will cause issues during Webpack. The post-processing of the view HTML text
+      // using HtmlUtils is moved to _processViewText because of this.
+      .then(ModuleElementUtils._processViewText)
+  );
 };
 
 /**
@@ -143,11 +145,13 @@ ModuleElementUtils.createViewModel = function (options) {
   return new Promise(function (resolve, reject) {
     var requireFunc = options.require ? options.require : require;
     requireFunc([options.viewModelPath], resolve, reject);
-  })
-  .then(function (viewModelValue) {
+  }).then(function (viewModelValue) {
     var viewModel = viewModelValue;
-    if (viewModel && (options.initialize === 'always' ||
-      (options.params != null && options.initialize !== 'never'))) {
+    if (
+      viewModel &&
+      (options.initialize === 'always' ||
+        (options.params != null && options.initialize !== 'never'))
+    ) {
       if (typeof viewModel === 'function') {
         // eslint-disable-next-line new-cap
         viewModel = new viewModel(options.params);
@@ -213,8 +217,7 @@ ModuleElementUtils.createConfig = function (options) {
       params: options.params,
       initialize: 'always'
     })
-  ])
-  .then(function (values) {
+  ]).then(function (values) {
     return { view: values[0], viewModel: values[1] };
   });
 };

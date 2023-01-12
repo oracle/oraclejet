@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -10,7 +10,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   /**
    * Utility class for storing built-in basemap info.
    */
-   if (window['DvtBaseMapManager']) {
+  if (window['DvtBaseMapManager']) {
     exports.DvtBaseMapManager = window['DvtBaseMapManager'];
   } else {
     exports.DvtBaseMapManager = {};
@@ -21,15 +21,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
   Object.assign(exports.DvtBaseMapManager, {
     /** @const */
-    TYPE_LABELS : 0,// contain region labels
+    TYPE_LABELS: 0, // contain region labels
     /** @const */
-    TYPE_PATH : 1,// contain region paths
+    TYPE_PATH: 1, // contain region paths
     /** @const */
-    TYPE_PARENTREGION_CHILDREN : 2,// contains parent region id to current region id mappings.  Stored this way since mapping is only needed if child layer is present.
+    TYPE_PARENTREGION_CHILDREN: 2, // contains parent region id to current region id mappings.  Stored this way since mapping is only needed if child layer is present.
     /** @const */
-    TYPE_LABELINFO : 3,// contains leaderline info
+    TYPE_LABELINFO: 3, // contains leaderline info
     /** @const */
-    TYPE_DIM : 4, //basemap dimensions
+    TYPE_DIM: 4, //basemap dimensions
     /** @const @private */
     _INDEX: '__index',
     /** @const @private */
@@ -41,13 +41,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} layerName The layer name
      * @return {dvt.Rectangle}
      */
-    getBaseMapDim : (baseMapName, layerName) => {
+    getBaseMapDim: (baseMapName, layerName) => {
       exports.DvtBaseMapManager._processUnprocessedMaps();
       var layer = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName][layerName];
       if (layer) {
         var dimAr = layer[exports.DvtBaseMapManager.TYPE_DIM];
-        if (dimAr)
-          return new dvt.Rectangle(dimAr[0], dimAr[1], dimAr[2], dimAr[3]);
+        if (dimAr) return new dvt.Rectangle(dimAr[0], dimAr[1], dimAr[2], dimAr[3]);
       }
       return null;
     },
@@ -58,13 +57,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} layerName The layer name
      * @return {Array}
      */
-    getAreaLabelInfo : (baseMapName, layerName) => {
+    getAreaLabelInfo: (baseMapName, layerName) => {
       exports.DvtBaseMapManager._processUnprocessedMaps();
       var layer = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName][layerName];
-      if (layer)
-        return layer[exports.DvtBaseMapManager.TYPE_LABELINFO];
-      else
-        return null;
+      if (layer) return layer[exports.DvtBaseMapManager.TYPE_LABELINFO];
+      else return null;
     },
 
     /**
@@ -76,8 +73,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     getAreaIds: (baseMapName, layerName) => {
       var areanames = [];
       var paths = exports.DvtBaseMapManager.getAreaPaths(baseMapName, layerName);
-      for (var area in paths)
-        areanames.push(area);
+      for (var area in paths) areanames.push(area);
       return areanames;
     },
 
@@ -87,13 +83,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} layerName The name of the layer
      * @return {Object}
      */
-     getAreaLabels: (baseMapName, layerName) => {
+    getAreaLabels: (baseMapName, layerName) => {
       exports.DvtBaseMapManager._processUnprocessedMaps();
       var layer = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName][layerName];
-      if (layer)
-        return layer[exports.DvtBaseMapManager.TYPE_LABELS];
-      else
-        return null;
+      if (layer) return layer[exports.DvtBaseMapManager.TYPE_LABELS];
+      else return null;
     },
 
     /**
@@ -103,16 +97,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} areaId The area id
      * @return {string}
      */
-     getLongAreaLabel: (baseMapName, layerName, areaId) => {
+    getLongAreaLabel: (baseMapName, layerName, areaId) => {
       exports.DvtBaseMapManager._processUnprocessedMaps();
       var layer = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName][layerName];
       var labels;
-      if (layer)
-        labels = layer[exports.DvtBaseMapManager.TYPE_LABELS];
-      if (labels && labels[areaId])
-        return labels[areaId][1];
-      else
-        return null;
+      if (layer) labels = layer[exports.DvtBaseMapManager.TYPE_LABELS];
+      if (labels && labels[areaId]) return labels[areaId][1];
+      else return null;
     },
 
     /**
@@ -121,15 +112,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} city The city id
      * @return {dvt.Point}
      */
-     getCityCoordinates : (baseMapName, city) => {
+    getCityCoordinates: (baseMapName, city) => {
       exports.DvtBaseMapManager._processUnprocessedMaps();
       var basemap = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName];
       if (basemap) {
         var cityLayer = basemap['cities'];
         if (cityLayer) {
           var coords = cityLayer[exports.DvtBaseMapManager.TYPE_PATH][city];
-          if (coords)
-            return new dvt.Point(coords[0], coords[1]);
+          if (coords) return new dvt.Point(coords[0], coords[1]);
         }
       }
       return null;
@@ -141,15 +131,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} city The city id
      * @return {string}
      */
-     getCityLabel : (baseMapName, city) => {
+    getCityLabel: (baseMapName, city) => {
       exports.DvtBaseMapManager._processUnprocessedMaps();
       var basemap = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName];
       if (basemap) {
         var cityLayer = basemap['cities'];
         if (cityLayer) {
           var cityLabel = cityLayer[exports.DvtBaseMapManager.TYPE_LABELS][city];
-          if (cityLabel)
-            return cityLabel[1];
+          if (cityLabel) return cityLabel[1];
         }
       }
       return null;
@@ -162,7 +151,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} areaId The area id
      * @return {dvt.Point}
      */
-    getAreaCenter : (baseMapName, layerName, areaId) => {
+    getAreaCenter: (baseMapName, layerName, areaId) => {
       exports.DvtBaseMapManager._processUnprocessedMaps();
       var basemap = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName];
       if (basemap) {
@@ -188,13 +177,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {number} zoomFactor The max basemap zoom factor
      * @return {Object}
      */
-    getAreaPaths : (baseMapName, layerName, viewportW, viewportH, zoomFactor)=> {
+    getAreaPaths: (baseMapName, layerName, viewportW, viewportH, zoomFactor) => {
       exports.DvtBaseMapManager._processUnprocessedMaps();
       var layer = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName][layerName];
       var paths = layer[exports.DvtBaseMapManager.TYPE_PATH];
       var dimAr = layer[exports.DvtBaseMapManager.TYPE_DIM];
       if (dimAr)
-        return exports.DvtBaseMapManager._simplifyAreaPaths(paths, dimAr[2], dimAr[3], viewportW, viewportH, zoomFactor);
+        return exports.DvtBaseMapManager._simplifyAreaPaths(
+          paths,
+          dimAr[2],
+          dimAr[3],
+          viewportW,
+          viewportH,
+          zoomFactor
+        );
       return paths;
     },
 
@@ -205,11 +201,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} area The area
      * @return {string}
      */
-     getPathForArea : (baseMapName, layerName, area) => {
+    getPathForArea: (baseMapName, layerName, area) => {
       exports.DvtBaseMapManager._processUnprocessedMaps();
       var layer = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName][layerName];
-      if (layer)
-        return layer[exports.DvtBaseMapManager.TYPE_PATH][area];
+      if (layer) return layer[exports.DvtBaseMapManager.TYPE_PATH][area];
       return null;
     },
 
@@ -224,7 +219,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {number} index
      * @param {Array} dim
      */
-     registerBaseMapLayer : (baseMapName, layerName, labelMetadata, pathMetadata, parentsRegionMetadata, labelInfoMetadata, index, dim) => {
+    registerBaseMapLayer: (
+      baseMapName,
+      layerName,
+      labelMetadata,
+      pathMetadata,
+      parentsRegionMetadata,
+      labelInfoMetadata,
+      index,
+      dim
+    ) => {
       // bootstrap global base map metadata
       // find or create basemap metadata
       var basemapMetadata = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName];
@@ -240,8 +244,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         layerMetadata = new Object();
         basemapMetadata[layerName] = layerMetadata;
         // custom area layers don't have indicies when registered
-        if (index != null)
-          basemapMetadata[exports.DvtBaseMapManager._INDEX][index] = layerName;
+        if (index != null) basemapMetadata[exports.DvtBaseMapManager._INDEX][index] = layerName;
       }
 
       // register layer metadata base on type
@@ -259,7 +262,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} layerName layer name
      * @param {string} labelMetadata label info
      */
-     registerResourceBundle : (baseMapName, layerName, labelMetadata) => {
+    registerResourceBundle: (baseMapName, layerName, labelMetadata) => {
       var basemapMetadata = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName];
       var layerMetadata;
       if (!basemapMetadata) {
@@ -276,8 +279,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
       layerMetadata = basemapMetadata[layerName];
       // Overwrite english labels with resource bundle language
-      if (layerMetadata)
-      layerMetadata[exports.DvtBaseMapManager.TYPE_LABELS] = labelMetadata;
+      if (layerMetadata) layerMetadata[exports.DvtBaseMapManager.TYPE_LABELS] = labelMetadata;
     },
 
     /**
@@ -286,7 +288,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} layerName layer name
      * @param {string} labelMetadata label info
      */
-     updateResourceBundle : (baseMapName, layerName, labelMetadata) => {
+    updateResourceBundle: (baseMapName, layerName, labelMetadata) => {
       var basemapMetadata = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName];
       if (basemapMetadata) {
         var layerMetadata = basemapMetadata[layerName];
@@ -303,20 +305,32 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * Processes registered maps
      * @private
      */
-     _processUnprocessedMaps : () => {
+    _processUnprocessedMaps: () => {
       var i;
       var args;
       var unprocessedMaps = exports.DvtBaseMapManager['_UNPROCESSED_MAPS'];
       if (unprocessedMaps) {
-        for (i = 0; i < unprocessedMaps[0].length; i++) { // registerBaseMapLayer
+        for (i = 0; i < unprocessedMaps[0].length; i++) {
+          // registerBaseMapLayer
           args = unprocessedMaps[0][i];
-          exports.DvtBaseMapManager.registerBaseMapLayer(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
+          exports.DvtBaseMapManager.registerBaseMapLayer(
+            args[0],
+            args[1],
+            args[2],
+            args[3],
+            args[4],
+            args[5],
+            args[6],
+            args[7]
+          );
         }
-        for (i = 0; i < unprocessedMaps[1].length; i++) { // registerResourceBundle
+        for (i = 0; i < unprocessedMaps[1].length; i++) {
+          // registerResourceBundle
           args = unprocessedMaps[1][i];
           exports.DvtBaseMapManager.registerResourceBundle(args[0], args[1], args[2]);
         }
-        for (i = 0; i < unprocessedMaps[2].length; i++) { // updateResourceBundle
+        for (i = 0; i < unprocessedMaps[2].length; i++) {
+          // updateResourceBundle
           args = unprocessedMaps[2][i];
           exports.DvtBaseMapManager.updateResourceBundle(args[0], args[1], args[2]);
         }
@@ -345,10 +359,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
               var indicies = basemapMetadata[exports.DvtBaseMapManager._INDEX];
               indicies.splice(index, 0, layerName);
               basemapMetadata[layerName][exports.DvtBaseMapManager._INDEX] = index;
-              for (var j = (index + 1); j < indicies.length; j++) {
+              for (var j = index + 1; j < indicies.length; j++) {
                 var lowerLayer = basemapMetadata[indicies[j]];
-                if (lowerLayer)
-                  lowerLayer[exports.DvtBaseMapManager._INDEX]++;
+                if (lowerLayer) lowerLayer[exports.DvtBaseMapManager._INDEX]++;
               }
             }
 
@@ -374,23 +387,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @return {Object}
      * @private
      */
-     _simplifyAreaPaths : (paths, basemapW, basemapH, viewportW, viewportH, zoomFactor) => {
+    _simplifyAreaPaths: (paths, basemapW, basemapH, viewportW, viewportH, zoomFactor) => {
       // determine the scale factor for the map given the viewport
       if (zoomFactor > 0) {
         var dzx = viewportW / basemapW;
         var dzy = viewportH / basemapH;
         var dz = Math.min(dzx, dzy);
         var scale = 1 / (dz * zoomFactor); // 6 is the current max zoom
-        if (scale <= 1)
-          return paths;
+        if (scale <= 1) return paths;
         // If scale = 10 that means 10 pixels in the map coordinate space = 1 pixel in the current viewport
         // and any draw commands less than 10 pixels in the map coordinate space won't even show up in the viewport
         var simplifiedPaths = [];
         if (paths) {
           for (var path in paths) {
             var pathAr = paths[path];
-            if (isNaN(pathAr))
-              pathAr = dvt.PathUtils.createPathArray(paths[path]);
+            if (isNaN(pathAr)) pathAr = dvt.PathUtils.createPathArray(paths[path]);
             simplifiedPaths[path] = dvt.PathUtils.simplifyPath(pathAr, scale);
           }
         }
@@ -406,19 +417,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} layerName The name of the layer or 'cities' for the point data layer
      * @return {object}
      */
-    getLayerIds : (baseMapName, layerName)  => {
+    getLayerIds: (baseMapName, layerName) => {
       exports.DvtBaseMapManager._processUnprocessedMaps();
       var layer = exports.DvtBaseMapManager._GLOBAL_MAPS[baseMapName][layerName];
       var map = {};
       if (layer) {
         var ids = layer[exports.DvtBaseMapManager.TYPE_LABELS];
-        for (var id in ids)
-          map[id] = ids[id][1];
+        for (var id in ids) map[id] = ids[id][1];
         if (layerName !== 'cities' && !ids) {
           // Handle MapProvider case where no labels are provided, but we still want to return the layer area ids
           var areas = exports.DvtBaseMapManager.getAreaIds(baseMapName, layerName);
-          for (var i = 0; i < areas.length; i++)
-            map[areas[i]] = null;
+          for (var i = 0; i < areas.length; i++) map[areas[i]] = null;
         }
       }
       return map;
@@ -437,7 +446,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    * @param {boolean} bSupportsVectorEffects True if the rendering browser supports vector effects
    */
   class DvtMapArea extends dvt.Container {
-
     /**
      * @param {dvt.Context} context The rendering context
      * @param {ThematicMap} view The owning component
@@ -458,8 +466,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       //IE10, Flash/XML toolkit do not support vector-effects=non-scaling-stroke so we still need to set stroke width based on zoom
       this._bSupportsVectorEffects = bSupportsVectorEffects;
       var stroke = dvtShape.getStroke();
-      if (stroke)
-        this._areaStrokeWidth = stroke.getWidth();
+      if (stroke) this._areaStrokeWidth = stroke.getWidth();
     }
 
     /**
@@ -482,7 +489,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         // Custom Tooltip from Function
         var tooltipObj = this._view.getOptions()['_tooltip'];
         if (tooltipObj)
-          return this._view.getCtx().getTooltipManager().getCustomTooltip(tooltipObj['renderer'], this.getDataContext());
+          return this._view
+            .getCtx()
+            .getTooltipManager()
+            .getCustomTooltip(tooltipObj['renderer'], this.getDataContext());
         return this._tooltip;
       }
       return null;
@@ -502,16 +512,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     getDataContext() {
       return {
-        'color': null,
-        'component': this._view.getOptions()['_widgetConstructor'],
-        'data': null,
-        'id': null,
-        'label': null,
-        'location': this.getAreaId(),
-        'locationName': this._areaName,
-        'tooltip': this._tooltip,
-        'x': null,
-        'y': null
+        color: null,
+        component: this._view.getOptions()['_widgetConstructor'],
+        data: null,
+        id: null,
+        label: null,
+        location: this.getAreaId(),
+        locationName: this._areaName,
+        tooltip: this._tooltip,
+        x: null,
+        y: null
       };
     }
 
@@ -520,8 +530,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @return {dvt.Stroke}
      */
     getStroke() {
-      if (this._shape instanceof dvt.Shape)
-        return this._shape.getStroke();
+      if (this._shape instanceof dvt.Shape) return this._shape.getStroke();
       return null;
     }
 
@@ -530,8 +539,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {dvt.Stroke} stroke The area stroke
      */
     setStroke(stroke) {
-      if (this._shape instanceof dvt.Shape)
-        this._shape.setStroke(stroke);
+      if (this._shape instanceof dvt.Shape) this._shape.setStroke(stroke);
     }
 
     /**
@@ -598,8 +606,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     contains(x, y) {
       var dims = this.getDimensions();
-      return x >= dims.x && x <= dims.x + dims.w &&
-            y >= dims.y && y <= dims.y + dims.h;
+      return x >= dims.x && x <= dims.x + dims.w && y >= dims.y && y <= dims.y + dims.h;
     }
 
     /**
@@ -610,8 +617,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     HandleZoomEvent(pzcMatrix) {
       if (!this._bSupportsVectorEffects && this._shape && this._areaStrokeWidth) {
         var copyStroke = this._shape.getStroke();
-        var zoomStroke = new dvt.Stroke(copyStroke.getColor(), copyStroke.getAlpha(),
-          this._areaStrokeWidth / pzcMatrix.getA(), copyStroke.isFixedWidth());
+        var zoomStroke = new dvt.Stroke(
+          copyStroke.getColor(),
+          copyStroke.getAlpha(),
+          this._areaStrokeWidth / pzcMatrix.getA(),
+          copyStroke.isFixedWidth()
+        );
         this._shape.setStroke(zoomStroke);
       }
     }
@@ -697,15 +708,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       }
 
       // if labels are always displayed, use the last available bounding box
-      if (state == -1 && this._labelDisplay === 'on')
-        state = this._boundRectangle.length - 1;
+      if (state == -1 && this._labelDisplay === 'on') state = this._boundRectangle.length - 1;
 
       if (this._currentState !== state) {
         if (state == -1) {
           this.reset();
         } else {
-          if (!this.getParent())
-            this._parentContainer.addChild(this);
+          if (!this.getParent()) this._parentContainer.addChild(this);
           var center = this._boundRectangle[state].getCenter();
           this.setCenter(center);
           if (this._leaderLines) {
@@ -726,20 +735,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
                 this.alignLeft();
                 this.alignMiddle();
                 this.setCenter(new dvt.Point(labelBox.x, center.y));
-              }
-              else if (labelBox.y > leaderLinePoints[numPoints - 1]) {
+              } else if (labelBox.y > leaderLinePoints[numPoints - 1]) {
                 // leaderline position: top
                 this.alignTop();
                 this.alignCenter();
                 this.setCenter(new dvt.Point(center.x, labelBox.y));
-              }
-              else if ((labelBox.x + labelBox.w) < leaderLinePoints[numPoints - 2]) {
+              } else if (labelBox.x + labelBox.w < leaderLinePoints[numPoints - 2]) {
                 // leaderline position: right
                 this.alignRight();
                 this.alignMiddle();
                 this.setCenter(new dvt.Point(labelBox.x + labelBox.w, center.y));
-              }
-              else if ((labelBox.y + labelBox.h) < leaderLinePoints[numPoints - 1]) {
+              } else if (labelBox.y + labelBox.h < leaderLinePoints[numPoints - 1]) {
                 // leaderline position: bottom
                 this.alignBottom();
                 this.alignCenter();
@@ -761,17 +767,26 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
       if (this._currentState !== -1) {
         var mat = new dvt.Matrix();
-        this.setMatrix(mat.translate(zoom * this._center.x - this._center.x, zoom * this._center.y - this._center.y));
+        this.setMatrix(
+          mat.translate(
+            zoom * this._center.x - this._center.x,
+            zoom * this._center.y - this._center.y
+          )
+        );
         if (this._leaderLine) {
           this._leaderLine.setMatrix(new dvt.Matrix(zoom, 0, 0, zoom));
           if (!this._bSupportsVectorEffects) {
             var copyStroke = this._leaderLine.getStroke();
-            var stroke = new dvt.Stroke(copyStroke.getColor(), copyStroke.getAlpha(), (1 / zoom), copyStroke.isFixedWidth());
+            var stroke = new dvt.Stroke(
+              copyStroke.getColor(),
+              copyStroke.getAlpha(),
+              1 / zoom,
+              copyStroke.isFixedWidth()
+            );
             this._leaderLine.setStroke(stroke);
           }
         }
       }
-
     }
 
     /**
@@ -806,7 +821,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     setCSSStyle(cssStyle) {
       super.setCSSStyle(cssStyle);
-      if (!this._labelColor) // save the label color for leader lines
+      if (!this._labelColor)
+        // save the label color for leader lines
         this._labelColor = cssStyle.getStyle(dvt.CSSStyle.COLOR);
     }
 
@@ -888,52 +904,92 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (this._oldDataLayer) {
         var anim = dataLayer.getAnim();
         var animDur = dataLayer.getAnimDur();
-        if (anim === 'auto') { // data change animation
+        if (anim === 'auto') {
+          // data change animation
           var animHandler = new dvt.DataAnimationHandler(this._tmap.getCtx());
           animHandler.constructAnimation(this._oldDataLayer.getAllObjs(), dataLayer.getAllObjs());
           this._animation = animHandler.getAnimation();
-        }
-        else if (dvt.BlackBoxAnimationHandler.isSupported(anim)) { // black box animation
+        } else if (dvt.BlackBoxAnimationHandler.isSupported(anim)) {
+          // black box animation
           // since certain animations like zoom and cubeToLeft/Right will use the bounding box of the object we need to
           // ensure all animated objects are the same dimensions by adding an invisible rect to all of them during animation
           this._removeAnimRect = true;
           var bounds1 = new dvt.Rectangle(0, 0, this._tmap.getWidth(), this._tmap.getHeight());
           var oldNonScaledContainers = this._oldDataLayer.getNonScaledContainers();
           for (var i = 0; i < oldNonScaledContainers.length; i++) {
-            var rect = new dvt.Rect(this._tmap.getCtx(), 0, 0, this._tmap.getWidth(), this._tmap.getHeight());
+            var rect = new dvt.Rect(
+              this._tmap.getCtx(),
+              0,
+              0,
+              this._tmap.getWidth(),
+              this._tmap.getHeight()
+            );
             rect.setFill(null);
             oldNonScaledContainers[i].addChild(rect);
           }
           var newNonScaledContainers = dataLayer.getNonScaledContainers();
           for (let i = 0; i < newNonScaledContainers.length; i++) {
-            let rect = new dvt.Rect(this._tmap.getCtx(), 0, 0, this._tmap.getWidth(), this._tmap.getHeight());
+            let rect = new dvt.Rect(
+              this._tmap.getCtx(),
+              0,
+              0,
+              this._tmap.getWidth(),
+              this._tmap.getHeight()
+            );
             rect.setFill(null);
             newNonScaledContainers[i].addChild(rect);
           }
-          var anim1 = dvt.BlackBoxAnimationHandler.getCombinedAnimation(this._tmap.getCtx(), anim,
-              oldNonScaledContainers,
-              newNonScaledContainers, bounds1, animDur);
+          var anim1 = dvt.BlackBoxAnimationHandler.getCombinedAnimation(
+            this._tmap.getCtx(),
+            anim,
+            oldNonScaledContainers,
+            newNonScaledContainers,
+            bounds1,
+            animDur
+          );
 
-          var bounds2 = new dvt.Rectangle(0, 0, this._tmap.getWidth() / this.PzcMatrix.getA(), this._tmap.getHeight() / this.PzcMatrix.getA());
+          var bounds2 = new dvt.Rectangle(
+            0,
+            0,
+            this._tmap.getWidth() / this.PzcMatrix.getA(),
+            this._tmap.getHeight() / this.PzcMatrix.getA()
+          );
           var oldScaledContainers = this._oldDataLayer.getScaledContainers();
           for (let i = 0; i < oldScaledContainers.length; i++) {
-            let rect = new dvt.Rect(this._tmap.getCtx(), 0, 0, this._tmap.getWidth() / this.PzcMatrix.getA(), this._tmap.getHeight() / this.PzcMatrix.getA());
+            let rect = new dvt.Rect(
+              this._tmap.getCtx(),
+              0,
+              0,
+              this._tmap.getWidth() / this.PzcMatrix.getA(),
+              this._tmap.getHeight() / this.PzcMatrix.getA()
+            );
             rect.setFill(null);
             oldScaledContainers[i].addChild(rect);
           }
           var newScaledContainers = dataLayer.getScaledContainers();
           for (let i = 0; i < newScaledContainers.length; i++) {
-            let rect = new dvt.Rect(this._tmap.getCtx(), 0, 0, this._tmap.getWidth() / this.PzcMatrix.getA(), this._tmap.getHeight() / this.PzcMatrix.getA());
+            let rect = new dvt.Rect(
+              this._tmap.getCtx(),
+              0,
+              0,
+              this._tmap.getWidth() / this.PzcMatrix.getA(),
+              this._tmap.getHeight() / this.PzcMatrix.getA()
+            );
             rect.setFill(null);
             newScaledContainers[i].addChild(rect);
           }
 
-          var anim2 = dvt.BlackBoxAnimationHandler.getCombinedAnimation(this._tmap.getCtx(), anim,
-              oldScaledContainers,
-              newScaledContainers, bounds2, animDur);
+          var anim2 = dvt.BlackBoxAnimationHandler.getCombinedAnimation(
+            this._tmap.getCtx(),
+            anim,
+            oldScaledContainers,
+            newScaledContainers,
+            bounds2,
+            animDur
+          );
           this._animation = new dvt.ParallelPlayable(this._tmap.getCtx(), [anim1, anim2]);
-        }
-        else { // no animation
+        } else {
+          // no animation
           var oldContainers = this._oldDataLayer.getContainers();
           for (let i = 0; i < oldContainers.length; i++) {
             var parent = oldContainers[i].getParent();
@@ -945,13 +1001,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
         // If an animation was created, play it
         if (this._animation) {
-
           // Disable event listeners temporarily
           this.EventHandler.removeListeners(this._callbackObj);
 
           // Start the animation
           var thisRef = this;
-          this._animation.setOnEnd(() => {thisRef.OnAnimEnd(dataLayer);}, this);
+          this._animation.setOnEnd(() => {
+            thisRef.OnAnimEnd(dataLayer);
+          }, this);
           this._animation.play();
         }
       } else {
@@ -991,8 +1048,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     render(pzcMatrix) {
       this.PzcMatrix = pzcMatrix;
-      for (var id in this.DataLayers)
-        this.DataLayers[id].render(pzcMatrix);
+      for (var id in this.DataLayers) this.DataLayers[id].render(pzcMatrix);
     }
 
     /**
@@ -1003,8 +1059,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     HandleZoomEvent(event, pzcMatrix) {
       this.PzcMatrix = pzcMatrix;
-      for (var id in this.DataLayers)
-        this.DataLayers[id].HandleZoomEvent(event, pzcMatrix);
+      for (var id in this.DataLayers) this.DataLayers[id].HandleZoomEvent(event, pzcMatrix);
     }
 
     /**
@@ -1014,24 +1069,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     HandlePanEvent(pzcMatrix) {
       this.PzcMatrix = pzcMatrix;
-      for (var id in this.DataLayers)
-        this.DataLayers[id].HandlePanEvent(pzcMatrix);
+      for (var id in this.DataLayers) this.DataLayers[id].HandlePanEvent(pzcMatrix);
     }
-
 
     /**
      * Cleans up animated objects after animation finishes
      * @param {DvtMapDataLayer} dataLayer The animated data layere
      * @protected
      */
-     OnAnimEnd(dataLayer) {
+    OnAnimEnd(dataLayer) {
       // Clean up the old container used by black box updates
       if (this._oldDataLayer) {
         var oldContainers = this._oldDataLayer.getContainers();
         for (var i = 0; i < oldContainers.length; i++) {
           var parent = oldContainers[i].getParent();
-          if (parent)
-            parent.removeChild(oldContainers[i]);
+          if (parent) parent.removeChild(oldContainers[i]);
         }
       }
 
@@ -1060,8 +1112,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     destroy() {
       var dataLayers = this.getDataLayers();
-      for (var layer in dataLayers)
-        dataLayers[layer].destroy();
+      for (var layer in dataLayers) dataLayers[layer].destroy();
     }
   }
 
@@ -1106,9 +1157,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
        */
       this._SHORT_NAME = 0;
       /**
-        * @const
-        * @private
-        */
+       * @const
+       * @private
+       */
       this._LONG_NAME = 1;
     }
 
@@ -1135,14 +1186,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     }
 
     getShortAreaName(area) {
-      if (this.AreaLabels && this.AreaLabels[area])
-        return this.AreaLabels[area][this._SHORT_NAME];
+      if (this.AreaLabels && this.AreaLabels[area]) return this.AreaLabels[area][this._SHORT_NAME];
       return null;
     }
 
     getLongAreaName(area) {
-      if (this.AreaLabels && this.AreaLabels[area])
-        return this.AreaLabels[area][this._LONG_NAME];
+      if (this.AreaLabels && this.AreaLabels[area]) return this.AreaLabels[area][this._LONG_NAME];
       return null;
     }
 
@@ -1151,8 +1200,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     }
 
     getLabelInfoForArea(area) {
-      if (!this._labelInfo)
-        return null;
+      if (!this._labelInfo) return null;
       return this._labelInfo[area];
     }
 
@@ -1216,8 +1264,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // reset the layer dimensions in case of data layer update
       this._layerDim = null;
       for (var area in this.AreaShapes) {
-        if (area !== isolatedArea)
-          this._renderArea[area] = false;
+        if (area !== isolatedArea) this._renderArea[area] = false;
       }
     }
 
@@ -1242,19 +1289,31 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           // there's a bug in the method where the complicated paths found for areas aren't
           // returning the correct bounds
           if (!basemap)
-            this._layerDim = dvt.DisplayableUtils.getDimensionsForced(this._tmap.getCtx(), this.getAreaShape(this._isolatedArea));
+            this._layerDim = dvt.DisplayableUtils.getDimensionsForced(
+              this._tmap.getCtx(),
+              this.getAreaShape(this._isolatedArea)
+            );
           else
-            this._layerDim = dvt.PathUtils.getDimensions(dvt.PathUtils.createPathArray(exports.DvtBaseMapManager.getPathForArea(this._tmap.getMapName(), this.LayerName, this._isolatedArea)));
+            this._layerDim = dvt.PathUtils.getDimensions(
+              dvt.PathUtils.createPathArray(
+                exports.DvtBaseMapManager.getPathForArea(
+                  this._tmap.getMapName(),
+                  this.LayerName,
+                  this._isolatedArea
+                )
+              )
+            );
         } else {
           if (basemap && basemap !== 'world' && basemap !== 'worldRegions')
             this._layerDim = exports.DvtBaseMapManager.getBaseMapDim(this._tmap.getMapName(), this.LayerName);
           if (!this._layerDim) {
             // all layers for a basemap should have the same dimensions
             // need to combine area and data layer dimensions bc they are in separate containers
-            var dim = this.AreaContainer.getDimensions().getUnion(this._tmap.getDataAreaContainer().getDimensions());
+            var dim = this.AreaContainer.getDimensions().getUnion(
+              this._tmap.getDataAreaContainer().getDimensions()
+            );
             // if we don't have cached dims and no objects have been rendered yet, dim will have 0 dimensions
-            if (dim.w > 0 && dim.h > 0)
-              this._layerDim = dim;
+            if (dim.w > 0 && dim.h > 0) this._layerDim = dim;
           }
         }
       }
@@ -1266,8 +1325,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (areaShape) {
         if (!this.Areas[area]) {
           var context = this._tmap.getCtx();
-          var areaName = (this.AreaLabels && this.AreaLabels[area]) ? this.AreaLabels[area][this._LONG_NAME] : null;
-          var mapArea = new DvtMapArea(context, this._tmap, areaShape, area, areaName, this._tmap.supportsVectorEffects());
+          var areaName =
+            this.AreaLabels && this.AreaLabels[area] ? this.AreaLabels[area][this._LONG_NAME] : null;
+          var mapArea = new DvtMapArea(
+            context,
+            this._tmap,
+            areaShape,
+            area,
+            areaName,
+            this._tmap.supportsVectorEffects()
+          );
           this.Areas[area] = mapArea;
           this.EventHandler.associate(areaShape, mapArea);
           mapArea.setDatatip(areaName);
@@ -1277,20 +1344,36 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           var label = this._areaLabels[area];
           if (!label) {
             if (this._labelDisplay !== 'off' && this.AreaLabels) {
-              var labelText = (this._labelType === 'short') ? this.AreaLabels[area][this._SHORT_NAME] :
-                                                            this.AreaLabels[area][this._LONG_NAME];
+              var labelText =
+                this._labelType === 'short'
+                  ? this.AreaLabels[area][this._SHORT_NAME]
+                  : this.AreaLabels[area][this._LONG_NAME];
               if (labelText) {
                 if (this._labelInfo && this._labelInfo[area])
-                  label = new DvtMapLabel(this._tmap.getCtx(), labelText, this._labelInfo[area], this._labelDisplay,
-                                          this.LabelContainer, this._tmap.supportsVectorEffects());
+                  label = new DvtMapLabel(
+                    this._tmap.getCtx(),
+                    labelText,
+                    this._labelInfo[area],
+                    this._labelDisplay,
+                    this.LabelContainer,
+                    this._tmap.supportsVectorEffects()
+                  );
                 else {
-                  var areaDim = dvt.DisplayableUtils.getDimensionsForced(this._tmap.getCtx(), areaShape);
-                  label = new DvtMapLabel(this._tmap.getCtx(), labelText, [[areaDim.x, areaDim.y, areaDim.w, areaDim.h]],
-                                          this._labelDisplay, this.LabelContainer, this._tmap.supportsVectorEffects());
+                  var areaDim = dvt.DisplayableUtils.getDimensionsForced(
+                    this._tmap.getCtx(),
+                    areaShape
+                  );
+                  label = new DvtMapLabel(
+                    this._tmap.getCtx(),
+                    labelText,
+                    [[areaDim.x, areaDim.y, areaDim.w, areaDim.h]],
+                    this._labelDisplay,
+                    this.LabelContainer,
+                    this._tmap.supportsVectorEffects()
+                  );
                 }
                 this._areaLabels[area] = label;
-                if (this._layerCSSStyle)
-                  label.setCSSStyle(this._layerCSSStyle);
+                if (this._layerCSSStyle) label.setCSSStyle(this._layerCSSStyle);
               }
             }
           }
@@ -1310,10 +1393,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
         var label = this._areaLabels[area];
         if (label) {
-          if (this._renderLabel[area])
-            label.update(this.PzcMatrix);
-          else
-            label.reset();
+          if (this._renderLabel[area]) label.update(this.PzcMatrix);
+          else label.reset();
           this._renderedLabels[area] = this._renderLabel[area];
         }
 
@@ -1346,8 +1427,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (topLayerName === this.getLayerName()) {
         for (var area in this.AreaShapes) {
           this._createAreaAndLabel(area);
-          if (this._renderArea[area])
-            this._addAreaAndLabel(area);
+          if (this._renderArea[area]) this._addAreaAndLabel(area);
         }
       }
     }
@@ -1359,12 +1439,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // create areashapes and then create the DvtMapArea object for all areas
       for (var area in this.AreaShapes) {
         this._createAreaAndLabel(area);
-        if (this._renderArea[area])
-          this._addAreaAndLabel(area);
+        if (this._renderArea[area]) this._addAreaAndLabel(area);
       }
       super.render(pzcMatrix);
     }
-
 
     /**
      * @override
@@ -1392,8 +1470,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
             this._renderedLabels[area] = false;
             this.LabelContainer.removeChild(label);
             var leaderLine = label.getLeaderLine();
-            if (leaderLine)
-              this.LabelContainer.removeChild(leaderLine);
+            if (leaderLine) this.LabelContainer.removeChild(leaderLine);
           }
         }
       }
@@ -1408,8 +1485,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       for (var i = 0; i < areas.length; i++) {
         this._createAreaAndLabel(areas[i]);
         // Do not render areas that were rendered in the data layer
-        if (this._renderArea[areas[i]])
-          this._addAreaAndLabel(areas[i], fadeInObjs);
+        if (this._renderArea[areas[i]]) this._addAreaAndLabel(areas[i], fadeInObjs);
       }
     }
 
@@ -1421,13 +1497,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     __getObjectUnderPoint(x, y) {
       for (var id in this.Areas) {
-        if (this.Areas[id].contains(x, y))
-          return this.Areas[id];
+        if (this.Areas[id].contains(x, y)) return this.Areas[id];
       }
       // No object found, return null
       return null;
     }
-
 
     /**
      * Displays drop site feedback for the specified node.
@@ -1445,12 +1519,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (obj) {
         this._dropSiteFeedback = obj.getDropSiteFeedback();
         if (this._dropSiteFeedback) {
-          this._dropSiteFeedback.setFill(new dvt.SolidFill(this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BACKGROUND_COLOR)));
-          var strokeWidth = this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BORDER_WIDTH) ?
-              this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BORDER_WIDTH).substring(0, this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BORDER_WIDTH).indexOf('px')) : 1;
-          if (!this._tmap.supportsVectorEffects())
-            strokeWidth /= this.PzcMatrix.getA();
-          var stroke = new dvt.Stroke(this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BORDER_COLOR), 1, strokeWidth, this._tmap.supportsVectorEffects());
+          this._dropSiteFeedback.setFill(
+            new dvt.SolidFill(this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BACKGROUND_COLOR))
+          );
+          var strokeWidth = this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BORDER_WIDTH)
+            ? this._dropSiteCSSStyle
+                .getStyle(dvt.CSSStyle.BORDER_WIDTH)
+                .substring(
+                  0,
+                  this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BORDER_WIDTH).indexOf('px')
+                )
+            : 1;
+          if (!this._tmap.supportsVectorEffects()) strokeWidth /= this.PzcMatrix.getA();
+          var stroke = new dvt.Stroke(
+            this._dropSiteCSSStyle.getStyle(dvt.CSSStyle.BORDER_COLOR),
+            1,
+            strokeWidth,
+            this._tmap.supportsVectorEffects()
+          );
 
           this._dropSiteFeedback.setStroke(stroke);
           this.AreaContainer.addChild(this._dropSiteFeedback);
@@ -1466,15 +1552,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     HandleZoomEvent(event, pzcMatrix) {
       super.HandleZoomEvent(event, pzcMatrix);
       if (!this._tmap.supportsVectorEffects()) {
-        for (var area in this.Areas)
-          this.Areas[area].HandleZoomEvent(pzcMatrix);
+        for (var area in this.Areas) this.Areas[area].HandleZoomEvent(pzcMatrix);
       }
 
       for (var areaLabels in this._renderedLabels) {
         if (this._renderedLabels[areaLabels]) {
           var label = this._areaLabels[areaLabels];
-          if (label)
-            label.update(pzcMatrix);
+          if (label) label.update(pzcMatrix);
         }
       }
     }
@@ -1498,9 +1582,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         this.addChild(dataItem);
       } else {
         if (Array.isArray(dataItem)) {
-          dataItem.forEach(function (node) {this.getElem().appendChild(node);}.bind(this)); // @HTMLUpdateOK
-        }
-        else {
+          dataItem.forEach(
+            function (node) {
+              this.getElem().appendChild(node); // @HTMLUpdateOK
+            }.bind(this)
+          );
+        } else {
           this.getElem().appendChild(dataItem); //dataItem is output of a custom renderer function or a knockout template @HTMLUpdateOK
         }
         // TODO make this more efficient by defering to render call
@@ -1518,7 +1605,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var sos = new dvt.Stroke(styles['selectedOuterColor'], 1, 2);
       var shis = new dvt.Stroke(styles['selectedInnerColor'], 1, 2);
       var shos = new dvt.Stroke(styles['selectedOuterColor'], 1, 2);
-      this._boundingRect.setHoverStroke(his, hos).setSelectedStroke(sis, sos).setSelectedHoverStroke(shis, shos);
+      this._boundingRect
+        .setHoverStroke(his, hos)
+        .setSelectedStroke(sis, sos)
+        .setSelectedHoverStroke(shis, shos);
       // Bounding rect stroke alignment is set to OUTER.
       // For OUTER stroke alignment, the stroke is applied on the outer edge of the path of the bounding rect.
       // The outer stroke will circumscribe inner stroke and the width of outer stroke won't be reduced by inner stroke.
@@ -1532,10 +1622,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     setAriaProperty(property, value) {
-      if (dvt.Agent.isTouchDevice())
-        this._boundingRect.setAriaProperty(property, value);
-      else
-        super.setAriaProperty(property, value);
+      if (dvt.Agent.isTouchDevice()) this._boundingRect.setAriaProperty(property, value);
+      else super.setAriaProperty(property, value);
     }
 
     /**
@@ -1543,10 +1631,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     setAriaRole(role) {
-      if (dvt.Agent.isTouchDevice())
-        this._boundingRect.setAriaRole(role);
-      else
-        super.setAriaRole(role);
+      if (dvt.Agent.isTouchDevice()) this._boundingRect.setAriaRole(role);
+      else super.setAriaRole(role);
     }
 
     /**
@@ -1632,14 +1718,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {boolean} shouldRemoveOldContent if set to true the old content will be removed before appending new content
      */
     updateRootElem(rootContent, shouldRemoveOldContent) {
-      if (this._dataItem === rootContent)
-        return;
+      if (this._dataItem === rootContent) return;
 
       if (this._dataItem && shouldRemoveOldContent) {
         if (this._dataItem instanceof dvt.BaseComponent) {
           this.removeChild(this._dataItem);
         } else if (Array.isArray(this._dataItem)) {
-          this._dataItem.forEach(function (node) {this.getElem().removeChild(node);}.bind(this));
+          this._dataItem.forEach(
+            function (node) {
+              this.getElem().removeChild(node);
+            }.bind(this)
+          );
         } else {
           this.getElem().removeChild(this._dataItem);
         }
@@ -1648,12 +1737,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // NOTE: Not updating width/height in this method call because we're assuming
       // that the application wouldn't want to recenter based on increased dimensions
       // caused by selection effects.
-      if (rootContent instanceof dvt.BaseComponent)
-        this.addChild(rootContent);
+      if (rootContent instanceof dvt.BaseComponent) this.addChild(rootContent);
       else if (Array.isArray(rootContent))
-        rootContent.forEach(function (node) {this.getElem().appendChild(node);}.bind(this)); // @HTMLUpdateOK
-      else
-        this.getElem().appendChild(rootContent);//rootContent is output of a custom renderer function or a knockout template @HTMLUpdateOK
+        rootContent.forEach(
+          function (node) {
+            this.getElem().appendChild(node); // @HTMLUpdateOK
+          }.bind(this)
+        );
+      else this.getElem().appendChild(rootContent); //rootContent is output of a custom renderer function or a knockout template @HTMLUpdateOK
       this._dataItem = rootContent;
     }
 
@@ -1661,8 +1752,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     fireKeyboardListener(event) {
-      if (this._dataItem instanceof dvt.BaseComponent)
-        this._dataItem.fireKeyboardListener(event);
+      if (this._dataItem instanceof dvt.BaseComponent) this._dataItem.fireKeyboardListener(event);
     }
   }
 
@@ -1703,27 +1793,27 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var arcIncr = Math.min(tmap.getWidth(), tmap.getHeight()) / 35;
 
       // Check for straight lines
-      if ((x2 - x1) === 0 || (y2 - y1) === 0) {
+      if (x2 - x1 === 0 || y2 - y1 === 0) {
         var controlX1, controlY1, controlX2, controlY2;
         if (numLinks > 1) {
-          arcIncr *= (numLinks - 1);
+          arcIncr *= numLinks - 1;
           // Vertical
-          if ((x2 - x1) === 0) {
+          if (x2 - x1 === 0) {
             var dist = Math.abs(y1 - y2) * 0.3;
             // Calculate the 1st control point
             controlX1 = x1 + arcIncr;
-            controlY1 = (y1 > y2) ? y1 - dist : y1 + dist;
+            controlY1 = y1 > y2 ? y1 - dist : y1 + dist;
             // Calculate the 2nd control point
             controlX2 = controlX1;
-            controlY2 = (y2 > y1) ? y2 - dist : y2 + dist;
+            controlY2 = y2 > y1 ? y2 - dist : y2 + dist;
           } else {
             // Horizontal, render overlap curve above
             var horizontalDist = Math.abs(x1 - x2) * 0.3;
             // Calculate the 1st control point
-            controlX1 = (x1 > x2) ? x1 - horizontalDist : x1 + horizontalDist;
+            controlX1 = x1 > x2 ? x1 - horizontalDist : x1 + horizontalDist;
             controlY1 = y1 - arcIncr;
             // Calculate the 2nd control point
-            controlX2 = (x2 > x1) ? x2 - horizontalDist : x2 + horizontalDist;
+            controlX2 = x2 > x1 ? x2 - horizontalDist : x2 + horizontalDist;
             controlY2 = controlY1;
           }
           curve += dvt.PathUtils.cubicTo(controlX1, controlY1, controlX2, controlY2, x2, y2);
@@ -1736,19 +1826,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         // at the same points. Otherwise, raise height of arc slightly for each additional overlap
         var arcHeight = distance / 4;
         if (numLinks > 1) {
-          arcHeight += ((numLinks - 1) * arcIncr);
+          arcHeight += (numLinks - 1) * arcIncr;
         }
 
         // Calculate the slope of the line perpendicular to the line thru the start/end points
         var slope = (y2 - y1) / (x2 - x1);
         var perpSlope = -1 / slope;
         // Force arc to always point up
-        if (perpSlope > 0)
-          arcHeight *= -1;
+        if (perpSlope > 0) arcHeight *= -1;
 
         // d / sqrt(1 + m^2)
-        var distVal = distance * 0.3 / Math.sqrt(1 + Math.pow(slope, 2));
-        var isX2AfterX1 = (x2 - x1) > 0;
+        var distVal = (distance * 0.3) / Math.sqrt(1 + Math.pow(slope, 2));
+        var isX2AfterX1 = x2 - x1 > 0;
         // Find point on original line to calculate 1st control point that is approx 30% of the way from the start point
         var xc1 = x1 + (isX2AfterX1 ? 1 : -1) * distVal;
         var yc1 = slope * (xc1 - x1) + y1;
@@ -1765,7 +1854,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var controlX2Point = xc2 + controlDistVal;
         var controlY2Point = perpSlope * (controlX2Point - xc2) + yc2;
 
-        curve += dvt.PathUtils.cubicTo(controlX1Point, controlY1Point, controlX2Point, controlY2Point, x2, y2);
+        curve += dvt.PathUtils.cubicTo(
+          controlX1Point,
+          controlY1Point,
+          controlX2Point,
+          controlY2Point,
+          x2,
+          y2
+        );
       }
       return curve;
     },
@@ -1779,8 +1875,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     getFirstNavigableLink: (marker, event, listOfLinks) => {
       var direction = event.keyCode;
-      if (!listOfLinks || listOfLinks.length < 1 || !marker)
-        return null;
+      if (!listOfLinks || listOfLinks.length < 1 || !marker) return null;
       var markerPt = marker.getCenter();
 
       var ctx = marker.getDisplayable().getCtx();
@@ -1789,10 +1884,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var linkPt;
         if (dvt.Obj.compareValues(ctx, marker.getId(), link.getStartMarker().getId()))
           linkPt = link.getEndPoint();
-        else
-          linkPt = link.getStartPoint();
-        if ((direction === dvt.KeyboardEvent.OPEN_ANGLED_BRACKET && linkPt.x <= markerPt.x) ||
-          (direction === dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET && linkPt.x >= markerPt.x)) {
+        else linkPt = link.getStartPoint();
+        if (
+          (direction === dvt.KeyboardEvent.OPEN_ANGLED_BRACKET && linkPt.x <= markerPt.x) ||
+          (direction === dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET && linkPt.x >= markerPt.x)
+        ) {
           break;
         }
       }
@@ -1833,11 +1929,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._view = dataLayer.getMap();
       this._locationName = locationName;
       if (!this._data['categories']) {
-        if (this._label)
-          this._data['categories'] = [this._label.getTextString()];
+        if (this._label) this._data['categories'] = [this._label.getTextString()];
       }
       if (this._view.getDisplayTooltips() == 'auto' && locationName)
-        this._data['shortDesc'] = (data['shortDesc'] ? locationName + ': ' + this._resolveShortDesc(data['shortDesc']) : locationName);
+        this._data['shortDesc'] = data['shortDesc']
+          ? locationName + ': ' + this._resolveShortDesc(data['shortDesc'])
+          : locationName;
       // WAI-ARIA
       if (this.Displayable) {
         var dataStyle = data['svgStyle'] || data['style'];
@@ -1852,9 +1949,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
        */
       this.ANIM_DELETE_PRIORITY = 0;
       /**
-        * The order in which the insert animation occurs
-        */
-      this.ANIM_INSERT_PRIORITY = 2; 
+       * The order in which the insert animation occurs
+       */
+      this.ANIM_INSERT_PRIORITY = 2;
     }
 
     /**
@@ -1863,8 +1960,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @return {string}
      */
     _resolveShortDesc(shortDesc) {
-      if(typeof shortDesc === 'function')
-        return shortDesc(this.getShortDescContext(this));
+      if (typeof shortDesc === 'function') return shortDesc(this.getShortDescContext(this));
       return shortDesc;
     }
 
@@ -1940,8 +2036,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     setVisible(bVisible) {
       this.Displayable.setVisible(bVisible);
-      if (this._label)
-        this._label.setVisible(bVisible);
+      if (this._label) this._label.setVisible(bVisible);
     }
 
     /**
@@ -1987,7 +2082,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         // Custom Tooltip from Function
         var tooltipObj = this._view.getOptions()['_tooltip'];
         if (tooltipObj)
-          return this._view.getCtx().getTooltipManager().getCustomTooltip(tooltipObj['renderer'], this.getDataContext());
+          return this._view
+            .getCtx()
+            .getTooltipManager()
+            .getCustomTooltip(tooltipObj['renderer'], this.getDataContext());
 
         // Custom Tooltip from ShortDesc
         return this.getShortDesc();
@@ -2002,17 +2100,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     getDataContext() {
       var data = this._data._noTemplate ? this._itemData : this._data;
       return {
-        'color': this.getDatatipColor(),
-        'component': this._view.getOptions()['_widgetConstructor'],
-        'data': data,
-        'id': this.getId(),
-        'itemData': this._itemData,
-        'label': this._label ? this._label.getTextString() : null,
-        'location': this.getLocation(),
-        'locationName': this.getLocationName(),
-        'tooltip': this.getShortDesc(),
-        'x': this._data['x'],
-        'y': this._data['y']
+        color: this.getDatatipColor(),
+        component: this._view.getOptions()['_widgetConstructor'],
+        data: data,
+        id: this.getId(),
+        itemData: this._itemData,
+        label: this._label ? this._label.getTextString() : null,
+        location: this.getLocation(),
+        locationName: this.getLocationName(),
+        tooltip: this.getShortDesc(),
+        x: this._data['x'],
+        y: this._data['y']
       };
     }
 
@@ -2024,14 +2122,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     getShortDescContext(peer) {
       var data = peer._data._noTemplate ? peer._itemData : peer._data;
       return {
-        'data': data,
-        'id': peer.getId(),
-        'itemData': peer._itemData,
-        'label': peer._label ? peer._label.getTextString() : null,
-        'location': peer.getLocation(),
-        'locationName': peer.getLocationName(),
-        'x': peer._data['x'],
-        'y': peer._data['y']
+        data: data,
+        id: peer.getId(),
+        itemData: peer._itemData,
+        label: peer._label ? peer._label.getTextString() : null,
+        location: peer.getLocation(),
+        locationName: peer.getLocationName(),
+        x: peer._data['x'],
+        y: peer._data['y']
       };
     }
 
@@ -2050,7 +2148,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     getAriaLabel() {
       var states = [];
       if (this.isSelectable())
-        states.push(this._view.getOptions().translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
+        states.push(
+          this._view.getOptions().translations[
+            this.isSelected() ? 'stateSelected' : 'stateUnselected'
+          ]
+        );
       return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states);
     }
 
@@ -2069,8 +2171,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     UpdateAriaLabel() {
       if (!dvt.Agent.deferAriaCreation()) {
         var desc = this.getAriaLabel();
-        if (desc)
-          this.Displayable.setAriaProperty('label', desc);
+        if (desc) this.Displayable.setAriaProperty('label', desc);
       }
     }
 
@@ -2083,8 +2184,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (this.Displayable.setSelectable) {
         // DvtShapes setSelectable also sets selecting cursor
         this.Displayable.setSelectable(bSelectable);
-        if (label && bSelectable)
-          label.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
+        if (label && bSelectable) label.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
       }
     }
 
@@ -2093,12 +2193,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     isSelectable() {
-      if (!this.Displayable.isSelectable)
-        return false;
-      else if (this._data['selectable'] !== 'off')
-        return this._dataLayer.isSelectable();
-      else
-        return false;
+      if (!this.Displayable.isSelectable) return false;
+      else if (this._data['selectable'] !== 'off') return this._dataLayer.isSelectable();
+      else return false;
     }
 
     /**
@@ -2118,9 +2215,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var prevState = this._getState();
         this._isSelected = selected;
         if (this._dataLayer.getOptions()['selectionRenderer'])
-          this._callCustomRenderer(this._dataLayer.getOptions()['selectionRenderer'], this._getState(), prevState);
-        else
-          this.processDefaultSelectionEffect(selected);
+          this._callCustomRenderer(
+            this._dataLayer.getOptions()['selectionRenderer'],
+            this._getState(),
+            prevState
+          );
+        else this.processDefaultSelectionEffect(selected);
         this.UpdateAriaLabel();
       }
     }
@@ -2130,14 +2230,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     showHoverEffect() {
-      if (this.IsHoverEffectShown())
-        return;
+      if (this.IsHoverEffectShown()) return;
       var prevState = this._getState();
       this._isShowingHoverEffect = true;
       if (this._dataLayer.getOptions()['hoverRenderer'])
-        this._callCustomRenderer(this._dataLayer.getOptions()['hoverRenderer'], this._getState(), prevState);
-      else
-        this.processDefaultHoverEffect(true);
+        this._callCustomRenderer(
+          this._dataLayer.getOptions()['hoverRenderer'],
+          this._getState(),
+          prevState
+        );
+      else this.processDefaultHoverEffect(true);
     }
 
     /**
@@ -2149,9 +2251,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var prevState = this._getState();
         this._isShowingHoverEffect = false;
         if (this._dataLayer.getOptions()['hoverRenderer'])
-          this._callCustomRenderer(this._dataLayer.getOptions()['hoverRenderer'], this._getState(), prevState);
-        else
-          this.processDefaultHoverEffect(false);
+          this._callCustomRenderer(
+            this._dataLayer.getOptions()['hoverRenderer'],
+            this._getState(),
+            prevState
+          );
+        else this.processDefaultHoverEffect(false);
       }
     }
 
@@ -2162,8 +2267,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     isDragAvailable(clientIds) {
       var parentId = this._dataLayer.getClientId();
       for (var i = 0; i < clientIds.length; i++) {
-        if (clientIds[i] == parentId)
-          return parentId;
+        if (clientIds[i] == parentId) return parentId;
       }
       return parentId;
     }
@@ -2196,8 +2300,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
         // care of the selection
         return this;
-      } else if ((event.keyCode == dvt.KeyboardEvent.OPEN_ANGLED_BRACKET || dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET) &&
-          event.altKey) {
+      } else if (
+        (event.keyCode == dvt.KeyboardEvent.OPEN_ANGLED_BRACKET ||
+          dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET) &&
+        event.altKey
+      ) {
         // get first navigable link if it exists
         var adjLinks = this.getDataLayer().getNavigableLinksForNodeId(this.getId());
         next = DvtThematicMapUtils.getFirstNavigableLink(this, event, adjLinks);
@@ -2223,7 +2330,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     getKeyboardBoundingBox(targetCoordinateSpace) {
       if (this.Displayable.getParent()) {
-        return this.Displayable.getDimensions(targetCoordinateSpace ? targetCoordinateSpace : this.Displayable.getCtx().getStage());
+        return this.Displayable.getDimensions(
+          targetCoordinateSpace ? targetCoordinateSpace : this.Displayable.getCtx().getStage()
+        );
       } else {
         return new dvt.Rectangle(0, 0, 0, 0);
       }
@@ -2242,14 +2351,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     showKeyboardFocusEffect() {
-      if (this.isShowingKeyboardFocusEffect())
-        return;
+      if (this.isShowingKeyboardFocusEffect()) return;
       var prevState = this._getState();
       this._isShowingKeyboardFocusEffect = true;
       if (this._dataLayer.getOptions()['focusRenderer'])
-        this._callCustomRenderer(this._dataLayer.getOptions()['focusRenderer'], this._getState(), prevState);
-      else
-        this.processDefaultFocusEffect(true);
+        this._callCustomRenderer(
+          this._dataLayer.getOptions()['focusRenderer'],
+          this._getState(),
+          prevState
+        );
+      else this.processDefaultFocusEffect(true);
     }
 
     /**
@@ -2261,9 +2372,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var prevState = this._getState();
         this._isShowingKeyboardFocusEffect = false;
         if (this._dataLayer.getOptions()['focusRenderer'])
-          this._callCustomRenderer(this._dataLayer.getOptions()['focusRenderer'], this._getState(), prevState);
-        else
-          this.processDefaultFocusEffect(false);
+          this._callCustomRenderer(
+            this._dataLayer.getOptions()['focusRenderer'],
+            this._getState(),
+            prevState
+          );
+        else this.processDefaultFocusEffect(false);
       }
     }
 
@@ -2281,8 +2395,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @protected
      */
     HandleZoomEvent(pzcMatrix) {
-      if (!this.Displayable.getParent())
-        return;
+      if (!this.Displayable.getParent()) return;
       this.Zoom = pzcMatrix.getA();
       this.__recenter();
     }
@@ -2296,7 +2409,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var x = this.Displayable.getCx() * this.Zoom;
         var markerY = this.Displayable.getCy() * this.Zoom;
         var markerH = this.Displayable.getHeight();
-        var markerType = this.Displayable instanceof dvt.SimpleMarker ? this.Displayable.getType() : 'image';
+        var markerType =
+          this.Displayable instanceof dvt.SimpleMarker ? this.Displayable.getType() : 'image';
 
         var y;
         var position = this._data['labelPosition'];
@@ -2346,8 +2460,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         shapeY = this._center.y * this.Zoom - shapeY;
         // account for x/y if displayable doesn't have setters for x/y
         if (this.Displayable instanceof DvtCustomDataItem) {
-          shapeX += (this._center.x - width / 2);
-          shapeY += (this._center.y - height / 2);
+          shapeX += this._center.x - width / 2;
+          shapeY += this._center.y - height / 2;
         }
         this.Displayable.setTranslate(shapeX, shapeY);
         dvt.Agent.workaroundFirefoxRepaint(this.Displayable);
@@ -2362,7 +2476,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {DvtMapObjPeer} oldObj The old data object state to animate from.
      */
     animateUpdate(handler, oldObj) {
-      var anim = new dvt.CustomAnimation(this._view.getCtx(), this.Displayable, this.getDataLayer().getAnimDur());
+      var anim = new dvt.CustomAnimation(
+        this._view.getCtx(),
+        this.Displayable,
+        this.getDataLayer().getAnimDur()
+      );
 
       var oldDisplayable = oldObj.getDisplayable();
       // Color change
@@ -2375,9 +2493,25 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
             var endLabelFill = this._label.getFill();
             this._label.setFill(oldObj.getLabel().getFill());
             if (!endLabelFill.equals(this._label.getFill()))
-              anim.getAnimator().addProp(dvt.Animator.TYPE_FILL, this._label, this._label.getFill, this._label.setFill, endLabelFill);
+              anim
+                .getAnimator()
+                .addProp(
+                  dvt.Animator.TYPE_FILL,
+                  this._label,
+                  this._label.getFill,
+                  this._label.setFill,
+                  endLabelFill
+                );
           }
-          anim.getAnimator().addProp(dvt.Animator.TYPE_FILL, this.Displayable, this.Displayable.getFill, this.Displayable.setFill, endFill);
+          anim
+            .getAnimator()
+            .addProp(
+              dvt.Animator.TYPE_FILL,
+              this.Displayable,
+              this.Displayable.getFill,
+              this.Displayable.setFill,
+              endFill
+            );
         }
       }
 
@@ -2386,9 +2520,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var startRect = oldObj.getDisplayable().getCenterDimensions();
         var endRect = this.Displayable.getCenterDimensions();
 
-        if (startRect.x != endRect.x || startRect.y != endRect.y || startRect.w != endRect.w || startRect.h != endRect.h) {
+        if (
+          startRect.x != endRect.x ||
+          startRect.y != endRect.y ||
+          startRect.w != endRect.w ||
+          startRect.h != endRect.h
+        ) {
           this.Displayable.setCenterDimensions(startRect);
-          anim.getAnimator().addProp(dvt.Animator.TYPE_RECTANGLE, this.Displayable, this.Displayable.getCenterDimensions, this.Displayable.setCenterDimensions, endRect);
+          anim
+            .getAnimator()
+            .addProp(
+              dvt.Animator.TYPE_RECTANGLE,
+              this.Displayable,
+              this.Displayable.getCenterDimensions,
+              this.Displayable.setCenterDimensions,
+              endRect
+            );
         }
       }
 
@@ -2397,21 +2544,39 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var endRotation = this.Displayable.getRotation();
       if (startRotation != endRotation) {
         var diffRotation = startRotation - endRotation;
-        if (diffRotation > Math.PI)
-          startRotation -= Math.PI * 2;
-        else if (diffRotation < -Math.PI)
-          startRotation += Math.PI * 2;
+        if (diffRotation > Math.PI) startRotation -= Math.PI * 2;
+        else if (diffRotation < -Math.PI) startRotation += Math.PI * 2;
         this.Displayable.setRotation(startRotation);
-        anim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this.Displayable, this.Displayable.getRotation, this.Displayable.setRotation, endRotation);
+        anim
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_NUMBER,
+            this.Displayable,
+            this.Displayable.getRotation,
+            this.Displayable.setRotation,
+            endRotation
+          );
       }
 
       // Recenter based on new x, y, rotation
       var startCenter = oldObj.getCenter();
       var endCenter = this.getCenter();
       if (startCenter && endCenter) {
-        if (startCenter.x != endCenter.x || startCenter.y != endCenter.y || startRotation != endRotation) {
+        if (
+          startCenter.x != endCenter.x ||
+          startCenter.y != endCenter.y ||
+          startRotation != endRotation
+        ) {
           this._setCenter(new dvt.Point(startCenter.x, startCenter.y));
-          anim.getAnimator().addProp(dvt.Animator.TYPE_POINT, this, this.getCenter, this._setCenter, new dvt.Point(endCenter.x, endCenter.y));
+          anim
+            .getAnimator()
+            .addProp(
+              dvt.Animator.TYPE_POINT,
+              this,
+              this.getCenter,
+              this._setCenter,
+              new dvt.Point(endCenter.x, endCenter.y)
+            );
         }
       }
 
@@ -2421,18 +2586,33 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var endLabelX = this._label.getX();
         if (startLabelX != endLabelX) {
           this._label.setX(startLabelX);
-          anim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this._label, this._label.getX, this._label.setX, endLabelX);
+          anim
+            .getAnimator()
+            .addProp(
+              dvt.Animator.TYPE_NUMBER,
+              this._label,
+              this._label.getX,
+              this._label.setX,
+              endLabelX
+            );
         }
         var startLabelY = oldObj.getLabel().getY();
         var endLabelY = this._label.getY();
         if (startLabelY != endLabelY) {
           this._label.setY(startLabelY);
-          anim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this._label, this._label.getY, this._label.setY, endLabelY);
+          anim
+            .getAnimator()
+            .addProp(
+              dvt.Animator.TYPE_NUMBER,
+              this._label,
+              this._label.getY,
+              this._label.setY,
+              endLabelY
+            );
         }
         // Hide old label
         oldObj.getLabel().setAlpha(0);
-      }
-      else if (oldObj.getLabel()) {
+      } else if (oldObj.getLabel()) {
         oldObj.getLabel().setAlpha(0);
       }
 
@@ -2450,8 +2630,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     animateDelete(handler, container) {
       var fadeObjs = [this.Displayable];
       var label = this.getLabel();
-      if (label)
-        fadeObjs.push(label);
+      if (label) fadeObjs.push(label);
       var anim = new dvt.AnimFadeOut(this._view.getCtx(), fadeObjs, this.getDataLayer().getAnimDur());
       handler.add(anim, this.ANIM_DELETE_PRIORITY);
     }
@@ -2477,8 +2656,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {boolean} selected true to show selected effect
      */
     processDefaultSelectionEffect(selected) {
-      if (this.Displayable.setSelected)
-        this.Displayable.setSelected(selected);
+      if (this.Displayable.setSelected) this.Displayable.setSelected(selected);
     }
 
     /**
@@ -2495,8 +2673,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     processDefaultHoverEffect(hovered) {
       if (hovered) {
-        if (this.Displayable.showHoverEffect)
-          this.Displayable.showHoverEffect();
+        if (this.Displayable.showHoverEffect) this.Displayable.showHoverEffect();
       } else {
         if (this.Displayable.hideHoverEffect && !this.isShowingKeyboardFocusEffect())
           this.Displayable.hideHoverEffect();
@@ -2539,15 +2716,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @private
      */
     _callCustomRenderer(renderer, state, prevState) {
-      if (!(this.Displayable instanceof DvtCustomDataItem))
-        return;
+      if (!(this.Displayable instanceof DvtCustomDataItem)) return;
 
       var contextHandler = this._view.getOptions()['_contextHandler'];
-      if (!contextHandler)
-        return;
+      if (!contextHandler) return;
 
       var rootElem = this.Displayable.getRootElem();
-      var context = contextHandler(this.Displayable.getElem(), rootElem, this._data, this._itemData, state, prevState);
+      var context = contextHandler(
+        this.Displayable.getElem(),
+        rootElem,
+        this._data,
+        this._itemData,
+        state,
+        prevState
+      );
       var newRootElem = renderer(context);
       //   - support null case on updates for custom elements
       if (!newRootElem && rootElem && this._view.getCtx().isCustomElement()) {
@@ -2588,9 +2770,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     _getState() {
       return {
-        'hovered': this.IsHoverEffectShown(),
-        'selected': this.isSelected(),
-        'focused': this.isShowingKeyboardFocusEffect()
+        hovered: this.IsHoverEffectShown(),
+        selected: this.isSelected(),
+        focused: this.isShowingKeyboardFocusEffect()
       };
     }
 
@@ -2620,8 +2802,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   }
 
   /**
-  * The order in which the update animation occurs
-  */
+   * The order in which the update animation occurs
+   */
   DvtMapObjPeer.ANIM_UPDATE_PRIORITY = 1;
 
   /**
@@ -2656,8 +2838,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     setSelected(selected) {
       if (this.isSelectable()) {
         // for initial selection where hover effect isn't shown on selection
-        if (selected && !this.IsHoverEffectShown())
-          this._dataAreaLayer.addChild(this.Displayable);
+        if (selected && !this.IsHoverEffectShown()) this._dataAreaLayer.addChild(this.Displayable);
         super.setSelected(selected);
       }
     }
@@ -2676,10 +2857,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     hideHoverEffect() {
-      if (this.isSelected())
-        this._dataAreaLayer.addChild(this.Displayable);
-      else
-        this._dataAreaLayer.addChildAt(this.Displayable, 0);
+      if (this.isSelected()) this._dataAreaLayer.addChild(this.Displayable);
+      else this._dataAreaLayer.addChildAt(this.Displayable, 0);
       super.hideHoverEffect();
     }
 
@@ -2688,8 +2867,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     HandleZoomEvent(pzcMatrix) {
       super.HandleZoomEvent(pzcMatrix);
-      if (!this.Displayable.getParent())
-        return;
+      if (!this.Displayable.getParent()) return;
       this.Displayable.handleZoomEvent(pzcMatrix);
       this.positionLabel(pzcMatrix);
     }
@@ -2698,8 +2876,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     positionLabel(pzcMatrix) {
-      if (this.getLabel())
-        this.getLabel().update(pzcMatrix);
+      if (this.getLabel()) this.getLabel().update(pzcMatrix);
     }
 
     /**
@@ -2733,7 +2910,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    * @constructor
    */
   class DvtThematicMapAutomation extends dvt.Automation {
-
     /**
      * Valid subIds inlcude:
      * <ul>
@@ -2750,7 +2926,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       return null;
     }
 
-
     /**
      * Valid subIds inlcude:
      * <ul>
@@ -2761,8 +2936,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     getDomElementForSubId(subId) {
-      if (subId === dvt.Automation.TOOLTIP_SUBID)
-        return this.GetTooltipElement(this._comp);
+      if (subId === dvt.Automation.TOOLTIP_SUBID) return this.GetTooltipElement(this._comp);
 
       var colonIdx = subId.indexOf(':');
       var parenIdx = subId.indexOf('[');
@@ -2774,7 +2948,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       }
       return null;
     }
-
 
     /**
      * Returns an object containing data for a thematic map data object. Used for verification.
@@ -2795,16 +2968,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (dataObj) {
         var label = dataObj.getLabel();
         var data = {
-          'color': dataObj.getDatatipColor(),
-          'tooltip': dataObj.getShortDesc(),
-          'label': label ? label.getTextString() : null,
-          'selected': dataObj.isSelected()
+          color: dataObj.getDatatipColor(),
+          tooltip: dataObj.getShortDesc(),
+          label: label ? label.getTextString() : null,
+          selected: dataObj.isSelected()
         };
         return data;
       }
       return null;
     }
-
 
     /**
      * Returns the SVG DOM Element for a given subId
@@ -2816,11 +2988,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     _getDomElement(dataLayerId, dataObjType, index) {
       var dataObj = this._getDataObject(dataLayerId, dataObjType, index);
-      if (dataObj)
-        return dataObj.getDisplayable().getElem();
+      if (dataObj) return dataObj.getDisplayable().getElem();
       return null;
     }
-
 
     /**
      * Returns the subId for a thematic map data object
@@ -2838,16 +3008,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           if (displayable instanceof dvt.Path) {
             var areas = dataLayers[id].getAreaObjs();
             for (var k = 0; k < areas.length; k++) {
-              if (areas[k] === dataObject)
-                return this._getDataLayerId(id) + ':' + 'area[' + k + ']';
+              if (areas[k] === dataObject) return this._getDataLayerId(id) + ':' + 'area[' + k + ']';
             }
             var links = dataLayers[id].getLinkObjs();
             for (var m = 0; m < links.length; m++) {
-              if (links[m] === dataObject)
-                return this._getDataLayerId(id) + ':' + 'link[' + m + ']';
+              if (links[m] === dataObject) return this._getDataLayerId(id) + ':' + 'link[' + m + ']';
             }
-          }
-          else {
+          } else {
             var markers = dataLayers[id].getMarkerObjs();
             for (var n = 0; n < markers.length; n++) {
               if (markers[n] === dataObject)
@@ -2858,7 +3025,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       }
       return null;
     }
-
 
     /**
      * Returns the DvtMapObjPeer for the given data layer and data object id
@@ -2876,11 +3042,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           if (this._getDataLayerId(id) === dataLayerId) {
             if (dataObjType === 'area') {
               return dataLayers[id].getDataAreaCollection()[index];
-            }
-            else if (dataObjType === 'marker') {
+            } else if (dataObjType === 'marker') {
               return dataLayers[id].getDataMarkerCollection()[index];
-            }
-            else if (dataObjType === 'link') {
+            } else if (dataObjType === 'link') {
               return dataLayers[id].getDataLinkCollection()[index];
             }
           }
@@ -2888,7 +3052,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       }
       return null;
     }
-
 
     /**
      * Returns the data layer id in the expected subId format.
@@ -2899,8 +3062,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     _getDataLayerId(dataLayerId) {
       // For ADF the clientId is passed in and we need to parse out just the data layerId e.g. 'demoTemplate:tm1:adl1'
       var colonIdx = dataLayerId.lastIndexOf(':');
-      if (colonIdx > 0)
-        return dataLayerId.substring(colonIdx + 1);
+      if (colonIdx > 0) return dataLayerId.substring(colonIdx + 1);
       return dataLayerId;
     }
   }
@@ -2911,67 +3073,68 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    */
   class DvtThematicMapDefaults extends dvt.BaseComponentDefaults {
     /**
-    * Default values and utility functions for thematic map component versioning.
-    * @class
-    * @constructor
-    * @param {dvt.Context} context The rendering context.
-    * @extends {dvt.BaseComponentDefaults}
-    */
+     * Default values and utility functions for thematic map component versioning.
+     * @class
+     * @constructor
+     * @param {dvt.Context} context The rendering context.
+     * @extends {dvt.BaseComponentDefaults}
+     */
     constructor(context) {
       /** @const **/
       const SKIN_ALTA = {
-        'animationDuration' : 500,
-        'animationOnDisplay' : 'none',
-        'animationOnMapChange' : 'none',
-        'highlightMatch' : 'all',
-        'hoverBehavior': 'none',
-        'initialZooming' : 'none',
-        'markerZoomBehavior' : 'fixed',
-        'panning' : 'none',
-        'tooltipDisplay' : 'auto',
-        'touchResponse' : 'auto',
-        'visualEffects': 'none',
-        'zooming' : 'none',
-        'styleDefaults' : {
-          'skin' : 'alta',
-          '_areaStyle' : {'backgroundColor': '#DDDDDD', 'borderColor': '#FFFFFF'},
-          'hoverBehaviorDelay' : 200,
-          'dataAreaDefaults' : {
-            'borderColor' : '#FFFFFF',
-            'hoverColor' : '#FFFFFF',
-            'opacity' : 1,
-            'selectedInnerColor' : '#FFFFFF',
-            'selectedOuterColor' : '#000000'
+        animationDuration: 500,
+        animationOnDisplay: 'none',
+        animationOnMapChange: 'none',
+        highlightMatch: 'all',
+        hoverBehavior: 'none',
+        initialZooming: 'none',
+        markerZoomBehavior: 'fixed',
+        panning: 'none',
+        tooltipDisplay: 'auto',
+        touchResponse: 'auto',
+        visualEffects: 'none',
+        zooming: 'none',
+        styleDefaults: {
+          skin: 'alta',
+          _areaStyle: { backgroundColor: '#DDDDDD', borderColor: '#FFFFFF' },
+          hoverBehaviorDelay: 200,
+          dataAreaDefaults: {
+            borderColor: '#FFFFFF',
+            hoverColor: '#FFFFFF',
+            opacity: 1,
+            selectedInnerColor: '#FFFFFF',
+            selectedOuterColor: '#000000'
           },
-          'dataMarkerDefaults' : {
-            'borderColor' : '#FFFFFF',
-            'borderStyle' : 'solid',
-            'borderWidth' : 0.5,
-            'color' : 'rgb(51,51,51)',
-            'height' : 8,
-            'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#333333'),
-            'opacity' : 1,
-            'scaleX' : 1,
-            'scaleY' : 1,
-            'shape' : 'circle',
-            'width' : 8
+          dataMarkerDefaults: {
+            borderColor: '#FFFFFF',
+            borderStyle: 'solid',
+            borderWidth: 0.5,
+            color: 'rgb(51,51,51)',
+            height: 8,
+            labelStyle: new dvt.CSSStyle(
+              dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color:#333333'
+            ),
+            opacity: 1,
+            scaleX: 1,
+            scaleY: 1,
+            shape: 'circle',
+            width: 8
           },
-          'linkDefaults' : {
-            'color' : '#9bb2c7',
-            '_hoverColor' : '#FFFFFF',
-            '_selectedColor' : '#000000',
-            'width' : 2
+          linkDefaults: {
+            color: '#9bb2c7',
+            _hoverColor: '#FFFFFF',
+            _selectedColor: '#000000',
+            width: 2
           },
-          'labelStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12)
+          labelStyle: new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12)
         },
-        'resources' : {
-          'images' : {},
-          'translations' : {}
+        resources: {
+          images: {},
+          translations: {}
         }
-      };    
-      super({'alta': SKIN_ALTA}, context);
+      };
+      super({ alta: SKIN_ALTA }, context);
     }
-
 
     /**
      * Combines the user options with the defaults for the specified version for an area layer.
@@ -2983,12 +3146,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     calcAreaLayerOptions(userOptions, isCustomElement) {
       var defaultObj = DvtThematicMapDefaults.DEFAULT_AREA_LAYER;
-      if (isCustomElement)
-        defaultObj = dvt.JsonUtils.merge({'labelDisplay': 'off'}, defaultObj);
+      if (isCustomElement) defaultObj = dvt.JsonUtils.merge({ labelDisplay: 'off' }, defaultObj);
 
       return dvt.JsonUtils.merge(userOptions, defaultObj);
     }
-
 
     /**
      * Combines the user options with the defaults for the specified version for a data layer.
@@ -3000,7 +3161,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     calcDataLayerOptions(userOptions) {
       return dvt.JsonUtils.merge(userOptions, DvtThematicMapDefaults.DEFAULT_DATA_LAYER);
     }
-
 
     /**
      * Scales down gap sizes based on the size of the component.
@@ -3017,40 +3177,39 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     getNoCloneObject() {
       return {
-        'mapProvider': true,
-        'areaLayers': {'areaDataLayer': {'areas': true, 'markers': true, 'links': true}},
-        'pointDataLayers': {'markers': true, 'links': true},
-        'areas': true,
-        'markers': true,
-        'links': true
-      } ;
+        mapProvider: true,
+        areaLayers: { areaDataLayer: { areas: true, markers: true, links: true } },
+        pointDataLayers: { markers: true, links: true },
+        areas: true,
+        markers: true,
+        links: true
+      };
     }
   }
 
   /** @const **/
   DvtThematicMapDefaults.DEFAULT_AREA_LAYER = {
-    'animationOnLayerChange' : 'none',
-    'labelDisplay' : 'auto',
-    'labelType' : 'short'
+    animationOnLayerChange: 'none',
+    labelDisplay: 'auto',
+    labelType: 'short'
   };
 
   /** @const **/
   DvtThematicMapDefaults.DEFAULT_DATA_LAYER = {
-    'animationOnDataChange' : 'none',
-    'selectionMode' : 'none'
+    animationOnDataChange: 'none',
+    selectionMode: 'none'
   };
 
   /**
    * @class tmap event manager
    */
   class DvtThematicMapEventManager extends dvt.EventManager {
-
-   /**
-    * @param {dvt.Context} context The rendering context.
-    * @param {function} callback The function that should be called to dispatch component events.
-    * @param {DvtThematicMap} callbackObj The object to dispatch component events to
-    * @constructor
-    */
+    /**
+     * @param {dvt.Context} context The rendering context.
+     * @param {function} callback The function that should be called to dispatch component events.
+     * @param {DvtThematicMap} callbackObj The object to dispatch component events to
+     * @constructor
+     */
     constructor(context, callback, callbackObj) {
       super(context, callback, callbackObj, callbackObj);
       this._selectionHandlers = new Object();
@@ -3119,10 +3278,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var mapLayer = null;
       var clickedObj = null;
       if (obj) {
-        if (obj instanceof DvtMapObjPeer)
-          clickedObj = obj.getDisplayable();
-        else if (obj instanceof DvtMapArea)
-          clickedObj = obj;
+        if (obj instanceof DvtMapObjPeer) clickedObj = obj.getDisplayable();
+        else if (obj instanceof DvtMapArea) clickedObj = obj;
         if (obj.getDataLayer) {
           var dataLayer = obj.getDataLayer();
           clientId = dataLayer.getClientId();
@@ -3155,11 +3312,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         event.preventDefault();
       }
       // Zoom to fit
-      else if ((keyCode === dvt.KeyboardEvent.ZERO || keyCode === dvt.KeyboardEvent.NUMPAD_ZERO) && event.ctrlKey) {
-        if (event.altKey)
-          this._tmap.fitRegion(focusDisp);
-        else
-          this._tmap.fitSelectedRegions();
+      else if (
+        (keyCode === dvt.KeyboardEvent.ZERO || keyCode === dvt.KeyboardEvent.NUMPAD_ZERO) &&
+        event.ctrlKey
+      ) {
+        if (event.altKey) this._tmap.fitRegion(focusDisp);
+        else this._tmap.fitSelectedRegions();
         event.preventDefault();
       }
       // Mashups
@@ -3180,13 +3338,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         }
         // All other tab cases should be handled by superclass and will move focus out of component
         else {
-          if (this._bPassOnEvent)
-            focusObj.showKeyboardFocusEffect(); // checked by superclass to tab out of component
+          if (this._bPassOnEvent) focusObj.showKeyboardFocusEffect(); // checked by superclass to tab out of component
           eventConsumed = super.ProcessKeyboardEvent(event);
           this._bPassOnEvent = false;
         }
       } else {
-        if (keyCode === dvt.KeyboardEvent.TAB && focusObj) {//make sure focused obj in on screen
+        if (keyCode === dvt.KeyboardEvent.TAB && focusObj) {
+          //make sure focused obj in on screen
           this._tmap.ensureObjInViewport(event, focusObj);
         }
         eventConsumed = super.ProcessKeyboardEvent(event);
@@ -3200,8 +3358,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     OnComponentTouchClick(event) {
       var consumed = this.GetEventInfo(event, 'panned');
-      if (consumed)
-        return;
+      if (consumed) return;
 
       var obj = this.GetLogicalObject(event.target);
       this.SetClickInfo(obj);
@@ -3215,8 +3372,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           if (bSelectionChanged) {
             var selectedObjs = this._selectionHandlers[clientId].getSelection();
             var selectedIds = [];
-            for (var i = 0; i < selectedObjs.length; i++)
-              selectedIds.push(selectedObjs[i].getId());
+            for (var i = 0; i < selectedObjs.length; i++) selectedIds.push(selectedObjs[i].getId());
             var selectionEvent = dvt.EventFactory.newSelectionEvent(selectedIds);
             this._callback.call(this._callbackObj, selectionEvent);
           }
@@ -3266,19 +3422,29 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     ProcessRolloverEvent(event, obj, bOver) {
       // Don't continue if not enabled
       var options = this._tmap.getOptions();
-      if (options['hoverBehavior'] !== 'dim')
-        return;
+      if (options['hoverBehavior'] !== 'dim') return;
 
       // Compute the new highlighted categories and update the options
       var categories = obj.getCategories ? obj.getCategories() : [];
       options['highlightedCategories'] = bOver ? categories.slice() : null;
 
       // Fire the event to the rollover handler, who will fire to the component callback.
-      var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
-      var hoverBehaviorDelay = dvt.CSSStyle.getTimeMilliseconds(options['styleDefaults']['hoverBehaviorDelay']);
-      this.RolloverHandler.processEvent(rolloverEvent,
-          this._tmap.getNavigableAreas().concat(this._tmap.getNavigableMarkers()).concat(this._tmap.getNavigableLinks()),
-          hoverBehaviorDelay, options['highlightMatch'] === 'any');
+      var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(
+        options['highlightedCategories'],
+        bOver
+      );
+      var hoverBehaviorDelay = dvt.CSSStyle.getTimeMilliseconds(
+        options['styleDefaults']['hoverBehaviorDelay']
+      );
+      this.RolloverHandler.processEvent(
+        rolloverEvent,
+        this._tmap
+          .getNavigableAreas()
+          .concat(this._tmap.getNavigableMarkers())
+          .concat(this._tmap.getNavigableLinks()),
+        hoverBehaviorDelay,
+        options['highlightMatch'] === 'any'
+      );
     }
 
     /**
@@ -3315,13 +3481,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     ShowFocusEffect(event, obj) {
-      if (!this._tmap.isPanning())
-        super.ShowFocusEffect(event, obj);
+      if (!this._tmap.isPanning()) super.ShowFocusEffect(event, obj);
     }
   }
 
   class DvtMapDataLayer {
-
     /**
      * @param {string} layerId The client ID of the layer
      */
@@ -3382,8 +3546,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     getNonScaledContainers() {
       var containers = [this._dataLabelLayer, this._dataLinkLayer];
-      if (this._tmap.isMarkerZoomBehaviorFixed())
-        containers.push(this._dataPointLayer);
+      if (this._tmap.isMarkerZoomBehaviorFixed()) containers.push(this._dataPointLayer);
       return containers;
     }
 
@@ -3449,8 +3612,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         this._markerObjs.push(obj);
         this._eventHandler.associate(obj.getDisplayable(), obj);
         var label = obj.getLabel();
-        if (label)
-          this._eventHandler.associate(label, obj);
+        if (label) this._eventHandler.associate(label, obj);
       }
     }
 
@@ -3488,10 +3650,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     trackLink(start, end) {
       // Store the link in a map using start/end points as key so we can track overlap
       var key = DvtMapDataLayer._getLinkKey(start, end);
-      if (!this._linkMap[key])
-        this._linkMap[key] = 1;
-      else
-        this._linkMap[key]++;
+      if (!this._linkMap[key]) this._linkMap[key] = 1;
+      else this._linkMap[key]++;
       return this._linkMap[key];
     }
 
@@ -3505,8 +3665,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     static _getLinkKey(start, end) {
       if (start.x < end.x)
         return start.x.toString() + start.y.toString() + end.x.toString() + end.y.toString();
-      else
-        return end.x.toString() + end.y.toString() + start.x.toString() + start.y.toString();
+      else return end.x.toString() + end.y.toString() + start.x.toString() + start.y.toString();
     }
 
     /**
@@ -3543,8 +3702,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     _removeAreaObj(obj) {
       var idx = this._areaObjs.indexOf(obj);
-      if (idx !== -1)
-        this._areaObjs.splice(idx, 1);
+      if (idx !== -1) this._areaObjs.splice(idx, 1);
     }
 
     getClientId() {
@@ -3567,7 +3725,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       return this._animDur;
     }
 
-
     /**
      * Sets the selection mode for this data layer
      * @param {String} mode The selection mode. Valid values are 's' and 'm'
@@ -3588,7 +3745,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._isolatedAreaRowKey = isolated;
     }
 
-
     /**
      * Since we don't set the area path commands until render time, we create an empty DvtSelectablePath when parsing the xml
      * so we can still set the area color and other info.  This path with no commands needs to be updated before adding to DOM.
@@ -3604,7 +3760,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         return true;
       }
     }
-
 
     /**
      * Renders a specific DvtMapAreaPeer and updates the label
@@ -3629,7 +3784,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       return false;
     }
 
-
     /**
      * Render the data layer objects
      * @param {dvt.Matrix} pzcMatrix The matrix to use when rendering the data layer
@@ -3640,11 +3794,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // first make a copy of markers and then sort by size to prevent overlapping
       // original order should be kept for automation purposes
       var dataObjs = this._markerObjs.slice();
-      dataObjs.sort(function (a,b) {
-        if (a.getSize() < b.getSize())
-          return 1;
-        else if (a.getSize() > b.getSize())
-          return -1;
+      dataObjs.sort(function (a, b) {
+        if (a.getSize() < b.getSize()) return 1;
+        else if (a.getSize() > b.getSize()) return -1;
         else return 0;
       });
       for (var i = 0; i < dataObjs.length; i++) {
@@ -3662,23 +3814,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         }
         // if area marker, do not display area label
         var regionId = dataObj.getLocation();
-        if (regionId)
-          areaLabelsToRemove[regionId] = true;
+        if (regionId) areaLabelsToRemove[regionId] = true;
       }
       for (var k = 0; k < this._areaObjs.length; k++) {
-        if (areaLabelsToRemove[this._areaObjs[k].getLocation()])
-          this._areaObjs[k].removeLabel();
+        if (areaLabelsToRemove[this._areaObjs[k].getLocation()]) this._areaObjs[k].removeLabel();
         // areaObjs array can be modified by _renderAreaAndLabel if area has
         // been removed from parent area layer due to path simplification routine
-        if (!this._renderAreaAndLabel(k))
-          k--;
+        if (!this._renderAreaAndLabel(k)) k--;
       }
       for (var m = 0; m < this._linkObjs.length; m++) {
         this._dataLinkLayer.addChild(this._linkObjs[m].getDisplayable());
       }
 
-      if (this._initSelections)
-        this._processInitialSelections();
+      if (this._initSelections) this._processInitialSelections();
     }
 
     /**
@@ -3691,22 +3839,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._pzcMatrix = pzcMatrix;
 
       var areaObjs = this.getAreaObjs();
-      for (var i = 0; i < areaObjs.length; i++)
-        areaObjs[i].HandleZoomEvent(pzcMatrix);
+      for (var i = 0; i < areaObjs.length; i++) areaObjs[i].HandleZoomEvent(pzcMatrix);
 
       if (this._tmap.isMarkerZoomBehaviorFixed()) {
         var markerObjs = this.getMarkerObjs();
-        for (var n = 0; n < markerObjs.length; n++)
-          markerObjs[n].HandleZoomEvent(pzcMatrix);
+        for (var n = 0; n < markerObjs.length; n++) markerObjs[n].HandleZoomEvent(pzcMatrix);
       }
 
       // reset link map so we can recalculate curve heights correctly
       this._linkMap = {};
       var linkObjs = this.getLinkObjs();
-      for (var p = 0; p < linkObjs.length; p++)
-        linkObjs[p].HandleZoomEvent(pzcMatrix);
+      for (var p = 0; p < linkObjs.length; p++) linkObjs[p].HandleZoomEvent(pzcMatrix);
     }
-
 
     /**
      * Processes a pan event for this data layer and updates the locations of its data objects
@@ -3717,11 +3861,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._pzcMatrix = pzcMatrix;
     }
 
-
     setInitialSelections(selections) {
       this._initSelections = selections;
     }
-
 
     /**
      * Update the selection handler with the initial selections.
@@ -3732,7 +3874,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         this._initSelections = null;
       }
     }
-
 
     /**
      * Returns the row keys for the current drag.
@@ -3760,7 +3901,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       }
     }
 
-
     /**
      * Returns the displayables to use for drag feedback for the current drag.
      * @return {array} The displayables for the current drag.
@@ -3776,7 +3916,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
       return displayables;
     }
-
 
     /**
      * Given a list of area row keys, looks up and returns a list of their area ids
@@ -3811,8 +3950,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           var rootObj = disp.getRootElem();
           if (Array.isArray(rootObj)) {
             rootObj.forEach(destroyFn);
-          } else if (rootObj.destroy)
-              rootObj.destroy();
+          } else if (rootObj.destroy) rootObj.destroy();
         }
       }
       // Null out reference to event handler which is just a reference to DvtThematicMap's which will
@@ -3832,8 +3970,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var link = this._dataLinkCollection[i];
         var startMarker = link.getStartMarker();
         var endMarker = link.getEndMarker();
-        if ((startMarker && dvt.Obj.compareValues(ctx, startMarker.getId(), markerId)) ||
-        (endMarker && dvt.Obj.compareValues(ctx, endMarker.getId(), markerId)))
+        if (
+          (startMarker && dvt.Obj.compareValues(ctx, startMarker.getId(), markerId)) ||
+          (endMarker && dvt.Obj.compareValues(ctx, endMarker.getId(), markerId))
+        )
           links.push(link);
       }
       return links;
@@ -3926,8 +4066,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           let adjLinks = this.getDataLayer().getNavigableLinksForNodeId(markerId);
           let idx = adjLinks.indexOf(this);
           idx++;
-          if (idx === adjLinks.length)
-            idx = 0;
+          if (idx === adjLinks.length) idx = 0;
           next = adjLinks[idx];
         } else if (event.keyCode === dvt.KeyboardEvent.DOWN_ARROW) {
           // Get the marker that was used to traverse to this link and traverse its other links
@@ -3935,13 +4074,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           var adjLinks = this.getDataLayer().getNavigableLinksForNodeId(markerId);
           let idx = adjLinks.indexOf(this);
           idx--;
-          if (idx === -1)
-            idx = adjLinks.length - 1;
+          if (idx === -1) idx = adjLinks.length - 1;
           next = adjLinks[idx];
         } else if (event.keyCode === dvt.KeyboardEvent.LEFT_ARROW) {
-          next = this.getStartPoint().x <= this.getEndPoint().x ? this.getStartMarker() : this.getEndMarker();
+          next =
+            this.getStartPoint().x <= this.getEndPoint().x
+              ? this.getStartMarker()
+              : this.getEndMarker();
         } else if (event.keyCode === dvt.KeyboardEvent.RIGHT_ARROW) {
-          next = this.getStartPoint().x >= this.getEndPoint().x ? this.getStartMarker() : this.getEndMarker();
+          next =
+            this.getStartPoint().x >= this.getEndPoint().x
+              ? this.getStartMarker()
+              : this.getEndMarker();
         } else {
           // invalid navigation key, do nothing
           return this;
@@ -3971,26 +4115,43 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         // Calculate the current (transformed) start/end coordinates
         var startPt = new dvt.Point(this._startPt.x * this.Zoom, this._startPt.y * this.Zoom);
         var endPt = new dvt.Point(this._endPt.x * this.Zoom, this._endPt.y * this.Zoom);
-        var curve = DvtThematicMapUtils.calcCurve(this._dataLayer, this._startPt, this._endPt, startPt, endPt);
+        var curve = DvtThematicMapUtils.calcCurve(
+          this._dataLayer,
+          this._startPt,
+          this._endPt,
+          startPt,
+          endPt
+        );
         this.Displayable.setCmds(curve);
         dvt.Agent.workaroundFirefoxRepaint(this.Displayable);
       }
     }
 
-
     /**
      * @override
      */
     animateUpdate(handler, oldObj) {
-      var anim = new dvt.CustomAnimation(this._view.getCtx(), this.Displayable, this.getDataLayer().getAnimDur());
+      var anim = new dvt.CustomAnimation(
+        this._view.getCtx(),
+        this.Displayable,
+        this.getDataLayer().getAnimDur()
+      );
 
       var oldDisplayable = oldObj.getDisplayable();
       // Color change
       var startStroke = oldDisplayable.getStroke();
       var endStroke = this.Displayable.getStroke();
-      if (endStroke.getColor() !==   startStroke.getColor()) {
+      if (endStroke.getColor() !== startStroke.getColor()) {
         this.Displayable.setStroke(startStroke);
-        anim.getAnimator().addProp(dvt.Animator.TYPE_STROKE, this.Displayable, this.Displayable.getStroke, this.Displayable.setStroke, endStroke);
+        anim
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_STROKE,
+            this.Displayable,
+            this.Displayable.getStroke,
+            this.Displayable.setStroke,
+            endStroke
+          );
       }
 
       // If start or end points change, fade in new link
@@ -4002,13 +4163,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (!origStart.equals(start) || !origEnd.equals(end)) {
         fadeOld = false;
         this.Displayable.setAlpha(0);
-        anim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this.Displayable, this.Displayable.getAlpha, this.Displayable.setAlpha, 1);
-        anim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, oldDisplayable, oldDisplayable.getAlpha, oldDisplayable.setAlpha, 0);
+        anim
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_NUMBER,
+            this.Displayable,
+            this.Displayable.getAlpha,
+            this.Displayable.setAlpha,
+            1
+          );
+        anim
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_NUMBER,
+            oldDisplayable,
+            oldDisplayable.getAlpha,
+            oldDisplayable.setAlpha,
+            0
+          );
       }
 
       // Hide old link
-      if (fadeOld)
-        oldDisplayable.setAlpha(0);
+      if (fadeOld) oldDisplayable.setAlpha(0);
 
       handler.add(anim, DvtMapObjPeer.ANIM_UPDATE_PRIORITY);
     }
@@ -4020,11 +4196,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     getShortDescContext(peer) {
       var data = peer._data._noTemplate ? peer._itemData : peer._data;
       return {
-        'data': data,
-        'id': peer.getId(),
-        'itemData': peer._itemData,
-        'label': peer._label ? peer._label.getTextString() : null,
-      }
+        data: data,
+        id: peer.getId(),
+        itemData: peer._itemData,
+        label: peer._label ? peer._label.getTextString() : null
+      };
     }
   }
 
@@ -4032,7 +4208,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    * Thematic Map MapProvider utility class for converting a GeoJSON object into a basemap.
    */
   const DvtMapProviderUtils = {
-
     /**
      * Does a basic check to see if an object contains geo JSON, returning true if it does. We need this check
      * because the default JET property for mapProvider produces an empty object for the 'geo' subproperty.
@@ -4054,8 +4229,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var areas = {};
       var geoJson = mapProvider['geo'];
       var keys = mapProvider['propertiesKeys'] || {};
-      if (!keys['id'])
-        throw new Error('Missing required mapProvider.propertiesKeys.id property.');
+      if (!keys['id']) throw new Error('Missing required mapProvider.propertiesKeys.id property.');
 
       // Determine the GeoJSON top-level type
       var type = geoJson['type'];
@@ -4067,13 +4241,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         for (var i = 0; i < features.length; i++) {
           DvtMapProviderUtils._parseFeature(context, features[i], keys, areas, labels);
         }
-      }
-      else if (type === 'Feature') {
+      } else if (type === 'Feature') {
         DvtMapProviderUtils._parseFeature(context, geoJson, keys, areas, labels);
-      }
-      else {
-        throw new Error('GeoJSON type of ' + type + ' is not supported. ' +
-            'Only Feature and FeatureCollection types are supported.');
+      } else {
+        throw new Error(
+          'GeoJSON type of ' +
+            type +
+            ' is not supported. ' +
+            'Only Feature and FeatureCollection types are supported.'
+        );
       }
 
       // Don't try and render if map didn't contain any valid areas
@@ -4082,7 +4258,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         throw new Error('No valid Features found in GeoJSON.');
       }
 
-      return {labels: labels, areas: areas};
+      return { labels: labels, areas: areas };
     },
 
     /**
@@ -4100,16 +4276,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var props = feature['properties'];
       var geom = feature['geometry'];
       if (!DvtMapProviderUtils._isSupportedGeometry(geom)) {
-        context['oj']['Logger']['warn']('A geometry of type ' + geom['type'] +
-            ' is not supported and will be skipped.');
+        context['oj']['Logger']['warn'](
+          'A geometry of type ' + geom['type'] + ' is not supported and will be skipped.'
+        );
         return;
       }
 
       var id = props[keys['id']];
       if (!id) {
-        context['oj']['Logger']['warn']("No 'id' value found in the mapProvider.propertiesKey object. " +
+        context['oj']['Logger']['warn'](
+          "No 'id' value found in the mapProvider.propertiesKey object. " +
             "A Feature's 'properties' object must have an id in the field specified by " +
-            'the mapProvider.propertiesKey.id value.');
+            'the mapProvider.propertiesKey.id value.'
+        );
         return;
       }
 
@@ -4131,10 +4310,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     _isSupportedGeometry: (geom) => {
       var type = geom['type'];
-      if (type === 'Polygon' 
-          || type === 'MultiPolygon'
-          || type === 'GeometryCollection')
-        return true;
+      if (type === 'Polygon' || type === 'MultiPolygon' || type === 'GeometryCollection') return true;
       return false;
     },
 
@@ -4151,14 +4327,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var coords = geom['coordinates'] || geom.geometries;
       if (type === 'Polygon') {
         path = DvtMapProviderUtils._polygonToPath(coords);
-      }
-      else if (type === 'MultiPolygon') {
+      } else if (type === 'MultiPolygon') {
         // The coordinates of a MultiPolygon are an array of Polygon coordinate arrays.
         for (var i = 0; i < coords.length; i++) {
           path += DvtMapProviderUtils._polygonToPath(coords[i]);
         }
-      }
-      else if (type === 'GeometryCollection') {
+      } else if (type === 'GeometryCollection') {
         // The GeometryCollection is an array of geometry objects. Each geometry object has coordinates of Polygon or MultiPolygon
         for (var gIdx = 0; gIdx < coords.length; gIdx++) {
           // each geometry has a type and coordinate
@@ -4196,7 +4370,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     _linearRingToPath: (coords) => {
       // [ [100.0, 0.0], [101.0, 1.0] ]
-      var path, prevX = 0, prevY = 0;
+      var path,
+        prevX = 0,
+        prevY = 0;
       var prevCmd = 'M';
       if (coords) {
         for (var i = 0; i < coords.length; i++) {
@@ -4215,12 +4391,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           var relY = y - prevY;
           // check to see if we can convert a l to a h/v command
           if (prevCmd == 'l') {
-            if (prevX === x) { // vertical line
+            if (prevX === x) {
+              // vertical line
               prevCmd = 'v';
               prevY = y;
               path = path + prevCmd + relY;
               continue;
-            } else if (prevY === y) { // horizontal line
+            } else if (prevY === y) {
+              // horizontal line
               prevCmd = 'h';
               prevX = x;
               path = path + prevCmd + relX;
@@ -4252,9 +4430,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var currChar = path[i];
         if (currChar !== '-' && (isNaN(currChar) || currChar === ' ')) {
           var cmd = null;
-          if (currChar !== ' ')
-            cmd = currChar;
-          return {coord: parseInt(path.substring(idx, i)), idx: i, cmd: cmd};
+          if (currChar !== ' ') cmd = currChar;
+          return { coord: parseInt(path.substring(idx, i)), idx: i, cmd: cmd };
         }
       }
       return {};
@@ -4285,18 +4462,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
           // If command isn't v or h look for 2nd coordinate
           if (currCmd !== 'v' && currCmd !== 'h') {
-            coord2 = DvtMapProviderUtils._getCoord(path, idx+1);
+            coord2 = DvtMapProviderUtils._getCoord(path, idx + 1);
 
             // Update idx
             idx = coord2.idx;
 
             currX += coord1.coord;
             currY += coord2.coord;
-          }
-          else if (currCmd === 'v') {
+          } else if (currCmd === 'v') {
             currY += coord1.coord;
-          }
-          else if (currCmd === 'h') {
+          } else if (currCmd === 'h') {
             currX += coord1.coord;
           }
 
@@ -4305,17 +4480,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
           // Update command
           if (coord2) {
-            if (coord2.cmd != null)
-              currCmd = coord2.cmd;
-          }
-          else if (coord1.cmd != null) {
+            if (coord2.cmd != null) currCmd = coord2.cmd;
+          } else if (coord1.cmd != null) {
             currCmd = coord1.cmd;
           }
 
           if (currCmd === 'Z') {
             coords.push(coordAr);
             coordAr = [];
-            currCmd = path[idx+1];
+            currCmd = path[idx + 1];
           }
         }
       }
@@ -4328,11 +4501,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    */
   class DvtSelectablePath extends dvt.Path {
     /**
-    * Creates a selectable map area.
-    * @param {dvt.Context} context The rendering context.
-    * @param {boolean} bSupportsVectorEffects True if the rendering context supports vector effects
-    * @constructor
-    */
+     * Creates a selectable map area.
+     * @param {dvt.Context} context The rendering context.
+     * @param {boolean} bSupportsVectorEffects True if the rendering context supports vector effects
+     * @constructor
+     */
     constructor(context, bSupportsVectorEffects) {
       super(context);
       this.Zoom = 1;
@@ -4344,27 +4517,39 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     setSelected(selected) {
-      if (this.IsSelected == selected)
-        return;
+      if (this.IsSelected == selected) return;
       var isRedwood = this.getCtx().getThemeBehavior() === 'redwood';
       if (selected) {
         //hoverselected == selected in redwood
         var hoverSelectedInnerStrokeWidth = isRedwood ? 1 : DvtSelectablePath.HOVER_STROKE_WIDTH;
-        var hoverSelectedOuterStrokeWidth = isRedwood ? 3 : DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH;
+        var hoverSelectedOuterStrokeWidth = isRedwood
+          ? 3
+          : DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH;
         var selectedInnerStrokeWidth = isRedwood ? 1 : DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH;
         var selectedOuterStrokeWidth = isRedwood ? 3 : DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH;
         if (this.isHoverEffectShown()) {
           this.CreateSelectedHoverStrokes();
-          this.SelectedHoverInnerStroke = this._adjustStrokeZoomWidth(this.SelectedHoverInnerStroke, hoverSelectedInnerStrokeWidth);
-          this.SelectedHoverOuterStroke = this._adjustStrokeZoomWidth(this.SelectedHoverOuterStroke, hoverSelectedOuterStrokeWidth);
+          this.SelectedHoverInnerStroke = this._adjustStrokeZoomWidth(
+            this.SelectedHoverInnerStroke,
+            hoverSelectedInnerStrokeWidth
+          );
+          this.SelectedHoverOuterStroke = this._adjustStrokeZoomWidth(
+            this.SelectedHoverOuterStroke,
+            hoverSelectedOuterStrokeWidth
+          );
         } else {
-          this.SelectedInnerStroke = this._adjustStrokeZoomWidth(this.SelectedInnerStroke, selectedInnerStrokeWidth);
-          this.SelectedOuterStroke = this._adjustStrokeZoomWidth(this.SelectedOuterStroke, selectedOuterStrokeWidth);
+          this.SelectedInnerStroke = this._adjustStrokeZoomWidth(
+            this.SelectedInnerStroke,
+            selectedInnerStrokeWidth
+          );
+          this.SelectedOuterStroke = this._adjustStrokeZoomWidth(
+            this.SelectedOuterStroke,
+            selectedOuterStrokeWidth
+          );
         }
       }
       super.setSelected(selected);
     }
-
 
     /**
      * @override
@@ -4372,14 +4557,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     showHoverEffect() {
       if (this.isSelected()) {
         this.CreateSelectedHoverStrokes();
-        this.SelectedHoverInnerStroke = this._adjustStrokeZoomWidth(this.SelectedHoverInnerStroke, DvtSelectablePath.HOVER_STROKE_WIDTH);
-        this.SelectedHoverOuterStroke = this._adjustStrokeZoomWidth(this.SelectedHoverOuterStroke, DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH);
+        this.SelectedHoverInnerStroke = this._adjustStrokeZoomWidth(
+          this.SelectedHoverInnerStroke,
+          DvtSelectablePath.HOVER_STROKE_WIDTH
+        );
+        this.SelectedHoverOuterStroke = this._adjustStrokeZoomWidth(
+          this.SelectedHoverOuterStroke,
+          DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH
+        );
       } else {
-        this.HoverInnerStroke = this._adjustStrokeZoomWidth(this.HoverInnerStroke, DvtSelectablePath.HOVER_STROKE_WIDTH);
+        this.HoverInnerStroke = this._adjustStrokeZoomWidth(
+          this.HoverInnerStroke,
+          DvtSelectablePath.HOVER_STROKE_WIDTH
+        );
       }
       super.showHoverEffect();
     }
-
 
     /**
      * @override
@@ -4389,16 +4582,25 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (!this.SelectedHoverInnerStroke) {
         var selectedHoverInnerStroke = isRedwood ? this.SelectedInnerStroke : this.HoverInnerStroke;
         var selectedHoverInnerStrokeWidth = isRedwood ? 1 : DvtSelectablePath.HOVER_STROKE_WIDTH;
-        this.SelectedHoverInnerStroke = new dvt.Stroke(selectedHoverInnerStroke.getColor(), selectedHoverInnerStroke.getAlpha(),
-        selectedHoverInnerStrokeWidth, this._bSupportsVectorEffects);
+        this.SelectedHoverInnerStroke = new dvt.Stroke(
+          selectedHoverInnerStroke.getColor(),
+          selectedHoverInnerStroke.getAlpha(),
+          selectedHoverInnerStrokeWidth,
+          this._bSupportsVectorEffects
+        );
       }
       if (!this.SelectedHoverOuterStroke) {
-        var selectedHoverOuterStrokeWidth = isRedwood ? 3 : DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH;
-        this.SelectedHoverOuterStroke = new dvt.Stroke(this.SelectedOuterStroke.getColor(), this.SelectedOuterStroke.getAlpha(),
-        selectedHoverOuterStrokeWidth, this._bSupportsVectorEffects);
+        var selectedHoverOuterStrokeWidth = isRedwood
+          ? 3
+          : DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH;
+        this.SelectedHoverOuterStroke = new dvt.Stroke(
+          this.SelectedOuterStroke.getColor(),
+          this.SelectedOuterStroke.getAlpha(),
+          selectedHoverOuterStrokeWidth,
+          this._bSupportsVectorEffects
+        );
       }
     }
-
 
     /**
      * @override
@@ -4408,8 +4610,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var isRedwood = this.getCtx().getThemeBehavior() === 'redwood';
         var selectedInnerStrokeWidth = isRedwood ? 1 : DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH;
         var selectedOuterStrokeWidth = isRedwood ? 3 : DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH;
-        this.SelectedInnerStroke = this._adjustStrokeZoomWidth(this.SelectedInnerStroke, selectedInnerStrokeWidth);
-        this.SelectedOuterStroke = this._adjustStrokeZoomWidth(this.SelectedOuterStroke, selectedOuterStrokeWidth);
+        this.SelectedInnerStroke = this._adjustStrokeZoomWidth(
+          this.SelectedInnerStroke,
+          selectedInnerStrokeWidth
+        );
+        this.SelectedOuterStroke = this._adjustStrokeZoomWidth(
+          this.SelectedOuterStroke,
+          selectedOuterStrokeWidth
+        );
       }
       super.hideHoverEffect();
     }
@@ -4424,7 +4632,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (!this._bSupportsVectorEffects) {
         var stroke = shape.getStroke();
         if (stroke) {
-          var updatedStroke = new dvt.Stroke(stroke.getColor(), stroke.getAlpha(), fixedWidth / this.Zoom, stroke.isFixedWidth());
+          var updatedStroke = new dvt.Stroke(
+            stroke.getColor(),
+            stroke.getAlpha(),
+            fixedWidth / this.Zoom,
+            stroke.isFixedWidth()
+          );
           shape.setStroke(updatedStroke);
         }
       }
@@ -4439,7 +4652,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     _adjustStrokeZoomWidth(stroke, fixedWidth) {
       if (!this._bSupportsVectorEffects) {
-        return new dvt.Stroke(stroke.getColor(), stroke.getAlpha(), fixedWidth / this.Zoom, stroke.isFixedWidth());
+        return new dvt.Stroke(
+          stroke.getColor(),
+          stroke.getAlpha(),
+          fixedWidth / this.Zoom,
+          stroke.isFixedWidth()
+        );
       }
       return stroke;
     }
@@ -4458,11 +4676,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           this._updateStrokeZoomWidth(this.InnerShape, DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH);
           this._updateStrokeZoomWidth(this, DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH);
         }
-      }
-      else if (this.isHoverEffectShown()) {
+      } else if (this.isHoverEffectShown()) {
         this._updateStrokeZoomWidth(this.InnerShape, DvtSelectablePath.HOVER_STROKE_WIDTH);
-      }
-      else {
+      } else {
         this._updateStrokeZoomWidth(this, 1);
       }
     }
@@ -4489,66 +4705,128 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     /**  @const  @private */
     _NEW_ZEALAND_RECT: new dvt.Rectangle(500, 200, 200, 200),
     /**  @const  @private */
-    _NEW_ZEALAND_BOUNDS: new dvt.Rectangle(163, - 49, 17, 17),
+    _NEW_ZEALAND_BOUNDS: new dvt.Rectangle(163, -49, 17, 17),
     /**  @const  @private */
-    _AFRICA_BOUNDS: new dvt.Rectangle(- 17.379205428479874, - 37.201510854305546, 68.66391442808313, 77.50071544582713),
+    _AFRICA_BOUNDS: new dvt.Rectangle(
+      -17.379205428479874,
+      -37.201510854305546,
+      68.66391442808313,
+      77.50071544582713
+    ),
     /**  @const  @private */
-    _ASIA_BOUNDS: new dvt.Rectangle(- 0.8436866097568272, - 0.7626456732012923, 1.8336308036296942, 1.5748427214611724),
+    _ASIA_BOUNDS: new dvt.Rectangle(
+      -0.8436866097568272,
+      -0.7626456732012923,
+      1.8336308036296942,
+      1.5748427214611724
+    ),
     /**  @const  @private */
-    _AUSTRALIA_BOUNDS: new dvt.Rectangle(113.29667079927977, - 52.89550592498755, 65.25257389065216, 42.123114617504626),
+    _AUSTRALIA_BOUNDS: new dvt.Rectangle(
+      113.29667079927977,
+      -52.89550592498755,
+      65.25257389065216,
+      42.123114617504626
+    ),
     /**  @const  @private */
-    _EUROPE_BOUNDS: new dvt.Rectangle(- 0.47944476148667076, - 0.0014669405958800579, 0.7364925893845453, 0.6293972741802124),
+    _EUROPE_BOUNDS: new dvt.Rectangle(
+      -0.47944476148667076,
+      -0.0014669405958800579,
+      0.7364925893845453,
+      0.6293972741802124
+    ),
     /**  @const  @private */
-    _N_AMERICA_BOUNDS: new dvt.Rectangle(- 0.6154469465354344, - 0.24589767758847714, 1.2448236795108683, 1.2631535127174947),
+    _N_AMERICA_BOUNDS: new dvt.Rectangle(
+      -0.6154469465354344,
+      -0.24589767758847714,
+      1.2448236795108683,
+      1.2631535127174947
+    ),
     /**  @const  @private */
-    _S_AMERICA_BOUNDS: new dvt.Rectangle(- 80.60817722658722, - 60.796273249672765, 46.608687602908056, 66.96595767361796),
+    _S_AMERICA_BOUNDS: new dvt.Rectangle(
+      -80.60817722658722,
+      -60.796273249672765,
+      46.608687602908056,
+      66.96595767361796
+    ),
     /**  @const  @private */
-    _APAC_BOUNDS: new dvt.Rectangle(68.20516856593524, - 52.89892708045518, 111.65739821771903, 116.55460214469134),
+    _APAC_BOUNDS: new dvt.Rectangle(
+      68.20516856593524,
+      -52.89892708045518,
+      111.65739821771903,
+      116.55460214469134
+    ),
     /**  @const  @private */
-    _EMEA_BOUNDS: new dvt.Rectangle(- 24.543831069368586, - 37.202500659225905, 204.54283106936856, 164.9634493690208),
+    _EMEA_BOUNDS: new dvt.Rectangle(
+      -24.543831069368586,
+      -37.202500659225905,
+      204.54283106936856,
+      164.9634493690208
+    ),
     /**  @const  @private */
-    _L_AMERICA_BOUNDS: new dvt.Rectangle(- 117.12451221229134, - 54.95921623126266, 82.33223251442891, 87.67786623127876),
+    _L_AMERICA_BOUNDS: new dvt.Rectangle(
+      -117.12451221229134,
+      -54.95921623126266,
+      82.33223251442891,
+      87.67786623127876
+    ),
     /**  @const  @private */
-    _USA_CANADA_BOUNDS: new dvt.Rectangle(- 0.6154656300926513, 0.0507209798775865, 1.0153104799231851, 0.966537441082997),
+    _USA_CANADA_BOUNDS: new dvt.Rectangle(
+      -0.6154656300926513,
+      0.0507209798775865,
+      1.0153104799231851,
+      0.966537441082997
+    ),
     /**  @const  @private */
-    _WORLD_BOUNDS: new dvt.Rectangle(- 171.9, - 62.6, 349.8, 150.8),
+    _WORLD_BOUNDS: new dvt.Rectangle(-171.9, -62.6, 349.8, 150.8),
     /**  @const  @private */
     _ALASKA1_RECT: new dvt.Rectangle(172, 51, 8, 3),
     /**  @const  @private */
-    _ALASKA2_RECT: new dvt.Rectangle(- 180, 51, 51, 21),
+    _ALASKA2_RECT: new dvt.Rectangle(-180, 51, 51, 21),
     /**  @const  @private */
-    _HAWAII_RECT: new dvt.Rectangle(- 178.5, 18.9, 35, 11),
+    _HAWAII_RECT: new dvt.Rectangle(-178.5, 18.9, 35, 11),
     /**  @const  @private */
-    _USA_RECT: new dvt.Rectangle(- 124.8, 24.4, 58, 25.5),
+    _USA_RECT: new dvt.Rectangle(-124.8, 24.4, 58, 25.5),
     /**  @const  @private */
-    _ALASKA_BOUNDS: new dvt.Rectangle(- 187.5517578125, 59.82610321044922, 57.562225341796875, 43.83738708496094),
+    _ALASKA_BOUNDS: new dvt.Rectangle(
+      -187.5517578125,
+      59.82610321044922,
+      57.562225341796875,
+      43.83738708496094
+    ),
     /**  @const  @private */
-    _HAWAII_BOUNDS: new dvt.Rectangle(- 160.23606872558594, 18.91549301147461, 5.4374847412109375, 3.3189010620117188),
+    _HAWAII_BOUNDS: new dvt.Rectangle(
+      -160.23606872558594,
+      18.91549301147461,
+      5.4374847412109375,
+      3.3189010620117188
+    ),
     /**  @const  @private */
-    _USA_BOUNDS: new dvt.Rectangle(- 2386803.25, - 1183550.5, 4514111, 2908402),
+    _USA_BOUNDS: new dvt.Rectangle(-2386803.25, -1183550.5, 4514111, 2908402),
     /**  @const  @private */
     _HAWAII_WINDOW: new dvt.Rectangle(165.0, 400.0, 100.0, 100.0),
     /**  @const  @private */
     _ALASKA_WINDOW: new dvt.Rectangle(-75.0, 350.0, 240.0, 150.0),
     /**  @const  @private */
-    _ROBINSON_COORDINATES: [[1, 0],
-    [0.9986, 0.0314],
-    [0.9954, 0.0629],
-    [0.9900, 0.0943],
-    [0.9822, 0.1258],
-    [0.9730, 0.1572],
-    [0.9600, 0.1887],
-    [0.9427, 0.2201],
-    [0.9216, 0.2515],
-    [0.8962, 0.2826],
-    [0.8679, 0.3132],
-    [0.8350, 0.3433],
-    [0.7986, 0.3726],
-    [0.7597, 0.4008],
-    [0.6732, 0.4532],
-    [0.6213, 0.4765],
-    [0.5722, 0.4951],
-    [0.5322, 0.5072]],
+    _ROBINSON_COORDINATES: [
+      [1, 0],
+      [0.9986, 0.0314],
+      [0.9954, 0.0629],
+      [0.99, 0.0943],
+      [0.9822, 0.1258],
+      [0.973, 0.1572],
+      [0.96, 0.1887],
+      [0.9427, 0.2201],
+      [0.9216, 0.2515],
+      [0.8962, 0.2826],
+      [0.8679, 0.3132],
+      [0.835, 0.3433],
+      [0.7986, 0.3726],
+      [0.7597, 0.4008],
+      [0.6732, 0.4532],
+      [0.6213, 0.4765],
+      [0.5722, 0.4951],
+      [0.5322, 0.5072]
+    ],
 
     /**
      * Gets the projection for built-in basemaps to be used for JET/AMX
@@ -4561,46 +4839,64 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var point;
       switch (basemap) {
         case 'africa':
-          point = DvtThematicMapProjections._getAffineProjection(DvtThematicMapProjections._AFRICA_BOUNDS,
-                                                                DvtThematicMapProjections._getMercatorProjection(x, y));
+          point = DvtThematicMapProjections._getAffineProjection(
+            DvtThematicMapProjections._AFRICA_BOUNDS,
+            DvtThematicMapProjections._getMercatorProjection(x, y)
+          );
           break;
         case 'asia':
-          point = DvtThematicMapProjections._getAffineProjection(DvtThematicMapProjections._ASIA_BOUNDS,
-                                                                DvtThematicMapProjections._getAlbersEqualAreaConicProjection(40, 95, 20, 60, x, y),
-                                                                DvtThematicMapProjections.toRadians(5));
+          point = DvtThematicMapProjections._getAffineProjection(
+            DvtThematicMapProjections._ASIA_BOUNDS,
+            DvtThematicMapProjections._getAlbersEqualAreaConicProjection(40, 95, 20, 60, x, y),
+            DvtThematicMapProjections.toRadians(5)
+          );
           break;
         case 'australia':
           point = DvtThematicMapProjections._getAustraliaProjection(x, y);
           break;
         case 'europe':
-          point = DvtThematicMapProjections._getAffineProjection(DvtThematicMapProjections._EUROPE_BOUNDS,
-                                                                DvtThematicMapProjections._getAlbersEqualAreaConicProjection(35, 25, 40, 65, x, y),
-                                                                DvtThematicMapProjections.toRadians(10));
+          point = DvtThematicMapProjections._getAffineProjection(
+            DvtThematicMapProjections._EUROPE_BOUNDS,
+            DvtThematicMapProjections._getAlbersEqualAreaConicProjection(35, 25, 40, 65, x, y),
+            DvtThematicMapProjections.toRadians(10)
+          );
           break;
         case 'northAmerica':
-          point = DvtThematicMapProjections._getAffineProjection(DvtThematicMapProjections._N_AMERICA_BOUNDS,
-                                                                DvtThematicMapProjections._getAlbersEqualAreaConicProjection(23, - 96, 20, 60, x, y));
+          point = DvtThematicMapProjections._getAffineProjection(
+            DvtThematicMapProjections._N_AMERICA_BOUNDS,
+            DvtThematicMapProjections._getAlbersEqualAreaConicProjection(23, -96, 20, 60, x, y)
+          );
           break;
         case 'southAmerica':
-          point = DvtThematicMapProjections._getAffineProjection(DvtThematicMapProjections._S_AMERICA_BOUNDS,
-                                                                new dvt.Point(x, y),
-                                                                DvtThematicMapProjections.toRadians(5));
+          point = DvtThematicMapProjections._getAffineProjection(
+            DvtThematicMapProjections._S_AMERICA_BOUNDS,
+            new dvt.Point(x, y),
+            DvtThematicMapProjections.toRadians(5)
+          );
           break;
         case 'apac':
-          point = DvtThematicMapProjections._getAffineProjection(DvtThematicMapProjections._APAC_BOUNDS,
-                                                                DvtThematicMapProjections._getMercatorProjection(x, y));
+          point = DvtThematicMapProjections._getAffineProjection(
+            DvtThematicMapProjections._APAC_BOUNDS,
+            DvtThematicMapProjections._getMercatorProjection(x, y)
+          );
           break;
         case 'emea':
-          point = DvtThematicMapProjections._getAffineProjection(DvtThematicMapProjections._EMEA_BOUNDS,
-                                                                DvtThematicMapProjections._getMercatorProjection(x, y));
+          point = DvtThematicMapProjections._getAffineProjection(
+            DvtThematicMapProjections._EMEA_BOUNDS,
+            DvtThematicMapProjections._getMercatorProjection(x, y)
+          );
           break;
         case 'latinAmerica':
-          point = DvtThematicMapProjections._getAffineProjection(DvtThematicMapProjections._L_AMERICA_BOUNDS,
-              new dvt.Point(x, y));
+          point = DvtThematicMapProjections._getAffineProjection(
+            DvtThematicMapProjections._L_AMERICA_BOUNDS,
+            new dvt.Point(x, y)
+          );
           break;
         case 'usaAndCanada':
-          point = DvtThematicMapProjections._getAffineProjection(DvtThematicMapProjections._USA_CANADA_BOUNDS,
-                                                                DvtThematicMapProjections._getAlbersEqualAreaConicProjection(23, - 96, 20, 60, x, y));
+          point = DvtThematicMapProjections._getAffineProjection(
+            DvtThematicMapProjections._USA_CANADA_BOUNDS,
+            DvtThematicMapProjections._getAlbersEqualAreaConicProjection(23, -96, 20, 60, x, y)
+          );
           break;
         case 'worldRegions':
           point = DvtThematicMapProjections._getWorldProjection(x, y);
@@ -4611,13 +4907,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         case 'world':
           point = DvtThematicMapProjections._getWorldProjection(x, y);
           break;
-        default :
+        default:
           break;
       }
-      if (point)
-        return new dvt.Point(point.x * 10, point.y * 10);// multiply by 10 because basemaps are 10x bigger
-      else
-        return null;
+      if (point) return new dvt.Point(point.x * 10, point.y * 10);
+      // multiply by 10 because basemaps are 10x bigger
+      else return null;
     },
 
     /**
@@ -4630,20 +4925,42 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     _getUSAProjection: (x, y) => {
       var viewPortTransform;
       var transformedPoint;
-      if (DvtThematicMapProjections._ALASKA1_RECT.containsPoint(x, y) || DvtThematicMapProjections._ALASKA2_RECT.containsPoint(x, y)) {
-        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._ALASKA_BOUNDS, DvtThematicMapProjections._ALASKA_WINDOW);
-        transformedPoint = DvtThematicMapProjections._applyAffineTransform(viewPortTransform, DvtThematicMapProjections._getMercatorProjection(x, y));
-      }
-      else if (DvtThematicMapProjections._HAWAII_RECT.containsPoint(x, y)) {
-        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._HAWAII_BOUNDS, DvtThematicMapProjections._HAWAII_WINDOW);
-        transformedPoint = DvtThematicMapProjections._applyAffineTransform(viewPortTransform, new dvt.Point(x, y));
-      }
-      else if (DvtThematicMapProjections._USA_RECT.containsPoint(x, y)) {
-        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._USA_BOUNDS, DvtThematicMapProjections._VIEWPORT_BOUNDS);
-        transformedPoint = DvtThematicMapProjections._applyAffineTransform(viewPortTransform, DvtThematicMapProjections._getOrthographicProjection(new dvt.Point(- 95, 36), x, y));
+      if (
+        DvtThematicMapProjections._ALASKA1_RECT.containsPoint(x, y) ||
+        DvtThematicMapProjections._ALASKA2_RECT.containsPoint(x, y)
+      ) {
+        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+          DvtThematicMapProjections._ALASKA_BOUNDS,
+          DvtThematicMapProjections._ALASKA_WINDOW
+        );
+        transformedPoint = DvtThematicMapProjections._applyAffineTransform(
+          viewPortTransform,
+          DvtThematicMapProjections._getMercatorProjection(x, y)
+        );
+      } else if (DvtThematicMapProjections._HAWAII_RECT.containsPoint(x, y)) {
+        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+          DvtThematicMapProjections._HAWAII_BOUNDS,
+          DvtThematicMapProjections._HAWAII_WINDOW
+        );
+        transformedPoint = DvtThematicMapProjections._applyAffineTransform(
+          viewPortTransform,
+          new dvt.Point(x, y)
+        );
+      } else if (DvtThematicMapProjections._USA_RECT.containsPoint(x, y)) {
+        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+          DvtThematicMapProjections._USA_BOUNDS,
+          DvtThematicMapProjections._VIEWPORT_BOUNDS
+        );
+        transformedPoint = DvtThematicMapProjections._applyAffineTransform(
+          viewPortTransform,
+          DvtThematicMapProjections._getOrthographicProjection(new dvt.Point(-95, 36), x, y)
+        );
       }
 
-      return DvtThematicMapProjections._getBoundedTransformedPoint(DvtThematicMapProjections._VIEWPORT_BOUNDS, transformedPoint);
+      return DvtThematicMapProjections._getBoundedTransformedPoint(
+        DvtThematicMapProjections._VIEWPORT_BOUNDS,
+        transformedPoint
+      );
     },
 
     /**
@@ -4654,9 +4971,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @private
      */
     _getWorldProjection: (x, y) => {
-      var viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._WORLD_BOUNDS, DvtThematicMapProjections._VIEWPORT_BOUNDS);
-      var transformedPoint = DvtThematicMapProjections._applyAffineTransform(viewPortTransform, DvtThematicMapProjections._getRobinsonProjection(x, y));
-      return DvtThematicMapProjections._getBoundedTransformedPoint(DvtThematicMapProjections._VIEWPORT_BOUNDS, transformedPoint);
+      var viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+        DvtThematicMapProjections._WORLD_BOUNDS,
+        DvtThematicMapProjections._VIEWPORT_BOUNDS
+      );
+      var transformedPoint = DvtThematicMapProjections._applyAffineTransform(
+        viewPortTransform,
+        DvtThematicMapProjections._getRobinsonProjection(x, y)
+      );
+      return DvtThematicMapProjections._getBoundedTransformedPoint(
+        DvtThematicMapProjections._VIEWPORT_BOUNDS,
+        transformedPoint
+      );
     },
 
     /**
@@ -4669,12 +4995,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     _getAustraliaProjection: (x, y) => {
       var viewPortTransform;
       if (DvtThematicMapProjections._NEW_ZEALAND_BOUNDS.containsPoint(x, y))
-        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._NEW_ZEALAND_BOUNDS, DvtThematicMapProjections._NEW_ZEALAND_RECT);
+        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+          DvtThematicMapProjections._NEW_ZEALAND_BOUNDS,
+          DvtThematicMapProjections._NEW_ZEALAND_RECT
+        );
       else
-        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._AUSTRALIA_BOUNDS, DvtThematicMapProjections._VIEWPORT_BOUNDS);
+        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+          DvtThematicMapProjections._AUSTRALIA_BOUNDS,
+          DvtThematicMapProjections._VIEWPORT_BOUNDS
+        );
 
-      var transformedPoint = DvtThematicMapProjections._applyAffineTransform(viewPortTransform, DvtThematicMapProjections._getMercatorProjection(x, y));
-      return DvtThematicMapProjections._getBoundedTransformedPoint(DvtThematicMapProjections._VIEWPORT_BOUNDS, transformedPoint);
+      var transformedPoint = DvtThematicMapProjections._applyAffineTransform(
+        viewPortTransform,
+        DvtThematicMapProjections._getMercatorProjection(x, y)
+      );
+      return DvtThematicMapProjections._getBoundedTransformedPoint(
+        DvtThematicMapProjections._VIEWPORT_BOUNDS,
+        transformedPoint
+      );
     },
 
     /**
@@ -4686,14 +5024,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @private
      */
     _getAffineProjection: (mapBounds, point, rotRadians) => {
-      var viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(mapBounds, DvtThematicMapProjections._VIEWPORT_BOUNDS);
-      if (rotRadians){
+      var viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+        mapBounds,
+        DvtThematicMapProjections._VIEWPORT_BOUNDS
+      );
+      if (rotRadians) {
         var rotMatrix = new dvt.Matrix();
         rotMatrix = rotMatrix.rotate(rotRadians);
-        viewPortTransform = DvtThematicMapProjections._concatAffineTransforms(viewPortTransform, rotMatrix);
+        viewPortTransform = DvtThematicMapProjections._concatAffineTransforms(
+          viewPortTransform,
+          rotMatrix
+        );
       }
       var transformedPoint = viewPortTransform.transformPoint(point);
-      return DvtThematicMapProjections._getBoundedTransformedPoint(DvtThematicMapProjections._VIEWPORT_BOUNDS, transformedPoint);
+      return DvtThematicMapProjections._getBoundedTransformedPoint(
+        DvtThematicMapProjections._VIEWPORT_BOUNDS,
+        transformedPoint
+      );
     },
 
     /**
@@ -4704,8 +5051,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @private
      */
     _getBoundedTransformedPoint: (bounds, point) => {
-      if (!point || !(bounds.containsPoint(point.x, point.y)))
-        return null;
+      if (!point || !bounds.containsPoint(point.x, point.y)) return null;
 
       return point;
     },
@@ -4728,9 +5074,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       sP2 = DvtThematicMapProjections.toRadians(sP2);
 
       var n = 0.5 * (Math.sin(sP1) + Math.sin(sP2));
-      var c = Math.pow((Math.cos(sP1)), 2) + (2 * n * Math.sin(sP1));
+      var c = Math.pow(Math.cos(sP1), 2) + 2 * n * Math.sin(sP1);
 
-      var rho0 = c - (2 * n * Math.sin(phi0));
+      var rho0 = c - 2 * n * Math.sin(phi0);
       rho0 = Math.sqrt(rho0) / n;
 
       var lambda = DvtThematicMapProjections.toRadians(x);
@@ -4738,11 +5084,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
       var theta = n * (lambda - lambda0);
 
-      var rho = c - (2 * n * Math.sin(phi));
+      var rho = c - 2 * n * Math.sin(phi);
       rho = Math.sqrt(rho) / n;
 
       var pX = rho * Math.sin(theta);
-      var pY = rho0 - (rho * Math.cos(theta));
+      var pY = rho0 - rho * Math.cos(theta);
 
       return new dvt.Point(pX, pY);
     },
@@ -4773,8 +5119,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var centerX = DvtThematicMapProjections.toRadians(center.x);
       var centerY = DvtThematicMapProjections.toRadians(center.y);
       var px = Math.cos(radY) * Math.sin(radX - centerX);
-      var py = Math.cos(centerY) * Math.sin(radY) - Math.sin(centerY) * Math.cos(radY) * Math.cos(radX - centerX);
-      return new dvt.Point(px * DvtThematicMapProjections._RADIUS, py * DvtThematicMapProjections._RADIUS);
+      var py =
+        Math.cos(centerY) * Math.sin(radY) -
+        Math.sin(centerY) * Math.cos(radY) * Math.cos(radX - centerX);
+      return new dvt.Point(
+        px * DvtThematicMapProjections._RADIUS,
+        py * DvtThematicMapProjections._RADIUS
+      );
     },
 
     /**
@@ -4791,14 +5142,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
       var yInterval = (Math.abs(y) - ycriteria * 5) / 5;
 
-      var xLength = DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria + 1][0] - DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria][0];
-      var yLength = DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria + 1][1] - DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria][1];
+      var xLength =
+        DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria + 1][0] -
+        DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria][0];
+      var yLength =
+        DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria + 1][1] -
+        DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria][1];
 
-      var newX = x * (DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria][0] + yInterval * xLength);
-      var newY = (DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria][1] + yInterval * yLength);
+      var newX =
+        x * (DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria][0] + yInterval * xLength);
+      var newY = DvtThematicMapProjections._ROBINSON_COORDINATES[ycriteria][1] + yInterval * yLength;
 
-      if (y < 0)
-        newY = - 1 * newY;
+      if (y < 0) newY = -1 * newY;
 
       return new dvt.Point(newX, newY * 180);
     },
@@ -4811,7 +5166,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @private
      */
     _applyAffineTransform: (matrix, point) => {
-      return new dvt.Point(point.x * matrix.getA() + matrix.getTx(), point.y * matrix.getD() + matrix.getTy());
+      return new dvt.Point(
+        point.x * matrix.getA() + matrix.getTx(),
+        point.y * matrix.getD() + matrix.getTy()
+      );
     },
 
     /**
@@ -4851,13 +5209,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var d2 = 0;
       var d3 = deviceView.w / d;
       var d4 = deviceView.h / d1;
-      d2 = (d3 <= d4) ? d3 : d4;
+      d2 = d3 <= d4 ? d3 : d4;
       var d5 = i - mapBound.x * d2;
       var d6 = j + mapBound.y * d2;
       d5 += (deviceView.w - d * d2) / 2;
       d6 += deviceView.h - (deviceView.h - d1 * d2) / 2;
 
-      return new dvt.Matrix(d2, 0, 0, - d2, d5, d6);
+      return new dvt.Matrix(d2, 0, 0, -d2, d5, d6);
     },
 
     /**
@@ -4892,53 +5250,99 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       y /= 10;
       switch (basemap) {
         case 'africa':
-          point = DvtThematicMapProjections._getInverseAffineProjection(DvtThematicMapProjections._AFRICA_BOUNDS,
-                                                                        new dvt.Point(x, y));
+          point = DvtThematicMapProjections._getInverseAffineProjection(
+            DvtThematicMapProjections._AFRICA_BOUNDS,
+            new dvt.Point(x, y)
+          );
           point = DvtThematicMapProjections._getInverseMercatorProjection(point.x, point.y);
           break;
         case 'asia':
-          point = DvtThematicMapProjections._getInverseAffineProjection(DvtThematicMapProjections._ASIA_BOUNDS,
-                                                                        new dvt.Point(x, y),
-                                                                        DvtThematicMapProjections.toRadians(5));
-          point = DvtThematicMapProjections._getInverseAlbersEqualAreaConicProjection(40, 95, 20, 60, point.x, point.y);
+          point = DvtThematicMapProjections._getInverseAffineProjection(
+            DvtThematicMapProjections._ASIA_BOUNDS,
+            new dvt.Point(x, y),
+            DvtThematicMapProjections.toRadians(5)
+          );
+          point = DvtThematicMapProjections._getInverseAlbersEqualAreaConicProjection(
+            40,
+            95,
+            20,
+            60,
+            point.x,
+            point.y
+          );
           break;
         case 'australia':
           point = DvtThematicMapProjections._getInverseAustraliaProjection(x, y);
           break;
         case 'europe':
-          point = DvtThematicMapProjections._getInverseAffineProjection(DvtThematicMapProjections._EUROPE_BOUNDS,
-                                                                        new dvt.Point(x, y),
-                                                                        DvtThematicMapProjections.toRadians(10));
-          point = DvtThematicMapProjections._getInverseAlbersEqualAreaConicProjection(35, 25, 40, 65, point.x, point.y);
+          point = DvtThematicMapProjections._getInverseAffineProjection(
+            DvtThematicMapProjections._EUROPE_BOUNDS,
+            new dvt.Point(x, y),
+            DvtThematicMapProjections.toRadians(10)
+          );
+          point = DvtThematicMapProjections._getInverseAlbersEqualAreaConicProjection(
+            35,
+            25,
+            40,
+            65,
+            point.x,
+            point.y
+          );
           break;
         case 'northAmerica':
-          point = DvtThematicMapProjections._getInverseAffineProjection(DvtThematicMapProjections._N_AMERICA_BOUNDS,
-                                                                        new dvt.Point(x, y));
-          point = DvtThematicMapProjections._getInverseAlbersEqualAreaConicProjection(23, - 96, 20, 60, point.x, point.y);
+          point = DvtThematicMapProjections._getInverseAffineProjection(
+            DvtThematicMapProjections._N_AMERICA_BOUNDS,
+            new dvt.Point(x, y)
+          );
+          point = DvtThematicMapProjections._getInverseAlbersEqualAreaConicProjection(
+            23,
+            -96,
+            20,
+            60,
+            point.x,
+            point.y
+          );
           break;
         case 'southAmerica':
-          point = DvtThematicMapProjections._getInverseAffineProjection(DvtThematicMapProjections._S_AMERICA_BOUNDS,
-                                                                        new dvt.Point(x, y),
-                                                                        DvtThematicMapProjections.toRadians(5));
+          point = DvtThematicMapProjections._getInverseAffineProjection(
+            DvtThematicMapProjections._S_AMERICA_BOUNDS,
+            new dvt.Point(x, y),
+            DvtThematicMapProjections.toRadians(5)
+          );
           break;
         case 'apac':
-          point = DvtThematicMapProjections._getInverseAffineProjection(DvtThematicMapProjections._APAC_BOUNDS,
-                                                                        new dvt.Point(x, y));
+          point = DvtThematicMapProjections._getInverseAffineProjection(
+            DvtThematicMapProjections._APAC_BOUNDS,
+            new dvt.Point(x, y)
+          );
           point = DvtThematicMapProjections._getInverseMercatorProjection(point.x, point.y);
           break;
         case 'emea':
-          point = DvtThematicMapProjections._getInverseAffineProjection(DvtThematicMapProjections._EMEA_BOUNDS,
-                                                                        new dvt.Point(x, y));
+          point = DvtThematicMapProjections._getInverseAffineProjection(
+            DvtThematicMapProjections._EMEA_BOUNDS,
+            new dvt.Point(x, y)
+          );
           point = DvtThematicMapProjections._getInverseMercatorProjection(point.x, point.y);
           break;
         case 'latinAmerica':
-          point = DvtThematicMapProjections._getInverseAffineProjection(DvtThematicMapProjections._L_AMERICA_BOUNDS,
-                                                                        new dvt.Point(x, y));
+          point = DvtThematicMapProjections._getInverseAffineProjection(
+            DvtThematicMapProjections._L_AMERICA_BOUNDS,
+            new dvt.Point(x, y)
+          );
           break;
         case 'usaAndCanada':
-          point = DvtThematicMapProjections._getInverseAffineProjection(DvtThematicMapProjections._USA_CANADA_BOUNDS,
-                                                                        new dvt.Point(x, y));
-          point = DvtThematicMapProjections._getInverseAlbersEqualAreaConicProjection(23, - 96, 20, 60, point.x, point.y);
+          point = DvtThematicMapProjections._getInverseAffineProjection(
+            DvtThematicMapProjections._USA_CANADA_BOUNDS,
+            new dvt.Point(x, y)
+          );
+          point = DvtThematicMapProjections._getInverseAlbersEqualAreaConicProjection(
+            23,
+            -96,
+            20,
+            60,
+            point.x,
+            point.y
+          );
           break;
         case 'worldRegions':
           point = DvtThematicMapProjections._getInverseWorldProjection(x, y);
@@ -4949,13 +5353,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         case 'world':
           point = DvtThematicMapProjections._getInverseWorldProjection(x, y);
           break;
-        default :
+        default:
           break;
       }
-      if (point)
-        return point;
-      else
-        return new dvt.Point(x, y);
+      if (point) return point;
+      else return new dvt.Point(x, y);
     },
 
     /**
@@ -4967,22 +5369,33 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     _getInverseUSAProjection: (x, y) => {
       var viewPortTransform;
-      if (DvtThematicMapProjections._ALASKA_WINDOW.containsPoint(x, y)){
-        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._ALASKA_BOUNDS, DvtThematicMapProjections._ALASKA_WINDOW);
+      if (DvtThematicMapProjections._ALASKA_WINDOW.containsPoint(x, y)) {
+        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+          DvtThematicMapProjections._ALASKA_BOUNDS,
+          DvtThematicMapProjections._ALASKA_WINDOW
+        );
         viewPortTransform = viewPortTransform.invert();
         var point = viewPortTransform.transformPoint(new dvt.Point(x, y));
         return DvtThematicMapProjections._getInverseMercatorProjection(point.x, point.y);
-      }
-      else if (DvtThematicMapProjections._HAWAII_WINDOW.containsPoint(x, y)){
-        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._HAWAII_BOUNDS, DvtThematicMapProjections._HAWAII_WINDOW);
+      } else if (DvtThematicMapProjections._HAWAII_WINDOW.containsPoint(x, y)) {
+        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+          DvtThematicMapProjections._HAWAII_BOUNDS,
+          DvtThematicMapProjections._HAWAII_WINDOW
+        );
         viewPortTransform = viewPortTransform.invert();
         return viewPortTransform.transformPoint(new dvt.Point(x, y));
-      }
-      else if (DvtThematicMapProjections._VIEWPORT_BOUNDS.containsPoint(x, y)){
-        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._USA_BOUNDS, DvtThematicMapProjections._VIEWPORT_BOUNDS);
+      } else if (DvtThematicMapProjections._VIEWPORT_BOUNDS.containsPoint(x, y)) {
+        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+          DvtThematicMapProjections._USA_BOUNDS,
+          DvtThematicMapProjections._VIEWPORT_BOUNDS
+        );
         viewPortTransform = viewPortTransform.invert();
         var transformedPoints = viewPortTransform.transformPoint(new dvt.Point(x, y));
-        return DvtThematicMapProjections._getInverseOrthographicProjection(new dvt.Point(- 95, 36), transformedPoints.x, transformedPoints.y);
+        return DvtThematicMapProjections._getInverseOrthographicProjection(
+          new dvt.Point(-95, 36),
+          transformedPoints.x,
+          transformedPoints.y
+        );
       }
       return new dvt.Point(x, y);
     },
@@ -4995,7 +5408,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @private
      */
     _getInverseWorldProjection: (x, y) => {
-      var viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._WORLD_BOUNDS, DvtThematicMapProjections._VIEWPORT_BOUNDS);
+      var viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+        DvtThematicMapProjections._WORLD_BOUNDS,
+        DvtThematicMapProjections._VIEWPORT_BOUNDS
+      );
       viewPortTransform = viewPortTransform.invert();
       var point = viewPortTransform.transformPoint(new dvt.Point(x, y));
       return DvtThematicMapProjections._getInverseRobinsonProjection(point.x, point.y);
@@ -5011,9 +5427,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     _getInverseAustraliaProjection: (x, y) => {
       var viewPortTransform;
       if (DvtThematicMapProjections._NEW_ZEALAND_RECT.containsPoint(x, y))
-        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._NEW_ZEALAND_BOUNDS, DvtThematicMapProjections._NEW_ZEALAND_RECT).invert();
+        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+          DvtThematicMapProjections._NEW_ZEALAND_BOUNDS,
+          DvtThematicMapProjections._NEW_ZEALAND_RECT
+        ).invert();
       else
-        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(DvtThematicMapProjections._AUSTRALIA_BOUNDS, DvtThematicMapProjections._VIEWPORT_BOUNDS).invert();
+        viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+          DvtThematicMapProjections._AUSTRALIA_BOUNDS,
+          DvtThematicMapProjections._VIEWPORT_BOUNDS
+        ).invert();
 
       var point = viewPortTransform.transformPoint(new dvt.Point(x, y));
       return DvtThematicMapProjections._getInverseMercatorProjection(point.x, point.y);
@@ -5028,11 +5450,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @private
      */
     _getInverseAffineProjection: (mapBounds, point, rotRadians) => {
-      var viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(mapBounds, DvtThematicMapProjections._VIEWPORT_BOUNDS);
-      if (rotRadians){
+      var viewPortTransform = DvtThematicMapProjections._getViewPortTransformation(
+        mapBounds,
+        DvtThematicMapProjections._VIEWPORT_BOUNDS
+      );
+      if (rotRadians) {
         var rotMatrix = new dvt.Matrix();
         rotMatrix = rotMatrix.rotate(rotRadians);
-        viewPortTransform = DvtThematicMapProjections._concatAffineTransforms(viewPortTransform, rotMatrix);
+        viewPortTransform = DvtThematicMapProjections._concatAffineTransforms(
+          viewPortTransform,
+          rotMatrix
+        );
       }
       viewPortTransform = viewPortTransform.invert();
       return viewPortTransform.transformPoint(point);
@@ -5056,9 +5484,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       sP2 = DvtThematicMapProjections.toRadians(sP2);
 
       var n = 0.5 * (Math.sin(sP1) + Math.sin(sP2));
-      var c = Math.pow((Math.cos(sP1)), 2) + (2 * n * Math.sin(sP1));
+      var c = Math.pow(Math.cos(sP1), 2) + 2 * n * Math.sin(sP1);
 
-      var p0 = c - (2 * n * Math.sin(phi0));
+      var p0 = c - 2 * n * Math.sin(phi0);
       p0 = Math.sqrt(p0) / n;
 
       var p = Math.sqrt(x * x + (p0 - y) * (p0 - y));
@@ -5067,7 +5495,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var py = Math.asin((c - p * p * n * n) / (2 * n));
       var px = lambda0 + pheta / n;
 
-      return new dvt.Point(DvtThematicMapProjections.toDegrees(px), DvtThematicMapProjections.toDegrees(py));
+      return new dvt.Point(
+        DvtThematicMapProjections.toDegrees(px),
+        DvtThematicMapProjections.toDegrees(py)
+      );
     },
 
     /**
@@ -5096,13 +5527,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var centerX = DvtThematicMapProjections.toRadians(center.x);
       var centerY = DvtThematicMapProjections.toRadians(center.y);
 
-      var p = Math.sqrt((radX * radX) + (radY * radY));
+      var p = Math.sqrt(radX * radX + radY * radY);
       var c = Math.asin(p);
 
-      var py = Math.asin(Math.cos(c) * Math.sin(centerY) + (radY * Math.sin(c) * Math.cos(centerY) / p));
-      var px = centerX + Math.atan(radX * Math.sin(c) / (p * Math.cos(centerY) * Math.cos(c) - radY * Math.sin(centerY) * Math.sin(c)));
+      var py = Math.asin(
+        Math.cos(c) * Math.sin(centerY) + (radY * Math.sin(c) * Math.cos(centerY)) / p
+      );
+      var px =
+        centerX +
+        Math.atan(
+          (radX * Math.sin(c)) /
+            (p * Math.cos(centerY) * Math.cos(c) - radY * Math.sin(centerY) * Math.sin(c))
+        );
 
-      return new dvt.Point(DvtThematicMapProjections.toDegrees(px), DvtThematicMapProjections.toDegrees(py));
+      return new dvt.Point(
+        DvtThematicMapProjections.toDegrees(px),
+        DvtThematicMapProjections.toDegrees(py)
+      );
     },
 
     /**
@@ -5117,15 +5558,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (criteria >= DvtThematicMapProjections._ROBINSON_COORDINATES.length - 1)
         criteria = DvtThematicMapProjections._ROBINSON_COORDINATES.length - 2;
 
-      var xLength = DvtThematicMapProjections._ROBINSON_COORDINATES[criteria + 1][0] - DvtThematicMapProjections._ROBINSON_COORDINATES[criteria][0];
-      var yLength = DvtThematicMapProjections._ROBINSON_COORDINATES[criteria + 1][1] - DvtThematicMapProjections._ROBINSON_COORDINATES[criteria][1];
+      var xLength =
+        DvtThematicMapProjections._ROBINSON_COORDINATES[criteria + 1][0] -
+        DvtThematicMapProjections._ROBINSON_COORDINATES[criteria][0];
+      var yLength =
+        DvtThematicMapProjections._ROBINSON_COORDINATES[criteria + 1][1] -
+        DvtThematicMapProjections._ROBINSON_COORDINATES[criteria][1];
 
-      var yInterval = (Math.abs(y / 180.0) - DvtThematicMapProjections._ROBINSON_COORDINATES[criteria][1]) / yLength;
-      var originalY = (yInterval * 5.0) + criteria * 5.0;
-      var originalX = x / (DvtThematicMapProjections._ROBINSON_COORDINATES[criteria][0] + yInterval * xLength);
+      var yInterval =
+        (Math.abs(y / 180.0) - DvtThematicMapProjections._ROBINSON_COORDINATES[criteria][1]) /
+        yLength;
+      var originalY = yInterval * 5.0 + criteria * 5.0;
+      var originalX =
+        x / (DvtThematicMapProjections._ROBINSON_COORDINATES[criteria][0] + yInterval * xLength);
 
-      if (y < 0.0)
-        originalY = - 1 * originalY;
+      if (y < 0.0) originalY = -1 * originalY;
 
       return new dvt.Point(originalX, originalY);
     }
@@ -5136,12 +5583,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    * @class
    */
   class DvtThematicMapJsonParser {
-   /**
-    * Initializes this thematic map JSON parser
-    * @param {ThematicMap} tmap The thematic map to update
-    * @constructor
-    */
-    constructor (tmap) {
+    /**
+     * Initializes this thematic map JSON parser
+     * @param {ThematicMap} tmap The thematic map to update
+     * @constructor
+     */
+    constructor(tmap) {
       this._tmap = tmap;
       this._areaLayerStyle = null;
       this._areaLayerStyleObject = null;
@@ -5153,8 +5600,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     parse(options) {
       var mapProvider = options['mapProvider'];
-      if (DvtMapProviderUtils.containsGeoJson(mapProvider))
-        this._mapProvider = mapProvider;
+      if (DvtMapProviderUtils.containsGeoJson(mapProvider)) this._mapProvider = mapProvider;
       this._parseMapProperties(options);
       this._parseStyles(options['styleDefaults']);
       // The map area layer should to be parsed before the data layers.
@@ -5173,18 +5619,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     _parseMapProperties(options) {
       var animDur = options['animationDuration'];
       if (typeof animDur == 'string') {
-        if (animDur.slice(-2) == 'ms')
-          animDur = parseInt((animDur.slice(0, -2))) / 1000;
-        else if (animDur.slice(-1) == 's')
-          animDur = parseFloat(animDur.slice(0, -1));
+        if (animDur.slice(-2) == 'ms') animDur = parseInt(animDur.slice(0, -2)) / 1000;
+        else if (animDur.slice(-1) == 's') animDur = parseFloat(animDur.slice(0, -1));
       } else {
         // default unit is milliseconds
         animDur /= 1000;
       }
       this._tmap.setAnimDur(animDur);
 
-      if (!this._mapProvider)
-        this._tmap.setMapName(options['basemap']);
+      if (!this._mapProvider) this._tmap.setMapName(options['basemap']);
 
       // zooming attributes
       this._tmap.setInitialZooming(options['initialZooming'] == 'auto');
@@ -5201,18 +5644,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // Legacy code supports an array of area layers, but this code just handles the JET case where
       // we only ever render the first area layer
       var context = this._tmap.getCtx();
-      var areaLayer = this._tmap.Defaults.calcAreaLayerOptions(areaLayers[0], context.isCustomElement());
+      var areaLayer = this._tmap.Defaults.calcAreaLayerOptions(
+        areaLayers[0],
+        context.isCustomElement()
+      );
       var layer = areaLayer['layer'];
       // layer and basemap names not required when using mapProvider
-      if (!layer && !this._mapProvider)
-        return;
+      if (!layer && !this._mapProvider) return;
 
       var mapLayer;
       var areaStyle = areaLayer['areaSvgStyle'] || areaLayer['areaStyle'];
       if (areaStyle) {
         //If the areaStyle is a string convert it to object
-        if (!(areaStyle instanceof Object))
-          areaStyle = dvt.CSSStyle.cssStringToObject(areaStyle);
+        if (!(areaStyle instanceof Object)) areaStyle = dvt.CSSStyle.cssStringToObject(areaStyle);
         var areaCSSStyle = DvtThematicMapJsonParser._getAreaCSSStyle(areaStyle);
         this._areaLayerStyleObject = dvt.JsonUtils.merge(areaStyle, this._areaLayerStyleObject);
         this._areaLayerStyle.merge(areaCSSStyle);
@@ -5220,15 +5664,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
       // styleDefaults.labelStyle is a dvt.CSSStyle
       var areaLabelStyle = this._tmap.getStyleDefaults()['labelStyle'];
-      if (areaLabelStyle)
-        this._areaLayerStyle.merge(areaLabelStyle);
+      if (areaLabelStyle) this._areaLayerStyle.merge(areaLabelStyle);
       // areaLayers.labelStyle is a string or object
       areaLabelStyle = areaLayer['labelStyle'];
-      if (areaLabelStyle)
-        this._areaLayerStyle.parseInlineStyle(areaLabelStyle);
+      if (areaLabelStyle) this._areaLayerStyle.parseInlineStyle(areaLabelStyle);
 
-      mapLayer = new DvtMapAreaLayer(this._tmap, layer, areaLayer['labelDisplay'], areaLayer['labelType'],
-          this._tmap.getEventManager());
+      mapLayer = new DvtMapAreaLayer(
+        this._tmap,
+        layer,
+        areaLayer['labelDisplay'],
+        areaLayer['labelType'],
+        this._tmap.getEventManager()
+      );
 
       var basemap = this._tmap.getMapName();
       var paths, labels, labelsInfo;
@@ -5237,8 +5684,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         paths = mapInfo.areas;
         labels = mapInfo.labels;
       } else {
-        paths = exports.DvtBaseMapManager.getAreaPaths(basemap, layer, this._tmap.getWidth(), this._tmap.getHeight(),
-            this._tmap.getMaxZoomFactor());
+        paths = exports.DvtBaseMapManager.getAreaPaths(
+          basemap,
+          layer,
+          this._tmap.getWidth(),
+          this._tmap.getHeight(),
+          this._tmap.getMaxZoomFactor()
+        );
         labels = exports.DvtBaseMapManager.getAreaLabels(basemap, layer);
         labelsInfo = exports.DvtBaseMapManager.getAreaLabelInfo(basemap, layer);
       }
@@ -5261,7 +5713,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         this.ParseDataLayers(areaLayer['pointDataLayers'], mapLayer, null, false);
     }
 
-
     /**
      * Parses JSON objects containing map data layer attributes and data
      * @param {Array} dataLayers An array of data layer JSON objects to parse
@@ -5271,8 +5722,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @protected
      */
     ParseDataLayers(dataLayers, parentLayer, topLayerName, isAreaDataLayer) {
-      if (!dataLayers)
-        return;
+      if (!dataLayers) return;
 
       var ctx = this._tmap.getCtx();
       for (var i = 0; i < dataLayers.length; i++) {
@@ -5282,14 +5732,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           if (parentLayer instanceof DvtMapAreaLayer && isAreaDataLayer)
             parentLayer.resetRenderedAreas();
         } else {
-          parentLayer = new DvtMapLayer(this._tmap, dataLayerOptions['id'], this._tmap.getEventManager());
+          parentLayer = new DvtMapLayer(
+            this._tmap,
+            dataLayerOptions['id'],
+            this._tmap.getEventManager()
+          );
           this._tmap.addLayer(parentLayer);
         }
-        var dataLayer = new DvtMapDataLayer(this._tmap, parentLayer, dataLayerOptions['id'], this._tmap.getEventManager(), dataLayerOptions);
+        var dataLayer = new DvtMapDataLayer(
+          this._tmap,
+          parentLayer,
+          dataLayerOptions['id'],
+          this._tmap.getEventManager(),
+          dataLayerOptions
+        );
 
         var selectionMode = dataLayerOptions['selectionMode'];
-        if (selectionMode == 'single')
-          dataLayer.setSelectionMode(dvt.SelectionHandler.TYPE_SINGLE);
+        if (selectionMode == 'single') dataLayer.setSelectionMode(dvt.SelectionHandler.TYPE_SINGLE);
         else if (selectionMode == 'multiple')
           dataLayer.setSelectionMode(dvt.SelectionHandler.TYPE_MULTIPLE);
 
@@ -5298,8 +5757,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
         //Add initially isolated area
         var isolatedRowKey = null;
-        if (parentLayer instanceof DvtMapAreaLayer)
-          isolatedRowKey = dataLayerOptions['isolatedItem'];
+        if (parentLayer instanceof DvtMapAreaLayer) isolatedRowKey = dataLayerOptions['isolatedItem'];
 
         var isolatedAreaId;
         var areaId;
@@ -5313,7 +5771,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         areas = dataLayerOptions['areas'];
         if (areas) {
           for (var j = 0; j < areas.length; j++) {
-            if (hiddenCategories && dvt.ArrayUtils.hasAnyItem(hiddenCategories, areas[j]['categories'])) {
+            if (
+              hiddenCategories &&
+              dvt.ArrayUtils.hasAnyItem(hiddenCategories, areas[j]['categories'])
+            ) {
               // placeholder null object for automation
               dataLayer.addAreaObj(null);
               continue;
@@ -5322,10 +5783,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
             areaId = areas[j]['location'];
 
             if (isolatedRowKey) {
-              if (!dvt.Obj.compareValues(ctx, isolatedRowKey, areas[j]['id']))
-                continue;
-              else
-                isolatedAreaId = areaId;
+              if (!dvt.Obj.compareValues(ctx, isolatedRowKey, areas[j]['id'])) continue;
+              else isolatedAreaId = areaId;
             }
 
             dataObj = this._createArea(parentLayer, dataLayer, areas[j]);
@@ -5338,85 +5797,93 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var renderer = dataLayerOptions['renderer'];
         markers = dataLayerOptions['markers'];
         if (markers) {
-          if (!renderer)
-            DvtThematicMapJsonParser._calcBubbleSizes(this._tmap, markers);
+          if (!renderer) DvtThematicMapJsonParser._calcBubbleSizes(this._tmap, markers);
 
-            for (var z = 0; z < markers.length; z++) {
-              if (hiddenCategories && dvt.ArrayUtils.hasAnyItem(hiddenCategories, markers[z]['categories'])) {
-                // placeholder null object for automation
-                dataLayer.addMarkerObj(null);
-                continue;
-              }
-              areaId = markers[z]['location'];
-              if (isolatedRowKey) {
-                if (!dvt.Obj.compareValues(ctx, isolatedRowKey, markers[z]['id']))
-                  continue;
-                else
-                  isolatedAreaId = areaId;
-              }
-              if (renderer) {
-                var initState = {'hovered': false, 'selected': false, 'focused': false};
-                var data = markers[z]['_noTemplate'] ? markers[z]['_itemData'] : markers[z];
-                var itemData = markers[z]['_itemData'];
-                var context = this._tmap.getOptions()['_contextHandler'](this._tmap.getElem(), null, data, itemData, initState, null);
-                var customContent = renderer(context);
-                dataObj = customContent && this._createCustomDataItem(parentLayer, dataLayer, markers[z], customContent, isParentAreaDataLayer);
-              } else {
-                dataObj = this._createMarker(parentLayer, dataLayer, markers[z], isParentAreaDataLayer);
-              }
-              if (dataObj) {
-                dataLayer.addMarkerObj(dataObj);
-              }
+          for (var z = 0; z < markers.length; z++) {
+            if (
+              hiddenCategories &&
+              dvt.ArrayUtils.hasAnyItem(hiddenCategories, markers[z]['categories'])
+            ) {
+              // placeholder null object for automation
+              dataLayer.addMarkerObj(null);
+              continue;
+            }
+            areaId = markers[z]['location'];
+            if (isolatedRowKey) {
+              if (!dvt.Obj.compareValues(ctx, isolatedRowKey, markers[z]['id'])) continue;
+              else isolatedAreaId = areaId;
+            }
+            if (renderer) {
+              var initState = { hovered: false, selected: false, focused: false };
+              var data = markers[z]['_noTemplate'] ? markers[z]['_itemData'] : markers[z];
+              var itemData = markers[z]['_itemData'];
+              var context = this._tmap
+                .getOptions()
+                ['_contextHandler'](this._tmap.getElem(), null, data, itemData, initState, null);
+              var customContent = renderer(context);
+              dataObj =
+                customContent &&
+                this._createCustomDataItem(
+                  parentLayer,
+                  dataLayer,
+                  markers[z],
+                  customContent,
+                  isParentAreaDataLayer
+                );
+            } else {
+              dataObj = this._createMarker(parentLayer, dataLayer, markers[z], isParentAreaDataLayer);
+            }
+            if (dataObj) {
+              dataLayer.addMarkerObj(dataObj);
             }
           }
-          var images = dataLayerOptions['images'];
-          if (images) {
-            for (var y = 0; y < images.length; y++) {
-              areaId = images[y]['location'];
-              if (isolatedRowKey) {
-                if (!dvt.Obj.compareValues(ctx, isolatedRowKey, images[y]['id']))
-                  continue;
-                else
-                  isolatedAreaId = areaId;
-              }
-              dataObj = this._createImage(parentLayer, dataLayer, images[y], isParentAreaDataLayer);
-              if (dataObj) {
-                dataLayer.addMarkerObj(dataObj);
-              }
+        }
+        var images = dataLayerOptions['images'];
+        if (images) {
+          for (var y = 0; y < images.length; y++) {
+            areaId = images[y]['location'];
+            if (isolatedRowKey) {
+              if (!dvt.Obj.compareValues(ctx, isolatedRowKey, images[y]['id'])) continue;
+              else isolatedAreaId = areaId;
+            }
+            dataObj = this._createImage(parentLayer, dataLayer, images[y], isParentAreaDataLayer);
+            if (dataObj) {
+              dataLayer.addMarkerObj(dataObj);
             }
           }
-      
-          var links = dataLayerOptions['links'];
-          if (links) {
-            var markerMap = new ctx.ojMap();
-            var areaMap = new ctx.ojMap();
-            var markers = dataLayer.getDataMarkerCollection();
-            for (var q = 0; q < markers.length; q++) {
-              var marker = markers[q];
-              if (marker)
-                markerMap.set(marker.getId(), marker);
+        }
+
+        var links = dataLayerOptions['links'];
+        if (links) {
+          var markerMap = new ctx.ojMap();
+          var areaMap = new ctx.ojMap();
+          var markers = dataLayer.getDataMarkerCollection();
+          for (var q = 0; q < markers.length; q++) {
+            var marker = markers[q];
+            if (marker) markerMap.set(marker.getId(), marker);
+          }
+          areas = dataLayer.getDataAreaCollection();
+          for (var c = 0; c < areas.length; c++) {
+            var area = areas[c];
+            if (area) areaMap.set(area.getId(), area);
+          }
+
+          for (var t = 0; t < links.length; t++) {
+            if (
+              hiddenCategories &&
+              dvt.ArrayUtils.hasAnyItem(hiddenCategories, links[t]['categories'])
+            ) {
+              // placeholder null object for automation
+              dataLayer.addAreaObj(null);
+              continue;
             }
-            areas = dataLayer.getDataAreaCollection();
-            for (var c = 0; c < areas.length; c++) {
-              var area = areas[c];
-              if (area)
-                areaMap.set(area.getId(), area);
-            }
-      
-            for (var t = 0; t < links.length; t++) {
-              if (hiddenCategories && dvt.ArrayUtils.hasAnyItem(hiddenCategories, links[t]['categories'])) {
-                // placeholder null object for automation
-                dataLayer.addAreaObj(null);
-                continue;
-              }
-      
-              dataObj = this._createLink(dataLayer, links[t], markerMap, areaMap);
-              if (dataObj) {
-                dataLayer.addLinkObj(dataObj);
-              }
-      
+
+            dataObj = this._createLink(dataLayer, links[t], markerMap, areaMap);
+            if (dataObj) {
+              dataLayer.addLinkObj(dataObj);
             }
           }
+        }
 
         // After processing all data objects we should have the area ID of the isolated area
         if (isolatedAreaId) {
@@ -5430,9 +5897,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           dataLayer.setInitialSelections(initSelections);
 
         if (topLayerName)
-          parentLayer.updateDataLayer(dataLayer, this._tmap.getPanZoomCanvas().getContentPane().getMatrix(), topLayerName);
-        else
-          parentLayer.addDataLayer(dataLayer);
+          parentLayer.updateDataLayer(
+            dataLayer,
+            this._tmap.getPanZoomCanvas().getContentPane().getMatrix(),
+            topLayerName
+          );
+        else parentLayer.addDataLayer(dataLayer);
       }
     }
 
@@ -5464,7 +5934,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     static _getAreaCSSStyle(styleObj) {
       var style = new dvt.CSSStyle();
       //Area CSS Style supports only border-color and background-color attributes
-      [dvt.CSSStyle.BORDER_COLOR, dvt.CSSStyle.BACKGROUND_COLOR].forEach(function(entry) {
+      [dvt.CSSStyle.BORDER_COLOR, dvt.CSSStyle.BACKGROUND_COLOR].forEach(function (entry) {
         var value = null;
         //convert CSS string property to object attribute
         var attribute = dvt.CSSStyle.cssStringToObjectProperty(entry);
@@ -5499,13 +5969,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         }
 
         var backgroundColor = this._areaLayerStyle.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
-        if (backgroundColor != 'transparent')
-          path.setSolidFill(backgroundColor);
-        else //TODO set on area layer instead
-          path.setFill(null);
+        if (backgroundColor != 'transparent') path.setSolidFill(backgroundColor);
+        //TODO set on area layer instead
+        else path.setFill(null);
 
-        if (this._areaLayerStyleObject)
-          path.setStyle(this._areaLayerStyleObject);
+        if (this._areaLayerStyleObject) path.setStyle(this._areaLayerStyleObject);
 
         shapes[area] = path;
       }
@@ -5533,23 +6001,41 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var path = new DvtSelectablePath(context, this._tmap.supportsVectorEffects());
 
         data = dvt.JsonUtils.merge(data, this._tmap.getStyleDefaults()['dataAreaDefaults']);
-        if (!data['labelStyle'])
-          data['labelStyle'] = this._tmap.getStyleDefaults()['labelStyle'];
+        if (!data['labelStyle']) data['labelStyle'] = this._tmap.getStyleDefaults()['labelStyle'];
 
         var outerStrokeWidth = isRedwood ? 3 : DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH;
         var hoverStrokeWidth = isRedwood ? 3 : DvtSelectablePath.HOVER_STROKE_WIDTH;
         var hs = new dvt.Stroke(data['hoverColor'], 1, 1, this._tmap.supportsVectorEffects());
-        var hos = new dvt.Stroke(data['color'], 1, hoverStrokeWidth, this._tmap.supportsVectorEffects());
+        var hos = new dvt.Stroke(
+          data['color'],
+          1,
+          hoverStrokeWidth,
+          this._tmap.supportsVectorEffects()
+        );
 
-        var sis = new dvt.Stroke(data['selectedInnerColor'], 1, DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH, this._tmap.supportsVectorEffects());
-        var sos = new dvt.Stroke(data['selectedOuterColor'], 1, outerStrokeWidth, this._tmap.supportsVectorEffects());
+        var sis = new dvt.Stroke(
+          data['selectedInnerColor'],
+          1,
+          DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH,
+          this._tmap.supportsVectorEffects()
+        );
+        var sos = new dvt.Stroke(
+          data['selectedOuterColor'],
+          1,
+          outerStrokeWidth,
+          this._tmap.supportsVectorEffects()
+        );
         path.setHoverStroke(hs, hos).setSelectedStroke(sis, sos);
 
         // disable labels in area layer if data layer exists and has label
         layer.setLabelRendered(data['location'], false);
         this._styleDisplayable(data, path);
         var label = this._createLabel(layer, dataLayer, data, path, true);
-        var locationName = DvtThematicMapJsonParser._getLocationName(this._tmap.getMapName(), dataLayer, data);
+        var locationName = DvtThematicMapJsonParser._getLocationName(
+          this._tmap.getMapName(),
+          dataLayer,
+          data
+        );
         return new DvtMapAreaPeer(data, dataLayer, path, label, locationName);
       }
       return null;
@@ -5570,14 +6056,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var center;
       // MapProvider coordinates are already projected, but need to flip the y coordinate for svg
       // because 0,0 is top left instead of bottom left
-      if (this._mapProvider && !data['location'])
-        center = new dvt.Point(data['x'], -data['y']);
+      if (this._mapProvider && !data['location']) center = new dvt.Point(data['x'], -data['y']);
       else
-        center = DvtThematicMapJsonParser.getCenter(dataLayer, data['location'], data['x'], data['y']);
+        center = DvtThematicMapJsonParser.getCenter(
+          dataLayer,
+          data['location'],
+          data['x'],
+          data['y']
+        );
 
       // Skip over data where no marker center was determined or values resulted in a calculated size of 0 pixels
-      if (!center || size === 0)
-        return null;
+      if (!center || size === 0) return null;
 
       // merge data marker default styles, need to handle label style differently because we want to merge the two css strings
       var markerDefaults = this._tmap.getStyleDefaults()['dataMarkerDefaults'];
@@ -5594,18 +6083,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         height = size;
       } else {
         var sx = data['scaleX'];
-        if (sx == null)
-          sx = 1;
+        if (sx == null) sx = 1;
         var sy = data['scaleY'];
-        if (sy == null)
-          sy = 1;
+        if (sy == null) sy = 1;
 
         var w = data['width'];
-        if (w == null)
-          w = this._tmap.getOptions()['styleDefaults']['dataMarkerDefaults']['width'];
+        if (w == null) w = this._tmap.getOptions()['styleDefaults']['dataMarkerDefaults']['width'];
         var h = data['height'];
-        if (h == null)
-          h = this._tmap.getOptions()['styleDefaults']['dataMarkerDefaults']['height'];
+        if (h == null) h = this._tmap.getOptions()['styleDefaults']['dataMarkerDefaults']['height'];
 
         width = w * sx;
         height = h * sy;
@@ -5616,26 +6101,48 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // id is used for custom marker definition lookup
       var marker;
       if (data['source']) {
-        marker = new dvt.ImageMarker(this._tmap.getCtx(), center.x, center.y, width, height, br,
-            data['source'], data['sourceSelected'], data['sourceHover'], data['sourceHoverSelected']);
-      }
-      else {
-        var shapeType = data['shape'] ? data['shape'] : this._tmap.getOptions()['styleDefaults']['dataMarkerDefaults']['shape'];
-        marker = new dvt.SimpleMarker(this._tmap.getCtx(), shapeType, center.x, center.y, width, height, br);
+        marker = new dvt.ImageMarker(
+          this._tmap.getCtx(),
+          center.x,
+          center.y,
+          width,
+          height,
+          br,
+          data['source'],
+          data['sourceSelected'],
+          data['sourceHover'],
+          data['sourceHoverSelected']
+        );
+      } else {
+        var shapeType = data['shape']
+          ? data['shape']
+          : this._tmap.getOptions()['styleDefaults']['dataMarkerDefaults']['shape'];
+        marker = new dvt.SimpleMarker(
+          this._tmap.getCtx(),
+          shapeType,
+          center.x,
+          center.y,
+          width,
+          height,
+          br
+        );
       }
       var rotation = data['rotation'];
       if (rotation) {
-        var radianRot = rotation * Math.PI / 180;
+        var radianRot = (rotation * Math.PI) / 180;
         marker.setRotation(radianRot);
       }
       // disable labels in area layer if data layer exists and has label
-      if (isParentAreaDataLayer)
-        layer.setLabelRendered(data['location'], false);
+      if (isParentAreaDataLayer) layer.setLabelRendered(data['location'], false);
 
       this._styleDisplayable(data, marker);
       var isRedwood = this._tmap.getCtx().getThemeBehavior() === 'redwood';
       var label = this._createLabel(layer, dataLayer, data, marker, isParentAreaDataLayer);
-      var locationName = DvtThematicMapJsonParser._getLocationName(this._tmap.getMapName(), dataLayer, data);
+      var locationName = DvtThematicMapJsonParser._getLocationName(
+        this._tmap.getMapName(),
+        dataLayer,
+        data
+      );
       return new DvtMapObjPeer(data, dataLayer, marker, label, center, locationName, isRedwood);
     }
 
@@ -5649,8 +6156,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @private
      */
     _createImage(layer, dataLayer, data, isParentAreaDataLayer) {
-      var center = DvtThematicMapJsonParser.getCenter(dataLayer, data['location'], data['x'], data['y']);
-      if (!center) // no matching city
+      var center = DvtThematicMapJsonParser.getCenter(
+        dataLayer,
+        data['location'],
+        data['x'],
+        data['y']
+      );
+      if (!center)
+        // no matching city
         return null;
 
       var image = new dvt.Image(this._tmap.getCtx(), data['url']);
@@ -5665,10 +6178,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       }
 
       // disable labels in area layer if data layer exists and has label
-      if (isParentAreaDataLayer)
-        layer.setLabelRendered(data['location'], false);
+      if (isParentAreaDataLayer) layer.setLabelRendered(data['location'], false);
 
-      var locationName = DvtThematicMapJsonParser._getLocationName(this._tmap.getMapName(), dataLayer, data);
+      var locationName = DvtThematicMapJsonParser._getLocationName(
+        this._tmap.getMapName(),
+        dataLayer,
+        data
+      );
       var peer = new DvtMapObjPeer(data, dataLayer, image, null, center, locationName);
       if (!width || !height) {
         var callback = (imageInfo) => {
@@ -5699,20 +6215,32 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var center;
       // MapProvider coordinates are already projected, but need to flip the y coordinate for svg
       // because 0,0 is top left instead of bottom left
-      if (this._mapProvider && !data['location'])
-        center = new dvt.Point(data['x'], -data['y']);
+      if (this._mapProvider && !data['location']) center = new dvt.Point(data['x'], -data['y']);
       else
-        center = DvtThematicMapJsonParser.getCenter(dataLayer, data['location'], data['x'], data['y']);
+        center = DvtThematicMapJsonParser.getCenter(
+          dataLayer,
+          data['location'],
+          data['x'],
+          data['y']
+        );
 
-      if (!center) // no matching city
+      if (!center)
+        // no matching city
         return null;
 
       // disable labels in area layer if data layer exists and has label
-      if (isParentAreaDataLayer)
-        layer.setLabelRendered(data['location'], false);
+      if (isParentAreaDataLayer) layer.setLabelRendered(data['location'], false);
 
-      var dataItem = new DvtCustomDataItem(this._tmap.getCtx(), customContent, this._tmap.getStyleDefaults()['dataAreaDefaults']);
-      var locationName = DvtThematicMapJsonParser._getLocationName(this._tmap.getMapName(), dataLayer, data);
+      var dataItem = new DvtCustomDataItem(
+        this._tmap.getCtx(),
+        customContent,
+        this._tmap.getStyleDefaults()['dataAreaDefaults']
+      );
+      var locationName = DvtThematicMapJsonParser._getLocationName(
+        this._tmap.getMapName(),
+        dataLayer,
+        data
+      );
       return new DvtMapObjPeer(data, dataLayer, dataItem, null, center, locationName);
     }
 
@@ -5740,7 +6268,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         else {
           startMarker = idToAreaMap.get(startLoc['id']);
           if (startMarker) {
-            startPt = this._getPtFromLocation(dataLayer, {'location': startMarker.getLocation()});
+            startPt = this._getPtFromLocation(dataLayer, { location: startMarker.getLocation() });
           }
         }
       } else {
@@ -5760,7 +6288,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         else {
           endMarker = idToAreaMap.get(endLoc['id']);
           if (endMarker) {
-            endPt = this._getPtFromLocation(dataLayer, {'location': endMarker.getLocation()});
+            endPt = this._getPtFromLocation(dataLayer, { location: endMarker.getLocation() });
           }
         }
       } else {
@@ -5768,19 +6296,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       }
 
       // Return null if both a start and end point are not determined
-      if (!endPt || !startPt)
-        return null;
+      if (!endPt || !startPt) return null;
 
-      var curve = new dvt.Path(this._tmap.getCtx(), DvtThematicMapUtils.calcCurve(dataLayer, startPt, endPt, startPt, endPt));
+      var curve = new dvt.Path(
+        this._tmap.getCtx(),
+        DvtThematicMapUtils.calcCurve(dataLayer, startPt, endPt, startPt, endPt)
+      );
       curve.setFill(null);
 
       var linkDefaults = this._tmap.getStyleDefaults()['linkDefaults'];
       var strokeColor = data['color'];
-      if (!strokeColor)
-        strokeColor = linkDefaults['color'];
+      if (!strokeColor) strokeColor = linkDefaults['color'];
       var strokeWidth = data['width'];
-      if (!strokeWidth)
-        strokeWidth = linkDefaults['width'];
+      if (!strokeWidth) strokeWidth = linkDefaults['width'];
       var stroke = new dvt.Stroke(strokeColor, 1, strokeWidth, true);
       curve.setStroke(stroke);
       var isRedwood = curve.getCtx().getThemeBehavior() === 'redwood';
@@ -5796,8 +6324,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (isRedwood) {
         shis = sis;
         shos = sos;
-      }
-      else {
+      } else {
         shis = new dvt.Stroke(hoverColor, 1, strokeWidth);
         shos = new dvt.Stroke(selectedColor, 1, strokeWidth + 2);
       }
@@ -5805,7 +6332,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
       return new DvtMapLinkPeer(data, dataLayer, curve, startPt, endPt, startMarker, endMarker);
     }
-
 
     /**
      * Creates a dvt.Point from the link location object which can contain x/y coordinates,
@@ -5839,14 +6365,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var labelText = data['label'];
       // if data label is provided, assume label display is on and if is from an area data layer, use area layer's label display
       var labelDisplay = labelText ? 'on' : 'off';
-      if (isParentAreaDataLayer)
-        labelDisplay = layer.getLabelDisplay();
+      if (isParentAreaDataLayer) labelDisplay = layer.getLabelDisplay();
 
       var isArea = displayable instanceof dvt.Path;
       // If object is in an areaDataLayer see if label is provided, if not, use the default area label
-      if (!labelText && isParentAreaDataLayer && ((isArea && labelDisplay != 'off') ||
-                                                  (!isArea && labelDisplay == 'on'))) {
-        labelText = (layer.getLabelType() == 'long' ? layer.getLongAreaName(areaId) : layer.getShortAreaName(areaId));
+      if (
+        !labelText &&
+        isParentAreaDataLayer &&
+        ((isArea && labelDisplay != 'off') || (!isArea && labelDisplay == 'on'))
+      ) {
+        labelText =
+          layer.getLabelType() == 'long'
+            ? layer.getLongAreaName(areaId)
+            : layer.getShortAreaName(areaId);
       }
 
       // Labels
@@ -5854,10 +6385,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var context = this._tmap.getCtx();
         var label;
         if (isArea)
-          label = new DvtMapLabel(context, labelText, layer.getLabelInfoForArea ? layer.getLabelInfoForArea(areaId) : null,
-                                  labelDisplay, dataLayer.getDataLabelContainer(), this._tmap.supportsVectorEffects());
-        else
-          label = new dvt.OutputText(context, labelText, 0, 0);
+          label = new DvtMapLabel(
+            context,
+            labelText,
+            layer.getLabelInfoForArea ? layer.getLabelInfoForArea(areaId) : null,
+            labelDisplay,
+            dataLayer.getDataLabelContainer(),
+            this._tmap.supportsVectorEffects()
+          );
+        else label = new dvt.OutputText(context, labelText, 0, 0);
 
         // Label styling
         var labelStyle = isArea ? layer.getLayerCSSStyle() : new dvt.CSSStyle();
@@ -5869,11 +6405,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         labelStyle.setStyle(dvt.CSSStyle.COLOR, null);
         label.setCSSStyle(labelStyle);
         // color label to contrast with data color if none provided or in high contrast mode
-        if (data['color'] && (label instanceof DvtMapLabel && (dvt.Agent.isHighContrast() || !fillColor))) {
+        if (
+          data['color'] &&
+          label instanceof DvtMapLabel &&
+          (dvt.Agent.isHighContrast() || !fillColor)
+        ) {
           fillColor = dvt.ColorUtils.getContrastingTextColor(data['color']);
         }
-        if (fillColor)
-          label.setSolidFill(fillColor);
+        if (fillColor) label.setSolidFill(fillColor);
       }
 
       return label;
@@ -5897,41 +6436,79 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           if (typeof borderWidth == 'string') {
             if (borderWidth.slice(-2) == 'px')
               borderWidth = parseFloat(style['borderWidth'].slice(0, -2));
-            else
-              borderWidth = parseFloat(style['borderWidth']);
+            else borderWidth = parseFloat(style['borderWidth']);
           }
-          var stroke = new dvt.Stroke(style['borderColor'], 1, borderWidth,
-            !this._tmap.isMarkerZoomBehaviorFixed(), dvt.Stroke.getDefaultDashProps(strokeType, borderWidth));
+          var stroke = new dvt.Stroke(
+            style['borderColor'],
+            1,
+            borderWidth,
+            !this._tmap.isMarkerZoomBehaviorFixed(),
+            dvt.Stroke.getDefaultDashProps(strokeType, borderWidth)
+          );
           displayable.setStroke(stroke);
           if (isRedwood) {
-            var selectedHoverInnerStroke = new dvt.Stroke(style['_hoverColor'], 1, 1, this._tmap.isMarkerZoomBehaviorFixed());
-            var selectedHoverOuterStroke = new dvt.Stroke(style['_selectionColor'], 1, 3, this._tmap.isMarkerZoomBehaviorFixed());
+            var selectedHoverInnerStroke = new dvt.Stroke(
+              style['_hoverColor'],
+              1,
+              1,
+              this._tmap.isMarkerZoomBehaviorFixed()
+            );
+            var selectedHoverOuterStroke = new dvt.Stroke(
+              style['_selectionColor'],
+              1,
+              3,
+              this._tmap.isMarkerZoomBehaviorFixed()
+            );
 
-            var selectedInnerStroke = new dvt.Stroke(style['_hoverColor'], 1, 1, this._tmap.isMarkerZoomBehaviorFixed());
-            var selectedOuterStroke  = new dvt.Stroke(style['_selectionColor'], 1, 3, this._tmap.isMarkerZoomBehaviorFixed());
+            var selectedInnerStroke = new dvt.Stroke(
+              style['_hoverColor'],
+              1,
+              1,
+              this._tmap.isMarkerZoomBehaviorFixed()
+            );
+            var selectedOuterStroke = new dvt.Stroke(
+              style['_selectionColor'],
+              1,
+              3,
+              this._tmap.isMarkerZoomBehaviorFixed()
+            );
 
-            var hoverInnerStroke = new dvt.Stroke(style['_hoverColor'], 1, 1, this._tmap.isMarkerZoomBehaviorFixed());
-            var hoverOuterStroke = new dvt.Stroke(style['color'], 1, 3, this._tmap.isMarkerZoomBehaviorFixed());
-            displayable.setHoverStroke(hoverInnerStroke, hoverOuterStroke).setSelectedStroke(selectedInnerStroke, selectedOuterStroke).setSelectedHoverStroke(selectedHoverInnerStroke, selectedHoverOuterStroke);
+            var hoverInnerStroke = new dvt.Stroke(
+              style['_hoverColor'],
+              1,
+              1,
+              this._tmap.isMarkerZoomBehaviorFixed()
+            );
+            var hoverOuterStroke = new dvt.Stroke(
+              style['color'],
+              1,
+              3,
+              this._tmap.isMarkerZoomBehaviorFixed()
+            );
+            displayable
+              .setHoverStroke(hoverInnerStroke, hoverOuterStroke)
+              .setSelectedStroke(selectedInnerStroke, selectedOuterStroke)
+              .setSelectedHoverStroke(selectedHoverInnerStroke, selectedHoverOuterStroke);
           }
-
         }
 
         var opacity = style['opacity'];
-        if (backgroundColor)
-          displayable.setSolidFill(backgroundColor, opacity);
-      }
-      else if (displayable instanceof dvt.Path) {
+        if (backgroundColor) displayable.setSolidFill(backgroundColor, opacity);
+      } else if (displayable instanceof dvt.Path) {
         var borderColor = style['borderColor'];
         if (borderColor) {
-          var borderColorStroke = new dvt.Stroke(borderColor, 1, 1, this._tmap.supportsVectorEffects());
+          var borderColorStroke = new dvt.Stroke(
+            borderColor,
+            1,
+            1,
+            this._tmap.supportsVectorEffects()
+          );
           displayable.setStroke(borderColorStroke);
         }
 
         displayable.setSolidFill(backgroundColor, opacity);
       }
     }
-
 
     /**
      * Retrieves the center coordinates for this data object if they exist
@@ -5966,13 +6543,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           // returning the correct bounds
           if (!mapName && layer.getAreaShape) {
             var mapArea = layer.getAreaShape(location);
-            if (!mapArea)
-              return null;
+            if (!mapArea) return null;
             dim = dvt.DisplayableUtils.getDimensionsForced(map.getCtx(), mapArea);
           } else {
             var path = exports.DvtBaseMapManager.getPathForArea(mapName, layerName, location);
-            if (!path)
-              return null;
+            if (!path) return null;
             var arPath = dvt.PathUtils.createPathArray(path);
             dim = dvt.PathUtils.getDimensions(arPath);
           }
@@ -5997,15 +6572,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       for (var i = 0; i < markers.length; i++) {
         var value = markers[i][valKey];
         // Negative and zero marker values don't correlate to a marker radius size so we skip them when determining range
-        if (value == null || value <= 0)
-          continue;
+        if (value == null || value <= 0) continue;
         maxValue = Math.max(maxValue, value);
         minValue = Math.min(minValue, value);
       }
 
       // No marker values provided value option, skip marker sizing calculation
-      if (minValue === Infinity)
-        return;
+      if (minValue === Infinity) return;
 
       // Min/max allowed marker sizes
       var zoomMargins = 2 * DvtThematicMapJsonParser._PZC_PADDING;
@@ -6014,17 +6587,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // Adjust maxSize by limiting basemap aspect ratio so that 1.3 < w/h < 1.7. Temporary heuristical approach
       // to fixing map aspct ratio issue which we can't determine until render time.
       var ratio = mapWidth / mapHeight;
-      if (ratio < 1.3)
-        mapHeight = mapWidth * 2 / 3;
-      else if (ratio > 1.7)
-        mapWidth = mapHeight * 1.5;
+      if (ratio < 1.3) mapHeight = (mapWidth * 2) / 3;
+      else if (ratio > 1.7) mapWidth = mapHeight * 1.5;
       var maxSize = DvtThematicMapJsonParser._MAX_MARKER_SIZE_RATIO * Math.min(mapWidth, mapHeight);
 
       // Loop through the data and update the sizes
       for (var p = 0; p < markers.length; p++) {
         var markerValue = markers[p][valKey];
         // Treat markers with missing values the same as we treat negative/zero valued markers and set size to 0 so we skip rendering them
-        markers[p]['_size'] = (markerValue == null || markerValue <= 0) ? 0 : dvt.LayoutUtils.getBubbleSize(markerValue, minValue, maxValue, DvtThematicMapJsonParser._MIN_MARKER_SIZE, maxSize);
+        markers[p]['_size'] =
+          markerValue == null || markerValue <= 0
+            ? 0
+            : dvt.LayoutUtils.getBubbleSize(
+                markerValue,
+                minValue,
+                maxValue,
+                DvtThematicMapJsonParser._MIN_MARKER_SIZE,
+                maxSize
+              );
       }
     }
 
@@ -6043,41 +6623,40 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         // For data objects associated with supported areas or cities we prepend the area/city name before the datatip
         if (!(mapLayer instanceof DvtMapAreaLayer))
           return exports.DvtBaseMapManager.getCityLabel(basemap, location);
-        else
-          return mapLayer.getLongAreaName(location);
+        else return mapLayer.getLongAreaName(location);
       }
       return null;
     }
   }
 
-  /**  
+  /**
    * @const
-   * @private 
-  */
+   * @private
+   */
   DvtThematicMapJsonParser._MIN_MARKER_SIZE = 6;
-  /**  
-  * @private 
-  */
+  /**
+   * @private
+   */
   DvtThematicMapJsonParser._MAX_MARKER_SIZE_RATIO = 0.5;
   /**
-  * Hard coded pan zoom canvas padding snce we don't render pzc until render call, but we also don't adjust the
-  * padding for TMap so we can hard code value for marker bubble sizing algorithm.
-  * @const
-  * @private
-  */
+   * Hard coded pan zoom canvas padding snce we don't render pzc until render call, but we also don't adjust the
+   * padding for TMap so we can hard code value for marker bubble sizing algorithm.
+   * @const
+   * @private
+   */
   DvtThematicMapJsonParser._PZC_PADDING = 20;
 
   /**
    * @class tmap keyboard handler
    */
   class DvtThematicMapKeyboardHandler extends ojdvtPanzoomcanvas.PanZoomCanvasKeyboardHandler {
-   /**
-    * @param {ThematicMap} tmap The owning component
-    * @param {dvt.EventManager} manager The owning dvt.EventManager
-    * @class DvtThematicMapKeyboardHandler
-    * @extends {dvt.KeyboardHandler}
-    * @constructor
-    */
+    /**
+     * @param {ThematicMap} tmap The owning component
+     * @param {dvt.EventManager} manager The owning dvt.EventManager
+     * @class DvtThematicMapKeyboardHandler
+     * @extends {dvt.KeyboardHandler}
+     * @constructor
+     */
     constructor(tmap, manager) {
       super(tmap, manager);
       this._tmap = tmap;
@@ -6122,13 +6701,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           this._tmap.ensureObjInViewport(event, focusObj);
         }
         this._eventManager.SetClickInfo(focusObj);
-      }
-      else if (keyCode === dvt.KeyboardEvent.OPEN_BRACKET) {
+      } else if (keyCode === dvt.KeyboardEvent.OPEN_BRACKET) {
         // Set the data layer link navigation type
         this._linkNavType = DvtThematicMapKeyboardHandler.LINK_NAV;
         // Traverse data objects in order of links [ markers [ areas
         var navigableObjs = [];
-
 
         if (focusObj instanceof DvtMapLinkPeer) {
           navigableObjs = this._tmap.getNavigableMarkers();
@@ -6150,9 +6727,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           this._tmap.ensureObjInViewport(event, focusObj);
         }
         this._eventManager.SetClickInfo(focusObj);
-      }
-      else {
-        if ((event.keyCode === dvt.KeyboardEvent.OPEN_ANGLED_BRACKET || dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET) && event.altKey) {
+      } else {
+        if (
+          (event.keyCode === dvt.KeyboardEvent.OPEN_ANGLED_BRACKET ||
+            dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET) &&
+          event.altKey
+        ) {
           // save a reference to the marker
           this._linkMarker = focusObj;
           this._linkNavType = DvtThematicMapUtils.LINK_NODE_NAV;
@@ -6164,7 +6744,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         }
       }
       return focusObj;
-
     }
 
     /**
@@ -6190,13 +6769,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       return event.keyCode === dvt.KeyboardEvent.SPACE && event.ctrlKey;
     }
 
-
     /**
      * @override
      */
     isNavigationEvent(event) {
       var isNavigable;
-        switch (event.keyCode) {
+      switch (event.keyCode) {
         case dvt.KeyboardEvent.OPEN_BRACKET:
         case dvt.KeyboardEvent.CLOSE_BRACKET:
           isNavigable = true;
@@ -6221,7 +6799,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    * @constructor
    */
   class ThematicMap extends ojdvtPanzoomcanvas.PanZoomComponent {
-
     constructor(context, callback, callbackObj) {
       /**
        * Initializes the thematicMap
@@ -6252,7 +6829,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
        */
       this.DEFAULT_MAX_ZOOM_FACTOR = 6;
     }
-
 
     /**
      * Helper function to create displayable containers
@@ -6332,11 +6908,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var maxZoom = this.Options['maxZoom'];
       if (!this._zooming) {
         return 1;
-      }
-      else if (!isNaN(maxZoom)) {
+      } else if (!isNaN(maxZoom)) {
         return Math.max(maxZoom, 1);
-      }
-      else {
+      } else {
         return this.DEFAULT_MAX_ZOOM_FACTOR;
       }
     }
@@ -6364,8 +6938,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     getLayer(layerName) {
       for (var i = 0; i < this._layers.length; i++) {
-        if (this._layers[i].getLayerName() === layerName)
-          return this._layers[i];
+        if (this._layers[i].getLayerName() === layerName) return this._layers[i];
       }
       return undefined;
     }
@@ -6423,7 +6996,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {string} attr The map name
      */
     setMapName(attr) {
-      this._bBaseMapChanged = (this._mapName && this._mapName !== attr);
+      this._bBaseMapChanged = this._mapName && this._mapName !== attr;
       this._mapName = attr;
     }
 
@@ -6481,7 +7054,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // 2. New base map
       // For case 2 we need to clear the old stored information
       if (!this.IsResize() && this._pzcContainer) {
-
         // Save reference to check for animations in Render
         this._oldMapProvider = this.Options['mapProvider'];
 
@@ -6503,7 +7075,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         this.EventManager.associate(this, this);
       }
     }
-
 
     /**
      * Creates all the event handlers that this component needs
@@ -6535,8 +7106,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._pzc.getContentPane().addChild(cpContainer);
       this._render(pzcContainer, cpContainer);
 
-      if (!this._areaLayer)
-        return;
+      if (!this._areaLayer) return;
 
       // Animation Support
       // Stop any animation in progress
@@ -6555,18 +7125,32 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         }
       }
 
-      if (!this._bRendered && !this._oldPzc) { // Case 1
+      if (!this._bRendered && !this._oldPzc) {
+        // Case 1
         var animOnDisplay = this.Options['animationOnDisplay'];
         animOnDisplay = animOnDisplay === 'auto' ? 'alphaFade' : null;
         if (animOnDisplay) {
-          this.Animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), animOnDisplay, this._pzc, bounds, this._animationDuration);
+          this.Animation = dvt.BlackBoxAnimationHandler.getInAnimation(
+            this.getCtx(),
+            animOnDisplay,
+            this._pzc,
+            bounds,
+            this._animationDuration
+          );
         }
-      }
-      else if (this._bBaseMapChanged && !this.IsResize()) { // Case 2
+      } else if (this._bBaseMapChanged && !this.IsResize()) {
+        // Case 2
         var animOnMapChange = this.Options['animationOnMapChange'];
         animOnMapChange = animOnMapChange === 'auto' ? 'alphaFade' : null;
         if (animOnMapChange) {
-          this.Animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(this.getCtx(), animOnMapChange, this._oldPzc, this._pzc, bounds, this._animationDuration);
+          this.Animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(
+            this.getCtx(),
+            animOnMapChange,
+            this._oldPzc,
+            this._pzc,
+            bounds,
+            this._animationDuration
+          );
           this.addChild(this._oldPzc);
         }
       }
@@ -6619,10 +7203,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // Add all containers
       cpContainer.addChild(this._areaLayers);
       cpContainer.addChild(this._dataAreaLayers);
-      if (this.isMarkerZoomBehaviorFixed())
-        pzcContainer.addChild(this._dataPointLayers);
-      else
-        cpContainer.addChild(this._dataPointLayers);
+      if (this.isMarkerZoomBehaviorFixed()) pzcContainer.addChild(this._dataPointLayers);
+      else cpContainer.addChild(this._dataPointLayers);
       pzcContainer.addChild(this._labelLayers);
       pzcContainer.addChild(this._linkLayers);
       this._touchEventLayer && pzcContainer.addChild(this._touchEventLayer);
@@ -6633,7 +7215,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._areaLayerRendered = false;
       for (var i = 0; i < this._layers.length; i++) {
         var layer = this._layers[i];
-        if ((!this._areaLayerRendered && layer instanceof DvtMapAreaLayer) || !(layer instanceof DvtMapAreaLayer)) {
+        if (
+          (!this._areaLayerRendered && layer instanceof DvtMapAreaLayer) ||
+          !(layer instanceof DvtMapAreaLayer)
+        ) {
           layer.render(pzcMatrix);
           if (!this._areaLayerRendered && layer instanceof DvtMapAreaLayer) {
             this._areaLayerRendered = true;
@@ -6652,8 +7237,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         }
       }
 
-      if (!this._areaLayer)
-        return;
+      if (!this._areaLayer) return;
 
       var isolatedArea = this._areaLayer.getIsolatedArea();
       if (this._isolatedArea !== isolatedArea) {
@@ -6668,7 +7252,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._pzc.setMaxZoom(null);
       this._pzc.setZoomingEnabled(true);
       this._pzc.setPanningEnabled(true);
-
 
       // Zoom to fit before initial render animations so animations will look correct
       // Additional zooming for initialZooming will be applied after animations are complete
@@ -6688,10 +7271,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     _setInitialKeyboardFocus() {
       if (this._keyboardHandler) {
         var navigables = this.getNavigableAreas();
-        if (navigables.length === 0)
-          navigables = this.getNavigableMarkers();
-        if (navigables.length === 0)
-          navigables = this.getNavigableLinks();
+        if (navigables.length === 0) navigables = this.getNavigableMarkers();
+        if (navigables.length === 0) navigables = this.getNavigableLinks();
         this.EventManager.setInitialFocus(navigables[0]);
       }
     }
@@ -6709,7 +7290,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
       // Parse new data layer
       var parser = new DvtThematicMapJsonParser(this);
-      parser.ParseDataLayers([dataLayerOptions], this.getLayer(parentLayer), this._areaLayer.getLayerName(), isAreaDataLayer);
+      parser.ParseDataLayers(
+        [dataLayerOptions],
+        this.getLayer(parentLayer),
+        this._areaLayer.getLayerName(),
+        isAreaDataLayer
+      );
       this._bRendered = true;
 
       // Reset initially focused object with updated data items
@@ -6727,8 +7313,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @private
      */
     _renderCompleted() {
-      if (!this.AnimationStopped)
-        this.RenderComplete();
+      if (!this.AnimationStopped) this.RenderComplete();
 
       // Reset animation flags
       this.Animation = null;
@@ -6749,11 +7334,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @protected
      */
     OnUpdateLayerEnd() {
-      if (this._areaLayer.getIsolatedArea())
-        this._pzc.zoomToFit(null, this._areaLayer.getLayerDim());
+      if (this._areaLayer.getIsolatedArea()) this._pzc.zoomToFit(null, this._areaLayer.getLayerDim());
 
-      if (this._initialZooming)
-        this._zoomData();
+      if (this._initialZooming) this._zoomData();
       this._renderCompleted();
     }
 
@@ -6779,8 +7362,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
       // this._dataPointLayers zoom transforms handled by markers to avoid scaling marker filter effects
       // tx/ty transforms are handled by tmap for better interactivity
-      if (this.isMarkerZoomBehaviorFixed())
-        this._dataPointLayers.setMatrix(mat);
+      if (this.isMarkerZoomBehaviorFixed()) this._dataPointLayers.setMatrix(mat);
       this._labelLayers.setMatrix(mat);
       this._linkLayers.setMatrix(mat);
     }
@@ -6794,7 +7376,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     _constrainPanning(zoom) {
       var padding = this._pzc.getZoomToFitPadding();
       var pzcDim = this._pzc.getSize();
-      var viewportDim = new dvt.Rectangle(padding, padding, pzcDim.w - 2 * padding, pzcDim.h - 2 * padding);
+      var viewportDim = new dvt.Rectangle(
+        padding,
+        padding,
+        pzcDim.w - 2 * padding,
+        pzcDim.h - 2 * padding
+      );
       var mapDim = this._areaLayer.getLayerDim();
       var zoomedMapX = mapDim.x * zoom;
       var zoomedMapY = mapDim.y * zoom;
@@ -6802,7 +7389,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var zoomedMapH = mapDim.h * zoom;
 
       if (zoomedMapW > viewportDim.w) {
-        this._pzc.setMinPanX((viewportDim.x + viewportDim.wt) - (zoomedMapX + zoomedMapW));
+        this._pzc.setMinPanX(viewportDim.x + viewportDim.wt - (zoomedMapX + zoomedMapW));
         this._pzc.setMaxPanX(viewportDim.x - zoomedMapX);
       } else {
         var minMaxX = (viewportDim.x + viewportDim.w) / 2 - (zoomedMapX + zoomedMapW / 2);
@@ -6811,7 +7398,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       }
 
       if (zoomedMapH > viewportDim.h) {
-        this._pzc.setMinPanY((viewportDim.y + viewportDim.h) - (zoomedMapY + zoomedMapH));
+        this._pzc.setMinPanY(viewportDim.y + viewportDim.h - (zoomedMapY + zoomedMapH));
         this._pzc.setMaxPanY(viewportDim.y - zoomedMapY);
       } else {
         var minMaxY = (viewportDim.y + viewportDim.h) / 2 - (zoomedMapY + zoomedMapH / 2);
@@ -6819,7 +7406,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         this._pzc.setMaxPanY(minMaxY);
       }
     }
-
 
     /**
      * Updates the dvt.Animator associated with a pan or zoom event with additional properties for containers not added to the content pane.
@@ -6834,16 +7420,39 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var mat = animator.getDestVal(contentPane, contentPane.getMatrix);
         if (bRecenterObjs) {
           this._currentAnimMatrix = contentPane.getMatrix();
-          animator.addProp(dvt.Animator.TYPE_MATRIX, this, this._getCenteredObjsMatrix, this._setCenteredObjsMatrix, mat);
+          animator.addProp(
+            dvt.Animator.TYPE_MATRIX,
+            this,
+            this._getCenteredObjsMatrix,
+            this._setCenteredObjsMatrix,
+            mat
+          );
         }
         var transMat = new dvt.Matrix(1, 0, 0, 1, mat.getTx(), mat.getTy());
         if (this.isMarkerZoomBehaviorFixed())
-          animator.addProp(dvt.Animator.TYPE_MATRIX, this._dataPointLayers, this._dataPointLayers.getMatrix, this._dataPointLayers.setMatrix, transMat);
-        animator.addProp(dvt.Animator.TYPE_MATRIX, this._labelLayers, this._labelLayers.getMatrix, this._labelLayers.setMatrix, transMat);
-        animator.addProp(dvt.Animator.TYPE_MATRIX, this._linkLayers, this._linkLayers.getMatrix, this._linkLayers.setMatrix, transMat);
+          animator.addProp(
+            dvt.Animator.TYPE_MATRIX,
+            this._dataPointLayers,
+            this._dataPointLayers.getMatrix,
+            this._dataPointLayers.setMatrix,
+            transMat
+          );
+        animator.addProp(
+          dvt.Animator.TYPE_MATRIX,
+          this._labelLayers,
+          this._labelLayers.getMatrix,
+          this._labelLayers.setMatrix,
+          transMat
+        );
+        animator.addProp(
+          dvt.Animator.TYPE_MATRIX,
+          this._linkLayers,
+          this._linkLayers.getMatrix,
+          this._linkLayers.setMatrix,
+          transMat
+        );
       }
     }
-
 
     /**
      * Processes a zoom event for this component and subcomponents.
@@ -6855,8 +7464,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       switch (subtype) {
         case 'adjustPanConstraints':
           // Calculate the new content dimensions based on the new zoom
-          if (this._panning)
-            this._constrainPanning(event.newZoom);
+          if (this._panning) this._constrainPanning(event.newZoom);
           break;
         case 'zooming':
         case 'elasticAnimBegin':
@@ -6868,7 +7476,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
             var pzcMatrix = this._pzc.getContentPane().getMatrix();
             // null out animator for Flash. Temp fix until  is done.
             event.animator = null;
-            this.dispatchEvent(dvt.EventFactory.newThematicMapViewportChangeEvent(pzcMatrix.getTx(), pzcMatrix.getTy(), zoom));
+            this.dispatchEvent(
+              dvt.EventFactory.newThematicMapViewportChangeEvent(
+                pzcMatrix.getTx(),
+                pzcMatrix.getTy(),
+                zoom
+              )
+            );
 
             this._transformContainers(pzcMatrix);
 
@@ -6897,18 +7511,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var subtype = event.subtype;
       if (subtype === 'elasticAnimBegin' || subtype === 'panning') {
         this._updateAnimator(event, false);
-      }
-      else if (subtype === 'panned') {
+      } else if (subtype === 'panned') {
         if (event.newX != null) {
           var pzcMatrix = this._pzc.getContentPane().getMatrix();
           // null out animator for Flash. Temp fix until  is done.
           event.animator = null;
-          this.dispatchEvent(dvt.EventFactory.newThematicMapViewportChangeEvent(pzcMatrix.getTx(), pzcMatrix.getTy(), this._pzc.getZoom()));
+          this.dispatchEvent(
+            dvt.EventFactory.newThematicMapViewportChangeEvent(
+              pzcMatrix.getTx(),
+              pzcMatrix.getTy(),
+              this._pzc.getZoom()
+            )
+          );
 
           this._transformContainers(pzcMatrix);
 
-          for (var i = 0; i < this._layers.length; i++)
-            this._layers[i].HandlePanEvent(pzcMatrix);
+          for (var i = 0; i < this._layers.length; i++) this._layers[i].HandlePanEvent(pzcMatrix);
         }
       }
     }
@@ -6956,17 +7574,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       }
 
       var animation;
-      if (!dvt.Agent.isEnvironmentTest())
-        animation = new dvt.Animator(this.getCtx(), .3);
-      if (bounds.w > 0 && bounds.h > 0)
-        this._pzc.zoomToFit(animation, bounds);
-      else
-        this._pzc.zoomToFit(animation, this._areaLayer.getLayerDim());
-      if (animation)
-        animation.play();
+      if (!dvt.Agent.isEnvironmentTest()) animation = new dvt.Animator(this.getCtx(), 0.3);
+      if (bounds.w > 0 && bounds.h > 0) this._pzc.zoomToFit(animation, bounds);
+      else this._pzc.zoomToFit(animation, this._areaLayer.getLayerDim());
+      if (animation) animation.play();
 
-      if (maxZoom)
-        this._pzc.setMaxZoom(maxZoom);
+      if (maxZoom) this._pzc.setMaxZoom(maxZoom);
     }
 
     /**
@@ -6975,7 +7588,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @private
      */
     _zoomToFitBounds(bounds) {
-      var animator = new dvt.Animator(this.getCtx(), .3);
+      var animator = new dvt.Animator(this.getCtx(), 0.3);
       this._pzc.zoomToFit(animator, bounds);
       animator.play();
     }
@@ -6985,13 +7598,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @param {dvt.Path} toFit The area to zoom to fit to
      */
     fitRegion(toFit) {
-      if (!toFit)
-        toFit = this._zoomToFitObject;
-      if (!toFit)
-        toFit = this._clickedObject;
+      if (!toFit) toFit = this._zoomToFitObject;
+      if (!toFit) toFit = this._clickedObject;
       this._zoomToFitBounds(toFit.getDimensions());
     }
-
 
     /**
      * Zooms the component to fit the currently selected areas
@@ -7021,7 +7631,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      *  Zooms to fit the map within the viewport.
      */
     fitMap() {
-      var animator = new dvt.Animator(this.getCtx(), .3);
+      var animator = new dvt.Animator(this.getCtx(), 0.3);
       this._pzc.zoomToFit(animator);
       animator.play();
     }
@@ -7049,8 +7659,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var markers = [];
       for (var i = 0; i < this._layers.length; i++) {
         var dataLayers = this._layers[i].getDataLayers();
-        for (var id in dataLayers)
-          markers = markers.concat(dataLayers[id].getMarkerObjs());
+        for (var id in dataLayers) markers = markers.concat(dataLayers[id].getMarkerObjs());
       }
       return markers;
     }
@@ -7063,8 +7672,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       var navigable = [];
       for (var i = 0; i < this._layers.length; i++) {
         var dataLayers = this._layers[i].getDataLayers();
-        for (var id in dataLayers)
-          navigable = navigable.concat(dataLayers[id].getLinkObjs());
+        for (var id in dataLayers) navigable = navigable.concat(dataLayers[id].getLinkObjs());
       }
       return navigable;
     }
@@ -7079,8 +7687,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // update centered markers and images
       if (this.isMarkerZoomBehaviorFixed()) {
         var objs = this.getNavigableMarkers();
-        for (var i = 0; i < objs.length; i++)
-          objs[i].HandleZoomEvent(matrix);
+        for (var i = 0; i < objs.length; i++) objs[i].HandleZoomEvent(matrix);
         // update centered labels for area and area data layers
         var numLabelLayers = this._labelLayers.getNumChildren();
         for (var j = 0; j < numLabelLayers; j++) {
@@ -7088,8 +7695,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
           var numLabels = labelLayer.getNumChildren();
           for (var k = 0; k < numLabels; k++) {
             var label = labelLayer.getChildAt(k);
-            if (label instanceof DvtMapLabel)
-              label.update(matrix);
+            if (label instanceof DvtMapLabel) label.update(matrix);
           }
         }
       }
@@ -7136,11 +7742,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       if (this._clickedDataLayerId) {
         this._selectedRowKeys = event['selection'];
         var dataLayer = this.getLayer(this._clickedLayerName).getDataLayer(this._clickedDataLayerId);
-        this._selectedAreas[this._clickedLayerName] = dataLayer.getSelectedAreas(this._selectedRowKeys);
+        this._selectedAreas[this._clickedLayerName] = dataLayer.getSelectedAreas(
+          this._selectedRowKeys
+        );
         event['clientId'] = this._clickedDataLayerId;
 
         // Save fit to region object
-        if (this._clickedObject && !(this._clickedObject instanceof dvt.SimpleMarker || this._clickedObject instanceof dvt.ImageMarker))
+        if (
+          this._clickedObject &&
+          !(
+            this._clickedObject instanceof dvt.SimpleMarker ||
+            this._clickedObject instanceof dvt.ImageMarker
+          )
+        )
           this._zoomToFitObject = this._clickedObject;
       } else {
         this._zoomToFitObject = null;
@@ -7152,13 +7766,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     destroy() {
       var layers = this.getAllLayers();
-      for (var i = 0; i < layers.length; i++)
-        layers[i].destroy();
+      for (var i = 0; i < layers.length; i++) layers[i].destroy();
 
       // Always call superclass last for destroy
       super.destroy(this);
     }
-
 
     /**
      * Hook for cleaning up animation behavior at the end of the animation.
@@ -7175,8 +7787,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._renderCompleted();
 
       // After the initial render animations we should perform any additional zooms
-      if (this._initialZooming)
-        this._zoomData();
+      if (this._initialZooming) this._zoomData();
 
       // Initial Highlighting
       if (this.Options['highlightedCategories'] && this.Options['highlightedCategories'].length > 0)
@@ -7194,8 +7805,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @return {dvt.Automation} The automation object
      */
     getAutomation() {
-      if (!this.Automation)
-        this.Automation = new DvtThematicMapAutomation(this);
+      if (!this.Automation) this.Automation = new DvtThematicMapAutomation(this);
       return this.Automation;
     }
 
@@ -7207,9 +7817,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this.Options['highlightedCategories'] = dvt.JsonUtils.clone(categories);
 
       // Perform the highlighting
-      dvt.CategoryRolloverHandler.highlight(categories,
-          this.getNavigableAreas().concat(this.getNavigableMarkers()).concat(this.getNavigableLinks()),
-          this.Options['highlightMatch'] === 'any');
+      dvt.CategoryRolloverHandler.highlight(
+        categories,
+        this.getNavigableAreas().concat(this.getNavigableMarkers()).concat(this.getNavigableLinks()),
+        this.Options['highlightMatch'] === 'any'
+      );
     }
 
     /**
@@ -7219,8 +7831,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     processDefaultHoverEffect(id, hovered) {
       var dataItem = this._getDataItemById(id);
-      if (dataItem)
-        dataItem.processDefaultHoverEffect(hovered);
+      if (dataItem) dataItem.processDefaultHoverEffect(hovered);
     }
 
     /**
@@ -7230,8 +7841,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     processDefaultSelectionEffect(id, selected) {
       var dataItem = this._getDataItemById(id);
-      if (dataItem)
-        dataItem.processDefaultSelectionEffect(selected);
+      if (dataItem) dataItem.processDefaultSelectionEffect(selected);
     }
 
     /**
@@ -7241,8 +7851,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     processDefaultFocusEffect(id, focused) {
       var dataItem = this._getDataItemById(id);
-      if (dataItem)
-        dataItem.processDefaultFocusEffect(focused);
+      if (dataItem) dataItem.processDefaultFocusEffect(focused);
     }
 
     /**
@@ -7278,8 +7887,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         for (var dlId in dataLayers) {
           var dataObjs = dataLayers[dlId].getMarkerObjs();
           for (var j = 0; j < dataObjs.length; j++) {
-            if (dvt.Obj.compareValues(ctx, dataObjs[j].getId(), id))
-              return dataObjs[j];
+            if (dvt.Obj.compareValues(ctx, dataObjs[j].getId(), id)) return dataObjs[j];
           }
         }
       }
@@ -7300,9 +7908,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._touchEventContentMarkerRef = marker;
       if (content.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
         dvt.ToolkitUtils.appendChildElem(this._touchEventLayer.getElem(), content);
-      }
-      else if (Array.isArray(content)) {
-        content.forEach(function (node) {dvt.ToolkitUtils.appendChildElem(this._touchEventLayer.getElem(), node);}.bind(this));
+      } else if (Array.isArray(content)) {
+        content.forEach(
+          function (node) {
+            dvt.ToolkitUtils.appendChildElem(this._touchEventLayer.getElem(), node);
+          }.bind(this)
+        );
       }
     }
 

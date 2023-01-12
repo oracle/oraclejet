@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -432,7 +432,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedef oj.ojChart.DrillItem
  * @ojsignature {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}
  */
- /**
+/**
  * The id for the data item.
  * @expose
  * @name id
@@ -442,7 +442,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @type {string|number}
  * @ojsignature {target: "Type", value: "K", jsdocOverride:true}
  */
- /**
+/**
  * The data object of the drilled item.
  * @expose
  * @name data
@@ -538,7 +538,6 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  *               {target: "Type", value: "oj.ojChart.DndDragConfig<ojChart.DndSeries<K, I>>", for: "series", jsdocOverride: true},
  *               {target: "Type", value: "oj.ojChart.DndDragConfig<ojChart.DndGroup>", for: "groups", jsdocOverride: true}]
  */
-
 
 /**
  * Object type that allows dropping on an element.
@@ -1044,7 +1043,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  *              {target: "Type", value: "<K, I extends Array<oj.ojChart.Item<any, null>>|Array<number>|null,D=any>", for: "genericTypeParameters"}]
  */
 
- /**
+/**
  * Object type that defines a chart data item for the no template case.
  * @typedef {Object} oj.ojChart.DataItem
  * @ojimportmembers oj.ojChartItemProperties
@@ -1060,7 +1059,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojimportmembers oj.ojChartBoxPlotStyleProperties
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.TooltipContext
  * @property {Element} parentElement The tooltip element. This can be used to change the tooltip border or background color.
  * @property {any} id The id of the hovered item.
@@ -1095,7 +1094,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  *               {target: "Type", value: "<K, D, I extends Array<oj.ojChart.Item<any, null>>|Array<number>|null>", for: "genericTypeParameters"}]
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.ItemShortDescContext
  * @property {any} id The id of the hovered item.
  * @property {string} series The id of the series the hovered item belongs to.
@@ -1150,46 +1149,46 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @property {string} subId Sub-id string to identify a particular dom node.
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.AxisTitleContext
  * @property {"xAxis"|"yAxis"|"y2Axis"} axis
  * @property {string} subId Sub-id string to identify a particular dom node.
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.ReferenceObject
  * @property {"xAxis"|"yAxis"|"y2Axis"} axis
  * @property {number} index The index of the reference object for the specified axis.
  * @property {string} subId Sub-id string to identify a particular dom node.
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.LegendItemContext
  * @property {Array} sectionIndexPath The array of numerical indices for the section.
  * @property {number} itemIndex The index of the item within the specified section.
  * @property {string} subId Sub-id string to identify a particular dom node.
  */
 
-  /**
+/**
  * @typedef {Object} oj.ojChart.GroupContext
  * @property {Array} indexPath The array of indices corresponding to the position of the group in the properties array. The array of numerical indices for the section.
  * @property {string} subId Sub-id string to identify a particular dom node.
  */
 
-  /**
+/**
  * @typedef {Object} oj.ojChart.ItemContext
  * @property {number} seriesIndex The index of the series within the specified section.
  * @property {number} itemIndex The index of the item within the specified section.
  * @property {string} subId Sub-id string to identify a particular dom node.
  */
 
-  /**
+/**
  * @typedef {Object} oj.ojChart.SeriesContext Context for a legend item that represents the series with the specified index.
  * @property {number} itemIndex The index of the item within the specified section.
  * @property {string} subId Sub-id string to identify a particular dom node.
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.DataLabelContext
  * @property {any} id The id of the data item.
  * @property {string} series The id of the series the data item belongs to.
@@ -1241,21 +1240,21 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  *               {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.DndItem
  * @property {Array.<Object>} item An array of dataContexts of the dragged data items. The dataContext is the same as what we use for "tooltip" and "dataLabels" properties.
  * @ojsignature [{target: "Type", value: "Array<oj.ojChart.DataLabelContext<K, D, I>>", for: "item", jsdocOverride: true},
  *                {target: "Type", value: "<K, D, I extends Array<oj.ojChart.Item<any, null>>|Array<number>|null>", for: "genericTypeParameters"}]
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.DndGroup
  * @property {string|number|Array.<string|number>} id The id of the group.
  * @property {string|number|Array.<string|number>} group The id of the group.
  * @property {string} label The label for the group.
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.DndSeries
  * @property {string|number} id The id of the series.
  * @property {string} color The color of the series.
@@ -1266,14 +1265,14 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  *                {target: "Type", value: "<K, I extends Array<oj.ojChart.Item<any, null>>|Array<number>|null>", for: "genericTypeParameters"}]
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.DndDrop
  * @property {number|null} x The X axis value at the event position. This is populated for plot area and x axis "drops".
  * @property {number|null} y The Y axis value at the event position. This is populated for plot area and y axis "drops".
  * @property {number|null} y2 The Y2 axis value at the event position. This is populated for plot area and y2 axis "drops".
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.SeriesTemplateContext
  * @property {Element} componentElement The &lt;oj-chart> custom element
  * @property {number} index The series index
@@ -1286,7 +1285,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  *               {target: "Type", value: "<D>", for: "genericTypeParameters"}]
  */
 
- /**
+/**
  * @typedef {Object} oj.ojChart.GroupTemplateContext
  * @property {Element} componentElement The &lt;oj-chart> custom element
  * @property {number} index The group index
@@ -1312,7 +1311,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * {target:"Type", value:"K", for:"key", jsdocOverride: true}]
  */
 
- // Slots
+// Slots
 /**
  * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the chart. The slot content must be a &lt;template> element.
  * The content of the template should only be one &lt;oj-chart-item> element. See the [oj-chart-item]{@link oj.ojChartItem} doc for more details. A <b>series-id</b> and <b>group-id</b> must be specified.</p>
@@ -1548,14 +1547,14 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
 // Node Context Objects ********************************************************
 
 /**
-* <p>Context for chart data items indexed by series and group indices.</p>
-*
-* @property {number} seriesIndex
-* @property {number} itemIndex
-*
-* @ojnodecontext oj-chart-item
-* @memberof oj.ojChart
-*/
+ * <p>Context for chart data items indexed by series and group indices.</p>
+ *
+ * @property {number} seriesIndex
+ * @property {number} itemIndex
+ *
+ * @ojnodecontext oj-chart-item
+ * @memberof oj.ojChart
+ */
 
 /**
  * <p>Context for a legend item that represents the series with the specified index.</p>
@@ -1611,632 +1610,632 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojnodecontext oj-legend-item
  * @memberof oj.ojChart
  */
- /**
-       * Specifies whether drilling on chart objects representing multiple series (e.g. other slice and legend item in pie charts) is enabled or not. Multiseries drill event is fired from the <i>other</i> slice and legend item of pieChart.
-       * @expose
-       * @name multiSeriesDrilling
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "on" Drill action for Other slice and legend item in pie chart will be enabled.
-       * @ojvalue {string} "off" Drill action for Other slice and legend item in pie chart will be disabled.
-       * @default 'off'
-       */
-      /**
-       * Defines whether the plot area is split into two sections, so that sets of data assigned to the different Y-axes appear in different parts of the plot area. Stock charts do not support "off".
-       * @expose
-       * @name splitDualY
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "on" Plot area will be split into two sections corresponding to datasets assigned to the different Y-axes.
-       * @ojvalue {string} "off" Plot area will not be split into two sections.
-       * @ojvalue {string} "auto" Plot area will not be split into two sections except for the stock charts.
-       * @default "auto"
-       */
-      /**
-       * In a split dual-Y chart, specifies the fraction of the space that is given to the Y-axis subchart. Valid values are numbers from 0 to 1.
-       * @expose
-       * @name splitterPosition
-       * @memberof oj.ojChart
-       * @instance
-       * @type {number=}
-       * @default 0.5
-       * @ojmin 0
-       * @ojmax 1
-       */
-      /**
-       * The type of time axis to display in the chart. Time axis is only supported for Cartesian bar, line, area, stock, box plot, and combo charts. If the value is "enabled" or "skipGaps", the time values must be provided through the "group-id" attribute of the oj-chart-item element. In this case stacking is supported. If the value is "skipGaps", the groups will be rendered at a regular interval regardless of any time gaps that may exist in the data. If the value is "mixedFrequency", the time values must be provided through the "x" attribute of the oj-chart-item element. In this case stacking is not supported.
-       * The time values provided through "group-id" or "x" attribute of the oj-chart-item must be an ISO string.
-       * @expose
-       * @name timeAxisType
-       * @memberof oj.ojChart
-       * @ojshortdesc The type of time axis to display in the chart. Time axis is only supported for Cartesian bar, line, area, stock, box plot, and combo charts. See the Help documentation for more information.
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "enabled" The time value for each data item is passed using the group-id attribute of oj-chart-item. The time intervals do not have to be uniform. Data items from the same group should have the same time value.
-       * @ojvalue {string} "mixedFrequency" The time value for each data item is passed using the x attribute of oj-chart-item. The time intervals do not have to be uniform. Data item from the same group can have different time values.
-       * @ojvalue {string} "skipGaps" The time value for each data item is passed using the group-id attribute of oj-chart-item. The times will always be drawn uniformly ignoring gaps. Data items from the same group should have the same time value.
-       * @ojvalue {string} "disabled" Time axis is disabled.
-       * @ojvalue {string} "auto" Time axis is disabled unless it is a stock chart, for which the timeAxisType is mixedFrequency.
-       * @default "auto"
-       */
-      /**
-       * <p>The type of selection behavior that is enabled on the chart. This attribute controls the number of selections that can be made via selection gestures at any given time.
-       *
-       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the chart's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
-       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the chart's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
-       *
-       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
-       *
-       * @expose
-       * @name selectionMode
-       * @memberof oj.ojChart
-       * @ojshortdesc The type of selection behavior that is enabled on the chart. See the Help documentation for more information.
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "none" Selection is disabled.
-       * @ojvalue {string} "single" Only a single item can be selected at a time.
-       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
-       * @default "none"
-       */
-      /**
-       * The action that is performed when a drag occurs on the chart. Pan and marquee zoom are only available if zoom and scroll is turned on. Marquee select is only available if multiple selection is turned on. If the value is set to "user" and multiple actions are available, buttons will be displayed on the plot area to let users switch between modes.
-       * @expose
-       * @name dragMode
-       * @memberof oj.ojChart
-       * @ojshortdesc The action that is performed when a drag occurs on the chart. See the Help documentation for more information.
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "pan" Pan action is performed when a drag occurs on the chart.
-       * @ojvalue {string} "zoom" Zoom action is performed when a drag occurs on the chart.
-       * @ojvalue {string} "select" Marquee selection is performed when a drag occurs on the chart.
-       * @ojvalue {string} "off" Drag is disabled.
-       * @ojvalue {string} "user" User can switch between different mode. Buttons will be displayed on the plot area to let users switch between modes.
-       * @default "user"
-       */
-      /**
-       * The chart type. By default, the first three series of "combo" chart are assigned '<i>bar'</i>, <i>'line'</i>, and <i>'area'</i> type respectively and then the type repeats, i.e sucessive series will be of types '<i>bar'</i>, <i>'line'</i>, and <i>'area'</i> and so on. To customize individual series, see <a href="oj.ojChartSeries.html#type"> oj-chart-series </a> for more details.
-       * @expose
-       * @name type
-       * @memberof oj.ojChart
-       * @ojshortdesc Specifies the chart type. See the Help documentation for more information.
-       * @instance
-       * @type {string=}
-       * @ojsignature {target: "Type", value: "oj.ojChart.ChartType", jsdocOverride: true}
-       * @default "bar"
-       */
-      /**
-       * Defines whether the data items are stacked. Only applies to bar, line, area, and combo charts. Does not apply to range series.
-       * @expose
-       * @name stack
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "on" Data items belonging to same group will be stacked.
-       * @ojvalue {string} "off" Data items will not be stacked.
-       * @default "off"
-       */
-      /**
-       * Defines whether the total values of stacked data items should be displayed. Only applies to bar charts. It can be formatted by the valueFormat of the type 'label'.
-       * @expose
-       * @name stackLabel
-       * @ojshortdesc Defines whether the total values of stacked data items should be displayed. Only applies to bar charts. See the Help documentation for more information.
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "on" The total value of the stacked data items will be displayed.
-       * @ojvalue {string} "off" The total value of the stacked data items will not be displayed.
-       * @default "off"
-       */
-      /**
-       * The chart orientation. Only applies to bar, line, area, combo, box plot, and funnel charts.
-       * @expose
-       * @name orientation
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "horizontal" Chart will be horizontally oriented.
-       * @ojvalue {string} "vertical" Chart will be vertically oriented.
-       * @default "vertical"
-       */
-      /**
-       * Defines whether the grid shape of the polar chart is circle or polygon. Only applies to polar line and area charts.
-       * @expose
-       * @name polarGridShape
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "polygon" The grid shape of polar chart will be a polygonal with number of side of the polygon equal to number of groups in chart.
-       * @ojvalue {string} "circle" The grid shape of polar chart will be circular.
-       * @default "circle"
-       */
-      /**
-       * The coordinate system of the chart. Only applies to bar, line, area, combo, scatter, and bubble charts.
-       * @expose
-       * @name coordinateSystem
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "polar" Polar coordinate system is used to plot the chart.
-       * @ojvalue {string} "cartesian" Cartesian coordinate system is used to plot the chart.
-       * @default "cartesian"
-       */
-      /**
-       * Defines the hide and show behavior that is performed when clicking on a legend item. When data items are hidden, the y axes can be optionally rescaled to fit to the remaining data.
-       * @expose
-       * @name hideAndShowBehavior
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "withRescale" Y axes rescales when data items are hidden or showed by clicking on a legend item.
-       * @ojvalue {string} "withoutRescale" Y axes does not rescale when data items are hidden or showed by clicking on a legend item.
-       * @ojvalue {string} "none" Hide and show behavior is disabled.
-       * @default "none"
-       */
-      /**
-       * An array of category strings used for filtering. Series or data items with any category matching an item in this array will be filtered.
-       * @expose
-       * @name hiddenCategories
-       * @memberof oj.ojChart
-       * @instance
-       * @type {(Array.<string>)=}
-       * @default []
-       * @ojwriteback
-       */
-      /**
-       * Defines the behavior applied when hovering over data items.
-       * @expose
-       * @name hoverBehavior
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "dim" Dimming hover behavior is applied.
-       * @ojvalue {string} "none" No hover behavior will be applied.
-       * @default "none"
-       */
-      /**
-       * An array of category strings used for highlighting. Series or data items matching categories in this array will be highlighted.
-       * @expose
-       * @name highlightedCategories
-       * @memberof oj.ojChart
-       * @instance
-       * @type {(Array.<string>)=}
-       * @default []
-       * @ojwriteback
-       */
-      /**
-       * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
-       * @expose
-       * @name highlightMatch
-       * @memberof oj.ojChart
-       * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "any" Only data items that match at least one of the highlightedCategories values will be highlighted.
-       * @ojvalue {string} "all" Only data items that match all of the highlightedCategories values will be highlighted.
-       * @default "all"
-       */
-      /**
-       * Defines the animation that is applied on data changes. Animation is automatically disabled when there are a large number of data items.
-       * @expose
-       * @name animationOnDataChange
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "slideToLeft" Data changes will have a sliding animation to the left.
-       * @ojvalue {string} "slideToRight" Data changes will have a sliding animation to the right.
-       * @ojvalue {string} "auto" Default non-sliding animation.
-       * @ojvalue {string} "none" No animation is applied on data change.
-       * @default "none"
-       */
-      /**
-       * Defines the animation that is shown on initial display. Animation is automatically disabled when there are a large number of data items.
-       * @expose
-       * @name animationOnDisplay
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "alphaFade" Chart uses an alpha fade animation on initial display.
-       * @ojvalue {string} "zoom" Chart zooms into view on initial display.
-       * @ojvalue {string} "auto" Default animation on initial display.
-       * @ojvalue {string} "none" No animation is applied on initial display.
-       * @default "none"
-       */
-      /**
-       * An alias for the $current context variable when referenced inside the item, series, or group templates when using a DataProvider.
-       * @expose
-       * @name as
-       * @memberof oj.ojChart
-       * @ojshortdesc An alias for the '$current' context variable passed to slot content for the itemTemplate, seriesTemplate, or groupTemplate slots.
-       * @instance
-       * @type {string=}
-       * @default ""
-       * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
-       */
-      /**
-       * A comparator function that determines the ordering of the chart series when using a DataProvider. If undefined, the series will follow the order in which they are found in the data. The series objects will have the same properties as the context for <a href="#seriesTemplate">seriesTemplate's $current</a>.
-       * @expose
-       * @name seriesComparator
-       * @memberof oj.ojChart
-       * @ojshortdesc A comparator function that determines the ordering of the chart series when using a DataProvider. If undefined, the series will follow the order in which they are found in the data.
-       * @instance
-       * @type {?(function(Object, Object):number)=}
-       * @return {number} Returns a number less than zero, zero or greater than zero to determine the order.
-       * If seriesComparator(a, b) is less than 0, chart series a comes before chart series b.
-       * If seriesComparator(a, b) is 0, the original order is preserved.
-       * If seriesComparator(a, b) is greater than 0, chart series b comes before chart series a.
-       * @ojsignature {target: "Type", value: "((context1: oj.ojChart.SeriesTemplateContext<D>, context2:  oj.ojChart.SeriesTemplateContext<D>) => number)", jsdocOverride: true}
-       * @default null
-       */
-      /**
-       * A comparator function that determines the ordering of the chart groups when using a DataProvider. If undefined, the group will follow the order in which they are found in the data. The group objects will have the same properties as the context for <a href="#groupTemplate">groupTemplate's $current</a>.
-       * @expose
-       * @name groupComparator
-       * @memberof oj.ojChart
-       * @ojshortdesc A comparator function that determines the ordering of the chart groups when using a DataProvider. If undefined, the group will follow the order in which they are found in the data.
-       * @instance
-       * @type {?(function(Object, Object):number)=}
-       * @return {number} Returns a number less than zero, zero or greater than zero to determine the order.
-       * If groupComparator(a, b) is less than 0, chart group a comes before chart group b.
-       * If groupComparator(a, b) is 0, the original order is preserved.
-       * If groupComparator(a, b) is greater than 0, chart group b comes before chart group a.
-       * @ojsignature {target: "Type", value: "((context1: oj.ojChart.GroupTemplateContext<D>, context2:  oj.ojChart.GroupTemplateContext<D>) => number)", jsdocOverride: true}
-       * @default null
-       */
-      /**
-       * Defines whether the data cursor is enabled. If set to "auto", the data cursor is shown only for line or area charts on touch devices. The data cursor is not shown when the tooltip is null and it is not supported on polar charts.
-       * @expose
-       * @name dataCursor
-       * @memberof oj.ojChart
-       * @ojshortdesc Defines whether the data cursor is enabled. The data cursor is not supported for polar charts. See the Help documentation for more information.
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "off" Data cursor is disabled.
-       * @ojvalue {string} "on" Data cursor is enabled. Not supported by polar charts.
-       * @ojvalue {string} "auto" The data cursor is shown only for line or area charts on touch devices.
-       * @default "auto"
-       */
-      /**
-       * Defines the behavior of the data cursor when moving between data items.
-       * @expose
-       * @name dataCursorBehavior
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "smooth" Data cursor follows the mouse cursor smoothly between data items.
-       * @ojvalue {string} "snap" Data cursor snaps between data items.
-       * @ojvalue {string} "auto" The data cursor exhibits the snap behavior except for line and area chart which exhibit the smooth behavior.
-       * @default "auto"
-       */
-      /**
-       * Specifies the position of the data cursor. Used for synchronizing data cursors across multiple charts. Null if the data cursor is not displayed.
-       * @expose
-       * @name dataCursorPosition
-       * @memberof oj.ojChart
-       * @instance
-       * @type {Object=}
-       * @ojsignature {target: "Type", value: "oj.ojChart.DataCursorPosition", jsdocOverride: true}
-       * @ojwriteback
-       */
-      /**
-       * Specifies the sorting of the data. It should only be used for pie charts, bar/line/area charts with one series, or stacked bar/area charts. Sorting will not apply when using a hierarchical group axis.
-       * @expose
-       * @name sorting
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "ascending" Data items are sorted in ascending order.
-       * @ojvalue {string} "descending" Data items are sorted in descending order.
-       * @ojvalue {string} "off" Groups are sorted in the order they are discovered in the data.
-       * @default "off"
-       */
-      /**
-       * Specifies the fraction of the whole pie under which a slice would be aggregated into an "Other" slice. Valid values range from 0 (default) to 1. For example, a value of 0.1 would cause all slices which are less than 10% of the pie to be aggregated into the "Other" slice. Only applies to pie chart.
-       * @expose
-       * @name otherThreshold
-       * @memberof oj.ojChart
-       * @instance
-       * @type {number=}
-       * @default 0
-       * @ojmin 0
-       * @ojmax 1
-       */
+/**
+ * Specifies whether drilling on chart objects representing multiple series (e.g. other slice and legend item in pie charts) is enabled or not. Multiseries drill event is fired from the <i>other</i> slice and legend item of pieChart.
+ * @expose
+ * @name multiSeriesDrilling
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "on" Drill action for Other slice and legend item in pie chart will be enabled.
+ * @ojvalue {string} "off" Drill action for Other slice and legend item in pie chart will be disabled.
+ * @default 'off'
+ */
+/**
+ * Defines whether the plot area is split into two sections, so that sets of data assigned to the different Y-axes appear in different parts of the plot area. Stock charts do not support "off".
+ * @expose
+ * @name splitDualY
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "on" Plot area will be split into two sections corresponding to datasets assigned to the different Y-axes.
+ * @ojvalue {string} "off" Plot area will not be split into two sections.
+ * @ojvalue {string} "auto" Plot area will not be split into two sections except for the stock charts.
+ * @default "auto"
+ */
+/**
+ * In a split dual-Y chart, specifies the fraction of the space that is given to the Y-axis subchart. Valid values are numbers from 0 to 1.
+ * @expose
+ * @name splitterPosition
+ * @memberof oj.ojChart
+ * @instance
+ * @type {number=}
+ * @default 0.5
+ * @ojmin 0
+ * @ojmax 1
+ */
+/**
+ * The type of time axis to display in the chart. Time axis is only supported for Cartesian bar, line, area, stock, box plot, and combo charts. If the value is "enabled" or "skipGaps", the time values must be provided through the "group-id" attribute of the oj-chart-item element. In this case stacking is supported. If the value is "skipGaps", the groups will be rendered at a regular interval regardless of any time gaps that may exist in the data. If the value is "mixedFrequency", the time values must be provided through the "x" attribute of the oj-chart-item element. In this case stacking is not supported.
+ * The time values provided through "group-id" or "x" attribute of the oj-chart-item must be an ISO string.
+ * @expose
+ * @name timeAxisType
+ * @memberof oj.ojChart
+ * @ojshortdesc The type of time axis to display in the chart. Time axis is only supported for Cartesian bar, line, area, stock, box plot, and combo charts. See the Help documentation for more information.
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "enabled" The time value for each data item is passed using the group-id attribute of oj-chart-item. The time intervals do not have to be uniform. Data items from the same group should have the same time value.
+ * @ojvalue {string} "mixedFrequency" The time value for each data item is passed using the x attribute of oj-chart-item. The time intervals do not have to be uniform. Data item from the same group can have different time values.
+ * @ojvalue {string} "skipGaps" The time value for each data item is passed using the group-id attribute of oj-chart-item. The times will always be drawn uniformly ignoring gaps. Data items from the same group should have the same time value.
+ * @ojvalue {string} "disabled" Time axis is disabled.
+ * @ojvalue {string} "auto" Time axis is disabled unless it is a stock chart, for which the timeAxisType is mixedFrequency.
+ * @default "auto"
+ */
+/**
+ * <p>The type of selection behavior that is enabled on the chart. This attribute controls the number of selections that can be made via selection gestures at any given time.
+ *
+ * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the chart's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+ * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the chart's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+ *
+ * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+ *
+ * @expose
+ * @name selectionMode
+ * @memberof oj.ojChart
+ * @ojshortdesc The type of selection behavior that is enabled on the chart. See the Help documentation for more information.
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "none" Selection is disabled.
+ * @ojvalue {string} "single" Only a single item can be selected at a time.
+ * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
+ * @default "none"
+ */
+/**
+ * The action that is performed when a drag occurs on the chart. Pan and marquee zoom are only available if zoom and scroll is turned on. Marquee select is only available if multiple selection is turned on. If the value is set to "user" and multiple actions are available, buttons will be displayed on the plot area to let users switch between modes.
+ * @expose
+ * @name dragMode
+ * @memberof oj.ojChart
+ * @ojshortdesc The action that is performed when a drag occurs on the chart. See the Help documentation for more information.
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "pan" Pan action is performed when a drag occurs on the chart.
+ * @ojvalue {string} "zoom" Zoom action is performed when a drag occurs on the chart.
+ * @ojvalue {string} "select" Marquee selection is performed when a drag occurs on the chart.
+ * @ojvalue {string} "off" Drag is disabled.
+ * @ojvalue {string} "user" User can switch between different mode. Buttons will be displayed on the plot area to let users switch between modes.
+ * @default "user"
+ */
+/**
+ * The chart type. By default, the first three series of "combo" chart are assigned '<i>bar'</i>, <i>'line'</i>, and <i>'area'</i> type respectively and then the type repeats, i.e sucessive series will be of types '<i>bar'</i>, <i>'line'</i>, and <i>'area'</i> and so on. To customize individual series, see <a href="oj.ojChartSeries.html#type"> oj-chart-series </a> for more details.
+ * @expose
+ * @name type
+ * @memberof oj.ojChart
+ * @ojshortdesc Specifies the chart type. See the Help documentation for more information.
+ * @instance
+ * @type {string=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.ChartType", jsdocOverride: true}
+ * @default "bar"
+ */
+/**
+ * Defines whether the data items are stacked. Only applies to bar, line, area, and combo charts. Does not apply to range series.
+ * @expose
+ * @name stack
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "on" Data items belonging to same group will be stacked.
+ * @ojvalue {string} "off" Data items will not be stacked.
+ * @default "off"
+ */
+/**
+ * Defines whether the total values of stacked data items should be displayed. Only applies to bar charts. It can be formatted by the valueFormat of the type 'label'.
+ * @expose
+ * @name stackLabel
+ * @ojshortdesc Defines whether the total values of stacked data items should be displayed. Only applies to bar charts. See the Help documentation for more information.
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "on" The total value of the stacked data items will be displayed.
+ * @ojvalue {string} "off" The total value of the stacked data items will not be displayed.
+ * @default "off"
+ */
+/**
+ * The chart orientation. Only applies to bar, line, area, combo, box plot, and funnel charts.
+ * @expose
+ * @name orientation
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "horizontal" Chart will be horizontally oriented.
+ * @ojvalue {string} "vertical" Chart will be vertically oriented.
+ * @default "vertical"
+ */
+/**
+ * Defines whether the grid shape of the polar chart is circle or polygon. Only applies to polar line and area charts.
+ * @expose
+ * @name polarGridShape
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "polygon" The grid shape of polar chart will be a polygonal with number of side of the polygon equal to number of groups in chart.
+ * @ojvalue {string} "circle" The grid shape of polar chart will be circular.
+ * @default "circle"
+ */
+/**
+ * The coordinate system of the chart. Only applies to bar, line, area, combo, scatter, and bubble charts.
+ * @expose
+ * @name coordinateSystem
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "polar" Polar coordinate system is used to plot the chart.
+ * @ojvalue {string} "cartesian" Cartesian coordinate system is used to plot the chart.
+ * @default "cartesian"
+ */
+/**
+ * Defines the hide and show behavior that is performed when clicking on a legend item. When data items are hidden, the y axes can be optionally rescaled to fit to the remaining data.
+ * @expose
+ * @name hideAndShowBehavior
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "withRescale" Y axes rescales when data items are hidden or showed by clicking on a legend item.
+ * @ojvalue {string} "withoutRescale" Y axes does not rescale when data items are hidden or showed by clicking on a legend item.
+ * @ojvalue {string} "none" Hide and show behavior is disabled.
+ * @default "none"
+ */
+/**
+ * An array of category strings used for filtering. Series or data items with any category matching an item in this array will be filtered.
+ * @expose
+ * @name hiddenCategories
+ * @memberof oj.ojChart
+ * @instance
+ * @type {(Array.<string>)=}
+ * @default []
+ * @ojwriteback
+ */
+/**
+ * Defines the behavior applied when hovering over data items.
+ * @expose
+ * @name hoverBehavior
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "dim" Dimming hover behavior is applied.
+ * @ojvalue {string} "none" No hover behavior will be applied.
+ * @default "none"
+ */
+/**
+ * An array of category strings used for highlighting. Series or data items matching categories in this array will be highlighted.
+ * @expose
+ * @name highlightedCategories
+ * @memberof oj.ojChart
+ * @instance
+ * @type {(Array.<string>)=}
+ * @default []
+ * @ojwriteback
+ */
+/**
+ * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
+ * @expose
+ * @name highlightMatch
+ * @memberof oj.ojChart
+ * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "any" Only data items that match at least one of the highlightedCategories values will be highlighted.
+ * @ojvalue {string} "all" Only data items that match all of the highlightedCategories values will be highlighted.
+ * @default "all"
+ */
+/**
+ * Defines the animation that is applied on data changes. Animation is automatically disabled when there are a large number of data items.
+ * @expose
+ * @name animationOnDataChange
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "slideToLeft" Data changes will have a sliding animation to the left.
+ * @ojvalue {string} "slideToRight" Data changes will have a sliding animation to the right.
+ * @ojvalue {string} "auto" Default non-sliding animation.
+ * @ojvalue {string} "none" No animation is applied on data change.
+ * @default "none"
+ */
+/**
+ * Defines the animation that is shown on initial display. Animation is automatically disabled when there are a large number of data items.
+ * @expose
+ * @name animationOnDisplay
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "alphaFade" Chart uses an alpha fade animation on initial display.
+ * @ojvalue {string} "zoom" Chart zooms into view on initial display.
+ * @ojvalue {string} "auto" Default animation on initial display.
+ * @ojvalue {string} "none" No animation is applied on initial display.
+ * @default "none"
+ */
+/**
+ * An alias for the $current context variable when referenced inside the item, series, or group templates when using a DataProvider.
+ * @expose
+ * @name as
+ * @memberof oj.ojChart
+ * @ojshortdesc An alias for the '$current' context variable passed to slot content for the itemTemplate, seriesTemplate, or groupTemplate slots.
+ * @instance
+ * @type {string=}
+ * @default ""
+ * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
+ */
+/**
+ * A comparator function that determines the ordering of the chart series when using a DataProvider. If undefined, the series will follow the order in which they are found in the data. The series objects will have the same properties as the context for <a href="#seriesTemplate">seriesTemplate's $current</a>.
+ * @expose
+ * @name seriesComparator
+ * @memberof oj.ojChart
+ * @ojshortdesc A comparator function that determines the ordering of the chart series when using a DataProvider. If undefined, the series will follow the order in which they are found in the data.
+ * @instance
+ * @type {?(function(Object, Object):number)=}
+ * @return {number} Returns a number less than zero, zero or greater than zero to determine the order.
+ * If seriesComparator(a, b) is less than 0, chart series a comes before chart series b.
+ * If seriesComparator(a, b) is 0, the original order is preserved.
+ * If seriesComparator(a, b) is greater than 0, chart series b comes before chart series a.
+ * @ojsignature {target: "Type", value: "((context1: oj.ojChart.SeriesTemplateContext<D>, context2:  oj.ojChart.SeriesTemplateContext<D>) => number)", jsdocOverride: true}
+ * @default null
+ */
+/**
+ * A comparator function that determines the ordering of the chart groups when using a DataProvider. If undefined, the group will follow the order in which they are found in the data. The group objects will have the same properties as the context for <a href="#groupTemplate">groupTemplate's $current</a>.
+ * @expose
+ * @name groupComparator
+ * @memberof oj.ojChart
+ * @ojshortdesc A comparator function that determines the ordering of the chart groups when using a DataProvider. If undefined, the group will follow the order in which they are found in the data.
+ * @instance
+ * @type {?(function(Object, Object):number)=}
+ * @return {number} Returns a number less than zero, zero or greater than zero to determine the order.
+ * If groupComparator(a, b) is less than 0, chart group a comes before chart group b.
+ * If groupComparator(a, b) is 0, the original order is preserved.
+ * If groupComparator(a, b) is greater than 0, chart group b comes before chart group a.
+ * @ojsignature {target: "Type", value: "((context1: oj.ojChart.GroupTemplateContext<D>, context2:  oj.ojChart.GroupTemplateContext<D>) => number)", jsdocOverride: true}
+ * @default null
+ */
+/**
+ * Defines whether the data cursor is enabled. If set to "auto", the data cursor is shown only for line or area charts on touch devices. The data cursor is not shown when the tooltip is null and it is not supported on polar charts.
+ * @expose
+ * @name dataCursor
+ * @memberof oj.ojChart
+ * @ojshortdesc Defines whether the data cursor is enabled. The data cursor is not supported for polar charts. See the Help documentation for more information.
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "off" Data cursor is disabled.
+ * @ojvalue {string} "on" Data cursor is enabled. Not supported by polar charts.
+ * @ojvalue {string} "auto" The data cursor is shown only for line or area charts on touch devices.
+ * @default "auto"
+ */
+/**
+ * Defines the behavior of the data cursor when moving between data items.
+ * @expose
+ * @name dataCursorBehavior
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "smooth" Data cursor follows the mouse cursor smoothly between data items.
+ * @ojvalue {string} "snap" Data cursor snaps between data items.
+ * @ojvalue {string} "auto" The data cursor exhibits the snap behavior except for line and area chart which exhibit the smooth behavior.
+ * @default "auto"
+ */
+/**
+ * Specifies the position of the data cursor. Used for synchronizing data cursors across multiple charts. Null if the data cursor is not displayed.
+ * @expose
+ * @name dataCursorPosition
+ * @memberof oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.DataCursorPosition", jsdocOverride: true}
+ * @ojwriteback
+ */
+/**
+ * Specifies the sorting of the data. It should only be used for pie charts, bar/line/area charts with one series, or stacked bar/area charts. Sorting will not apply when using a hierarchical group axis.
+ * @expose
+ * @name sorting
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "ascending" Data items are sorted in ascending order.
+ * @ojvalue {string} "descending" Data items are sorted in descending order.
+ * @ojvalue {string} "off" Groups are sorted in the order they are discovered in the data.
+ * @default "off"
+ */
+/**
+ * Specifies the fraction of the whole pie under which a slice would be aggregated into an "Other" slice. Valid values range from 0 (default) to 1. For example, a value of 0.1 would cause all slices which are less than 10% of the pie to be aggregated into the "Other" slice. Only applies to pie chart.
+ * @expose
+ * @name otherThreshold
+ * @memberof oj.ojChart
+ * @instance
+ * @type {number=}
+ * @default 0
+ * @ojmin 0
+ * @ojmax 1
+ */
 
-      /**
-       * An array used to define the ids of the initially selected objects.
-       * When the selection is changed, the <code class="prettyprint">event.detail</code> of the <code class="prettyprint">selectionChanged</code> event will contain the following additional properties:<br><br>
-       * <table class="props">
-       *   <thead>
-       *     <tr>
-       *       <th>Name</th>
-       *       <th>Type</th>
-       *       <th>Description</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td class="name"><code>selectionData</code></td>
-       *       <td class="type">Object</td>
-       *       <td class="description">an array containing objects describing the selected data items
-       *         <h6>Properties</h6>
-       *         <table class="props">
-       *           <thead>
-       *             <tr>
-       *               <th>Name</th>
-       *               <th>Type</th>
-       *               <th>Description</th>
-       *             </tr>
-       *           </thead>
-       *           <tbody>
-       *             <tr>
-       *               <td class="name"><code>data</code></td>
-       *               <td class="type">object</td>
-       *               <td class="description">the data of the item, if one was specified</td>
-       *             </tr>
-       *             <tr>
-       *               <td class="name"><code>itemData</code></td>
-       *               <td class="type">object</td>
-       *               <td class="description">the row data of the item, if one was specified. This will only be set if a DataProvider is used.</td>
-       *             </tr>
-       *             <tr>
-       *               <td class="name"><code>groupData</code></td>
-       *               <td class="type">Array</td>
-       *               <td class="description">the group data of the item</td>
-       *             </tr>
-       *             <tr>
-       *               <td class="name"><code>seriesData</code></td>
-       *               <td class="type">object</td>
-       *               <td class="description">the series data of the item</td>
-       *             </tr>
-       *           </tbody>
-       *         </table>
-       *       </td>
-       *     </tr>
-       *     <tr>
-       *       <td class="name"><code>endGroup</code></td>
-       *       <td class="type">string</td>
-       *       <td class="description">the end group of a marquee selection on a chart with categorical axis</td>
-       *     </tr>
-       *     <tr>
-       *       <td class="name"><code>startGroup</code></td>
-       *       <td class="type">string</td>
-       *       <td class="description">the start group of a marquee selection on a chart with categorical axis</td>
-       *     </tr>
-       *     <tr>
-       *       <td class="name"><code>xMax</code></td>
-       *       <td class="type">number</td>
-       *       <td class="description">the maximum x value of a marquee selection</td>
-       *     </tr>
-       *     <tr>
-       *       <td class="name"><code>xMin</code></td>
-       *       <td class="type">number</td>
-       *       <td class="description">the minimum x value of a marquee selection</td>
-       *     </tr>
-       *     <tr>
-       *       <td class="name"><code>yMax</code></td>
-       *       <td class="type">number</td>
-       *       <td class="description">the maximum y value of a marquee selection</td>
-       *     </tr>
-       *     <tr>
-       *       <td class="name"><code>yMin</code></td>
-       *       <td class="type">number</td>
-       *       <td class="description">the minimum y value of a marquee selection</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       * @expose
-       * @name selection
-       * @memberof oj.ojChart
-       * @ojshortdesc An array used to define the ids of the initially selected objects. See the Help documentation for more information.
-       * @instance
-       * @type {(Array.<any>)=}
-       * @ojsignature {target:"Type", value:"Array<K>"}
-       * @default []
-       * @ojwriteback
-       * @ojeventgroup common
-       */
-      /**
-       * An object defining the center content of a pie chart. Either a label can be displayed at the center of the pie chart or custom HTML content.
-       * @expose
-       * @name pieCenter
-       * @memberof oj.ojChart
-       * @instance
-       * @type {Object=}
-       * @ojsignature {target: "Type", value: "oj.ojChart.PieCenter", jsdocOverride: true}
-       */
-      /**
-       * An object defining properties for the axis, tick marks, tick labels, and axis titles.
-       * @expose
-       * @name xAxis
-       * @memberof oj.ojChart
-       * @instance
-       * @type {Object=}
-       * @ojsignature {target: "Type", value: "oj.ojChart.XAxis", jsdocOverride: true}
-       */
-      /**
-       * An object defining properties for the axis, tick marks, tick labels, and axis titles.
-       * @expose
-       * @name yAxis
-       * @memberof oj.ojChart
-       * @instance
-       * @type {Object=}
-       * @ojsignature {target: "Type", value: "oj.ojChart.YAxis", jsdocOverride: true}
-       */
-      /**
-       * An object defining properties for the axis, tick marks, tick labels, and axis titles. Y2 axis is only supported for Cartesian bar, line, area, and combo charts.
-       * @expose
-       * @name y2Axis
-       * @memberof oj.ojChart
-       * @instance
-       * @type {Object=}
-       * @ojsignature {target: "Type", value: "oj.ojChart.Y2Axis", jsdocOverride: true}
-       */
-      /**
-      * An object defining the overview scrollbar. Only applies if zoomAndScroll is not off. Currently only supported for vertical bar, line, area, stock, and combo charts.
-      * @expose
-      * @name overview
-      * @memberof oj.ojChart
-      * @instance
-      * @type {Object=}
-      * @ojsignature {target: "Type", value: "oj.ojChart.Overview<C>", jsdocOverride: true}
-      */
-      /**
-      * An object defining the style of the plot area.
-      * @expose
-      * @name plotArea
-      * @memberof oj.ojChart
-      * @instance
-      * @type {Object=}
-      * @ojsignature {target: "Type", value: "oj.ojChart.PlotArea", jsdocOverride: true}
-      */
-      /**
-      * An object defining the style, positioning, and behavior of the legend.
-      * @expose
-      * @name legend
-      * @memberof oj.ojChart
-      * @instance
-      * @type {Object=}
-      * @ojsignature {target: "Type", value: "oj.ojChart.Legend", jsdocOverride: true}
-      */
-      /**
-      * An object defining the default styles for series colors, marker shapes, and other style attributes. Properties specified on this object may be overridden by specifications on the data object.
-      * @expose
-      * @name styleDefaults
-      * @memberof oj.ojChart
-      * @instance
-      * @type {Object=}
-      * @ojsignature {target: "Type", value: "oj.ojChart.StyleDefaults", jsdocOverride: true}
-      */
-      /**
-       * An object specifying value formatting and tooltip behavior, whose keys generally correspond to the attribute names on the data items.
-       * @name valueFormats
-       * @memberof oj.ojChart
-       * @instance
-       * @type {Object=}
-       * @ojsignature {target: "Type", value: "oj.ojChart.ValueFormats", jsdocOverride: true}
-       */
-      /**
-       * Specifies the zoom and scroll behavior of the chart. "Live" behavior means that the chart will be updated continuously as it is being manipulated, while "delayed" means that the update will wait until the zoom/scroll action is done. While "live" zoom and scroll provides the best end user experience, no guarantess are made about the rendering performance or usability for large data sets or slow client environments. If performance is an issue, "delayed" zoom and scroll should be used instead.
-       * @expose
-       * @name zoomAndScroll
-       * @memberof oj.ojChart
-       * @ojshortdesc Specifies the zoom and scroll behavior of the chart. See the Help documentation for more information.
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "delayedScrollOnly" Zooming is disabled and chart will wait to update until scroll action is done.
-       * @ojvalue {string} "liveScrollOnly" Zooming is disabled and chart is updated continuously when scrolled.
-       * @ojvalue {string} "delayed" When zooming or scrolling, chart will wait to update until the zoom/scroll action is done.
-       * @ojvalue {string} "live" When zooming or scrolling, chart will be updated continuously as it is being manipulated.
-       * @ojvalue {string} "off" Zoom and scroll will be disabled.
-       * @default "off"
-       */
-      /**
-       * Specifies the zoom direction of bubble and scatter charts. "Auto" zooms in both x and y direction. Use "x" or "y" for single direction zooming.
-       * @expose
-       * @name zoomDirection
-       * @memberof oj.ojChart
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "x" Chart will only zoom in x direction.
-       * @ojvalue {string} "y" Chart will only zoom in y direction.
-       * @ojvalue {string} "auto" Chart will zoom in both x and y direction.
-       * @default "auto"
-       */
-      /**
-       * Whether automatic initial zooming is enabled. The valid values are "first" to initially zoom to the first data points (after the viewportMin) that can fit in the plot area, "last" to initially zoom to the last data points (before the viewportMax), and "none" to disable initial zooming. Only applies to bar, line, area, and combo charts with zoomAndScroll turned on.
-       * @expose
-       * @name initialZooming
-       * @memberof oj.ojChart
-       * @ojshortdesc Specifies whether automatic initial zooming is enabled. Only applies to bar, line, area, and combo charts with zoomAndScroll turned on. See the Help documentation for more information.
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "first" Zoom to first data points (after the viewportMin) that can fit in the plot area on initial render.
-       * @ojvalue {string} "last" Zoom to last data points (before the viewportMax) that can fit in the plot area on initial render.
-       * @ojvalue {string} "none" No initial zooming.
-       * @default "none"
-       */
-      /**
-       * Whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). Use "on" to enable drilling for all series objects (legend items), group objects (x-axis labels), and data items. Use "seriesOnly" or "groupsOnly" to enable drilling for series objects or group objects only. To enable or disable drilling on individual series, group, or data item, use the drilling attribute in each series, group, or data item.
-       * See multiSeriesDrilling documentation for details on drilling on the legend item for Other.
-       * @expose
-       * @name drilling
-       * @memberof oj.ojChart
-       * @ojshortdesc Specifies whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). See the Help documentation for more information.
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "on" Drilling is enabled on data items, axis labels and legend items.
-       * @ojvalue {string} "seriesOnly" Drilling is enabled only on legend items. Use multiSeriesDrilling attribute to enable drilling on the legend item for Other.
-       * @ojvalue {string} "groupsOnly" Drilling is enabled only on axis labels.
-       * @ojvalue {string} "off" Drilling is not enabled.
-       * @default "off"
-       */
-      /**
-       * Data visualizations require a press and hold delay before triggering tooltips, marquee selection, and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive.For a better user experience,
-       * the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and
-       * consume the page pan events if the element does not require an internal feature that requires a touch start gesture like panning, zooming, or when marquee selection is initiated. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content
-       * and if panning is not available for those elements that support the feature.
-       * @expose
-       * @name touchResponse
-       * @memberof oj.ojChart
-       * @ojshortdesc Specifies configuration options for touch and hold delays on mobile devices. See the Help documentation for more information.
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "touchStart"  Chart will instantly trigger the touch gesture and consume the page pan events if it does not require an internal feature that requires a touch start gesture like panning, zooming, or when marquee selection is initiated.
-       * @ojvalue {string} "auto" Chart will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
-       * @default "auto"
-       */
-      /**
-       * A function that returns a custom data label. The function takes a <a href="#DataLabelContext">DataLabelContext</a> argument,
-       * provided by the chart. The function may return a number or a string or in the case of range charts, an array of numbers or strings. If any label is a number, it will be formatted by the valueFormat of the type 'label' before being used as a label.
-       * @expose
-       * @name dataLabel
-       * @memberof oj.ojChart
-       * @ojshortdesc A function that returns a custom data label. The function takes a context argument, provided by the chart. See the Help documentation for more information.
-       * @instance
-       * @type {?(function(Object):Object)=}
-       * @ojsignature {target: "Type", value: "((context: oj.ojChart.DataLabelContext<K, D, I>) => (Array<string>|string|Array<number>|number))", jsdocOverride: true}
-       * @default null
-       */
-      /**
-       * A function that returns a custom data label for stacks in bar charts with stacking enabled. The function takes a <a href="#StackLabelContext">StackLabelContext</a> argument,
-       * provided by the chart. The function returns a string.
-       * @expose
-       * @name stackLabelProvider
-       * @memberof oj.ojChart
-       * @ojshortdesc A function that returns a custom stack label. The function takes a context argument, provided by the chart. See the Help documentation for more information.
-       * @instance
-       * @type {(function(Object):String)=}
-       * @ojsignature {target: "Type", value: "((context: oj.ojChart.StackLabelContext<K, D, I>) => (string))", jsdocOverride: true}
-       * @default null
-       */
-      /**
-       * Provides support for HTML5 Drag and Drop events. Please refer to <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop">third party documentation</a> on HTML5 Drag and Drop to learn how to use it.
-       * @expose
-       * @name dnd
-       * @ojshortdesc Provides support for HTML5 Drag and Drop events. See the Help documentation for more information.
-       * @memberof oj.ojChart
-       * @instance
-       * @type {Object=}
-       */
-      /**
-       * An object that describes drag functionality.
-       * @expose
-       * @name dnd.drag
-       * @memberof! oj.ojChart
-       * @instance
-       * @type {Object=}
-       * @ojsignature {target: "Type", value: "oj.ojChart.DndDragConfigs<K, D, I>", jsdocOverride: true}
-       */
-      /**
-       * An object that describes drop functionality.
-       * @expose
-       * @name dnd.drop
-       * @memberof! oj.ojChart
-       * @instance
-       * @type {Object=}
-       * @ojsignature {target: "Type", value: "oj.ojChart.DndDropConfigs", jsdocOverride: true}
-       */
+/**
+ * An array used to define the ids of the initially selected objects.
+ * When the selection is changed, the <code class="prettyprint">event.detail</code> of the <code class="prettyprint">selectionChanged</code> event will contain the following additional properties:<br><br>
+ * <table class="props">
+ *   <thead>
+ *     <tr>
+ *       <th>Name</th>
+ *       <th>Type</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td class="name"><code>selectionData</code></td>
+ *       <td class="type">Object</td>
+ *       <td class="description">an array containing objects describing the selected data items
+ *         <h6>Properties</h6>
+ *         <table class="props">
+ *           <thead>
+ *             <tr>
+ *               <th>Name</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name"><code>data</code></td>
+ *               <td class="type">object</td>
+ *               <td class="description">the data of the item, if one was specified</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>itemData</code></td>
+ *               <td class="type">object</td>
+ *               <td class="description">the row data of the item, if one was specified. This will only be set if a DataProvider is used.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>groupData</code></td>
+ *               <td class="type">Array</td>
+ *               <td class="description">the group data of the item</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>seriesData</code></td>
+ *               <td class="type">object</td>
+ *               <td class="description">the series data of the item</td>
+ *             </tr>
+ *           </tbody>
+ *         </table>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name"><code>endGroup</code></td>
+ *       <td class="type">string</td>
+ *       <td class="description">the end group of a marquee selection on a chart with categorical axis</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name"><code>startGroup</code></td>
+ *       <td class="type">string</td>
+ *       <td class="description">the start group of a marquee selection on a chart with categorical axis</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name"><code>xMax</code></td>
+ *       <td class="type">number</td>
+ *       <td class="description">the maximum x value of a marquee selection</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name"><code>xMin</code></td>
+ *       <td class="type">number</td>
+ *       <td class="description">the minimum x value of a marquee selection</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name"><code>yMax</code></td>
+ *       <td class="type">number</td>
+ *       <td class="description">the maximum y value of a marquee selection</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name"><code>yMin</code></td>
+ *       <td class="type">number</td>
+ *       <td class="description">the minimum y value of a marquee selection</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * @expose
+ * @name selection
+ * @memberof oj.ojChart
+ * @ojshortdesc An array used to define the ids of the initially selected objects. See the Help documentation for more information.
+ * @instance
+ * @type {(Array.<any>)=}
+ * @ojsignature {target:"Type", value:"Array<K>"}
+ * @default []
+ * @ojwriteback
+ * @ojeventgroup common
+ */
+/**
+ * An object defining the center content of a pie chart. Either a label can be displayed at the center of the pie chart or custom HTML content.
+ * @expose
+ * @name pieCenter
+ * @memberof oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.PieCenter", jsdocOverride: true}
+ */
+/**
+ * An object defining properties for the axis, tick marks, tick labels, and axis titles.
+ * @expose
+ * @name xAxis
+ * @memberof oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.XAxis", jsdocOverride: true}
+ */
+/**
+ * An object defining properties for the axis, tick marks, tick labels, and axis titles.
+ * @expose
+ * @name yAxis
+ * @memberof oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.YAxis", jsdocOverride: true}
+ */
+/**
+ * An object defining properties for the axis, tick marks, tick labels, and axis titles. Y2 axis is only supported for Cartesian bar, line, area, and combo charts.
+ * @expose
+ * @name y2Axis
+ * @memberof oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.Y2Axis", jsdocOverride: true}
+ */
+/**
+ * An object defining the overview scrollbar. Only applies if zoomAndScroll is not off. Currently only supported for vertical bar, line, area, stock, and combo charts.
+ * @expose
+ * @name overview
+ * @memberof oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.Overview<C>", jsdocOverride: true}
+ */
+/**
+ * An object defining the style of the plot area.
+ * @expose
+ * @name plotArea
+ * @memberof oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.PlotArea", jsdocOverride: true}
+ */
+/**
+ * An object defining the style, positioning, and behavior of the legend.
+ * @expose
+ * @name legend
+ * @memberof oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.Legend", jsdocOverride: true}
+ */
+/**
+ * An object defining the default styles for series colors, marker shapes, and other style attributes. Properties specified on this object may be overridden by specifications on the data object.
+ * @expose
+ * @name styleDefaults
+ * @memberof oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.StyleDefaults", jsdocOverride: true}
+ */
+/**
+ * An object specifying value formatting and tooltip behavior, whose keys generally correspond to the attribute names on the data items.
+ * @name valueFormats
+ * @memberof oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.ValueFormats", jsdocOverride: true}
+ */
+/**
+ * Specifies the zoom and scroll behavior of the chart. "Live" behavior means that the chart will be updated continuously as it is being manipulated, while "delayed" means that the update will wait until the zoom/scroll action is done. While "live" zoom and scroll provides the best end user experience, no guarantess are made about the rendering performance or usability for large data sets or slow client environments. If performance is an issue, "delayed" zoom and scroll should be used instead.
+ * @expose
+ * @name zoomAndScroll
+ * @memberof oj.ojChart
+ * @ojshortdesc Specifies the zoom and scroll behavior of the chart. See the Help documentation for more information.
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "delayedScrollOnly" Zooming is disabled and chart will wait to update until scroll action is done.
+ * @ojvalue {string} "liveScrollOnly" Zooming is disabled and chart is updated continuously when scrolled.
+ * @ojvalue {string} "delayed" When zooming or scrolling, chart will wait to update until the zoom/scroll action is done.
+ * @ojvalue {string} "live" When zooming or scrolling, chart will be updated continuously as it is being manipulated.
+ * @ojvalue {string} "off" Zoom and scroll will be disabled.
+ * @default "off"
+ */
+/**
+ * Specifies the zoom direction of bubble and scatter charts. "Auto" zooms in both x and y direction. Use "x" or "y" for single direction zooming.
+ * @expose
+ * @name zoomDirection
+ * @memberof oj.ojChart
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "x" Chart will only zoom in x direction.
+ * @ojvalue {string} "y" Chart will only zoom in y direction.
+ * @ojvalue {string} "auto" Chart will zoom in both x and y direction.
+ * @default "auto"
+ */
+/**
+ * Whether automatic initial zooming is enabled. The valid values are "first" to initially zoom to the first data points (after the viewportMin) that can fit in the plot area, "last" to initially zoom to the last data points (before the viewportMax), and "none" to disable initial zooming. Only applies to bar, line, area, and combo charts with zoomAndScroll turned on.
+ * @expose
+ * @name initialZooming
+ * @memberof oj.ojChart
+ * @ojshortdesc Specifies whether automatic initial zooming is enabled. Only applies to bar, line, area, and combo charts with zoomAndScroll turned on. See the Help documentation for more information.
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "first" Zoom to first data points (after the viewportMin) that can fit in the plot area on initial render.
+ * @ojvalue {string} "last" Zoom to last data points (before the viewportMax) that can fit in the plot area on initial render.
+ * @ojvalue {string} "none" No initial zooming.
+ * @default "none"
+ */
+/**
+ * Whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). Use "on" to enable drilling for all series objects (legend items), group objects (x-axis labels), and data items. Use "seriesOnly" or "groupsOnly" to enable drilling for series objects or group objects only. To enable or disable drilling on individual series, group, or data item, use the drilling attribute in each series, group, or data item.
+ * See multiSeriesDrilling documentation for details on drilling on the legend item for Other.
+ * @expose
+ * @name drilling
+ * @memberof oj.ojChart
+ * @ojshortdesc Specifies whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). See the Help documentation for more information.
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "on" Drilling is enabled on data items, axis labels and legend items.
+ * @ojvalue {string} "seriesOnly" Drilling is enabled only on legend items. Use multiSeriesDrilling attribute to enable drilling on the legend item for Other.
+ * @ojvalue {string} "groupsOnly" Drilling is enabled only on axis labels.
+ * @ojvalue {string} "off" Drilling is not enabled.
+ * @default "off"
+ */
+/**
+ * Data visualizations require a press and hold delay before triggering tooltips, marquee selection, and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive.For a better user experience,
+ * the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and
+ * consume the page pan events if the element does not require an internal feature that requires a touch start gesture like panning, zooming, or when marquee selection is initiated. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content
+ * and if panning is not available for those elements that support the feature.
+ * @expose
+ * @name touchResponse
+ * @memberof oj.ojChart
+ * @ojshortdesc Specifies configuration options for touch and hold delays on mobile devices. See the Help documentation for more information.
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "touchStart"  Chart will instantly trigger the touch gesture and consume the page pan events if it does not require an internal feature that requires a touch start gesture like panning, zooming, or when marquee selection is initiated.
+ * @ojvalue {string} "auto" Chart will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
+ * @default "auto"
+ */
+/**
+ * A function that returns a custom data label. The function takes a <a href="#DataLabelContext">DataLabelContext</a> argument,
+ * provided by the chart. The function may return a number or a string or in the case of range charts, an array of numbers or strings. If any label is a number, it will be formatted by the valueFormat of the type 'label' before being used as a label.
+ * @expose
+ * @name dataLabel
+ * @memberof oj.ojChart
+ * @ojshortdesc A function that returns a custom data label. The function takes a context argument, provided by the chart. See the Help documentation for more information.
+ * @instance
+ * @type {?(function(Object):Object)=}
+ * @ojsignature {target: "Type", value: "((context: oj.ojChart.DataLabelContext<K, D, I>) => (Array<string>|string|Array<number>|number))", jsdocOverride: true}
+ * @default null
+ */
+/**
+ * A function that returns a custom data label for stacks in bar charts with stacking enabled. The function takes a <a href="#StackLabelContext">StackLabelContext</a> argument,
+ * provided by the chart. The function returns a string.
+ * @expose
+ * @name stackLabelProvider
+ * @memberof oj.ojChart
+ * @ojshortdesc A function that returns a custom stack label. The function takes a context argument, provided by the chart. See the Help documentation for more information.
+ * @instance
+ * @type {(function(Object):String)=}
+ * @ojsignature {target: "Type", value: "((context: oj.ojChart.StackLabelContext<K, D, I>) => (string))", jsdocOverride: true}
+ * @default null
+ */
+/**
+ * Provides support for HTML5 Drag and Drop events. Please refer to <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop">third party documentation</a> on HTML5 Drag and Drop to learn how to use it.
+ * @expose
+ * @name dnd
+ * @ojshortdesc Provides support for HTML5 Drag and Drop events. See the Help documentation for more information.
+ * @memberof oj.ojChart
+ * @instance
+ * @type {Object=}
+ */
+/**
+ * An object that describes drag functionality.
+ * @expose
+ * @name dnd.drag
+ * @memberof! oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.DndDragConfigs<K, D, I>", jsdocOverride: true}
+ */
+/**
+ * An object that describes drop functionality.
+ * @expose
+ * @name dnd.drop
+ * @memberof! oj.ojChart
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "oj.ojChart.DndDropConfigs", jsdocOverride: true}
+ */
 //-----------------------------------------------------
 //                   Styling
 //-----------------------------------------------------
@@ -2249,14 +2248,14 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojstylevariable oj-chart-animation-marker-color {description: "Chart animation marker color",formats: ["color"], help: "#css-variables"}
  * @ojstylevariable oj-chart-data-cursor-line-color {description: "Chart data cursor line color", formats: ["color"], help: "#css-variables"}
  * @memberof oj.ojChart
-*/
+ */
 /**
  * @ojstylevariableset oj-chart-css-set2
  * @ojdisplayname Polar chart
  * @ojstylevariable oj-chart-polar-axis-tick-label-inside-bg-color {description: "Polar chart inside tick label background color", formats: ["color"], help: "#oj-chart-css-set2"}
  * @ojstylevariable oj-chart-polar-axis-tick-label-outside-bg-color {description: "Polar chart outside tick label background color", formats: ["color"], help: "#oj-chart-css-set2"}
  * @memberof oj.ojChart
-*/
+ */
 /**
  * @ojstylevariableset oj-chart-css-set3
  * @ojdisplayname Stock Chart
@@ -2264,7 +2263,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojstylevariable oj-chart-stock-range-bg-color {description: "Stock chart stock range background color", formats: ["color"], help: "oj-chart-css-set3"}
  * @ojstylevariable oj-chart-stock-rising-bg-color {description: "Stock chart rising stock background color", formats: ["color"], help: "oj-chart-css-set3"}
  * @memberof oj.ojChart
-*/
+ */
 
 /**
  * Object type that defines a chart data item.
@@ -3308,7 +3307,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * </pre>
  */
 
- /**
+/**
  * The id for the series the item belongs to.
  * @expose
  * @ojrequired
@@ -3318,7 +3317,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @type {string|number}
  *
  */
- /**
+/**
  * The array of id(s) for the group(s) the item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids. This is also used to specify the date for non mixed frequency time axes.
  * The specified date for non mixed frequency time axes must be an ISO string.
  * @expose
@@ -3329,7 +3328,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @type {Array.<string|number>}
  *
  */
- /**
+/**
  * An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot.
  * @expose
  * @name items
@@ -3418,7 +3417,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true}
  */
 
- // Slots
+// Slots
 
 /**
  * <p> The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the spark chart when a DataProvider has been specified with the data attribute. The slot content must be a &lt;template> element.
@@ -3449,7 +3448,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  *    &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
-*/
+ */
 
 /**
  * <p>The <code class="prettyprint">tooltipTemplate</code> slot is used to specify custom tooltip content.
@@ -6022,7 +6021,10 @@ var __oj_chart_metadata =
     star: true,
     auto: true
   };
-  var chartShapeParser = DvtAttributeUtils.shapeParseFunction({ 'style-defaults.marker-shape': true }, _CHART_SHAPE_ENUMS);
+  var chartShapeParser = DvtAttributeUtils.shapeParseFunction(
+    { 'style-defaults.marker-shape': true },
+    _CHART_SHAPE_ENUMS
+  );
   var chartParseFunction = function (value, name, metadata, defaultParseFunction) {
     if (metadata.type === 'number|string') {
       return isNaN(value) ? value : Number(value);
@@ -6035,7 +6037,7 @@ var __oj_chart_metadata =
     metadata: __oj_chart_metadata,
     parseFunction: chartParseFunction
   });
-}());
+})();
 
 var __oj_chart_item_metadata = 
 {
@@ -6247,9 +6249,12 @@ var __oj_chart_item_metadata =
   };
   oj.CustomElementBridge.register('oj-chart-item', {
     metadata: __oj_chart_item_metadata,
-    parseFunction: DvtAttributeUtils.shapeParseFunction({ 'marker-shape': true }, _CHART_ITEM_SHAPE_ENUMS)
+    parseFunction: DvtAttributeUtils.shapeParseFunction(
+      { 'marker-shape': true },
+      _CHART_ITEM_SHAPE_ENUMS
+    )
   });
-}());
+})();
 
 var __oj_chart_series_metadata = 
 {
@@ -6474,10 +6479,12 @@ var __oj_chart_series_metadata =
   };
   oj.CustomElementBridge.register('oj-chart-series', {
     metadata: __oj_chart_series_metadata,
-    parseFunction: DvtAttributeUtils.shapeParseFunction({ 'marker-shape': true },
-                                                             _CHART_SERIES_SHAPE_ENUMS)
+    parseFunction: DvtAttributeUtils.shapeParseFunction(
+      { 'marker-shape': true },
+      _CHART_SERIES_SHAPE_ENUMS
+    )
   });
-}());
+})();
 
 var __oj_chart_group_metadata = 
 {
@@ -6509,7 +6516,7 @@ var __oj_chart_group_metadata =
   oj.CustomElementBridge.register('oj-chart-group', {
     metadata: __oj_chart_group_metadata
   });
-}());
+})();
 
 var __oj_spark_chart_metadata = 
 {
@@ -6765,9 +6772,12 @@ var __oj_spark_chart_metadata =
   };
   oj.CustomElementBridge.register('oj-spark-chart', {
     metadata: __oj_spark_chart_metadata,
-    parseFunction: DvtAttributeUtils.shapeParseFunction({ 'marker-shape': true }, _SPARK_SHAPE_ENUMS)
+    parseFunction: DvtAttributeUtils.shapeParseFunction(
+      { 'marker-shape': true },
+      _SPARK_SHAPE_ENUMS
+    )
   });
-}());
+})();
 
 var __oj_spark_chart_item_metadata = 
 {
@@ -6824,7 +6834,7 @@ var __oj_spark_chart_item_metadata =
   oj.CustomElementBridge.register('oj-spark-chart-item', {
     metadata: __oj_spark_chart_item_metadata
   });
-}());
+})();
 
 /**
  * @ignore
@@ -6846,7 +6856,7 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
   const groupMap = new Map();
   // Map for each group Symbol containing indices of belonging items
   // Only populated if groupTemplate or groupComparator is specified
-  const groupItemMap = (groupTemplate || groupComparator) ? new Map() : null;
+  const groupItemMap = groupTemplate || groupComparator ? new Map() : null;
   // 2-D map keyed by seriesId, groupSymbol containing item indices
   const seriesMap = new Map();
 
@@ -6881,7 +6891,7 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
       itemMap.set(leafSymbol, itemIndex);
       // add the itemIndex to all groups if the groupItemMap was passed
       if (groupItemMap) {
-        groupSymbols.forEach(groupSymbol => {
+        groupSymbols.forEach((groupSymbol) => {
           let groupItems = groupItemMap.get(groupSymbol);
           if (!groupItems) {
             groupItems = [];
@@ -6910,7 +6920,7 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
     };
     Object.defineProperty(context, 'items', {
       get: () => {
-        return groupItemMap.get(groupSymbol).map(itemIndex => {
+        return groupItemMap.get(groupSymbol).map((itemIndex) => {
           const item = items[itemIndex];
           return {
             data: item._itemData,
@@ -6937,9 +6947,14 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
         groupContexts.set(gid, groupContext);
       }
       if (groupTemplate) {
-        group = templateHandler.processNodeTemplate(dataProperty,
-          templateEngine, groupTemplate, 'oj-chart-group',
-          groupContext, groupSymbol);
+        group = templateHandler.processNodeTemplate(
+          dataProperty,
+          templateEngine,
+          groupTemplate,
+          'oj-chart-group',
+          groupContext,
+          groupSymbol
+        );
       } else {
         group = {};
       }
@@ -6956,8 +6971,7 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
       return group;
     });
     if (groupComparator) {
-      groups.sort((a, b) =>
-        groupComparator(groupContexts.get(a.id), groupContexts.get(b.id)));
+      groups.sort((a, b) => groupComparator(groupContexts.get(a.id), groupContexts.get(b.id)));
     }
     return groups;
   };
@@ -6980,7 +6994,7 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
     Object.defineProperty(context, 'items', {
       get: () => {
         const itemContexts = [];
-        groupSymbols.forEach(symbol => {
+        groupSymbols.forEach((symbol) => {
           const itemIndex = itemMap.get(symbol);
           if (itemIndex != null) {
             const item = items[itemIndex];
@@ -7000,7 +7014,7 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
 
   const getGroupSymbols = (groups) => {
     const symbols = [];
-    groups.forEach(group => {
+    groups.forEach((group) => {
       if (group.groups) {
         symbols.push(...getGroupSymbols(group.groups));
       } else {
@@ -7025,15 +7039,20 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
         }
         let series;
         if (seriesTemplate) {
-          series = templateHandler.processNodeTemplate(dataProperty,
-            templateEngine, seriesTemplate, 'oj-chart-series',
-            seriesContext, sid);
+          series = templateHandler.processNodeTemplate(
+            dataProperty,
+            templateEngine,
+            seriesTemplate,
+            'oj-chart-series',
+            seriesContext,
+            sid
+          );
         } else {
           series = {};
         }
         series.id = sid;
         series.name = series.name == null ? String(sid) : series.name;
-        series.items = groupSymbols.map(symbol => {
+        series.items = groupSymbols.map((symbol) => {
           let item = null;
           const itemIndex = itemMap.get(symbol);
           if (itemIndex != null) {
@@ -7045,7 +7064,8 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
       });
       if (seriesComparator) {
         arSeries.sort((a, b) =>
-          seriesComparator(seriesContexts.get(a.id), seriesContexts.get(b.id)));
+          seriesComparator(seriesContexts.get(a.id), seriesContexts.get(b.id))
+        );
       }
     } catch (error$1) {
       error(error$1);
@@ -7091,6 +7111,7 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 1
  *
+ * @ojoracleicon 'oj-ux-ico-chart'
  * @ojuxspecs ['charts-bar-line-area-and-combo', 'data-visualization-range-chart', 'data-visualization-pie', 'data-visualization-polar-chart', 'data-visualization-funnel', 'data-visualization-pyramid', 'data-visualization-stock-chart', 'data-visualization-common']
  *
  * @classdesc
@@ -7161,952 +7182,1001 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
-  {
-    widgetEventPrefix: 'oj',
-    options: {
-      /**
-       * An object defining the series and groups, when using a DataProvider to provide data to the chart.
-       * The DataProvider can either have an arbitrary data shape, in which case an <oj-chart-item>
-       * element must be specified in the itemTemplate slot or it can have <a href="#DataItem">ojChart.DataItem</a>
-       * as its data shape, in which case no template is required.
-       * @name data
-       * @memberof oj.ojChart
-       * @ojshortdesc An object defining the series and groups, when using a DataProvider to populate the chart data. Also accepts a Promise for deferred data rendering.
-       * @instance
-       * @type {Object|null}
-       * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
-       * @default null
-       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
-       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
-       */
-      data: null,
-      /**
-       * An array of <a href="#Series">Series</a> objects, used to define series labels and override series styles.
-       * Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.
-       * @expose
-       * @ojtsignore
-       * @name series
-       * @memberof oj.ojChart
-       * @ojshortdesc An array of objects defining series labels and override series styles. See the Help documentation for more information.
-       * @instance
-       * @type {Array.<Object>|Promise|null}
-       * @ojsignature {target: "Type", value: "Array<oj.ojChart.Series>|Promise<Array<oj.ojChart.Series>>|null", jsdocOverride: true}
-       * @default null
-       */
-      series: null,
-      /**
-       * An array of strings identifying the group labels, or an array of <a href="#Group">Group</a> objects specifying group labels and styles. Also accepts a Promise for deferred data rendering.
-       *
-       * @expose
-       * @ojtsignore
-       * @name groups
-       * @memberof oj.ojChart
-       * @ojshortdesc An array of strings identifying the group labels, or an array of objects specifying group labels and styles. See the Help documentation for more information.
-       * @instance
-       * @type {Array.<string>|Array.<Object>|Promise|null}
-       * @ojsignature {target: "Type", value: "Array<string>|Promise<Array<string>>|Array<oj.ojChart.Group>|Promise<Array<oj.ojChart.Group>>|null", jsdocOverride: true}
-       * @default null
-       */
-      groups: null,
-
-      /**
-       * Triggered during a selection gesture, such as a change in the marquee selection rectangle.
-       *
-       * @property {Array<string>} items an array containing the string ids of the selected data items
-       * @property {Array<Object>} selectionData an array containing objects describing the selected data items
-       * @property {Object} selectionData.data the data of the item, if one was specified
-       * @property {Object} selectionData.itemData the row data of the item, if one was specified. This will only be set if a DataProvider is used.
-       * @property {Array.<Object>} selectionData.groupData the group data of the item
-       * @property {Object} selectionData.seriesData the series data of the item
-       * @property {string} endGroup the end group of a marquee selection on a chart with categorical axis
-       * @property {string} startGroup the start group of a marquee selection on a chart with categorical axis
-       * @property {number} xMax the maximum x value of a marquee selection
-       * @property {number} xMin the minimum x value of a marquee selection
-       * @property {number} yMax the maximum y value of a marquee selection
-       * @property {number} yMin the minimum y value of a marquee selection
-       *
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @ojbubbles
-       * @ojsignature [{target: "Type", value: "D", for: "selectionData.itemData"},
-       *                {target: "Type", value: "oj.ojChart.Item<K, Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>|number", for: "selectionData.data", consumedBy: "js"},
-       *                {target: "Type", value: "oj.ojChart.Item<K, I>|number", for: "selectionData.data", consumedBy: "ts"},
-       *                {target: "Type", value: "Array.<oj.ojChart.Group>", for: "selectionData.groupData", jsdocOverride: true},
-       *                {target: "Type", value: "oj.ojChart.Series<K, I>", for: "selectionData.seriesData", jsdocOverride: true},
-       *                {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
-       */
-      selectInput: null,
-
-      /**
-       * An object containing an optional callback function for tooltip customization.
-       * @expose
-       * @name tooltip
-       * @memberof oj.ojChart
-       * @instance
-       * @type {Object=}
-       *
-       * @example <caption>Initialize the Chart with the <code class="prettyprint">tooltip</code> attribute specified:</caption>
-       * &lt;oj-chart tooltip.renderer='[[tooltipFun]]'>&lt;/oj-chart>
-       *
-       * &lt;oj-chart tooltip='[[{"renderer": tooltipFun}]]'>&lt;/oj-chart>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">tooltip</code> property after initialization:</caption>
-       * // Get one
-       * var value = myChart.tooltip.renderer;
-       *
-       * // Set one, leaving the others intact.
-       * myChart.setProperty('tooltip.renderer', tooltipFun);
-       *
-       * // Get all
-       * var values = myChart.tooltip;
-       *
-       * // Set all. Must list every resource key, as those not listed are lost.
-       * myChart.tooltip = {'renderer': tooltipFun};
-       */
-      tooltip: {
-        /**
-         * A function that returns a custom tooltip for chart. The function takes a <a href="#TooltipContext">TooltipContext</a> argument,
-         * provided by the chart, and returns an object with the following properties:
-         *  <ul>
-         *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
-         *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
-         *  </ul>
-         * @expose
-         * @name tooltip.renderer
-         * @memberof! oj.ojChart
-         * @ojshortdesc A function that returns a custom tooltip for chart. The function takes a context argument, provided by the chart. See the Help documentation for more information.
-         * @instance
-         * @type {?(function(Object):Object)}
-         * @ojsignature {target: "Type", value: "oj.dvtBaseComponent.PreventableDOMRendererFunction<oj.ojChart.TooltipContext<K, D, I>>", jsdocOverride: true}
-         * @default null
-         */
-        renderer: null
-      },
-
-      /**
-       * Triggered after the viewport is changed due to a zoom or scroll operation.
-       *
-       * @property {string} endGroup the end group of the new viewport on a chart with categorical axis
-       * @property {string} startGroup the start group of the new viewport on a chart with categorical axis
-       * @property {number} xMax the maximum x value of the new viewport
-       * @property {number} xMin the minimum x value of the new viewport
-       * @property {number} yMax the maximum y value of the new viewport
-       * @property {number} yMin the minimum y value of the new viewport
-       *
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @ojbubbles
-       */
-      viewportChange: null,
-
-      /**
-       * Triggered during a viewport change gesture, such as a drag operation on the overview window. Note: There are
-       * situations where the chart cannot determine whether the viewport change gesture is still in progress, such
-       * as with mouse wheel zoom interactions. Standard viewportChange events are fired in these cases.
-       *
-       * @property {string} endGroup the end group of the new viewport on a chart with categorical axis
-       * @property {string} startGroup the start group of the new viewport on a chart with categorical axis
-       * @property {number} xMax the maximum x value of the new viewport
-       * @property {number} xMin the minimum x value of the new viewport
-       * @property {number} yMax the maximum y value of the new viewport
-       * @property {number} yMin the minimum y value of the new viewport
-       *
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @ojshortdesc Triggered during a viewport change gesture, such as a drag operation on the overview window. See the Help documentation for more information.
-       * @instance
-       * @ojbubbles
-       */
-      viewportChangeInput: null,
-
-      /**
-       * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
-       *
-       * @property {string} id the id of the drilled object
-       * @property {string} series the series id of the drilled object, if applicable
-       * @property {string} group the group id of the drilled object, if applicable
-       * @property {Object|null} data  the data object of the drilled item
-       * @property {Object} itemData  the row data object of the drilled item. This will only be set if a DataProvider is being used.
-       * @property {Object|null} seriesData the data for the series of the drilled object
-       * @property {Array.<Object>|null} groupData an array of data for the group the drilled object belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the drilled object
-       * @ojdeprecated {since: '10.0.0', description: 'No longer recommended. Use separate drill listeners - ojItemDrill, ojGroupDrill, ojSeriesDrill, and ojMultiSeriesDrill instead.'}
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @ojbubbles
-       * @ojsignature [{target: "Type", value: "D", for: "itemData"},
-       *                {target: "Type", value: "oj.ojChart.Item<K, Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>|number|null", for: "data", consumedBy: "js"},
-       *                {target: "Type", value: "oj.ojChart.Item<K, I>|number|null", for: "data", consumedBy: "ts"},
-       *                {target: "Type", value: "oj.ojChart.Series<K, I>|null", for: "seriesData", jsdocOverride: true},
-       *                {target: "Type", value: "Array.<oj.ojChart.Group>|null", for: "groupData", jsdocOverride: true},
-       *                {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
-       */
-      drill: null,
-
-      /**
-       * Triggered on a chart item (double click if selection is enabled, single click otherwise).
-       *
-       * @property {string} id the id of the drilled object
-       * @property {string} series the series id of the drilled object
-       * @property {string|Array.<string>} group the group id of the drilled object. For hierarchical groups, it will be an array of outermost to innermost group id related to the drilled object
-       * @property {Object} data  the data object of the drilled item
-       * @property {Object} itemData  the row data object of the drilled item. This will only be set if a DataProvider is being used.
-       * @property {Object} seriesData the data for the series of the drilled object
-       * @property {Array.<Object>} groupData an array of data for the group the drilled object belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the drilled object
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @ojbubbles
-       * @ojsignature [{target: "Type", value: "D", for: "itemData"},
-       *                {target: "Type", value: "oj.ojChart.Item<K, Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>|number", for: "data", consumedBy: "js"},
-       *                {target: "Type", value: "oj.ojChart.Item<K, I>|number", for: "data", consumedBy: "ts"},
-       *                {target: "Type", value: "oj.ojChart.Series<K, I>", for: "seriesData", jsdocOverride: true},
-       *                {target: "Type", value: "Array.<oj.ojChart.Group>", for: "groupData", jsdocOverride: true},
-       *                {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
-       */
-      itemDrill: null,
-       /**
-       * Triggered on a chart group drill gesture (double click if selection is enabled, single click otherwise).
-       *
-       * @property {string} id the id of the drilled object
-       * @property {string|Array.<string>} group the group id of the drilled object. For hierarchical groups, it will be an array of outermost to innermost group id related to the drilled object
-       * @property {Array.<Object>} groupData an array of data for the group the drilled object belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the drilled object
-       * @property {Array.<Object>} items an array containing objects describing the data items belonging to the drilled group
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @ojbubbles
-       * @ojsignature [ {target: "Type", value: "Array.<oj.ojChart.Group>", for: "groupData", jsdocOverride: true},
-       *                {target: "Type", value: "Array.<oj.ojChart.DrillItem<K, D, I>>", for: "items", jsdocOverride: true},
-       *                {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
-       */
-      groupDrill: null,
-
-      /**
-       * Triggered on a chart series drill gesture (double click if selection is enabled, single click otherwise).
-       * @property {string} id the id of the drilled object
-       * @property {string} series the series id of the drilled object
-       * @property {Object} seriesData the data for the series of the drilled object
-       * @property {Array.<Object>} items an array containing objects describing the data items belonging to the drilled group
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @ojbubbles
-       * @ojsignature [{target: "Type", value: "oj.ojChart.Series<K, I>", for: "seriesData", jsdocOverride: true},
-       *               {target: "Type", value: "Array.<oj.ojChart.DrillItem<K, D, I>>", for: "items", jsdocOverride: true},
-       *               {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
-       */
-      seriesDrill: null,
-
-      /**
-       * Triggered on the drill gesture on chart object representing multiple series (e.g. other slice and legend item in pie charts). (double click if selection is enabled, single click otherwise). Multi series drilling is
-       * enabled when <i>multi-series-drilling</i> is set to on.
-       * @property {Array.<string>} series an array of series id of all the series belonging to the drill event
-       * @property {Array.<Object>} seriesData an array of series data of all the series belonging to the drill event
-       * @property {Array.<Object>} items an array containing objects describing the data items belonging to the drilled group
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @ojbubbles
-       * @ojsignature [{target: "Type", value: "oj.ojChart.Series<K, I>", for: "seriesData", jsdocOverride: true},
-       *               {target: "Type", value: "Array.<oj.ojChart.DrillItem<K, D, I>>", for: "items", jsdocOverride: true},
-       *               {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
-       */
-      multiSeriesDrill: null,
-    },
+oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent, {
+  widgetEventPrefix: 'oj',
+  options: {
     /**
-     * @override
+     * An object defining the series and groups, when using a DataProvider to provide data to the chart.
+     * The DataProvider can either have an arbitrary data shape, in which case an <oj-chart-item>
+     * element must be specified in the itemTemplate slot or it can have <a href="#DataItem">ojChart.DataItem</a>
+     * as its data shape, in which case no template is required.
+     * @name data
      * @memberof oj.ojChart
-     * @protected
+     * @ojshortdesc An object defining the series and groups, when using a DataProvider to populate the chart data. Also accepts a Promise for deferred data rendering.
+     * @instance
+     * @type {Object|null}
+     * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
+     * @default null
+     * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
+     *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
      */
-    _ComponentCreate: function () {
-      this._super();
-      this._SetLocaleHelpers(NumberConverter, ConverterUtils);
+    data: null,
+    /**
+     * An array of <a href="#Series">Series</a> objects, used to define series labels and override series styles.
+     * Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.
+     * @expose
+     * @ojtsignore
+     * @name series
+     * @memberof oj.ojChart
+     * @ojshortdesc An array of objects defining series labels and override series styles. See the Help documentation for more information.
+     * @instance
+     * @type {Array.<Object>|Promise|null}
+     * @ojsignature {target: "Type", value: "Array<oj.ojChart.Series>|Promise<Array<oj.ojChart.Series>>|null", jsdocOverride: true}
+     * @default null
+     */
+    series: null,
+    /**
+     * An array of strings identifying the group labels, or an array of <a href="#Group">Group</a> objects specifying group labels and styles. Also accepts a Promise for deferred data rendering.
+     *
+     * @expose
+     * @ojtsignore
+     * @name groups
+     * @memberof oj.ojChart
+     * @ojshortdesc An array of strings identifying the group labels, or an array of objects specifying group labels and styles. See the Help documentation for more information.
+     * @instance
+     * @type {Array.<string>|Array.<Object>|Promise|null}
+     * @ojsignature {target: "Type", value: "Array<string>|Promise<Array<string>>|Array<oj.ojChart.Group>|Promise<Array<oj.ojChart.Group>>|null", jsdocOverride: true}
+     * @default null
+     */
+    groups: null,
+
+    /**
+     * Triggered during a selection gesture, such as a change in the marquee selection rectangle.
+     *
+     * @property {Array<string>} items an array containing the string ids of the selected data items
+     * @property {Array<Object>} selectionData an array containing objects describing the selected data items
+     * @property {Object} selectionData.data the data of the item, if one was specified
+     * @property {Object} selectionData.itemData the row data of the item, if one was specified. This will only be set if a DataProvider is used.
+     * @property {Array.<Object>} selectionData.groupData the group data of the item
+     * @property {Object} selectionData.seriesData the series data of the item
+     * @property {string} endGroup the end group of a marquee selection on a chart with categorical axis
+     * @property {string} startGroup the start group of a marquee selection on a chart with categorical axis
+     * @property {number} xMax the maximum x value of a marquee selection
+     * @property {number} xMin the minimum x value of a marquee selection
+     * @property {number} yMax the maximum y value of a marquee selection
+     * @property {number} yMin the minimum y value of a marquee selection
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojChart
+     * @instance
+     * @ojbubbles
+     * @ojsignature [{target: "Type", value: "D", for: "selectionData.itemData"},
+     *                {target: "Type", value: "oj.ojChart.Item<K, Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>|number", for: "selectionData.data", consumedBy: "js"},
+     *                {target: "Type", value: "oj.ojChart.Item<K, I>|number", for: "selectionData.data", consumedBy: "ts"},
+     *                {target: "Type", value: "Array.<oj.ojChart.Group>", for: "selectionData.groupData", jsdocOverride: true},
+     *                {target: "Type", value: "oj.ojChart.Series<K, I>", for: "selectionData.seriesData", jsdocOverride: true},
+     *                {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
+     */
+    selectInput: null,
+
+    /**
+     * An object containing an optional callback function for tooltip customization.
+     * @expose
+     * @name tooltip
+     * @memberof oj.ojChart
+     * @instance
+     * @type {Object=}
+     *
+     * @example <caption>Initialize the Chart with the <code class="prettyprint">tooltip</code> attribute specified:</caption>
+     * &lt;oj-chart tooltip.renderer='[[tooltipFun]]'>&lt;/oj-chart>
+     *
+     * &lt;oj-chart tooltip='[[{"renderer": tooltipFun}]]'>&lt;/oj-chart>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">tooltip</code> property after initialization:</caption>
+     * // Get one
+     * var value = myChart.tooltip.renderer;
+     *
+     * // Set one, leaving the others intact.
+     * myChart.setProperty('tooltip.renderer', tooltipFun);
+     *
+     * // Get all
+     * var values = myChart.tooltip;
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myChart.tooltip = {'renderer': tooltipFun};
+     */
+    tooltip: {
+      /**
+       * A function that returns a custom tooltip for chart. The function takes a <a href="#TooltipContext">TooltipContext</a> argument,
+       * provided by the chart, and returns an object with the following properties:
+       *  <ul>
+       *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
+       *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
+       *  </ul>
+       * @expose
+       * @name tooltip.renderer
+       * @memberof! oj.ojChart
+       * @ojshortdesc A function that returns a custom tooltip for chart. The function takes a context argument, provided by the chart. See the Help documentation for more information.
+       * @instance
+       * @type {?(function(Object):Object)}
+       * @ojsignature {target: "Type", value: "oj.dvtBaseComponent.PreventableDOMRendererFunction<oj.ojChart.TooltipContext<K, D, I>>", jsdocOverride: true}
+       * @default null
+       */
+      renderer: null
     },
 
-    _CreateDvtComponent: function (context, callback, callbackObj) {
-      return new Chart(context, callback, callbackObj);
-    },
+    /**
+     * Triggered after the viewport is changed due to a zoom or scroll operation.
+     *
+     * @property {string} endGroup the end group of the new viewport on a chart with categorical axis
+     * @property {string} startGroup the start group of the new viewport on a chart with categorical axis
+     * @property {number} xMax the maximum x value of the new viewport
+     * @property {number} xMin the minimum x value of the new viewport
+     * @property {number} yMax the maximum y value of the new viewport
+     * @property {number} yMin the minimum y value of the new viewport
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojChart
+     * @instance
+     * @ojbubbles
+     */
+    viewportChange: null,
 
+    /**
+     * Triggered during a viewport change gesture, such as a drag operation on the overview window. Note: There are
+     * situations where the chart cannot determine whether the viewport change gesture is still in progress, such
+     * as with mouse wheel zoom interactions. Standard viewportChange events are fired in these cases.
+     *
+     * @property {string} endGroup the end group of the new viewport on a chart with categorical axis
+     * @property {string} startGroup the start group of the new viewport on a chart with categorical axis
+     * @property {number} xMax the maximum x value of the new viewport
+     * @property {number} xMin the minimum x value of the new viewport
+     * @property {number} yMax the maximum y value of the new viewport
+     * @property {number} yMin the minimum y value of the new viewport
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojChart
+     * @ojshortdesc Triggered during a viewport change gesture, such as a drag operation on the overview window. See the Help documentation for more information.
+     * @instance
+     * @ojbubbles
+     */
+    viewportChangeInput: null,
 
-    _ConvertLocatorToSubId: function (locator) {
-      var subId = locator.subId;
+    /**
+     * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
+     *
+     * @property {string} id the id of the drilled object
+     * @property {string} series the series id of the drilled object, if applicable
+     * @property {string} group the group id of the drilled object, if applicable
+     * @property {Object|null} data  the data object of the drilled item
+     * @property {Object} itemData  the row data object of the drilled item. This will only be set if a DataProvider is being used.
+     * @property {Object|null} seriesData the data for the series of the drilled object
+     * @property {Array.<Object>|null} groupData an array of data for the group the drilled object belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the drilled object
+     * @ojdeprecated {since: '10.0.0', description: 'No longer recommended. Use separate drill listeners - ojItemDrill, ojGroupDrill, ojSeriesDrill, and ojMultiSeriesDrill instead.'}
+     * @expose
+     * @event
+     * @memberof oj.ojChart
+     * @instance
+     * @ojbubbles
+     * @ojsignature [{target: "Type", value: "D", for: "itemData"},
+     *                {target: "Type", value: "oj.ojChart.Item<K, Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>|number|null", for: "data", consumedBy: "js"},
+     *                {target: "Type", value: "oj.ojChart.Item<K, I>|number|null", for: "data", consumedBy: "ts"},
+     *                {target: "Type", value: "oj.ojChart.Series<K, I>|null", for: "seriesData", jsdocOverride: true},
+     *                {target: "Type", value: "Array.<oj.ojChart.Group>|null", for: "groupData", jsdocOverride: true},
+     *                {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
+     */
+    drill: null,
 
-      // Convert the supported locators
-      if (subId === 'oj-chart-item') {
-        // dataItem[seriesIndex][itemIndex]
-        subId = 'dataItem[' + locator.seriesIndex + '][' + locator.itemIndex + ']';
-      } else if (subId === 'oj-chart-group') {
-        // group[index1][index2]...[indexN]
-        subId = 'group' + this._GetStringFromIndexPath(locator.indexPath);
-      } else if (subId === 'oj-chart-series') {
-        // series[index]
-        subId = 'series[' + locator.index + ']';
-      } else if (subId === 'oj-chart-axis-title') {
-        // xAxis/yAxis/y2Axis:title
-        subId = locator.axis + ':title';
-      } else if (subId === 'oj-chart-reference-object') {
-        // xAxis/yAxis/y2Axis:referenceObject[index]
-        subId = locator.axis + ':referenceObject[' + locator.index + ']';
-      } else if (subId === 'oj-legend-item') {
-        // legend:section[sectionIndex0][sectionIndex1]...[sectionIndexN]:item[itemIndex]
-        subId = 'legend:section' + this._GetStringFromIndexPath(locator.sectionIndexPath);
-        subId += ':item[' + locator.itemIndex + ']';
-      } else if (subId === 'oj-chart-tooltip') {
-        subId = 'tooltip';
-      } else if (subId === 'oj-chart-pie-center-label') {
-        subId = 'pieCenterLabel';
-      }
+    /**
+     * Triggered on a chart item (double click if selection is enabled, single click otherwise).
+     *
+     * @property {string} id the id of the drilled object
+     * @property {string} series the series id of the drilled object
+     * @property {string|Array.<string>} group the group id of the drilled object. For hierarchical groups, it will be an array of outermost to innermost group id related to the drilled object
+     * @property {Object} data  the data object of the drilled item
+     * @property {Object} itemData  the row data object of the drilled item. This will only be set if a DataProvider is being used.
+     * @property {Object} seriesData the data for the series of the drilled object
+     * @property {Array.<Object>} groupData an array of data for the group the drilled object belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the drilled object
+     * @expose
+     * @event
+     * @memberof oj.ojChart
+     * @instance
+     * @ojbubbles
+     * @ojsignature [{target: "Type", value: "D", for: "itemData"},
+     *                {target: "Type", value: "oj.ojChart.Item<K, Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>|number", for: "data", consumedBy: "js"},
+     *                {target: "Type", value: "oj.ojChart.Item<K, I>|number", for: "data", consumedBy: "ts"},
+     *                {target: "Type", value: "oj.ojChart.Series<K, I>", for: "seriesData", jsdocOverride: true},
+     *                {target: "Type", value: "Array.<oj.ojChart.Group>", for: "groupData", jsdocOverride: true},
+     *                {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
+     */
+    itemDrill: null,
+    /**
+     * Triggered on a chart group drill gesture (double click if selection is enabled, single click otherwise).
+     *
+     * @property {string} id the id of the drilled object
+     * @property {string|Array.<string>} group the group id of the drilled object. For hierarchical groups, it will be an array of outermost to innermost group id related to the drilled object
+     * @property {Array.<Object>} groupData an array of data for the group the drilled object belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the drilled object
+     * @property {Array.<Object>} items an array containing objects describing the data items belonging to the drilled group
+     * @expose
+     * @event
+     * @memberof oj.ojChart
+     * @instance
+     * @ojbubbles
+     * @ojsignature [ {target: "Type", value: "Array.<oj.ojChart.Group>", for: "groupData", jsdocOverride: true},
+     *                {target: "Type", value: "Array.<oj.ojChart.DrillItem<K, D, I>>", for: "items", jsdocOverride: true},
+     *                {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
+     */
+    groupDrill: null,
 
-      // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
-      // support for the old subId syntax in 1.2.0.
-      return subId;
-    },
+    /**
+     * Triggered on a chart series drill gesture (double click if selection is enabled, single click otherwise).
+     * @property {string} id the id of the drilled object
+     * @property {string} series the series id of the drilled object
+     * @property {Object} seriesData the data for the series of the drilled object
+     * @property {Array.<Object>} items an array containing objects describing the data items belonging to the drilled group
+     * @expose
+     * @event
+     * @memberof oj.ojChart
+     * @instance
+     * @ojbubbles
+     * @ojsignature [{target: "Type", value: "oj.ojChart.Series<K, I>", for: "seriesData", jsdocOverride: true},
+     *               {target: "Type", value: "Array.<oj.ojChart.DrillItem<K, D, I>>", for: "items", jsdocOverride: true},
+     *               {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
+     */
+    seriesDrill: null,
 
+    /**
+     * Triggered on the drill gesture on chart object representing multiple series (e.g. other slice and legend item in pie charts). (double click if selection is enabled, single click otherwise). Multi series drilling is
+     * enabled when <i>multi-series-drilling</i> is set to on.
+     * @property {Array.<string>} series an array of series id of all the series belonging to the drill event
+     * @property {Array.<Object>} seriesData an array of series data of all the series belonging to the drill event
+     * @property {Array.<Object>} items an array containing objects describing the data items belonging to the drilled group
+     * @expose
+     * @event
+     * @memberof oj.ojChart
+     * @instance
+     * @ojbubbles
+     * @ojsignature [{target: "Type", value: "oj.ojChart.Series<K, I>", for: "seriesData", jsdocOverride: true},
+     *               {target: "Type", value: "Array.<oj.ojChart.DrillItem<K, D, I>>", for: "items", jsdocOverride: true},
+     *               {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
+     */
+    multiSeriesDrill: null
+  },
+  /**
+   * @override
+   * @memberof oj.ojChart
+   * @protected
+   */
+  _ComponentCreate: function () {
+    this._super();
+    this._SetLocaleHelpers(NumberConverter, ConverterUtils);
+  },
 
-    _ProcessTemplates: function (dataProperty, data, templateEngine, isTreeData,
-      parentKey, isRoot, updateChildren) {
-      var results = isRoot ? this._TemplateHandler.getComponentResults(dataProperty) : null;
+  _CreateDvtComponent: function (context, callback, callbackObj) {
+    return new Chart(context, callback, callbackObj);
+  },
 
-      if (!results) {
-        // Support for dataprovider and chart templates
-        var items = this._super(dataProperty, data, templateEngine, isTreeData,
-          parentKey, isRoot, updateChildren);
-        var groupsAndSeries =
-          createGroupsAndSeries(this, templateEngine, items.values[0], dataProperty);
-        results = { paths: ['series', 'groups'], values: [groupsAndSeries.series, groupsAndSeries.groups] };
-        if (isRoot) {
-          this._TemplateHandler.setComponentResults(dataProperty, results);
-        }
-      }
-      return results;
-    },
+  _ConvertLocatorToSubId: function (locator) {
+    var subId = locator.subId;
 
+    // Convert the supported locators
+    if (subId === 'oj-chart-item') {
+      // dataItem[seriesIndex][itemIndex]
+      subId = 'dataItem[' + locator.seriesIndex + '][' + locator.itemIndex + ']';
+    } else if (subId === 'oj-chart-group') {
+      // group[index1][index2]...[indexN]
+      subId = 'group' + this._GetStringFromIndexPath(locator.indexPath);
+    } else if (subId === 'oj-chart-series') {
+      // series[index]
+      subId = 'series[' + locator.index + ']';
+    } else if (subId === 'oj-chart-axis-title') {
+      // xAxis/yAxis/y2Axis:title
+      subId = locator.axis + ':title';
+    } else if (subId === 'oj-chart-reference-object') {
+      // xAxis/yAxis/y2Axis:referenceObject[index]
+      subId = locator.axis + ':referenceObject[' + locator.index + ']';
+    } else if (subId === 'oj-legend-item') {
+      // legend:section[sectionIndex0][sectionIndex1]...[sectionIndexN]:item[itemIndex]
+      subId = 'legend:section' + this._GetStringFromIndexPath(locator.sectionIndexPath);
+      subId += ':item[' + locator.itemIndex + ']';
+    } else if (subId === 'oj-chart-tooltip') {
+      subId = 'tooltip';
+    } else if (subId === 'oj-chart-pie-center-label') {
+      subId = 'pieCenterLabel';
+    }
 
-    _GetSimpleDataProviderConfigs: function () {
-      return {
-        data: {
-          templateName: 'itemTemplate',
-          templateElementName: 'oj-chart-item',
-          resultPath: '_item',
-          derivedTemplates: ['seriesTemplate', 'groupTemplate']
-        }
+    // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
+    // support for the old subId syntax in 1.2.0.
+    return subId;
+  },
+
+  _ProcessTemplates: function (
+    dataProperty,
+    data,
+    templateEngine,
+    isTreeData,
+    parentKey,
+    isRoot,
+    updateChildren
+  ) {
+    var results = isRoot ? this._TemplateHandler.getComponentResults(dataProperty) : null;
+
+    if (!results) {
+      // Support for dataprovider and chart templates
+      var items = this._super(
+        dataProperty,
+        data,
+        templateEngine,
+        isTreeData,
+        parentKey,
+        isRoot,
+        updateChildren
+      );
+      var groupsAndSeries = createGroupsAndSeries(
+        this,
+        templateEngine,
+        items.values[0],
+        dataProperty
+      );
+      results = {
+        paths: ['series', 'groups'],
+        values: [groupsAndSeries.series, groupsAndSeries.groups]
       };
-    },
-
-    _UseObjectAssignForShapedData: function () {
-      return true;
-    },
-
-    _ProcessOptions: function () {
-      this._super();
-
-      var center = this.options.pieCenter;
-      if (center && center._renderer) {
-        center.renderer = this._GetTemplateRenderer(center._renderer, 'center');
+      if (isRoot) {
+        this._TemplateHandler.setComponentResults(dataProperty, results);
       }
+    }
+    return results;
+  },
 
-      var selection = this.options.selection;
-      // The array<Object> type is deprecated since 2.1.0 so for custom elements and only supported for the data provider use case starting 5.1.0
-      // we are breaking selection in order to push developers to use the correct syntax
-      if (this._IsCustomElement() && selection && typeof selection[0] === 'object' && !this.options.data) {
-        this.options.selection = null;
+  _GetSimpleDataProviderConfigs: function () {
+    return {
+      data: {
+        templateName: 'itemTemplate',
+        templateElementName: 'oj-chart-item',
+        resultPath: '_item',
+        derivedTemplates: ['seriesTemplate', 'groupTemplate']
       }
-    },
+    };
+  },
 
+  _UseObjectAssignForShapedData: function () {
+    return true;
+  },
 
-    _ConvertSubIdToLocator: function (subId) {
-      var locator = {};
+  _ProcessOptions: function () {
+    this._super();
 
-      if (subId.indexOf('dataItem') === 0) {
-        // dataItem[seriesIndex][itemIndex]
-        var indexPath = this._GetIndexPath(subId);
+    var center = this.options.pieCenter;
+    if (center && center._renderer) {
+      center.renderer = this._GetTemplateRenderer(center._renderer, 'center');
+    }
 
-        locator.subId = 'oj-chart-item';
-        locator.seriesIndex = indexPath[0];
-        locator.itemIndex = indexPath[1];
-      } else if (subId.indexOf('group') === 0) {
-        // group[index1][index2]...[indexN]
-        locator.subId = 'oj-chart-group';
-        locator.indexPath = this._GetIndexPath(subId);
-      } else if (subId.indexOf('series') === 0) {
-        // series[index]
-        locator.subId = 'oj-chart-series';
-        locator.index = this._GetFirstIndex(subId);
-      } else if (subId.indexOf('Axis:title') > 0) {
-        // xAxis/yAxis/y2Axis:title
-        locator.subId = 'oj-chart-axis-title';
-        locator.axis = subId.substring(0, subId.indexOf(':'));
-      } else if (subId.indexOf('Axis:referenceObject') > 0) {
-        // xAxis/yAxis/y2Axis:referenceObject[index]
-        locator.subId = 'oj-chart-reference-object';
-        locator.axis = subId.substring(0, subId.indexOf(':'));
-        locator.index = this._GetFirstIndex(subId);
-      } else if (subId.indexOf('legend') === 0) {
-        if (subId.indexOf(':item') > 0) {
-          // legend:section[sectionIndex0][sectionIndex1]...[sectionIndexN]:item[itemIndex]
-          var itemStartIndex = subId.indexOf(':item');
-          var sectionSubstr = subId.substring(0, itemStartIndex);
-          var itemSubstr = subId.substring(itemStartIndex);
+    var selection = this.options.selection;
+    // The array<Object> type is deprecated since 2.1.0 so for custom elements and only supported for the data provider use case starting 5.1.0
+    // we are breaking selection in order to push developers to use the correct syntax
+    if (
+      this._IsCustomElement() &&
+      selection &&
+      typeof selection[0] === 'object' &&
+      !this.options.data
+    ) {
+      this.options.selection = null;
+    }
+  },
 
-          locator.subId = 'oj-legend-item';
-          locator.sectionIndexPath = this._GetIndexPath(sectionSubstr);
-          locator.itemIndex = this._GetFirstIndex(itemSubstr);
-        }
-      } else if (subId === 'tooltip') {
-        locator.subId = 'oj-chart-tooltip';
-      } else if (subId === 'pieCenterLabel') {
-        locator.subId = 'oj-chart-pie-center-label';
+  _ConvertSubIdToLocator: function (subId) {
+    var locator = {};
+
+    if (subId.indexOf('dataItem') === 0) {
+      // dataItem[seriesIndex][itemIndex]
+      var indexPath = this._GetIndexPath(subId);
+
+      locator.subId = 'oj-chart-item';
+      locator.seriesIndex = indexPath[0];
+      locator.itemIndex = indexPath[1];
+    } else if (subId.indexOf('group') === 0) {
+      // group[index1][index2]...[indexN]
+      locator.subId = 'oj-chart-group';
+      locator.indexPath = this._GetIndexPath(subId);
+    } else if (subId.indexOf('series') === 0) {
+      // series[index]
+      locator.subId = 'oj-chart-series';
+      locator.index = this._GetFirstIndex(subId);
+    } else if (subId.indexOf('Axis:title') > 0) {
+      // xAxis/yAxis/y2Axis:title
+      locator.subId = 'oj-chart-axis-title';
+      locator.axis = subId.substring(0, subId.indexOf(':'));
+    } else if (subId.indexOf('Axis:referenceObject') > 0) {
+      // xAxis/yAxis/y2Axis:referenceObject[index]
+      locator.subId = 'oj-chart-reference-object';
+      locator.axis = subId.substring(0, subId.indexOf(':'));
+      locator.index = this._GetFirstIndex(subId);
+    } else if (subId.indexOf('legend') === 0) {
+      if (subId.indexOf(':item') > 0) {
+        // legend:section[sectionIndex0][sectionIndex1]...[sectionIndexN]:item[itemIndex]
+        var itemStartIndex = subId.indexOf(':item');
+        var sectionSubstr = subId.substring(0, itemStartIndex);
+        var itemSubstr = subId.substring(itemStartIndex);
+
+        locator.subId = 'oj-legend-item';
+        locator.sectionIndexPath = this._GetIndexPath(sectionSubstr);
+        locator.itemIndex = this._GetFirstIndex(itemSubstr);
       }
+    } else if (subId === 'tooltip') {
+      locator.subId = 'oj-chart-tooltip';
+    } else if (subId === 'pieCenterLabel') {
+      locator.subId = 'oj-chart-pie-center-label';
+    }
 
-      return locator;
-    },
+    return locator;
+  },
 
+  _GetComponentRendererOptions: function () {
+    return [
+      { path: 'tooltip/renderer', slot: 'tooltipTemplate' },
+      { path: 'pieCenter/renderer', slot: 'pieCenterTemplate' }
+    ];
+  },
 
-    _GetComponentRendererOptions: function () {
-      return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
-              { path: 'pieCenter/renderer', slot: 'pieCenterTemplate' }];
-    },
+  _GetComponentStyleClasses: function () {
+    var styleClasses = this._super();
+    styleClasses.push('oj-chart');
+    return styleClasses;
+  },
 
+  _GetChildStyleClasses: function () {
+    var styleClasses = this._super();
+    styleClasses['oj-chart-data-label'] = {
+      path: 'styleDefaults/_dataLabelStyle',
+      property: 'TEXT'
+    };
+    styleClasses['oj-chart-data-cursor-line'] = [
+      { path: 'styleDefaults/dataCursor/lineColor', property: 'color' },
+      { path: 'styleDefaults/dataCursor/lineWidth', property: 'width' }
+    ];
+    styleClasses['oj-chart-stack-label'] = {
+      path: 'styleDefaults/stackLabelStyle',
+      property: 'TEXT'
+    };
+    styleClasses['oj-chart-pie-center-label'] = { path: 'pieCenter/labelStyle', property: 'TEXT' };
+    styleClasses['oj-chart-slice-label'] = {
+      path: 'styleDefaults/sliceLabelStyle',
+      property: 'TEXT'
+    };
+    styleClasses['oj-chart-stock-falling'] = {
+      path: 'styleDefaults/stockFallingColor',
+      property: 'background-color'
+    };
+    styleClasses['oj-chart-stock-range'] = {
+      path: 'styleDefaults/stockRangeColor',
+      property: 'background-color'
+    };
+    styleClasses['oj-chart-stock-rising'] = {
+      path: 'styleDefaults/stockRisingColor',
+      property: 'background-color'
+    };
+    styleClasses['oj-chart-xaxis-tick-label'] = { path: 'xAxis/tickLabel/style', property: 'TEXT' };
+    styleClasses['oj-chart-xaxis-title'] = { path: 'xAxis/titleStyle', property: 'TEXT' };
+    styleClasses['oj-chart-yaxis-tick-label'] = { path: 'yAxis/tickLabel/style', property: 'TEXT' };
+    styleClasses['oj-chart-yaxis-title'] = { path: 'yAxis/titleStyle', property: 'TEXT' };
+    styleClasses['oj-chart-y2axis-tick-label'] = {
+      path: 'y2Axis/tickLabel/style',
+      property: 'TEXT'
+    };
+    styleClasses['oj-chart-y2axis-title'] = { path: 'y2Axis/titleStyle', property: 'TEXT' };
+    styleClasses['oj-chart-reference-object-line'] = [
+      { path: '_defaultReferenceObjectLineColor', property: 'color' },
+      { path: '_defaultReferenceObjectLineWidth', property: 'width' }
+    ];
+    styleClasses['oj-chart-reference-object-area'] = {
+      path: '_defaultReferenceObjectAreaColor',
+      property: 'color'
+    };
 
-    _GetComponentStyleClasses: function () {
-      var styleClasses = this._super();
-      styleClasses.push('oj-chart');
-      return styleClasses;
-    },
+    // Legend, should be kept in sync with oj-legend
+    styleClasses['oj-legend'] = { path: 'legend/textStyle', property: 'TEXT' };
+    styleClasses['oj-legend-title'] = { path: 'legend/titleStyle', property: 'TEXT' };
+    styleClasses['oj-legend-section-title'] = {
+      path: 'legend/_sectionTitleStyle',
+      property: 'TEXT'
+    };
+    styleClasses['oj-legend-hover'] = {
+      path: 'legend/_hoverBorderRadius',
+      property: 'border-radius'
+    };
 
+    // Color Ramp
+    styleClasses['oj-dvt-color-ramp'] = { path: 'styleDefaults/colors', property: 'COLOR' };
+    return styleClasses;
+  },
 
-    _GetChildStyleClasses: function () {
-      var styleClasses = this._super();
-      styleClasses['oj-chart-data-label'] =
-        { path: 'styleDefaults/_dataLabelStyle', property: 'TEXT' };
-      styleClasses['oj-chart-data-cursor-line'] = [
-        { path: 'styleDefaults/dataCursor/lineColor', property: 'color' },
-        { path: 'styleDefaults/dataCursor/lineWidth', property: 'width' }
-      ];
-      styleClasses['oj-chart-stack-label'] =
-        { path: 'styleDefaults/stackLabelStyle', property: 'TEXT' };
-      styleClasses['oj-chart-pie-center-label'] =
-        { path: 'pieCenter/labelStyle', property: 'TEXT' };
-      styleClasses['oj-chart-slice-label'] =
-        { path: 'styleDefaults/sliceLabelStyle', property: 'TEXT' };
-      styleClasses['oj-chart-stock-falling'] =
-        { path: 'styleDefaults/stockFallingColor', property: 'background-color' };
-      styleClasses['oj-chart-stock-range'] =
-        { path: 'styleDefaults/stockRangeColor', property: 'background-color' };
-      styleClasses['oj-chart-stock-rising'] =
-        { path: 'styleDefaults/stockRisingColor', property: 'background-color' };
-      styleClasses['oj-chart-xaxis-tick-label'] =
-        { path: 'xAxis/tickLabel/style', property: 'TEXT' };
-      styleClasses['oj-chart-xaxis-title'] =
-        { path: 'xAxis/titleStyle', property: 'TEXT' };
-      styleClasses['oj-chart-yaxis-tick-label'] = { path: 'yAxis/tickLabel/style', property: 'TEXT' };
-      styleClasses['oj-chart-yaxis-title'] =
-        { path: 'yAxis/titleStyle', property: 'TEXT' };
-      styleClasses['oj-chart-y2axis-tick-label'] =
-        { path: 'y2Axis/tickLabel/style', property: 'TEXT' };
-      styleClasses['oj-chart-y2axis-title'] =
-        { path: 'y2Axis/titleStyle', property: 'TEXT' };
-      styleClasses['oj-chart-reference-object-line'] = [
-        { path: '_defaultReferenceObjectLineColor', property: 'color' },
-        { path: '_defaultReferenceObjectLineWidth', property: 'width' }
-      ];
-      styleClasses['oj-chart-reference-object-area'] =
-        { path: '_defaultReferenceObjectAreaColor', property: 'color' };
+  _GetEventTypes: function () {
+    return [
+      'drill',
+      'groupDrill',
+      'itemDrill',
+      'seriesDrill',
+      'multiSeriesDrill',
+      'optionChange',
+      'selectInput',
+      'viewportChange',
+      'viewportChangeInput'
+    ];
+  },
 
-      // Legend, should be kept in sync with oj-legend
-      styleClasses['oj-legend'] = { path: 'legend/textStyle', property: 'TEXT' };
-      styleClasses['oj-legend-title'] = { path: 'legend/titleStyle', property: 'TEXT' };
-      styleClasses['oj-legend-section-title'] = { path: 'legend/_sectionTitleStyle', property: 'TEXT' };
-      styleClasses['oj-legend-hover'] = { path: 'legend/_hoverBorderRadius', property: 'border-radius' };
-
-      // Color Ramp
-      styleClasses['oj-dvt-color-ramp'] =
-      { path: 'styleDefaults/colors', property: 'COLOR' };
-      return styleClasses;
-    },
-
-
-    _GetEventTypes: function () {
-      return ['drill', 'groupDrill', 'itemDrill', 'seriesDrill', 'multiSeriesDrill', 'optionChange', 'selectInput', 'viewportChange', 'viewportChangeInput'];
-    },
-
-
-    _HandleEvent: function (event) {
-      var type = event.type;
-      if (type === 'selection') {
-        var selection = event.selection;
-        if (selection) {
-          // Convert the graph selection context into the JET context
-          var selectedItems = [];
-          var selectionData = [];
-          for (var i = 0; i < selection.length; i++) {
-            var selectedItem;
-            if (this._IsCustomElement()) {
-              selectedItem = selection[i].id;
-            } else {
-              selectedItem = { id: selection[i].id,
-                series: selection[i].series,
-                group: selection[i].group };
-            }
-            var selectedItemData = { data: selection[i].data,
-              seriesData: selection[i].seriesData,
-              groupData: selection[i].groupData,
-              itemData: selection[i].itemData };
-            selectedItems.push(selectedItem);
-            selectionData.push(selectedItemData);
-          }
-
-          var selectPayload = {
-            endGroup: event.endGroup,
-            startGroup: event.startGroup,
-            xMax: event.xMax,
-            xMin: event.xMin,
-            yMax: event.yMax,
-            yMin: event.yMin,
-            y2Max: event.y2Max,
-            y2Min: event.y2Min,
-            selectionData: selectionData
-          };
-
-          if (!this._IsCustomElement()) {
-            selectPayload.component = event.component;
-          }
-
-          // Update the options selection state if the user interaction is complete
-          if (event.complete) {
-            this._UserOptionChange('selection', selectedItems, selectPayload);
+  _HandleEvent: function (event) {
+    var type = event.type;
+    if (type === 'selection') {
+      var selection = event.selection;
+      if (selection) {
+        // Convert the graph selection context into the JET context
+        var selectedItems = [];
+        var selectionData = [];
+        for (var i = 0; i < selection.length; i++) {
+          var selectedItem;
+          if (this._IsCustomElement()) {
+            selectedItem = selection[i].id;
           } else {
-            selectPayload.items = selectedItems;
-            this._trigger('selectInput', null, selectPayload);
+            selectedItem = {
+              id: selection[i].id,
+              series: selection[i].series,
+              group: selection[i].group
+            };
           }
+          var selectedItemData = {
+            data: selection[i].data,
+            seriesData: selection[i].seriesData,
+            groupData: selection[i].groupData,
+            itemData: selection[i].itemData
+          };
+          selectedItems.push(selectedItem);
+          selectionData.push(selectedItemData);
         }
-      } else if (type === 'viewportChange') {
-        var viewportChangePayload = {
+
+        var selectPayload = {
           endGroup: event.endGroup,
           startGroup: event.startGroup,
           xMax: event.xMax,
           xMin: event.xMin,
           yMax: event.yMax,
-          yMin: event.yMin };
+          yMin: event.yMin,
+          y2Max: event.y2Max,
+          y2Min: event.y2Min,
+          selectionData: selectionData
+        };
 
-        // Maintain the viewport state
-        // TODO we should be firing option change event for this, but it doesn't support nested props yet.
-        if (event.complete) {
-          // Ensure the axis options both exist
-          if (!this.options.xAxis) {
-            this.options.xAxis = {};
-          }
-
-          if (!this.options.yAxis) {
-            this.options.yAxis = {};
-          }
-
-          // X-Axis: Clear the start and end group because min/max more accurate.
-          this.options.xAxis.viewportStartGroup = null;
-          this.options.xAxis.viewportEndGroup = null;
-          if (event.xMin != null && event.xMax != null) {
-            this.options.xAxis.viewportMin = event.xMin;
-            this.options.xAxis.viewportMax = event.xMax;
-          }
-
-          // Y-Axis
-          if (event.yMin != null && event.yMax != null) {
-            this.options.yAxis.viewportMin = event.yMin;
-            this.options.yAxis.viewportMax = event.yMax;
-          }
+        if (!this._IsCustomElement()) {
+          selectPayload.component = event.component;
         }
 
-        this._trigger(event.complete ? 'viewportChange' : 'viewportChangeInput',
-                      null, viewportChangePayload);
-      } else if (type === 'drill') {
-        if (!event.subType) {
-          this._trigger('drill', null, {
+        // Update the options selection state if the user interaction is complete
+        if (event.complete) {
+          this._UserOptionChange('selection', selectedItems, selectPayload);
+        } else {
+          selectPayload.items = selectedItems;
+          this._trigger('selectInput', null, selectPayload);
+        }
+      }
+    } else if (type === 'viewportChange') {
+      var viewportChangePayload = {
+        endGroup: event.endGroup,
+        startGroup: event.startGroup,
+        xMax: event.xMax,
+        xMin: event.xMin,
+        yMax: event.yMax,
+        yMin: event.yMin
+      };
+
+      // Maintain the viewport state
+      // TODO we should be firing option change event for this, but it doesn't support nested props yet.
+      if (event.complete) {
+        // Ensure the axis options both exist
+        if (!this.options.xAxis) {
+          this.options.xAxis = {};
+        }
+
+        if (!this.options.yAxis) {
+          this.options.yAxis = {};
+        }
+
+        // X-Axis: Clear the start and end group because min/max more accurate.
+        this.options.xAxis.viewportStartGroup = null;
+        this.options.xAxis.viewportEndGroup = null;
+        if (event.xMin != null && event.xMax != null) {
+          this.options.xAxis.viewportMin = event.xMin;
+          this.options.xAxis.viewportMax = event.xMax;
+        }
+
+        // Y-Axis
+        if (event.yMin != null && event.yMax != null) {
+          this.options.yAxis.viewportMin = event.yMin;
+          this.options.yAxis.viewportMax = event.yMax;
+        }
+      }
+
+      this._trigger(
+        event.complete ? 'viewportChange' : 'viewportChangeInput',
+        null,
+        viewportChangePayload
+      );
+    } else if (type === 'drill') {
+      if (!event.subType) {
+        this._trigger('drill', null, {
+          id: event.id,
+          series: event.series,
+          group: event.group,
+          data: event.data,
+          seriesData: event.seriesData,
+          groupData: event.groupData,
+          itemData: event.itemData,
+          component: event.component
+        });
+      } else if (this._IsCustomElement()) {
+        var subType = event.subType;
+        if (subType === 'item') {
+          this._trigger('itemDrill', null, {
             id: event.id,
             series: event.series,
             group: event.group,
             data: event.data,
-            seriesData: event.seriesData,
-            groupData: event.groupData,
             itemData: event.itemData,
-            component: event.component
+            seriesData: event.seriesData,
+            groupData: event.groupData
           });
-        } else if (this._IsCustomElement()) {
-          var subType = event.subType;
-          if (subType === 'item') {
-            this._trigger('itemDrill', null, {
-              id: event.id,
-              series: event.series,
-              group: event.group,
-              data: event.data,
-              itemData: event.itemData,
-              seriesData: event.seriesData,
-              groupData: event.groupData,
-            });
-          } else if (subType === 'group') {
-            this._trigger('groupDrill', null, {
-              group: event.group,
-              groupData: event.groupData,
-              id: event.id,
-              items: event.items
-            });
-          } else if (subType === 'series') {
-            this._trigger('seriesDrill', null, {
-              id: event.id,
-              items: event.items,
-              series: event.series,
-              seriesData: event.seriesData
-            });
-          } else if (subType === 'multiSeries') {
-            this._trigger('multiSeriesDrill', null, {
-              items: event.items,
-              series: event.series,
-              seriesData: event.seriesData
-            });
-          }
+        } else if (subType === 'group') {
+          this._trigger('groupDrill', null, {
+            group: event.group,
+            groupData: event.groupData,
+            id: event.id,
+            items: event.items
+          });
+        } else if (subType === 'series') {
+          this._trigger('seriesDrill', null, {
+            id: event.id,
+            items: event.items,
+            series: event.series,
+            seriesData: event.seriesData
+          });
+        } else if (subType === 'multiSeries') {
+          this._trigger('multiSeriesDrill', null, {
+            items: event.items,
+            series: event.series,
+            seriesData: event.seriesData
+          });
         }
-      } else {
-        this._super(event);
       }
-    },
-
-
-    _LoadResources: function () {
-      // Ensure the resources object exists
-      if (this.options._resources == null) {
-        this.options._resources = {};
-      }
-
-      var resources = this.options._resources;
-
-      // Add images
-      resources.overviewGrippy = 'oj-fwk-icon oj-fwk-icon-drag-horizontal';
-
-      // Drag button icons
-      resources.pan = 'oj-fwk-icon oj-fwk-icon-pan';
-      resources.select = 'oj-fwk-icon oj-fwk-icon-marquee';
-      resources.zoom = 'oj-fwk-icon oj-fwk-icon-magnifier';
-    },
-
-    /**
-     * Returns the chart title.
-     * @ignore
-     * @return {string} The chart title
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @instance
-     * @memberof oj.ojChart
-     */
-    getTitle: function () {
-      var auto = this._component.getAutomation();
-      return auto.getTitle();
-    },
-
-    /**
-     * Returns the group corresponding to the given index
-     * @param {string} groupIndex the group index
-     * @return {string} The group name corresponding to the given group index
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @instance
-     * @memberof oj.ojChart
-     */
-    getGroup: function (groupIndex) {
-      var auto = this._component.getAutomation();
-      return auto.getGroup(groupIndex);
-    },
-
-    /**
-     * Returns the series corresponding to the given index
-     * @param {string} seriesIndex the series index
-     * @return {string} The series name corresponding to the given series index
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @instance
-     * @memberof oj.ojChart
-     */
-    getSeries: function (seriesIndex) {
-      var auto = this._component.getAutomation();
-      return auto.getSeries(seriesIndex);
-    },
-
-    /**
-     * Returns number of groups in the chart data
-     * @return {number} The number of groups
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @instance
-     * @memberof oj.ojChart
-     */
-    getGroupCount: function () {
-      var auto = this._component.getAutomation();
-      return auto.getGroupCount();
-    },
-
-    /**
-     * Returns number of series in the chart data
-     * @return {number} The number of series
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @instance
-     * @memberof oj.ojChart
-     */
-    getSeriesCount: function () {
-      var auto = this._component.getAutomation();
-      return auto.getSeriesCount();
-    },
-
-    /**
-     * Returns an object with the following properties for automation testing verification of the data item with
-     * the specified series and group indices.
-     *
-     * @param {number} seriesIndex
-     * @param {number} groupIndex
-     * @property {string} borderColor
-     * @property {string} color
-     * @property {number} close The closing value for a stock item
-     * @property {string} group The group id.
-     * @property {number} high The high value for a range or stock item
-     * @property {string} label
-     * @property {number} low  The low value for a range or stock item
-     * @property {number} open The opening value for a stock item
-     * @property {boolean} selected
-     * @property {string} series The series id.
-     * @property {number} targetValue The target value for a funnel slice.
-     * @property {string} tooltip
-     * @property {number} value
-     * @property {number} volume  The volume of a stock item
-     * @property {number} x
-     * @property {number} y
-     * @property {number} z
-     * @return {Object|null} An object containing properties for the data item, or null if none exists.
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @instance
-     * @memberof oj.ojChart
-     * @ojshortdesc Returns information for automation testing verification of a specified data item.
-     */
-    getDataItem: function (seriesIndex, groupIndex) {
-      return this._component.getAutomation().getDataItem(seriesIndex, groupIndex);
-    },
-
-    /**
-     * Returns an object that contains sizing information for the chart legend.
-     *
-     * @property {Object} bounds An object containing the bounds of the legend.
-     * @property {number} bounds.x
-     * @property {number} bounds.y
-     * @property {number} bounds.width
-     * @property {number} bounds.height
-     * @property {string} title
-     * @return {Object} An object containing properties for the chart legend.
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this property is no longer recommended.', target:'property', for: 'title' }
-     * @instance
-     * @memberof oj.ojChart
-     * @ojsignature [{target: "Type", value: "{bounds: {x: number, y: number, width: number, height: number}}", for: "returns"}]
-     */
-    getLegend: function () {
-      return this._component.getAutomation().getLegend();
-    },
-
-    /**
-     * Returns an object that contains sizing information for the chart plot area.
-     *
-     * @property {Object} bounds An object containing the bounds of the plot area.
-     * @property {number} bounds.x
-     * @property {number} bounds.y
-     * @property {number} bounds.width
-     * @property {number} bounds.height
-     * @return {Object} An object containing properties for the chart plot area.
-     * @instance
-     * @memberof oj.ojChart
-     * @ojsignature [{target: "Type", value: "{bounds: {x: number, y: number, width: number, height: number}}", for: "returns"}]
-     */
-    getPlotArea: function () {
-      return this._component.getAutomation().getPlotArea();
-    },
-
-    /**
-     * Returns an object that contains sizing information for the chart X-Axis.
-     *
-     * @property {Object} bounds An object containing the bounds of the legend.
-     * @property {number} bounds.x
-     * @property {number} bounds.y
-     * @property {number} bounds.width
-     * @property {number} bounds.height
-     * @property {string} title
-     * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
-     *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
-     *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
-     *   <code class="prettyprint">refresh</code> after invoking this function.
-     * @property {number} getPreferredSize.width
-     * @property {number} getPreferredSize.height
-     * @return {Object} An object containing properties for the x axis.
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this property is no longer recommended.', target:'property', for: 'title' }
-     * @instance
-     * @memberof oj.ojChart
-     * @ojsignature [{target: "Type", value: "{bounds: {x: number, y: number, width: number, height: number}, getPreferredSize(width: number, height: number): {width: number, height: number}}", for: "returns"}]
-     */
-    getXAxis: function () {
-      return this._component.getAutomation().getXAxis();
-    },
-
-    /**
-     * Returns an object that contains sizing information for the chart Y-Axis.
-     *
-     * @property {Object} bounds An object containing the bounds of the legend.
-     * @property {number} bounds.x
-     * @property {number} bounds.y
-     * @property {number} bounds.width
-     * @property {number} bounds.height
-     * @property {string} title
-     * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
-     *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
-     *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
-     *   <code class="prettyprint">refresh</code> after invoking this function.
-     * @property {number} getPreferredSize.width
-     * @property {number} getPreferredSize.height
-     * @return {Object} An object containing properties for the y axis.
-     * @instance
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this property is no longer recommended.', target: 'property', for: 'title' }
-     * @memberof oj.ojChart
-     * @ojsignature [{target: "Type", value: "{bounds: {x: number, y: number, width: number, height: number}, getPreferredSize(width: number, height: number): {width: number, height: number}}", for: "returns"}]
-     */
-    getYAxis: function () {
-      return this._component.getAutomation().getYAxis();
-    },
-
-    /**
-     * Returns an object that contains sizing information for the chart Y2-Axis.
-     *
-     * @property {Object} bounds An object containing the bounds of the legend.
-     * @property {number} bounds.x
-     * @property {number} bounds.y
-     * @property {number} bounds.width
-     * @property {number} bounds.height
-     * @property {string} title
-     * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
-     *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
-     *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
-     *   <code class="prettyprint">refresh</code> after invoking this function.
-     * @property {number} getPreferredSize.width
-     * @property {number} getPreferredSize.height
-     * @return {Object} An object containing properties for the y2 axis.
-     * @instance
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this property is no longer recommended.', target: 'property', for: 'title' }
-     * @memberof oj.ojChart
-     * @ojsignature [{target: "Type", value: "{bounds: {x: number, y: number, width: number, height: number}, getPreferredSize(width: number, height: number): {width: number, height: number}}", for: "returns"}]
-     */
-    getY2Axis: function () {
-      return this._component.getAutomation().getY2Axis();
-    },
-
-    /**
-     * Returns the x, y, and y2 axis values at the specified X and Y coordinate.
-     * @param {number} x The X coordinate relative to the component.
-     * @param {number} y The Y coordinate relative to the component.
-     * @return {Object} An object containing the "x", "y", and "y2" axis values.
-     * @ojsignature {target: "Type", value: "{x: number|string|null, y: number|null, y2:number|null}", for: "returns"}
-     * @instance
-     * @memberof oj.ojChart
-     */
-    getValuesAt: function (x, y) {
-      return this._component.getValsAt(x, y);
-    },
-
-    /**
-     * {@ojinclude "name":"nodeContextDoc"}
-     * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
-     * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-     * @ojsignature {target: "Type", value: "oj.ojChart.PieCenterLabelContext|oj.ojChart.LegendItemContext|oj.ojChart.ReferenceObject|oj.ojChart.GroupContext|oj.ojChart.AxisTitleContext|oj.ojChart.ItemContext|oj.ojChart.SeriesContext", jsdocOverride: true, for: "returns"}
-     * @example {@ojinclude "name":"nodeContextExample"}
-     *
-     * @expose
-     * @instance
-     * @memberof oj.ojChart
-     * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
-     */
-    getContextByNode: function (node) {
-      // context objects are documented with @ojnodecontext
-      var context = this.getSubIdByNode(node);
-      if (context && context.subId !== 'oj-chart-tooltip') {
-        return context;
-      }
-
-      return null;
-    },
-
-
- /**
-  * Returns the chart automation component used by webdriver.
-  * @memberof oj.ojChart
-  * @instance
-  * @ojhidden
-  */
-    getAutomation: function () {
-      return this._component.getAutomation();
-    },
-
-    // @inheritdoc
-    _GetComponentNoClonePaths: function () {
-      var noClonePaths = this._super();
-
-      // Don't clone areas where app may pass in an instance of Converter
-      // If the instance is a class, class methods may not be cloned for some reason.
-      noClonePaths.pieCenter = { converter: true };
-      noClonePaths.xAxis = {
-        tickLabel: { converter: true }
-      };
-      noClonePaths.yAxis = {
-        tickLabel: { converter: true }
-      };
-      noClonePaths.y2Axis = {
-        tickLabel: { converter: true }
-      };
-      noClonePaths.valueFormats = {
-        close: { converter: true },
-        high: { converter: true },
-        label: { converter: true },
-        low: { converter: true },
-        open: { converter: true },
-        q1: { converter: true },
-        q2: { converter: true },
-        q3: { converter: true },
-        targetValue: { converter: true },
-        value: { converter: true },
-        volume: { converter: true },
-        x: { converter: true },
-        y: { converter: true },
-        y2: { converter: true },
-        z: { converter: true }
-      };
-
-      return noClonePaths;
-    },
-
-    _GetComponentDeferredDataPaths: function () {
-      return { root: ['groups', 'series', 'data'] };
-    },
-
-
-    _CompareOptionValues: function (option, value1, value2) {
-      if (option === 'dataCursorPosition') {
-        return oj.Object.compareValues(value1, value2);
-      }
-      return this._super(option, value1, value2);
+    } else {
+      this._super(event);
     }
-  });
+  },
+
+  _LoadResources: function () {
+    // Ensure the resources object exists
+    if (this.options._resources == null) {
+      this.options._resources = {};
+    }
+
+    var resources = this.options._resources;
+
+    // Add images
+    resources.overviewGrippy = 'oj-fwk-icon oj-fwk-icon-drag-horizontal';
+
+    // Drag button icons
+    resources.pan = 'oj-fwk-icon oj-fwk-icon-pan';
+    resources.select = 'oj-fwk-icon oj-fwk-icon-marquee';
+    resources.zoom = 'oj-fwk-icon oj-fwk-icon-magnifier';
+  },
+
+  /**
+   * Returns the chart title.
+   * @ignore
+   * @return {string} The chart title
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @instance
+   * @memberof oj.ojChart
+   */
+  getTitle: function () {
+    var auto = this._component.getAutomation();
+    return auto.getTitle();
+  },
+
+  /**
+   * Returns the group corresponding to the given index
+   * @param {string} groupIndex the group index
+   * @return {string} The group name corresponding to the given group index
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @instance
+   * @memberof oj.ojChart
+   */
+  getGroup: function (groupIndex) {
+    var auto = this._component.getAutomation();
+    return auto.getGroup(groupIndex);
+  },
+
+  /**
+   * Returns the series corresponding to the given index
+   * @param {string} seriesIndex the series index
+   * @return {string} The series name corresponding to the given series index
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @instance
+   * @memberof oj.ojChart
+   */
+  getSeries: function (seriesIndex) {
+    var auto = this._component.getAutomation();
+    return auto.getSeries(seriesIndex);
+  },
+
+  /**
+   * Returns number of groups in the chart data
+   * @return {number} The number of groups
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @instance
+   * @memberof oj.ojChart
+   */
+  getGroupCount: function () {
+    var auto = this._component.getAutomation();
+    return auto.getGroupCount();
+  },
+
+  /**
+   * Returns number of series in the chart data
+   * @return {number} The number of series
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @instance
+   * @memberof oj.ojChart
+   */
+  getSeriesCount: function () {
+    var auto = this._component.getAutomation();
+    return auto.getSeriesCount();
+  },
+
+  /**
+   * Returns an object with the following properties for automation testing verification of the data item with
+   * the specified series and group indices.
+   *
+   * @param {number} seriesIndex
+   * @param {number} groupIndex
+   * @property {string} borderColor
+   * @property {string} color
+   * @property {number} close The closing value for a stock item
+   * @property {string} group The group id.
+   * @property {number} high The high value for a range or stock item
+   * @property {string} label
+   * @property {number} low  The low value for a range or stock item
+   * @property {number} open The opening value for a stock item
+   * @property {boolean} selected
+   * @property {string} series The series id.
+   * @property {number} targetValue The target value for a funnel slice.
+   * @property {string} tooltip
+   * @property {number} value
+   * @property {number} volume  The volume of a stock item
+   * @property {number} x
+   * @property {number} y
+   * @property {number} z
+   * @return {Object|null} An object containing properties for the data item, or null if none exists.
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @instance
+   * @memberof oj.ojChart
+   * @ojshortdesc Returns information for automation testing verification of a specified data item.
+   */
+  getDataItem: function (seriesIndex, groupIndex) {
+    return this._component.getAutomation().getDataItem(seriesIndex, groupIndex);
+  },
+
+  /**
+   * Returns an object that contains sizing information for the chart legend.
+   *
+   * @property {Object} bounds An object containing the bounds of the legend.
+   * @property {number} bounds.x
+   * @property {number} bounds.y
+   * @property {number} bounds.width
+   * @property {number} bounds.height
+   * @property {string} title
+   * @return {Object} An object containing properties for the chart legend.
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this property is no longer recommended.', target:'property', for: 'title' }
+   * @instance
+   * @memberof oj.ojChart
+   * @ojsignature [{target: "Type", value: "{bounds: {x: number, y: number, width: number, height: number}}", for: "returns"}]
+   */
+  getLegend: function () {
+    return this._component.getAutomation().getLegend();
+  },
+
+  /**
+   * Returns an object that contains sizing information for the chart plot area.
+   *
+   * @property {Object} bounds An object containing the bounds of the plot area.
+   * @property {number} bounds.x
+   * @property {number} bounds.y
+   * @property {number} bounds.width
+   * @property {number} bounds.height
+   * @return {Object} An object containing properties for the chart plot area.
+   * @instance
+   * @memberof oj.ojChart
+   * @ojsignature [{target: "Type", value: "{bounds: {x: number, y: number, width: number, height: number}}", for: "returns"}]
+   */
+  getPlotArea: function () {
+    return this._component.getAutomation().getPlotArea();
+  },
+
+  /**
+   * Returns an object that contains sizing information for the chart X-Axis.
+   *
+   * @property {Object} bounds An object containing the bounds of the legend.
+   * @property {number} bounds.x
+   * @property {number} bounds.y
+   * @property {number} bounds.width
+   * @property {number} bounds.height
+   * @property {string} title
+   * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
+   *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
+   *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
+   *   <code class="prettyprint">refresh</code> after invoking this function.
+   * @property {number} getPreferredSize.width
+   * @property {number} getPreferredSize.height
+   * @return {Object} An object containing properties for the x axis.
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this property is no longer recommended.', target:'property', for: 'title' }
+   * @instance
+   * @memberof oj.ojChart
+   * @ojsignature [{target: "Type", value: "{bounds: {x: number, y: number, width: number, height: number}, getPreferredSize(width: number, height: number): {width: number, height: number}}", for: "returns"}]
+   */
+  getXAxis: function () {
+    return this._component.getAutomation().getXAxis();
+  },
+
+  /**
+   * Returns an object that contains sizing information for the chart Y-Axis.
+   *
+   * @property {Object} bounds An object containing the bounds of the legend.
+   * @property {number} bounds.x
+   * @property {number} bounds.y
+   * @property {number} bounds.width
+   * @property {number} bounds.height
+   * @property {string} title
+   * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
+   *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
+   *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
+   *   <code class="prettyprint">refresh</code> after invoking this function.
+   * @property {number} getPreferredSize.width
+   * @property {number} getPreferredSize.height
+   * @return {Object} An object containing properties for the y axis.
+   * @instance
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this property is no longer recommended.', target: 'property', for: 'title' }
+   * @memberof oj.ojChart
+   * @ojsignature [{target: "Type", value: "{bounds: {x: number, y: number, width: number, height: number}, getPreferredSize(width: number, height: number): {width: number, height: number}}", for: "returns"}]
+   */
+  getYAxis: function () {
+    return this._component.getAutomation().getYAxis();
+  },
+
+  /**
+   * Returns an object that contains sizing information for the chart Y2-Axis.
+   *
+   * @property {Object} bounds An object containing the bounds of the legend.
+   * @property {number} bounds.x
+   * @property {number} bounds.y
+   * @property {number} bounds.width
+   * @property {number} bounds.height
+   * @property {string} title
+   * @property {Function(number, number)} getPreferredSize Returns the preferred size of the axis, given the available
+   *   width and height. This value can be passed into the <code class="prettyprint">size</code> and
+   *   <code class="prettyprint">maxSize</code> options of the axis. A re-render must be triggered by calling
+   *   <code class="prettyprint">refresh</code> after invoking this function.
+   * @property {number} getPreferredSize.width
+   * @property {number} getPreferredSize.height
+   * @return {Object} An object containing properties for the y2 axis.
+   * @instance
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this property is no longer recommended.', target: 'property', for: 'title' }
+   * @memberof oj.ojChart
+   * @ojsignature [{target: "Type", value: "{bounds: {x: number, y: number, width: number, height: number}, getPreferredSize(width: number, height: number): {width: number, height: number}}", for: "returns"}]
+   */
+  getY2Axis: function () {
+    return this._component.getAutomation().getY2Axis();
+  },
+
+  /**
+   * Returns the x, y, and y2 axis values at the specified X and Y coordinate.
+   * @param {number} x The X coordinate relative to the component.
+   * @param {number} y The Y coordinate relative to the component.
+   * @return {Object} An object containing the "x", "y", and "y2" axis values.
+   * @ojsignature {target: "Type", value: "{x: number|string|null, y: number|null, y2:number|null}", for: "returns"}
+   * @instance
+   * @memberof oj.ojChart
+   */
+  getValuesAt: function (x, y) {
+    return this._component.getValsAt(x, y);
+  },
+
+  /**
+   * {@ojinclude "name":"nodeContextDoc"}
+   * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+   * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+   * @ojsignature {target: "Type", value: "oj.ojChart.PieCenterLabelContext|oj.ojChart.LegendItemContext|oj.ojChart.ReferenceObject|oj.ojChart.GroupContext|oj.ojChart.AxisTitleContext|oj.ojChart.ItemContext|oj.ojChart.SeriesContext", jsdocOverride: true, for: "returns"}
+   * @example {@ojinclude "name":"nodeContextExample"}
+   *
+   * @expose
+   * @instance
+   * @memberof oj.ojChart
+   * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
+   */
+  getContextByNode: function (node) {
+    // context objects are documented with @ojnodecontext
+    var context = this.getSubIdByNode(node);
+    if (context && context.subId !== 'oj-chart-tooltip') {
+      return context;
+    }
+
+    return null;
+  },
+
+  /**
+   * Returns the chart automation component used by webdriver.
+   * @memberof oj.ojChart
+   * @instance
+   * @ojhidden
+   */
+  getAutomation: function () {
+    return this._component.getAutomation();
+  },
+
+  // @inheritdoc
+  _GetComponentNoClonePaths: function () {
+    var noClonePaths = this._super();
+
+    // Don't clone areas where app may pass in an instance of Converter
+    // If the instance is a class, class methods may not be cloned for some reason.
+    noClonePaths.pieCenter = { converter: true };
+    noClonePaths.xAxis = {
+      tickLabel: { converter: true }
+    };
+    noClonePaths.yAxis = {
+      tickLabel: { converter: true }
+    };
+    noClonePaths.y2Axis = {
+      tickLabel: { converter: true }
+    };
+    noClonePaths.valueFormats = {
+      close: { converter: true },
+      high: { converter: true },
+      label: { converter: true },
+      low: { converter: true },
+      open: { converter: true },
+      q1: { converter: true },
+      q2: { converter: true },
+      q3: { converter: true },
+      targetValue: { converter: true },
+      value: { converter: true },
+      volume: { converter: true },
+      x: { converter: true },
+      y: { converter: true },
+      y2: { converter: true },
+      z: { converter: true }
+    };
+
+    return noClonePaths;
+  },
+
+  _GetComponentDeferredDataPaths: function () {
+    return { root: ['groups', 'series', 'data'] };
+  },
+
+  _CompareOptionValues: function (option, value1, value2) {
+    if (option === 'dataCursorPosition') {
+      return oj.Object.compareValues(value1, value2);
+    }
+    return this._super(option, value1, value2);
+  }
+});
 
 /**
  * @ojcomponent oj.ojSparkChart
@@ -8132,6 +8202,8 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @ojpropertylayout {propertyGroup: "data", items: ["data", "items"]}
  * @ojvbdefaultcolumns 2
  * @ojvbmincolumns 1
+ *
+ * @ojoracleicon 'oj-ux-ico-chart-spark'
  *
  * @classdesc
  * <h3 id="sparkChartOverview-section">
@@ -8179,10 +8251,9 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
-  {
-    widgetEventPrefix: 'oj',
-    options: {
+oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent, {
+  widgetEventPrefix: 'oj',
+  options: {
     /**
      * An alias for the $current context variable when referenced inside itemTemplate when using a DataProvider.
      * @expose
@@ -8194,7 +8265,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * @default ''
      * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
      */
-      as: '',
+    as: '',
     /**
      * The DataProvider for the spark chart. It should provide rows where each row corresponds to a single spark chart item.
      * The DataProvider can either have an arbitrary data shape, in which case an <oj-spark-chart-item> element must be specified in the itemTemplate slot or it can have [oj.ojSparkChart.Item]{@link oj.ojSparkChart.Item} as its data shape, in which case no template is required.
@@ -8221,7 +8292,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.data = dataProvider;
      */
-      data: null,
+    data: null,
     /**
      * An array of objects with the following properties that define the data for the spark chart. Also accepts a Promise for deferred data rendering.</ul>
      * @name items
@@ -8255,7 +8326,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      *                       {"low": 9, "high": 20, "color": "yellow"},
      *                       {"low": 0, "high": 7, "color": "green"}];
      */
-      items: null,
+    items: null,
     /**
      * An array of objects with the following properties defining the reference objects associated with the y axis of the spark chart.
      * @expose
@@ -8289,7 +8360,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      *                                {"type": "line", "value": 9, "location": "front", "color": "yellow"},
      *                                {"type": "area", "high": 10, "low": 0, "location": "back", "color": "green"}];
      */
-      referenceObjects: [],
+    referenceObjects: [],
     /**
      * An object containing an optional callback function for tooltip customization.
      * @expose
@@ -8320,7 +8391,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // Set all. Must list every resource key, as those not listed are lost.
      * mySparkChart.tooltip={'renderer': tooltipFun};
      */
-      tooltip: {
+    tooltip: {
       /**
        *  A function that returns a custom tooltip. The function takes a dataContext argument,
        *  provided by the chart, with the following properties:
@@ -8344,8 +8415,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
        * @ojsignature {target: "Type", value: "((context: oj.ojSparkChart.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))|null", jsdocOverride: true}
        * @example <caption>See the <a href="#tooltip">tooltip</a> attribute for usage examples.</caption>
        */
-        renderer: null
-      },
+      renderer: null
+    },
     /**
      * The chart type.
      * @expose
@@ -8370,7 +8441,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.type="area";
      */
-      type: 'line',
+    type: 'line',
     /**
      * The color of the data items. The default value varies based on theme.
      * @expose
@@ -8392,7 +8463,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.color="rgb(35, 123, 177)";
      */
-      color: '#267DB3',
+    color: '',
     /**
      * The color of the area in area or lineWithArea spark chart.
      * @expose
@@ -8415,7 +8486,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.areaColor="red";
      */
-      areaColor: '',
+    areaColor: '',
     /**
      * The CSS style class to apply if the type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
      * @expose
@@ -8437,7 +8508,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.areaSvgClassName = "svgClassName";
      */
-      areaSvgClassName: '',
+    areaSvgClassName: '',
     /**
      * The inline style to apply if the type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
      * Only SVG CSS style properties are supported.
@@ -8461,7 +8532,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.areaSvgStyle = {"fill":"url(someURL#filterId)"};
      */
-      areaSvgStyle: {},
+    areaSvgStyle: {},
     /**
      * The CSS style class to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaSvgClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.
      * @expose
@@ -8483,7 +8554,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.svgClassName = "className";
      */
-      svgClassName: '',
+    svgClassName: '',
     /**
      * The inline style to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaSvgStyle is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.
      * Only SVG CSS style properties are supported.
@@ -8507,7 +8578,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.svgStyle = {"fill":"url(someURL#filterId)"};
      */
-      svgStyle: {},
+    svgStyle: {},
     /**
      * The color of the first data item.
      * @expose
@@ -8529,7 +8600,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.firstColor = "yellow";
      */
-      firstColor: '',
+    firstColor: '',
     /**
      * The color of the last data item.
      * @expose
@@ -8551,7 +8622,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.lastColor = "red";
      */
-      lastColor: '',
+    lastColor: '',
     /**
      * The color of the data item with the greatest value.
      * @expose
@@ -8573,7 +8644,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.highColor = "blue";
      */
-      highColor: '',
+    highColor: '',
     /**
      * The color of the data item with the lowest value.
      * @expose
@@ -8595,7 +8666,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.lowColor = "blue";
      */
-      lowColor: '',
+    lowColor: '',
     /**
      * The duration of the animations in milliseconds. The default value comes from the CSS and varies based on theme.
      * @expose
@@ -8617,7 +8688,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.animationDuration = 50;
      */
-      animationDuration: undefined,
+    animationDuration: undefined,
 
     /**
      * Defines the animation that is applied on data changes.
@@ -8641,7 +8712,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.animationOnDataChange = "auto";
      */
-      animationOnDataChange: 'none',
+    animationOnDataChange: 'none',
     /**
      * Defines the animation that is shown on initial display.
      * @expose
@@ -8664,7 +8735,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.animationOnDisplay = "auto";
      */
-      animationOnDisplay: 'none',
+    animationOnDisplay: 'none',
     /**
      * Defines whether visual effects such as overlays are applied to the spark chart.
      * @expose
@@ -8687,7 +8758,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.visualEffects = "none";
      */
-      visualEffects: 'auto',
+    visualEffects: 'auto',
     /**
      * Defines whether the axis baseline starts at the minimum value of the data or at zero.
      * @expose
@@ -8710,7 +8781,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.baselineScaling = "zero";
      */
-      baselineScaling: 'min',
+    baselineScaling: 'min',
     /**
      * The width of the data line in pixels. Only applies to line spark charts.
      * @expose
@@ -8732,7 +8803,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.lineWidth = 4;
      */
-      lineWidth: 1,
+    lineWidth: 1,
     /**
      * The line style of the data line. Only applies to line spark charts.
      * @expose
@@ -8756,7 +8827,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.lineStyle = "dotted";
      */
-      lineStyle: 'solid',
+    lineStyle: 'solid',
     /**
      * The line type of the data line or area. Only applies to line and area spark charts.
      * @expose
@@ -8784,7 +8855,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.lineType = "curved";
      */
-      lineType: 'straight',
+    lineType: 'straight',
     /**
      * The shape of the data markers. Can take the name of a built-in shape or the SVG path commands for a custom shape. Only applies to line and area spark charts.
      * @expose
@@ -8806,7 +8877,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.markerShape = "triangleUp";
      */
-      markerShape: 'auto',
+    markerShape: 'auto',
     /**
      * The size of the data markers in pixels. Only applies to line and area spark charts.
      * @expose
@@ -8828,7 +8899,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.markerSize = 15;
      */
-      markerSize: 5,
+    markerSize: 5,
     /**
      * Specifies the width of the bar gap as a ratio of the item width. The valid value is a number from 0 to 1.
      * @expose
@@ -8849,43 +8920,40 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * // setter
      * mySparkChart.barGapRatio = 0.12;
      */
-      barGapRatio: 0.25
-    },
+    barGapRatio: 0.25
+  },
 
+  _CreateDvtComponent: function (context, callback, callbackObj) {
+    this._focusable({ element: this.element, applyHighlight: true });
+    return new SparkChart(context, callback, callbackObj);
+  },
 
-    _CreateDvtComponent: function (context, callback, callbackObj) {
-      this._focusable({ element: this.element, applyHighlight: true });
-      return new SparkChart(context, callback, callbackObj);
-    },
+  _GetComponentStyleClasses: function () {
+    var styleClasses = this._super();
+    styleClasses.push('oj-sparkchart');
+    return styleClasses;
+  },
 
+  _GetChildStyleClasses: function () {
+    var styleClasses = this._super();
+    styleClasses['oj-dvtbase oj-sparkchart'] = { path: 'animationDuration', property: 'ANIM_DUR' };
+    styleClasses['oj-spark-chart-item'] = { path: 'color', property: 'color' };
+    return styleClasses;
+  },
 
-    _GetComponentStyleClasses: function () {
-      var styleClasses = this._super();
-      styleClasses.push('oj-sparkchart');
-      return styleClasses;
-    },
-
-
-    _GetChildStyleClasses: function () {
-      var styleClasses = this._super();
-      styleClasses['oj-dvtbase oj-sparkchart'] = { path: 'animationDuration', property: 'ANIM_DUR' };
-      return styleClasses;
-    },
-
-
-    _Render: function () {
+  _Render: function () {
     // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
-      if (this.element.attr('title')) {
-        this.options.shortDesc = this.element.attr('title');
-        this.element.data(this.element, 'title', this.element.attr('title'));
-        this.element.removeAttr('title');
-      } else if (this.element.data('title')) {
-        this.options.shortDesc = this.element.data('title');
-      }
+    if (this.element.attr('title')) {
+      this.options.shortDesc = this.element.attr('title');
+      this.element.data(this.element, 'title', this.element.attr('title'));
+      this.element.removeAttr('title');
+    } else if (this.element.data('title')) {
+      this.options.shortDesc = this.element.data('title');
+    }
 
     // Call the super to render
-      this._super();
-    },
+    this._super();
+  },
 
   /**
    * Returns an object with the following properties for automation testing verification of the data item with
@@ -8906,33 +8974,31 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
    * @ojtsignore
    * @ojshortdesc Returns information for automation testing verification of a specified data item.
    */
-    getDataItem: function (itemIndex) {
-      var ret = this._component.getAutomation().getDataItem(itemIndex);
+  getDataItem: function (itemIndex) {
+    var ret = this._component.getAutomation().getDataItem(itemIndex);
 
     // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-      if (ret) {
-        ret.getFloatValue = ret.getLow;
+    this._AddAutomationGetters(ret);
+    if (ret) {
+      ret.getFloatValue = ret.getLow;
+    }
+
+    return ret;
+  },
+
+  _GetComponentDeferredDataPaths: function () {
+    return { root: ['items', 'data'] };
+  },
+
+  _GetSimpleDataProviderConfigs: function () {
+    return {
+      data: {
+        templateName: 'itemTemplate',
+        templateElementName: 'oj-spark-chart-item',
+        resultPath: 'items'
       }
-
-      return ret;
-    },
-
-
-    _GetComponentDeferredDataPaths: function () {
-      return { root: ['items', 'data'] };
-    },
-
-
-    _GetSimpleDataProviderConfigs: function () {
-      return {
-        data: {
-          templateName: 'itemTemplate',
-          templateElementName: 'oj-spark-chart-item',
-          resultPath: 'items'
-        }
-      };
-    },
+    };
+  },
 
   /**
    * Adds getters for the properties on the specified map.
@@ -8941,19 +9007,19 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
    * @instance
    * @protected
    */
-    _AddAutomationGetters: function (map) {
-      if (!map) {
-        return;
-      }
+  _AddAutomationGetters: function (map) {
+    if (!map) {
+      return;
+    }
 
-      // These getters are deprecated in 3.0.0
-      var props = {};
-      var keys = Object.keys(map);
-      for (var i = 0; i < keys.length; i++) {
-        this._addGetter(map, keys[i], props);
-      }
-      Object.defineProperties(map, props);
-    },
+    // These getters are deprecated in 3.0.0
+    var props = {};
+    var keys = Object.keys(map);
+    for (var i = 0; i < keys.length; i++) {
+      this._addGetter(map, keys[i], props);
+    }
+    Object.defineProperties(map, props);
+  },
 
   /**
    * Adds getter for the specified property on the specified properties map.
@@ -8964,10 +9030,14 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
    * @instance
    * @private
    */
-    _addGetter: function (map, key, props) {
-      var prefix = (key === 'selected') ? 'is' : 'get';
-      var getterName = prefix + key.charAt(0).toUpperCase() + key.slice(1);
-      // eslint-disable-next-line no-param-reassign
-      props[getterName] = { value: function () { return map[key]; } };
-    },
-  });
+  _addGetter: function (map, key, props) {
+    var prefix = key === 'selected' ? 'is' : 'get';
+    var getterName = prefix + key.charAt(0).toUpperCase() + key.slice(1);
+    // eslint-disable-next-line no-param-reassign
+    props[getterName] = {
+      value: function () {
+        return map[key];
+      }
+    };
+  }
+});

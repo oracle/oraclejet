@@ -5,8 +5,22 @@ import { ItemContext } from 'ojs/ojcommontypes';
 import { DataProvider, ItemMetadata } from 'ojs/ojdataprovider';
 import { Action, DynamicTemplateSlots, ExtendGlobalProps } from 'ojs/ojvcomponent';
 import { Component, ComponentChild } from 'preact';
-import { MessageBannerItem, MessageBannerTemplateContext } from './ojmessagebannertypes';
 import 'ojs/ojbutton';
+declare type MessageBannerSeverity = 'error' | 'warning' | 'confirmation' | 'info' | 'none';
+export declare type MessageBannerItem = {
+    closeAffordance?: 'on' | 'off';
+    detail?: string;
+    severity?: MessageBannerSeverity;
+    sound?: 'default' | 'none' | string;
+    summary?: string;
+    timestamp?: string;
+};
+export declare type MessageBannerTemplateContext<K, D> = {
+    data: D;
+    index: number;
+    key: K;
+    metadata?: ItemMetadata<K>;
+};
 declare type CloseActionDetail<K, D> = {
     data: D;
     key: K;
@@ -32,11 +46,11 @@ export declare class MessageBanner<K extends string | number = string | number, 
     private readonly _rootRef?;
     private readonly WrapperMessagesContainer;
     private readonly _addBusyState;
+    private readonly _detailRendererKeyProxy;
     private readonly _handleCloseMessage;
-    private readonly _handleAnimation;
     private readonly _renderCloseButton;
     constructor(props: ExtendGlobalProps<Props<K, D>>);
-    render(props?: ExtendGlobalProps<Props<K, D>>, state?: Readonly<State<K, D>>): ComponentChild;
+    render(props?: ExtendGlobalProps<Props<K, D>>): ComponentChild;
 }
 export {};
 export interface MessageBannerElement<K extends string | number = string | number, D extends MessageBannerItem = MessageBannerItem> extends JetElement<MessageBannerElementSettableProperties<K, D>>, MessageBannerElementSettableProperties<K, D> {

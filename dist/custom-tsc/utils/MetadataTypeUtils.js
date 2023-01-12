@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLocalExport = exports.getPossibleTypeDef = exports.getEnumStringsFromUnion = exports.isClassDeclaration = exports.possibleComplexProperty = exports.getAllMetadataForDeclaration = exports.getSubstituteTypeForCircularReference = exports.getComplexPropertyMetadata = exports.getPropertyTypes = exports.getPropertyType = exports.isGenericTypeParameter = exports.isTypeLiteralType = exports.getTypeDeclaration = exports.getNodeDeclaration = exports.getTypeNameFromIntersectionTypes = exports.getTypeNameFromType = exports.getTypeNameFromTypeReference = exports.getSignatureFromType = exports.getIndexedAccessTypeNodeSignature = exports.getTypeReferenceNodeSignature = exports.getUnionTypeNodeSignature = exports.getLiteralTypeNodeSignature = exports.getGenericsAndTypeParametersFromType = exports.getGenericsAndTypeParameters = void 0;
+exports.isLocalExport = exports.getPossibleTypeDef = exports.getEnumStringsFromUnion = exports.isClassDeclaration = exports.possibleComplexProperty = exports.getAllMetadataForDeclaration = exports.getSubstituteTypeForCircularReference = exports.getComplexPropertyMetadata = exports.getPropertyTypes = exports.getPropertyType = exports.isGenericTypeParameter = exports.isTypeLiteralType = exports.getTypeDeclaration = exports.getNodeDeclaration = exports.getTypeNameFromIntersectionTypes = exports.getTypeNameFromType = exports.getTypeNameFromTypeReference = exports.getSignatureFromType = exports.getGenericsAndTypeParametersFromType = exports.getGenericsAndTypeParameters = void 0;
 const ts = __importStar(require("typescript"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
@@ -111,355 +111,8 @@ function getGenericsAndTypeParametersFromType(typeObj, metaUtilObj) {
     return retVal;
 }
 exports.getGenericsAndTypeParametersFromType = getGenericsAndTypeParametersFromType;
-function getLiteralTypeNodeSignature(literalNode) {
-    let typeObj = { type: 'any' };
-    const literalToken = literalNode.literal;
-    if (ts.isStringLiteral(literalToken) || ts.isNoSubstitutionTemplateLiteral(literalToken)) {
-        typeObj['type'] = 'string';
-        typeObj['reftype'] = 'string';
-        typeObj['enumValues'] = [literalToken.text];
-    }
-    else if (ts.isNumericLiteral(literalToken)) {
-        typeObj['type'] = 'number';
-        typeObj['reftype'] = 'number';
-    }
-    else if (ts.isBigIntLiteral(literalToken)) {
-        typeObj['type'] = 'bigint';
-        typeObj['reftype'] = 'bigint';
-    }
-    else if (literalToken.kind === ts.SyntaxKind.NullKeyword) {
-        typeObj['type'] = 'null';
-        typeObj['reftype'] = 'null';
-    }
-    else if (literalToken.kind === ts.SyntaxKind.TrueKeyword ||
-        literalToken.kind === ts.SyntaxKind.FalseKeyword) {
-        typeObj['type'] = 'boolean';
-        typeObj['reftype'] = 'boolean';
-    }
-    return typeObj;
-}
-exports.getLiteralTypeNodeSignature = getLiteralTypeNodeSignature;
-function getUnionTypeNodeSignature(unionNode, metaUtilObj) {
-    let typeObj = { type: 'string' };
-    let isStringTypeExplicit = false;
-    const unionNodeSymbol = metaUtilObj.typeChecker.getTypeAtLocation(unionNode);
-    const strType = metaUtilObj.typeChecker.typeToString(unionNodeSymbol);
-    if (strType === 'any') {
-        return { type: 'any' };
-    }
-    let enumValues = getEnumStringsFromUnion(unionNode);
-    if (enumValues) {
-        typeObj['enumValues'] = enumValues.filter((enumVal) => enumVal !== null);
-        if (enumValues.some((enumVal) => enumVal === null)) {
-            typeObj.type = 'string|null';
-        }
-    }
-    else {
-        let regTypes = new Set();
-        let reftypes = new Set();
-        let allEnums = new Set();
-        unionNode.types.forEach((typeNode) => {
-            let kind = typeNode.kind;
-            switch (kind) {
-                case ts.SyntaxKind.StringKeyword:
-                case ts.SyntaxKind.TemplateLiteralType:
-                    regTypes.add('string');
-                    reftypes.add('string');
-                    isStringTypeExplicit = true;
-                    break;
-                case ts.SyntaxKind.NumberKeyword:
-                    regTypes.add('number');
-                    reftypes.add('number');
-                    break;
-                case ts.SyntaxKind.BigIntKeyword:
-                    regTypes.add('bigint');
-                    reftypes.add('bigint');
-                    break;
-                case ts.SyntaxKind.BooleanKeyword:
-                    regTypes.add('boolean');
-                    reftypes.add('boolean');
-                    break;
-                case ts.SyntaxKind.NullKeyword:
-                    regTypes.add('null');
-                    reftypes.add('null');
-                    break;
-                case ts.SyntaxKind.UndefinedKeyword:
-                    break;
-                case ts.SyntaxKind.ObjectKeyword:
-                    regTypes.add('object');
-                    reftypes.add('object');
-                    break;
-                case ts.SyntaxKind.ArrayType:
-                    const data = getArrayTypeNodeSignature(typeNode, metaUtilObj);
-                    regTypes.add(data.type);
-                    if (data.reftype) {
-                        reftypes.add(data.reftype);
-                    }
-                    else {
-                        reftypes.add(data.type);
-                    }
-                    break;
-                case ts.SyntaxKind.TypeReference:
-                    const refTypeNode = typeNode;
-                    const refTypes = getTypeReferenceNodeSignature(refTypeNode, false, metaUtilObj);
-                    if (refTypes.enumValues) {
-                        refTypes.enumValues.forEach((val) => allEnums.add(val));
-                    }
-                    else if (refTypes.isStringTypeExplicit) {
-                        isStringTypeExplicit = true;
-                    }
-                    regTypes.add(refTypes.type);
-                    reftypes.add(refTypes['reftype']);
-                    break;
-                case ts.SyntaxKind.ParenthesizedType:
-                    const parTypeNode = typeNode;
-                    if (parTypeNode.type.kind === ts.SyntaxKind.FunctionType) {
-                        regTypes.add('function');
-                        reftypes.add(`( ${parTypeNode.type.getText()} )`);
-                    }
-                    break;
-                case ts.SyntaxKind.TypeLiteral:
-                    const typeLiteral = typeNode;
-                    regTypes.add('object');
-                    reftypes.add(typeLiteral.getText());
-                    break;
-                case ts.SyntaxKind.LiteralType:
-                    const literalTypes = getLiteralTypeNodeSignature(typeNode);
-                    if (literalTypes.enumValues) {
-                        literalTypes.enumValues.forEach((val) => allEnums.add(val));
-                    }
-                    regTypes.add(literalTypes.type);
-                    reftypes.add(literalTypes['reftype']);
-                    break;
-                case ts.SyntaxKind.TypeOperator: {
-                    let regTypeVal = 'any';
-                    const typeOperatorNode = typeNode;
-                    const operator = typeOperatorNode.operator.valueOf();
-                    let strOperator = '';
-                    if (operator === ts.SyntaxKind.KeyOfKeyword) {
-                        strOperator = 'keyof';
-                        regTypeVal = 'string | number';
-                    }
-                    if (operator === ts.SyntaxKind.UniqueKeyword) {
-                        strOperator = 'unique';
-                    }
-                    if (operator === ts.SyntaxKind.ReadonlyKeyword) {
-                        strOperator = 'readonly';
-                    }
-                    const typeOfOperator = typeOperatorNode.type.getText();
-                    regTypes.add(regTypeVal);
-                    reftypes.add(`${strOperator} ${typeOfOperator}`);
-                    break;
-                }
-                default:
-                    regTypes.add(strType);
-                    reftypes.add(strType);
-                    break;
-            }
-        });
-        let iter = regTypes.values();
-        if (regTypes.has('any')) {
-            typeObj['type'] = 'any';
-        }
-        else {
-            enumValues = [];
-            for (let val of iter) {
-                enumValues.push(val);
-            }
-            let result = enumValues.filter((type) => type.trim() !== 'null');
-            if (result.length == 1 && result[0] === 'Array<object>') {
-                typeObj.isArrayOfObject = true;
-            }
-            typeObj['type'] = enumValues.join('|');
-        }
-        iter = reftypes.values();
-        enumValues = [];
-        for (let val of iter) {
-            enumValues.push(val);
-        }
-        typeObj['reftype'] = enumValues.join('|');
-        if (allEnums.size > 0 && !isStringTypeExplicit) {
-            iter = allEnums.values();
-            enumValues = [];
-            for (let val of iter) {
-                enumValues.push(val);
-            }
-            typeObj.enumValues = enumValues;
-        }
-    }
-    return typeObj;
-}
-exports.getUnionTypeNodeSignature = getUnionTypeNodeSignature;
-function getTypeReferenceNodeSignature(node, isPropSignature, metaUtilObj) {
-    var _a, _b, _c, _d, _e;
-    const typeRefNode = node;
-    let refNodeTypeName = typeRefNode.typeName.getText();
-    const typeObject = metaUtilObj.typeChecker.getTypeAtLocation(typeRefNode);
-    if (isLiteralTypeObject(typeObject)) {
-        return getSignatureFromType(typeObject, isPropSignature, metaUtilObj);
-    }
-    const strType = metaUtilObj.typeChecker.typeToString(typeObject);
-    if (MetaUtils.isMappedType(typeObject)) {
-        refNodeTypeName = strType;
-    }
-    else if (typeRefNode.typeArguments) {
-        refNodeTypeName += MetaUtils.getGenericTypeParameters(typeRefNode);
-    }
-    let typeObj = {
-        type: strType,
-        reftype: refNodeTypeName
-    };
-    let symbol, kind;
-    let declaration;
-    if (typeObject.symbol) {
-        symbol = typeObject.symbol;
-        declaration = (_a = symbol.declarations) === null || _a === void 0 ? void 0 : _a[0];
-        kind = declaration.kind;
-    }
-    else if (typeObject.aliasSymbol) {
-        symbol = typeObject.aliasSymbol;
-        declaration = (_b = symbol.declarations) === null || _b === void 0 ? void 0 : _b[0];
-        if (declaration) {
-            declaration = declaration.type;
-            kind = declaration.kind;
-        }
-    }
-    if (!symbol) {
-        return typeObj;
-    }
-    else if (!declaration) {
-        typeObj['type'] = 'any';
-        return typeObj;
-    }
-    switch (kind) {
-        case ts.SyntaxKind.FunctionType:
-            typeObj = { type: 'function', reftype: refNodeTypeName };
-            break;
-        case ts.SyntaxKind.ArrayType:
-            typeObj = getArrayTypeNodeSignature(declaration, metaUtilObj);
-            typeObj.reftype = refNodeTypeName;
-            break;
-        case ts.SyntaxKind.UnionType:
-            typeObj = getUnionTypeNodeSignature(declaration, metaUtilObj);
-            typeObj.reftype = refNodeTypeName;
-            break;
-        case ts.SyntaxKind.InterfaceDeclaration:
-            if (symbol.name === 'Array') {
-                if (typeRefNode.typeArguments) {
-                    let typevars = '';
-                    let typearg = typeRefNode.typeArguments[0];
-                    if (ts.isTypeReferenceNode(typearg)) {
-                        let types = getTypeReferenceNodeSignature(typearg, false, metaUtilObj);
-                        typeObj['reftype'] = `Array<${(_c = types.reftype) !== null && _c !== void 0 ? _c : types.type}>`;
-                        typeObj['type'] = `Array<${types.type}>`;
-                        if (types.reftype && types.type === 'object') {
-                            typeObj.isArrayOfObject = true;
-                        }
-                        return typeObj;
-                    }
-                    else if (ts.isUnionTypeNode(typearg)) {
-                        let types = getUnionTypeNodeSignature(typearg, metaUtilObj);
-                        typeObj['reftype'] = `Array<${(_d = types.reftype) !== null && _d !== void 0 ? _d : types.type}>`;
-                        typeObj['type'] = `Array<${types.type}>`;
-                        let arrTypeNodes = typearg.types.filter(nullTypeNodeFilter);
-                        if (arrTypeNodes.length == 1) {
-                            const arrTypeNode = arrTypeNodes[0];
-                            if (ts.isTypeLiteralNode(arrTypeNode)) {
-                                typeObj.isArrayOfObject = true;
-                            }
-                            else if (ts.isTypeReferenceNode(arrTypeNode)) {
-                                let types = getTypeReferenceNodeSignature(arrTypeNode, false, metaUtilObj);
-                                if (types.reftype && types.type === 'object') {
-                                    typeObj.isArrayOfObject = true;
-                                }
-                            }
-                        }
-                        return typeObj;
-                    }
-                    else if (ts.isTypeLiteralNode(typearg)) {
-                        typevars = 'object';
-                    }
-                    else {
-                        typevars = typearg.getText();
-                    }
-                    typeObj['reftype'] = `Array<${typevars}>`;
-                    if (['string', 'number', 'boolean'].indexOf(typevars.toLowerCase()) > -1) {
-                        typeObj['type'] = `Array<${typevars.toLowerCase()}>`;
-                    }
-                    else {
-                        typeObj['type'] = 'Array<object>';
-                        if (typearg.kind === ts.SyntaxKind.TypeLiteral ||
-                            typearg.kind === ts.SyntaxKind.IntersectionType) {
-                            typeObj.isArrayOfObject = true;
-                        }
-                    }
-                }
-                else {
-                    if (typeObject.aliasSymbol) {
-                        symbol = typeObject.aliasSymbol;
-                        declaration = (_e = symbol.declarations) === null || _e === void 0 ? void 0 : _e[0];
-                        declaration = declaration.type;
-                        typeObj = {
-                            type: getArrayTypeNodeSignature(declaration, metaUtilObj).type,
-                            reftype: refNodeTypeName
-                        };
-                    }
-                }
-            }
-            else if (symbol.name === 'Function') {
-                typeObj['type'] = 'function';
-            }
-            else if (['Number', 'String', 'Boolean', 'Object'].indexOf(symbol.name) > -1) {
-                typeObj['reftype'] = strType;
-                typeObj['type'] = strType.toLowerCase();
-            }
-            else if (symbol.name === 'Promise') {
-                typeObj['type'] = 'Promise';
-            }
-            else {
-                typeObj['type'] =
-                    (isPropSignature && symbolHasPropertySignatureMembers(symbol)) || isDomType(typeObject)
-                        ? strType
-                        : 'object';
-            }
-            break;
-        case ts.SyntaxKind.TypeParameter:
-            typeObj['type'] = 'any';
-            typeObj['reftype'] = declaration.getText();
-            break;
-        case ts.SyntaxKind.EnumDeclaration:
-            const enumDeclaration = declaration;
-            const members = enumDeclaration.members;
-            let enums = [];
-            const initializer = members[0].initializer;
-            if (initializer && initializer.kind === ts.SyntaxKind.StringLiteral) {
-                typeObj['type'] = 'string';
-                members.forEach((member) => {
-                    enums.push(metaUtilObj.typeChecker.getConstantValue(member));
-                });
-                typeObj['enumValues'] = enums;
-            }
-            else {
-                typeObj['type'] = 'number';
-            }
-            break;
-        default:
-            typeObj['type'] =
-                (isPropSignature && symbolHasPropertySignatureMembers(symbol)) || isDomType(typeObject)
-                    ? strType
-                    : 'object';
-            break;
-    }
-    return typeObj;
-}
-exports.getTypeReferenceNodeSignature = getTypeReferenceNodeSignature;
-function getIndexedAccessTypeNodeSignature(indexedAccessNode, metaUtilObj) {
-    let indexedAccessType = metaUtilObj.typeChecker.getTypeAtLocation(indexedAccessNode);
-    return getSignatureFromType(indexedAccessType, true, metaUtilObj);
-}
-exports.getIndexedAccessTypeNodeSignature = getIndexedAccessTypeNodeSignature;
 function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
-    var _a, _b, _c;
+    var _a, _b;
     let typeObj;
     let unionWithNull = false;
     let unionTypes = [];
@@ -492,7 +145,7 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
             typeObj = { type: 'object', reftype: getTypeNameFromType(type) };
         }
         else if (type.isStringLiteral()) {
-            typeObj = { type: 'string', reftype: 'string', enumValues: [type.value] };
+            typeObj = { type: 'string', enumValues: [type.value] };
         }
         else if (type.isNumberLiteral()) {
             typeObj = { type: 'number', reftype: 'number' };
@@ -509,30 +162,26 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
         else if (type.flags & ts.TypeFlags.TemplateLiteral) {
             typeObj = { type: 'string', reftype: 'string', isStringTypeExplicit: true };
         }
-        else if (type.isTypeParameter() || MetaUtils.isAnyOrUnknownType(type)) {
+        else if (type.flags & ts.TypeFlags.Index) {
+            typeObj = { type: 'string|number', reftype: strType };
+        }
+        else if (type.isTypeParameter()) {
+            typeObj = { type: 'any', reftype: strType };
+            if (unionWithNull) {
+                typeObj.reftype += _OR_NULL;
+                unionWithNull = false;
+            }
+        }
+        else if (MetaUtils.isTypeTreatedAsAny(type)) {
             typeObj = { type: 'any' };
+            unionWithNull = false;
         }
         else if (MetaUtils.isObjectType(type)) {
             typeObj = { type: getTypeNameFromType(type) };
             let typeObjTypeParams = MetaUtils.getTypeParametersFromType(type, checker);
             typeObj.reftype = typeObjTypeParams ? typeObj.type + typeObjTypeParams : typeObj.type;
             if (typeObj.type === 'Array') {
-                const elementTypes = checker.getTypeArguments(type);
-                const arrayItemType = elementTypes === null || elementTypes === void 0 ? void 0 : elementTypes[0];
-                if (arrayItemType) {
-                    const arrayItemTypeObj = getSignatureFromType(arrayItemType, false, metaUtilObj);
-                    typeObj = {
-                        type: `Array<${arrayItemTypeObj.type}>`,
-                        reftype: `Array<${(_a = arrayItemTypeObj.reftype) !== null && _a !== void 0 ? _a : arrayItemTypeObj.type}>`
-                    };
-                    if (arrayItemTypeObj.reftype &&
-                        (arrayItemTypeObj.type === 'object' || arrayItemTypeObj.type === 'object|null')) {
-                        typeObj.isArrayOfObject = true;
-                    }
-                }
-                else {
-                    typeObj.type = strType;
-                }
+                typeObj = getSignatureFromArrayType(type, strType, metaUtilObj);
             }
             else if (typeObj.type === 'Number') {
                 typeObj = { type: 'number', reftype: 'Number' };
@@ -557,11 +206,11 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
                 let typeDecl;
                 if (type['symbol']) {
                     typeSymbol = type['symbol'];
-                    typeDecl = (_b = typeSymbol.declarations) === null || _b === void 0 ? void 0 : _b[0];
+                    typeDecl = (_a = typeSymbol.declarations) === null || _a === void 0 ? void 0 : _a[0];
                 }
                 else if (type['aliasSymbol']) {
                     typeSymbol = type['aliasSymbol'];
-                    typeDecl = (_c = typeSymbol.declarations) === null || _c === void 0 ? void 0 : _c[0];
+                    typeDecl = (_b = typeSymbol.declarations) === null || _b === void 0 ? void 0 : _b[0];
                     typeDecl = typeDecl.type;
                 }
                 if (typeSymbol && typeDecl) {
@@ -600,6 +249,15 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
                             typeObj.type = 'function';
                             typeObj.reftype = 'function';
                             break;
+                        case ts.SyntaxKind.InterfaceDeclaration:
+                            if (typeSymbol.name === 'Array') {
+                                typeObj = getSignatureFromArrayType(type, strType, metaUtilObj);
+                                break;
+                            }
+                            else if (typeSymbol.name === 'Promise') {
+                                typeObj = { type: 'Promise', reftype: 'Promise<void>' };
+                                break;
+                            }
                         default:
                             let keepObjectTypeName = (isPropSignatureType && symbolHasPropertySignatureMembers(typeSymbol)) ||
                                 isDomType(type);
@@ -615,6 +273,9 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
             typeObj = { type: strType };
         }
     }
+    if (typeObj.type === 'boolean' && (typeObj === null || typeObj === void 0 ? void 0 : typeObj.reftype) === 'boolean') {
+        delete typeObj.reftype;
+    }
     if (unionWithNull) {
         typeObj.type += _OR_NULL;
         if (typeObj.reftype) {
@@ -624,6 +285,27 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
     return typeObj;
 }
 exports.getSignatureFromType = getSignatureFromType;
+function getSignatureFromArrayType(type, fallbackType, metaUtilObj) {
+    var _a;
+    let typeObj;
+    const elementTypes = metaUtilObj.typeChecker.getTypeArguments(type);
+    const arrayItemType = elementTypes === null || elementTypes === void 0 ? void 0 : elementTypes[0];
+    if (arrayItemType) {
+        const arrayItemTypeObj = getSignatureFromType(arrayItemType, false, metaUtilObj);
+        typeObj = {
+            type: `Array<${arrayItemTypeObj.type}>`,
+            reftype: `Array<${(_a = arrayItemTypeObj.reftype) !== null && _a !== void 0 ? _a : arrayItemTypeObj.type}>`
+        };
+        if (arrayItemTypeObj.reftype &&
+            (arrayItemTypeObj.type === 'object' || arrayItemTypeObj.type === 'object|null')) {
+            typeObj.isArrayOfObject = true;
+        }
+    }
+    else {
+        typeObj.type = fallbackType;
+    }
+    return typeObj;
+}
 function getSignatureFromUnionTypes(unionTypes, metaUtilObj) {
     let typeObj;
     let types = new Set();
@@ -631,9 +313,10 @@ function getSignatureFromUnionTypes(unionTypes, metaUtilObj) {
     let enumvalues = new Set();
     let values;
     let isStringTypeExplicit = false;
-    unionTypes.forEach((type) => {
+    const checker = metaUtilObj.typeChecker;
+    for (let type of unionTypes) {
         if (MetaUtils.isConditionalType(type)) {
-            type = metaUtilObj.typeChecker.getApparentType(type);
+            type = checker.getApparentType(type);
             if (type.isUnion()) {
                 const unionTypeObj = getSignatureFromUnionTypes(type.types, metaUtilObj);
                 const unionTypeArray = unionTypeObj.type.split(MetaUtils._UNION_SPLITTER);
@@ -645,13 +328,17 @@ function getSignatureFromUnionTypes(unionTypes, metaUtilObj) {
                 if (unionTypeObj.enumValues) {
                     unionTypeObj.enumValues.forEach((enumVal) => enumvalues.add(enumVal));
                 }
-                return;
+                continue;
             }
         }
-        if (MetaUtils.isAnyOrUnknownType(type)) {
-            return { type: 'any' };
+        if (MetaUtils.isTypeTreatedAsAny(type)) {
+            types.clear();
+            reftypes.clear();
+            enumvalues.clear();
+            types.add('any');
+            break;
         }
-        let tFlags = type['flags'];
+        const tFlags = type.getFlags();
         if (type.isStringLiteral()) {
             types.add('string');
             reftypes.add('string');
@@ -678,30 +365,88 @@ function getSignatureFromUnionTypes(unionTypes, metaUtilObj) {
             types.add('bigint');
             reftypes.add('bigint');
         }
+        else if (tFlags & ts.TypeFlags.Index) {
+            types.add('string');
+            types.add('number');
+            reftypes.add(checker.typeToString(type));
+        }
         else if (tFlags & ts.TypeFlags.Object) {
-            let objtypeObj = getSignatureFromType(type, false, metaUtilObj);
+            const objtypeObj = getSignatureFromType(type, false, metaUtilObj);
             types.add(objtypeObj.type);
             reftypes.add(objtypeObj.reftype);
         }
+        else if (type.isIntersection()) {
+            const primitiveType = getPrimitiveTypeNameFromIntersectionPattern(type);
+            if (primitiveType !== undefined) {
+                types.add(primitiveType);
+                reftypes.add(primitiveType);
+                if (primitiveType === 'string') {
+                    isStringTypeExplicit = true;
+                }
+            }
+            else {
+                const objtypeObj = getSignatureFromType(type, false, metaUtilObj);
+                types.add(objtypeObj.type);
+                reftypes.add(objtypeObj.reftype);
+            }
+        }
         else {
-            const strType = metaUtilObj.typeChecker.typeToString(type);
-            types.add(strType);
+            const strType = checker.typeToString(type);
+            types.add(type.isTypeParameter() ? 'any' : strType);
             reftypes.add(strType);
         }
-    });
-    values = [...types];
-    typeObj = { type: values.join('|') };
-    if (values.length == 1 && values[0] === 'Array<object>') {
-        typeObj.isArrayOfObject = true;
     }
-    values = [...reftypes];
-    typeObj.reftype = values.join('|');
+    if (types.size > 1 && types.has('any')) {
+        typeObj = { type: 'any' };
+    }
+    else {
+        values = [...types];
+        typeObj = { type: values.join('|') };
+        if (values.length == 1 && values[0] === 'Array<object>') {
+            typeObj.isArrayOfObject = true;
+        }
+    }
+    if (reftypes.size > 0) {
+        values = [...reftypes];
+        typeObj.reftype = values.join('|');
+    }
     if (enumvalues.size > 0) {
         if (!isStringTypeExplicit) {
             typeObj.enumValues = [...enumvalues];
+            if (typeObj.type === 'string' || typeObj.type === 'string|null') {
+                delete typeObj.reftype;
+            }
         }
     }
     return typeObj;
+}
+function getPrimitiveTypeNameFromIntersectionPattern(intersectionType) {
+    let primitiveName;
+    let wasAnonymousEmptyObjFound = false;
+    if (intersectionType.types.length === 2) {
+        intersectionType.types.forEach((type) => {
+            var _a;
+            if (type.flags & ts.TypeFlags.String) {
+                primitiveName = 'string';
+            }
+            else if (type.flags & ts.TypeFlags.Number) {
+                primitiveName = 'number';
+            }
+            else if (type.flags & ts.TypeFlags.BigInt) {
+                primitiveName = 'bigint';
+            }
+            else if (type.flags & ts.TypeFlags.Object) {
+                const objType = type;
+                if (objType.objectFlags & ts.ObjectFlags.Anonymous) {
+                    const objSymbol = objType.symbol;
+                    if (!(((_a = objSymbol.members) === null || _a === void 0 ? void 0 : _a.size) > 0)) {
+                        wasAnonymousEmptyObjFound = true;
+                    }
+                }
+            }
+        });
+    }
+    return wasAnonymousEmptyObjFound && primitiveName ? primitiveName : undefined;
 }
 function getTypeNameFromTypeReference(node) {
     var _a, _b;
@@ -819,13 +564,13 @@ function getPropertyTypes(propDeclaration) {
     return types;
 }
 exports.getPropertyTypes = getPropertyTypes;
-function getComplexPropertyMetadata(memberSymbol, type, outerType, scope, stack, metaUtilObj) {
+function getComplexPropertyMetadata(memberSymbol, type, outerType, scope, flags, propertyPath, nestedArrayStack, metaUtilObj) {
     var _a;
     let seen = new Set();
     if (outerType) {
         seen.add(outerType);
     }
-    const returnObj = getComplexPropertyHelper(memberSymbol, type, seen, scope, stack, metaUtilObj);
+    const returnObj = getComplexPropertyHelper(memberSymbol, type, seen, scope, flags, propertyPath, nestedArrayStack, metaUtilObj);
     if (((_a = returnObj.circularRefs) === null || _a === void 0 ? void 0 : _a.length) > 0) {
         const circRefInfo = returnObj.circularRefs.pop();
         return { circRefDetected: { type: circRefInfo.circularType } };
@@ -837,19 +582,19 @@ function getSubstituteTypeForCircularReference(metaObj) {
     return metaObj.isArrayOfObject ? 'Array<object>' : 'object';
 }
 exports.getSubstituteTypeForCircularReference = getSubstituteTypeForCircularReference;
-function getAllMetadataForDeclaration(declarationWithType, scope, metaUtilObj, flags = MetaTypes.GETMD_FLAGS_NONE, declSymbol) {
+function getAllMetadataForDeclaration(declarationWithType, scope, flags, propertyPath, declSymbol, metaUtilObj) {
     var _a, _b;
     let metadata = {
         type: 'any'
     };
     let typeObj;
+    let refNodeTypeName;
     if (scope == MetaTypes.MetadataScope.DT) {
-        Object.assign(metadata, MetaUtils.getDtMetadata(declarationWithType, metaUtilObj, flags));
+        Object.assign(metadata, MetaUtils.getDtMetadata(declarationWithType, flags, propertyPath, metaUtilObj));
     }
     if (!declarationWithType.type) {
         if (ts.isPropertyDeclaration(declarationWithType)) {
-            const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName, declarationWithType);
-            console.log(`${logHeader} No type provided, defaulting to 'any' for property '${(_a = declarationWithType['name']) === null || _a === void 0 ? void 0 : _a.getText()}'.`);
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.DEFAULT_TO_ANY_TYPE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `No type provided, defaulting to 'any' for property '${(_a = declarationWithType['name']) === null || _a === void 0 ? void 0 : _a.getText()}'.`, declarationWithType);
         }
         return metadata;
     }
@@ -867,58 +612,37 @@ function getAllMetadataForDeclaration(declarationWithType, scope, metaUtilObj, f
         }
     }
     if (!typeObj) {
+        if (ts.isParenthesizedTypeNode(declTypeNode)) {
+            declTypeNode = declTypeNode.type;
+        }
         if (ts.isTypeReferenceNode(declTypeNode)) {
-            let refNodeTypeName = getTypeNameFromTypeReference(declTypeNode);
+            refNodeTypeName = getTypeNameFromTypeReference(declTypeNode);
             if (refNodeTypeName === `${metaUtilObj.namedExportToAlias.ElementReadOnly}` ||
                 refNodeTypeName === `${metaUtilObj.namedExportToAlias.ReadOnlyPropertyChanged}`) {
                 declTypeNode = (_b = declTypeNode.typeArguments) === null || _b === void 0 ? void 0 : _b[0];
             }
         }
-        else if (ts.isParenthesizedTypeNode(declTypeNode)) {
-            declTypeNode = declTypeNode.type;
-        }
-        let kind = declTypeNode.kind;
         let isPropSignature = ts.isPropertySignature(declarationWithType) || ts.isPropertyDeclaration(declarationWithType);
-        switch (kind) {
-            case ts.SyntaxKind.TypeReference:
-                typeObj = getTypeReferenceNodeSignature(declTypeNode, isPropSignature, metaUtilObj);
-                break;
-            case ts.SyntaxKind.FunctionType:
-                typeObj = getFunctionTypeNodeSignature(declTypeNode, metaUtilObj);
-                break;
-            case ts.SyntaxKind.ArrayType:
-                typeObj = getArrayTypeNodeSignature(declTypeNode, metaUtilObj);
-                break;
-            case ts.SyntaxKind.LiteralType:
-                typeObj = getLiteralTypeNodeSignature(declTypeNode);
-                break;
-            case ts.SyntaxKind.TemplateLiteralType:
-                typeObj = { type: 'string' };
-                break;
-            case ts.SyntaxKind.TypeLiteral:
-            case ts.SyntaxKind.IntersectionType:
-                typeObj = { type: 'object' };
-                break;
-            case ts.SyntaxKind.UnionType:
-                typeObj = getUnionTypeNodeSignature(declTypeNode, metaUtilObj);
-                break;
-            case ts.SyntaxKind.IndexedAccessType:
-                typeObj = getIndexedAccessTypeNodeSignature(declTypeNode, metaUtilObj);
-                break;
-            case ts.SyntaxKind.StringKeyword:
-            case ts.SyntaxKind.NumberKeyword:
-            case ts.SyntaxKind.BooleanKeyword:
-            default:
-                let symbolType = metaUtilObj.typeChecker.getTypeAtLocation(declTypeNode);
-                let strType = metaUtilObj.typeChecker.typeToString(symbolType);
-                typeObj = { type: strType };
-                break;
+        const type = metaUtilObj.typeChecker.getTypeAtLocation(declTypeNode);
+        typeObj = getSignatureFromType(type, isPropSignature, metaUtilObj);
+        if (refNodeTypeName) {
+            if (MetaUtils.isMappedType(type)) {
+                const strType = metaUtilObj.typeChecker.typeToString(type);
+                refNodeTypeName = strType;
+            }
+            else if (declTypeNode.typeArguments) {
+                refNodeTypeName += MetaUtils.getGenericTypeParameters(declTypeNode);
+            }
+            typeObj['reftype'] = refNodeTypeName;
         }
     }
-    if (scope == MetaTypes.MetadataScope.RT) {
+    if (scope === MetaTypes.MetadataScope.RT) {
         delete typeObj.reftype;
         delete typeObj.optional;
         delete typeObj.isStringTypeExplicit;
+    }
+    else if (flags & MetaTypes.MDFlags.PROP_RO_WRITEBACK) {
+        delete typeObj.reftype;
     }
     return Object.assign({}, metadata, typeObj);
 }
@@ -989,7 +713,7 @@ function getEnumStringsFromUnion(union) {
     return enums.length === union.types.length ? enums : null;
 }
 exports.getEnumStringsFromUnion = getEnumStringsFromUnion;
-function getComplexPropertyHelper(memberSymbol, type, seen, scope, stack, metaUtilObj) {
+function getComplexPropertyHelper(memberSymbol, type, seen, scope, flags, propertyPath, nestedArrayStack, metaUtilObj) {
     const checkMemberForCircularReference = function (circularTypeObj, seen) {
         let rtnRefInfo;
         if (seen.has(circularTypeObj.type)) {
@@ -1098,9 +822,10 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, stack, metaUt
         else {
             processedMembers += 1;
         }
-        const metaObj = getAllMetadataForDeclaration(symbol.valueDeclaration, scope == MetaTypes.MetadataScope.RT ? MetaTypes.MetadataScope.RT_EXTENDED : scope, metaUtilObj, MetaTypes.GETMD_FLAGS_NONE, symbol);
-        let type = metaObj.type;
         const prop = key;
+        const updatedPath = [...propertyPath, prop];
+        const metaObj = getAllMetadataForDeclaration(symbol.valueDeclaration, scope == MetaTypes.MetadataScope.RT ? MetaTypes.MetadataScope.RT_EXTENDED : scope, nestedArrayStack.length === 0 ? flags : flags | MetaTypes.MDFlags.EXT_ITEMPROPS, updatedPath, symbol, metaUtilObj);
+        let type = metaObj.type;
         const circularRefInfo = checkMemberForCircularReference(metaObj, seen);
         if (circularRefInfo) {
             circularRefs.push(circularRefInfo);
@@ -1115,11 +840,11 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, stack, metaUt
             let isExtensionMd = false;
             if (scope == MetaTypes.MetadataScope.DT && metaObj.isArrayOfObject) {
                 isExtensionMd = true;
-                stack.push(prop);
+                nestedArrayStack.push(prop);
             }
-            const returnObj = getComplexPropertyHelper(symbol, type, new Set(seen), scope, stack, metaUtilObj);
+            const returnObj = getComplexPropertyHelper(symbol, type, new Set(seen), scope, nestedArrayStack.length === 0 ? flags : flags | MetaTypes.MDFlags.EXT_ITEMPROPS, updatedPath, nestedArrayStack, metaUtilObj);
             if (isExtensionMd) {
-                stack.pop();
+                nestedArrayStack.pop();
             }
             if (((_b = returnObj.circularRefs) === null || _b === void 0 ? void 0 : _b.length) > 0) {
                 const circRefInfo = returnObj.circularRefs.pop();
@@ -1129,7 +854,7 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, stack, metaUt
             if (returnObj.metadata) {
                 if (metaObj.isArrayOfObject) {
                     if (scope == MetaTypes.MetadataScope.DT) {
-                        if (stack.length == 0) {
+                        if (nestedArrayStack.length == 0) {
                             metadata[prop].type = 'Array<object>';
                             metadata[prop].extension = {};
                             metadata[prop].extension['vbdt'] = {};
@@ -1149,10 +874,10 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, stack, metaUt
                     metadata[prop].properties = returnObj.metadata;
                 }
                 if (scope == MetaTypes.MetadataScope.DT) {
-                    const typeDefName = getPossibleTypeDef(prop, symbol, metaObj, metaUtilObj);
-                    if (typeDefName) {
+                    const typeDef = getPossibleTypeDef(prop, symbol, metaObj, metaUtilObj);
+                    if (typeDef && typeDef.name) {
                         metadata[prop]['jsdoc'] = metadata[prop]['jsdoc'] || {};
-                        metadata[prop]['jsdoc']['typedef'] = typeDefName;
+                        metadata[prop]['jsdoc']['typedef'] = typeDef;
                     }
                 }
             }
@@ -1161,81 +886,6 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, stack, metaUt
         delete metadata[prop]['reftype'];
     });
     return { metadata: processedMembers > 0 ? metadata : null };
-}
-function getArrayTypeNodeSignature(node, metaUtilObj) {
-    let typeObj = { type: 'Array' };
-    if (ts.isArrayTypeNode(node)) {
-        let elemTypeNode = node.elementType;
-        if (ts.isParenthesizedTypeNode(elemTypeNode)) {
-            elemTypeNode = elemTypeNode.type;
-        }
-        if (ts.isUnionTypeNode(elemTypeNode)) {
-            const unionTypeObj = getUnionTypeNodeSignature(elemTypeNode, metaUtilObj);
-            typeObj.type = `Array<${unionTypeObj.type}>`;
-            if (unionTypeObj.reftype) {
-                typeObj.reftype = `Array<${unionTypeObj.reftype}>`;
-            }
-        }
-        else if (ts.isTypeReferenceNode(elemTypeNode)) {
-            const typeRefTypeObj = getTypeReferenceNodeSignature(elemTypeNode, false, metaUtilObj);
-            typeObj.type = `Array<${typeRefTypeObj.type}>`;
-            if (typeRefTypeObj.reftype) {
-                typeObj.reftype = `Array<${typeRefTypeObj.reftype}>`;
-            }
-            const typeRefTypes = typeRefTypeObj.type.split(MetaUtils._UNION_SPLITTER);
-            if (typeRefTypes.indexOf('object') > -1 &&
-                (typeRefTypes.length === 1 ||
-                    (typeRefTypes.length === 2 && typeRefTypes.indexOf('null') > -1))) {
-                typeObj.isArrayOfObject = true;
-            }
-        }
-        else if (ts.isTypeLiteralNode(elemTypeNode)) {
-            typeObj.type = 'Array<object>';
-            typeObj.isArrayOfObject = true;
-        }
-        else {
-            typeObj.type = `Array<${elemTypeNode.getText()}>`;
-        }
-    }
-    else if (ts.isTypeReferenceNode(node)) {
-        let typesObj = getTypeReferenceNodeSignature(node, false, metaUtilObj);
-        typeObj.reftype = typesObj.reftype ? typesObj.reftype : typesObj.type;
-        typeObj.type = typesObj.type;
-        const typeRefTypes = typesObj.type.split(MetaUtils._UNION_SPLITTER);
-        if (typeRefTypes.indexOf('object') > -1 &&
-            (typeRefTypes.length === 1 ||
-                (typeRefTypes.length === 2 && typeRefTypes.indexOf('null') > -1))) {
-            typeObj.isArrayOfObject = true;
-        }
-    }
-    return typeObj;
-}
-function getFunctionTypeNodeSignature(node, metaUtilObj) {
-    let typeObj = { type: 'function' };
-    if (ts.isFunctionTypeNode(node)) {
-        const functionNode = node;
-        const parameters = functionNode.parameters;
-        let signature = '(';
-        for (let i = 0; i < parameters.length; i++) {
-            const parameter = parameters[i];
-            signature += parameter.name.getText();
-            if (parameter.type) {
-                const paramSymbolType = metaUtilObj.typeChecker.getTypeAtLocation(parameter.type);
-                const strType = metaUtilObj.typeChecker.typeToString(paramSymbolType);
-                signature += `:${strType}`;
-            }
-            if (i < parameters.length - 1) {
-                signature += ',';
-            }
-        }
-        signature += ')';
-        const returnType = functionNode.type;
-        const returnTypeSymbol = metaUtilObj.typeChecker.getTypeAtLocation(returnType);
-        const strType = metaUtilObj.typeChecker.typeToString(returnTypeSymbol);
-        signature += ` => ${strType}`;
-        typeObj['reftype'] = signature;
-    }
-    return typeObj;
 }
 function isDomType(symbolType) {
     var _a;
@@ -1248,14 +898,6 @@ function isDomType(symbolType) {
                 sourceFile.fileName.indexOf('typescript/lib/lib.dom.d.ts') > -1;
     }
     return isDomType;
-}
-function isLiteralTypeObject(type) {
-    return (type.isLiteral() ||
-        !!(type.flags &
-            (ts.TypeFlags.BigIntLiteral |
-                ts.TypeFlags.BooleanLiteral |
-                ts.TypeFlags.Null |
-                ts.TypeFlags.TemplateLiteral)));
 }
 function getTypeRefNodeForPropDeclaration(declaration, metaUtilObj) {
     var _a, _b;
@@ -1353,8 +995,9 @@ function getSymbolTypeFromIndexedAccessTypeNode(indexedAccessNode, metaUtilObj) 
     return rtnType;
 }
 function getPossibleTypeDef(prop, memberSymbol, metaObj, metaUtilObj) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     let typeName;
+    let typedefObj = {};
     if (metaObj.reftype) {
         try {
             let symbolType = metaUtilObj.typeChecker
@@ -1363,13 +1006,22 @@ function getPossibleTypeDef(prop, memberSymbol, metaObj, metaUtilObj) {
             if (!(symbolType.isIntersection() || MetaUtils.isMappedType(symbolType))) {
                 const kind = memberSymbol.valueDeclaration.kind;
                 const declaration = memberSymbol.valueDeclaration;
-                if (kind == ts.SyntaxKind.PropertyDeclaration || kind == ts.SyntaxKind.PropertySignature) {
+                if (kind === ts.SyntaxKind.PropertyDeclaration ||
+                    kind === ts.SyntaxKind.PropertySignature ||
+                    kind === ts.SyntaxKind.Parameter) {
                     const typeRefNode = getTypeRefNodeForPropDeclaration(declaration, metaUtilObj);
-                    if (typeRefNode && ts.isTypeReferenceNode(typeRefNode)) {
+                    if (typeRefNode) {
                         symbolType = metaUtilObj.typeChecker.getTypeAtLocation(typeRefNode);
-                        if (!!(symbolType['flags'] & ts.SymbolFlags.TypeAlias)) {
-                            const type = getTypeNameFromTypeReference(typeRefNode);
+                        if (symbolType && !!(symbolType['flags'] & ts.SymbolFlags.TypeAlias)) {
                             const typeAliasDeclaration = ((_b = (_a = symbolType.aliasSymbol) === null || _a === void 0 ? void 0 : _a.declarations) === null || _b === void 0 ? void 0 : _b[0]) || ((_d = (_c = symbolType.symbol) === null || _c === void 0 ? void 0 : _c.declarations) === null || _d === void 0 ? void 0 : _d[0]);
+                            const type = (_e = typeAliasDeclaration.name) === null || _e === void 0 ? void 0 : _e.getText();
+                            if (!type) {
+                                return typedefObj;
+                            }
+                            const md = MetaUtils.getDtMetadata(typeAliasDeclaration, MetaTypes.MDFlags.COMP, null, metaUtilObj) || {};
+                            const signature = getGenericsAndTypeParametersFromType(typeAliasDeclaration, metaUtilObj) ||
+                                {};
+                            typedefObj = Object.assign(Object.assign({}, md['jsdoc']), signature);
                             if (typeAliasDeclaration.kind == ts.SyntaxKind.TypeAliasDeclaration) {
                                 const exportedSymbol = metaUtilObj.typeChecker.getExportSymbolOfSymbol(symbolType.aliasSymbol ? symbolType.aliasSymbol : symbolType.symbol);
                                 if (exportedSymbol) {
@@ -1393,7 +1045,8 @@ function getPossibleTypeDef(prop, memberSymbol, metaObj, metaUtilObj) {
             console.log(`Unexpected error happened during typdef lookup for ${prop}`);
         }
     }
-    return typeName;
+    typedefObj.name = typeName;
+    return typedefObj;
 }
 exports.getPossibleTypeDef = getPossibleTypeDef;
 function isLocalExport(typeRefNode, metaUtilObj) {

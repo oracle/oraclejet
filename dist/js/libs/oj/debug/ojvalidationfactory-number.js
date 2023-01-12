@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -58,13 +58,13 @@ var NumberConverterFactory = (function () {
       return _createNumberConverter(options);
     }
   };
-}()); // notice immediate invocation of anonymous function
+})(); // notice immediate invocation of anonymous function
 
 /** Register the default factory provider function */
 __ValidationFactoryBase.Validation.__registerDefaultConverterFactory(
   __ValidationFactoryBase.ConverterFactory.CONVERTER_TYPE_NUMBER, // factory name
-  NumberConverterFactory);
-
+  NumberConverterFactory
+);
 
 // JET VALIDATOR FACTORIES
 
@@ -111,13 +111,13 @@ var NumberRangeValidatorFactory = (function () {
       return _createNumberRangeValidator(options);
     }
   };
-}()); // notice immediate invocation of anonymous function
+})(); // notice immediate invocation of anonymous function
 
 /** Register the default factory provider function */
 __ValidationFactoryBase.Validation.__registerDefaultValidatorFactory(
   __ValidationFactoryBase.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE,
-  NumberRangeValidatorFactory);
-
+  NumberRangeValidatorFactory
+);
 
 
 /* global NumberConverterFactory:false, NumberRangeValidatorFactory:false */
@@ -125,7 +125,6 @@ __ValidationFactoryBase.Validation.__registerDefaultValidatorFactory(
 var __ValidationFactoryNumber = {};
 __ValidationFactoryNumber.NumberConverterFactory = NumberConverterFactory;
 __ValidationFactoryNumber.NumberRangeValidatorFactory = NumberRangeValidatorFactory;
-
 
   ;return __ValidationFactoryNumber;
 });

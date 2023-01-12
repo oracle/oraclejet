@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -9,7 +9,7 @@ import { ExpParser } from 'ojs/ojexpparser';
 
 /**
  * @license
- * Copyright (c) 2019 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2019 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  *
@@ -20,7 +20,7 @@ import { ExpParser } from 'ojs/ojexpparser';
  * @ignore
  */
 
- /**
+/**
  * @ignore
  * @constructor
  */
@@ -48,19 +48,21 @@ const CspExpressionEvaluatorInternal = function (options) {
       _throwErrorWithExpression(e, expressionText);
     }
     var extraScope = _options.globalScope;
-    return { evaluate: function (contexts) {
-      var ret;
-      var scopes = contexts;
-      if (extraScope) {
-        scopes = contexts.concat([extraScope]);
+    return {
+      evaluate: function (contexts) {
+        var ret;
+        var scopes = contexts;
+        if (extraScope) {
+          scopes = contexts.concat([extraScope]);
+        }
+        try {
+          ret = _evaluate(parsed, scopes);
+        } catch (e) {
+          _throwErrorWithExpression(e, expressionText);
+        }
+        return ret;
       }
-      try {
-        ret = _evaluate(parsed, scopes);
-      } catch (e) {
-        _throwErrorWithExpression(e, expressionText);
-      }
-      return ret;
-    } };
+    };
   };
 
   /**
@@ -77,35 +79,87 @@ const CspExpressionEvaluatorInternal = function (options) {
   // expression is evaluated only if it is needed and only after
   // left hand expression is evaluated.
   var _binops = {
-    '||': function (a, b) { return a || b(); },
-    '&&': function (a, b) { return a && b(); },
-    '|': function (a, b) { return a | b; },
-    '^': function (a, b) { return a ^ b; },
-    '&': function (a, b) { return a & b; },
-    '==': function (a, b) { return a == b; },
-    '!=': function (a, b) { return a != b; },
-    '===': function (a, b) { return a === b; },
-    '!==': function (a, b) { return a !== b; },
-    '<': function (a, b) { return a < b; },
-    '>': function (a, b) { return a > b; },
-    '<=': function (a, b) { return a <= b; },
-    '>=': function (a, b) { return a >= b; },
-    '<<': function (a, b) { return a << b; },
-    '>>': function (a, b) { return a >> b; },
-    '>>>': function (a, b) { return a >>> b; },
-    '+': function (a, b) { return a + b; },
-    '-': function (a, b) { return a - b; },
-    '*': function (a, b) { return a * b; },
-    '/': function (a, b) { return a / b; },
-    '%': function (a, b) { return a % b; }
+    '||': function (a, b) {
+      return a || b();
+    },
+    '&&': function (a, b) {
+      return a && b();
+    },
+    '|': function (a, b) {
+      return a | b;
+    },
+    '^': function (a, b) {
+      return a ^ b;
+    },
+    '&': function (a, b) {
+      return a & b;
+    },
+    '==': function (a, b) {
+      return a == b;
+    },
+    '!=': function (a, b) {
+      return a != b;
+    },
+    '===': function (a, b) {
+      return a === b;
+    },
+    '!==': function (a, b) {
+      return a !== b;
+    },
+    '<': function (a, b) {
+      return a < b;
+    },
+    '>': function (a, b) {
+      return a > b;
+    },
+    '<=': function (a, b) {
+      return a <= b;
+    },
+    '>=': function (a, b) {
+      return a >= b;
+    },
+    '<<': function (a, b) {
+      return a << b;
+    },
+    '>>': function (a, b) {
+      return a >> b;
+    },
+    '>>>': function (a, b) {
+      return a >>> b;
+    },
+    '+': function (a, b) {
+      return a + b;
+    },
+    '-': function (a, b) {
+      return a - b;
+    },
+    '*': function (a, b) {
+      return a * b;
+    },
+    '/': function (a, b) {
+      return a / b;
+    },
+    '%': function (a, b) {
+      return a % b;
+    }
   };
 
   var _unops = {
-    '-': function (a) { return -a; },
-    '+': function (a) { return a; },
-    '~': function (a) { return ~a; },
-    '!': function (a) { return !a; },
-    '...': function (a) { return new _Spread(a); },
+    '-': function (a) {
+      return -a;
+    },
+    '+': function (a) {
+      return a;
+    },
+    '~': function (a) {
+      return ~a;
+    },
+    '!': function (a) {
+      return !a;
+    },
+    '...': function (a) {
+      return new _Spread(a);
+    }
   };
 
   function _Spread(list) {
@@ -154,15 +208,17 @@ const CspExpressionEvaluatorInternal = function (options) {
 
       case 6: // 'BinaryExpression'
         if (node.operator === '=') {
-          return _evaluateAssignment(node.left, contexts,
-            _evaluate(node.right, contexts));
+          return _evaluateAssignment(node.left, contexts, _evaluate(node.right, contexts));
         }
-        return _binops[node.operator](_evaluate(node.left, contexts),
-          _evaluate(node.right, contexts));
+        return _binops[node.operator](
+          _evaluate(node.left, contexts),
+          _evaluate(node.right, contexts)
+        );
 
       case 7: // 'LogicalExpression':
-        return _binops[node.operator](_evaluate(node.left, contexts),
-            function () { return _evaluate(node.right, contexts); });
+        return _binops[node.operator](_evaluate(node.left, contexts), function () {
+          return _evaluate(node.right, contexts);
+        });
 
       case 8: // 'ConditionalExpression'
         return _evaluate(node.test, contexts)
@@ -187,16 +243,15 @@ const CspExpressionEvaluatorInternal = function (options) {
   }
 
   function _evaluateArray(list, contexts) {
-    return list.reduce(
-      (acc, v) => {
-        const elem = _evaluate(v, contexts);
-        if (elem instanceof _Spread) {
-          acc.push(...elem.items());
-        } else {
-          acc.push(elem);
-        }
-        return acc;
-      }, []);
+    return list.reduce((acc, v) => {
+      const elem = _evaluate(v, contexts);
+      if (elem instanceof _Spread) {
+        acc.push(...elem.items());
+      } else {
+        acc.push(elem);
+      }
+      return acc;
+    }, []);
   }
 
   function _evaluateMember(node, contexts) {
@@ -211,13 +266,10 @@ const CspExpressionEvaluatorInternal = function (options) {
   }
 
   function _evaluateObjectExpression(node, contexts) {
-    return node.properties.reduce(
-      function (acc, curr) {
-        acc[curr.key] = _evaluate(curr.value, contexts);
-        return acc;
-      },
-      {}
-    );
+    return node.properties.reduce(function (acc, curr) {
+      acc[curr.key] = _evaluate(curr.value, contexts);
+      return acc;
+    }, {});
   }
 
   // eslint-disable-next-line consistent-return
@@ -249,13 +301,11 @@ const CspExpressionEvaluatorInternal = function (options) {
         target[name] = val;
         break;
       case 2: // 'MemberExpression'
-        var key = node.computed ?
-          _evaluate(node.property, contexts) : node.property.name;
+        var key = node.computed ? _evaluate(node.property, contexts) : node.property.name;
         _evaluateMember(node, contexts)[0][key] = val;
         break;
       default:
-        _throwError('Expression of type: ' + node.type +
-          ' not supported for assignment');
+        _throwError('Expression of type: ' + node.type + ' not supported for assignment');
     }
     return val;
   }
@@ -265,12 +315,10 @@ const CspExpressionEvaluatorInternal = function (options) {
     return function () {
       var _args = arguments;
 
-      var argScope = node.arguments.reduce(
-        function (acc, arg, i) {
-          acc[arg.name] = _args[i];
-          return acc;
-        }, {}
-      );
+      var argScope = node.arguments.reduce(function (acc, arg, i) {
+        acc[arg.name] = _args[i];
+        return acc;
+      }, {});
 
       // eslint-disable-next-line dot-notation
       argScope['this'] = this;
@@ -294,8 +342,10 @@ const CspExpressionEvaluatorInternal = function (options) {
     }
 
     // eslint-disable-next-line new-parens
-    return new (Function.prototype.bind.apply(constrObj,
-      [null].concat(_evaluateArray(node.arguments, contexts))));
+    return new (Function.prototype.bind.apply(
+      constrObj,
+      [null].concat(_evaluateArray(node.arguments, contexts))
+    ))();
   }
 
   function _getContextForIdentifier(contexts, name) {

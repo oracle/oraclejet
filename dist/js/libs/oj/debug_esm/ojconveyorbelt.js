@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -73,14 +73,14 @@ var __oj_conveyor_belt_metadata =
 (function () {
   __oj_conveyor_belt_metadata.extension._WIDGET_NAME = 'ojConveyorBelt';
   oj.CustomElementBridge.register('oj-conveyor-belt', { metadata: __oj_conveyor_belt_metadata });
-}());
+})();
 
 /*
-** Important:
-** - This file is designed to be shared verbatim among the ADFui products.
-** - Do not add framework-specific dependencies in this file (it must be self-contained).
-** - Do not change this file without testing it in other ADFui products (ADF Faces, JET, etc.).
-*/
+ ** Important:
+ ** - This file is designed to be shared verbatim among the ADFui products.
+ ** - Do not add framework-specific dependencies in this file (it must be self-contained).
+ ** - Do not change this file without testing it in other ADFui products (ADF Faces, JET, etc.).
+ */
 
 /**
  * Constructor.
@@ -120,8 +120,8 @@ var __oj_conveyor_belt_metadata =
  * @ignore
  * @ojtsignore
  */
-function ConveyorBeltCommon(
-  elem, options, buttonInfo, callbackInfo, styleInfo) { //  orientation, contentParent, bRtl, buttonInfo, callbackInfo, styleInfo) {
+function ConveyorBeltCommon(elem, options, buttonInfo, callbackInfo, styleInfo) {
+  //  orientation, contentParent, bRtl, buttonInfo, callbackInfo, styleInfo) {
   this._elem = elem;
   this._orientation = options.orientation;
   this._contentParent = options.contentParent;
@@ -197,32 +197,40 @@ ConveyorBeltCommon.prototype.setup = function () {
   this._touchStartListener = function (event) {
     self._handleTouchStart(event);
   };
-  cbcClass._addBubbleEventListener(this._overflowContainer, 'touchstart',
-                                  this._touchStartListener, true);
+  cbcClass._addBubbleEventListener(
+    this._overflowContainer,
+    'touchstart',
+    this._touchStartListener,
+    true
+  );
   this._touchMoveListener = function (event) {
     self._handleTouchMove(event);
   };
-  cbcClass._addBubbleEventListener(this._overflowContainer, 'touchmove',
-                                   this._touchMoveListener, false);
+  cbcClass._addBubbleEventListener(
+    this._overflowContainer,
+    'touchmove',
+    this._touchMoveListener,
+    false
+  );
   this._touchEndListener = function (event) {
     self._handleTouchEnd(event);
   };
-  cbcClass._addBubbleEventListener(this._overflowContainer, 'touchend',
-                                   this._touchEndListener);
-  cbcClass._addBubbleEventListener(this._overflowContainer, 'touchcancel',
-                                   this._touchEndListener);
+  cbcClass._addBubbleEventListener(this._overflowContainer, 'touchend', this._touchEndListener);
+  cbcClass._addBubbleEventListener(this._overflowContainer, 'touchcancel', this._touchEndListener);
 
   this._handleKeyDownFunc = function (event) {
     self._handleKeyDown(event);
   };
 
-  cbcClass._addBubbleEventListener(this._elem, 'keydown',
-                                   this._handleKeyDownFunc);
+  cbcClass._addBubbleEventListener(this._elem, 'keydown', this._handleKeyDownFunc);
 
   this._handleFocusListener = function (event) {
     self._handleFocus(event);
   };
-  this._elem.addEventListener('focus', this._handleFocusListener, { passive: false, capture: true });
+  this._elem.addEventListener('focus', this._handleFocusListener, {
+    passive: false,
+    capture: true
+  });
   // initial value from the scrollPosition option
   this._origScroll = this._scrollPosition;
 
@@ -238,10 +246,8 @@ ConveyorBeltCommon.prototype.setup = function () {
     self._handleResize(false);
   };
   // listen for resizes on both the conveyor itself and on its content
-  this._addResizeListenerFunc(this._elem,
-                              this._handleResizeFunc);
-  this._addResizeListenerFunc(this._contentContainer,
-                              this._handleResizeFunc);
+  this._addResizeListenerFunc(this._elem, this._handleResizeFunc);
+  this._addResizeListenerFunc(this._contentContainer, this._handleResizeFunc);
 
   // notify the child that it's being re-attached to the DOM AFTER attaching it
   // (the detached notification happened in _reparentChildrenToContentContainer())
@@ -320,7 +326,6 @@ ConveyorBeltCommon.prototype._scrollPrevOnKeyDown = function (event) {
   }
 };
 
-
 /**
  * Destroy the conveyor belt.
  * @return {void}
@@ -335,19 +340,30 @@ ConveyorBeltCommon.prototype.destroy = function () {
   var cbcClass = ConveyorBeltCommon;
   cbcClass._removeBubbleEventListener(elem, 'mousewheel', this._mouseWheelListener, false);
   cbcClass._removeBubbleEventListener(elem, 'wheel', this._mouseWheelListener, false);
-  cbcClass._removeBubbleEventListener(this._overflowContainer, 'touchstart',
-                                      this._touchStartListener, true);
-  cbcClass._removeBubbleEventListener(this._overflowContainer, 'touchmove',
-                                      this._touchMoveListener, false);
-  cbcClass._removeBubbleEventListener(this._overflowContainer, 'touchend',
-                                      this._touchEndListener);
-  cbcClass._removeBubbleEventListener(this._overflowContainer, 'touchcancel',
-                                      this._touchEndListener);
-  cbcClass._removeBubbleEventListener(this._overflowContainer, 'scroll',
-                                      this._scrollListener);
-  cbcClass._removeBubbleEventListener(this._elem, 'keydown',
-                                      this._handleKeyDownFunc);
-  this._elem.removeEventListener('focus', this._handleFocusListener, { passive: false, capture: true });
+  cbcClass._removeBubbleEventListener(
+    this._overflowContainer,
+    'touchstart',
+    this._touchStartListener,
+    true
+  );
+  cbcClass._removeBubbleEventListener(
+    this._overflowContainer,
+    'touchmove',
+    this._touchMoveListener,
+    false
+  );
+  cbcClass._removeBubbleEventListener(this._overflowContainer, 'touchend', this._touchEndListener);
+  cbcClass._removeBubbleEventListener(
+    this._overflowContainer,
+    'touchcancel',
+    this._touchEndListener
+  );
+  cbcClass._removeBubbleEventListener(this._overflowContainer, 'scroll', this._scrollListener);
+  cbcClass._removeBubbleEventListener(this._elem, 'keydown', this._handleKeyDownFunc);
+  this._elem.removeEventListener('focus', this._handleFocusListener, {
+    passive: false,
+    capture: true
+  });
   this._mouseWheelListener = null;
   this._touchStartListener = null;
   this._touchMoveListener = null;
@@ -435,8 +451,7 @@ ConveyorBeltCommon.prototype.getScroll = function () {
  * @instance
  * @private
  */
-ConveyorBeltCommon.prototype._reparentChildrenToContentContainer = function (
-  fromNode, toNode) {
+ConveyorBeltCommon.prototype._reparentChildrenToContentContainer = function (fromNode, toNode) {
   var fromNodeChildren = fromNode.childNodes;
   while (fromNodeChildren.length > 0) {
     var child = fromNodeChildren[0];
@@ -453,7 +468,6 @@ ConveyorBeltCommon.prototype._reparentChildrenToContentContainer = function (
   }
 };
 
-
 /**
  * Reparent the DOM child nodes from the content container to a new
  * parent node.
@@ -464,8 +478,7 @@ ConveyorBeltCommon.prototype._reparentChildrenToContentContainer = function (
  * @instance
  * @private
  */
-ConveyorBeltCommon.prototype._reparentChildrenFromContentContainer = function (
-  fromNode, toNode) {
+ConveyorBeltCommon.prototype._reparentChildrenFromContentContainer = function (fromNode, toNode) {
   var children = fromNode.childNodes;
   while (children.length > 0) {
     var child = children[0];
@@ -527,7 +540,7 @@ ConveyorBeltCommon._getElemInnerHeight = function (elem) {
  */
 ConveyorBeltCommon._getCSSLengthAsInt = function (cssLength) {
   // this function copied from AdfAgent.getCSSLengthAsInt
-  if ((cssLength.length) > 0 && (cssLength !== 'auto')) {
+  if (cssLength.length > 0 && cssLength !== 'auto') {
     // Fix  - CONVEYOR BELT TAB SCROLLING DOESN'T SCROLL THE LAST ITEM ENTIRELY INTO VIEW
     // offsetWidth/offsetHeight property will round the value to an integer
     // similarly, round the cssLength to the nearest integer
@@ -612,7 +625,7 @@ ConveyorBeltCommon._getWheelDelta = function (event) {
  * @private
  */
 ConveyorBeltCommon.prototype._isHorizontal = function () {
-  return (this._orientation === 'horizontal');
+  return this._orientation === 'horizontal';
 };
 
 /**
@@ -723,15 +736,15 @@ ConveyorBeltCommon.prototype._adjustOverflowSize = function (bInit) {
   var bHoriz = this._isHorizontal();
 
   var cbcClass = ConveyorBeltCommon;
-  var elemInnerSize = bHoriz ?
-                      cbcClass._getElemInnerWidth(this._elem) :
-                      cbcClass._getElemInnerHeight(this._elem);
+  var elemInnerSize = bHoriz
+    ? cbcClass._getElemInnerWidth(this._elem)
+    : cbcClass._getElemInnerHeight(this._elem);
 
   this._minScroll = 0;
   // take the button size into account for max scroll position
-  this._maxScroll = bHoriz ?
-    (contentContainer.offsetWidth - elemInnerSize) + this._buttonWidth :
-    (contentContainer.offsetHeight - elemInnerSize) + this._buttonHeight;
+  this._maxScroll = bHoriz
+    ? contentContainer.offsetWidth - elemInnerSize + this._buttonWidth
+    : contentContainer.offsetHeight - elemInnerSize + this._buttonHeight;
   // constrain max scroll
   if (this._maxScroll < 0) {
     this._maxScroll = 0;
@@ -803,7 +816,7 @@ ConveyorBeltCommon.prototype._getContentElements = function () {
   var i;
   for (i = 0; i < numContentChildren; i++) {
     var child = contentChildren[i];
-    if (child.nodeType === 1 && (child.tagName !== 'TEMPLATE') && child.offsetWidth !== 0) {
+    if (child.nodeType === 1 && child.tagName !== 'TEMPLATE' && child.offsetWidth !== 0) {
       arContentElements.push(child);
     }
   }
@@ -835,8 +848,7 @@ ConveyorBeltCommon.prototype._getContentElements = function () {
  * @instance
  * @private
  */
-ConveyorBeltCommon.prototype._createPrevButton = function (
-  buttonStyleClass, icon) {
+ConveyorBeltCommon.prototype._createPrevButton = function (buttonStyleClass, icon) {
   var self = this;
   var prevButton = document.createElement('div');
   this._prevButton = prevButton;
@@ -863,8 +875,7 @@ ConveyorBeltCommon.prototype._createPrevButton = function (
  * @instance
  * @private
  */
-ConveyorBeltCommon.prototype._createNextButton = function (
-  buttonStyleClass, icon) {
+ConveyorBeltCommon.prototype._createNextButton = function (buttonStyleClass, icon) {
   var self = this;
   var nextButton = document.createElement('div');
   this._nextButton = nextButton;
@@ -1148,8 +1159,7 @@ ConveyorBeltCommon.prototype._getCurrViewportSize = function () {
  * @instance
  * @private
  */
-ConveyorBeltCommon.prototype._setCurrScroll = function (scroll,
-                                                        bImmediate) {
+ConveyorBeltCommon.prototype._setCurrScroll = function (scroll, bImmediate) {
   // don't do anything if we're already in the middle of scrolling
   if (!this._bScrolling) {
     // if this function is called, the conveyor internally initiated the scroll, so turn off the
@@ -1168,8 +1178,7 @@ ConveyorBeltCommon.prototype._setCurrScroll = function (scroll,
  * @instance
  * @private
  */
-ConveyorBeltCommon.prototype._setCurrScrollHelper = function (scroll,
-                                                              bImmediate) {
+ConveyorBeltCommon.prototype._setCurrScrollHelper = function (scroll, bImmediate) {
   if (this._isEmpty()) {
     return;
   }
@@ -1205,9 +1214,7 @@ ConveyorBeltCommon.prototype._setCurrScrollHelper = function (scroll,
     // scrollFunc delegates to jQuery.animate() to animate scrollLeft.
     // Most browsers use negative scroll value in RTL, except for old ie/edge that still use positive values
     // DomUtils.calculateScrollLeft converts the logical scroll to the correct browser value.
-    scrollFunc(this._overflowContainer,
-               calculateScrollLeft(scroll),
-               duration, onEndFunc);
+    scrollFunc(this._overflowContainer, calculateScrollLeft(scroll), duration, onEndFunc);
   }
 };
 
@@ -1234,8 +1241,9 @@ ConveyorBeltCommon.prototype._resolveBusyState = function () {
  */
 ConveyorBeltCommon.prototype._getCurrScroll = function () {
   var container = this._overflowContainer;
-  return this._isHorizontal() ? Math.round(Math.abs(container.scrollLeft)) :
-  Math.round(container.scrollTop);
+  return this._isHorizontal()
+    ? Math.round(Math.abs(container.scrollLeft))
+    : Math.round(container.scrollTop);
 };
 
 /**
@@ -1248,9 +1256,9 @@ ConveyorBeltCommon.prototype._getCurrScroll = function () {
 ConveyorBeltCommon.prototype._needsScroll = function () {
   var contentContainer = this._contentContainer;
   var overflowContainer = this._overflowContainer;
-  return this._isHorizontal() ?
-    contentContainer.offsetWidth > overflowContainer.offsetWidth :
-    contentContainer.offsetHeight > overflowContainer.offsetHeight;
+  return this._isHorizontal()
+    ? contentContainer.offsetWidth > overflowContainer.offsetWidth
+    : contentContainer.offsetHeight > overflowContainer.offsetHeight;
 };
 
 /**
@@ -1294,7 +1302,7 @@ ConveyorBeltCommon.prototype._handleMouseWheel = function (event) {
       bConsumeEvent = true;
       this._setCurrScroll(scroll, true);
     }
-   }
+  }
   if (bConsumeEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -1329,7 +1337,6 @@ ConveyorBeltCommon.prototype._handleTouchStart = function (event) {
   }
 };
 
-
 /**
  * Handle a touchmove event.
  * @param {Event} event Event object
@@ -1346,10 +1353,10 @@ ConveyorBeltCommon.prototype._handleTouchMove = function (event) {
   var diff = this._touchCurrentCoord - this._touchLastCoord;
   // in non-RTL, if swiping left or up, scroll next; otherwise scroll prev
   // in RTL, if swiping right or up, scroll next; otherwise scroll prev
-  var bNext = (bHoriz && this._bRtl) ? (diff > 0) : (diff < 0);
+  var bNext = bHoriz && this._bRtl ? diff > 0 : diff < 0;
   // determine whether the conveyor can be scrolled in the direction of the swipe
-  var canScrollInSwipeDirection = (bNext && this._touchInitialNotAtEnd) ||
-                                  (!bNext && this._touchInitialNotAtStart);
+  var canScrollInSwipeDirection =
+    (bNext && this._touchInitialNotAtEnd) || (!bNext && this._touchInitialNotAtStart);
   // only need to do something if we also received the touchstart and if we can
   // scroll in the swipe direction
   if (this._bTouch && this._firstTouch.id === currentTouch.id && canScrollInSwipeDirection) {
@@ -1363,8 +1370,10 @@ ConveyorBeltCommon.prototype._handleTouchMove = function (event) {
     // if we're under the threshold, but we've already scrolled to the end,
     // then we don't need to continue trying to scroll and we don't need to
     // reset the scroll position at the end of the touch
-    if ((this._touchInitialNotAtEnd && this._atEnd) ||
-        (this._touchInitialNotAtStart && this._atStart)) {
+    if (
+      (this._touchInitialNotAtEnd && this._atEnd) ||
+      (this._touchInitialNotAtStart && this._atStart)
+    ) {
       this._bTouch = false;
     }
     // FIX : set a flag indicating we've scrolled for this touch event
@@ -1406,17 +1415,17 @@ ConveyorBeltCommon.prototype._addTrackingPoint = function (coord) {
   }
   var time = Date.now();
   while (this._trackingPoints.length > 0) {
-      if (time - this._trackingPoints[0].time <= 100) {
-          break;
-      }
-      this._trackingPoints.shift();
+    if (time - this._trackingPoints[0].time <= 100) {
+      break;
+    }
+    this._trackingPoints.shift();
   }
   this._trackingPoints.push({ coord, time });
 };
 
 /*
-* Initialize animation of values coming to a stop
-*/
+ * Initialize animation of values coming to a stop
+ */
 ConveyorBeltCommon.prototype._startDecelAnim = function () {
   var firstPoint = this._trackingPoints[0];
   var lastPoint = this._trackingPoints[this._trackingPoints.length - 1];
@@ -1429,8 +1438,8 @@ ConveyorBeltCommon.prototype._startDecelAnim = function () {
   this._decVel = offset / D || 0; // prevent NaN
 
   if (Math.abs(this._decVel) > 1) {
-      this._decelerating = true;
-      requestAnimationFrame(this._stepDecelAnim.bind(this));
+    this._decelerating = true;
+    requestAnimationFrame(this._stepDecelAnim.bind(this));
   }
 };
 
@@ -1593,7 +1602,7 @@ ConveyorBeltCommon.prototype._calcStartScroll = function (index) {
 ConveyorBeltCommon.prototype._calcEndScroll = function (index) {
   var sizes = this._getSizes();
   var sizeObj = sizes[index];
-  return (sizeObj.end - this._getCurrViewportSize()) + 1;
+  return sizeObj.end - this._getCurrViewportSize() + 1;
 };
 
 /**
@@ -1606,7 +1615,7 @@ ConveyorBeltCommon.prototype._calcEndScroll = function (index) {
 ConveyorBeltCommon.prototype._calcFirstVisibleItemIndex = function () {
   var currScroll = this._getCurrScroll();
   var i = this._calcItemIndex(currScroll);
-  return (i < 0) ? 0 : i;
+  return i < 0 ? 0 : i;
 };
 
 /**
@@ -1618,10 +1627,10 @@ ConveyorBeltCommon.prototype._calcFirstVisibleItemIndex = function () {
  */
 ConveyorBeltCommon.prototype._calcLastVisibleItemIndex = function () {
   var elemSize = this._getCurrViewportSize();
-  var currScroll = (this._getCurrScroll() + elemSize) - 1;
+  var currScroll = this._getCurrScroll() + elemSize - 1;
   var i = this._calcItemIndex(currScroll);
   var sizes = this._getSizes();
-  return (i < 0) ? sizes.length - 1 : i;
+  return i < 0 ? sizes.length - 1 : i;
 };
 
 /**
@@ -1634,7 +1643,7 @@ ConveyorBeltCommon.prototype._calcLastVisibleItemIndex = function () {
 ConveyorBeltCommon.prototype._calcPrevVisibleItemIndex = function () {
   var currScroll = this._getCurrScroll() - 1;
   var i = this._calcItemIndex(currScroll);
-  return (i < 0) ? 0 : i;
+  return i < 0 ? 0 : i;
 };
 
 /**
@@ -1649,7 +1658,7 @@ ConveyorBeltCommon.prototype._calcNextVisibleItemIndex = function () {
   var currScroll = this._getCurrScroll() + elemSize;
   var i = this._calcItemIndex(currScroll);
   var sizes = this._getSizes();
-  return (i < 0) ? sizes.length - 1 : i;
+  return i < 0 ? sizes.length - 1 : i;
 };
 
 /**
@@ -1690,7 +1699,6 @@ ConveyorBeltCommon._TOUCH_SCROLL_FRICTION = 0.7;
  */
 ConveyorBeltCommon._TOUCH_SCROLL_STOP_THRESHOLD = 0.1;
 
-
 ConveyorBeltCommon._KEYBOARD_KEYS = {
   _UP: 'ArrowUp',
   _UP_IE: 'Up',
@@ -1718,6 +1726,7 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
  *
+ * @ojoracleicon 'oj-ux-ico-conveyor-belt'
  * @ojuxspecs ['conveyor-belt']
  *
  * @classdesc
@@ -2013,883 +2022,905 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
 
   // end static members and functions ////////////////////////////////////////////
 
+  oj.__registerWidget('oj.ojConveyorBelt', $.oj.baseComponent, {
+    defaultElement: '<div>',
+    widgetEventPrefix: 'oj',
 
-  oj.__registerWidget('oj.ojConveyorBelt', $.oj.baseComponent,
-    {
-      defaultElement: '<div>',
-      widgetEventPrefix: 'oj',
-
-      options: {
-        /**
-         * Specify the orientation of the conveyorBelt.
-         *
-         * @expose
-         * @memberof oj.ojConveyorBelt
-         * @instance
-         * @ojwriteback
-         * @type {string}
-         * @ojvalue {string} "horizontal" Orient the conveyorBelt horizontally.
-         * @ojvalue {string} "vertical" Orient the conveyorBelt vertically.
-         * @default "horizontal"
-         * @ojshortdesc Specifies the orientation of the conveyorBelt.
-         *
-         * @example <caption>Initialize the conveyorBelt with the
-         * <code class="prettyprint">orientation</code> attribute specified:</caption>
-         * &lt;oj-conveyor-belt orientation='vertical'>
-         * &lt;/oj-conveyor-belt>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">orientation</code>
-         * property after initialization:</caption>
-         * // getter
-         * var orientation = myConveyorBelt.orientation;
-         *
-         * // setter
-         * myConveyorBelt.orientation = 'vertical';
-         */
-        orientation: 'horizontal',
-        /**
-         * <p>Indicates whether overflow content arrows are visible or hidden.
-         *
-         * <p>The default value of this property varies by theme. If the default value is 'auto', then the behavior varies by device.
-         *
-         * @expose
-         * @memberof oj.ojConveyorBelt
-         * @instance
-         * @since 9.0.0
-         * @ojwriteback
-         * @type {string}
-         * @ojvalue {string} "auto" show overflow arrows on desktop, hide on mobile.
-         * @ojvalue {string} "visible" always show overflow arrows.
-         * @ojvalue {string} "hidden" never show overflow arrows.
-         * @ojshortdesc Specifies visibility of overflow arrow buttons.
-         *
-         * @example <caption>Initialize the conveyorBelt with the
-         * <code class="prettyprint">arrow-visibility</code> attribute specified:</caption>
-         * &lt;oj-conveyor-belt arrow-visibility='auto'>
-         * &lt;/oj-conveyor-belt>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">arrow-visibility</code> property after initialization:</caption>
-         * // getter
-         * var arrowVisibilityValue = myConveyor.arrowVisibility;
-         *
-         * // setter
-         * myConveyor.arrowVisibility = 'hidden';
-         *
-         * @example <caption>Set the default in the theme (SCSS) :</caption>
-         * $conveyorBeltArrowVisibilityOptionDefault: visible !default;
-         *
-         */
-        arrowVisibility: 'auto',
-        /**
-         * Specify the selector of the descendant DOM element in the conveyorBelt
-         * that directly contains the items to scroll among.
-         *
-         * <p>This attribute value is <code class="prettyprint">null</code> by default,
-         * meaning that the items to scroll among are direct children of the
-         * oj-conveyor-belt.  In some cases, the items to scroll among
-         * are not direct children of the oj-conveyor-belt, but are instead
-         * nested in a descendant DOM element.  In such cases, this attribute should be
-         * specified to point to the descendant DOM element whose direct children
-         * are the items to scroll among.  For example, if the items to scroll
-         * among are buttons in a buttonset, the buttons are direct children of
-         * the DOM element representing the buttonset.  The buttonset would be
-         * the direct child of the conveyorBelt.  If the
-         * <code class="prettyprint">id</code> of the buttonset DOM element were
-         * <code class="prettyprint">'myContentElem'</code>, then content-parent
-         * would be specified as <code class="prettyprint">'#myContentElem'</code>.
-         *
-         * <p><b>WARNING:</b> The selector specified for this attribute should match
-         * only a single descendant DOM element.  If multiple elements are matched,
-         * then only the first one will be used.  Applications should not depend on
-         * this behavior because we reserve the right to change it in the future in
-         * order to allow and use multiple matching elements.
-         *
-         * @expose
-         * @memberof oj.ojConveyorBelt
-         * @instance
-         * @ojwriteback
-         * @type {?string}
-         * @default null
-         * @ojshortdesc Specify the selector of the descendant DOM element in the conveyorBelt that directly contains the items to scroll among.
-         *
-         * @example <caption>Initialize the conveyorBelt with the
-         * <code class="prettyprint">content-parent</code> attribute specified:</caption>
-         * &lt;oj-conveyor-belt content-parent='#myContentElem'>
-         *   &lt;div id='myContentElem'>
-         *     &lt;oj-button>Item 1&lt;/oj-button>
-         *     &lt;oj-button>Item 2&lt;/oj-button>
-         *     &lt;oj-button>Item 3&lt;/oj-button>
-         *     &lt;oj-button>Item 4&lt;/oj-button>
-         *     &lt;oj-button>Item 5&lt;/oj-button>
-         *   &lt;/div>
-         * &lt;/oj-conveyor-belt>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">contentParent</code>
-         * property after initialization:</caption>
-         * // getter
-         * var contentParent = myConveyorBelt.contentParent;
-         *
-         * // setter
-         * myConveyorBelt.contentParent = '#myContentElem';
-         */
-        contentParent: null,
-        /**
-         * <p>Gets or sets the number of pixels that an element's content is scrolled from its initial position.
-         *
-         * <p>The default value of this property is 0.
-         *
-         * <p> There is no difference between LTR/RTL value assignment.
-         * In both LTR and RTL values changes from 0 and max scroll position >=0  if we scroll to the end.
-         * If we scroll to the beginning then the values changes from max scroll position >=0 to min scroll position = 0
-         * When the value exceeds max/min the value is constrained to the max/min scroll position accordingly.
-         *
-         * @ojshortdesc Gets or sets the number of pixels that an element's content is scrolled from its initial position.
-         * @expose
-         * @public
-         * @type {number}
-         * @instance
-         * @memberof oj.ojConveyorBelt
-         * @default 0
-         * @since 12.0.0
-         * @ojwriteback
-         *
-         *
-         * @example <caption>Get or set the <code class="prettyprint">scroll-position</code> property after initialization:</caption>
-         * // getter
-         * var scrollPosition = myConveyor.scrollPosition;
-         *
-         * // setter
-         * myConveyor.scrollPosition = 10;
-         *
-         *
-         */
-        scrollPosition: 0
-
-        /**
-         * To avoid tight coupling between a ConveyorBelt and its contents, JET
-         * ConveyorBelt does not support the <code class="prettyprint">disabled</code>
-         * attribute.
-         *
-         * <p><b>WARNING:</b> Applications should not depend on this behavior
-         * because we reserve the right to change it in the future in order to
-         * support <code class="prettyprint">disabled</code> and propagate it to
-         * child elements of ConveyorBelt.
-         *
-         * @member
-         * @name disabled
-         * @memberof oj.ojConveyorBelt
-         * @instance
-         * @type {boolean}
-         * @default false
-         * @ignore
-         */
-        // disabled attribute declared in superclass, but we still want the above API doc
-
-        // Events
-
-        /**
-         * Triggered when the conveyorBelt is created.
-         *
-         * @event
-         * @name create
-         * @memberof oj.ojConveyorBelt
-         * @instance
-         * @ignore
-         */
-        // create event declared in superclass, but we still want the above API doc
-      },
-
+    options: {
       /**
-       * After _ComponentCreate and _AfterCreate,
-       * the widget should be 100% set up. this._super should be called first.
-       * @return {void}
-       * @override
-       * @protected
-       * @instance
-       * @memberof oj.ojConveyorBelt
-       */
-      _ComponentCreate: function () { // Override of protected base class method.
-        // call superclass first
-        this._super();
-
-        var elem = this.element;
-        elem.addClass('oj-conveyorbelt oj-component');
-
-        var options = this.options;
-        // FIX : log warning message when "disabled" attribute set
-        if (options.disabled) {
-          warn(_WARNING_DISABLED_OPTION);
-        }
-
-        // FIX : remove override of _init() and call _setup() from here
-        this._setup();
-      },
-
-      // This method currently runs at create, init, and refresh time (since refresh() is called by _init()).
-      /**
-       * Refreshes the visual state of the conveyorBelt. JET elements require a
-       * <code class="prettyprint">refresh()</code> after the DOM is
-       * programmatically changed underneath the element.
+       * Specify the orientation of the conveyorBelt.
        *
-       * <p>This method does not accept any arguments.
-       *
-       * @return {void}
        * @expose
        * @memberof oj.ojConveyorBelt
        * @instance
-       * @ojshortdesc Refreshes the visual state of the conveyorBelt.
+       * @ojwriteback
+       * @type {string}
+       * @ojvalue {string} "horizontal" Orient the conveyorBelt horizontally.
+       * @ojvalue {string} "vertical" Orient the conveyorBelt vertically.
+       * @default "horizontal"
+       * @ojshortdesc Specifies the orientation of the conveyorBelt.
        *
-       * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-       * myConveyorBelt.refresh();
-       */
-      refresh: function () { // Override of public base class method.
-        this._super();
-
-        // Check if the reading direction have changed
-        var bRTL = (this._GetReadingDirection() === 'rtl');
-        var bDirectionChanged = (this._bRTL !== bRTL);
-
-        // save and restore scroll position only if the reading direction is not changed
-        var scroll;
-        // save the current scroll position
-        if (!bDirectionChanged) {
-          scroll = this._cbCommon.getScroll();
-        }
-
-        // destroy the cbCommon and setup from scratch in case items were added/removed
-        this._destroyCBCommon();
-        this._setup();
-
-        // restore the saved scroll position
-        if (!bDirectionChanged) {
-          this._cbCommon.setScroll(scroll, true);
-        }
-      },
-
-      /**
-       * Notifies the component that its subtree has been made visible
-       * programmatically after the component has been created.
-       * @return {void}
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @protected
-       * @override
-       */
-      _NotifyShown: function () {
-        this._super();
-        // FIX : perform a deferred layout
-        if (this._needsSetup) {
-          this._setup();
-        } else if (this._cbCommon) {
-          // with internal flexbox layout, conveyor doesn't get notified when
-          // content resizes while hidden, so explicitly handle a resize when
-          // shown again
-          var cbCommon = this._cbCommon;
-          cbCommon.handleResize();
-        }
-      },
-
-      /**
-       * Notifies the component that its subtree has been connected to the document
-       * programmatically after the component has been created.
-       * @return {void}
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @protected
-       * @override
-       */
-      _NotifyAttached: function () {
-        this._super();
-        // FIX : perform a deferred layout
-        if (this._needsSetup) {
-          this._setup();
-        } else if (this._cbCommon) {
-          // with internal flexbox layout, conveyor doesn't get notified when
-          // content resizes while detached, so explicitly handle a resize when
-          // attached again
-          var cbCommon = this._cbCommon;
-          cbCommon.handleResize();
-        }
-      },
-
-      /**
-       * Setup the conveyorBelt.
-       * @return {void}
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
-       */
-      _setup: function () { // Private, not an override (not in base class).
-        var self = this;
-        var elem = this.element;
-        var options = this.options;
-        var orientation = options.orientation;
-
-        if (orientation === 'vertical') {
-          elem.addClass('oj-conveyorbelt-vertical');
-        } else {
-          elem.removeClass('oj-conveyorbelt-vertical');
-        }
-
-        // FIX : if conveyor is detached or hidden, we can't layout
-        // correctly, so defer layout until conveyor is attached or shown
-        if (!this._canCalculateSizes()) {
-          this._needsSetup = true;
-          return;
-        }
-        this._needsSetup = null;
-
-        this._bRTL = (this._GetReadingDirection() === 'rtl');
-        if (!this._cbCommon) {
-          var prevStyleClass = null;
-          var nextStyleClass = null;
-          var prevIcon = null;
-          var nextIcon = null;
-
-          var animateScrollFunc = null;
-          var tooltipNext = _escapeHtml(this.getTranslatedString('tipArrowNext'));
-          var tooltipPrevious = _escapeHtml(this.getTranslatedString('tipArrowPrevious'));
-          if (orientation !== 'vertical') {
-            prevStyleClass = 'oj-enabled oj-conveyorbelt-overflow-indicator oj-start oj-default';
-            nextStyleClass = 'oj-enabled oj-conveyorbelt-overflow-indicator oj-end oj-default';
-            prevIcon = this._createIcon('oj-conveyorbelt-overflow-icon oj-start', tooltipPrevious);
-            nextIcon = this._createIcon('oj-conveyorbelt-overflow-icon oj-end', tooltipNext);
-            animateScrollFunc = this._animateScrollLeft.bind(this);
-          } else {
-            prevStyleClass = 'oj-enabled oj-conveyorbelt-overflow-indicator oj-top oj-default';
-            nextStyleClass = 'oj-enabled oj-conveyorbelt-overflow-indicator oj-bottom oj-default';
-            prevIcon = this._createIcon('oj-conveyorbelt-overflow-icon oj-top', tooltipPrevious);
-            nextIcon = this._createIcon('oj-conveyorbelt-overflow-icon oj-bottom', tooltipNext);
-            animateScrollFunc = this._animateScrollTop.bind(this);
-          }
-
-          var buttonInfo = {};
-
-          if (options.arrowVisibility === 'auto') {
-            buttonInfo.arrowVisibility = (getDeviceRenderMode() === 'phone') ? 'hidden' : 'visible';
-          } else {
-            buttonInfo.arrowVisibility = options.arrowVisibility;
-          }
-
-          buttonInfo.prevButtonStyleClass = prevStyleClass;
-          buttonInfo.nextButtonStyleClass = nextStyleClass;
-          buttonInfo.prevButtonIcon = prevIcon;
-          buttonInfo.nextButtonIcon = nextIcon;
-          var styleInfo = {};
-          styleInfo.overflowContainerStyleClass = 'oj-conveyorbelt-overflow-container';
-
-          styleInfo.contentContainerStyleClass = 'oj-conveyorbelt-content-container';
-          styleInfo.itemStyleClass = 'oj-conveyorbelt-item';
-          styleInfo.hiddenStyleClass = 'oj-helper-hidden';
-          var callbackInfo = {};
-          callbackInfo.addResizeListener = function (_elem, listener) {
-            addResizeListener(_elem, listener,
-                                          _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT);
-          };
-          callbackInfo.removeResizeListener = removeResizeListener;
-          callbackInfo.addStyleClassName = this._addStyleClassName;
-          callbackInfo.removeStyleClassName = this._removeStyleClassName;
-          callbackInfo.hasStyleClassName = this._hasStyleClassName;
-          callbackInfo.filterContentElements =
-            function (arContentElements) {
-              return self._filterContentElements(arContentElements);
-            };
-          callbackInfo.subtreeDetached = subtreeDetached;
-          callbackInfo.subtreeAttached = subtreeAttached;
-          callbackInfo.addBusyState =
-            function (description) {
-              return self._addBusyState(description);
-            };
-          callbackInfo.setScrollPositionProperty = function (value) {
-            self.option('scrollPosition', value, { _context: { internalSet: true, writeback: true } });
-          };
-          // disable scroll animation during testing
-          if (getAutomationMode() !== 'enabled') {
-            callbackInfo.scrollFunc = animateScrollFunc;
-          }
-          var contentParentElem = null;
-          if (options.contentParent) {
-            // only use the first result returned from the contentParent selector
-            contentParentElem = $(options.contentParent)[0];
-          }
-          callbackInfo.handleFocus = function (event) {
-            // if focus is on the conveyorbelt itself do nothing
-            if (self.element[0].isEqualNode(event.target)) {
-              return;
-            }
-            var conveyorBeltItems;
-            if (contentParentElem != null) {
-              conveyorBeltItems = contentParentElem.children;
-            } else {
-              conveyorBeltItems = self.element[0].getElementsByClassName('oj-conveyorbelt-item');
-            }
-            for (var j = 0; j < conveyorBeltItems.length; j++) {
-              if (conveyorBeltItems[j].isEqualNode(event.target)) {
-                self.scrollElementIntoView(conveyorBeltItems[j]);
-                break;
-              }
-            }
-          };
-          this._cbCommon = new ConveyorBeltCommon(
-            elem[0],
-            {
-              orientation: orientation,
-              contentParent: contentParentElem,
-              bRtl: this._bRTL,
-              scrollPosition: options.scrollPosition
-            },
-            buttonInfo,
-            callbackInfo,
-            styleInfo);
-        }
-
-        var cbCommon = this._cbCommon;
-        cbCommon.setup();
-        var children = elem.find('.oj-conveyorbelt-overflow-indicator');
-        // need to setup listeners for styles on each button individually so that callbacks for that
-        // listener are specific to each button and don't affect both buttons at the same time
-        for (var i = 0; i < children.length; i++) {
-          this._setupButtonMouseStyles($(children[i]));
-        }
-      },
-
-      /**
-       * Destroy the conveyorBelt.
-       * @return {void}
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @override
-       * @protected
-       */
-      _destroy: function () { // Override of protected base class method.
-        this._destroyCBCommon();
-        var elem = this.element;
-        elem.removeClass('oj-conveyorbelt oj-component oj-conveyorbelt-vertical');
-
-        // call superclass last
-        this._super();
-      },
-
-      /**
-       * Set an option on the conveyorBelt.
-       * @return {void}
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @override
-       * @protected
-       */
-      _setOption: function (key, value, flags) { // Override of protected base class method.
-        // Method name needn't be quoted since is in externs.js.
-        var bRecreate = false;
-        var options = this.options;
-        switch (key) {
-            // when changing containerParent or orientation, just destroy and recreate
-            // the ConveyorBeltCommon
-          case 'containerParent':
-          case 'arrowVisibility':
-            bRecreate = true;
-            break;
-          case 'orientation':
-            bRecreate = (options.orientation !== value);
-            break;
-          case 'scrollPosition':
-            if (options.scrollPosition !== value) {
-              this._cbCommon.setScroll(value, true);
-            }
-            break;
-          case 'disabled':
-            // FIX : log warning message when "disabled" attribute set
-            warn(_WARNING_DISABLED_OPTION);
-            break;
-          default:
-            break;
-        }
-        // if recreating, destroy the ConveyorBeltCommon before calling superclass
-        // _setOption
-        if (bRecreate) {
-          this._destroyCBCommon();
-        }
-        if (key !== 'scrollPosition') {
-          // For 'scrollPosition' the option value assignment and option change event
-          // are done later in this.option(..) in the scroll callback
-          this._super(key, value, flags);
-        }
-        // if recreating, setup the new ConveyorBeltCommon after calling superclass
-        // _setOption
-        if (bRecreate) {
-          this._setup();
-        }
-      },
-
-      /**
-       * Destroy the ConveyorBeltCommon.
-       * @return {void}
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
-       */
-      _destroyCBCommon: function () {
-        var cbCommon = this._cbCommon;
-        if (cbCommon) {
-          // FIX : detach mouse listeners from overflow indicators
-          // before destroying cbCommon in order to avoid memory leaks
-          var elem = this.element;
-          var children = elem.find('.oj-conveyorbelt-overflow-indicator');
-          children.off(this.eventNamespace);
-
-          cbCommon.destroy();
-        }
-        this._cbCommon = null;
-      },
-
-      /**
-       * Determine whether the conveyorBelt can calculate sizes (when it is
-       * attached to the page DOM and not hidden).
-       * @returns {boolean} true if sizes can be calculated, false if not
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
-       */
-      _canCalculateSizes: function () {
-        var div = document.createElement('div');
-        var style = div.style;
-        style.width = '10px';
-        style.height = '10px';
-
-        // make sure flexbox layout doesn't grow/shrink the item
-        style['-webkit-flex'] = '0 0 auto';
-        style.flex = '0 0 auto';
-
-        var elem = this.element[0];
-        elem.appendChild(div); // @HTMLUpdateOK
-        var bCanCalcSizes = false;
-        try {
-          bCanCalcSizes = div.offsetWidth > 0 && div.offsetHeight > 0;
-        } catch (e) {
-          // do nothing
-        }
-        elem.removeChild(div);
-        return bCanCalcSizes;
-      },
-
-      /**
-       * Setup mouse listeners to change button styles.
-       * @param {Object} element jQuery element to affect
-       * @return {void}
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
-       */
-      _setupButtonMouseStyles: function (element) {
-        //  - conveyorbelt next/previous oj-hover color don't go away
-        this._AddHoverable({
-          element: element,
-          afterToggle: function (eventtype) {
-            if (eventtype === 'mouseenter') {
-              element.removeClass('oj-default');
-            } else if (eventtype === 'mouseleave') {
-              element.addClass('oj-default');
-            }
-          }
-        });
-
-        this._AddActiveable({
-          element: element,
-          afterToggle: function (eventtype) {
-            if (eventtype === 'mousedown' || eventtype === 'touchstart' ||
-                eventtype === 'mouseenter') {
-              element.removeClass('oj-default');
-            } else if (eventtype === 'mouseup' || eventtype === 'touchend' ||
-                       eventtype === 'touchcancel' || eventtype === 'mouseleave') {
-              element.addClass('oj-default');
-            }
-          }
-        });
-      },
-
-      /**
-       * Create a DOM element for a button with an icon.
-       * @param {string} iconStyleClass Style class for the icon
-       * @returns {Element} Button with Icon DOM element
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
-       */
-      _createIcon: function (iconStyleClass, tooltip) {
-        var span = document.createElement('span');
-        span.setAttribute('class', 'oj-component-icon ' + iconStyleClass);
-        var innerButton = document.createElement('div');
-        innerButton.setAttribute('class', 'oj-conveyorbelt-overflow-button');
-        innerButton.setAttribute('role', 'button');
-        innerButton.appendChild(span);
-        innerButton.setAttribute('title', tooltip);
-
-        return innerButton;
-      },
-
-      /**
-       * Animate setting the scrollLeft DOM property.
-       * @param {Element} elem DOM element to scroll
-       * @param {number} value Scroll value
-       * @param {number} duration Duration of animation, in ms
-       * @param {function():void} onEndFunc Function to call when the animation ends
-       * @return {void}
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
-       */
-      _animateScrollLeft: function (elem, value, duration, onEndFunc) {
-        var props = {};
-        props.scrollLeft = value;
-        // use swing instead of easeInOutCubic because easeInOutCubic isn't found
-        // when running in the cookbook
-        $(elem).animate(props, duration, 'swing', onEndFunc);
-      },
-
-      /**
-       * Animate setting the scrollTop DOM property.
-       * @param {Element} elem DOM element to scroll
-       * @param {number} value Scroll value
-       * @param {number} duration Duration of animation, in ms
-       * @param {function():void} onEndFunc Function to call when the animation ends
-       * @return {void}
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
-       */
-      _animateScrollTop: function (elem, value, duration, onEndFunc) {
-        var props = {};
-        props.scrollTop = value;
-        // use swing instead of easeInOutCubic because easeInOutCubic isn't found
-        // when running in the cookbook
-        $(elem).animate(props, duration, 'swing', onEndFunc);
-      },
-
-      /**
-       * Add a style class name to an element.
-       * @param {Object} elem Element to which to add style class.
-       * @param {string} styleClass Style class name to add.
-       * @return {void}
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
-       */
-      _addStyleClassName: function (elem, styleClass) {
-        $(elem).addClass(styleClass);
-      },
-
-      /**
-       * Remove a style class name from an element.
-       * @param {Object} elem Element from which to remove style class.
-       * @param {string} styleClass Style class name to remove.
-       * @return {void}
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
-       */
-      _removeStyleClassName: function (elem, styleClass) {
-        $(elem).removeClass(styleClass);
-      },
-
-      /**
-       * Determine whether the given style class name is applied to the given
-       * element.
-       * @param {Object} elem Element to check for style class name.
-       * @param {string} styleClass Style class name for which to look.
-       * @returns {boolean} true if style class name is applied, false if not
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
-       */
-      _hasStyleClassName: function (elem, styleClass) {
-        return $(elem).hasClass(styleClass);
-      },
-
-      /**
-       * Filter the given array of conveyor content elements to remove extraneous elements, like the
-       * divs added by the resize listener.
-       * @param {Array} arContentElements Array of conveyor content elements.
-       * @returns {Array} filtered array of conveyor content elements
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
-       */
-      _filterContentElements: function (arContentElements) {
-        var ret = [];
-        for (var i = 0; i < arContentElements.length; i++) {
-          var contentElem = arContentElements[i];
-          if (!this._hasStyleClassName(contentElem, 'oj-helper-detect-expansion') &&
-              !this._hasStyleClassName(contentElem, 'oj-helper-detect-contraction')) {
-            ret.push(contentElem);
-          }
-        }
-        return ret;
-      },
-
-      /**
-       * Add a busy state to the busy context.
+       * @example <caption>Initialize the conveyorBelt with the
+       * <code class="prettyprint">orientation</code> attribute specified:</caption>
+       * &lt;oj-conveyor-belt orientation='vertical'>
+       * &lt;/oj-conveyor-belt>
        *
-       * @param {string} description Additional information about busy state.
-       * @returns {Function} Resolve function called by the registrant when the busy state completes.
-       *          The resultant function will throw an error if the busy state is no longer registered.
-       * @memberof oj.ojConveyorBelt
-       * @instance
-       * @private
+       * @example <caption>Get or set the <code class="prettyprint">orientation</code>
+       * property after initialization:</caption>
+       * // getter
+       * var orientation = myConveyorBelt.orientation;
+       *
+       * // setter
+       * myConveyorBelt.orientation = 'vertical';
        */
-      _addBusyState: function (description) {
-        var element = this.element;
-        var context = Context.getContext(element[0]);
-        var busyContext = context.getBusyContext();
-
-        var desc = 'ConveyorBelt';
-        var id = element.attr('id');
-        desc += " (id='" + id + "')";
-        desc += ': ' + description;
-
-        var busyStateOptions = { description: desc };
-        return busyContext.addBusyState(busyStateOptions);
-      },
-
-      // @inheritdoc
-      getNodeBySubId: function (locator) {
-        if (locator == null) {
-          return this.element[0];
-        }
-
-        var subId = locator.subId;
-        if (subId === 'oj-conveyorbelt-start-overflow-indicator') {
-          return this.widget().find('.oj-conveyorbelt-overflow-indicator.oj-start')[0];
-        }
-        if (subId === 'oj-conveyorbelt-end-overflow-indicator') {
-          return this.widget().find('.oj-conveyorbelt-overflow-indicator.oj-end')[0];
-        }
-        if (subId === 'oj-conveyorbelt-top-overflow-indicator') {
-          return this.widget().find('.oj-conveyorbelt-overflow-indicator.oj-top')[0];
-        }
-        if (subId === 'oj-conveyorbelt-bottom-overflow-indicator') {
-          return this.widget().find('.oj-conveyorbelt-overflow-indicator.oj-bottom')[0];
-        }
-
-        // Non-null locators have to be handled by the component subclasses
-        return null;
-      },
-
-      // @inheritdoc
-      getSubIdByNode: function (node) {
-        var startIndicator =
-            this.getNodeBySubId({ subId: 'oj-conveyorbelt-start-overflow-indicator' });
-        var endIndicator =
-            this.getNodeBySubId({ subId: 'oj-conveyorbelt-end-overflow-indicator' });
-        var topIndicator =
-            this.getNodeBySubId({ subId: 'oj-conveyorbelt-top-overflow-indicator' });
-        var bottomIndicator =
-            this.getNodeBySubId({ subId: 'oj-conveyorbelt-bottom-overflow-indicator' });
-        var currentNode = node;
-        var elem = this.element[0];
-        while (currentNode && currentNode !== elem) {
-          if (currentNode === startIndicator) {
-            return { subId: 'oj-conveyorbelt-start-overflow-indicator' };
-          } else if (currentNode === endIndicator) {
-            return { subId: 'oj-conveyorbelt-end-overflow-indicator' };
-          } else if (currentNode === topIndicator) {
-            return { subId: 'oj-conveyorbelt-top-overflow-indicator' };
-          } else if (currentNode === bottomIndicator) {
-            return { subId: 'oj-conveyorbelt-bottom-overflow-indicator' };
-          }
-
-          currentNode = currentNode.parentElement;
-        }
-        return null;
-      },
-
+      orientation: 'horizontal',
       /**
-       * Scrolls child item of conveyor belt into the view.
+       * <p>Indicates whether overflow content arrows are visible or hidden.
        *
+       * <p>The default value of this property varies by theme. If the default value is 'auto', then the behavior varies by device.
        *
-       * @param {Element} elem DOM element to scroll
-       * @return {void}
        * @expose
        * @memberof oj.ojConveyorBelt
        * @instance
        * @since 9.0.0
-       * @ojshortdesc Scrolls child item of conveyor belt into the view.
+       * @ojwriteback
+       * @type {string}
+       * @ojvalue {string} "auto" show overflow arrows on desktop, hide on mobile.
+       * @ojvalue {string} "visible" always show overflow arrows.
+       * @ojvalue {string} "hidden" never show overflow arrows.
+       * @ojshortdesc Specifies visibility of overflow arrow buttons.
        *
-       * @example <caption>Invoke the <code class="prettyprint">scrollElementIntoView</code> method:</caption>
-       * myConveyorBelt.scrollElementIntoView(element);
+       * @example <caption>Initialize the conveyorBelt with the
+       * <code class="prettyprint">arrow-visibility</code> attribute specified:</caption>
+       * &lt;oj-conveyor-belt arrow-visibility='auto'>
+       * &lt;/oj-conveyor-belt>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">arrow-visibility</code> property after initialization:</caption>
+       * // getter
+       * var arrowVisibilityValue = myConveyor.arrowVisibility;
+       *
+       * // setter
+       * myConveyor.arrowVisibility = 'hidden';
+       *
+       * @example <caption>Set the default in the theme (SCSS) :</caption>
+       * $conveyorBeltArrowVisibilityOptionDefault: visible !default;
+       *
        */
-      scrollElementIntoView: function (element) {
-        var currentScroll = this._cbCommon.getScroll();
-        var currentViewportSize = this._cbCommon._getCurrViewportSize();
+      arrowVisibility: 'auto',
+      /**
+       * Specify the selector of the descendant DOM element in the conveyorBelt
+       * that directly contains the items to scroll among.
+       *
+       * <p>This attribute value is <code class="prettyprint">null</code> by default,
+       * meaning that the items to scroll among are direct children of the
+       * oj-conveyor-belt.  In some cases, the items to scroll among
+       * are not direct children of the oj-conveyor-belt, but are instead
+       * nested in a descendant DOM element.  In such cases, this attribute should be
+       * specified to point to the descendant DOM element whose direct children
+       * are the items to scroll among.  For example, if the items to scroll
+       * among are buttons in a buttonset, the buttons are direct children of
+       * the DOM element representing the buttonset.  The buttonset would be
+       * the direct child of the conveyorBelt.  If the
+       * <code class="prettyprint">id</code> of the buttonset DOM element were
+       * <code class="prettyprint">'myContentElem'</code>, then content-parent
+       * would be specified as <code class="prettyprint">'#myContentElem'</code>.
+       *
+       * <p><b>WARNING:</b> The selector specified for this attribute should match
+       * only a single descendant DOM element.  If multiple elements are matched,
+       * then only the first one will be used.  Applications should not depend on
+       * this behavior because we reserve the right to change it in the future in
+       * order to allow and use multiple matching elements.
+       *
+       * @expose
+       * @memberof oj.ojConveyorBelt
+       * @instance
+       * @ojwriteback
+       * @type {?string}
+       * @default null
+       * @ojshortdesc Specify the selector of the descendant DOM element in the conveyorBelt that directly contains the items to scroll among.
+       *
+       * @example <caption>Initialize the conveyorBelt with the
+       * <code class="prettyprint">content-parent</code> attribute specified:</caption>
+       * &lt;oj-conveyor-belt content-parent='#myContentElem'>
+       *   &lt;div id='myContentElem'>
+       *     &lt;oj-button>Item 1&lt;/oj-button>
+       *     &lt;oj-button>Item 2&lt;/oj-button>
+       *     &lt;oj-button>Item 3&lt;/oj-button>
+       *     &lt;oj-button>Item 4&lt;/oj-button>
+       *     &lt;oj-button>Item 5&lt;/oj-button>
+       *   &lt;/div>
+       * &lt;/oj-conveyor-belt>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">contentParent</code>
+       * property after initialization:</caption>
+       * // getter
+       * var contentParent = myConveyorBelt.contentParent;
+       *
+       * // setter
+       * myConveyorBelt.contentParent = '#myContentElem';
+       */
+      contentParent: null,
+      /**
+       * <p>Gets or sets the number of pixels that an element's content is scrolled from its initial position.
+       *
+       * <p>The default value of this property is 0.
+       *
+       * <p> There is no difference between LTR/RTL value assignment.
+       * In both LTR and RTL values changes from 0 and max scroll position >=0  if we scroll to the end.
+       * If we scroll to the beginning then the values changes from max scroll position >=0 to min scroll position = 0
+       * When the value exceeds max/min the value is constrained to the max/min scroll position accordingly.
+       *
+       * @ojshortdesc Gets or sets the number of pixels that an element's content is scrolled from its initial position.
+       * @expose
+       * @public
+       * @type {number}
+       * @instance
+       * @memberof oj.ojConveyorBelt
+       * @default 0
+       * @since 12.0.0
+       * @ojwriteback
+       *
+       *
+       * @example <caption>Get or set the <code class="prettyprint">scroll-position</code> property after initialization:</caption>
+       * // getter
+       * var scrollPosition = myConveyor.scrollPosition;
+       *
+       * // setter
+       * myConveyor.scrollPosition = 10;
+       *
+       *
+       */
+      scrollPosition: 0
 
-        var contentWidth = this._cbCommon._contentContainer.offsetWidth;
+      /**
+       * To avoid tight coupling between a ConveyorBelt and its contents, JET
+       * ConveyorBelt does not support the <code class="prettyprint">disabled</code>
+       * attribute.
+       *
+       * <p><b>WARNING:</b> Applications should not depend on this behavior
+       * because we reserve the right to change it in the future in order to
+       * support <code class="prettyprint">disabled</code> and propagate it to
+       * child elements of ConveyorBelt.
+       *
+       * @member
+       * @name disabled
+       * @memberof oj.ojConveyorBelt
+       * @instance
+       * @type {boolean}
+       * @default false
+       * @ignore
+       */
+      // disabled attribute declared in superclass, but we still want the above API doc
 
-        var elementOffLeft = element.offsetLeft;
-        // FIX : in IE, the conveyor items all report offsetLeft=0,
-        // so we need to get the offset from the parent wrapping table cell div
-        // instead
-        if (!this._cbCommon._contentParent && elementOffLeft === 0) {
-          elementOffLeft = element.parentNode.offsetLeft;
+      // Events
+
+      /**
+       * Triggered when the conveyorBelt is created.
+       *
+       * @event
+       * @name create
+       * @memberof oj.ojConveyorBelt
+       * @instance
+       * @ignore
+       */
+      // create event declared in superclass, but we still want the above API doc
+    },
+
+    /**
+     * After _ComponentCreate and _AfterCreate,
+     * the widget should be 100% set up. this._super should be called first.
+     * @return {void}
+     * @override
+     * @protected
+     * @instance
+     * @memberof oj.ojConveyorBelt
+     */
+    _ComponentCreate: function () {
+      // Override of protected base class method.
+      // call superclass first
+      this._super();
+
+      var elem = this.element;
+      elem.addClass('oj-conveyorbelt oj-component');
+
+      var options = this.options;
+      // FIX : log warning message when "disabled" attribute set
+      if (options.disabled) {
+        warn(_WARNING_DISABLED_OPTION);
+      }
+
+      // FIX : remove override of _init() and call _setup() from here
+      this._setup();
+    },
+
+    // This method currently runs at create, init, and refresh time (since refresh() is called by _init()).
+    /**
+     * Refreshes the visual state of the conveyorBelt. JET elements require a
+     * <code class="prettyprint">refresh()</code> after the DOM is
+     * programmatically changed underneath the element.
+     *
+     * <p>This method does not accept any arguments.
+     *
+     * @return {void}
+     * @expose
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @ojshortdesc Refreshes the visual state of the conveyorBelt.
+     *
+     * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
+     * myConveyorBelt.refresh();
+     */
+    refresh: function () {
+      // Override of public base class method.
+      this._super();
+
+      // Check if the reading direction have changed
+      var bRTL = this._GetReadingDirection() === 'rtl';
+      var bDirectionChanged = this._bRTL !== bRTL;
+
+      // save and restore scroll position only if the reading direction is not changed
+      var scroll;
+      // save the current scroll position
+      if (!bDirectionChanged) {
+        scroll = this._cbCommon.getScroll();
+      }
+
+      // destroy the cbCommon and setup from scratch in case items were added/removed
+      this._destroyCBCommon();
+      this._setup();
+
+      // restore the saved scroll position
+      if (!bDirectionChanged) {
+        this._cbCommon.setScroll(scroll, true);
+      }
+    },
+
+    /**
+     * Notifies the component that its subtree has been made visible
+     * programmatically after the component has been created.
+     * @return {void}
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @protected
+     * @override
+     */
+    _NotifyShown: function () {
+      this._super();
+      // FIX : perform a deferred layout
+      if (this._needsSetup) {
+        this._setup();
+      } else if (this._cbCommon) {
+        // with internal flexbox layout, conveyor doesn't get notified when
+        // content resizes while hidden, so explicitly handle a resize when
+        // shown again
+        var cbCommon = this._cbCommon;
+        cbCommon.handleResize();
+      }
+    },
+
+    /**
+     * Notifies the component that its subtree has been connected to the document
+     * programmatically after the component has been created.
+     * @return {void}
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @protected
+     * @override
+     */
+    _NotifyAttached: function () {
+      this._super();
+      // FIX : perform a deferred layout
+      if (this._needsSetup) {
+        this._setup();
+      } else if (this._cbCommon) {
+        // with internal flexbox layout, conveyor doesn't get notified when
+        // content resizes while detached, so explicitly handle a resize when
+        // attached again
+        var cbCommon = this._cbCommon;
+        cbCommon.handleResize();
+      }
+    },
+
+    /**
+     * Setup the conveyorBelt.
+     * @return {void}
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _setup: function () {
+      // Private, not an override (not in base class).
+      var self = this;
+      var elem = this.element;
+      var options = this.options;
+      var orientation = options.orientation;
+
+      if (orientation === 'vertical') {
+        elem.addClass('oj-conveyorbelt-vertical');
+      } else {
+        elem.removeClass('oj-conveyorbelt-vertical');
+      }
+
+      // FIX : if conveyor is detached or hidden, we can't layout
+      // correctly, so defer layout until conveyor is attached or shown
+      if (!this._canCalculateSizes()) {
+        this._needsSetup = true;
+        return;
+      }
+      this._needsSetup = null;
+
+      this._bRTL = this._GetReadingDirection() === 'rtl';
+      if (!this._cbCommon) {
+        var prevStyleClass = null;
+        var nextStyleClass = null;
+        var prevIcon = null;
+        var nextIcon = null;
+
+        var animateScrollFunc = null;
+        var tooltipNext = _escapeHtml(this.getTranslatedString('tipArrowNext'));
+        var tooltipPrevious = _escapeHtml(this.getTranslatedString('tipArrowPrevious'));
+        if (orientation !== 'vertical') {
+          prevStyleClass = 'oj-enabled oj-conveyorbelt-overflow-indicator oj-start oj-default';
+          nextStyleClass = 'oj-enabled oj-conveyorbelt-overflow-indicator oj-end oj-default';
+          prevIcon = this._createIcon('oj-conveyorbelt-overflow-icon oj-start', tooltipPrevious);
+          nextIcon = this._createIcon('oj-conveyorbelt-overflow-icon oj-end', tooltipNext);
+          animateScrollFunc = this._animateScrollLeft.bind(this);
+        } else {
+          prevStyleClass = 'oj-enabled oj-conveyorbelt-overflow-indicator oj-top oj-default';
+          nextStyleClass = 'oj-enabled oj-conveyorbelt-overflow-indicator oj-bottom oj-default';
+          prevIcon = this._createIcon('oj-conveyorbelt-overflow-icon oj-top', tooltipPrevious);
+          nextIcon = this._createIcon('oj-conveyorbelt-overflow-icon oj-bottom', tooltipNext);
+          animateScrollFunc = this._animateScrollTop.bind(this);
         }
 
-         // if RTL, still want to save the start coords in logical, ascending order beginning with 0
-        if (this._cbCommon._bRtl) {
-          elementOffLeft = contentWidth - (elementOffLeft + element.offsetWidth);
+        var buttonInfo = {};
+
+        if (options.arrowVisibility === 'auto') {
+          buttonInfo.arrowVisibility =
+            getDeviceRenderMode() === 'phone' ? 'hidden' : 'visible';
+        } else {
+          buttonInfo.arrowVisibility = options.arrowVisibility;
         }
-        // FIX : in IE, the conveyor items all report offsetTop=0,
-        // so we need to get the offset from the parent wrapping table cell div
-        // instead
-        var elementOffTop = element.offsetTop;
-        if (!this._cbCommon._contentParent && elementOffTop === 0) {
-            elementOffTop = element.parentNode.offsetTop;
+
+        buttonInfo.prevButtonStyleClass = prevStyleClass;
+        buttonInfo.nextButtonStyleClass = nextStyleClass;
+        buttonInfo.prevButtonIcon = prevIcon;
+        buttonInfo.nextButtonIcon = nextIcon;
+        var styleInfo = {};
+        styleInfo.overflowContainerStyleClass = 'oj-conveyorbelt-overflow-container';
+
+        styleInfo.contentContainerStyleClass = 'oj-conveyorbelt-content-container';
+        styleInfo.itemStyleClass = 'oj-conveyorbelt-item';
+        styleInfo.hiddenStyleClass = 'oj-helper-hidden';
+        var callbackInfo = {};
+        callbackInfo.addResizeListener = function (_elem, listener) {
+          addResizeListener(_elem, listener, _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT);
+        };
+        callbackInfo.removeResizeListener = removeResizeListener;
+        callbackInfo.addStyleClassName = this._addStyleClassName;
+        callbackInfo.removeStyleClassName = this._removeStyleClassName;
+        callbackInfo.hasStyleClassName = this._hasStyleClassName;
+        callbackInfo.filterContentElements = function (arContentElements) {
+          return self._filterContentElements(arContentElements);
+        };
+        callbackInfo.subtreeDetached = subtreeDetached;
+        callbackInfo.subtreeAttached = subtreeAttached;
+        callbackInfo.addBusyState = function (description) {
+          return self._addBusyState(description);
+        };
+        callbackInfo.setScrollPositionProperty = function (value) {
+          self.option('scrollPosition', value, {
+            _context: { internalSet: true, writeback: true }
+          });
+        };
+        // disable scroll animation during testing
+        if (getAutomationMode() !== 'enabled') {
+          callbackInfo.scrollFunc = animateScrollFunc;
         }
-        if (this._cbCommon._isHorizontal()) { // horizontal conveyor belt
-          // if the element is in the current horizontal view port, then we don't need to scroll
-          if ((elementOffLeft + element.offsetWidth <= currentScroll + currentViewportSize)
-              && (elementOffLeft >= currentScroll)
-              && (elementOffLeft > this._cbCommon._getButtonSize())) {
+        var contentParentElem = null;
+        if (options.contentParent) {
+          // only use the first result returned from the contentParent selector
+          contentParentElem = $(options.contentParent)[0];
+        }
+        callbackInfo.handleFocus = function (event) {
+          // if focus is on the conveyorbelt itself do nothing
+          if (self.element[0].isEqualNode(event.target)) {
             return;
           }
+          var conveyorBeltItems;
+          if (contentParentElem != null) {
+            conveyorBeltItems = contentParentElem.children;
+          } else {
+            conveyorBeltItems = self.element[0].getElementsByClassName('oj-conveyorbelt-item');
+          }
+          for (var j = 0; j < conveyorBeltItems.length; j++) {
+            if (conveyorBeltItems[j].isEqualNode(event.target)) {
+              self.scrollElementIntoView(conveyorBeltItems[j]);
+              break;
+            }
+          }
+        };
+        this._cbCommon = new ConveyorBeltCommon(
+          elem[0],
+          {
+            orientation: orientation,
+            contentParent: contentParentElem,
+            bRtl: this._bRTL,
+            scrollPosition: options.scrollPosition
+          },
+          buttonInfo,
+          callbackInfo,
+          styleInfo
+        );
+      }
 
-        // if vertical conveyor belt and the element is in the current vertical view port, then we don't need to scroll
-        } else if ((elementOffTop + element.offsetHeight <= currentScroll + currentViewportSize)
-               && (elementOffTop >= currentScroll)
-               && (elementOffTop > this._cbCommon._getButtonSize())) {
+      var cbCommon = this._cbCommon;
+      cbCommon.setup();
+      var children = elem.find('.oj-conveyorbelt-overflow-indicator');
+      // need to setup listeners for styles on each button individually so that callbacks for that
+      // listener are specific to each button and don't affect both buttons at the same time
+      for (var i = 0; i < children.length; i++) {
+        this._setupButtonMouseStyles($(children[i]));
+      }
+    },
+
+    /**
+     * Destroy the conveyorBelt.
+     * @return {void}
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @override
+     * @protected
+     */
+    _destroy: function () {
+      // Override of protected base class method.
+      this._destroyCBCommon();
+      var elem = this.element;
+      elem.removeClass('oj-conveyorbelt oj-component oj-conveyorbelt-vertical');
+
+      // call superclass last
+      this._super();
+    },
+
+    /**
+     * Set an option on the conveyorBelt.
+     * @return {void}
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @override
+     * @protected
+     */
+    _setOption: function (key, value, flags) {
+      // Override of protected base class method.
+      // Method name needn't be quoted since is in externs.js.
+      var bRecreate = false;
+      var options = this.options;
+      switch (key) {
+        // when changing containerParent or orientation, just destroy and recreate
+        // the ConveyorBeltCommon
+        case 'containerParent':
+        case 'arrowVisibility':
+          bRecreate = true;
+          break;
+        case 'orientation':
+          bRecreate = options.orientation !== value;
+          break;
+        case 'scrollPosition':
+          if (options.scrollPosition !== value) {
+            this._cbCommon.setScroll(value, true);
+          }
+          break;
+        case 'disabled':
+          // FIX : log warning message when "disabled" attribute set
+          warn(_WARNING_DISABLED_OPTION);
+          break;
+        default:
+          break;
+      }
+      // if recreating, destroy the ConveyorBeltCommon before calling superclass
+      // _setOption
+      if (bRecreate) {
+        this._destroyCBCommon();
+      }
+      if (key !== 'scrollPosition') {
+        // For 'scrollPosition' the option value assignment and option change event
+        // are done later in this.option(..) in the scroll callback
+        this._super(key, value, flags);
+      }
+      // if recreating, setup the new ConveyorBeltCommon after calling superclass
+      // _setOption
+      if (bRecreate) {
+        this._setup();
+      }
+    },
+
+    /**
+     * Destroy the ConveyorBeltCommon.
+     * @return {void}
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _destroyCBCommon: function () {
+      var cbCommon = this._cbCommon;
+      if (cbCommon) {
+        // FIX : detach mouse listeners from overflow indicators
+        // before destroying cbCommon in order to avoid memory leaks
+        var elem = this.element;
+        var children = elem.find('.oj-conveyorbelt-overflow-indicator');
+        children.off(this.eventNamespace);
+
+        cbCommon.destroy();
+      }
+      this._cbCommon = null;
+    },
+
+    /**
+     * Determine whether the conveyorBelt can calculate sizes (when it is
+     * attached to the page DOM and not hidden).
+     * @returns {boolean} true if sizes can be calculated, false if not
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _canCalculateSizes: function () {
+      var div = document.createElement('div');
+      var style = div.style;
+      style.width = '10px';
+      style.height = '10px';
+
+      // make sure flexbox layout doesn't grow/shrink the item
+      style['-webkit-flex'] = '0 0 auto';
+      style.flex = '0 0 auto';
+
+      var elem = this.element[0];
+      elem.appendChild(div); // @HTMLUpdateOK
+      var bCanCalcSizes = false;
+      try {
+        bCanCalcSizes = div.offsetWidth > 0 && div.offsetHeight > 0;
+      } catch (e) {
+        // do nothing
+      }
+      elem.removeChild(div);
+      return bCanCalcSizes;
+    },
+
+    /**
+     * Setup mouse listeners to change button styles.
+     * @param {Object} element jQuery element to affect
+     * @return {void}
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _setupButtonMouseStyles: function (element) {
+      //  - conveyorbelt next/previous oj-hover color don't go away
+      this._AddHoverable({
+        element: element,
+        afterToggle: function (eventtype) {
+          if (eventtype === 'mouseenter') {
+            element.removeClass('oj-default');
+          } else if (eventtype === 'mouseleave') {
+            element.addClass('oj-default');
+          }
+        }
+      });
+
+      this._AddActiveable({
+        element: element,
+        afterToggle: function (eventtype) {
+          if (
+            eventtype === 'mousedown' ||
+            eventtype === 'touchstart' ||
+            eventtype === 'mouseenter'
+          ) {
+            element.removeClass('oj-default');
+          } else if (
+            eventtype === 'mouseup' ||
+            eventtype === 'touchend' ||
+            eventtype === 'touchcancel' ||
+            eventtype === 'mouseleave'
+          ) {
+            element.addClass('oj-default');
+          }
+        }
+      });
+    },
+
+    /**
+     * Create a DOM element for a button with an icon.
+     * @param {string} iconStyleClass Style class for the icon
+     * @returns {Element} Button with Icon DOM element
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _createIcon: function (iconStyleClass, tooltip) {
+      var span = document.createElement('span');
+      span.setAttribute('class', 'oj-component-icon ' + iconStyleClass);
+      var innerButton = document.createElement('div');
+      innerButton.setAttribute('class', 'oj-conveyorbelt-overflow-button');
+      innerButton.setAttribute('role', 'button');
+      innerButton.appendChild(span);
+      innerButton.setAttribute('title', tooltip);
+
+      return innerButton;
+    },
+
+    /**
+     * Animate setting the scrollLeft DOM property.
+     * @param {Element} elem DOM element to scroll
+     * @param {number} value Scroll value
+     * @param {number} duration Duration of animation, in ms
+     * @param {function():void} onEndFunc Function to call when the animation ends
+     * @return {void}
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _animateScrollLeft: function (elem, value, duration, onEndFunc) {
+      var props = {};
+      props.scrollLeft = value;
+      // use swing instead of easeInOutCubic because easeInOutCubic isn't found
+      // when running in the cookbook
+      $(elem).animate(props, duration, 'swing', onEndFunc);
+    },
+
+    /**
+     * Animate setting the scrollTop DOM property.
+     * @param {Element} elem DOM element to scroll
+     * @param {number} value Scroll value
+     * @param {number} duration Duration of animation, in ms
+     * @param {function():void} onEndFunc Function to call when the animation ends
+     * @return {void}
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _animateScrollTop: function (elem, value, duration, onEndFunc) {
+      var props = {};
+      props.scrollTop = value;
+      // use swing instead of easeInOutCubic because easeInOutCubic isn't found
+      // when running in the cookbook
+      $(elem).animate(props, duration, 'swing', onEndFunc);
+    },
+
+    /**
+     * Add a style class name to an element.
+     * @param {Object} elem Element to which to add style class.
+     * @param {string} styleClass Style class name to add.
+     * @return {void}
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _addStyleClassName: function (elem, styleClass) {
+      $(elem).addClass(styleClass);
+    },
+
+    /**
+     * Remove a style class name from an element.
+     * @param {Object} elem Element from which to remove style class.
+     * @param {string} styleClass Style class name to remove.
+     * @return {void}
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _removeStyleClassName: function (elem, styleClass) {
+      $(elem).removeClass(styleClass);
+    },
+
+    /**
+     * Determine whether the given style class name is applied to the given
+     * element.
+     * @param {Object} elem Element to check for style class name.
+     * @param {string} styleClass Style class name for which to look.
+     * @returns {boolean} true if style class name is applied, false if not
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _hasStyleClassName: function (elem, styleClass) {
+      return $(elem).hasClass(styleClass);
+    },
+
+    /**
+     * Filter the given array of conveyor content elements to remove extraneous elements, like the
+     * divs added by the resize listener.
+     * @param {Array} arContentElements Array of conveyor content elements.
+     * @returns {Array} filtered array of conveyor content elements
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _filterContentElements: function (arContentElements) {
+      var ret = [];
+      for (var i = 0; i < arContentElements.length; i++) {
+        var contentElem = arContentElements[i];
+        if (
+          !this._hasStyleClassName(contentElem, 'oj-helper-detect-expansion') &&
+          !this._hasStyleClassName(contentElem, 'oj-helper-detect-contraction')
+        ) {
+          ret.push(contentElem);
+        }
+      }
+      return ret;
+    },
+
+    /**
+     * Add a busy state to the busy context.
+     *
+     * @param {string} description Additional information about busy state.
+     * @returns {Function} Resolve function called by the registrant when the busy state completes.
+     *          The resultant function will throw an error if the busy state is no longer registered.
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _addBusyState: function (description) {
+      var element = this.element;
+      var context = Context.getContext(element[0]);
+      var busyContext = context.getBusyContext();
+
+      var desc = 'ConveyorBelt';
+      var id = element.attr('id');
+      desc += " (id='" + id + "')";
+      desc += ': ' + description;
+
+      var busyStateOptions = { description: desc };
+      return busyContext.addBusyState(busyStateOptions);
+    },
+
+    // @inheritdoc
+    getNodeBySubId: function (locator) {
+      if (locator == null) {
+        return this.element[0];
+      }
+
+      var subId = locator.subId;
+      if (subId === 'oj-conveyorbelt-start-overflow-indicator') {
+        return this.widget().find('.oj-conveyorbelt-overflow-indicator.oj-start')[0];
+      }
+      if (subId === 'oj-conveyorbelt-end-overflow-indicator') {
+        return this.widget().find('.oj-conveyorbelt-overflow-indicator.oj-end')[0];
+      }
+      if (subId === 'oj-conveyorbelt-top-overflow-indicator') {
+        return this.widget().find('.oj-conveyorbelt-overflow-indicator.oj-top')[0];
+      }
+      if (subId === 'oj-conveyorbelt-bottom-overflow-indicator') {
+        return this.widget().find('.oj-conveyorbelt-overflow-indicator.oj-bottom')[0];
+      }
+
+      // Non-null locators have to be handled by the component subclasses
+      return null;
+    },
+
+    // @inheritdoc
+    getSubIdByNode: function (node) {
+      var startIndicator = this.getNodeBySubId({
+        subId: 'oj-conveyorbelt-start-overflow-indicator'
+      });
+      var endIndicator = this.getNodeBySubId({ subId: 'oj-conveyorbelt-end-overflow-indicator' });
+      var topIndicator = this.getNodeBySubId({ subId: 'oj-conveyorbelt-top-overflow-indicator' });
+      var bottomIndicator = this.getNodeBySubId({
+        subId: 'oj-conveyorbelt-bottom-overflow-indicator'
+      });
+      var currentNode = node;
+      var elem = this.element[0];
+      while (currentNode && currentNode !== elem) {
+        if (currentNode === startIndicator) {
+          return { subId: 'oj-conveyorbelt-start-overflow-indicator' };
+        } else if (currentNode === endIndicator) {
+          return { subId: 'oj-conveyorbelt-end-overflow-indicator' };
+        } else if (currentNode === topIndicator) {
+          return { subId: 'oj-conveyorbelt-top-overflow-indicator' };
+        } else if (currentNode === bottomIndicator) {
+          return { subId: 'oj-conveyorbelt-bottom-overflow-indicator' };
+        }
+
+        currentNode = currentNode.parentElement;
+      }
+      return null;
+    },
+
+    /**
+     * Scrolls child item of conveyor belt into the view.
+     *
+     *
+     * @param {Element} elem DOM element to scroll
+     * @return {void}
+     * @expose
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @since 9.0.0
+     * @ojshortdesc Scrolls child item of conveyor belt into the view.
+     *
+     * @example <caption>Invoke the <code class="prettyprint">scrollElementIntoView</code> method:</caption>
+     * myConveyorBelt.scrollElementIntoView(element);
+     */
+    scrollElementIntoView: function (element) {
+      var currentScroll = this._cbCommon.getScroll();
+      var currentViewportSize = this._cbCommon._getCurrViewportSize();
+
+      var contentWidth = this._cbCommon._contentContainer.offsetWidth;
+
+      var elementOffLeft = element.offsetLeft;
+      // FIX : in IE, the conveyor items all report offsetLeft=0,
+      // so we need to get the offset from the parent wrapping table cell div
+      // instead
+      if (!this._cbCommon._contentParent && elementOffLeft === 0) {
+        elementOffLeft = element.parentNode.offsetLeft;
+      }
+
+      // if RTL, still want to save the start coords in logical, ascending order beginning with 0
+      if (this._cbCommon._bRtl) {
+        elementOffLeft = contentWidth - (elementOffLeft + element.offsetWidth);
+      }
+      // FIX : in IE, the conveyor items all report offsetTop=0,
+      // so we need to get the offset from the parent wrapping table cell div
+      // instead
+      var elementOffTop = element.offsetTop;
+      if (!this._cbCommon._contentParent && elementOffTop === 0) {
+        elementOffTop = element.parentNode.offsetTop;
+      }
+      if (this._cbCommon._isHorizontal()) {
+        // horizontal conveyor belt
+        // if the element is in the current horizontal view port, then we don't need to scroll
+        if (
+          elementOffLeft + element.offsetWidth <= currentScroll + currentViewportSize &&
+          elementOffLeft >= currentScroll &&
+          elementOffLeft > this._cbCommon._getButtonSize()
+        ) {
           return;
         }
 
-        var contentContainer = this._cbCommon._contentContainer;
-        var cbcClass = ConveyorBeltCommon;
-        var elemInnerSize = this._cbCommon._isHorizontal() ?
-                     cbcClass._getElemInnerWidth(this.element[0]) :
-                     cbcClass._getElemInnerHeight(this.element[0]);
-        this._cbCommon._minScroll = 0;
-         // take the button size into account for max scroll position
-        this._cbCommon._maxScroll = this._cbCommon._isHorizontal() ?
-           (contentContainer.offsetWidth - elemInnerSize) + this._cbCommon._buttonWidth :
-           (contentContainer.offsetHeight - elemInnerSize) + this._cbCommon._buttonHeight;
-         // constrain max scroll
-        if (this._cbCommon._maxScroll < 0) {
-         this._cbCommon._maxScroll = 0;
-        }
-        var scroll = 0;
-        if (this._cbCommon._isHorizontal()) { // scroll conveyor belt in case of a horizontal conveyorbelt
-         scroll = elementOffLeft;
-        } else { // scroll conveyor belt in case of a vertical conveyorbelt
-         scroll = elementOffTop;
-        }
-        if (scroll <= this._cbCommon._getButtonSize()) {
-          scroll = this._cbCommon._minScroll;
-        }
-        this._cbCommon._setCurrScroll(scroll, true);
+        // if vertical conveyor belt and the element is in the current vertical view port, then we don't need to scroll
+      } else if (
+        elementOffTop + element.offsetHeight <= currentScroll + currentViewportSize &&
+        elementOffTop >= currentScroll &&
+        elementOffTop > this._cbCommon._getButtonSize()
+      ) {
+        return;
       }
-    }); // end of oj.__registerWidget
+
+      var contentContainer = this._cbCommon._contentContainer;
+      var cbcClass = ConveyorBeltCommon;
+      var elemInnerSize = this._cbCommon._isHorizontal()
+        ? cbcClass._getElemInnerWidth(this.element[0])
+        : cbcClass._getElemInnerHeight(this.element[0]);
+      this._cbCommon._minScroll = 0;
+      // take the button size into account for max scroll position
+      this._cbCommon._maxScroll = this._cbCommon._isHorizontal()
+        ? contentContainer.offsetWidth - elemInnerSize + this._cbCommon._buttonWidth
+        : contentContainer.offsetHeight - elemInnerSize + this._cbCommon._buttonHeight;
+      // constrain max scroll
+      if (this._cbCommon._maxScroll < 0) {
+        this._cbCommon._maxScroll = 0;
+      }
+      var scroll = 0;
+      if (this._cbCommon._isHorizontal()) {
+        // scroll conveyor belt in case of a horizontal conveyorbelt
+        scroll = elementOffLeft;
+      } else {
+        // scroll conveyor belt in case of a vertical conveyorbelt
+        scroll = elementOffTop;
+      }
+      if (scroll <= this._cbCommon._getButtonSize()) {
+        scroll = this._cbCommon._minScroll;
+      }
+      this._cbCommon._setCurrScroll(scroll, true);
+    }
+  }); // end of oj.__registerWidget
 
   // Set theme-based defaults
   setDefaultOptions({
     ojConveyorBelt: {
       arrowVisibility: createDynamicPropertyGetter(function () {
-        return getCachedCSSVarValues(['--oj-private-conveyor-belt-global-arrow-visibility-default'])[0];
+        return getCachedCSSVarValues([
+          '--oj-private-conveyor-belt-global-arrow-visibility-default'
+        ])[0];
       })
     }
   });
-}()); // end of ConveyorBelt wrapper function
+})(); // end of ConveyorBelt wrapper function

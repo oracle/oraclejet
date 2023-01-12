@@ -1,11 +1,12 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
+import { getLocale } from 'ojs/ojconfig';
 import ojldimport from 'ojL10n!ojtranslations/nls/localeElements';
 import { CalendarUtils } from 'ojs/ojcalendarutils';
 
@@ -110,8 +111,20 @@ LocaleData.getMonthNames = function (type) {
   }
   var months = LocaleData._getCalendarData().months['stand-alone'][type];
 
-  return [months['1'], months['2'], months['3'], months['4'], months['5'], months['6'],
-    months['7'], months['8'], months['9'], months['10'], months['11'], months['12']];
+  return [
+    months['1'],
+    months['2'],
+    months['3'],
+    months['4'],
+    months['5'],
+    months['6'],
+    months['7'],
+    months['8'],
+    months['9'],
+    months['10'],
+    months['11'],
+    months['12']
+  ];
 };
 
 /**
@@ -126,12 +139,12 @@ LocaleData.getMonthNames = function (type) {
  */
 LocaleData.isMonthPriorToYear = function () {
   var options = { dateStyle: 'long' };
-  var locale = oj.Config.getLocale();
+  var locale = getLocale();
   var d = new Date();
   var intlFormatter = new Intl.DateTimeFormat(locale, options);
   var parts = intlFormatter.formatToParts(d);
-  var monthIndex = parts.findIndex(obj => obj.type === 'month');
-  var yearIndex = parts.findIndex(obj => obj.type === 'year');
+  var monthIndex = parts.findIndex((obj) => obj.type === 'month');
+  var yearIndex = parts.findIndex((obj) => obj.type === 'year');
   return monthIndex < yearIndex;
 };
 
@@ -160,7 +173,7 @@ LocaleData._getWeekData = function (key) {
  * @private
  */
 LocaleData._getCalendarData = function () {
-  var locale = oj.Config.getLocale();
+  var locale = getLocale();
   var cal = CalendarUtils.getCalendar(locale, 'gregory');
   return cal;
 };
@@ -170,12 +183,13 @@ LocaleData._getCalendarData = function () {
  * @private
  */
 LocaleData._getRegion = function () {
-  var locale = oj.Config.getLocale();
+  var locale = getLocale();
   if (locale) {
     var tokens = locale.toUpperCase().split(/-|_/);
     if (tokens.length >= 2) {
       var tag = tokens[1];
-      if (tag.length === 4) { // this is a script tag
+      if (tag.length === 4) {
+        // this is a script tag
         if (tokens.length >= 3) {
           return tokens[2];
         }

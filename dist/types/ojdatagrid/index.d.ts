@@ -5,8 +5,8 @@ import { DataGridProvider, GridBodyItem, GridHeaderItem, GridItem } from '../ojd
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProperties<K, D>> {
     bandingInterval: {
-        column: number;
-        row: number;
+        column?: number;
+        row?: number;
     };
     cell: {
         className?: ((context: ojDataGrid.CellContext<K, D>) => string | void | null) | string | null;
@@ -18,25 +18,55 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
     currentCell: ojDataGrid.CurrentCell<K> | null;
     data: DataGridProvider<D>;
     dataTransferOptions: {
-        copy: 'disable' | 'enable';
-        cut: 'disable' | 'enable';
-        fill: 'disable' | 'enable';
-        paste: 'disable' | 'enable';
+        copy?: 'disable' | 'enable';
+        cut?: 'disable' | 'enable';
+        fill?: 'disable' | 'enable';
+        paste?: 'disable' | 'enable';
     };
     dnd: {
-        reorder: {
-            row: 'enable' | 'disable';
+        drag?: {
+            columns?: {
+                dataTypes?: string | string[];
+                drag?: ((param0: DragEvent) => void);
+                dragEnd?: ((param0: DragEvent) => void);
+                dragStart?: ((param0: DragEvent, param1: ojDataGrid.DragHeaderContext) => void);
+            };
+            rows?: {
+                dataTypes?: string | string[];
+                drag?: ((param0: DragEvent) => void);
+                dragEnd?: ((param0: DragEvent) => void);
+                dragStart?: ((param0: DragEvent, param1: ojDataGrid.DragHeaderContext) => void);
+            };
+        };
+        drop?: {
+            columns?: {
+                dataTypes: string | string[];
+                dragEnter?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                dragLeave?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                dragOver?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                drop: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+            };
+            rows?: {
+                dataTypes: string | string[];
+                dragEnter?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                dragLeave?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                dragOver?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                drop: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+            };
+        };
+        reorder?: {
+            row?: 'enable' | 'disable';
         };
     };
     editMode: 'none' | 'cellNavigation' | 'cellEdit';
     gridlines: {
-        horizontal: 'visible' | 'hidden';
-        vertical: 'visible' | 'hidden';
+        horizontal?: 'visible' | 'hidden';
+        vertical?: 'visible' | 'hidden';
     };
     header: {
-        column: {
+        column?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
-            label: {
+            label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
@@ -46,16 +76,16 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
                 insert: HTMLElement | string;
             } | void | null) | null;
-            resizable: {
-                height: 'enable' | 'disable';
+            resizable?: {
+                height?: 'enable' | 'disable';
                 width?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
             };
             sortable?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
             style?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
         };
-        columnEnd: {
+        columnEnd?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
-            label: {
+            label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
@@ -65,15 +95,15 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
                 insert: HTMLElement | string;
             } | void | null) | null;
-            resizable: {
-                height: 'enable' | 'disable';
+            resizable?: {
+                height?: 'enable' | 'disable';
                 width?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
             };
             style?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
         };
-        row: {
+        row?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
-            label: {
+            label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
@@ -83,16 +113,16 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
                 insert: HTMLElement | string;
             } | void | null) | null;
-            resizable: {
+            resizable?: {
                 height?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
-                width: 'enable' | 'disable';
+                width?: 'enable' | 'disable';
             };
             sortable?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
             style?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
         };
-        rowEnd: {
+        rowEnd?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
-            label: {
+            label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
@@ -102,17 +132,17 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
                 insert: HTMLElement | string;
             } | void | null) | null;
-            resizable: {
+            resizable?: {
                 height?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
-                width: 'enable' | 'disable';
+                width?: 'enable' | 'disable';
             };
             style?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
         };
     };
     scrollPolicy: 'auto' | 'loadMoreOnScroll' | 'scroll';
     scrollPolicyOptions: {
-        maxColumnCount: number;
-        maxRowCount: number;
+        maxColumnCount?: number;
+        maxRowCount?: number;
     };
     scrollPosition: {
         columnIndex?: number;
@@ -127,8 +157,8 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
     scrollToKey: 'auto' | 'capability' | 'always' | 'never';
     selection: Array<ojDataGrid.Selection<K>>;
     selectionMode: {
-        cell: 'none' | 'single' | 'multiple';
-        row: 'none' | 'single' | 'multiple';
+        cell?: 'none' | 'single' | 'multiple';
+        row?: 'none' | 'single' | 'multiple';
     };
     translations: {
         accessibleActionableMode?: string;
@@ -138,6 +168,9 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         accessibleColumnEndHeaderLabelContext?: string;
         accessibleColumnHeaderContext?: string;
         accessibleColumnHeaderLabelContext?: string;
+        accessibleColumnHierarchicalFull?: string;
+        accessibleColumnHierarchicalPartial?: string;
+        accessibleColumnHierarchicalUnknown?: string;
         accessibleColumnSelected?: string;
         accessibleColumnSpanContext?: string;
         accessibleContainsControls?: string;
@@ -147,6 +180,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         accessibleLastColumn?: string;
         accessibleLastRow?: string;
         accessibleLevelContext?: string;
+        accessibleLevelHierarchicalContext?: string;
         accessibleMultiCellSelected?: string;
         accessibleNavigationMode?: string;
         accessibleRangeSelectModeOff?: string;
@@ -158,6 +192,9 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         accessibleRowExpanded?: string;
         accessibleRowHeaderContext?: string;
         accessibleRowHeaderLabelContext?: string;
+        accessibleRowHierarchicalFull?: string;
+        accessibleRowHierarchicalPartial?: string;
+        accessibleRowHierarchicalUnknown?: string;
         accessibleRowSelected?: string;
         accessibleRowSpanContext?: string;
         accessibleSelectionAffordanceBottom?: string;
@@ -386,6 +423,17 @@ export namespace ojDataGrid {
         type: 'cell' | 'header' | 'label';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type DragHeaderContext = {
+        axis: string;
+        range: Range[];
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DropHeaderContext = {
+        axis: string;
+        index: number;
+        position: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type HeaderContext<K, D> = {
         axis: 'column' | 'columnEnd' | 'row' | 'rowEnd';
         componentElement: Element;
@@ -486,8 +534,8 @@ export interface ojDataGridEventMap<K, D> extends baseComponentEventMap<ojDataGr
 }
 export interface ojDataGridSettableProperties<K, D> extends baseComponentSettableProperties {
     bandingInterval: {
-        column: number;
-        row: number;
+        column?: number;
+        row?: number;
     };
     cell: {
         className?: ((context: ojDataGrid.CellContext<K, D>) => string | void | null) | string | null;
@@ -499,25 +547,55 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
     currentCell: ojDataGrid.CurrentCell<K> | null;
     data: DataGridProvider<D> | null;
     dataTransferOptions: {
-        copy: 'disable' | 'enable';
-        cut: 'disable' | 'enable';
-        fill: 'disable' | 'enable';
-        paste: 'disable' | 'enable';
+        copy?: 'disable' | 'enable';
+        cut?: 'disable' | 'enable';
+        fill?: 'disable' | 'enable';
+        paste?: 'disable' | 'enable';
     };
     dnd: {
-        reorder: {
-            row: 'enable' | 'disable';
+        drag?: {
+            columns?: {
+                dataTypes?: string | string[];
+                drag?: ((param0: DragEvent) => void);
+                dragEnd?: ((param0: DragEvent) => void);
+                dragStart?: ((param0: DragEvent, param1: ojDataGrid.DragHeaderContext) => void);
+            };
+            rows?: {
+                dataTypes?: string | string[];
+                drag?: ((param0: DragEvent) => void);
+                dragEnd?: ((param0: DragEvent) => void);
+                dragStart?: ((param0: DragEvent, param1: ojDataGrid.DragHeaderContext) => void);
+            };
+        };
+        drop?: {
+            columns?: {
+                dataTypes: string | string[];
+                dragEnter?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                dragLeave?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                dragOver?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                drop: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+            };
+            rows?: {
+                dataTypes: string | string[];
+                dragEnter?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                dragLeave?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                dragOver?: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+                drop: ((param0: DragEvent, param1: ojDataGrid.DropHeaderContext) => void);
+            };
+        };
+        reorder?: {
+            row?: 'enable' | 'disable';
         };
     };
     editMode: 'none' | 'cellNavigation' | 'cellEdit';
     gridlines: {
-        horizontal: 'visible' | 'hidden';
-        vertical: 'visible' | 'hidden';
+        horizontal?: 'visible' | 'hidden';
+        vertical?: 'visible' | 'hidden';
     };
     header: {
-        column: {
+        column?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
-            label: {
+            label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
@@ -527,16 +605,16 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
                 insert: HTMLElement | string;
             } | void | null) | null;
-            resizable: {
-                height: 'enable' | 'disable';
+            resizable?: {
+                height?: 'enable' | 'disable';
                 width?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
             };
             sortable?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
             style?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
         };
-        columnEnd: {
+        columnEnd?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
-            label: {
+            label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
@@ -546,15 +624,15 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
                 insert: HTMLElement | string;
             } | void | null) | null;
-            resizable: {
-                height: 'enable' | 'disable';
+            resizable?: {
+                height?: 'enable' | 'disable';
                 width?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
             };
             style?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
         };
-        row: {
+        row?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
-            label: {
+            label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
@@ -564,16 +642,16 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
                 insert: HTMLElement | string;
             } | void | null) | null;
-            resizable: {
+            resizable?: {
                 height?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
-                width: 'enable' | 'disable';
+                width?: 'enable' | 'disable';
             };
             sortable?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
             style?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
         };
-        rowEnd: {
+        rowEnd?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
-            label: {
+            label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
@@ -583,17 +661,17 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
                 insert: HTMLElement | string;
             } | void | null) | null;
-            resizable: {
+            resizable?: {
                 height?: ((context: ojDataGrid.HeaderContext<K, D>) => string) | string | null;
-                width: 'enable' | 'disable';
+                width?: 'enable' | 'disable';
             };
             style?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
         };
     };
     scrollPolicy: 'auto' | 'loadMoreOnScroll' | 'scroll';
     scrollPolicyOptions: {
-        maxColumnCount: number;
-        maxRowCount: number;
+        maxColumnCount?: number;
+        maxRowCount?: number;
     };
     scrollPosition: {
         columnIndex?: number;
@@ -608,8 +686,8 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
     scrollToKey: 'auto' | 'capability' | 'always' | 'never';
     selection: Array<ojDataGrid.Selection<K>>;
     selectionMode: {
-        cell: 'none' | 'single' | 'multiple';
-        row: 'none' | 'single' | 'multiple';
+        cell?: 'none' | 'single' | 'multiple';
+        row?: 'none' | 'single' | 'multiple';
     };
     translations: {
         accessibleActionableMode?: string;
@@ -619,6 +697,9 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         accessibleColumnEndHeaderLabelContext?: string;
         accessibleColumnHeaderContext?: string;
         accessibleColumnHeaderLabelContext?: string;
+        accessibleColumnHierarchicalFull?: string;
+        accessibleColumnHierarchicalPartial?: string;
+        accessibleColumnHierarchicalUnknown?: string;
         accessibleColumnSelected?: string;
         accessibleColumnSpanContext?: string;
         accessibleContainsControls?: string;
@@ -628,6 +709,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         accessibleLastColumn?: string;
         accessibleLastRow?: string;
         accessibleLevelContext?: string;
+        accessibleLevelHierarchicalContext?: string;
         accessibleMultiCellSelected?: string;
         accessibleNavigationMode?: string;
         accessibleRangeSelectModeOff?: string;
@@ -639,6 +721,9 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         accessibleRowExpanded?: string;
         accessibleRowHeaderContext?: string;
         accessibleRowHeaderLabelContext?: string;
+        accessibleRowHierarchicalFull?: string;
+        accessibleRowHierarchicalPartial?: string;
+        accessibleRowHierarchicalUnknown?: string;
         accessibleRowSelected?: string;
         accessibleRowSpanContext?: string;
         accessibleSelectionAffordanceBottom?: string;
@@ -848,6 +933,12 @@ export namespace DataGridElement {
         };
         level?: number;
         type: 'cell' | 'header' | 'label';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DropHeaderContext = {
+        axis: string;
+        index: number;
+        position: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type HeaderTemplateContext<D> = {

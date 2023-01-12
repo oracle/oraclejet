@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -48,11 +48,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     for (var i = 0; i < SimpleTapRecognizer._TOUCHEVENTS.length; i++) {
       eventType = SimpleTapRecognizer._TOUCHEVENTS[i];
       if (eventType === 'touchstart' || eventType === 'touchmove') {
-        docElement.addEventListener(
-          eventType,
-          eventHandlerCallback,
-          { passive: false, capture: true }
-        );
+        docElement.addEventListener(eventType, eventHandlerCallback, {
+          passive: false,
+          capture: true
+        });
       } else {
         docElement.addEventListener(eventType, eventHandlerCallback, true);
       }
@@ -107,11 +106,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     for (var i = 0; i < SimpleTapRecognizer._TOUCHEVENTS.length; i++) {
       eventType = SimpleTapRecognizer._TOUCHEVENTS[i];
       if (eventType === 'touchstart' || eventType === 'touchmove') {
-        docElement.removeEventListener(
-          eventType,
-          eventHandlerCallback,
-          { passive: false, capture: true }
-        );
+        docElement.removeEventListener(eventType, eventHandlerCallback, {
+          passive: false,
+          capture: true
+        });
       } else {
         docElement.removeEventListener(eventType, eventHandlerCallback, true);
       }
@@ -249,8 +247,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @public
    * @ojtsignore
    */
-  PopupService.MODALITY =
-  {
+  PopupService.MODALITY = {
     /** Type of popup that doesn't support modality */
     NONE: 'none',
     /** Dialog that that blocks user input of the primary window.*/
@@ -266,8 +263,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @public
    * @ojtsignore
    */
-  PopupService.EVENT =
-  {
+  PopupService.EVENT = {
     /**
      * Event called by the popup service when the surrogate is removed in the document
      * resulting in the popup getting implicitly closed and associated bound element
@@ -330,8 +326,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @public
    * @ojtsignore
    */
-  PopupService.LAYER_LEVEL =
-  {
+  PopupService.LAYER_LEVEL = {
     /**
      * Option used by dialogs.  Dialogs are always top rooted.
      */
@@ -351,8 +346,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @see oj.PopupService#open
    * @ojtsignore
    */
-  PopupService.OPTION =
-  {
+  PopupService.OPTION = {
     /**
      * Parameter holding the jQuery element that is the root of the popup.  This
      * element is reparented into the zorder container when open. It is a required
@@ -410,35 +404,33 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     CUSTOM_ELEMENT: 'customElement'
   };
 
-  oj.__registerWidget('oj.ojSurrogate', $.oj.baseComponent,
-    {
-      version: '1.0.0',
-      widgetEventPrefix: 'oj',
-      options:
-      {
-        beforeDestroy: null
-      },
-      _ComponentCreate: function () {
-        this._super();
-        this.element.uniqueId();
-      },
-      _invokeBeforeDestroy: function () {
-        var callback = this.options.beforeDestroy;
-        this.options.beforeDestroy = null;
-        if (callback) {
-          callback();
-        }
-      },
-      _destroy: function () {
-        this._invokeBeforeDestroy();
-        this.element.removeUniqueId();
-        this._super();
-      },
-      _NotifyDetached: function () {
-        this._invokeBeforeDestroy();
-        this._super();
+  oj.__registerWidget('oj.ojSurrogate', $.oj.baseComponent, {
+    version: '1.0.0',
+    widgetEventPrefix: 'oj',
+    options: {
+      beforeDestroy: null
+    },
+    _ComponentCreate: function () {
+      this._super();
+      this.element.uniqueId();
+    },
+    _invokeBeforeDestroy: function () {
+      var callback = this.options.beforeDestroy;
+      this.options.beforeDestroy = null;
+      if (callback) {
+        callback();
       }
-    });
+    },
+    _destroy: function () {
+      this._invokeBeforeDestroy();
+      this.element.removeUniqueId();
+      this._super();
+    },
+    _NotifyDetached: function () {
+      this._invokeBeforeDestroy();
+      this._super();
+    }
+  });
 
   var ojSurrogateMeta = {
     properties: {
@@ -478,9 +470,13 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     // Evaulate if global dom listeners are still needed and ignore the request.
     // This is generally and indicator something wacky has happened that needs recovery.
     var status = ZOrderUtils.getStatus(popup);
-    if (!(status === ZOrderUtils.STATUS.UNKNOWN ||
-          status === ZOrderUtils.STATUS.BEFORE_OPEN ||
-          status === ZOrderUtils.STATUS.CLOSE)) {
+    if (
+      !(
+        status === ZOrderUtils.STATUS.UNKNOWN ||
+        status === ZOrderUtils.STATUS.BEFORE_OPEN ||
+        status === ZOrderUtils.STATUS.CLOSE
+      )
+    ) {
       this._assertEventSink();
       return;
     }
@@ -498,9 +494,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     oj.Assert.assertObject(events);
 
     var modality = options[PopupService.OPTION.MODALITY];
-    if (!modality ||
-      !(PopupService.MODALITY.MODELESS === modality ||
-        PopupService.MODALITY.MODAL === modality)) {
+    if (
+      !modality ||
+      !(PopupService.MODALITY.MODELESS === modality || PopupService.MODALITY.MODAL === modality)
+    ) {
       modality = PopupService.MODALITY.NONE;
     }
 
@@ -510,9 +507,13 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     var isCustomElement = options[PopupService.OPTION.CUSTOM_ELEMENT];
 
     var layerLevel = options[PopupService.OPTION.LAYER_LEVEL];
-    if (!layerLevel ||
-      !(PopupService.LAYER_LEVEL.TOP_LEVEL === layerLevel ||
-        PopupService.LAYER_LEVEL.NEAREST_ANCESTOR === layerLevel)) {
+    if (
+      !layerLevel ||
+      !(
+        PopupService.LAYER_LEVEL.TOP_LEVEL === layerLevel ||
+        PopupService.LAYER_LEVEL.NEAREST_ANCESTOR === layerLevel
+      )
+    ) {
       layerLevel = PopupService.LAYER_LEVEL.NEAREST_ANCESTOR;
     }
 
@@ -528,8 +529,14 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     // set logical parent
     DomUtils.setLogicalParent(popup, launcher);
 
-    ZOrderUtils.addToAncestorLayer(popup, launcher, modality, layerClass, layerLevel,
-      isCustomElement);
+    ZOrderUtils.addToAncestorLayer(
+      popup,
+      launcher,
+      modality,
+      layerClass,
+      layerLevel,
+      isCustomElement
+    );
 
     var _finalize = function () {
       try {
@@ -555,8 +562,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         // if the originating subtree where the popup was defined is removed during
         // open animation, invoke the popup remove event callback.  It's registered
         // late (applyEvents above) to prevent removing the popup while it's animating open.
-        if (!ZOrderUtils._getSurrogate(layer) &&
-            $.isFunction(events[PopupService.EVENT.POPUP_REMOVE])) {
+        if (
+          !ZOrderUtils._getSurrogate(layer) &&
+          $.isFunction(events[PopupService.EVENT.POPUP_REMOVE])
+        ) {
           var surrogateRemoveCallback = events[PopupService.EVENT.POPUP_REMOVE];
           surrogateRemoveCallback();
         }
@@ -637,8 +646,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     // then it is opening, closing or already closed. Evaluate if the document level
     // dom listeners are still needed and ignore the request.
     var status = ZOrderUtils.getStatus(popup);
-    if (!(status === ZOrderUtils.STATUS.OPEN ||
-          status === ZOrderUtils.STATUS.BEFORE_CLOSE) || !events) {
+    if (
+      !(status === ZOrderUtils.STATUS.OPEN || status === ZOrderUtils.STATUS.BEFORE_CLOSE) ||
+      !events
+    ) {
       this._assertEventSink();
       return;
     }
@@ -823,7 +834,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       window.removeEventListener('scroll', PopupServiceImpl._refreshCallback, true);
 
       docElement = document.documentElement;
-      docElement.removeEventListener('mousewheel', PopupServiceImpl._refreshCallback, { passive: true, capture: true });
+      docElement.removeEventListener('mousewheel', PopupServiceImpl._refreshCallback, {
+        passive: true,
+        capture: true
+      });
       docElement.removeEventListener('DOMMouseScroll', PopupServiceImpl._refreshCallback, true);
 
       this._callbackEventFilter = null;
@@ -842,7 +856,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       window.addEventListener('scroll', PopupServiceImpl._refreshCallback, true);
 
       docElement = document.documentElement;
-      docElement.addEventListener('mousewheel', PopupServiceImpl._refreshCallback, { passive: true, capture: true });
+      docElement.addEventListener('mousewheel', PopupServiceImpl._refreshCallback, {
+        passive: true,
+        capture: true
+      });
       docElement.addEventListener('DOMMouseScroll', PopupServiceImpl._refreshCallback, true);
 
       callbackEventFilter = this._eventFilterCallback.bind(this);
@@ -884,8 +901,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     }
 
     var defaultLayer = ZOrderUtils.getDefaultLayer();
-    if (event.type === 'keydown' && ZOrderUtils.hasModalDialogOpen() &&
-      !DomUtils.isAncestor(defaultLayer[0], target[0])) {
+    if (
+      event.type === 'keydown' &&
+      ZOrderUtils.hasModalDialogOpen() &&
+      !DomUtils.isAncestor(defaultLayer[0], target[0])
+    ) {
       // Inexpensive check to make sure that if a modal dialog is open,
       // we prevent a keydown outside the zorder layer that contains all
       // popups.  This handles the scenario where focus is placed in the
@@ -938,8 +958,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
     // Wrap a native event in a jQuery.Event
     context.event = $.Event(event, props);
-    ZOrderUtils.postOrderVisit(defaultLayer, PopupServiceImpl._redistributeVisitCallback,
-      context);
+    ZOrderUtils.postOrderVisit(defaultLayer, PopupServiceImpl._redistributeVisitCallback, context);
   };
 
   /**
@@ -1064,10 +1083,34 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @type {Object}
    */
   PopupServiceImpl._COPY_SAFE_EVENT_PROPERTIES = [
-    'altKey', 'bubbles', 'cancelable', 'ctrlKey', 'currentTarget', 'eventPhase',
-    'metaKey', 'relatedTarget', 'shiftKey', 'target', 'timeStamp', 'view', 'which',
-    'button', 'buttons', 'clientX', 'clientY', 'offsetX', 'offsetY', 'pageX', 'pageY',
-    'screenX', 'screenY', 'toElement', 'char', 'charCode', 'key', 'keyCode'
+    'altKey',
+    'bubbles',
+    'cancelable',
+    'ctrlKey',
+    'currentTarget',
+    'eventPhase',
+    'metaKey',
+    'relatedTarget',
+    'shiftKey',
+    'target',
+    'timeStamp',
+    'view',
+    'which',
+    'button',
+    'buttons',
+    'clientX',
+    'clientY',
+    'offsetX',
+    'offsetY',
+    'pageX',
+    'pageY',
+    'screenX',
+    'screenY',
+    'toElement',
+    'char',
+    'charCode',
+    'key',
+    'keyCode'
   ];
 
   /**
@@ -1097,8 +1140,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @see ZOrderUtils.setStatus
    * @ojtsignore
    */
-  ZOrderUtils.STATUS =
-  {
+  ZOrderUtils.STATUS = {
     /** Node has not interacted with the popup service. */
     UNKNOWN: 0,
     /** triggering the before open event */
@@ -1157,8 +1199,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       popup = $(popup);
     }
 
-    if (status >= ZOrderUtils.STATUS.UNKNOWN &&
-        status <= ZOrderUtils.STATUS.CLOSE) {
+    if (status >= ZOrderUtils.STATUS.UNKNOWN && status <= ZOrderUtils.STATUS.CLOSE) {
       popup.data(ZOrderUtils._STATUS_DATA, status);
     }
   };
@@ -1180,8 +1221,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     }
 
     var parent = launcher;
-    while (parent && parent.length > 0
-      && parent.attr(ZOrderUtils._SURROGATE_ATTR) !== ZOrderUtils._DEFAULT_LAYER_ID) {
+    while (
+      parent &&
+      parent.length > 0 &&
+      parent.attr(ZOrderUtils._SURROGATE_ATTR) !== ZOrderUtils._DEFAULT_LAYER_ID
+    ) {
       if (ZOrderUtils._hasSurrogate(parent[0])) {
         return parent;
       }
@@ -1227,15 +1271,22 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @return {void}
    * @public
    */
-  ZOrderUtils.addToAncestorLayer = function (popup, launcher, modality, layerClass, layerLevel,
-    isCustomElement) {
+  ZOrderUtils.addToAncestorLayer = function (
+    popup,
+    launcher,
+    modality,
+    layerClass,
+    layerLevel,
+    isCustomElement
+  ) {
     var popupDom = popup[0];
     if (ZOrderUtils._hasSurrogate(popupDom.parentNode)) {
       throw new Error('JET Popup is already open - id: ' + popupDom.getAttribute('id'));
     }
 
-    var ancestorLayer = ZOrderUtils.getFirstAncestorLayer(layerLevel ===
-      PopupService.LAYER_LEVEL.TOP_LEVEL ? null : launcher);
+    var ancestorLayer = ZOrderUtils.getFirstAncestorLayer(
+      layerLevel === PopupService.LAYER_LEVEL.TOP_LEVEL ? null : launcher
+    );
 
     var layer = $('<div>');
 
@@ -1252,7 +1303,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     popup.after(layer); // @HTMLUpdateOK
 
     const surrogate = ZOrderUtils._createSurrogate(layer, isCustomElement);
-
 
     Components.subtreeDetached(popupDom);
     popup.appendTo(layer); // @HTMLUpdateOK
@@ -1316,7 +1366,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     if (surrogate.length > 0 && events && $.isFunction(events[PopupService.EVENT.POPUP_REMOVE])) {
       // if the surrogate script element gets replaced in the dom it will trigger closure of the
       // popup.
-      Components.setComponentOption(surrogate[0], 'beforeDestroy', events[PopupService.EVENT.POPUP_REMOVE]);
+      Components.setComponentOption(
+        surrogate[0],
+        'beforeDestroy',
+        events[PopupService.EVENT.POPUP_REMOVE]
+      );
     }
   };
 
@@ -1441,6 +1495,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
     ZOrderUtils.preOrderVisit(layer, ZOrderUtils._closeDescendantPopupsCallback);
 
+    ZOrderUtils._resetAriaHiddenOnBackround(layer);
     ZOrderUtils._restoreBodyOverflow();
     ZOrderUtils._removeOverlayFromAncestorLayer(layer);
 
@@ -1544,10 +1599,49 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     }
     if (modality === PopupService.MODALITY.MODAL) {
       layer.attr('aria-modal', 'true');
+      ZOrderUtils._setAriaHiddenOnBackround(layer);
     } else {
       // saw a tech note that a "false" value doesn't convey the same information as
       // if the attribute wasn’t present at all screen readers.
       layer.removeAttr('aria-modal');
+      ZOrderUtils._resetAriaHiddenOnBackround(layer);
+    }
+  };
+
+  /**
+   * Adds aria-hidden="true" on elements outside of the modal popup hierarchy.
+   * This is a required workaround for screen readers that do not honor
+   * the aria-modal="true" setting on the popup and allow elements under
+   * the modal overlay to be read and accessed.
+   *
+   * @param {!jQuery} layer for the target popup
+   * @return {void}
+   * @private
+   */
+  ZOrderUtils._setAriaHiddenOnBackround = function (layer) {
+    var $node = layer;
+    var $hidden = $();
+    do {
+      $hidden = $hidden.add($node.siblings(':not(script):not([aria-hidden="true"])'));
+      $node = $node.parent();
+    } while ($node[0].tagName.toLowerCase() !== 'body');
+    $hidden.attr('aria-hidden', true);
+    layer.data(ZOrderUtils._ARIA_HIDDEN_ELEMS, $hidden);
+  };
+
+  /**
+   * Removes aria-hidden="true" on elements outside of the modal popup hierarchy
+   * when the modal closes or modality status changes.
+   *
+   * @param {!jQuery} layer for the target popup
+   * @return {void}
+   * @private
+   */
+  ZOrderUtils._resetAriaHiddenOnBackround = function (layer) {
+    var $hidden = layer.data(ZOrderUtils._ARIA_HIDDEN_ELEMS);
+    if ($hidden) {
+      $hidden.removeAttr('aria-hidden');
+      layer.removeData(ZOrderUtils._ARIA_HIDDEN_ELEMS);
     }
   };
 
@@ -1630,8 +1724,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @see ZOrderUtils.preOrderVisit
    * @ojtsignore
    */
-  ZOrderUtils.VISIT_RESULT =
-  {
+  ZOrderUtils.VISIT_RESULT = {
     /** Continue to descend into current subtree. */
     ACCEPT: 0,
     /** Halt processing the subtree but contine visiting */
@@ -1645,8 +1738,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @enum {number}
    * @private
    */
-  ZOrderUtils._VISIT_TRAVERSAL =
-  {
+  ZOrderUtils._VISIT_TRAVERSAL = {
     /** The callback is invoked on the target popup before any children. */
     PRE_ORDER: 0,
     /** The callback is invoked on the target popup after first visiting all descendents. */
@@ -1752,7 +1844,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
     return ZOrderUtils.VISIT_RESULT.ACCEPT;
   };
-
 
   /**
    * Determines the target element is an open popup by checking for the
@@ -1938,8 +2029,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     }
 
     // Returns true if the target element is a child of the top most modal layer.
-    return DomUtils.isAncestorOrSelf(topModalLayer, element) ||
-           ZOrderUtils.compareStackingContexts($(topModalLayer), $(element)) < 0;
+    return (
+      DomUtils.isAncestorOrSelf(topModalLayer, element) ||
+      ZOrderUtils.compareStackingContexts($(topModalLayer), $(element)) < 0
+    );
   };
 
   /**
@@ -2004,7 +2097,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       }
       return 0;
     }
-
 
     var n1 = describeStackingContext(el1, false);
     var n2 = describeStackingContext(el2, false);
@@ -2084,6 +2176,15 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @type {string}
    */
   ZOrderUtils._MODALITY_DATA = 'oj-popup-modality';
+
+  /**
+   * Key used to store the aria-hidden elems outside of a modal popup layer
+   * as a jQuery data property.
+   * @const
+   * @private
+   * @type {string}
+   */
+  ZOrderUtils._ARIA_HIDDEN_ELEMS = 'oj-aria-hidden-elems';
 
   /**
    * The id assigned to the zorder container that will house all open popups.
@@ -2170,19 +2271,21 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       var align = target[propName];
       if (align) {
         if (oj.StringUtils.isString(align)) {
-          target[propName] = align.replace('start', (isRtl ? 'right' : 'left'))
-            .replace('end', (isRtl ? 'left' : 'right'))
-            .replace('<', (isRtl ? '+' : '-'))
-            .replace('>', (isRtl ? '-' : '+'));
+          target[propName] = align
+            .replace('start', isRtl ? 'right' : 'left')
+            .replace('end', isRtl ? 'left' : 'right')
+            .replace('<', isRtl ? '+' : '-')
+            .replace('>', isRtl ? '-' : '+');
         } else {
           for (var s = 0; s < PositionUtils._SUB_ALIGN_RULE_PROPERTIES.length; s++) {
             var subPropName = PositionUtils._SUB_ALIGN_RULE_PROPERTIES[s];
             var subAlign = align[subPropName];
             if (oj.StringUtils.isString(subAlign)) {
-              align[subPropName] = subAlign.replace('start', (isRtl ? 'right' : 'left'))
-                .replace('end', (isRtl ? 'left' : 'right'))
-                .replace('<', (isRtl ? '+' : '-'))
-                .replace('>', (isRtl ? '-' : '+'));
+              align[subPropName] = subAlign
+                .replace('start', isRtl ? 'right' : 'left')
+                .replace('end', isRtl ? 'left' : 'right')
+                .replace('<', isRtl ? '+' : '-')
+                .replace('>', isRtl ? '-' : '+');
             }
           }
         }
@@ -2313,7 +2416,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     return false;
   };
 
-
   /**
    * Returns <code>true</code> if the jquery element is visible within overflow an
    * overflow container. The check only considers statically positioned elements and
@@ -2332,32 +2434,39 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       var scrollBarWidth;
       if (['hidden', 'scroll', 'auto'].indexOf(containerBox.overflowY) > -1) {
         // 1px fudge factor for rounding errors
-        if ((alignBox.bottom - containerBox.top) < -1) {
+        if (alignBox.bottom - containerBox.top < -1) {
           return false;
         }
 
         // find horizontal scrollbar size. always present when "scroll", or when "auto" and scrollWidth > innerWidth
-        scrollBarWidth = ((containerBox.overflowX === 'auto' &&
-                           containerBox.scrollWidth > containerBox.innerWidth) ||
-                          containerBox.overflowX === 'scroll') ? DomUtils.getScrollBarWidth() : 0;
-        if ((containerBox.bottom - scrollBarWidth) - alignBox.top < 1) {
+        scrollBarWidth =
+          (containerBox.overflowX === 'auto' && containerBox.scrollWidth > containerBox.innerWidth) ||
+          containerBox.overflowX === 'scroll'
+            ? DomUtils.getScrollBarWidth()
+            : 0;
+        if (containerBox.bottom - scrollBarWidth - alignBox.top < 1) {
           return false;
         }
       }
 
       if (['hidden', 'scroll', 'auto'].indexOf(containerBox.overflowX) > -1) {
         // find vertical scrollbar width. always present when "scroll", or when "auto" and scrollHeight > innerHeight
-        scrollBarWidth = ((containerBox.overflowY === 'auto' &&
-                           containerBox.scrollHeight > containerBox.innerHeight) ||
-                          containerBox.overflowY === 'scroll') ? DomUtils.getScrollBarWidth() : 0;
+        scrollBarWidth =
+          (containerBox.overflowY === 'auto' &&
+            containerBox.scrollHeight > containerBox.innerHeight) ||
+          containerBox.overflowY === 'scroll'
+            ? DomUtils.getScrollBarWidth()
+            : 0;
 
         // depending on ltr vs rtl, the vertical scrollbar can be on either side of the container, so only include the side its on
-        if (((alignBox.right - (containerBox.left +
-                                (DomUtils.getReadingDirection() === 'rtl' ?
-                                  scrollBarWidth : 0))) < -1) ||
-            ((alignBox.left - (containerBox.right -
-                               (DomUtils.getReadingDirection() === 'ltr' ?
-                                 scrollBarWidth : 0))) > -1)) {
+        if (
+          alignBox.right -
+            (containerBox.left + (DomUtils.getReadingDirection() === 'rtl' ? scrollBarWidth : 0)) <
+            -1 ||
+          alignBox.left -
+            (containerBox.right - (DomUtils.getReadingDirection() === 'ltr' ? scrollBarWidth : 0)) >
+            -1
+        ) {
           return false;
         }
       }
@@ -2366,8 +2475,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     }
 
     function hasOverflow(_element) {
-      return _element.css('overflow-x') !== 'visible' ||
-             _element.css('overflow-y') !== 'visible';
+      return _element.css('overflow-x') !== 'visible' || _element.css('overflow-y') !== 'visible';
     }
 
     function getRect(_element) {
@@ -2386,11 +2494,13 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     }
 
     function isPositioned(_element) {
-      return ['fixed', 'absolute', 'relative', 'sticky'].indexOf(_element.css('position')) > -1 &&
-             (!isNaN(parseInt(_element.css('top'), 10)) ||
-              !isNaN(parseInt(_element.css('bottom'), 10)) ||
-              !isNaN(parseInt(_element.css('left'), 10)) ||
-              !isNaN(parseInt(_element.css('right'), 10)));
+      return (
+        ['fixed', 'absolute', 'relative', 'sticky'].indexOf(_element.css('position')) > -1 &&
+        (!isNaN(parseInt(_element.css('top'), 10)) ||
+          !isNaN(parseInt(_element.css('bottom'), 10)) ||
+          !isNaN(parseInt(_element.css('left'), 10)) ||
+          !isNaN(parseInt(_element.css('right'), 10)))
+      );
     }
 
     if (!element) {
@@ -2404,8 +2514,14 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     // check that the element is not hidden in overflow
     var isWithinViewPort = true;
     var parent = element.parent();
-    while (isWithinViewPort && parent && parent.length > 0 &&
-           parent[0].nodeName !== 'BODY' && parent[0].nodeType === 1 && !isPositioned(parent)) {
+    while (
+      isWithinViewPort &&
+      parent &&
+      parent.length > 0 &&
+      parent[0].nodeName !== 'BODY' &&
+      parent[0].nodeType === 1 &&
+      !isPositioned(parent)
+    ) {
       if (hasOverflow(parent)) {
         var parentBox = getRect(parent);
         // ignore elements with empty border-boxes
@@ -2429,8 +2545,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @private
    * @const
    */
-  PositionUtils._ANIMATION_TRANSFORM_ORIGIN_RULES =
-  {
+  PositionUtils._ANIMATION_TRANSFORM_ORIGIN_RULES = {
     'right-top': 'right top',
     'right-middle': 'right center',
     'right-bottom': 'right bottom',
@@ -2501,13 +2616,13 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       effectsAsString = effectsAsString.replace(exp, transformOrigin);
 
       // eslint-disable-next-line no-param-reassign
-      effects = isEffectsTypeofString ? effectsAsString :
-        /** @type {Object} */ (JSON.parse(effectsAsString));
+      effects = isEffectsTypeofString
+        ? effectsAsString
+        : /** @type {Object} */ (JSON.parse(effectsAsString));
     }
 
     return effects;
   };
-
 
   /**
    * Splits the jquery UI vertical mnemonic into 3 groups.
@@ -2554,7 +2669,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       if (groups[2]) {
         var offset = parseInt(groups[3], 10);
         if (!isNaN(offset)) {
-          offset *= (groups[2] === '-' ? -1 : 1);
+          offset *= groups[2] === '-' ? -1 : 1;
           data[1] = offset;
         }
       }
@@ -2618,14 +2733,17 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
     var groups;
 
-    if (oj.StringUtils.isString(source)) { // jquery ui
+    if (oj.StringUtils.isString(source)) {
+      // jquery ui
       // split horizontal and vertical tokens
       var tokens = source.split(/\s/);
 
       // parse horizontal
       if (tokens.length > 0 && !oj.StringUtils.isEmpty(tokens[0])) {
-        groups = PositionUtils._parsePositionNmnemonic(tokens[0],
-          PositionUtils._HORIZONTAL_ENUM_TST_REGX);
+        groups = PositionUtils._parsePositionNmnemonic(
+          tokens[0],
+          PositionUtils._HORIZONTAL_ENUM_TST_REGX
+        );
 
         // verify horizontal enum
         if (groups[0]) {
@@ -2638,8 +2756,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
       // parse vertical
       if (tokens.length > 1 && !oj.StringUtils.isEmpty(tokens[1])) {
-        groups = PositionUtils._parsePositionNmnemonic(tokens[1],
-          PositionUtils._VERTICAL_ENUM_TST_REGX);
+        groups = PositionUtils._parsePositionNmnemonic(
+          tokens[1],
+          PositionUtils._VERTICAL_ENUM_TST_REGX
+        );
 
         // verify vertical enum
         if (groups[0]) {
@@ -2652,8 +2772,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     } else if (source) {
       // my is is in the jet position format
       if ('horizontal' in source) {
-        groups = PositionUtils._parsePositionNmnemonic(source.horizontal,
-          PositionUtils._HORIZONTAL_ENUM_TST_REGX);
+        groups = PositionUtils._parsePositionNmnemonic(
+          source.horizontal,
+          PositionUtils._HORIZONTAL_ENUM_TST_REGX
+        );
 
         if (groups[0]) {
           target.horizontal = groups[0];
@@ -2664,8 +2786,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       }
 
       if ('vertical' in source) {
-        groups = PositionUtils._parsePositionNmnemonic(source.vertical,
-          PositionUtils._VERTICAL_ENUM_TST_REGX);
+        groups = PositionUtils._parsePositionNmnemonic(
+          source.vertical,
+          PositionUtils._VERTICAL_ENUM_TST_REGX
+        );
 
         if (groups[0]) {
           target.vertical = groups[0];
@@ -2699,7 +2823,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
     return { collision: collisionTarget };
   };
-
 
   /**
    * Converts a source "position.of" into a suitable state held by jet components.
@@ -2802,24 +2925,24 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     var targetOffset = {
       offset: {
         x: targetMy.offset.x + targetAt.offset.x,
-        y: targetMy.offset.y + targetAt.offset.y,
+        y: targetMy.offset.y + targetAt.offset.y
       }
     };
     delete targetMy.offset;
     delete targetAt.offset;
 
-    var target = $.extend({},
+    var target = $.extend(
+      {},
       targetMy,
       targetAt,
       targetOffset,
-      PositionUtils._coerceCollisionToJet(source.collision,
-        collisionDefault),
+      PositionUtils._coerceCollisionToJet(source.collision, collisionDefault),
       PositionUtils._coerceOfToJet(source.of, ofDefault),
-      _coerceUsingToJet(source.using, usingDefault));
+      _coerceUsingToJet(source.using, usingDefault)
+    );
 
     return target;
   };
-
 
   /**
    * Converts the jet position object into the jQuery UI object used by the position utility.
@@ -2837,7 +2960,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       }
 
       if (align === 'my' && source.offset) {
-        var offsetDirection = (direction === 'horizontal' ? 'x' : 'y');
+        var offsetDirection = direction === 'horizontal' ? 'x' : 'y';
         var offset = source.offset[offsetDirection];
         if (!isNaN(offset) && offset !== 0) {
           tokens.push(offset > 0 ? '+' : '');
@@ -2847,7 +2970,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
       return tokens.join('');
     }
-
 
     var target = {};
 
@@ -2870,13 +2992,27 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       } else {
         target.of = ofSource;
       }
-    } else if (ofSource && !oj.StringUtils.isString(ofSource) &&
-               'x' in ofSource && 'y' in ofSource) {
+    } else if (ofSource && !oj.StringUtils.isString(ofSource) && 'x' in ofSource && 'y' in ofSource) {
       var x = ofSource.x;
       var y = ofSource.y;
       var nativeEvent = document.createEvent('MouseEvents');
-      nativeEvent.initMouseEvent('click', true, true, window, 1, x, y, x, y,
-        false, false, false, false, 0, null);
+      nativeEvent.initMouseEvent(
+        'click',
+        true,
+        true,
+        window,
+        1,
+        x,
+        y,
+        x,
+        y,
+        false,
+        false,
+        false,
+        false,
+        0,
+        null
+      );
       target.of = $.Event(nativeEvent, { pageX: x, pageY: y });
     } else {
       target.of = ofSource;
@@ -2908,7 +3044,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
   PositionUtils.calcAvailablePopupSize = function (pos, feedback, withinElem) {
     var within = $.position.getWithinInfo(withinElem || window);
     var scrollInfo = $.position.getScrollInfo(within);
-    var isRtl = (DomUtils.getReadingDirection() === 'rtl');
+    var isRtl = DomUtils.getReadingDirection() === 'rtl';
 
     var paddingLeft = isRtl ? scrollInfo.width : 0;
     var paddingRight = isRtl ? 0 : scrollInfo.width;
@@ -2916,8 +3052,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     var element = feedback.element;
     var target = feedback.target;
 
-    var scrollLeft = (within.isWindow) ? within.scrollLeft : 0;
-    var scrollTop = (within.isWindow) ? within.scrollTop : 0;
+    var scrollLeft = within.isWindow ? within.scrollLeft : 0;
+    var scrollTop = within.isWindow ? within.scrollTop : 0;
 
     var elemLeft = element.left;
     var elemRight = element.left + element.width;
@@ -2949,7 +3085,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         maxRight = withinRight;
       }
     } else if (elemLeft === targetLeft) {
-      if ((targetLeft - withinLeft) > (withinRight - targetRight)) {
+      if (targetLeft - withinLeft > withinRight - targetRight) {
         minLeft = withinLeft;
         maxRight = targetRight;
       } else {
@@ -3047,11 +3183,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         // for dynamic browser adress bar and toolbar behavior while scrolling.
         // Need to use window.innerHeight on mobile.
         var agentInfo = oj.AgentUtils.getAgentInfo();
-        var isMobile = (oj.AgentUtils.OS.ANDROID === agentInfo.os
-                     || oj.AgentUtils.OS.IOS === agentInfo.os);
+        var isMobile =
+          oj.AgentUtils.OS.ANDROID === agentInfo.os || oj.AgentUtils.OS.IOS === agentInfo.os;
         return {
           width: elem.width(),
-          height: (isMobile ? raw.innerHeight : elem.height()),
+          height: isMobile ? raw.innerHeight : elem.height(),
           offset: { top: elem.scrollTop(), left: elem.scrollLeft() }
         };
       }
@@ -3084,7 +3220,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
      *
      */
     $.position = {
-
       getWithinInfo: _origGetWithinInfo.bind(this),
 
       scrollbarWidth: function () {
@@ -3118,10 +3253,12 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       getScrollInfo: function (within) {
         var overflowX = within.isWindow || within.isDocument ? '' : within.element.css('overflow-x');
         var overflowY = within.isWindow || within.isDocument ? '' : within.element.css('overflow-y');
-        var hasOverflowX = overflowX === 'scroll'
-          || (overflowX === 'auto' && within.width < within.element[0].scrollWidth);
-        var hasOverflowY = overflowY === 'scroll'
-          || (overflowY === 'auto' && within.height < within.element[0].scrollHeight);
+        var hasOverflowX =
+          overflowX === 'scroll' ||
+          (overflowX === 'auto' && within.width < within.element[0].scrollWidth);
+        var hasOverflowY =
+          overflowY === 'scroll' ||
+          (overflowY === 'auto' && within.height < within.element[0].scrollHeight);
 
         return {
           width: hasOverflowY ? $.position.scrollbarWidth() : 0,
@@ -3130,7 +3267,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       }
     };
 
-    $.fn.position = (function (options) {
+    $.fn.position = function (options) {
       if (!options || !options.of) {
         return _position.apply(this, arguments);
       }
@@ -3146,9 +3283,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       var dimensions;
 
       // Make sure string options are treated as CSS selectors
-      var target = typeof options.of === 'string' ?
-        $(document).find(options.of) :
-        $(options.of);
+      var target = typeof options.of === 'string' ? $(document).find(options.of) : $(options.of);
 
       var within = $.position.getWithinInfo(options.within);
       var scrollInfo = $.position.getScrollInfo(within);
@@ -3170,16 +3305,16 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       // Force my and at to have valid horizontal and vertical positions
       // if a value is missing or invalid, it will be converted to center
       $.each(['my', 'at'], function () {
-      var pos = (options[this] || '').split(' ');
-      var horizontalOffset;
-      var verticalOffset;
+        var pos = (options[this] || '').split(' ');
+        var horizontalOffset;
+        var verticalOffset;
 
-      if (pos.length === 1) {
-        pos = rhorizontal.test(pos[0]) ?
-            pos.concat(['center']) :
-            (rvertical.test(pos[0]) ?
-              ['center'].concat(pos) :
-              ['center', 'center']);
+        if (pos.length === 1) {
+          pos = rhorizontal.test(pos[0])
+            ? pos.concat(['center'])
+            : rvertical.test(pos[0])
+            ? ['center'].concat(pos)
+            : ['center', 'center'];
         }
         pos[0] = rhorizontal.test(pos[0]) ? pos[0] : 'center';
         pos[1] = rvertical.test(pos[1]) ? pos[1] : 'center';
@@ -3193,10 +3328,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         ];
 
         // Reduce to just the positions without the offsets
-        options[this] = [
-          rposition.exec(pos[0])[0],
-          rposition.exec(pos[1])[0]
-        ];
+        options[this] = [rposition.exec(pos[0])[0], rposition.exec(pos[1])[0]];
       });
 
       // Normalize collision option
@@ -3228,10 +3360,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         var elemHeight = elem.outerHeight();
         var marginLeft = parseCss(this, 'marginLeft');
         var marginTop = parseCss(this, 'marginTop');
-        var collisionWidth = elemWidth + marginLeft + parseCss(this, 'marginRight') +
-            scrollInfo.width;
-        var collisionHeight = elemHeight + marginTop + parseCss(this, 'marginBottom') +
-            scrollInfo.height;
+        var collisionWidth =
+          elemWidth + marginLeft + parseCss(this, 'marginRight') + scrollInfo.width;
+        var collisionHeight =
+          elemHeight + marginTop + parseCss(this, 'marginBottom') + scrollInfo.height;
         var position = $.extend({}, basePosition);
         var myOffset = getOffsets(offsets.my, elem.outerWidth(), elem.outerHeight());
 
@@ -3282,23 +3414,23 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
             var top = targetOffset.top - position.top;
             var bottom = top + targetHeight - elemHeight;
             var feedback = {
-                target: {
-                  element: target,
-                  left: targetOffset.left,
-                  top: targetOffset.top,
-                  width: targetWidth,
-                  height: targetHeight
-                },
-                element: {
-                  element: elem,
-                  left: position.left,
-                  top: position.top,
-                  width: elemWidth,
-                  height: elemHeight
-                },
-                horizontal: right < 0 ? 'left' : left > 0 ? 'right' : 'center',
-                vertical: bottom < 0 ? 'top' : top > 0 ? 'bottom' : 'middle'
-              };
+              target: {
+                element: target,
+                left: targetOffset.left,
+                top: targetOffset.top,
+                width: targetWidth,
+                height: targetHeight
+              },
+              element: {
+                element: elem,
+                left: position.left,
+                top: position.top,
+                width: elemWidth,
+                height: elemHeight
+              },
+              horizontal: right < 0 ? 'left' : left > 0 ? 'right' : 'center',
+              vertical: bottom < 0 ? 'top' : top > 0 ? 'bottom' : 'middle'
+            };
             if (targetWidth < elemWidth && Math.abs(left + right) < targetWidth) {
               feedback.horizontal = 'center';
             }
@@ -3316,7 +3448,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
         elem.offset($.extend(position, { using: using }));
       });
-    });
+    };
 
     /**
      * Forked the jquery UI "flip" position collision rule in version 1.11.4.
@@ -3332,27 +3464,27 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     var _origLeftFlipCollisionRule = $.ui.position.flip.left; // stash away the original left flip rule
 
     /**
-      * @ojtsignore
-      */
+     * @ojtsignore
+     */
     $.ui.position.flip = {
       left: _origLeftFlipCollisionRule.bind(this),
       /**
-        * @param {{top: number, left: number}} position
-        * @param {{targetWidth: number,
-        *         targetHeight: number,
-        *         elemWidth: number,
-        *         elemHeight: number,
-        *         collisionPosition: {marginLeft: number, marginTop: number},
-        *         collisionWidth: number,
-        *         collisionHeight: number,
-        *         offset: Array.<number>,
-        *         my: Array.<string>,
-        *         at: Array.<string>,
-        *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
-        *         elem: jQuery
-        *        }} data
-        * @returns {undefined}
-        */
+       * @param {{top: number, left: number}} position
+       * @param {{targetWidth: number,
+       *         targetHeight: number,
+       *         elemWidth: number,
+       *         elemHeight: number,
+       *         collisionPosition: {marginLeft: number, marginTop: number},
+       *         collisionWidth: number,
+       *         collisionHeight: number,
+       *         offset: Array.<number>,
+       *         my: Array.<string>,
+       *         at: Array.<string>,
+       *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
+       *         elem: jQuery
+       *        }} data
+       * @returns {undefined}
+       */
       top: function (position, data) {
         var within = data.within;
         var withinOffset = within.offset.top + within.scrollTop;
@@ -3360,7 +3492,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         var offsetTop = within.isWindow ? within.scrollTop : within.offset.top;
         var collisionPosTop = position.top - data.collisionPosition.marginTop;
         var overTop = collisionPosTop - offsetTop;
-        var overBottom = (collisionPosTop + data.collisionHeight) - outerHeight - offsetTop;
+        var overBottom = collisionPosTop + data.collisionHeight - outerHeight - offsetTop;
         var top = data.my[1] === 'top';
 
         var myOffset;
@@ -3385,8 +3517,14 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         var newOverBottom;
         var newOverTop;
         if (overTop < 0) {
-          newOverBottom = (position.top + myOffset + atOffset + offset + data.collisionHeight) -
-            outerHeight - withinOffset;
+          newOverBottom =
+            position.top +
+            myOffset +
+            atOffset +
+            offset +
+            data.collisionHeight -
+            outerHeight -
+            withinOffset;
           if (newOverBottom < 0 || newOverBottom < Math.abs(overTop)) {
             //  - only flip up if there is more "over" on top than bottom
             if (overBottom < 0 && overTop > overBottom) {
@@ -3395,9 +3533,13 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
             }
           }
         } else if (overBottom > 0) {
-          newOverTop = (((position.top - data.collisionPosition.marginTop) +
-                          myOffset + atOffset + offset) -
-                        offsetTop);
+          newOverTop =
+            position.top -
+            data.collisionPosition.marginTop +
+            myOffset +
+            atOffset +
+            offset -
+            offsetTop;
           if (newOverTop > 0 || Math.abs(newOverTop) < overBottom) {
             // eslint-disable-next-line no-param-reassign
             position.top += myOffset + atOffset + offset;
@@ -3407,19 +3549,19 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     };
 
     /**
-      * Forked the jquery UI "fit" position collision rule.
-      * The jquery version can return negative left and top positions. This
-      * is a problem because the page cannot be scrolled to negative
-      * coordinates and parts of the popup may not be accessible.
-      *
-      * Outside of making the code closure compiler friendly, the only
-      * difference is the test whether the returned position is negative.
-      * If so, it is set to 0 to make the popup "fit" in the page.
-      */
+     * Forked the jquery UI "fit" position collision rule.
+     * The jquery version can return negative left and top positions. This
+     * is a problem because the page cannot be scrolled to negative
+     * coordinates and parts of the popup may not be accessible.
+     *
+     * Outside of making the code closure compiler friendly, the only
+     * difference is the test whether the returned position is negative.
+     * If so, it is set to 0 to make the popup "fit" in the page.
+     */
 
     /**
-      * @ojtsignore
-      */
+     * @ojtsignore
+     */
     $.ui.position.fit = {
       left: function (position, data) {
         var within = data.within;
@@ -3437,11 +3579,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
             newOverRight = position.left + overLeft + data.collisionWidth - outerWidth - withinOffset;
             position.left += overLeft - newOverRight;
 
-          // Element is initially over right side of within
+            // Element is initially over right side of within
           } else if (overRight > 0 && overLeft <= 0) {
             position.left = withinOffset;
 
-          // Element is initially over both left and right sides of within
+            // Element is initially over both left and right sides of within
           } else {
             // eslint-disable-next-line no-lonely-if
             if (overLeft > overRight) {
@@ -3451,15 +3593,15 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
             }
           }
 
-        // Too far left -> align with left edge
+          // Too far left -> align with left edge
         } else if (overLeft > 0) {
           position.left += overLeft;
 
-        // Too far right -> align with right edge
+          // Too far right -> align with right edge
         } else if (overRight > 0) {
           position.left -= overRight;
 
-        // Adjust based on position and margin
+          // Adjust based on position and margin
         } else {
           position.left = Math.max(position.left - collisionPosLeft, position.left);
         }
@@ -3483,15 +3625,15 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         if (data.collisionHeight > outerHeight) {
           // Element is initially over the top of within
           if (overTop > 0 && overBottom <= 0) {
-            newOverBottom = position.top + overTop + data.collisionHeight - outerHeight -
-              withinOffset;
+            newOverBottom =
+              position.top + overTop + data.collisionHeight - outerHeight - withinOffset;
             position.top += overTop - newOverBottom;
 
-          // Element is initially over bottom of within
+            // Element is initially over bottom of within
           } else if (overBottom > 0 && overTop <= 0) {
             position.top = withinOffset;
 
-          // Element is initially over both top and bottom of within
+            // Element is initially over both top and bottom of within
           } else {
             // eslint-disable-next-line no-lonely-if
             if (overTop > overBottom) {
@@ -3501,15 +3643,15 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
             }
           }
 
-        // Too far up -> align with top
+          // Too far up -> align with top
         } else if (overTop > 0) {
           position.top += overTop;
 
-        // Too far down -> align with bottom edge
+          // Too far down -> align with bottom edge
         } else if (overBottom > 0) {
           position.top -= overBottom;
 
-        // Adjust based on position and margin
+          // Adjust based on position and margin
         } else {
           position.top = Math.max(position.top - collisionPosTop, position.top);
         }
@@ -3527,22 +3669,22 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
      */
     $.ui.position.flipcenter = {
       /**
-        * @param {{top: number, left: number}} position
-        * @param {{targetWidth: number,
-        *         targetHeight: number,
-        *         elemWidth: number,
-        *         elemHeight: number,
-        *         collisionPosition: {marginLeft: number, marginTop: number},
-        *         collisionWidth: number,
-        *         collisionHeight: number,
-        *         offset: Array.<number>,
-        *         my: Array.<string>,
-        *         at: Array.<string>,
-        *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
-        *         elem: jQuery
-        *        }} data
-        * @returns {undefined}
-        */
+       * @param {{top: number, left: number}} position
+       * @param {{targetWidth: number,
+       *         targetHeight: number,
+       *         elemWidth: number,
+       *         elemHeight: number,
+       *         collisionPosition: {marginLeft: number, marginTop: number},
+       *         collisionWidth: number,
+       *         collisionHeight: number,
+       *         offset: Array.<number>,
+       *         my: Array.<string>,
+       *         at: Array.<string>,
+       *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
+       *         elem: jQuery
+       *        }} data
+       * @returns {undefined}
+       */
       left: function (position, data) {
         // stash away the initial position calculated from the at alignment
         var posLeft = position.left;
@@ -3556,7 +3698,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         var outerWidth = within.width;
         var collisionPosLeft = position.left - data.collisionPosition.marginLeft;
         var overLeft = withinOffset - collisionPosLeft;
-        var overRight = (collisionPosLeft + data.collisionWidth) - outerWidth - withinOffset;
+        var overRight = collisionPosLeft + data.collisionWidth - outerWidth - withinOffset;
 
         // if popup is not within, center align it
         if (overLeft > 0 || overRight > 0) {
@@ -3582,22 +3724,22 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       },
 
       /**
-        * @param {{top: number, left: number}} position
-        * @param {{targetWidth: number,
-        *         targetHeight: number,
-        *         elemWidth: number,
-        *         elemHeight: number,
-        *         collisionPosition: {marginLeft: number, marginTop: number},
-        *         collisionWidth: number,
-        *         collisionHeight: number,
-        *         offset: Array.<number>,
-        *         my: Array.<string>,
-        *         at: Array.<string>,
-        *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
-        *         elem: jQuery
-        *        }} data
-        * @returns {undefined}
-        */
+       * @param {{top: number, left: number}} position
+       * @param {{targetWidth: number,
+       *         targetHeight: number,
+       *         elemWidth: number,
+       *         elemHeight: number,
+       *         collisionPosition: {marginLeft: number, marginTop: number},
+       *         collisionWidth: number,
+       *         collisionHeight: number,
+       *         offset: Array.<number>,
+       *         my: Array.<string>,
+       *         at: Array.<string>,
+       *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
+       *         elem: jQuery
+       *        }} data
+       * @returns {undefined}
+       */
       top: function (position, data) {
         // stash away the initial position calculated from the at alignment
         var posTop = position.top;
@@ -3610,7 +3752,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         var outerHeight = data.within.height;
         var collisionPosTop = position.top - data.collisionPosition.marginTop;
         var overTop = withinOffset - collisionPosTop;
-        var overBottom = (collisionPosTop + data.collisionHeight) - outerHeight - withinOffset;
+        var overBottom = collisionPosTop + data.collisionHeight - outerHeight - withinOffset;
 
         if (overTop > 0 || overBottom > 0) {
           // find the center of the target element
@@ -3631,7 +3773,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         }
       }
     };
-  }());
+  })();
 
   /**
    * Utility for handling popup voice over messages sent to a aria live region.
@@ -3721,7 +3863,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         id: PopupLiveRegion._POPUP_LIVE_REGION_ID,
         role: 'log',
         'aria-live': 'polite',
-        'aria-relevant': 'additions' });
+        'aria-relevant': 'additions'
+      });
       liveRegion.addClass('oj-helper-hidden-accessible');
       liveRegion.appendTo(document.body); // @HTMLUpdateOK
     }
@@ -3761,7 +3904,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     if (options) {
       this._options = Object.assign({}, this._options, options);
     }
-
 
     this._sibling = sibling;
     this._message = message;
@@ -3943,8 +4085,12 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     // be invoked when the resolved queue is delivered (operation completes).
     var busyContext = Context.getContext(this._element[0]).getBusyContext();
     var options = {
-      description: this._getBusyStateDescription.bind(this, this._element,
-        this._operation, this._widgetName)
+      description: this._getBusyStateDescription.bind(
+        this,
+        this._element,
+        this._operation,
+        this._widgetName
+      )
     };
     var resolve = busyContext.addBusyState(options);
     this.AddPromiseExecutor(resolve);
@@ -3960,10 +4106,20 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @param {string} widgetName component constructor
    * @returns {string} description of the busy state animation operation.
    */
-  PopupWhenReadyMediator.prototype._getBusyStateDescription = function (element, operation,
-    widgetName) {
-    return widgetName + " identified by '" + element.attr('id') + "' is busy animating on " +
-      "the '" + operation + "' operation.";
+  PopupWhenReadyMediator.prototype._getBusyStateDescription = function (
+    element,
+    operation,
+    widgetName
+  ) {
+    return (
+      widgetName +
+      " identified by '" +
+      element.attr('id') +
+      "' is busy animating on " +
+      "the '" +
+      operation +
+      "' operation."
+    );
   };
 
   /**
@@ -4074,30 +4230,43 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
    * @param {Array} methodArgs passed to a queue method invocation
    * @returns {boolean} <code>true</code> if a "close" or "open" operation is pending completion.
    */
-  PopupWhenReadyMediator.prototype.isOperationPending = function (widgetInstance, operation,
-    methodName, methodArgs) {
+  PopupWhenReadyMediator.prototype.isOperationPending = function (
+    widgetInstance,
+    operation,
+    methodName,
+    methodArgs
+  ) {
     var isPending = false;
     var widgetName = this._widgetName;
     var pendingOperation = this._getPendingOperation();
     if (operation === pendingOperation) {
       // Same request is already pending. Silently fail.
-      Logger.info("An %s instance invoked a '%s' operation while pending animation of " +
-        'the same type of operation.  The second request will be ignored.', widgetName,
-      operation);
+      Logger.info(
+        "An %s instance invoked a '%s' operation while pending animation of " +
+          'the same type of operation.  The second request will be ignored.',
+        widgetName,
+        operation
+      );
       isPending = true;
     } else if (pendingOperation !== 'none') {
-      Logger.info("An %s instance invoked a '%s' operation while pending animation of a " +
-        "'%s' operation. The second request will be invoked after the pending operation " +
-        'completes.'
-      , widgetName, operation, pendingOperation);
+      Logger.info(
+        "An %s instance invoked a '%s' operation while pending animation of a " +
+          "'%s' operation. The second request will be invoked after the pending operation " +
+          'completes.',
+        widgetName,
+        operation,
+        pendingOperation
+      );
 
       // Queue the operation after the pending operation has completed
       // register another resolve promise with the mediator that will be
       // call when the pending operation finishes.
       var promise = new Promise(this.AddPromiseExecutor.bind(this));
-      promise.then(function () {
-        this[methodName].apply(this, methodArgs);
-      }.bind(widgetInstance));
+      promise.then(
+        function () {
+          this[methodName].apply(this, methodArgs);
+        }.bind(widgetInstance)
+      );
       isPending = true;
     }
     return isPending;
@@ -4206,12 +4375,16 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       if (isComponentInOldDom) {
           return openLayerHost(element[V_LAYER_HOST_ID_REF], launcherElement);
       }
+      return _getNewLayerHost();
+  }
+  function _getNewLayerHost() {
       let newLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
       if (!newLayerHost) {
           newLayerHost = document.createElement('div');
           newLayerHost.setAttribute('id', NEW_DEFAULT_LAYER_ID);
+          newLayerHost.setAttribute('data-oj-binding-provider', 'preact');
           newLayerHost.classList.add('oj-root-layer-host');
-          zOrderContainer = document.getElementById(OLD_DEFAULT_LAYER_ID);
+          let zOrderContainer = document.getElementById(OLD_DEFAULT_LAYER_ID);
           if (!zOrderContainer) {
               document.body.prepend(newLayerHost);
           }
@@ -4228,6 +4401,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       if (!vpopupCoreElement) {
           vpopupCoreElement = document.createElement('div');
           vpopupCoreElement.setAttribute('id', elementId);
+          vpopupCoreElement.setAttribute('data-oj-binding-provider', 'preact');
           document.body.appendChild(vpopupCoreElement);
       }
       const popupServiceInstance = oj.PopupService.getInstance();
@@ -4243,6 +4417,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       popupServiceInstance.close(popupServiceOptions);
       element.remove();
   }
+  function findOpenVPopups() {
+      const newLayerHost = _getNewLayerHost();
+      return [].slice.call(newLayerHost.children);
+  }
 
   exports.PopupLiveRegion = PopupLiveRegion;
   exports.PopupService = PopupService;
@@ -4250,6 +4428,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
   exports.PopupWhenReadyMediator = PopupWhenReadyMediator;
   exports.PositionUtils = PositionUtils;
   exports.VPopup = VPopup;
+  exports.findOpenVPopups = findOpenVPopups;
   exports.getLayerHost = getLayerHost;
 
   Object.defineProperty(exports, '__esModule', { value: true });

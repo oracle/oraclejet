@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,8 +20,8 @@ import { getLocale } from 'ojs/ojconfig';
  * @ojtsignore
  */
 const Events =
-/** @lends Events */
-{
+  /** @lends Events */
+  {
     /**
      * Add an event handler for an event type to the model or collection object.
      * @param {string|Object} eventType Types of event handlers to add (may be a single event type, a
@@ -34,9 +34,9 @@ const Events =
      * @since 1.0.0
      * @memberof Events
      */
-  on: function (eventType, callback, context) {
-    return this.OnInternal(eventType, callback, context, false, false);
-  },
+    on: function (eventType, callback, context) {
+      return this.OnInternal(eventType, callback, context, false, false);
+    },
 
     /**
      * Remove an event handler for an event type from the model or collection object.
@@ -50,10 +50,10 @@ const Events =
      * @ojsignature {target: "Type", for: "callback", value: "(context: object, data?: any, data2?: any)=> void"}
      * @since 1.0.0
      * @memberof Events
-    */
-  off: function (eventType, callback, context) {
-    return this._offInternal(eventType, callback, context, false);
-  },
+     */
+    off: function (eventType, callback, context) {
+      return this._offInternal(eventType, callback, context, false);
+    },
 
     /**
      * Fire the given event type(s) for all registered handlers.
@@ -63,13 +63,14 @@ const Events =
      * @since 1.0.0
      * @memberof Events
      */
-  trigger: function (eventType) { // eslint-disable-line no-unused-vars
-    var args = Array.prototype.slice.call(arguments);
-                 // Inject a silent setting in there: if this is being called outside we want to fire all relevant
-                 // events
-    args.unshift(false);
-    return Events.TriggerInternal.apply(this, args);
-  },
+    // eslint-disable-next-line no-unused-vars
+    trigger: function (eventType) {
+      var args = Array.prototype.slice.call(arguments);
+      // Inject a silent setting in there: if this is being called outside we want to fire all relevant
+      // events
+      args.unshift(false);
+      return Events.TriggerInternal.apply(this, args);
+    },
 
     /**
      * Add an event handler for an event type to the model or collection object, but only fire it once, then remove
@@ -85,9 +86,9 @@ const Events =
      * @since 1.0.0
      * @memberof Events
      */
-  once: function (eventType, callback, context) {
-    return this._onceInternal(eventType, callback, context, false, null);
-  },
+    once: function (eventType, callback, context) {
+      return this._onceInternal(eventType, callback, context, false, null);
+    },
 
     /**
      * Add an event handler for an event type to a second model or collection object ("otherObj"), but track it on
@@ -103,45 +104,49 @@ const Events =
      * @since 1.0.0
      * @memberof Events
      */
-  listenTo: function (otherObj, eventType, callback) {
-    var eventArray;
-    var e;
-    var event;
-    var attr;
-    var eventString;
-    var listenerObj;
-    var eventMap = {};
-    var prop;
+    listenTo: function (otherObj, eventType, callback) {
+      var eventArray;
+      var e;
+      var event;
+      var attr;
+      var eventString;
+      var listenerObj;
+      var eventMap = {};
+      var prop;
 
-    if (eventType.constructor === String) {
-      // Create a map out of it
-      eventMap[eventType] = callback;
-    } else {
-      eventMap = eventType;
-    }
+      if (eventType.constructor === String) {
+        // Create a map out of it
+        eventMap[eventType] = callback;
+      } else {
+        eventMap = eventType;
+      }
 
-    for (prop in eventMap) { // eslint-disable-line no-restricted-syntax
-      if (eventMap.hasOwnProperty(prop)) { // eslint-disable-line no-prototype-builtins
-        eventArray = Events._getEvents(prop);
-        for (e = 0; e < eventArray.length; e += 1) {
-          event = eventArray[e].event;
-          attr = eventArray[e].attribute;
-          listenerObj = { event: event,
-            attribute: attr,
-            object: otherObj,
-            callback: eventMap[prop] };
-          eventString = attr ? event + ':' + attr : event;
-          if (this._listeningTo === undefined) {
-            this._listeningTo = [];
+      // eslint-disable-next-line no-restricted-syntax
+      for (prop in eventMap) {
+        // eslint-disable-next-line no-prototype-builtins
+        if (eventMap.hasOwnProperty(prop)) {
+          eventArray = Events._getEvents(prop);
+          for (e = 0; e < eventArray.length; e += 1) {
+            event = eventArray[e].event;
+            attr = eventArray[e].attribute;
+            listenerObj = {
+              event: event,
+              attribute: attr,
+              object: otherObj,
+              callback: eventMap[prop]
+            };
+            eventString = attr ? event + ':' + attr : event;
+            if (this._listeningTo === undefined) {
+              this._listeningTo = [];
+            }
+            this._listeningTo.push(listenerObj);
+            // fire
+            otherObj.OnInternal(eventString, eventMap[prop], null, true, false);
           }
-          this._listeningTo.push(listenerObj);
-          // fire
-          otherObj.OnInternal(eventString, eventMap[prop], null, true, false);
         }
       }
-    }
-    return this;
-  },
+      return this;
+    },
 
     /**
      * Add an event handler for an event type to a second model or collection object ("otherObj"), but track it on
@@ -157,45 +162,49 @@ const Events =
      * @since 1.0.0
      * @memberof Events
      */
-  listenToOnce: function (otherObj, eventType, callback) {
-    var eventArray;
-    var e;
-    var event;
-    var attr;
-    var eventString;
-    var listenerObj;
-    var eventMap = {};
-    var prop;
+    listenToOnce: function (otherObj, eventType, callback) {
+      var eventArray;
+      var e;
+      var event;
+      var attr;
+      var eventString;
+      var listenerObj;
+      var eventMap = {};
+      var prop;
 
-    if (eventType.constructor === String) {
-      // Create a map out of it
-      eventMap[eventType] = callback;
-    } else {
-      eventMap = (eventType);
-    }
+      if (eventType.constructor === String) {
+        // Create a map out of it
+        eventMap[eventType] = callback;
+      } else {
+        eventMap = eventType;
+      }
 
-    for (prop in eventMap) { // eslint-disable-line no-restricted-syntax
-      if (eventMap.hasOwnProperty(prop)) { // eslint-disable-line no-prototype-builtins
-        eventArray = Events._getEvents(prop);
-        for (e = 0; e < eventArray.length; e += 1) {
-          event = eventArray[e].event;
-          attr = eventArray[e].attribute;
-          listenerObj = { event: event,
-            attribute: attr,
-            object: otherObj,
-            callback: eventMap[prop] };
-          eventString = attr ? event + ':' + attr : event;
-          if (this._listeningTo === undefined) {
-            this._listeningTo = [];
+      // eslint-disable-next-line no-restricted-syntax
+      for (prop in eventMap) {
+        // eslint-disable-next-line no-prototype-builtins
+        if (eventMap.hasOwnProperty(prop)) {
+          eventArray = Events._getEvents(prop);
+          for (e = 0; e < eventArray.length; e += 1) {
+            event = eventArray[e].event;
+            attr = eventArray[e].attribute;
+            listenerObj = {
+              event: event,
+              attribute: attr,
+              object: otherObj,
+              callback: eventMap[prop]
+            };
+            eventString = attr ? event + ':' + attr : event;
+            if (this._listeningTo === undefined) {
+              this._listeningTo = [];
+            }
+            this._listeningTo.push(listenerObj);
+            // fire
+            otherObj._onceInternal(eventString, eventMap[prop], null, true, this);
           }
-          this._listeningTo.push(listenerObj);
-          // fire
-          otherObj._onceInternal(eventString, eventMap[prop], null, true, this);
         }
       }
-    }
-    return this;
-  },
+      return this;
+    },
 
     /**
      * Remove event handlers from a model or collection object. If the arguments are omitted, removes all event
@@ -211,221 +220,226 @@ const Events =
      * @since 1.0.0
      * @memberof Events
      */
-  stopListening: function (otherObj, eventType, callback) {
-    var eventArray;
-    var actualType;
-    var eventMap = {};
-    var e;
-    var oneEvent;
-    var oneAttr;
-    var event;
-    var objEqual;
-    var eventEqual;
-    var callbackEqual;
-    var attrEqual;
-    var i;
-    var len;
-    var cb;
-    var prop;
+    stopListening: function (otherObj, eventType, callback) {
+      var eventArray;
+      var actualType;
+      var eventMap = {};
+      var e;
+      var oneEvent;
+      var oneAttr;
+      var event;
+      var objEqual;
+      var eventEqual;
+      var callbackEqual;
+      var attrEqual;
+      var i;
+      var len;
+      var cb;
+      var prop;
 
-    if (arguments == null || arguments.length <= 1) {
-      len = this._listeningTo ? this._listeningTo.length : 0;
-      // Remove everything
-      for (i = 0; i < len; i++) {
-        event = this._listeningTo[i];
-        // If we have an "otherObj" argument, make sure that passes muster
-        objEqual = otherObj ? otherObj === event.object : true;
-        if (objEqual) {
-          cb = event.object._offInternal;
-          cb.apply(event.object, [event.event, event.callback, event.context, true]);
+      if (arguments == null || arguments.length <= 1) {
+        len = this._listeningTo ? this._listeningTo.length : 0;
+        // Remove everything
+        for (i = 0; i < len; i++) {
+          event = this._listeningTo[i];
+          // If we have an "otherObj" argument, make sure that passes muster
+          objEqual = otherObj ? otherObj === event.object : true;
+          if (objEqual) {
+            cb = event.object._offInternal;
+            cb.apply(event.object, [event.event, event.callback, event.context, true]);
+          }
         }
+        this._listeningTo = [];
+        return this;
       }
-      this._listeningTo = [];
-      return this;
-    }
 
-    actualType = eventType;
-    // Account for missing otherObj
-    if (otherObj && otherObj.constructor === String) {
-      actualType = otherObj;
-    }
+      actualType = eventType;
+      // Account for missing otherObj
+      if (otherObj && otherObj.constructor === String) {
+        actualType = otherObj;
+      }
 
-    if (actualType.constructor === String) {
-      // Create a map out of it
-      eventMap[actualType] = callback;
-    } else {
-      eventMap = actualType;
-    }
+      if (actualType.constructor === String) {
+        // Create a map out of it
+        eventMap[actualType] = callback;
+      } else {
+        eventMap = actualType;
+      }
 
-    for (prop in eventMap) { // eslint-disable-line no-restricted-syntax
-      if (eventMap.hasOwnProperty(prop)) { // eslint-disable-line no-prototype-builtins
-        eventArray = Events._getEvents(prop);
-        for (e = 0; e < eventArray.length; e += 1) {
-          oneEvent = eventArray[e].event;
-          oneAttr = eventArray[e].attribute;
-          len = this._listeningTo ? this._listeningTo.length : 0;
-          for (i = len - 1; i >= 0; i -= 1) {
-            event = this._listeningTo[i];
-            objEqual = otherObj ? otherObj === event.object : true;
-            eventEqual = oneEvent ? oneEvent === event.event : true;
-            callbackEqual = callback ? eventMap[prop] === event.callback : true;
-            attrEqual = oneAttr ? oneAttr === event.attribute : true;
-            if (objEqual && eventEqual && callbackEqual && attrEqual) {
-              cb = this._listeningTo[i].object._offInternal;
-              cb.apply(this._listeningTo[i].object, [this._listeningTo[i].event,
-                this._listeningTo[i].callback,
-                this._listeningTo[i].context, true]);
-              this._listeningTo.splice(i, 1);
+      // eslint-disable-next-line no-restricted-syntax
+      for (prop in eventMap) {
+        // eslint-disable-next-line no-prototype-builtins
+        if (eventMap.hasOwnProperty(prop)) {
+          eventArray = Events._getEvents(prop);
+          for (e = 0; e < eventArray.length; e += 1) {
+            oneEvent = eventArray[e].event;
+            oneAttr = eventArray[e].attribute;
+            len = this._listeningTo ? this._listeningTo.length : 0;
+            for (i = len - 1; i >= 0; i -= 1) {
+              event = this._listeningTo[i];
+              objEqual = otherObj ? otherObj === event.object : true;
+              eventEqual = oneEvent ? oneEvent === event.event : true;
+              callbackEqual = callback ? eventMap[prop] === event.callback : true;
+              attrEqual = oneAttr ? oneAttr === event.attribute : true;
+              if (objEqual && eventEqual && callbackEqual && attrEqual) {
+                cb = this._listeningTo[i].object._offInternal;
+                cb.apply(this._listeningTo[i].object, [
+                  this._listeningTo[i].event,
+                  this._listeningTo[i].callback,
+                  this._listeningTo[i].context,
+                  true
+                ]);
+                this._listeningTo.splice(i, 1);
+              }
             }
           }
         }
       }
-    }
-    return this;
-  },
+      return this;
+    },
 
-  /**
-   * @export
-   * Event types
-   * @enum {string}
-   * @memberof Events
-   */
-  EventType: {
-    /** Triggered when a model is added to a collection<p>
-     *  The event passes these arguments to the handler: <br>
-     *  <ul>
-     *  <b>model</b>: the model being added to the collection<br>
-     *  <b>collection</b>: the collection to which the model has been added<br>
-     *  <b>options</b>: any options passed in to the add call that triggered the event
-     *  </ul>
+    /**
+     * @export
+     * Event types
+     * @enum {string}
+     * @memberof Events
      */
-  ADD: 'add',
-    /** Triggered by a collection during an add call once all models passed in have been added<p>
-     * The event passes these arguments to the handler:<br>
-     * <ul>
-     * <b>collection</b>: the collection to which the models have been added<br>
-     * <b>models</b>: the array of models that have been added <br>
-     * <b>options</b>: any options passed in to the add call
-     * </ul>
-     */
-  ALLADDED: 'alladded',
-    /** Triggered when a model is removed from a collection<p>
-     * The event passes these arguments to the handler: <br>
-     * <ul>
-     * <b>model</b>: the model being removed from the collection<br>
-     * <b>collection</b>: the collection from which the model was removed<br>
-     * <b>options</b>: <b>index</b>: the index of the model being removed
-     * </ul>
-     */
-  REMOVE: 'remove',
-    /** Triggered when a collection is reset (see Collection.reset)<p>
-     *  The event passes these arguments to the handler:<br>
-     *  <ul>
-     *  <b>collection</b>: the collection being reset<br>
-     *  <b>options</b>: any options passed in to the reset call
-     *  </ul>
-     */
-  RESET: 'reset',
-    /** Triggered when a collection is refreshed (see Collection.refresh)<p>
-     *  The event passes these arguments to the handler: <br>
-     *  <ul>
-     *  <b>collection</b>: the collection being refreshed<br>
-     *  <b>options</b>: any options passed in to the refresh call
-     *  </ul>
-     */
-  REFRESH: 'refresh',
-    /** Triggered when a collection is sorted.  If the second argument to the callback is set (options) and
-     * 'add' is true, it means this sort event was triggered as a result of an add <p>
-     *  The event passes these arguments to the handler:<br>
-     *  <ul>
-     *  <b>collection</b>: the collection being sorted<br>
-     *  <b>options</b>: <b>add</b>: true if this sort event was triggered as the result of an add call,
-     *  undefined or false if not
-     *  </ul>
-     */
-  SORT: 'sort',
-    /** Triggered when a model's attributes are changed.  This can be the result of a clear call on a model;
-     * a property set call on a model; an unset call on a model; or the changing of properties due to the
-     * merging of models (in an add, for example) <p>
-     * The event passes these arguments to the handler:<br>
-     * <ul>
-     * <b>model</b>: the model on which the change occurred<br>
-     * <b>value</b>: for property-specific change events, the new value of the property being changed<br>
-     * <b>options</b>: any options passed in to the call that triggered the change event.  This is the second
-     * argument passed for overall change events, and the third parameter (after value) for property-specific
-     * change events.
-     * </ul>
-     */
-  CHANGE: 'change',
-    /** Triggered when a model is deleted from the data service (and thus from its Collection), due to a model
-     * destroy call<p>
-     * The event passes these arguments to the handler:<br>
-     * <ul>
-     * <b>model</b>: the model being deleted<br>
-     * <b>collection</b>: the deleted model's collection, if any
-     * </ul>
-     */
-  DESTROY: 'destroy',
-    /** Triggered by a collection during a remove call once all models passed in have been removed and
-     * destroyed<p>
-     * The event passes these arguments to the handler:<br>
-     * <ul>
-     * <b>collection</b>: the collection from which the models have been removed<br>
-     * <b>models</b>: the array of models that have been removed <br>
-     * <b>options</b>: any options passed in to the remove call
-     * </ul>
-     */
-  ALLREMOVED: 'allremoved',
-    /** Triggered when a model or collection has sent a request to the data service <p>
-     *  The event passes these arguments to the handler:<br>
-     *  <ul>
-     *  <b>collection or model</b>: the collection or model triggering the request<br>
-     *  <b>xhr</b>: the xhr argument for the request<br>
-     *  <b>options</b>: any options passed as part of the request
-     *  </ul>
-     */
-  REQUEST: 'request',
-    /** Triggered when a model or collection has been updated from the data service<p>
-     *  The event passes these arguments to the handler:<br>
-     *  <ul>
-     *  <b>collection or model</b>: the collection or model that triggered the update<br>
-     *  <b>response</b>: the response object from the data service<br>
-     *  <b>options</b>: any options passed in to the call that triggered the update
-     *  </ul>
-     */
-  SYNC: 'sync',
-    /** Triggered when a model has failed to update on the data service<p>
-     *  The event passes these arguments to the handler:<br>
-     *  <b>collection or model</b>: the collection or model that made the call that resulted in the error<br>
-     *  <b>xhr</b>: the xhr argument for the failing request, if any<br>
-     *  <b>options</b>: any options passed in to the call that triggered the failing request, plus the status
-     *  and error as textStatus and errorThrown
-     *  </ul>
-     */
-  ERROR: 'error',
-    /** Triggered on an error with data source interactions <p>
-     * The event passes these arguments to the handler:<br>
-     * <ul>
-     * <b>model</b>: the model (or collection) on which the error operation happened <br>
-     * <b>xhr</b>: the xhr involved, if relevant<br>
-     * <b>options</b>: any options passed in to the call that triggered the invalid event
-     * </ul>
-     */
-  INVALID: 'invalid',
-    /** Triggered when all pending promises from Collection API calls have been resolved<p>
-     * The event passes these arguments to the handler:<br>
-     * <ul>
-     * <b>collection</b>: the collection on which the promises have been resolved
-     * </ul>
-     */
-  READY: 'ready',
-    /** Triggered for any of the above events <p>
-     * The event passes the name of the actual event and then any arguments normally passed to that event
-     * following the name
-     */
-  ALL: 'all'
-  }
-};
+    EventType: {
+      /** Triggered when a model is added to a collection<p>
+       *  The event passes these arguments to the handler: <br>
+       *  <ul>
+       *  <b>model</b>: the model being added to the collection<br>
+       *  <b>collection</b>: the collection to which the model has been added<br>
+       *  <b>options</b>: any options passed in to the add call that triggered the event
+       *  </ul>
+       */
+      ADD: 'add',
+      /** Triggered by a collection during an add call once all models passed in have been added<p>
+       * The event passes these arguments to the handler:<br>
+       * <ul>
+       * <b>collection</b>: the collection to which the models have been added<br>
+       * <b>models</b>: the array of models that have been added <br>
+       * <b>options</b>: any options passed in to the add call
+       * </ul>
+       */
+      ALLADDED: 'alladded',
+      /** Triggered when a model is removed from a collection<p>
+       * The event passes these arguments to the handler: <br>
+       * <ul>
+       * <b>model</b>: the model being removed from the collection<br>
+       * <b>collection</b>: the collection from which the model was removed<br>
+       * <b>options</b>: <b>index</b>: the index of the model being removed
+       * </ul>
+       */
+      REMOVE: 'remove',
+      /** Triggered when a collection is reset (see Collection.reset)<p>
+       *  The event passes these arguments to the handler:<br>
+       *  <ul>
+       *  <b>collection</b>: the collection being reset<br>
+       *  <b>options</b>: any options passed in to the reset call
+       *  </ul>
+       */
+      RESET: 'reset',
+      /** Triggered when a collection is refreshed (see Collection.refresh)<p>
+       *  The event passes these arguments to the handler: <br>
+       *  <ul>
+       *  <b>collection</b>: the collection being refreshed<br>
+       *  <b>options</b>: any options passed in to the refresh call
+       *  </ul>
+       */
+      REFRESH: 'refresh',
+      /** Triggered when a collection is sorted.  If the second argument to the callback is set (options) and
+       * 'add' is true, it means this sort event was triggered as a result of an add <p>
+       *  The event passes these arguments to the handler:<br>
+       *  <ul>
+       *  <b>collection</b>: the collection being sorted<br>
+       *  <b>options</b>: <b>add</b>: true if this sort event was triggered as the result of an add call,
+       *  undefined or false if not
+       *  </ul>
+       */
+      SORT: 'sort',
+      /** Triggered when a model's attributes are changed.  This can be the result of a clear call on a model;
+       * a property set call on a model; an unset call on a model; or the changing of properties due to the
+       * merging of models (in an add, for example) <p>
+       * The event passes these arguments to the handler:<br>
+       * <ul>
+       * <b>model</b>: the model on which the change occurred<br>
+       * <b>value</b>: for property-specific change events, the new value of the property being changed<br>
+       * <b>options</b>: any options passed in to the call that triggered the change event.  This is the second
+       * argument passed for overall change events, and the third parameter (after value) for property-specific
+       * change events.
+       * </ul>
+       */
+      CHANGE: 'change',
+      /** Triggered when a model is deleted from the data service (and thus from its Collection), due to a model
+       * destroy call<p>
+       * The event passes these arguments to the handler:<br>
+       * <ul>
+       * <b>model</b>: the model being deleted<br>
+       * <b>collection</b>: the deleted model's collection, if any
+       * </ul>
+       */
+      DESTROY: 'destroy',
+      /** Triggered by a collection during a remove call once all models passed in have been removed and
+       * destroyed<p>
+       * The event passes these arguments to the handler:<br>
+       * <ul>
+       * <b>collection</b>: the collection from which the models have been removed<br>
+       * <b>models</b>: the array of models that have been removed <br>
+       * <b>options</b>: any options passed in to the remove call
+       * </ul>
+       */
+      ALLREMOVED: 'allremoved',
+      /** Triggered when a model or collection has sent a request to the data service <p>
+       *  The event passes these arguments to the handler:<br>
+       *  <ul>
+       *  <b>collection or model</b>: the collection or model triggering the request<br>
+       *  <b>xhr</b>: the xhr argument for the request<br>
+       *  <b>options</b>: any options passed as part of the request
+       *  </ul>
+       */
+      REQUEST: 'request',
+      /** Triggered when a model or collection has been updated from the data service<p>
+       *  The event passes these arguments to the handler:<br>
+       *  <ul>
+       *  <b>collection or model</b>: the collection or model that triggered the update<br>
+       *  <b>response</b>: the response object from the data service<br>
+       *  <b>options</b>: any options passed in to the call that triggered the update
+       *  </ul>
+       */
+      SYNC: 'sync',
+      /** Triggered when a model has failed to update on the data service<p>
+       *  The event passes these arguments to the handler:<br>
+       *  <b>collection or model</b>: the collection or model that made the call that resulted in the error<br>
+       *  <b>xhr</b>: the xhr argument for the failing request, if any<br>
+       *  <b>options</b>: any options passed in to the call that triggered the failing request, plus the status
+       *  and error as textStatus and errorThrown
+       *  </ul>
+       */
+      ERROR: 'error',
+      /** Triggered on an error with data source interactions <p>
+       * The event passes these arguments to the handler:<br>
+       * <ul>
+       * <b>model</b>: the model (or collection) on which the error operation happened <br>
+       * <b>xhr</b>: the xhr involved, if relevant<br>
+       * <b>options</b>: any options passed in to the call that triggered the invalid event
+       * </ul>
+       */
+      INVALID: 'invalid',
+      /** Triggered when all pending promises from Collection API calls have been resolved<p>
+       * The event passes these arguments to the handler:<br>
+       * <ul>
+       * <b>collection</b>: the collection on which the promises have been resolved
+       * </ul>
+       */
+      READY: 'ready',
+      /** Triggered for any of the above events <p>
+       * The event passes the name of the actual event and then any arguments normally passed to that event
+       * following the name
+       */
+      ALL: 'all'
+    }
+  };
 
 // Aliases for backward compatibility
 Events.bind = Events.on;
@@ -439,12 +453,13 @@ Events.unbind = Events.off;
 Events.Mixin = function (myClass, source) {
   var methodName;
   var obj = source || this;
-  for (methodName in obj) { // eslint-disable-line no-restricted-syntax
+  // eslint-disable-next-line no-restricted-syntax
+  for (methodName in obj) {
     if (typeof obj[methodName] === 'function') {
       myClass[methodName] = obj[methodName]; // eslint-disable-line no-param-reassign
     }
   }
-    // Make sure actual vars are own copies
+  // Make sure actual vars are own copies
   myClass.eventHandlers = {}; // eslint-disable-line no-param-reassign
   myClass._listeningTo = []; // eslint-disable-line no-param-reassign
 };
@@ -480,13 +495,15 @@ Events._onceInternal = function (eventType, callback, context, listenTo, otherOb
           self.eventHandlers[event] = [];
         }
 
-        self.eventHandlers[event].push({ callback: eventMap[prop],
+        self.eventHandlers[event].push({
+          callback: eventMap[prop],
           context: cxt,
           attribute: attr,
           once: true,
           fired: false,
           listen: listenTo,
-          otherObj: otherObj });
+          otherObj: otherObj
+        });
       }
     }
   });
@@ -544,8 +561,10 @@ Events.TriggerInternal = function (silent, eventType) {
         args = Array.prototype.slice.call(arguments);
         if (handlers && handlers[i] && handlers[i].once) {
           // Remove it: only want to fire once--make sure we remove it from the original
-          this._removeHandler(Events._getHandlers(this.eventHandlers, eventsToFire[e].event,
-            true), handlers[i]);
+          this._removeHandler(
+            Events._getHandlers(this.eventHandlers, eventsToFire[e].event, true),
+            handlers[i]
+          );
           // Now take it out of the other object's "listen to" list, if relevant
           if (handlers[i].otherObj) {
             // Clean up the "other object" if this was a triggered listenOnce
@@ -572,8 +591,12 @@ Events.TriggerInternal = function (silent, eventType) {
         }
       }
       // All case--make sure to pass event name
-      if (allHandlers && allHandlers[i] && allHandlers[i].callback &&
-        this._shouldFire(allHandlers[i])) {
+      if (
+        allHandlers &&
+        allHandlers[i] &&
+        allHandlers[i].callback &&
+        this._shouldFire(allHandlers[i])
+      ) {
         callback = allHandlers[i].callback;
         // If this isn't a silent firing or this handler always wants to be called, make the call
         if (!silent || allHandlers[i].ignoreSilent) {
@@ -582,13 +605,18 @@ Events.TriggerInternal = function (silent, eventType) {
       }
       if (allHandlers && allHandlers[i] && allHandlers[i].once) {
         // Remove it: only want to fire once
-        this._removeHandler(this._getHandlers(this.eventHandlers, Events.EventType.ALL, true),
-                                       allHandlers[i]);
+        this._removeHandler(
+          this._getHandlers(this.eventHandlers, Events.EventType.ALL, true),
+          allHandlers[i]
+        );
         // Now take it out of the other object's "listen to" list, if relevant
         if (allHandlers[i].otherObj) {
           // Clean up the "other object" if this was a triggered listenOnce
-          allHandlers[i].otherObj.stopListening(this, Events.EventType.ALL,
-                                                                 allHandlers[i].callback);
+          allHandlers[i].otherObj.stopListening(
+            this,
+            Events.EventType.ALL,
+            allHandlers[i].callback
+          );
         }
       }
     }
@@ -613,8 +641,10 @@ Events.OnInternal = function (eventType, callback, context, listenTo, ignoreSile
   eventMap = obj.map;
   cxt = obj.context;
 
-  for (prop in eventMap) { // eslint-disable-line no-restricted-syntax
-    if (eventMap.hasOwnProperty(prop)) { // eslint-disable-line no-prototype-builtins
+  // eslint-disable-next-line no-restricted-syntax
+  for (prop in eventMap) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (eventMap.hasOwnProperty(prop)) {
       eventArray = this._getEvents(prop);
 
       for (i = 0; i < eventArray.length; i += 1) {
@@ -627,13 +657,17 @@ Events.OnInternal = function (eventType, callback, context, listenTo, ignoreSile
           this.eventHandlers[event] = [];
         }
 
-        eventObj = { callback: eventMap[prop],
+        eventObj = {
+          callback: eventMap[prop],
           context: cxt,
           attribute: attr,
           listen: listenTo,
-          ignoreSilent: ignoreSilent };
-        if (this._checkForHandler(this.eventHandlers[event], eventObj,
-          Events._handlersIdentical) === -1) {
+          ignoreSilent: ignoreSilent
+        };
+        if (
+          this._checkForHandler(this.eventHandlers[event], eventObj, Events._handlersIdentical) ===
+          -1
+        ) {
           this.eventHandlers[event].push(eventObj);
         }
       }
@@ -652,7 +686,7 @@ Events._offInternal = function (eventType, callback, context, listen) {
   var prop;
 
   if (arguments == null || arguments.length === 0) {
-         // Remove everything
+    // Remove everything
     this.eventHandlers = {};
     return this;
   }
@@ -666,14 +700,15 @@ Events._offInternal = function (eventType, callback, context, listen) {
   eventMap = obj.map;
   cxt = obj.context;
 
-  for (prop in eventMap) { // eslint-disable-line no-restricted-syntax
-    if (eventMap.hasOwnProperty(prop)) { // eslint-disable-line no-prototype-builtins
+  // eslint-disable-next-line no-restricted-syntax
+  for (prop in eventMap) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (eventMap.hasOwnProperty(prop)) {
       this._removeEvent(prop, eventMap[prop], cxt, listen);
     }
   }
   return this;
 };
-
 
 /**
  * @private
@@ -725,12 +760,12 @@ Events._removeEvent = function (eventType, callback, context, listen) {
     if (this.eventHandlers !== undefined && this.eventHandlers[evt] instanceof Array) {
       handlers = this.eventHandlers[evt];
       for (i = handlers.length - 1; i >= 0; i -= 1) {
-        callbacks = (callback === undefined || callback === null || handlers[i].callback ===
-          callback);
+        callbacks =
+          callback === undefined || callback === null || handlers[i].callback === callback;
 
-        contexts = (context === undefined || context === null || handlers[i].context === context);
-        attrs = (attr === undefined || attr === null || handlers[i].attribute === attr);
-        listenEq = (listen === undefined || listen === null || handlers[i].listen === listen);
+        contexts = context === undefined || context === null || handlers[i].context === context;
+        attrs = attr === undefined || attr === null || handlers[i].attribute === attr;
+        listenEq = listen === undefined || listen === null || handlers[i].listen === listen;
         if (callbacks && contexts && attrs && listenEq) {
           handlers.splice(i, 1);
         }
@@ -756,17 +791,25 @@ Events._removeHandler = function (handlers, handler) {
 
   if (handlers) {
     for (i = handlers.length - 1; i >= 0; i -= 1) {
-      callbacks = (handler.callback === undefined || handler.callback === null ||
-                         handlers[i].callback === handler.callback);
+      callbacks =
+        handler.callback === undefined ||
+        handler.callback === null ||
+        handlers[i].callback === handler.callback;
 
-      contexts = (handler.context === undefined || handler.context === null ||
-                        handlers[i].context === handler.context);
-      attrs = (handler.attribute === undefined || handler.attribute === null ||
-                     handlers[i].attribute === handler.attribute);
-      listenEq = (handler.listen === undefined || handler.listen === null ||
-                        handlers[i].listen === handler.listen);
-      onceEq = (handler.once === undefined || handler.once === null ||
-        handlers[i].once === handler.once);
+      contexts =
+        handler.context === undefined ||
+        handler.context === null ||
+        handlers[i].context === handler.context;
+      attrs =
+        handler.attribute === undefined ||
+        handler.attribute === null ||
+        handlers[i].attribute === handler.attribute;
+      listenEq =
+        handler.listen === undefined ||
+        handler.listen === null ||
+        handlers[i].listen === handler.listen;
+      onceEq =
+        handler.once === undefined || handler.once === null || handlers[i].once === handler.once;
       if (callbacks && contexts && attrs && listenEq && onceEq) {
         handlers.splice(i, 1);
       }
@@ -798,17 +841,25 @@ Events._getEvents = function (eventString) {
  * @private
  */
 Events._handlersIdentical = function (handler1, handler2) {
-  return (handler1.callback === handler2.callback) && (handler1.attribute === handler2.attribute) &&
-          (handler1.context === handler2.context) && (handler1.listen === handler2.listen) &&
-          (handler1.once === handler2.once);
+  return (
+    handler1.callback === handler2.callback &&
+    handler1.attribute === handler2.attribute &&
+    handler1.context === handler2.context &&
+    handler1.listen === handler2.listen &&
+    handler1.once === handler2.once
+  );
 };
 
 /**
  * @private
  */
 Events._listenersIdentical = function (listener1, listener2) {
-  return (listener1.event === listener2.event) && (listener1.attribute === listener2.attribute) &&
-          (listener1.context === listener2.context) && (listener1.object === listener2.object);
+  return (
+    listener1.event === listener2.event &&
+    listener1.attribute === listener2.attribute &&
+    listener1.context === listener2.context &&
+    listener1.object === listener2.object
+  );
 };
 
 /**
@@ -891,14 +942,14 @@ RestImpl.addOptions = function (starter, options, customOptions) {
         initial[prop] = tempOpt[prop];
       }
       if (prop === RestImpl._HEADER_PROP) {
-                // Deep merge
+        // Deep merge
         initial[prop] = $.extend(true, initial[prop], tempOpt[prop]);
       }
     }
   });
 
   if (options && options.oauthHeader) {
-        // if there are no any headers then create a new one.
+    // if there are no any headers then create a new one.
     if (!initial[RestImpl._HEADER_PROP]) initial[RestImpl._HEADER_PROP] = {};
     Object.keys(options.oauthHeader || {}).forEach(function (prop) {
       if (Object.prototype.hasOwnProperty.call(options.oauthHeader, prop)) {
@@ -956,12 +1007,25 @@ RestImpl.prototype.getRecord = function (success, error, recordID, options, cont
   return opt.xhr;
 };
 
-
-RestImpl.prototype.updateRecord = function (callback, recordID, record, error,
-  options, context, patch) {
+RestImpl.prototype.updateRecord = function (
+  callback,
+  recordID,
+  record,
+  error,
+  options,
+  context,
+  patch
+) {
   var opt = options || {};
   var isJsonp = opt.dataType === 'jsonp';
-  var urlInfo = this._getURL(patch ? 'patch' : 'update', this.rootURL, this.customURL, recordID, context, opt);
+  var urlInfo = this._getURL(
+    patch ? 'patch' : 'update',
+    this.rootURL,
+    this.customURL,
+    recordID,
+    context,
+    opt
+  );
   var emulateHTTP = RestImpl._emulateHTTP(opt);
   var ajaxOptions = {
     crossDomain: opt.crossDomain || !isJsonp,
@@ -985,7 +1049,7 @@ RestImpl.prototype.updateRecord = function (callback, recordID, record, error,
 RestImpl._beforeSendMod = function (emulateHTTP, options) {
   var opt = options || {};
   if (emulateHTTP) {
-        // Do a before send xhr mod for this case
+    // Do a before send xhr mod for this case
     var beforeSend = opt.beforeSend;
     opt.beforeSend = function (xhr) {
       xhr.setRequestHeader('X-HTTP-Method-Override', opt._method);
@@ -1000,7 +1064,7 @@ RestImpl._beforeSendMod = function (emulateHTTP, options) {
 
 RestImpl.prototype._getData = function (data, options, urlInfo) {
   if (RestImpl._emulateJSON(options)) {
-        // Push record and _method into an object
+    // Push record and _method into an object
     var retObj = { _method: urlInfo._method ? urlInfo._method : urlInfo.type };
     if (data) {
       retObj.model = data;
@@ -1045,12 +1109,15 @@ RestImpl._emulateJSON = function (options) {
   return options.emulateJSON || oj.emulateJSON;
 };
 
-RestImpl.prototype._getURL = function (operation, rootURL, customURL, recordID,
-  context, options) {
+RestImpl.prototype._getURL = function (operation, rootURL, customURL, recordID, context, options) {
   var httpMethod = this._getHTTPMethod(operation, options);
   if ($.isFunction(customURL)) {
-    var result = customURL.call(this, operation, context,
-                                   RestImpl.SetCustomURLOptions(recordID, context, options));
+    var result = customURL.call(
+      this,
+      operation,
+      context,
+      RestImpl.SetCustomURLOptions(recordID, context, options)
+    );
     if (oj.StringUtils.isString(result)) {
       var ret = { url: result, type: httpMethod.method };
       if (httpMethod._method) {
@@ -1305,8 +1372,7 @@ Model.prototype.customURL = null;
 /**
  * @typedef {Object} Model.CustomURLCallbackOptions
  * @property {string=} recordID id of the record involved, if relevant
-*/
-
+ */
 
 /**
  * @export
@@ -1375,12 +1441,16 @@ Model._init = function (model, attributes, opt, properties) {
   // Deep copy actual data if found
   model.attributes = {}; // eslint-disable-line no-param-reassign
   if (model.defaults && !options.ignoreDefaults) {
-    model.attributes = Model._cloneAttributes($.isFunction(model.defaults) ? // eslint-disable-line no-param-reassign
-      model.defaults() : model.defaults, null);
+    // eslint-disable-next-line no-param-reassign
+    model.attributes = Model._cloneAttributes(
+      $.isFunction(model.defaults) ? model.defaults() : model.defaults,
+      null
+    );
   }
 
   // First, copy all properties passed in
-  for (prop in properties) { // eslint-disable-line no-restricted-syntax
+  // eslint-disable-next-line no-restricted-syntax
+  for (prop in properties) {
     if (Object.prototype.hasOwnProperty.call(properties, prop)) {
       model[prop] = properties[prop]; // eslint-disable-line no-param-reassign
     }
@@ -1401,7 +1471,8 @@ Model._init = function (model, attributes, opt, properties) {
       model.attributes = {}; // eslint-disable-line no-param-reassign
     } else {
       // Move them in
-      for (prop in attrCopy) { // eslint-disable-line no-restricted-syntax
+      // eslint-disable-next-line no-restricted-syntax
+      for (prop in attrCopy) {
         if (Object.prototype.hasOwnProperty.call(attrCopy, prop)) {
           model._setProp(prop, attrCopy[prop], false, false, options, true);
         }
@@ -1411,14 +1482,14 @@ Model._init = function (model, attributes, opt, properties) {
 
   model.SetCid();
 
-    // Grab collection option, if there
+  // Grab collection option, if there
   model.SetCollection(options.collection);
 
   if (options.customURL) {
     model.customURL = options.customURL; // eslint-disable-line no-param-reassign
   }
 
-    // If URL is set, use that
+  // If URL is set, use that
   if (options.url) {
     model.url = options.url; // eslint-disable-line no-param-reassign
   }
@@ -1433,7 +1504,6 @@ Model._init = function (model, attributes, opt, properties) {
 
   model.SetupId();
 };
-
 
 /**
  * Create a new, specific type of model object to represent single records from a JSON data set.
@@ -1470,11 +1540,11 @@ Model.extend = function (properties, classProperties) {
   obj = new Model();
   Model._justExtending = false;
 
-    // Add regular properties from this "parent"
-    // Events.Mixin(obj, this.prototype);
+  // Add regular properties from this "parent"
+  // Events.Mixin(obj, this.prototype);
   $.extend(obj, this.prototype);
 
-    // Grab properties
+  // Grab properties
   var props = properties || {};
   Object.keys(props).forEach(function (prop) {
     if (Object.prototype.hasOwnProperty.call(props, prop)) {
@@ -1484,8 +1554,7 @@ Model.extend = function (properties, classProperties) {
 
   var model;
 
-  if (props && props.constructor && Object.prototype.hasOwnProperty.call(props,
-    'constructor')) {
+  if (props && props.constructor && Object.prototype.hasOwnProperty.call(props, 'constructor')) {
     model = props.constructor;
   } else {
     model = function (attributes, options) {
@@ -1496,12 +1565,12 @@ Model.extend = function (properties, classProperties) {
   $.extend(model, this);
   model.prototype = obj;
 
-    // Allow extending resulting obj
+  // Allow extending resulting obj
   model.extend = Model.extend;
 
   model.prototype.constructor = model;
 
-    // Add class properties from this
+  // Add class properties from this
   Events.Mixin(model, this);
 
   if (classProperties) {
@@ -1511,7 +1580,6 @@ Model.extend = function (properties, classProperties) {
       }
     });
   }
-
 
   return model;
 };
@@ -1526,7 +1594,7 @@ Model.prototype.TriggerInternal = function (silent, event, arg1, arg2, options) 
  * @protected
  */
 Model.prototype.SetCid = function () {
-    // Create cid property if necessary
+  // Create cid property if necessary
   if (!this.GetCid()) {
     this.cid = 'id' + Model._idCount;
     Model._idCount += 1;
@@ -1601,12 +1669,12 @@ Model.prototype.Merge = function (model, comparator, silent) {
   var self = this;
   Object.keys(model.attributes || {}).forEach(function (prop) {
     if (Object.prototype.hasOwnProperty.call(model.attributes, prop)) {
-      valueChange = (self.attributes[prop] !== model.attributes[prop]);
+      valueChange = self.attributes[prop] !== model.attributes[prop];
       if (isStringComparator) {
-                // We have a string comparator--does it match this property?  If we hit a property that doesn't
-                // match, we need sort
+        // We have a string comparator--does it match this property?  If we hit a property that doesn't
+        // match, we need sort
         if (prop === comparator) {
-                    // The property matches the comparator property: are we changing the value?
+          // The property matches the comparator property: are we changing the value?
           if (valueChange) {
             needSort = true;
           }
@@ -1623,7 +1691,7 @@ Model.prototype.Merge = function (model, comparator, silent) {
     }
   });
   this.SetupId();
-    // Only fire master change if there were any changes
+  // Only fire master change if there were any changes
   if (changes) {
     this._fireChange(null, silent);
   }
@@ -1636,7 +1704,8 @@ Model.prototype.Merge = function (model, comparator, silent) {
 Model._hasProperties = function (object) {
   if (object && object instanceof Object) {
     var prop;
-    for (prop in object) { // eslint-disable-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
+    for (prop in object) {
       if (Object.prototype.hasOwnProperty.call(object, prop)) {
         return true;
       }
@@ -1654,7 +1723,7 @@ Model.prototype.SetCollection = function (coll) {
     return;
   }
   this.collection = coll;
-    // This can depend on the collection
+  // This can depend on the collection
   this.SetupId();
 };
 
@@ -1685,9 +1754,9 @@ Model.prototype._fireChange = function (options, silent) {
  * @protected
  */
 Model.prototype.SetupId = function () {
-    // Replicate id attribute at top level
+  // Replicate id attribute at top level
   var id = null;
-    // Ask for collection's function if available
+  // Ask for collection's function if available
   if (this.collection && this.collection.modelId) {
     var modFunc = this.collection.modelId;
     id = $.isFunction(modFunc) ? modFunc.call(this.collection, this.attributes) : modFunc;
@@ -1696,7 +1765,7 @@ Model.prototype.SetupId = function () {
     var idAttr = this._getIdAttr();
     id = this.attributes != null ? this.attributes[idAttr] : null;
   }
-    // Supposedly this should always be model.id...who knew?
+  // Supposedly this should always be model.id...who knew?
   this.id = id;
 };
 
@@ -1708,8 +1777,8 @@ Model.prototype._setPropInternal = function (prop, value, copyRegardless) {
   if (copyRegardless || !equality) {
     this.attributes[prop] = value;
     this.SetupId();
-        // Return value management here seems bizarre due to backbone tests: do the direct set if copyRegardless,
-        // but only return if the inner equals was different
+    // Return value management here seems bizarre due to backbone tests: do the direct set if copyRegardless,
+    // but only return if the inner equals was different
     return !equality;
   }
   return false;
@@ -1770,7 +1839,7 @@ Model.prototype._setProp = function (prop, value, copyRegardless, propertyBag, o
     this.changes = [];
   }
 
-    // Store old value
+  // Store old value
   if (!this.nestedSet && !init) {
     this.previousAttrs = Model._cloneAttributes(this.attributes, null);
   }
@@ -1788,7 +1857,7 @@ Model.prototype._setProp = function (prop, value, copyRegardless, propertyBag, o
       }
     }
   });
-    // Fire events: don't fire if silent
+  // Fire events: don't fire if silent
   var silent = opts.silent;
   Object.keys(attrs).forEach(function (p) {
     if (Object.prototype.hasOwnProperty.call(attrs, p)) {
@@ -1813,7 +1882,6 @@ Model.prototype._setProp = function (prop, value, copyRegardless, propertyBag, o
   this.nestedSet = false;
   return true;
 };
-
 
 /**
  * Clears all attributes from the model<br>
@@ -1844,7 +1912,8 @@ Model.prototype.clear = function (options) {
   this._clearChanged();
 
   var self = this;
-  for (p in self.attributes) { // eslint-disable-line no-restricted-syntax
+  // eslint-disable-next-line no-restricted-syntax
+  for (p in self.attributes) {
     if (Object.prototype.hasOwnProperty.call(self.attributes, p)) {
       if (!this._unsetInternal(p, unsetOpt, true)) {
         return false;
@@ -1874,9 +1943,12 @@ Model._cloneAttributes = function (oldData, nd) {
 
   var prop;
   if (newDataKeys.length > 0) {
-    for (prop in newData) { // eslint-disable-line no-restricted-syntax
-      if (Object.prototype.hasOwnProperty.call(newData, prop) &&
-          Object.prototype.hasOwnProperty.call(oldData, prop)) {
+    // eslint-disable-next-line no-restricted-syntax
+    for (prop in newData) {
+      if (
+        Object.prototype.hasOwnProperty.call(newData, prop) &&
+        Object.prototype.hasOwnProperty.call(oldData, prop)
+      ) {
         // They both have this: now is oldData undefined?
         if (oldData[prop] === undefined) {
           // Remove it so it doesn't get copied/overwritten
@@ -1888,9 +1960,16 @@ Model._cloneAttributes = function (oldData, nd) {
     return newData;
   }
   var type;
-  for (prop in oldData) { // eslint-disable-line no-restricted-syntax, guard-for-in
+  // eslint-disable-next-line no-restricted-syntax, guard-for-in
+  for (prop in oldData) {
     type = $.type(oldData[prop]);
-    if (type === 'function' || type === 'undefined' || type === 'date' || type === 'array' || type === 'object') {
+    if (
+      type === 'function' ||
+      type === 'undefined' ||
+      type === 'date' ||
+      type === 'array' ||
+      type === 'object'
+    ) {
       canUseJson = false;
       break;
     }
@@ -1916,18 +1995,19 @@ Model.prototype.clone = function () {
   var c = new this.constructor();
   var prop;
 
-  for (prop in this) { // eslint-disable-line no-restricted-syntax
-        // Shallow copy all but data
+  // eslint-disable-next-line no-restricted-syntax
+  for (prop in this) {
+    // Shallow copy all but data
     if (Object.prototype.hasOwnProperty.call(this, prop) && this[prop] !== this.attributes) {
       c[prop] = this[prop];
     }
   }
-    // Deep copy data
+  // Deep copy data
   c.attributes = Model._cloneAttributes(this.attributes, null);
 
-    // Remove the cid--this should be unique
+  // Remove the cid--this should be unique
   delete c.cid;
-    // Set a new cid
+  // Set a new cid
   c.SetCid();
 
   c.SetupId();
@@ -1942,11 +2022,13 @@ Model.prototype.clone = function () {
 Model.prototype.Match = function (id, cid) {
   var modId = this.GetId();
   var modCid;
-  if (modId !== undefined && modId == id) { // eslint-disable-line eqeqeq
+  // eslint-disable-next-line eqeqeq
+  if (modId !== undefined && modId == id) {
     return true;
   }
   modCid = this.cid;
-  if (modCid !== undefined && modCid == cid) { // eslint-disable-line eqeqeq
+  // eslint-disable-next-line eqeqeq
+  if (modCid !== undefined && modCid == cid) {
     return true;
   }
   return false;
@@ -1983,7 +2065,8 @@ Model.prototype.set = function (property, value, options) {
       opts = value || {};
       // For set, pass entire thing to setProp
       if (opts.unset) {
-        for (prop in property) { // eslint-disable-line no-restricted-syntax
+        // eslint-disable-next-line no-restricted-syntax
+        for (prop in property) {
           if (Object.prototype.hasOwnProperty.call(property, prop)) {
             this._unsetInternal(prop, null, false);
           }
@@ -2022,7 +2105,6 @@ Model.prototype.set = function (property, value, options) {
 Model.prototype.unset = function (property, options) {
   return this._unsetInternal(property, options, false);
 };
-
 
 /**
  * @private
@@ -2131,7 +2213,6 @@ Model.prototype.fetch = function (options) {
   return Model._internalSync('read', this, opts);
 };
 
-
 /**
  * @private
  */
@@ -2181,7 +2262,6 @@ Model.prototype.url = function () {
   throw new URLError();
 };
 
-
 /**
  * Return all of the model's attributes as an array
  *
@@ -2201,7 +2281,6 @@ Model.prototype.keys = function () {
   });
   return retArray;
 };
-
 
 /**
  * Return all of the model's attributes values as an array
@@ -2401,7 +2480,7 @@ Model._isValidateSet = function (opt, save) {
   if (options.validate !== undefined && options.validate !== null) {
     return options.validate;
   }
-    // The "default" is different for save vs. set
+  // The "default" is different for save vs. set
   return save;
 };
 
@@ -2412,7 +2491,7 @@ Model.prototype._checkValid = function (attributes, opt, save) {
   var options = opt || {};
   var validate = this.validate;
   if (validate && Model._isValidateSet(options, save)) {
-        // If we have a validate override and it returns something, don't save
+    // If we have a validate override and it returns something, don't save
     this.validationError = validate.call(this, attributes, options);
     if (this.validationError) {
       this.TriggerInternal(false, Events.EventType.INVALID, this, this.validationError, options);
@@ -2433,10 +2512,10 @@ Model._processArgs = function (args) {
 
   if (args) {
     if (args.length > 0) {
-            // Check if the last argument is not the first argument
+      // Check if the last argument is not the first argument
       if (args.length > 1) {
         if (args[args.length - 1] && Model._hasProperties(args[args.length - 1])) {
-                    // Last arg is options: ignore later
+          // Last arg is options: ignore later
           ignoreLastArg = true;
           options = args[args.length - 1] || {};
         }
@@ -2457,8 +2536,11 @@ Model._processArgs = function (args) {
         for (i = 0; i < args.length; i += 2) {
           // Process the arg as long as its: defined, and isn't the last argument where we're supposed to
           // ignore the last argument due to it being 'options'
-          if (args[i] !== undefined || i < args.length - 1 || (!ignoreLastArg && i ===
-            args.length - 1)) {
+          if (
+            args[i] !== undefined ||
+            i < args.length - 1 ||
+            (!ignoreLastArg && i === args.length - 1)
+          ) {
             attributes[args[i]] = args[i + 1];
           }
         }
@@ -2492,7 +2574,6 @@ Model._triggerError = function (self, silent, opt, status, err, xhr) {
   options.errorThrown = err;
   self.TriggerInternal(silent, Events.EventType.ERROR, self, xhr, options);
 };
-
 
 /**
  * Saves the current Model object to the data service. Performs a data "update."<br>
@@ -2561,7 +2642,7 @@ Model.prototype.save = function (attributes, options) {
   patch = opts.patch;
 
   opts.error = function (xhr, status, err) {
-                            // Trigger an error event
+    // Trigger an error event
     Model._triggerError(self, false, tempOpts, status, err, xhr);
 
     if (userErr) {
@@ -2571,57 +2652,56 @@ Model.prototype.save = function (attributes, options) {
 
   opts.saveAttrs = opts.wait ? this._attrUnion(attrArgs) : this.attributes;
 
-    // Must temporarily at least set attrs for toJSON()
+  // Must temporarily at least set attrs for toJSON()
   oldAttrs = this.attributes;
-    // Swap in what's to be saved and call toJSON()
+  // Swap in what's to be saved and call toJSON()
   this.attributes = opts.saveAttrs;
   opts.saveAttrs = this.toJSON();
   this.attributes = oldAttrs;
 
   if (!forceNew && !this.isNew()) {
     success = opts.success;
-    opts.success =
-            function (resp) {
-              var attrs;
+    opts.success = function (resp) {
+      var attrs;
 
-                // Make sure we pass xhr
-              if (opts.xhr) {
-                tempOpts.xhr = opts.xhr;
-              }
+      // Make sure we pass xhr
+      if (opts.xhr) {
+        tempOpts.xhr = opts.xhr;
+      }
 
-              if (resp && !oj.Object.isEmpty(resp)) {
-                if ($.isFunction(self.parse)) {
-                  attrs = self.parse(resp);
-                } else {
-                  attrs = resp;
-                }
+      if (resp && !oj.Object.isEmpty(resp)) {
+        if ($.isFunction(self.parse)) {
+          attrs = self.parse(resp);
+        } else {
+          attrs = resp;
+        }
 
-                self.attributes = $.extend(true, self.attributes, attrs);
+        self.attributes = $.extend(true, self.attributes, attrs);
 
-                // Merge attrs from response/parse into arg attrs if different--server takes priority in case
-                // of 'wait'
-                if (opts.wait) {
-                  Object.keys(attrArgs || {}).forEach(function (prop) {
-                    if (Object.prototype.hasOwnProperty.call(attrs, prop)) {
-                      // Prioritize the one in attrs
-                      attrArgs[prop] = attrs[prop];
-                    }
-                  });
-                }
-                self.SetupId();
-              }
-              Model._fireSyncEvent(self, resp, opts, false);
+        // Merge attrs from response/parse into arg attrs if different--server takes priority in case
+        // of 'wait'
+        if (opts.wait) {
+          Object.keys(attrArgs || {}).forEach(function (prop) {
+            if (Object.prototype.hasOwnProperty.call(attrs, prop)) {
+              // Prioritize the one in attrs
+              attrArgs[prop] = attrs[prop];
+            }
+          });
+        }
+        self.SetupId();
+      }
+      Model._fireSyncEvent(self, resp, opts, false);
 
-              if (opts.wait) {
-                self.set(attrArgs);
-              }
+      if (opts.wait) {
+        self.set(attrArgs);
+      }
 
-              if (success) {
-                success.call(Model.GetContext(opts, self), self, resp, tempOpts);
-              }
-              self._clearChanged();
-            };
-        // If caller passes in attrs themselves, just use those
+      if (success) {
+        success.call(Model.GetContext(opts, self), self, resp, tempOpts);
+      }
+      self._clearChanged();
+    };
+    // If caller passes in attrs themselves, just use those
     if (!opts.attrs) {
       if (attrArgs === undefined) {
         opts.attrs = undefined;
@@ -2635,7 +2715,7 @@ Model.prototype.save = function (attributes, options) {
   callback = Model._getSuccess(opts);
   opts.success = function (resp) {
     var attrs;
-       // Make sure we pass xhr
+    // Make sure we pass xhr
     if (opts.xhr) {
       tempOpts.xhr = opts.xhr;
     }
@@ -2673,16 +2753,16 @@ Model.prototype.save = function (attributes, options) {
     self._clearChanged();
   };
 
-    // If caller passed in attrs, just use those
+  // If caller passed in attrs, just use those
   if (!opts.attrs) {
     opts.attrs = opts.saveAttrs;
   }
 
-    // Turn on parse flag
+  // Turn on parse flag
   opts.parse = true;
 
-    // Bizarre case tested by backboneJS--if this is a new model, but we're patching, make sure we only save the
-    // explicit attrs if passed in by user
+  // Bizarre case tested by backboneJS--if this is a new model, but we're patching, make sure we only save the
+  // explicit attrs if passed in by user
   if (patch) {
     opts.saveAttrs = opts.attrs;
   }
@@ -2709,12 +2789,15 @@ Model.prototype._attrUnion = function (attrs) {
   return attrReturn;
 };
 
-
 /**
  * @protected
  */
 Model.IsComplexValue = function (val) {
-  return val && Object.prototype.hasOwnProperty.call(val, 'value') && Object.prototype.hasOwnProperty.call(val, 'comparator');
+  return (
+    val &&
+    Object.prototype.hasOwnProperty.call(val, 'value') &&
+    Object.prototype.hasOwnProperty.call(val, 'comparator')
+  );
 };
 
 /**
@@ -2724,7 +2807,8 @@ Model.IsComplexValue = function (val) {
 Model.prototype._hasAttrs = function (attrs) {
   var prop;
 
-  for (prop in attrs) { // eslint-disable-line no-restricted-syntax
+  // eslint-disable-next-line no-restricted-syntax
+  for (prop in attrs) {
     if (Object.prototype.hasOwnProperty.call(attrs, prop)) {
       if (!Object.prototype.hasOwnProperty.call(this.attributes, prop)) {
         return false;
@@ -2762,13 +2846,14 @@ Model.prototype._hasAttrs = function (attrs) {
  */
 Model.prototype.matches = function (attrs) {
   return (function (model) {
-    for (var prop in attrs) { // eslint-disable-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
+    for (var prop in attrs) {
       if (model.get(prop) !== attrs[prop]) {
         return false;
       }
     }
     return true;
-  }(this));
+  })(this);
 };
 
 /**
@@ -2776,7 +2861,7 @@ Model.prototype.matches = function (attrs) {
  * @protected
  */
 Model.prototype.Contains = function (attrs) {
-  var attrList = (attrs.constructor === Array) ? attrs : [attrs];
+  var attrList = attrs.constructor === Array ? attrs : [attrs];
   var i;
 
   for (i = 0; i < attrList.length; i++) {
@@ -2872,12 +2957,13 @@ Model.prototype.changedAttributes = function (attributes) {
  */
 Model.prototype.hasChanged = function (attribute) {
   if (attribute !== undefined) {
-    return Model._hasProperties(this.changed) &&
-      Object.prototype.hasOwnProperty.call(this.changed, attribute);
+    return (
+      Model._hasProperties(this.changed) &&
+      Object.prototype.hasOwnProperty.call(this.changed, attribute)
+    );
   }
   return Model._hasProperties(this.changed);
 };
-
 
 /**
  * Delete the record represented by this model object from the data service.  If the server responds with virtual
@@ -2919,7 +3005,7 @@ Model.prototype.destroy = function (options) {
 
   opts = Model._copyOptions(tempOpt);
   callback = Model._getSuccess(opts);
-    // Grab the collection off the model in case we need to update
+  // Grab the collection off the model in case we need to update
   var collection = this.GetCollection();
 
   opts.success = function (data) {
@@ -2931,8 +3017,8 @@ Model.prototype.destroy = function (options) {
     // Give an opportunity to update any collection paging properties, like totalResults due to this destroy
     if (collection) {
       // Make sure to parse the data if necessary
-      var props = oj.StringUtils.isString(data) && !oj.StringUtils.isEmpty(data) ?
-        JSON.parse(data) : data;
+      var props =
+        oj.StringUtils.isString(data) && !oj.StringUtils.isEmpty(data) ? JSON.parse(data) : data;
 
       collection._setPagingReturnValues(props, null, data, true);
     }
@@ -3092,8 +3178,10 @@ Model._internalSync = function (method, model, opt) {
 
   // Do parsing if necessary and tuck it on options
   if (method === 'create' || method === 'patch' || method === 'update') {
-    options.parsedData = model.parseSave.call(model, method === 'patch' ? options.attrs :
-                                                                               options.saveAttrs);
+    options.parsedData = model.parseSave.call(
+      model,
+      method === 'patch' ? options.attrs : options.saveAttrs
+    );
   }
   var recordId = null;
   if (model instanceof Model) {
@@ -3107,7 +3195,7 @@ Model._internalSync = function (method, model, opt) {
   Object.keys(urlOpt || {}).forEach(function (prop) {
     newOpt[prop] = urlOpt[prop];
   });
-    // Make sure we send back xhr in options-- can come from return value or passed back through options
+  // Make sure we send back xhr in options-- can come from return value or passed back through options
   options.xhr = model.sync(method, model, newOpt);
   if (newOpt.xhr) {
     options.xhr = newOpt.xhr;
@@ -3158,8 +3246,15 @@ const sync = function (method, model, options) {
     if (model instanceof Model) {
       url = tempOpt.url ? tempOpt.url : RestImpl.GetPropValue(model, 'url');
       restService = new RestImpl(url, model);
-      return _fireAndReturn(restService.getRecord(success, error, model.GetId(), tempOpt,
-                                  Model.GetContext(tempOpt, model)));
+      return _fireAndReturn(
+        restService.getRecord(
+          success,
+          error,
+          model.GetId(),
+          tempOpt,
+          Model.GetContext(tempOpt, model)
+        )
+      );
     }
     // Collection fetch
     url = model.GetCollectionFetchUrl(tempOpt);
@@ -3173,12 +3268,14 @@ const sync = function (method, model, options) {
     recordId = model.GetId();
   }
   if (method.valueOf() === 'update') {
-    return _fireAndReturn(restService.updateRecord(success, recordId, tempOpt.parsedData,
-      error, tempOpt, model, false));
+    return _fireAndReturn(
+      restService.updateRecord(success, recordId, tempOpt.parsedData, error, tempOpt, model, false)
+    );
   }
   if (method.valueOf() === 'patch') {
-    return _fireAndReturn(restService.updateRecord(success, recordId, tempOpt.parsedData,
-      error, tempOpt, model, true));
+    return _fireAndReturn(
+      restService.updateRecord(success, recordId, tempOpt.parsedData, error, tempOpt, model, true)
+    );
   }
   if (method.valueOf() === 'delete') {
     return _fireAndReturn(restService.deleteRecord(recordId, error, tempOpt, model));
@@ -3186,7 +3283,6 @@ const sync = function (method, model, options) {
   return null;
 };
 oj._registerLegacyNamespaceProp('sync', sync);
-
 
 /**
  * @private
@@ -3210,7 +3306,8 @@ Model._urlError = function (ajaxOptions) {
  * @global
  * @since 1.0.0
  */
-const ajax = function (settings) { // eslint-disable-line no-unused-vars
+// eslint-disable-next-line no-unused-vars
+const ajax = function (settings) {
   if (arguments && arguments.length > 0) {
     Model._urlError(arguments[0]);
   }
@@ -3241,7 +3338,7 @@ const Collection = function (models, options) {
     return;
   }
 
-    // Initialize
+  // Initialize
   Collection._init(this, models, options, null);
 };
 
@@ -3260,7 +3357,6 @@ oj.Object.createSubclass(Collection, oj.Object, 'oj.Collection');
  * @export
  */
 Collection.prototype.model = null;
-
 
 /**
  * @desc Function specifying how to construct the id for models in this collection.  Override to
@@ -3330,7 +3426,6 @@ Collection.prototype.url = null;
  */
 Collection.prototype.changes = [];
 
-
 /**
  * A callback to allow users to customize the data service URLs.  The callback should accept
  * these parameters:<p>
@@ -3398,7 +3493,6 @@ Collection.prototype.customURL = null;
  * }
  * </code></pre>
  */
-
 
 /**
  * A callback function allowing users to extract their own paging/virtualization
@@ -3624,12 +3718,16 @@ Collection.extend = function (properties, classProperties) {
   obj = new Collection();
   Collection._justExtending = false;
 
-    // Add regular properties from this "parent"
-    // Events.Mixin(obj, this.prototype);
+  // Add regular properties from this "parent"
+  // Events.Mixin(obj, this.prototype);
   $.extend(obj, this.prototype);
 
   var coll;
-  if (properties && properties.constructor && Object.prototype.hasOwnProperty.call(properties, 'constructor')) {
+  if (
+    properties &&
+    properties.constructor &&
+    Object.prototype.hasOwnProperty.call(properties, 'constructor')
+  ) {
     coll = properties.constructor;
   } else {
     coll = function (models, options) {
@@ -3656,14 +3754,13 @@ Collection.extend = function (properties, classProperties) {
   $.extend(coll, this);
   coll.prototype = obj;
 
-    // Allow extending resulting obj
+  // Allow extending resulting obj
   coll.extend = Collection.extend;
 
   coll.prototype.constructor = coll;
 
   return coll;
 };
-
 
 /**
  * @private
@@ -3676,25 +3773,36 @@ Collection._init = function (collection, models, options, properties) {
 
   collection.Init();
 
-    // Augment with Event
+  // Augment with Event
   Events.Mixin(collection);
 
-    // First, copy all properties passed in
+  // First, copy all properties passed in
   if (properties) {
-    for (prop in properties) { // eslint-disable-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
+    for (prop in properties) {
       if (Object.prototype.hasOwnProperty.call(properties, prop)) {
         collection[prop] = properties[prop]; // eslint-disable-line no-param-reassign
       }
     }
   }
 
-    // Check options
+  // Check options
   var opt = options || {};
-  optionlist = ['comparator', 'customPagingOptions', 'customURL',
-    Collection._FETCH_SIZE_PROP, 'model', 'modelLimit', 'sortDirection', 'url'];
+  optionlist = [
+    'comparator',
+    'customPagingOptions',
+    'customURL',
+    Collection._FETCH_SIZE_PROP,
+    'model',
+    'modelLimit',
+    'sortDirection',
+    'url'
+  ];
   for (i = 0; i < optionlist.length; i++) {
-    if (Object.prototype.hasOwnProperty.call(opt, optionlist[i]) &&
-        opt[optionlist[i]] !== undefined) {
+    if (
+      Object.prototype.hasOwnProperty.call(opt, optionlist[i]) &&
+      opt[optionlist[i]] !== undefined
+    ) {
       collection[optionlist[i]] = opt[optionlist[i]]; // eslint-disable-line no-param-reassign
     }
   }
@@ -3714,12 +3822,12 @@ Collection._init = function (collection, models, options, properties) {
   }
   if (localModels != null) {
     opt.noparse = true;
-    modelList = (localModels instanceof Array) ? localModels : [localModels];
+    modelList = localModels instanceof Array ? localModels : [localModels];
     collection._addInternal(modelList, opt, true, false);
   }
   collection._setLength();
   if (!localModels) {
-        // Make sure totalResults is uninitialized at first, though, for non virtual case--0 could be the length of the first fetch
+    // Make sure totalResults is uninitialized at first, though, for non virtual case--0 could be the length of the first fetch
     collection.totalResults = undefined; // eslint-disable-line no-param-reassign
   }
 
@@ -3727,7 +3835,6 @@ Collection._init = function (collection, models, options, properties) {
     properties.initialize.call(collection, localModels, opt);
   }
 };
-
 
 // Placeholder for event mixins
 Collection.prototype.on = function (event, callback) {}; // eslint-disable-line no-unused-vars
@@ -3759,7 +3866,6 @@ Collection.prototype._setChangeAt = function (start, count) {
     }
   }
 };
-
 
 /**
  * @private
@@ -3836,7 +3942,7 @@ Collection.prototype._pushModel = function (model) {
  * @private
  */
 Collection.prototype._pushModels = function (model) {
-    // Model is being added to the end, it should be made the head
+  // Model is being added to the end, it should be made the head
   this._makeModelHead(model);
   this._pushModel(model);
   this.lruCount += 1;
@@ -3863,16 +3969,16 @@ Collection.prototype._reduceLRU = function (removed) {
  * @private
  */
 Collection.prototype._spliceModels = function (start, count, model) {
-    // Clean up prev/next links for models being removed
+  // Clean up prev/next links for models being removed
   for (var i = start; i < start + count; i++) {
     this._removePrevNext(this._getModel(i));
   }
   if (model === undefined) {
     this._reduceLRU(this._getModels().splice(start, count));
-    this._spliceModelIndices(start, (start + count) - 1);
+    this._spliceModelIndices(start, start + count - 1);
   } else {
     this._reduceLRU(this._getModels().splice(start, count, model));
-    this._spliceModelIndices(start, (start + count) - 1);
+    this._spliceModelIndices(start, start + count - 1);
     this._insertModelIndex(start);
     this._makeModelHead(model);
   }
@@ -3915,18 +4021,18 @@ Collection.prototype._removePrevNext = function (model) {
 
   var oldPrev = model.GetPrevious();
   var oldNext = model.GetNext();
-    // Link the two surrounding previous/next elements to each other, because this one is being replaced and moved
-    // to the head
+  // Link the two surrounding previous/next elements to each other, because this one is being replaced and moved
+  // to the head
   if (oldPrev) {
     oldPrev.SetNext(oldNext);
   } else {
-        // This element used to be the head
+    // This element used to be the head
     this.head = oldNext;
   }
   if (oldNext) {
     oldNext.SetPrevious(oldPrev);
   } else {
-        // This element used to be the tail
+    // This element used to be the tail
     this.tail = oldPrev;
   }
 };
@@ -3935,12 +4041,12 @@ Collection.prototype._removePrevNext = function (model) {
  * @private
  */
 Collection.prototype._makeModelHead = function (model) {
-    // Make this new model the most recently used: the head
+  // Make this new model the most recently used: the head
   model.SetNext(this.head);
   if (this.head) {
     this.head.SetPrevious(model);
   } else {
-        // No head: list is empty-->make tail the same element
+    // No head: list is empty-->make tail the same element
     this.tail = model;
   }
   model.SetPrevious(null);
@@ -3957,19 +4063,18 @@ Collection.prototype._setModelIndex = function (index) {
   }
 };
 
-
 /**
  * Insert the given model at the given index
  * @private
  */
 Collection.prototype._insertModelIndex = function (start) {
-    // Up all the indices of models with index greater than start
+  // Up all the indices of models with index greater than start
   for (var i = 0; i < this._modelIndices.length; i++) {
     if (this._modelIndices[i] >= start) {
       this._modelIndices[i] += 1;
     }
   }
-    // Now add the new one
+  // Now add the new one
   this._modelIndices.push(start);
 };
 
@@ -3978,11 +4083,11 @@ Collection.prototype._insertModelIndex = function (start) {
  * @private
  */
 Collection.prototype._spliceModelIndices = function (start, end) {
-  var localEnd = (end === undefined) ? start : end;
+  var localEnd = end === undefined ? start : end;
   this._clearModelIndices(start, localEnd);
 
-  var count = (localEnd - start) + 1;
-    // Reduce the indexes of any models above the endpoint by the number of models removed
+  var count = localEnd - start + 1;
+  // Reduce the indexes of any models above the endpoint by the number of models removed
   for (var i = 0; i < this._modelIndices.length; i++) {
     if (this._modelIndices[i] > localEnd) {
       this._modelIndices[i] -= count;
@@ -3995,8 +4100,8 @@ Collection.prototype._spliceModelIndices = function (start, end) {
  * @private
  */
 Collection.prototype._clearModelIndices = function (start, end) {
-  var localEnd = (end === undefined) ? start : end;
-    // Knock out any of the deleted model's indexes from the list
+  var localEnd = end === undefined ? start : end;
+  // Knock out any of the deleted model's indexes from the list
   for (var i = start; i <= localEnd; i++) {
     var idx = this._modelIndices.indexOf(start);
     if (idx > -1) {
@@ -4012,7 +4117,7 @@ Collection.prototype._setModel = function (index, model) {
   var oldModel = this._getModel(index);
   this._removePrevNext(oldModel);
   if (!oldModel) {
-        // Newly "inserted" model
+    // Newly "inserted" model
     this.lruCount += 1;
   }
   this._setChangeAt(index, 1);
@@ -4036,7 +4141,7 @@ Collection.prototype._clearOutModels = function (n) {
 
   this.tail = null;
   while (current && i < n) {
-        // Erase this model from collection, iff it hasn't changed
+    // Erase this model from collection, iff it hasn't changed
     index = current.GetIndex();
     model = this._getModel(index);
     if (!(model && model.hasChanged())) {
@@ -4046,19 +4151,19 @@ Collection.prototype._clearOutModels = function (n) {
         this._clearModelIndices(index, index);
       }
 
-            // Clear its pointers
+      // Clear its pointers
       current.SetNext(null);
       current = current.SetPrevious(null);
       i += 1;
     } else {
-            // Lock down the tail to this one we're not deleting
+      // Lock down the tail to this one we're not deleting
       if (!this.tail) {
         this.tail = current;
       }
       current = current.GetPrevious();
     }
   }
-    // Make sure we set tail if not already set
+  // Make sure we set tail if not already set
   if (!this.tail) {
     this.tail = current;
   }
@@ -4070,7 +4175,6 @@ Collection.prototype._clearOutModels = function (n) {
     this.tail = null;
   }
 };
-
 
 /**
  * Reset the LRU list
@@ -4091,8 +4195,8 @@ Collection.prototype._manageLRU = function (incoming) {
     var limit = this._getModelLimit();
     if (limit > -1) {
       if (this.lruCount + incoming > limit) {
-                // Must flush the amount over the limit
-        this._clearOutModels((this.lruCount + incoming) - limit);
+        // Must flush the amount over the limit
+        this._clearOutModels(this.lruCount + incoming - limit);
       }
     }
   }
@@ -4116,7 +4220,7 @@ Collection.prototype._cloneInternal = function (withProperties) {
   var c = new this.constructor();
   var i;
 
-    // Only copy locally if virtual
+  // Only copy locally if virtual
   var model;
   if (this.IsVirtual()) {
     c = this._copyFetchProperties(c);
@@ -4125,14 +4229,14 @@ Collection.prototype._cloneInternal = function (withProperties) {
 
   c = this._copyProperties(c);
   if (withProperties) {
-        // Try to copy models only if told to--we may only need the shell of the collection with properties
-        // Make a copy of the model indices (it will be modified by this process)
+    // Try to copy models only if told to--we may only need the shell of the collection with properties
+    // Make a copy of the model indices (it will be modified by this process)
     var indices = [];
     for (i = 0; i < this._modelIndices.length; i++) {
       indices.push(this._modelIndices[i]);
     }
-        // Sort them in reverse order so we eliminate the higher indexes first so as not to disrupt the position of
-        // the earlier ones
+    // Sort them in reverse order so we eliminate the higher indexes first so as not to disrupt the position of
+    // the earlier ones
     indices.sort(function (a, b) {
       return a - b;
     });
@@ -4209,8 +4313,9 @@ Collection.prototype._setLength = function () {
  */
 Collection._createModel = function (collection, attrs, options) {
   if (collection.model) {
-    return $.isFunction(collection.model) ? new collection.model(attrs, options) : // eslint-disable-line new-cap
-                                                   new collection.model.constructor(attrs, options); // eslint-disable-line new-cap
+    return $.isFunction(collection.model)
+      ? new collection.model(attrs, options) // eslint-disable-line new-cap
+      : new collection.model.constructor(attrs, options); // eslint-disable-line new-cap
   }
   return null;
 };
@@ -4228,14 +4333,14 @@ Collection.prototype._newModel = function (m, parse, options, ignoreDefaults) {
   if (m instanceof Model) {
     newModel = m;
   } else if (this.model) {
-            // model is defined
+    // model is defined
     newModel = Collection._createModel(this, m, opt);
   } else {
-            // Set this collection on the model
+    // Set this collection on the model
     opt.collection = this;
     newModel = new Model(m, opt);
   }
-    // Validate
+  // Validate
   if (opt.validate && newModel.validate) {
     validationValue = newModel.validate(newModel.attributes);
     if (validationValue) {
@@ -4294,7 +4399,7 @@ Collection.prototype.add = function (m, options) {
  * @private
  */
 Collection.prototype._addInternal = function (m, options, fillIn, deferred) {
-    // Get options
+  // Get options
   var opt = options || {};
   var modelArray = [];
   var at = opt.at;
@@ -4311,7 +4416,7 @@ Collection.prototype._addInternal = function (m, options, fillIn, deferred) {
   var modelReturnList = [];
 
   if (at !== undefined && at < 0) {
-        // Normalize it using the length-- another BackboneJS test case
+    // Normalize it using the length-- another BackboneJS test case
     at += this._getLength() + 1;
   }
 
@@ -4329,14 +4434,14 @@ Collection.prototype._addInternal = function (m, options, fillIn, deferred) {
     } else {
       index = at;
       if (collection.IsVirtual() && fillIn) {
-                // Array has been preallocated in this case
+        // Array has been preallocated in this case
         collection._setModel(index, newModel);
       } else {
         collection._spliceModels(index, 0, newModel);
       }
       collection._getModel(index).SetCid();
-            // Increment at so that later models will be added right after their predecessors, if an array is
-            // passed in
+      // Increment at so that later models will be added right after their predecessors, if an array is
+      // passed in
       at += 1;
     }
     if (newModel.GetCollection() === undefined) {
@@ -4347,8 +4452,13 @@ Collection.prototype._addInternal = function (m, options, fillIn, deferred) {
     added = true;
   }
 
-  function resortAndFireEvents(collection, existingModel, modelFoundInCollection,
-    newModel, resortDeferred) {
+  function resortAndFireEvents(
+    collection,
+    existingModel,
+    modelFoundInCollection,
+    newModel,
+    resortDeferred
+  ) {
     // Now resort if required (don't resort if either told not to, or if 'at' option is set)
     // and if there's more than one model
     var resortOpt = opt || {};
@@ -4356,10 +4466,16 @@ Collection.prototype._addInternal = function (m, options, fillIn, deferred) {
       resortOpt.fillIn = true;
     }
     var comparator = resortOpt.comparator || collection._hasComparator();
-        // If we're filling in to a blank, also check that there's no comparator
+    // If we're filling in to a blank, also check that there's no comparator
     var fillInSort = !fillIn || (fillIn && comparator);
-    if (fillInSort && needSort && existingModel === undefined && !sort &&
-        at === undefined && collection._getLength() > 1) {
+    if (
+      fillInSort &&
+      needSort &&
+      existingModel === undefined &&
+      !sort &&
+      at === undefined &&
+      collection._getLength() > 1
+    ) {
       if (index > -1) {
         cid = collection._getModel(index).cid;
       }
@@ -4367,7 +4483,7 @@ Collection.prototype._addInternal = function (m, options, fillIn, deferred) {
       oj.CollectionUtils.copyInto(sortOpt, resortOpt);
       sortOpt.add = true;
       collection.sort(sortOpt);
-            // Reset index--can't get it back if virtual--set to -1
+      // Reset index--can't get it back if virtual--set to -1
       if (index > -1) {
         if (collection.IsVirtual()) {
           index = -1;
@@ -4386,37 +4502,48 @@ Collection.prototype._addInternal = function (m, options, fillIn, deferred) {
         newModel.TriggerInternal(silent, Events.EventType.ADD, newModel, collection, resortOpt);
         addedModels.push(newModel);
       } else {
-        modelFoundInCollection.TriggerInternal(silent, Events.EventType.ADD,
-          modelFoundInCollection, collection, resortOpt);
+        modelFoundInCollection.TriggerInternal(
+          silent,
+          Events.EventType.ADD,
+          modelFoundInCollection,
+          collection,
+          resortOpt
+        );
         addedModels.push(modelFoundInCollection);
       }
     }
   }
 
-  function mergeAttrs(collection, modelToTryAndMerge, modelFoundInCollection, newModel,
-    mergeDeferred) {
+  function mergeAttrs(
+    collection,
+    modelToTryAndMerge,
+    modelFoundInCollection,
+    newModel,
+    mergeDeferred
+  ) {
     var existingModel;
     var modelAdded = null;
 
     if (!force && merge && modelFoundInCollection) {
-            // Try to merge the attributes--we're merging and the model (by id) was already in the collection
+      // Try to merge the attributes--we're merging and the model (by id) was already in the collection
       needSort = modelFoundInCollection.Merge(modelToTryAndMerge, collection.comparator, silent);
       modelAdded = modelFoundInCollection;
     } else {
-            // Make sure model is not already in there
+      // Make sure model is not already in there
       if (!force) {
         if (fillIn) {
-                  // Only bother if we have a real id set--comparing cids on a fill in is useless
+          // Only bother if we have a real id set--comparing cids on a fill in is useless
           existingModel = !newModel.isNew() ? collection._getLocal(newModel) : undefined;
         } else {
           existingModel = collection._getLocal(newModel);
         }
         if (existingModel && fillIn && at !== existingModel.index) {
-                    // We're filling in a virtual collection: we should *not* be finding the new model already in
-                    // the collection if we're not merging and not forcing: this indicates duplicate ids
-                    // throw new Error("Duplicate IDs fetched or added without merging");
-          warn('Duplicate ID fetched or added without merging, the id = ' +
-                                   existingModel.GetId());
+          // We're filling in a virtual collection: we should *not* be finding the new model already in
+          // the collection if we're not merging and not forcing: this indicates duplicate ids
+          // throw new Error("Duplicate IDs fetched or added without merging");
+          warn(
+            'Duplicate ID fetched or added without merging, the id = ' + existingModel.GetId()
+          );
         }
       }
 
@@ -4440,51 +4567,66 @@ Collection.prototype._addInternal = function (m, options, fillIn, deferred) {
     var modelFoundInCollection = null;
     if (newModel != null) {
       index = -1;
-            // Make sure ID is up to date
+      // Make sure ID is up to date
       newModel.SetupId();
 
-            // Use original model array not cloned model if merging--otherwise we won't find the model in the
-            // collection
+      // Use original model array not cloned model if merging--otherwise we won't find the model in the
+      // collection
       modelToTryAndMerge = model instanceof Model ? model : newModel;
       if (addDeferred) {
         if (force) {
           return new Promise(function (resolve) {
-            var mergedModel = mergeAttrs(collection, modelToTryAndMerge, undefined, newModel,
-              addDeferred);
+            var mergedModel = mergeAttrs(
+              collection,
+              modelToTryAndMerge,
+              undefined,
+              newModel,
+              addDeferred
+            );
             modelReturnList.push(mergedModel);
             resolve(mergedModel);
           });
         }
-        return collection._getInternal(modelToTryAndMerge, { silent: true },
-          addDeferred, true).then(
-            function (modInfo) {
-              modelFoundInCollection = modInfo.m;
-              var mod = mergeAttrs(collection,
-                   modelToTryAndMerge, modelFoundInCollection,
-                   newModel, addDeferred);
-              modelReturnList.push(mod);
-            });
+        return collection
+          ._getInternal(modelToTryAndMerge, { silent: true }, addDeferred, true)
+          .then(function (modInfo) {
+            modelFoundInCollection = modInfo.m;
+            var mod = mergeAttrs(
+              collection,
+              modelToTryAndMerge,
+              modelFoundInCollection,
+              newModel,
+              addDeferred
+            );
+            modelReturnList.push(mod);
+          });
       }
       if (!force && merge) {
-                // Grab the actual model we want to merge from the collection, if the caller has indicated that
-                // we aren't forcing an add and we want to merge
-        modelFoundInCollection = fillIn ? collection._getLocal(modelToTryAndMerge) :
-                                                  collection.get(modelToTryAndMerge);
+        // Grab the actual model we want to merge from the collection, if the caller has indicated that
+        // we aren't forcing an add and we want to merge
+        modelFoundInCollection = fillIn
+          ? collection._getLocal(modelToTryAndMerge)
+          : collection.get(modelToTryAndMerge);
       }
-      var modelAdded = mergeAttrs(collection, modelToTryAndMerge, modelFoundInCollection, newModel,
-                                  addDeferred);
+      var modelAdded = mergeAttrs(
+        collection,
+        modelToTryAndMerge,
+        modelFoundInCollection,
+        newModel,
+        addDeferred
+      );
       if (modelAdded) {
         modelReturnList.push(modelAdded);
       }
     } else {
-            // Add boolean falses for invalid models
+      // Add boolean falses for invalid models
       modelReturnList.push(false);
     }
     return Promise.resolve();
   }
 
   function _parse(collection, array) {
-        // Must stop parsing if coming in from reset or constructor
+    // Must stop parsing if coming in from reset or constructor
     if (collection.parse && opt.parse && !opt.noparse) {
       return collection.parse(array);
     }
@@ -4510,8 +4652,7 @@ Collection.prototype._addInternal = function (m, options, fillIn, deferred) {
       }
       currentStep.then(function () {
         if (addedModels.length > 0) {
-          self.TriggerInternal(opt.silent, Events.EventType.ALLADDED, self, addedModels,
-                                         opt);
+          self.TriggerInternal(opt.silent, Events.EventType.ALLADDED, self, addedModels, opt);
         }
         allResolve(Collection._returnModels(modelReturnList));
       }, allReject);
@@ -4579,21 +4720,21 @@ Collection.prototype.sort = function (options) {
   var self;
   var eventOpts;
 
-    // Check for comparator
+  // Check for comparator
   if (!this._hasComparator()) {
     return null;
   }
 
-    // This is a no-op in case of virtualization: we should just clear things out so that
-    // any elements will be refetched
+  // This is a no-op in case of virtualization: we should just clear things out so that
+  // any elements will be refetched
   if (this.IsVirtual()) {
     var totalResults = this.totalResults;
     if (this._hasTotalResults()) {
-            // Make sure to set up the array if the length changes (i.e., from 0 to totalResults--need to
-            // preallocate)
+      // Make sure to set up the array if the length changes (i.e., from 0 to totalResults--need to
+      // preallocate)
       this._setModels(new Array(totalResults), true);
     } else {
-            // No totalresults
+      // No totalresults
       this._setModels([], true);
       this._resetLRU();
       this._setLength();
@@ -4612,7 +4753,7 @@ Collection.prototype.sort = function (options) {
     return Collection.SortFunc(a, b, comparator, self, self);
   });
   this._realignModelIndices(0);
-    // Indicate this sort is due to an add
+  // Indicate this sort is due to an add
   eventOpts = opt.add ? { add: true } : null;
   this.TriggerInternal(silent, Events.EventType.SORT, this, eventOpts, null);
   return null;
@@ -4638,9 +4779,9 @@ Collection.SortFunc = function (a, b, comparator, collection, self) {
   var retVal;
 
   if ($.isFunction(comparator)) {
-        // How many args?
+    // How many args?
     if (comparator.length === 1) {
-            // "sortBy" comparator option
+      // "sortBy" comparator option
       keyA = comparator.call(self, a);
       keyB = comparator.call(self, b);
       var attrs1 = oj.StringUtils.isString(keyA) ? keyA.split(',') : [keyA];
@@ -4652,10 +4793,10 @@ Collection.SortFunc = function (a, b, comparator, collection, self) {
         }
       }
     }
-        // "sort" comparator option
+    // "sort" comparator option
     return comparator.call(self, a, b);
   }
-    // String option
+  // String option
   if (oj.StringUtils.isString(comparator)) {
     var attrs = comparator.split(',');
 
@@ -4687,7 +4828,7 @@ Collection.prototype.sortedIndex = function (model, comparator) {
   var self;
   var test;
 
-    // Check for comparator
+  // Check for comparator
   if (!comp) {
     return -1;
   }
@@ -4700,9 +4841,9 @@ Collection.prototype.sortedIndex = function (model, comparator) {
     var keyB;
 
     if ($.isFunction(comp)) {
-                // How many args?
+      // How many args?
       if (comp.length === 1) {
-                    // "sortBy" comparator option
+        // "sortBy" comparator option
         keyA = comp.call(self, a);
         keyB = comp.call(self, b);
         var attrs1 = oj.StringUtils.isString(keyA) ? keyA.split(',') : [keyA];
@@ -4716,10 +4857,10 @@ Collection.prototype.sortedIndex = function (model, comparator) {
           }
         }
       }
-                // "sort" comparator option
+      // "sort" comparator option
       return comp.call(self, a, b);
     }
-            // String option
+    // String option
     if (oj.StringUtils.isString(comp)) {
       keyA = a.get(comp);
       keyB = b.get(comp);
@@ -4788,7 +4929,6 @@ Collection._compareKeys = function (keyA, keyB, sortDirection) {
   return 0;
 };
 
-
 /**
  * Add the given model to the front of the collection<br>
  * For events that may be fired, see [add]{@link Collection#add}.<br>
@@ -4804,7 +4944,7 @@ Collection._compareKeys = function (keyA, keyB, sortDirection) {
  * @since 1.0.0
  */
 Collection.prototype.unshift = function (m, options) {
-    // Like an add but set 'at' to zero if not specified
+  // Like an add but set 'at' to zero if not specified
   var opt = {};
   oj.CollectionUtils.copyInto(opt, options || {});
   if (!opt.at) {
@@ -4866,7 +5006,7 @@ Collection.prototype.shift = function (options) {
  * @since 1.0.0
  */
 Collection.prototype.initial = function (n) {
-  var index = (n === undefined) ? 1 : n;
+  var index = n === undefined ? 1 : n;
 
   this._throwErrIfVirtual('initial');
 
@@ -4903,7 +5043,7 @@ Collection.prototype._getDeferred = function (options) {
  */
 Collection.prototype.last = function (n, options) {
   var deferred = this._getDeferred(options);
-  var index = (n === undefined) ? 1 : n;
+  var index = n === undefined ? 1 : n;
   var len;
 
   if (index === 1) {
@@ -4921,15 +5061,15 @@ Collection.prototype.last = function (n, options) {
   var i;
   len = this._getLength();
   if (deferred || this.IsVirtual()) {
-        // Loop using deferred
+    // Loop using deferred
     var start = len - n;
 
-        // Handle edge or no totalResults cases
+    // Handle edge or no totalResults cases
     if (start < 0) {
       start = 0;
     }
     if (len === 0) {
-            // No totalresults, probably
+      // No totalresults, probably
       len = n;
     }
 
@@ -4956,7 +5096,7 @@ Collection.prototype.IterativeAt = function (start, end) {
   var self = this;
   return new Promise(function (allResolve, allReject) {
     var doTask = function (index) {
-            // Make sure we're not asking beyond what we know the server can deliver, if virtual
+      // Make sure we're not asking beyond what we know the server can deliver, if virtual
       if (self.IsVirtual() && self._hasTotalResults() && index >= self.totalResults) {
         return Promise.resolve(index + 1);
       }
@@ -4998,7 +5138,7 @@ Collection.prototype._calculateNextStart = function () {
     lastFetch = this[Collection._FETCH_SIZE_PROP];
   }
   if (this.offset === undefined || this.offset === null) {
-        // Assume zero offset (0+lastFetch)
+    // Assume zero offset (0+lastFetch)
     return lastFetch;
   }
   return this.offset + lastFetch;
@@ -5032,11 +5172,11 @@ Collection.prototype.next = function (n, options) {
   var start = this._calculateNextStart();
   var length = this._getLength();
   if (length === 0 && opt[Collection._FETCH_SIZE_PROP] > 0) {
-        // If we have a fetch size and we have no length let next() do a fetchSize fetch starting at zero to
-        // kick things off
+    // If we have a fetch size and we have no length let next() do a fetchSize fetch starting at zero to
+    // kick things off
     start = 0;
   } else if (start >= length) {
-        // No op -- still call success because the items are already fetched.
+    // No op -- still call success because the items are already fetched.
     var self = this;
     if (opt.success) {
       opt.success.call(Model.GetContext(opt, self), self, null, opt);
@@ -5053,7 +5193,7 @@ Collection.prototype.next = function (n, options) {
  */
 Collection.prototype._calculatePrevStart = function (n) {
   if (this.offset === undefined || this.offset === null) {
-        // Assume zero: we can't back up beyond that so if the offset wasn't set there's nothing to do
+    // Assume zero: we can't back up beyond that so if the offset wasn't set there's nothing to do
     return 0;
   }
   return this.offset - n;
@@ -5083,8 +5223,8 @@ Collection.prototype._calculatePrevStart = function (n) {
 Collection.prototype.previous = function (n, options) {
   var opt = options || {};
   if (this.offset === 0) {
-        // No op -- still call success (if we've fetched before--lastFetchCount is other than zero) because the
-        // items are already fetched.
+    // No op -- still call success (if we've fetched before--lastFetchCount is other than zero) because the
+    // items are already fetched.
     var self = this;
     if (opt.success && this.lastFetchCount) {
       opt.success.call(Model.GetContext(opt, self), self, null, opt);
@@ -5095,14 +5235,13 @@ Collection.prototype.previous = function (n, options) {
   opt[Collection._FETCH_SIZE_PROP] = this._getDefaultFetchSize(n);
   var start = this._calculatePrevStart(opt[Collection._FETCH_SIZE_PROP]);
   if (start < 0) {
-        // Only fetch from 0 to the last fetch's starting point...
+    // Only fetch from 0 to the last fetch's starting point...
     opt[Collection._FETCH_SIZE_PROP] = this.offset;
     start = 0;
   }
   opt.startIndex = start;
   return this.fetch(opt);
 };
-
 
 /**
  * Set or change the number of models held at any one time
@@ -5115,7 +5254,7 @@ Collection.prototype.previous = function (n, options) {
  */
 Collection.prototype.setModelLimit = function (n) {
   this.modelLimit = n;
-    // Clean out down to the new limit, if necessary
+  // Clean out down to the new limit, if necessary
   this._manageLRU(0);
 };
 
@@ -5139,7 +5278,6 @@ Collection.prototype.setFetchSize = function (n) {
   this[Collection._FETCH_SIZE_PROP] = n;
 };
 
-
 /**
  * Return the array of models found in the Collection starting with index n.<br>
  * For events that may be fired if the collection is virtual, see [fetch]{@link Collection#fetch}.<br>
@@ -5154,11 +5292,11 @@ Collection.prototype.setFetchSize = function (n) {
  */
 Collection.prototype.rest = function (n, options) {
   var deferred = this._getDeferred(options);
-  var index = (n === undefined) ? 1 : n;
+  var index = n === undefined ? 1 : n;
 
   var array = [];
   var i;
-    // TODO
+  // TODO
   if (this.IsVirtual() || deferred) {
     var self = this;
     return this._addPromise(function () {
@@ -5202,7 +5340,7 @@ Collection.prototype.remove = function (m, options) {
 
   var modsRemoved = [];
   for (mod = modArray.length - 1; mod >= 0; mod -= 1) {
-        // Done to keep array in order matching one passed in--we do removal in reverse
+    // Done to keep array in order matching one passed in--we do removal in reverse
     modsRemoved.unshift(this._removeInternal(modArray[mod], -1, opt));
   }
   this.TriggerInternal(opt.silent, Events.EventType.ALLREMOVED, this, modArray, opt);
@@ -5220,7 +5358,7 @@ Collection.prototype._removeInternal = function (model, index, options) {
   var n = modInfo.index;
   if (n > -1) {
     var mod = modInfo.m;
-        // only unset the collection setting if it's mine
+    // only unset the collection setting if it's mine
     if (mod !== undefined && mod.GetCollection() === this) {
       mod.SetCollection(null);
     }
@@ -5237,7 +5375,6 @@ Collection.prototype._removeInternal = function (model, index, options) {
   }
   return modInfo.m;
 };
-
 
 /**
  * @private
@@ -5264,12 +5401,12 @@ Collection.prototype._modelEvent = function (event, model, collection, options) 
     this.remove(model);
   }
 
-    // Don't process general events if we're not the target
+  // Don't process general events if we're not the target
   if (collection !== undefined && collection instanceof Collection && collection !== this) {
     return;
   }
 
-    // Throw up to the collection
+  // Throw up to the collection
   var silent = options && options.silent;
   this.TriggerInternal(silent, event, model, collection, options);
 };
@@ -5306,10 +5443,10 @@ Collection.prototype.refresh = function (options) {
       if (!self.IsVirtual()) {
         silent = optCopy.silent !== undefined && optCopy.silent;
         try {
-                    // Do a reset, with silent
+          // Do a reset, with silent
           self.reset(null, { silent: true });
-                    // Local: do a fetch to fill back up
-                    // In case options are passed to refresh-->fetch
+          // Local: do a fetch to fill back up
+          // In case options are passed to refresh-->fetch
           var opt = {};
           Object.keys(optCopy).forEach(function (prop) {
             if (Object.prototype.hasOwnProperty.call(optCopy, prop)) {
@@ -5326,9 +5463,9 @@ Collection.prototype.refresh = function (options) {
           self._fetchInternal(opt, -1, false);
           return;
         } catch (e) {
-                    // This is OK if it's a URLError: just fire the event: local collection without custom sync
+          // This is OK if it's a URLError: just fire the event: local collection without custom sync
           if (e instanceof URLError) {
-                        // if it's a completely local collection, it's a no-op other than the event
+            // if it's a completely local collection, it's a no-op other than the event
             self.TriggerInternal(silent, Events.EventType.REFRESH, self, optCopy, null);
             resolve({ collection: self, options: optCopy });
             return;
@@ -5336,13 +5473,13 @@ Collection.prototype.refresh = function (options) {
           throw e;
         }
       }
-            // Virtual
+      // Virtual
       var startIndex = optCopy.startIndex;
 
       self._setModels([], true);
       self._resetLRU();
 
-            // Clear totalresults.
+      // Clear totalresults.
       self.totalResults = undefined;
       self._setLength();
 
@@ -5354,11 +5491,13 @@ Collection.prototype.refresh = function (options) {
       if (startIndex !== undefined && startIndex !== null) {
         // Do a set range local
         self._setRangeLocalInternal(startIndex, self._getFetchSize(optCopy)).then(
-        function (actual) {
-          resolve(actual);
-        }, function (err) {
-          reject(err);
-        });
+          function (actual) {
+            resolve(actual);
+          },
+          function (err) {
+            reject(err);
+          }
+        );
       } else {
         resolve(undefined);
       }
@@ -5409,7 +5548,7 @@ Collection.prototype.reset = function (data, options) {
   var silent = opts.silent !== undefined && opts.silent;
   if (!data) {
     this._setLength();
-        // Clear totalresults
+    // Clear totalresults
     this.totalResults = undefined;
     this.TriggerInternal(silent, Events.EventType.RESET, this, opts, null);
     return null;
@@ -5422,7 +5561,7 @@ Collection.prototype.reset = function (data, options) {
     newData = this.parse(data);
   }
 
-  this._manageLRU((newData instanceof Array) ? newData.length : 1);
+  this._manageLRU(newData instanceof Array ? newData.length : 1);
   opts.noparse = true;
   retObj = this._addInternal(newData, opts, true, false);
   this._setLength();
@@ -5462,7 +5601,7 @@ Collection.prototype.at = function (index, options) {
 Collection.prototype._atInternal = function (index, options, local, deferred) {
   var n = index;
   if (n < 0) {
-        // Normalize it using the length-- another BackboneJS test case
+    // Normalize it using the length-- another BackboneJS test case
     n += this._getLength();
   }
 
@@ -5494,10 +5633,10 @@ Collection.prototype._atInternal = function (index, options, local, deferred) {
  */
 Collection.prototype.whenReady = function () {
   if (this._promises) {
-        // If we have an active chain, return it
+    // If we have an active chain, return it
     return this._promises;
   }
-    // Otherwise return an immediately resolved promise that means nothing...
+  // Otherwise return an immediately resolved promise that means nothing...
   return Promise.resolve();
 };
 
@@ -5507,37 +5646,38 @@ Collection.prototype.whenReady = function () {
  */
 Collection.prototype._addPromise = function (promiseTask) {
   var self = this;
-    // Undefined, so set it up initially
+  // Undefined, so set it up initially
   if (this._promises === undefined) {
     this._promiseCount = 0;
     this._promises = Promise.resolve();
   }
-    // Track the number we have left to resolve
+  // Track the number we have left to resolve
   this._promiseCount += 1;
-    // Chain this new promise callback task to the end of the list
+  // Chain this new promise callback task to the end of the list
   this._promises = this._promises.then(promiseTask.bind(self)).then(
-        function (arg) {
-            // Resolved successfully--decrement our count and clean up if we have none left to resolve
-          self._promiseCount -= 1;
-          if (self._promiseCount === 0) {
-            self._promises = undefined;
-                // Fire the ready event
-            self.TriggerInternal(false, Events.EventType.READY, self, null, null);
-          }
-            // Resolve the true promise with the value we're given
-          return arg;
-        },
-        function (error) {
-            // Rejected--decrement our count and clean up if we have none left to resolve
-          self._promiseCount -= 1;
-          if (self._promiseCount === 0) {
-            self._promises = undefined;
-          }
-            // Reject the promise
-          return Promise.reject(error);
-        });
+    function (arg) {
+      // Resolved successfully--decrement our count and clean up if we have none left to resolve
+      self._promiseCount -= 1;
+      if (self._promiseCount === 0) {
+        self._promises = undefined;
+        // Fire the ready event
+        self.TriggerInternal(false, Events.EventType.READY, self, null, null);
+      }
+      // Resolve the true promise with the value we're given
+      return arg;
+    },
+    function (error) {
+      // Rejected--decrement our count and clean up if we have none left to resolve
+      self._promiseCount -= 1;
+      if (self._promiseCount === 0) {
+        self._promises = undefined;
+      }
+      // Reject the promise
+      return Promise.reject(error);
+    }
+  );
 
-    // Return the chain with the new promise at the end
+  // Return the chain with the new promise at the end
   return this._promises;
 };
 
@@ -5550,14 +5690,14 @@ Collection.prototype._addxhr = function (xhr) {
     if (this._xhrs === undefined) {
       this._xhrs = [];
     }
-        // Listen to this xhr to know when to remove it
+    // Listen to this xhr to know when to remove it
     var self = this;
     this._xhrs.push(xhr);
     xhr.done(function () {
-            // Find the xhr
+      // Find the xhr
       var loc = self._xhrs ? self._xhrs.indexOf(xhr) : -1;
       if (loc > -1) {
-                // Remove it from the list
+        // Remove it from the list
         self._xhrs.splice(loc, 1);
       }
     });
@@ -5577,31 +5717,40 @@ Collection.prototype.abort = function () {
   // Abort all pending XHR requests
   var self = this;
   function createPromise(index, resolve) {
-    self._xhrs[index].then(function (data, status) {
-      if (status === 'abort') {
-                    // Remove from list
+    self._xhrs[index].then(
+      function (data, status) {
+        if (status === 'abort') {
+          // Remove from list
+          self._xhrs.splice(index, 1);
+          // If this is the last one, resolve the promise we returned
+          if (self._xhrs.length === 0) {
+            self.whenReady().then(
+              function () {
+                resolve(null);
+              },
+              function () {
+                resolve(null);
+              }
+            );
+          }
+        }
+      },
+      function () {
+        // Remove from list
         self._xhrs.splice(index, 1);
-                    // If this is the last one, resolve the promise we returned
+        // If this is the last one, resolve the promise we returned
         if (self._xhrs.length === 0) {
-          self.whenReady().then(function () {
-            resolve(null);
-          }, function () {
-            resolve(null);
-          });
+          self.whenReady().then(
+            function () {
+              resolve(null);
+            },
+            function () {
+              resolve(null);
+            }
+          );
         }
       }
-    }, function () {
-      // Remove from list
-      self._xhrs.splice(index, 1);
-      // If this is the last one, resolve the promise we returned
-      if (self._xhrs.length === 0) {
-        self.whenReady().then(function () {
-          resolve(null);
-        }, function () {
-          resolve(null);
-        });
-      }
-    });
+    );
   }
 
   if (this._xhrs && this._xhrs.length > 0) {
@@ -5621,11 +5770,11 @@ Collection.prototype.abort = function () {
  */
 Collection.prototype._deferredAt = function (index, options) {
   var self = this;
-    // If it's virtual, we need to see if this item has been fetched or not: if not, we need to fetch it + fetchSize
+  // If it's virtual, we need to see if this item has been fetched or not: if not, we need to fetch it + fetchSize
   var model = self._getModel(index);
   if (model === undefined) {
     return new Promise(function (resolve, reject) {
-            // Go fetch
+      // Go fetch
       var opts = {};
       oj.CollectionUtils.copyInto(opts, options || {});
       opts.context = self;
@@ -5678,7 +5827,6 @@ Collection.prototype.getByCid = function (clientId) {
   return null;
 };
 
-
 /**
  * Return the first model object from the collection whose model id value is the given id or cid, or the id or
  * cid from a passed in model
@@ -5702,16 +5850,18 @@ Collection.prototype.get = function (id, options) {
   var deferred = this._getDeferred(options);
   var internalGet = this._getInternal(id, options, deferred);
   if (internalGet) {
-        // Is this a deferred object?
+    // Is this a deferred object?
     if ($.isFunction(internalGet.then)) {
       return this._addPromise(function () {
         return new Promise(function (resolve, reject) {
-          internalGet.then(function (modInfo) {
-            resolve(modInfo.m);
-          },
-                    function (err) {
-                      reject(err);
-                    });
+          internalGet.then(
+            function (modInfo) {
+              resolve(modInfo.m);
+            },
+            function (err) {
+              reject(err);
+            }
+          );
         });
       });
     }
@@ -5747,9 +5897,9 @@ Collection.prototype._getLocalInternal = function (id) {
   var cid = id;
   var localId = id;
   if (id instanceof Model) {
-        // Get the cid
+    // Get the cid
     cid = id.GetCid();
-        // Get the id
+    // Get the id
     localId = id.GetId();
   } else if (Collection._defined(id) && id.id !== undefined) {
     localId = id.id;
@@ -5814,9 +5964,9 @@ Collection.prototype._getInternal = function (id, options, deferred, fillIn) {
     }
     return foundObj;
   }
-    // If virtual, might be undefined because it needs to be fetched
+  // If virtual, might be undefined because it needs to be fetched
   if (this.IsVirtual()) {
-        // Try to fetch using start ID.  cid not supported
+    // Try to fetch using start ID.  cid not supported
     if (localId === undefined && cid !== undefined) {
       return new Promise(function (resolve) {
         resolve(Collection._getModinfo(-1, undefined));
@@ -5839,13 +5989,13 @@ Collection.prototype._getInternal = function (id, options, deferred, fillIn) {
         }
       };
 
-            // Go fetch
+      // Go fetch
       var opts = {};
       oj.CollectionUtils.copyInto(opts, options || {});
       opts.context = self;
       opts.startID = localId;
       opts.error = function (collection, error, optarg, xhr, status) {
-                // Handle potential errors
+        // Handle potential errors
         reject(Collection._createRejectionError(xhr, status, error, self, options, false));
       };
       opts.success = function (collection, response) {
@@ -5887,7 +6037,8 @@ Collection.prototype._parseImpl = function (response) {
 
   // See if any of the properties contain arrays
   var prop;
-  for (prop in response) { // eslint-disable-line no-restricted-syntax
+  // eslint-disable-next-line no-restricted-syntax
+  for (prop in response) {
     if (Object.prototype.hasOwnProperty.call(response, prop)) {
       if (response[prop] instanceof Array) {
         return response[prop];
@@ -5912,11 +6063,11 @@ Collection.prototype.parse = Collection.prototype._parseImpl;
  * @private
  */
 Collection.prototype._checkActual = function (start, count, actual) {
-    // Are we at the end with what actually came back?  Then this request should satisfy the setLocalRange
-  if (this._hasTotalResults() && (actual.start + actual.count >= this.totalResults)) {
+  // Are we at the end with what actually came back?  Then this request should satisfy the setLocalRange
+  if (this._hasTotalResults() && actual.start + actual.count >= this.totalResults) {
     return true;
   }
-  return (actual.start === start && actual.count === count);
+  return actual.start === start && actual.count === count;
 };
 
 /**
@@ -5967,8 +6118,8 @@ Collection.prototype.setRangeLocal = function (start, count, options) {
  */
 Collection.prototype._setRangeLocalInternal = function (start, count, options) {
   if (this.IsVirtual()) {
-        // make sure we reconcile the length to what we think the totalresults are--if there have been any non
-        // fetched changes in length we don't want to be placing things wrong
+    // make sure we reconcile the length to what we think the totalresults are--if there have been any non
+    // fetched changes in length we don't want to be placing things wrong
     this._resetModelsToFullLength(this.totalResults);
   }
   var actual = this._getLocalRange(start, count);
@@ -5979,22 +6130,38 @@ Collection.prototype._setRangeLocalInternal = function (start, count, options) {
     });
   }
 
-    // Manage the LRU - set model limit at least as high as the count we're trying to fetch
+  // Manage the LRU - set model limit at least as high as the count we're trying to fetch
   var modelLimit = this._getModelLimit();
   if (modelLimit > -1 && modelLimit < count) {
     this.modelLimit = count;
   }
   return new Promise(function (resolve, reject) {
-    self._setRangeLocalFetch(start, count, -1, { start: start, count: count }, resolve,
-                             reject, true, options);
+    self._setRangeLocalFetch(
+      start,
+      count,
+      -1,
+      { start: start, count: count },
+      resolve,
+      reject,
+      true,
+      options
+    );
   });
 };
 
 /**
  * @private
  */
-Collection.prototype._setRangeLocalFetch = function (start, count, placement, original,
-  resolve, reject, fill, options) {
+Collection.prototype._setRangeLocalFetch = function (
+  start,
+  count,
+  placement,
+  original,
+  resolve,
+  reject,
+  fill,
+  options
+) {
   var self = this;
   var localStart = start;
   var resp = function () {
@@ -6005,8 +6172,16 @@ Collection.prototype._setRangeLocalFetch = function (start, count, placement, or
       // Try the next block...don't repeat the request
       var newStart = localStart + (self.lastFetchCount ? self.lastFetchCount : count);
       if (newStart < self.totalResults) {
-        self._setRangeLocalFetch(newStart, count, newPlacement, original, resolve, reject,
-          fill, options);
+        self._setRangeLocalFetch(
+          newStart,
+          count,
+          newPlacement,
+          original,
+          resolve,
+          reject,
+          fill,
+          options
+        );
       } else {
         // Can't go any further
         resolve(actual);
@@ -6016,14 +6191,14 @@ Collection.prototype._setRangeLocalFetch = function (start, count, placement, or
     }
   };
 
-    // Go fetch
+  // Go fetch
   var limit = localStart + count;
-    // Get the greater of the limit-localStart or fetchSize
+  // Get the greater of the limit-localStart or fetchSize
   if (this[Collection._FETCH_SIZE_PROP] && this[Collection._FETCH_SIZE_PROP] > count) {
     limit = this[Collection._FETCH_SIZE_PROP] + localStart;
   }
 
-    // Now, to optimize, move localStart up to the first undefined model in the sequence
+  // Now, to optimize, move localStart up to the first undefined model in the sequence
   var opts = null;
   if (this.IsVirtual()) {
     var newStart = this._getFirstMissingModel(localStart, limit);
@@ -6041,7 +6216,7 @@ Collection.prototype._setRangeLocalFetch = function (start, count, placement, or
     opts = { context: this };
   }
   opts.error = function (collection, error, optarg, xhr, status) {
-        // Handle potential errors
+    // Handle potential errors
     reject(Collection._createRejectionError(xhr, status, error, self, null, false));
   };
   opts.success = function () {
@@ -6054,7 +6229,7 @@ Collection.prototype._setRangeLocalFetch = function (start, count, placement, or
   try {
     this._fetchInternal(opts, placement, placement > -1);
   } catch (e) {
-        // This is OK if it's a URLError: local collection with no means of fetching: just resolve
+    // This is OK if it's a URLError: local collection with no means of fetching: just resolve
     if (e instanceof URLError) {
       var actual = self._getLocalRange(localStart, count);
       resolve(actual);
@@ -6065,13 +6240,12 @@ Collection.prototype._setRangeLocalFetch = function (start, count, placement, or
 /**
  * @private
  */
-Collection._createRejectionError = function (xhr, status, error, collection, options,
-  fireError) {
+Collection._createRejectionError = function (xhr, status, error, collection, options, fireError) {
   var silent = false;
   if (options && options.silent) {
     silent = options.silent;
   }
-    // To avoid duplication in many cases...
+  // To avoid duplication in many cases...
   if (fireError) {
     Model._triggerError(collection, silent, options, status, error, xhr);
   }
@@ -6089,7 +6263,7 @@ Collection._createRejectionError = function (xhr, status, error, collection, opt
 Collection.prototype._getMaxLength = function (start, count) {
   var len = this._getModelsLength();
   if (len === 0) {
-        // This is an exception: could be uninitialized
+    // This is an exception: could be uninitialized
     return start + count;
   }
   return start + count > len ? len : start + count;
@@ -6112,8 +6286,10 @@ Collection.prototype.isRangeLocal = function (start, count) {
     // is zero--edge case
     return count === 0;
   }
-  return start === localRange.start && (count === localRange.count ||
-         start + count > this._getModelsLength());
+  return (
+    start === localRange.start &&
+    (count === localRange.count || start + count > this._getModelsLength())
+  );
 };
 
 /**
@@ -6134,11 +6310,11 @@ Collection.prototype._getModelArray = function (start, count) {
  * @private
  */
 Collection.prototype._getLocalRange = function (start, count) {
-    // Not virtual, local if there are any models
+  // Not virtual, local if there are any models
   if (!this.IsVirtual()) {
     if (this._getModelsLength() > 0) {
       if (start + count > this._getModelsLength()) {
-                // Over the boundary
+        // Over the boundary
         var c = this._getModelsLength() - start;
         return { start: start, count: c, models: this._getModelArray(start, c) };
       }
@@ -6148,24 +6324,28 @@ Collection.prototype._getLocalRange = function (start, count) {
     return { start: start, count: 0, models: [] };
   }
   var limit = this._getMaxLength(start, count);
-    // Adjust for no totalResults
+  // Adjust for no totalResults
   if (!this._hasTotalResults() && limit < start + count) {
-        // We don't know if it's local or not
-    return { start: start,
-      count: (limit - start),
-      models: this._getModelArray(start, limit - start) };
+    // We don't know if it's local or not
+    return {
+      start: start,
+      count: limit - start,
+      models: this._getModelArray(start, limit - start)
+    };
   }
   if (limit === 0) {
-        // There nothing here
+    // There nothing here
     return { start: start, count: 0, models: [] };
   }
   var firstMissingModel = this._getFirstMissingModel(start, limit);
   if (firstMissingModel > -1) {
-    return { start: start,
-      count: (firstMissingModel - start),
-      models: this._getModelArray(start, firstMissingModel - start) };
+    return {
+      start: start,
+      count: firstMissingModel - start,
+      models: this._getModelArray(start, firstMissingModel - start)
+    };
   }
-    // Make sure start doesn't overrun the end!
+  // Make sure start doesn't overrun the end!
   var localCount = count;
   if (start > limit) {
     localCount = 0;
@@ -6372,7 +6552,7 @@ Collection.prototype._putDataIntoCollection = function (data, placement, manageL
   var dataList;
 
   if (data) {
-    dataList = (data instanceof Array) ? data : [data];
+    dataList = data instanceof Array ? data : [data];
 
     var addOpt = {};
     // Only manage the LRU if we're not trying to achieve a range
@@ -6405,15 +6585,19 @@ Collection.prototype._putDataIntoCollection = function (data, placement, manageL
  * if virtual
  * @private
  */
-Collection.prototype._fillInCollectionWithParsedData = function (data, placement, manageLRU,
-  options) {
+Collection.prototype._fillInCollectionWithParsedData = function (
+  data,
+  placement,
+  manageLRU,
+  options
+) {
   var opt = options || {};
   var parse = opt.parse;
   var modelInstance = Collection._createModel(this);
   var dataList = null;
 
   if (data) {
-    dataList = (data instanceof Array) ? data : [data];
+    dataList = data instanceof Array ? data : [data];
 
     var addOpt = {};
     var parsedModel;
@@ -6450,11 +6634,11 @@ Collection.prototype._fillInCollectionWithParsedData = function (data, placement
           addOpt = { at: insertPos };
           prevItem = this._atInternal(insertPos, addOpt, true, false);
         }
-                // Don't fire add events
+        // Don't fire add events
         addOpt.silent = true;
         this._addInternal(parsedModel, addOpt, true, false);
-                // If virtual, make sure the item was really added where we thought--in other words, what's there
-                // now shouldn't match what was there otherwise could be duplicate id and don't increment counter
+        // If virtual, make sure the item was really added where we thought--in other words, what's there
+        // now shouldn't match what was there otherwise could be duplicate id and don't increment counter
         if (this._atInternal(insertPos, null, true, false) !== prevItem) {
           insertPos += 1;
         }
@@ -6505,12 +6689,12 @@ Collection.prototype._fetchOnly = function (options) {
     }
 
     if (!opt.add && !self.model) {
-      dataList = (data instanceof Array) ? data : [data];
+      dataList = data instanceof Array ? data : [data];
     } else {
       modelInstance = Collection._createModel(self);
 
       if (data) {
-        dataList = (data instanceof Array) ? data : [data];
+        dataList = data instanceof Array ? data : [data];
 
         for (i = 0; i < dataList.length; i += 1) {
           if (modelInstance && opt.parse) {
@@ -6543,7 +6727,7 @@ Collection.prototype._fetchCall = function (opt) {
   try {
     return Model._internalSync('read', this, opt);
   } catch (e) {
-         // Some kind of error: trigger an error event
+    // Some kind of error: trigger an error event
     Model._triggerError(this, false, opt, null, e, null);
     throw e;
   }
@@ -6582,11 +6766,16 @@ Collection.prototype.IsVirtual = function () {
 /**
  * @private
  */
-Collection.prototype._getReturnProperty = function (customObj, response, property,
-  optionValue, defaultValue) {
+Collection.prototype._getReturnProperty = function (
+  customObj,
+  response,
+  property,
+  optionValue,
+  defaultValue
+) {
   var value = parseInt(Collection._getProp(customObj, response, property), 10);
   if (value === undefined || value === null || isNaN(value)) {
-        // use fetchsize
+    // use fetchsize
     return optionValue || defaultValue;
   }
   return value;
@@ -6596,7 +6785,7 @@ Collection.prototype._getReturnProperty = function (customObj, response, propert
  * @private
  */
 Collection.prototype._cleanTotalResults = function (totalResults) {
-    // In case server (incorrectly) passes back a -1, treat it as undefined
+  // In case server (incorrectly) passes back a -1, treat it as undefined
   if (totalResults === -1) {
     return undefined;
   }
@@ -6619,42 +6808,74 @@ Collection.prototype._setPagingReturnValues = function (response, options, data,
   }
   // What limit was actually used to generate this response?
   var opt = options || {};
-  this.lastFetchSize = this._getReturnProperty(customObj, response, 'limit', opt.fetchSize,
-                                                    this.fetchSize);
+  this.lastFetchSize = this._getReturnProperty(
+    customObj,
+    response,
+    'limit',
+    opt.fetchSize,
+    this.fetchSize
+  );
 
   // What offset was actually used to generate this response?
   this.offset = this._getReturnProperty(customObj, response, 'offset', opt.startIndex, 0);
 
   // How many records actually came back?
-  this.lastFetchCount = this._getReturnProperty(customObj, response, 'count', this.lastFetchCount,
-                                                     this.lastFetchCount);
+  this.lastFetchCount = this._getReturnProperty(
+    customObj,
+    response,
+    'count',
+    this.lastFetchCount,
+    this.lastFetchCount
+  );
 
   // What is the total number of records possible for this collection?
-  this.totalResults = this._cleanTotalResults(this._getReturnProperty(customObj, response, 'totalResults',
-                                                   this.totalResults, this.totalResults));
+  this.totalResults = this._cleanTotalResults(
+    this._getReturnProperty(
+      customObj,
+      response,
+      'totalResults',
+      this.totalResults,
+      this.totalResults
+    )
+  );
 
   // Is there more?
-  this.hasMore = this._getHasMore(Collection._getProp(customObj, response, 'hasMore'),
-                                       this.offset, this.lastFetchSize, this.totalResults);
+  this.hasMore = this._getHasMore(
+    Collection._getProp(customObj, response, 'hasMore'),
+    this.offset,
+    this.lastFetchSize,
+    this.totalResults
+  );
 
   // Adjust total results to account for the case where the server tells us there's no more data, and
   // totalResults wasn't set by the server...but don't do it for simple gets/adds
   var retVal = false;
   if (!fillIn) {
-        // We want to know if the server *actually* returned values for these things, not if they defaulted above
-    var totalResultsReturned = this._cleanTotalResults(parseInt(Collection._getProp(customObj,
-      response, 'totalResults'), 10));
-    var lastFetchCountReturned = parseInt(Collection._getProp(customObj, response, 'count'),
-      10);
-    this.totalResults = this._adjustTotalResults(totalResultsReturned, this.hasMore,
-      this.offset, lastFetchCountReturned, data && Array.isArray(data) ? data.length : 0);
-    retVal = (totalResultsReturned === undefined || isNaN(totalResultsReturned) ||
-              totalResultsReturned === null);
+    // We want to know if the server *actually* returned values for these things, not if they defaulted above
+    var totalResultsReturned = this._cleanTotalResults(
+      parseInt(Collection._getProp(customObj, response, 'totalResults'), 10)
+    );
+    var lastFetchCountReturned = parseInt(Collection._getProp(customObj, response, 'count'), 10);
+    this.totalResults = this._adjustTotalResults(
+      totalResultsReturned,
+      this.hasMore,
+      this.offset,
+      lastFetchCountReturned,
+      data && Array.isArray(data) ? data.length : 0
+    );
+    retVal =
+      totalResultsReturned === undefined ||
+      isNaN(totalResultsReturned) ||
+      totalResultsReturned === null;
   }
 
   // Was fetchSize set?  If not, set it to limit
-  if (!this.IsVirtual() && this.totalResults && this.totalResults !== this.lastFetchCount &&
-        this.lastFetchSize) {
+  if (
+    !this.IsVirtual() &&
+    this.totalResults &&
+    this.totalResults !== this.lastFetchCount &&
+    this.lastFetchSize
+  ) {
     this.setFetchSize(this.lastFetchSize);
   }
   return retVal;
@@ -6663,16 +6884,21 @@ Collection.prototype._setPagingReturnValues = function (response, options, data,
 /**
  * @private
  */
-Collection.prototype._adjustTotalResults = function (totalResultsReturned, hasMore, offset,
-  lastFetchCount, dataLength) {
-    // Fix for : if hasMore is false, and totalResults wasn't set by the server, we should set it to
-    // the last thing fetched here.  There is no more.
+Collection.prototype._adjustTotalResults = function (
+  totalResultsReturned,
+  hasMore,
+  offset,
+  lastFetchCount,
+  dataLength
+) {
+  // Fix for : if hasMore is false, and totalResults wasn't set by the server, we should set it to
+  // the last thing fetched here.  There is no more.
   if (!hasMore) {
-        // No more data, per server
+    // No more data, per server
     if (isNaN(totalResultsReturned)) {
-            // TotalResults was not returned by the server here
-            // If lastFetchCount was set, use that as the final total.  Otherwise, use the length of data passed
-            // in...all + offset
+      // TotalResults was not returned by the server here
+      // If lastFetchCount was set, use that as the final total.  Otherwise, use the length of data passed
+      // in...all + offset
       var count = !isNaN(lastFetchCount) ? lastFetchCount : dataLength;
       return count + offset;
     }
@@ -6687,11 +6913,11 @@ Collection.prototype._getHasMore = function (hasMore, offset, lastFetchSize, tot
   if (Collection._defined(hasMore)) {
     return hasMore;
   }
-    // Special case: return true if totalResults not defined
+  // Special case: return true if totalResults not defined
   if (totalResults === undefined || totalResults === null) {
     return true;
   }
-    // Not there: figure it out.  It's true unless we're walking off the end
+  // Not there: figure it out.  It's true unless we're walking off the end
   return !(offset + lastFetchSize > totalResults);
 };
 
@@ -6709,7 +6935,7 @@ Collection._getProp = function (custom, response, prop) {
  * @private
  */
 Collection.prototype._getOffset = function () {
-  return (Collection._defined(this.offset) ? this.offset : 0);
+  return Collection._defined(this.offset) ? this.offset : 0;
 };
 
 /**
@@ -6749,7 +6975,7 @@ Collection.prototype.create = function (attributes, options) {
 
   function doAdd(newModel, addOpts) {
     if (opt.wait) {
-            // Don't do adding now
+      // Don't do adding now
       if (self.IsVirtual() || deferred) {
         return self._addPromise(function () {
           return Promise.resolve(undefined);
@@ -6760,7 +6986,7 @@ Collection.prototype.create = function (attributes, options) {
     return self.add(newModel, addOpts);
   }
 
-    // Save the user's context and callback, if any
+  // Save the user's context and callback, if any
   var newModel = this._newModel(attributes, true, opt, false);
   var callback = opt.success;
   var context = opt.context;
@@ -6795,42 +7021,41 @@ Collection.prototype.create = function (attributes, options) {
     return new Promise(function (resolve) {
       addOpts.merge = true;
       addOpts.deferred = true;
-      doAdd(newModel, addOpts)
-                    .then(function () {
-                      opt.success = function (model, resp, successOpts) {
-                                    // Make sure we pass xhr
-                        if (successOpts.xhr) {
-                          opt.xhr = successOpts.xhr;
-                        }
-                        if (opt.wait) {
-                                        // Trigger delayed add event
-                                        // Force the add if virtual because we know it was successfully saved: we
-                                        // don't want to go back to the server to check
-                          if (self.IsVirtual()) {
-                            addOpts.force = true;
-                          }
-                          self.add(newModel, addOpts).then(function () {
-                            if (callback) {
-                              callback.call(context != null ? context : self, model, resp, opt);
-                            }
-                            resolve(model);
-                          });
-                        } else {
-                          if (callback) {
-                            callback.call(context != null ? context : self, model, resp, opt);
-                          }
-                          resolve(model);
-                        }
-                      };
-                      var model = doSave(self, newModel, validate, opt);
-                                // make sure that success is called first if successful...promise resolved
-                                // second
-                      if (!model) {
-                                    // Failed: make sure we resolve the promise.  Otherwise promise will
-                                    // be resolved by success call, above
-                        resolve(model);
-                      }
-                    });
+      doAdd(newModel, addOpts).then(function () {
+        opt.success = function (model, resp, successOpts) {
+          // Make sure we pass xhr
+          if (successOpts.xhr) {
+            opt.xhr = successOpts.xhr;
+          }
+          if (opt.wait) {
+            // Trigger delayed add event
+            // Force the add if virtual because we know it was successfully saved: we
+            // don't want to go back to the server to check
+            if (self.IsVirtual()) {
+              addOpts.force = true;
+            }
+            self.add(newModel, addOpts).then(function () {
+              if (callback) {
+                callback.call(context != null ? context : self, model, resp, opt);
+              }
+              resolve(model);
+            });
+          } else {
+            if (callback) {
+              callback.call(context != null ? context : self, model, resp, opt);
+            }
+            resolve(model);
+          }
+        };
+        var model = doSave(self, newModel, validate, opt);
+        // make sure that success is called first if successful...promise resolved
+        // second
+        if (!model) {
+          // Failed: make sure we resolve the promise.  Otherwise promise will
+          // be resolved by success call, above
+          resolve(model);
+        }
+      });
     });
   }
 
@@ -6933,15 +7158,17 @@ Collection.prototype._whereInternal = function (attrs, options) {
       var success = function (collection, fetchedModels) {
         resolve(fetchedModels);
       };
-            // Send the attributes for a server-based filter; also indicate that we need *all* the attributes.
-            // In the standard REST URL construction this is accomplished by leaving off fetchSize/start indices,
-            // etc.
-      var opts = { query: attrs,
+      // Send the attributes for a server-based filter; also indicate that we need *all* the attributes.
+      // In the standard REST URL construction this is accomplished by leaving off fetchSize/start indices,
+      // etc.
+      var opts = {
+        query: attrs,
         all: true,
         success: success,
         error: function (xhr, status, error) {
           reject(Collection._createRejectionError(xhr, status, error, self, opt, true));
-        } };
+        }
+      };
       self._fetchOnly(opts);
     });
   }
@@ -6988,12 +7215,15 @@ Collection.prototype.whereToCollection = function (attrs, options) {
   if (this.IsVirtual() || deferred) {
     return self._addPromise(function () {
       return new Promise(function (resolve, reject) {
-        return self._whereInternal(attrs, opt).then(function (models) {
-          var collection = self._makeNewCollection(models);
-          resolve(collection);
-        }, function (err) {
-          reject(err);
-        });
+        return self._whereInternal(attrs, opt).then(
+          function (models) {
+            var collection = self._makeNewCollection(models);
+            resolve(collection);
+          },
+          function (err) {
+            reject(err);
+          }
+        );
       });
     });
   }
@@ -7108,12 +7338,12 @@ Collection.prototype.sortBy = function (iterator, context) {
     var keyB;
 
     if ($.isFunction(iterator)) {
-                // "sortBy" comparator option
+      // "sortBy" comparator option
       keyA = iterator.call(context || self, a);
       keyB = iterator.call(context || self, b);
       return Collection._compareKeys(keyA, keyB, self.sortDirection);
     }
-            // String option
+    // String option
     keyA = a.get(iterator);
     keyB = b.get(iterator);
     return Collection._compareKeys(keyA, keyB, self.sortDirection);
@@ -7209,7 +7439,7 @@ Collection.prototype.min = function (iterator, context) {
   if (this._getModelsLength() === 0) {
     return null;
   }
-    // Get vals started
+  // Get vals started
   minModel = this._getModel(0);
   minModelValue = iterator.call(context || this, this._getModel(0));
 
@@ -7299,7 +7529,8 @@ Collection.prototype.filter = function (iterator, context) {
  * @since 1.0.0
  * @export
  */
-Collection.prototype.without = function (var_args) { // eslint-disable-line
+// eslint-disable-next-line
+Collection.prototype.without = function (var_args) {
   var retArr = [];
   var j;
   var id;
@@ -7309,18 +7540,18 @@ Collection.prototype.without = function (var_args) { // eslint-disable-line
   this._throwErrIfVirtual('without');
 
   var model;
-    // Test each model in the collection
+  // Test each model in the collection
   for (var i = 0; i < this._getModels().length; i++) {
     add = true;
     model = this._getModel(i);
     for (j = 0; j < arguments.length; j += 1) {
-            // Get the cid
+      // Get the cid
       cid = arguments[j].GetCid();
-            // Get the id
+      // Get the id
       id = arguments[j].GetId();
       if (model.Match(id, cid)) {
-                // If it's found, don't return it--we're "subtracting" those from the return value, which starts
-                // as all models in the collection
+        // If it's found, don't return it--we're "subtracting" those from the return value, which starts
+        // as all models in the collection
         add = false;
         break;
       }
@@ -7343,7 +7574,8 @@ Collection.prototype.without = function (var_args) { // eslint-disable-line
  * @since 1.0.0
  * @export
  */
-Collection.prototype.difference = function (var_args) { // eslint-disable-line
+// eslint-disable-next-line
+Collection.prototype.difference = function (var_args) {
   var retArr = [];
   var j;
   var k;
@@ -7358,11 +7590,11 @@ Collection.prototype.difference = function (var_args) { // eslint-disable-line
     add = true;
     model = this._getModel(i);
     for (j = 0; j < arguments.length; j += 1) {
-            // Each argument is assumed to be an array of Models
+      // Each argument is assumed to be an array of Models
       for (k = 0; k < arguments[j].length; k++) {
-                // Get the cid
+        // Get the cid
         cid = arguments[j][k].GetCid();
-                // Get the id
+        // Get the id
         id = arguments[j][k].GetId();
         if (model.Match(id, cid)) {
           add = false;
@@ -7370,7 +7602,7 @@ Collection.prototype.difference = function (var_args) { // eslint-disable-line
         }
       }
       if (!add) {
-                // We found this model somewhere in the arguments--we're not going to add it so get out
+        // We found this model somewhere in the arguments--we're not going to add it so get out
         break;
       }
     }
@@ -7533,11 +7765,11 @@ Collection.prototype.set = function (models, options) {
 };
 
 Collection._removeAfterSet = function (collection, models, remove, foundModels, options) {
-    // Now remove models that weren't found
-    // get an array of all models
+  // Now remove models that weren't found
+  // get an array of all models
 
-    // Can't avoid looping over everything because we *have* to clean up even unfetched models, in order to fire
-    // events, etc.
+  // Can't avoid looping over everything because we *have* to clean up even unfetched models, in order to fire
+  // events, etc.
   if (remove) {
     for (var i = models.length - 1; i >= 0; i -= 1) {
       if (foundModels.indexOf(i) === -1) {
@@ -7555,12 +7787,12 @@ Collection.prototype._swapModels = function (oldIndex, newIndex, remove, add) {
   if (this._hasComparator() || !remove || !add) {
     return { index: oldIndex, swapped: false };
   }
-    // Make sure in range
+  // Make sure in range
   var len = this._getModelsLength();
   if (oldIndex >= len || newIndex >= len) {
     return { index: oldIndex, swapped: false };
   }
-    // Swap
+  // Swap
   var oldModel = this._getModel(oldIndex);
   var newModel = this._getModel(newIndex);
   this._setModel(oldIndex, newModel);
@@ -7568,14 +7800,14 @@ Collection.prototype._swapModels = function (oldIndex, newIndex, remove, add) {
   this._setModel(newIndex, oldModel);
   oldModel.SetIndex(newIndex);
 
-  return { index: newIndex, swapped: (newIndex !== oldIndex) };
+  return { index: newIndex, swapped: newIndex !== oldIndex };
 };
 
 /**
  * @private
  */
 Collection.prototype._setInternal = function (models, parse, opt, deferred) {
-    // Determine if any of the options are set
+  // Determine if any of the options are set
   var options = opt || {};
   var add = options.add === undefined ? true : options.add;
   var remove = options.remove === undefined ? true : options.remove;
@@ -7596,20 +7828,24 @@ Collection.prototype._setInternal = function (models, parse, opt, deferred) {
     });
   }
 
-    // Go through the passed in models and determine what to do
+  // Go through the passed in models and determine what to do
   var swapped = false;
   for (i = 0; i < modelList.length; i += 1) {
-    currModel = this._updateModel(this._newModel(modelList[i], parse, options, true), add,
-      merge, deferred);
+    currModel = this._updateModel(
+      this._newModel(modelList[i], parse, options, true),
+      add,
+      merge,
+      deferred
+    );
     if (currModel !== -1) {
-            // And swap it into the position as passed in, if no comparator and we're removing, so that the slots
-            // are exact
+      // And swap it into the position as passed in, if no comparator and we're removing, so that the slots
+      // are exact
       var obj = this._swapModels(currModel, i, remove, add);
       var newLoc = obj.index;
       if (obj.swapped) {
         swapped = true;
       }
-            // Save its new location as found
+      // Save its new location as found
       if (foundModels.indexOf(newLoc) === -1) {
         foundModels.push(newLoc);
       }
@@ -7628,23 +7864,31 @@ Collection.prototype._setInternal = function (models, parse, opt, deferred) {
  * Handle the updates/removes on virtual collections
  * @private
  */
-Collection.prototype._deferredSet = function (modelList, modelsCopy, options, remove, add,
-  merge, parse) {
+Collection.prototype._deferredSet = function (
+  modelList,
+  modelsCopy,
+  options,
+  remove,
+  add,
+  merge,
+  parse
+) {
   var foundModels = [];
   var i;
 
-    // Go through the passed in models and determine what to do
+  // Go through the passed in models and determine what to do
   var self = this;
   return new Promise(function (allResolve, allReject) {
     var doTask = function (index) {
       return new Promise(function (resolve, reject) {
-        self._updateModel(self._newModel(modelList[index], parse, options, true), add, merge,
-                                                             true).then(function (currModel) {
-                                                               if (currModel !== -1) {
-                                                                 foundModels.push(currModel);
-                                                               }
-                                                               resolve(index + 1);
-                                                             }, reject);
+        self
+          ._updateModel(self._newModel(modelList[index], parse, options, true), add, merge, true)
+          .then(function (currModel) {
+            if (currModel !== -1) {
+              foundModels.push(currModel);
+            }
+            resolve(index + 1);
+          }, reject);
       });
     };
 
@@ -7659,7 +7903,6 @@ Collection.prototype._deferredSet = function (modelList, modelsCopy, options, re
     }, allReject);
   });
 };
-
 
 /**
  * Return the index of the given model after updating it, if it was found.  Otherwise it is added and a -1 is
@@ -8011,7 +8254,7 @@ Collection._getQueryString = function (q) {
   for (i = 0; i < queries.length; i++) {
     str = processQuery(queries[i], str);
   }
-    // Remove trailing ','
+  // Remove trailing ','
   if (str.substring(str.length - 1) === ',') {
     return str.substring(0, str.length - 1);
   }
@@ -8040,7 +8283,7 @@ Collection.prototype.ModifyOptionsForCustomURL = function (options) {
     }
     opt.sortDir = this._getSortDirStr();
   }
-    // Put fetchSize on if appropriate, and not already set
+  // Put fetchSize on if appropriate, and not already set
   if (this.IsVirtual()) {
     opt[Collection._FETCH_SIZE_PROP] = this._getFetchSize(opt);
   }
@@ -8067,12 +8310,12 @@ Collection.prototype.IsUrlBased = function (options) {
 Collection.prototype.GetCollectionFetchUrl = function (opt) {
   var url = RestImpl.GetPropValue(this, 'url');
 
-    // Adorn it with options, if any
+  // Adorn it with options, if any
   if (this.IsVirtual()) {
     var options = opt || {};
     var all = options.all;
 
-        // Put in page size
+    // Put in page size
     var limit = null;
     if (all) {
       var totalResults = this.totalResults;
@@ -8081,7 +8324,7 @@ Collection.prototype.GetCollectionFetchUrl = function (opt) {
       limit = this._getFetchSize(options);
     }
     if (url && url.indexOf('?') > -1) {
-            // Already have a param coming in
+      // Already have a param coming in
       url += '&';
     } else {
       url += '?';
@@ -8102,7 +8345,7 @@ Collection.prototype.GetCollectionFetchUrl = function (opt) {
         url += '&until=' + options.until;
       }
     }
-        // Query
+    // Query
     if (options.query) {
       var queryString = Collection._getQueryString(options.query);
       if (queryString && queryString.length > 0) {
@@ -8110,7 +8353,7 @@ Collection.prototype.GetCollectionFetchUrl = function (opt) {
       }
     }
 
-        // Add sorting
+    // Add sorting
     var comparator = this.comparator;
     if (comparator && oj.StringUtils.isString(comparator)) {
       var attrs = this._getSortAttrs(comparator);
@@ -8124,7 +8367,7 @@ Collection.prototype.GetCollectionFetchUrl = function (opt) {
         }
       }
     }
-        // Always ask for totalresults
+    // Always ask for totalresults
     url += '&totalResults=true';
   }
   return url;
@@ -8185,7 +8428,7 @@ Collection._FETCH_SIZE_PROP = 'fetchSize';
  * @constructor
  * @final
  * @since 1.0.0
-*/
+ */
 const OAuth = function (header, attributes) {
   OAuth._init(this, attributes || {}, header || 'Authorization');
 };
@@ -8246,9 +8489,11 @@ OAuth.prototype.isInitialized = function () {
 OAuth.prototype.clientCredentialGrant = function () {
   var headers = {};
   var self = this;
-  headers[self.accessTokenRequest.auth_header] = 'Basic ' +
-    OAuth._base64_encode(self.accessTokenRequest.client_id + ':' +
-    self.accessTokenRequest.client_secret);
+  headers[self.accessTokenRequest.auth_header] =
+    'Basic ' +
+    OAuth._base64_encode(
+      self.accessTokenRequest.client_id + ':' + self.accessTokenRequest.client_secret
+    );
 
   $.ajax({
     type: 'POST',
@@ -8349,7 +8594,8 @@ OAuth._init = function (oauth, attributes, header) {
   oa.accessTokenRequest = {};
   oa.accessTokenResponse = {};
 
-  if (attributes.access_token) { // access_token has higher preference
+  if (attributes.access_token) {
+    // access_token has higher preference
     oa.accessTokenResponse = OAuth._initAccessToken(oa.accessTokenResponse, attributes);
   } else if (attributes.client_id && attributes.client_secret && attributes.bearer_url) {
     // Client Credential Grant

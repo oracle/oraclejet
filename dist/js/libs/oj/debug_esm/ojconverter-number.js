@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -418,15 +418,20 @@ const OraNumberConverter = (function () {
     var l;
     for (l = str.length; l < count; l += 1) {
       // eslint-disable-next-line no-param-reassign
-      str = (left ? ('0' + str) : (str + '0'));
+      str = left ? '0' + str : str + '0';
     }
     return str;
   }
 
   function _throwNumberOutOfRange(value, minimum, maximum, property) {
-    var msg = value +
-        ' is out of range.  Enter a value between ' + minimum +
-        ' and ' + maximum + ' for ' + property;
+    var msg =
+      value +
+      ' is out of range.  Enter a value between ' +
+      minimum +
+      ' and ' +
+      maximum +
+      ' for ' +
+      property;
     var rangeError = new RangeError(msg);
     var errorInfo = {
       errorCode: 'numberOptionOutOfRange',
@@ -498,11 +503,10 @@ const OraNumberConverter = (function () {
     var numberSettings = _numberSettings;
     var pat;
     var localeElementsMainNode =
-    OraI18nUtils.getLocaleElementsMainNode(localeElements);
+      OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var numberingSystemKey = _getNumberingSystemKey(localeElementsMainNode, locale);
     numberSettings.numberingSystemKey = numberingSystemKey;
-    numberSettings.numberingSystem = 'symbols-numberSystem-' +
-      numberingSystemKey;
+    numberSettings.numberingSystem = 'symbols-numberSystem-' + numberingSystemKey;
     var lenient = options.lenientParse;
     numberSettings.lenientParse = lenient || 'full';
     numberSettings.style = options.style;
@@ -512,13 +516,13 @@ const OraNumberConverter = (function () {
     } else {
       var key;
       switch (numberSettings.style) {
-        case 'decimal' :
+        case 'decimal':
           key = 'decimalFormats-numberSystem-';
           break;
-        case 'currency' :
+        case 'currency':
           key = 'currencyFormats-numberSystem-';
           break;
-        case 'percent' :
+        case 'percent':
           key = 'percentFormats-numberSystem-';
           break;
         default:
@@ -535,16 +539,17 @@ const OraNumberConverter = (function () {
       decFormatLength = options.currencyFormat;
     }
     // if either decimalFormat or currencyFormat is set, save it in number settings
-    if (decFormatLength !== undefined &&
-        (numberSettings.style === 'decimal' || numberSettings.style === 'currency')) {
+    if (
+      decFormatLength !== undefined &&
+      (numberSettings.style === 'decimal' || numberSettings.style === 'currency')
+    ) {
       numberSettings.shortDecimalFormat =
-        localeElementsMainNode.numbers['decimalFormats-numberSystem-latn'][decFormatLength]
-        .decimalFormat;
+        localeElementsMainNode.numbers['decimalFormats-numberSystem-latn'][
+          decFormatLength
+        ].decimalFormat;
     }
-    var decimalSeparator =
-        localeElementsMainNode.numbers[numberSettings.numberingSystem].decimal;
-    var groupSeparator =
-        localeElementsMainNode.numbers[numberSettings.numberingSystem].group;
+    var decimalSeparator = localeElementsMainNode.numbers[numberSettings.numberingSystem].decimal;
+    var groupSeparator = localeElementsMainNode.numbers[numberSettings.numberingSystem].group;
     var separators = options.separators;
     if (separators !== undefined) {
       numberSettings.separators = separators;
@@ -558,7 +563,7 @@ const OraNumberConverter = (function () {
       }
     }
     var mainNodeKey =
-    OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
+      OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
     var lang = _getBCP47Lang(mainNodeKey);
     numberSettings.lang = lang;
     numberSettings.pat = pat;
@@ -577,33 +582,47 @@ const OraNumberConverter = (function () {
     }
     _applyPatternImpl(options, pat, localeElementsMainNode, numberSettings);
     if (options.pattern === undefined) {
-      numberSettings.minimumIntegerDigits =
-        _getNumberOption(options,
-                         'minimumIntegerDigits', 1, 21,
-                         numberSettings.minimumIntegerDigits);
+      numberSettings.minimumIntegerDigits = _getNumberOption(
+        options,
+        'minimumIntegerDigits',
+        1,
+        21,
+        numberSettings.minimumIntegerDigits
+      );
       if (options.maximumFractionDigits !== undefined) {
-        numberSettings.maximumFractionDigits =
-          _getNumberOption(options,
-                           'maximumFractionDigits', 0, 20,
-                           numberSettings.maximumFractionDigits);
+        numberSettings.maximumFractionDigits = _getNumberOption(
+          options,
+          'maximumFractionDigits',
+          0,
+          20,
+          numberSettings.maximumFractionDigits
+        );
         if (numberSettings.maximumFractionDigits < numberSettings.minimumFractionDigits) {
           numberSettings.minimumFractionDigits = numberSettings.maximumFractionDigits;
         }
       }
       if (options.minimumFractionDigits !== undefined) {
-        numberSettings.minimumFractionDigits =
-          _getNumberOption(options,
-                           'minimumFractionDigits', 0, 20,
-                           numberSettings.minimumFractionDigits);
+        numberSettings.minimumFractionDigits = _getNumberOption(
+          options,
+          'minimumFractionDigits',
+          0,
+          20,
+          numberSettings.minimumFractionDigits
+        );
       }
       if (numberSettings.maximumFractionDigits < numberSettings.minimumFractionDigits) {
         numberSettings.maximumFractionDigits = numberSettings.minimumFractionDigits;
-        info('maximumFractionDigits is less than minimumFractionDigits, so maximumFractionDigits will be set to minimumFractionDigits');
+        info(
+          'maximumFractionDigits is less than minimumFractionDigits, so maximumFractionDigits will be set to minimumFractionDigits'
+        );
       }
       // set currency fractions based on currencyData in root bundle. Do not apply
       // it for short and long currencyFormats
-      if (numberSettings.style === 'currency' && options.minimumFractionDigits === undefined &&
-          (decFormatLength === undefined || decFormatLength === 'standard')) {
+      if (
+        numberSettings.style === 'currency' &&
+        options.minimumFractionDigits === undefined &&
+        (decFormatLength === undefined || decFormatLength === 'standard')
+      ) {
         var currencyFractions = localeElements.supplemental.currencyData.fractions;
         var specialCurrency = currencyFractions[options.currency];
         if (specialCurrency !== undefined) {
@@ -616,10 +635,13 @@ const OraNumberConverter = (function () {
   }
 
   function _throwMissingCurrency(prop) {
-    var typeError = new TypeError('The property "currency" is required when' +
-                                  ' the property "' + prop +
-                                  '" is "currency". An accepted value is a ' +
-                                  'three-letter ISO 4217 currency code.');
+    var typeError = new TypeError(
+      'The property "currency" is required when' +
+        ' the property "' +
+        prop +
+        '" is "currency". An accepted value is a ' +
+        'three-letter ISO 4217 currency code.'
+    );
     var errorInfo = {
       errorCode: 'optionTypesMismatch',
       parameterMap: {
@@ -634,9 +656,12 @@ const OraNumberConverter = (function () {
   }
 
   function _throwMissingUnit(prop) {
-    var typeError = new TypeError('The property "unit" is required when' +
-                                  ' the property "' + prop +
-                                  '" is "unit". An accepted value is "byte" or "bit".');
+    var typeError = new TypeError(
+      'The property "unit" is required when' +
+        ' the property "' +
+        prop +
+        '" is "unit". An accepted value is "byte" or "bit".'
+    );
     var errorInfo = {
       errorCode: 'optionTypesMismatch',
       parameterMap: {
@@ -668,10 +693,14 @@ const OraNumberConverter = (function () {
   // provided. parse does not support short and long decimalFormat.
   function _validateNumberOptions(options, caller) {
     var getOption = OraI18nUtils.getGetOption(options, caller);
-    var s = getOption('style', 'string',
-                      ['currency', 'decimal', 'percent', 'unit', 'perMill'], 'decimal');
+    var s = getOption(
+      'style',
+      'string',
+      ['currency', 'decimal', 'percent', 'unit', 'perMill'],
+      'decimal'
+    );
     if (s === 'decimal' || s === 'currency') {
-      var fmt = (s === 'decimal') ? 'decimalFormat' : 'currencyFormat';
+      var fmt = s === 'decimal' ? 'decimalFormat' : 'currencyFormat';
       s = getOption(fmt, 'string', ['standard', 'short', 'long']);
       if (caller === 'OraNumberConverter.parse' && s !== undefined && s !== 'standard') {
         _throwUnsupportedParseOption(fmt);
@@ -686,8 +715,15 @@ const OraNumberConverter = (function () {
     if (s === 'unit' && c === undefined) {
       _throwMissingUnit('style');
     }
-    s = getOption('roundingMode', 'string',
-            ['UP', 'DOWN', 'FLOOR', 'CEILING', 'HALF_UP', 'HALF_DOWN', 'HALF_EVEN']);
+    s = getOption('roundingMode', 'string', [
+      'UP',
+      'DOWN',
+      'FLOOR',
+      'CEILING',
+      'HALF_UP',
+      'HALF_DOWN',
+      'HALF_EVEN'
+    ]);
   }
 
   // _toDigitalByte does compact formatting like 300MB, 300Mb
@@ -787,7 +823,8 @@ const OraNumberConverter = (function () {
     if (typeVal[1] !== null) {
       var lang = numberSettings.lang;
       var plural = new Intl.PluralRules(lang).select(
-                   Math.floor(absVal / _decimalTypeValuesMap[typeVal[0]]));
+        Math.floor(absVal / _decimalTypeValuesMap[typeVal[0]])
+      );
       decimalFormatType = '' + typeVal[1] + '-count-' + plural;
       decimalFormatType = numberSettings.shortDecimalFormat[decimalFormatType];
       if (decimalFormatType === undefined) {
@@ -799,7 +836,7 @@ const OraNumberConverter = (function () {
       zeros = tokens[1];
       prefix = tokens[0];
       if (zeros < decimalFormatType.length) {
-        var i = (1 * Math.pow(10, zeros));
+        var i = 1 * Math.pow(10, zeros);
         i = (typeVal[1] / i) * 10;
         // eslint-disable-next-line no-param-reassign
         absVal /= i;
@@ -847,7 +884,7 @@ const OraNumberConverter = (function () {
     numStr1 += '';
     numStr1 = _zeroPad(numStr1, padLen, false);
     if (numStr0.indexOf('.') !== -1) {
-      exponent -= (numberSettings.minimumIntegerDigits - numStr0.indexOf('.')) + trimExp;
+      exponent -= numberSettings.minimumIntegerDigits - numStr0.indexOf('.') + trimExp;
     } else {
       exponent -= padLen - numStr.length - numberSettings.minimumFractionDigits;
     }
@@ -859,9 +896,11 @@ const OraNumberConverter = (function () {
     var str1 = numStr1.slice(0, numberSettings.minimumIntegerDigits);
     var str2 = numStr1.slice(numberSettings.minimumIntegerDigits);
     if (str2.length > 0) {
-      str1 += numberSettings.decimalSeparator +
+      str1 +=
+        numberSettings.decimalSeparator +
         numStr1.slice(numberSettings.minimumIntegerDigits) +
-        numberSettings.exponential + posExp;
+        numberSettings.exponential +
+        posExp;
     } else {
       str1 += numberSettings.exponential + posExp;
     }
@@ -881,8 +920,7 @@ const OraNumberConverter = (function () {
     numberString = split[0];
     split = numberString.split('.');
     var right = split.length > 1 ? split[1] : '';
-    var precision = Math.min(numberSettings.maximumFractionDigits,
-          right.length - exponent);
+    var precision = Math.min(numberSettings.maximumFractionDigits, right.length - exponent);
     // round the number only if it has decimal points
     if (split.length > 1 && right.length > exponent) {
       var mode = options.roundingMode || 'DEFAULT';
@@ -909,8 +947,8 @@ const OraNumberConverter = (function () {
       numberString = numberString.slice(0, -exponent);
     }
     if (precision > 0 && right.length > 0) {
-      right = ((right.length > precision) ? right.slice(0, precision) :
-               _zeroPad(right, precision, false));
+      right =
+        right.length > precision ? right.slice(0, precision) : _zeroPad(right, precision, false);
       // if right is only zeros, truncate it to minimumFractionDigits
       if (_REGEX_ONLY_ZEROS.test(right) === true) {
         right = right.slice(0, numberSettings.minimumFractionDigits);
@@ -924,27 +962,25 @@ const OraNumberConverter = (function () {
     // trim trailing zeros from right
     right = OraI18nUtils.trimRightZeros(right);
     // insert grouping separator in the integer part based on groupingSize
-    var padLen = decimalSeparator.length +
-        numberSettings.minimumFractionDigits;
+    var padLen = decimalSeparator.length + numberSettings.minimumFractionDigits;
     right = _zeroPad(right, padLen, false);
     var sep = numberSettings.groupingSeparator;
     var ret = '';
     if (options.useGrouping === false && options.pattern === undefined) {
       sep = '';
     }
-    numberString = _zeroPad(numberString,
-                            numberSettings.minimumIntegerDigits, true);
+    numberString = _zeroPad(numberString, numberSettings.minimumIntegerDigits, true);
     var stringIndex = numberString.length - 1;
     right = right.length > 1 ? right : '';
     var rets;
     while (stringIndex >= 0) {
       if (curSize === 0 || curSize > stringIndex) {
-        rets = numberString.slice(0, stringIndex + 1) +
-          (ret.length ? (sep + ret + right) : right);
+        rets = numberString.slice(0, stringIndex + 1) + (ret.length ? sep + ret + right : right);
         return rets;
       }
-      ret = numberString.slice((stringIndex - curSize) + 1, stringIndex + 1) +
-        (ret.length ? (sep + ret) : '');
+      ret =
+        numberString.slice(stringIndex - curSize + 1, stringIndex + 1) +
+        (ret.length ? sep + ret : '');
       stringIndex -= curSize;
       if (curSize0 > 0) {
         curSize = curSize0;
@@ -968,7 +1004,7 @@ const OraNumberConverter = (function () {
     if (part2 > 0) {
       str = part1.substr(0, 1) + part1.substr(2);
       if (str.length - 1 < part2) {
-        var e = (part2 + 1) - str.length;
+        var e = part2 + 1 - str.length;
         while (e > 0) {
           str += '0';
           e -= 1;
@@ -1073,7 +1109,7 @@ const OraNumberConverter = (function () {
     var v1 = strValue[1];
     // shift the decimal point based on the scale so that we can apply ceil or floor
     // scale is a number, no need to parse it, just parse v1.
-    var s = v0 + 'e' + (v1 ? (parseInt(v1, 10) - scale) : -scale);
+    var s = v0 + 'e' + (v1 ? parseInt(v1, 10) - scale : -scale);
     var num = parseFloat(s);
     var _value = Math[mode](num);
     strValue = _value.toString().split('e');
@@ -1081,17 +1117,16 @@ const OraNumberConverter = (function () {
     v0 = strValue[0];
     v1 = strValue[1];
     // shift the decimal point back to its original position
-    s = v0 + 'e' + (v1 ? (parseInt(v1, 10) + scale) : scale);
+    s = v0 + 'e' + (v1 ? parseInt(v1, 10) + scale : scale);
     num = parseFloat(s);
     return num;
   }
 
   // first call _toRawFixed then add prefixes and suffixes. Display the
   // number using native digits based on the numbering system
-  function _formatNumberImpl(value, options, localeElements,
-    numberSettings, locale) {
+  function _formatNumberImpl(value, options, localeElements, numberSettings, locale) {
     var localeElementsMainNode =
-    OraI18nUtils.getLocaleElementsMainNode(localeElements);
+      OraI18nUtils.getLocaleElementsMainNode(localeElements);
     if (!isFinite(value)) {
       if (value === Infinity) {
         return localeElementsMainNode.numbers[numberSettings.numberingSystem].infinity;
@@ -1105,8 +1140,7 @@ const OraNumberConverter = (function () {
       return 'NaN';
     }
     var number = value;
-    if (numberSettings.isPercent === true ||
-        numberSettings.style === 'percent') {
+    if (numberSettings.isPercent === true || numberSettings.style === 'percent') {
       number *= 100;
     } else if (numberSettings.isPerMill === true) {
       number *= 1000;
@@ -1117,9 +1151,11 @@ const OraNumberConverter = (function () {
       formatType = options.currencyFormat;
     }
     var optStyle = numberSettings.style;
-    if ((optStyle === 'decimal' || optStyle === 'currency')
-        && formatType !== undefined
-        && formatType !== 'standard') {
+    if (
+      (optStyle === 'decimal' || optStyle === 'currency') &&
+      formatType !== undefined &&
+      formatType !== 'standard'
+    ) {
       number = _toCompactNumber(number, options, numberSettings);
     } else if (numberSettings.useExponentialNotation === true) {
       number = _toExponentialPrecision(number, numberSettings);
@@ -1132,10 +1168,10 @@ const OraNumberConverter = (function () {
     var ret = '';
     // add negative prefix and suffix if number is negative
     // and the new formatted value isn't zero
-    if (value < 0 && (number - 0 !== 0)) {
+    if (value < 0 && number - 0 !== 0) {
       ret += numberSettings.negativePrefix + number + numberSettings.negativeSuffix;
     } else {
-    // add positive prefix and suffix if number is positive
+      // add positive prefix and suffix if number is positive
       ret += numberSettings.positivePrefix + number + numberSettings.positiveSuffix;
     }
     // display the digits based on the numbering system
@@ -1149,7 +1185,8 @@ const OraNumberConverter = (function () {
       for (idx = 0; idx < ret.length; idx++) {
         if (ret[idx] >= '0' && ret[idx] <= '9') {
           nativeRet.push(
-            OraI18nUtils.numeringSystems[numberingSystemKey][ret[idx]]);
+            OraI18nUtils.numeringSystems[numberingSystemKey][ret[idx]]
+          );
         } else {
           nativeRet.push(ret[idx]);
         }
@@ -1161,8 +1198,7 @@ const OraNumberConverter = (function () {
 
   // remove prefix and suffix, return a sign and value. First try to extract
   // a number using exact match. If it fails try lenient parsing.
-  function _parseNegativePattern(value, options, numberSettings,
-    localeElements) {
+  function _parseNegativePattern(value, options, numberSettings, localeElements) {
     var ret;
     var num = OraI18nUtils.trimNumber(value);
     var sign = '';
@@ -1170,24 +1206,46 @@ const OraNumberConverter = (function () {
     var posSign = localeElements.numbers[numberSettings.numberingSystem].plusSign;
     var posSignRegExp = new RegExp('^' + posSign.replace(_ESCAPE_REGEXP, '\\$1'));
     num = num.replace(posSignRegExp, '');
-    var nbSettingPosPrefix =
-    OraI18nUtils.trimNumber(numberSettings.positivePrefix);
-    var nbSettingPosSuffix =
-    OraI18nUtils.trimNumber(numberSettings.positiveSuffix);
-    var nbSettingNegPrefix =
-    OraI18nUtils.trimNumber(numberSettings.negativePrefix);
-    var nbSettingNegSuffix =
-    OraI18nUtils.trimNumber(numberSettings.negativeSuffix);
+    // The pattern of a number may contain positive prefix (nbSettingPosPrefix),
+    // positive suffix (nbSettingPosSuffix),
+    // negative prefix (nbSettingNegPrefix) ,
+    // negative suffix (nbSettingNegSuffix).
+    // We first try exact match of these prefix/suffix to determine the sign of
+    // the number. If the number pattern pattern contain these prefix/suffix
+    // and no exact match is found, we go to lenient parse.
+    var nbSettingPosPrefix = OraI18nUtils.trimNumber(
+      numberSettings.positivePrefix
+    );
+    var nbSettingPosSuffix = OraI18nUtils.trimNumber(
+      numberSettings.positiveSuffix
+    );
+    var nbSettingNegPrefix = OraI18nUtils.trimNumber(
+      numberSettings.negativePrefix
+    );
+    var nbSettingNegSuffix = OraI18nUtils.trimNumber(
+      numberSettings.negativeSuffix
+    );
+    // Create regular expressions for the prefixes and suffixes in order to
+    // match them with the input number. We need to escape the special
+    // characters in them by using _ESCAPE_REGEXP. For example if the prefix
+    // conatain '$' it need to be escaped to '\\$'
+    // positive prefix regular expression
+    var posPrefRegexp = new RegExp(
+      '^' + (nbSettingPosPrefix || '').replace(_ESCAPE_REGEXP, '\\$1')
+    );
+    // positive suffix regular expression
+    var posSuffRegexp = new RegExp(
+      (nbSettingPosSuffix || '').replace(_ESCAPE_REGEXP, '\\$1') + '$'
+    );
+    // negative prefix regular expression
+    var negPrefRegexp = new RegExp(
+      '^' + (nbSettingNegPrefix || '').replace(_ESCAPE_REGEXP, '\\$1')
+    );
+    // negative suffix regular expression
+    var negSuffRegexp = new RegExp(
+      (nbSettingNegSuffix || '').replace(_ESCAPE_REGEXP, '\\$1') + '$'
+    );
     // try exact match of negative prefix and suffix
-    var posPrefRegexp = new RegExp('^' + (nbSettingPosPrefix || '')
-                                   .replace(_ESCAPE_REGEXP, '\\$1'));
-    var posSuffRegexp = new RegExp((nbSettingPosSuffix || '')
-                                   .replace(_ESCAPE_REGEXP, '\\$1') + '$');
-    var negPrefRegexp = new RegExp('^' + (nbSettingNegPrefix || '')
-                                   .replace(_ESCAPE_REGEXP, '\\$1'));
-    var negSuffRegexp = new RegExp((nbSettingNegSuffix || '')
-                                   .replace(_ESCAPE_REGEXP, '\\$1') + '$');
-
     if (negPrefRegexp.test(num) === true && negSuffRegexp.test(num) === true) {
       num = num.replace(negPrefRegexp, '');
       num = num.replace(negSuffRegexp, '');
@@ -1208,27 +1266,30 @@ const OraNumberConverter = (function () {
       if (localeElements.numbers.currencies[code] !== undefined) {
         symbol = localeElements.numbers.currencies[code].symbol;
       }
-      if (numberSettings.currencyDisplay === undefined ||
-          numberSettings.currencyDisplay === 'symbol') {
+      if (
+        numberSettings.currencyDisplay === undefined ||
+        numberSettings.currencyDisplay === 'symbol'
+      ) {
         repStr = symbol;
       } else if (numberSettings.currencyDisplay === 'code') {
         repStr = code;
       }
       if (repStr !== undefined) {
+        // Remove the currency code/symbol from the prefix/suffix
         var posPrefix = (nbSettingPosPrefix || '').replace(repStr, '');
         var posSuffix = (nbSettingPosSuffix || '').replace(repStr, '');
         var negPrefix = (nbSettingNegPrefix || '').replace(repStr, '');
         var negSuffix = (nbSettingNegSuffix || '').replace(repStr, '');
-        posPrefRegexp = new RegExp(('^' + posPrefix).replace(
-            _ESCAPE_REGEXP, '\\$1'));
-        posSuffRegexp = new RegExp(posSuffix.replace(
-            _ESCAPE_REGEXP, '\\$1') + '$');
-        negPrefRegexp = new RegExp(('^' + negPrefix).replace(
-            _ESCAPE_REGEXP, '\\$1'));
-        negSuffRegexp = new RegExp(negSuffix.replace(
-            _ESCAPE_REGEXP, '\\$1') + '$');
+        // positive prefix regular expression without currency code/symbol
+        posPrefRegexp = new RegExp('^' + posPrefix.replace(_ESCAPE_REGEXP, '\\$1'));
+        // positive suffix regular expression without currency code/symbol
+        posSuffRegexp = new RegExp(posSuffix.replace(_ESCAPE_REGEXP, '\\$1') + '$');
+        // negative prefix regular expression without currency code/symbol
+        negPrefRegexp = new RegExp('^' + negPrefix.replace(_ESCAPE_REGEXP, '\\$1'));
+        // negative suffix regular expression without currency code/symbol
+        negSuffRegexp = new RegExp(negSuffix.replace(_ESCAPE_REGEXP, '\\$1') + '$');
 
-        // try  match of positive prefix and suffix
+        // try  match of positive prefix and suffix without currency code/symbol
         if (negPrefRegexp.test(num) === true && negSuffRegexp.test(num) === true) {
           num = num.replace(negPrefRegexp, '');
           num = num.replace(negSuffRegexp, '');
@@ -1270,8 +1331,7 @@ const OraNumberConverter = (function () {
     var minusSign = '-';
     var sign = '';
     var dot = '';
-    var exponential =
-        OraI18nUtils.toUpper(numberSettings.exponential);
+    var exponential = OraI18nUtils.toUpper(numberSettings.exponential);
     var num = OraI18nUtils.toUpper(_num);
     num = num.split(exponential).join('E');
     // remove grouping separator from string
@@ -1310,8 +1370,12 @@ const OraNumberConverter = (function () {
     pos = OraI18nUtils.trimNumber(pos);
     if (OraI18nUtils.startsWith(value, neg)) {
       ret = ['-', value.substr(neg.length)];
-    } else if (OraI18nUtils.startsWith(value,
-      OraI18nUtils.trimNumber(pos))) {
+    } else if (
+      OraI18nUtils.startsWith(
+        value,
+        OraI18nUtils.trimNumber(pos)
+      )
+    ) {
       ret = ['+', value.substr(pos.length)];
     }
     return ret || ['', value];
@@ -1325,8 +1389,9 @@ const OraNumberConverter = (function () {
     var idx;
     var latnStr = [];
     for (idx = 0; idx < str.length; idx++) {
-      var pos =
-      OraI18nUtils.numeringSystems[numberingSystemKey].indexOf(str[idx]);
+      var pos = OraI18nUtils.numeringSystems[numberingSystemKey].indexOf(
+        str[idx]
+      );
       if (pos !== -1) {
         latnStr.push(pos);
       } else {
@@ -1389,7 +1454,10 @@ const OraNumberConverter = (function () {
       // eslint-disable-next-line no-param-reassign
       ret /= 1000;
     }
-    var getOption = OraI18nUtils.getGetOption(options, 'OraNumberConverter.parse');
+    var getOption = OraI18nUtils.getGetOption(
+      options,
+      'OraNumberConverter.parse'
+    );
     var roundDuringParse = getOption('roundDuringParse', 'boolean', [true, false], false);
     if (roundDuringParse) {
       // eslint-disable-next-line no-param-reassign
@@ -1402,13 +1470,13 @@ const OraNumberConverter = (function () {
     var code;
     var msg = 'Enter a number in this format:' + numberSettings.pat;
     switch (style) {
-      case 'decimal' :
+      case 'decimal':
         code = 'decimalFormatMismatch';
         break;
-      case 'currency' :
+      case 'currency':
         code = 'currencyFormatMismatch';
         break;
-      case 'percent' :
+      case 'percent':
         code = 'percentFormatMismatch';
         break;
       default:
@@ -1428,7 +1496,7 @@ const OraNumberConverter = (function () {
 
   function _parseNumberImpl(str, localeElements, options, locale) {
     var localeElementsMainNode =
-    OraI18nUtils.getLocaleElementsMainNode(localeElements);
+      OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var numberSettings = {};
     var numStr = _getLatnDigits(str, locale);
     _getNumberSettings(localeElements, numberSettings, options, locale);
@@ -1439,8 +1507,7 @@ const OraNumberConverter = (function () {
       ret = parseFloat(numStr);
       return ret;
     }
-    var signInfo = _parseNegativePattern(numStr, options, numberSettings,
-        localeElementsMainNode);
+    var signInfo = _parseNegativePattern(numStr, options, numberSettings, localeElementsMainNode);
     var sign = signInfo[0];
     var num = signInfo[1];
     sign = sign || '+';
@@ -1489,7 +1556,7 @@ const OraNumberConverter = (function () {
   var _SEPARATOR = ';';
   var _EXPONENT = 'E';
   var _MINUS = '-';
-  var _QUOT = '\'';
+  var _QUOT = "'";
   var _CURRENCY = '\u00A4';
 
   var posPrefixPattern;
@@ -1502,9 +1569,12 @@ const OraNumberConverter = (function () {
 
   function _throwSyntaxError(pattern) {
     var samplePattern = '#,##0.###';
-    var msg = 'Unexpected character(s) encountered in the pattern "' +
-        pattern + ' An example of a valid pattern is "' + samplePattern +
-        '".';
+    var msg =
+      'Unexpected character(s) encountered in the pattern "' +
+      pattern +
+      ' An example of a valid pattern is "' +
+      samplePattern +
+      '".';
     var syntaxError = new SyntaxError(msg);
     var errorInfo = {
       errorCode: 'optionValueInvalid',
@@ -1521,27 +1591,43 @@ const OraNumberConverter = (function () {
   function _regionMatches(str1, offset1, str2) {
     var sub1 = str1.substr(offset1, str2.length);
     var regExp = new RegExp(str2, 'i');
-    return (regExp.exec(sub1) !== null);
+    return regExp.exec(sub1) !== null;
   }
 
   function _expandAffixes(localeElements, _numberSettings) {
     var numberSettings = _numberSettings;
     var curDisplay = {};
     if (posPrefixPattern !== null) {
-      numberSettings.positivePrefix = _expandAffix(posPrefixPattern,
-          localeElements, numberSettings, curDisplay);
+      numberSettings.positivePrefix = _expandAffix(
+        posPrefixPattern,
+        localeElements,
+        numberSettings,
+        curDisplay
+      );
     }
     if (posSuffixPattern !== null) {
-      numberSettings.positiveSuffix = _expandAffix(posSuffixPattern,
-          localeElements, numberSettings, curDisplay);
+      numberSettings.positiveSuffix = _expandAffix(
+        posSuffixPattern,
+        localeElements,
+        numberSettings,
+        curDisplay
+      );
     }
     if (negPrefixPattern !== null) {
-      numberSettings.negativePrefix = _expandAffix(negPrefixPattern,
-          localeElements, numberSettings, curDisplay);
+      numberSettings.negativePrefix = _expandAffix(
+        negPrefixPattern,
+        localeElements,
+        numberSettings,
+        curDisplay
+      );
     }
     if (negSuffixPattern !== null) {
-      numberSettings.negativeSuffix = _expandAffix(negSuffixPattern,
-          localeElements, numberSettings, curDisplay);
+      numberSettings.negativeSuffix = _expandAffix(
+        negSuffixPattern,
+        localeElements,
+        numberSettings,
+        curDisplay
+      );
     }
     if (curDisplay.name !== undefined) {
       numberSettings.positiveSuffix = '\u00a0' + curDisplay.name;
@@ -1549,7 +1635,8 @@ const OraNumberConverter = (function () {
       if (numberSettings.lang === 'ar') {
         numberSettings.negativeSuffix =
           localeElements.numbers[numberSettings.numberingSystem].minusSign +
-          '\u00a0' + curDisplay.name;
+          '\u00a0' +
+          curDisplay.name;
         numberSettings.negativePrefix = '';
       } else {
         numberSettings.negativeSuffix = '\u00a0' + curDisplay.name;
@@ -1561,7 +1648,7 @@ const OraNumberConverter = (function () {
 
   function _expandAffix(pattern, localeElements, numberSettings, currencyDisplay) {
     var buffer = '';
-    for (var i = 0; i < pattern.length;) {
+    for (var i = 0; i < pattern.length; ) {
       var c = pattern.charAt(i);
       i += 1;
       if (c !== _QUOT) {
@@ -1576,8 +1663,10 @@ const OraNumberConverter = (function () {
               name = localeElements.numbers.currencies[code].displayName;
               symbol = localeElements.numbers.currencies[code].symbol;
             }
-            if (numberSettings.currencyDisplay === undefined ||
-                numberSettings.currencyDisplay === 'symbol') {
+            if (
+              numberSettings.currencyDisplay === undefined ||
+              numberSettings.currencyDisplay === 'symbol'
+            ) {
               c = symbol;
             } else if (numberSettings.currencyDisplay === 'code') {
               // Currency code need to be followed by a space character
@@ -1638,7 +1727,7 @@ const OraNumberConverter = (function () {
             // Process the prefix / suffix characters
             if (inQuote) {
               if (ch === _QUOT) {
-                if ((pos + 1) < pattern.length && pattern.charAt(pos + 1) === _QUOT) {
+                if (pos + 1 < pattern.length && pattern.charAt(pos + 1) === _QUOT) {
                   pos += 1;
                   if (isPrefix) {
                     prefix = prefix.concat("''");
@@ -1650,10 +1739,12 @@ const OraNumberConverter = (function () {
                 }
                 continue;
               }
-            } else if (ch === _DIGIT ||
-                       ch === _ZERO_DIGIT ||
-                       ch === _GROUPING_SEPARATOR ||
-                       ch === _DECIMAL_SEPARATOR) {
+            } else if (
+              ch === _DIGIT ||
+              ch === _ZERO_DIGIT ||
+              ch === _GROUPING_SEPARATOR ||
+              ch === _DECIMAL_SEPARATOR
+            ) {
               // Process unquoted characters seen in prefix or suffix phase.
               phase = 1;
               pos -= 1; // Reprocess this character
@@ -1662,12 +1753,12 @@ const OraNumberConverter = (function () {
               if (options.currency === undefined) {
                 _throwMissingCurrency('style');
               }
-                // Use lookahead to determine if the currency sign
-                // is doubled or not.
+              // Use lookahead to determine if the currency sign
+              // is doubled or not.
               numberSettings.style = 'currency';
-              var doubled = (pos + 1) < pattern.length &&
-                    pattern.charAt(pos + 1) === _CURRENCY;
-              if (doubled) { // Skip over the doubled character
+              var doubled = pos + 1 < pattern.length && pattern.charAt(pos + 1) === _CURRENCY;
+              if (doubled) {
+                // Skip over the doubled character
                 pos += 1;
               }
               if (isPrefix) {
@@ -1678,8 +1769,7 @@ const OraNumberConverter = (function () {
               continue;
             } else if (ch === _QUOT) {
               if (ch === _QUOT) {
-                if ((pos + 1) < pattern.length &&
-                      pattern.charAt(pos + 1) === _QUOT) {
+                if (pos + 1 < pattern.length && pattern.charAt(pos + 1) === _QUOT) {
                   pos += 1;
                   if (isPrefix) {
                     prefix = prefix.concat("''"); // o''clock
@@ -1699,7 +1789,7 @@ const OraNumberConverter = (function () {
               pos = pattern.length;
               continue;
             } else if (ch === _PERCENT) {
-                // Next handle characters which are appended directly.
+              // Next handle characters which are appended directly.
               numberSettings.style = 'percent';
               if (multiplier !== 1) {
                 _throwSyntaxError(pattern);
@@ -1776,8 +1866,7 @@ const OraNumberConverter = (function () {
               if (decimalPos >= 0) {
                 _throwSyntaxError(pattern);
               }
-              decimalPos = digitLeftCount + zeroDigitCount +
-                  digitRightCount;
+              decimalPos = digitLeftCount + zeroDigitCount + digitRightCount;
             } else if (_regionMatches(pattern, pos, _EXPONENT)) {
               if (useExponentialNotation) {
                 _throwSyntaxError(pattern);
@@ -1791,8 +1880,7 @@ const OraNumberConverter = (function () {
                 pos += 1;
               }
 
-              if ((digitLeftCount + zeroDigitCount) < 1 ||
-                  minExponentDigits < 1) {
+              if (digitLeftCount + zeroDigitCount < 1 || minExponentDigits < 1) {
                 _throwSyntaxError(pattern);
               }
               phase = 2;
@@ -1813,11 +1901,11 @@ const OraNumberConverter = (function () {
       }
       /* eslint-enable no-continue */
 
-
       if (zeroDigitCount === 0 && digitLeftCount > 0 && decimalPos >= 0) {
         // Handle "###.###" and "###." and ".###"
         var n = decimalPos;
-        if (n === 0) { // Handle ".###"
+        if (n === 0) {
+          // Handle ".###"
           n += 1;
         }
         digitRightCount = digitLeftCount - n;
@@ -1826,10 +1914,13 @@ const OraNumberConverter = (function () {
       }
 
       // Do syntax checking on the digits.
-      if ((decimalPos < 0 && digitRightCount > 0) ||
-          (decimalPos >= 0 && (decimalPos < digitLeftCount ||
-              decimalPos > (digitLeftCount + zeroDigitCount))) ||
-          groupingCount === 0 || inQuote) {
+      if (
+        (decimalPos < 0 && digitRightCount > 0) ||
+        (decimalPos >= 0 &&
+          (decimalPos < digitLeftCount || decimalPos > digitLeftCount + zeroDigitCount)) ||
+        groupingCount === 0 ||
+        inQuote
+      ) {
         _throwSyntaxError(pattern);
       }
 
@@ -1842,21 +1933,15 @@ const OraNumberConverter = (function () {
         // The effectiveDecimalPos is the position the decimal is at or
         // would be at if there is no decimal. Note that if decimalPos<0,
         // then digitTotalCount == digitLeftCount + zeroDigitCount.
-        var effectiveDecimalPos = decimalPos >= 0 ?
-            decimalPos : digitTotalCount;
-        numberSettings.minimumIntegerDigits = (effectiveDecimalPos - digitLeftCount);
-        numberSettings.maximumIntegerDigits =
-          (useExponentialNotation ?
-           digitLeftCount + numberSettings.minimumIntegerDigits :
-           _MAXIMUM_INTEGER_DIGITS);
-        numberSettings.maximumFractionDigits = (decimalPos >= 0 ?
-                                                (digitTotalCount - decimalPos) : 0);
+        var effectiveDecimalPos = decimalPos >= 0 ? decimalPos : digitTotalCount;
+        numberSettings.minimumIntegerDigits = effectiveDecimalPos - digitLeftCount;
+        numberSettings.maximumIntegerDigits = useExponentialNotation
+          ? digitLeftCount + numberSettings.minimumIntegerDigits
+          : _MAXIMUM_INTEGER_DIGITS;
+        numberSettings.maximumFractionDigits = decimalPos >= 0 ? digitTotalCount - decimalPos : 0;
         numberSettings.minimumFractionDigits =
-          (decimalPos >= 0 ?
-           ((digitLeftCount + zeroDigitCount) - decimalPos) :
-           0);
-        numberSettings.groupingSize =
-          (groupingCount > 0) ? groupingCount : 0;
+          decimalPos >= 0 ? digitLeftCount + zeroDigitCount - decimalPos : 0;
+        numberSettings.groupingSize = groupingCount > 0 ? groupingCount : 0;
         numberSettings.groupingSize0 = groupingCount0;
       } else {
         negPrefixPattern = prefix;
@@ -1878,9 +1963,11 @@ const OraNumberConverter = (function () {
     // If there was no negative pattern, or if the negative pattern is
     // identical to the positive pattern, then prepend the minus sign to
     // the positive pattern to form the negative pattern.
-    if (!gotNegative ||
-        ((negPrefixPattern.localeCompare(posPrefixPattern) === 0)
-         && (negSuffixPattern.localeCompare(posSuffixPattern) === 0))) {
+    if (
+      !gotNegative ||
+      (negPrefixPattern.localeCompare(posPrefixPattern) === 0 &&
+        negSuffixPattern.localeCompare(posSuffixPattern) === 0)
+    ) {
       if (numberSettings.style === 'currency' && numberSettings.lang === 'ar') {
         negSuffixPattern = posSuffixPattern + "'\u200f-";
         negPrefixPattern = posPrefixPattern;
@@ -1905,8 +1992,10 @@ const OraNumberConverter = (function () {
     _validateNumberOptions(options, 'OraNumberConverter.resolvedOptions');
     _getNumberSettings(localeElements, numberSettings, options, locale);
     numberSettings.numberingSystemKey = _getNumberingExtension(locale);
-    if (OraI18nUtils.numeringSystems[numberSettings.numberingSystemKey] ===
-      undefined) {
+    if (
+      OraI18nUtils.numeringSystems[numberSettings.numberingSystemKey] ===
+      undefined
+    ) {
       numberSettings.numberingSystemKey = 'latn';
     }
     return numberSettings;
@@ -1915,8 +2004,8 @@ const OraNumberConverter = (function () {
   function _resolveOptions(numberSettings, options, locale) {
     var resOptions = {
       locale: locale,
-      style: (numberSettings.style === undefined) ? 'decimal' : numberSettings.style,
-      useGrouping: (options.useGrouping === undefined) ? true : options.useGrouping,
+      style: numberSettings.style === undefined ? 'decimal' : numberSettings.style,
+      useGrouping: options.useGrouping === undefined ? true : options.useGrouping,
       numberingSystem: numberSettings.numberingSystemKey
     };
     resOptions.minimumIntegerDigits = numberSettings.minimumIntegerDigits;
@@ -1930,8 +2019,8 @@ const OraNumberConverter = (function () {
     }
     if (numberSettings.style === 'currency') {
       resOptions.currency = options.currency;
-      resOptions.currencyDisplay = (options.currencyDisplay === undefined) ?
-        'symbol' : options.currencyDisplay;
+      resOptions.currencyDisplay =
+        options.currencyDisplay === undefined ? 'symbol' : options.currencyDisplay;
     }
     if (options.unit !== undefined) {
       resOptions.unit = options.unit;
@@ -1960,10 +2049,10 @@ const OraNumberConverter = (function () {
   }
 
   /*
-  * Checks through the converter options.
-  * Based on the options the appropriate virtualKeyboardHint is returned.
-  * @return {string} virtual keyboard hint type - 'number' or 'text'
-  */
+   * Checks through the converter options.
+   * Based on the options the appropriate virtualKeyboardHint is returned.
+   * @return {string} virtual keyboard hint type - 'number' or 'text'
+   */
   function _getVirtualKeyboardHint(numberSettings, options) {
     var virtualKeyboardHint = 'text';
     var converterStyle = options.style;
@@ -1998,9 +2087,9 @@ const OraNumberConverter = (function () {
   }
 
   /*
-  * Based on converter's options.useGrouping the virtualKeyboardHint is decided.
-  * @return {string} virtualKeyboardHint value
-  */
+   * Based on converter's options.useGrouping the virtualKeyboardHint is decided.
+   * @return {string} virtualKeyboardHint value
+   */
   function _parseUseGrouping(numberSettings, options) {
     if (options.useGrouping === undefined || options.useGrouping) {
       if (numberSettings.decimalSeparator === '.' && numberSettings.groupingSeparator === '') {
@@ -2013,9 +2102,9 @@ const OraNumberConverter = (function () {
   }
 
   /*
-  * Based on converter's options.pattern the virtualKeyboardHint is decided.
-  * @return {string} virtualKeyboardHint value
-  */
+   * Based on converter's options.pattern the virtualKeyboardHint is decided.
+   * @return {string} virtualKeyboardHint value
+   */
   function _parsePatternOption(numberSettings, options) {
     var patternHasNonNumericChar = _checkPatternForNonNumericChar(options.pattern);
     if (patternHasNonNumericChar) {
@@ -2048,10 +2137,10 @@ const OraNumberConverter = (function () {
   }
 
   /*
-  * Checks if the converter's options.pattern has non-numeric characters
-  * that cannot be rendered by input type 'number'.
-  * @return {boolean} indicates whether pattern has non-numeric characters or not.
-  */
+   * Checks if the converter's options.pattern has non-numeric characters
+   * that cannot be rendered by input type 'number'.
+   * @return {boolean} indicates whether pattern has non-numeric characters or not.
+   */
 
   function _checkPatternForNonNumericChar(pattern) {
     var nonNumericPattern = /[^0-9.#]/i;
@@ -2059,10 +2148,10 @@ const OraNumberConverter = (function () {
   }
 
   /*
-  * Checks if the converter's options.pattern has group separator symbol
-  * that cannot be rendered by input type 'number'.
-  * @return {boolean} indicates whether pattern has group separator symbol or not.
-  */
+   * Checks if the converter's options.pattern has group separator symbol
+   * that cannot be rendered by input type 'number'.
+   * @return {boolean} indicates whether pattern has group separator symbol or not.
+   */
   function _checkPatternForGroupSeparator(pattern) {
     if (pattern.indexOf(',') !== -1) {
       return true;
@@ -2071,11 +2160,11 @@ const OraNumberConverter = (function () {
   }
 
   /*
-  * Checks if the converter's options.pattern has decimal separator symbol
-  * that cannot be rendered by input type 'number'.
-  * @return {boolean} indicates whether pattern has
-  *  decimal separator symbol or not.
-  */
+   * Checks if the converter's options.pattern has decimal separator symbol
+   * that cannot be rendered by input type 'number'.
+   * @return {boolean} indicates whether pattern has
+   *  decimal separator symbol or not.
+   */
   function _checkPatternForDecimalSeparator(pattern) {
     if (pattern.indexOf('.') !== -1) {
       return true;
@@ -2151,8 +2240,7 @@ const OraNumberConverter = (function () {
         _validateNumberOptions(options, 'OraNumberConverter.format');
         var numberSettings = {};
         _getNumberSettings(localeElements, numberSettings, options, locale);
-        return _formatNumberImpl(value, options, localeElements,
-            numberSettings, locale);
+        return _formatNumberImpl(value, options, localeElements, numberSettings, locale);
       },
       /**
        * Parse a number.
@@ -2304,7 +2392,7 @@ const OraNumberConverter = (function () {
       return instance;
     }
   };
-}());
+})();
 
 /**
  * oj.NumberConverter Contract.
@@ -2416,6 +2504,16 @@ NumberConverter.prototype.parse = function (value) {
  * Lenient parse can be disabled by setting the property lenientParse to "none". In which case the user input must
  * be an exact match of the expected pattern and all the leniency described above will be disabled.
  * <p>
+ * <h3 id="migration-section">
+ *   Migration
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+ * </h3>
+ *
+ * <p>
+ * Please be aware that newer converters are available and IntlNumberConverter will be deprecated in the future.
+ * See the docs for <a href="BigDecimalStringConverter.html" target="_blank">BigDecimalStringConverter</a> and
+ * <a href="NumberConverter.html" target="_blank">NumberConverter</a> for more details.
+ * </p>
  * @param {Object=} options - an object literal used to provide optional information to
  * initialize the converter.
  *
@@ -2773,7 +2871,6 @@ IntlNumberConverter.prototype.Init = function (options) {
   IntlNumberConverter.superclass.Init.call(this, options);
 };
 
-
 // Returns the wrapped number converter implementation object.
 // FA is overriding our ojs/ojconverter-datetime bundle and needs to define this function
 // or else they will get an error.
@@ -2803,9 +2900,11 @@ IntlNumberConverter.prototype._getWrapped = function () {
  */
 IntlNumberConverter.prototype.format = function (value) {
   // undefined, null and empty string values all return null. If value is NaN then return "".
-  if (value == null ||
-      (typeof value === 'string' && (oj$1.StringUtils.trim('' + value)).length === 0) ||
-      (typeof value === 'number' && isNaN(value))) {
+  if (
+    value == null ||
+    (typeof value === 'string' && oj$1.StringUtils.trim('' + value).length === 0) ||
+    (typeof value === 'number' && isNaN(value))
+  ) {
     return '';
   }
 
@@ -2816,8 +2915,7 @@ IntlNumberConverter.prototype.format = function (value) {
   var formatValue;
 
   try {
-    formatValue =
-      this._getWrapped().format(value, localeElements, resolvedOptions, locale);
+    formatValue = this._getWrapped().format(value, localeElements, resolvedOptions, locale);
   } catch (e) {
     converterError = this._processConverterError(e, value);
     throw converterError;
@@ -2832,14 +2930,11 @@ IntlNumberConverter.prototype.format = function (value) {
       'oj-converter.number.invalidNumberFormat.summary',
       { value: value }
     );
-    var detail = getTranslatedString(
-      'oj-converter.number.invalidNumberFormat.detail'
-    );
+    var detail = getTranslatedString('oj-converter.number.invalidNumberFormat.detail');
     error(summary + ' ' + detail);
   }
   return formatValue;
 };
-
 
 /**
  * In general, returns hint for the converter. For a IntlNumberConverter returned value is always null.
@@ -2895,7 +2990,8 @@ IntlNumberConverter.prototype.parse = function (value) {
 
   // null and empty string values are ignored and not parsed. It
   // undefined.
-  if (value == null || value === '') { // check for undefined, null and ""
+  if (value == null || value === '') {
+    // check for undefined, null and ""
     return null;
   }
 
@@ -2905,10 +3001,12 @@ IntlNumberConverter.prototype.parse = function (value) {
 
   try {
     // we want to trim the value for leading spaces before and after
-    return this._getWrapped().parse(oj$1.StringUtils.trim(value),
-                                    localeElements,
-                                    resolvedOptions,
-                                    locale);
+    return this._getWrapped().parse(
+      oj$1.StringUtils.trim(value),
+      localeElements,
+      resolvedOptions,
+      locale
+    );
   } catch (e) {
     converterError = this._processConverterError(e, value);
     throw converterError;
@@ -2958,7 +3056,7 @@ IntlNumberConverter.prototype.resolvedOptions = function () {
 
   // options are resolved and cached for the current locale. when locale changes resolvedOptions
   // is reevaluated as it contains locale specific info.
-  if ((locale !== this._locale) || !this._resolvedOptions) {
+  if (locale !== this._locale || !this._resolvedOptions) {
     // leave this line unchanged so that we can test that LocaleData can also be accessed from the oj namespace.
     localeElements = __getBundle();
     try {
@@ -2968,9 +3066,11 @@ IntlNumberConverter.prototype.resolvedOptions = function () {
       }
 
       // cache if successfully resolved
-      this._resolvedOptions = this._getWrapped().resolvedOptions(localeElements,
-                                                                 this.getOptions(),
-                                                                 locale);
+      this._resolvedOptions = this._getWrapped().resolvedOptions(
+        localeElements,
+        this.getOptions(),
+        locale
+      );
       this._locale = locale;
     } catch (e) {
       converterError = this._processConverterError(e);
@@ -3009,15 +3109,21 @@ IntlNumberConverter.prototype._processConverterError = function (e, value) {
       case 'optionTypesMismatch':
       case 'optionTypeInvalid':
         converterError = IntlConverterUtils.__getConverterOptionError(
-          errorCode, parameterMap);
+          errorCode,
+          parameterMap
+        );
         break;
       case 'optionOutOfRange':
         converterError = IntlConverterUtils.__getConverterOptionError(
-          errorCode, parameterMap);
+          errorCode,
+          parameterMap
+        );
         break;
       case 'optionValueInvalid':
         converterError = IntlConverterUtils.__getConverterOptionError(
-          errorCode, parameterMap);
+          errorCode,
+          parameterMap
+        );
         break;
       case 'decimalFormatMismatch':
         // The '{value}' does not match the expected number format
@@ -3056,8 +3162,9 @@ IntlNumberConverter.prototype._processConverterError = function (e, value) {
 
       // _getHintValue is smart. It uses the converter's 'format' function
       //  to get the example format to show the end user.
-      detail = getTranslatedString('oj-converter.hint.detail',
-        { exampleValue: this._getHintValue() });
+      detail = getTranslatedString('oj-converter.hint.detail', {
+        exampleValue: this._getHintValue()
+      });
 
       converterError = new ConverterError(summary, detail);
     }

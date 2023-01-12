@@ -1,0 +1,10 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../collection/themes/stable/_oj-collection.cssvars.scss";
+
+@include module-include-once("stable.variables.datagrid") {
+:root {
+    --oj-data-grid-column-width:                             6.25rem;
+    }
+}

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -103,7 +103,7 @@ define(function () { 'use strict';
 	 *
 	 */
 
-	 /**
+	/**
 	 * hint is an optional attribute. It is a Promise that resolves to the hint string or null.
 	 * @example <caption>Create an Object that duck-types the oj.AsyncValidator interface.
 	 * Bind the Object to the JET form component's async-validators attribute. The
@@ -141,8 +141,6 @@ define(function () { 'use strict';
 	 *
 	 */
 
-	 /**
-	 * End of jsdoc
-	 */
+	// end of jsdoc
 
 });

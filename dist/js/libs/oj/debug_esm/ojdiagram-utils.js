@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -49,8 +49,7 @@ import oj from 'ojs/ojcore-base';
  * @hideconstructor
  * @since 3.0
  */
-const DiagramUtils = function () {
-};
+const DiagramUtils = function () {};
 
 oj._registerLegacyNamespaceProp('DiagramUtils', DiagramUtils);
 
@@ -154,16 +153,18 @@ DiagramUtils.getLayout = function (obj) {
     var defaultLabelLayout;
     if (obj.nodes && layoutContext.getNodeCount() > 0) {
       var nodesDataMap = DiagramUtils._dataArrayToMap(obj.nodes);
-      defaultLabelLayout = obj.nodeDefaults
-        && obj.nodeDefaults.labelLayout ? obj.nodeDefaults.labelLayout : null;
+      defaultLabelLayout =
+        obj.nodeDefaults && obj.nodeDefaults.labelLayout ? obj.nodeDefaults.labelLayout : null;
 
       for (var ni = 0; ni < layoutContext.getNodeCount(); ni++) {
         var node = layoutContext.getNodeByIndex(ni);
         var nodeData = nodesDataMap.get(node.getId());
-        DiagramUtils._positionChildNodes(node.getChildNodes(),
-                                            nodeData ? nodeData.nodes : null,
-                                            layoutContext,
-                                            defaultLabelLayout);
+        DiagramUtils._positionChildNodes(
+          node.getChildNodes(),
+          nodeData ? nodeData.nodes : null,
+          layoutContext,
+          defaultLabelLayout
+        );
         DiagramUtils._positionNodeAndLabel(node, nodeData, layoutContext, defaultLabelLayout);
       }
     }
@@ -172,8 +173,8 @@ DiagramUtils.getLayout = function (obj) {
     if (obj.links && layoutContext.getLinkCount() > 0) {
       var linksDataMap = DiagramUtils._dataArrayToMap(obj.links);
       var defaultPath = obj.linkDefaults && obj.linkDefaults.path ? obj.linkDefaults.path : null;
-      defaultLabelLayout = obj.linkDefaults
-        && obj.linkDefaults.labelLayout ? obj.linkDefaults.labelLayout : null;
+      defaultLabelLayout =
+        obj.linkDefaults && obj.linkDefaults.labelLayout ? obj.linkDefaults.labelLayout : null;
       for (var li = 0; li < layoutContext.getLinkCount(); li++) {
         var link = layoutContext.getLinkByIndex(li);
         var linkData = linksDataMap.get(link.getId());
@@ -239,18 +240,18 @@ DiagramUtils._dataArrayToMap = function (dataArray) {
  * @param {Object|Function} defaultLabelLayout Default label layout defined as an object or a function
  * @private
  */
-DiagramUtils._positionChildNodes = function (
-  nodes, nodesData, layoutContext, defaultLabelLayout
-) {
+DiagramUtils._positionChildNodes = function (nodes, nodesData, layoutContext, defaultLabelLayout) {
   if (nodes && nodesData) {
     var nodesDataMap = DiagramUtils._dataArrayToMap(nodesData);
     for (var ni = 0; ni < nodes.length; ni++) {
       var node = nodes[ni];
       var nodeData = nodesDataMap.get(node.getId());
-      DiagramUtils._positionChildNodes(node.getChildNodes(),
-                                          nodeData ? nodeData.nodes : null,
-                                          layoutContext,
-                                          defaultLabelLayout);
+      DiagramUtils._positionChildNodes(
+        node.getChildNodes(),
+        nodeData ? nodeData.nodes : null,
+        layoutContext,
+        defaultLabelLayout
+      );
       DiagramUtils._positionNodeAndLabel(node, nodeData, layoutContext, defaultLabelLayout);
     }
   }
@@ -264,9 +265,7 @@ DiagramUtils._positionChildNodes = function (
  * @param {Object|Function} defaultLabelLayout Default label layout defined as an object or a function
  * @private
  */
-DiagramUtils._positionNodeAndLabel = function (
-  node, nodeData, layoutContext, defaultLabelLayout
-) {
+DiagramUtils._positionNodeAndLabel = function (node, nodeData, layoutContext, defaultLabelLayout) {
   if (node && nodeData) {
     node.setPosition({ x: nodeData.x, y: nodeData.y });
     // node has a label - position it

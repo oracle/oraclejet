@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -112,7 +112,6 @@ define(['ojs/ojcore'], function (oj) { 'use strict';
     Validator.superclass.Init.call(this);
   };
 
-
   /**
    * Validates the value.
    * The function typically returns if the validation passes and throws an error if it fails.
@@ -148,7 +147,6 @@ define(['ojs/ojcore'], function (oj) { 'use strict';
    * @memberof oj.Validator
    * @instance
    */
-
 
   /**
    * Returns a hint that describes the validator rule.

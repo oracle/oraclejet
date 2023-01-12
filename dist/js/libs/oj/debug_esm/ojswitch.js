@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -148,28 +148,26 @@ var __oj_switch_metadata =
   __oj_switch_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
   __oj_switch_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
   oj.CustomElementBridge.register('oj-switch', {
-    metadata:
-      oj.CollectionUtils.mergeDeep(__oj_switch_metadata, {
-        properties: {
-          readonly: {
-            binding: { consume: { name: 'readonly' } }
-          },
-          userAssistanceDensity: {
-            binding: { consume: { name: 'userAssistanceDensity' } }
-          },
-          labelEdge: {
-            binding: { consume: { name: 'labelEdge' } }
-          }
+    metadata: oj.CollectionUtils.mergeDeep(__oj_switch_metadata, {
+      properties: {
+        readonly: {
+          binding: { consume: { name: 'readonly' } }
+        },
+        userAssistanceDensity: {
+          binding: { consume: { name: 'userAssistanceDensity' } }
+        },
+        labelEdge: {
+          binding: { consume: { name: 'labelEdge' } }
         }
-      })
+      }
+    })
   });
-}());
+})();
 
 const OJ_SWITCH_THUMB = 'oj-switch-thumb';
 const OJ_SWITCH_TRACK = 'oj-switch-track';
 const ARIA_LABEL = 'aria-label';
 const ARIA_DISABLED = 'aria-disabled';
-
 
 (function () {
   /*!
@@ -198,6 +196,7 @@ const ARIA_DISABLED = 'aria-disabled';
    * @ojvbdefaultcolumns 6
    * @ojvbmincolumns 2
    *
+   * @ojoracleicon 'oj-ux-ico-switch-on'
    * @ojuxspecs ['switch']
    *
    * @classdesc
@@ -333,130 +332,130 @@ const ARIA_DISABLED = 'aria-disabled';
   //-----------------------------------------------------
   // ---------------- oj-switch --------------
   /**
-  * Top level switch class.
-  * @ojstyleclass oj-switch
-  * @ojdisplayname Switch
-  * @memberof oj.ojSwitch
-  */
+   * Top level switch class.
+   * @ojstyleclass oj-switch
+   * @ojdisplayname Switch
+   * @memberof oj.ojSwitch
+   */
   // ---------------- oj-focus-highlight --------------
   /**
-  * Under normal circumstances this class is applied automatically.
-  * It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
-  * The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
-  * The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
-  * <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
-  * <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
-  * <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
-  * To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
-  * @ojstyleclass oj-focus-highlight
-  * @ojdisplayname Focus Styling
-  * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
-  * @memberof oj.ojSwitch
-  * @ojtsexample
-  * &lt;oj-switch class="oj-focus-highlight">
-  *   &lt;!-- Content -->
-  * &lt;/oj-switch>
-  */
+   * Under normal circumstances this class is applied automatically.
+   * It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
+   * The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
+   * The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
+   * <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
+   * <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
+   * <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
+   * To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
+   * @ojstyleclass oj-focus-highlight
+   * @ojdisplayname Focus Styling
+   * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
+   * @memberof oj.ojSwitch
+   * @ojtsexample
+   * &lt;oj-switch class="oj-focus-highlight">
+   *   &lt;!-- Content -->
+   * &lt;/oj-switch>
+   */
   /**
-  * @ojstylevariableset oj-switch-css-set1
-  * @ojstylevariable oj-switch-track-height {description: "Switch track height", formats: ["length"], help: "#css-variables"}
-  * @ojstylevariable oj-switch-track-width {description: "Switch track width", formats: ["length"], help: "#css-variables"}
-  * @ojstylevariable oj-switch-track-border-radius {description: "Switch track border radius", formats: ["length","percentage"], help: "#css-variables"}
-  * @ojstylevariable oj-switch-thumb-to-track-horizontal-margin {description: "Switch thumb to track horizontal margin", formats: ["length"], help: "#css-variables"}
-  * @ojstylevariable oj-switch-thumb-height {description: "Switch thumb height", formats: ["length"], help: "#css-variables"}
-  * @ojstylevariable oj-switch-thumb-width {description: "Switch thumb width", formats: ["length"], help: "#css-variables"}
-  * @ojstylevariable oj-switch-thumb-border-radius {description: "Switch thumb border radius", formats: ["length","percentage"], help: "#css-variables"}
-  * @memberof oj.ojSwitch
-  */
+   * @ojstylevariableset oj-switch-css-set1
+   * @ojstylevariable oj-switch-track-height {description: "Switch track height", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-switch-track-width {description: "Switch track width", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-switch-track-border-radius {description: "Switch track border radius", formats: ["length","percentage"], help: "#css-variables"}
+   * @ojstylevariable oj-switch-thumb-to-track-horizontal-margin {description: "Switch thumb to track horizontal margin", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-switch-thumb-height {description: "Switch thumb height", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-switch-thumb-width {description: "Switch thumb width", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-switch-thumb-border-radius {description: "Switch thumb border radius", formats: ["length","percentage"], help: "#css-variables"}
+   * @memberof oj.ojSwitch
+   */
   /**
-  * CSS variables used by oj-switch when enabled
-  * @ojstylevariableset oj-switch-css-set2
-  * @ojdisplayname Enabled
-  * @ojstylevariable oj-switch-track-bg-color {description: "Switch track background color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
-  * @ojstylevariable oj-switch-track-border-color {description: "Switch track border color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
-  * @ojstylevariable oj-switch-thumb-bg-color {description: "Switch thumb background color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
-  * @ojstylevariable oj-switch-thumb-border-color {description: "Switch thumb border color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
-  * @ojstylevariable oj-switch-thumb-box-shadow {description: "Switch thumb box shadow when enabled", help: "#oj-switch-css-set2"}
-  * @memberof oj.ojSwitch
-  */
+   * CSS variables used by oj-switch when enabled
+   * @ojstylevariableset oj-switch-css-set2
+   * @ojdisplayname Enabled
+   * @ojstylevariable oj-switch-track-bg-color {description: "Switch track background color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
+   * @ojstylevariable oj-switch-track-border-color {description: "Switch track border color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
+   * @ojstylevariable oj-switch-thumb-bg-color {description: "Switch thumb background color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
+   * @ojstylevariable oj-switch-thumb-border-color {description: "Switch thumb border color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
+   * @ojstylevariable oj-switch-thumb-box-shadow {description: "Switch thumb box shadow when enabled", help: "#oj-switch-css-set2"}
+   * @memberof oj.ojSwitch
+   */
   /**
-  * CSS variables used by oj-switch when hovered
-  * @ojstylevariableset oj-switch-css-set3
-  * @ojdisplayname Hovered
-  * @ojstylevariable oj-switch-track-bg-color-hover {description: "Switch track background color when hovered", formats: ["color"], help: "#oj-switch-css-set3"}
-  * @ojstylevariable oj-switch-track-border-color-hover {description: "Switch track border color when hovered",formats: ["color"], help: "#oj-switch-css-set3"}
-  * @ojstylevariable oj-switch-track-border-color-hover {description: "Switch track border color when hovered",formats: ["color"], help: "#oj-switch-css-set3"}
-  * @ojstylevariable oj-switch-thumb-bg-color-hover {description: "Switch thumb background color when hovered", formats: ["color"], help: "#oj-switch-css-set3"}
-  * @ojstylevariable oj-switch-thumb-border-color-hover {description: "Switch thumb border color when hovered",formats: ["color"], help: "#oj-switch-css-set3"}
-  * @ojstylevariable oj-switch-thumb-box-shadow-hover {description: "Switch thumb box shadow when hovered", help: "#oj-switch-css-set3"}
-  * @memberof oj.ojSwitch
-  */
+   * CSS variables used by oj-switch when hovered
+   * @ojstylevariableset oj-switch-css-set3
+   * @ojdisplayname Hovered
+   * @ojstylevariable oj-switch-track-bg-color-hover {description: "Switch track background color when hovered", formats: ["color"], help: "#oj-switch-css-set3"}
+   * @ojstylevariable oj-switch-track-border-color-hover {description: "Switch track border color when hovered",formats: ["color"], help: "#oj-switch-css-set3"}
+   * @ojstylevariable oj-switch-track-border-color-hover {description: "Switch track border color when hovered",formats: ["color"], help: "#oj-switch-css-set3"}
+   * @ojstylevariable oj-switch-thumb-bg-color-hover {description: "Switch thumb background color when hovered", formats: ["color"], help: "#oj-switch-css-set3"}
+   * @ojstylevariable oj-switch-thumb-border-color-hover {description: "Switch thumb border color when hovered",formats: ["color"], help: "#oj-switch-css-set3"}
+   * @ojstylevariable oj-switch-thumb-box-shadow-hover {description: "Switch thumb box shadow when hovered", help: "#oj-switch-css-set3"}
+   * @memberof oj.ojSwitch
+   */
   /**
-  * CSS variables used by oj-switch when selected and hovered
-  * @ojstylevariableset oj-switch-css-set4
-  * @ojdisplayname Selected hovered
-  * @ojstylevariable oj-switch-track-bg-color-selected-hover {description: "Switch track background color when selected and hovered", formats: ["color"],
-  *  help: "#oj-switch-css-set4"}
-  * @ojstylevariable oj-switch-track-border-color-selected-hover {description: "Switch track border color when selected and hovered", formats: ["color"],
-  *  help: "#oj-switch-css-set4"}
-  * @ojstylevariable oj-switch-thumb-bg-color-selected-hover {description: "Switch thumb background color when selected and hovered", formats: ["color"],
-  *  help: "#oj-switch-css-set4"}
-  * @ojstylevariable oj-switch-thumb-border-color-selected-hover {description: "Switch thumb border color when selected and hovered", formats: ["color"],
-  *  help: "#oj-switch-css-set4"}
-  * @ojstylevariable oj-switch-thumb-box-shadow-selected-hover {description: "Switch thumb box shadow when selected and hovered", help: "#oj-switch-css-set4"}
-  * @memberof oj.ojSwitch
-  */
+   * CSS variables used by oj-switch when selected and hovered
+   * @ojstylevariableset oj-switch-css-set4
+   * @ojdisplayname Selected hovered
+   * @ojstylevariable oj-switch-track-bg-color-selected-hover {description: "Switch track background color when selected and hovered", formats: ["color"],
+   *  help: "#oj-switch-css-set4"}
+   * @ojstylevariable oj-switch-track-border-color-selected-hover {description: "Switch track border color when selected and hovered", formats: ["color"],
+   *  help: "#oj-switch-css-set4"}
+   * @ojstylevariable oj-switch-thumb-bg-color-selected-hover {description: "Switch thumb background color when selected and hovered", formats: ["color"],
+   *  help: "#oj-switch-css-set4"}
+   * @ojstylevariable oj-switch-thumb-border-color-selected-hover {description: "Switch thumb border color when selected and hovered", formats: ["color"],
+   *  help: "#oj-switch-css-set4"}
+   * @ojstylevariable oj-switch-thumb-box-shadow-selected-hover {description: "Switch thumb box shadow when selected and hovered", help: "#oj-switch-css-set4"}
+   * @memberof oj.ojSwitch
+   */
   /**
-  * CSS variables used by oj-switch when active
-  * @ojstylevariableset oj-switch-css-set5
-  * @ojdisplayname Active
-  * @ojstylevariable oj-switch-track-bg-color-active {description: "Switch track background color when active", formats: ["color"], help: "#oj-switch-css-set5"}
-  * @ojstylevariable oj-switch-track-border-color-active {description: "Switch track border color when active",formats: ["color"], help: "#oj-switch-css-set5"}
-  * @ojstylevariable oj-switch-thumb-bg-color-active {description: "Switch thumb background color when active", formats: ["color"], help: "#oj-switch-css-set5"}
-  * @ojstylevariable oj-switch-thumb-border-color-active {description: "Switch thumb border color when active",formats: ["color"], help: "#oj-switch-css-set5"}
-  * @ojstylevariable oj-switch-thumb-box-shadow-active {description: "Switch thumb box shadow when active", help: "#oj-switch-css-set5"}
-  * @ojstylevariable oj-switch-thumb-width-active {description: "Switch thumb width when active", formats: ["length"], help: "#oj-switch-css-set5"}
-  * @memberof oj.ojSwitch
-  */
+   * CSS variables used by oj-switch when active
+   * @ojstylevariableset oj-switch-css-set5
+   * @ojdisplayname Active
+   * @ojstylevariable oj-switch-track-bg-color-active {description: "Switch track background color when active", formats: ["color"], help: "#oj-switch-css-set5"}
+   * @ojstylevariable oj-switch-track-border-color-active {description: "Switch track border color when active",formats: ["color"], help: "#oj-switch-css-set5"}
+   * @ojstylevariable oj-switch-thumb-bg-color-active {description: "Switch thumb background color when active", formats: ["color"], help: "#oj-switch-css-set5"}
+   * @ojstylevariable oj-switch-thumb-border-color-active {description: "Switch thumb border color when active",formats: ["color"], help: "#oj-switch-css-set5"}
+   * @ojstylevariable oj-switch-thumb-box-shadow-active {description: "Switch thumb box shadow when active", help: "#oj-switch-css-set5"}
+   * @ojstylevariable oj-switch-thumb-width-active {description: "Switch thumb width when active", formats: ["length"], help: "#oj-switch-css-set5"}
+   * @memberof oj.ojSwitch
+   */
   /**
-  * CSS variables used by oj-switch when selected and active
-  * @ojstylevariableset oj-switch-css-set6
-  * @ojdisplayname Selected active
-  * @ojstylevariable oj-switch-track-bg-color-selected-active {description: "Switch track background color when selected and active", formats: ["color"],
-  *  help: "#oj-switch-css-set6"}
-  * @ojstylevariable oj-switch-track-border-color-selected-active {description: "Switch track border color when selected and active ",formats: ["color"],
-  *  help: "#oj-switch-css-set6"}
-  * @ojstylevariable oj-switch-thumb-bg-color-selected-active {description: "Switch thumb background color when selected and active", formats: ["color"],
-  *  help: "#oj-switch-css-set6"}
-  * @ojstylevariable oj-switch-thumb-border-color-selected-active {description: "Switch thumb border color when selected and active",formats: ["color"],
-  *  help: "#oj-switch-css-set6"}
-  * @ojstylevariable oj-switch-thumb-box-shadow-selected-active {description: "Switch thumb box shadow when selected and active", help: "#oj-switch-css-set6"}
-  * @memberof oj.ojSwitch
-  */
+   * CSS variables used by oj-switch when selected and active
+   * @ojstylevariableset oj-switch-css-set6
+   * @ojdisplayname Selected active
+   * @ojstylevariable oj-switch-track-bg-color-selected-active {description: "Switch track background color when selected and active", formats: ["color"],
+   *  help: "#oj-switch-css-set6"}
+   * @ojstylevariable oj-switch-track-border-color-selected-active {description: "Switch track border color when selected and active ",formats: ["color"],
+   *  help: "#oj-switch-css-set6"}
+   * @ojstylevariable oj-switch-thumb-bg-color-selected-active {description: "Switch thumb background color when selected and active", formats: ["color"],
+   *  help: "#oj-switch-css-set6"}
+   * @ojstylevariable oj-switch-thumb-border-color-selected-active {description: "Switch thumb border color when selected and active",formats: ["color"],
+   *  help: "#oj-switch-css-set6"}
+   * @ojstylevariable oj-switch-thumb-box-shadow-selected-active {description: "Switch thumb box shadow when selected and active", help: "#oj-switch-css-set6"}
+   * @memberof oj.ojSwitch
+   */
   /**
-  * CSS variables used by oj-switch when disabled
-  * @ojstylevariableset oj-switch-css-set7
-  * @ojdisplayname Disabled
-  * @ojstylevariable oj-switch-track-bg-color-disabled {description: "Switch track background color when disabled", formats: ["color"], help: "#oj-switch-css-set7"}
-  * @ojstylevariable oj-switch-track-border-color-disabled {description: "Switch track border color when disabled",formats: ["color"], help: "#oj-switch-css-set7"}
-  * @ojstylevariable oj-switch-thumb-bg-color-disabled {description: "Switch thumb background color when disabled", formats: ["color"], help: "#oj-switch-css-set7"}
-  * @ojstylevariable oj-switch-thumb-border-color-disabled {description: "Switch thumb border color when disabled",formats: ["color"], help: "#oj-switch-css-set7"}
-  * @memberof oj.ojSwitch
-  */
+   * CSS variables used by oj-switch when disabled
+   * @ojstylevariableset oj-switch-css-set7
+   * @ojdisplayname Disabled
+   * @ojstylevariable oj-switch-track-bg-color-disabled {description: "Switch track background color when disabled", formats: ["color"], help: "#oj-switch-css-set7"}
+   * @ojstylevariable oj-switch-track-border-color-disabled {description: "Switch track border color when disabled",formats: ["color"], help: "#oj-switch-css-set7"}
+   * @ojstylevariable oj-switch-thumb-bg-color-disabled {description: "Switch thumb background color when disabled", formats: ["color"], help: "#oj-switch-css-set7"}
+   * @ojstylevariable oj-switch-thumb-border-color-disabled {description: "Switch thumb border color when disabled",formats: ["color"], help: "#oj-switch-css-set7"}
+   * @memberof oj.ojSwitch
+   */
   /**
-  * CSS variables used by oj-switch when selected and disabled
-  * @ojstylevariableset oj-switch-css-set8
-  * @ojdisplayname Selected disabled
-  * @ojstylevariable oj-switch-track-bg-color-selected-disabled {description: "Switch track background color when selected and disabled", formats: ["color"],
-  *  help: "#oj-switch-css-set8"}
-  * @ojstylevariable oj-switch-track-border-color-selected-disabled {description: "Switch track border color when selected and disabled",formats: ["color"],
-  *  help: "#oj-switch-css-set8"}
-  * @ojstylevariable oj-switch-thumb-bg-color-selected-disabled {description: "Switch thumb background color when selected and disabled", formats: ["color"],
-  *  help: "#oj-switch-css-set8"}
-  * @ojstylevariable oj-switch-thumb-border-color-selected-disabled {description: "Switch thumb border color when selected and disabled",formats: ["color"],
-  *  help: "#oj-switch-css-set8"}
-  * @memberof oj.ojSwitch
-  */
+   * CSS variables used by oj-switch when selected and disabled
+   * @ojstylevariableset oj-switch-css-set8
+   * @ojdisplayname Selected disabled
+   * @ojstylevariable oj-switch-track-bg-color-selected-disabled {description: "Switch track background color when selected and disabled", formats: ["color"],
+   *  help: "#oj-switch-css-set8"}
+   * @ojstylevariable oj-switch-track-border-color-selected-disabled {description: "Switch track border color when selected and disabled",formats: ["color"],
+   *  help: "#oj-switch-css-set8"}
+   * @ojstylevariable oj-switch-thumb-bg-color-selected-disabled {description: "Switch thumb background color when selected and disabled", formats: ["color"],
+   *  help: "#oj-switch-css-set8"}
+   * @ojstylevariable oj-switch-thumb-border-color-selected-disabled {description: "Switch thumb border color when selected and disabled",formats: ["color"],
+   *  help: "#oj-switch-css-set8"}
+   * @memberof oj.ojSwitch
+   */
   // --------------------------------------------------- oj.ojSwitch Styling end -----------------------------------------------------------
 
   oj.__registerWidget('oj.ojSwitch', $.oj.editableValue, {
@@ -464,8 +463,7 @@ const ARIA_DISABLED = 'aria-disabled';
     defaultElement: '<input>',
     widgetEventPrefix: 'oj',
 
-    options:
-    {
+    options: {
       /**
        * <p>
        * Whether the component is disabled. The element's
@@ -623,7 +621,7 @@ const ARIA_DISABLED = 'aria-disabled';
       var rootElement = this.widget();
 
       if (!node) {
-        node = (locator == null || locator.subId == null) ? rootElement : null;
+        node = locator == null || locator.subId == null ? rootElement : null;
         if (!node && locator) {
           subId = locator.subId;
           if (subId === OJ_SWITCH_THUMB || subId === OJ_SWITCH_TRACK) {
@@ -659,9 +657,7 @@ const ARIA_DISABLED = 'aria-disabled';
 
       if (node != null) {
         if ($(node).hasClass(OJ_SWITCH_TRACK) || $(node).hasClass(OJ_SWITCH_THUMB)) {
-          nodeId = $(node).parents('div.oj-switch')
-            .find('input.oj-component-initnode')
-            .attr('id');
+          nodeId = $(node).parents('div.oj-switch').find('input.oj-component-initnode').attr('id');
           if (originalId === nodeId && $(node).hasClass(OJ_SWITCH_TRACK)) {
             result = { subId: OJ_SWITCH_TRACK };
           } else if (originalId === nodeId && $(node).hasClass(OJ_SWITCH_THUMB)) {
@@ -692,8 +688,7 @@ const ARIA_DISABLED = 'aria-disabled';
      * @private
      * @const
      */
-    _BUNDLE_KEY:
-    {
+    _BUNDLE_KEY: {
       _SWITCH_OFF: 'SwitchOFF',
       _SWITCH_ON: 'SwitchON'
     },
@@ -714,12 +709,14 @@ const ARIA_DISABLED = 'aria-disabled';
       props = [
         { attribute: 'disabled', validateOption: true },
         { attribute: 'readonly', option: 'readOnly', validateOption: true },
-        { attribute: 'checked',
+        {
+          attribute: 'checked',
           option: 'value',
           validateOption: false,
           coerceDomValue: function (domValue) {
             return !!domValue;
-          } },
+          }
+        },
         { attribute: 'title' }
       ];
 
@@ -744,8 +741,9 @@ const ARIA_DISABLED = 'aria-disabled';
         if (translations.switchOff !== undefined) {
           newTranslations.SwitchOFF = translations.switchOff;
         }
-        newConstructorOptions = Object.assign({},
-          constructorOptions, { translations: newTranslations });
+        newConstructorOptions = Object.assign({}, constructorOptions, {
+          translations: newTranslations
+        });
       }
 
       this._super(originalDefaults, newConstructorOptions);
@@ -754,8 +752,7 @@ const ARIA_DISABLED = 'aria-disabled';
       if (!this._IsCustomElement()) {
         EditableValueUtils.initializeOptionsFromDom(props, constructorOptions, this);
         val = this.option('value');
-        this.option({ value: !!val },
-                    { _context: { writeback: true, internalSet: true } });
+        this.option({ value: !!val }, { _context: { writeback: true, internalSet: true } });
       }
     },
 
@@ -800,10 +797,8 @@ const ARIA_DISABLED = 'aria-disabled';
       `;
       this._element2.append(switchContainerHTML); // @HTMLUpdateOK append or prepend trusted new DOM to switch elem
 
-
       this.switchThumb = this._element2.find('.oj-switch-thumb');
-      this.switchThumb
-        .attr('role', this._setSwitchRole());
+      this.switchThumb.attr('role', this._setSwitchRole());
 
       this.switchTrack = this._element2.find('.oj-switch-track');
     },
@@ -842,9 +837,10 @@ const ARIA_DISABLED = 'aria-disabled';
         // Custom element case
         if (this.options.labelledBy) {
           var defaultLabelId = this.uuid + '_Label';
-          labelElementId =
-          EditableValueUtils._getOjLabelAriaLabelledBy(
-            this.options.labelledBy, defaultLabelId);
+          labelElementId = EditableValueUtils._getOjLabelAriaLabelledBy(
+            this.options.labelledBy,
+            defaultLabelId
+          );
         }
       } else {
         // Non custom element case
@@ -895,8 +891,7 @@ const ARIA_DISABLED = 'aria-disabled';
       this._setupEvents();
 
       if (rootElement === undefined) return;
-      this.element
-        .attr('checked', this.option('value')); // Switch vs Input synchonization
+      this.element.attr('checked', this.option('value')); // Switch vs Input synchonization
 
       rootElement.removeClass('oj-disabled oj-read-only oj-selected oj-hover oj-active');
       $(this.switchThumb).attr('tabindex', this._inputElementTabIndex);
@@ -1041,16 +1036,16 @@ const ARIA_DISABLED = 'aria-disabled';
     _GetDefaultStyleClass: function () {
       return 'oj-switch';
     },
-  /**
-   * Whether the a value can be set on the component. For example, if the component is
-   * disabled or readOnly then setting value on component is a no-op.
-   *
-   * @see #_SetValue
-   * @return {boolean}
-   * @memberof oj.ojSwitch
-   * @override
-   * @protected
-   */
+    /**
+     * Whether the a value can be set on the component. For example, if the component is
+     * disabled or readOnly then setting value on component is a no-op.
+     *
+     * @see #_SetValue
+     * @return {boolean}
+     * @memberof oj.ojSwitch
+     * @override
+     * @protected
+     */
     _CanSetValue: function () {
       var readOnly;
       var superCanSetValue = this._super();
@@ -1060,7 +1055,7 @@ const ARIA_DISABLED = 'aria-disabled';
       }
 
       readOnly = this.options.readOnly || false;
-      return !(readOnly);
+      return !readOnly;
     },
     /**
      * Returns switch role for ARIA
@@ -1207,4 +1202,4 @@ const ARIA_DISABLED = 'aria-disabled';
       this._setup();
     }
   });
-}());
+})();

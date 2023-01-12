@@ -25,6 +25,7 @@ function traverse(compiler, bundle) {
         [key]: compiler.compile(value)
       };
     }
+    return accum;
   }, {});
   return output;
 }
@@ -50,9 +51,16 @@ function getBundle(filepath) {
  * @param {string} locale The locale of the bundle
  * @param {string} targetFile The path to the target file where the contents will
  * be written.
- * @param {boolean} exportType Whether to export the bundle type
+ * @param {object?} addlExports Additional exports for the bundle. This object
+ * should only be passed for the root bundle, from where the type definitions
+ * will be read.
+ * <code>
+ *   {
+ *     exportType?: boolean // whether to export the bundle type definition
+ *   }
+ * </code>
  */
-function convertBundle(bundle, locale, targetFile, exportType) {
+function convertBundle(bundle, locale, targetFile, addlExports = {}) {
   const compiler = new PatternCompiler(locale);
   const processed = traverse(compiler, bundle);
   const contents = Object.keys(processed).map((messageKey) => {
@@ -66,10 +74,10 @@ function convertBundle(bundle, locale, targetFile, exportType) {
   });
   const targetDir = path.dirname(targetFile);
   fsx.ensureDirSync(targetDir);
-  fsx.writeFileSync(targetFile, wrapInModule(`{\n${contents.join(',\n')}\n}`, exportType));
+  fsx.writeFileSync(targetFile, wrapInModule(`{\n${contents.join(',\n')}\n}`, addlExports));
 }
 
-function wrapInModule(contents, exportType) {
+function wrapInModule(contents, { exportType }) {
   return `const bundle = ${contents};
 export default bundle;
 ${exportType ? 'export type BundleType = typeof bundle;' : ''}
@@ -98,66 +106,66 @@ function transpile(rootDir, moduleType) {
   program.emit();
 }
 
-/**
- * Compile the message bundle in ICU format. This function starts with the "root"
- * message bundle and attempts to discover bundles for all available locales by
- * traversing the root bundle's directory and looking for locale directory names.
- * Any file found under locale directories whose names match the root bundle will
- * also be compiled.
- * When creating the output file in the given targetDir, the locale directory
- * structure from the source will be recreated.
- * @param {string} rootDir The path to the root message bundle
- * @param {string} bundleName The name of the bundle file
- * @param {string} locale The locale of the root message bundle
- * @param {string} outDir The target directory where the compiled root message
- * @param {string} module The type of module to produce -- 'amd' or 'esm'
- * @param {string} supportedLocales The comma-separated list of supported locales
- * to build
- */
-module.exports = function build({
-  rootDir,
-  bundleName,
-  locale,
-  outDir,
-  module,
-  supportedLocales = ''
-}) {
-  const jsonRegEx = /\.json$/;
-  if (!jsonRegEx.test(bundleName)) {
-    throw Error(`${bundleName} must be a JSON file`);
-  }
-  const pkg = require('./package.json');
-  const targetBundleName = bundleName.replace(jsonRegEx, '.ts');
-
-  // Traverse root bundle
-  const rootBundle = getBundle(path.join(rootDir, bundleName));
-  if (rootBundle) {
-    convertBundle(rootBundle, locale, path.join(outDir, targetBundleName), true);
-  }
-
-  fsx
-    // Traverse all locales, merging all base locales
-    .readdirSync(rootDir)
+module.exports = {
+  isNlsDir,
+  /**
+   * Compile the message bundle in ICU format. This function starts with the "root"
+   * message bundle and attempts to discover bundles for all available locales by
+   * traversing the root bundle's directory and looking for locale directory names.
+   * Any file found under locale directories whose names match the root bundle will
+   * also be compiled.
+   * When creating the output file in the given targetDir, the locale directory
+   * structure from the source will be recreated.
+   * @param {string} rootDir The path to the root message bundle
+   * @param {string} bundleName The name of the bundle file
+   * @param {string} locale The locale of the root message bundle
+   * @param {string} outDir The target directory where the compiled root message
+   * @param {string} module The type of module to produce -- 'amd' or 'esm'
+   * @param {string[]?} additionalLocales An array of additional locales to build
+   */
+  build: function ({ rootDir, bundleName, locale, outDir, module, additionalLocales = [] }) {
+    const jsonRegEx = /\.json$/;
+    if (!jsonRegEx.test(bundleName)) {
+      throw Error(`${bundleName} must be a JSON file`);
+    }
+    const pkg = require('./package.json');
+    const targetBundleName = bundleName.replace(jsonRegEx, '.ts');
     // Merge in supported locales to build. If physical dirs don't exist, they'll
     // inherit the root translations
-    .concat(supportedLocales.split(','))
-    .forEach((locale) => {
-      if (isNlsDir(locale)) {
-        // Combine all levels into single bundle, starting with rootBundle
-        const combinedBundle = Object.assign({}, rootBundle);
-        const localeParts = locale.split('-');
-        for (let i = 0, len = localeParts.length; i < len; i++) {
-          // Build segment from region (0) to index
-          let segment = localeParts.slice(0, i + 1).join('-');
-          const perBundle = getBundle(path.join(rootDir, segment, bundleName));
-          Object.assign(combinedBundle, perBundle);
-        }
+    const supportedLocales = [
+      ...new Set(fsx.readdirSync(rootDir).filter(isNlsDir).concat(additionalLocales).sort())
+    ];
 
-        convertBundle(combinedBundle, locale, path.join(outDir, locale, targetBundleName));
+    // Traverse root bundle
+    const rootBundle = getBundle(path.join(rootDir, bundleName));
+    if (rootBundle) {
+      convertBundle(rootBundle, locale, path.join(outDir, targetBundleName), {
+        supportedLocales,
+        exportType: true
+      });
+    }
+
+    supportedLocales.forEach((locale) => {
+      // Combine all levels into single bundle, starting with rootBundle
+      const combinedBundle = Object.assign({}, rootBundle);
+      const localeParts = locale.split('-');
+      for (let i = 0, len = localeParts.length; i < len; i++) {
+        // Build segment from region (0) to index
+        let segment = localeParts.slice(0, i + 1).join('-');
+        const perBundle = getBundle(path.join(rootDir, segment, bundleName));
+        Object.assign(combinedBundle, perBundle);
       }
+
+      convertBundle(combinedBundle, locale, path.join(outDir, locale, targetBundleName));
     });
 
-  if (module) {
-    transpile(path.resolve(outDir), module);
+    fsx.writeFileSync(
+      path.join(outDir, 'supportedLocales.ts'),
+      `export default ${JSON.stringify(supportedLocales)};\n`
+    );
+
+    if (module) {
+      transpile(path.resolve(outDir), module);
+    }
   }
 };

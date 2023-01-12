@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -54,7 +54,7 @@ var __oj_progress_metadata =
 };
     __oj_progress_metadata.extension._WIDGET_NAME = 'ojProgressbar';
     oj.CustomElementBridge.register('oj-progress', { metadata: __oj_progress_metadata });
-  }());
+  })();
 
   /**
    * @ojcomponent oj.ojProgress
@@ -100,6 +100,14 @@ var __oj_progress_metadata =
    * <p>If this element is being used to describe the loading process of a particular region of a page, then the <code class="prettyprint">aria-describedby</code>
    *    attribute must point to the id of the oj-progress and <code class="prettyprint">aria-busy = "true"</code> must be added to the region until the loading is complete.</p>
    *
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   *  </h3>
+   *  To migrate from oj-progress-bar to oj-c-progress-bar, you need to revise the import statement and references to oj-c-progress-bar in your app.  Please note the changes between the two components below.
+   *  <h5>oj-progress-bar-embedded class</h5>
+   *  <p>To render a progress bar that is attached to a container, set the edge attribute to 'top' instead of using the 'oj-progress-bar-embedded' class.</p>
+   *
    *
    */
 
@@ -128,54 +136,54 @@ var __oj_progress_metadata =
 
   // ---------------- oj-progress-bar-embedded --------------
   /**
-  * Optional class that can be set on a oj-progress bar element to style an embedded progress bar within a web application or dialog.
-  * @ojstyleclass oj-progress-bar-embedded
-  * @ojdisplayname Embedded
-  * @memberof oj.ojProgress
-  * @ojtsexample
-  * &lt;div class='oj-web-applayout-page'>
-  *   &lt;header class='oj-web-applayout-header'>
-  *   &lt;</header>
-  *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
-  *   &lt;/oj-progress>
-  * &lt;/div>
-  */
+   * Optional class that can be set on a oj-progress bar element to style an embedded progress bar within a web application or dialog.
+   * @ojstyleclass oj-progress-bar-embedded
+   * @ojdisplayname Embedded
+   * @memberof oj.ojProgress
+   * @ojtsexample
+   * &lt;div class='oj-web-applayout-page'>
+   *   &lt;header class='oj-web-applayout-header'>
+   *   &lt;</header>
+   *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
+   *   &lt;/oj-progress>
+   * &lt;/div>
+   */
   // ---------------- oj-progress-bar-start-label --------------
   /**
-  * Optional class that can be set on a div after the oj-progress element. This div contains the start text to display underneath the oj-progress bar.
-  * @ojstyleclass oj-progress-bar-start-label
-  * @ojdisplayname Start Label
-  * @memberof oj.ojProgress
-  * @ojtsexample
-  * &lt;div class='oj-web-applayout-page'>
-  *   &lt;header class='oj-web-applayout-header'>
-  *   &lt;</header>
-  *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
-  *     &lt;div class='oj-progress-bar-start-label'>0%
-  *     &lt;/div>
-  *     &lt;div class='oj-progress-bar-end-label'>100%
-  *     &lt;/div>
-  *   &lt;/oj-progress>
-  * &lt;/div>
-  */
+   * Optional class that can be set on a div after the oj-progress element. This div contains the start text to display underneath the oj-progress bar.
+   * @ojstyleclass oj-progress-bar-start-label
+   * @ojdisplayname Start Label
+   * @memberof oj.ojProgress
+   * @ojtsexample
+   * &lt;div class='oj-web-applayout-page'>
+   *   &lt;header class='oj-web-applayout-header'>
+   *   &lt;</header>
+   *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
+   *     &lt;div class='oj-progress-bar-start-label'>0%
+   *     &lt;/div>
+   *     &lt;div class='oj-progress-bar-end-label'>100%
+   *     &lt;/div>
+   *   &lt;/oj-progress>
+   * &lt;/div>
+   */
   // ---------------- oj-progress-bar-end-label --------------
   /**
-  * Optional class that can be set on a div after the oj-progress element. This div contains the end text to display underneath the oj-progress bar.
-  * @ojstyleclass oj-progress-bar-end-label
-  * @ojdisplayname End Label
-  * @memberof oj.ojProgress
-  * @ojtsexample
-  * &lt;div class='oj-web-applayout-page'>
-  *   &lt;header class='oj-web-applayout-header'>
-  *   &lt;</header>
-  *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
-  *     &lt;div class='oj-progress-bar-start-label'>0%
-  *     &lt;/div>
-  *     &lt;div class='oj-progress-bar-end-label'>100%
-  *     &lt;/div>
-  *   &lt;/oj-progress>
-  * &lt;/div>
-  */
+   * Optional class that can be set on a div after the oj-progress element. This div contains the end text to display underneath the oj-progress bar.
+   * @ojstyleclass oj-progress-bar-end-label
+   * @ojdisplayname End Label
+   * @memberof oj.ojProgress
+   * @ojtsexample
+   * &lt;div class='oj-web-applayout-page'>
+   *   &lt;header class='oj-web-applayout-header'>
+   *   &lt;</header>
+   *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
+   *     &lt;div class='oj-progress-bar-start-label'>0%
+   *     &lt;/div>
+   *     &lt;div class='oj-progress-bar-end-label'>100%
+   *     &lt;/div>
+   *   &lt;/oj-progress>
+   * &lt;/div>
+   */
 
   //-----------------------------------------------------
   //                   Slots
@@ -337,8 +345,7 @@ var __oj_progress_metadata =
           this._setupCircleSVG();
         } else {
           this.element.addClass('oj-progress-bar');
-          this.valueDiv = $("<div class='oj-progress-bar-value'></div>")
-            .appendTo(this.element); // @HTMLUpdateOK
+          this.valueDiv = $("<div class='oj-progress-bar-value'></div>").appendTo(this.element); // @HTMLUpdateOK
         }
 
         this._refreshValue();
@@ -382,7 +389,7 @@ var __oj_progress_metadata =
         }
 
         // Indicates that the value is indeterminate.
-        this._indeterminate = (newValue === -1);
+        this._indeterminate = newValue === -1;
 
         // sanitize value
         if (typeof newValue !== 'number') {
@@ -390,8 +397,7 @@ var __oj_progress_metadata =
           newValue = isNaN(newValue) ? 0 : Number(newValue);
         }
 
-        return this._indeterminate ? -1 :
-          Math.min(this.options.max, Math.max(this.min, newValue));
+        return this._indeterminate ? -1 : Math.min(this.options.max, Math.max(this.min, newValue));
       },
       /**
        * Set the value
@@ -450,7 +456,7 @@ var __oj_progress_metadata =
           circle.setAttribute('cy', radius);
           circle.setAttribute('class', 'oj-progress-circle-base oj-progress-circle-value');
           var circumference = 2 * radius * 0.9 * Math.PI;
-          var offset = circumference - ((this._percentage() / 100) * circumference);
+          var offset = circumference - (this._percentage() / 100) * circumference;
           circle.style.strokeDasharray = circumference.toString();
           circle.style.strokeDashoffset = offset;
 
@@ -513,8 +519,12 @@ var __oj_progress_metadata =
        * @return {number}
        */
       _percentage: function () {
-        return Math.min(this._indeterminate ? 100 :
-                        (100 * (this.options.value - this.min)) / (this.options.max - this.min), 100);
+        return Math.min(
+          this._indeterminate
+            ? 100
+            : (100 * (this.options.value - this.min)) / (this.options.max - this.min),
+          100
+        );
       },
 
       /**
@@ -548,12 +558,18 @@ var __oj_progress_metadata =
           this.element.removeAttr('aria-valuemax');
           if (!this.overlayDiv) {
             if (isCircle) {
-              this.overlayDiv = $("<div class='oj-progress-circle-overlay'></div>").appendTo(this.element); // @HTMLUpdateOK
+              // prettier-ignore
+              this.overlayDiv = $("<div class='oj-progress-circle-overlay'></div>").appendTo( // @HTMLUpdateOK
+                this.element
+              );
               var diameter = Math.min(this.element.outerWidth(), this.element.outerHeight());
               this.overlayDiv.css('width', diameter);
               this.overlayDiv.css('height', diameter);
             } else {
-              this.overlayDiv = $("<div class='oj-progress-bar-overlay'></div>").appendTo(this.valueDiv); // @HTMLUpdateOK
+              // prettier-ignore
+              this.overlayDiv = $("<div class='oj-progress-bar-overlay'></div>").appendTo( // @HTMLUpdateOK
+                this.valueDiv
+              );
             }
             this.overlayDiv.addClass('oj-indeterminate');
           }
@@ -581,8 +597,7 @@ var __oj_progress_metadata =
             this.svg.remove();
           }
         } else {
-          this.element
-            .removeClass('oj-progress-bar oj-component');
+          this.element.removeClass('oj-progress-bar oj-component');
 
           this.valueDiv.remove();
           if (this._indeterminate) {
@@ -600,6 +615,6 @@ var __oj_progress_metadata =
         this._super();
       }
     });
-  }());
+  })();
 
 });

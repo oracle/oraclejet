@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -24,16 +24,25 @@ const BaseCustomElementBridge = {};
  * Prototype for subclasses
  * @ignore
  */
-BaseCustomElementBridge.proto =
-{
+BaseCustomElementBridge.proto = {
   getClass: function (descriptor) {
     var proto = Object.create(HTMLElement.prototype);
     this.InitializePrototype(proto);
 
     var metadata = this.GetMetadata(descriptor);
     // Enumerate metadata to define the prototype properties, methods, and events
-    BaseCustomElementBridge._enumerateMetadataForKey(proto, metadata, 'properties', this.DefinePropertyCallback.bind(this));
-    BaseCustomElementBridge._enumerateMetadataForKey(proto, metadata, 'methods', this.DefineMethodCallback.bind(this));
+    BaseCustomElementBridge._enumerateMetadataForKey(
+      proto,
+      metadata,
+      'properties',
+      this.DefinePropertyCallback.bind(this)
+    );
+    BaseCustomElementBridge._enumerateMetadataForKey(
+      proto,
+      metadata,
+      'methods',
+      this.DefineMethodCallback.bind(this)
+    );
 
     // Add additional element methods not defined in metadata, e.g. getNodeBySubId/getSubIdByNode or get/setProperty
     this.AddComponentMethods(proto);
@@ -43,8 +52,16 @@ BaseCustomElementBridge.proto =
     };
 
     // The set/unset methods are used for TypeScript only so we should define these as non enumerated properties
-    Object.defineProperty(proto, 'set', { value: function (prop, value) { this.setProperty(prop, value); } });
-    Object.defineProperty(proto, 'unset', { value: function (prop) { this.setProperty(prop, undefined); } });
+    Object.defineProperty(proto, 'set', {
+      value: function (prop, value) {
+        this.setProperty(prop, value);
+      }
+    });
+    Object.defineProperty(proto, 'unset', {
+      value: function (prop) {
+        this.setProperty(prop, undefined);
+      }
+    });
 
     // Add lifecycle listeners
     proto.attributeChangedCallback = this.AttributeChangedCallback;
@@ -97,14 +114,17 @@ BaseCustomElementBridge.proto =
     };
 
     var bridge = this;
-    Object.defineProperty(constructorFunc, 'observedAttributes',
-      {
-        get: function () {
-          return bridge.GetAttributes(metadata);
-        }
-      });
+    Object.defineProperty(constructorFunc, 'observedAttributes', {
+      get: function () {
+        return bridge.GetAttributes(metadata);
+      }
+    });
 
-    Object.defineProperty(proto, 'constructor', { value: constructorFunc, writable: true, configurable: true });
+    Object.defineProperty(proto, 'constructor', {
+      value: constructorFunc,
+      writable: true,
+      configurable: true
+    });
     constructorFunc.prototype = proto;
     Object.setPrototypeOf(constructorFunc, HTMLElement);
 
@@ -140,11 +160,17 @@ BaseCustomElementBridge.proto =
       // we will remove the disabled attribute after we save the value and will ignore all disabled
       // attribute sets after component initialization when the application can just as easily use the property
       // setter instead. Expressions will be handled in the CustomElementBinding.
-      if (attr === 'disabled' && bridge.ShouldRemoveDisabled() && bridge._isDisabledAttributeRemoved()) {
+      if (
+        attr === 'disabled' &&
+        bridge.ShouldRemoveDisabled() &&
+        bridge._isDisabledAttributeRemoved()
+      ) {
         // Always remove the disabled attribute even after component initialization and log warning.
         // A null value indicates that the value was removed already.
         if (newValue != null) {
-          warn("Ignoring 'disabled' attribute change after component initialization. Use element property setter instead.");
+          warn(
+            "Ignoring 'disabled' attribute change after component initialization. Use element property setter instead."
+          );
           bridge._removeDisabledAttribute(this);
         }
         return;
@@ -168,11 +194,15 @@ BaseCustomElementBridge.proto =
 
         var expression = AttributeUtils.getExpressionInfo(newValue).expr;
         if (!expression) {
-          const propMeta = getPropertyMetadata(prop,
-            CustomElementUtils.getElementProperties(this));
+          const propMeta = getPropertyMetadata(
+            prop,
+            CustomElementUtils.getElementProperties(this)
+          );
           if (propMeta) {
-            this.setProperty(prop, BaseCustomElementBridge
-              .__ParseAttrValue(this, attr, prop, newValue, propMeta));
+            this.setProperty(
+              prop,
+              BaseCustomElementBridge.__ParseAttrValue(this, attr, prop, newValue, propMeta)
+            );
           }
           // This allows subclasses to handle special cases like global transfer
           // attributes for JET components or controlled properties for virtual components
@@ -229,7 +259,6 @@ BaseCustomElementBridge.proto =
     return this.ShouldHandleAttributeChanged();
   },
 
-
   // eslint-disable-next-line no-unused-vars
   HandleAttributeChanged: function (element, attr, oldValue, newValue) {},
 
@@ -268,8 +297,10 @@ BaseCustomElementBridge.proto =
   },
 
   GetProperty: function (element, prop, props) {
-    var meta = getPropertyMetadata(prop,
-      CustomElementUtils.getElementProperties(element));
+    var meta = getPropertyMetadata(
+      prop,
+      CustomElementUtils.getElementProperties(element)
+    );
 
     // For event listener and non component properties, retrieve the value directly stored on the element.
     // For top level properties, this will delegate to our 'set' methods so we can handle default values.
@@ -283,8 +314,14 @@ BaseCustomElementBridge.proto =
   // VComponent hook to queue property change events to be fired asynchronously
   HandlePropertyChanged: function (element, property, value, previousValue, isOuter, subprop) {
     var updatedFrom = isOuter ? 'external' : 'internal';
-    BaseCustomElementBridge.__FirePropertyChangeEvent(element, property, value,
-      previousValue, updatedFrom, subprop);
+    BaseCustomElementBridge.__FirePropertyChangeEvent(
+      element,
+      property,
+      value,
+      previousValue,
+      updatedFrom,
+      subprop
+    );
   },
 
   PlaybackEarlyPropertySets: function (element) {
@@ -296,11 +333,11 @@ BaseCustomElementBridge.proto =
       const propertyMeta = this.GetMetadata(descriptor);
       while (this._earlySets.length) {
         const setObj = this._earlySets.shift();
-        const updatedValue =
-          transformPreactValue(
-            element,
-            propertyMeta.properties[setObj.property],
-            setObj.value);
+        const updatedValue = transformPreactValue(
+          element,
+          propertyMeta.properties[setObj.property],
+          setObj.value
+        );
         element.setProperty(setObj.property, updatedValue);
       }
     }
@@ -350,8 +387,10 @@ BaseCustomElementBridge.proto =
 
   SetProperty: function (element, prop, value, props, bOuter) {
     // Check value against any defined enums
-    var meta = getPropertyMetadata(prop,
-      CustomElementUtils.getElementProperties(element));
+    var meta = getPropertyMetadata(
+      prop,
+      CustomElementUtils.getElementProperties(element)
+    );
     if (AttributeUtils.isEventListenerProperty(prop) || !meta) {
       // eslint-disable-next-line no-param-reassign
       element[prop] = value;
@@ -367,7 +406,11 @@ BaseCustomElementBridge.proto =
         topPropPrevValue = oj.CollectionUtils.copyInto({}, topPropPrevValue, undefined, true);
       }
 
-      if (!ElementUtils.comparePropertyValues(meta, value, previousValue)) {
+      // If the new value is undefined, check whether default value exists and use it to compare props.
+      // We want to do it for top level prop only and keep undefined for subprops to preserve old behavior.
+      // See JET-53415 for subprops issue.
+      var valueToCompare = value === undefined && propPath.length === 1 ? meta.value : value;
+      if (!ElementUtils.comparePropertyValues(meta.writeback, valueToCompare, previousValue)) {
         var isSubprop = prop.indexOf('.') !== -1;
         if (isSubprop) {
           // Set a flag for the case a subproperty results in a set of the top level property
@@ -377,12 +420,21 @@ BaseCustomElementBridge.proto =
 
         if (bOuter) {
           // This ultimately triggers our element defined property setter
-          this.ValidateAndSetProperty(this.GetAliasForProperty.bind(this),
-            props, prop, value, element);
+          this.ValidateAndSetProperty(
+            this.GetAliasForProperty.bind(this),
+            props,
+            prop,
+            value,
+            element
+          );
         } else {
           // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
-          BaseCustomElementBridge.__SetProperty(this.GetAliasForProperty.bind(this),
-            props, prop, value);
+          BaseCustomElementBridge.__SetProperty(
+            this.GetAliasForProperty.bind(this),
+            props,
+            prop,
+            value
+          );
         }
 
         this._SKIP_PROP_CHANGE_EVENT = false;
@@ -393,8 +445,14 @@ BaseCustomElementBridge.proto =
             value,
             previousValue
           };
-          this.HandlePropertyChanged(element, topProp, props[topProp],
-            topPropPrevValue, bOuter, subprop);
+          this.HandlePropertyChanged(
+            element,
+            topProp,
+            props[topProp],
+            topPropPrevValue,
+            bOuter,
+            subprop
+          );
         }
         this.State.dirtyProps.add(topProp);
         return { property: topProp, propertySet: true, isSubproperty: isSubprop };
@@ -422,7 +480,12 @@ BaseCustomElementBridge.proto =
     var propAr = property.split('.');
 
     if (!propMeta) {
-      warn(CustomElementUtils.getElementInfo(element) + ": Ignoring property set for undefined property '" + property + "'.");
+      warn(
+        CustomElementUtils.getElementInfo(element) +
+          ": Ignoring property set for undefined property '" +
+          property +
+          "'."
+      );
       return undefined;
     }
 
@@ -446,7 +509,11 @@ BaseCustomElementBridge.proto =
   PostCreate: function (element) {
     // After parsing the DOM attribute values and initializing properties, remove the disabled
     // property if it exists due to 
-    if (element.hasAttribute('disabled') && this.ShouldRemoveDisabled() && !this._isDisabledAttributeRemoved()) {
+    if (
+      element.hasAttribute('disabled') &&
+      this.ShouldRemoveDisabled() &&
+      !this._isDisabledAttributeRemoved()
+    ) {
       this._removeDisabledAttribute(element);
     }
   },
@@ -460,7 +527,8 @@ BaseCustomElementBridge.proto =
     // the component is already in an error state.
     if (!state.isComplete()) {
       state.startCreationCycle();
-      if (state.isCreating()) { // initial attach
+      if (state.isCreating()) {
+        // initial attach
         // Initializing props from DOM needs to be called
         // before we playback properties so we cannot call this
         // inside the createComponentCallback
@@ -573,7 +641,6 @@ BaseCustomElementBridge.proto =
     this._disabledProcessed = true;
     element.removeAttribute('disabled');
   }
-
 };
 
 /** ***************************/
@@ -590,11 +657,9 @@ BaseCustomElementBridge._enumerateMetadataForKey = function (proto, metadata, ke
 
   var values = metadata[key];
   var names = Object.keys(values);
-  names.forEach(
-    function (name) {
-      callback(proto, name, values[name]);
-    }
-  );
+  names.forEach(function (name) {
+    callback(proto, name, values[name]);
+  });
 };
 
 /**
@@ -611,10 +676,12 @@ BaseCustomElementBridge.checkType = function (element, property, value, metadata
   const supportedTypes = ElementUtils.getSupportedTypes(type);
   if (supportedTypes.typeCount === 1 && !supportedTypes.any && !supportedTypes.other) {
     const valueType = typeof value;
-    if ((supportedTypes.array && !Array.isArray(value)) ||
+    if (
+      (supportedTypes.array && !Array.isArray(value)) ||
       (supportedTypes.object && !(valueType === 'object')) ||
       (supportedTypes.string && !(valueType === 'string')) ||
-      (supportedTypes.number && !(valueType === 'number' && isFinite(value)))) {
+      (supportedTypes.number && !(valueType === 'number' && isFinite(value)))
+    ) {
       BaseCustomElementBridge.__ThrowTypeError(element, property, value, type);
     } else if (supportedTypes.boolean) {
       // Treat boolean property sets like the DOM does where any value that passes
@@ -629,8 +696,11 @@ BaseCustomElementBridge.checkType = function (element, property, value, metadata
  * @ignore
  */
 BaseCustomElementBridge.__ThrowTypeError = function (element, property, value, type) {
-  throw new JetElementError(element, `Invalid type '${typeof value}' found for property '${property}'.\
- Expected value of type '${type}'.`);
+  throw new JetElementError(
+    element,
+    `Invalid type '${typeof value}' found for property '${property}'.\
+ Expected value of type '${type}'.`
+  );
 };
 
 /**
@@ -644,7 +714,10 @@ BaseCustomElementBridge.__CheckOverlappingAttribute = function (element, attr) {
     while (attrPath.length) {
       var attrSubPath = attrPath.join('.');
       if (element.hasAttribute(attrSubPath)) {
-        throw new JetElementError(element, `Cannot set overlapping attributes '${attr}' and '${attrSubPath}'.`);
+        throw new JetElementError(
+          element,
+          `Cannot set overlapping attributes '${attr}' and '${attrSubPath}'.`
+        );
       }
       attrPath.pop();
     }
@@ -671,13 +744,20 @@ BaseCustomElementBridge.__InitProperties = function (element, componentProps) {
 
         var info = AttributeUtils.getExpressionInfo(attr.value);
         if (!info.expr) {
-          var value = BaseCustomElementBridge.__ParseAttrValue(element,
-                                                                  attr.nodeName,
-                                                                  property,
-                                                                  attr.value,
-                                                                  meta);
-          bridge.ValidateAndSetProperty(bridge.GetAliasForProperty.bind(bridge),
-                                        componentProps, property, value, element);
+          var value = BaseCustomElementBridge.__ParseAttrValue(
+            element,
+            attr.nodeName,
+            property,
+            attr.value,
+            meta
+          );
+          bridge.ValidateAndSetProperty(
+            bridge.GetAliasForProperty.bind(bridge),
+            componentProps,
+            property,
+            value,
+            element
+          );
         }
       }
     }
@@ -739,11 +819,9 @@ BaseCustomElementBridge.__ParseAttrValue = function (elem, attr, prop, val, meta
 
   var parseFunction = CustomElementUtils.getElementDescriptor(elem.tagName).parseFunction;
   if (parseFunction) {
-    return parseFunction(val, prop, metadata,
-      function (value) {
-        return _coerceVal(value);
-      }
-    );
+    return parseFunction(val, prop, metadata, function (value) {
+      return _coerceVal(value);
+    });
   }
   return _coerceVal(val);
 };
@@ -754,14 +832,20 @@ BaseCustomElementBridge.__ParseAttrValue = function (elem, attr, prop, val, meta
 BaseCustomElementBridge.__ProcessEventListeners = function (_metadata) {
   var metadata = oj.CollectionUtils.copyInto({}, _metadata, undefined, true, 1);
   metadata.properties = metadata.properties || {};
-  BaseCustomElementBridge._enumerateMetadataForKey(null, metadata, 'properties',
+  BaseCustomElementBridge._enumerateMetadataForKey(
+    null,
+    metadata,
+    'properties',
     function (proto, property) {
       var eventName = AttributeUtils.propertyNameToChangeEventType(property);
       var eventListenerProperty = AttributeUtils.eventTypeToEventListenerProperty(eventName);
       metadata.properties[eventListenerProperty] = { _derived: true, _eventListener: true };
     }
   );
-  BaseCustomElementBridge._enumerateMetadataForKey(null, metadata, 'events',
+  BaseCustomElementBridge._enumerateMetadataForKey(
+    null,
+    metadata,
+    'events',
     function (proto, event) {
       var eventListenerProperty = AttributeUtils.eventTypeToEventListenerProperty(event);
       metadata.properties[eventListenerProperty] = { _derived: true, _eventListener: true };
@@ -779,47 +863,52 @@ BaseCustomElementBridge.__ProcessEventListeners = function (_metadata) {
  * @param {string} updatedFrom
  * @param {Object=} subprop
  */
-BaseCustomElementBridge.__FirePropertyChangeEvent =
-  function (element, name, value, previousValue, updatedFrom, subprop) {
-    var bridge = CustomElementUtils.getElementBridge(element);
-    // There are cases where a subproperty set can trigger a top level property set
-    // if the top level property was not instantiated to an empty object. We don't want
-    // to fire two events for that case. The BaseCustomElementBridge has logic to fire
-    // the subproperty change event there.
-    if (!bridge._SKIP_PROP_CHANGE_EVENT) {
-      var detail = {};
-      if (subprop) {
-        detail.subproperty = subprop;
-      }
-      detail.value = value;
-      detail.previousValue = previousValue;
-      detail.updatedFrom = updatedFrom;
-
-      // Check if the subclass needs to do anything before we fire the property change event,
-      // e.g. composites that need to call the propertyChanged ViewModel callback.
-      if (bridge.beforePropertyChangedEvent) {
-        bridge.beforePropertyChangedEvent(element, name, detail);
-      }
-      // The bridge sets the ready to fire flag after the component has been instantiated.
-      // We shouldn't fire property changed events before then unless the update comes from internally
-      // for cases like readOnly property updates.
-      if (updatedFrom !== 'external' || bridge.State.isComplete()) {
-        element.dispatchEvent(new CustomEvent(name + 'Changed', { detail: detail }));
-      }
+BaseCustomElementBridge.__FirePropertyChangeEvent = function (
+  element,
+  name,
+  value,
+  previousValue,
+  updatedFrom,
+  subprop
+) {
+  var bridge = CustomElementUtils.getElementBridge(element);
+  // There are cases where a subproperty set can trigger a top level property set
+  // if the top level property was not instantiated to an empty object. We don't want
+  // to fire two events for that case. The BaseCustomElementBridge has logic to fire
+  // the subproperty change event there.
+  if (!bridge._SKIP_PROP_CHANGE_EVENT) {
+    var detail = {};
+    if (subprop) {
+      detail.subproperty = subprop;
     }
-  };
+    detail.value = value;
+    detail.previousValue = previousValue;
+    detail.updatedFrom = updatedFrom;
+
+    // Check if the subclass needs to do anything before we fire the property change event,
+    // e.g. composites that need to call the propertyChanged ViewModel callback.
+    if (bridge.beforePropertyChangedEvent) {
+      bridge.beforePropertyChangedEvent(element, name, detail);
+    }
+    // The bridge sets the ready to fire flag after the component has been instantiated.
+    // We shouldn't fire property changed events before then unless the update comes from internally
+    // for cases like readOnly property updates.
+    if (updatedFrom !== 'external' || bridge.State.isComplete()) {
+      element.dispatchEvent(new CustomEvent(name + 'Changed', { detail: detail }));
+    }
+  }
+};
 
 /**
  * @ignore
  */
-BaseCustomElementBridge.__DefineDynamicObjectProperty =
-  function (obj, property, getter, setter) {
-    Object.defineProperty(obj, property, {
-      enumerable: true,
-      get: getter,
-      set: setter
-    });
-  };
+BaseCustomElementBridge.__DefineDynamicObjectProperty = function (obj, property, getter, setter) {
+  Object.defineProperty(obj, property, {
+    enumerable: true,
+    get: getter,
+    set: setter
+  });
+};
 
 /** @ignore */
 BaseCustomElementBridge.DESC_KEY_META = 'metadata';
@@ -853,15 +942,18 @@ function _ojHighContrast() {
   div.style.borderColor = 'red green';
   div.style.position = 'absolute';
   div.style.top = '-999px';
-  div.style.backgroundImage = 'url(data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=)';
+  div.style.backgroundImage =
+    'url(data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=)';
   var body = document.body;
   body.appendChild(div); // @HTMLUpdateOK safe manipulation
   var computedStyles = window.getComputedStyle(div);
 
   var bki = computedStyles.backgroundImage;
 
-  if (computedStyles.borderTopColor === computedStyles.borderRightColor ||
-      (bki != null && (bki === 'none' || bki === 'url (invalid-url:)'))) {
+  if (
+    computedStyles.borderTopColor === computedStyles.borderRightColor ||
+    (bki != null && (bki === 'none' || bki === 'url (invalid-url:)'))
+  ) {
     body.classList.add('oj-hicontrast');
   }
 
@@ -869,7 +961,7 @@ function _ojHighContrast() {
 }
 
 whenDocumentReady().then(function () {
-    _ojHighContrast();
+  _ojHighContrast();
 });
 
 /**
@@ -1345,11 +1437,11 @@ whenDocumentReady().then(function () {
  */
 function _ojApplyAgentClasses() {
   let classes = [];
-      const ai = oj$1.AgentUtils.getAgentInfo();
-      classes.push(`oj-agent-os-${ai.os.toLowerCase()}`);
-      classes.push(`oj-agent-browser-${ai.browser.toLowerCase()}`);
-      var html = document.documentElement;
-      html.classList.add(...classes);
+  const ai = oj$1.AgentUtils.getAgentInfo();
+  classes.push(`oj-agent-os-${ai.os.toLowerCase()}`);
+  classes.push(`oj-agent-browser-${ai.browser.toLowerCase()}`);
+  var html = document.documentElement;
+  html.classList.add(...classes);
 }
 
 whenDocumentReady().then(function () {

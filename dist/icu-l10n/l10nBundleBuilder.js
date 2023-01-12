@@ -13,13 +13,13 @@ const argsMap = Array.from(process.argv)
     };
   }, {});
 if ('rootDir' in argsMap && 'bundleName' in argsMap && 'locale' in argsMap && 'outDir' in argsMap) {
-  require('./Bundler')({
+  require('./Bundler').build({
     rootDir: argsMap.rootDir,
     bundleName: argsMap.bundleName,
     locale: argsMap.locale,
     outDir: argsMap.outDir,
     module: argsMap.module,
-    supportedLocales: argsMap.supportedLocales
+    additionalLocales: argsMap.supportedLocales && argsMap.supportedLocales.split(',')
   });
 } else {
   const procName = path.basename(process.argv[1]);
@@ -36,6 +36,8 @@ if ('rootDir' in argsMap && 'bundleName' in argsMap && 'locale' in argsMap && 'o
       --supportedLocales\tA list of comma-separated additional locales to build. If
       \ta locale is specified but doesn't have a directory and translation file
       \tin the rootDir, it will be built using the root translations.
+      \tThis list will be added onto the full list of supportedLocales exported
+      \tfrom the root bundle TS file, which contains locales found in the rootDir.
 
     Example for root bundle:
     ${procName} --rootDir=resources/nls --bundleName=bundle-i18n.json --locale=en-US --outDir=dist --module=amd

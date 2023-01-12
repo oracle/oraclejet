@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,62 +8,64 @@
 define(['ojs/ojcomponentcore', 'ojs/ojoption', 'ojs/ojdataprovider', 'ojs/ojcomposite'], function (ojcomponentcore, ojoption, ojdataprovider, Composite) { 'use strict';
 
   /**
-     * @ojcomponent oj.ojMenuSelectMany
-     * @since 6.0.0
-     * @ojdisplayname Menu Multi Select
-     * @ojshortdesc A menu select many allows the user to select one or more menu items from a set.
-     * @ojrole menuitemcheckbox
-     * @ojsignature {target: "Type", value:"class ojMenuSelectMany extends JetElement<ojMenuSelectManySettableProperties>"}
-     *
-     * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
-     *
-     * @ojpropertylayout {propertyGroup: "common", items: ["disabled"]}
-     * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
-     * @ojvbdefaultcolumns 2
-     * @ojvbmincolumns 1
-     *
-     * @classdesc
-     * <h3 id="selectOverview-section">
-     *   JET Menu Select Many
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#MenuSelectManyOverview-section"></a>
-     * </h3>
-     * <p>Description: JET Menu Select Many provides support for multiple selection of checkable menu items.
-     * The only supported component child element of <code class="prettyprint">oj-menu-select-many</code> is
-     * <code class="prettyprint">oj-option</code>. <code class="prettyprint">oj-menu-select-many</code> cannot
-     * contain submenus but can be a child of a top-level <code class="prettyprint">oj-menu</code> or submenu.
-     * </p>
-     *
-     * <p>A JET Menu Select Many can be created with the following markup.</p>
-     *
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;!-- Including oj-option children -->
-     * &lt;oj-menu-select-many value="{{selectedColors}}">
-     *   &lt;oj-option value="blue">Blue&lt;/oj-option>
-     *   &lt;oj-option value="green">Green&lt;/oj-option>
-     *   &lt;oj-option value="red">Red&lt;/oj-option>
-     * &lt;/oj-menu-select-many>
-     *
-     * &lt;!-- Collection bound simple syntax, no need to specify oj-option children -->
-     * &lt;oj-menu-select-many value="{{selectedColors}}" options="[[colorOptions]]">
-     * &lt;/oj-menu-select-many>
-     * </code></pre>
-     *
-     * <h3 id="touch-section">
-     *   Touch End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"touchDoc"}
-     *
-     * <h3 id="keyboard-section">
-     *   Keyboard End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"keyboardDoc"}
-     *
-     */
+   * @ojcomponent oj.ojMenuSelectMany
+   * @since 6.0.0
+   * @ojdisplayname Menu Multi Select
+   * @ojshortdesc A menu select many allows the user to select one or more menu items from a set.
+   * @ojrole menuitemcheckbox
+   * @ojsignature {target: "Type", value:"class ojMenuSelectMany extends JetElement<ojMenuSelectManySettableProperties>"}
+   *
+   * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 2
+   * @ojvbmincolumns 1
+   *
+   * @ojoracleicon 'oj-ux-ico-menu-select-many'
+   *
+   * @classdesc
+   * <h3 id="selectOverview-section">
+   *   JET Menu Select Many
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#MenuSelectManyOverview-section"></a>
+   * </h3>
+   * <p>Description: JET Menu Select Many provides support for multiple selection of checkable menu items.
+   * The only supported component child element of <code class="prettyprint">oj-menu-select-many</code> is
+   * <code class="prettyprint">oj-option</code>. <code class="prettyprint">oj-menu-select-many</code> cannot
+   * contain submenus but can be a child of a top-level <code class="prettyprint">oj-menu</code> or submenu.
+   * </p>
+   *
+   * <p>A JET Menu Select Many can be created with the following markup.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;!-- Including oj-option children -->
+   * &lt;oj-menu-select-many value="{{selectedColors}}">
+   *   &lt;oj-option value="blue">Blue&lt;/oj-option>
+   *   &lt;oj-option value="green">Green&lt;/oj-option>
+   *   &lt;oj-option value="red">Red&lt;/oj-option>
+   * &lt;/oj-menu-select-many>
+   *
+   * &lt;!-- Collection bound simple syntax, no need to specify oj-option children -->
+   * &lt;oj-menu-select-many value="{{selectedColors}}" options="[[colorOptions]]">
+   * &lt;/oj-menu-select-many>
+   * </code></pre>
+   *
+   * <h3 id="touch-section">
+   *   Touch End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"touchDoc"}
+   *
+   * <h3 id="keyboard-section">
+   *   Keyboard End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"keyboardDoc"}
+   *
+   */
 
   /**
    * @typedef {Object} oj.ojMenuSelectMany.Option
@@ -194,17 +196,17 @@ define(['ojs/ojcomponentcore', 'ojs/ojoption', 'ojs/ojdataprovider', 'ojs/ojcomp
    * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
    **/
   var _MENU_SELECT_MANY_VIEW =
-  '<oj-bind-slot></oj-bind-slot>' +
-  '<oj-bind-if test="[[$properties.options]]">' +
-  '  <oj-bind-for-each data="[[$properties.options]]">' +
-  '    <template>' +
-  '      <oj-option :id="[[$current.data.id ? $current.data.id : optionIdPrefix + $current.observableIndex()]]" ' +
-  '                 value="[[$current.data.value]]" disabled="[[$current.data.disabled]]">' +
-  '        <oj-bind-text value="[[$current.data.label]]"></oj-bind-text>' +
-  '      </oj-option>' +
-  '    </template>' +
-  '  </oj-bind-for-each>' +
-  '<oj-bind-if>';
+    '<oj-bind-slot></oj-bind-slot>' +
+    '<oj-bind-if test="[[$properties.options]]">' +
+    '  <oj-bind-for-each data="[[$properties.options]]">' +
+    '    <template>' +
+    '      <oj-option :id="[[$current.data.id ? $current.data.id : optionIdPrefix + $current.observableIndex()]]" ' +
+    '                 value="[[$current.data.value]]" disabled="[[$current.data.disabled]]">' +
+    '        <oj-bind-text value="[[$current.data.label]]"></oj-bind-text>' +
+    '      </oj-option>' +
+    '    </template>' +
+    '  </oj-bind-for-each>' +
+    '<oj-bind-if>';
 
   function MenuSelectManyViewModel(context) {
     this._composite = context.element;
@@ -235,9 +237,11 @@ define(['ojs/ojcomponentcore', 'ojs/ojoption', 'ojs/ojdataprovider', 'ojs/ojcomp
   };
 
   MenuSelectManyViewModel.prototype._propertyChanged = function (detail) {
-    if ((detail.updatedFrom === 'external' && detail.property === 'value') ||
-        (detail.updatedFrom === 'external' && detail.property === 'disabled') ||
-        (detail.updatedFrom === 'external' && detail.property === 'options')) {
+    if (
+      (detail.updatedFrom === 'external' && detail.property === 'value') ||
+      (detail.updatedFrom === 'external' && detail.property === 'disabled') ||
+      (detail.updatedFrom === 'external' && detail.property === 'options')
+    ) {
       this._handleOptionMutations();
 
       if (detail.property === 'disabled') {
@@ -424,50 +428,50 @@ define(['ojs/ojcomponentcore', 'ojs/ojoption', 'ojs/ojdataprovider', 'ojs/ojcomp
    */
 
   /**
-    * <table class="keyboard-table">
-    *   <thead>
-    *     <tr>
-    *       <th>Target</th>
-    *       <th>Key</th>
-    *       <th>Action</th>
-    *     </tr>
-    *   </thead>
-    *   <tbody>
-    *     <tr>
-    *       <td rowspan = "5">Menu Item</td>
-    *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
-    *       <td>Invoke the focused menu item's action and toggles the checked state.</td>
-    *     </tr>
-    *     <tr>
-    *       <td><kbd>UpArrow</kbd></td>
-    *       <td>Move focus to the previous menu item, wrapping around at the top.</td>
-    *     </tr>
-    *     <tr>
-    *       <td><kbd>DownArrow</kbd></td>
-    *       <td>Move focus to the next menu item, wrapping around at the bottom.</td>
-    *     </tr>
-    *     <tr>
-    *       <td><kbd>Home</kbd></td>
-    *       <td>Move focus to the first menu item.</td>
-    *     </tr>
-    *     <tr>
-    *       <td><kbd>End</kbd></td>
-    *       <td>Move focus to the last menu item.</td>
-    *     </tr>
-    *     <tr>
-    *       <td>Menu Item in Top-level Menu</td>
-    *       <td><kbd>Esc</kbd></td>
-    *       <td>Close the menu and move focus to the launcher.</td>
-    *     </tr>
-    *   </tbody>
-    * </table>
-    *
-    *
-    * <p>Disabled items can receive keyboard focus, but do not allow any other interaction.</p>
-    *
-    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-    * @memberof oj.ojMenuSelectMany
-    */
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td rowspan = "5">Menu Item</td>
+   *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
+   *       <td>Invoke the focused menu item's action and toggles the checked state.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>UpArrow</kbd></td>
+   *       <td>Move focus to the previous menu item, wrapping around at the top.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>DownArrow</kbd></td>
+   *       <td>Move focus to the next menu item, wrapping around at the bottom.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Home</kbd></td>
+   *       <td>Move focus to the first menu item.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>End</kbd></td>
+   *       <td>Move focus to the last menu item.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Menu Item in Top-level Menu</td>
+   *       <td><kbd>Esc</kbd></td>
+   *       <td>Close the menu and move focus to the launcher.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   *
+   * <p>Disabled items can receive keyboard focus, but do not allow any other interaction.</p>
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojMenuSelectMany
+   */
 
 var __oj_menu_select_many_metadata = 
 {
@@ -495,11 +499,10 @@ var __oj_menu_select_many_metadata =
   "extension": {}
 };
   /* global __oj_menu_select_many_metadata */
-  Composite.register('oj-menu-select-many',
-    {
-      view: _MENU_SELECT_MANY_VIEW,
-      viewModel: MenuSelectManyViewModel,
-      metadata: __oj_menu_select_many_metadata
-    });
+  Composite.register('oj-menu-select-many', {
+    view: _MENU_SELECT_MANY_VIEW,
+    viewModel: MenuSelectManyViewModel,
+    metadata: __oj_menu_select_many_metadata
+  });
 
 });

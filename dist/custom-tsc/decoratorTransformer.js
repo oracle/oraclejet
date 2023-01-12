@@ -25,7 +25,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ts = __importStar(require("typescript"));
 const DecoratorUtils_1 = require("./utils/DecoratorUtils");
-const _DT_DECORATORS = new Set(['method', 'consumedBindings', 'providedBindings']);
+const _DT_DECORATORS = new Set([
+    'method',
+    'consumedBindings',
+    'providedBindings',
+    'consumedContexts'
+]);
 function decoratorTransformer(buildOptions) {
     function visitor(ctx, sf) {
         var _a;
@@ -38,17 +43,18 @@ function decoratorTransformer(buildOptions) {
             console.log(`${sf.fileName}: processing decorators...`);
         const aliasToExport = (_a = buildOptions.importMaps) === null || _a === void 0 ? void 0 : _a.aliasToExport;
         const visitor = (node) => {
-            if (aliasToExport && node.decorators) {
-                let updatedDecorators = removeDtDecorators(node, aliasToExport);
-                if (updatedDecorators.length === 0) {
-                    updatedDecorators = undefined;
+            var _a;
+            if (aliasToExport && ts.canHaveDecorators(node) && ((_a = ts.getDecorators(node)) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+                let updatedModifiers = removeDtDecoratorsFromModifiers(node, aliasToExport);
+                if (updatedModifiers.length === 0) {
+                    updatedModifiers = undefined;
                 }
-                if (!updatedDecorators || updatedDecorators.length < node.decorators.length) {
+                if (!updatedModifiers || updatedModifiers.length < node.modifiers.length) {
                     if (ts.isClassDeclaration(node)) {
-                        node = ts.factory.updateClassDeclaration(node, updatedDecorators, node.modifiers, node.name, node.typeParameters, node.heritageClauses, node.members);
+                        node = ts.factory.updateClassDeclaration(node, updatedModifiers, node.name, node.typeParameters, node.heritageClauses, node.members);
                     }
                     else if (ts.isMethodDeclaration(node)) {
-                        return ts.factory.updateMethodDeclaration(node, updatedDecorators, node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters, node.type, node.body);
+                        return ts.factory.updateMethodDeclaration(node, updatedModifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters, node.type, node.body);
                     }
                 }
             }
@@ -61,10 +67,15 @@ function decoratorTransformer(buildOptions) {
     };
 }
 exports.default = decoratorTransformer;
-function removeDtDecorators(node, aliasToExport) {
-    return node.decorators.filter((decorator) => {
-        const decoratorName = aliasToExport[(0, DecoratorUtils_1.getDecoratorName)(decorator)];
-        return !_DT_DECORATORS.has(decoratorName);
+function removeDtDecoratorsFromModifiers(node, aliasToExport) {
+    var _a;
+    return (_a = node.modifiers) === null || _a === void 0 ? void 0 : _a.filter((modLike) => {
+        if (ts.isModifier(modLike)) {
+            return true;
+        }
+        else {
+            return !_DT_DECORATORS.has(aliasToExport[(0, DecoratorUtils_1.getDecoratorName)(modLike)]);
+        }
     });
 }
 //# sourceMappingURL=decoratorTransformer.js.map

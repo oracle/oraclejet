@@ -1,20 +1,32 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojselectbase', 'ojs/ojcore-base', 'ojs/ojkeyset', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojthemeutils', 'ojs/ojlogger', 'ojs/ojcustomelement-utils'], function (ojselectbase, oj$1, ojkeyset, $, Components, ThemeUtils, Logger, ojcustomelementUtils) { 'use strict';
+define(['ojs/ojselectbase', 'ojs/ojcore-base', 'ojs/ojkeyset', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojthemeutils', 'ojs/ojlogger', 'ojs/ojcustomelement-utils'], function (ojselectbase, oj, ojkeyset, $, Components, ThemeUtils, Logger, ojcustomelementUtils) { 'use strict';
 
-  oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
+  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
+  (function () {
 var __oj_select_single_metadata = 
 {
   "properties": {
     "data": {
-      "type": "object"
+      "type": "object",
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "14.0.0",
+              "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
+            }
+          ]
+        }
+      }
     },
     "describedBy": {
       "type": "string"
@@ -206,37 +218,33 @@ var __oj_select_single_metadata =
   },
   "extension": {}
 };
-  /* global __oj_select_single_metadata:false */
-  (function () {
     __oj_select_single_metadata.extension._WIDGET_NAME = 'ojSelectSingle';
     __oj_select_single_metadata.extension._INNER_ELEM = 'input';
     __oj_select_single_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
     __oj_select_single_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
     oj.CustomElementBridge.register('oj-select-single', {
-      metadata:
-        oj.CollectionUtils.mergeDeep(__oj_select_single_metadata, {
-          properties: {
-            readonly: {
-              binding: { consume: { name: 'readonly' } }
-            },
-            userAssistanceDensity: {
-              binding: { consume: { name: 'userAssistanceDensity' } }
-            },
-            labelEdge: {
-              binding: { consume: { name: 'labelEdge' } }
-            }
+      metadata: oj.CollectionUtils.mergeDeep(__oj_select_single_metadata, {
+        properties: {
+          readonly: {
+            binding: { consume: { name: 'readonly' } }
+          },
+          userAssistanceDensity: {
+            binding: { consume: { name: 'userAssistanceDensity' } }
+          },
+          labelEdge: {
+            binding: { consume: { name: 'labelEdge' } }
           }
-        })
+        }
+      })
     });
-  }());
+  })();
 
   /**
    * @private
    */
-  const LovDropdownSingle = function () {
-  };
+  const LovDropdownSingle = function () {};
 
-  oj$1.Object.createSubclass(LovDropdownSingle, ojselectbase.LovDropdown, 'LovDropdownSingle');
+  oj.Object.createSubclass(LovDropdownSingle, ojselectbase.LovDropdown, 'LovDropdownSingle');
 
   LovDropdownSingle.prototype.init = function (options) {
     LovDropdownSingle.superclass.init.call(this, options);
@@ -260,8 +268,7 @@ var __oj_select_single_metadata =
    * @protected
    * @override
    */
-  LovDropdownSingle.prototype._ConfigureResultsInitial = function (
-    selectedValue, busyContext) {
+  LovDropdownSingle.prototype._ConfigureResultsInitial = function (selectedValue, busyContext) {
     // If it is the initial fetch, set both selection and currentRow, because both were cleared
     // initially.
 
@@ -291,8 +298,7 @@ var __oj_select_single_metadata =
    * @protected
    * @override
    */
-  LovDropdownSingle.prototype._ConfigureResultsNoSearchText = function (
-    selectedValue, busyContext) {
+  LovDropdownSingle.prototype._ConfigureResultsNoSearchText = function (selectedValue, busyContext) {
     // If no search text is present, clear current row
     this._SetCollectionCurrentRow({ rowKey: null });
     var selectedKeySet = this._createKeySetImpl(selectedValue);
@@ -314,32 +320,36 @@ var __oj_select_single_metadata =
    * @override
    */
   LovDropdownSingle.prototype._ConfigureResultsWithSearchText = function (
-    selectedValue, busyContext) {
+    selectedValue,
+    busyContext
+  ) {
     // If search text is present, the first option should be highlighted
     // TODO: This call modifies the fetchedDataCount in the dataProvider,
     //       should this be reset to the initial value? For now, the count is stored
     //       in the LovDropdown and can be retrieved by calling LovDropdown.prototype.getResultsCount
     //       method.
-    return this._FetchFirstResult().then(function (data) {
-      if (data == null) {
-        this._SetCurrentFirstItem(null);
-        this._ClearSelection();
+    return this._FetchFirstResult().then(
+      function (data) {
+        if (data == null) {
+          this._SetCurrentFirstItem(null);
+          this._ClearSelection();
+          // Return the busy context promise
+          return busyContext.whenReady();
+        }
+
+        // Set the current value item
+        var rowKey = data.key;
+        this._SetCurrentFirstItem(data);
+        this._SetCollectionCurrentRow({ rowKey: rowKey });
+        // During initial render the handlers will be short-circuited, so we
+        // need to call selected separately
+        var selectedKeySet = this._createKeySetImpl(selectedValue);
+        this._SetCollectionSelectedKeySet(selectedKeySet);
+
         // Return the busy context promise
         return busyContext.whenReady();
-      }
-
-      // Set the current value item
-      var rowKey = data.key;
-      this._SetCurrentFirstItem(data);
-      this._SetCollectionCurrentRow({ rowKey: rowKey });
-      // During initial render the handlers will be short-circuited, so we
-      // need to call selected separately
-      var selectedKeySet = this._createKeySetImpl(selectedValue);
-      this._SetCollectionSelectedKeySet(selectedKeySet);
-
-      // Return the busy context promise
-      return busyContext.whenReady();
-    }.bind(this));
+      }.bind(this)
+    );
   };
 
   /**
@@ -401,6 +411,7 @@ var __oj_select_single_metadata =
    * @ojvbdefaultcolumns 6
    * @ojvbmincolumns 2
    *
+   * @ojoracleicon 'oj-ux-ico-select'
    * @ojuxspecs ['select-single-item']
    *
    * @classdesc
@@ -442,6 +453,8 @@ var __oj_select_single_metadata =
    *
    * {@ojinclude "name":"keyboardDoc"}
    *
+   * {@ojinclude "name":"migrationDoc"}
+   *
    * <h3 id="perf-section">
    *   Performance
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
@@ -468,61 +481,60 @@ var __oj_select_single_metadata =
    * When applied to an ancestor element, all form components that support the style classes will be affected.
    */
   // ---------------- oj-form-control max-width --------------
-    /**
-    * In the Redwood theme the default max width of a text field is 100%.
-    * These max width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-max-width
-    * @ojdisplayname Max Width
-    * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojSelectSingle
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-select-single class="oj-form-control-max-width-md">
-    * &lt;/oj-select-single>
-    */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
-    * @ojshortdesc Sets the max width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojSelectSingle
-     */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
-    * @ojshortdesc Sets the max width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojSelectSingle
-     */
+  /**
+   * In the Redwood theme the default max width of a text field is 100%.
+   * These max width convenience classes are available to create a medium or small field.<br>
+   * The class is applied to the root element.
+   * @ojstyleset form-control-max-width
+   * @ojdisplayname Max Width
+   * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+   * @ojstylerelation exclusive
+   * @memberof oj.ojSelectSingle
+   * @ojunsupportedthemes ['Alta']
+   * @ojtsexample
+   * &lt;oj-select-single class="oj-form-control-max-width-md">
+   * &lt;/oj-select-single>
+   */
+  /**
+   * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+   * @ojshortdesc Sets the max width for a small field
+   * @ojdisplayname Small
+   * @memberof! oj.ojSelectSingle
+   */
+  /**
+   * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+   * @ojshortdesc Sets the max width for a medium field
+   * @ojdisplayname Medium
+   * @memberof! oj.ojSelectSingle
+   */
 
-
-    // ---------------- oj-form-control width --------------
-    /**
-    * In the Redwood theme the default width of a text field is 100%.
-    * These width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-width
-    * @ojdisplayname Width
-    * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojSelectSingle
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-select-single class="oj-form-control-width-md">
-    * &lt;/oj-select-single>
-    */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-sm
-    * @ojshortdesc Sets the width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojSelectSingle
-     */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-md
-    * @ojshortdesc Sets the width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojSelectSingle
-     */
+  // ---------------- oj-form-control width --------------
+  /**
+   * In the Redwood theme the default width of a text field is 100%.
+   * These width convenience classes are available to create a medium or small field.<br>
+   * The class is applied to the root element.
+   * @ojstyleset form-control-width
+   * @ojdisplayname Width
+   * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+   * @ojstylerelation exclusive
+   * @memberof oj.ojSelectSingle
+   * @ojunsupportedthemes ['Alta']
+   * @ojtsexample
+   * &lt;oj-select-single class="oj-form-control-width-md">
+   * &lt;/oj-select-single>
+   */
+  /**
+   * @ojstyleclass form-control-width.oj-form-control-width-sm
+   * @ojshortdesc Sets the width for a small field
+   * @ojdisplayname Small
+   * @memberof! oj.ojSelectSingle
+   */
+  /**
+   * @ojstyleclass form-control-width.oj-form-control-width-md
+   * @ojshortdesc Sets the width for a medium field
+   * @ojdisplayname Medium
+   * @memberof! oj.ojSelectSingle
+   */
   // ---------------- oj-form-control-text-align- --------------
   /**
    * Classes that help align text of the element.
@@ -617,8 +629,7 @@ var __oj_select_single_metadata =
    * @ojfragment selectComboDifferences
    * @memberof oj.ojSelectSingle
    */
-  oj$1.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
-
+  oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
     options: {
       /**
        * The <code class="prettyprint">valueItem</code> is similar to the
@@ -662,7 +673,7 @@ var __oj_select_single_metadata =
        * // setter
        * mySelect.valueItem = valueItem;
        */
-      valueItem: { key: null, data: null, metadata: null },
+      valueItem: { key: null, data: null, metadata: null }
 
       /**
        * The value of the element. The type must be the same as the type of keys in the data provider.
@@ -891,8 +902,9 @@ var __oj_select_single_metadata =
       // although the display value is different. In that case, user should be able to still
       // select the previous valid value to get rid off the invalid style and message.
       /* if (!(old === LovUtils.getOptionValue(data)))*/
-      var newValueItem = this._IsValueItemForPlaceholder(valueItem) ?
-        this._defaultValueItemForPlaceholder : valueItem;
+      var newValueItem = this._IsValueItemForPlaceholder(valueItem)
+        ? this._defaultValueItemForPlaceholder
+        : valueItem;
 
       var configureInputFieldsFunc = function () {
         // JET-46874 - Select single busy state not cleared properly causing spectra test to fail
@@ -936,14 +948,17 @@ var __oj_select_single_metadata =
         // new messages/invalid state instead of old state
         if (this._messagingStrategyQueueActionPromise) {
           this._messagingStrategyQueueActionPromise.then(
-            configureInputFieldsFunc, configureInputFieldsFunc);
+            configureInputFieldsFunc,
+            configureInputFieldsFunc
+          );
         } else {
           configureInputFieldsFunc();
         }
       }.bind(this);
 
       this._handleUserSelectedValueItem(newValueItem, event, context).then(
-        afterHandleFunc, afterHandleFunc
+        afterHandleFunc,
+        afterHandleFunc
       );
     },
 
@@ -998,12 +1013,9 @@ var __oj_select_single_metadata =
       }.bind(this);
 
       if (ret instanceof Promise) {
-        return ret.then(
-          afterSetValue,
-          function () {
-            afterSetValue(false);
-          }
-        );
+        return ret.then(afterSetValue, function () {
+          afterSetValue(false);
+        });
       }
 
       var afterFunc = function () {
@@ -1057,8 +1069,7 @@ var __oj_select_single_metadata =
       var displayValueForSetValue = $(this._lovMainField.getInputElem()).val();
 
       // returns Promise that resolves to true|false or boolean
-      var returnValue = this._SetValue(displayValueForSetValue, null,
-        this._VALIDATE_METHOD_OPTIONS);
+      var returnValue = this._SetValue(displayValueForSetValue, null, this._VALIDATE_METHOD_OPTIONS);
 
       if (!(returnValue instanceof Promise)) {
         returnValue = Promise.resolve(returnValue ? 'valid' : 'invalid');
@@ -1158,7 +1169,7 @@ var __oj_select_single_metadata =
         // both value and valueItem specified, find the option for the value
         if (valueItem) {
           // may need to find out the label and setValueItem later
-          resolveLater = !oj$1.Object.compareValues(value, valueItem.key);
+          resolveLater = !oj.Object.compareValues(value, valueItem.key);
         }
       } else if (valueItem && !this._deferSettingValue) {
         // JET-38612 - Select Single | Value, disable bug
@@ -1195,7 +1206,7 @@ var __oj_select_single_metadata =
         newVal = valueItem ? valueItem.key : null;
       }
 
-      if (!oj$1.Object.compareValues(newVal, value)) {
+      if (!oj.Object.compareValues(newVal, value)) {
         // JET-42413: set flag while we're processing a value change so that if an app makes
         // changes to the component from within the change listener, we can defer processing the
         // new change until after we're done processing the current change
@@ -1237,8 +1248,7 @@ var __oj_select_single_metadata =
       // because in those cases we can process setting the value without having to fetch from the
       // data provider.
       if (!this._applyValueItem(valueItem)) {
-        var value = (!this._IsValueItemForPlaceholder(valueItem)) ? valueItem.key :
-          this.options.value;
+        var value = !this._IsValueItemForPlaceholder(valueItem) ? valueItem.key : this.options.value;
         // JET-37550 - REGRESSION : OJ-SELECT-SINGLE NOT DISPLAYING DEFAULT VALUE
         // if setting both data and value at the same time, defer setting a non-placeholder value
         // until after the data has been set
@@ -1263,8 +1273,7 @@ var __oj_select_single_metadata =
     _applyValueItem: function (valueItem) {
       //  - resetting value when value-item and placeholder are set throws exception
       //  - placeholder is not displayed after removing selections from select many
-      if (!this._resolveValueItemLater &&
-          !this._IsValueItemForPlaceholder(valueItem)) {
+      if (!this._resolveValueItemLater && !this._IsValueItemForPlaceholder(valueItem)) {
         this._updateInputElemValue(valueItem);
         return true;
       }
@@ -1319,10 +1328,13 @@ var __oj_select_single_metadata =
     _UpdateValueItem: function (value) {
       // TODO: does value need to be normalized?
       // var value = LovUtils.normalizeValue(_value);
-      this._initSelectionHelper(value, function (valueItem) {
-        this._SetValueItem(valueItem);
-        this._updateSelectedOption(valueItem);
-      }.bind(this));
+      this._initSelectionHelper(
+        value,
+        function (valueItem) {
+          this._SetValueItem(valueItem);
+          this._updateSelectedOption(valueItem);
+        }.bind(this)
+      );
     },
 
     /**
@@ -1357,9 +1369,11 @@ var __oj_select_single_metadata =
         // if the filter field is visible, update its text, too...
         // JET-40375 - SELECT SINGLE - DEFAULTED VALUE OVERRIDES USER INPUT
         // ...unless the user has already typed some filter text
-        if (((!this._fullScreenPopup && this._filterInputText.style.visibility !== 'hidden') ||
-             (this._fullScreenPopup && this._abstractLovBase.isDropdownOpen())) &&
-            !this._userHasTypedFilterText) {
+        if (
+          ((!this._fullScreenPopup && this._filterInputText.style.visibility !== 'hidden') ||
+            (this._fullScreenPopup && this._abstractLovBase.isDropdownOpen())) &&
+          !this._userHasTypedFilterText
+        ) {
           this._SetFilterFieldText(text);
         }
       }
@@ -1394,18 +1408,23 @@ var __oj_select_single_metadata =
         // if the value-item is initialized with an object equivalent to the default placeholder
         // value-item, then use the given object so that no valueItemChanged event is fired
         var placeholderValueItem =
-          (valueItem && oj$1.Object.compareValues(valueItem, this._defaultValueItemForPlaceholder)) ?
-          valueItem : this._defaultValueItemForPlaceholder;
+          valueItem && oj.Object.compareValues(valueItem, this._defaultValueItemForPlaceholder)
+            ? valueItem
+            : this._defaultValueItemForPlaceholder;
         initSelectionCallback(placeholderValueItem);
       } else if (this._abstractLovBase.hasData()) {
         // if user has selected a new value in the UI, use the saved valueItem instead of calling
         // fetchByKeys on the data provider
         if (this._userSelectedValueItem) {
           var userSelectedValueItem = this._userSelectedValueItem;
-          this._initSelectionFetchByKey({
-            data: [userSelectedValueItem.data],
-            metadata: [userSelectedValueItem.metadata]
-          }, value, initSelectionCallback);
+          this._initSelectionFetchByKey(
+            {
+              data: [userSelectedValueItem.data],
+              metadata: [userSelectedValueItem.metadata]
+            },
+            value,
+            initSelectionCallback
+          );
         } else if (this.options.data) {
           // JET-34351 - OJ-SELECT-SINGLE DOES NOT SHOW VALUE IF OPTIONS ARE UPDATED ASYNC
           // if we were showing the loading indicator while waiting for data to be set, stop
@@ -1417,18 +1436,20 @@ var __oj_select_single_metadata =
           // JET-34351 - OJ-SELECT-SINGLE DOES NOT SHOW VALUE IF OPTIONS ARE UPDATED ASYNC
           // only init selected value if options.data not null, otherwise the valueItem may
           // get set containing only the key, which means no label will be shown in the field
-          this._FetchByKeysFromDataProvider([value])
-            .then(function (fetchResults) {
+          this._FetchByKeysFromDataProvider([value]).then(
+            function (fetchResults) {
               // JET-34713 Error updating array dataprovider of ojSelectSingle while its hidden
               // Abort if select single has been disconnected
               if (!this._bReleasedResources) {
                 this._initSelectionFetchByKey(fetchResults, value, initSelectionCallback);
               }
-            }.bind(this), function () {
+            }.bind(this),
+            function () {
               if (!this._bReleasedResources) {
                 this._initSelectionFetchByKey(null, value, initSelectionCallback);
               }
-            }.bind(this));
+            }.bind(this)
+          );
         } else if (!this._loadingAwaitingData) {
           // JET-34351 - OJ-SELECT-SINGLE DOES NOT SHOW VALUE IF OPTIONS ARE UPDATED ASYNC
           // if we can't fetch right now because we're waiting for data to be set, show the
@@ -1447,7 +1468,7 @@ var __oj_select_single_metadata =
     _initSelectionFetchByKey: function (fetchResults, value, initSelectionCallback) {
       //  - While fetching the label for the initial value,
       // user can still interact the component and pick a new value.
-      if (oj$1.Object.compareValues(value, this.options.value) && !this._valueHasChanged) {
+      if (oj.Object.compareValues(value, this.options.value) && !this._valueHasChanged) {
         var data = null;
         var metadata = null;
         if (fetchResults && fetchResults.data && fetchResults.data.length > 0) {
@@ -1503,9 +1524,11 @@ var __oj_select_single_metadata =
      * @private
      */
     _selectItemByValue: function (value, event) {
-      const fetchDataAndSelectPromise = new Promise(function (resolve) {
-        this._resolveFetchDataAndSelectPromise = resolve;
-      }.bind(this));
+      const fetchDataAndSelectPromise = new Promise(
+        function (resolve) {
+          this._resolveFetchDataAndSelectPromise = resolve;
+        }.bind(this)
+      );
 
       if (value != null) {
         const valueItem = { key: value };
@@ -1534,12 +1557,14 @@ var __oj_select_single_metadata =
         if (event.detail.remove != null) {
           var keys = event.detail.remove.keys;
 
-          keys.forEach(function (key) {
-            if (oj$1.Object.compareValues(key, newVal)) {
-              newVal = this._defaultValueForPlaceholder;
-              Logger.warn('Select: selected value removed from data provider');
-            }
-          }.bind(this));
+          keys.forEach(
+            function (key) {
+              if (oj.Object.compareValues(key, newVal)) {
+                newVal = this._defaultValueForPlaceholder;
+                Logger.warn('Select: selected value removed from data provider');
+              }
+            }.bind(this)
+          );
         }
       }
 
@@ -1628,8 +1653,10 @@ var __oj_select_single_metadata =
         // check whether placeholder valueItem is already set so that we don't trigger
         // validation unnecessarily
         if (this._IsFilterInputTextCleared()) {
-          if (!this._IsValueForPlaceholder(this.options.value) ||
-              !this._IsValueItemForPlaceholder(this.options.valueItem)) {
+          if (
+            !this._IsValueForPlaceholder(this.options.value) ||
+            !this._IsValueItemForPlaceholder(this.options.valueItem)
+          ) {
             // on desktop, if the user clears all the text and Tabs out, clear the LOV value
             this._handleSelection(this._defaultValueItemForPlaceholder, null, true);
           }
@@ -1707,7 +1734,7 @@ var __oj_select_single_metadata =
      * @override
      */
     _IsValueItemForPlaceholder: function (valueItem) {
-      return (valueItem == null) || this._IsValueForPlaceholder(valueItem.key);
+      return valueItem == null || this._IsValueForPlaceholder(valueItem.key);
     },
 
     /**
@@ -1717,7 +1744,7 @@ var __oj_select_single_metadata =
      * @override
      */
     _IsValueForPlaceholder: function (value) {
-      return (value === null || value === undefined);
+      return value === null || value === undefined;
     },
 
     /**
@@ -1765,7 +1792,7 @@ var __oj_select_single_metadata =
      */
     _CreateLovDropdown: function () {
       return new LovDropdownSingle();
-    },
+    }
 
     // TODO: Jeanne. Need a _ValidateReturnPromise function as well. And I need a test, because
     // right now we should have a test that fails, but ojselect tests all pass, and so do
@@ -1939,9 +1966,7 @@ var __oj_select_single_metadata =
      *               {target: "Type", value: "<V, D>", for: "genericTypeParameters"}]
      */
 
-
     // Fragments:
-
 
     /**
      * <table class="keyboard-table">
@@ -2020,13 +2045,139 @@ var __oj_select_single_metadata =
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojSelectSingle
      */
-
+    /**
+     * <h3 id="migration-section">
+     *   Migration
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+     * </h3>
+     *
+     * <p>
+     * To migrate from oj-select-single to oj-c-select-single, you need to revise the import statement
+     * and references to oj-c-select-single in your app. Please note the changes between the two
+     * components below.
+     * </p>
+     *
+     * <h5>ItemText attribute</h5>
+     * <p>
+     * This attribute is required to specify how to get the text string to render for a data item.
+     * </p>
+     *
+     * <h5>LabelEdge attribute</h5>
+     * <p>
+     * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
+     * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+     * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+     * attribute to the corresponding value.
+     * </p>
+     *
+     * <h5>TextAlign attribute</h5>
+     * <p>
+     * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start and oj-form-control-text-align-end is now
+     * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+     * <ul>
+     *   <li>
+     *   .oj-form-control-text-align-right maps to 'right'
+     *   </li>
+     *   <li>
+     *   .oj-form-control-text-align-start maps to 'start'
+     *   </li>
+     *   <li>
+     *   .oj-form-control-text-align-end maps to 'end'
+     *   </li>
+     * </ul>
+     * </p>
+     *
+     * <h5>Translations</h5>
+     * <p>
+     * The instance level translations are not supported anymore for the following translation properties. These need to be configured
+     * in the translation bundle.
+     * <ul>
+     *  <li>cancel</li>
+     *  <li>label-acc-clear-value</li>
+     *  <li>multiple-matches-found</li>
+     *  <li>n-or-more-matches-found</li>
+     *  <li>no-matches-found</li>
+     *  <li>one-match-found</li>
+     * </ul>
+     *
+     * The 'required' translation property can still be configured at the instance level, but this API is simplied to take a single
+     * string instead of an object. To show a different required message detail, the application can now set the `required-message-detail`
+     * attribute to the desired translated string.
+     *
+     * <h5>ValueItem</h5>
+     * <p>
+     * The default value of the valueItem property is changed to <code class="prettyprint">null</code> instead of <code class="prettyprint">{ key: null, data: null, metadata: null }</code>.
+     * Also, when clearing out the value of the component, this property will be set to <code class="prettyprint">null</code> instead of the object mentioned above.
+     * </p>
+     *
+     * <h5>Refresh method</h5>
+     * <p>
+     * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+     * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+     * </p>
+     *
+     * <h5>Reset method</h5>
+     * <p>
+     * This method does not synchronously reset the component. The application should wait on the busy context of the component after
+     * invoking this method for the changes to appear.
+     * </p>
+     *
+     * <h5>ShowMessages method</h5>
+     * <p>
+     * This method does not synchronously shows the hidden messages of the component. The application should wait on the busy context
+     * of the component after invoking this method for the changes to appear.
+     * </p>
+     *
+     * <h5>Animation Events</h5>
+     * <p>
+     * ojAnimateStart and ojAnimateEnd events are no longer supported.
+     * </p>
+     *
+     * <h5>ojValueAction Event</h5>
+     * <p>
+     * When clearing out the value, the <code class="prettyprint">itemContext</code> property of the <code class="prettyprint">event.detail</code>
+     * object will be set to <code class="prettyprint">null</code> instead of <code class="prettyprint">{ key: null, data: null, metadata: null }</code>.
+     *
+     * <h5>Custom Label</h5>
+     * <p>
+     * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+     * label-hint attribute to add a label for the form component.
+     * </p>
+     * <p>
+     * The application should no longer need to use the &lt;oj-label-value> component to layout the form component. The application
+     * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+     * </p>
+     *
+     * <h5>User Assistance Density - Compact mode</h5>
+     * <p>
+     * Rendering the component in compact userAssistanceDensity mode is not supported in this release. Please use 'reflow' or 'efficient' instead.
+     * </p>
+     *
+     * <h5>Usage in Dynamic Form</h5>
+     * <p>
+     * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+     * </p>
+     *
+     * <h5>Limitations</h5>
+     * <p>
+     * Note that oj-c-select-single supports a limited feature set in JET 14. It does not support:
+     * </p>
+     * <ul>
+     * <li>a mobile specific dropdown</li>
+     * <li>hierarchical data</li>
+     * <li>customizing dropdown collection rendering beyond the text of each item (no itemTemplate or collectionTemplate)</li>
+     * <li>rendering in collection components like oj-data-grid and oj-table</li>
+     * </ul>
+     * @ojfragment migrationDoc
+     * @memberof oj.ojSelectSingle
+     */
   });
 
   Components.setDefaultOptions({
     // converterHint is defaulted to placeholder and notewindow in EditableValue.
     // For ojSelectSingle, we don't want a converterHint.
-    ojSelectSingle: { // properties for all ojSelectSingle components
+    ojSelectSingle: {
+      // properties for all ojSelectSingle components
       displayOptions: {
         converterHint: ['none']
       }

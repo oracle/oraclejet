@@ -1,11 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcomponentcore', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils'], function (Components, ojcustomelement, ojcustomelementUtils) { 'use strict';
+define(['ojs/ojcomponentcore', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojcore-base'], function (Components, ojcustomelement, ojcustomelementUtils, oj) { 'use strict';
+
+  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
    * @ojcomponent oj.ojSwitcher
@@ -21,6 +23,8 @@ define(['ojs/ojcomponentcore', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 2
    *
+   * @ojoracleicon 'oj-ux-ico-switcher'
+   *
    * @classdesc The switcher element dynamically decides which child element should be made visible. It will make a child element visible only if its <code class="prettyprint">slot</code> attribute's value matches with switcher's <code class="prettyprint">value</code> property.
    * <p> If child content is expensive to render, use <a href="oj.ojDefer.html">oj-defer</a> to defer rendering until child element is made visible.
    * <pre class="prettyprint">
@@ -33,7 +37,6 @@ define(['ojs/ojcomponentcore', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils
    * &lt;/oj-switcher>
    * </code></pre>
    */
-
 
   /**
    * Sets a property or a single subproperty for complex properties and notifies the component
@@ -104,7 +107,6 @@ define(['ojs/ojcomponentcore', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils
    * @example <caption>Change value property:</caption>
    * mySwitcher.value = 'settings';
    */
-
 
   /**
    * @constructor
@@ -201,7 +203,9 @@ define(['ojs/ojcomponentcore', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils
           _applyValueToItem(item, key);
         }
       }
-      if (isInitialRender) { isInitialRender = false; }
+      if (isInitialRender) {
+        isInitialRender = false;
+      }
     };
 
     function _applyValueToItem(item, itemSlotAttributeValue) {
@@ -239,6 +243,6 @@ var __oj_switcher_metadata =
     __oj_switcher_metadata.extension._CONSTRUCTOR = ojSwitcher;
     __oj_switcher_metadata.extension._CONTROLS_SUBTREE_HIDDEN = true;
     oj.CustomElementBridge.register('oj-switcher', { metadata: __oj_switcher_metadata });
-  }());
+  })();
 
 });

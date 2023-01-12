@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -16,7 +16,18 @@ var __oj_progress_list_metadata =
 {
   "properties": {
     "data": {
-      "type": "object"
+      "type": "object",
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "14.0.0",
+              "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
+            }
+          ]
+        }
+      }
     }
   },
   "methods": {
@@ -43,8 +54,7 @@ var __oj_progress_list_metadata =
  * @ojdeprecated {since: '8.0.0', description: '&lt;oj-progress-list> has been deprecated, please use &lt;oj-list-view> instead.'}
  *
  */
-oj.ProgressItem = function () {
-};
+oj.ProgressItem = function () {};
 
 /**
  * Attach an event handler
@@ -172,14 +182,13 @@ oj.ProgressItem.EventType = {
  * @ignore
  * @ojtsignore
  */
-var progressItemMetadata =
-  {
-    properties: {
-      data: {
-        type: 'object'
-      }
+var progressItemMetadata = {
+  properties: {
+    data: {
+      type: 'object'
     }
-  };
+  }
+};
 
 var progressItemView =
   "    <div class='oj-flex oj-sm-justify-content-space-between'>" +
@@ -200,7 +209,6 @@ var progressItemView =
   '        </div>' +
   '      </div>' +
   '    </div>';
-
 
 function progressItemViewModel(context) {
   var self = this;
@@ -278,12 +286,11 @@ function progressItemViewModel(context) {
 }
 
 // eslint-disable-next-line no-undef
-Composite.register('oj-progress-item',
-  {
-    view: progressItemView,
-    viewModel: progressItemViewModel,
-    metadata: progressItemMetadata
-  });
+Composite.register('oj-progress-item', {
+  view: progressItemView,
+  viewModel: progressItemViewModel,
+  metadata: progressItemMetadata
+});
 
 
 /* global KnockoutTemplateUtils:false */
@@ -302,6 +309,8 @@ Composite.register('oj-progress-item',
  * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
  * @ojvbdefaultcolumns 4
  * @ojvbmincolumns 1
+ *
+ * @ojoracleicon 'oj-ux-ico-progress-list'
  *
  * @classdesc
  * <h3 id="progressListOverview-section">
@@ -338,6 +347,8 @@ Composite.register('oj-progress-item',
  *               {target: "Type", value: "DataProvider|TableDataSource|null", consumedBy:"js"}]
  *
  * @default null
+ * @ojwebelementstatus {type: "deprecated", since: "14.0.0",
+ *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
  *
  * @example <caption>Initialize the progress list with the <code class="prettyprint">data</code> attribute specified:</caption>
  * &lt;oj-progress-list data='{{dataProvider}}'>&lt;/oj-progress-list>
@@ -351,14 +362,14 @@ Composite.register('oj-progress-item',
  */
 
 var progressListView =
-  "<oj-list-view data-bind=\"attr: {id: $unique + '_list'}\"" +
+  '<oj-list-view data-bind="attr: {id: $unique + \'_list\'}"' +
   "              aria-label='list using array'" +
   "              data='{{$properties.data}}'" +
   "              item.renderer='{{renderer()}}'" +
   "              selection-mode='single'>" +
   '</oj-list-view>' +
   '' +
-  "<script type='text/html' data-bind=\"attr: {id: tempId}\">" +
+  '<script type=\'text/html\' data-bind="attr: {id: tempId}">' +
   "  <li class='oj-progresslist-item' tabindex='0'>" +
   "    <oj-progress-item data='{{$data}}'>" +
   '    </oj-progress-item>' +
@@ -376,13 +387,11 @@ function progressListViewModel(context) {
 
 /* global __oj_progress_list_metadata */
 // eslint-disable-next-line no-undef
-Composite.register('oj-progress-list',
-  {
-    view: progressListView,
-    viewModel: progressListViewModel,
-    metadata: __oj_progress_list_metadata
-  });
-
+Composite.register('oj-progress-list', {
+  view: progressListView,
+  viewModel: progressListViewModel,
+  metadata: __oj_progress_list_metadata
+});
 
 /**
  * Sets a property or a single subproperty for complex properties and notifies the component
@@ -451,44 +460,41 @@ Composite.register('oj-progress-list',
  * @ignore
  * @ojtsignore
  */
-var progressStatusMetadata =
-  {
-    properties: {
-      status: {
-        type: 'string'
-      },
-      progress: {
-        type: 'number'
-      }
+var progressStatusMetadata = {
+  properties: {
+    status: {
+      type: 'string'
+    },
+    progress: {
+      type: 'number'
     }
-  };
+  }
+};
 
 var progressStatusView =
-  "  <div data-bind='visible: ($properties.status == \"queued\")'" +
+  '  <div data-bind=\'visible: ($properties.status == "queued")\'' +
   "       class='oj-progressstatus-cell'>" +
   "    <div class='oj-component-icon oj-progressstatus-cancel-icon'" +
   "         role='img' title='cancel'></div>" +
   '  </div>' +
-  "  <div data-bind='visible: ($properties.status == \"loadstarted\")'" +
+  '  <div data-bind=\'visible: ($properties.status == "loadstarted")\'' +
   "       class='oj-progressstatus-cell'>" +
   "    <oj-progress type='circle' value='{{$properties.progress}}'>" +
   '    </oj-progress>' +
   '  </div>' +
-  "  <div data-bind='visible: ($properties.status == \"loaded\")'" +
+  '  <div data-bind=\'visible: ($properties.status == "loaded")\'' +
   "       class='oj-progressstatus-cell'>" +
   "    <div class='oj-component-icon oj-progressstatus-done-icon' role='img' title='done'></div>" +
   '  </div>' +
-  "  <div data-bind='visible: ($properties.status == \"errored\" || $properties.status == \"timedout\" || $properties.status == \"aborted\")'" +
+  '  <div data-bind=\'visible: ($properties.status == "errored" || $properties.status == "timedout" || $properties.status == "aborted")\'' +
   "       class='oj-progressstatus-cell'>" +
   "    <div class='oj-component-icon oj-progressstatus-error-icon' role='img' title='error'></div>" +
   '  </div>';
 
-
 // eslint-disable-next-line no-undef
-Composite.register('oj-progress-status',
-  {
-    view: progressStatusView,
-    metadata: progressStatusMetadata
-  });
+Composite.register('oj-progress-status', {
+  view: progressStatusView,
+  metadata: progressStatusMetadata
+});
 
 });

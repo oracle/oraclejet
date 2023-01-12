@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -49,8 +49,9 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         this.startClosedWithEsc = false;
         this.endClosedWithEsc = false;
         this.bottomClosedWithEsc = false;
-        this.overlayDrawerResizeListener = null;
-        this.reflowDrawerResizeListener = null;
+        this.overlayDrawerResizeHandler = null;
+        this.reflowDrawerResizeHandler = null;
+        this.windowResizeHandler = null;
         this.handleResize = true;
         this.state = {
             startOpened: this.props.startOpened,
@@ -128,7 +129,14 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             this.setBottomOverlayDrawerWidth();
             PopupService.getInstance().triggerOnDescendents($drawerElement, PopupService.EVENT.POPUP_REFRESH);
         };
-        this.resizeHandler = () => {
+        this.destroyHandler = (edge) => {
+            const $drawerElement = $(this.getDrawerRef(edge).current);
+            const status = ZOrderUtils.getStatus($drawerElement);
+            if (status === ZOrderUtils.STATUS.OPEN) {
+                ZOrderUtils.removeFromAncestorLayer($drawerElement);
+            }
+        };
+        this.windowResizeCallback = () => {
             if (this.handleResize) {
                 const prevViewportResolvedDisplayMode = this.state.viewportResolvedDisplayMode;
                 const nextViewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
@@ -409,9 +417,10 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         this.startOpenedPrevState = this.props.startOpened;
         this.endOpenedPrevState = this.props.endOpened;
         this.bottomOpenedPrevState = this.props.bottomOpened;
-        window.addEventListener(DrawerConstants.stringResize, () => {
-            this.resizeHandler();
-        });
+        if (this.windowResizeHandler === null) {
+            this.windowResizeHandler = this.windowResizeCallback.bind(this);
+        }
+        window.addEventListener(DrawerConstants.stringResize, this.windowResizeHandler);
         if (DrawerLayout_1.defaultProps.startOpened != this.props.startOpened ||
             DrawerLayout_1.defaultProps.endOpened != this.props.endOpened ||
             DrawerLayout_1.defaultProps.bottomOpened != this.props.bottomOpened) {
@@ -423,9 +432,8 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         }
     }
     componentWillUnmount() {
-        window.removeEventListener(DrawerConstants.stringResize, () => {
-            this.resizeHandler();
-        });
+        window.removeEventListener(DrawerConstants.stringResize, this.windowResizeHandler);
+        this.windowResizeHandler = null;
     }
     handleComponentUpdate(prevState) {
         let sides = [
@@ -462,8 +470,8 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             this.elementWithFocusBeforeDrawerCloses = document.activeElement;
             this.animateClose(edge)
                 .then(() => {
-                removeResizeListener(this.getDrawerRef(edge).current, this.reflowDrawerResizeListener);
-                this.reflowDrawerResizeListener === null;
+                removeResizeListener(this.getDrawerRef(edge).current, this.reflowDrawerResizeHandler);
+                this.reflowDrawerResizeHandler === null;
                 this.returnFocus(edge);
                 if (this.getStateToChangeTo(edge)) {
                     const updatedState = {};
@@ -482,6 +490,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                 }
                 else {
                     if (!this.wasDrawerOpenedInPrevState(edge)) {
+                        this.addHiddenStyle(edge);
                         this.forceUpdate();
                         setTimeout(() => {
                             this.setBottomOverlayDrawerWidth();
@@ -501,19 +510,28 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                     if (!prevState[this.edgeToShouldChangeDisplayMode(edge)]) {
                         this.drawerOpener = document.activeElement;
                     }
+                    this.removeHiddenStyle(edge);
                     this.animateOpen(edge).then(() => {
                         this.setBottomOverlayDrawerWidth();
-                        if (this.reflowDrawerResizeListener === null) {
-                            this.reflowDrawerResizeListener = this.reflowDrawerResizeCallback.bind(this, edge);
+                        if (this.reflowDrawerResizeHandler === null) {
+                            this.reflowDrawerResizeHandler = this.reflowDrawerResizeCallback.bind(this, edge);
                         }
-                        addResizeListener(this.getDrawerRef(edge).current, this.reflowDrawerResizeListener, 50, true);
+                        addResizeListener(this.getDrawerRef(edge).current, this.reflowDrawerResizeHandler, 50, true);
                     });
                 }
             }
         }
     }
+    removeHiddenStyle(edge) {
+        var _a;
+        (_a = this.getDrawerWrapperRef(edge).current) === null || _a === void 0 ? void 0 : _a.classList.remove(DrawerConstants.styleDrawerHidden);
+    }
+    addHiddenStyle(edge) {
+        this.getDrawerWrapperRef(edge).current.classList.add(DrawerConstants.styleDrawerHidden);
+    }
     returnFocus(edge) {
-        if (this.getDrawerRef(edge).current.contains(this.elementWithFocusBeforeDrawerCloses)) {
+        const drawerElem = this.getDrawerRef(edge).current;
+        if (drawerElem && drawerElem.contains(this.elementWithFocusBeforeDrawerCloses)) {
             DrawerUtils.moveFocusToElementOrNearestAncestor(this.drawerOpener);
         }
     }
@@ -564,6 +582,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         }
         else if (this.isDrawerOpened(edge)) {
             if ([ZOrderUtils.STATUS.CLOSE, ZOrderUtils.STATUS.UNKNOWN].indexOf(ZOrderUtils.getStatus($drawerElement) > -1)) {
+                this.removeHiddenStyle(edge);
                 popupServiceInstance.open(popupServiceOptions);
             }
         }
@@ -583,13 +602,15 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         PSOptions[PSoption.LAYER_SELECTORS] = DrawerConstants.DrawerLayoutStyleSurrogate;
         PSOptions[PSoption.LAYER_LEVEL] = PopupService.LAYER_LEVEL.TOP_LEVEL;
         PSOptions[PSoption.POSITION] = this.getDrawerPosition(edge);
+        PSOptions[PSoption.CUSTOM_ELEMENT] = true;
         const PSEvent = PopupService.EVENT;
         PSOptions[PSoption.EVENTS] = {
             [PSEvent.POPUP_BEFORE_OPEN]: () => this.beforeOpenHandler(edge, prevState, PSOptions),
             [PSEvent.POPUP_AFTER_OPEN]: () => this.afterOpenHandler(edge, prevState),
             [PSEvent.POPUP_BEFORE_CLOSE]: () => this.beforeCloseHandler(edge),
             [PSEvent.POPUP_AFTER_CLOSE]: () => this.afterCloseHandler(edge, prevState),
-            [PSEvent.POPUP_REFRESH]: () => this.refreshHandler(edge)
+            [PSEvent.POPUP_REFRESH]: () => this.refreshHandler(edge),
+            [PSEvent.POPUP_REMOVE]: () => this.destroyHandler(edge)
         };
         return PSOptions;
     }
@@ -621,10 +642,10 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         this.handleFocus(prevState);
         const $drawerElement = $(this.getDrawerRef(edge).current);
         const status = ZOrderUtils.getStatus($drawerElement);
-        if (this.overlayDrawerResizeListener === null) {
-            this.overlayDrawerResizeListener = this.overlayDrawerResizeCallback.bind(this, edge);
+        if (this.overlayDrawerResizeHandler === null) {
+            this.overlayDrawerResizeHandler = this.overlayDrawerResizeCallback.bind(this, edge);
         }
-        addResizeListener(this.getDrawerRef(edge).current, this.overlayDrawerResizeListener, 50, true);
+        addResizeListener(this.getDrawerRef(edge).current, this.overlayDrawerResizeHandler, 50, true);
         if (status === ZOrderUtils.STATUS.OPEN && !this.isDrawerOpened(edge)) {
             const popupServiceInstance = PopupService.getInstance();
             const popupServiceOptions = this.getPopupServiceOptions(edge, prevState);
@@ -645,8 +666,8 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
     beforeCloseHandler(edge) {
         DrawerUtils.disableBodyOverflow();
         this.elementWithFocusBeforeDrawerCloses = document.activeElement;
-        removeResizeListener(this.getDrawerRef(edge).current, this.overlayDrawerResizeListener);
-        this.overlayDrawerResizeListener === null;
+        removeResizeListener(this.getDrawerRef(edge).current, this.overlayDrawerResizeHandler);
+        this.overlayDrawerResizeHandler === null;
         return this.animateClose(edge);
     }
     afterCloseHandler(edge, prevState) {
@@ -681,6 +702,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             popupServiceInstance.open(popupServiceOptions);
         }
         else if (!this.wasDrawerOpenedInPrevState(edge)) {
+            this.addHiddenStyle(edge);
             this.forceUpdate();
         }
     }
@@ -704,7 +726,7 @@ DrawerLayout.defaultProps = {
     endDisplay: 'auto',
     bottomDisplay: 'auto'
 };
-DrawerLayout.metadata = { "slots": { "": {}, "start": {}, "end": {}, "bottom": {} }, "properties": { "startOpened": { "type": "boolean", "writeback": true }, "endOpened": { "type": "boolean", "writeback": true }, "bottomOpened": { "type": "boolean", "writeback": true }, "startDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] }, "endDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] }, "bottomDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] } }, "events": { "ojBeforeClose": { "cancelable": true } }, "extension": { "_WRITEBACK_PROPS": ["startOpened", "endOpened", "bottomOpened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
+DrawerLayout._metadata = { "slots": { "": {}, "start": {}, "end": {}, "bottom": {} }, "properties": { "startOpened": { "type": "boolean", "writeback": true }, "endOpened": { "type": "boolean", "writeback": true }, "bottomOpened": { "type": "boolean", "writeback": true }, "startDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] }, "endDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] }, "bottomDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] } }, "events": { "ojBeforeClose": { "cancelable": true } }, "extension": { "_WRITEBACK_PROPS": ["startOpened", "endOpened", "bottomOpened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
 DrawerLayout = DrawerLayout_1 = __decorate([
     customElement('oj-drawer-layout')
 ], DrawerLayout);

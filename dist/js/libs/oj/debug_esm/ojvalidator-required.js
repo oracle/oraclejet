@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -105,8 +105,11 @@ RequiredValidator.prototype.validate = function (value) {
   var params = {};
 
   // checks for empty arrays and String. Objects are considered non-null.
-  if (value !== undefined && value !== null &&
-      !((typeof value === 'string' || value instanceof Array) && value.length === 0)) {
+  if (
+    value !== undefined &&
+    value !== null &&
+    !((typeof value === 'string' || value instanceof Array) && value.length === 0)
+  ) {
     return;
   }
 
@@ -117,11 +120,12 @@ RequiredValidator.prototype.validate = function (value) {
     label = this._options.label || '';
   }
   params = { label: label };
-  localizedSummary = (summary) ? applyParameters(summary, params) :
-    getTranslatedString(this._getSummaryKey(), params);
-  localizedDetail = (detail) ?
-    applyParameters(detail, params) :
-    getTranslatedString(this._getDetailKey(), params);
+  localizedSummary = summary
+    ? applyParameters(summary, params)
+    : getTranslatedString(this._getSummaryKey(), params);
+  localizedDetail = detail
+    ? applyParameters(detail, params)
+    : getTranslatedString(this._getDetailKey(), params);
 
   throw new ValidatorError(localizedSummary, localizedDetail);
 };
@@ -138,7 +142,7 @@ RequiredValidator.prototype.validate = function (value) {
  */
 RequiredValidator.prototype.getHint = function () {
   var hint = '';
-  if (this._options && (this._options.hint)) {
+  if (this._options && this._options.hint) {
     hint = getTranslatedString(this._options.hint);
   }
 

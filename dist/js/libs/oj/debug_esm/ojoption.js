@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -103,7 +103,7 @@ var __oj_option_metadata =
   __oj_option_metadata.properties.customOptionRenderer = {};
   __oj_option_metadata.extension._CONSTRUCTOR = ojOption;
   oj.CustomElementBridge.register('oj-option', { metadata: __oj_option_metadata });
-}());
+})();
 
 /**
  * @ojcomponent oj.ojOption
@@ -114,6 +114,8 @@ var __oj_option_metadata =
  * @ojsignature class ojOption extends JetElement<ojOptionSettableProperties>
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["value", "disabled"]}
+ *
+ * @ojoracleicon 'oj-ux-ico-get-options'
  *
  * @classdesc
  * <h3 id="optionOverview-section">

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -26,9 +26,17 @@ import 'ojs/ojdatasource-common';
  * @export
  * @ojtsignore
  * @see FlattenedDataGridDataSource
+ * @ojdeprecated {since: '14.0.0', description: 'FlattenedTreeCellSet has been deprecated with
+ * FlattenedTreeDataGridDataSource.'}
  */
-const FlattenedTreeCellSet = function (startRow, endRow,
-  startColumn, endColumn, nodeSet, columns) {
+const FlattenedTreeCellSet = function (
+  startRow,
+  endRow,
+  startColumn,
+  endColumn,
+  nodeSet,
+  columns
+) {
   oj$1.Assert.assertArrayOrNull(columns);
   this.m_startRow = startRow;
   this.m_endRow = endRow;
@@ -63,8 +71,9 @@ FlattenedTreeCellSet.prototype.getData = function (indexes) {
   var column = relIndex[1];
 
   // make sure index are valid
-  oj$1.Assert.assert(row < this.m_nodeSet.getStart() + this.m_nodeSet.getCount() &&
-                   column < this.m_columns.length);
+  oj$1.Assert.assert(
+    row < this.m_nodeSet.getStart() + this.m_nodeSet.getCount() && column < this.m_columns.length
+  );
 
   var columnKey = this.m_columns[column];
   var rowData = this.m_nodeSet.getData(row);
@@ -102,7 +111,6 @@ FlattenedTreeCellSet.prototype.getData = function (indexes) {
     return returnObj;
   }
 
-
   return null;
 };
 
@@ -130,9 +138,10 @@ FlattenedTreeCellSet.prototype.getMetadata = function (indexes) {
   var row = relIndex[0];
   var column = relIndex[1];
 
-    // make sure index are valid
-  oj$1.Assert.assert(row < this.m_nodeSet.getStart() + this.m_nodeSet.getCount() &&
-                   column < this.m_columns.length);
+  // make sure index are valid
+  oj$1.Assert.assert(
+    row < this.m_nodeSet.getStart() + this.m_nodeSet.getCount() && column < this.m_columns.length
+  );
 
   var columnKey = this.m_columns[column];
 
@@ -160,7 +169,7 @@ FlattenedTreeCellSet.prototype._getRelIndexes = function (indexes) {
   }
 
   // map to the index in nodeSet
-  var row = (indexes.row - this.m_startRow) + this.m_nodeSet.getStart();
+  var row = indexes.row - this.m_startRow + this.m_nodeSet.getStart();
   var column = indexes.column;
 
   // make sure index are valid
@@ -244,8 +253,10 @@ FlattenedTreeCellSet.prototype.getCount = function (axis) {
  */
 // eslint-disable-next-line no-unused-vars
 FlattenedTreeCellSet.prototype.getExtent = function (indexes) {
-  return { row: { extent: 1, more: { before: false, after: false } },
-    column: { extent: 1, more: { before: false, after: false } } };
+  return {
+    row: { extent: 1, more: { before: false, after: false } },
+    column: { extent: 1, more: { before: false, after: false } }
+  };
 };
 
 /**
@@ -261,13 +272,19 @@ FlattenedTreeCellSet.prototype.getExtent = function (indexes) {
  * @export
  * @extends FlattenedTreeDataSource
  * @ojtsignore
+ * @ojdeprecated {since: '14.0.0', description: 'FlattenedTreeDataGridDataSource has been deprecated,
+ * use RowDataGridProvider with FlattenedTreeDataProviderView instead.'}
  */
 const FlattenedTreeDataGridDataSource = function (treeDataSource, options) {
   FlattenedTreeDataGridDataSource.superclass.constructor.call(this, treeDataSource, options);
 };
 oj$1._registerLegacyNamespaceProp('FlattenedTreeDataGridDataSource', FlattenedTreeDataGridDataSource);
 // Subclass from FlattenedTreeDataSource
-oj$1.Object.createSubclass(FlattenedTreeDataGridDataSource, oj$1.FlattenedTreeDataSource, 'oj.FlattenedTreeDataGridDataSource');
+oj$1.Object.createSubclass(
+  FlattenedTreeDataGridDataSource,
+  oj$1.FlattenedTreeDataSource,
+  'oj.FlattenedTreeDataGridDataSource'
+);
 
 /**
  * Initializes the data source.
@@ -345,7 +362,9 @@ FlattenedTreeDataGridDataSource.prototype.getCount = function (axis) {
  * @return {undefined}
  */
 FlattenedTreeDataGridDataSource.prototype.fetchHeaders = function (
-  headerRange, callbacks, callbackObjects
+  headerRange,
+  callbacks,
+  callbackObjects
 ) {
   var headerSet;
   var axis = headerRange.axis;
@@ -402,7 +421,9 @@ FlattenedTreeDataGridDataSource.prototype.fetchHeaders = function (
  * @return {undefined}
  */
 FlattenedTreeDataGridDataSource.prototype.fetchCells = function (
-  cellRanges, callbacks, callbackObjects
+  cellRanges,
+  callbacks,
+  callbackObjects
 ) {
   var rowStart;
   var rowCount;
@@ -423,18 +444,26 @@ FlattenedTreeDataGridDataSource.prototype.fetchCells = function (
   var prevFetchSize = this.m_fetchSize;
   this.m_fetchSize = rowCount;
 
-  FlattenedTreeDataGridDataSource.superclass.fetchRows.call(this, {
-    start: rowStart,
-    count: rowCount
-  }, {
-    success: function (nodeSet) {
-      this._handleFetchRowsSuccess(nodeSet, cellRanges, callbacks, callbackObjects, 0);
-    }.bind(this),
-    error: function (status) {
-      this._handleFetchRowsError(status, { start: rowStart, count: rowCount },
-                                 callbacks, callbackObjects);
-    }.bind(this)
-  });
+  FlattenedTreeDataGridDataSource.superclass.fetchRows.call(
+    this,
+    {
+      start: rowStart,
+      count: rowCount
+    },
+    {
+      success: function (nodeSet) {
+        this._handleFetchRowsSuccess(nodeSet, cellRanges, callbacks, callbackObjects, 0);
+      }.bind(this),
+      error: function (status) {
+        this._handleFetchRowsError(
+          status,
+          { start: rowStart, count: rowCount },
+          callbacks,
+          callbackObjects
+        );
+      }.bind(this)
+    }
+  );
 
   // revert fetch size so that fetch size can be used as normal for max insert count
   this.m_fetchSize = prevFetchSize;
@@ -456,18 +485,22 @@ FlattenedTreeDataGridDataSource.prototype.keys = function (indexes) {
   var rowIndex = indexes.row;
   var colIndex = indexes.column;
 
-  return new Promise(function (resolve) {
-    // if it hasn't been fetched yet or invalid column index, return null
-    if (rowIndex > FlattenedTreeDataGridDataSource.superclass.getFetchedRange.call(this).end ||
-        colIndex > this.m_columns.length) {
-      resolve(null);
-    } else {
-      resolve({
-        row: FlattenedTreeDataGridDataSource.superclass.getKey.call(this, rowIndex),
-        column: this.m_columns[colIndex]
-      });
-    }
-  }.bind(this));
+  return new Promise(
+    function (resolve) {
+      // if it hasn't been fetched yet or invalid column index, return null
+      if (
+        rowIndex > FlattenedTreeDataGridDataSource.superclass.getFetchedRange.call(this).end ||
+        colIndex > this.m_columns.length
+      ) {
+        resolve(null);
+      } else {
+        resolve({
+          row: FlattenedTreeDataGridDataSource.superclass.getKey.call(this, rowIndex),
+          column: this.m_columns[colIndex]
+        });
+      }
+    }.bind(this)
+  );
 };
 
 /**
@@ -485,13 +518,15 @@ FlattenedTreeDataGridDataSource.prototype.indexes = function (keys) {
   var rowKey = keys.row;
   var colKey = keys.column;
 
-  return new Promise(function (resolve) {
-    // call helper method to find the flattened index
-    var rowIndex = FlattenedTreeDataGridDataSource.superclass.getIndex.call(this, rowKey);
-    var colIndex;
-    colIndex = this.m_columns.indexOf(colKey);
-    resolve({ row: rowIndex, column: colIndex });
-  }.bind(this));
+  return new Promise(
+    function (resolve) {
+      // call helper method to find the flattened index
+      var rowIndex = FlattenedTreeDataGridDataSource.superclass.getIndex.call(this, rowKey);
+      var colIndex;
+      colIndex = this.m_columns.indexOf(colKey);
+      resolve({ row: rowIndex, column: colIndex });
+    }.bind(this)
+  );
 };
 
 /**
@@ -512,9 +547,7 @@ FlattenedTreeDataGridDataSource.prototype.indexes = function (keys) {
  * @memberof! FlattenedTreeDataGridDataSource
  * @return {undefined}
  */
-FlattenedTreeDataGridDataSource.prototype.sort = function (
-  criteria, callbacks, callbackObjects
-) {
+FlattenedTreeDataGridDataSource.prototype.sort = function (criteria, callbacks, callbackObjects) {
   var dataSource = FlattenedTreeDataGridDataSource.superclass.getWrappedDataSource.call(this);
 
   // delegates to the underlying TreeDataSource but intercept the success callback so that we can clear the cache
@@ -533,7 +566,8 @@ FlattenedTreeDataGridDataSource.prototype.sort = function (
  * @private
  */
 FlattenedTreeDataGridDataSource.prototype._handleSortSuccess = function (
-  callbacks, callbackObjects
+  callbacks,
+  callbackObjects
 ) {
   // reset state
   this.refresh();
@@ -564,7 +598,10 @@ FlattenedTreeDataGridDataSource.prototype._handleSortSuccess = function (
  * @return {undefined}
  */
 FlattenedTreeDataGridDataSource.prototype.move = function (
-  rowToMove, referenceRow, position, callbacks
+  rowToMove,
+  referenceRow,
+  position,
+  callbacks
 ) {
   var dataSource = FlattenedTreeDataGridDataSource.superclass.getWrappedDataSource.call(this);
 
@@ -623,7 +660,10 @@ FlattenedTreeDataGridDataSource.prototype.insertMetadata = function (key, metada
  * @private
  */
 FlattenedTreeDataGridDataSource.prototype._handleFetchRowsSuccess = function (
-  nodeSet, cellRanges, callbacks, callbackObjects
+  nodeSet,
+  cellRanges,
+  callbacks,
+  callbackObjects
 ) {
   var rowStart;
   var rowCount;
@@ -650,18 +690,26 @@ FlattenedTreeDataGridDataSource.prototype._handleFetchRowsSuccess = function (
     var headerRange = this.m_fetchHeaderRequest.range;
     if (headerRange.start === rowStart && headerRange.count === rowCount) {
       // handle row header request
-      this._handleRowHeaderFetchSuccess(nodeSet, headerRange,
-                                        this.m_fetchHeaderRequest.callbacks,
-                                        this.m_fetchHeaderRequest.callbackObjects);
+      this._handleRowHeaderFetchSuccess(
+        nodeSet,
+        headerRange,
+        this.m_fetchHeaderRequest.callbacks,
+        this.m_fetchHeaderRequest.callbackObjects
+      );
       // do not clear unless it is the correct range
       this.m_fetchHeaderRequest = null;
     }
   }
 
   // create wrapper
-  var cellSet = new oj$1.FlattenedTreeCellSet(rowStart, rowStart + rowCount,
-                                            columnStart, columnStart + columnCount,
-                                            nodeSet, this.m_columns);
+  var cellSet = new oj$1.FlattenedTreeCellSet(
+    rowStart,
+    rowStart + rowCount,
+    columnStart,
+    columnStart + columnCount,
+    nodeSet,
+    this.m_columns
+  );
   // invoke success callback
   if (callbacks.success) {
     // todo: get rid of callbackObjects
@@ -686,7 +734,10 @@ FlattenedTreeDataGridDataSource.prototype._handleFetchRowsSuccess = function (
  * @private
  */
 FlattenedTreeDataGridDataSource.prototype._handleFetchRowsError = function (
-  status, range, callbacks, callbackObjects
+  status,
+  range,
+  callbacks,
+  callbackObjects
 ) {
   // checks whether there is an outstanding fetch header request with the same range
   if (this.m_fetchHeaderRequest) {
@@ -735,14 +786,19 @@ FlattenedTreeDataGridDataSource.prototype._handleFetchRowsError = function (
  * @private
  */
 FlattenedTreeDataGridDataSource.prototype._handleRowHeaderFetchSuccess = function (
-  nodeSet, headerRange, callbacks, callbackObjects
+  nodeSet,
+  headerRange,
+  callbacks,
+  callbackObjects
 ) {
   // create wrapper
-  var headerSet = new oj$1.FlattenedTreeHeaderSet(headerRange.start,
-                                                headerRange.start + headerRange.count,
-                                                this.m_columns,
-                                                nodeSet,
-                                                this.m_rowHeader);
+  var headerSet = new oj$1.FlattenedTreeHeaderSet(
+    headerRange.start,
+    headerRange.start + headerRange.count,
+    this.m_columns,
+    nodeSet,
+    this.m_rowHeader
+  );
   // invoke success callback
   if (callbacks.success) {
     // todo: get rid of callbackObjects
@@ -762,19 +818,29 @@ FlattenedTreeDataGridDataSource.prototype._handleRowHeaderFetchSuccess = functio
  * @protected
  */
 FlattenedTreeDataGridDataSource.prototype.insertRows = function (
-  insertAtIndex, insertAtRowKey, nodeSet
+  insertAtIndex,
+  insertAtRowKey,
+  nodeSet
 ) {
   var headerSet = null;
   if (this.m_rowHeader) {
-    headerSet = new oj$1.FlattenedTreeHeaderSet(insertAtIndex,
-                                              insertAtIndex + nodeSet.getCount(),
-                                              this.m_columns, nodeSet, this.m_rowHeader);
+    headerSet = new oj$1.FlattenedTreeHeaderSet(
+      insertAtIndex,
+      insertAtIndex + nodeSet.getCount(),
+      this.m_columns,
+      nodeSet,
+      this.m_rowHeader
+    );
   }
   // create a CellSet that wraps around a RowSet
-  var cellSet = new oj$1.FlattenedTreeCellSet(insertAtIndex,
-                                            insertAtIndex + nodeSet.getCount(),
-                                            0, this.m_columns.length,
-                                            nodeSet, this.m_columns);
+  var cellSet = new oj$1.FlattenedTreeCellSet(
+    insertAtIndex,
+    insertAtIndex + nodeSet.getCount(),
+    0,
+    this.m_columns.length,
+    nodeSet,
+    this.m_columns
+  );
 
   var keys = [];
   var indexes = [];
@@ -848,6 +914,8 @@ FlattenedTreeDataGridDataSource.prototype.handleMaxCountReached = function (rang
  * @export
  * @ojtsignore
  * @see FlattenedTreeDataGridDataSource
+ * @ojdeprecated {since: '14.0.0', description: 'FlattenedTreeHeaderSet has been deprecated with
+ * FlattenedTreeDataGridDataSource.'}
  */
 const FlattenedTreeHeaderSet = function (start, end, headers, nodeSet, rowHeader) {
   oj$1.Assert.assertArrayOrNull(headers);
@@ -880,7 +948,7 @@ FlattenedTreeHeaderSet.prototype.getData = function (index, level) {
 
   // row or column header
   if (this.m_rowHeader != null && this.m_nodeSet != null) {
-    rowData = this.m_nodeSet.getData((index - this.m_start) + this.m_nodeSet.getStart());
+    rowData = this.m_nodeSet.getData(index - this.m_start + this.m_nodeSet.getStart());
     if (rowData != null) {
       if (rowData.get) {
         return rowData.get(this.m_rowHeader);
@@ -916,7 +984,7 @@ FlattenedTreeHeaderSet.prototype.getMetadata = function (index, level) {
   oj$1.Assert.assert(level == null || level === 0, 'level out of bounds');
 
   if (this.m_rowHeader != null && this.m_nodeSet != null) {
-    return this.m_nodeSet.getMetadata((index - this.m_start) + this.m_nodeSet.getStart());
+    return this.m_nodeSet.getMetadata(index - this.m_start + this.m_nodeSet.getStart());
   }
 
   data = this.getData(index);

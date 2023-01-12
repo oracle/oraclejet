@@ -1,2 +1,2 @@
-export { FileUploadTransport } from './FileUploadTransport';
+export { FileUploadTransport} from './FileUploadTransport';
 export { FilePickerElementEventMap, FilePickerElementSettableProperties, FilePickerElementSettablePropertiesLenient, FilePickerElement, ojFilePickerEventMap, ojFilePickerSettableProperties, ojFilePickerSettablePropertiesLenient, ojFilePicker } from './ojFilePicker';

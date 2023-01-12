@@ -1,0 +1,11 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.variables._oj-list-view.scoped") {
+    .oj-listview-card-group, 
+    .oj-listview-card-layout .oj-listview-group {
+        padding-top: 0;    
+        padding-bottom: var(--oj-panel-gutter);    
+        padding-inline-start: var(--oj-core-gutter-start, 0);    
+        padding-inline-end: var(--oj-core-gutter-end, 0);
+    }
+}

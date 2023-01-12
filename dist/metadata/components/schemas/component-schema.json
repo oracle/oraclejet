@@ -107,6 +107,14 @@
             }
           }
         },
+        "catalog": {
+          "type": "object",
+          "properties": {
+            "dataProviderProperties": {
+              "$ref": "#/definitions/extensionDataProviderPropsDef"
+            }
+          }
+        },
         "jet": {
           "$ref": "#/definitions/extensionJetDef"
         },
@@ -116,6 +124,39 @@
         "webelement": {
           "$ref": "#/definitions/extensionWebElementExceptionStatusDef"
         }
+      }
+    },
+
+    "extensionDataProviderPropsDef": {
+      "type": "object",
+
+      "$comment": "DataProvider property names follow JavaScript identifer naming restrictions",
+      "patternProperties": {
+        "^[a-zA-Z_$][0-9a-zA-Z_$]*$": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "required": {
+              "type": "boolean"
+            },
+            "value": {
+              "type": ["array", "boolean", "number", "null", "object", "string"]
+            },
+            "key": {
+              "type": "boolean"
+            },
+            "properties": {
+              "$ref": "#/definitions/extensionDataProviderPropsDef"
+            }
+          },
+          "required": ["type"]
+        },
+        "additionalProperties": false
       }
     },
 
@@ -143,6 +184,12 @@
             },
             "readme": {
               "type": "string"
+            },
+            "referenceModules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             },
             "screenshots": {
               "type": "object",
@@ -222,6 +269,9 @@
                 "type": "string"
               }
             },
+            "icon": {
+              "type": "string"
+            },
             "uxSpecs": {
               "type": "array",
               "items": {
@@ -267,6 +317,7 @@
             "type": "string"
           }
         },
+        "required": ["name", "type"],
         "additionalProperties": false
       }
     },
@@ -315,6 +366,9 @@
         "filter": {
           "type": "object",
           "properties": {
+            "nestedFilter": {
+              "type": "boolean"
+            },
             "textFilter": {
               "type": "boolean"
             }
@@ -1523,11 +1577,11 @@
     },
 
     {
-      "$comment": "if the component type is explicitly set to either 'reference', 'vbcs-pattern', 'vbcs-template', or 'vbcs-action', then the 'jetVersion' property is invalid",
+      "$comment": "if the component type is explicitly set to 'reference', then the 'jetVersion' property is invalid",
       "if": {
         "properties": {
           "type": {
-            "enum": ["reference", "vbcs-pattern", "vbcs-template", "vbcs-action"]
+            "const": ["reference"]
           }
         },
         "required": ["type"]

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -15,7 +15,7 @@ import * as DomUtils from 'ojs/ojdomutils';
 import { setInKoCleanExternal, isTouchSupported } from 'ojs/ojdomutils';
 import $ from 'jquery';
 import { CustomElementUtils, AttributeUtils, JetElementError, ElementUtils } from 'ojs/ojcustomelement-utils';
-import { getPropagationMetadataViaCache } from 'ojs/ojbindpropagation';
+import { getPropagationMetadataViaCache, ROOT_BINDING_PROPAGATION } from 'ojs/ojbindpropagation';
 import KeySetImpl from 'ojs/ojkeysetimpl';
 import Context from 'ojs/ojcontext';
 import templateEngine from 'ojs/ojtemplateengine-ko';
@@ -144,8 +144,11 @@ const ComponentChangeTracker = function (component, queue) {
 };
 
 // Subclass from oj.Object
-oj$1.Object.createSubclass(ComponentChangeTracker, oj$1.Object,
-                         'ComponentBinding.ComponentChangeTracker');
+oj$1.Object.createSubclass(
+  ComponentChangeTracker,
+  oj$1.Object,
+  'ComponentBinding.ComponentChangeTracker'
+);
 
 /**
  * @param {Function} updateCallback
@@ -158,7 +161,6 @@ ComponentChangeTracker.prototype.Init = function (updateCallback, queue) {
   this._changes = {};
   this._suspendCountMap = {};
 };
-
 
 ComponentChangeTracker.prototype.addChange = function (property, value) {
   if (this._isSuspended(property) || this._disposed) {
@@ -204,10 +206,9 @@ ComponentChangeTracker.prototype.flushChanges = function () {
   return changes;
 };
 
-
 ComponentChangeTracker.prototype._isSuspended = function (option) {
   var count = this._suspendCountMap[option] || 0;
-  return (count >= 1);
+  return count >= 1;
 };
 
 const __ExpressionUtils = {};
@@ -242,7 +243,7 @@ oj$1._registerLegacyNamespaceProp('__ExpressionUtils', __ExpressionUtils);
       return null;
     }
 
-    var target = match[1] ? ('Object(' + match[1] + ')' + match[2]) : expression;
+    var target = match[1] ? 'Object(' + match[1] + ')' + match[2] : expression;
 
     return '{' + _KO_WRITER_KEY + ': function(v){' + target + '=v;}}';
   };
@@ -250,7 +251,7 @@ oj$1._registerLegacyNamespaceProp('__ExpressionUtils', __ExpressionUtils);
   __ExpressionUtils.getWriter = function (evaluator) {
     return evaluator[_KO_WRITER_KEY];
   };
-}());
+})();
 
 /**
  * To create a custom binding,
@@ -268,13 +269,12 @@ oj$1._registerLegacyNamespaceProp('__ExpressionUtils', __ExpressionUtils);
  * @hideconstructor
  * @ojtsignore
  */
- const ComponentBinding = function (name, options) {
+const ComponentBinding = function (name, options) {
   this.Init(name, options);
 };
 
 oj$1.Object.createSubclass(ComponentBinding, oj$1.Object, 'oj.ComponentBinding');
 oj$1._registerLegacyNamespaceProp('ComponentBinding', ComponentBinding);
-
 
 /**
  * Creates a binding instance and registers it with Knockout.js
@@ -413,7 +413,6 @@ ComponentBinding.prototype.setupManagedAttributes = function (opts) {
   this._managedAttrOptions[forName] = managers;
 };
 
-
 /**
  * Delivers all accumulated component changes across all instances of this binding.
  * Calling this method is optional - the changes will be delivered after a 1ms timeout
@@ -439,7 +438,6 @@ ComponentBinding.prototype.Init = function (names, options) {
 
   this._bindingOptions = options || {};
 
-
   this._bindingNames = Array.isArray(names) ? names : [names];
 
   this.init = this._init.bind(this);
@@ -455,176 +453,179 @@ ComponentBinding.prototype._getBindingOptions = function () {
   return this._bindingOptions;
 };
 
+/**
+ * @private
+ */
+ComponentBinding.prototype._init = function (
+  element,
+  valueAccessor,
+  allBindingsAccessor,
+  viewModel,
+  bindingContext
+) {
+  // Invoke child bindings first to allow on-the-fly generation of child content
+  applyBindingsToDescendants(bindingContext, element);
+
+  return { controlsDescendantBindings: true };
+};
 
 /**
  * @private
  */
-ComponentBinding.prototype._init =
-  function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-    // Invoke child bindings first to allow on-the-fly generation of child content
-    applyBindingsToDescendants(bindingContext, element);
+ComponentBinding.prototype._update = function (
+  element,
+  valueAccessor,
+  allBindingsAccessor,
+  viewModel,
+  bindingContext
+) {
+  // an array of ko.computed() that would need cleaning up
+  var componentComputeds = [];
+  var stage = 0; // init
+  var component;
+  var changeTracker;
 
-    return { controlsDescendantBindings: true };
-  };
+  var jelem = $(element);
 
+  function cleanup(destroyComponent) {
+    componentComputeds.forEach(function (computed) {
+      computed.dispose();
+    });
+    componentComputeds = [];
 
-/**
- * @private
- */
-ComponentBinding.prototype._update =
-  function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-    // an array of ko.computed() that would need cleaning up
-    var componentComputeds = [];
-    var stage = 0; // init
-    var component;
-    var changeTracker;
-
-    var jelem = $(element);
-
-    function cleanup(destroyComponent) {
-      componentComputeds.forEach(function (computed) {
-        computed.dispose();
-      });
-      componentComputeds = [];
-
-      // when cleanup() is called by the node disposal, there is no need to destroy the component because cleanNode() will
-      // do it for us
-      if (destroyComponent && component) {
-        component('destroy');
-        component = null;
-      }
-      if (changeTracker) {
-        changeTracker.dispose();
-        changeTracker = null;
-      }
-
-      jelem.off(ComponentBinding._HANDLER_NAMESPACE);
+    // when cleanup() is called by the node disposal, there is no need to destroy the component because cleanNode() will
+    // do it for us
+    if (destroyComponent && component) {
+      component('destroy');
+      component = null;
+    }
+    if (changeTracker) {
+      changeTracker.dispose();
+      changeTracker = null;
     }
 
-    function createComponent(componentName, nameOption, bindingValue) {
-      if (componentName == null) {
-        // null component name is legal - we just won't create a components
-        return;
-      }
+    jelem.off(ComponentBinding._HANDLER_NAMESPACE);
+  }
 
-      var comp = jelem[componentName];
-
-      if ((typeof comp) !== 'function') {
-        error('Component %s is not found', componentName);
-        return;
-      }
-
-      comp = comp.bind(jelem);
-
-      var updaterCallback = function (changes) {
-        var mutationOptions = ComponentBinding.__removeDotNotationOptions(changes);
-
-        comp('option', changes);
-        var keys = Object.keys(mutationOptions);
-
-        for (var k = 0; k < keys.length; k++) {
-          var key = keys[k];
-          comp('option', key, mutationOptions[key]);
-        }
-      };
-
-      changeTracker = new ComponentChangeTracker(updaterCallback,
-            BindingProviderImpl.getGlobalChangeQueue());
-
-      // Create a compatible valueAccessor for backward compatibility with the managed attributes and custom bindings that
-      // expect the ojComponent value to be defined inline. We can use already-resolved binding value here because the component
-      // will be recreated whenever the binding value changes, and this method will be called with the new binding value
-
-      var compatibleValueAccessor = function () {
-        return bindingValue;
-      };
-
-      var specifiedOptions = Object.keys(bindingValue).filter(
-        function (value) {
-          return !(value == null || value === nameOption);
-        }
-      );
-
-
-      var componentContext = {
-        component: comp,
-        changeTracker: changeTracker,
-        componentName: componentName,
-        specifiedOptions: specifiedOptions,
-        computeds: componentComputeds,
-        valueAccessor: compatibleValueAccessor,
-        allBindingsAccessor: allBindingsAccessor,
-        bindingContext: bindingContext,
-        destroyCallback: function () {
-          component = null;
-        },
-        readOnlyProperties: {}
-      };
-
-      component = this._initComponent(element, componentContext);
+  function createComponent(componentName, nameOption, bindingValue) {
+    if (componentName == null) {
+      // null component name is legal - we just won't create a components
+      return;
     }
 
-    // Since we want the update() method to be invoked by Knockout only once, we are suspending dependency detection
-    ignoreDependencies(
-      function () {
-        computed(
-          function () {
-            // invoking valueAccessor() adds a dependency on the bidning value and the possible observable ViewModel
-            // to this computed, and unwrapping the observable adds a dependency on the observable binding value
-            var bindingValue = utils.unwrapObservable(valueAccessor());
+    var comp = jelem[componentName];
 
-            if (typeof bindingValue !== 'object') {
-              error('ojComponent binding should evaluate to an object');
-            }
+    if (typeof comp !== 'function') {
+      error('Component %s is not found', componentName);
+      return;
+    }
 
-            var componentName = this._bindingOptions.componentName;
+    comp = comp.bind(jelem);
 
-            var nameOpt;
-            var nameOptionFound = false;
+    var updaterCallback = function (changes) {
+      var mutationOptions = ComponentBinding.__removeDotNotationOptions(changes);
 
-            if (componentName == null && bindingValue != null) {
-              var nameAttrs = [ComponentBinding._COMPONENT_OPTION, 'role'];
+      comp('option', changes);
+      var keys = Object.keys(mutationOptions);
 
-              for (var n = 0; !nameOptionFound && n < nameAttrs.length; n++) {
-                nameOpt = nameAttrs[n];
-                if (nameOpt in bindingValue) {
-                  nameOptionFound = true;
-                  componentName = bindingValue[nameOpt];
-                }
-              }
+      for (var k = 0; k < keys.length; k++) {
+        var key = keys[k];
+        comp('option', key, mutationOptions[key]);
+      }
+    };
 
-              if (!nameOptionFound) {
-                error('component attribute is required for the ojComponent binding');
-              }
-
-              componentName = utils.unwrapObservable(componentName);
-            }
-
-
-            if (stage === 0) {
-              stage = 1;
-            } else {
-              // Suspend dependency detection for this computed during cleanup()
-              ignoreDependencies(cleanup, this, [true]);
-            }
-
-            // Suspend dependency detection for this computed during createComponent(). Changes to the component options
-            // will be tracked separately
-            ignoreDependencies(createComponent, this, [componentName, nameOpt, bindingValue]);
-          },
-          this,
-          { disposeWhenNodeIsRemoved: element }
-        );
-      },
-      this
+    changeTracker = new ComponentChangeTracker(
+      updaterCallback,
+      BindingProviderImpl.getGlobalChangeQueue()
     );
 
-    // cleanup() called by the node disposal should not be destroying components, as they will be destroyed by .cleanNode()
-    utils.domNodeDisposal.addDisposeCallback(element,
-                                                cleanup.bind(this,
-                                                             false /* destroyComponent flag*/));
-  };
+    // Create a compatible valueAccessor for backward compatibility with the managed attributes and custom bindings that
+    // expect the ojComponent value to be defined inline. We can use already-resolved binding value here because the component
+    // will be recreated whenever the binding value changes, and this method will be called with the new binding value
 
+    var compatibleValueAccessor = function () {
+      return bindingValue;
+    };
+
+    var specifiedOptions = Object.keys(bindingValue).filter(function (value) {
+      return !(value == null || value === nameOption);
+    });
+
+    var componentContext = {
+      component: comp,
+      changeTracker: changeTracker,
+      componentName: componentName,
+      specifiedOptions: specifiedOptions,
+      computeds: componentComputeds,
+      valueAccessor: compatibleValueAccessor,
+      allBindingsAccessor: allBindingsAccessor,
+      bindingContext: bindingContext,
+      destroyCallback: function () {
+        component = null;
+      },
+      readOnlyProperties: {}
+    };
+
+    component = this._initComponent(element, componentContext);
+  }
+
+  // Since we want the update() method to be invoked by Knockout only once, we are suspending dependency detection
+  ignoreDependencies(function () {
+    computed(
+      function () {
+        // invoking valueAccessor() adds a dependency on the bidning value and the possible observable ViewModel
+        // to this computed, and unwrapping the observable adds a dependency on the observable binding value
+        var bindingValue = utils.unwrapObservable(valueAccessor());
+
+        if (typeof bindingValue !== 'object') {
+          error('ojComponent binding should evaluate to an object');
+        }
+
+        var componentName = this._bindingOptions.componentName;
+
+        var nameOpt;
+        var nameOptionFound = false;
+
+        if (componentName == null && bindingValue != null) {
+          var nameAttrs = [ComponentBinding._COMPONENT_OPTION, 'role'];
+
+          for (var n = 0; !nameOptionFound && n < nameAttrs.length; n++) {
+            nameOpt = nameAttrs[n];
+            if (nameOpt in bindingValue) {
+              nameOptionFound = true;
+              componentName = bindingValue[nameOpt];
+            }
+          }
+
+          if (!nameOptionFound) {
+            error('component attribute is required for the ojComponent binding');
+          }
+
+          componentName = utils.unwrapObservable(componentName);
+        }
+
+        if (stage === 0) {
+          stage = 1;
+        } else {
+          // Suspend dependency detection for this computed during cleanup()
+          ignoreDependencies(cleanup, this, [true]);
+        }
+
+        // Suspend dependency detection for this computed during createComponent(). Changes to the component options
+        // will be tracked separately
+        ignoreDependencies(createComponent, this, [componentName, nameOpt, bindingValue]);
+      },
+      this,
+      { disposeWhenNodeIsRemoved: element }
+    );
+  }, this);
+
+  // cleanup() called by the node disposal should not be destroying components, as they will be destroyed by .cleanNode()
+  utils.domNodeDisposal.addDisposeCallback(
+    element,
+    cleanup.bind(this, false /* destroyComponent flag*/)
+  );
+};
 
 /**
  * @private
@@ -644,41 +645,53 @@ ComponentBinding.prototype._initComponent = function (element, ctx) {
 
   var destroyEventType = '_ojDestroy';
 
+  var destroyListener = function (evt) {
+    if (evt.target && evt.target === element) {
+      // ensure that we do not try to destroy the component again during node cleanup
+      ctx.destroyCallback();
 
-  var destroyListener =
-    function (evt) {
-      if (evt.target && evt.target === element) {
-        // ensure that we do not try to destroy the component again during node cleanup
-        ctx.destroyCallback();
-
-        var destroyCallback = self._bindingOptions.beforeDestroy;
-        if (destroyCallback) {
-          destroyCallback(element, comp, ctx.valueAccessor,
-                          ctx.allBindingsAccessor, ctx.bindingContext);
-        }
-
-        ComponentBinding._deliverCreateDestroyEventToManagedProps(false,
-                      specifiedManagedAttrs, element, comp, ctx.valueAccessor,
-                      ctx.allBindingsAccessor, ctx.bindingContext);
-
-        disposed = true;
-        ctx.changeTracker.dispose();
-        element.removeEventListener(destroyEventType, destroyListener);
+      var destroyCallback = self._bindingOptions.beforeDestroy;
+      if (destroyCallback) {
+        destroyCallback(
+          element,
+          comp,
+          ctx.valueAccessor,
+          ctx.allBindingsAccessor,
+          ctx.bindingContext
+        );
       }
-    };
+
+      ComponentBinding._deliverCreateDestroyEventToManagedProps(
+        false,
+        specifiedManagedAttrs,
+        element,
+        comp,
+        ctx.valueAccessor,
+        ctx.allBindingsAccessor,
+        ctx.bindingContext
+      );
+
+      disposed = true;
+      ctx.changeTracker.dispose();
+      element.removeEventListener(destroyEventType, destroyListener);
+    }
+  };
 
   element.addEventListener(destroyEventType, destroyListener);
 
-  var managedAttrMap =
-      ComponentBinding._resolveManagedAttributes(this._managedAttrOptions,
-                                                    ctx.specifiedOptions,
-                                                    componentName);
+  var managedAttrMap = ComponentBinding._resolveManagedAttributes(
+    this._managedAttrOptions,
+    ctx.specifiedOptions,
+    componentName
+  );
 
   // Always use managed attribute behavior from the default instance
   var defaultInstance = ComponentBinding.getDefaultInstance();
   if (this !== defaultInstance) {
-    var defaultManagedMap =
-        defaultInstance._getManagedAttributes(ctx.specifiedOptions, componentName);
+    var defaultManagedMap = defaultInstance._getManagedAttributes(
+      ctx.specifiedOptions,
+      componentName
+    );
     // Override default managed attribute map with values from this binding's map.
     // Note that there is no need to clone defaultManagedMap because a new instance gets created
     // every time _getManagedAttributes() is called
@@ -693,14 +706,23 @@ ComponentBinding.prototype._initComponent = function (element, ctx) {
 
     var value = ComponentBinding._toJS(ctx.valueAccessor()[prop]);
 
-    if (stage === 0) { // init, no change
+    if (stage === 0) {
+      // init, no change
       var managedPropEntry = managedAttrMap[prop];
       if (managedPropEntry != null) {
         specifiedManagedAttrs[prop] = managedPropEntry;
         var initFunc = managedPropEntry.init;
         if (initFunc != null) {
-          var initProps = initFunc(prop, value, element, comp, ctx.valueAccessor,
-                                   ctx.allBindingsAccessor, ctx.bindingContext) || {};
+          var initProps =
+            initFunc(
+              prop,
+              value,
+              element,
+              comp,
+              ctx.valueAccessor,
+              ctx.allBindingsAccessor,
+              ctx.bindingContext
+            ) || {};
 
           var initKeys = Object.keys(initProps);
 
@@ -718,8 +740,16 @@ ComponentBinding.prototype._initComponent = function (element, ctx) {
       if (managedAttrMap[prop] != null) {
         var updateFunc = managedAttrMap[prop].update;
         if (updateFunc != null) {
-          var updateProps = updateFunc(prop, value, element, comp, ctx.valueAccessor,
-                                        ctx.allBindingsAccessor, ctx.bindingContext) || {};
+          var updateProps =
+            updateFunc(
+              prop,
+              value,
+              element,
+              comp,
+              ctx.valueAccessor,
+              ctx.allBindingsAccessor,
+              ctx.bindingContext
+            ) || {};
 
           var updateKeys = Object.keys(updateProps);
 
@@ -728,12 +758,12 @@ ComponentBinding.prototype._initComponent = function (element, ctx) {
             ctx.changeTracker.addChange(p, ComponentBinding.__cloneIfArray(updateProps[p]));
           }
         }
-      } else if (!ctx.readOnlyProperties[prop]) { // ignore chnages to read-only properties
+      } else if (!ctx.readOnlyProperties[prop]) {
+        // ignore chnages to read-only properties
         ctx.changeTracker.addChange(prop, ComponentBinding.__cloneIfArray(value));
       }
     }
   };
-
 
   for (var k = 0; k < ctx.specifiedOptions.length; k++) {
     // ko.computed is used to set up dependency tracking for the bindings's attribute
@@ -749,7 +779,6 @@ ComponentBinding.prototype._initComponent = function (element, ctx) {
 
   stage = 1; // post-init
 
-
   ComponentBinding._registerWritebacks(jelem, ctx);
 
   var mutationOptions = ComponentBinding.__removeDotNotationOptions(resolvedInitialOptions);
@@ -757,26 +786,29 @@ ComponentBinding.prototype._initComponent = function (element, ctx) {
   // Initialization of the component happens here
   comp(resolvedInitialOptions);
 
-  Object.keys(mutationOptions).forEach(
-    function (mo) {
-      comp('option', mo, mutationOptions[mo]);
-    }
-  );
+  Object.keys(mutationOptions).forEach(function (mo) {
+    comp('option', mo, mutationOptions[mo]);
+  });
 
   var createCallback = this._bindingOptions.afterCreate;
   if (createCallback) {
     createCallback(element, comp, ctx.valueAccessor, ctx.allBindingsAccessor, ctx.bindingContext);
   }
 
-  ComponentBinding._deliverCreateDestroyEventToManagedProps(true, specifiedManagedAttrs,
-              element, comp, ctx.valueAccessor, ctx.allBindingsAccessor, ctx.bindingContext);
-
+  ComponentBinding._deliverCreateDestroyEventToManagedProps(
+    true,
+    specifiedManagedAttrs,
+    element,
+    comp,
+    ctx.valueAccessor,
+    ctx.allBindingsAccessor,
+    ctx.bindingContext
+  );
 
   resolvedInitialOptions = null;
 
   return comp;
 };
-
 
 /**
  * @private
@@ -795,7 +827,7 @@ function _extractOptionChange(ctx, event, eventData) {
   var nameVal = {};
   var metadata = eventData.optionMetadata;
   if (metadata) {
-    var shouldWrite = (metadata.writeback === 'shouldWrite');
+    var shouldWrite = metadata.writeback === 'shouldWrite';
     if (shouldWrite) {
       var name = eventData.option;
       nameVal[name] = eventData.value;
@@ -811,100 +843,99 @@ function _extractOptionChange(ctx, event, eventData) {
  * @private
  */
 ComponentBinding.prototype._getManagedAttributes = function (specifiedOptions, componentName) {
-  return ComponentBinding._resolveManagedAttributes(this._managedAttrOptions,
-                                                       specifiedOptions,
-                                                       componentName);
+  return ComponentBinding._resolveManagedAttributes(
+    this._managedAttrOptions,
+    specifiedOptions,
+    componentName
+  );
 };
 
 /**
  * @private
  */
-ComponentBinding._resolveManagedAttributes =
-  function (optionMap, specifiedOptions, componentName) {
-    var managedAttrMap = {};
+ComponentBinding._resolveManagedAttributes = function (optionMap, specifiedOptions, componentName) {
+  var managedAttrMap = {};
 
-    var applicableOptions = [];
+  var applicableOptions = [];
 
-    var attrsField = 'attributes';
+  var attrsField = 'attributes';
 
-    var traverseOptions = function (name, followLinks) {
-      var managers = optionMap[name];
-      if (managers != null) {
-        for (var n = managers.length - 1; n >= 0; n--) {
-          var opt = managers[n];
+  var traverseOptions = function (name, followLinks) {
+    var managers = optionMap[name];
+    if (managers != null) {
+      for (var n = managers.length - 1; n >= 0; n--) {
+        var opt = managers[n];
 
-          if (opt[attrsField] != null) {
-            applicableOptions.push(opt);
-          }
-          if (followLinks) {
-            var parents = opt.use;
-            if (parents != null) {
-              parents = Array.isArray(parents) ? parents : [parents];
-              for (var i = 0; i < parents.length; i++) {
-                traverseOptions(parents[i], true);
-              }
+        if (opt[attrsField] != null) {
+          applicableOptions.push(opt);
+        }
+        if (followLinks) {
+          var parents = opt.use;
+          if (parents != null) {
+            parents = Array.isArray(parents) ? parents : [parents];
+            for (var i = 0; i < parents.length; i++) {
+              traverseOptions(parents[i], true);
             }
           }
         }
       }
-    };
-
-    traverseOptions(componentName, true);
-
-    // If this is a JET component, check managed options registered for the ancestors
-    var ojNamespace = 'oj';
-    var widgetClass = $[ojNamespace][componentName];
-
-    if (widgetClass != null) {
-      var proto = Object.getPrototypeOf(widgetClass.prototype);
-      while (proto != null && ojNamespace === proto.namespace) {
-        traverseOptions(proto.widgetName, true);
-        proto = Object.getPrototypeOf(proto);
-      }
     }
+  };
 
-    traverseOptions('@global', false);
+  traverseOptions(componentName, true);
 
-    if (applicableOptions.length > 0) {
-      for (var k = 0; k < specifiedOptions.length; k++) {
-        var attr = specifiedOptions[k];
+  // If this is a JET component, check managed options registered for the ancestors
+  var ojNamespace = 'oj';
+  var widgetClass = $[ojNamespace][componentName];
 
-        for (var l = 0; l < applicableOptions.length; l++) {
-          var opts = applicableOptions[l];
+  if (widgetClass != null) {
+    var proto = Object.getPrototypeOf(widgetClass.prototype);
+    while (proto != null && ojNamespace === proto.namespace) {
+      traverseOptions(proto.widgetName, true);
+      proto = Object.getPrototypeOf(proto);
+    }
+  }
 
-          var attributes = opts[attrsField];
+  traverseOptions('@global', false);
 
-          if (attributes.indexOf(attr) >= 0) {
-            managedAttrMap[attr] = {
-              init: opts.init,
-              update: opts.update,
-              afterCreate: opts.afterCreate,
-              beforeDestroy: opts.beforeDestroy
-            };
-            break;
-          }
+  if (applicableOptions.length > 0) {
+    for (var k = 0; k < specifiedOptions.length; k++) {
+      var attr = specifiedOptions[k];
+
+      for (var l = 0; l < applicableOptions.length; l++) {
+        var opts = applicableOptions[l];
+
+        var attributes = opts[attrsField];
+
+        if (attributes.indexOf(attr) >= 0) {
+          managedAttrMap[attr] = {
+            init: opts.init,
+            update: opts.update,
+            afterCreate: opts.afterCreate,
+            beforeDestroy: opts.beforeDestroy
+          };
+          break;
         }
       }
     }
+  }
 
-    return managedAttrMap;
-  };
+  return managedAttrMap;
+};
 
 /**
  * @private
  */
 ComponentBinding._HANDLER_NAMESPACE = '.oj_ko';
 
-
 /**
  * @private
  */
 ComponentBinding._registerWritebacks = function (jelem, ctx) {
-  var writablePropMap =
-    {
-      '^slider$': [{ event: 'slidechange', getter: _extractValueFromChangeEvent }],
-      '^oj*': [{ event: 'ojoptionchange', getter: _extractOptionChange.bind(undefined, ctx) }]
-    };
+  var writablePropMap = {
+    '^slider$': [{ event: 'slidechange', getter: _extractValueFromChangeEvent }],
+    '^oj*': [{ event: 'ojoptionchange', getter: _extractOptionChange.bind(undefined, ctx) }]
+  };
 
   var cachedWriterFunctionEvaluators = {};
 
@@ -919,7 +950,8 @@ ComponentBinding._registerWritebacks = function (jelem, ctx) {
 
         jelem.on(
           info.event + ComponentBinding._HANDLER_NAMESPACE,
-          { // JQuery will pass this object as event.data
+          {
+            // JQuery will pass this object as event.data
             getter: info.getter
           },
           function (evt, data) {
@@ -943,12 +975,14 @@ ComponentBinding._registerWritebacks = function (jelem, ctx) {
 
                   var target = accessor[name];
 
-                  ComponentBinding._writeValueToProperty(name,
-                                                            target,
-                                                            nameValues[name],
-                                                            expr,
-                                                            ctx.bindingContext,
-                                                            cachedWriterFunctionEvaluators);
+                  ComponentBinding._writeValueToProperty(
+                    name,
+                    target,
+                    nameValues[name],
+                    expr,
+                    ctx.bindingContext,
+                    cachedWriterFunctionEvaluators
+                  );
                 }
               } finally {
                 ctx.changeTracker.resume(name);
@@ -962,12 +996,17 @@ ComponentBinding._registerWritebacks = function (jelem, ctx) {
   }
 };
 
-
 /**
  * @private
  */
 ComponentBinding._writeValueToProperty = function (
-  name, target, value, propertyExpression, bindingContext, cachedWriterFunctionEvaluators) {
+  name,
+  target,
+  value,
+  propertyExpression,
+  bindingContext,
+  cachedWriterFunctionEvaluators
+) {
   if (target == null || !isObservable(target)) {
     if (!(name in cachedWriterFunctionEvaluators)) {
       var inContextWriter = null;
@@ -992,7 +1031,6 @@ ComponentBinding._writeValueToProperty = function (
   }
 };
 
-
 /**
  * @private
  */
@@ -1009,7 +1047,6 @@ ComponentBinding._toJS = function (_prop) {
   return prop;
 };
 
-
 /**
  * @ignore
  */
@@ -1020,7 +1057,6 @@ ComponentBinding.__cloneIfArray = function (value) {
   }
   return value;
 };
-
 
 /**
  * @private
@@ -1042,12 +1078,18 @@ ComponentBinding.__removeDotNotationOptions = function (options) {
   return mutationOptions;
 };
 
-
 /**
  * @private
  */
-ComponentBinding._deliverCreateDestroyEventToManagedProps = function (isCreate,
-  managedAttrMap, element, comp, valueAccessor, allBindingsAccessor, bindingContext) {
+ComponentBinding._deliverCreateDestroyEventToManagedProps = function (
+  isCreate,
+  managedAttrMap,
+  element,
+  comp,
+  valueAccessor,
+  allBindingsAccessor,
+  bindingContext
+) {
   var props = Object.keys(managedAttrMap);
   for (var i = 0; i < props.length; i++) {
     var prop = props[i];
@@ -1074,12 +1116,10 @@ ComponentBinding._isNameRegistered = function (bindingName) {
   return ComponentBinding._REGISTERED_NAMES.indexOf(bindingName) >= 0;
 };
 
-
 /**
  * @ignore
  */
 ComponentBinding._REGISTERED_NAMES = [];
-
 
 /**
  * @ignore
@@ -1090,7 +1130,6 @@ ComponentBinding._COMPONENT_OPTION = 'component';
  * @ignore
  */
 ComponentBinding._OPTION_MAP = '_ojOptions';
-
 
 /**
  * Redefine ko.utils.domNodeDisposal.cleanExternalData, so that JET components can avoid removing the wrapper node during
@@ -1117,7 +1156,7 @@ ComponentBinding._OPTION_MAP = '_ojOptions';
       }
     }
   };
-}());
+})();
 
 /**
  * @private
@@ -1130,7 +1169,6 @@ ComponentBinding._INSTANCE = ComponentBinding.create(['__ojComponentPrivate', 'j
 BindingProviderImpl.addPostprocessor({
   getBindingAccessors: _replaceComponentBindingWithV2
 });
-
 
 /**
  * This function modifies the return value of getBindingAccessors()
@@ -1150,8 +1188,13 @@ function _replaceComponentBindingWithV2(node, bindingContext, accessorMap, wrapp
   var bindingName = _findOwnBinding(accessorMap);
   if (bindingName != null) {
     // eslint-disable-next-line no-param-reassign
-    accessorMap = _modifyOjComponentBinding(node, bindingName, wrapped,
-      bindingContext, accessorMap);
+    accessorMap = _modifyOjComponentBinding(
+      node,
+      bindingName,
+      wrapped,
+      bindingContext,
+      accessorMap
+    );
   }
 
   return accessorMap;
@@ -1184,16 +1227,15 @@ function _modifyOjComponentBinding(node, bindingName, wrapped, bindingContext, a
 
   var bindingList = info.attrList;
 
-  if (bindingList == null) { // binding is specified externally (as opposed to an 'inline' object literal)
+  if (bindingList == null) {
+    // binding is specified externally (as opposed to an 'inline' object literal)
     return accessorMap;
   }
 
   var bindingMap = {};
-  _keyValueArrayForEach(bindingList,
-    function (key, value) {
-      bindingMap[key] = value;
-    }
-  );
+  _keyValueArrayForEach(bindingList, function (key, value) {
+    bindingMap[key] = value;
+  });
 
   // clone the original accessor map
   // eslint-disable-next-line no-param-reassign
@@ -1201,8 +1243,11 @@ function _modifyOjComponentBinding(node, bindingName, wrapped, bindingContext, a
 
   // Add accessor for the V2 version of the Component binding
   // eslint-disable-next-line no-param-reassign
-  accessorMap[bindingName] =
-    _getOjComponent2BindingAccessor(bindingContext, bindingMap, info.bindingExpr);
+  accessorMap[bindingName] = _getOjComponent2BindingAccessor(
+    bindingContext,
+    bindingMap,
+    info.bindingExpr
+  );
 
   return accessorMap;
 }
@@ -1213,30 +1258,25 @@ function _modifyOjComponentBinding(node, bindingName, wrapped, bindingContext, a
 function _getOjComponent2BindingAccessor(bindingContext, attributeMap, bindingExpr) {
   var accessorFunc = function () {
     var accessor = {};
-    Object.keys(attributeMap).forEach(
-      function (option) {
-        var expression = attributeMap[option];
+    Object.keys(attributeMap).forEach(function (option) {
+      var expression = attributeMap[option];
 
-        // bindingContext will be passed as as the first parameter to the evaluator
-        var getter =
-          BindingProviderImpl.createEvaluator(expression, bindingContext).bind(null,
-            bindingContext);
+      // bindingContext will be passed as as the first parameter to the evaluator
+      var getter = BindingProviderImpl.createEvaluator(expression, bindingContext).bind(
+        null,
+        bindingContext
+      );
 
-        Object.defineProperty(accessor, option,
-          {
-            get: getter,
-            enumerable: true
-          }
-        );
-      }
-    );
+      Object.defineProperty(accessor, option, {
+        get: getter,
+        enumerable: true
+      });
+    });
 
-    Object.defineProperty(accessor, ComponentBinding._OPTION_MAP,
-      {
-        value: attributeMap
-        /* not enumerable */
-      }
-    );
+    Object.defineProperty(accessor, ComponentBinding._OPTION_MAP, {
+      value: attributeMap
+      /* not enumerable */
+    });
 
     return accessor;
   };
@@ -1249,7 +1289,6 @@ function _getOjComponent2BindingAccessor(bindingContext, attributeMap, bindingEx
 
   return accessorFunc;
 }
-
 
 /**
  * @param node
@@ -1266,15 +1305,13 @@ function _getBindingValueInfo(node, bindingName, wrapped, bindingContext) {
 
   var selfVal = null;
 
-  _keyValueArrayForEach(keyValueArray,
-    function (key, value) {
-      if (key === bindingName) {
-        selfVal = value;
-        return true;
-      }
-      return false;
+  _keyValueArrayForEach(keyValueArray, function (key, value) {
+    if (key === bindingName) {
+      selfVal = value;
+      return true;
     }
-  );
+    return false;
+  });
 
   if (selfVal != null) {
     // check for object literal
@@ -1297,75 +1334,72 @@ function _keyValueArrayForEach(array, callback) {
   }
 }
 
-
-BindingProviderImpl.addPostprocessor(
-  {
-    nodeHasBindings: function (node, wrappedReturn) {
-      if (!oj$1.BaseCustomElementBridge) {
-        return wrappedReturn;
-      }
-      return wrappedReturn ||
-        (node.nodeType === 1 && CustomElementUtils.isElementRegistered(node.nodeName));
-    },
-
-    getBindingAccessors: function (node, bindingContext, wrappedReturn) {
-      if (node.nodeType === 1) {
-        var name = node.nodeName;
-
-        if (CustomElementUtils.isElementRegistered(name)) {
-          // eslint-disable-next-line no-param-reassign
-          wrappedReturn = wrappedReturn || {};
-
-          // eslint-disable-next-line no-param-reassign
-          wrappedReturn._ojCustomElement = function () {
-            const isComposite = CustomElementUtils.isComposite(name);
-            const isVComponent = CustomElementUtils.isVComponent(name);
-            return { skipThrottling: isComposite || isVComponent };
-          };
-        }
-      }
-
+BindingProviderImpl.addPostprocessor({
+  nodeHasBindings: function (node, wrappedReturn) {
+    if (!oj$1.BaseCustomElementBridge) {
       return wrappedReturn;
     }
+    return (
+      wrappedReturn ||
+      (node.nodeType === 1 && CustomElementUtils.isElementRegistered(node.nodeName))
+    );
+  },
+
+  getBindingAccessors: function (node, bindingContext, wrappedReturn) {
+    if (node.nodeType === 1) {
+      var name = node.nodeName;
+
+      if (CustomElementUtils.isElementRegistered(name)) {
+        // eslint-disable-next-line no-param-reassign
+        wrappedReturn = wrappedReturn || {};
+
+        // eslint-disable-next-line no-param-reassign
+        wrappedReturn._ojCustomElement = function () {
+          const isComposite = CustomElementUtils.isComposite(name);
+          const isVComponent = CustomElementUtils.isVComponent(name);
+          return { skipThrottling: isComposite || isVComponent };
+        };
+      }
+    }
+
+    return wrappedReturn;
   }
-);
+});
 
 /**
  * This is added so that we could cleanup any ko references on the element when it is removed.
  * @export
  */
-$.widget('oj._ojDetectCleanData',
-  {
-    options: {
-      /**
-       * @type {boolean}
-       * @default <code class="prettyprint">false</code>
-       */
-      cleanParent: false,
-    },
-    _destroy: function () {
-      var disposal = utils.domNodeDisposal;
-      var cleanExternalData = 'cleanExternalData';
+$.widget('oj._ojDetectCleanData', {
+  options: {
+    /**
+     * @type {boolean}
+     * @default <code class="prettyprint">false</code>
+     */
+    cleanParent: false
+  },
+  _destroy: function () {
+    var disposal = utils.domNodeDisposal;
+    var cleanExternalData = 'cleanExternalData';
 
-      // need to temporarily short circuit the domNodeDisposal call otherwise
-      // the _destroy override would be invoked again
-      var oldCleanExternal = disposal[cleanExternalData];
-      disposal[cleanExternalData] = function () {};
+    // need to temporarily short circuit the domNodeDisposal call otherwise
+    // the _destroy override would be invoked again
+    var oldCleanExternal = disposal[cleanExternalData];
+    disposal[cleanExternalData] = function () {};
 
-      try {
-        // provide the option to clean from the parent node for components like ojdatagrid so that the comment
-        // and text nodes aren't memory leaked with ko when remove/_destroy is not called on all node types
-        if (this.options.cleanParent && this.element[0].parentNode != null) {
-          cleanNode(this.element[0].parentNode);
-        } else {
-          cleanNode(this.element[0]);
-        }
-      } finally {
-        disposal[cleanExternalData] = oldCleanExternal;
+    try {
+      // provide the option to clean from the parent node for components like ojdatagrid so that the comment
+      // and text nodes aren't memory leaked with ko when remove/_destroy is not called on all node types
+      if (this.options.cleanParent && this.element[0].parentNode != null) {
+        cleanNode(this.element[0].parentNode);
+      } else {
+        cleanNode(this.element[0]);
       }
+    } finally {
+      disposal[cleanExternalData] = oldCleanExternal;
     }
   }
-);
+});
 
 /**
  * Returns a renderer function and executes the template specified in the binding attribute. (for example, a knockout template).
@@ -1377,11 +1411,16 @@ $.widget('oj._ojDetectCleanData',
 function _getDvtRenderer(bindingContext, template) {
   return function (context) {
     var model = bindingContext.createChildContext(context.context);
-    renderTemplate(template, model, {
-      afterRender: function (renderedElement) {
-        $(renderedElement)._ojDetectCleanData();
-      }
-    }, context.parentElement);
+    renderTemplate(
+      template,
+      model,
+      {
+        afterRender: function (renderedElement) {
+          $(renderedElement)._ojDetectCleanData();
+        }
+      },
+      context.parentElement
+    );
     return null;
   };
 }
@@ -1397,11 +1436,16 @@ function _getDvtRenderer(bindingContext, template) {
 function _getDvtDataRenderer(bindingContext, template) {
   return function (context) {
     var model = bindingContext.createChildContext(context.data);
-    renderTemplate(template, model, {
-      afterRender: function (renderedElement) {
-        $(renderedElement)._ojDetectCleanData();
-      }
-    }, context.parentElement);
+    renderTemplate(
+      template,
+      model,
+      {
+        afterRender: function (renderedElement) {
+          $(renderedElement)._ojDetectCleanData();
+        }
+      },
+      context.parentElement
+    );
     return null;
   };
 }
@@ -1425,12 +1469,24 @@ function _handleManagedTooltipAttributes(name, value, bindingContext) {
 ComponentBinding.getDefaultInstance().setupManagedAttributes({
   attributes: ['tooltip'],
   init: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedTooltipAttributes(name, value, bindingContext);
   },
   update: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedTooltipAttributes(name, value, bindingContext);
   },
@@ -1440,9 +1496,20 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
 // Default declarations for all components supporting tooltips
 (function () {
   var componentsArray = [
-    'ojChart', 'ojDiagram', 'ojNBox', 'ojPictoChart', 'ojSunburst', 'ojTagCloud',
-    'ojThematicMap', 'ojTreemap', 'ojDialGauge', 'ojLedGauge', 'ojRatingGauge',
-    'ojSparkChart', 'ojStatusMeterGauge', 'ojGantt'
+    'ojChart',
+    'ojDiagram',
+    'ojNBox',
+    'ojPictoChart',
+    'ojSunburst',
+    'ojTagCloud',
+    'ojThematicMap',
+    'ojTreemap',
+    'ojDialGauge',
+    'ojLedGauge',
+    'ojRatingGauge',
+    'ojSparkChart',
+    'ojStatusMeterGauge',
+    'ojGantt'
   ];
   for (var i = 0; i < componentsArray.length; i++) {
     ComponentBinding.getDefaultInstance().setupManagedAttributes({
@@ -1450,7 +1517,7 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
       use: 'tooltipOptionRenderer'
     });
   }
-}());
+})();
 
 /**
  * Common method to handle managed attributes for both init and update
@@ -1471,12 +1538,24 @@ function _handleManagedChartAttributes(name, value, bindingContext) {
 ComponentBinding.getDefaultInstance().setupManagedAttributes({
   attributes: ['pieCenter'],
   init: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedChartAttributes(name, value, bindingContext);
   },
   update: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedChartAttributes(name, value, bindingContext);
   },
@@ -1496,12 +1575,10 @@ function _getComboboxOptionRenderer(bindingContext, template) {
     var parent = context.parentElement;
 
     // runs the template
-    var childContext = bindingContext.createChildContext(context.data, null,
-      function (binding) {
-        // eslint-disable-next-line no-param-reassign
-        binding.$optionContext = context;
-      }
-    );
+    var childContext = bindingContext.createChildContext(context.data, null, function (binding) {
+      // eslint-disable-next-line no-param-reassign
+      binding.$optionContext = context;
+    });
     renderTemplate(template, childContext, null, parent);
 
     // tell the combobox not to do anything
@@ -1529,50 +1606,60 @@ function _handleComboboxManagedAttributes(name, value, bindingContext) {
   return null;
 }
 
-ComponentBinding.getDefaultInstance().setupManagedAttributes(
-  {
-    attributes: ['optionTemplate'],
-    init: function (name, value, element, widgetConstructor, valueAccessor,
-      allBindingsAccessor, bindingContext) {
-      var result = _handleComboboxManagedAttributes(name, value, bindingContext);
-      if (result !== null) {
-        return result;
-      }
-      return undefined;
-    },
-    update: function (name, value, element, widgetConstructor, valueAccessor,
-      allBindingsAccessor, bindingContext) {
-      return _handleComboboxManagedAttributes(name, value, bindingContext);
-    },
-    for: 'ComboboxOptionRenderer'
-  });
+ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  attributes: ['optionTemplate'],
+  init: function (
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
+  ) {
+    var result = _handleComboboxManagedAttributes(name, value, bindingContext);
+    if (result !== null) {
+      return result;
+    }
+    return undefined;
+  },
+  update: function (
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
+  ) {
+    return _handleComboboxManagedAttributes(name, value, bindingContext);
+  },
+  for: 'ComboboxOptionRenderer'
+});
 
 /**
  * Default declaration for ojCombobox
  */
-ComponentBinding.getDefaultInstance().setupManagedAttributes(
-  {
-    for: 'ojCombobox',
-    use: 'ComboboxOptionRenderer'
-  });
+ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  for: 'ojCombobox',
+  use: 'ComboboxOptionRenderer'
+});
 
 /**
  * Default declaration for ojSelect
  */
-ComponentBinding.getDefaultInstance().setupManagedAttributes(
-  {
-    for: 'ojSelect',
-    use: 'ComboboxOptionRenderer'
-  });
+ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  for: 'ojSelect',
+  use: 'ComboboxOptionRenderer'
+});
 
 /**
  * Default declaration for ojInputSearch
  */
-ComponentBinding.getDefaultInstance().setupManagedAttributes(
-  {
-    for: 'ojInputSearch',
-    use: 'ComboboxOptionRenderer'
-  });
+ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  for: 'ojInputSearch',
+  use: 'ComboboxOptionRenderer'
+});
 
 /* jslint browser: true, devel: true*/
 
@@ -1609,7 +1696,9 @@ bindingHandlers.ojContextMenu = {
       .removeEventListener('click', clickListener, true);
 
     // remove touchstart listener registered with passive option
-    $element[0].removeEventListener('touchstart', touchstartMousedownKeydownListener, { passive: false });
+    $element[0].removeEventListener('touchstart', touchstartMousedownKeydownListener, {
+      passive: false
+    });
 
     clearTimeout(pressHoldTimer);
 
@@ -1622,7 +1711,6 @@ bindingHandlers.ojContextMenu = {
     }
 
     var contextMenuListenerSet = false;
-
 
     // 3) Get menu selector/id: ---
 
@@ -1639,50 +1727,54 @@ bindingHandlers.ojContextMenu = {
     // If/when KO binding is disposed, .data data is discarded, so no leak.
     $element.data('_ojLastContextMenu', { selector: menuSelector, id: menuId });
 
-
     // 4) Add listeners to element having context menu (not menu element) : ---
 
     // Use capture phase to make sure we cancel it before any regular bubble listeners hear it.
     element.addEventListener('click', clickListener, true);
 
     // register touchstart with passive option
-    $element[0].addEventListener('touchstart', touchstartMousedownKeydownListener, { passive: false });
+    $element[0].addEventListener('touchstart', touchstartMousedownKeydownListener, {
+      passive: false
+    });
 
     $element
-      .on('mousedown' + eventNamespace + ' ' +
-          'keydown' + eventNamespace + ' ', touchstartMousedownKeydownListener)
-    // if the touch ends before the 750ms is up, it's not a long enough tap-and-hold to show the CM
-      .on('touchend' + eventNamespace + ' ' +
-          'touchcancel' + eventNamespace, function () {
-            touchInProgress = false;
-            clearTimeout(pressHoldTimer);
-            return true;
-          })
-      .on('keydown' + eventNamespace + ' ' +
-          'contextmenu' + eventNamespace, function (event) {
-            if (event.type === 'contextmenu' // right-click.  pressHold for Android but not iOS
-                || (event.keyCode === 121 && event.shiftKey)) { // Shift-F10
-              var eventType;
-              if (touchInProgress) {
-                eventType = 'touch';
-              } else if (event.type === 'keydown') {
-                eventType = 'keyboard';
-              } else {
-                eventType = 'mouse';
-              }
-              launch(event, eventType, false);
-            }
+      .on(
+        'mousedown' + eventNamespace + ' keydown' + eventNamespace + ' ',
+        touchstartMousedownKeydownListener
+      )
+      // if the touch ends before the 750ms is up, it's not a long enough tap-and-hold to show the CM
+      .on('touchend' + eventNamespace + ' touchcancel' + eventNamespace, function () {
+        touchInProgress = false;
+        clearTimeout(pressHoldTimer);
+        return true;
+      })
+      .on('keydown' + eventNamespace + ' contextmenu' + eventNamespace, function (event) {
+        if (
+          event.type === 'contextmenu' || // right-click.  pressHold for Android but not iOS
+          (event.keyCode === 121 && event.shiftKey)
+        ) {
+          // Shift-F10
+          var eventType;
+          if (touchInProgress) {
+            eventType = 'touch';
+          } else if (event.type === 'keydown') {
+            eventType = 'keyboard';
+          } else {
+            eventType = 'mouse';
+          }
+          launch(event, eventType, false);
+        }
 
-            return true;
-          })
+        return true;
+      })
 
-    // Does 2 things:
-    // 1) Prevents native context menu / callout from appearing in Mobile Safari.  E.g. for links, native CM has "Open in New Tab".
-    // 2) In Mobile Safari and Android Chrome, prevents pressHold from selecting the text and showing the selection handles and (in Safari) the Copy/Define callout.
-    // In UX discussion, we decided to prevent both of these things for now.  App can theme directly if they have specific needs.
-    // Per discussion with architects, do #2 only for touch devices, so that text selection isn't prevented on desktop.  Since #1
-    // is a no-op for non-touch, we can accomplish this by omitting the entire style class, which does 1 and 2, for non-touch.
-    // Per comments in scss file, the suppression of 1 and 2 has issues in old versions of Mobile Safari.
+      // Does 2 things:
+      // 1) Prevents native context menu / callout from appearing in Mobile Safari.  E.g. for links, native CM has "Open in New Tab".
+      // 2) In Mobile Safari and Android Chrome, prevents pressHold from selecting the text and showing the selection handles and (in Safari) the Copy/Define callout.
+      // In UX discussion, we decided to prevent both of these things for now.  App can theme directly if they have specific needs.
+      // Per discussion with architects, do #2 only for touch devices, so that text selection isn't prevented on desktop.  Since #1
+      // is a no-op for non-touch, we can accomplish this by omitting the entire style class, which does 1 and 2, for non-touch.
+      // Per comments in scss file, the suppression of 1 and 2 has issues in old versions of Mobile Safari.
       .addClass(isTouchSupported() ? 'oj-menu-context-menu-launcher' : '');
 
     // At least some of the time, the pressHold gesture also fires a click event same as a short tap.  Prevent that here.
@@ -1701,7 +1793,8 @@ bindingHandlers.ojContextMenu = {
     // , on Chrome preventDefault on "keyup" will avoid triggering contextmenu event
     // which will display native contextmenu.This also need to be added on document as event target is not menu launcher.
     function preventKeyUpEventIfMenuOpen(event) {
-      if (event.keyCode === 121 && event.shiftKey) { // Shift-F10
+      if (event.keyCode === 121 && event.shiftKey) {
+        // Shift-F10
         if (getContextMenuNode().is(':visible')) {
           event.preventDefault();
         }
@@ -1719,8 +1812,11 @@ bindingHandlers.ojContextMenu = {
 
       // if no element found, or if element has no JET Menu
       if (!contextMenu) {
-        throw new Error('ojContextMenu binding bound to "' + (menuId || menuSelector) +
-                        '", which does not reference a valid JET Menu.');
+        throw new Error(
+          'ojContextMenu binding bound to "' +
+            (menuId || menuSelector) +
+            '", which does not reference a valid JET Menu.'
+        );
       }
 
       if (!contextMenuListenerSet) {
@@ -1742,7 +1838,7 @@ bindingHandlers.ojContextMenu = {
     }
 
     function _getContextMenuNode(selector, id) {
-      return (id)
+      return id
         ? $(document.getElementById(id)) // Do NOT use $('#' + id), due to escaping issues
         : $(selector).first();
     }
@@ -1770,6 +1866,7 @@ bindingHandlers.ojContextMenu = {
         $element.one('touchend' + eventNamespace, function () {
           var touchendMousedownThreshold = 50; // 50ms.  Make as small as possible to prevent unwanted side effects.
           menu.__contextMenuPressHoldJustEnded(true);
+          // prettier-ignore
           setTimeout(function () { // @HTMLUpdateOK delaying our own callback
             menu.__contextMenuPressHoldJustEnded(false);
           }, touchendMousedownThreshold);
@@ -1783,8 +1880,10 @@ bindingHandlers.ojContextMenu = {
       // Note: Another option is a platform-specific solution where we only use pressHold for platforms that need
       // it (that don't already fire a contextmenu event for pressHold), but architectural preference is to avoid
       // platform-specific solutions if possible.
-      if ((doubleOpenType === 'touchstart' && event.type === 'contextmenu')
-          || (doubleOpenType === 'contextmenu' && event.type === 'touchstart')) {
+      if (
+        (doubleOpenType === 'touchstart' && event.type === 'contextmenu') ||
+        (doubleOpenType === 'contextmenu' && event.type === 'touchstart')
+      ) {
         doubleOpenType = null;
         clearTimeout(doubleOpenTimer);
         return;
@@ -1832,6 +1931,7 @@ bindingHandlers.ojContextMenu = {
         // see double-open comments above
         if (event.type === 'touchstart' || event.type === 'contextmenu') {
           doubleOpenType = event.type;
+          // prettier-ignore
           doubleOpenTimer = setTimeout(function () { // @HTMLUpdateOK delaying our own callback
             doubleOpenType = null;
           }, doubleOpenThreshold);
@@ -1849,8 +1949,7 @@ bindingHandlers.ojContextMenu = {
         event = $.Event(event);
       }
       // for mousedown-after-touchend Mobile Safari issue explained above where __contextMenuPressHoldJustEnded is set.
-      if (event.type === 'mousedown' &&
-          getContextMenu().__contextMenuPressHoldJustEnded()) {
+      if (event.type === 'mousedown' && getContextMenu().__contextMenuPressHoldJustEnded()) {
         return undefined;
       }
 
@@ -1860,6 +1959,7 @@ bindingHandlers.ojContextMenu = {
       // start a pressHold timer on touchstart.  If not cancelled before 750ms by touchend/etc., will launch the CM.
       if (event.type === 'touchstart') {
         touchInProgress = true;
+        // prettier-ignore
         pressHoldTimer = setTimeout( // @HTMLUpdateOK delaying our own callback
           launch.bind(undefined, event, 'touch', true),
           pressHoldThreshold
@@ -1885,7 +1985,6 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
   var _settingProperties = {};
   var _CHANGED_EVENT_SUFFIX = 'Changed';
 
-
   // This function should be called when the bindings are applied initially and whenever the expression attribute changes
   /**
    * Sets up property binding. This method is called both when the bindings are applied and in response to an attribute change.
@@ -1897,8 +1996,13 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
    * If the attrVal parameter is undefined, the observable will be used to set up property binding
    * @ignore
    */
-  this.setupPropertyBinding = function (attrVal, propName, metadata,
-    providedValueSetter, providedPropName) {
+  this.setupPropertyBinding = function (
+    attrVal,
+    propName,
+    metadata,
+    providedValueSetter,
+    providedPropName
+  ) {
     // If no metadata was passed in, just return bc this is not a component property.
     if (!metadata) {
       return;
@@ -1938,8 +2042,8 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
       // Implicit bindings are used only when the corresponding attribute is not set
 
       // Get an observable for the provided value if we have metadata for its name
-      const observable = (providedPropName === undefined) ? null :
-              (bindingContext.$provided || {})[providedPropName];
+      const observable =
+        providedPropName === undefined ? null : (bindingContext.$provided || {})[providedPropName];
 
       // If the observable is present, we set up the implicit binding
       if (observable) {
@@ -1957,49 +2061,49 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
     if (evaluator) {
       if (!metadata.readOnly) {
         var initialRead = true;
-        ignoreDependencies(
-          function () {
-            _expressionListeners[propName] = computed(
-              // The read() function for the computed will be called when the computed is created and whenever any of
-              // the expression's dependency changes
-              function () {
-                var value = evaluator(bindingContext);
-                var unwrappedValue = utils.unwrapObservable(value);
+        ignoreDependencies(function () {
+          _expressionListeners[propName] = computed(
+            // The read() function for the computed will be called when the computed is created and whenever any of
+            // the expression's dependency changes
+            function () {
+              var value = evaluator(bindingContext);
+              var unwrappedValue = utils.unwrapObservable(value);
 
-                if (metadata._domListener) {
-                  var _event = AttributeUtils.eventListenerPropertyToEventType(propName);
-                  _setDomListener(bindingContext, _event, unwrappedValue);
-                } else {
-                  // We cannot share the same storage with KO because we want to be able to compare values,
-                  // so make a copy of the array before setting it.
-                  if (Array.isArray(unwrappedValue)) {
-                    unwrappedValue = unwrappedValue.slice();
-                  }
+              if (metadata._domListener) {
+                var _event = AttributeUtils.eventListenerPropertyToEventType(propName);
+                _setDomListener(bindingContext, _event, unwrappedValue);
+              } else {
+                // We cannot share the same storage with KO because we want to be able to compare values,
+                // so make a copy of the array before setting it.
+                if (Array.isArray(unwrappedValue)) {
+                  unwrappedValue = unwrappedValue.slice();
+                }
 
-                  if (metadata._eventListener) {
-                    // Need to wrap the function so that it gets called with extra params
-                    // No need to throw an error for the non-function case here because
-                    // the bridge will throw it for us
-                    if (unwrappedValue && unwrappedValue instanceof Function) {
-                      unwrappedValue =
-                        _createSimpleEventListenerWrapper(bindingContext, unwrappedValue);
-                    }
-                  }
-
-                  if (!initialRead && _throttler) {
-                    _throttler.addChange(propName, unwrappedValue);
-                  } else {
-                    _setElementProperty(propName, unwrappedValue);
-                  }
-
-                  if (initialRead && providedValueSetter) {
-                    providedValueSetter(unwrappedValue);
+                if (metadata._eventListener) {
+                  // Need to wrap the function so that it gets called with extra params
+                  // No need to throw an error for the non-function case here because
+                  // the bridge will throw it for us
+                  if (unwrappedValue && unwrappedValue instanceof Function) {
+                    unwrappedValue = _createSimpleEventListenerWrapper(
+                      bindingContext,
+                      unwrappedValue
+                    );
                   }
                 }
+
+                if (!initialRead && _throttler) {
+                  _throttler.addChange(propName, unwrappedValue);
+                } else {
+                  _setElementProperty(propName, unwrappedValue);
+                }
+
+                if (initialRead && providedValueSetter) {
+                  providedValueSetter(unwrappedValue);
+                }
               }
-            );
-          }
-        );
+            }
+          );
+        });
         initialRead = false;
       }
 
@@ -2009,7 +2113,6 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
       }
     }
   };
-
 
   this.teardown = function () {
     var i;
@@ -2022,7 +2125,6 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
       }
     }
     _expressionListeners = {};
-
 
     // reset change listeners
     names = Object.keys(_changeListeners);
@@ -2101,44 +2203,45 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
       if (!_isSettingProperty(topProp)) {
         var written = false;
         var reason;
-        ignoreDependencies(
-          function () {
-            var value = evt.detail.value;
-            // If the propName has '.' we need to walk the top level value and writeback
-            // subproperty value
-            for (var i = 1; i < splitProps.length; i++) {
-              var subprop = splitProps[i];
-              value = value[subprop];
-            }
+        ignoreDependencies(function () {
+          var value = evt.detail.value;
+          // If the propName has '.' we need to walk the top level value and writeback
+          // subproperty value
+          for (var i = 1; i < splitProps.length; i++) {
+            var subprop = splitProps[i];
+            value = value[subprop];
+          }
 
-            var target = evaluator(bindingContext);
+          var target = evaluator(bindingContext);
 
-            if (isObservable(target)) {
-              if (isWriteableObservable(target)) {
-                target(ComponentBinding.__cloneIfArray(value));
-                written = true;
-              } else {
-                reason = 'the observable is not writeable';
-              }
+          if (isObservable(target)) {
+            if (isWriteableObservable(target)) {
+              target(ComponentBinding.__cloneIfArray(value));
+              written = true;
             } else {
-              var writerExpr = __ExpressionUtils.getPropertyWriterExpression(expr);
-              if (writerExpr != null) {
-                var wrirerEvaluator =
-                      BindingProviderImpl.createEvaluator(writerExpr, bindingContext);
-                var func = __ExpressionUtils.getWriter(wrirerEvaluator(bindingContext));
-                func(ComponentBinding.__cloneIfArray(value));
-                written = true;
-              } else {
-                reason = 'the expression is not a valid update target';
-              }
+              reason = 'the observable is not writeable';
+            }
+          } else {
+            var writerExpr = __ExpressionUtils.getPropertyWriterExpression(expr);
+            if (writerExpr != null) {
+              var wrirerEvaluator = BindingProviderImpl.createEvaluator(writerExpr, bindingContext);
+              var func = __ExpressionUtils.getWriter(wrirerEvaluator(bindingContext));
+              func(ComponentBinding.__cloneIfArray(value));
+              written = true;
+            } else {
+              reason = 'the expression is not a valid update target';
             }
           }
-        );
+        });
 
         if (!written) {
           if (reason) {
-            info("The expression '%s' for property '%s' was not updated because %s.",
-                          expr, propName, reason);
+            info(
+              "The expression '%s' for property '%s' was not updated because %s.",
+              expr,
+              propName,
+              reason
+            );
           }
         }
       }
@@ -2147,7 +2250,6 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
     element.addEventListener(topProp + _CHANGED_EVENT_SUFFIX, listener);
     return listener;
   }
-
 
   function _setElementProperty(propName, value) {
     _startSettingProperty(propName);
@@ -2262,14 +2364,18 @@ const _KnockoutBindingProvider = function () {
       var promises = [];
       while (childrenPromises.length > 0) {
         var callbackItem = childrenPromises.shift();
-        if (trackOption === 'nearestCustomElement' ||
-           (trackOption === 'immediate' && callbackItem.immediate === true)) {
+        if (
+          trackOption === 'nearestCustomElement' ||
+          (trackOption === 'immediate' && callbackItem.immediate === true)
+        ) {
           promises.push(callbackItem.promiseCallback);
         }
       }
-      Promise.all(promises).then(function () {
-        this._resolveWhenChildrenBindingsApplied(elem, trackOption);
-      }.bind(this));
+      Promise.all(promises).then(
+        function () {
+          this._resolveWhenChildrenBindingsApplied(elem, trackOption);
+        }.bind(this)
+      );
     }
   };
 
@@ -2327,12 +2433,17 @@ const _KnockoutBindingProvider = function () {
   };
 
   /**
-    * A wrapper function used by VTemplateEngine that extends binding context with given extra properties.
+   * A wrapper function used by VTemplateEngine that extends binding context with given extra properties.
    * @ignore
    */
-   this.__ExtendBindingContext = function (context, current, alias, templateAlias, cacheKey) {
+  this.__ExtendBindingContext = function (context, current, alias, templateAlias, cacheKey) {
     return BindingProviderImpl.extendBindingContext(
-      context, current, alias, templateAlias, cacheKey);
+      context,
+      current,
+      alias,
+      templateAlias,
+      cacheKey
+    );
   };
 
   /**
@@ -2341,8 +2452,7 @@ const _KnockoutBindingProvider = function () {
    */
   this.__ContextFor = function (node) {
     // Note: the context for oj_bind_for_each template is stored on __ojBindingContext property.
-    return node.__ojBindingContext ?
-      node.__ojBindingContext : contextFor(node);
+    return node.__ojBindingContext ? node.__ojBindingContext : contextFor(node);
   };
 
   /**
@@ -2365,7 +2475,7 @@ const _KnockoutBindingProvider = function () {
    * A wrapper function used by VTemplateEngine to create a computed observable.
    * @ignore
    */
-    this.__KoComputed = function (evaluator, targetObject, options) {
+  this.__KoComputed = function (evaluator, targetObject, options) {
     return computed(evaluator, targetObject, options);
   };
 
@@ -2373,7 +2483,7 @@ const _KnockoutBindingProvider = function () {
    * A wrapper function used by VTemplateEngine to check if called during the first evaluation of the current computed observable.
    * @ignore
    */
-    this.__KoIsInitial = function () {
+  this.__KoIsInitial = function () {
     return computedContext.isInitial();
   };
 
@@ -2410,7 +2520,8 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
       var _expressionHandler;
       var attributeListener;
 
-      const metadataProps = CustomElementUtils.getElementProperties(element);
+      const compMetadata = CustomElementUtils.getMetadata(element.tagName);
+      const metadataProps = compMetadata.properties || {};
 
       // Compute data about the provided and consumed properties.
       // Also get the function that would perform necessary clean up when the bindings on the provider element are being cleaned
@@ -2418,7 +2529,7 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
         provide: provideMap,
         consume: consumeMap,
         cleanup: disposeProviderListeners
-      } = _setupProvideAndConsumeMaps(element, metadataProps);
+      } = _setupProvideAndConsumeMaps(element, compMetadata);
 
       // Called both when KO's cleanNode() is invoked and when the observable view model is mutated
       function cleanup() {
@@ -2553,7 +2664,7 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
   const _ATTRIBUTE_CHANGED = 'attribute-changed';
   const _CHANGE_SUFFIX = 'Changed';
 
-  function _setupProvideAndConsumeMaps(element, metadataProps) {
+  function _setupProvideAndConsumeMaps(element, compMetadata) {
     // A map of a property name to a record with the following structure:
     // {set: {Function}, vars: Array<{name: {String}, obs: {Function}, transform: {Record<string, string>}}>} (the 'set' key representing
     // the setter for updating the value (the setter may be updating more than one observable if the value is being provided
@@ -2573,18 +2684,18 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
 
     const changeListeners = Object.create(null);
 
-    const provideConsumeMeta = getPropagationMetadataViaCache(element.localName, metadataProps); // will return null if the component has no provide/consume metadata
+    const provideConsumeMeta = getPropagationMetadataViaCache(element.localName, compMetadata); // will return null if the component has no provide/consume metadata
     if (provideConsumeMeta !== null) {
+      const metadataProps = compMetadata.properties || {};
       // eslint-disable-next-line no-restricted-syntax
       for (const [pName, [provideMeta, consumeMeta]] of provideConsumeMeta) {
         if (provideMeta !== undefined) {
-          // 1) populate the 'provide' map including collecting initial values for properties
-          // whose attributes have literal values
+          // 1) populate the 'provide' map including
+          //    a) using any root-level (static) values
+          //    b) collecting initial values for properties whose attributes have literal values
 
           // The binding will be provided to descendants only if the corresponding attribute is set
           // or if the default value is provided via metadata
-          const attrName = AttributeUtils.propertyNameToAttribute(pName);
-          const hasAttribute = element.hasAttribute(attrName);
           const observables = [];
           const vars = [];
           // iterate over provided bindings (there may be more than one!) that a single attribute produces
@@ -2600,26 +2711,35 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
           });
 
           if (vars.length > 0) {
+            const isRootProvide = pName === ROOT_BINDING_PROPAGATION;
             // create a setter function that can update several observables at once
             const set = _getSingleSetter(observables);
             provide[pName] = { set, vars };
 
-            // Call the setter function whenever a  proeprty change event is fired
-            const changeListener = _setupChangeListenerForProvidedProperty(set);
-            const evtName = pName + _CHANGE_SUFFIX;
-            element.addEventListener(evtName, changeListener);
-            // Store listener in a map for future cleanup
-            changeListeners[evtName] = changeListener;
+            if (!isRootProvide) {
+              // Call the setter function whenever a  proeprty change event is fired
+              const changeListener = _setupChangeListenerForProvidedProperty(set);
+              const evtName = pName + _CHANGE_SUFFIX;
+              element.addEventListener(evtName, changeListener);
+              // Store listener in a map for future cleanup
+              changeListeners[evtName] = changeListener;
 
-            // If the attribute is present, and its value is not an expression, we won't be getting the initial value
-            // when the expression is evaluated, so we have to coerce and store the initial value here
-            if (hasAttribute) {
-              const attrVal = element.getAttribute(attrName);
-              if (!AttributeUtils.getExpressionInfo(attrVal).expr) {
-                set(
-                  AttributeUtils.attributeToPropertyValue(element, attrName, attrVal,
-                    metadataProps[pName])
-                );
+              // If the attribute is present, and its value is not an expression, we won't be getting the initial value
+              // when the expression is evaluated, so we have to coerce and store the initial value here
+              const attrName = AttributeUtils.propertyNameToAttribute(pName);
+              const hasAttribute = element.hasAttribute(attrName);
+              if (hasAttribute) {
+                const attrVal = element.getAttribute(attrName);
+                if (!AttributeUtils.getExpressionInfo(attrVal).expr) {
+                  set(
+                    AttributeUtils.attributeToPropertyValue(
+                      element,
+                      attrName,
+                      attrVal,
+                      metadataProps[pName]
+                    )
+                  );
+                }
               }
             }
           }
@@ -2643,15 +2763,14 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
     return { provide, consume, cleanup };
   }
 
-
   function _setupChangeListenerForProvidedProperty(setter) {
     return (evt) => setter(evt.detail.value);
   }
 
-
   function _getChildContext(bindingContext, provideMap) {
     let newContext = bindingContext;
-    const props = Object.keys(provideMap);
+    // We need to account for ROOT_BINDING_PROPAGATION here
+    const props = Reflect.ownKeys(provideMap);
     if (props.length > 0) {
       const oldProvided = bindingContext.$provided;
       const newProvided = oldProvided === undefined ? {} : Object.assign({}, oldProvided);
@@ -2659,7 +2778,17 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
       props.forEach((prop) => {
         const vars = provideMap[prop].vars;
         vars.forEach((info) => {
-          newProvided[info.name] = info.obs;
+          // JET-54103 - __oj_private_contexts value is a Map. We want to merge the old and new value instead of overwrite
+          // in order to preserve an ancestor context. Also the context always get provided as default values.
+          // The values are not going to change, so they don't need to be remerged.
+          const obs = info.obs;
+          if (info.name === '__oj_private_contexts' && oldProvided && oldProvided[info.name]) {
+            const oldValue = oldProvided[info.name]();
+            const newValue = obs();
+            const merged = new Map([...oldValue, ...newValue]);
+            obs(merged);
+          }
+          newProvided[info.name] = obs;
         });
       });
 
@@ -2683,7 +2812,7 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
   function _getSingleSetter(observables) {
     return (val) => observables.forEach((observable) => observable(val));
   }
-}());
+})();
 
 /**
  * Returns a header renderer function executes the template specified in the binding attribute.
@@ -2705,8 +2834,7 @@ function _getDataGridHeaderRenderer(bindingContext, template) {
       binding.$metadata = context.metadata;
       // eslint-disable-next-line no-param-reassign
       binding.$headerContext = context;
-    }
-                                                    );
+    });
 
     _executeTemplate(context, template, parent, childContext, nodeStore);
 
@@ -2737,8 +2865,7 @@ function _getDataGridCellRenderer(bindingContext, template) {
       binding.$cellContext = context;
       // eslint-disable-next-line no-param-reassign
       binding.$cell = context.cell;
-    }
-                                                    );
+    });
 
     _executeTemplate(context, template, parent, childContext, nodeStore);
 
@@ -2746,7 +2873,6 @@ function _getDataGridCellRenderer(bindingContext, template) {
     return null;
   };
 }
-
 
 /**
  * Execute a template and applies relevant afterRender function
@@ -2783,8 +2909,10 @@ function _executeTemplate(context, template, parent, childContext, nodeStore) {
 function _getClonedNodeArray(useTemplate, nodeStore) {
   var nodesArray = nodeStore[useTemplate];
   if (nodesArray == null) {
-    nodesArray = utils.parseHtmlFragment(document.getElementById(useTemplate).innerHTML, // @HTMLUpdateOK
-                                            document);
+    nodesArray = utils.parseHtmlFragment(
+      document.getElementById(useTemplate).innerHTML, // @HTMLUpdateOK
+      document
+    );
     // eslint-disable-next-line no-param-reassign
     nodeStore[useTemplate] = nodesArray;
   }
@@ -2810,114 +2938,125 @@ function _resolveDataGridTemplate(template, context) {
   return template;
 }
 
-ComponentBinding.getDefaultInstance().setupManagedAttributes(
-  {
-    attributes: ['header', 'cell'],
-    init: function (
-      name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
-    ) {
-      if (name === 'header') {
-        // find row template and creates a renderer
-        var row = value.row;
-        if (row != null) {
-          var rowTemplate = row.template;
-          if (rowTemplate != null) {
-            row.renderer = _getDataGridHeaderRenderer(bindingContext, rowTemplate);
-          }
+ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  attributes: ['header', 'cell'],
+  init: function (
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
+  ) {
+    if (name === 'header') {
+      // find row template and creates a renderer
+      var row = value.row;
+      if (row != null) {
+        var rowTemplate = row.template;
+        if (rowTemplate != null) {
+          row.renderer = _getDataGridHeaderRenderer(bindingContext, rowTemplate);
         }
-
-        // find column template and creates a renderer
-        var column = value.column;
-        if (column != null) {
-          var columnTemplate = column.template;
-          if (columnTemplate != null) {
-            column.renderer = _getDataGridHeaderRenderer(bindingContext, columnTemplate);
-          }
-        }
-
-        // find column template and creates a renderer
-        var rowEnd = value.rowEnd;
-        if (rowEnd != null) {
-          var rowEndTemplate = rowEnd.template;
-          if (rowEndTemplate != null) {
-            rowEnd.renderer = _getDataGridHeaderRenderer(bindingContext, rowEndTemplate);
-          }
-        }
-
-        // find column template and creates a renderer
-        var columnEnd = value.columnEnd;
-        if (columnEnd != null) {
-          var columnEndTemplate = columnEnd.template;
-          if (columnEndTemplate != null) {
-            columnEnd.renderer = _getDataGridHeaderRenderer(bindingContext, columnEndTemplate);
-          }
-        }
-        return { header: value };
-      } else if (name === 'cell') {
-        // find the cell template and creates a renderer
-        var cellTemplate = value.template;
-        if (cellTemplate != null) {
-          // eslint-disable-next-line no-param-reassign
-          value.renderer = _getDataGridCellRenderer(bindingContext, cellTemplate);
-        }
-        return { cell: value };
       }
-      return undefined;
-    },
-    update: function (
-      name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
-    ) {
-      if (name === 'header') {
-        // find row template and creates a renderer
-        var row = value.row;
-        if (row != null) {
-          var rowTemplate = row.template;
-          if (rowTemplate != null) {
-            row.renderer = _getDataGridHeaderRenderer(bindingContext, rowTemplate);
-          }
-        }
 
-        // find column template and creates a renderer
-        var column = value.column;
-        if (column != null) {
-          var columnTemplate = column.template;
-          if (columnTemplate != null) {
-            column.renderer = _getDataGridHeaderRenderer(bindingContext, columnTemplate);
-          }
+      // find column template and creates a renderer
+      var column = value.column;
+      if (column != null) {
+        var columnTemplate = column.template;
+        if (columnTemplate != null) {
+          column.renderer = _getDataGridHeaderRenderer(bindingContext, columnTemplate);
         }
-
-        // find column template and creates a renderer
-        var rowEnd = value.rowEnd;
-        if (rowEnd != null) {
-          var rowEndTemplate = rowEnd.template;
-          if (rowEndTemplate != null) {
-            rowEnd.renderer = _getDataGridHeaderRenderer(bindingContext, rowEndTemplate);
-          }
-        }
-
-        // find column template and creates a renderer
-        var columnEnd = value.columnEnd;
-        if (columnEnd != null) {
-          var columnEndTemplate = columnEnd.template;
-          if (columnEndTemplate != null) {
-            columnEnd.renderer = _getDataGridHeaderRenderer(bindingContext, columnEndTemplate);
-          }
-        }
-        return { header: value };
-      } else if (name === 'cell') {
-        // find the cell template and creates a renderer
-        var cellTemplate = value.template;
-        if (cellTemplate != null) {
-          // eslint-disable-next-line no-param-reassign
-          value.renderer = _getDataGridCellRenderer(bindingContext, cellTemplate);
-        }
-        return { cell: value };
       }
-      return null;
-    },
 
-    for: 'ojDataGrid'
-  });
+      // find column template and creates a renderer
+      var rowEnd = value.rowEnd;
+      if (rowEnd != null) {
+        var rowEndTemplate = rowEnd.template;
+        if (rowEndTemplate != null) {
+          rowEnd.renderer = _getDataGridHeaderRenderer(bindingContext, rowEndTemplate);
+        }
+      }
+
+      // find column template and creates a renderer
+      var columnEnd = value.columnEnd;
+      if (columnEnd != null) {
+        var columnEndTemplate = columnEnd.template;
+        if (columnEndTemplate != null) {
+          columnEnd.renderer = _getDataGridHeaderRenderer(bindingContext, columnEndTemplate);
+        }
+      }
+      return { header: value };
+    } else if (name === 'cell') {
+      // find the cell template and creates a renderer
+      var cellTemplate = value.template;
+      if (cellTemplate != null) {
+        // eslint-disable-next-line no-param-reassign
+        value.renderer = _getDataGridCellRenderer(bindingContext, cellTemplate);
+      }
+      return { cell: value };
+    }
+    return undefined;
+  },
+  update: function (
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
+  ) {
+    if (name === 'header') {
+      // find row template and creates a renderer
+      var row = value.row;
+      if (row != null) {
+        var rowTemplate = row.template;
+        if (rowTemplate != null) {
+          row.renderer = _getDataGridHeaderRenderer(bindingContext, rowTemplate);
+        }
+      }
+
+      // find column template and creates a renderer
+      var column = value.column;
+      if (column != null) {
+        var columnTemplate = column.template;
+        if (columnTemplate != null) {
+          column.renderer = _getDataGridHeaderRenderer(bindingContext, columnTemplate);
+        }
+      }
+
+      // find column template and creates a renderer
+      var rowEnd = value.rowEnd;
+      if (rowEnd != null) {
+        var rowEndTemplate = rowEnd.template;
+        if (rowEndTemplate != null) {
+          rowEnd.renderer = _getDataGridHeaderRenderer(bindingContext, rowEndTemplate);
+        }
+      }
+
+      // find column template and creates a renderer
+      var columnEnd = value.columnEnd;
+      if (columnEnd != null) {
+        var columnEndTemplate = columnEnd.template;
+        if (columnEndTemplate != null) {
+          columnEnd.renderer = _getDataGridHeaderRenderer(bindingContext, columnEndTemplate);
+        }
+      }
+      return { header: value };
+    } else if (name === 'cell') {
+      // find the cell template and creates a renderer
+      var cellTemplate = value.template;
+      if (cellTemplate != null) {
+        // eslint-disable-next-line no-param-reassign
+        value.renderer = _getDataGridCellRenderer(bindingContext, cellTemplate);
+      }
+      return { cell: value };
+    }
+    return null;
+  },
+
+  for: 'ojDataGrid'
+});
 
 /**
  * @private
@@ -2932,12 +3071,24 @@ function _handleManagedDiagramAttributes(name, value, bindingContext) {
 ComponentBinding.getDefaultInstance().setupManagedAttributes({
   attributes: ['template'],
   init: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedDiagramAttributes(name, value, bindingContext);
   },
   update: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedDiagramAttributes(name, value, bindingContext);
   },
@@ -2950,124 +3101,140 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
 (function () {
   var _BINDINGS = '_ojbindingsobj';
 
-  BindingProviderImpl.registerPreprocessor(
-    'oj-bind-text',
-    function (node) {
-      return _replaceWithKo(node, 'text', 'value', true);
-    }
-  );
+  BindingProviderImpl.registerPreprocessor('oj-bind-text', function (node) {
+    return _replaceWithKo(node, 'text', 'value', true);
+  });
 
-  BindingProviderImpl.registerPreprocessor(
-    'oj-bind-if',
-    function (node) {
-      return _replaceWithKo(node, 'if', 'test', false);
-    }
-  );
+  BindingProviderImpl.registerPreprocessor('oj-bind-if', function (node) {
+    return _replaceWithKo(node, 'if', 'test', false);
+  });
 
-  BindingProviderImpl.registerPreprocessor(
-    'oj-bind-for-each', _replaceWithKoForEach);
+  BindingProviderImpl.registerPreprocessor('oj-bind-for-each', _replaceWithKoForEach);
 
-  BindingProviderImpl.addPostprocessor(
-    {
-      nodeHasBindings: function (node, wrappedReturn) {
+  BindingProviderImpl.addPostprocessor({
+    nodeHasBindings: function (node, wrappedReturn) {
+      var bindings = _getBindings(node);
+      return (
+        wrappedReturn ||
+        bindings._ATTR_BIND != null ||
+        bindings._STYLE_BIND != null ||
+        bindings._EVENT_BIND != null
+      );
+    },
+    getBindingAccessors: function (node, bindingContext, wrappedReturn) {
+      if (node.nodeType === 1) {
+        // eslint-disable-next-line no-param-reassign
+        wrappedReturn = wrappedReturn || {};
         var bindings = _getBindings(node);
-        return wrappedReturn || bindings._ATTR_BIND != null ||
-          bindings._STYLE_BIND != null || bindings._EVENT_BIND != null;
-      },
-      getBindingAccessors: function (node, bindingContext, wrappedReturn) {
-        if (node.nodeType === 1) {
-          // eslint-disable-next-line no-param-reassign
-          wrappedReturn = wrappedReturn || {};
-          var bindings = _getBindings(node);
-          var i;
-          var attr;
+        var i;
+        var attr;
 
-          // Style bindings
-          var styleAttrs = bindings._STYLE_BIND;
-          if (styleAttrs) {
-            if (wrappedReturn.style) {
-              throw new Error('Cannot have both style data-bind and JET style binding on ' +
-                              node.tagName + ' with id ' + node.id);
-            }
-
-            // If :style is set, any additional :style.* attributes would have thrown an error earlier
-            if (styleAttrs === 'style') {
-              // eslint-disable-next-line no-param-reassign
-              wrappedReturn[styleAttrs] =
-                _getValueEvaluator(node, styleAttrs,
-                                   node.getAttribute(_getBoundAttrName(styleAttrs)),
-                                   bindingContext, 'object');
-            } else {
-              var styleEvaluators = {};
-              for (i = 0; i < styleAttrs.length; i++) {
-                attr = styleAttrs[i];
-                var styleProp = AttributeUtils.attributeToPropertyName(attr.substring(6));
-                styleEvaluators[styleProp] =
-                  _getValueEvaluator(node, attr,
-                                     node.getAttribute(_getBoundAttrName(attr)),
-                                     bindingContext, 'string');
-              }
-              // eslint-disable-next-line no-param-reassign
-              wrappedReturn.style = _getObjectEvaluator(styleEvaluators);
-            }
+        // Style bindings
+        var styleAttrs = bindings._STYLE_BIND;
+        if (styleAttrs) {
+          if (wrappedReturn.style) {
+            throw new Error(
+              'Cannot have both style data-bind and JET style binding on ' +
+                node.tagName +
+                ' with id ' +
+                node.id
+            );
           }
 
-          // All other attribute bindings
-          var boundAttrs = bindings._ATTR_BIND;
-          if (boundAttrs) {
-            if (wrappedReturn.attr) {
-              throw new Error('Cannot have both attr data-bind and JET attribute binding on ' +
-                              node.tagName + ' with id ' + node.id);
-            }
-
-            var attrEvaluators = {};
-            for (i = 0; i < boundAttrs.length; i++) {
-              attr = boundAttrs[i];
-              // For the class attribute we support a string, an array and object types.
-              // For all the types we pass to knockout's css binding that also handles arrays and strings
-              // since version 3.5.0.
-              if (attr === 'class') {
-                _setClassEvaluator(wrappedReturn, node,
-                                   node.getAttribute(_getBoundAttrName(attr)), bindingContext);
-              } else {
-                attrEvaluators[attr] =
-                  _getValueEvaluator(node, attr,
-                                     node.getAttribute(_getBoundAttrName(attr)),
-                                     bindingContext, 'string');
-              }
-            }
-
+          // If :style is set, any additional :style.* attributes would have thrown an error earlier
+          if (styleAttrs === 'style') {
             // eslint-disable-next-line no-param-reassign
-            wrappedReturn.attr = _getObjectEvaluator(attrEvaluators);
-          }
-
-          // Event bindings for native HTML elements
-          var eventAttrs = bindings._EVENT_BIND;
-          if (eventAttrs) {
-            // Delegate to ExpressionPropertyUpdater, which is also responsible for
-            // setting up the event bindings for custom elements.
-            var expressionHandler = new ExpressionPropertyUpdater(node, bindingContext, true);
-
-            for (i = 0; i < eventAttrs.length; i++) {
-              var attrNode = eventAttrs[i];
-              var propName = AttributeUtils.attributeToPropertyName(attrNode.nodeName);
-              expressionHandler.setupPropertyBinding(attrNode.value, propName, {
-                _domListener: true
-              });
+            wrappedReturn[styleAttrs] = _getValueEvaluator(
+              node,
+              styleAttrs,
+              node.getAttribute(_getBoundAttrName(styleAttrs)),
+              bindingContext,
+              'object'
+            );
+          } else {
+            var styleEvaluators = {};
+            for (i = 0; i < styleAttrs.length; i++) {
+              attr = styleAttrs[i];
+              var styleProp = AttributeUtils.attributeToPropertyName(attr.substring(6));
+              styleEvaluators[styleProp] = _getValueEvaluator(
+                node,
+                attr,
+                node.getAttribute(_getBoundAttrName(attr)),
+                bindingContext,
+                'string'
+              );
             }
-
-            utils.domNodeDisposal.addDisposeCallback(node, function () {
-              if (expressionHandler) {
-                expressionHandler.teardown();
-                expressionHandler = null;
-              }
-            });
+            // eslint-disable-next-line no-param-reassign
+            wrappedReturn.style = _getObjectEvaluator(styleEvaluators);
           }
         }
-        return wrappedReturn;
+
+        // All other attribute bindings
+        var boundAttrs = bindings._ATTR_BIND;
+        if (boundAttrs) {
+          if (wrappedReturn.attr) {
+            throw new Error(
+              'Cannot have both attr data-bind and JET attribute binding on ' +
+                node.tagName +
+                ' with id ' +
+                node.id
+            );
+          }
+
+          var attrEvaluators = {};
+          for (i = 0; i < boundAttrs.length; i++) {
+            attr = boundAttrs[i];
+            // For the class attribute we support a string, an array and object types.
+            // For all the types we pass to knockout's css binding that also handles arrays and strings
+            // since version 3.5.0.
+            if (attr === 'class') {
+              _setClassEvaluator(
+                wrappedReturn,
+                node,
+                node.getAttribute(_getBoundAttrName(attr)),
+                bindingContext
+              );
+            } else {
+              attrEvaluators[attr] = _getValueEvaluator(
+                node,
+                attr,
+                node.getAttribute(_getBoundAttrName(attr)),
+                bindingContext,
+                'string'
+              );
+            }
+          }
+
+          // eslint-disable-next-line no-param-reassign
+          wrappedReturn.attr = _getObjectEvaluator(attrEvaluators);
+        }
+
+        // Event bindings for native HTML elements
+        var eventAttrs = bindings._EVENT_BIND;
+        if (eventAttrs) {
+          // Delegate to ExpressionPropertyUpdater, which is also responsible for
+          // setting up the event bindings for custom elements.
+          var expressionHandler = new ExpressionPropertyUpdater(node, bindingContext, true);
+
+          for (i = 0; i < eventAttrs.length; i++) {
+            var attrNode = eventAttrs[i];
+            var propName = AttributeUtils.attributeToPropertyName(attrNode.nodeName);
+            expressionHandler.setupPropertyBinding(attrNode.value, propName, {
+              _domListener: true
+            });
+          }
+
+          utils.domNodeDisposal.addDisposeCallback(node, function () {
+            if (expressionHandler) {
+              expressionHandler.teardown();
+              expressionHandler = null;
+            }
+          });
+        }
       }
+      return wrappedReturn;
     }
-  );
+  });
 
   function _replaceWithKo(node, bindableAttr, nodeAttr, stringify) {
     var expr = _getExpression(node.getAttribute(nodeAttr), stringify);
@@ -3091,7 +3258,10 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
           throw new Error('got value ' + dataValue);
         }
       } catch (e) {
-        throw new Error('The value on the oj-bind-for-each data attribute should be either a JSON array or an expression : ' + e);
+        throw new Error(
+          'The value on the oj-bind-for-each data attribute should be either a JSON array or an expression : ' +
+            e
+        );
       }
     }
 
@@ -3183,8 +3353,10 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
         return Array.isArray(resolvedValue) ? resolvedValue.join(' ') : resolvedValue;
       };
     } else {
-      var classValueEvaluator =
-            BindingProviderImpl.createEvaluator(exp, bindingContext).bind(null, bindingContext);
+      var classValueEvaluator = BindingProviderImpl.createEvaluator(exp, bindingContext).bind(
+        null,
+        bindingContext
+      );
       // create computed to handle cases when an expression evaluates into an observable or
       // when expression evaluates into a function that mutates the value based on observable.
       evaluator = pureComputed(function () {
@@ -3200,9 +3372,7 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
     var exp = AttributeUtils.getExpressionInfo(value).expr;
     if (exp == null) {
       return function () {
-        return type === 'object' ?
-          AttributeUtils.coerceValue(elem, attr, value, type) :
-          value;
+        return type === 'object' ? AttributeUtils.coerceValue(elem, attr, value, type) : value;
       };
     }
     return BindingProviderImpl.createEvaluator(exp, bindingContext).bind(null, bindingContext);
@@ -3250,15 +3420,22 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
         // Handle event binding for native HTML elements.
         // The event binding for custom elements is handled by the bridge.
-        if (!CustomElementUtils.isElementRegistered(node.nodeName) && attr.name.substring(0, 3) === 'on-') {
+        if (
+          !CustomElementUtils.isElementRegistered(node.nodeName) &&
+          attr.name.substring(0, 3) === 'on-'
+        ) {
           boundEvents.push(attr);
         }
       }
 
       if (boundStyle.length) {
         if (bindings._STYLE_BIND) {
-          throw new Error('Cannot have both style and style.* data bound attributes on ' +
-                          node.tagName + ' with id ' + node.id);
+          throw new Error(
+            'Cannot have both style and style.* data bound attributes on ' +
+              node.tagName +
+              ' with id ' +
+              node.id
+          );
         } else {
           bindings._STYLE_BIND = boundStyle;
         }
@@ -3289,11 +3466,11 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
   function _getBoundAttrName(attr) {
     return ':' + attr;
   }
-}());
+})();
 
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  *
@@ -3401,20 +3578,27 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
           var errMessage;
           switch (slotAttr) {
             case '':
-              errMessage = 'Multiple default templates found: oj-bind-for-each requires a single default template element as its direct child';
+              errMessage =
+                'Multiple default templates found: oj-bind-for-each requires a single default template element as its direct child';
               break;
             case 'noData':
-                errMessage = 'Multiple noData templates found: oj-bind-for-each requires a single noData template element as its direct child';
-                break;
+              errMessage =
+                'Multiple noData templates found: oj-bind-for-each requires a single noData template element as its direct child';
+              break;
             default:
-              errMessage = 'Unknown template slot detected - ' + slotAttr + ': oj-bind-for-each supports a single default template and a single noData template';
+              errMessage =
+                'Unknown template slot detected - ' +
+                slotAttr +
+                ': oj-bind-for-each supports a single default template and a single noData template';
           }
           throw new Error(errMessage);
         }
       }
     }
     if (!defaultTemplate) {
-      throw new Error('Default template not found: oj-bind-for-each requires a single default template element as its direct child');
+      throw new Error(
+        'Default template not found: oj-bind-for-each requires a single default template element as its direct child'
+      );
     }
     // eslint-disable-next-line no-param-reassign
     elem._templateNode = defaultTemplate;
@@ -3488,7 +3672,8 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
     this._initChildrenBindingsAppliedPromise();
 
     var primeData = unwrap(this.data);
-    if (primeData.fetchFirst) { // the data is a DataProvider object
+    if (primeData.fetchFirst) {
+      // the data is a DataProvider object
       this.currentDataProvider = primeData;
       this.fetchData();
     } else {
@@ -3510,7 +3695,8 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
         this.changeSubs = this.data.subscribe(this.onDataChange, this, 'change');
       }
     } else if (isObservable$1) {
-      if (!this.data.indexOf) { // observable but not an observable array
+      if (!this.data.indexOf) {
+        // observable but not an observable array
         // Make sure the observable is trackable.
         this.data = this.data.extend({ trackArrayChanges: true });
       }
@@ -3571,26 +3757,28 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
     var containerElement = this.element.parentNode;
     var busyContext = Context.getContext(containerElement).getBusyContext();
     return busyContext.addBusyState({
-      description: 'oj-bind-for-each binding on a node with the Id ' +
-        containerElement.id + 'is loading data.'
+      description:
+        'oj-bind-for-each binding on a node with the Id ' + containerElement.id + 'is loading data.'
     });
   };
 
   // initializes a promise for expanding an element and applying bindings to its children
   OjForEach.prototype._initChildrenBindingsAppliedPromise = function () {
     var currentContext = this.element._templateNode.__ojBindingContext.$current;
-    var parentTrackingContext = currentContext ?
-    { _nearestCustomParent: currentContext._nearestCustomParent,
-      _immediate: currentContext._immediate } : null;
-    var nearestCustomParent =
-      findNearestCustomParent(this.element, parentTrackingContext);
-    var isImmediate =
-      findImmediateState(this.element, nearestCustomParent, parentTrackingContext);
+    var parentTrackingContext = currentContext
+      ? {
+          _nearestCustomParent: currentContext._nearestCustomParent,
+          _immediate: currentContext._immediate
+        }
+      : null;
+    var nearestCustomParent = findNearestCustomParent(this.element, parentTrackingContext);
+    var isImmediate = findImmediateState(this.element, nearestCustomParent, parentTrackingContext);
     this.trackingContext = {
       _nearestCustomParent: nearestCustomParent,
       _immediate: isImmediate
     };
-    this._childrenBindingsPromiseResolver = _KnockoutBindingProvider.getInstance()
+    this._childrenBindingsPromiseResolver = _KnockoutBindingProvider
+      .getInstance()
       .__RegisterBindingAppliedPromiseForChildren(nearestCustomParent, isImmediate);
   };
 
@@ -3640,32 +3828,36 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
     var headPromise;
 
     // function passed to iterator.next() promise on success, until result.done is set to true
-    var getProcessResultsFunc = function (changeSet, onArrayChangeCallback,
-      callbackObj) {
+    var getProcessResultsFunc = function (changeSet, onArrayChangeCallback, callbackObj) {
       return function (result) {
-        if (callbackObj.headDataPromise === headPromise) { // current promise
+        if (callbackObj.headDataPromise === headPromise) {
+          // current promise
           var value = result.value;
           var entryIndex = changeSet.length;
           for (var i = 0; i < value.metadata.length && i < value.data.length; i++) {
             changeSet.push(valueToChangeAddItem(value.data[i], entryIndex, value.metadata[i].key));
             entryIndex += 1;
           }
-          if (result.done) { // finish up
+          if (result.done) {
+            // finish up
             onArrayChangeCallback.call(callbackObj, changeSet);
             busyStateCallback();
             dataPromiseResolve();
             callbackObj.resetChainIfCompleted(headPromise);
           } else {
-            iterator.next().then(
-              getProcessResultsFunc(changeSet, onArrayChangeCallback,
-                                    callbackObj),
-              function (reason) {
-                busyStateCallback();
-                dataPromiseReject(reason);
-                callbackObj.resetChainIfCompleted(headPromise);
-              });
+            iterator
+              .next()
+              .then(
+                getProcessResultsFunc(changeSet, onArrayChangeCallback, callbackObj),
+                function (reason) {
+                  busyStateCallback();
+                  dataPromiseReject(reason);
+                  callbackObj.resetChainIfCompleted(headPromise);
+                }
+              );
           }
-        } else { // abandoned promise
+        } else {
+          // abandoned promise
           busyStateCallback();
           dataPromiseReject(new Error(_ABANDONED_PROMISE_CHAIN));
         }
@@ -3678,17 +3870,20 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
     // The abandoned promise rejections are ignored,
     // other rejections are thrown and marked with _CAUGHT_PROMISE_REJECTION
     // in order to prevent rethrowing in chained promises.
-    headPromise = new Promise(function (resolve, reject) {
-      dataPromiseResolve = resolve;
-      dataPromiseReject = reject;
-      iterator.next()
-        .then(getProcessResultsFunc([], this.onArrayChange, this),
+    headPromise = new Promise(
+      function (resolve, reject) {
+        dataPromiseResolve = resolve;
+        dataPromiseReject = reject;
+        iterator.next().then(
+          getProcessResultsFunc([], this.onArrayChange, this),
           function (reason) {
             busyStateCallback();
             dataPromiseReject(reason);
             this.resetChainIfCompleted(headPromise);
-          }.bind(this));
-    }.bind(this));
+          }.bind(this)
+        );
+      }.bind(this)
+    );
 
     // the catch handles a case when the head promise does not have a chain and we need to catch valid rejection
     headPromise.catch(function (reason) {
@@ -3713,11 +3908,13 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
   OjForEach.prototype.getIndexesForEvent = function (eventIndexes, eventKeys) {
     var dataIndexes = [];
     var i;
-    if (Array.isArray(eventIndexes)) { // use indexes if possible
+    if (Array.isArray(eventIndexes)) {
+      // use indexes if possible
       for (i = 0; i < eventIndexes.length; i++) {
         dataIndexes.push(eventIndexes[i]);
       }
-    } else if (eventKeys) { // retrieve indexes from keys
+    } else if (eventKeys) {
+      // retrieve indexes from keys
       // eventKeys can be a Set or an Array, so we need to get the key count differently
       var eventKeysCount = Array.isArray(eventKeys) ? eventKeys.length : eventKeys.size;
       var eventKeySet = new KeySetImpl(eventKeys);
@@ -3750,12 +3947,13 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
     if (this.tailDataPromise) {
       busyStateCallback = this.registerBusyState();
-      currentPromise = this.tailDataPromise.then(
-        function () { // success
-          busyStateCallback();
-          return self.getDataMutationHelper(event, promiseContainer);
-        });
-      currentPromise.catch(function (reason) { // error handler
+      currentPromise = this.tailDataPromise.then(function () {
+        // success
+        busyStateCallback();
+        return self.getDataMutationHelper(event, promiseContainer);
+      });
+      currentPromise.catch(function (reason) {
+        // error handler
         self.promiseRejectHelper(reason, busyStateCallback, currentPromise);
       });
     } else {
@@ -3814,12 +4012,16 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
       if (addData) {
         // The 'afterKeys' prop is deprecated, but continue to support it until we can remove it.
         // The getIndexesForEvent() method can take either array or set as its argument.
-        var dataIndexes = this.getIndexesForEvent(addDetail.indexes,
-          addDetail.addBeforeKeys ? addDetail.addBeforeKeys : addDetail.afterKeys);
+        var dataIndexes = this.getIndexesForEvent(
+          addDetail.indexes,
+          addDetail.addBeforeKeys ? addDetail.addBeforeKeys : addDetail.afterKeys
+        );
 
         var getCurrentIndex = function (entryIndex) {
-          var currentIndex = dataIndexes.length > entryIndex ? dataIndexes[entryIndex] :
-            this.firstLastNodesList.length + entryIndex; // add entry to the end
+          var currentIndex =
+            dataIndexes.length > entryIndex
+              ? dataIndexes[entryIndex]
+              : this.firstLastNodesList.length + entryIndex; // add entry to the end
           if (currentIndex === undefined) {
             return this.firstLastNodesList.length;
           }
@@ -3839,46 +4041,50 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
     // Some data were not sent, need to fetch data and work with promises.
     if ((updateDetail && !Array.isArray(updateData)) || (addDetail && !Array.isArray(addData))) {
-      var updatePromise = updateDetail && !Array.isArray(updateData) ?
-        this.currentDataProvider.fetchByKeys({ keys: updateDetail.keys }) : Promise.resolve();
-      var addPromise = addDetail && !Array.isArray(addData) ?
-        this.currentDataProvider.fetchByKeys({ keys: addDetail.keys }) : Promise.resolve();
+      var updatePromise =
+        updateDetail && !Array.isArray(updateData)
+          ? this.currentDataProvider.fetchByKeys({ keys: updateDetail.keys })
+          : Promise.resolve();
+      var addPromise =
+        addDetail && !Array.isArray(addData)
+          ? this.currentDataProvider.fetchByKeys({ keys: addDetail.keys })
+          : Promise.resolve();
 
       busyStateCallback = this.registerBusyState();
-      dataPromise = Promise.all([updatePromise, addPromise]).then(
-        (keyResults) => { // successfully got all the data
-          // if promise is current, retrieve records and update data set;
-          // else throw valid rejection error
-          if (promiseContainer.head === this.headDataPromise) {
-              // Perform updates
-              var updateKeyResults = keyResults[0];
-              if (updateKeyResults && updateKeyResults.results.size > 0) {
-                updateData = [...updateDetail.keys].map(key => {
-                  return updateKeyResults.results.get(key).data;
-                });
-              }
-              doUpdates();
-
-              // Perform removals
-              doRemovals();
-
-              // Perform additions
-              var addKeyResults = keyResults[1];
-              if (addKeyResults && addKeyResults.results.size > 0) {
-                addData = [...addDetail.keys].map(key => {
-                  return addKeyResults.results.get(key).data;
-                });
-              }
-              doAdditions();
-
-              busyStateCallback();
-              this.resetChainIfCompleted(promiseContainer.current);
-          } else { // Promise is not current
-            busyStateCallback();
-            throw new Error(_ABANDONED_PROMISE_CHAIN);
+      dataPromise = Promise.all([updatePromise, addPromise]).then((keyResults) => {
+        // successfully got all the data
+        // if promise is current, retrieve records and update data set;
+        // else throw valid rejection error
+        if (promiseContainer.head === this.headDataPromise) {
+          // Perform updates
+          var updateKeyResults = keyResults[0];
+          if (updateKeyResults && updateKeyResults.results.size > 0) {
+            updateData = [...updateDetail.keys].map((key) => {
+              return updateKeyResults.results.get(key).data;
+            });
           }
+          doUpdates();
+
+          // Perform removals
+          doRemovals();
+
+          // Perform additions
+          var addKeyResults = keyResults[1];
+          if (addKeyResults && addKeyResults.results.size > 0) {
+            addData = [...addDetail.keys].map((key) => {
+              return addKeyResults.results.get(key).data;
+            });
+          }
+          doAdditions();
+
+          busyStateCallback();
+          this.resetChainIfCompleted(promiseContainer.current);
+        } else {
+          // Promise is not current
+          busyStateCallback();
+          throw new Error(_ABANDONED_PROMISE_CHAIN);
         }
-      );
+      });
       dataPromise.catch((reason) => {
         this.promiseRejectHelper(reason, busyStateCallback, promiseContainer.current);
       });
@@ -3900,8 +4106,12 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
   // Renders noData template if necessary
   OjForEach.prototype._addNoData = function () {
     if (this.firstLastNodesList.length === 0 && this.element._noDataTemplateNode) {
-      this._noDataNodes = templateEngine.execute(this.element,
-        this.element._noDataTemplateNode, {}, null);
+      this._noDataNodes = templateEngine.execute(
+        this.element,
+        this.element._noDataTemplateNode,
+        {},
+        null
+      );
       this.insertAllAfter(this._noDataNodes);
     }
   };
@@ -3909,7 +4119,7 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
   // Removes nodes from noData Template, if they exist
   OjForEach.prototype._removeNoData = function () {
     if (this._noDataNodes) {
-      this._noDataNodes.forEach(node => {
+      this._noDataNodes.forEach((node) => {
         templateEngine.clean(node);
         node.parentNode.removeChild(node);
       });
@@ -3936,8 +4146,7 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
     for (var i = 0, len = changeSet.length; i < len; i++) {
       if (changeMap[statusAdded].length && changeSet[i].status === statusAdded) {
         var lastAdd = changeMap[statusAdded][changeMap[statusAdded].length - 1];
-        var lastIndex = lastAdd.isBatch ? (lastAdd.index + lastAdd.values.length) - 1 :
-          lastAdd.index;
+        var lastIndex = lastAdd.isBatch ? lastAdd.index + lastAdd.values.length - 1 : lastAdd.index;
         if (lastIndex + 1 === changeSet[i].index) {
           if (!lastAdd.isBatch) {
             // transform the last addition into a batch addition object
@@ -3974,7 +4183,6 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
     this._resolveChildrenBindingsAppliedPromise();
   };
 
-
   // Reflect all the changes in the queue in the DOM, then wipe the queue.
   OjForEach.prototype.processQueue = function () {
     var self = this;
@@ -3996,7 +4204,6 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
     this.changeQueue = [];
   };
-
 
   // Process a changeItem with {status: 'added', ...}
   /**
@@ -4036,8 +4243,12 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
             enumerable: false
           }
         });
-        childNodes = templateEngine.execute(this.element,
-          this.element._templateNode, currentChildContext, this.as);
+        childNodes = templateEngine.execute(
+          this.element,
+          this.element._templateNode,
+          currentChildContext,
+          this.as
+        );
       }
 
       // Note discussion at https://github.com/angular/angular.js/issues/7851
@@ -4134,7 +4345,8 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
       var pd = this.getOrCreatePendingDeleteFor(changeItem.value);
       pd.nodesets.push(this.getNodesForIndex(changeItem.index));
       pd.currentChildContext = this.firstLastNodesList[changeItem.index].currentChildContext;
-    } else { // simple data, just remove the nodes
+    } else {
+      // simple data, just remove the nodes
       this.removeNodes(this.getNodesForIndex(changeItem.index));
     }
     this.indexesToDelete.push(changeItem.index);
@@ -4217,39 +4429,43 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
       var ffe;
       var value;
 
-      computed(function () {
-        // : watch for array modifications, that are not covered by addSubscriptions() call:
-        // - non-observable array replacement triggered by CCA
-        // - array data defined with expression
-        value = valueAccessor();
-        if (ffe) {
-          var updatedValues = value.data;
-          var currentValues = ffe.getData().data;
-          var currentPrimeData;
-          var updatedPrimeData;
-          // retrive the array data that might be defined as an observable
-          ignoreDependencies(function () {
-            currentPrimeData = unwrap(currentValues);
-            updatedPrimeData = unwrap(updatedValues);
-          });
-          ffe.setData({
-            data: updatedValues,
-            dataProvider: updatedPrimeData.fetchFirst ? updatedPrimeData : null
-          });
-          if (Array.isArray(currentPrimeData) && Array.isArray(updatedPrimeData)) {
-            // compare arrays and update rendered DOM
-            // initialize options for ko.utils.compareArrays
-            // 'dontLimitMoves':true recommended for newer code, 'sparse':true is used for trackArray changes
-            var compareArrayOptions = { sparse: true, dontLimitMoves: true };
-            var changeSet =
-              utils.compareArrays(currentPrimeData, updatedPrimeData, compareArrayOptions);
-            ffe.onArrayChange(changeSet);
-          } else {
-            // recreate content in all other cases
-            ffe.recreateContent(updatedPrimeData);
+      computed(
+        function () {
+          // : watch for array modifications, that are not covered by addSubscriptions() call:
+          // - non-observable array replacement triggered by CCA
+          // - array data defined with expression
+          value = valueAccessor();
+          if (ffe) {
+            var updatedValues = value.data;
+            var currentValues = ffe.getData().data;
+            var currentPrimeData;
+            var updatedPrimeData;
+            // retrive the array data that might be defined as an observable
+            ignoreDependencies(function () {
+              currentPrimeData = unwrap(currentValues);
+              updatedPrimeData = unwrap(updatedValues);
+            });
+            ffe.setData({
+              data: updatedValues,
+              dataProvider: updatedPrimeData.fetchFirst ? updatedPrimeData : null
+            });
+            if (Array.isArray(currentPrimeData) && Array.isArray(updatedPrimeData)) {
+              // compare arrays and update rendered DOM
+              // initialize options for ko.utils.compareArrays
+              // 'dontLimitMoves':true recommended for newer code, 'sparse':true is used for trackArray changes
+              var compareArrayOptions = { sparse: true, dontLimitMoves: true };
+              var changeSet = utils.compareArrays(
+                currentPrimeData,
+                updatedPrimeData,
+                compareArrayOptions
+              );
+              ffe.onArrayChange(changeSet);
+            } else {
+              // recreate content in all other cases
+              ffe.recreateContent(updatedPrimeData);
+            }
           }
-        }
-      },
+        },
         null,
         { disposeWhenNodeIsRemoved: element }
       );
@@ -4260,11 +4476,11 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
         ffe.removeSubscriptions();
       });
       return { controlsDescendantBindings: true };
-    },
+    }
   };
 
   virtualElements.allowedBindings._ojBindForEach_ = true;
-}());
+})();
 
 //
 // Define a template source that allows the use of a knockout array (ko[])
@@ -4354,7 +4570,7 @@ koStringTemplateEngine.install = function () {
       }
       return new StringTemplate(template);
     }
-    if ((template && (template.nodeType === 1)) || (template.nodeType === 8)) {
+    if ((template && template.nodeType === 1) || template.nodeType === 8) {
       // eslint-disable-next-line new-cap
       return new localKo.templateSources.anonymousTemplate(template);
     }
@@ -4385,13 +4601,18 @@ function _getListViewItemRenderer(bindingContext, template) {
     var childContext = bindingContext.createChildContext(context.data, null, function (binding) {
       // eslint-disable-next-line no-param-reassign
       binding.$itemContext = context;
-    }
-                                                        );
-    renderTemplate(template, childContext, {
-      afterRender: function (renderedElement) {
-        $(renderedElement)._ojDetectCleanData();
-      }
-    }, parent, 'replaceNode');
+    });
+    renderTemplate(
+      template,
+      childContext,
+      {
+        afterRender: function (renderedElement) {
+          $(renderedElement)._ojDetectCleanData();
+        }
+      },
+      parent,
+      'replaceNode'
+    );
 
     // tell the listview not to do anything
     return null;
@@ -4424,7 +4645,13 @@ function _handleListViewManagedAttributes(name, value, bindingContext) {
 ComponentBinding.getDefaultInstance().setupManagedAttributes({
   attributes: ['item'],
   init: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     var result = _handleListViewManagedAttributes(name, value, bindingContext);
     if (result != null) {
@@ -4433,7 +4660,13 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
     return undefined;
   },
   update: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleListViewManagedAttributes(name, value, bindingContext);
   },
@@ -4476,6 +4709,8 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
  * @ojpropertylayout {propertyGroup: "common", items: ["data"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 1
+ *
+ * @ojoracleicon 'oj-ux-ico-for-each'
  *
  * @classdesc
  * <h3 id="oj-for-each-overview-section">
@@ -4524,7 +4759,7 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
  * @ojsignature {target: "Type", value:"Array<D>|DataProvider<K, D>", jsdocOverride:true}
  */
 
- /**
+/**
  * An alias for the array item. This can be especially useful
  * if multiple oj-bind-for-each elements are nested to provide access to the data
  * for each level of iteration.
@@ -4603,6 +4838,8 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 1
  *
+ * @ojoracleicon 'oj-ux-ico-if'
+ *
  * @classdesc
  * <h3 id="overview-section">
  *   If Binding
@@ -4657,6 +4894,8 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
  * @ojvbdefaultcolumns 2
  * @ojvbmincolumns 1
  *
+ * @ojoracleicon 'oj-ux-ico-select-text'
+ *
  * @classdesc
  * <h3 id="overview-section">
  *   Text Binding
@@ -4667,6 +4906,9 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
  * applied, and any child elements it has will be removed. For slotting, applications
  * need to wrap the oj-bind-text element inside another HTML element (e.g. &lt;span&gt;) with the slot attribute.
  * The oj-bind-text element does not support the slot attribute.</p>
+ *
+ * <p>Note: Since the element sets its value using a text node, it is safe to set any string value
+ * without risking HTML or script injection.</p>
  *
  * @example <caption>Initialize the oj-bind-text:</caption>
  * &lt;span>
@@ -4707,12 +4949,24 @@ function _handleManagedGaugeAttributes(name, value, bindingContext) {
 ComponentBinding.getDefaultInstance().setupManagedAttributes({
   attributes: ['center'],
   init: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedGaugeAttributes(name, value, bindingContext);
   },
   update: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedGaugeAttributes(name, value, bindingContext);
   },
@@ -4738,12 +4992,24 @@ function _handleManagedSunburstAttributes(name, value, bindingContext) {
 ComponentBinding.getDefaultInstance().setupManagedAttributes({
   attributes: ['rootNodeContent'],
   init: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedSunburstAttributes(name, value, bindingContext);
   },
   update: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedSunburstAttributes(name, value, bindingContext);
   },
@@ -4805,8 +5071,7 @@ function _getTableColumnTemplateRenderer(bindingContext, type, template) {
           binding.$columnIndex = params.columnIndex;
           // eslint-disable-next-line no-param-reassign
           binding.$cellContext = params.cellContext;
-        }
-                                                        );
+        });
         parentElement = params.cellContext.parentElement;
       }
       if (_type === 'footer') {
@@ -4818,12 +5083,19 @@ function _getTableColumnTemplateRenderer(bindingContext, type, template) {
         });
         parentElement = params.footerContext.parentElement;
       }
-      renderTemplate(_template, childContext, {
-        afterRender: function (renderedElement) {
-          $(renderedElement)._ojDetectCleanData();
-        } }, parentElement, 'replaceNode');
+      renderTemplate(
+        _template,
+        childContext,
+        {
+          afterRender: function (renderedElement) {
+            $(renderedElement)._ojDetectCleanData();
+          }
+        },
+        parentElement,
+        'replaceNode'
+      );
     };
-  }(template, type));
+  })(template, type);
 
   return rendererOption;
 }
@@ -4841,82 +5113,113 @@ function _getTableRowTemplateRenderer(bindingContext, template) {
     var childContext = bindingContext.createChildContext(childData, null, function (binding) {
       // eslint-disable-next-line no-param-reassign
       binding.$rowContext = params.rowContext;
-    }
-                                                        );
-    renderTemplate(template, childContext, {
-      afterRender: function (renderedElement) {
-        $(renderedElement)._ojDetectCleanData();
-      } }, params.rowContext.parentElement, 'replaceNode');
+    });
+    renderTemplate(
+      template,
+      childContext,
+      {
+        afterRender: function (renderedElement) {
+          $(renderedElement)._ojDetectCleanData();
+        }
+      },
+      params.rowContext.parentElement,
+      'replaceNode'
+    );
   };
 }
 
-ComponentBinding.getDefaultInstance().setupManagedAttributes(
-  {
-    attributes: [_COLUMNS_ATTR, _COLUMNS_DEFAULT_ATTR, _ROW_TEMPLATE_ATTR],
-    init: function (name, value, element, widgetConstructor, valueAccessor,
-      allBindingsAccessor, bindingContext) {
-      if (name === _COLUMNS_ATTR || name === _COLUMNS_DEFAULT_ATTR) {
-        for (var i = 0; i < value.length; i++) {
-          var column = value[i];
-          var template = column.template;
-          var footerTemplate = column.footerTemplate;
-          var headerTemplate = column.headerTemplate;
+ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  attributes: [_COLUMNS_ATTR, _COLUMNS_DEFAULT_ATTR, _ROW_TEMPLATE_ATTR],
+  init: function (
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
+  ) {
+    if (name === _COLUMNS_ATTR || name === _COLUMNS_DEFAULT_ATTR) {
+      for (var i = 0; i < value.length; i++) {
+        var column = value[i];
+        var template = column.template;
+        var footerTemplate = column.footerTemplate;
+        var headerTemplate = column.headerTemplate;
 
-          if (template != null) {
-            column.renderer = _getTableColumnTemplateRenderer(bindingContext, 'cell', template);
-          }
-          if (footerTemplate != null) {
-            column.footerRenderer =
-              _getTableColumnTemplateRenderer(bindingContext, 'footer', footerTemplate);
-          }
-          if (headerTemplate != null) {
-            column.headerRenderer =
-              _getTableColumnTemplateRenderer(bindingContext, 'header', headerTemplate);
-          }
+        if (template != null) {
+          column.renderer = _getTableColumnTemplateRenderer(bindingContext, 'cell', template);
         }
-        if (name === _COLUMNS_ATTR) {
-          return { columns: value };
+        if (footerTemplate != null) {
+          column.footerRenderer = _getTableColumnTemplateRenderer(
+            bindingContext,
+            'footer',
+            footerTemplate
+          );
         }
-
-        return { columnsDefault: value };
-      } else if (name === _ROW_TEMPLATE_ATTR) {
-        return { rowRenderer: _getTableRowTemplateRenderer(bindingContext, value) };
+        if (headerTemplate != null) {
+          column.headerRenderer = _getTableColumnTemplateRenderer(
+            bindingContext,
+            'header',
+            headerTemplate
+          );
+        }
       }
-      return undefined;
-    },
-    update: function (name, value, element, widgetConstructor, valueAccessor,
-      allBindingsAccessor, bindingContext) {
-      if (name === _COLUMNS_ATTR || name === _COLUMNS_DEFAULT_ATTR) {
-        for (var i = 0; i < value.length; i++) {
-          var column = value[i];
-          var template = column.template;
-          var footerTemplate = column.footerTemplate;
-          var headerTemplate = column.headerTemplate;
-
-          if (template != null) {
-            column.renderer = _getTableColumnTemplateRenderer(bindingContext, 'cell', template);
-          }
-          if (footerTemplate != null) {
-            column.footerRenderer =
-              _getTableColumnTemplateRenderer(bindingContext, 'footer', footerTemplate);
-          }
-          if (headerTemplate != null) {
-            column.headerRenderer =
-              _getTableColumnTemplateRenderer(bindingContext, 'header', headerTemplate);
-          }
-        }
-        if (name === _COLUMNS_ATTR) {
-          widgetConstructor({ columns: value });
-        } else {
-          widgetConstructor({ columnsDefault: value });
-        }
-      } else if (name === _ROW_TEMPLATE_ATTR) {
-        return { rowRenderer: _getTableRowTemplateRenderer(bindingContext, value) };
+      if (name === _COLUMNS_ATTR) {
+        return { columns: value };
       }
-      return null;
-    },
-    for: 'ojTable'
-  });
+
+      return { columnsDefault: value };
+    } else if (name === _ROW_TEMPLATE_ATTR) {
+      return { rowRenderer: _getTableRowTemplateRenderer(bindingContext, value) };
+    }
+    return undefined;
+  },
+  update: function (
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
+  ) {
+    if (name === _COLUMNS_ATTR || name === _COLUMNS_DEFAULT_ATTR) {
+      for (var i = 0; i < value.length; i++) {
+        var column = value[i];
+        var template = column.template;
+        var footerTemplate = column.footerTemplate;
+        var headerTemplate = column.headerTemplate;
+
+        if (template != null) {
+          column.renderer = _getTableColumnTemplateRenderer(bindingContext, 'cell', template);
+        }
+        if (footerTemplate != null) {
+          column.footerRenderer = _getTableColumnTemplateRenderer(
+            bindingContext,
+            'footer',
+            footerTemplate
+          );
+        }
+        if (headerTemplate != null) {
+          column.headerRenderer = _getTableColumnTemplateRenderer(
+            bindingContext,
+            'header',
+            headerTemplate
+          );
+        }
+      }
+      if (name === _COLUMNS_ATTR) {
+        widgetConstructor({ columns: value });
+      } else {
+        widgetConstructor({ columnsDefault: value });
+      }
+    } else if (name === _ROW_TEMPLATE_ATTR) {
+      return { rowRenderer: _getTableRowTemplateRenderer(bindingContext, value) };
+    }
+    return null;
+  },
+  for: 'ojTable'
+});
 
 /**
  * Common method to handle managed attributes for both init and update
@@ -4956,12 +5259,24 @@ function _handleManagedMapAttributes(name, value, bindingContext) {
 ComponentBinding.getDefaultInstance().setupManagedAttributes({
   attributes: ['areaLayers', 'pointDataLayers'],
   init: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedMapAttributes(name, value, bindingContext);
   },
   update: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedMapAttributes(name, value, bindingContext);
   },
@@ -4987,12 +5302,24 @@ function _handleManagedTreemapAttributes(name, value, bindingContext) {
 ComponentBinding.getDefaultInstance().setupManagedAttributes({
   attributes: ['nodeContent'],
   init: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedTreemapAttributes(name, value, bindingContext);
   },
   update: function (
-    name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext
+    name,
+    value,
+    element,
+    widgetConstructor,
+    valueAccessor,
+    allBindingsAccessor,
+    bindingContext
   ) {
     return _handleManagedTreemapAttributes(name, value, bindingContext);
   },

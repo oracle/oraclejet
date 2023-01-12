@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -242,11 +242,14 @@ var __oj_input_password_metadata =
 };
   __oj_input_password_metadata.extension._WIDGET_NAME = 'ojInputPassword';
   __oj_input_password_metadata.extension._INNER_ELEM = 'input';
-  __oj_input_password_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex'];
+  __oj_input_password_metadata.extension._GLOBAL_TRANSFER_ATTRS = [
+    'accesskey',
+    'aria-label',
+    'tabindex'
+  ];
   __oj_input_password_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
   oj.CustomElementBridge.register('oj-input-password', {
-    metadata: oj.CollectionUtils.mergeDeep(__oj_input_password_metadata,
-      bindingMeta)
+    metadata: oj.CollectionUtils.mergeDeep(__oj_input_password_metadata, bindingMeta)
   });
 
 var __oj_input_text_metadata = 
@@ -400,6 +403,9 @@ var __oj_input_text_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleClearIcon": {
+          "type": "string"
+        },
         "accessibleMaxLengthExceeded": {
           "type": "string"
         },
@@ -495,11 +501,15 @@ var __oj_input_text_metadata =
   /* global __oj_input_text_metadata:false */
   __oj_input_text_metadata.extension._WIDGET_NAME = 'ojInputText';
   __oj_input_text_metadata.extension._INNER_ELEM = 'input';
-  __oj_input_text_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex', 'autocapitalize'];
+  __oj_input_text_metadata.extension._GLOBAL_TRANSFER_ATTRS = [
+    'accesskey',
+    'aria-label',
+    'tabindex',
+    'autocapitalize'
+  ];
   __oj_input_text_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
   oj.CustomElementBridge.register('oj-input-text', {
-    metadata: oj.CollectionUtils.mergeDeep(__oj_input_text_metadata,
-      bindingMeta)
+    metadata: oj.CollectionUtils.mergeDeep(__oj_input_text_metadata, bindingMeta)
   });
 
 var __oj_text_area_metadata = 
@@ -748,13 +758,17 @@ var __oj_text_area_metadata =
   /* global __oj_text_area_metadata:false */
   __oj_text_area_metadata.extension._WIDGET_NAME = 'ojTextArea';
   __oj_text_area_metadata.extension._INNER_ELEM = 'textarea';
-  __oj_text_area_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex', 'autocapitalize'];
+  __oj_text_area_metadata.extension._GLOBAL_TRANSFER_ATTRS = [
+    'accesskey',
+    'aria-label',
+    'tabindex',
+    'autocapitalize'
+  ];
   __oj_text_area_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
   oj.CustomElementBridge.register('oj-text-area', {
-    metadata: oj.CollectionUtils.mergeDeep(__oj_text_area_metadata,
-      bindingMeta)
+    metadata: oj.CollectionUtils.mergeDeep(__oj_text_area_metadata, bindingMeta)
   });
-}());
+})();
 
 /**
  * @ojcomponent oj.inputBase
@@ -796,7 +810,9 @@ var __oj_text_area_metadata =
  *
  * @param {Object=} options a map of option-value pairs to set on the component
  */
-oj.__registerWidget('oj.inputBase', $.oj.editableValue,
+oj.__registerWidget(
+  'oj.inputBase',
+  $.oj.editableValue,
   {
     version: '1.0.0',
     widgetEventPrefix: 'oj',
@@ -868,9 +884,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       { attribute: 'pattern' },
       { attribute: 'placeholder' },
       { attribute: 'value' },
-      { attribute: 'readonly',
-        option: 'readOnly',
-        validateOption: true },
+      { attribute: 'readonly', option: 'readOnly', validateOption: true },
       { attribute: 'required', coerceDomValue: true, validateOption: true },
       { attribute: 'title' },
       { attribute: 'spellcheck' }
@@ -903,8 +917,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
     _counterSpanEl: null,
     _ariaLiveTimer: null,
 
-    options:
-    {
+    options: {
       /**
        * List of asynchronous validators used by the component when performing validation.
        * Use <code class="prettyprint">async-validators</code> when you need to
@@ -1540,7 +1553,10 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       this._super(originalDefaults, constructorOptions);
       if (!this._IsCustomElement()) {
         EditableValueUtils.initializeOptionsFromDom(
-        this._GET_INIT_OPTIONS_PROPS_FOR_WIDGET, constructorOptions, this);
+          this._GET_INIT_OPTIONS_PROPS_FOR_WIDGET,
+          constructorOptions,
+          this
+        );
       }
     },
 
@@ -1561,7 +1577,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       // JET-39086 - raw-value is not getting updated until space in android devices
       // In android device we need to update rawValue even for composition events
       // Get and store agent info
-      this._isAndroidDevice = (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.ANDROID);
+      this._isAndroidDevice = oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.ANDROID;
 
       // update element state using options
       if (typeof readOnly === 'boolean') {
@@ -1811,14 +1827,14 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      * @protected
      */
     _GetNormalizedValidatorsFromOption: EditableValueUtils._GetNormalizedValidatorsFromOption,
-   /**
-    * This returns an array of all async validators
-    * normalized from the async-validators attribute set on the component. <br/>
-    * @return {Array} of validators.
-    * @memberof! oj.inputBase
-    * @instance
-    * @protected
-    */
+    /**
+     * This returns an array of all async validators
+     * normalized from the async-validators attribute set on the component. <br/>
+     * @return {Array} of validators.
+     * @memberof! oj.inputBase
+     * @instance
+     * @protected
+     */
     _GetNormalizedAsyncValidatorsFromOption:
       EditableValueUtils._GetNormalizedAsyncValidatorsFromOption,
 
@@ -1865,8 +1881,10 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
           // Putting it inside of DoWrapElement keeps it from getting called twice for
           // ojinputdatetime, which calls it once for ojinputdatetime and another for ojinputdatetime's
           // ojInputTime instantiation. DoWrapElement calls _isIndependentInput in ojinputtime.
-          this._createOrUpdateReadonlyDiv(this.element[0],
-                                          this._DoWrapElement() && this.OuterWrapper);
+          this._createOrUpdateReadonlyDiv(
+            this.element[0],
+            this._DoWrapElement() && this.OuterWrapper
+          );
         }
         // last thing we do is refresh the state theming since this
         // affects the display css of the textarea and readonlydiv dom nodes.
@@ -1896,9 +1914,8 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
           this._processOptions(key, value);
           break;
         case 'pattern':
-          this._defaultRegExpValidator.regexp =
-          this._getImplicitRegExpValidator();
-        this._AfterSetOptionValidators();
+          this._defaultRegExpValidator.regexp = this._getImplicitRegExpValidator();
+          this._AfterSetOptionValidators();
           break;
         case 'labelledBy': {
           // pass in old option value and new option value for labelledBy
@@ -1988,7 +2005,10 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      */
     _initLabelledByForInputBase: function (labelledBy) {
       this._initInputIdLabelForConnection(
-        this._GetContentElement()[0], this.widget()[0].id, labelledBy);
+        this._GetContentElement()[0],
+        this.widget()[0].id,
+        labelledBy
+      );
     },
 
     /**
@@ -2005,7 +2025,6 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
         this._filterTextAndSetValues(currentVal, proposedVal, true, false);
       }
     },
-
 
     /**
      * @ignore
@@ -2036,26 +2055,26 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       return ret;
     },
 
-   /**
-    *
-    * @protected
-    * @override
-    * @instance
-    * @memberof! oj.inputBase
-    */
+    /**
+     *
+     * @protected
+     * @override
+     * @instance
+     * @memberof! oj.inputBase
+     */
     _SetLoading: function () {
       this._super();
       // don't want to type into the field when it is loading.
       this.element.prop('readonly', true);
     },
 
-   /**
-    *
-    * @protected
-    * @override
-    * @instance
-    * @memberof! oj.inputBase
-    */
+    /**
+     *
+     * @protected
+     * @override
+     * @instance
+     * @memberof! oj.inputBase
+     */
     _ClearLoading: function () {
       this._super();
       this.element.prop('readonly', this.options.readOnly);
@@ -2096,9 +2115,15 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
         this._eventHandlers[this._DROP_HANDLER_KEY] = dropHandler;
       } else if (this._eventHandlers) {
         // meaning either it is readOnly or is disabled, remove the handlers if they were attached previously
-        var eventEntries = [this._BLUR_HANDLER_KEY, this._KEYDOWN_HANDLER_KEY,
-          this._KEYUP_HANDLER_KEY, this._COMPOSITIONSTART_HANDLER_KEY,
-          this._COMPOSITIONEND_HANDLER_KEY, this._INPUT_HANDLER_KEY, this._DROP_HANDLER_KEY];
+        var eventEntries = [
+          this._BLUR_HANDLER_KEY,
+          this._KEYDOWN_HANDLER_KEY,
+          this._KEYUP_HANDLER_KEY,
+          this._COMPOSITIONSTART_HANDLER_KEY,
+          this._COMPOSITIONEND_HANDLER_KEY,
+          this._INPUT_HANDLER_KEY,
+          this._DROP_HANDLER_KEY
+        ];
 
         for (var i = 0, j = eventEntries.length; i < j; i++) {
           if (this._eventHandlers[eventEntries[i]]) {
@@ -2161,8 +2186,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      * @param {Event} event
      */
     // eslint-disable-next-line no-unused-vars
-    _onKeyDownHandler: function (event) {
-    },
+    _onKeyDownHandler: function (event) {},
 
     /**
      * Invoked when keyup is triggered of the this.element
@@ -2315,12 +2339,15 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
 
         describedBy += ' ' + helperDescribedById;
         this.element.attr('aria-describedby', describedBy);
-        this._inputHelper = $("<div class='oj-helper-hidden-accessible' aria-hidden='true' id='"
-                              + helperDescribedById + "'>"
-                              + this._EscapeXSS(this.getTranslatedString(this._INPUT_HELPER_KEY))
-                              + '</div>');
+        this._inputHelper = $(
+          "<div class='oj-helper-hidden-accessible' aria-hidden='true' id='" +
+            helperDescribedById +
+            "'>" +
+            this._EscapeXSS(this.getTranslatedString(this._INPUT_HELPER_KEY)) +
+            '</div>'
+        );
 
-        this._AppendInputHelperParent().append(this._inputHelper);// @HTMLUpdateOK append action of the div element created with escaped translated text, so ok
+        this._AppendInputHelperParent().append(this._inputHelper); // @HTMLUpdateOK append action of the div element created with escaped translated text, so ok
       }
     },
 
@@ -2420,7 +2447,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       }
 
       readOnly = this.options.readOnly || false;
-      return !(readOnly);
+      return !readOnly;
     },
     /**
      * Toggles css selector on the widget. E.g., when readonly property changes,
@@ -2446,8 +2473,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       if (!this.options.pattern) {
         return null;
       }
-      var regexpOptions = { pattern: this.options.pattern,
-        label: this._getLabelText() };
+      var regexpOptions = { pattern: this.options.pattern, label: this._getLabelText() };
 
       $.extend(regexpOptions, this.options.translations.regexp || {});
       var regexpValidator = new RegExpValidator(regexpOptions);
@@ -2578,32 +2604,44 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
     _processLengthCounterAttr: function (lengthCounterAttr) {
       var wrapperElem = this._GetContentWrapper().parentElement;
       var counterEl = wrapperElem.querySelector('.' + this._TEXT_FIELD_COUNTER_CLASS);
-      var hiddenAriaLiveEl = wrapperElem.parentNode.querySelector('.' + this._TEXT_FIELD_HIDDEN_ARIA_LIVE_CLASS);
+      var hiddenAriaLiveEl = wrapperElem.parentNode.querySelector(
+        '.' + this._TEXT_FIELD_HIDDEN_ARIA_LIVE_CLASS
+      );
       var textLength = this.lengthFilter ? this.lengthFilter.calcLength(this.options.rawValue) : -1;
       var remainingChars = '';
       var newAriaLiveContent = '';
 
-      if (lengthCounterAttr === 'none' || lengthCounterAttr === undefined || lengthCounterAttr === null ||
-          this.options.length.max === 0 || this.options.disabled || this.options.readOnly) {
+      if (
+        lengthCounterAttr === 'none' ||
+        lengthCounterAttr === undefined ||
+        lengthCounterAttr === null ||
+        this.options.length.max === 0 ||
+        this.options.disabled ||
+        this.options.readOnly
+      ) {
         // remove the icon if it is there
         if (counterEl) {
-          counterEl.removeEventListener(this._CLICK_HANDLER_KEY,
-                                        this._setFocusOnTextArea);
+          counterEl.removeEventListener(this._CLICK_HANDLER_KEY, this._setFocusOnTextArea);
           wrapperElem.removeChild(counterEl);
         }
         this._counterSpanEl = null;
 
         // remove the aria live text if textLength === -1 or length.max === 0 or
         // options.disabled or options.readOnly are true
-        if (textLength === -1 || this.options.length.max === 0 ||
-            this.options.disabled || this.options.readOnly) {
+        if (
+          textLength === -1 ||
+          this.options.length.max === 0 ||
+          this.options.disabled ||
+          this.options.readOnly
+        ) {
           newAriaLiveContent = '';
         } else {
           remainingChars = this.options.length.max - textLength;
 
           // update aria live
-          newAriaLiveContent = this.getTranslatedString(this._TEXT_FIELD_MAX_LENGTH_REMAINING_KEY,
-                                                        { chars: remainingChars });
+          newAriaLiveContent = this.getTranslatedString(this._TEXT_FIELD_MAX_LENGTH_REMAINING_KEY, {
+            chars: remainingChars
+          });
         }
       } else {
         if (counterEl === null) {
@@ -2621,8 +2659,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
           if (this._TEXTAREA_COUNTER_EL) {
             counterEl.className += ' ' + this._TEXTAREA_COUNTER_EL;
             this._setFocusOnTextAreaBind();
-            textFieldCounter.addEventListener(this._CLICK_HANDLER_KEY,
-                                              this._setFocusOnTextArea);
+            textFieldCounter.addEventListener(this._CLICK_HANDLER_KEY, this._setFocusOnTextArea);
           }
 
           textFieldCounter.appendChild(counterEl);
@@ -2637,14 +2674,15 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
           remainingChars = this.options.length.max - textLength;
 
           // update aria live
-          newAriaLiveContent = this.getTranslatedString(this._TEXT_FIELD_MAX_LENGTH_REMAINING_KEY,
-                                                        { chars: remainingChars });
+          newAriaLiveContent = this.getTranslatedString(this._TEXT_FIELD_MAX_LENGTH_REMAINING_KEY, {
+            chars: remainingChars
+          });
         }
       }
 
       // If we have an active counter span, update it.
       if (this._counterSpanEl) {
-          this._counterSpanEl.textContent = remainingChars;
+        this._counterSpanEl.textContent = remainingChars;
       }
 
       // Update the aria live element if it exists and the new content is different
@@ -2682,7 +2720,9 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       this._SetRawValue(filteredText, null);
       this._SetDisplayValue(filteredText, null);
       var wrapperElem = this._GetContentWrapper().parentElement;
-      var hiddenAriaLiveEl = wrapperElem.parentNode.querySelector('.' + this._TEXT_FIELD_HIDDEN_ARIA_LIVE_CLASS);
+      var hiddenAriaLiveEl = wrapperElem.parentNode.querySelector(
+        '.' + this._TEXT_FIELD_HIDDEN_ARIA_LIVE_CLASS
+      );
 
       // If the proposed value is longer than the filtered text, then the length has exceeded
       // the max length and we need to update the aria live div with an error message.
@@ -2697,7 +2737,8 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
           assertiveDiv.textContent = ''; // Clear it first, so we always hear this message.
           assertiveDiv.textContent = this.getTranslatedString(
             this._TEXT_FIELD_MAX_LENGTH_EXCEEDED_KEY,
-            { len: this.options.length.max });
+            { len: this.options.length.max }
+          );
         } else if (this.lastFilteredText !== proposedVal) {
           // We don't clear the error message if nothing has changed.
           assertiveDiv.textContent = '';
@@ -2770,7 +2811,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      */
     _ValidateReturnBoolean: EditableValueUtils._ValidateReturnBoolean,
 
-  /**
+    /**
      * the validate method that returns a Promise
      * @memberof! oj.inputBase
      * @instance
@@ -2782,7 +2823,6 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
     getNodeBySubId: function (locator) {
       return this._super(locator);
     },
-
 
     /**
      * Validates the component's display value using the converter and all validators registered on
@@ -2861,8 +2901,9 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
     widget: function () {
       return this._DoWrapElement() ? this._wrapper : this.element;
     }
-
-  }, true);
+  },
+  true
+);
 
 /**
  * @ojcomponent oj.ojInputPassword
@@ -2887,6 +2928,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
  *
+ * @ojoracleicon 'oj-ux-ico-text-input-password'
  * @ojuxspecs ['input-password']
  *
  * @classdesc
@@ -2925,7 +2967,106 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
+ * <h3 id="migration-section">
+ *   Migration
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+ * </h3>
  *
+ * <p>
+ * To migrate from oj-input-password to oj-c-input-password, you need to revise the import statement
+ * and references to oj-c-input-password in your app. Please note the changes between the two components below.
+ * </p>
+ *
+ * <h5>Converter attribute</h5>
+ * <p>
+ * The converter attribute is changed to support only a converter instance, null, or undefined. It does not support
+ * a Promise that resolves to a converter instance. The application should resolve the promise and then update the
+ * converter attribute with the resolved converter instance.
+ * </p>
+ *
+ * <h5>LabelEdge attribute</h5>
+ * <p>
+ * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
+ * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+ * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+ * attribute to the corresponding value.
+ * </p>
+ *
+ * <h5>MaskIcon attribute</h5>
+ * <p>
+ * The default value of the mask-icon attribute is changed from 'hidden' to 'visible'.
+ * </p>
+ *
+ * <h5>TextAlign attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start and oj-form-control-text-align-end is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-text-align-right maps to 'right'
+ * </li>
+ * <li>
+ * .oj-form-control-text-align-start maps to 'start'
+ * </li>
+ * <li>
+ * .oj-form-control-text-align-end maps to 'end'
+ * </li>
+ * </ul>
+ * </p>
+ * <h5>Translations attribute</h5>
+ * <p>
+ * <p>
+ * The translations.required.message-detail attribute has changed to required-message-detail.
+ * </p>
+ *
+ * <h5>Value attribute</h5>
+ * <p>
+ * Clearing the field and committing the value will now set the value attribute to <code>null</code>
+ * instead of <code>''</code>.
+ * </p>
+ *
+ * <h5>Refresh method</h5>
+ * <p>
+ * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+ * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+ * </p>
+ *
+ * <h5>Reset method</h5>
+ * <p>
+ * This method does not synchronously reset the component. The application should wait on the busy context of the component after
+ * invoking this method for the changes to appear.
+ * </p>
+ *
+ * <h5>ShowMessages method</h5>
+ * <p>
+ * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
+ * of the component after invoking this method for the changes to appear.
+ * </p>
+ *
+ * <h5>Animation Events</h5>
+ * <p>
+ * ojAnimateStart and ojAnimateEnd events are no longer supported.
+ * </p>
+ *
+ * <h5>Custom Label</h5>
+ * <p>
+ * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+ * label-hint attribute to add a label for the form component.
+ * </p>
+ * <p>
+ * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
+ * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+ * </p>
+ *
+ * <h5>User Assistance Density - Compact mode</h5>
+ * <p>
+ * Rendering the component in compact userAssistanceDensity mode is not supported in this release. Please use 'reflow' or 'efficient' instead.
+ * </p>
+ *
+ * <h5>Usage in Dynamic Form</h5>
+ * <p>
+ * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+ * </p>
  *
  * @example <caption>Initialize the oj-input-password element with no attributess specified:</caption>
  * &lt;oj-input-password>&lt;/oj-input-password>
@@ -2963,7 +3104,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
  * @ojstylerelation exclusive
  * @memberof oj.ojInputPassword
-  * @ojunsupportedthemes ['Alta']
+ * @ojunsupportedthemes ['Alta']
  * @ojtsexample
  * &lt;oj-input-password class="oj-form-control-max-width-md">&lt;/oj-input-password>
  */
@@ -2990,10 +3131,10 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
  * @ojstylerelation exclusive
  * @memberof oj.ojInputPassword
-  * @ojunsupportedthemes ['Alta']
+ * @ojunsupportedthemes ['Alta']
  * @ojtsexample
  * &lt;oj-input-password class="oj-form-control-width-md">&lt;/oj-input-password>
-*/
+ */
 /**
  * @ojstyleclass form-control-width.oj-form-control-width-sm
  * @ojshortdesc Sets the width for a small field
@@ -3007,355 +3148,361 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
  * @memberof! oj.ojInputPassword
  */
 // --------------------------------------------------- oj.ojInputPassword Styling end ------------------------------------------------------------
-oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
-  {
-    version: '1.0.0',
-    defaultElement: '<input>',
-    widgetEventPrefix: 'oj',
+oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
+  version: '1.0.0',
+  defaultElement: '<input>',
+  widgetEventPrefix: 'oj',
 
+  /**
+   * @expose
+   * @private
+   * @memberof! oj.ojInputPassword
+   */
+  _ATTR_CHECK: [{ attr: 'type', setMandatory: 'password' }],
+
+  /**
+   * @expose
+   * @private
+   * @memberof! oj.ojInputPassword
+   */
+  _CLASS_NAMES: 'oj-inputpassword-input',
+
+  /**
+   * @expose
+   * @private
+   * @memberof! oj.ojInputPassword
+   */
+  _WIDGET_CLASS_NAMES: 'oj-inputpassword oj-form-control oj-component',
+
+  _INPUT_CONTAINER_CLASS: 'oj-text-field-container',
+
+  _MASK_ICON_SHOW_PASSWORD_LABEL_KEY: 'accessibleShowPassword',
+  _MASK_ICON_HIDE_PASSWORD_LABEL_KEY: 'accessibleHidePassword',
+
+  options: {
     /**
      * @expose
-     * @private
-     * @memberof! oj.ojInputPassword
-     */
-    _ATTR_CHECK: [{ attr: 'type', setMandatory: 'password' }],
-
-    /**
-     * @expose
-     * @private
-     * @memberof! oj.ojInputPassword
-     */
-    _CLASS_NAMES: 'oj-inputpassword-input',
-
-    /**
-     * @expose
-     * @private
-     * @memberof! oj.ojInputPassword
-     */
-    _WIDGET_CLASS_NAMES: 'oj-inputpassword oj-form-control oj-component',
-
-    _INPUT_CONTAINER_CLASS: 'oj-text-field-container',
-
-    _MASK_ICON_SHOW_PASSWORD_LABEL_KEY: 'accessibleShowPassword',
-    _MASK_ICON_HIDE_PASSWORD_LABEL_KEY: 'accessibleHidePassword',
-
-    options:
-    {
-      /**
-       * @expose
-       * @access public
-       * @instance
-       * @memberof! oj.ojInputPassword
-       * @type {Object|null}
-       * @ignore
-       */
-      converter: null,
-      /**
-       * The mask icon is used to mask or unmask the visibility of the password. The password
-       * always starts out masked, but using the mask icon the user can toggle the visibility
-       * of the password so that it can be read.  The <code class="prettyprint">mask-icon</code>
-       * attribute is used to make the mask icon visible or hidden.  If it is hidden, then the
-       * user has no way to toggle the visibility of the password.
-       *
-       * @expose
-       * @memberof! oj.ojInputPassword
-       * @instance
-       * @type {string}
-       * @ojvalue {string} "hidden" The mask visibility icon is never visible
-       * @ojvalue {string} "visible" The mask visibility icon is always visible
-       * @default "hidden"
-       */
-      maskIcon: 'hidden',
-      /**
-       * Regular expression pattern which will be used to validate the component's value.
-       * <p>
-       * When pattern is set to true, an implicit regExp validator is created using
-       * the RegExpValidator -
-       * <code class="prettyprint">new RegExpValidator()</code>.
-       * </p>
-       *
-       * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> attribute:</caption>
-       * &lt;oj-input-password pattern="[a-zA-Z0-9]{3,}">&lt;/oj-input-password><br/>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">pattern</code> property after initialization:</caption>
-       * // getter
-       * var pattern = myComp.pattern;
-       *
-       * // setter
-       * myComp.pattern = "[0-9]{3,}";
-       *
-       * @expose
-       * @instance
-       * @memberof! oj.ojInputPassword
-       * @type {string|undefined}
-       * @ignore
-       */
-      pattern: '',
-      /**
-       * The value of the component. Value must be a string or null.
-       *
-       * <p>
-       * When <code class="prettyprint">value</code> property changes due to programmatic
-       * intervention, the component always clears all messages
-       * including <code class="prettyprint">messagesCustom</code>, runs deferred validation, and
-       * always refreshes UI display value.</br>
-       *
-       * <h4>Running Validation</h4>
-       * <ul>
-       * <li>component always runs deferred validation; if there is a validation error the
-       * <code class="prettyprint">valid</code> property is updated.</li>
-       * </ul>
-       * </p>
-       *
-       * @example <caption>Initialize the component with the <code class="prettyprint">value</code> attribute specified:</caption>
-       * &lt;oj-input-password value='12345'>&lt;/oj-input-password>
-       * @example <caption>Get or set <code class="prettyprint">value</code> attribute, after initialization:</caption>
-       * // Getter: returns 10
-       * var val = myComp.value;
-       * // Setter: sets 20
-       * myComp.value = 20;
-       *
-       * @expose
-       * @access public
-       * @instance
-       * @default null
-       * @ojwriteback
-       * @ojeventgroup common
-       * @memberof oj.ojInputPassword
-       * @type {string|null}
-       * @ojsignature { target: "Type",
-       *                value: "V|null"}
-       */
-      value: undefined
-
-      // Events
-
-      /**
-       * Triggered when the ojInputPassword is created.
-       *
-       * @event
-       * @name create
-       * @memberof oj.ojInputPassword
-       * @instance
-       * @property {Event} event event object
-       * @property {Object} ui Currently empty
-       * @ignore
-       *
-       * @example <caption>Initialize the ojInputPassword with the <code class="prettyprint">create</code> callback specified:</caption>
-       * $( ".selector" ).ojInputPassword({
-       *     "create": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-       * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
-       */
-      // create event declared in superclass, but we still want the above API doc
-    },
-
-    /**
-     * @protected
-     * @override
+     * @access public
      * @instance
      * @memberof! oj.ojInputPassword
+     * @type {Object|null}
+     * @ignore
      */
-    _ComponentCreate: function () {
-      var retVal = this._super();
+    converter: null,
+    /**
+     * The mask icon is used to mask or unmask the visibility of the password. The password
+     * always starts out masked, but using the mask icon the user can toggle the visibility
+     * of the password so that it can be read.  The <code class="prettyprint">mask-icon</code>
+     * attribute is used to make the mask icon visible or hidden.  If it is hidden, then the
+     * user has no way to toggle the visibility of the password.
+     *
+     * @expose
+     * @memberof! oj.ojInputPassword
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "hidden" The mask visibility icon is never visible
+     * @ojvalue {string} "visible" The mask visibility icon is always visible
+     * @default "hidden"
+     */
+    maskIcon: 'hidden',
+    /**
+     * Regular expression pattern which will be used to validate the component's value.
+     * <p>
+     * When pattern is set to true, an implicit regExp validator is created using
+     * the RegExpValidator -
+     * <code class="prettyprint">new RegExpValidator()</code>.
+     * </p>
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> attribute:</caption>
+     * &lt;oj-input-password pattern="[a-zA-Z0-9]{3,}">&lt;/oj-input-password><br/>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">pattern</code> property after initialization:</caption>
+     * // getter
+     * var pattern = myComp.pattern;
+     *
+     * // setter
+     * myComp.pattern = "[0-9]{3,}";
+     *
+     * @expose
+     * @instance
+     * @memberof! oj.ojInputPassword
+     * @type {string|undefined}
+     * @ignore
+     */
+    pattern: '',
+    /**
+     * The value of the component. Value must be a string or null.
+     *
+     * <p>
+     * When <code class="prettyprint">value</code> property changes due to programmatic
+     * intervention, the component always clears all messages
+     * including <code class="prettyprint">messagesCustom</code>, runs deferred validation, and
+     * always refreshes UI display value.</br>
+     *
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>component always runs deferred validation; if there is a validation error the
+     * <code class="prettyprint">valid</code> property is updated.</li>
+     * </ul>
+     * </p>
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> attribute specified:</caption>
+     * &lt;oj-input-password value='12345'>&lt;/oj-input-password>
+     * @example <caption>Get or set <code class="prettyprint">value</code> attribute, after initialization:</caption>
+     * // Getter: returns 10
+     * var val = myComp.value;
+     * // Setter: sets 20
+     * myComp.value = 20;
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @default null
+     * @ojwriteback
+     * @ojeventgroup common
+     * @memberof oj.ojInputPassword
+     * @type {string|null}
+     * @ojsignature { target: "Type",
+     *                value: "V|null"}
+     */
+    value: undefined
 
-     // add in the mask visibility icon if needed
-      this._processMaskVisibilityIcon();
-
-      return retVal;
-    },
+    // Events
 
     /**
-     * Render or remove the mask visibility icon
-     * @ignore
-     * @private
+     * Triggered when the ojInputPassword is created.
+     *
+     * @event
+     * @name create
      * @memberof oj.ojInputPassword
      * @instance
+     * @property {Event} event event object
+     * @property {Object} ui Currently empty
+     * @ignore
+     *
+     * @example <caption>Initialize the ojInputPassword with the <code class="prettyprint">create</code> callback specified:</caption>
+     * $( ".selector" ).ojInputPassword({
+     *     "create": function( event, ui ) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
+     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
      */
-    _processMaskVisibilityIcon: function () {
-      var wrapperElem = this._GetContentWrapper().parentElement;
-      var elem = this.element[0]; // Get the input element
-      var maskVisibilityIconWrapper = wrapperElem.querySelector('span.oj-text-field-end');
+    // create event declared in superclass, but we still want the above API doc
+  },
 
-      if (this.options.disabled || this.options.readOnly) {
-        // remove the icon if it is there
-        if (maskVisibilityIconWrapper) {
-          wrapperElem.removeChild(maskVisibilityIconWrapper);
-          elem.type = 'password';
-        }
-      } else if (maskVisibilityIconWrapper === null) {
-        if (this.options.maskIcon === 'visible') {
-          var maskVisibilityIcon;
-          var maskVisibilityIconBtn;
-          maskVisibilityIconWrapper = document.createElement('span');
-          maskVisibilityIconWrapper.className = 'oj-text-field-end';
-          maskVisibilityIconBtn = document.createElement('a');
-          maskVisibilityIconBtn.className =
-            'oj-component-icon oj-clickable-icon-nocontext';
+  /**
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.ojInputPassword
+   */
+  _ComponentCreate: function () {
+    var retVal = this._super();
 
-          maskVisibilityIconBtn.setAttribute('aria-label',
-            this.getTranslatedString(this._MASK_ICON_SHOW_PASSWORD_LABEL_KEY));
-          maskVisibilityIconBtn.role = 'button';
+    // add in the mask visibility icon if needed
+    this._processMaskVisibilityIcon();
 
-          maskVisibilityIconBtn.setAttribute('target', '_blank');
-          maskVisibilityIconBtn.setAttribute('tabindex', '0');
-          maskVisibilityIcon = document.createElement('span');
-          maskVisibilityIcon.className =
-            'oj-inputpassword-show-password-icon';
+    return retVal;
+  },
 
-          maskVisibilityIconBtn.appendChild(maskVisibilityIcon);
-          maskVisibilityIconWrapper.appendChild(maskVisibilityIconBtn);
-          wrapperElem.appendChild(maskVisibilityIconWrapper);
+  /**
+   * Render or remove the mask visibility icon
+   * @ignore
+   * @private
+   * @memberof oj.ojInputPassword
+   * @instance
+   */
+  _processMaskVisibilityIcon: function () {
+    var wrapperElem = this._GetContentWrapper().parentElement;
+    var elem = this.element[0]; // Get the input element
+    var maskVisibilityIconWrapper = wrapperElem.querySelector('span.oj-text-field-end');
 
-          var $maskVisIconBtn = $(maskVisibilityIconBtn);
-          this._AddHoverable($maskVisIconBtn);
-          this._AddActiveable($maskVisIconBtn);
-
-          maskVisibilityIconBtn.addEventListener(this._CLICK_HANDLER_KEY,
-            this._onMaskVisibilityIconClickHandler.bind(this));
-          maskVisibilityIconBtn.addEventListener(this._KEYDOWN_HANDLER_KEY,
-            this._onMaskVisibilityIconKeyDownHandler.bind(this));
-        }
-      } else if (this.options.maskIcon !== 'visible') {
-        // The Icon is currently visible, so remove it.
+    if (this.options.disabled || this.options.readOnly) {
+      // remove the icon if it is there
+      if (maskVisibilityIconWrapper) {
         wrapperElem.removeChild(maskVisibilityIconWrapper);
-        elem.type = 'password'; // Make sure we are the right type.
-      }
-    },
-
-    /**
-     * The handler clears the value of the input element and sets the focus on the element
-     * NOTE: this handler expects the input text component to be bound to this via .bind()
-     *
-     * @ignore
-     * @private
-     * @memberof! oj.ojInputPassword
-     */
-    _onMaskVisibilityIconClickHandler: function () {
-      var elem = this.element[0]; // Get the input element
-      var wrapperElem = this._GetContentWrapper().parentElement;
-      var maskVisibilityIconBtn = wrapperElem.querySelector('a.oj-component-icon');
-      var maskVisibilityIcon = maskVisibilityIconBtn.children[0];
-
-      // toggle the input type and the icon class
-      if (elem.type === 'password') {
-        // password is currently hidden
-        elem.type = 'text';
-        maskVisibilityIcon.classList.remove('oj-inputpassword-show-password-icon');
-        maskVisibilityIcon.classList.add('oj-inputpassword-hide-password-icon');
-        maskVisibilityIconBtn.setAttribute('aria-label',
-          this.getTranslatedString(this._MASK_ICON_HIDE_PASSWORD_LABEL_KEY));
-      } else {
-        // password is currently visible
         elem.type = 'password';
-        maskVisibilityIcon.classList.remove('oj-inputpassword-hide-password-icon');
-        maskVisibilityIcon.classList.add('oj-inputpassword-show-password-icon');
-        maskVisibilityIconBtn.setAttribute('aria-label',
-          this.getTranslatedString(this._MASK_ICON_SHOW_PASSWORD_LABEL_KEY));
       }
-    },
+    } else if (maskVisibilityIconWrapper === null) {
+      if (this.options.maskIcon === 'visible') {
+        var maskVisibilityIcon;
+        var maskVisibilityIconBtn;
+        maskVisibilityIconWrapper = document.createElement('span');
+        maskVisibilityIconWrapper.className = 'oj-text-field-end';
+        maskVisibilityIconBtn = document.createElement('a');
+        maskVisibilityIconBtn.className = 'oj-component-icon oj-clickable-icon-nocontext';
 
-    /**
-     * If the key code is ENTER or SPACE, we call _onMaskVisibilityIconClickHandler() to
-     * toggle the mask visibility.
-     *
-     * @ignore
-     * @private
-     * @memberof! oj.ojInputPassword
-     */
-    _onMaskVisibilityIconKeyDownHandler: function (event) {
-      if (event.altKey || event.ctrlKey) {
-        return;
+        maskVisibilityIconBtn.setAttribute(
+          'aria-label',
+          this.getTranslatedString(this._MASK_ICON_SHOW_PASSWORD_LABEL_KEY)
+        );
+        maskVisibilityIconBtn.role = 'button';
+
+        maskVisibilityIconBtn.setAttribute('target', '_blank');
+        maskVisibilityIconBtn.setAttribute('tabindex', '0');
+        maskVisibilityIcon = document.createElement('span');
+        maskVisibilityIcon.className = 'oj-inputpassword-show-password-icon';
+
+        maskVisibilityIconBtn.appendChild(maskVisibilityIcon);
+        maskVisibilityIconWrapper.appendChild(maskVisibilityIconBtn);
+        wrapperElem.appendChild(maskVisibilityIconWrapper);
+
+        var $maskVisIconBtn = $(maskVisibilityIconBtn);
+        this._AddHoverable($maskVisIconBtn);
+        this._AddActiveable($maskVisIconBtn);
+
+        maskVisibilityIconBtn.addEventListener(
+          this._CLICK_HANDLER_KEY,
+          this._onMaskVisibilityIconClickHandler.bind(this)
+        );
+        maskVisibilityIconBtn.addEventListener(
+          this._KEYDOWN_HANDLER_KEY,
+          this._onMaskVisibilityIconKeyDownHandler.bind(this)
+        );
       }
-      var keyCode = $.ui.keyCode;
-
-      switch (event.keyCode) {
-        case keyCode.SPACE:
-        case keyCode.ENTER:
-          this._onMaskVisibilityIconClickHandler();
-          break;
-        default:
-      }
-    },
-    /**
-     * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
-     * different tasks.
-     *
-     * @param {string} option
-     * @param {Object=} flags
-     * @protected
-     * @memberof oj.ojInputPassword
-     * @instance
-     */
-    _AfterSetOption: function (option, flags) {
-      this._super(option, flags);
-
-      switch (option) {
-          // all of these options potentially affect the visiblity and/or rendering of the icon
-          // so we need to process the icon if any of these change.
-        case 'disabled' :
-        case 'readOnly' :
-        case 'maskIcon' :
-          this._processMaskVisibilityIcon();
-          break;
-        default:
-          break;
-      }
-    },
-
-    /**
-     * @ignore
-     * @override
-     * @protected
-     * @memberof! oj.ojInputPassword
-     * @return {boolean}
-     */
-    _DoWrapElementAndTriggers: function () {
-      this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES = this._INPUT_CONTAINER_CLASS;
-      return true;
-    },
-
-    /**
-     * ojInputPassword extends from InputBase which creates a readonly div,
-     * so overriding it to return false prevents ojInputPassword from creating
-     * a readonly div. We do not want inputPassword to show its password in
-     * plain text.
-     * @ignore
-     * @override
-     * @protected
-     * @memberof! oj.ojInputPassword
-     * @return {boolean}
-     */
-    _UseReadonlyDiv: function () {
-      return false;
-    },
-
-    getNodeBySubId: function (locator) {
-      var node = this._superApply(arguments);
-      var subId;
-      if (!node) {
-        subId = locator.subId;
-        if (subId === 'oj-inputpassword-input') {
-          node = this.element ? this.element[0] : null;
-        }
-      }
-      // Non-null locators have to be handled by the component subclasses
-      return node || null;
-    },
-
-    /**
-     * @override
-     * @instance
-     * @memberof! oj.ojInputPassword
-     * @protected
-     * @return {string}
-     */
-    _GetDefaultStyleClass: function () {
-      return 'oj-inputpassword';
+    } else if (this.options.maskIcon !== 'visible') {
+      // The Icon is currently visible, so remove it.
+      wrapperElem.removeChild(maskVisibilityIconWrapper);
+      elem.type = 'password'; // Make sure we are the right type.
     }
-  });
+  },
+
+  /**
+   * The handler clears the value of the input element and sets the focus on the element
+   * NOTE: this handler expects the input text component to be bound to this via .bind()
+   *
+   * @ignore
+   * @private
+   * @memberof! oj.ojInputPassword
+   */
+  _onMaskVisibilityIconClickHandler: function () {
+    var elem = this.element[0]; // Get the input element
+    var wrapperElem = this._GetContentWrapper().parentElement;
+    var maskVisibilityIconBtn = wrapperElem.querySelector('a.oj-component-icon');
+    var maskVisibilityIcon = maskVisibilityIconBtn.children[0];
+
+    // toggle the input type and the icon class
+    if (elem.type === 'password') {
+      // password is currently hidden
+      elem.type = 'text';
+      maskVisibilityIcon.classList.remove('oj-inputpassword-show-password-icon');
+      maskVisibilityIcon.classList.add('oj-inputpassword-hide-password-icon');
+      maskVisibilityIconBtn.setAttribute(
+        'aria-label',
+        this.getTranslatedString(this._MASK_ICON_HIDE_PASSWORD_LABEL_KEY)
+      );
+    } else {
+      // password is currently visible
+      elem.type = 'password';
+      maskVisibilityIcon.classList.remove('oj-inputpassword-hide-password-icon');
+      maskVisibilityIcon.classList.add('oj-inputpassword-show-password-icon');
+      maskVisibilityIconBtn.setAttribute(
+        'aria-label',
+        this.getTranslatedString(this._MASK_ICON_SHOW_PASSWORD_LABEL_KEY)
+      );
+    }
+  },
+
+  /**
+   * If the key code is ENTER or SPACE, we call _onMaskVisibilityIconClickHandler() to
+   * toggle the mask visibility.
+   *
+   * @ignore
+   * @private
+   * @memberof! oj.ojInputPassword
+   */
+  _onMaskVisibilityIconKeyDownHandler: function (event) {
+    if (event.altKey || event.ctrlKey) {
+      return;
+    }
+    var keyCode = $.ui.keyCode;
+
+    switch (event.keyCode) {
+      case keyCode.SPACE:
+      case keyCode.ENTER:
+        this._onMaskVisibilityIconClickHandler();
+        break;
+      default:
+    }
+  },
+  /**
+   * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
+   * different tasks.
+   *
+   * @param {string} option
+   * @param {Object=} flags
+   * @protected
+   * @memberof oj.ojInputPassword
+   * @instance
+   */
+  _AfterSetOption: function (option, flags) {
+    this._super(option, flags);
+
+    switch (option) {
+      // all of these options potentially affect the visiblity and/or rendering of the icon
+      // so we need to process the icon if any of these change.
+      case 'disabled':
+      case 'readOnly':
+      case 'maskIcon':
+        this._processMaskVisibilityIcon();
+        break;
+      default:
+        break;
+    }
+  },
+
+  /**
+   * @ignore
+   * @override
+   * @protected
+   * @memberof! oj.ojInputPassword
+   * @return {boolean}
+   */
+  _DoWrapElementAndTriggers: function () {
+    this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES = this._INPUT_CONTAINER_CLASS;
+    return true;
+  },
+
+  /**
+   * ojInputPassword extends from InputBase which creates a readonly div,
+   * so overriding it to return false prevents ojInputPassword from creating
+   * a readonly div. We do not want inputPassword to show its password in
+   * plain text.
+   * @ignore
+   * @override
+   * @protected
+   * @memberof! oj.ojInputPassword
+   * @return {boolean}
+   */
+  _UseReadonlyDiv: function () {
+    return false;
+  },
+
+  getNodeBySubId: function (locator) {
+    var node = this._superApply(arguments);
+    var subId;
+    if (!node) {
+      subId = locator.subId;
+      if (subId === 'oj-inputpassword-input') {
+        node = this.element ? this.element[0] : null;
+      }
+    }
+    // Non-null locators have to be handled by the component subclasses
+    return node || null;
+  },
+
+  /**
+   * @override
+   * @instance
+   * @memberof! oj.ojInputPassword
+   * @protected
+   * @return {string}
+   */
+  _GetDefaultStyleClass: function () {
+    return 'oj-inputpassword';
+  }
+});
 
 // Fragments:
 
@@ -3408,7 +3555,6 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
  * @memberof oj.ojInputPassword
  */
 
-
 // ////////////////     SUB-IDS     //////////////////
 /**
  * <p>Sub-ID for the ojInputPassword component's input element.</p>
@@ -3448,6 +3594,7 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
  *
+ * @ojoracleicon 'oj-ux-ico-text-input'
  * @ojuxspecs ['input-text']
  *
  * @classdesc
@@ -3486,7 +3633,108 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
+ * <h3 id="migration-section">
+ *   Migration
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+ * </h3>
  *
+ * <p>
+ * To migrate from oj-input-text to oj-c-input-text, you need to revise the import statement
+ * and references to oj-c-input-text in your app. Please note the changes between the two components below.
+ * </p>
+ *
+ * <h5>Converter attribute</h5>
+ * <p>
+ * The converter attribute is changed to support only a converter instance, null, or undefined. It does not support
+ * a Promise that resolves to a converter instance. The application should resolve the promise and then update the
+ * converter attribute with the resolved converter instance.
+ * </p>
+ * <p>
+ * The converter is no longer applied when the value is <code>null</code>, <code>undefined</code>, or <code>''</code>.
+ * <p>
+ *
+ * <h5>LabelEdge attribute</h5>
+ * <p>
+ * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
+ * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+ * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+ * attribute to the corresponding value.
+ * </p>
+ *
+ * <h5>List attribute</h5>
+ * <p>
+ * The list attribute is no longer supported.
+ * </p>
+ *
+ * <h5>TextAlign attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start and oj-form-control-text-align-end is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-text-align-right maps to 'right'
+ * </li>
+ * <li>
+ * .oj-form-control-text-align-start maps to 'start'
+ * </li>
+ * <li>
+ * .oj-form-control-text-align-end maps to 'end'
+ * </li>
+ * </ul>
+ * </p>
+ * <h5>Translations attribute</h5>
+ * <p>
+ * The translations.required.message-detail attribute has changed to required-message-detail.
+ * </p>
+ *
+ * <h5>Value attribute</h5>
+ * <p>
+ * Clearing the field and committing the value will now set the value attribute to <code>null</code>
+ * instead of <code>''</code>.
+ * </p>
+ *
+ * <h5>Refresh method</h5>
+ * <p>
+ * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+ * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+ * </p>
+ *
+ * <h5>Reset method</h5>
+ * <p>
+ * This method does not synchronously reset the component. The application should wait on the busy context of the component after
+ * invoking this method for the changes to appear.
+ * </p>
+ *
+ * <h5>ShowMessages method</h5>
+ * <p>
+ * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
+ * of the component after invoking this method for the changes to appear.
+ * </p>
+ *
+ * <h5>Animation Events</h5>
+ * <p>
+ * ojAnimateStart and ojAnimateEnd events are no longer supported.
+ * </p>
+ *
+ * <h5>Custom Label</h5>
+ * <p>
+ * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+ * label-hint attribute to add a label for the form component.
+ * </p>
+ * <p>
+ * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
+ * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+ * </p>
+ *
+ * <h5>User Assistance Density - Compact mode</h5>
+ * <p>
+ * Rendering the component in compact userAssistanceDensity mode is not supported in this release. Please use 'reflow' or 'efficient' instead.
+ * </p>
+ *
+ * <h5>Usage in Dynamic Form</h5>
+ * <p>
+ * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+ * </p>
  *
  * @example <caption>Declare the oj-input-text component with no attributes specified:</caption>
  * &lt;oj-input-text>&lt;/oj-input-text>
@@ -3498,77 +3746,77 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
  * &lt;oj-input-text id="textId" value="{{currentValue}}">&lt;/oj-input-text>
  */
 // --------------------------------------------------- oj.ojInputText Styling Start ------------------------------------------------------------
-  /**
-   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
-   * The form control style classes can be applied to the component, or an ancestor element. <br/>
-   * When applied to an ancestor element, all form components that support the style classes will be affected.
-   */
-  // ---------------- oj-form-control-full-width --------------
-  /**
-  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
-  * @ojstyleclass oj-form-control-full-width
-  * @ojdisplayname Full Width
-  * @memberof oj.ojInputText
-  * @ojtsexample
-  * &lt;oj-input-text class="oj-form-control-full-width">
-  * &lt;/oj-input-text>
-  */
+/**
+ * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+ * The form control style classes can be applied to the component, or an ancestor element. <br/>
+ * When applied to an ancestor element, all form components that support the style classes will be affected.
+ */
+// ---------------- oj-form-control-full-width --------------
+/**
+ * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+ * @ojstyleclass oj-form-control-full-width
+ * @ojdisplayname Full Width
+ * @memberof oj.ojInputText
+ * @ojtsexample
+ * &lt;oj-input-text class="oj-form-control-full-width">
+ * &lt;/oj-input-text>
+ */
 
-  // ---------------- oj-form-control max-width --------------
-  /**
-  * In the Redwood theme the default max width of a text field is 100%.
-  * These max width convenience classes are available to create a medium or small field.<br>
-  * The class is applied to the root element.
-  * @ojstyleset form-control-max-width
-  * @ojdisplayname Max Width
-  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
-  * @ojstylerelation exclusive
-  * @memberof oj.ojInputText
-  * @ojunsupportedthemes ['Alta']
-  * @ojtsexample
-  * &lt;oj-input-text class="oj-form-control-max-width-md">&lt;/oj-input-text>
-  */
-  /**
-  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
-  * @ojshortdesc Sets the max width for a small field
-  * @ojdisplayname Small
-  * @memberof! oj.ojInputText
-   */
-  /**
-  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
-  * @ojshortdesc Sets the max width for a medium field
-  * @ojdisplayname Medium
-  * @memberof! oj.ojInputText
-   */
+// ---------------- oj-form-control max-width --------------
+/**
+ * In the Redwood theme the default max width of a text field is 100%.
+ * These max width convenience classes are available to create a medium or small field.<br>
+ * The class is applied to the root element.
+ * @ojstyleset form-control-max-width
+ * @ojdisplayname Max Width
+ * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojInputText
+ * @ojunsupportedthemes ['Alta']
+ * @ojtsexample
+ * &lt;oj-input-text class="oj-form-control-max-width-md">&lt;/oj-input-text>
+ */
+/**
+ * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+ * @ojshortdesc Sets the max width for a small field
+ * @ojdisplayname Small
+ * @memberof! oj.ojInputText
+ */
+/**
+ * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+ * @ojshortdesc Sets the max width for a medium field
+ * @ojdisplayname Medium
+ * @memberof! oj.ojInputText
+ */
 
-  // ---------------- oj-form-control width --------------
-  /**
-  * In the Redwood theme the default width of a text field is 100%.
-  * These width convenience classes are available to create a medium or small field.<br>
-  * The class is applied to the root element.
-  * @ojstyleset form-control-width
-  * @ojdisplayname Width
-  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
-  * @ojstylerelation exclusive
-  * @memberof oj.ojInputText
-  * @ojunsupportedthemes ['Alta']
-  * @ojtsexample
-  * &lt;oj-input-text class="oj-form-control-width-md">&lt;/oj-input-text>
-  */
-  /**
-  * @ojstyleclass form-control-width.oj-form-control-width-sm
-  * @ojshortdesc Sets the width for a small field
-  * @ojdisplayname Small
-  * @memberof! oj.ojInputText
-   */
-  /**
-  * @ojstyleclass form-control-width.oj-form-control-width-md
-  * @ojshortdesc Sets the width for a medium field
-  * @ojdisplayname Medium
-  * @memberof! oj.ojInputText
-   */
+// ---------------- oj-form-control width --------------
+/**
+ * In the Redwood theme the default width of a text field is 100%.
+ * These width convenience classes are available to create a medium or small field.<br>
+ * The class is applied to the root element.
+ * @ojstyleset form-control-width
+ * @ojdisplayname Width
+ * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojInputText
+ * @ojunsupportedthemes ['Alta']
+ * @ojtsexample
+ * &lt;oj-input-text class="oj-form-control-width-md">&lt;/oj-input-text>
+ */
+/**
+ * @ojstyleclass form-control-width.oj-form-control-width-sm
+ * @ojshortdesc Sets the width for a small field
+ * @ojdisplayname Small
+ * @memberof! oj.ojInputText
+ */
+/**
+ * @ojstyleclass form-control-width.oj-form-control-width-md
+ * @ojshortdesc Sets the width for a medium field
+ * @ojdisplayname Medium
+ * @memberof! oj.ojInputText
+ */
 
- // ---------------- oj-form-control-text-align- --------------
+// ---------------- oj-form-control-text-align- --------------
 /**
  * Classes that help align text of the element.
  * @ojstyleset text-align
@@ -3611,232 +3859,231 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase,
  * &lt;/oj-input-text>
  */
 // --------------------------------------------------- oj.ojInputText Styling end ------------------------------------------------------------
-oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
-  {
-    version: '1.0.0',
-    defaultElement: '<input>',
-    widgetEventPrefix: 'oj',
+oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
+  version: '1.0.0',
+  defaultElement: '<input>',
+  widgetEventPrefix: 'oj',
 
+  /**
+   * @expose
+   * @private
+   */
+  _ATTR_CHECK: [{ attr: 'type', setMandatory: 'text' }],
+
+  /**
+   * @expose
+   * @private
+   */
+  _CLASS_NAMES: 'oj-inputtext-input',
+
+  /**
+   * @expose
+   * @private
+   */
+  _WIDGET_CLASS_NAMES: 'oj-inputtext oj-form-control oj-component',
+
+  /**
+   * @private
+   */
+  _ALLOWED_TYPES: ['email', 'number', 'search', 'tel', 'text', 'url'],
+
+  _CLICK_HANDLER_KEY: 'click',
+
+  _INPUT_CONTAINER_CLASS: 'oj-text-field-container',
+  _INPUTTEXT_COUNTER_EL: 'oj-inputtext-counter-el',
+  _INPUTTEXT_CLEAR_ICON_KEY: 'accessibleClearIcon',
+
+  options: {
     /**
      * @expose
-     * @private
+     * @memberof! oj.ojInputText
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "never" The clear icon is never visible
+     * @ojvalue {string} "always" The clear icon is always visible
+     * @ojvalue {string} "conditional" The clear icon is visible under the following conditions:
+     * if the component has a non-empty value, and it either has focus or the mouse is over the field.
+     * @default "never"
+     * @desc Specifies if an icon to clear the input field should be visible.
+     *
+     * @example <caption>Initialize the oj-input-text with the <code class="prettyprint">clear-icon</code> attribute specified:</caption>
+     * &lt;oj-input-text clear-icon="conditional" id="inputcontrol">&lt;/oj-input-text>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">clearIcon</code> property after initialization:</caption>
+     * // getter
+     * var clearIcon = myInputText.clearIcon;
+     *
+     * // setter
+     * myInputText.clearIcon = 'conditional';
      */
-    _ATTR_CHECK: [{ attr: 'type', setMandatory: 'text' }],
-
+    clearIcon: 'never',
     /**
+     * A converter instance or Promise to a converter instance
+     * or one that duck types {@link oj.Converter}.
+     * {@ojinclude "name":"inputBaseConverterOptionDoc"}
+     * <p>
+     *  During validation, the converter takes the input value which is a string
+     *  and parses it into the type of the component's value property
+     *  (e.g. a number)
+     *  before it passes it to the validator. It then takes the validated value property
+     *  and formats it into a string to be displayed and puts it into the input.
+     *  If the converter's format or parse functions
+     *  throw an error, it will be displayed to the user inline on the field.
+     * </p>
+     * <p>
+     * The hint exposed by the converter is shown inline by default in the Redwood theme when
+     * the field has focus.
+     * In the Alta theme, converter hints are shown in a notewindow on focus,
+     * or as determined by the
+     * 'converterHint' property set on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * In either theme, you can turn off showing converter hints by using the
+     * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * </p>
+     * <p>
+     * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+     * help.instruction shows; if no help.instruction then validator hints show;
+     * if none, then help-hints.definition shows; if none, then converter hint shows.
+     * help-hints.source always shows along with the other help or hint.
+     * </p>
+     * @example <caption>Initialize the component with a number converter instance:</caption>
+     * &lt;oj-input-text converter="[[salaryConverter]]">&lt;/oj-input-text><br/>
+     * // Initialize converter instance using currency options
+     * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
+     * this.salaryConverter = new NumberConverter(options);
+     *
+     * @example <caption>Get or set the <code class="prettyprint">converter</code>
+     *  property after initialization:</caption>
+     * // getter
+     * var converter = myComp.converter;
+     *
+     * // setter
+     * myComp.converter = myConverter;
      * @expose
-     * @private
+     * @access public
+     * @instance
+     * @memberof! oj.ojInputText
+     * @ojshortdesc An object that converts the value. See the Help documentation for more information.
+     * @default null
+     * @ojsignature [{
+     *    target: "Type",
+     *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+     *            null",
+     *    jsdocOverride: true},
+     *    {target: "Type",
+     *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+     *            oj.Validation.RegisteredConverter|
+     *            null",
+     *    consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
+     *                description:'Defining a converter with an object literal with converter type and its options
+     *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
+     *                  work again by importing the deprecated module you need, like ojvalidation-base or
+     *                  ojvalidation-number module.'}
+     * @type {Object|null}
      */
-    _CLASS_NAMES: 'oj-inputtext-input',
-
+    converter: null,
     /**
+     * Indicates a list of pre-defined options to suggest to the user.
+     * The value must be the id of a &lt;datalist> element in the same page.
+     * This attribute is ignored when the type attribute's value is hidden.
+     *
+     * @example <caption>Initialize component with <code class="prettyprint">list</code> attribute:</caption>
+     * &lt;oj-some-element list="sampleDataList">&lt;/oj-some-element>
+     *
+     * <p>Example for datalist:
+     * <pre class="prettyprint">
+     * <code>
+     * &lt;datalist id="sampleDataList">
+     *   &lt;option value="item 1">item 1&lt;/option>
+     *   &lt;option value="item 2">item 2&lt;/option>
+     *   &lt;option value="item 3">item 3&lt;/option>
+     *   &lt;option value="item 4">item 4&lt;/option>
+     * &lt;/datalist>
+     * </code></pre>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">list</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.list;
+     *
+     * // setter
+     * myComp.list = "myDataList";
+     *
      * @expose
-     * @private
+     * @instance
+     * @memberof! oj.ojInputText
+     * @ojshortdesc Specifies a list of pre-defined options to present to the user. See the Help documentation for more information.
+     * @type {string}
+     * @public
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
      */
-    _WIDGET_CLASS_NAMES: 'oj-inputtext oj-form-control oj-component',
+    list: '',
 
     /**
-     * @private
+     * Regular expression pattern which will be used to validate the component's value.
+     * <p>
+     * When pattern is set to a non-empty string value, an implicit regExp validator is created using
+     * the RegExpValidator -
+     * <code class="prettyprint">new RegExpValidator()</code>.
+     * </p>
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> attribute:</caption>
+     * &lt;oj-input-text pattern="[a-zA-Z0-9]{3,}">&lt;/oj-input-text><br/>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">pattern</code> property after initialization:</caption>
+     * // getter
+     * var pattern = myComp.pattern;
+     *
+     * // setter
+     * myComp.pattern = "[0-9]{3,}";
+     *
+     * @expose
+     * @instance
+     * @memberof! oj.ojInputText
+     * @type {string|undefined}
+     * @ignore
      */
-    _ALLOWED_TYPES: ['email', 'number', 'search', 'tel', 'text', 'url'],
+    pattern: '',
+    /**
+     * The type of virtual keyboard to display for entering a value on mobile browsers. This attribute has no effect on desktop browsers.
+     * @example <caption>Initialize the component with the <code class="prettyprint">virtual-keyboard</code> attribute:</caption>
+     * &lt;oj-input-text virtual-keyboard="number">&lt;/oj-input-text>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">virtualKeyboard</code> property after initialization:</caption>
+     * // Getter
+     * var virtualKeyboard = myComp.virtualKeyboard;
+     *
+     * // Setter
+     * myComp.virtualKeyboard = "number";
+     *
+     * @expose
+     * @instance
+     * @memberof oj.ojInputText
+     * @ojshortdesc The type of virtual keyboard to display for entering a value on mobile browsers. See the Help documentation for more information.
+     * @type {string}
+     * @ojvalue {string} "auto" The component will determine the best mobile virtual keyboard to use.
+     *                          For example, it may look at the converter's resolvedOptions
+     *                          to determine the mobile virtual keyboard type.
+     * @ojvalue {string} "email" Use a mobile virtual keyboard for entering email addresses.
+     * @ojvalue {string} "number" Use a mobile virtual keyboard for entering numbers.
+     *                            <p>If using "number", you must set the converter attribute to a converter
+     *                            that formats to numeric characters only, otherwise the value will not be shown. The reason for this
+     *                            is oj-input-text uses the browser native input type='number' and when you set a value that contains a non-numeric character,
+     *                            browsers do not display the value. For example, "1,000" would not be shown.</p>
+     *                            <p>Note that on Android and Windows Mobile, the "number" keyboard does
+     *                            not contain the minus sign.  This value should not be used on fields that
+     *                            accept negative values.</p>
+     * @ojvalue {string} "search" Use a mobile virtual keyboard for entering search terms.
+     * @ojvalue {string} "tel" Use a mobile virtual keyboard for entering telephone numbers.
+     * @ojvalue {string} "text" Use a mobile virtual keyboard for entering text.
+     * @ojvalue {string} "url" Use a mobile virtual keyboard for URL entry.
+     * @default "auto"
+     * @since 5.0.0
+     */
+    virtualKeyboard: 'auto',
 
-    _CLICK_HANDLER_KEY: 'click',
-
-    _INPUT_CONTAINER_CLASS: 'oj-text-field-container',
-    _INPUTTEXT_COUNTER_EL: 'oj-inputtext-counter-el',
-
-    options:
-    {
-      /**
-       * @expose
-       * @memberof! oj.ojInputText
-       * @instance
-       * @type {string}
-       * @ojvalue {string} "never" The clear icon is never visible
-       * @ojvalue {string} "always" The clear icon is always visible
-       * @ojvalue {string} "conditional" The clear icon is visible under the following conditions:
-       * if the component has a non-empty value, and it either has focus or the mouse is over the field.
-       * @default "never"
-       * @desc Specifies if an icon to clear the input field should be visible.
-       *
-       * @example <caption>Initialize the oj-input-text with the <code class="prettyprint">clear-icon</code> attribute specified:</caption>
-       * &lt;oj-input-text clear-icon="conditional" id="inputcontrol">&lt;/oj-input-text>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">clearIcon</code> property after initialization:</caption>
-       * // getter
-       * var clearIcon = myInputText.clearIcon;
-       *
-       * // setter
-       * myInputText.clearIcon = 'conditional';
-       */
-      clearIcon: 'never',
-      /**
-       * A converter instance or Promise to a converter instance
-       * or one that duck types {@link oj.Converter}.
-       * {@ojinclude "name":"inputBaseConverterOptionDoc"}
-       * <p>
-       *  During validation, the converter takes the input value which is a string
-       *  and parses it into the type of the component's value property
-       *  (e.g. a number)
-       *  before it passes it to the validator. It then takes the validated value property
-       *  and formats it into a string to be displayed and puts it into the input.
-       *  If the converter's format or parse functions
-       *  throw an error, it will be displayed to the user inline on the field.
-       * </p>
-       * <p>
-       * The hint exposed by the converter is shown inline by default in the Redwood theme when
-       * the field has focus.
-       * In the Alta theme, converter hints are shown in a notewindow on focus,
-       * or as determined by the
-       * 'converterHint' property set on the <code class="prettyprint">display-options</code>
-       * attribute.
-       * In either theme, you can turn off showing converter hints by using the
-       * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
-       * attribute.
-       * </p>
-       * <p>
-       * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
-       * help.instruction shows; if no help.instruction then validator hints show;
-       * if none, then help-hints.definition shows; if none, then converter hint shows.
-       * help-hints.source always shows along with the other help or hint.
-       * </p>
-       * @example <caption>Initialize the component with a number converter instance:</caption>
-       * &lt;oj-input-text converter="[[salaryConverter]]">&lt;/oj-input-text><br/>
-       * // Initialize converter instance using currency options
-       * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
-       * this.salaryConverter = new NumberConverter(options);
-       *
-       * @example <caption>Get or set the <code class="prettyprint">converter</code>
-       *  property after initialization:</caption>
-       * // getter
-       * var converter = myComp.converter;
-       *
-       * // setter
-       * myComp.converter = myConverter;
-       * @expose
-       * @access public
-       * @instance
-       * @memberof! oj.ojInputText
-       * @ojshortdesc An object that converts the value. See the Help documentation for more information.
-       * @default null
-       * @ojsignature [{
-       *    target: "Type",
-       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
-       *            null",
-       *    jsdocOverride: true},
-       *    {target: "Type",
-       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
-       *            oj.Validation.RegisteredConverter|
-       *            null",
-       *    consumedBy: 'tsdep'}]
-       * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
-       *                description:'Defining a converter with an object literal with converter type and its options
-       *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
-       *                  work again by importing the deprecated module you need, like ojvalidation-base or
-       *                  ojvalidation-number module.'}
-       * @type {Object|null}
-       */
-      converter: null,
-      /**
-       * Indicates a list of pre-defined options to suggest to the user.
-       * The value must be the id of a &lt;datalist> element in the same page.
-       * This attribute is ignored when the type attribute's value is hidden.
-       *
-       * @example <caption>Initialize component with <code class="prettyprint">list</code> attribute:</caption>
-       * &lt;oj-some-element list="sampleDataList">&lt;/oj-some-element>
-       *
-       * <p>Example for datalist:
-       * <pre class="prettyprint">
-       * <code>
-       * &lt;datalist id="sampleDataList">
-       *   &lt;option value="item 1">item 1&lt;/option>
-       *   &lt;option value="item 2">item 2&lt;/option>
-       *   &lt;option value="item 3">item 3&lt;/option>
-       *   &lt;option value="item 4">item 4&lt;/option>
-       * &lt;/datalist>
-       * </code></pre>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">list</code> property after initialization:</caption>
-       * // getter
-       * var ro = myComp.list;
-       *
-       * // setter
-       * myComp.list = "myDataList";
-       *
-       * @expose
-       * @instance
-       * @memberof! oj.ojInputText
-       * @ojshortdesc Specifies a list of pre-defined options to present to the user. See the Help documentation for more information.
-       * @type {string}
-       * @public
-       * @ojextension {_COPY_TO_INNER_ELEM: true}
-       */
-      list: '',
-
-      /**
-       * Regular expression pattern which will be used to validate the component's value.
-       * <p>
-       * When pattern is set to a non-empty string value, an implicit regExp validator is created using
-       * the RegExpValidator -
-       * <code class="prettyprint">new RegExpValidator()</code>.
-       * </p>
-       *
-       * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> attribute:</caption>
-       * &lt;oj-input-text pattern="[a-zA-Z0-9]{3,}">&lt;/oj-input-text><br/>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">pattern</code> property after initialization:</caption>
-       * // getter
-       * var pattern = myComp.pattern;
-       *
-       * // setter
-       * myComp.pattern = "[0-9]{3,}";
-       *
-       * @expose
-       * @instance
-       * @memberof! oj.ojInputText
-       * @type {string|undefined}
-       * @ignore
-       */
-      pattern: '',
-      /**
-       * The type of virtual keyboard to display for entering a value on mobile browsers. This attribute has no effect on desktop browsers.
-       * @example <caption>Initialize the component with the <code class="prettyprint">virtual-keyboard</code> attribute:</caption>
-       * &lt;oj-input-text virtual-keyboard="number">&lt;/oj-input-text>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">virtualKeyboard</code> property after initialization:</caption>
-       * // Getter
-       * var virtualKeyboard = myComp.virtualKeyboard;
-       *
-       * // Setter
-       * myComp.virtualKeyboard = "number";
-       *
-       * @expose
-       * @instance
-       * @memberof oj.ojInputText
-       * @ojshortdesc The type of virtual keyboard to display for entering a value on mobile browsers. See the Help documentation for more information.
-       * @type {string}
-       * @ojvalue {string} "auto" The component will determine the best mobile virtual keyboard to use.
-       *                          For example, it may look at the converter's resolvedOptions
-       *                          to determine the mobile virtual keyboard type.
-       * @ojvalue {string} "email" Use a mobile virtual keyboard for entering email addresses.
-       * @ojvalue {string} "number" Use a mobile virtual keyboard for entering numbers.
-       *                            <p>If using "number", you must set the converter attribute to a converter
-       *                            that formats to numeric characters only, otherwise the value will not be shown. The reason for this
-       *                            is oj-input-text uses the browser native input type='number' and when you set a value that contains a non-numeric character,
-       *                            browsers do not display the value. For example, "1,000" would not be shown.</p>
-       *                            <p>Note that on Android and Windows Mobile, the "number" keyboard does
-       *                            not contain the minus sign.  This value should not be used on fields that
-       *                            accept negative values.</p>
-       * @ojvalue {string} "search" Use a mobile virtual keyboard for entering search terms.
-       * @ojvalue {string} "tel" Use a mobile virtual keyboard for entering telephone numbers.
-       * @ojvalue {string} "text" Use a mobile virtual keyboard for entering text.
-       * @ojvalue {string} "url" Use a mobile virtual keyboard for URL entry.
-       * @default "auto"
-       * @since 5.0.0
-       */
-      virtualKeyboard: 'auto',
-
-      /**
+    /**
         *
         * @expose
         * @instance
@@ -3848,385 +4095,383 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
         // * @ojtsignore tsdefonly
       */
 
-      length: {
-        /**
-         * Maximum number of characters that can be entered in the input field.
-         *
-         * @expose
-         * @name length.max
-         * @ojshortdesc Specifies the maximum number of characters to be entered in the input text.
-         * @memberof! oj.ojInputText
-         * @instance
-         * @type {number|null}
-         * @default null
-         * @since 8.0.0
-         */
-        max: null,
-
-        /**
-         * Dictates how the input text characters has to be counted.
-         *
-         * @expose
-         * @name length.countBy
-         * @ojshortdesc Specifies the manner in which the input text characters has to be counted.
-         * @memberof! oj.ojInputText
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} 'codePoint' Uses code point to calculate the text length
-         * @ojvalue {string} 'codeUnit' Uses code unit to calculate the text length
-         * @default "codePoint"
-         * @since 8.0.0
-         */
-        countBy: 'codePoint'
-      }
-
-      // Events
+    length: {
+      /**
+       * Maximum number of characters that can be entered in the input field.
+       *
+       * @expose
+       * @name length.max
+       * @ojshortdesc Specifies the maximum number of characters to be entered in the input text.
+       * @memberof! oj.ojInputText
+       * @instance
+       * @type {number|null}
+       * @default null
+       * @since 8.0.0
+       */
+      max: null,
 
       /**
-       * Triggered when the ojInputText is created.
+       * Dictates how the input text characters has to be counted.
        *
-       * @event
-       * @name create
-       * @memberof oj.ojInputText
+       * @expose
+       * @name length.countBy
+       * @ojshortdesc Specifies the manner in which the input text characters has to be counted.
+       * @memberof! oj.ojInputText
        * @instance
-       * @property {Event} event event object
-       * @property {Object} ui Currently empty
-       * @ignore
-       *
-       * @example <caption>Initialize the ojInputText with the <code class="prettyprint">create</code> callback specified:</caption>
-       * $( ".selector" ).ojInputText({
-       *     "create": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-       * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+       * @type {string=}
+       * @ojvalue {string} 'codePoint' Uses code point to calculate the text length
+       * @ojvalue {string} 'codeUnit' Uses code unit to calculate the text length
+       * @default "codePoint"
+       * @since 8.0.0
        */
-      // create event declared in superclass, but we still want the above API doc
-    },
+      countBy: 'codePoint'
+    }
+
+    // Events
 
     /**
-     * @protected
-     * @override
-     * @instance
-     * @memberof! oj.ojInputText
-     */
-    _ComponentCreate: function () {
-      var retVal = this._super();
-
-      // add in the clear icon if needed
-      var clearIconAttr = this.options.clearIcon;
-
-      this._processClearIconAttr(clearIconAttr);
-      this._processSlottedChildren();
-
-      this._AddHoverable(this._wrapper);
-
-      // Set the input type attribute based on virtualKeyboard property
-      this._SetInputType(this._ALLOWED_TYPES);
-
-      return retVal;
-    },
-    /**
-     * @ignore
-     * @override
-     * @protected
-     * @memberof! oj.InputText
-     * @return {boolean}
-     */
-    _DoWrapElementAndTriggers: function () {
-      this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES = this._INPUT_CONTAINER_CLASS;
-      return true;
-    },
-    /**
-     * Render or remove the clear icon
-     * @ignore
-     * @private
-     * @param {string} clearIconAttr
+     * Triggered when the ojInputText is created.
+     *
+     * @event
+     * @name create
      * @memberof oj.ojInputText
      * @instance
+     * @property {Event} event event object
+     * @property {Object} ui Currently empty
+     * @ignore
+     *
+     * @example <caption>Initialize the ojInputText with the <code class="prettyprint">create</code> callback specified:</caption>
+     * $( ".selector" ).ojInputText({
+     *     "create": function( event, ui ) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
+     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
      */
-    _processClearIconAttr: function (clearIconAttr) {
-      var wrapperElem = this._GetContentWrapper().parentElement;
+    // create event declared in superclass, but we still want the above API doc
+  },
 
-      var clearIconBtn = wrapperElem.querySelector('a.oj-inputtext-clear-icon-btn');
+  /**
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.ojInputText
+   */
+  _ComponentCreate: function () {
+    var retVal = this._super();
 
-      if (clearIconAttr === 'never' || this.options.disabled || this.options.readOnly) {
-        // remove the icon if it is there
-        if (clearIconBtn) {
-          wrapperElem.removeChild(clearIconBtn);
+    // add in the clear icon if needed
+    var clearIconAttr = this.options.clearIcon;
+
+    this._processClearIconAttr(clearIconAttr);
+    this._processSlottedChildren();
+
+    this._AddHoverable(this._wrapper);
+
+    // Set the input type attribute based on virtualKeyboard property
+    this._SetInputType(this._ALLOWED_TYPES);
+
+    return retVal;
+  },
+  /**
+   * @ignore
+   * @override
+   * @protected
+   * @memberof! oj.InputText
+   * @return {boolean}
+   */
+  _DoWrapElementAndTriggers: function () {
+    this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES = this._INPUT_CONTAINER_CLASS;
+    return true;
+  },
+  /**
+   * Render or remove the clear icon
+   * @ignore
+   * @private
+   * @param {string} clearIconAttr
+   * @memberof oj.ojInputText
+   * @instance
+   */
+  _processClearIconAttr: function (clearIconAttr) {
+    var wrapperElem = this._GetContentWrapper().parentElement;
+
+    var clearIconBtn = wrapperElem.querySelector('a.oj-inputtext-clear-icon-btn');
+
+    if (clearIconAttr === 'never' || this.options.disabled || this.options.readOnly) {
+      // remove the icon if it is there
+      if (clearIconBtn) {
+        wrapperElem.removeChild(clearIconBtn);
+      }
+
+      // if the clearIcon is not rendered, we shouldn't have these classes
+      wrapperElem.classList.remove('oj-inputtext-clearicon-visible');
+      wrapperElem.classList.remove('oj-inputtext-clearicon-conditional');
+    } else {
+      if (clearIconBtn === null) {
+        var clearIcon;
+        var agentInfo = oj.AgentUtils.getAgentInfo();
+        clearIconBtn = document.createElement('a');
+        clearIconBtn.className =
+          'oj-inputtext-clear-icon-btn oj-component-icon oj-clickable-icon-nocontext';
+        clearIconBtn.setAttribute('tabindex', '-1');
+        clearIconBtn.setAttribute(
+          'title',
+          this.getTranslatedString(this._INPUTTEXT_CLEAR_ICON_KEY)
+        );
+        // Only add aria-label for screen readers on mobile browsers
+        if (
+          agentInfo.os === oj.AgentUtils.OS.ANDROID ||
+          agentInfo.os === oj.AgentUtils.OS.IOS ||
+          agentInfo.os === oj.AgentUtils.OS.WINDOWSPHONE
+        ) {
+          clearIconBtn.setAttribute('aria-label', 'Clear input');
+        } else {
+          // clear icon is hidden from screen reader users for desktop.
+          clearIconBtn.setAttribute('aria-hidden', 'true');
         }
 
-        // if the clearIcon is not rendered, we shouldn't have these classes
+        clearIconBtn.setAttribute('target', '_blank');
+        clearIcon = document.createElement('span');
+        clearIcon.className = 'oj-inputtext-clear-icon';
+
+        clearIconBtn.appendChild(clearIcon);
+        wrapperElem.appendChild(clearIconBtn);
+
+        clearIconBtn.addEventListener(
+          this._CLICK_HANDLER_KEY,
+          this._onClearIconClickHandler.bind(this)
+        );
+      }
+
+      // If clear-icon = "always", we want the icon visible all the time
+      if (clearIconAttr === 'always') {
+        wrapperElem.classList.add('oj-inputtext-clearicon-visible');
+      } else {
         wrapperElem.classList.remove('oj-inputtext-clearicon-visible');
-        wrapperElem.classList.remove('oj-inputtext-clearicon-conditional');
-      } else {
-        if (clearIconBtn === null) {
-          var clearIcon;
-          var agentInfo = oj.AgentUtils.getAgentInfo();
-          clearIconBtn = document.createElement('a');
-          clearIconBtn.className =
-            'oj-inputtext-clear-icon-btn oj-component-icon oj-clickable-icon-nocontext';
-          clearIconBtn.setAttribute('tabindex', '-1');
 
-          // Only add aria-label for screen readers on mobile browsers
-          if (agentInfo.os === oj.AgentUtils.OS.ANDROID ||
-              agentInfo.os === oj.AgentUtils.OS.IOS ||
-              agentInfo.os === oj.AgentUtils.OS.WINDOWSPHONE) {
-            clearIconBtn.setAttribute('aria-label', 'Clear input');
-          } else {
-            // clear icon is hidden from screen reader users for desktop.
-            clearIconBtn.setAttribute('aria-hidden', 'true');
-          }
+        // For the conditional case, we render oj-form-control-empty-clearicon if the input doesn't
+        // have a value, as we always want the clear icon hidden for this case.  When the input does
+        // have a value, then we use oj-inputtext-clearicon-conditional, which has selectors for
+        // oj-hover and oj-focus to determine when the icon is visible.
+        wrapperElem.classList.add('oj-inputtext-clearicon-conditional');
 
-          clearIconBtn.setAttribute('target', '_blank');
-          clearIcon = document.createElement('span');
-          clearIcon.className =
-            'oj-inputtext-clear-icon';
+        var val;
 
-          clearIconBtn.appendChild(clearIcon);
-          wrapperElem.appendChild(clearIconBtn);
-
-          clearIconBtn.addEventListener(this._CLICK_HANDLER_KEY,
-                                        this._onClearIconClickHandler.bind(this));
-        }
-
-        // If clear-icon = "always", we want the icon visible all the time
-        if (clearIconAttr === 'always') {
-          wrapperElem.classList.add('oj-inputtext-clearicon-visible');
+        // if the component is not fully rendered, then we need to use the value option's value
+        // instead of the input element's value
+        if (wrapperElem.classList.contains('oj-complete')) {
+          val = this.element[0].value;
         } else {
-          wrapperElem.classList.remove('oj-inputtext-clearicon-visible');
+          val = this.options.value;
+        }
 
-
-          // For the conditional case, we render oj-form-control-empty-clearicon if the input doesn't
-          // have a value, as we always want the clear icon hidden for this case.  When the input does
-          // have a value, then we use oj-inputtext-clearicon-conditional, which has selectors for
-          // oj-hover and oj-focus to determine when the icon is visible.
-          wrapperElem.classList.add('oj-inputtext-clearicon-conditional');
-
-          var val;
-
-          // if the component is not fully rendered, then we need to use the value option's value
-          // instead of the input element's value
-          if (wrapperElem.classList.contains('oj-complete')) {
-            val = this.element[0].value;
-          } else {
-            val = this.options.value;
-          }
-
-          if (val && val !== '') {
-            wrapperElem.classList.remove('oj-form-control-empty-clearicon');
-          } else {
-            wrapperElem.classList.add('oj-form-control-empty-clearicon');
-          }
+        if (val && val !== '') {
+          wrapperElem.classList.remove('oj-form-control-empty-clearicon');
+        } else {
+          wrapperElem.classList.add('oj-form-control-empty-clearicon');
         }
       }
-    },
-    /**
-     * Handles slotted start and end icons.
-     * @ignore
-     * @private
-     * @memberof oj.ojInputText
-     * @instance
-     */
-    _processSlottedChildren: function () {
-      function scrubSlots(slotMap) {
-        var VALID_SLOTS = { contextMenu: true, start: true, end: true, '': true };
-        var keys = Object.keys(slotMap);
-        for (var i = keys.length - 1; i > -1; i--) {
-          var key = keys[i];
-          if (!VALID_SLOTS[key]) {
-            var nodes = slotMap[key];
-            for (var n = 0; n < nodes.length; n++) {
-              var node = nodes[n];
-              node.parentElement.removeChild(node);
-            }
+    }
+  },
+  /**
+   * Handles slotted start and end icons.
+   * @ignore
+   * @private
+   * @memberof oj.ojInputText
+   * @instance
+   */
+  _processSlottedChildren: function () {
+    function scrubSlots(slotMap) {
+      var VALID_SLOTS = { contextMenu: true, start: true, end: true, '': true };
+      var keys = Object.keys(slotMap);
+      for (var i = keys.length - 1; i > -1; i--) {
+        var key = keys[i];
+        if (!VALID_SLOTS[key]) {
+          var nodes = slotMap[key];
+          for (var n = 0; n < nodes.length; n++) {
+            var node = nodes[n];
+            node.parentElement.removeChild(node);
           }
         }
       }
-      function processStartSlots(contentContainer, nodes) {
-        var wrapperElem = document.createElement('span');
-        var textFieldContainer = contentContainer.parentElement;
-        wrapperElem.classList.add('oj-text-field-start');
-        textFieldContainer.insertBefore(wrapperElem, contentContainer);
-        textFieldContainer.classList.add('oj-text-field-has-start-slot');
-        for (var i = 0; i < nodes.length; i++) {
-          var node = nodes[i];
-          wrapperElem.appendChild(node);
-        }
+    }
+    function processStartSlots(contentContainer, nodes) {
+      var wrapperElem = document.createElement('span');
+      var textFieldContainer = contentContainer.parentElement;
+      wrapperElem.classList.add('oj-text-field-start');
+      textFieldContainer.insertBefore(wrapperElem, contentContainer);
+      textFieldContainer.classList.add('oj-text-field-has-start-slot');
+      for (var i = 0; i < nodes.length; i++) {
+        var node = nodes[i];
+        wrapperElem.appendChild(node);
       }
-      function processEndSlots(contentContainer, nodes) {
-        var wrapperElem = document.createElement('span');
-        var textFieldContainer = contentContainer.parentElement;
-        wrapperElem.classList.add('oj-text-field-end');
-        textFieldContainer.appendChild(wrapperElem);
-        textFieldContainer.classList.add('oj-text-field-has-end-slot');
-        for (var i = 0; i < nodes.length; i++) {
-          var node = nodes[i];
-          wrapperElem.appendChild(node);
-        }
+    }
+    function processEndSlots(contentContainer, nodes) {
+      var wrapperElem = document.createElement('span');
+      var textFieldContainer = contentContainer.parentElement;
+      wrapperElem.classList.add('oj-text-field-end');
+      textFieldContainer.appendChild(wrapperElem);
+      textFieldContainer.classList.add('oj-text-field-has-end-slot');
+      for (var i = 0; i < nodes.length; i++) {
+        var node = nodes[i];
+        wrapperElem.appendChild(node);
       }
+    }
 
-      var slotMap = CustomElementUtils.getSlotMap(this._getRootElement());
-      scrubSlots(slotMap);
+    var slotMap = CustomElementUtils.getSlotMap(this._getRootElement());
+    scrubSlots(slotMap);
 
-      var contextContainer = this._GetContentWrapper();
-      var slotName = 'start';
-      if (slotMap[slotName]) {
-        processStartSlots(contextContainer, slotMap[slotName]);
+    var contextContainer = this._GetContentWrapper();
+    var slotName = 'start';
+    if (slotMap[slotName]) {
+      processStartSlots(contextContainer, slotMap[slotName]);
+    }
+    slotName = 'end';
+    if (slotMap[slotName]) {
+      processEndSlots(contextContainer, slotMap[slotName]);
+    }
+  },
+
+  /**
+   * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
+   * different tasks.
+   *
+   * @param {string} option
+   * @param {Object=} flags
+   * @protected
+   * @memberof oj.ojInputText
+   * @instance
+   */
+  _AfterSetOption: function (option, flags) {
+    this._super(option, flags);
+
+    switch (option) {
+      // all of these options potentially affect the visiblity and/or rendering of the icon
+      // so we need to process the icon if any of these change.
+      case 'clearIcon':
+      case 'disabled':
+      case 'readOnly':
+        this._processClearIconAttr(this.options.clearIcon);
+        break;
+
+      case 'virtualKeyboard':
+        this._SetInputType(this._ALLOWED_TYPES);
+        break;
+
+      case 'value':
+        this._processClearIconAttr(this.options.clearIcon);
+        this._filterTextOnValueChange();
+        this._AfterSetOptionLength(this.options.length);
+        break;
+
+      default:
+        break;
+    }
+  },
+  /**
+   * Invoked when the input event happens
+   *
+   * @ignore
+   * @protected
+   * @memberof! oj.ojInputText
+   * @param {Event} event
+   */
+  _onInputHandler: function (event) {
+    this._super(event);
+    var inputNode = event.target;
+    var wrapperNode = this._GetContentWrapper().parentElement;
+    var clearIconAttr = this.options.clearIcon;
+
+    if (clearIconAttr === 'conditional') {
+      if (inputNode.value !== '') {
+        wrapperNode.classList.remove('oj-form-control-empty-clearicon');
+      } else {
+        wrapperNode.classList.add('oj-form-control-empty-clearicon');
       }
-      slotName = 'end';
-      if (slotMap[slotName]) {
-        processEndSlots(contextContainer, slotMap[slotName]);
-      }
-    },
+    }
+  },
+  /**
+   * The handler clears the value of the input element and sets the focus on the element
+   * NOTE: this handler expects the input text component to be bound to this via .bind()
+   *
+   * @ignore
+   * @private
+   * @memberof! oj.ojInputText
+   * @param {Event} event
+   */
+  _onClearIconClickHandler: function (event) {
+    var elem = this.element[0];
 
-    /**
-     * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
-     * different tasks.
-     *
-     * @param {string} option
-     * @param {Object=} flags
-     * @protected
-     * @memberof oj.ojInputText
-     * @instance
-     */
-    _AfterSetOption: function (option, flags) {
-      this._super(option, flags);
+    elem.value = '';
+    // we need to update the raw value to keep it in sync
+    this._SetRawValue(elem.value, event);
+    elem.focus();
+    var wrapper = this._GetContentWrapper().parentElement;
+    wrapper.classList.add('oj-form-control-empty-clearicon');
+    this._processLengthCounterAttr(this.options.length.counter);
+  },
+  /**
+   * Invoked when blur is triggered of the this.element
+   * We don't want to set the value if the event.relatedTarget is the clear icon button
+   *
+   * @ignore
+   * @protected
+   * @memberof! oj.inputText
+   * @param {Event} event
+   */
+  _onBlurHandler: function (event) {
+    var wrapperNode = this._wrapper[0];
+    var target = event.relatedTarget;
 
-      switch (option) {
-          // all of these options potentially affect the visiblity and/or rendering of the icon
-          // so we need to process the icon if any of these change.
-        case 'clearIcon' :
-        case 'disabled' :
-        case 'readOnly' :
-          this._processClearIconAttr(this.options.clearIcon);
-          break;
-
-        case 'virtualKeyboard':
-          this._SetInputType(this._ALLOWED_TYPES);
-          break;
-
-        case 'value':
-          this._processClearIconAttr(this.options.clearIcon);
-          this._filterTextOnValueChange();
-          this._AfterSetOptionLength(this.options.length);
-          break;
-
-        default:
-          break;
-      }
-    },
-    /**
-     * Invoked when the input event happens
-     *
-     * @ignore
-     * @protected
-     * @memberof! oj.ojInputText
-     * @param {Event} event
-     */
-    _onInputHandler: function (event) {
+    // if this is the clear icon, skip the blur handler if it is an ancestor of the input text
+    if (
+      !(
+        target &&
+        target.classList.contains('oj-inputtext-clear-icon-btn') &&
+        target.parentElement &&
+        isAncestorOrSelf(wrapperNode, target.parentElement)
+      )
+    ) {
       this._super(event);
-      var inputNode = event.target;
-      var wrapperNode = this._GetContentWrapper().parentElement;
-      var clearIconAttr = this.options.clearIcon;
-
-      if (clearIconAttr === 'conditional') {
-        if (inputNode.value !== '') {
-          wrapperNode.classList.remove('oj-form-control-empty-clearicon');
-        } else {
-          wrapperNode.classList.add('oj-form-control-empty-clearicon');
-        }
+    } else {
+      // We need to put the oj-focus back on the wrapperNode so that the icon
+      // doesn't disappear on iOS and make it so that the click handler will fire.
+      wrapperNode.classList.add('oj-focus');
+    }
+  },
+  getNodeBySubId: function (locator) {
+    var node = this._superApply(arguments);
+    var subId;
+    if (!node) {
+      subId = locator.subId;
+      if (subId === 'oj-inputtext-input') {
+        node = this.element ? this.element[0] : null;
       }
-    },
-    /**
-     * The handler clears the value of the input element and sets the focus on the element
-     * NOTE: this handler expects the input text component to be bound to this via .bind()
-     *
-     * @ignore
-     * @private
-     * @memberof! oj.ojInputText
-     * @param {Event} event
-     */
-    _onClearIconClickHandler: function (event) {
-      var elem = this.element[0];
+    }
+    // Non-null locators have to be handled by the component subclasses
+    return node || null;
+  },
 
-      elem.value = '';
-      // we need to update the raw value to keep it in sync
-      this._SetRawValue(elem.value, event);
-      elem.focus();
-      var wrapper = this._GetContentWrapper().parentElement;
-      wrapper.classList.add('oj-form-control-empty-clearicon');
-      this._processLengthCounterAttr(this.options.length.counter);
-    },
-    /**
-     * Invoked when blur is triggered of the this.element
-     * We don't want to set the value if the event.relatedTarget is the clear icon button
-     *
-     * @ignore
-     * @protected
-     * @memberof! oj.inputText
-     * @param {Event} event
-     */
-    _onBlurHandler: function (event) {
-      var wrapperNode = this._wrapper[0];
-      var target = event.relatedTarget;
+  /**
+   * @override
+   * @instance
+   * @memberof! oj.ojInputText
+   * @protected
+   * @return {string}
+   */
+  _GetDefaultStyleClass: function () {
+    return 'oj-inputtext';
+  },
 
-      // if this is the clear icon, skip the blur handler if it is an ancestor of the input text
-      if (!(target &&
-            target.classList.contains('oj-inputtext-clear-icon-btn') &&
-            target.parentElement &&
-            isAncestorOrSelf(wrapperNode, target.parentElement))) {
-        this._super(event);
-      } else {
-        // We need to put the oj-focus back on the wrapperNode so that the icon
-        // doesn't disappear on iOS and make it so that the click handler will fire.
-        wrapperNode.classList.add('oj-focus');
-      }
-    },
-    getNodeBySubId: function (locator) {
-      var node = this._superApply(arguments);
-      var subId;
-      if (!node) {
-        subId = locator.subId;
-        if (subId === 'oj-inputtext-input') {
-          node = this.element ? this.element[0] : null;
-        }
-      }
-      // Non-null locators have to be handled by the component subclasses
-      return node || null;
-    },
-
-    /**
-     * @override
-     * @instance
-     * @memberof! oj.ojInputText
-     * @protected
-     * @return {string}
-     */
-    _GetDefaultStyleClass: function () {
-      return 'oj-inputtext';
-    },
-
-    /**
-     * @protected
-     * @override
-     * @instance
-     * @memberof! oj.ojInputText
-     */
-    _GetTranslationsSectionName: function () {
-      return 'oj-inputBase';
-    },
-
-    /**
-     * Set the type of the input element based on virtualKeyboard option.
-     * @memberof oj.ojInputText
-     * @instance
-     * @protected
-     * @ignore
-     */
-    _SetInputType: EditableValueUtils._SetInputType
-
-  });
+  /**
+   * Set the type of the input element based on virtualKeyboard option.
+   * @memberof oj.ojInputText
+   * @instance
+   * @protected
+   * @ignore
+   */
+  _SetInputType: EditableValueUtils._SetInputType
+});
 
 // Fragments:
 
@@ -4278,7 +4523,6 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojInputText
  */
-
 
 // ////////////////     SUB-IDS     //////////////////
 /**
@@ -4350,6 +4594,7 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
  *
+ * @ojoracleicon 'oj-ux-ico-text-input-area'
  * @ojuxspecs ['input-text']
  *
  * @classdesc
@@ -4388,11 +4633,107 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
+ * <h3 id="migration-section">
+ *   Migration
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+ * </h3>
  *
+ * <p>
+ * To migrate from oj-text-area to oj-c-text-area, you need to revise the import statement
+ * and references to oj-c-text-area in your app. Please note the changes between the two components below.
+ * </p>
+ *
+ * <h5>Converter attribute</h5>
+ * <p>
+ * The converter attribute is changed to support only a converter instance, null, or undefined. It does not support
+ * a Promise that resolves to a converter instance. The application should resolve the promise and then update the
+ * converter attribute with the resolved converter instance.
+ * </p>
+ * <p>
+ * The converter is no longer applied when the value is <code>null</code>, <code>undefined</code>, or <code>''</code>.
+ * <p>
+ *
+ * <h5>LabelEdge attribute</h5>
+ * <p>
+ * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
+ * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+ * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+ * attribute to the corresponding value.
+ * </p>
+ *
+ * <h5>TextAlign attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start and oj-form-control-text-align-end is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-text-align-right maps to 'right'
+ * </li>
+ * <li>
+ * .oj-form-control-text-align-start maps to 'start'
+ * </li>
+ * <li>
+ * .oj-form-control-text-align-end maps to 'end'
+ * </li>
+ * </ul>
+ * </p>
+ * <h5>Translations attribute</h5>
+ * <p>
+ * The translations.required.message-detail attribute has changed to required-message-detail.
+ * </p>
+ *
+ * <h5>Value attribute</h5>
+ * <p>
+ * Clearing the field and committing the value will now set the value attribute to <code>null</code>
+ * instead of <code>''</code>.
+ * </p>
+ *
+ * <h5>Refresh method</h5>
+ * <p>
+ * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+ * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+ * </p>
+ *
+ * <h5>Reset method</h5>
+ * <p>
+ * This method does not synchronously reset the component. The application should wait on the busy context of the component after
+ * invoking this method for the changes to appear.
+ * </p>
+ *
+ * <h5>ShowMessages method</h5>
+ * <p>
+ * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
+ * of the component after invoking this method for the changes to appear.
+ * </p>
+ *
+ * <h5>Animation Events</h5>
+ * <p>
+ * ojAnimateStart and ojAnimateEnd events are no longer supported.
+ * </p>
+ *
+ * <h5>Custom Label</h5>
+ * <p>
+ * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+ * label-hint attribute to add a label for the form component.
+ * </p>
+ * <p>
+ * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
+ * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+ * </p>
  * <h3 id="binding-section">
  *   Declarative Binding
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
  * </h3>
+ *
+ * <h5>User Assistance Density - Compact mode</h5>
+ * <p>
+ * Rendering the component in compact userAssistanceDensity mode is not supported in this release. Please use 'reflow' or 'efficient' instead.
+ * </p>
+ *
+ * <h5>Usage in Dynamic Form</h5>
+ * <p>
+ * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+ * </p>
  *
  * @example <caption>Initialize the textarea with no attributes specified:</caption>
  * &lt;oj-text-area>&lt;/oj-text-area>
@@ -4405,74 +4746,74 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  */
 // --------------------------------------------------- oj.ojTextArea Styling Start ------------------------------------------------------------
 /**
-   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
-   * The form control style classes can be applied to the component, or an ancestor element. <br/>
-   * When applied to an ancestor element, all form components that support the style classes will be affected.
-   */
+ * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+ * The form control style classes can be applied to the component, or an ancestor element. <br/>
+ * When applied to an ancestor element, all form components that support the style classes will be affected.
+ */
 // ---------------- oj-form-control-full-width --------------
 /**
-  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
-  * @ojstyleclass oj-form-control-full-width
-  * @ojdisplayname Full Width
-  * @memberof oj.ojTextArea
-  * @ojtsexample
-  * &lt;oj-text-area class="oj-form-control-full-width">
-  * &lt;/oj-text-area>
-  */
+ * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+ * @ojstyleclass oj-form-control-full-width
+ * @ojdisplayname Full Width
+ * @memberof oj.ojTextArea
+ * @ojtsexample
+ * &lt;oj-text-area class="oj-form-control-full-width">
+ * &lt;/oj-text-area>
+ */
 
- // ---------------- oj-form-control max-width --------------
-  /**
-  * In the Redwood theme the default max width of a text field is 100%.
-  * These max width convenience classes are available to create a medium or small field.<br>
-  * The class is applied to the root element.
-  * @ojstyleset form-control-max-width
-  * @ojdisplayname Max Width
-  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
-  * @ojstylerelation exclusive
-  * @memberof oj.ojTextArea
-  * @ojunsupportedthemes ['Alta']
-  * @ojtsexample
-  * &lt;oj-text-area class="oj-form-control-max-width-md">&lt;/oj-text-area>
-  */
-  /**
-  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
-  * @ojshortdesc Sets the max width for a small field
-  * @ojdisplayname Small
-  * @memberof! oj.ojTextArea
-   */
-  /**
-  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
-  * @ojshortdesc Sets the max width for a medium field
-  * @ojdisplayname Medium
-  * @memberof! oj.ojTextArea
-   */
+// ---------------- oj-form-control max-width --------------
+/**
+ * In the Redwood theme the default max width of a text field is 100%.
+ * These max width convenience classes are available to create a medium or small field.<br>
+ * The class is applied to the root element.
+ * @ojstyleset form-control-max-width
+ * @ojdisplayname Max Width
+ * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojTextArea
+ * @ojunsupportedthemes ['Alta']
+ * @ojtsexample
+ * &lt;oj-text-area class="oj-form-control-max-width-md">&lt;/oj-text-area>
+ */
+/**
+ * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+ * @ojshortdesc Sets the max width for a small field
+ * @ojdisplayname Small
+ * @memberof! oj.ojTextArea
+ */
+/**
+ * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+ * @ojshortdesc Sets the max width for a medium field
+ * @ojdisplayname Medium
+ * @memberof! oj.ojTextArea
+ */
 
-  // ---------------- oj-form-control width --------------
-  /**
-  * In the Redwood theme the default width of a text field is 100%.
-  * These width convenience classes are available to create a medium or small field.<br>
-  * The class is applied to the root element.
-  * @ojstyleset form-control-width
-  * @ojdisplayname Width
-  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
-  * @ojstylerelation exclusive
-  * @memberof oj.ojTextArea
-  * @ojunsupportedthemes ['Alta']
-  * @ojtsexample
-  * &lt;oj-text-area class="oj-form-control-width-md">&lt;/oj-text-area>
-  */
-  /**
-  * @ojstyleclass form-control-width.oj-form-control-width-sm
-  * @ojshortdesc Sets the width for a small field
-  * @ojdisplayname Small
-  * @memberof! oj.ojTextArea
-   */
-  /**
-  * @ojstyleclass form-control-width.oj-form-control-width-md
-  * @ojshortdesc Sets the width for a medium field
-  * @ojdisplayname Medium
-  * @memberof! oj.ojTextArea
-   */
+// ---------------- oj-form-control width --------------
+/**
+ * In the Redwood theme the default width of a text field is 100%.
+ * These width convenience classes are available to create a medium or small field.<br>
+ * The class is applied to the root element.
+ * @ojstyleset form-control-width
+ * @ojdisplayname Width
+ * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+ * @ojstylerelation exclusive
+ * @memberof oj.ojTextArea
+ * @ojunsupportedthemes ['Alta']
+ * @ojtsexample
+ * &lt;oj-text-area class="oj-form-control-width-md">&lt;/oj-text-area>
+ */
+/**
+ * @ojstyleclass form-control-width.oj-form-control-width-sm
+ * @ojshortdesc Sets the width for a small field
+ * @ojdisplayname Small
+ * @memberof! oj.ojTextArea
+ */
+/**
+ * @ojstyleclass form-control-width.oj-form-control-width-md
+ * @ojshortdesc Sets the width for a medium field
+ * @ojdisplayname Medium
+ * @memberof! oj.ojTextArea
+ */
 
 // ---------------- oj-form-control-text-align- --------------
 /**
@@ -4506,696 +4847,692 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  */
 // --------------------------------------------------- oj.ojTextArea Styling end ------------------------------------------------------------
 
-oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
-  {
-    version: '1.0.0',
-    defaultElement: '<textarea>',
-    widgetEventPrefix: 'oj',
+oj.__registerWidget('oj.ojTextArea', $.oj.inputBase, {
+  version: '1.0.0',
+  defaultElement: '<textarea>',
+  widgetEventPrefix: 'oj',
+
+  /**
+   * @expose
+   * @private
+   * @memberof! oj.ojTextArea
+   */
+  _ATTR_CHECK: [],
+
+  /**
+   * @expose
+   * @private
+   * @memberof! oj.ojTextArea
+   */
+  _CLASS_NAMES: 'oj-textarea-input',
+
+  /**
+   * @expose
+   * @private
+   * @memberof! oj.ojTextArea
+   */
+  _WIDGET_CLASS_NAMES: 'oj-textarea oj-form-control oj-component',
+
+  _INPUT_CONTAINER_CLASS: 'oj-text-field-container',
+  _TEXTAREA_COUNTER_CONTAINER: 'oj-textarea-counter-container',
+  _TEXTAREA_COUNTER_EL: 'oj-textarea-counter-el',
+
+  _INPUT_HANDLER_KEY: 'input',
+
+  options: {
+    /**
+     * A converter instance or Promise to a converter instance
+     * or one that duck types {@link oj.Converter}.
+     * {@ojinclude "name":"inputBaseConverterOptionDoc"}
+     *
+     * <p>
+     * The hint exposed by the converter is shown inline by default in the Redwood theme when
+     * the field has focus.
+     * In the Alta theme, converter hints are shown in a notewindow on focus,
+     * or as determined by the
+     * 'converterHint' property set on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * In either theme, you can turn off showing converter hints by using the
+     * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * </p>
+     * <p>
+     * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+     * help.instruction shows; if no help.instruction then validator hints show;
+     * if none, then help-hints.definition shows; if none, then converter hint shows.
+     * help-hints.source always shows along with the other help or hint.
+     * </p>
+     * @example <caption>Initialize the component with a number converter instance:</caption>
+     * &lt;oj-text-area converter="[[salaryConverter]]">&lt;/oj-text-area><br/>
+     * // Initialize converter instance using currency options
+     * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
+     * this.salaryConverter = new NumberConverter(options);
+     *
+     * @example <caption>Get or set the <code class="prettyprint">converter</code>
+     * property after initialization:</caption>
+     * // getter
+     * var converter = myComp.converter;
+     *
+     * // setter
+     * myComp.converter = myConverter;
+     * @expose
+     * @access public
+     * @instance
+     * @default null
+     * @memberof! oj.ojTextArea
+     * @ojshortdesc An object that converts the value. See the Help documentation for more information.
+     * @ojsignature [{
+     *    target: "Type",
+     *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+     *            null",
+     *    jsdocOverride: true},
+     *    {target: "Type",
+     *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+     *            oj.Validation.RegisteredConverter|
+     *            null",
+     *    consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
+     *                description:'Defining a converter with an object literal with converter type and its options
+     *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
+     *                  work again by importing the deprecated module you need, like ojvalidation-base or
+     *                  ojvalidation-number module.'}
+     * @type {Object|null}
+     */
+    converter: null,
+    /**
+     * The maximum number of visible text lines of the textarea. The textarea will change its height in response to content change.
+     * If this is 0, the number of visible text lines is always as specified by the "rows" attribute, and the textarea will never change
+     * its size.
+     * If this is -1, there is no maximum and the textarea will grow to show all the content.
+     * If this is a positive number larger than the "rows" attribute, the textarea will grow to fit the content,
+     * up to the maximum number of text lines.
+     * The height will never be less than the number of rows specified by the "rows" attribute.
+     *
+     * @example <caption>Initialize component with <code class="prettyprint">max-rows</code> attribute:</caption>
+     * &lt;oj-some-element max-rows="5">&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">max-rows</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.maxRows;
+     *
+     * // setter
+     * myComp.maxRows = 5;
+     *
+     * @expose
+     * @instance
+     * @memberof! oj.ojTextArea
+     * @ojshortdesc Specifies the maximum number of visible text lines of the textarea.
+     * @type {number}
+     * @default 0
+     * @since 8.0.0
+     */
+    maxRows: 0,
+    /**
+     * Regular expression pattern which will be used to validate the component's value.
+     * <p>
+     * When pattern is set to true, an implicit regExp validator is created using
+     * the RegExpValidator -
+     * <code class="prettyprint">new RegExpValidator()</code>.
+     * </p>
+     *
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> attribute:</caption>
+     * &lt;oj-text-area pattern="[a-zA-Z0-9]{3,}">&lt;/oj-text-area><br/>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">pattern</code> property after initialization:</caption>
+     * // getter
+     * var pattern = myComp.pattern;
+     *
+     * // setter
+     * myComp.pattern = "[0-9]{3,}";
+     *
+     * @expose
+     * @instance
+     * @memberof! oj.ojTextArea
+     * @type {string|undefined}
+     * @ignore
+     */
+    pattern: '',
+    /**
+     *
+     * Defines the resizeBehavior of the textarea.
+     * Note that this is implemented via the native browser support for resize on the textarea element.
+     * If a browser doesn't support this (IE, Edge, iOS, Android), then this attribute has no effect.
+     *
+     * @expose
+     * @memberof oj.ojTextArea
+     * @ojshortdesc Specifies the resize behavior, based upon native browser support. See the Help documentation for more information.
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "both" The textarea will be interactively resizable horizontally and vertically.
+     * @ojvalue {string} "horizontal" The textarea will be resizable in the horizontal direction only.
+     * @ojvalue {string} "vertical" The textarea will be resizable in the vertical direction only.
+     * @ojvalue {string} "none" The textarea will not be interactively resizable.
+     * @default "none"
+     * @since 7.0.0
+     *
+     * @example <caption>Initialize the textarea to a specific <code class="prettyprint">resizeBehavior</code></caption>
+     * &lt;oj-text-area resize-behavior="none" &gt;&lt;/oj-text-area&gt;
+     *
+     * @example <caption>Get or set the <code class="prettyprint">resizeBehavior</code> property, after initialization:</caption>
+     *
+     * // getter
+     * var resizeBehavior = myTextarea.resizeBehavior;
+     *
+     * // setter
+     * myTextarea.resizeBehavior = "none";
+     */
+    resizeBehavior: 'none',
+    /**
+     * The number of visible text lines in the textarea. It can also be used to
+     * give specific height to the textarea.  When used in conjuction with max-rows,
+     * the rows attribnute will be the minimum height of the textarea.
+     *
+     * @example <caption>Initialize component with <code class="prettyprint">rows</code> attribute:</caption>
+     * &lt;oj-some-element rows="5">&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">rows</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.rows;
+     *
+     * // setter
+     * myComp.rows = 5;
+     *
+     * @expose
+     * @instance
+     * @memberof! oj.ojTextArea
+     * @ojshortdesc Specifies the visible number of lines in the text area.
+     * @type {number}
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     */
+    rows: undefined,
 
     /**
      * @expose
-     * @private
-     * @memberof! oj.ojTextArea
+     * @instance
+     * @memberof oj.ojTextArea
+     * @name length
+     * @type {Object}
+     * @ojshortdesc An object whose properties describe the maximum length attributes.
+     * @since 8.0.0
      */
-    _ATTR_CHECK: [],
-
-    /**
-     * @expose
-     * @private
-     * @memberof! oj.ojTextArea
-     */
-    _CLASS_NAMES: 'oj-textarea-input',
-
-    /**
-     * @expose
-     * @private
-     * @memberof! oj.ojTextArea
-     */
-    _WIDGET_CLASS_NAMES: 'oj-textarea oj-form-control oj-component',
-
-    _INPUT_CONTAINER_CLASS: 'oj-text-field-container',
-    _TEXTAREA_COUNTER_CONTAINER: 'oj-textarea-counter-container',
-    _TEXTAREA_COUNTER_EL: 'oj-textarea-counter-el',
-
-    _INPUT_HANDLER_KEY: 'input',
-
-    options:
-    {
+    length: {
       /**
-       * A converter instance or Promise to a converter instance
-       * or one that duck types {@link oj.Converter}.
-       * {@ojinclude "name":"inputBaseConverterOptionDoc"}
+       * Maximum number of characters that can be entered in the input field.
        *
-       * <p>
-       * The hint exposed by the converter is shown inline by default in the Redwood theme when
-       * the field has focus.
-       * In the Alta theme, converter hints are shown in a notewindow on focus,
-       * or as determined by the
-       * 'converterHint' property set on the <code class="prettyprint">display-options</code>
-       * attribute.
-       * In either theme, you can turn off showing converter hints by using the
-       * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
-       * attribute.
-       * </p>
-       * <p>
-       * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
-       * help.instruction shows; if no help.instruction then validator hints show;
-       * if none, then help-hints.definition shows; if none, then converter hint shows.
-       * help-hints.source always shows along with the other help or hint.
-       * </p>
-       * @example <caption>Initialize the component with a number converter instance:</caption>
-       * &lt;oj-text-area converter="[[salaryConverter]]">&lt;/oj-text-area><br/>
-       * // Initialize converter instance using currency options
-       * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
-       * this.salaryConverter = new NumberConverter(options);
-       *
-       * @example <caption>Get or set the <code class="prettyprint">converter</code>
-       * property after initialization:</caption>
-       * // getter
-       * var converter = myComp.converter;
-       *
-       * // setter
-       * myComp.converter = myConverter;
        * @expose
-       * @access public
+       * @name length.max
+       * @ojshortdesc Specifies the maximum number of characters to be entered in the text area.
+       * @memberof! oj.ojTextArea
        * @instance
+       * @type {number|null}
        * @default null
-       * @memberof! oj.ojTextArea
-       * @ojshortdesc An object that converts the value. See the Help documentation for more information.
-       * @ojsignature [{
-       *    target: "Type",
-       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
-       *            null",
-       *    jsdocOverride: true},
-       *    {target: "Type",
-       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
-       *            oj.Validation.RegisteredConverter|
-       *            null",
-       *    consumedBy: 'tsdep'}]
-       * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
-       *                description:'Defining a converter with an object literal with converter type and its options
-       *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
-       *                  work again by importing the deprecated module you need, like ojvalidation-base or
-       *                  ojvalidation-number module.'}
-       * @type {Object|null}
-       */
-      converter: null,
-      /**
-      * The maximum number of visible text lines of the textarea. The textarea will change its height in response to content change.
-      * If this is 0, the number of visible text lines is always as specified by the "rows" attribute, and the textarea will never change
-      * its size.
-      * If this is -1, there is no maximum and the textarea will grow to show all the content.
-      * If this is a positive number larger than the "rows" attribute, the textarea will grow to fit the content,
-      * up to the maximum number of text lines.
-      * The height will never be less than the number of rows specified by the "rows" attribute.
-      *
-      * @example <caption>Initialize component with <code class="prettyprint">max-rows</code> attribute:</caption>
-      * &lt;oj-some-element max-rows="5">&lt;/oj-some-element>
-      *
-      * @example <caption>Get or set the <code class="prettyprint">max-rows</code> property after initialization:</caption>
-      * // getter
-      * var ro = myComp.maxRows;
-      *
-      * // setter
-      * myComp.maxRows = 5;
-      *
-      * @expose
-      * @instance
-      * @memberof! oj.ojTextArea
-      * @ojshortdesc Specifies the maximum number of visible text lines of the textarea.
-      * @type {number}
-      * @default 0
-      * @since 8.0.0
-      */
-      maxRows: 0,
-      /**
-       * Regular expression pattern which will be used to validate the component's value.
-       * <p>
-       * When pattern is set to true, an implicit regExp validator is created using
-       * the RegExpValidator -
-       * <code class="prettyprint">new RegExpValidator()</code>.
-       * </p>
-       *
-       *
-       * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> attribute:</caption>
-       * &lt;oj-text-area pattern="[a-zA-Z0-9]{3,}">&lt;/oj-text-area><br/>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">pattern</code> property after initialization:</caption>
-       * // getter
-       * var pattern = myComp.pattern;
-       *
-       * // setter
-       * myComp.pattern = "[0-9]{3,}";
-       *
-       * @expose
-       * @instance
-       * @memberof! oj.ojTextArea
-       * @type {string|undefined}
-       * @ignore
-       */
-      pattern: '',
-      /**
-       *
-       * Defines the resizeBehavior of the textarea.
-       * Note that this is implemented via the native browser support for resize on the textarea element.
-       * If a browser doesn't support this (IE, Edge, iOS, Android), then this attribute has no effect.
-       *
-       * @expose
-       * @memberof oj.ojTextArea
-       * @ojshortdesc Specifies the resize behavior, based upon native browser support. See the Help documentation for more information.
-       * @instance
-       * @type {string}
-       * @ojvalue {string} "both" The textarea will be interactively resizable horizontally and vertically.
-       * @ojvalue {string} "horizontal" The textarea will be resizable in the horizontal direction only.
-       * @ojvalue {string} "vertical" The textarea will be resizable in the vertical direction only.
-       * @ojvalue {string} "none" The textarea will not be interactively resizable.
-       * @default "none"
-       * @since 7.0.0
-       *
-       * @example <caption>Initialize the textarea to a specific <code class="prettyprint">resizeBehavior</code></caption>
-       * &lt;oj-text-area resize-behavior="none" &gt;&lt;/oj-text-area&gt;
-       *
-       * @example <caption>Get or set the <code class="prettyprint">resizeBehavior</code> property, after initialization:</caption>
-       *
-       * // getter
-       * var resizeBehavior = myTextarea.resizeBehavior;
-       *
-       * // setter
-       * myTextarea.resizeBehavior = "none";
-       */
-      resizeBehavior: 'none',
-      /**
-       * The number of visible text lines in the textarea. It can also be used to
-       * give specific height to the textarea.  When used in conjuction with max-rows,
-       * the rows attribnute will be the minimum height of the textarea.
-       *
-       * @example <caption>Initialize component with <code class="prettyprint">rows</code> attribute:</caption>
-       * &lt;oj-some-element rows="5">&lt;/oj-some-element>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">rows</code> property after initialization:</caption>
-       * // getter
-       * var ro = myComp.rows;
-       *
-       * // setter
-       * myComp.rows = 5;
-       *
-       * @expose
-       * @instance
-       * @memberof! oj.ojTextArea
-       * @ojshortdesc Specifies the visible number of lines in the text area.
-       * @type {number}
-       * @ojextension {_COPY_TO_INNER_ELEM: true}
-       */
-      rows: undefined,
-
-      /**
-       * @expose
-       * @instance
-       * @memberof oj.ojTextArea
-       * @name length
-       * @type {Object}
-       * @ojshortdesc An object whose properties describe the maximum length attributes.
        * @since 8.0.0
        */
-      length: {
-        /**
-         * Maximum number of characters that can be entered in the input field.
-         *
-         * @expose
-         * @name length.max
-         * @ojshortdesc Specifies the maximum number of characters to be entered in the text area.
-         * @memberof! oj.ojTextArea
-         * @instance
-         * @type {number|null}
-         * @default null
-         * @since 8.0.0
-         */
-        max: null,
-
-        /**
-         * Dictates how the input text characters has to be counted.
-         *
-         * @expose
-         * @name length.countBy
-         * @ojshortdesc Specifies the manner in which the text area characters has to be counted.
-         * @memberof! oj.ojTextArea
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} 'codePoint' Uses code point to calculate the text length
-         * @ojvalue {string} 'codeUnit' Uses code unit to calculate the text length
-         * @default "codePoint"
-         * @since 8.0.0
-         */
-        countBy: 'codePoint',
-
-        /**
-         * Decides whether the remaining number of characters
-         * that can be entered is shown or not.
-         *
-         * @expose
-         * @name length.counter
-         * @ojshortdesc The type of counter to display.
-         * @memberof! oj.ojTextArea
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} 'none' The remaining characters count is not displayed.
-         * @ojvalue {string} 'remaining' The remaining characters count is displayed.
-         * @default "none"
-         * @since 8.0.0
-         */
-        counter: 'none'
-      }
-
-      // Events
+      max: null,
 
       /**
-       * Triggered when the ojTextArea is created.
+       * Dictates how the input text characters has to be counted.
        *
-       * @event
-       * @name create
-       * @memberof oj.ojTextArea
+       * @expose
+       * @name length.countBy
+       * @ojshortdesc Specifies the manner in which the text area characters has to be counted.
+       * @memberof! oj.ojTextArea
        * @instance
-       * @property {Event} event event object
-       * @property {Object} ui Currently empty
-       * @ignore
-       *
-       * @example <caption>Initialize the ojTextArea with the <code class="prettyprint">create</code> callback specified:</caption>
-       * $( ".selector" ).ojTextArea({
-       *     "create": function( event, ui ) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-       * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+       * @type {string=}
+       * @ojvalue {string} 'codePoint' Uses code point to calculate the text length
+       * @ojvalue {string} 'codeUnit' Uses code unit to calculate the text length
+       * @default "codePoint"
+       * @since 8.0.0
        */
-      // create event declared in superclass, but we still want the above API doc
-    },
+      countBy: 'codePoint',
+
+      /**
+       * Decides whether the remaining number of characters
+       * that can be entered is shown or not.
+       *
+       * @expose
+       * @name length.counter
+       * @ojshortdesc The type of counter to display.
+       * @memberof! oj.ojTextArea
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} 'none' The remaining characters count is not displayed.
+       * @ojvalue {string} 'remaining' The remaining characters count is displayed.
+       * @default "none"
+       * @since 8.0.0
+       */
+      counter: 'none'
+    }
+
+    // Events
 
     /**
-     * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
-     * different tasks.
+     * Triggered when the ojTextArea is created.
      *
-     * @param {string} option
-     * @param {Object=} flags
-     * @protected
+     * @event
+     * @name create
      * @memberof oj.ojTextArea
      * @instance
-     */
-    _AfterSetOption: function (option, flags) {
-      this._super(option, flags);
-
-      switch (option) {
-        case 'value':
-          this._filterTextOnValueChange();
-          this._AfterSetOptionLength(this.options.length);
-          break;
-
-        default:
-          break;
-      }
-    },
-
-    /**
-     * This function gets called on initial render,
-     * and when oj-text-area attributes are modified.
+     * @property {Event} event event object
+     * @property {Object} ui Currently empty
+     * @ignore
      *
-     * @protected
-     * @override
-     * @instance
-     * @memberof! oj.ojTextArea
+     * @example <caption>Initialize the ojTextArea with the <code class="prettyprint">create</code> callback specified:</caption>
+     * $( ".selector" ).ojTextArea({
+     *     "create": function( event, ui ) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
+     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
      */
-    _AfterCreate: function () {
-      var ret = this._superApply(arguments);
-      if (this.options.value === undefined) {
-        this._SetDisplayValue('');
-      }
-      this.widget()[0].querySelector('.' + this._INPUT_CONTAINER_CLASS).style.resize =
-        this.options.resizeBehavior;
-      this._setupResizeTextareaBind();
-      var maxrows = this.options.maxRows;
-      if (maxrows === -1) {
-        this.widget()[0].classList.add('oj-maxrows-neg1');
-      }
-      return ret;
-    },
-    /**
-    * Do things here for creating the component where you need the converter, since
-    * getting the converter can be asynchronous. We get the converter before calling
-    * this method, so it is there. This function is called once the converter is resolved.
-    *
-    * @protected
-    * @override
-    * @instance
-    * @memberof! oj.ojTextArea
-    */
-    _AfterCreateConverterCached: function () {
-      var ret = this._super();
-      var textarea = this._GetContentElement()[0];
-      var maxrows = this.options.maxRows;
-      // don't resize <textarea> if you don't have to
+    // create event declared in superclass, but we still want the above API doc
+  },
+
+  /**
+   * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
+   * different tasks.
+   *
+   * @param {string} option
+   * @param {Object=} flags
+   * @protected
+   * @memberof oj.ojTextArea
+   * @instance
+   */
+  _AfterSetOption: function (option, flags) {
+    this._super(option, flags);
+
+    switch (option) {
+      case 'value':
+        this._filterTextOnValueChange();
+        this._AfterSetOptionLength(this.options.length);
+        break;
+
+      default:
+        break;
+    }
+  },
+
+  /**
+   * This function gets called on initial render,
+   * and when oj-text-area attributes are modified.
+   *
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.ojTextArea
+   */
+  _AfterCreate: function () {
+    var ret = this._superApply(arguments);
+    if (this.options.value === undefined) {
+      this._SetDisplayValue('');
+    }
+    this.widget()[0].querySelector('.' + this._INPUT_CONTAINER_CLASS).style.resize =
+      this.options.resizeBehavior;
+    this._setupResizeTextareaBind();
+    var maxrows = this.options.maxRows;
+    if (maxrows === -1) {
+      this.widget()[0].classList.add('oj-maxrows-neg1');
+    }
+    return ret;
+  },
+  /**
+   * Do things here for creating the component where you need the converter, since
+   * getting the converter can be asynchronous. We get the converter before calling
+   * this method, so it is there. This function is called once the converter is resolved.
+   *
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.ojTextArea
+   */
+  _AfterCreateConverterCached: function () {
+    var ret = this._super();
+    var textarea = this._GetContentElement()[0];
+    var maxrows = this.options.maxRows;
+    // don't resize <textarea> if you don't have to
+    let textAreaNotInUse = this._textAreaElementNotDisplayed();
+    if (!textAreaNotInUse && (maxrows === -1 || maxrows > textarea.rows)) {
+      this._calculateLineHeight(textarea);
+      this._resizeTextArea();
+    }
+    return ret;
+  },
+
+  /**
+   * @ignore
+   * @protected
+   * @memberof! oj.ojTextArea
+   * @override
+   */
+  // eslint-disable-next-line no-unused-vars
+  _setOption: function (key, value, flags) {
+    var retVal = this._superApply(arguments);
+
+    if (key === 'resizeBehavior') {
+      this.widget()[0].querySelector('.' + this._INPUT_CONTAINER_CLASS).style.resize = value;
+    } else if (key === 'value') {
+      // only resize if maxrows is more than rows and we aren't using readonlyDiv at the moment.
       let textAreaNotInUse = this._textAreaElementNotDisplayed();
-      if (!textAreaNotInUse && (maxrows === -1 || maxrows > textarea.rows)) {
-        this._calculateLineHeight(textarea);
+      let maxrows = this.options.maxRows;
+      if (!textAreaNotInUse && (maxrows === -1 || maxrows > this._GetContentElement()[0].rows)) {
         this._resizeTextArea();
       }
-      return ret;
-    },
-
-    /**
-     * @ignore
-     * @protected
-     * @memberof! oj.ojTextArea
-     * @override
-     */
-    // eslint-disable-next-line no-unused-vars
-    _setOption: function (key, value, flags) {
-      var retVal = this._superApply(arguments);
-
-      if (key === 'resizeBehavior') {
-        this.widget()[0].querySelector('.' + this._INPUT_CONTAINER_CLASS).style.resize = value;
-      } else if (key === 'value') {
-        // only resize if maxrows is more than rows and we aren't using readonlyDiv at the moment.
-        let textAreaNotInUse = this._textAreaElementNotDisplayed();
-        let maxrows = this.options.maxRows;
-        if (!textAreaNotInUse && (maxrows === -1 || maxrows > this._GetContentElement()[0].rows)) {
-          this._resizeTextArea();
-        }
+    }
+    return retVal;
+  },
+  /**
+   * Notifies the component that its subtree has been connected to the document
+   * programmatically after the component has been created.
+   * @return {void}
+   * @memberof oj.ojTextArea
+   * @instance
+   * @protected
+   * @override
+   */
+  _NotifyAttached: function () {
+    this._super();
+    var maxrows = this.options.maxRows;
+    if (maxrows === -1 || maxrows > this._GetContentElement()[0].rows) {
+      this._resizeTextArea();
+    }
+  },
+  /**
+   * Invoked when the input event happens
+   *
+   * @ignore
+   * @protected
+   * @memberof! oj.inputBase
+   * @param {Event} event
+   */
+  _onInputHandler: function (event) {
+    this._super(event);
+    var textarea = this._GetContentElement()[0];
+    // only resize if maxrows is more than rows
+    var maxrows = this.options.maxRows;
+    if (maxrows === -1 || maxrows > textarea.rows) {
+      this._resizeTextArea();
+    }
+  },
+  /**
+   * Resize the textarea based on the content.
+   * @ignore
+   * @protected
+   * @memberof! oj.ojTextArea
+   */
+  _resizeTextArea: function () {
+    if (this._textAreaElementNotDisplayed() || this._lineHeight === undefined) {
+      return;
+    }
+    const maxRows = this.options.maxRows;
+    const textarea = this._GetContentElement()[0];
+    const rows = textarea.rows;
+    textarea.style.height = 0;
+    const paddingHeight = this._getStylingHeight(textarea, 'padding');
+    const heightForRows = this._lineHeight * rows + paddingHeight;
+    const scrollHeight = textarea.scrollHeight;
+    var resizedHeight = 0;
+    // if maxRows is -1 the textarea will grow or shrink to fit all the content.
+    // it won't shrink any less than rows.
+    if (maxRows === -1) {
+      // we want to fit the entire scrollHeight, but we don't want
+      // to shrink smaller than the height for rows.
+      if (scrollHeight < heightForRows) {
+        resizedHeight = heightForRows;
+      } else {
+        resizedHeight = scrollHeight;
       }
-      return retVal;
-    },
-    /**
-     * Notifies the component that its subtree has been connected to the document
-     * programmatically after the component has been created.
-     * @return {void}
-     * @memberof oj.ojTextArea
-     * @instance
-     * @protected
-     * @override
-    */
-    _NotifyAttached: function () {
-      this._super();
-      var maxrows = this.options.maxRows;
-      if (maxrows === -1 || maxrows > this._GetContentElement()[0].rows) {
-        this._resizeTextArea();
+    } else if (maxRows > rows) {
+      // if maxRows is positive and greater than rows, the textarea will grow to fit the content
+      // up to maxrows, or shrink to fit the content and down to rows.
+      var heightForMaximumRows = this._lineHeight * maxRows + paddingHeight;
+      if (scrollHeight > heightForMaximumRows) {
+        resizedHeight = heightForMaximumRows;
+      } else if (scrollHeight < heightForRows) {
+        resizedHeight = heightForRows;
+      } else {
+        resizedHeight = scrollHeight;
       }
-    },
-    /**
-     * Invoked when the input event happens
-     *
-     * @ignore
-     * @protected
-     * @memberof! oj.inputBase
-     * @param {Event} event
-     */
-    _onInputHandler: function (event) {
-      this._super(event);
+    } else {
+      resizedHeight = heightForRows;
+    }
+    textarea.style.height = resizedHeight + 'px';
+  },
+
+  _setupResizeTextareaBind: function () {
+    if (this._textAreaElementNotDisplayed()) {
+      return;
+    }
+
+    this._resizeTextareaBind = function () {
       var textarea = this._GetContentElement()[0];
-      // only resize if maxrows is more than rows
+      // only resize if maxrows is more than rows or maxrows is -1,
+      // which means it will grow as you type if need be.
       var maxrows = this.options.maxRows;
       if (maxrows === -1 || maxrows > textarea.rows) {
         this._resizeTextArea();
       }
-    },
-    /**
-     * Resize the textarea based on the content.
-     * @ignore
-     * @protected
-     * @memberof! oj.ojTextArea
-     */
-    _resizeTextArea: function () {
-      if (this._textAreaElementNotDisplayed() || this._lineHeight === undefined) {
-        return;
+    }.bind(this);
+    window.addEventListener('resize', this._resizeTextareaBind, false);
+  },
+  /**
+   * Calculates the padding and borders height for text-area
+   *
+   * @ignore
+   * @protected
+   * @memberof! oj.ojTextArea
+   * @param {element} textarea
+   * @param {string} type - accept 'padding', 'border', 'paddingAndBorder'
+   */
+  _getStylingHeight: function (textarea, type) {
+    var cssStyle = window.getComputedStyle(textarea);
+    var stylingHeight = 0;
+    if (type === 'padding' || type === 'paddingAndBorder') {
+      var paddingTop = parseFloat(cssStyle.paddingTop);
+      var paddingBottom = parseFloat(cssStyle.paddingBottom);
+      stylingHeight += paddingTop + paddingBottom;
+    }
+    if (type === 'border' || type === 'paddingAndBorder') {
+      var borderTopWidth = parseFloat(cssStyle.borderTopWidth);
+      var borderBottomWidth = parseFloat(cssStyle.borderBottomWidth);
+      stylingHeight += borderTopWidth + borderBottomWidth;
+    }
+    return stylingHeight;
+  },
+  /**
+   * Calculates the line height for text-area
+   *
+   * @ignore
+   * @protected
+   * @memberof! oj.ojTextArea
+   */
+  _calculateLineHeight: function (textarea) {
+    if (this._textAreaElementNotDisplayed()) {
+      return;
+    }
+    var computedStyle = window.getComputedStyle(textarea);
+    if (computedStyle.display === 'none') {
+      return;
+    }
+    var computedlineHeight = computedStyle.lineHeight;
+    switch (computedlineHeight) {
+      // We get 'normal' for values 'initial', 'inherit', 'unset' and 'normal'
+      // In Alta Web theme, the lineHeight returns 'normal', we should keep this.
+      case 'normal':
+        // getComputedStyle always return fontSize in pixels.  Not likely a float, but since it's legal
+        // we use parseFloat()
+        var fontSize = parseFloat(computedStyle.fontSize);
+        this._lineHeight = 1.2 * fontSize;
+        break;
+      // We get the value in pixels for all units (%, em, cm, mm, in, pt, pc, px)
+      default:
+        this._lineHeight = parseFloat(computedlineHeight);
+    }
+  },
+  /**
+   * @ignore
+   * @private
+   */
+  _cleanUpListeners: function () {
+    if (this._resizeTextareaBind) {
+      window.removeEventListener('resize', this._resizeTextareaBind);
+    }
+  },
+  /**
+   * @ignore
+   * @protected
+   * @override
+   */
+  _ReleaseResources: function () {
+    this._super();
+    this._cleanUpListeners();
+  },
+  getNodeBySubId: function (locator) {
+    var node = this._superApply(arguments);
+    var subId;
+    if (!node) {
+      subId = locator.subId;
+      if (subId === 'oj-textarea-input') {
+        node = this.element ? this.element[0] : null;
       }
-      const maxRows = this.options.maxRows;
-      const textarea = this._GetContentElement()[0];
-      const rows = textarea.rows;
-      textarea.style.height = 0;
-      const paddingHeight = this._getStylingHeight(textarea, 'padding');
-      const heightForRows = this._lineHeight * rows + paddingHeight;
-      const scrollHeight = textarea.scrollHeight;
-      var resizedHeight = 0;
-      // if maxRows is -1 the textarea will grow or shrink to fit all the content.
-      // it won't shrink any less than rows.
-      if (maxRows === -1) {
-        // we want to fit the entire scrollHeight, but we don't want
-        // to shrink smaller than the height for rows.
-        if (scrollHeight < heightForRows) {
-          resizedHeight = heightForRows;
-        } else {
-          resizedHeight = scrollHeight;
-        }
-      } else if (maxRows > rows) {
-        // if maxRows is positive and greater than rows, the textarea will grow to fit the content
-        // up to maxrows, or shrink to fit the content and down to rows.
-        var heightForMaximumRows = this._lineHeight * maxRows + paddingHeight;
-        if (scrollHeight > heightForMaximumRows) {
-          resizedHeight = heightForMaximumRows;
-        } else if (scrollHeight < heightForRows) {
-          resizedHeight = heightForRows;
-        } else {
-          resizedHeight = scrollHeight;
-        }
-      } else {
-        resizedHeight = heightForRows;
-      }
-      textarea.style.height = resizedHeight + 'px';
-    },
+    }
+    // Non-null locators have to be handled by the component subclasses
+    return node || null;
+  },
 
-    _setupResizeTextareaBind: function () {
-      if (this._textAreaElementNotDisplayed()) {
-        return;
-      }
+  /**
+   * @ignore
+   * @override
+   * @protected
+   * @memberof! oj.ojTextArea
+   * @return {boolean}
+   */
+  _DoWrapElementAndTriggers: function () {
+    this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES = this._INPUT_CONTAINER_CLASS;
+    return true;
+  },
 
-      this._resizeTextareaBind = function () {
+  /**
+   * ojTextArea extends from InputBase which creates a readonly div,
+   * so overriding it to return false prevents ojTextArea from creating
+   * a readonly div. Only form components that show their value in an
+   * html input element need to use a readonly div for readonly in the
+   * redwood theme.
+   * @ignore
+   * @override
+   * @protected
+   * @memberof! oj.ojTextArea
+   * @return {boolean}
+   */
+  _UseReadonlyDiv: function () {
+    var ret = this._super();
+    if (ret) {
+      // if max-rows is -1, then use readonly div when it is readonly.
+      if (this.options.maxRows === -1) {
+        return true;
+      }
+      return false;
+    }
+    return ret;
+  },
+
+  /**
+   * @instance
+   * @memberof! oj.ojTextArea
+   * @override
+   * @protected
+   * @return {string}
+   */
+  _GetDefaultStyleClass: function () {
+    return 'oj-textarea';
+  },
+
+  /**
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.ojTextArea
+   */
+  _GetTranslationsSectionName: function () {
+    return 'oj-inputBase';
+  },
+  /**
+   * If the converter is async or not
+   *
+   * @ignore
+   * @protected
+   * @memberof! oj.ojTextArea
+   */
+  _isConverAsync: function () {
+    var converter = this._GetConverter();
+    if (converter instanceof Promise) {
+      return true;
+    }
+    return false;
+  },
+  /**
+   * Invoked when keyup is triggered of the this.element
+   *
+   * When of keyCode is of Enter, oj-text-area should do nothing as
+   * the enter key is just user entered data.
+   *
+   * @ignore
+   * @protected
+   * @override
+   * @memberof! oj.ojTextArea
+   * @param {Event} event
+   */
+  // eslint-disable-next-line no-unused-vars
+  _onKeyUpHandler: function (event) {},
+  /**
+   * Invoked when keydown is triggered of the this.element
+   *
+   * When of keyCode is of ALT+ENTER, oj-text-area will insert a new line.
+   * It is useful in the cases where Enter is used by the parent component, such as an oj-text-area in an oj-data-grid,
+   * where Enter will go to the cell below in an editable data grid. Therefore in that case, use Alt+Enter on Windows and
+   * Option+Return on MacOS to insert a new line in textarea.
+   *
+   * @ignore
+   * @protected
+   * @override
+   * @memberof! oj.ojTextArea
+   * @param {Event} event
+   */
+  // eslint-disable-next-line no-unused-vars
+  _onKeyDownHandler: function (event) {
+    if (event.keyCode === 13 || event.key === 'Enter') {
+      if (event.altKey) {
         var textarea = this._GetContentElement()[0];
-        // only resize if maxrows is more than rows or maxrows is -1,
-        // which means it will grow as you type if need be.
+        var textValue = textarea.value;
+        var textBefore = textValue.substring(0, textarea.selectionStart);
+        var textAfter = textValue.substring(textarea.selectionEnd);
+        textarea.value = textBefore + '\r\n' + textAfter;
+        var cursorPosition = textarea.value.length - textAfter.length;
+        textarea.setSelectionRange(cursorPosition, cursorPosition);
+        // Using blur()/focus() to bring the cursor position so that it's visible in the textarea
+        textarea.blur();
+        textarea.focus();
         var maxrows = this.options.maxRows;
         if (maxrows === -1 || maxrows > textarea.rows) {
           this._resizeTextArea();
         }
-      }.bind(this);
-      window.addEventListener('resize', this._resizeTextareaBind, false);
-    },
-    /**
-     * Calculates the padding and borders height for text-area
-     *
-     * @ignore
-     * @protected
-     * @memberof! oj.ojTextArea
-     * @param {element} textarea
-     * @param {string} type - accept 'padding', 'border', 'paddingAndBorder'
-     */
-    _getStylingHeight: function (textarea, type) {
-      var cssStyle = window.getComputedStyle(textarea);
-      var stylingHeight = 0;
-      if (type === 'padding' || type === 'paddingAndBorder') {
-        var paddingTop = parseFloat(cssStyle.paddingTop);
-        var paddingBottom = parseFloat(cssStyle.paddingBottom);
-        stylingHeight += paddingTop + paddingBottom;
+        event.stopPropagation();
       }
-      if (type === 'border' || type === 'paddingAndBorder') {
-        var borderTopWidth = parseFloat(cssStyle.borderTopWidth);
-        var borderBottomWidth = parseFloat(cssStyle.borderBottomWidth);
-        stylingHeight += borderTopWidth + borderBottomWidth;
-      }
-      return stylingHeight;
-    },
-    /**
-     * Calculates the line height for text-area
-     *
-     * @ignore
-     * @protected
-     * @memberof! oj.ojTextArea
-     */
-    _calculateLineHeight: function (textarea) {
-      if (this._textAreaElementNotDisplayed()) {
-        return;
-      }
-      var computedStyle = window.getComputedStyle(textarea);
-      if (computedStyle.display === 'none') {
-        return;
-      }
-      var computedlineHeight = computedStyle.lineHeight;
-      switch (computedlineHeight) {
-        // We get 'normal' for values 'initial', 'inherit', 'unset' and 'normal'
-        // In Alta Web theme, the lineHeight returns 'normal', we should keep this.
-        case 'normal':
-          // getComputedStyle always return fontSize in pixels.  Not likely a float, but since it's legal
-          // we use parseFloat()
-          var fontSize = parseFloat(computedStyle.fontSize);
-          this._lineHeight = 1.2 * fontSize;
-          break;
-        // We get the value in pixels for all units (%, em, cm, mm, in, pt, pc, px)
-        default:
-          this._lineHeight = parseFloat(computedlineHeight);
-      }
-    },
-    /**
-     * @ignore
-     * @private
-     */
-    _cleanUpListeners: function () {
-      if (this._resizeTextareaBind) {
-        window.removeEventListener('resize', this._resizeTextareaBind);
-      }
-    },
-    /**
-     * @ignore
-     * @protected
-     * @override
-     */
-    _ReleaseResources: function () {
-      this._super();
-      this._cleanUpListeners();
-    },
-    getNodeBySubId: function (locator) {
-      var node = this._superApply(arguments);
-      var subId;
-      if (!node) {
-        subId = locator.subId;
-        if (subId === 'oj-textarea-input') {
-          node = this.element ? this.element[0] : null;
-        }
-      }
-      // Non-null locators have to be handled by the component subclasses
-      return node || null;
-    },
-
-    /**
-     * @ignore
-     * @override
-     * @protected
-     * @memberof! oj.ojTextArea
-     * @return {boolean}
-     */
-    _DoWrapElementAndTriggers: function () {
-      this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES = this._INPUT_CONTAINER_CLASS;
-      return true;
-    },
-
-    /**
-     * ojTextArea extends from InputBase which creates a readonly div,
-     * so overriding it to return false prevents ojTextArea from creating
-     * a readonly div. Only form components that show their value in an
-     * html input element need to use a readonly div for readonly in the
-     * redwood theme.
-     * @ignore
-     * @override
-     * @protected
-     * @memberof! oj.ojTextArea
-     * @return {boolean}
-     */
-    _UseReadonlyDiv: function () {
-      var ret = this._super();
-      if (ret) {
-        // if max-rows is -1, then use readonly div when it is readonly.
-        if (this.options.maxRows === -1) {
-          return true;
-        }
-        return false;
-      }
-      return ret;
-    },
-
-    /**
-     * @instance
-     * @memberof! oj.ojTextArea
-     * @override
-     * @protected
-     * @return {string}
-     */
-    _GetDefaultStyleClass: function () {
-      return 'oj-textarea';
-    },
-
-    /**
-     * @protected
-     * @override
-     * @instance
-     * @memberof! oj.ojTextArea
-     */
-    _GetTranslationsSectionName: function () {
-      return 'oj-inputBase';
-    },
-    /**
-     * If the converter is async or not
-     *
-     * @ignore
-     * @protected
-     * @memberof! oj.ojTextArea
-     */
-    _isConverAsync: function () {
-      var converter = this._GetConverter();
-      if (converter instanceof Promise) {
-        return true;
-      }
-      return false;
-    },
-    /**
-     * Invoked when keyup is triggered of the this.element
-     *
-     * When of keyCode is of Enter, oj-text-area should do nothing as
-     * the enter key is just user entered data.
-     *
-     * @ignore
-     * @protected
-     * @override
-     * @memberof! oj.ojTextArea
-     * @param {Event} event
-     */
-    // eslint-disable-next-line no-unused-vars
-    _onKeyUpHandler: function (event) {
-    },
-    /**
-     * Invoked when keydown is triggered of the this.element
-     *
-     * When of keyCode is of ALT+ENTER, oj-text-area will insert a new line.
-     * It is useful in the cases where Enter is used by the parent component, such as an oj-text-area in an oj-data-grid,
-     * where Enter will go to the cell below in an editable data grid. Therefore in that case, use Alt+Enter on Windows and
-     * Option+Return on MacOS to insert a new line in textarea.
-     *
-     * @ignore
-     * @protected
-     * @override
-     * @memberof! oj.ojTextArea
-     * @param {Event} event
-     */
-    // eslint-disable-next-line no-unused-vars
-    _onKeyDownHandler: function (event) {
-      if (event.keyCode === 13 || event.key === 'Enter') {
-        if (event.altKey) {
-          var textarea = this._GetContentElement()[0];
-          var textValue = textarea.value;
-          var textBefore = textValue.substring(0, textarea.selectionStart);
-          var textAfter = textValue.substring(textarea.selectionEnd);
-          textarea.value = textBefore + '\r\n' + textAfter;
-          var cursorPosition = textarea.value.length - textAfter.length;
-          textarea.setSelectionRange(cursorPosition, cursorPosition);
-          // Using blur()/focus() to bring the cursor position so that it's visible in the textarea
-          textarea.blur();
-          textarea.focus();
-          var maxrows = this.options.maxRows;
-          if (maxrows === -1 || maxrows > textarea.rows) {
-            this._resizeTextArea();
-          }
-          event.stopPropagation();
-        }
-      }
-    },
-    /**
-     * Returns true if the <textarea> dom element is not being used,
-     * and instead the readonlyDiv is being used. In that case we
-     * do not want to resize the <textarea> element.
-     *
-     * @ignore
-     * @private
-     * @memberof! oj.ojTextArea
-     */
-    _textAreaElementNotDisplayed: function () {
-      return (this._UseReadonlyDiv() && this.options.readOnly && this.options.maxRows === -1);
     }
-
-  });
+  },
+  /**
+   * Returns true if the <textarea> dom element is not being used,
+   * and instead the readonlyDiv is being used. In that case we
+   * do not want to resize the <textarea> element.
+   *
+   * @ignore
+   * @private
+   * @memberof! oj.ojTextArea
+   */
+  _textAreaElementNotDisplayed: function () {
+    return this._UseReadonlyDiv() && this.options.readOnly && this.options.maxRows === -1;
+  }
+});
 
 // Fragments:
 
@@ -5259,7 +5596,6 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojTextArea
  */
-
 
 // ////////////////     SUB-IDS     //////////////////
 /**

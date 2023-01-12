@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils'], function (ojcore, ojcomponentcore, ojlabel, oj, DomUtils, Context, ojlogger, ojthemeutils) { 'use strict';
+define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils', '@oracle/oraclejet-preact/hooks/UNSAFE_useFormVariantContext'], function (ojcore, ojcomponentcore, ojlabel, oj, DomUtils, Context, ojlogger, ojthemeutils, UNSAFE_useFormVariantContext) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -21,6 +21,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', '
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 2
    *
+   * @ojoracleicon 'oj-ux-ico-form-layout'
    * @ojuxspecs ['form-layout']
    *
    * @classdesc
@@ -109,7 +110,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', '
    * &lt;oj-form-layout class="oj-formlayout-full-width">
    * &lt;/oj-form-layout>
    */
-   /**
+  /**
    * @ojstylevariableset oj-form-layout-css-set1
    * @ojstylevariable oj-form-layout-margin-bottom {description: "Bottom margin of each row in a form layout", formats: ["length"], help: "#css-variables"}
    * @ojstylevariable oj-form-layout-column-min-width {description: "Form layout column min width", formats: ["length"], help: "#css-variables"}
@@ -705,7 +706,7 @@ var __oj_form_layout_metadata =
      * @private
      */
     function _shouldRegisterResizeListener() {
-      return (element.columns < 1 && element.direction === 'row');
+      return element.columns < 1 && element.direction === 'row';
     }
 
     /**
@@ -869,8 +870,11 @@ var __oj_form_layout_metadata =
           // We also need to track custom element upgrade status. We do this by observing attribute
           // mutations and if the 'class' attribute gets "oj-complete" added, we know the custom element
           // is finished upgrading.
-          self._rootElementMutationObserver
-            .observe(element, { childList: true, subtree: true, attributes: true });
+          self._rootElementMutationObserver.observe(element, {
+            childList: true,
+            subtree: true,
+            attributes: true
+          });
 
           // During debugging a different bug, I noticed on IE11 that sometimes this wasn't updated
           // when it obviously should have been (i.e. we reentered this function after the initial time
@@ -919,8 +923,9 @@ var __oj_form_layout_metadata =
       if (!readyResolveFunc) {
         var busyContext = Context.getContext(element).getBusyContext();
         var options = {
-          description: "The oj-form-layout component with id = '" + element.id +
-            "' is being rendered." };
+          description:
+            "The oj-form-layout component with id = '" + element.id + "' is being rendered."
+        };
         readyResolveFunc = busyContext.addBusyState(options);
       }
     }
@@ -942,7 +947,9 @@ var __oj_form_layout_metadata =
       if (!ojFormReadyResolveFunc) {
         var busyContext = Context.getContext(ojForm).getBusyContext();
         var options = {
-          description: "The oj-form div for oj-form-layout component with id = '" + element.id +
+          description:
+            "The oj-form div for oj-form-layout component with id = '" +
+            element.id +
             "' is being rendered."
         };
         ojFormReadyResolveFunc = busyContext.addBusyState(options);
@@ -999,7 +1006,7 @@ var __oj_form_layout_metadata =
         var newClass = 'oj-formlayout-max-cols-' + calculatedColumns;
         var cName = element.className;
         if (cName.indexOf('oj-formlayout-max-cols-') !== -1) {
-            // This will replace the old class name with the new one
+          // This will replace the old class name with the new one
           element.className = cName.replace(/oj-formlayout-max-cols-[\d+]/, newClass);
         } else {
           element.classList.add(newClass); // First time, just add it.
@@ -1093,9 +1100,13 @@ var __oj_form_layout_metadata =
               _ojFormMakeReady();
               _makeReady();
 
-              throw new Error("oj-form-layout component with id='" + element.id +
-                              "' has an oj-label child element with id='" + label.id +
-                              "' but has no next sibling element that it is associated with.");
+              throw new Error(
+                "oj-form-layout component with id='" +
+                  element.id +
+                  "' has an oj-label child element with id='" +
+                  label.id +
+                  "' but has no next sibling element that it is associated with."
+              );
             }
           } else if (tagName === 'oj-label-value') {
             // if were are being re-rendered, then we need to refresh any oj-label-value children.
@@ -1123,7 +1134,12 @@ var __oj_form_layout_metadata =
      * Return true if the label is handled by the child element; false otherwise.
      */
     function _isLabelByChild(child) {
-      return (element.labelEdge === 'inside' || child.labelEdge === 'inside' || child.labelEdge === 'none' || child.tagName.toLowerCase().startsWith('oj-c-'));
+      return (
+        element.labelEdge === 'inside' ||
+        child.labelEdge === 'inside' ||
+        child.labelEdge === 'none' ||
+        child.tagName.toLowerCase().startsWith('oj-c-')
+      );
     }
 
     /**
@@ -1143,8 +1159,7 @@ var __oj_form_layout_metadata =
         return ojLabel;
       }
 
-      if (child instanceof Element && 'labelHint' in child
-          && child.labelHint !== '') {
+      if (child instanceof Element && 'labelHint' in child && child.labelHint !== '') {
         _ensureUniqueId(child);
         ojLabel = _createOjLabelAndInitialize(child);
 
@@ -1179,10 +1194,14 @@ var __oj_form_layout_metadata =
         // oj-label in favor of label-hint but forgot to remove labelled-by.
         let labelledByLabel = document.getElementById(evLabelledBy);
         if (labelledByLabel) {
-          ojlogger.error('The oj-form-layout descendent component with id ' + editableElem.id +
-          ' has both label-hint and labelled-by. Remove labelled-by="' +
-          evLabelledBy + '" since no matching element was found in the document, ' +
-          'and a label will be created using the label-hint.');
+          ojlogger.error(
+            'The oj-form-layout descendent component with id ' +
+              editableElem.id +
+              ' has both label-hint and labelled-by. Remove labelled-by="' +
+              evLabelledBy +
+              '" since no matching element was found in the document, ' +
+              'and a label will be created using the label-hint.'
+          );
         }
       }
       var ojLabel = document.createElement('oj-label');
@@ -1337,12 +1356,12 @@ var __oj_form_layout_metadata =
     }
 
     /*
-    * Returns true if required is not shown inline, meaning it needs to be on the label.
-    * @param {Element} editable
-    * @memberof oj.ojFormLayout
-    * @instance
-    * @private
-    */
+     * Returns true if required is not shown inline, meaning it needs to be on the label.
+     * @param {Element} editable
+     * @memberof oj.ojFormLayout
+     * @instance
+     * @private
+     */
     function _showRequiredHelpOnLabel(editable) {
       let defaultOptions = ojthemeutils.parseJSONFromFontFamily('oj-form-control-option-defaults');
       // this will return 'use' or 'ignore'. This tells us whether we should use the
@@ -1350,8 +1369,8 @@ var __oj_form_layout_metadata =
       // use the displayOptions attribute.
       var useUserAssistanceOption = defaultOptions.useUserAssistanceOptionDefault;
 
-      let displayMethod = useUserAssistanceOption === 'use' ?
-        editable.userAssistanceDensity : 'displayOptions';
+      let displayMethod =
+        useUserAssistanceOption === 'use' ? editable.userAssistanceDensity : 'displayOptions';
       return displayMethod === 'compact' || displayMethod === 'displayOptions';
     }
 
@@ -1435,7 +1454,10 @@ var __oj_form_layout_metadata =
               child.removeEventListener('labelHintChanged', _childLabelHintChanged);
               child.removeEventListener('helpHintsChanged', _childHelpHintsChanged);
               child.removeEventListener('requiredChanged', _childRequiredChanged);
-              child.removeEventListener('userAssistanceDensityChanged', _childUserAssistanceDensityChanged);
+              child.removeEventListener(
+                'userAssistanceDensityChanged',
+                _childUserAssistanceDensityChanged
+              );
             }
           }
         }
@@ -1507,7 +1529,7 @@ var __oj_form_layout_metadata =
       // If direction is column or max-columns is 1, we don't need to move non-element nodes
       // because we are wrapping every element in its own oj-flex div, so the order
       // of the nodes will always remain the same.
-      return (element.direction === 'column' || calculatedColumns === 1);
+      return element.direction === 'column' || calculatedColumns === 1;
     }
 
     // Move all non-element nodes preceding elem into ojFlex
@@ -1736,7 +1758,9 @@ var __oj_form_layout_metadata =
       var colspan = 1;
       // For direction === 'column', we want the width to be 100%.  For 'row', we want it to be
       // the 100% divided by the number of columns.
-      if (element.direction === 'column') { return '100%'; }
+      if (element.direction === 'column') {
+        return '100%';
+      }
 
       // If elem has a colspan property, then
       if (elem && 'colspan' in elem && elem.colspan) {
@@ -1748,8 +1772,18 @@ var __oj_form_layout_metadata =
 
       // TODO: remove this IE specific hack that I had to put in here because IE's rounding errors cause the resulting
       // width to be just a tad to long and was causing the last column to wrap.  This minor work around fixes that.
-      let fullWidth = 'calc(((100% / ' + calculatedColumns + ') - ((' + columnGap + ' * (' +
-                       (calculatedColumns - 1) + ') / ' + calculatedColumns + '))' + (_isIE11() ? ' - 0.1px' : '') + ')';
+      let fullWidth =
+        'calc(((100% / ' +
+        calculatedColumns +
+        ') - ((' +
+        columnGap +
+        ' * (' +
+        (calculatedColumns - 1) +
+        ') / ' +
+        calculatedColumns +
+        '))' +
+        (_isIE11() ? ' - 0.1px' : '') +
+        ')';
 
       // We only need to append this when we are spanning more than one column.
       if (colspan > 1) {
@@ -1961,8 +1995,11 @@ var __oj_form_layout_metadata =
       for (var i = 0; i < mutationsLength; i++) {
         var mutation = mutations[i];
 
-        if (mutation.type === 'childList' && _isBonusDomDivOrSelf(mutation.target)
-                                          && _isNodeOfThisFormLayout(mutation.target)) {
+        if (
+          mutation.type === 'childList' &&
+          _isBonusDomDivOrSelf(mutation.target) &&
+          _isNodeOfThisFormLayout(mutation.target)
+        ) {
           ignore = false;
           break;
         }
@@ -1984,9 +2021,9 @@ var __oj_form_layout_metadata =
      * @returns {boolean|null} true if we have a parent DIV with the bonus dom attribute
      */
     function _isBonusDomDivOrSelf(node) {
-      return node === element || (node &&
-                                  node.tagName === 'DIV' &&
-                                  node.hasAttribute(BONUS_DOM_ATTR));
+      return (
+        node === element || (node && node.tagName === 'DIV' && node.hasAttribute(BONUS_DOM_ATTR))
+      );
     }
     /**
      * Checks to make sure that this node belongs to this oj-form-layout rather than a nested -oj-form-layout
@@ -2057,7 +2094,7 @@ var __oj_form_layout_metadata =
       return agent.browser === 'ie' && agent.browserVersion === 11;
     }
 
-   /**
+    /**
      * In the Alta theme, we show required on the label with an * icon,
      * and help on label with a ? icon.
      * In the Redwood theme, we show 'Required'/help as text inline if
@@ -2076,7 +2113,7 @@ var __oj_form_layout_metadata =
         resolvedUserAssistance =
           useUserAssistanceOption === 'use' ? editableElem.userAssistanceDensity : 'displayOptions';
       }
-      return (resolvedUserAssistance === 'compact' || resolvedUserAssistance === 'displayOptions');
+      return resolvedUserAssistance === 'compact' || resolvedUserAssistance === 'displayOptions';
     }
 
     /**
@@ -2085,7 +2122,7 @@ var __oj_form_layout_metadata =
      * Else we take the default from themes and use it.
      */
     function _updateDefaultFromTheme(componentContext) {
-      var themeDefault = (ojthemeutils.parseJSONFromFontFamily(_OJ_DEFAULTS) || {});
+      var themeDefault = ojthemeutils.parseJSONFromFontFamily(_OJ_DEFAULTS) || {};
       if (componentContext) {
         if (!componentContext.props.labelEdge) {
           element.labelEdge = themeDefault.labelEdge;
@@ -2112,25 +2149,31 @@ var __oj_form_layout_metadata =
 
   // static function called by the bridge to get attribute default values
   ojFormLayout.getDynamicDefaults = function () {
-    var themeDefault = (ojthemeutils.parseJSONFromFontFamily(_OJ_DEFAULTS) || {});
+    var themeDefault = ojthemeutils.parseJSONFromFontFamily(_OJ_DEFAULTS) || {};
     return {
       labelEdge: themeDefault.labelEdge,
       direction: themeDefault.direction
     };
   };
 
+  // eslint-disable-next-line wrap-iife
   (function () {
     __oj_form_layout_metadata.extension._CONSTRUCTOR = ojFormLayout;
     __oj_form_layout_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
+    __oj_form_layout_metadata.extension._BINDING = {
+      provide: [
+        {
+          name: '__oj_private_contexts',
+          default: new Map([[UNSAFE_useFormVariantContext.FormVariantContext, 'default']])
+        }
+      ]
+    };
     oj.CustomElementBridge.register('oj-form-layout', {
       metadata: oj.CollectionUtils.mergeDeep(__oj_form_layout_metadata, {
         properties: {
           readonly: {
             binding: {
-              provide: [
-                { name: 'containerReadonly', default: false },
-                { name: 'readonly' },
-              ],
+              provide: [{ name: 'containerReadonly', default: false }, { name: 'readonly' }],
               consume: { name: 'containerReadonly' }
             }
           },
@@ -2166,6 +2209,6 @@ var __oj_form_layout_metadata =
         }
       })
     });
-  }());
+  })();
 
 });

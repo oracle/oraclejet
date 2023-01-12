@@ -270,7 +270,7 @@
           members = self.find({kind: 'member', name:{has: self.globals}, memberof: {isUndefined:true}});
         }
         else{
-          members = self.find({kind: 'member', memberof: doc.longname});
+            members = self.find({kind: 'member', memberof: doc.longname, ojhidden:{isBoolean: false}});
         }
         if (members && members.length) {
             // Normally, members is returned in sorted order, so that the original OOTB JSDoc template didn't need a sort here, 
@@ -305,7 +305,7 @@
           methods = self.find({kind: 'function', name:{has: self.globals}, memberof: {isUndefined:true}});
         }
         else{
-          methods = self.find({kind: 'function', memberof: doc.longname});
+            methods = self.find({kind: 'function', memberof: doc.longname, ojhidden:{isBoolean: false}});
         }
         if (methods && methods.length) {
             var methodsObj = sortMembers(methods);

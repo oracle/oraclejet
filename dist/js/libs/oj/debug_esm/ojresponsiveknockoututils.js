@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -56,7 +56,9 @@ oj._registerLegacyNamespaceProp('ResponsiveKnockoutUtils', ResponsiveKnockoutUti
  */
 ResponsiveKnockoutUtils.createMediaQueryObservable = function (queryString) {
   if (queryString == null) {
-    throw new Error('ResponsiveKnockoutUtils.createMediaQueryObservable: aborting, queryString is null');
+    throw new Error(
+      'ResponsiveKnockoutUtils.createMediaQueryObservable: aborting, queryString is null'
+    );
   }
 
   var query = window.matchMedia(queryString);
@@ -67,7 +69,6 @@ ResponsiveKnockoutUtils.createMediaQueryObservable = function (queryString) {
   query.addListener(function (_query) {
     observable$1(_query.matches);
   });
-
 
   // There is a major bug in webkit, tested on ios 7 going from
   // landscape to portrait.
@@ -83,8 +84,10 @@ ResponsiveKnockoutUtils.createMediaQueryObservable = function (queryString) {
   // still has webkit in their user agent string, however they
   // now only change the number after "Chrome".
 
-  if (navigator.userAgent.indexOf('WebKit') !== -1 &&
-      navigator.userAgent.indexOf('Chrome') === -1) {
+  if (
+    navigator.userAgent.indexOf('WebKit') !== -1 &&
+    navigator.userAgent.indexOf('Chrome') === -1
+  ) {
     $(window).resize(function () {
       // Somehow if I change some text in the dom on resize
       // the query listener is called
@@ -96,17 +99,18 @@ ResponsiveKnockoutUtils.createMediaQueryObservable = function (queryString) {
         // hides the content without using display:none.
         // However we don't want screen readers to read
         // this so setting aria-hidden to true.
-        $('body').append('<div aria-hidden="true" class="oj-helper-hidden-accessible ' + // @HTMLUpdateOK
-                         selector + '">');
+        // prettier-ignore
+        $('body').append( // @HTMLUpdateOK
+          '<div aria-hidden="true" class="oj-helper-hidden-accessible ' + selector + '">'
+        );
       }
 
-      $('.' + selector).text((new Date().getMilliseconds()).toString());
+      $('.' + selector).text(new Date().getMilliseconds().toString());
     });
   }
 
   return observable$1;
 };
-
 
 /**
  * This function creates a computed observable, the
@@ -150,43 +154,31 @@ ResponsiveKnockoutUtils.createMediaQueryObservable = function (queryString) {
  */
 ResponsiveKnockoutUtils.createScreenRangeObservable = function () {
   // queryies
-  var xxlQuery = getFrameworkQuery(
-                                FRAMEWORK_QUERY_KEY.XXL_UP);
+  var xxlQuery = getFrameworkQuery(FRAMEWORK_QUERY_KEY.XXL_UP);
 
-  var xlQuery = getFrameworkQuery(
-                                FRAMEWORK_QUERY_KEY.XL_UP);
+  var xlQuery = getFrameworkQuery(FRAMEWORK_QUERY_KEY.XL_UP);
 
-  var lgQuery = getFrameworkQuery(
-                                FRAMEWORK_QUERY_KEY.LG_UP);
+  var lgQuery = getFrameworkQuery(FRAMEWORK_QUERY_KEY.LG_UP);
 
-  var mdQuery = getFrameworkQuery(
-                                FRAMEWORK_QUERY_KEY.MD_UP);
+  var mdQuery = getFrameworkQuery(FRAMEWORK_QUERY_KEY.MD_UP);
 
-  var smQuery = getFrameworkQuery(
-                                FRAMEWORK_QUERY_KEY.SM_UP);
-
+  var smQuery = getFrameworkQuery(FRAMEWORK_QUERY_KEY.SM_UP);
 
   // observables
-  var xxlObservable = xxlQuery == null ?
-                      null :
-                      ResponsiveKnockoutUtils.createMediaQueryObservable(xxlQuery);
+  var xxlObservable =
+    xxlQuery == null ? null : ResponsiveKnockoutUtils.createMediaQueryObservable(xxlQuery);
 
-  var xlObservable = xlQuery == null ?
-                     null :
-                     ResponsiveKnockoutUtils.createMediaQueryObservable(xlQuery);
+  var xlObservable =
+    xlQuery == null ? null : ResponsiveKnockoutUtils.createMediaQueryObservable(xlQuery);
 
-  var lgObservable = lgQuery == null ?
-                     null :
-                     ResponsiveKnockoutUtils.createMediaQueryObservable(lgQuery);
+  var lgObservable =
+    lgQuery == null ? null : ResponsiveKnockoutUtils.createMediaQueryObservable(lgQuery);
 
-  var mdObservable = mdQuery == null ?
-                     null :
-                     ResponsiveKnockoutUtils.createMediaQueryObservable(mdQuery);
+  var mdObservable =
+    mdQuery == null ? null : ResponsiveKnockoutUtils.createMediaQueryObservable(mdQuery);
 
-  var smObservable = smQuery == null ?
-                     null :
-                     ResponsiveKnockoutUtils.createMediaQueryObservable(smQuery);
-
+  var smObservable =
+    smQuery == null ? null : ResponsiveKnockoutUtils.createMediaQueryObservable(smQuery);
 
   return computed(function () {
     if (xxlObservable && xxlObservable()) {

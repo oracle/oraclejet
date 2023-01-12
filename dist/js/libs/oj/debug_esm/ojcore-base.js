@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -37,12 +37,12 @@ const oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '13.1.0',
+  version: '14.0.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2022-10-01_20-13-24',
+  revision: '2023-01-05_18-07-49',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -91,7 +91,7 @@ StringUtils.isEmpty = function (value) {
 
   var trimValue = StringUtils.trim(value);
 
-  return (trimValue.length === 0);
+  return trimValue.length === 0;
 };
 
 /**
@@ -118,7 +118,7 @@ StringUtils.isEmptyOrUndefined = function (value) {
  * @memberof oj.StringUtils
  */
 StringUtils.isString = function (obj) {
-  return obj !== null && ((typeof obj === 'string') || obj instanceof String);
+  return obj !== null && (typeof obj === 'string' || obj instanceof String);
 };
 
 /**
@@ -154,7 +154,7 @@ StringUtils.hashCode = function (str) {
   for (var i = 0; i < str.length; i++) {
     var c = str.charCodeAt(i);
     // eslint-disable-next-line no-bitwise
-    hash = ((hash << 5) - hash) + c;
+    hash = (hash << 5) - hash + c;
     // eslint-disable-next-line no-bitwise
     hash &= hash;
   }
@@ -271,9 +271,11 @@ AgentUtils.getAgentInfo = function (userAgent) {
   var engine = AgentUtils.ENGINE.UNKNOWN;
   /** @type {number} */
   var engineVersion = 0;
-  if (userAgent.indexOf('iphone') > -1 || (userAgent.indexOf('ipad') > -1 ||
-    (navigator.platform === 'MacIntel' &&
-    typeof navigator.standalone !== 'undefined'))) {
+  if (
+    userAgent.indexOf('iphone') > -1 ||
+    userAgent.indexOf('ipad') > -1 ||
+    (navigator.platform === 'MacIntel' && typeof navigator.standalone !== 'undefined')
+  ) {
     os = AgentUtils.OS.IOS;
   } else if (userAgent.indexOf('mac') > -1) {
     os = AgentUtils.OS.MAC;
@@ -292,12 +294,12 @@ AgentUtils.getAgentInfo = function (userAgent) {
   if (os === AgentUtils.OS.ANDROID) {
     // This works for Chrome, Firefox, and Edge on Android, even though only Chrome is officially supported.
     // This also works for Edge on Windows 10 Mobile, which announces itself as android-compatible user agent.
-    deviceType = userAgent.indexOf('mobile') > -1 ?
-      AgentUtils.DEVICETYPE.PHONE : AgentUtils.DEVICETYPE.TABLET;
+    deviceType =
+      userAgent.indexOf('mobile') > -1 ? AgentUtils.DEVICETYPE.PHONE : AgentUtils.DEVICETYPE.TABLET;
   } else if (os === AgentUtils.OS.IOS) {
     // This works for Safari, Chrome, Firefox, and Edge on iOS, even though only Safari is officially supported.
-    deviceType = userAgent.indexOf('iphone') > -1 ?
-      AgentUtils.DEVICETYPE.PHONE : AgentUtils.DEVICETYPE.TABLET;
+    deviceType =
+      userAgent.indexOf('iphone') > -1 ? AgentUtils.DEVICETYPE.PHONE : AgentUtils.DEVICETYPE.TABLET;
   }
 
   if (userAgent.indexOf('msie') > -1) {
@@ -435,7 +437,6 @@ Assert.isDebug = function () {
   return Assert[_DEBUG] === true;
 };
 
-
 /**
  * Asserts that a condition is true.  If the condition does not
  * evaluate to true, an exception is thrown with the optional message
@@ -445,10 +446,7 @@ Assert.isDebug = function () {
  * @export
  * @memberof oj.Assert
  */
-Assert.assert = function (
-  condition,
-  message
-  ) {
+Assert.assert = function (condition, message) {
   if (Assert[_DEBUG] && !condition) {
     var myMessage = message || '';
 
@@ -474,7 +472,6 @@ Assert.failedInAbstractFunction = function () {
   }
 };
 
-
 /**
  * Asserts that the the target object has the same prototype as the example
  * type
@@ -484,11 +481,7 @@ Assert.failedInAbstractFunction = function () {
  * @export
  * @memberof oj.Assert
  */
-Assert.assertPrototype = function (
-  target,
-  theConstructor,
-  reason
-  ) {
+Assert.assertPrototype = function (target, theConstructor, reason) {
   if (Assert[_DEBUG]) {
     var thePrototype = theConstructor.prototype;
 
@@ -497,10 +490,7 @@ Assert.assertPrototype = function (
 
       var isPrototypeOf = Object.prototype.isPrototypeOf;
       if (!isPrototypeOf.call(thePrototype, target)) {
-        Assert.assertionFailed("object '" + target + _NO_PROTO
-                                  + thePrototype,
-                                  1,
-                                  reason);
+        Assert.assertionFailed("object '" + target + _NO_PROTO + thePrototype, 1, reason);
       }
     } else {
       Assert.assertionFailed("null object doesn't match prototype " + thePrototype, 1, reason);
@@ -514,21 +504,14 @@ Assert.assertPrototype = function (
  * @export
  * @memberof oj.Assert
  */
-Assert.assertPrototypeOrNull = function (
-  target,
-  theConstructor,
-  reason
-  ) {
-  if (Assert[_DEBUG] && (target != null)) {
+Assert.assertPrototypeOrNull = function (target, theConstructor, reason) {
+  if (Assert[_DEBUG] && target != null) {
     Assert.assertType(theConstructor, 'function', null, 1, false);
     var thePrototype = theConstructor.prototype;
 
     var isPrototypeOf = Object.prototype.isPrototypeOf;
     if (!isPrototypeOf.call(thePrototype, target)) {
-      Assert.assertionFailed("object '" + target + _NO_PROTO
-                                + thePrototype,
-                                1,
-                                reason);
+      Assert.assertionFailed("object '" + target + _NO_PROTO + thePrototype, 1, reason);
     }
   }
 };
@@ -539,27 +522,23 @@ Assert.assertPrototypeOrNull = function (
  * @export
  * @memberof oj.Assert
  */
-Assert.assertPrototypes = function (
-  target,
-  instanceOne,
-  instanceTwo,
-  reason
-  ) {
+Assert.assertPrototypes = function (target, instanceOne, instanceTwo, reason) {
   if (Assert[_DEBUG]) {
     var thePrototype = instanceOne.prototype;
     var thePrototypeTwo = instanceTwo.prototype;
 
     var isPrototypeOf = Object.prototype.isPrototypeOf;
-    if (!(isPrototypeOf.call(thePrototype, target) ||
-          isPrototypeOf.call(thePrototypeTwo, target))) {
-      Assert.assertionFailed("object '" + target + _NO_PROTO
-                                + thePrototype + ' or ' + thePrototypeTwo,
-                                1,
-                                reason);
+    if (
+      !(isPrototypeOf.call(thePrototype, target) || isPrototypeOf.call(thePrototypeTwo, target))
+    ) {
+      Assert.assertionFailed(
+        "object '" + target + _NO_PROTO + thePrototype + ' or ' + thePrototypeTwo,
+        1,
+        reason
+      );
     }
   }
 };
-
 
 /**
  * Asserts that the target is a DOM Node or Null
@@ -581,7 +560,7 @@ Assert.assertDomNodeOrNull = function (target, depth) {
  */
 Assert.assertDomNode = function (target, depth) {
   if (Assert[_DEBUG]) {
-    if (!target || (target.nodeType === undefined)) {
+    if (!target || target.nodeType === undefined) {
       Assert.assertionFailed(target + ' is not a DOM Node', depth + 1);
     }
   }
@@ -601,7 +580,7 @@ Assert.assertDomElement = function (target, nodeName) {
 
     if (target.nodeType !== 1) {
       Assert.assertionFailed(target + ' is not a DOM Element', 1);
-    } else if (nodeName && (target.nodeName !== nodeName)) {
+    } else if (nodeName && target.nodeName !== nodeName) {
       Assert.assertionFailed(target + ' is not a ' + nodeName + ' Element', 1);
     }
   }
@@ -614,17 +593,16 @@ Assert.assertDomElement = function (target, nodeName) {
  * @memberof oj.Assert
  */
 Assert.assertDomElementOrNull = function (target, nodeName) {
-  if (Assert[_DEBUG] && (target != null)) {
+  if (Assert[_DEBUG] && target != null) {
     Assert.assertDomNode(target, 1);
 
     if (target.nodeType !== 1) {
       Assert.assertionFailed(target + ' is not a DOM Element', 1);
-    } else if (nodeName && (target.nodeName !== nodeName)) {
+    } else if (nodeName && target.nodeName !== nodeName) {
       Assert.assertionFailed(target + ' is not a ' + nodeName + ' Element', 1);
     }
   }
 };
-
 
 /**
  * Asserts that the target object has the typeof specified
@@ -642,7 +620,7 @@ Assert.assertType = function (target, type, prefix, depth, nullOK) {
     // either the target is null and null is OK, or the target better
     // be of the correct type
     var targetType = typeof target;
-    if (!(((target == null) && nullOK) || (targetType === type))) {
+    if (!((target == null && nullOK) || targetType === type)) {
       var message = target + ' is not of type ' + type;
 
       if (prefix) {
@@ -784,7 +762,6 @@ Assert.assertNumberOrNull = function (target, prefix) {
   }
 };
 
-
 /**
  * Asserts that the target object is an Array
  * @param {Object} target target object
@@ -792,10 +769,7 @@ Assert.assertNumberOrNull = function (target, prefix) {
  * @export
  * @memberof oj.Assert
  */
-Assert.assertArray = function (
-  target,
-  message
-  ) {
+Assert.assertArray = function (target, message) {
   if (Assert[_DEBUG]) {
     if (!Array.isArray(target)) {
       if (message === undefined) {
@@ -815,10 +789,8 @@ Assert.assertArray = function (
  * @export
  * @memberof oj.Assert
  */
-Assert.assertArrayOrNull = function (
-  target,
-  message) {
-  if (Assert[_DEBUG] && (target != null)) {
+Assert.assertArrayOrNull = function (target, message) {
+  if (Assert[_DEBUG] && target != null) {
     if (!Array.isArray(target)) {
       if (message === undefined) {
         // eslint-disable-next-line no-param-reassign
@@ -830,7 +802,6 @@ Assert.assertArrayOrNull = function (
   }
 };
 
-
 /**
  * Asserts that the target object is not either a number, or convertible to a number
  * @param {Object} target target object
@@ -838,10 +809,7 @@ Assert.assertArrayOrNull = function (
  * @export
  * @memberof oj.Assert
  */
-Assert.assertNonNumeric = function (
-  target,
-  message
-  ) {
+Assert.assertNonNumeric = function (target, message) {
   if (Assert[_DEBUG]) {
     if (!isNaN(target)) {
       if (message === undefined) {
@@ -861,10 +829,7 @@ Assert.assertNonNumeric = function (
  * @export
  * @memberof oj.Assert
  */
-Assert.assertNumeric = function (
-  target,
-  message
-  ) {
+Assert.assertNumeric = function (target, message) {
   if (Assert[_DEBUG]) {
     if (isNaN(target)) {
       if (message === undefined) {
@@ -885,11 +850,8 @@ Assert.assertNumeric = function (
  * @export
  * @memberof oj.Assert
  */
-Assert.assertInSet = function (
-  value,
-  set,
-  message) {
-  if ((value == null) || (set[value.toString()] === undefined)) {
+Assert.assertInSet = function (value, set, message) {
+  if (value == null || set[value.toString()] === undefined) {
     if (message === undefined) {
       var keyString = ' is not in set: {';
 
@@ -919,10 +881,7 @@ Assert.assertInSet = function (
  * @export
  * @memberof oj.Assert
  */
-Assert.assertionFailed = function (
-  message,
-  skipLevel,
-  reason) {
+Assert.assertionFailed = function (message, skipLevel, reason) {
   if (!skipLevel) {
     // eslint-disable-next-line no-param-reassign
     skipLevel = 0;
@@ -961,15 +920,14 @@ if (_assertSetting !== undefined) {
   if (agentInfo.browser === AgentUtils.BROWSER.IE) {
     error('Internet Explorer is not supported with this version of JET.');
   }
-}());
+})();
 
 /**
  * Utilities for working with collections
  * @ignore
  */
- const CollectionUtils = {};
- oj._registerLegacyNamespaceProp('CollectionUtils', CollectionUtils);
-
+const CollectionUtils = {};
+oj._registerLegacyNamespaceProp('CollectionUtils', CollectionUtils);
 
 /**
  * Copies all of the properties of source into the target and returns the target
@@ -983,20 +941,9 @@ if (_assertSetting !== undefined) {
  * @export
  * @memberof! oj.CollectionUtils
  */
-CollectionUtils.copyInto = function (
-  target,
-  source,
-  keyConverter,
-  recurse,
-  maxRecursionDepth) {
-  return CollectionUtils._copyIntoImpl(target,
-                                          source,
-                                          keyConverter,
-                                          recurse,
-                                          maxRecursionDepth,
-                                          0);
+CollectionUtils.copyInto = function (target, source, keyConverter, recurse, maxRecursionDepth) {
+  return CollectionUtils._copyIntoImpl(target, source, keyConverter, recurse, maxRecursionDepth, 0);
 };
-
 
 /**
  * A simpler alternative to copyInto()
@@ -1010,7 +957,7 @@ CollectionUtils.mergeDeep = function (target, ...sources) {
   const merge = CollectionUtils.mergeDeep;
   const source = sources.shift();
   if (isPlain(target) && isPlain(source)) {
-    Object.keys(source).forEach(key => {
+    Object.keys(source).forEach((key) => {
       if (isPlain(source[key])) {
         if (!target[key]) Object.assign(target, { [key]: {} });
         merge(target[key], source[key]);
@@ -1021,7 +968,6 @@ CollectionUtils.mergeDeep = function (target, ...sources) {
   }
   return merge(target, ...sources);
 };
-
 
 /**
  * Checks whether the object is a direct instance of Object
@@ -1035,8 +981,7 @@ CollectionUtils.isPlainObject = function (obj) {
   if (obj !== null && typeof obj === 'object') {
     try {
       var hasOwnProperty = Object.prototype.hasOwnProperty;
-      if (obj.constructor &&
-          hasOwnProperty.call(obj.constructor.prototype, 'isPrototypeOf')) {
+      if (obj.constructor && hasOwnProperty.call(obj.constructor.prototype, 'isPrototypeOf')) {
         return true;
       }
     } catch (e) {
@@ -1046,7 +991,6 @@ CollectionUtils.isPlainObject = function (obj) {
 
   return false;
 };
-
 
 /**
  * @private
@@ -1058,7 +1002,8 @@ CollectionUtils._copyIntoImpl = function (
   keyConverter,
   recurse,
   maxRecursionDepth,
-  currentLevel) {
+  currentLevel
+) {
   var targetKey;
 
   if (maxRecursionDepth === undefined || maxRecursionDepth === null) {
@@ -1066,7 +1011,7 @@ CollectionUtils._copyIntoImpl = function (
     maxRecursionDepth = Number.MAX_VALUE;
   }
 
-  if (target && source && (target !== source)) {
+  if (target && source && target !== source) {
     var keys = Object.keys(source);
     for (var i = 0; i < keys.length; i++) {
       var k = keys[i];
@@ -1083,17 +1028,21 @@ CollectionUtils._copyIntoImpl = function (
 
       if (recurse && currentLevel < maxRecursionDepth) {
         var targetVal = target[targetKey];
-        if (CollectionUtils.isPlainObject(sourceVal) &&
-           (targetVal == null || CollectionUtils.isPlainObject(targetVal))) {
+        if (
+          CollectionUtils.isPlainObject(sourceVal) &&
+          (targetVal == null || CollectionUtils.isPlainObject(targetVal))
+        ) {
           recursed = true;
           // eslint-disable-next-line no-param-reassign
           target[targetKey] = targetVal || {};
-          CollectionUtils._copyIntoImpl(target[targetKey],
-                                           sourceVal,
-                                           keyConverter,
-                                           true,
-                                           maxRecursionDepth,
-                                           currentLevel + 1);
+          CollectionUtils._copyIntoImpl(
+            target[targetKey],
+            sourceVal,
+            keyConverter,
+            true,
+            maxRecursionDepth,
+            currentLevel + 1
+          );
         }
       }
       if (!recursed) {
@@ -1112,27 +1061,26 @@ CollectionUtils._copyIntoImpl = function (
  * it is needed for.
  */
 
-
 (function () {
   if (typeof window === 'undefined') {
     return;
   }
   // polyfill for Element.closest()
   if (window.Element && !Element.prototype.closest) {
-    Element.prototype.closest =
-        function (s) {
-          var matches = (this.document || this.ownerDocument).querySelectorAll(s);
-          var i;
-          var el = this;
+    Element.prototype.closest = function (s) {
+      var matches = (this.document || this.ownerDocument).querySelectorAll(s);
+      var i;
+      var el = this;
 
-          do { // eslint-disable-line no-cond-assign
-            i = matches.length;
-            while (--i >= 0 && matches.item(i) !== el) {} // eslint-disable-line no-plusplus, no-empty
-          } while ((i < 0) && (el = el.parentElement)); // eslint-disable-line no-cond-assign
-          return el;
-        };
+      do {
+        // eslint-disable-line no-cond-assign
+        i = matches.length;
+        while (--i >= 0 && matches.item(i) !== el) {} // eslint-disable-line no-plusplus, no-empty
+      } while (i < 0 && (el = el.parentElement)); // eslint-disable-line no-cond-assign
+      return el;
+    };
   }
-}());
+})();
 
 (function () {
   // Polyfill for addEventListener & removeEventListener in browsers
@@ -1140,14 +1088,14 @@ CollectionUtils._copyIntoImpl = function (
   // an options object, extract the capture option and pass it on as useCapture
 
   /**
-  * Detect if options object is supported by checking if
-  * browser looks for passive option. Code taken from
-  * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
-  * under "Safely detecting option support"
-  * @ignore
-  * @return {boolean} true if option object is supported,
-  * false otherwise
-  */
+   * Detect if options object is supported by checking if
+   * browser looks for passive option. Code taken from
+   * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+   * under "Safely detecting option support"
+   * @ignore
+   * @return {boolean} true if option object is supported,
+   * false otherwise
+   */
   function browserSupportsOptionObject() {
     let supportsOptionsObject = false;
     try {
@@ -1170,7 +1118,7 @@ CollectionUtils._copyIntoImpl = function (
    * @ignore
    * @param {Object|boolean} option option object or useCapture
    * @return {boolean} value for useCapture
-  */
+   */
   function getCaptureOption(option) {
     if (typeof option === 'boolean') {
       return option;
@@ -1187,21 +1135,16 @@ CollectionUtils._copyIntoImpl = function (
    * @return {Function} polyfilled addEventListenr or
    * removeEventListener that accepts either options
    * object or useCapture.
-  */
+   */
   function polyfill(native) {
     /**
      * @ignore
      * @param {string} event
      * @param {Function} handler
      * @param {Object|boolean} option options object or useCapture
-    */
+     */
     return function (event, handler, option) {
-      return native.call(
-        this,
-        event,
-        handler,
-        getCaptureOption(option)
-      );
+      return native.call(this, event, handler, getCaptureOption(option));
     };
   }
   if (typeof window !== 'undefined' && !browserSupportsOptionObject()) {
@@ -1220,7 +1163,7 @@ CollectionUtils._copyIntoImpl = function (
       nativePrototype.removeEventListener = polyfill(nativePrototype.removeEventListener);
     }
   }
-}());
+})();
 
 (function () {
   /**
@@ -1236,11 +1179,13 @@ CollectionUtils._copyIntoImpl = function (
       Promise.resolve()
         .then(callback)
         .catch(function (e) {
-          setTimeout(function () { throw e; });
+          setTimeout(function () {
+            throw e;
+          });
         });
     };
   }
-}());
+})();
 
 /* The custom element (webcomponents) support requires the native CustomEvent
  * object.  This polyfill provides CustomEvent implementation for browsers that
@@ -1258,7 +1203,7 @@ CollectionUtils._copyIntoImpl = function (
     e.initEvent('foo', true, true);
     e.preventDefault();
     return e.defaultPrevented;
-  }());
+  })();
 
   if (!workingDefaultPrevented) {
     var origPreventDefault = Event.prototype.preventDefault;
@@ -1295,7 +1240,7 @@ CollectionUtils._copyIntoImpl = function (
   CustomEvent.prototype = Object.getPrototypeOf(new CustomEvent('bogusEvent'));
 
   window.CustomEvent = CustomEvent;
-}());
+})();
 
 /**
  * Polyfill FocusEvent constructor for IE.
@@ -1315,7 +1260,7 @@ CollectionUtils._copyIntoImpl = function (
 
   FocusEvent.prototype = Object.getPrototypeOf(new FocusEvent('focus'));
   window.FocusEvent = FocusEvent;
-}());
+})();
 
 /* This polyfill implements a proposed Microsoft standard [1] for effective yielding.
  * With the setImmediate global function, developers can yield control flow to the
@@ -1404,7 +1349,7 @@ CollectionUtils._copyIntoImpl = function (
 
   window.setImmediate = setImmediateImpl;
   window.clearImmediate = clearImmediateImpl;
-}());
+})();
 
 (function () {
   if (typeof window === 'undefined') {
@@ -1423,7 +1368,7 @@ CollectionUtils._copyIntoImpl = function (
     window.Symbol.asyncIterator = 'asyncIterator';
     window.Symbol.iterator = 'iterator';
   }
-}());
+})();
 
 (function () {
   if (typeof window === 'undefined') {
@@ -1445,7 +1390,7 @@ CollectionUtils._copyIntoImpl = function (
     Set.prototype.constructor = Set;
     window.Set = Set;
   }
-}());
+})();
 
 (function () {
   if (typeof window === 'undefined') {
@@ -1460,7 +1405,7 @@ CollectionUtils._copyIntoImpl = function (
   if (window.DOMTokenList && !DOMTokenList.prototype.forEach) {
     DOMTokenList.prototype.forEach = Array.prototype.forEach;
   }
-}());
+})();
 
 /**
  * Node.isConnected polyfill for IE and EdgeHTML
@@ -1482,10 +1427,10 @@ CollectionUtils._copyIntoImpl = function (
           // eslint-disable-next-line no-bitwise
           !(this.ownerDocument.compareDocumentPosition(this) & this.DOCUMENT_POSITION_DISCONNECTED)
         );
-      },
+      }
     });
   }
-}());
+})();
 
 /**
  * Base class of all OJET Objects.
@@ -1500,7 +1445,6 @@ CollectionUtils._copyIntoImpl = function (
  * initialization implementations to be shared in some cases.
  * </p>
  */
-
 
 /**
  * @constructor oj.Object
@@ -1530,7 +1474,6 @@ OjObject._GET_FUNCTION_NAME_REGEXP = /function\s+([\w$][\w$\d]*)\s*\(/;
 OjObject.prototype = {};
 OjObject.prototype.constructor = OjObject;
 
-
 /**
  * Creates a subclass of a baseClass
  * @method createSubclass
@@ -1542,10 +1485,8 @@ OjObject.prototype.constructor = OjObject;
  * @return {void}
  * @export
  */
-OjObject.createSubclass = function (
-  extendingClass,
-  baseClass,
-  typeName) { // optional name to name this class
+OjObject.createSubclass = function (extendingClass, baseClass, typeName) {
+  // optional name to name this class
   Assert.assertFunction(extendingClass);
   Assert.assertFunctionOrNull(baseClass);
   Assert.assertStringOrNull(typeName);
@@ -1612,7 +1553,6 @@ OjObject.copyPropertiesForClass = function (targetClass, source) {
  */
 OjObject._tempSubclassConstructor = function () {};
 
-
 /**
  * Returns the class object for the instance
  * @method getClass
@@ -1624,8 +1564,7 @@ OjObject._tempSubclassConstructor = function () {};
  * @final
  * @export
  */
-OjObject.prototype.getClass = function (
-  otherInstance) {
+OjObject.prototype.getClass = function (otherInstance) {
   if (otherInstance === undefined) {
     // eslint-disable-next-line no-param-reassign
     otherInstance = this;
@@ -1634,7 +1573,6 @@ OjObject.prototype.getClass = function (
   }
   return otherInstance.constructor;
 };
-
 
 /**
  * Returns a clone of this object.  The default implementation is a shallow
@@ -1674,7 +1612,6 @@ OjObject.prototype.toString = function () {
 OjObject.prototype.toDebugString = function () {
   return this.getTypeName() + ' Object';
 };
-
 
 /**
  * Returns the type name for a class derived from oj.Object
@@ -1764,7 +1701,6 @@ OjObject.ensureClassInitialization = function (clazz) {
   }
 };
 
-
 /**
  * Indicates whether some other oj.Object is "equal to" this one.
  * Method is equivalent to java ".equals()" method.
@@ -1775,8 +1711,7 @@ OjObject.ensureClassInitialization = function (clazz) {
  * @return {boolean} true if if the comparison target is equal to this object, false otherwise
  * @export
  */
-OjObject.prototype.equals = function (
-  object) {
+OjObject.prototype.equals = function (object) {
   return this === object;
 };
 
@@ -1798,7 +1733,6 @@ OjObject.createCallback = function (obj, func) {
   // All browsers supported by JET support bind() method
   return func.bind(obj);
 };
-
 
 /**
  * @private
@@ -1822,7 +1756,6 @@ OjObject._initClasses = function (currClass) {
       OjObject._initClasses(superclassConstructor);
     }
   }
-
 
   // if the class has an initialization function, call it
   var InitClassFunc = currClass.InitClass;
@@ -1910,8 +1843,10 @@ OjObject._compareArrayValues = function (array1, array2) {
 // Note: it returns false if one is an id and other is an index
 // if ids are the same, index will be ignored if there is only one is provided
 OjObject._compareIdIndexObject = function (obj1, obj2) {
-  if ((typeof obj1 === 'number' && typeof obj2 === 'number') ||
-      (typeof obj1 === 'string' && typeof obj2 === 'string')) {
+  if (
+    (typeof obj1 === 'number' && typeof obj2 === 'number') ||
+    (typeof obj1 === 'string' && typeof obj2 === 'string')
+  ) {
     return obj1 === obj2;
   }
 
@@ -1934,18 +1869,17 @@ OjObject._compareIdIndexObject = function (obj1, obj2) {
   return false;
 };
 
-
 // Comparion of two arrays containing ids, indexes, or objects where each object has id,
 // index or both properties.
 // order needn't be same but no duplicates
 OjObject._compareArrayIdIndexObject = function (array1, array2) {
   // null and [] are equals
   if (!array1) {
-    return (!array2 || array2.length === 0);
+    return !array2 || array2.length === 0;
   }
 
   if (!array2) {
-    return (!array1 || array1.length === 0);
+    return !array1 || array1.length === 0;
   }
 
   if (array1.length !== array2.length) {
@@ -1967,7 +1901,6 @@ OjObject._compareArrayIdIndexObject = function (array1, array2) {
 
   return true;
 };
-
 
 OjObject.__innerEquals = function (obj1, obj2, set = new Set()) {
   if (obj1 === obj2) {
@@ -2004,7 +1937,7 @@ OjObject.__innerEquals = function (obj1, obj2, set = new Set()) {
       }
 
       if (obj1[prop] !== obj2[prop]) {
-        if (typeof (obj1[prop]) !== 'object') {
+        if (typeof obj1[prop] !== 'object') {
           return false;
         }
 
@@ -2044,8 +1977,10 @@ OjObject.isEmpty = function (object) {
     return true;
   }
 
-  for (prop in object) { // eslint-disable-line no-restricted-syntax
-    if (object.hasOwnProperty(prop)) { // eslint-disable-line no-prototype-builtins
+  // eslint-disable-next-line no-restricted-syntax
+  for (prop in object) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (object.hasOwnProperty(prop)) {
       return false;
     }
   }
@@ -2069,7 +2004,6 @@ const EventSource = function () {
 OjObject.createSubclass(EventSource, OjObject, 'oj.EventSource');
 oj._registerLegacyNamespaceProp('EventSource', EventSource);
 
-
 /**
  * Initializes the instance.
  * @export
@@ -2092,8 +2026,10 @@ EventSource.prototype.on = function (eventType, eventHandler) {
   var foundEventHandler = false;
 
   for (var i = 0; i < this._eventHandlers.length; i++) {
-    if (this._eventHandlers[i].eventType === eventType &&
-        this._eventHandlers[i].eventHandlerFunc === eventHandler) {
+    if (
+      this._eventHandlers[i].eventType === eventType &&
+      this._eventHandlers[i].eventHandlerFunc === eventHandler
+    ) {
       foundEventHandler = true;
       break;
     }
@@ -2114,8 +2050,10 @@ EventSource.prototype.on = function (eventType, eventHandler) {
  */
 EventSource.prototype.off = function (eventType, eventHandler) {
   for (var i = this._eventHandlers.length - 1; i >= 0; i--) {
-    if (this._eventHandlers[i].eventType === eventType &&
-        this._eventHandlers[i].eventHandlerFunc === eventHandler) {
+    if (
+      this._eventHandlers[i].eventType === eventType &&
+      this._eventHandlers[i].eventHandlerFunc === eventHandler
+    ) {
       this._eventHandlers.splice(i, 1);
       break;
     }
@@ -2137,8 +2075,10 @@ EventSource.prototype.handleEvent = function (eventType, event) {
   for (var i = 0; i < this._eventHandlers.length; i++) {
     var eventHandler = this._eventHandlers[i];
     if (eventHandler.eventType === eventType) {
-      returnValue =
-        eventHandler.eventHandlerFunc.apply(this, Array.prototype.slice.call(arguments).slice(1));
+      returnValue = eventHandler.eventHandlerFunc.apply(
+        this,
+        Array.prototype.slice.call(arguments).slice(1)
+      );
 
       if (returnValue === false) {
         // event cancelled
@@ -2188,8 +2128,8 @@ var _checkpointManagerDelegate = _scope.__ojCheckpointManager;
  * @export
  * @ignore
  */
- const CHECKPOINT_MANAGER = {};
- oj._registerLegacyNamespaceProp('CHECKPOINT_MANAGER', CHECKPOINT_MANAGER);
+const CHECKPOINT_MANAGER = {};
+oj._registerLegacyNamespaceProp('CHECKPOINT_MANAGER', CHECKPOINT_MANAGER);
 
 /**
  * Starts a checkpoint
@@ -2245,23 +2185,21 @@ CHECKPOINT_MANAGER.matchRecords = function (regexp) {
  * @memberof! oj.CHECKPOINT_MANAGER
  */
 CHECKPOINT_MANAGER.dump = function (regexp) {
-  info(
-    function () {
-      var logMsg = 'Checkpoint Records:';
-      var records = CHECKPOINT_MANAGER.matchRecords(regexp);
-      for (var i = 0; i < records.length; i++) {
-        var record = records[i];
-        logMsg = logMsg + '\n' + record.name;
-        var desc = record.description;
-        if (desc != null) {
-          logMsg = logMsg + ' (' + desc + ')';
-        }
-        logMsg += ':\n';
-        logMsg = logMsg + 'start: ' + record.start + '\tduration: ' + record.duration;
+  info(function () {
+    var logMsg = 'Checkpoint Records:';
+    var records = CHECKPOINT_MANAGER.matchRecords(regexp);
+    for (var i = 0; i < records.length; i++) {
+      var record = records[i];
+      logMsg = logMsg + '\n' + record.name;
+      var desc = record.description;
+      if (desc != null) {
+        logMsg = logMsg + ' (' + desc + ')';
       }
-      return logMsg;
+      logMsg += ':\n';
+      logMsg = logMsg + 'start: ' + record.start + '\tduration: ' + record.duration;
     }
-  );
+    return logMsg;
+  });
 };
 
 export default oj;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -152,7 +152,7 @@ var __oj_time_axis_metadata =
 };
     __oj_time_axis_metadata.extension._WIDGET_NAME = 'ojTimeAxis';
     oj.CustomElementBridge.register('oj-time-axis', { metadata: __oj_time_axis_metadata });
-  }());
+  })();
 
   /**
    * <p>The Time Axis is intended to be used inside of a JET Table or DataGrid.
@@ -313,6 +313,7 @@ var __oj_time_axis_metadata =
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 6
    *
+   * @ojoracleicon 'oj-ux-ico-time-axis'
    * @ojuxspecs ['data-visualization-time-axis']
    *
    * @classdesc
@@ -386,315 +387,309 @@ var __oj_time_axis_metadata =
    *
    * {@ojinclude "name":"rtl"}
    */
-  oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
-    {
-      widgetEventPrefix: 'oj',
-      options: {
-        /**
-         * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the time axis for all 'scale' values, or
-         * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting.
-         * See also {@link oj.DateTimeConverter}.
-         * @expose
-         * @name converter
-         * @ojshortdesc An object that converts the labels of the time axis for all 'scale' values'. See the Help documentation for more information.
-         * @memberof oj.ojTimeAxis
-         * @instance
-         * @type {Object}
-         * @ojsignature {target: "Type", value: "oj.ojTimeAxis.Converters|oj.Converter<string>", jsdocOverride: true}
-         * @default {"default": null, "seconds": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric'}), "days": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "months": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "quarters": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "years": new DateTimeConverter.IntlDateTimeConverter({'year': 'numeric'})}
-         *
-         * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">converter</code> attribute specified:</caption>
-         * &lt;oj-time-axis converter='[[myConverterObject]]'>&lt;/oj-time-axis>
-         *
-         * &lt;oj-time-axis converter.days='[[myConverterDays]]'>&lt;/oj-time-axis>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">converter</code> property after initialization:</caption>
-         * // Get one
-         * var converterDays = myTimeAxis.converter.days;
-         *
-         * // Set one, leaving the others intact.
-         * myTimeAxis.setProperty('converter.days', converterDays);
-         *
-         * // Get all
-         * var converterObject = myTimeAxis.converter;
-         *
-         * // Set all. Must list every resource key, as those not listed are lost.
-         * myTimeAxis.converter = {
-         *     "default": converterDefault,
-         *     "seconds": converterSeconds,
-         *     "minutes": converterMinutes,
-         *     "hours": converterHours,
-         *     "days": converterDays,
-         *     "weeks": converterWeeks,
-         *     "months": converterMonths,
-         *     "quarters": converterQuarters,
-         *     "years": converterYears
-         * };
-         */
-        converter: undefined,
-        /**
-         * The start time of the time axis.
-         * A valid value is required in order for the time axis to properly render.
-         * See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
-         * @expose
-         * @name start
-         * @ojrequired
-         * @ojshortdesc The start time of the time axis. See the Help documentation for more information.
-         * @memberof oj.ojTimeAxis
-         * @instance
-         * @type {string}
-         * @ojformat date-time
-         * @default ""
-         *
-         * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">start</code> attribute specified:</caption>
-         * &lt;oj-time-axis start='2017-01-01T05:00:00.000Z'>&lt;/oj-time-axis>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">start</code> property after initialization:</caption>
-         * // getter
-         * var startValue = myTimeAxis.start;
-         *
-         * // setter
-         * myTimeAxis.start = '2017-01-01T05:00:00.000Z';
-         */
-        start: '',
-        /**
-         * The end time of the time axis.
-         * A valid value is required in order for the time axis to properly render.
-         * See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
-         * @expose
-         * @name end
-         * @ojrequired
-         * @ojshortdesc The end time of the time axis. See the Help documentation for more information.
-         * @memberof oj.ojTimeAxis
-         * @instance
-         * @type {string}
-         * @ojformat date-time
-         * @default ""
-         *
-         * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">end</code> attribute specified:</caption>
-         * &lt;oj-time-axis end='2017-12-31T05:00:00.000Z'>&lt;/oj-time-axis>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">end</code> property after initialization:</caption>
-         * // getter
-         * var endValue = myTimeAxis.end;
-         *
-         * // setter
-         * myTimeAxis.end = '2017-12-31T05:00:00.000Z';
-         */
-        end: '',
-        /**
-         * The time scale used for the time axis. This is required in order for the time axis to properly render.
-         * The scale must either be a scale string (see acceptable values) or a custom instance of {@link DvtTimeComponentScale}.
-         *
-         * @expose
-         * @name scale
-         * @ojrequired
-         * @ojshortdesc The time scale used for the time axis.
-         * @memberof oj.ojTimeAxis
-         * @instance
-         * @type {?(string|DvtTimeComponentScale)}
-         * @ojvalue {string} "seconds"
-         * @ojvalue {string} "minutes"
-         * @ojvalue {string} "hours"
-         * @ojvalue {string} "days"
-         * @ojvalue {string} "weeks"
-         * @ojvalue {string} "months"
-         * @ojvalue {string} "quarters"
-         * @ojvalue {string} "years"
-         * @default null
-         * @ojsignature {target: "Type", value: "?(string|DvtTimeComponentScale)"}
-         *
-         * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">scale</code> attribute specified:</caption>
-         * &lt;oj-time-axis scale='weeks'>&lt;/oj-time-axis>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">scale</code> property after initialization:</caption>
-         * // getter
-         * var scaleValue = myTimeAxis.scale;
-         *
-         * // setter
-         * myTimeAxis.scale = 'weeks';
-         */
-        scale: null
-      },
+  oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent, {
+    widgetEventPrefix: 'oj',
+    options: {
       /**
-       * @override
+       * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the time axis for all 'scale' values, or
+       * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting.
+       * See also {@link oj.DateTimeConverter}.
+       * @expose
+       * @name converter
+       * @ojshortdesc An object that converts the labels of the time axis for all 'scale' values'. See the Help documentation for more information.
        * @memberof oj.ojTimeAxis
-       * @protected
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "oj.ojTimeAxis.Converters|oj.Converter<string>", jsdocOverride: true}
+       * @default {"default": null, "seconds": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric'}), "days": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "months": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "quarters": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "years": new DateTimeConverter.IntlDateTimeConverter({'year': 'numeric'})}
+       *
+       * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">converter</code> attribute specified:</caption>
+       * &lt;oj-time-axis converter='[[myConverterObject]]'>&lt;/oj-time-axis>
+       *
+       * &lt;oj-time-axis converter.days='[[myConverterDays]]'>&lt;/oj-time-axis>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">converter</code> property after initialization:</caption>
+       * // Get one
+       * var converterDays = myTimeAxis.converter.days;
+       *
+       * // Set one, leaving the others intact.
+       * myTimeAxis.setProperty('converter.days', converterDays);
+       *
+       * // Get all
+       * var converterObject = myTimeAxis.converter;
+       *
+       * // Set all. Must list every resource key, as those not listed are lost.
+       * myTimeAxis.converter = {
+       *     "default": converterDefault,
+       *     "seconds": converterSeconds,
+       *     "minutes": converterMinutes,
+       *     "hours": converterHours,
+       *     "days": converterDays,
+       *     "weeks": converterWeeks,
+       *     "months": converterMonths,
+       *     "quarters": converterQuarters,
+       *     "years": converterYears
+       * };
        */
-      _ComponentCreate: function () {
-        this._super();
-        this._SetLocaleHelpers(NumberConverter, ConverterUtils);
-      },
+      converter: undefined,
+      /**
+       * The start time of the time axis.
+       * A valid value is required in order for the time axis to properly render.
+       * See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+       * @expose
+       * @name start
+       * @ojrequired
+       * @ojshortdesc The start time of the time axis. See the Help documentation for more information.
+       * @memberof oj.ojTimeAxis
+       * @instance
+       * @type {string}
+       * @ojformat date-time
+       * @default ""
+       *
+       * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">start</code> attribute specified:</caption>
+       * &lt;oj-time-axis start='2017-01-01T05:00:00.000Z'>&lt;/oj-time-axis>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">start</code> property after initialization:</caption>
+       * // getter
+       * var startValue = myTimeAxis.start;
+       *
+       * // setter
+       * myTimeAxis.start = '2017-01-01T05:00:00.000Z';
+       */
+      start: '',
+      /**
+       * The end time of the time axis.
+       * A valid value is required in order for the time axis to properly render.
+       * See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+       * @expose
+       * @name end
+       * @ojrequired
+       * @ojshortdesc The end time of the time axis. See the Help documentation for more information.
+       * @memberof oj.ojTimeAxis
+       * @instance
+       * @type {string}
+       * @ojformat date-time
+       * @default ""
+       *
+       * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">end</code> attribute specified:</caption>
+       * &lt;oj-time-axis end='2017-12-31T05:00:00.000Z'>&lt;/oj-time-axis>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">end</code> property after initialization:</caption>
+       * // getter
+       * var endValue = myTimeAxis.end;
+       *
+       * // setter
+       * myTimeAxis.end = '2017-12-31T05:00:00.000Z';
+       */
+      end: '',
+      /**
+       * The time scale used for the time axis. This is required in order for the time axis to properly render.
+       * The scale must either be a scale string (see acceptable values) or a custom instance of {@link DvtTimeComponentScale}.
+       *
+       * @expose
+       * @name scale
+       * @ojrequired
+       * @ojshortdesc The time scale used for the time axis.
+       * @memberof oj.ojTimeAxis
+       * @instance
+       * @type {?(string|DvtTimeComponentScale)}
+       * @ojvalue {string} "seconds"
+       * @ojvalue {string} "minutes"
+       * @ojvalue {string} "hours"
+       * @ojvalue {string} "days"
+       * @ojvalue {string} "weeks"
+       * @ojvalue {string} "months"
+       * @ojvalue {string} "quarters"
+       * @ojvalue {string} "years"
+       * @default null
+       * @ojsignature {target: "Type", value: "?(string|DvtTimeComponentScale)"}
+       *
+       * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">scale</code> attribute specified:</caption>
+       * &lt;oj-time-axis scale='weeks'>&lt;/oj-time-axis>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">scale</code> property after initialization:</caption>
+       * // getter
+       * var scaleValue = myTimeAxis.scale;
+       *
+       * // setter
+       * myTimeAxis.scale = 'weeks';
+       */
+      scale: null
+    },
+    /**
+     * @override
+     * @memberof oj.ojTimeAxis
+     * @protected
+     */
+    _ComponentCreate: function () {
+      this._super();
+      this._SetLocaleHelpers(NumberConverter, ConverterUtils);
+    },
 
-      // @inheritdoc
-      _CreateDvtComponent: function (context, callback, callbackObj) {
-        return new ojtimeaxisToolkit.TimeAxis(context, callback, callbackObj);
-      },
+    // @inheritdoc
+    _CreateDvtComponent: function (context, callback, callbackObj) {
+      return new ojtimeaxisToolkit.TimeAxis(context, callback, callbackObj);
+    },
 
-      // @inheritdoc
-      _GetComponentStyleClasses: function () {
-        var styleClasses = this._super();
-        styleClasses.push('oj-timeaxis');
-        return styleClasses;
-      },
+    // @inheritdoc
+    _GetComponentStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses.push('oj-timeaxis');
+      return styleClasses;
+    },
 
-      // @inheritdoc
-      _GetChildStyleClasses: function () {
-        var styleClasses = this._super();
-        styleClasses['oj-timeaxis-label'] = { path: 'labelStyle', property: 'TEXT' };
+    // @inheritdoc
+    _GetChildStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses['oj-timeaxis-label'] = { path: 'labelStyle', property: 'TEXT' };
 
-        return styleClasses;
-      },
+      return styleClasses;
+    },
 
-      // @inheritdoc
-      _GetEventTypes: function () {
-        return ['optionChange'];
-      },
+    // @inheritdoc
+    _GetEventTypes: function () {
+      return ['optionChange'];
+    },
 
-      // @inheritdoc
-      _GetComponentRendererOptions: function () {
-        // the function should be removed if the component will support 'tooltip.renderer' attr
-        return [];
-      },
+    // @inheritdoc
+    _GetComponentRendererOptions: function () {
+      // the function should be removed if the component will support 'tooltip.renderer' attr
+      return [];
+    },
 
-      // @inheritdoc
-      _ProcessOptions: function () {
-        this._super();
+    // @inheritdoc
+    _ProcessOptions: function () {
+      this._super();
 
-        // Date related options support only ISO String
-        var self = this;
-        var processRootDateOptions = function (key) {
-          var optionType = typeof self.options[key];
-          if (!(optionType === 'string')) {
-            self.options[key] = null;
-          }
-        };
-
-        processRootDateOptions('start');
-        processRootDateOptions('end');
-
-        // Set label position.
-        const scale = this.options.scale;
-        if (scale) {
-          this.options._scaleLabelPosition = {};
-          if (scale.name) {
-            const labelPosition = scale.labelPosition || 'auto';
-            const effectiveLabelPosition = labelPosition === 'auto' ? 'center' : labelPosition;
-            this.options._scaleLabelPosition[scale.name] = effectiveLabelPosition;
-          } else {
-            this.options._scaleLabelPosition[scale] = 'center';
-          }
+      // Date related options support only ISO String
+      var self = this;
+      var processRootDateOptions = function (key) {
+        var optionType = typeof self.options[key];
+        if (!(optionType === 'string')) {
+          self.options[key] = null;
         }
-        // Set label alignment
-        this.options._labelAlignment = {
-          horizontal: 'middle',
-          vertical: 'middle'
-        };
-      },
+      };
 
-      // @inheritdoc
-      _LoadResources: function () {
-        // Ensure the resources object exists
-        if (this.options._resources == null) {
-          this.options._resources = {};
+      processRootDateOptions('start');
+      processRootDateOptions('end');
+
+      // Set label position.
+      const scale = this.options.scale;
+      if (scale) {
+        this.options._scaleLabelPosition = {};
+        if (scale.name) {
+          const labelPosition = scale.labelPosition || 'auto';
+          const effectiveLabelPosition = labelPosition === 'auto' ? 'center' : labelPosition;
+          this.options._scaleLabelPosition[scale.name] = effectiveLabelPosition;
+        } else {
+          this.options._scaleLabelPosition[scale] = 'center';
         }
-
-        var resources = this.options._resources;
-
-        // Create default converters
-        var secondsConverter = new ojconverterDatetime.IntlDateTimeConverter({
-          hour: 'numeric',
-          minute: '2-digit',
-          second: '2-digit'
-        });
-        var minutesConverter = new ojconverterDatetime.IntlDateTimeConverter({
-          hour: 'numeric',
-          minute: '2-digit'
-        });
-        var hoursConverter = new ojconverterDatetime.IntlDateTimeConverter({ hour: 'numeric' });
-        var daysConverter = new ojconverterDatetime.IntlDateTimeConverter({
-          month: 'numeric',
-          day: '2-digit'
-        });
-        var monthsConverter = new ojconverterDatetime.IntlDateTimeConverter({ month: 'long' });
-        var yearsConverter = new ojconverterDatetime.IntlDateTimeConverter({ year: 'numeric' });
-
-        var monthsConverterVert = new ojconverterDatetime.IntlDateTimeConverter({ month: 'short' });
-        var yearsConverterVert = new ojconverterDatetime.IntlDateTimeConverter({ year: '2-digit' });
-
-        var converter = {
-          seconds: secondsConverter,
-          minutes: minutesConverter,
-          hours: hoursConverter,
-          days: daysConverter,
-          weeks: daysConverter,
-          months: monthsConverter,
-          quarters: monthsConverter,
-          years: yearsConverter
-        };
-        var converterVert = {
-          seconds: secondsConverter,
-          minutes: minutesConverter,
-          hours: hoursConverter,
-          days: daysConverter,
-          weeks: daysConverter,
-          months: monthsConverterVert,
-          quarters: monthsConverterVert,
-          years: yearsConverterVert
-        };
-
-        resources.defaultDateTimeConverter = new ojconverterDatetime.IntlDateTimeConverter({
-          formatType: 'datetime',
-          dateFormat: 'medium',
-          timeFormat: 'medium'
-        }); // e.g. Jan 1, 2016, 5:53:39 PM
-        resources.defaultDateConverter = new ojconverterDatetime.IntlDateTimeConverter({
-          formatType: 'date',
-          dateFormat: 'medium'
-        }); // e.g. Jan 1, 2016
-        resources.converter = converter;
-        resources.converterVert = converterVert;
-
-        // Class names to be set on appropriate svg elements
-        resources.axisClass = 'oj-timeaxis-container';
-        resources.axisLabelClass = 'oj-timeaxis-label';
-        resources.axisSeparatorClass = 'oj-timeaxis-separator';
-
-        // first day of week; locale specific
-        resources.firstDayOfWeek = ojlocaledata.getFirstDayOfWeek();
-      },
-
-      // @inheritdoc
-      _GetComponentNoClonePaths: function () {
-        var noClonePaths = this._super();
-        // Don't clone areas where app may pass in an instance of DvtTimeComponentScales
-        // If the instance is a class, class methods may not be cloned for some reason.
-        noClonePaths.scale = true;
-
-        // Don't clone areas where app may pass in an instance of Converter
-        // If the instance is a class, class methods may not be cloned for some reason.
-        noClonePaths.converter = true;
-        noClonePaths._resources = {
-          converter: true,
-          defaultDateConverter: true,
-          defaultDateTimeConverter: true
-        };
-        return noClonePaths;
       }
-    });
+      // Set label alignment
+      this.options._labelAlignment = {
+        horizontal: 'middle',
+        vertical: 'middle'
+      };
+    },
+
+    // @inheritdoc
+    _LoadResources: function () {
+      // Ensure the resources object exists
+      if (this.options._resources == null) {
+        this.options._resources = {};
+      }
+
+      var resources = this.options._resources;
+
+      // Create default converters
+      var secondsConverter = new ojconverterDatetime.IntlDateTimeConverter({
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      var minutesConverter = new ojconverterDatetime.IntlDateTimeConverter({
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+      var hoursConverter = new ojconverterDatetime.IntlDateTimeConverter({ hour: 'numeric' });
+      var daysConverter = new ojconverterDatetime.IntlDateTimeConverter({
+        month: 'numeric',
+        day: '2-digit'
+      });
+      var monthsConverter = new ojconverterDatetime.IntlDateTimeConverter({ month: 'long' });
+      var yearsConverter = new ojconverterDatetime.IntlDateTimeConverter({ year: 'numeric' });
+
+      var monthsConverterVert = new ojconverterDatetime.IntlDateTimeConverter({ month: 'short' });
+      var yearsConverterVert = new ojconverterDatetime.IntlDateTimeConverter({ year: '2-digit' });
+
+      var converter = {
+        seconds: secondsConverter,
+        minutes: minutesConverter,
+        hours: hoursConverter,
+        days: daysConverter,
+        weeks: daysConverter,
+        months: monthsConverter,
+        quarters: monthsConverter,
+        years: yearsConverter
+      };
+      var converterVert = {
+        seconds: secondsConverter,
+        minutes: minutesConverter,
+        hours: hoursConverter,
+        days: daysConverter,
+        weeks: daysConverter,
+        months: monthsConverterVert,
+        quarters: monthsConverterVert,
+        years: yearsConverterVert
+      };
+
+      resources.defaultDateTimeConverter = new ojconverterDatetime.IntlDateTimeConverter({
+        formatType: 'datetime',
+        dateFormat: 'medium',
+        timeFormat: 'medium'
+      }); // e.g. Jan 1, 2016, 5:53:39 PM
+      resources.defaultDateConverter = new ojconverterDatetime.IntlDateTimeConverter({
+        formatType: 'date',
+        dateFormat: 'medium'
+      }); // e.g. Jan 1, 2016
+      resources.converter = converter;
+      resources.converterVert = converterVert;
+
+      // Class names to be set on appropriate svg elements
+      resources.axisClass = 'oj-timeaxis-container';
+      resources.axisLabelClass = 'oj-timeaxis-label';
+      resources.axisSeparatorClass = 'oj-timeaxis-separator';
+
+      // first day of week; locale specific
+      resources.firstDayOfWeek = ojlocaledata.getFirstDayOfWeek();
+    },
+
+    // @inheritdoc
+    _GetComponentNoClonePaths: function () {
+      var noClonePaths = this._super();
+      // Don't clone areas where app may pass in an instance of DvtTimeComponentScales
+      // If the instance is a class, class methods may not be cloned for some reason.
+      noClonePaths.scale = true;
+
+      // Don't clone areas where app may pass in an instance of Converter
+      // If the instance is a class, class methods may not be cloned for some reason.
+      noClonePaths.converter = true;
+      noClonePaths._resources = {
+        converter: true,
+        defaultDateConverter: true,
+        defaultDateTimeConverter: true
+      };
+      return noClonePaths;
+    }
+  });
 
   // Add custom getters for properties
-  ojcomponentcore.setDefaultOptions(
-    {
-      ojTimeAxis:
-      {
-        converter: ojcomponentcore.createDynamicPropertyGetter(
-          function () {
-            return _getDateDefaultConverter();
-          }
-        )
-      }
+  ojcomponentcore.setDefaultOptions({
+    ojTimeAxis: {
+      converter: ojcomponentcore.createDynamicPropertyGetter(function () {
+        return _getDateDefaultConverter();
+      })
     }
-  );
+  });
 
 });

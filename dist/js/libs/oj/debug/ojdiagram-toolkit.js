@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,94 +20,100 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       const GREY_SHADE = 'rgba(0,0,0, .3)';
       const BLACK_SHADE = 'rgb(0,0,0)';
       const SKIN_ALTA = {
-        'skin': dvt.CSSStyle.SKIN_ALTA,
-        'emptyText': null,
-        'selectionMode': 'none',
-        'animationOnDataChange': 'none',
-        'animationOnDisplay': 'none',
-        'maxZoom' : 1.0,
-        'highlightMatch' : 'all',
-        'nodeHighlightMode': 'node',
-        'linkHighlightMode': 'link',
-        'panning': 'none',
-        'panZoomState': {
-          'zoom': 0.0,
-          'centerX': null,
-          'centerY': null
+        skin: dvt.CSSStyle.SKIN_ALTA,
+        emptyText: null,
+        selectionMode: 'none',
+        animationOnDataChange: 'none',
+        animationOnDisplay: 'none',
+        maxZoom: 1.0,
+        highlightMatch: 'all',
+        nodeHighlightMode: 'node',
+        linkHighlightMode: 'link',
+        panning: 'none',
+        panZoomState: {
+          zoom: 0.0,
+          centerX: null,
+          centerY: null
         },
-        'overview': {
-          'fitArea': 'content',
-          'preserveAspectRatio': 'meet'
+        overview: {
+          fitArea: 'content',
+          preserveAspectRatio: 'meet'
         },
-        'touchResponse': 'auto',
-        'zooming': 'none',
-        'promotedLinkBehavior': 'lazy',
-        '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
-        'dnd': {
-          'drag': {
-            'nodes': {},
-            'ports': {}
+        touchResponse: 'auto',
+        zooming: 'none',
+        promotedLinkBehavior: 'lazy',
+        _statusMessageStyle: new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
+        dnd: {
+          drag: {
+            nodes: {},
+            ports: {}
           },
-          'drop': {
-            'background': {},
-            'nodes': {},
-            'links': {},
-            'ports': {}
+          drop: {
+            background: {},
+            nodes: {},
+            links: {},
+            ports: {}
           }
         },
-        'styleDefaults': {
-          'animationDuration': 500,
-          'hoverBehaviorDelay': 200,
-          '_highlightAlpha' : .1,
-          '_overviewStyles': {
-            'overview': {
-              'backgroundColor':'rgb(228,229,230)',
+        styleDefaults: {
+          animationDuration: 500,
+          hoverBehaviorDelay: 200,
+          _highlightAlpha: 0.1,
+          _overviewStyles: {
+            overview: {
+              backgroundColor: 'rgb(228,229,230)'
             },
-            'overviewContent': {
-              'padding': '10px'
+            overviewContent: {
+              padding: '10px'
             },
-            'viewport': {
-              'backgroundColor': WHITE_SHADE,
-              'borderColor': 'rgb(74,76,78)'
+            viewport: {
+              backgroundColor: WHITE_SHADE,
+              borderColor: 'rgb(74,76,78)'
             },
-            'node': {
-              'shape': 'inherit'
+            node: {
+              shape: 'inherit'
             }
           },
-          'nodeDefaults': {
-            '_containerStyle' : new dvt.CSSStyle('border-color:#abb3ba;background-color:#f9f9f9;border-width:.5px;border-radius:1px;padding-top:20px;padding-left:20px;padding-bottom:20px;padding-right:20px;'),
-            'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12 + 'color:#383A47'),
-            'hoverInnerColor': WHITE_SHADE,
-            'hoverOuterColor': GREY_SHADE,
-            'selectionColor': BLACK_SHADE,
-            'icon': {
-              'width': 10,
-              'height': 10,
-              'pattern' : 'none',
-              'shape': 'circle'
+          nodeDefaults: {
+            _containerStyle: new dvt.CSSStyle(
+              'border-color:#abb3ba;background-color:#f9f9f9;border-width:.5px;border-radius:1px;padding-top:20px;padding-left:20px;padding-bottom:20px;padding-right:20px;'
+            ),
+            labelStyle: new dvt.CSSStyle(
+              dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12 + 'color:#383A47'
+            ),
+            hoverInnerColor: WHITE_SHADE,
+            hoverOuterColor: GREY_SHADE,
+            selectionColor: BLACK_SHADE,
+            icon: {
+              width: 10,
+              height: 10,
+              pattern: 'none',
+              shape: 'circle'
             }
           },
-          'linkDefaults' : {
-            'startConnectorType': 'none',
-            'endConnectorType': 'none',
-            'width' : 1,
-            '_style' : {'_type': 'solid'},
-            'hoverInnerColor': WHITE_SHADE,
-            'hoverOuterColor': GREY_SHADE,
-            'selectionColor': BLACK_SHADE,
-            'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12 + 'color:#383A47'),
-            '_hitDetectionOffset' : 10
+          linkDefaults: {
+            startConnectorType: 'none',
+            endConnectorType: 'none',
+            width: 1,
+            _style: { _type: 'solid' },
+            hoverInnerColor: WHITE_SHADE,
+            hoverOuterColor: GREY_SHADE,
+            selectionColor: BLACK_SHADE,
+            labelStyle: new dvt.CSSStyle(
+              dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12 + 'color:#383A47'
+            ),
+            _hitDetectionOffset: 10
           },
-          'promotedLink' : {
-            'startConnectorType': 'none',
-            'endConnectorType': 'none',
-            'width' : 1,
-            '_style' : {'_type': 'dot', 'strokeDasharray': '2,3'},
-            'color' : '#778999',
-            'hoverInnerColor': WHITE_SHADE,
-            'hoverOuterColor': GREY_SHADE,
-            'selectionColor': BLACK_SHADE,
-            '_hitDetectionOffset' : 10
+          promotedLink: {
+            startConnectorType: 'none',
+            endConnectorType: 'none',
+            width: 1,
+            _style: { _type: 'dot', strokeDasharray: '2,3' },
+            color: '#778999',
+            hoverInnerColor: WHITE_SHADE,
+            hoverOuterColor: GREY_SHADE,
+            selectionColor: BLACK_SHADE,
+            _hitDetectionOffset: 10
           }
         }
       };
@@ -118,7 +124,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @override
      */
     getNoCloneObject() {
-      return {'data': true, 'nodeData': true, 'linkData': true, 'nodes': true, 'links': true};
+      return { data: true, nodeData: true, linkData: true, nodes: true, links: true };
     }
   }
 
@@ -170,14 +176,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {array} nodesArray array of nodes to search
      * @return {array} array of containers to search
      */
-    GetCollapsedContainers:(rootDataProvider, nodesArray) => {
+    GetCollapsedContainers: (rootDataProvider, nodesArray) => {
       var collapsedContainers = [];
       while (nodesArray.length > 0) {
         var node = nodesArray.shift();
         if (node['nodes']) {
-          node['nodes'].forEach((childNode) => {nodesArray.push(childNode);});
-        }
-        else {
+          node['nodes'].forEach((childNode) => {
+            nodesArray.push(childNode);
+          });
+        } else {
           var childDataProvider = rootDataProvider.getChildDataProvider(node['id']);
           var isEmpty = childDataProvider ? childDataProvider.isEmpty() === 'yes' : true;
           if (!isEmpty && node['descendantsConnectivity'] !== 'disjoint') {
@@ -198,7 +205,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     GetNodeOption: (comp, node) => {
       // build path from child node to root node
       var path = [node.getId()];
-      while(node && node.getGroupId()) {
+      while (node && node.getGroupId()) {
         var groupId = node.getGroupId();
         path.push(groupId);
         node = comp.getNodeById(groupId);
@@ -208,11 +215,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var testId = path.pop();
       var options = [comp.getOptions()];
       var context = comp.getCtx();
-      while(testId && options[0].nodes) {
-      options = options[0].nodes.filter((item) => {
+      while (testId && options[0].nodes) {
+        options = options[0].nodes.filter((item) => {
           return DvtDiagramDataUtils.compareValues(context, item.id, testId);
-      });
-      testId = path.pop();
+        });
+        testId = path.pop();
       }
       return options[0];
     },
@@ -231,56 +238,53 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       return dvt.Obj.compareValues(ctx, obj1, obj2);
     },
 
-
-
-      /**
-       * Rotate label bounds
-       * @param {DvtRectandle} bounds label bounds
-       * @param {number} rotAngle rotation angle
-       * @param {DvtDiagramPoint} rotPoint rotation point
-       * @return {dvt.Rectangle} bounds for the rotated label
-       * @protected
-       */
-      RotateBounds: (bounds, rotAngle, rotPoint) => {
-        if (rotAngle == null && !rotPoint) {
-          return bounds;
-        }
-
-        var topLeft = new dvt.Point(bounds.x, bounds.y);
-        var topRight = new dvt.Point(bounds.x + bounds.w, bounds.y);
-        var bottomLeft = new dvt.Point(bounds.x, bounds.y + bounds.h);
-        var bottomRight = new dvt.Point(bounds.x + bounds.w, bounds.y + bounds.h);
-
-        var mat = new dvt.Matrix();
-        if (rotAngle != null) {
-          if (rotPoint) {
-            mat = mat.translate(- rotPoint.x, - rotPoint.y);
-          }
-          mat = mat.rotate(rotAngle);
-          if (rotPoint) {
-            mat = mat.translate(rotPoint.x, rotPoint.y);
-          }
-        }
-
-        var tl = mat.transformPoint(topLeft);
-        var tr = mat.transformPoint(topRight);
-        var bl = mat.transformPoint(bottomLeft);
-        var br = mat.transformPoint(bottomRight);
-
-        var minX = Math.min(Math.min(tl.x, tr.x), Math.min(bl.x, br.x));
-        var maxX = Math.max(Math.max(tl.x, tr.x), Math.max(bl.x, br.x));
-        var minY = Math.min(Math.min(tl.y, tr.y), Math.min(bl.y, br.y));
-        var maxY = Math.max(Math.max(tl.y, tr.y), Math.max(bl.y, br.y));
-
-        return new dvt.Rectangle(minX, minY, maxX - minX, maxY - minY);
+    /**
+     * Rotate label bounds
+     * @param {DvtRectandle} bounds label bounds
+     * @param {number} rotAngle rotation angle
+     * @param {DvtDiagramPoint} rotPoint rotation point
+     * @return {dvt.Rectangle} bounds for the rotated label
+     * @protected
+     */
+    RotateBounds: (bounds, rotAngle, rotPoint) => {
+      if (rotAngle == null && !rotPoint) {
+        return bounds;
       }
+
+      var topLeft = new dvt.Point(bounds.x, bounds.y);
+      var topRight = new dvt.Point(bounds.x + bounds.w, bounds.y);
+      var bottomLeft = new dvt.Point(bounds.x, bounds.y + bounds.h);
+      var bottomRight = new dvt.Point(bounds.x + bounds.w, bounds.y + bounds.h);
+
+      var mat = new dvt.Matrix();
+      if (rotAngle != null) {
+        if (rotPoint) {
+          mat = mat.translate(-rotPoint.x, -rotPoint.y);
+        }
+        mat = mat.rotate(rotAngle);
+        if (rotPoint) {
+          mat = mat.translate(rotPoint.x, rotPoint.y);
+        }
+      }
+
+      var tl = mat.transformPoint(topLeft);
+      var tr = mat.transformPoint(topRight);
+      var bl = mat.transformPoint(bottomLeft);
+      var br = mat.transformPoint(bottomRight);
+
+      var minX = Math.min(Math.min(tl.x, tr.x), Math.min(bl.x, br.x));
+      var maxX = Math.max(Math.max(tl.x, tr.x), Math.max(bl.x, br.x));
+      var minY = Math.min(Math.min(tl.y, tr.y), Math.min(bl.y, br.y));
+      var maxY = Math.max(Math.max(tl.y, tr.y), Math.max(bl.y, br.y));
+
+      return new dvt.Rectangle(minX, minY, maxX - minX, maxY - minY);
+    }
   };
 
   /**
    * Dvt Diagram Link Utils
    */
   const DvtDiagramLinkUtils = {
-
     /**
      * Gets dash size
      * @param {string} strokeType stroke type
@@ -295,11 +299,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       // For underlays, increase the dashes by 2 (1 pixel on each side) and decrease the gaps by 2 (1 pixel on each side)
       else if (strokeType === 'dash') {
         return bUnderlay ? '8,2' : '6,4';
-      }
-      else if (strokeType === 'dot') {
+      } else if (strokeType === 'dot') {
         return bUnderlay ? '4,1' : '2,3';
-      }
-      else if (strokeType === 'dashDot') {
+      } else if (strokeType === 'dashDot') {
         return bUnderlay ? '10,1,4,1' : '8,3,2,3';
       }
       return null;
@@ -326,9 +328,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {object} stroke object
      */
     getStrokeObject: (linkStyle, bUnderlay) => {
-      return {'_type' : linkStyle,
-        'strokeDasharray' : DvtDiagramLinkUtils.GetStrokeDash(linkStyle, bUnderlay),
-        'strokeDashoffset' : DvtDiagramLinkUtils.GetStrokeDashOffset(linkStyle, bUnderlay)};
+      return {
+        _type: linkStyle,
+        strokeDasharray: DvtDiagramLinkUtils.GetStrokeDash(linkStyle, bUnderlay),
+        strokeDashoffset: DvtDiagramLinkUtils.GetStrokeDashOffset(linkStyle, bUnderlay)
+      };
     },
 
     /**
@@ -341,8 +345,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (strokeDashArray) {
         var dashArray = strokeDashArray.split(/[\s,]+/);
         //Convert odd number of array values to even number of values by copying itself
-        if (dashArray.length % 2 > 0)
-          dashArray = dashArray.concat(dashArray);
+        if (dashArray.length % 2 > 0) dashArray = dashArray.concat(dashArray);
         return dashArray.toString();
       }
       return strokeDashArray;
@@ -361,10 +364,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         //Do the +2, -2 transformation on the resulting even length array. +2 for the dash and -2 for the dot
         for (var index = 0; index < dashArray.length; index++) {
           var item = dvt.CSSStyle.toNumber(dashArray[index].trim());
-          var resp = (item >= 2) ? item - 2 : 0;
-          stringBuf += (index % 2 == 0) ? (item + 2) : resp;
-          if (index < dashArray.length - 1)
-            stringBuf += ', ';
+          var resp = item >= 2 ? item - 2 : 0;
+          stringBuf += index % 2 == 0 ? item + 2 : resp;
+          if (index < dashArray.length - 1) stringBuf += ', ';
         }
         return stringBuf;
       }
@@ -383,8 +385,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         for (var i = 0; i < points.length; i += 2) {
           if (i == 0) {
             pathCmds.push('M');
-          }
-          else {
+          } else {
             pathCmds.push('L');
           }
           pathCmds.push(points[i], points[i + 1]);
@@ -432,7 +433,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {dvt.Rectangle} rectangle that represents link bounds
      */
     GetLinkBounds: (linkObj) => {
-      var linkBounds = new dvt.Rectangle(Number.MAX_VALUE, Number.MAX_VALUE, - Number.MAX_VALUE, - Number.MAX_VALUE);
+      var linkBounds = new dvt.Rectangle(
+        Number.MAX_VALUE,
+        Number.MAX_VALUE,
+        -Number.MAX_VALUE,
+        -Number.MAX_VALUE
+      );
       var points = linkObj.getPoints();
       if (points) {
         if (DvtDiagramLinkUtils.IsPath(points)) {
@@ -467,8 +473,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         }
         bounds.x = Math.min(linkBounds.x, labelBounds.x + labelPos.x);
         bounds.y = Math.min(linkBounds.y, labelBounds.y + labelPos.y);
-        bounds.w = Math.max(linkBounds.x + linkBounds.w, labelBounds.x + labelPos.x + labelBounds.w) - bounds.x;
-        bounds.h = Math.max(linkBounds.y + linkBounds.h, labelBounds.y + labelPos.y + labelBounds.h) - bounds.y;
+        bounds.w =
+          Math.max(linkBounds.x + linkBounds.w, labelBounds.x + labelPos.x + labelBounds.w) -
+          bounds.x;
+        bounds.h =
+          Math.max(linkBounds.y + linkBounds.h, labelBounds.y + labelPos.y + labelBounds.h) -
+          bounds.y;
       }
 
       return bounds;
@@ -479,7 +489,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
    * Dvt Diagram Link Connector utils
    */
   const DvtDiagramLinkConnectorUtils = {
-
     /**
      * Creates the shape for a link connector
      * @param {dvt.Context} context the rendering context
@@ -494,10 +503,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       switch (connectorType) {
         case 'arrow':
-          return DvtDiagramLinkConnectorUtils.CreateFilledArrowConnector(context, linkWidth, parentLink.getLinkColor());
+          return DvtDiagramLinkConnectorUtils.CreateFilledArrowConnector(
+            context,
+            linkWidth,
+            parentLink.getLinkColor()
+          );
 
         case 'arrowConcave':
-          return DvtDiagramLinkConnectorUtils.CreateFilledConcaveArrowConnector(context, linkWidth, parentLink.getLinkColor());
+          return DvtDiagramLinkConnectorUtils.CreateFilledConcaveArrowConnector(
+            context,
+            linkWidth,
+            parentLink.getLinkColor()
+          );
 
         case 'arrowOpen':
           return DvtDiagramLinkConnectorUtils.CreateOpenArrowConnector(context, linkWidth, stroke);
@@ -509,71 +526,64 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           return DvtDiagramLinkConnectorUtils.CreateRectangleConnector(context, linkWidth, stroke);
 
         case 'rectangleRounded':
-          return DvtDiagramLinkConnectorUtils.CreateRoundedRectangleConnector(context, linkWidth, stroke);
+          return DvtDiagramLinkConnectorUtils.CreateRoundedRectangleConnector(
+            context,
+            linkWidth,
+            stroke
+          );
       }
       return null;
     },
 
-
     /**
      * @protected
      */
-    TransformConnector: (connector, connectorType, points, connectorPos) =>
-    {
-      var mat = DvtDiagramLinkConnectorUtils.CalcConnectorTransform(connector, connectorType, points, connectorPos);
+    TransformConnector: (connector, connectorType, points, connectorPos) => {
+      var mat = DvtDiagramLinkConnectorUtils.CalcConnectorTransform(
+        connector,
+        connectorType,
+        points,
+        connectorPos
+      );
       connector.setMatrix(mat);
     },
 
-
     /**
      * @protected
      */
-    CalcConnectorTransform: (connector, connectorType, points, connectorPos) =>
-    {
-
+    CalcConnectorTransform: (connector, connectorType, points, connectorPos) => {
       var x1 = -1;
       var y1 = 0;
       var x2 = 0;
       var y2 = 0;
 
       if (points) {
-
         var numPoints = points.length;
-        if (connectorPos === 1)
-        {
+        if (connectorPos === 1) {
           //make sure the array is long enough
-          if (numPoints >= 2)
-          {
+          if (numPoints >= 2) {
             x2 = points[numPoints - 2];
             y2 = points[numPoints - 1];
           }
-          if (numPoints >= 4)
-          {
+          if (numPoints >= 4) {
             x1 = points[numPoints - 4];
             y1 = points[numPoints - 3];
-          }
-          else
-          {
-            x1 = x2 - .0001;
+          } else {
+            x1 = x2 - 0.0001;
             y1 = y2;
           }
-        }
-        else //if (connectorPos === 0)
-        {
+        } //if (connectorPos === 0)
+        else {
           //make sure the array is long enough
-          if (numPoints >= 2)
-          {
+          if (numPoints >= 2) {
             x2 = points[0];
             y2 = points[1];
           }
-          if (numPoints >= 4)
-          {
+          if (numPoints >= 4) {
             x1 = points[2];
             y1 = points[3];
-          }
-          else
-          {
-            x1 = x2 + .0001;
+          } else {
+            x1 = x2 + 0.0001;
             y1 = y2;
           }
         }
@@ -584,8 +594,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var angleRads = DvtDiagramLinkConnectorUtils.CalcConnectorRotation(x1, y1, x2, y2);
 
       var origMat = connector._connectorOrigMat;
-      if (!origMat)
-      {
+      if (!origMat) {
         origMat = connector.getMatrix();
         connector._connectorOrigMat = origMat;
       }
@@ -615,8 +624,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     /**
      * @protected
      */
-    CalcConnectorRotation: (x1, y1, x2, y2) =>
-    {
+    CalcConnectorRotation: (x1, y1, x2, y2) => {
       var diffY = y2 - y1;
       var diffX = x2 - x1;
       return Math.atan2(diffY, diffX);
@@ -632,14 +640,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     CreateFilledConcaveArrowConnector: (context, linkWidth, linkColor) => {
-      var scaleFactor = DvtDiagramLinkConnectorUtils._getReduce(linkWidth, .5);
+      var scaleFactor = DvtDiagramLinkConnectorUtils._getReduce(linkWidth, 0.5);
       var arrowLength = scaleFactor * 6;
-      var arrowWidth = arrowLength * .8;
+      var arrowWidth = arrowLength * 0.8;
 
-      var points = [-.22 * arrowLength, -.5 * arrowWidth,
-                    .78 * arrowLength, 0,
-                    -.22 * arrowLength, .5 * arrowWidth,
-                    0, 0];
+      var points = [
+        -0.22 * arrowLength,
+        -0.5 * arrowWidth,
+        0.78 * arrowLength,
+        0,
+        -0.22 * arrowLength,
+        0.5 * arrowWidth,
+        0,
+        0
+      ];
 
       var filledArrowHead = new dvt.Polygon(context, points);
       filledArrowHead.setSolidFill(linkColor);
@@ -656,19 +670,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     CreateFilledArrowConnector: (context, linkWidth, linkColor) => {
-      var scaleFactor = DvtDiagramLinkConnectorUtils._getReduce(linkWidth, .5);
+      var scaleFactor = DvtDiagramLinkConnectorUtils._getReduce(linkWidth, 0.5);
       var arrowLength = scaleFactor * 5;
-      var arrowWidth = arrowLength * .8;
+      var arrowWidth = arrowLength * 0.8;
 
-      var points = [0, -.5 * arrowWidth,
-                    arrowLength, 0,
-                    0, .5 * arrowWidth];
+      var points = [0, -0.5 * arrowWidth, arrowLength, 0, 0, 0.5 * arrowWidth];
 
       var filledArrowHead = new dvt.Polygon(context, points);
       filledArrowHead.setSolidFill(linkColor);
       return filledArrowHead;
     },
-
 
     //
     // Function to size the arrow head non-linearly
@@ -680,7 +691,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (length <= 1) return length;
       var tempLength = length - 1;
       tempLength *= fract;
-      return (1 + tempLength);
+      return 1 + tempLength;
     },
 
     /**
@@ -696,9 +707,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var arrowWidth = linkWidth * 3;
       var strokeWidth = stroke.getWidth();
 
-      var points = [-arrowWidth + strokeWidth * Math.sqrt(2) / 2, -arrowWidth,
-                    strokeWidth * Math.sqrt(2) / 2, 0,
-                    -arrowWidth + strokeWidth * Math.sqrt(2) / 2, arrowWidth];
+      var points = [
+        -arrowWidth + (strokeWidth * Math.sqrt(2)) / 2,
+        -arrowWidth,
+        (strokeWidth * Math.sqrt(2)) / 2,
+        0,
+        -arrowWidth + (strokeWidth * Math.sqrt(2)) / 2,
+        arrowWidth
+      ];
 
       var arrowHead = new dvt.Polyline(context, points);
       arrowHead.setStroke(stroke);
@@ -746,7 +762,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     CreateRectangleConnector: (context, linkWidth, stroke) => {
       var length = DvtDiagramLinkConnectorUtils.getRectangleLength(linkWidth);
-      var conShape = new dvt.Rect(context, 0 , -length / 2, length, length);
+      var conShape = new dvt.Rect(context, 0, -length / 2, length, length);
       conShape.setStroke(stroke);
       conShape.setFill(null);
       return conShape;
@@ -762,7 +778,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     CreateRoundedRectangleConnector: (context, linkWidth, stroke) => {
-      var conShape = DvtDiagramLinkConnectorUtils.CreateRectangleConnector(context, linkWidth, stroke);
+      var conShape = DvtDiagramLinkConnectorUtils.CreateRectangleConnector(
+        context,
+        linkWidth,
+        stroke
+      );
       conShape.setCornerRadius(linkWidth);
       return conShape;
     },
@@ -779,7 +799,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     GetConnectorOffset: (connector, connectorType, stroke, parentLink) => {
-      return DvtDiagramLinkConnectorUtils.getStandardConnectorOffset(connectorType, parentLink.GetAppliedLinkWidth(), stroke.getWidth());
+      return DvtDiagramLinkConnectorUtils.getStandardConnectorOffset(
+        connectorType,
+        parentLink.GetAppliedLinkWidth(),
+        stroke.getWidth()
+      );
     },
 
     /**
@@ -795,22 +819,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var arrowLength;
       switch (connectorType) {
         case 'arrowOpen':
-          return (strokeWidth * Math.sqrt(2));
+          return strokeWidth * Math.sqrt(2);
 
         case 'arrow':
-          scaleFactor = DvtDiagramLinkConnectorUtils._getReduce(linkWidth, .5);
+          scaleFactor = DvtDiagramLinkConnectorUtils._getReduce(linkWidth, 0.5);
           arrowLength = scaleFactor * 5;
           return arrowLength;
 
         case 'arrowConcave':
-          scaleFactor = DvtDiagramLinkConnectorUtils._getReduce(linkWidth, .5);
+          scaleFactor = DvtDiagramLinkConnectorUtils._getReduce(linkWidth, 0.5);
           arrowLength = scaleFactor * 6;
-          return .78 * arrowLength;
+          return 0.78 * arrowLength;
 
         case 'circle':
           var radius = DvtDiagramLinkConnectorUtils.getCircleRadius(strokeWidth);
           return 2 * radius + strokeWidth / 2;
-
 
         case 'rectangle':
         case 'rectangleRounded':
@@ -835,12 +858,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
   class DvtDiagramLinkUnderlay extends dvt.Container {
     constructor(context, points, stroke, styleObj, styleClass) {
       super(context);
-      if (!points)
-        points = ['M', 0, 0, 'L', 1, 0];
+      if (!points) points = ['M', 0, 0, 'L', 1, 0];
 
       this._stroke = stroke;
-      if (!this._stroke)
-        this._stroke = new dvt.Stroke('#ffffff', 1, 1, true);
+      if (!this._stroke) this._stroke = new dvt.Stroke('#ffffff', 1, 1, true);
 
       this._underlay = new dvt.Path(context, points);
       this._underlay.setStroke(this._stroke);
@@ -863,8 +884,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     addUnderlayStart(points, connectorType, parentLink) {
       var connectorUnderlay = this.CreateConnectorUnderlay(points, connectorType, parentLink, 0);
-      if (this._underlayStart)
-        this.removeChild(this._underlayStart);
+      if (this._underlayStart) this.removeChild(this._underlayStart);
       this._underlayStart = connectorUnderlay;
       this._underlayStartType = connectorType;
       this.addChild(this._underlayStart);
@@ -879,8 +899,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     addUnderlayEnd(points, connectorType, parentLink) {
       var connectorUnderlay = this.CreateConnectorUnderlay(points, connectorType, parentLink, 1);
-      if (this._underlayEnd)
-        this.removeChild(this._underlayEnd);
+      if (this._underlayEnd) this.removeChild(this._underlayEnd);
       this._underlayEnd = connectorUnderlay;
       this._underlayEndType = connectorType;
       this.addChild(this._underlayEnd);
@@ -897,14 +916,27 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     CreateConnectorUnderlay(points, connectorType, parentLink, connectorPos) {
       // link stroke uses fixed width, but link connectors are be scalable, so reset fixed width property for the link connector stroke
-      var stroke = new dvt.Stroke(this._stroke.getColor(), this._stroke.getAlpha(), this._stroke.getWidth(),
-        false, this._stroke.getDashProps());
+      var stroke = new dvt.Stroke(
+        this._stroke.getColor(),
+        this._stroke.getAlpha(),
+        this._stroke.getWidth(),
+        false,
+        this._stroke.getDashProps()
+      );
 
-      var connectorUnderlay = DvtDiagramLinkConnectorUtils.CreateConnectorShape(this.getCtx(), connectorType, stroke, parentLink);
+      var connectorUnderlay = DvtDiagramLinkConnectorUtils.CreateConnectorShape(
+        this.getCtx(),
+        connectorType,
+        stroke,
+        parentLink
+      );
 
-      DvtDiagramLinkConnectorUtils.TransformConnector(connectorUnderlay,
-          connectorType,
-          points, connectorPos);
+      DvtDiagramLinkConnectorUtils.TransformConnector(
+        connectorUnderlay,
+        connectorType,
+        points,
+        connectorPos
+      );
       return connectorUnderlay;
     }
 
@@ -943,8 +975,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       if (this._underlayStart) {
         var startStroke;
-        if (this._underlayStartType == 'arrow' ||
-            this._underlayStartType == 'arrowConcave') {
+        if (this._underlayStartType == 'arrow' || this._underlayStartType == 'arrowConcave') {
           startStroke = new dvt.Stroke(stroke.getColor(), stroke.getAlpha(), strokeOffset);
           this._underlayStart.setSolidFill(stroke.getColor());
         } else {
@@ -955,8 +986,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       if (this._underlayEnd) {
         var endStroke;
-        if (this._underlayEndType == 'arrow' ||
-            this._underlayEndType == 'arrowConcave') {
+        if (this._underlayEndType == 'arrow' || this._underlayEndType == 'arrowConcave') {
           endStroke = new dvt.Stroke(stroke.getColor(), stroke.getAlpha(), strokeOffset);
           this._underlayEnd.setSolidFill(stroke.getColor());
         } else {
@@ -978,32 +1008,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Hides underlay start
      */
     hideUnderlayStart() {
-      if (this._underlayStart)
-        this.removeChild(this._underlayStart);
+      if (this._underlayStart) this.removeChild(this._underlayStart);
     }
 
     /**
      * Hides underlay end
      */
     hideUnderlayEnd() {
-      if (this._underlayEnd)
-        this.removeChild(this._underlayEnd);
+      if (this._underlayEnd) this.removeChild(this._underlayEnd);
     }
 
     /**
      * Shows underlay start
      */
     showUnderlayStart() {
-      if (this._underlayStart)
-        this.addChild(this._underlayStart);
+      if (this._underlayStart) this.addChild(this._underlayStart);
     }
 
     /**
      * Shows underlay end
      */
     showUnderlayEnd() {
-      if (this._underlayEnd)
-        this.addChild(this._underlayEnd);
+      if (this._underlayEnd) this.addChild(this._underlayEnd);
     }
   }
 
@@ -1129,7 +1155,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       return this.getData()['startConnectorType'];
     }
 
-
     getEndConnectorType() {
       return this.getData()['endConnectorType'];
     }
@@ -1142,7 +1167,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     getStartConnectorOffset() {
       if (this.getStartConnectorType()) {
-        return DvtDiagramLinkConnectorUtils.getStandardConnectorOffset(this.getStartConnectorType(), this.GetAppliedLinkWidth(), this.GetAppliedLinkWidth());
+        return DvtDiagramLinkConnectorUtils.getStandardConnectorOffset(
+          this.getStartConnectorType(),
+          this.GetAppliedLinkWidth(),
+          this.GetAppliedLinkWidth()
+        );
       }
       return 0;
     }
@@ -1155,11 +1184,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     getEndConnectorOffset() {
       if (this.getEndConnectorType()) {
-        return DvtDiagramLinkConnectorUtils.getStandardConnectorOffset(this.getEndConnectorType(), this.GetAppliedLinkWidth(), this.GetAppliedLinkWidth());
+        return DvtDiagramLinkConnectorUtils.getStandardConnectorOffset(
+          this.getEndConnectorType(),
+          this.GetAppliedLinkWidth(),
+          this.GetAppliedLinkWidth()
+        );
       }
       return 0;
     }
-
 
     /**
      * Renders diagram link
@@ -1173,15 +1205,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (groupId) {
         var context = this.getCtx();
         var linkParent = diagram.getNodeById(groupId).GetChildNodePane();
-        if( DvtDiagramDataUtils.compareValues(context, groupId, startGroupId) && DvtDiagramDataUtils.compareValues(context, groupId, endGroupId) )
+        if (
+          DvtDiagramDataUtils.compareValues(context, groupId, startGroupId) &&
+          DvtDiagramDataUtils.compareValues(context, groupId, endGroupId)
+        )
           linkParent.addChildAt(this, 0);
-        else
-          linkParent.addChild(this); //cross container link inside container
-      }
-      else if (startGroupId || endGroupId) { //cross container link to the top level
+        else linkParent.addChild(this); //cross container link inside container
+      } else if (startGroupId || endGroupId) {
+        //cross container link to the top level
         diagram.getNodesPane().addChild(this);
-      }
-      else { //flat diagram or link connects top level nodes
+      } else {
+        //flat diagram or link connects top level nodes
         diagram.getLinksPane().addChild(this);
       }
 
@@ -1203,14 +1237,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (renderer) {
         this._customPoints = points;
         var prevState = {
-          'hovered': false,
-          'selected': false,
-          'focused': false,
-          'inActionableMode': this.hasActiveInnerElems
+          hovered: false,
+          selected: false,
+          focused: false,
+          inActionableMode: this.hasActiveInnerElems
         };
         this._applyCustomLinkContent(renderer, this._getState(), prevState);
-      }
-      else {
+      } else {
         if (!this._pathCmds && points) {
           DvtDiagramLink._renderLinkShape(this.getData(), this);
         }
@@ -1218,46 +1251,70 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (!DvtDiagramLinkUtils.IsPath(points)) {
           this._points = points;
           this._pathCmds = DvtDiagramLinkUtils.ConvertToPath(points);
-        }
-        else {
+        } else {
           this._pathCmds = points;
           this._points = DvtDiagramLinkUtils.ConvertToPoints(points);
         }
 
         if (this._shape) {
-
           if (this._shape instanceof dvt.Path) {
             this._shape.setCommandsArray(this._pathCmds);
 
             if (!this._endConnector) {
               this._endConnector = this.CreateConnector(this._points, this.getEndConnectorType(), 1);
-            }
-            else {
-              DvtDiagramLinkConnectorUtils.TransformConnector(this._endConnector, this.getEndConnectorType(), this._points, 1);
+            } else {
+              DvtDiagramLinkConnectorUtils.TransformConnector(
+                this._endConnector,
+                this.getEndConnectorType(),
+                this._points,
+                1
+              );
             }
             if (!this._startConnector) {
-              this._startConnector = this.CreateConnector(this._points, this.getStartConnectorType(), 0);
-            }
-            else {
-              DvtDiagramLinkConnectorUtils.TransformConnector(this._startConnector, this.getStartConnectorType(), this._points, 0);
+              this._startConnector = this.CreateConnector(
+                this._points,
+                this.getStartConnectorType(),
+                0
+              );
+            } else {
+              DvtDiagramLinkConnectorUtils.TransformConnector(
+                this._startConnector,
+                this.getStartConnectorType(),
+                this._points,
+                0
+              );
             }
           }
         }
         //need to update the selection feedback when animating a link
-        var underlayStart = null, underlayEnd = null;
+        var underlayStart = null,
+          underlayEnd = null;
         if (this._linkUnderlay && this._linkUnderlay.getUnderlay() instanceof dvt.Path) {
           this._linkUnderlay.getUnderlay().setCommandsArray(this._pathCmds);
         }
         if (this._linkUnderlay && (underlayStart = this._linkUnderlay.getUnderlayStart())) {
-          DvtDiagramLinkConnectorUtils.TransformConnector(underlayStart, this.getStartConnectorType(), this._points, 0);
+          DvtDiagramLinkConnectorUtils.TransformConnector(
+            underlayStart,
+            this.getStartConnectorType(),
+            this._points,
+            0
+          );
         }
         if (this._linkUnderlay && (underlayEnd = this._linkUnderlay.getUnderlayEnd())) {
-          DvtDiagramLinkConnectorUtils.TransformConnector(underlayEnd, this.getEndConnectorType(), this._points, 1);
+          DvtDiagramLinkConnectorUtils.TransformConnector(
+            underlayEnd,
+            this.getEndConnectorType(),
+            this._points,
+            1
+          );
         }
 
         //: need to update the hit detection underlay when animating
         //a link
-        if (this._hitDetectionUnderlay && this._hitDetectionUnderlay.getUnderlay() instanceof dvt.Path) {
+        if (
+          this._hitDetectionUnderlay &&
+          this._hitDetectionUnderlay.getUnderlay() instanceof dvt.Path
+        ) {
           this._hitDetectionUnderlay.getUnderlay().setCommandsArray(this._pathCmds);
         }
         if (this._startHandle) {
@@ -1276,10 +1333,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _getState() {
       return {
-        'hovered': this._isShowingHoverEffect,
-        'selected': this.isSelected(),
-        'focused': this._isShowingKeyboardFocusEffect,
-        'inActionableMode': this.hasActiveInnerElems
+        hovered: this._isShowingHoverEffect,
+        selected: this.isSelected(),
+        focused: this._isShowingKeyboardFocusEffect,
+        inActionableMode: this.hasActiveInnerElems
       };
     }
 
@@ -1293,13 +1350,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     _applyCustomLinkContent(renderer, state, prevState) {
       var contextHandler = this._diagram.getOptions()['_contextHandler'];
       if (!contextHandler) {
-        this._diagram.Log('Diagram: could not add custom link content - context handler is undefined', 1);
+        this._diagram.Log(
+          'Diagram: could not add custom link content - context handler is undefined',
+          1
+        );
         return;
       }
 
-      var context = contextHandler(this.isPromoted() ? 'promotedLink' : 'link',
-        this.getElem(), this._customLinkContent, null, this.getDataContext(),
-        state, prevState, this._customPoints);
+      var context = contextHandler(
+        this.isPromoted() ? 'promotedLink' : 'link',
+        this.getElem(),
+        this._customLinkContent,
+        null,
+        this.getDataContext(),
+        state,
+        prevState,
+        this._customPoints
+      );
 
       var linkContent = renderer(context);
       // Disable any new focusable elements that may have been added during render
@@ -1330,9 +1397,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (!stashedOldContents) {
           if (this._customLinkContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
             this.getContainerElem().removeChild(this._customLinkContent);
-          }
-          else if (Array.isArray(this._customLinkContent)) {
-            this._customLinkContent.forEach((node) => {this.getContainerElem().removeChild(node);});
+          } else if (Array.isArray(this._customLinkContent)) {
+            this._customLinkContent.forEach((node) => {
+              this.getContainerElem().removeChild(node);
+            });
           }
         }
         this._customLinkContent = null;
@@ -1350,13 +1418,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (processedContent && processedContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
           DvtDiagramLink._insertCustomElem(this, processedContent, this._labelObj);
           this._customLinkContent = processedContent;
-        }
-        else if (processedContent && Array.isArray(processedContent)) {
-          processedContent.forEach((item) => {DvtDiagramLink._insertCustomElem(this, item, this._labelObj);});
+        } else if (processedContent && Array.isArray(processedContent)) {
+          processedContent.forEach((item) => {
+            DvtDiagramLink._insertCustomElem(this, item, this._labelObj);
+          });
           this._customLinkContent = processedContent;
-        }
-        else { // not an svg fragment
-          this._diagram.Log('Diagram: could not add custom link content for the link ' + this.getId() + linkContent, 1);
+        } else {
+          // not an svg fragment
+          this._diagram.Log(
+            'Diagram: could not add custom link content for the link ' + this.getId() + linkContent,
+            1
+          );
         }
       }
 
@@ -1395,13 +1467,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (container.getCtx().isCustomElement()) {
         // Don't need to do anything special for links, just apply the style to the shape
         shape.setStyle(linkStyle);
-      }
-      else {
+      } else {
         // Support for original link styles for widgets: string type  and a style object type
         //If the linkstyle is an object directly apply it on the link
         if (linkStyle && linkStyle instanceof Object) {
           if (linkStyle['_type'] == DvtDiagramLink.CUSTOM_STYLE && linkStyle['strokeDasharray']) {
-            linkStyle['strokeDasharray'] = DvtDiagramLinkUtils.processStrokeDashArray(linkStyle['strokeDasharray']);
+            linkStyle['strokeDasharray'] = DvtDiagramLinkUtils.processStrokeDashArray(
+              linkStyle['strokeDasharray']
+            );
           }
           dashProps = {
             dashArray: linkStyle['strokeDasharray'],
@@ -1410,11 +1483,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
           //Remove already processed style attributes
           var styleObj = dvt.JsonUtils.clone(linkStyle);
-          ['_type', 'strokeDasharray', 'strokeDashoffset'].forEach((entry) => {delete styleObj[entry];});
+          ['_type', 'strokeDasharray', 'strokeDashoffset'].forEach((entry) => {
+            delete styleObj[entry];
+          });
           //set the style object directly in style
           shape.setStyle(styleObj);
-        }
-        else if (linkStyle !== 'solid') {
+        } else if (linkStyle !== 'solid') {
           //Use default stroke type if no link style is specified
           dashProps = {
             dashArray: DvtDiagramLinkUtils.GetStrokeDash(linkStyle),
@@ -1428,7 +1502,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       container.setShape(shape);
       container.addChildAt(shape, 1);
     }
-
 
     /**
      * Renders link labels
@@ -1445,8 +1518,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var multiLineText = rtl ? dvt.MultilineText.H_ALIGN_RIGHT : dvt.MultilineText.H_ALIGN_LEFT;
         var outputText = rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
         var halign = bMultiline ? multiLineText : outputText;
-        var valign =  bMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_TOP;
-        var label = DvtDiagramLink.createText(diagram.getCtx(), labelString, linkData['labelStyle'], halign, valign, bMultiline);
+        var valign = bMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_TOP;
+        var label = DvtDiagramLink.createText(
+          diagram.getCtx(),
+          labelString,
+          linkData['labelStyle'],
+          halign,
+          valign,
+          bMultiline
+        );
 
         var maxWidth = linkData['labelStyle'].getMaxWidth() || linkData['labelStyle'].getWidth();
         var labelWidth = dvt.CSSStyle.toNumber(maxWidth);
@@ -1454,8 +1534,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (!maxWidth) {
           container.addChild(label);
           container._labelObj = label;
-        }
-        else if (labelWidth > 0 && dvt.TextUtils.fitText(label, labelWidth, Infinity, container)) {
+        } else if (labelWidth > 0 && dvt.TextUtils.fitText(label, labelWidth, Infinity, container)) {
           container._labelObj = label;
         }
       }
@@ -1474,9 +1553,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     static createText(ctx, strText, style, halign, valign, bMultiline) {
       var text;
       if (style.hasBackgroundStyles())
-        text = bMultiline ? new dvt.BackgroundMultilineText(ctx, strText, 0, 0, style, null, true) : new dvt.BackgroundOutputText(ctx, strText, 0, 0, style);
+        text = bMultiline
+          ? new dvt.BackgroundMultilineText(ctx, strText, 0, 0, style, null, true)
+          : new dvt.BackgroundOutputText(ctx, strText, 0, 0, style);
       else {
-        text = bMultiline ? new dvt.MultilineText(ctx, strText, 0, 0, null, true) : new dvt.OutputText(ctx, strText, 0, 0);
+        text = bMultiline
+          ? new dvt.MultilineText(ctx, strText, 0, 0, null, true)
+          : new dvt.OutputText(ctx, strText, 0, 0);
         text.setCSSStyle(style);
       }
 
@@ -1495,12 +1578,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var selectionRenderer = this._getCustomRenderer('selectionRenderer');
       if (selectionRenderer) {
         this._applyCustomLinkContent(selectionRenderer, this._getState(), prevState);
-      }
-      else {
+      } else {
         if (selected) {
           this._showFeedback(this._isShowingHoverEffect, true);
-        }
-        else {
+        } else {
           this._hideFeedback();
         }
       }
@@ -1512,7 +1593,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @override
      */
     isSelectable() {
-      return this.GetDiagram().isSelectionSupported() && this.getData()['selectable'] != 'off' && !this.hasActiveInnerElems;
+      return (
+        this.GetDiagram().isSelectionSupported() &&
+        this.getData()['selectable'] != 'off' &&
+        !this.hasActiveInnerElems
+      );
     }
 
     /**
@@ -1528,13 +1613,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           this._savedStroke = this.getShape().getStroke();
         }
         var copyStroke = this.getShape().getStroke();
-        var hoverStroke = new dvt.Stroke(this.getData()['hoverInnerColor'],
-          copyStroke.getAlpha(), copyStroke.getWidth(), copyStroke.isFixedWidth(), copyStroke.getDashProps());
+        var hoverStroke = new dvt.Stroke(
+          this.getData()['hoverInnerColor'],
+          copyStroke.getAlpha(),
+          copyStroke.getWidth(),
+          copyStroke.isFixedWidth(),
+          copyStroke.getDashProps()
+        );
         this.getShape().setStroke(hoverStroke);
         this.ReplaceConnectorColor(this.getStartConnector(), hoverStroke);
         this.ReplaceConnectorColor(this.getEndConnector(), hoverStroke);
-      }
-      else if (this._savedStroke) {
+      } else if (this._savedStroke) {
         this.getShape().setStroke(this._savedStroke);
         this.ReplaceConnectorColor(this.getStartConnector(), this._savedStroke);
         this.ReplaceConnectorColor(this.getEndConnector(), this._savedStroke);
@@ -1543,7 +1632,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       if (!this._linkUnderlay) {
         // the styles will be applied for custom elements only, since svgStyle && svgClassName are not supported for widgets
-        this._linkUnderlay = this.CreateFeedbackUnderlay('#000000', 1, 0, this.getData()['svgStyle'], this.getData()['svgClassName']);
+        this._linkUnderlay = this.CreateFeedbackUnderlay(
+          '#000000',
+          1,
+          0,
+          this.getData()['svgStyle'],
+          this.getData()['svgClassName']
+        );
         this.addChildAt(this._linkUnderlay, 0);
       }
       var color = bSelected ? this.getData()['selectionColor'] : this.getData()['hoverOuterColor'];
@@ -1559,7 +1654,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @private
      */
     _hideFeedback() {
-
       if (this._savedStroke) {
         this.getShape().setStroke(this._savedStroke);
         this.ReplaceConnectorColor(this.getStartConnector(), this._savedStroke);
@@ -1593,8 +1687,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var strokeType = linkStyle['_type'];
         var dashProps;
         if (strokeType == DvtDiagramLink.CUSTOM_STYLE) {
-          var strokeDashOffset = (linkStyle['strokeDashoffset'] != null) ?
-              (dvt.CSSStyle.toNumber(linkStyle['strokeDashoffset']) + 1) : 1;
+          var strokeDashOffset =
+            linkStyle['strokeDashoffset'] != null
+              ? dvt.CSSStyle.toNumber(linkStyle['strokeDashoffset']) + 1
+              : 1;
           dashProps = {
             dashArray: DvtDiagramLinkUtils.getCustomUnderlay(linkStyle['strokeDasharray']),
             dashOffset: strokeDashOffset
@@ -1657,13 +1753,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var hoverRenderer = this._getCustomRenderer('hoverRenderer');
         if (hoverRenderer) {
           this._applyCustomLinkContent(hoverRenderer, this._getState(), prevState);
-        }
-        else {
+        } else {
           this._showFeedback(true, this.isSelected());
         }
       }
     }
-
 
     /**
      * @override
@@ -1674,12 +1768,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var hoverRenderer = this._getCustomRenderer('hoverRenderer');
       if (hoverRenderer) {
         this._applyCustomLinkContent(hoverRenderer, this._getState(), prevState);
-      }
-      else {
+      } else {
         if (this.isSelected()) {
           this._showFeedback(false, true);
-        }
-        else {
+        } else {
           this._hideFeedback();
         }
       }
@@ -1691,7 +1783,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     highlight(bHighlight) {
       if (this._isHighlighted !== bHighlight) {
-        var highlightAlpha = bHighlight ? 1.0 : this._diagram.getOptions()['styleDefaults']['_highlightAlpha'];
+        var highlightAlpha = bHighlight
+          ? 1.0
+          : this._diagram.getOptions()['styleDefaults']['_highlightAlpha'];
         this.setAlpha(highlightAlpha);
         this._isHighlighted = bHighlight;
       }
@@ -1706,10 +1800,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var customTooltip = this.GetDiagram().getOptions()['tooltip'];
       var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
       if (tooltipFunc)
-        return this.GetDiagram().getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, this.getDataContext());
+        return this.GetDiagram()
+          .getCtx()
+          .getTooltipManager()
+          .getCustomTooltip(tooltipFunc, this.getDataContext());
 
       // Custom Tooltip from ShortDesc
-      return dvt.Displayable.resolveShortDesc(this.getShortDesc(), () => DvtDiagramLink.getShortDescContext(this));
+      return dvt.Displayable.resolveShortDesc(this.getShortDesc(), () =>
+        DvtDiagramLink.getShortDescContext(this)
+      );
     }
 
     /**
@@ -1720,7 +1819,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var translations = this.GetDiagram().getOptions().translations;
       if (this.isPromoted()) {
         var linkCount = this.getData()['_links'].length;
-        return dvt.ResourceUtils.format(translations[linkCount > 1 ? 'promotedLinks' : 'promotedLink'], [linkCount]);
+        return dvt.ResourceUtils.format(
+          translations[linkCount > 1 ? 'promotedLinks' : 'promotedLink'],
+          [linkCount]
+        );
       }
       return this.getData()['shortDesc'];
     }
@@ -1734,23 +1836,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (this.GetDiagram().isDataProviderMode()) {
         // return both type of data - template processed and originals
         if (this.isPromoted()) {
-          itemData = this.getData()['_links'].map((item) => {return item['_itemData']});
-          data = this.getData()['_links'][0]['_noTemplate'] ? itemData :  this.getData()['_links'];
-        }
-        else {
-          data =  this.getData();
+          itemData = this.getData()['_links'].map((item) => {
+            return item['_itemData'];
+          });
+          data = this.getData()['_links'][0]['_noTemplate'] ? itemData : this.getData()['_links'];
+        } else {
+          data = this.getData();
           itemData = this.getData()['_itemData'];
         }
       } else {
         data = this.isPromoted() ? this.getData()['_links'] : this.getData()['_itemData'];
       }
       var dataContext = {
-        'id': this.getId(),
-        'type': this.isPromoted() ? 'promotedLink' : 'link',
-        'label': this.getData()['label'],
-        'data' : data,
-        'itemData' : itemData,
-        'component': this.GetDiagram().getOptions()['_widgetConstructor']
+        id: this.getId(),
+        type: this.isPromoted() ? 'promotedLink' : 'link',
+        label: this.getData()['label'],
+        data: data,
+        itemData: itemData,
+        component: this.GetDiagram().getOptions()['_widgetConstructor']
       };
 
       return this.getCtx().fixRendererContext(dataContext);
@@ -1765,21 +1868,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (link.GetDiagram().isDataProviderMode()) {
         // return both type of data - template processed and originals
         if (link.isPromoted()) {
-          itemData = link.getData()['_links'].map((item) => {return item['_itemData']});
-          data = link.getData()['_links'][0]['_noTemplate'] ? itemData :  link.getData()['_links'];
-        }
-        else {
-          data =  link.getData();
+          itemData = link.getData()['_links'].map((item) => {
+            return item['_itemData'];
+          });
+          data = link.getData()['_links'][0]['_noTemplate'] ? itemData : link.getData()['_links'];
+        } else {
+          data = link.getData();
           itemData = link.getData()['_itemData'];
         }
       } else {
         data = link.isPromoted() ? link.getData()['_links'] : link.getData()['_itemData'];
       }
       return {
-        'id': link.getId(),
-        'label': link.getData()['label'],
-        'data' : data,
-        'itemData' : itemData
+        id: link.getId(),
+        label: link.getData()['label'],
+        data: data,
+        itemData: itemData
       };
     }
     /**
@@ -1801,7 +1905,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (actionableElems.length > 0) {
         states.push(translations.accessibleContainsControls);
       }
-      return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtDiagramLink.getShortDescContext(this));
+      return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () =>
+        DvtDiagramLink.getShortDescContext(this)
+      );
     }
 
     /**
@@ -1811,8 +1917,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     UpdateAriaLabel() {
       if (!dvt.Agent.deferAriaCreation()) {
         var desc = this.getAriaLabel();
-        if (desc)
-          this.setAriaProperty('label', desc);
+        if (desc) this.setAriaProperty('label', desc);
       }
     }
 
@@ -1820,8 +1925,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Implementation of DvtKeyboardNavigable interface
      * @override
      */
-    getNextNavigable(event)
-    {
+    getNextNavigable(event) {
       // If there are active elements, then short circuit a keyboard navigation
       if (this.hasActiveInnerElems) {
         return null;
@@ -1831,14 +1935,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
         // care of the selection
         return this;
-      }
-      else if (event.keyCode == dvt.KeyboardEvent.UP_ARROW || event.keyCode == dvt.KeyboardEvent.DOWN_ARROW) {
+      } else if (
+        event.keyCode == dvt.KeyboardEvent.UP_ARROW ||
+        event.keyCode == dvt.KeyboardEvent.DOWN_ARROW
+      ) {
         //if the link got focus via keyboard, get the node where the focus came from
         //we'll navigate around that node
         //if the focus was set through mouse click, set start node as a center of navigation
         node = this.getKeyboardFocusNode();
-        if (!node)
-          node = this.GetDiagram().getNodeById(this.getStartId());
+        if (!node) node = this.GetDiagram().getNodeById(this.getStartId());
 
         //find next link - if up counter-clockwise, down - clockwise
         var nextLink = this;
@@ -1850,19 +1955,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         nextLink.setKeyboardFocusNode(node);
         this._diagram.ensureObjInViewport(event, nextLink);
         return nextLink;
-      }
-      else if (event.keyCode == dvt.KeyboardEvent.RIGHT_ARROW || event.keyCode == dvt.KeyboardEvent.LEFT_ARROW)
-      {
+      } else if (
+        event.keyCode == dvt.KeyboardEvent.RIGHT_ARROW ||
+        event.keyCode == dvt.KeyboardEvent.LEFT_ARROW
+      ) {
         var nodeId;
-        if (this._movingToStart(event.keyCode))
-          nodeId = this.getStartId();
-        else
-          nodeId = this.getEndId();
+        if (this._movingToStart(event.keyCode)) nodeId = this.getStartId();
+        else nodeId = this.getEndId();
         node = this.GetDiagram().getNodeById(nodeId);
         this._diagram.ensureObjInViewport(event, node);
         return node;
-      }
-      else if (event.type == dvt.MouseEvent.CLICK) {
+      } else if (event.type == dvt.MouseEvent.CLICK) {
         return this;
       }
       return null;
@@ -1877,10 +1980,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     _movingToStart(direction) {
       var start = this.getLinkStart();
       var end = this.getLinkEnd();
-      var linkDirectionL2R = (start.x < end.x) ? true : false;
+      var linkDirectionL2R = start.x < end.x ? true : false;
 
-      return !((direction == dvt.KeyboardEvent.RIGHT_ARROW && linkDirectionL2R) ||
-      (direction == dvt.KeyboardEvent.LEFT_ARROW && !linkDirectionL2R));
+      return !(
+        (direction == dvt.KeyboardEvent.RIGHT_ARROW && linkDirectionL2R) ||
+        (direction == dvt.KeyboardEvent.LEFT_ARROW && !linkDirectionL2R)
+      );
     }
 
     /**
@@ -1889,12 +1994,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     getLinkStart() {
       if (this._customPoints) {
-        return DvtDiagramLinkUtils.IsPath(this._customPoints) ?
-          new dvt.Point(this._customPoints[1], this._customPoints[2]) :
-          new dvt.Point(this._customPoints[0], this._customPoints[1]);
+        return DvtDiagramLinkUtils.IsPath(this._customPoints)
+          ? new dvt.Point(this._customPoints[1], this._customPoints[2])
+          : new dvt.Point(this._customPoints[0], this._customPoints[1]);
       }
-      if (!this._points)
-        return null;
+      if (!this._points) return null;
       var x = this._points[0];
       var y = this._points[1];
       return new dvt.Point(x, y);
@@ -1909,8 +2013,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var numPoints = this._customPoints.length;
         return new dvt.Point(this._customPoints[numPoints - 2], this._customPoints[numPoints - 1]);
       }
-      if (!this._points)
-        return null;
+      if (!this._points) return null;
       var numPoints = this._points.length;
       var x = this._points[numPoints - 2];
       var y = this._points[numPoints - 1];
@@ -1969,7 +2072,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (hiddenCategories && dvt.ArrayUtils.hasAnyItem(hiddenCategories, this.getCategories())) {
         return true;
       }
-      if (!(this.GetDiagram().getNodeById(this.getStartId()) && this.GetDiagram().getNodeById(this.getEndId()))) {
+      if (
+        !(
+          this.GetDiagram().getNodeById(this.getStartId()) &&
+          this.GetDiagram().getNodeById(this.getEndId())
+        )
+      ) {
         return true;
       }
       return false;
@@ -2000,20 +2108,39 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var newMat = this._labelObj.getMatrix();
         if (!oldMat.equals(newMat)) {
           this._labelObj.setMatrix(oldMat);
-          playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, this._labelObj, this._labelObj.getMatrix, this._labelObj.setMatrix, newMat);
+          playable
+            .getAnimator()
+            .addProp(
+              dvt.Animator.TYPE_MATRIX,
+              this._labelObj,
+              this._labelObj.getMatrix,
+              this._labelObj.setMatrix,
+              newMat
+            );
         }
       }
 
       if (oldLink.getShape() && this.getShape()) {
         var oldStroke = oldLink.getShape().getStroke();
         var newStroke = this.getShape().getStroke();
-        if (oldStroke && newStroke &&
-            oldStroke instanceof dvt.Stroke &&
-            newStroke instanceof dvt.Stroke &&
-            (oldStroke.getColor() != newStroke.getColor() ||
-            oldStroke.getWidth() != newStroke.getWidth())) {
+        if (
+          oldStroke &&
+          newStroke &&
+          oldStroke instanceof dvt.Stroke &&
+          newStroke instanceof dvt.Stroke &&
+          (oldStroke.getColor() != newStroke.getColor() ||
+            oldStroke.getWidth() != newStroke.getWidth())
+        ) {
           this.getShape().setStroke(oldStroke);
-          playable.getAnimator().addProp(dvt.Animator.TYPE_STROKE, this.getShape(), this.getShape().getStroke, this.getShape().setStroke, newStroke);
+          playable
+            .getAnimator()
+            .addProp(
+              dvt.Animator.TYPE_STROKE,
+              this.getShape(),
+              this.getShape().getStroke,
+              this.getShape().setStroke,
+              newStroke
+            );
         }
       }
 
@@ -2024,11 +2151,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var newTy = this.getTranslateY();
       if (oldTx != newTx) {
         this.setTranslateX(oldTx);
-        playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateX, this.setTranslateX, newTx);
+        playable
+          .getAnimator()
+          .addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateX, this.setTranslateX, newTx);
       }
       if (oldTy != newTy) {
         this.setTranslateY(oldTy);
-        playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateY, this.setTranslateY, newTy);
+        playable
+          .getAnimator()
+          .addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateY, this.setTranslateY, newTy);
       }
 
       // animate custom content
@@ -2050,12 +2181,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             var arPoints = dvt.PathUtils.createPathArray(points);
             return arPoints;
           };
-          playable.getAnimator().addProp(dvt.Animator.TYPE_PATH, animateTo, pointsGetter, pointsSetter, dvt.PathUtils.createPathArray(newPointsCustom));
+          playable
+            .getAnimator()
+            .addProp(
+              dvt.Animator.TYPE_PATH,
+              animateTo,
+              pointsGetter,
+              pointsSetter,
+              dvt.PathUtils.createPathArray(newPointsCustom)
+            );
         }
 
         //animate the rest of custom content
-        var fadeInItems = DvtDiagramLink._getFadeInCustomItems(this._customLinkContent, animateTo, animateFrom);
-        var playableExtra = new dvt.CustomAnimation(this.getCtx(), null, animationHandler.getAnimDur());
+        var fadeInItems = DvtDiagramLink._getFadeInCustomItems(
+          this._customLinkContent,
+          animateTo,
+          animateFrom
+        );
+        var playableExtra = new dvt.CustomAnimation(
+          this.getCtx(),
+          null,
+          animationHandler.getAnimDur()
+        );
         for (var ix = 0; ix < fadeInItems.length; ix++) {
           var item = fadeInItems[ix];
           dvt.ToolkitUtils.setAttrNullNS(item, 'opacity', '0');
@@ -2066,14 +2213,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             var value = dvt.ToolkitUtils.getAttrNullNS(item, 'opacity');
             return Number(value);
           };
-          playableExtra.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, item, opacityGetter, opacitySetter, 1);
+          playableExtra
+            .getAnimator()
+            .addProp(dvt.Animator.TYPE_NUMBER, item, opacityGetter, opacitySetter, 1);
         }
         animationHandler.add(playableExtra, DvtDiagramDataAnimationPhase.INSERT);
       }
 
       if (bCleanUp) {
         var thisRef = this;
-        dvt.Playable.appendOnEnd(playable, () => {thisRef.getParent().removeChild(thisRef);});
+        dvt.Playable.appendOnEnd(playable, () => {
+          thisRef.getParent().removeChild(thisRef);
+        });
       }
       animationHandler.add(playable, DvtDiagramDataAnimationPhase.UPDATE);
     }
@@ -2100,7 +2251,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     animateInsert(animationHandler) {
       this.setAlpha(0);
-      animationHandler.add(new dvt.AnimFadeIn(this.getCtx(), this, animationHandler.getAnimDur()), DvtDiagramDataAnimationPhase.INSERT);
+      animationHandler.add(
+        new dvt.AnimFadeIn(this.getCtx(), this, animationHandler.getAnimDur()),
+        DvtDiagramDataAnimationPhase.INSERT
+      );
     }
 
     /**
@@ -2109,17 +2263,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {Array} oldLinksArray array of old links that are collapsing into this one
      */
     animateCollapse(animationHandler, oldLinksArray) {
-      if (!oldLinksArray || oldLinksArray.length == 0)
-        return;
+      if (!oldLinksArray || oldLinksArray.length == 0) return;
 
       //copy points for the original link to create fake links if needed
       var origPoints = this._customPoints ? this._customPoints : this.getPoints();
-      if (Array.isArray(origPoints))
-        origPoints = origPoints.slice();
+      if (Array.isArray(origPoints)) origPoints = origPoints.slice();
 
       //copy translation for the original link to use on fake links
       var origTx = this.getTranslateX(),
-          origTy = this.getTranslateY();
+        origTy = this.getTranslateY();
 
       // use first link to animate from many to promoted
       this.animateUpdate(animationHandler, oldLinksArray[0]);
@@ -2127,7 +2279,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       // create fake links to animate from many to one
       // delete the fake links at animation end
       for (var i = 1; i < oldLinksArray.length; i++) {
-        var data = {'id': '_fakeLink' + i + this.getId()};
+        var data = { id: '_fakeLink' + i + this.getId() };
         data = dvt.JsonUtils.merge(data, this.getData());
         var fakeLink = new DvtDiagramLink(this.GetDiagram().getCtx(), this.GetDiagram(), data, true);
         fakeLink.render();
@@ -2143,8 +2295,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {Array} newLinksArray array of new links
      */
     animateExpand(animationHandler, newLinksArray) {
-      if (!newLinksArray || newLinksArray.length == 0)
-        return;
+      if (!newLinksArray || newLinksArray.length == 0) return;
       for (var i = 0; i < newLinksArray.length; i++) {
         newLinksArray[i].animateUpdate(animationHandler, this);
       }
@@ -2158,7 +2309,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {string} valign valign of the link label
      */
     setLabelAlignments(halign, valign) {
-      var isMultiline = this._labelObj instanceof dvt.MultilineText || this._labelObj instanceof dvt.BackgroundMultilineText;
+      var isMultiline =
+        this._labelObj instanceof dvt.MultilineText ||
+        this._labelObj instanceof dvt.BackgroundMultilineText;
       if (valign == 'baseline')
         valign = isMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_AUTO;
 
@@ -2170,8 +2323,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Sets group id for the link
      * @param {any} id group id for the link
      */
-    setGroupId(id)
-    {
+    setGroupId(id) {
       this._groupId = id;
     }
 
@@ -2179,8 +2331,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Gets group id for the link
      * @return {string} group id for the link
      */
-    getGroupId()
-    {
+    getGroupId() {
       return this._groupId;
     }
 
@@ -2263,7 +2414,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _createDropEffect(styleClass) {
       var hitDetectionOffset = dvt.CSSStyle.toNumber(this.getData()['_hitDetectionOffset']);
-      this._dropEffect = this.CreateFeedbackUnderlay('#000000', 0, hitDetectionOffset, null, styleClass);
+      this._dropEffect = this.CreateFeedbackUnderlay(
+        '#000000',
+        0,
+        hitDetectionOffset,
+        null,
+        styleClass
+      );
       this._dropEffect.setMouseEnabled(false);
       this.addChild(this._dropEffect);
     }
@@ -2276,14 +2433,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     static ConvertLinkData(linkData) {
       return {
-        'id': linkData['id'],
-        'startNode': linkData['startNode'],
-        'endNode': linkData['endNode'],
-        'label': linkData['label'],
-        'selectable': linkData['selectable'],
-        'shortDesc': linkData['shortDesc'],
-        'categories': linkData['categories'],
-        '_itemData': linkData
+        id: linkData['id'],
+        startNode: linkData['startNode'],
+        endNode: linkData['endNode'],
+        label: linkData['label'],
+        selectable: linkData['selectable'],
+        shortDesc: linkData['shortDesc'],
+        categories: linkData['categories'],
+        _itemData: linkData
       };
     }
 
@@ -2294,31 +2451,49 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     getAnimationState() {
       var label, shape, state;
       if (this._labelObj) {
-        label = {'matrix' : this._labelObj.getMatrix()};
-        label.getMatrix = () => {return label['matrix']};
+        label = { matrix: this._labelObj.getMatrix() };
+        label.getMatrix = () => {
+          return label['matrix'];
+        };
       }
       if (this.getShape()) {
-        shape = {'stroke': this.getShape().getStroke()};
-        shape.getStroke = () => {return shape['stroke']};
+        shape = { stroke: this.getShape().getStroke() };
+        shape.getStroke = () => {
+          return shape['stroke'];
+        };
       }
       var includedLinks = this.isPromoted() ? this.getData()['_links'] : null;
       return {
         partialUpdate: true,
         id: this.getId(),
         promoted: this.isPromoted(),
-        includedLinks : includedLinks,
-        points : this.getPoints(),
+        includedLinks: includedLinks,
+        points: this.getPoints(),
         shape: shape,
         tx: this.getTranslateX(),
         ty: this.getTranslateY(),
         _labelObj: label,
-        getId: function() {return this.id},
-        isPromoted: function() {return this.promoted},
-        getData: function() {return {'_links' : this.includedLinks}},
-        getPoints: function() {return this.points},
-        getShape: function() {return this.shape},
-        getTranslateX: function() {return this.tx},
-        getTranslateY: function() {return this.ty}
+        getId: function () {
+          return this.id;
+        },
+        isPromoted: function () {
+          return this.promoted;
+        },
+        getData: function () {
+          return { _links: this.includedLinks };
+        },
+        getPoints: function () {
+          return this.points;
+        },
+        getShape: function () {
+          return this.shape;
+        },
+        getTranslateX: function () {
+          return this.tx;
+        },
+        getTranslateY: function () {
+          return this.ty;
+        }
       };
     }
 
@@ -2333,8 +2508,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var pathElement = container.getContainerElem().querySelector('.oj-diagram-link-path');
       if (pathElement) {
         var points = container._customPoints;
-        var pathCommands = DvtDiagramLinkUtils.IsPath(points) ?
-          points : DvtDiagramLinkUtils.ConvertToPath(points);
+        var pathCommands = DvtDiagramLinkUtils.IsPath(points)
+          ? points
+          : DvtDiagramLinkUtils.ConvertToPath(points);
         pathElement.setAttributeNS(null, 'd', dvt.PathUtils.getPathString(pathCommands));
       }
     }
@@ -2355,7 +2531,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var getChildren = (node, skipMe) => {
           var children = [];
           while (node) {
-            if(node.nodeType === 1 && node !== skipMe) {
+            if (node.nodeType === 1 && node !== skipMe) {
               children.push(node);
             }
             node = node.nextSibling;
@@ -2372,10 +2548,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         // update the test node if link content is an array
         if (Array.isArray(newContent)) {
           newContent.forEach((node) => {
-            if (node.contains(newPathNode))
-              testNode = node;
-            else
-              items.push(node);
+            if (node.contains(newPathNode)) testNode = node;
+            else items.push(node);
           });
         }
         var currentNode = newPathNode;
@@ -2383,8 +2557,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           items = items.concat(getSiblings(currentNode));
           currentNode = currentNode.parentNode;
         }
-      }
-      else if (newContent) {
+      } else if (newContent) {
         items = Array.isArray(newContent) ? newContent : [newContent];
       }
       return items;
@@ -2450,7 +2623,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (linkContent.namespaceURI === dvt.ToolkitUtils.SVG_NS && linkContent.tagName === 'svg') {
         customContent = [];
         // Using Array.prototype.forEach.call() since IE11 does not support NodeList.forEach()
-        Array.prototype.forEach.call(linkContent.childNodes, (node) => {customContent.push(node);});
+        Array.prototype.forEach.call(linkContent.childNodes, (node) => {
+          customContent.push(node);
+        });
       }
       // svg fragment from custom defined callback without 'svg' element as root
       else if (linkContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
@@ -2458,15 +2633,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
       // content from template - always an array of nodes or
       // updated content from customer defined callback that was initially wrapped into svg element
-      else if (Array.isArray(linkContent)){
+      else if (Array.isArray(linkContent)) {
         customContent = [];
         for (var i = 0; i < linkContent.length; i++) {
-          if (linkContent[i].namespaceURI === dvt.ToolkitUtils.SVG_NS && linkContent[i].tagName === 'svg') {
+          if (
+            linkContent[i].namespaceURI === dvt.ToolkitUtils.SVG_NS &&
+            linkContent[i].tagName === 'svg'
+          ) {
             // Using Array.prototype.forEach.call() since IE11 does not support NodeList.forEach()
-            Array.prototype.forEach.call(linkContent[i].childNodes, (node) => {customContent.push(node);});
+            Array.prototype.forEach.call(linkContent[i].childNodes, (node) => {
+              customContent.push(node);
+            });
             break;
-          }
-          else if (linkContent[i].namespaceURI === dvt.ToolkitUtils.SVG_NS) {
+          } else if (linkContent[i].namespaceURI === dvt.ToolkitUtils.SVG_NS) {
             customContent.push(linkContent[i]);
           }
         }
@@ -2549,7 +2728,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     setLabelRotationAngle(angle) {
       this._labelRotAngle = angle;
-      DvtDiagramLink.PositionLabel(this._labelObj, this.getLabelPosition(), angle, this.getLabelRotationPoint());
+      DvtDiagramLink.PositionLabel(
+        this._labelObj,
+        this.getLabelPosition(),
+        angle,
+        this.getLabelRotationPoint()
+      );
     }
 
     /**
@@ -2566,7 +2750,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     setLabelRotationPoint(point) {
       this._labelRotPoint = point;
-      DvtDiagramLink.PositionLabel(this._labelObj, this.getLabelPosition(), this.getLabelRotationAngle(), point);
+      DvtDiagramLink.PositionLabel(
+        this._labelObj,
+        this.getLabelPosition(),
+        this.getLabelRotationAngle(),
+        point
+      );
     }
 
     /**
@@ -2592,7 +2781,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     setLabelPosition(pos) {
       if (pos) {
         this._labelPos = pos;
-        DvtDiagramLink.PositionLabel(this._labelObj, pos, this.getLabelRotationAngle(), this.getLabelRotationPoint());
+        DvtDiagramLink.PositionLabel(
+          this._labelObj,
+          pos,
+          this.getLabelRotationAngle(),
+          this.getLabelRotationPoint()
+        );
       }
     }
 
@@ -2600,8 +2794,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Sets label dimensions
      * @param {dvt.Rectangle} bounds The bounds of the label
      */
-    setLabelBounds(bounds) {
-    }
+    setLabelBounds(bounds) {}
 
     /**
      * Sets selectable flag on the link
@@ -2610,7 +2803,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     setSelectable(selectable) {
       this._selectable = selectable;
     }
-
 
     /**
      * Checks whether the node is selected
@@ -2663,20 +2855,33 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {dvt.Shape} connector shape
      */
     CreateConnector(points, connectorType, connectorPos) {
-
       if (!connectorType) {
         return;
       }
 
       var origStroke = this._shape.getStroke();
-      var stroke = new dvt.Stroke(origStroke.getColor(), origStroke.getAlpha(), origStroke.getWidth());
+      var stroke = new dvt.Stroke(
+        origStroke.getColor(),
+        origStroke.getAlpha(),
+        origStroke.getWidth()
+      );
 
-      var connector = DvtDiagramLinkConnectorUtils.CreateConnectorShape(this.getCtx(), connectorType, stroke, this);
+      var connector = DvtDiagramLinkConnectorUtils.CreateConnectorShape(
+        this.getCtx(),
+        connectorType,
+        stroke,
+        this
+      );
 
       if (connector) {
         //: add connectors as children of shape so that selection feedback affects them
         this._shape.addChild(connector);
-        DvtDiagramLinkConnectorUtils.TransformConnector(connector, connectorType, points, connectorPos);
+        DvtDiagramLinkConnectorUtils.TransformConnector(
+          connector,
+          connectorType,
+          points,
+          connectorPos
+        );
       }
       return connector;
     }
@@ -2690,7 +2895,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     getPoints() {
       return this._arPoints;
     }
-
 
     /**
      * @protected
@@ -2726,11 +2930,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     static PositionLabel(label, pos, rotAngle, rotPoint) {
-      if (!label)
-        return;
+      if (!label) return;
       var mat = DvtDiagramLink.CalcLabelMatrix(pos, rotAngle, rotPoint);
       label.setMatrix(mat);
-    };
+    }
 
     /**
      * Creates link underlay - underlay for the link itself, it does not include connectors
@@ -2768,7 +2971,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     CreateFeedbackUnderlay(strokeColor, strokeAlpha, strokeWidthOffset, styleObj, styleClass) {
-      var feedbackUnderlay = this.CreateUnderlay(strokeColor, strokeAlpha, strokeWidthOffset, styleObj, styleClass);
+      var feedbackUnderlay = this.CreateUnderlay(
+        strokeColor,
+        strokeAlpha,
+        strokeWidthOffset,
+        styleObj,
+        styleClass
+      );
 
       if (this._startConnector && this.getStartConnectorType())
         feedbackUnderlay.addUnderlayStart(this._points, this.getStartConnectorType(), this);
@@ -2783,18 +2992,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {dvt.Stroke} stroke for the link connector
      */
     ReplaceConnectorColor(connector, stroke) {
-      if (!connector)
-        return;
+      if (!connector) return;
       var color = null;
-      if (stroke.getColor)
-        color = stroke.getColor();
+      if (stroke.getColor) color = stroke.getColor();
 
       if (color) {
         var conStroke = connector.getStroke();
         var conFill = connector.getFill();
 
         if (conStroke) {
-          connector.setStroke(new dvt.Stroke(color, conStroke.getAlpha(), conStroke.getWidth(), conStroke.isFixedWidth(), conStroke.getDashProps()));
+          connector.setStroke(
+            new dvt.Stroke(
+              color,
+              conStroke.getAlpha(),
+              conStroke.getWidth(),
+              conStroke.isFixedWidth(),
+              conStroke.getDashProps()
+            )
+          );
         }
         if (conFill) {
           connector.setSolidFill(color);
@@ -2815,8 +3030,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     /**
      * @override
      */
-    getTargetElem()
-    {
+    getTargetElem() {
       return this.getElem();
     }
 
@@ -2861,15 +3075,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
    * @class
    */
   const DvtDiagramStyleUtils = {
-
     /**
      * If the option node style attribute is a string, converts it to object
      * @param {object} optionsObject  node options object
      * @param {string} attribute  node attribute
      */
     prepareNodeStyle: (optionsObject, attribute) => {
-      if (optionsObject && optionsObject[attribute] != null &&
-              !(optionsObject[attribute] instanceof Object)) {
+      if (
+        optionsObject &&
+        optionsObject[attribute] != null &&
+        !(optionsObject[attribute] instanceof Object)
+      ) {
         optionsObject[attribute] = dvt.CSSStyle.cssStringToObject(optionsObject[attribute]);
       }
     },
@@ -2919,26 +3135,30 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     getNodeStyles: (comp, nodeData, nodeDefaults) => {
       if (comp.isDataProviderMode()) {
-        return dvt.JsonUtils.merge(nodeData, nodeDefaults, {'_itemData': true, 'id': true, 'nodes': true});
+        return dvt.JsonUtils.merge(nodeData, nodeDefaults, {
+          _itemData: true,
+          id: true,
+          nodes: true
+        });
       }
 
       var convertedNodeData = {
-        'id': nodeData['id'],
-        'label': nodeData['label'],
-        'selectable': nodeData['selectable'],
-        'shortDesc': nodeData['shortDesc'],
-        'categories': nodeData['categories'],
-        'nodes': nodeData['nodes'],
-        '_itemData': nodeData
+        id: nodeData['id'],
+        label: nodeData['label'],
+        selectable: nodeData['selectable'],
+        shortDesc: nodeData['shortDesc'],
+        categories: nodeData['categories'],
+        nodes: nodeData['nodes'],
+        _itemData: nodeData
       };
       if (comp.getOptions()['nodeProperties']) {
         var styleProps = dvt.JsonUtils.clone(comp.getOptions()['nodeProperties'](nodeData));
         //If background/container style is specified in nodeData, make sure it is an object before merging
         DvtDiagramStyleUtils.prepareNodeStyle(styleProps, 'backgroundStyle');
         DvtDiagramStyleUtils.prepareNodeStyle(styleProps, 'containerStyle');
-        convertedNodeData = dvt.JsonUtils.merge(convertedNodeData, styleProps, {'_itemData': true});
+        convertedNodeData = dvt.JsonUtils.merge(convertedNodeData, styleProps, { _itemData: true });
       }
-      return dvt.JsonUtils.merge(convertedNodeData, nodeDefaults, {'_itemData': true});
+      return dvt.JsonUtils.merge(convertedNodeData, nodeDefaults, { _itemData: true });
     },
 
     /**
@@ -2955,7 +3175,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var attr = comp.getCtx().isCustomElement() ? 'svgStyle' : 'style';
       linkDefaults[attr] = dvt.JsonUtils.merge(linkDefaults[attr], linkDefaults['_style']);
       if (comp.getCtx().isCustomElement()) {
-        ['_type'].forEach((entry) => {delete linkDefaults[attr][entry];});
+        ['_type'].forEach((entry) => {
+          delete linkDefaults[attr][entry];
+        });
       }
       return linkDefaults;
     },
@@ -2970,7 +3192,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     getLinkStyles: (comp, linkData, linkDefaults) => {
       if (comp.isDataProviderMode()) {
-        return dvt.JsonUtils.merge(linkData, linkDefaults, {'_itemData': true, 'id': true});
+        return dvt.JsonUtils.merge(linkData, linkDefaults, { _itemData: true, id: true });
       }
 
       var convertedLinkData = DvtDiagramLink.ConvertLinkData(linkData);
@@ -2978,9 +3200,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var styleProps = dvt.JsonUtils.clone(comp.getOptions()['linkProperties'](linkData));
         //If linkData has style attribute, make sure it is an object
         DvtDiagramStyleUtils.prepareLinkStyle(styleProps, 'style');
-        convertedLinkData = dvt.JsonUtils.merge(convertedLinkData, styleProps, {'_itemData': true});
+        convertedLinkData = dvt.JsonUtils.merge(convertedLinkData, styleProps, { _itemData: true });
       }
-      return dvt.JsonUtils.merge(convertedLinkData, linkDefaults, {'_itemData': true});
+      return dvt.JsonUtils.merge(convertedLinkData, linkDefaults, { _itemData: true });
     },
 
     /**
@@ -2991,7 +3213,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {number} The animation duration in seconds.
      */
     getAnimDur: (diagram) => {
-      return dvt.CSSStyle.getTimeMilliseconds(diagram.getOptions()['styleDefaults']['animationDuration']) / 1000;
+      return (
+        dvt.CSSStyle.getTimeMilliseconds(diagram.getOptions()['styleDefaults']['animationDuration']) /
+        1000
+      );
     },
 
     /**
@@ -2999,10 +3224,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {Diagram} diagram
      * @return {string}
      */
-    getAnimOnDisplay:(diagram) => {
+    getAnimOnDisplay: (diagram) => {
       return diagram.getOptions()['animationOnDisplay'];
     },
-
 
     /**
      * Returns the data change animation for the specified diagram.
@@ -3096,7 +3320,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       return this.getContentBounds(forceDims);
     }
 
-
     /**
      * Sets the position of the link label. The position is in the coordinate
      * system of the node's container.
@@ -3105,9 +3328,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     setLabelPosition(pos) {
       if (pos) {
         this._labelPos = pos;
-        DvtDiagramNode.PositionLabel(this._labelObj, pos,
-            this.getLabelRotationAngle(),
-            this.getLabelRotationPoint());
+        DvtDiagramNode.PositionLabel(
+          this._labelObj,
+          pos,
+          this.getLabelRotationAngle(),
+          this.getLabelRotationPoint()
+        );
       }
     }
 
@@ -3119,13 +3345,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       return this._labelPos;
     }
 
-
     /**
      * Sets label dimensions
      * @param {dvt.Rectangle} bounds The bounds of the label
      */
-    setLabelBounds(bounds) {
-    }
+    setLabelBounds(bounds) {}
 
     /**
      * Gets label dimensions
@@ -3150,8 +3374,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var selectionRenderer = this._getCustomRenderer('selectionRenderer');
       if (selectionRenderer) {
         this._applyCustomNodeContent(selectionRenderer, this._getState(), prevState);
-      }
-      else {
+      } else {
         this.processDefaultSelectionEffect(selected);
       }
       this.UpdateAriaLabel();
@@ -3162,8 +3385,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {boolean} selected true to show selected effect
      */
     processDefaultSelectionEffect(selected) {
-      if (!this.getSelectionShape())
-        return;
+      if (!this.getSelectionShape()) return;
       this.getSelectionShape().setSelected(selected);
     }
     /**
@@ -3202,7 +3424,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @override
      */
     isSelectable() {
-      return this.GetDiagram().isSelectionSupported() && this.getData()['selectable'] != 'off' && !this.hasActiveInnerElems;
+      return (
+        this.GetDiagram().isSelectionSupported() &&
+        this.getData()['selectable'] != 'off' &&
+        !this.hasActiveInnerElems
+      );
     }
 
     /**
@@ -3218,29 +3444,33 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Renders diagram node
      */
     render() {
-      this._cleanUp();
+      this._cleanUp(null);
       var nodeData = this.getData();
       var renderer = this._getCustomRenderer('renderer');
       if (renderer) {
         var prevState = {
-          'hovered': false,
-          'selected': false,
-          'focused': false,
-          'zoom': 1,
-          'expanded': false,
-          'inActionableMode': false
+          hovered: false,
+          selected: false,
+          focused: false,
+          zoom: 1,
+          expanded: false,
+          inActionableMode: false
         };
-        this._applyCustomNodeContent(renderer, this._getState(), prevState, true);
+        this._applyCustomNodeContent(renderer, this._getState(), prevState);
         //update container padding if the node is a disclosed container
         if (this.isDisclosed()) {
           var zoom = this.GetDiagram().getPanZoomCanvas().getZoom();
           var nodeBoundingRect = this.getElem().getBoundingClientRect();
-          var childPaneBoundingRect = this._childNodePane ? this._childNodePane.getElem().getBoundingClientRect() : null;
+          var childPaneBoundingRect = this._childNodePane
+            ? this._childNodePane.getElem().getBoundingClientRect()
+            : null;
           if (childPaneBoundingRect) {
-            this._containerPadding = {left: (childPaneBoundingRect.left - nodeBoundingRect.left)/zoom,
-              right: (nodeBoundingRect.right - childPaneBoundingRect.right)/zoom,
-              top: (childPaneBoundingRect.top - nodeBoundingRect.top)/zoom,
-              bottom: (nodeBoundingRect.bottom - childPaneBoundingRect.bottom)/zoom};
+            this._containerPadding = {
+              left: (childPaneBoundingRect.left - nodeBoundingRect.left) / zoom,
+              right: (nodeBoundingRect.right - childPaneBoundingRect.right) / zoom,
+              top: (childPaneBoundingRect.top - nodeBoundingRect.top) / zoom,
+              bottom: (nodeBoundingRect.bottom - childPaneBoundingRect.bottom) / zoom
+            };
           }
         }
         //reset default selection shape if it is there
@@ -3248,12 +3478,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           this.removeChild(this._selectionShape);
           this._selectionShape = null;
         }
-      }
-      else {
+      } else {
         if (this.isDisclosed()) {
           DvtDiagramNode._renderContainer(this._diagram, nodeData, this);
-        }
-        else {
+        } else {
           DvtDiagramNode._renderNodeBackground(this._diagram, nodeData, this);
           DvtDiagramNode._renderNodeIcon(this._diagram, nodeData, this);
         }
@@ -3272,14 +3500,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {function} renderer custom renderer for the node state
      * @param {Object} state object that contains curremt object state
      * @param {Object} prevState object that contains previous object state
-     * @param {Boolean} templateCleanup if true, cleans up knockout bindings
      * @private
      */
-    _applyCustomNodeContent(renderer, state, prevState, templateCleanup) {
-
+    _applyCustomNodeContent(renderer, state, prevState) {
       var contextHandler = this._diagram.getOptions()['_contextHandler'];
       if (!contextHandler) {
-        this._diagram.Log('Diagram: could not add custom node content - context handler is undefined', 1);
+        this._diagram.Log(
+          'Diagram: could not add custom node content - context handler is undefined',
+          1
+        );
         return;
       }
       var nodeDataContext = this.getDataContext();
@@ -3287,12 +3516,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (this.isDisclosed()) {
         var childNodePane = this.GetChildNodePane();
         var bbox = childNodePane.getDimensions();
-        childContent = {'element': childNodePane.getElem(), 'w' : bbox ? bbox.w - bbox.x : null, 'h': bbox ? bbox.h - bbox.y : null};
+        childContent = {
+          element: childNodePane.getElem(),
+          w: bbox ? bbox.w - bbox.x : null,
+          h: bbox ? bbox.h - bbox.y : null
+        };
       }
-      if (templateCleanup && this._nodeContext) {
-        this._diagram.getOptions()['_cleanTemplate'](this.getId());
-      }
-      var context = contextHandler('node', this.getElem(), this._customNodeContent, childContent, nodeDataContext, state, prevState);
+      var context = contextHandler(
+        'node',
+        this.getElem(),
+        this._customNodeContent,
+        childContent,
+        nodeDataContext,
+        state,
+        prevState
+      );
       var nodeContent = renderer(context);
       // Disable any new focusable elements that may have been added during render
       if (!this.hasActiveInnerElems) {
@@ -3318,13 +3556,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (!stashedOldContents) {
           if (this._customNodeContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
             this.getContainerElem().removeChild(this._customNodeContent);
-          }
-          else if (Array.isArray(this._customNodeContent)) {
+          } else if (Array.isArray(this._customNodeContent)) {
             this._customNodeContent.forEach((node) => {
               this.getContainerElem().removeChild(node);
             });
-          }
-          else {
+          } else {
             this.removeChild(nodeContent);
           }
         }
@@ -3340,36 +3576,45 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       if (nodeContent && nodeContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
         if (!this._customNodeContent) {
-          this._appendChildElem(this.getContainerElem(), nodeContent, childContent ? childContent.element : null);
+          this._appendChildElem(
+            this.getContainerElem(),
+            nodeContent,
+            childContent ? childContent.element : null
+          );
           this._customNodeContent = nodeContent;
         }
-      }
-      else if (nodeContent && Array.isArray(nodeContent)) {
+      } else if (nodeContent && Array.isArray(nodeContent)) {
         if (!this._customNodeContent) {
           nodeContent.forEach((node) => {
-            this._appendChildElem(this.getContainerElem(), node, childContent ? childContent.element : null);
+            this._appendChildElem(
+              this.getContainerElem(),
+              node,
+              childContent ? childContent.element : null
+            );
           });
           this._customNodeContent = nodeContent;
         }
-      }
-      else if (nodeContent instanceof dvt.BaseComponent) {
+      } else if (nodeContent instanceof dvt.BaseComponent) {
         if (!this._customNodeContent) {
           this.addChild(nodeContent);
           this._customNodeContent = nodeContent;
         }
-      }
-      else if (nodeContent) { //not an svg fragment
-        this._diagram.Log('Diagram: could not add custom node content for the node ' + this.getId() + nodeContent, 1);
+      } else if (nodeContent) {
+        //not an svg fragment
+        this._diagram.Log(
+          'Diagram: could not add custom node content for the node ' + this.getId() + nodeContent,
+          1
+        );
       }
     }
 
     /**
-       * Appends the child content to the custom node
-       * @param {object} parent DOM element
-       * @param {object} nodeContent custom node DOM element
-       * @param {object} childContent DOM element child content of node
-       * @private
-       */
+     * Appends the child content to the custom node
+     * @param {object} parent DOM element
+     * @param {object} nodeContent custom node DOM element
+     * @param {object} childContent DOM element child content of node
+     * @private
+     */
     _appendChildElem(parent, nodeContent, childContent) {
       if (nodeContent.querySelector) {
         var placeholderChild = nodeContent.querySelector('oj-diagram-child-content');
@@ -3386,7 +3631,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (this._labelObj) {
         parent.insertBefore(nodeContent, this._labelObj.getElem());
       } else {
-        parent.insertBefore(nodeContent, this._containerButton ? this._containerButton.getElem() : null);
+        parent.insertBefore(
+          nodeContent,
+          this._containerButton ? this._containerButton.getElem() : null
+        );
       }
     }
 
@@ -3400,21 +3648,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     static _renderNodeBackground(diagram, nodeData, container) {
       // TODO: removing node background for custom elements,
       // since we can't properly support svg style and class name at the moment
-      if (diagram.getCtx().isCustomElement())
-        return;
+      if (diagram.getCtx().isCustomElement()) return;
 
       var backgroundStyle = nodeData['backgroundSvgStyle'] || nodeData['backgroundStyle'];
       var styleObj = dvt.JsonUtils.clone(backgroundStyle);
-      var backgroundProps = [dvt.CSSStyle.WIDTH,
+      var backgroundProps = [
+        dvt.CSSStyle.WIDTH,
         dvt.CSSStyle.HEIGHT,
         dvt.CSSStyle.BACKGROUND_COLOR,
         dvt.CSSStyle.BORDER_COLOR,
         dvt.CSSStyle.BORDER_WIDTH,
-        dvt.CSSStyle.BORDER_RADIUS];
+        dvt.CSSStyle.BORDER_RADIUS
+      ];
       //Merge the background style from options and background style from CSS object
-      backgroundStyle = DvtDiagramNode._getNodeCSSStyle(styleObj,
-                                                            nodeData['_backgroundStyle'],
-                                                            backgroundProps);
+      backgroundStyle = DvtDiagramNode._getNodeCSSStyle(
+        styleObj,
+        nodeData['_backgroundStyle'],
+        backgroundProps
+      );
       if (!backgroundStyle.isEmpty()) {
         var width = dvt.CSSStyle.toNumber(backgroundStyle.getStyle(dvt.CSSStyle.WIDTH));
         var height = dvt.CSSStyle.toNumber(backgroundStyle.getStyle(dvt.CSSStyle.HEIGHT));
@@ -3422,7 +3673,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
         var borderColor = backgroundStyle.getStyle(dvt.CSSStyle.BORDER_COLOR);
         var borderWidth = dvt.CSSStyle.toNumber(backgroundStyle.getStyle(dvt.CSSStyle.BORDER_WIDTH));
-        var borderRadius = dvt.CSSStyle.toNumber(backgroundStyle.getStyle(dvt.CSSStyle.BORDER_RADIUS));
+        var borderRadius = dvt.CSSStyle.toNumber(
+          backgroundStyle.getStyle(dvt.CSSStyle.BORDER_RADIUS)
+        );
 
         var backgroundRect = new dvt.Rect(diagram.getCtx(), 0, 0, width, height);
         backgroundRect.setSolidFill(fillColor);
@@ -3436,7 +3689,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
         //Parse out the CSS properties which are already applied on the DOM
         if (styleObj)
-          backgroundProps.forEach((entry) => {delete styleObj[dvt.CSSStyle.cssStringToObjectProperty(entry)];});
+          backgroundProps.forEach((entry) => {
+            delete styleObj[dvt.CSSStyle.cssStringToObjectProperty(entry)];
+          });
         //Set the style and class attributes for node background
         var bgClassName = nodeData['backgroundSvgClassName'] || nodeData['backgroundClassName'];
         backgroundRect.setStyle(styleObj).setClassName(bgClassName);
@@ -3463,16 +3718,32 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var iconBorderRadius = icon['borderRadius'];
         var iconMarker;
         if (icon['source']) {
-          iconMarker = new dvt.ImageMarker(diagram.getCtx(), iconWidth / 2, iconHeight / 2, iconWidth, iconHeight, iconBorderRadius,
-              icon['source'], icon['sourceSelected'], icon['sourceHover'], icon['sourceHoverSelected']);
-        }
-        else {
-          iconMarker = new dvt.SimpleMarker(diagram.getCtx(), icon['shape'], iconWidth / 2, iconHeight / 2, iconWidth, iconHeight, iconBorderRadius);
+          iconMarker = new dvt.ImageMarker(
+            diagram.getCtx(),
+            iconWidth / 2,
+            iconHeight / 2,
+            iconWidth,
+            iconHeight,
+            iconBorderRadius,
+            icon['source'],
+            icon['sourceSelected'],
+            icon['sourceHover'],
+            icon['sourceHoverSelected']
+          );
+        } else {
+          iconMarker = new dvt.SimpleMarker(
+            diagram.getCtx(),
+            icon['shape'],
+            iconWidth / 2,
+            iconHeight / 2,
+            iconWidth,
+            iconHeight,
+            iconBorderRadius
+          );
         }
         if (icon['pattern'] != 'none') {
           iconMarker.setFill(new dvt.PatternFill(icon['pattern'], iconColor));
-        }
-        else {
+        } else {
           iconMarker.setSolidFill(iconColor);
         }
         if (icon['opacity'] != null) {
@@ -3509,37 +3780,34 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var iconWidth = iconData['width'];
         var iconHeight = iconData['height'];
         //default to center
-        var positionX = (backgroundWidth - iconWidth) * .5;
-        var positionY = (backgroundHeight - iconHeight) * .5;
+        var positionX = (backgroundWidth - iconWidth) * 0.5;
+        var positionY = (backgroundHeight - iconHeight) * 0.5;
 
         // find x position
-        if (iconData['positionX'] !== undefined) { //allow positionX=0
+        if (iconData['positionX'] !== undefined) {
+          //allow positionX=0
           positionX = parseFloat(iconData['positionX']);
           if (dvt.Agent.isRightToLeft(container.getCtx())) {
             positionX = backgroundWidth - positionX - iconWidth;
           }
-        }
-        else {
+        } else {
           var resolvedHalign = iconData['halign'];
           if (resolvedHalign == 'start') {
             resolvedHalign = dvt.Agent.isRightToLeft(container.getCtx()) ? 'right' : 'left';
-          }
-          else if (resolvedHalign == 'end') {
+          } else if (resolvedHalign == 'end') {
             resolvedHalign = dvt.Agent.isRightToLeft(container.getCtx()) ? 'left' : 'right';
           }
-          var resp = (resolvedHalign == 'right') ? backgroundWidth - iconWidth : positionX;
-          positionX = (resolvedHalign == 'left') ? 0 : resp;
+          var resp = resolvedHalign == 'right' ? backgroundWidth - iconWidth : positionX;
+          positionX = resolvedHalign == 'left' ? 0 : resp;
         }
 
         // find y position
         if (iconData['positionY'] !== undefined) {
           positionY = parseFloat(iconData['positionY']);
-        }
-        else {
+        } else {
           if (iconData['valign'] == 'top') {
             positionY = 0;
-          }
-          else if (iconData['valign'] == 'bottom') {
+          } else if (iconData['valign'] == 'bottom') {
             positionY = backgroundHeight - iconHeight;
           }
         }
@@ -3562,8 +3830,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var multilineTextPos = rtl ? dvt.MultilineText.H_ALIGN_RIGHT : dvt.MultilineText.H_ALIGN_LEFT;
         var outputTextPos = rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
         var halign = bMultiline ? multilineTextPos : outputTextPos;
-        var valign =  bMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_TOP;
-        var label = DvtDiagramNode.createText(diagram.getCtx(), labelString, nodeData['labelStyle'], halign, valign, bMultiline);
+        var valign = bMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_TOP;
+        var label = DvtDiagramNode.createText(
+          diagram.getCtx(),
+          labelString,
+          nodeData['labelStyle'],
+          halign,
+          valign,
+          bMultiline
+        );
 
         var maxWidth = nodeData['labelStyle'].getMaxWidth() || nodeData['labelStyle'].getWidth();
         var labelWidth = dvt.CSSStyle.toNumber(maxWidth);
@@ -3571,12 +3846,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (!maxWidth) {
           container.addChild(label);
           container._labelObj = label;
-        }
-        else if (labelWidth > 0 && dvt.TextUtils.fitText(label, labelWidth, Infinity, container)) {
+        } else if (labelWidth > 0 && dvt.TextUtils.fitText(label, labelWidth, Infinity, container)) {
           container._labelObj = label;
         }
       }
-
     }
 
     /**
@@ -3592,9 +3865,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     static createText(ctx, strText, style, halign, valign, bMultiline) {
       var text;
       if (style.hasBackgroundStyles())
-        text = bMultiline ? new dvt.BackgroundMultilineText(ctx, strText, 0, 0, style, null, true) : new dvt.BackgroundOutputText(ctx, strText, 0, 0, style);
+        text = bMultiline
+          ? new dvt.BackgroundMultilineText(ctx, strText, 0, 0, style, null, true)
+          : new dvt.BackgroundOutputText(ctx, strText, 0, 0, style);
       else {
-        text = bMultiline ? new dvt.MultilineText(ctx, strText, 0, 0, null, true) : new dvt.OutputText(ctx, strText, 0, 0);
+        text = bMultiline
+          ? new dvt.MultilineText(ctx, strText, 0, 0, null, true)
+          : new dvt.OutputText(ctx, strText, 0, 0);
         text.setCSSStyle(style);
       }
 
@@ -3621,24 +3898,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var sos;
       if (isRedwood) {
         var dataColor;
-        if (nodeData.icon && nodeData.icon.color)
-          dataColor = nodeData.icon.color;
-        else
-          dataColor = hoverOuterColor;
+        if (nodeData.icon && nodeData.icon.color) dataColor = nodeData.icon.color;
+        else dataColor = hoverOuterColor;
         his = new dvt.Stroke(hoverInnerColor, 1, 1, true);
         hos = new dvt.Stroke(dataColor, 1, 3, true);
         sis = new dvt.Stroke(hoverInnerColor, 1, 1, true);
         sos = new dvt.Stroke(selectionColor, 1, 3, true);
         selectionShape.setHoverStroke(his, hos).setSelectedStroke(sis, sos);
-      }
-      else {
+      } else {
         his = new dvt.Stroke(hoverInnerColor, 1, 4, true);
         hos = new dvt.Stroke(hoverOuterColor, 1, 8, true);
         sis = new dvt.Stroke(hoverInnerColor, 1, 2, true);
         sos = new dvt.Stroke(selectionColor, 1, 6, true);
         var shis = new dvt.Stroke(hoverInnerColor, 1, 4, true);
         var shos = new dvt.Stroke(selectionColor, 1, 8, true);
-        selectionShape.setHoverStroke(his, hos).setSelectedStroke(sis, sos).setSelectedHoverStroke(shis, shos);
+        selectionShape
+          .setHoverStroke(his, hos)
+          .setSelectedStroke(sis, sos)
+          .setSelectedHoverStroke(shis, shos);
       }
     }
 
@@ -3664,8 +3941,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         sis = new dvt.Stroke(hoverInnerColor, 1, 1, true);
         sos = new dvt.Stroke(selectionColor, 1, 3, true);
         selectionShape.setHoverStroke(his, hos).setSelectedStroke(sis, sos);
-      }
-      else {
+      } else {
         // For OUTER stroke alignment, the stroke is applied on the outer edge of the path of the selection shape.
         // The outer stroke will circumscribe inner stroke and the width of outer stroke won't be reduced by inner stroke.
         // The outer stroke visible width will be same as specified.
@@ -3675,10 +3951,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         sos = new dvt.Stroke(selectionColor, 1, 2, true);
         var shis = new dvt.Stroke(hoverInnerColor, 1, 2, true);
         var shos = new dvt.Stroke(selectionColor, 1, 2, true);
-        selectionShape.setHoverStroke(his, hos).setSelectedStroke(sis, sos).setSelectedHoverStroke(shis, shos);
+        selectionShape
+          .setHoverStroke(his, hos)
+          .setSelectedStroke(sis, sos)
+          .setSelectedHoverStroke(shis, shos);
       }
     }
-
 
     /**
      * Sets the shape that should be used for displaying selection and hover feedback
@@ -3688,16 +3966,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._selectionShape = selectionShape;
     }
 
-
     /**
      * Gets the shape that should be used for displaying selection and hover feedback
      * @return {dvt.Shape} the shape that should be used for displaying selection and hover feedback
      */
     getSelectionShape() {
-      if (!this._selectionShape) { // create selection shape in necessary
+      if (!this._selectionShape) {
+        // create selection shape in necessary
         var contentDims = this.getContentBounds(true);
         if (contentDims) {
-          var selectionShape = new dvt.Rect(this._diagram.getCtx(), contentDims.x, contentDims.y, contentDims.w, contentDims.h);
+          var selectionShape = new dvt.Rect(
+            this._diagram.getCtx(),
+            contentDims.x,
+            contentDims.y,
+            contentDims.w,
+            contentDims.h
+          );
           selectionShape.setInvisibleFill();
           // Selection shape stroke alignment is set to OUTER.
           selectionShape.setStrokeAlignment('outer');
@@ -3742,19 +4026,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @override
      */
     showHoverEffect() {
-      if (this._isShowingHoverEffect)
-        return;
+      if (this._isShowingHoverEffect) return;
       var prevState = this._getState();
       this._isShowingHoverEffect = true;
       var hoverRenderer = this._getCustomRenderer('hoverRenderer');
       if (hoverRenderer) {
         this._applyCustomNodeContent(hoverRenderer, this._getState(), prevState);
-      }
-      else {
+      } else {
         this.processDefaultHoverEffect(true);
       }
     }
-
 
     /**
      * @override
@@ -3766,8 +4047,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var hoverRenderer = this._getCustomRenderer('hoverRenderer');
         if (hoverRenderer) {
           this._applyCustomNodeContent(hoverRenderer, this._getState(), prevState);
-        }
-        else {
+        } else {
           this.processDefaultHoverEffect(false);
         }
       }
@@ -3778,12 +4058,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {boolean} hovered true to show hover effect
      */
     processDefaultHoverEffect(hovered) {
-      if (!this.getSelectionShape())
-        return;
-      if (hovered)
-        this.getSelectionShape().showHoverEffect();
-      else
-        this.getSelectionShape().hideHoverEffect();
+      if (!this.getSelectionShape()) return;
+      if (hovered) this.getSelectionShape().showHoverEffect();
+      else this.getSelectionShape().hideHoverEffect();
     }
 
     /**
@@ -3795,10 +4072,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var customTooltip = this.GetDiagram().getOptions()['tooltip'];
       var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
       if (tooltipFunc)
-        return this.GetDiagram().getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, this.getDataContext());
+        return this.GetDiagram()
+          .getCtx()
+          .getTooltipManager()
+          .getCustomTooltip(tooltipFunc, this.getDataContext());
 
       // Custom Tooltip from ShortDesc
-      return dvt.Displayable.resolveShortDesc(this.getShortDesc(), () => DvtDiagramNode.getShortDescContext(this));
+      return dvt.Displayable.resolveShortDesc(this.getShortDesc(), () =>
+        DvtDiagramNode.getShortDescContext(this)
+      );
     }
 
     /**
@@ -3817,12 +4099,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var data = this.getData();
       var resp = data['_noTemplate'] ? data['_itemData'] : data;
       var dataContext = {
-        'id': this.getId(),
-        'type': 'node',
-        'label': data['label'],
-        'data': this.GetDiagram().isDataProviderMode()  ? resp : data['_itemData'],
-        'itemData': this.GetDiagram().isDataProviderMode() ? data['_itemData'] : null,
-        'component': this.GetDiagram().getOptions()['_widgetConstructor']
+        id: this.getId(),
+        type: 'node',
+        label: data['label'],
+        data: this.GetDiagram().isDataProviderMode() ? resp : data['_itemData'],
+        itemData: this.GetDiagram().isDataProviderMode() ? data['_itemData'] : null,
+        component: this.GetDiagram().getOptions()['_widgetConstructor']
       };
 
       return this.getCtx().fixRendererContext(dataContext);
@@ -3836,10 +4118,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var data = node.getData();
       var resp = data['_noTemplate'] ? data['_itemData'] : data;
       return {
-        'id': node.getId(),
-        'label': data['label'],
-        'data': node.GetDiagram().isDataProviderMode()  ? resp : data['_itemData'],
-        'itemData': node.GetDiagram().isDataProviderMode() ? data['_itemData'] : null
+        id: node.getId(),
+        label: data['label'],
+        data: node.GetDiagram().isDataProviderMode() ? resp : data['_itemData'],
+        itemData: node.GetDiagram().isDataProviderMode() ? data['_itemData'] : null
       };
     }
 
@@ -3862,7 +4144,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (actionableElems.length > 0) {
         states.push(translations.accessibleContainsControls);
       }
-      return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtDiagramNode.getShortDescContext(this));
+      return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () =>
+        DvtDiagramNode.getShortDescContext(this)
+      );
     }
 
     /**
@@ -3872,8 +4156,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     UpdateAriaLabel() {
       if (!dvt.Agent.deferAriaCreation()) {
         var desc = this.getAriaLabel();
-        if (desc)
-          this.setAriaProperty('label', desc);
+        if (desc) this.setAriaProperty('label', desc);
       }
     }
 
@@ -3886,47 +4169,43 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       // If there are active elements, then short circuit a keyboard navigation
       if (this.hasActiveInnerElems) {
         return null;
-      }
-      else if (event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey) {
+      } else if (event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey) {
         // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
         // care of the selection
         next = this;
-      }
-      else if ((event.keyCode == dvt.KeyboardEvent.OPEN_ANGLED_BRACKET || dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET) &&
-          event.altKey) {
+      } else if (
+        (event.keyCode == dvt.KeyboardEvent.OPEN_ANGLED_BRACKET ||
+          dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET) &&
+        event.altKey
+      ) {
         //get first navigable link if exists
         var adjLinks = this.GetDiagram().getNavigableLinksForNodeId(this.getId());
         var keyboardHandler = this.GetDiagram().getEventManager().getKeyboardHandler();
         if (keyboardHandler && keyboardHandler.getFirstNavigableLink)
           next = keyboardHandler.getFirstNavigableLink(this, event, adjLinks);
-        if (next)
-          next.setKeyboardFocusNode(this);
-        else
-          next = this;
-      }
-      else if (event.keyCode == dvt.KeyboardEvent.OPEN_BRACKET) { //next node down in container hierarchy
+        if (next) next.setKeyboardFocusNode(this);
+        else next = this;
+      } else if (event.keyCode == dvt.KeyboardEvent.OPEN_BRACKET) {
+        //next node down in container hierarchy
         if (this.isDisclosed()) {
           var childNodes = this.getChildNodes();
           next = childNodes[0];
-        }
-        else
-          next = this;
-      }
-      else if (event.keyCode == dvt.KeyboardEvent.CLOSE_BRACKET) {//next node up in container hierarchy
+        } else next = this;
+      } else if (event.keyCode == dvt.KeyboardEvent.CLOSE_BRACKET) {
+        //next node up in container hierarchy
         parentNode = this.getGroupId() ? this.GetDiagram().getNodeById(this.getGroupId()) : null;
         next = parentNode ? parentNode : this;
-      }
-      else if (event.type == dvt.MouseEvent.CLICK) {
+      } else if (event.type == dvt.MouseEvent.CLICK) {
         next = this;
-      }
-      else {
+      } else {
         // get next navigable node
         var parentNode = this.getGroupId() ? this.GetDiagram().getNodeById(this.getGroupId()) : null;
-        var siblings = parentNode ? parentNode.getChildNodes() : this.GetDiagram().GetRootNodeObjects();
+        var siblings = parentNode
+          ? parentNode.getChildNodes()
+          : this.GetDiagram().GetRootNodeObjects();
         next = dvt.KeyboardHandler.getNextAdjacentNavigable(this, event, siblings);
       }
-      if (event instanceof dvt.KeyboardEvent)
-        this._diagram.ensureObjInViewport(event, next);
+      if (event instanceof dvt.KeyboardEvent) this._diagram.ensureObjInViewport(event, next);
 
       return next;
     }
@@ -3949,13 +4228,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     isContainer() {
       if (this._diagram.isTreeDataProvider()) {
-        var childDataProvider = this._diagram.getOptions().nodeData.getChildDataProvider(this.getId());
+        var childDataProvider = this._diagram
+          .getOptions()
+          .nodeData.getChildDataProvider(this.getId());
         return childDataProvider ? childDataProvider.isEmpty() !== 'yes' : false;
-      }
-      else if (this._diagram.isDataProviderMode()) {
+      } else if (this._diagram.isDataProviderMode()) {
         return false;
-      }
-      else {
+      } else {
         var dataSource = this.GetDiagram().getOptions()['data'];
         return dataSource['getChildCount'](this.getData()) == 0 ? false : true;
       }
@@ -3965,15 +4244,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @override
      */
     showKeyboardFocusEffect() {
-      if (this.isShowingKeyboardFocusEffect())
-        return;
+      if (this.isShowingKeyboardFocusEffect()) return;
       var prevState = this._getState();
       this._isShowingKeyboardFocusEffect = true;
       var focusRenderer = this._getCustomRenderer('focusRenderer');
       if (focusRenderer) {
         this._applyCustomNodeContent(focusRenderer, this._getState(), prevState);
-      }
-      else {
+      } else {
         this.processDefaultFocusEffect(true);
       }
     }
@@ -3988,8 +4265,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var focusRenderer = this._getCustomRenderer('focusRenderer');
         if (focusRenderer) {
           this._applyCustomNodeContent(focusRenderer, this._getState(), prevState);
-        }
-        else {
+        } else {
           this.processDefaultFocusEffect(false);
         }
       }
@@ -4037,18 +4313,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _calcContentDims() {
       var dims = null;
-      if (this._customNodeContent) { // custom renderer
+      if (this._customNodeContent) {
+        // custom renderer
         var bbox;
         if (this._customNodeContent instanceof dvt.BaseComponent) {
           bbox = this._customNodeContent.getDimensions();
           if (bbox) {
             dims = new dvt.Rectangle(bbox.x, bbox.y, bbox.w, bbox.h);
           }
-        }
-        else {
+        } else {
           var customNode = this._customNodeContent;
           if (Array.isArray(customNode)) {
-            for (var i = 0; i < customNode.length; i++) { // get the svg elmeent to measure
+            for (var i = 0; i < customNode.length; i++) {
+              // get the svg elmeent to measure
               if (customNode[i].namespaceURI === dvt.ToolkitUtils.SVG_NS) {
                 customNode = customNode[i];
                 break;
@@ -4060,16 +4337,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             dims = new dvt.Rectangle(bbox.x, bbox.y, bbox.width, bbox.height);
           }
         }
-      }
-      else if (this.isDisclosed()) { // standard container renderer
+      } else if (this.isDisclosed()) {
+        // standard container renderer
         dims = this._containerShape.GetDimensionsWithStroke(this);
-      }
-      else { // standard leaf node or collapsed node renderer
+      } else {
+        // standard leaf node or collapsed node renderer
         dims = this._background ? this._background.GetDimensionsWithStroke(this) : null;
         if (dims && this._shape) {
           dims = dims.getUnion(this._shape.GetDimensionsWithStroke(this));
-        }
-        else if (!dims && this._shape) {
+        } else if (!dims && this._shape) {
           dims = this._shape.GetDimensionsWithStroke(this);
         }
       }
@@ -4082,7 +4358,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {DvtDiagramNode} oldNode the old node to animate from
      */
     animateUpdate(animationHandler, oldNode) {
-
       var playable = new dvt.CustomAnimation(this.getCtx(), null, animationHandler.getAnimDur());
 
       // animate node internals - consider 3 different scenarios
@@ -4097,7 +4372,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         DvtDiagramNode._animatePosition(playable, oldNode, this);
         //size
         if (oldNode._shape && this._shape) {
-          playable.getAnimator().addProp(dvt.Animator.TYPE_RECTANGLE, this._shape, this._shape.getCenterDimensions, this._shape.setCenterDimensions, this._shape.getCenterDimensions());
+          playable
+            .getAnimator()
+            .addProp(
+              dvt.Animator.TYPE_RECTANGLE,
+              this._shape,
+              this._shape.getCenterDimensions,
+              this._shape.setCenterDimensions,
+              this._shape.getCenterDimensions()
+            );
           this._shape.setCenterDimensions(oldNode._shape.getCenterDimensions());
         }
         //label
@@ -4106,7 +4389,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           newMat = this._labelObj.getMatrix();
           if (!oldMat.equals(newMat)) {
             this._labelObj.setMatrix(oldMat);
-            playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, this._labelObj, this._labelObj.getMatrix, this._labelObj.setMatrix, newMat);
+            playable
+              .getAnimator()
+              .addProp(
+                dvt.Animator.TYPE_MATRIX,
+                this._labelObj,
+                this._labelObj.getMatrix,
+                this._labelObj.setMatrix,
+                newMat
+              );
           }
         }
         //background and icon
@@ -4121,33 +4412,52 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           newMat = this._labelObj.getMatrix();
           if (!oldMat.equals(newMat)) {
             this._labelObj.setMatrix(oldMat);
-            playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, this._labelObj, this._labelObj.getMatrix, this._labelObj.setMatrix, newMat);
+            playable
+              .getAnimator()
+              .addProp(
+                dvt.Animator.TYPE_MATRIX,
+                this._labelObj,
+                this._labelObj.getMatrix,
+                this._labelObj.setMatrix,
+                newMat
+              );
           }
         }
 
         if (this._getCustomRenderer('renderer')) {
           this._animateCustomUpdate(animationHandler, oldNode);
-        }
-        else {
+        } else {
           DvtDiagramNode._animatePosition(playable, oldNode, this);
 
           //animate size and background
           DvtDiagramNode._animateContainer(playable, oldNode._containerShape, this._containerShape);
 
           //animate expand-collapse button position in rtl case
-          if (dvt.Agent.isRightToLeft(this.getCtx()) && oldNode._containerButton && this._containerButton) {
+          if (
+            dvt.Agent.isRightToLeft(this.getCtx()) &&
+            oldNode._containerButton &&
+            this._containerButton
+          ) {
             var oldButtonTx = oldNode._containerButton.getTranslateX();
             var newButtonTx = this._containerButton.getTranslateX();
             if (oldButtonTx != newButtonTx) {
               this._containerButton.setTranslateX(oldButtonTx);
-              playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this._containerButton,
-                  this._containerButton.getTranslateX, this._containerButton.setTranslateX, newButtonTx);
+              playable
+                .getAnimator()
+                .addProp(
+                  dvt.Animator.TYPE_NUMBER,
+                  this._containerButton,
+                  this._containerButton.getTranslateX,
+                  this._containerButton.setTranslateX,
+                  newButtonTx
+                );
             }
           }
 
           if (!oldNode['partialUpdate']) {
             //construct animation for child nodes
-            var newChildNodes = [], oldChildNodes = [];
+            var newChildNodes = [],
+              oldChildNodes = [];
             var newChildIds = this.getChildNodeIds();
             for (var i = 0; i < newChildIds.length; i++) {
               newChildNodes.push(this.GetDiagram().getNodeById(newChildIds[i]));
@@ -4186,26 +4496,38 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
 
       // scales for sizing and positioning
-      var scaleTo = newBounds.w / oldBounds.w;  //used for old node
-      var scaleFrom = oldBounds.w / newBounds.w;  //used for new node
+      var scaleTo = newBounds.w / oldBounds.w; //used for old node
+      var scaleFrom = oldBounds.w / newBounds.w; //used for new node
 
       //create animator to animate position
       playable = new dvt.CustomAnimation(this.getCtx(), null, animationHandler.getAnimDur());
 
       //animate new node position
-      var oldNodeCenter = new dvt.Point(oldNode.getTranslateX() + oldBounds.w * .5, oldNode.getTranslateY() + oldBounds.h * .5);
+      var oldNodeCenter = new dvt.Point(
+        oldNode.getTranslateX() + oldBounds.w * 0.5,
+        oldNode.getTranslateY() + oldBounds.h * 0.5
+      );
       var newTx = this.getTranslateX();
       var newTy = this.getTranslateY();
-      this.setTranslateX(oldNodeCenter.x - newBounds.w * scaleFrom * .5);
-      this.setTranslateY(oldNodeCenter.y - newBounds.w * scaleFrom * .5);
-      playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateX, this.setTranslateX, newTx);
-      playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateY, this.setTranslateY, newTy);
+      this.setTranslateX(oldNodeCenter.x - newBounds.w * scaleFrom * 0.5);
+      this.setTranslateY(oldNodeCenter.y - newBounds.w * scaleFrom * 0.5);
+      playable
+        .getAnimator()
+        .addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateX, this.setTranslateX, newTx);
+      playable
+        .getAnimator()
+        .addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateY, this.setTranslateY, newTy);
       animationHandler.add(playable, DvtDiagramDataAnimationPhase.UPDATE);
 
       // animate scale and fade in new node
       this.setScaleX(scaleFrom);
       this.setScaleY(scaleFrom);
-      var scaleNewToOld = new dvt.AnimScaleTo(this.getCtx(), this, new dvt.Point(1, 1), animationHandler.getAnimDur());
+      var scaleNewToOld = new dvt.AnimScaleTo(
+        this.getCtx(),
+        this,
+        new dvt.Point(1, 1),
+        animationHandler.getAnimDur()
+      );
       animationHandler.add(scaleNewToOld, DvtDiagramDataAnimationPhase.UPDATE);
 
       var oldNodeContent = oldNode['partialUpdate'] ? oldNode['origContent'] : oldNode;
@@ -4215,18 +4537,48 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         this.getParent().addChild(oldNodeContent);
 
         //animate old node position
-        var newNodeCenter = new dvt.Point(this.getTranslateX() + newBounds.w * .5, this.getTranslateY() + newBounds.h * .5);
-        playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, oldNodeContent, oldNode.getTranslateX, oldNodeContent.setTranslateX, newNodeCenter.x - oldBounds.w * scaleTo * .5);
-        playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, oldNodeContent, oldNode.getTranslateY, oldNodeContent.setTranslateY, newNodeCenter.y - oldBounds.h * scaleTo * .5);
+        var newNodeCenter = new dvt.Point(
+          this.getTranslateX() + newBounds.w * 0.5,
+          this.getTranslateY() + newBounds.h * 0.5
+        );
+        playable
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_NUMBER,
+            oldNodeContent,
+            oldNode.getTranslateX,
+            oldNodeContent.setTranslateX,
+            newNodeCenter.x - oldBounds.w * scaleTo * 0.5
+          );
+        playable
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_NUMBER,
+            oldNodeContent,
+            oldNode.getTranslateY,
+            oldNodeContent.setTranslateY,
+            newNodeCenter.y - oldBounds.h * scaleTo * 0.5
+          );
 
         // animate scale and fade out old node
-        var scaleOldToNew = new dvt.AnimScaleTo(this.getCtx(), oldNodeContent, new dvt.Point(scaleTo, scaleTo), animationHandler.getAnimDur());
+        var scaleOldToNew = new dvt.AnimScaleTo(
+          this.getCtx(),
+          oldNodeContent,
+          new dvt.Point(scaleTo, scaleTo),
+          animationHandler.getAnimDur()
+        );
         animationHandler.add(scaleOldToNew, DvtDiagramDataAnimationPhase.UPDATE);
 
-        var fadeOut = new dvt.AnimFadeOut(this.getCtx(), oldNodeContent, animationHandler.getAnimDur());
+        var fadeOut = new dvt.AnimFadeOut(
+          this.getCtx(),
+          oldNodeContent,
+          animationHandler.getAnimDur()
+        );
         animationHandler.add(fadeOut, DvtDiagramDataAnimationPhase.UPDATE);
         var thisRef = this;
-        dvt.Playable.appendOnEnd(fadeOut, () => {thisRef.getParent().removeChild(oldNodeContent);});
+        dvt.Playable.appendOnEnd(fadeOut, () => {
+          thisRef.getParent().removeChild(oldNodeContent);
+        });
 
         this.setAlpha(0);
         var fadeIn = new dvt.AnimFadeIn(this.getCtx(), this, animationHandler.getAnimDur());
@@ -4249,11 +4601,27 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var newTy = newNode.getTranslateY();
         if (oldTx != newTx) {
           newNode.setTranslateX(oldTx);
-          playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newNode, newNode.getTranslateX, newNode.setTranslateX, newTx);
+          playable
+            .getAnimator()
+            .addProp(
+              dvt.Animator.TYPE_NUMBER,
+              newNode,
+              newNode.getTranslateX,
+              newNode.setTranslateX,
+              newTx
+            );
         }
         if (oldTy != newTy) {
           newNode.setTranslateY(oldTy);
-          playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newNode, newNode.getTranslateY, newNode.setTranslateY, newTy);
+          playable
+            .getAnimator()
+            .addProp(
+              dvt.Animator.TYPE_NUMBER,
+              newNode,
+              newNode.getTranslateY,
+              newNode.setTranslateY,
+              newTy
+            );
         }
       }
     }
@@ -4268,9 +4636,25 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     static _animateContainer(playable, oldDisplayable, newDisplayable) {
       if (newDisplayable && oldDisplayable) {
         DvtDiagramNode._animateFill(playable, oldDisplayable, newDisplayable);
-        playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newDisplayable, newDisplayable.getWidth, newDisplayable.setWidth, newDisplayable.getWidth());
+        playable
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_NUMBER,
+            newDisplayable,
+            newDisplayable.getWidth,
+            newDisplayable.setWidth,
+            newDisplayable.getWidth()
+          );
         newDisplayable.setWidth(oldDisplayable.getWidth());
-        playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newDisplayable, newDisplayable.getHeight, newDisplayable.setHeight, newDisplayable.getHeight());
+        playable
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_NUMBER,
+            newDisplayable,
+            newDisplayable.getHeight,
+            newDisplayable.setHeight,
+            newDisplayable.getHeight()
+          );
         newDisplayable.setHeight(oldDisplayable.getHeight());
       }
     }
@@ -4283,8 +4667,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @private
      */
     static _animateFill(playable, oldDisplayable, newDisplayable) {
-      if (oldDisplayable && newDisplayable && newDisplayable.getFill() instanceof dvt.SolidFill && !newDisplayable.getFill().equals(oldDisplayable.getFill())) {
-        playable.getAnimator().addProp(dvt.Animator.TYPE_FILL, newDisplayable, newDisplayable.getFill, newDisplayable.setFill, newDisplayable.getFill());
+      if (
+        oldDisplayable &&
+        newDisplayable &&
+        newDisplayable.getFill() instanceof dvt.SolidFill &&
+        !newDisplayable.getFill().equals(oldDisplayable.getFill())
+      ) {
+        playable
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_FILL,
+            newDisplayable,
+            newDisplayable.getFill,
+            newDisplayable.setFill,
+            newDisplayable.getFill()
+          );
         newDisplayable.setFill(oldDisplayable.getFill());
       }
     }
@@ -4310,7 +4707,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     animateInsert(animationHandler) {
       this.setAlpha(0);
-      animationHandler.add(new dvt.AnimFadeIn(this.getCtx(), this, animationHandler.getAnimDur()), DvtDiagramDataAnimationPhase.INSERT);
+      animationHandler.add(
+        new dvt.AnimFadeIn(this.getCtx(), this, animationHandler.getAnimDur()),
+        DvtDiagramDataAnimationPhase.INSERT
+      );
     }
 
     /**
@@ -4321,12 +4721,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _getState(zoom) {
       return {
-        'hovered': this._isShowingHoverEffect,
-        'selected': this.isSelected(),
-        'focused': this._isShowingKeyboardFocusEffect,
-        'zoom': zoom ? zoom : this.GetDiagram().getPanZoomCanvas().getZoom(),
-        'expanded': this.isDisclosed(),
-        'inActionableMode': this.hasActiveInnerElems
+        hovered: this._isShowingHoverEffect,
+        selected: this.isSelected(),
+        focused: this._isShowingKeyboardFocusEffect,
+        zoom: zoom ? zoom : this.GetDiagram().getPanZoomCanvas().getZoom(),
+        expanded: this.isDisclosed(),
+        inActionableMode: this.hasActiveInnerElems
       };
     }
 
@@ -4350,7 +4750,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     highlight(bHighlight) {
       if (this._isHighlighted !== bHighlight) {
         this._isHighlighted = bHighlight;
-        var highlightAlpha = bHighlight ? 1.0 : this._diagram.getOptions()['styleDefaults']['_highlightAlpha'];
+        var highlightAlpha = bHighlight
+          ? 1.0
+          : this._diagram.getOptions()['styleDefaults']['_highlightAlpha'];
 
         if (!this._customNodeContent && this.isDisclosed()) {
           // update parts of a standard container
@@ -4358,8 +4760,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           this._containerButton && this._containerButton.setAlpha(highlightAlpha);
           this._labelObj && this._labelObj.setAlpha(highlightAlpha);
           this._selectionShape && this._selectionShape.setAlpha(highlightAlpha);
-        }
-        else {
+        } else {
           // default way - just toggle the value
           this.setAlpha(highlightAlpha);
         }
@@ -4374,7 +4775,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {string} valign valign of the node label
      */
     setLabelAlignments(halign, valign) {
-      var isMultiline = this._labelObj instanceof dvt.MultilineText || this._labelObj instanceof dvt.BackgroundMultilineText;
+      var isMultiline =
+        this._labelObj instanceof dvt.MultilineText ||
+        this._labelObj instanceof dvt.BackgroundMultilineText;
       if (valign == 'baseline')
         valign = isMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_AUTO;
 
@@ -4391,37 +4794,42 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (!this._containerPadding && this._getCustomRenderer('renderer')) {
         var zoom = this.GetDiagram().getPanZoomCanvas().getZoom();
         var nodeBoundingRect = this.getElem().getBoundingClientRect();
-        var childPaneBoundingRect = this._childNodePane ? this._childNodePane.getElem().getBoundingClientRect() : null;
+        var childPaneBoundingRect = this._childNodePane
+          ? this._childNodePane.getElem().getBoundingClientRect()
+          : null;
         if (childPaneBoundingRect) {
-          this._containerPadding = {left: (childPaneBoundingRect.left - nodeBoundingRect.left)/zoom,
-              right: (nodeBoundingRect.right - childPaneBoundingRect.right)/zoom,
-              top: (childPaneBoundingRect.top - nodeBoundingRect.top)/zoom,
-              bottom: (nodeBoundingRect.bottom - childPaneBoundingRect.bottom)/zoom};
+          this._containerPadding = {
+            left: (childPaneBoundingRect.left - nodeBoundingRect.left) / zoom,
+            right: (nodeBoundingRect.right - childPaneBoundingRect.right) / zoom,
+            top: (childPaneBoundingRect.top - nodeBoundingRect.top) / zoom,
+            bottom: (nodeBoundingRect.bottom - childPaneBoundingRect.bottom) / zoom
+          };
         }
-      }
-      else if (!this._containerPadding) {
+      } else if (!this._containerPadding) {
         var paddingProps = ['padding-left', 'padding-right', 'padding-top', 'padding-bottom'];
         var containerStyleObj = this._data['containerSvgStyle'] || this._data['containerStyle'];
-        var styles = DvtDiagramNode._getNodeCSSStyle(containerStyleObj,
-            this._data['_containerStyle'],
-            paddingProps);
-        this._containerPadding = {left: styles.getPadding('padding-left'),
+        var styles = DvtDiagramNode._getNodeCSSStyle(
+          containerStyleObj,
+          this._data['_containerStyle'],
+          paddingProps
+        );
+        this._containerPadding = {
+          left: styles.getPadding('padding-left'),
           right: styles.getPadding('padding-right'),
           top: styles.getPadding('padding-top'),
-          bottom: styles.getPadding('padding-bottom')};
+          bottom: styles.getPadding('padding-bottom')
+        };
       }
       return this._containerPadding;
     }
 
-    setContainerPadding() {
-    }
+    setContainerPadding() {}
 
     /**
      * Gets child ids for the node
      * @return {array} an array of child ids
      */
-    getChildNodeIds()
-    {
+    getChildNodeIds() {
       return this._childNodeIds;
     }
 
@@ -4429,10 +4837,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Adds id of a child node to the array of child nodes
      * @param {string} id child id
      */
-    addChildNodeId(id)
-    {
-      if (!this._childNodeIds)
-        this._childNodeIds = [];
+    addChildNodeId(id) {
+      if (!this._childNodeIds) this._childNodeIds = [];
       this._childNodeIds.push(id);
     }
 
@@ -4440,8 +4846,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Removes id of a child node from the array of child nodes
      * @param {string} id child id
      */
-    removeChildNodeId(id)
-    {
+    removeChildNodeId(id) {
       if (this._childNodeIds) {
         dvt.ArrayUtils.removeItem(this._childNodeIds, id);
       }
@@ -4451,8 +4856,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Removes child node
      * @param {DvtDiagramNode} childNode child node
      */
-    removeChildNode(childNode)
-    {
+    removeChildNode(childNode) {
       if (childNode) {
         this.removeChildNodeId(childNode.getId());
         this._childNodePane.removeChild(childNode);
@@ -4463,8 +4867,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Gets visible child nodes for the node
      * @return {array} an array of visible child nodes
      */
-    getChildNodes()
-    {
+    getChildNodes() {
       var childNodes = [];
       var count = this._childNodeIds ? this._childNodeIds.length : -1;
       for (var i = 0; i < count; i++) {
@@ -4480,8 +4883,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Sets group id for the node
      * @param {string} id group id for the node
      */
-    setGroupId(id)
-    {
+    setGroupId(id) {
       this._groupId = id;
     }
 
@@ -4489,8 +4891,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Gets group id for the node
      * @return {string} group id for the node
      */
-    getGroupId()
-    {
+    getGroupId() {
       return this._groupId;
     }
 
@@ -4507,7 +4908,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
       return this._childNodePane;
     }
-
 
     /**
      * Handles container disclosure
@@ -4528,17 +4928,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     static _renderContainer(diagram, nodeData, container) {
       // TODO: removing container styles for custom elements,
       // since we can't properly support svg style and class name at the moment
-      var containerStyleObj = diagram.getCtx().isCustomElement() ? null :
-          nodeData['containerSvgStyle'] || nodeData['containerStyle'];
+      var containerStyleObj = diagram.getCtx().isCustomElement()
+        ? null
+        : nodeData['containerSvgStyle'] || nodeData['containerStyle'];
       var styleObj = dvt.JsonUtils.clone(containerStyleObj);
-      var containerProps = [dvt.CSSStyle.BACKGROUND_COLOR,
-                            dvt.CSSStyle.BORDER_COLOR,
-                            dvt.CSSStyle.BORDER_WIDTH,
-                            dvt.CSSStyle.BORDER_RADIUS];
+      var containerProps = [
+        dvt.CSSStyle.BACKGROUND_COLOR,
+        dvt.CSSStyle.BORDER_COLOR,
+        dvt.CSSStyle.BORDER_WIDTH,
+        dvt.CSSStyle.BORDER_RADIUS
+      ];
       //Merge the container style from options and container style from CSS object
-      var containerStyle = DvtDiagramNode._getNodeCSSStyle(styleObj,
-          nodeData['_containerStyle'],
-          containerProps);
+      var containerStyle = DvtDiagramNode._getNodeCSSStyle(
+        styleObj,
+        nodeData['_containerStyle'],
+        containerProps
+      );
 
       var fillColor = containerStyle.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
       var borderColor = containerStyle.getStyle(dvt.CSSStyle.BORDER_COLOR);
@@ -4549,9 +4954,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var padding = container.getContainerPadding();
       childNodePane.setTranslate(padding.left, padding.top);
       var childBounds = childNodePane.getDimensionsWithStroke();
-      var containerShape = new dvt.Rect(diagram.getCtx(), 0, 0,
-          childBounds.w + padding.left + padding.right,
-          childBounds.h + padding.top + padding.bottom);
+      var containerShape = new dvt.Rect(
+        diagram.getCtx(),
+        0,
+        0,
+        childBounds.w + padding.left + padding.right,
+        childBounds.h + padding.top + padding.bottom
+      );
       containerShape.setSolidFill(fillColor);
       if (borderRadius) {
         containerShape.setRx(borderRadius);
@@ -4563,12 +4972,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       //Parse out the CSS properties which are already applied on the DOM
       if (styleObj)
-        containerProps.forEach((entry) => {delete styleObj[dvt.CSSStyle.cssStringToObjectProperty(entry)];});
+        containerProps.forEach((entry) => {
+          delete styleObj[dvt.CSSStyle.cssStringToObjectProperty(entry)];
+        });
       // Set the style and class attributes for node container
       // TODO: removing container styles for custom elements,
       // since we can't properly support svg style and class name at the moment
-      var containerClassName = diagram.getCtx().isCustomElement() ? null :
-                  nodeData['containerSvgClassName'] || nodeData['containerClassName'];
+      var containerClassName = diagram.getCtx().isCustomElement()
+        ? null
+        : nodeData['containerSvgClassName'] || nodeData['containerClassName'];
       containerShape.setStyle(styleObj).setClassName(containerClassName);
 
       container.addChildAt(containerShape, 0);
@@ -4593,10 +5005,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var value = null;
         //convert CSS string property to object attribute
         var attribute = dvt.CSSStyle.cssStringToObjectProperty(entry);
-        if (styleObj && styleObj[attribute] != null)
-          value = styleObj[attribute];
-        else if (styleCSS)
-          value = styleCSS.getStyle(entry);
+        if (styleObj && styleObj[attribute] != null) value = styleObj[attribute];
+        else if (styleCSS) value = styleCSS.getStyle(entry);
         style.setStyle(entry, value);
       });
       return style;
@@ -4616,22 +5026,34 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var context = diagram.getCtx();
       var rtl = dvt.Agent.isRightToLeft(context);
       var options = diagram.getOptions();
-      var LTR_BUTTON_PATH = 'M1 0 19 0 A 1 1 0 0 1 19 1 L 1 19 A 1 1 0 0 1 0 19 L 0 1 A 1 1 0 0 1 1 0z';
-      var RTL_BUTTON_PATH = 'M1 0 19 0 A 1 1 0 0 1 20 1 L 20 19 A 1 1 0 0 1 19 19 L 1 1 A 1 1 0 0 1 1 0z';
+      var LTR_BUTTON_PATH =
+        'M1 0 19 0 A 1 1 0 0 1 19 1 L 1 19 A 1 1 0 0 1 0 19 L 0 1 A 1 1 0 0 1 1 0z';
+      var RTL_BUTTON_PATH =
+        'M1 0 19 0 A 1 1 0 0 1 20 1 L 20 19 A 1 1 0 0 1 19 19 L 1 1 A 1 1 0 0 1 1 0z';
       var commands = rtl ? RTL_BUTTON_PATH : LTR_BUTTON_PATH;
       var buttonWidth = 20;
       var strokeWidth = 1;
       var background = new dvt.Path(context, commands);
       var iconResources = options._resources[container.isDisclosed() ? 'collapse' : 'expand'];
       var iconStyle = dvt.ToolkitUtils.getIconStyle(context, iconResources.icon);
-      var yPos = iconResources.width / 2 + 1;  // Position icon slightly off center to better align with triangle container
+      var yPos = iconResources.width / 2 + 1; // Position icon slightly off center to better align with triangle container
       var xPos = rtl ? buttonWidth - yPos : yPos;
-      var containerButton = new dvt.IconButton(diagram.getCtx(), 'outlined', {style: iconStyle, size: iconResources.width, pos: {x: xPos, y: yPos}}, background, null, container.handleDisclosure, container);
+      var containerButton = new dvt.IconButton(
+        diagram.getCtx(),
+        'outlined',
+        { style: iconStyle, size: iconResources.width, pos: { x: xPos, y: yPos } },
+        background,
+        null,
+        container.handleDisclosure,
+        container
+      );
 
       container.addChild(containerButton);
       var contentDims = container.getContentBounds(true);
       if (contentDims) {
-        var x = rtl ? contentDims.x + contentDims.w - buttonWidth - strokeWidth / 2 : contentDims.x + strokeWidth / 2;
+        var x = rtl
+          ? contentDims.x + contentDims.w - buttonWidth - strokeWidth / 2
+          : contentDims.x + strokeWidth / 2;
         var y = contentDims.y + strokeWidth / 2;
         containerButton.setTranslate(x, y);
       }
@@ -4648,8 +5070,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @override
      */
     getDragTransferable() {
-      if (!this._isDraggable())
-        return null;
+      if (!this._isDraggable()) return null;
       return [this.getId()];
     }
 
@@ -4662,7 +5083,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
 
       // If more than one object is selected, return the displayables of all selected objects
-      if (this._diagram.isSelectionSupported() && this._diagram.getSelectionHandler().getSelectedCount() > 1) {
+      if (
+        this._diagram.isSelectionSupported() &&
+        this._diagram.getSelectionHandler().getSelectedCount() > 1
+      ) {
         var selection = this._diagram.getSelectionHandler().getSelection();
         var displayables = [];
         for (var i = 0; i < selection.length; i++) {
@@ -4678,7 +5102,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Show drop effect on the node
      */
     ShowDropEffect() {
-      if (! this._dropEffect) {
+      if (!this._dropEffect) {
         this._createDropEffect('oj-active-drop');
       }
     }
@@ -4687,7 +5111,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Show rejected drop effect on the node
      */
     ShowRejectedDropEffect() {
-      if (! this._dropEffect) {
+      if (!this._dropEffect) {
         this._createDropEffect('oj-invalid-drop');
       }
     }
@@ -4712,14 +5136,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       // if this is a custom rendered node or disclosed node
       // or a leafnode with background or just an image
       // create a rectangle as a drop effect
-      if (this._customNodeContent || this.isDisclosed() || this._background ||
-          (this._shape && this._shape instanceof dvt.ImageMarker)) {
+      if (
+        this._customNodeContent ||
+        this.isDisclosed() ||
+        this._background ||
+        (this._shape && this._shape instanceof dvt.ImageMarker)
+      ) {
         var contentDims = this.getContentBounds(true);
         if (contentDims) {
-          dropEffectShape = new dvt.Rect(this._diagram.getCtx(), contentDims.x, contentDims.y,
-              contentDims.w, contentDims.h);
-          var borderRadius = this._customNodeContent ? null : this.isDisclosed() ? this._containerShape.getRx() :
-              this._background ? this._background.getRx() : null;
+          dropEffectShape = new dvt.Rect(
+            this._diagram.getCtx(),
+            contentDims.x,
+            contentDims.y,
+            contentDims.w,
+            contentDims.h
+          );
+          var borderRadius = this._customNodeContent
+            ? null
+            : this.isDisclosed()
+            ? this._containerShape.getRx()
+            : this._background
+            ? this._background.getRx()
+            : null;
           if (borderRadius) {
             dropEffectShape.setRx(borderRadius);
             dropEffectShape.setRy(borderRadius);
@@ -4745,9 +5183,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _setDraggableStyleClass() {
       if (this._diagram.getEventManager().IsDragSupported() && this._isDraggable()) {
-        var draggableTopShape = this._customNodeContent ? this :
-            this.isDisclosed() ? this._containerShape :
-            this._background ? this._background : this._shape;
+        var draggableTopShape = this._customNodeContent
+          ? this
+          : this.isDisclosed()
+          ? this._containerShape
+          : this._background
+          ? this._background
+          : this._shape;
         var el = draggableTopShape.getElem() ? draggableTopShape.getElem() : draggableTopShape;
         dvt.ToolkitUtils.addClassName(el, 'oj-draggable');
       }
@@ -4759,7 +5201,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {boolean} true if the node is draggable
      */
     _isDraggable() {
-      return (this.getData()['draggable'] !== 'off' && this.getData()['draggable'] !== false);
+      return this.getData()['draggable'] !== 'off' && this.getData()['draggable'] !== false;
     }
 
     /**
@@ -4794,6 +5236,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         this._containerButton = null;
       }
       if (this._customNodeContent) {
+        if (this._nodeContext) {
+          this._diagram.getOptions()['_cleanTemplate'](this.getId());
+        }
         // reparent child node pane - it is likely to be attached
         // to an element inside of custom content
         if (this._childNodePane) {
@@ -4802,15 +5247,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         }
         if (this._customNodeContent.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
           this.getContainerElem().removeChild(this._customNodeContent);
-          saveContainer && dvt.ToolkitUtils.appendChildElem(saveContainer.getContainerElem(), this._customNodeContent);
-        }
-        else if (Array.isArray(this._customNodeContent)) {
+          saveContainer &&
+            dvt.ToolkitUtils.appendChildElem(
+              saveContainer.getContainerElem(),
+              this._customNodeContent
+            );
+        } else if (Array.isArray(this._customNodeContent)) {
           for (var i = 0; i < this._customNodeContent.length; i++) {
             this.getContainerElem().removeChild(this._customNodeContent[i]);
-            saveContainer && dvt.ToolkitUtils.appendChildElem(saveContainer.getContainerElem(), this._customNodeContent[i]);
+            saveContainer &&
+              dvt.ToolkitUtils.appendChildElem(
+                saveContainer.getContainerElem(),
+                this._customNodeContent[i]
+              );
           }
-        }
-        else if (this._customNodeContent instanceof dvt.BaseComponent) {
+        } else if (this._customNodeContent instanceof dvt.BaseComponent) {
           this.removeChild(this._customNodeContent);
           saveContainer && saveContainer.addChild(this._customNodeContent);
         }
@@ -4829,25 +5280,37 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var contentBounds = this.getContentBounds();
       if (this._shape) {
         shape = {
-          'centerDimensions': this._shape.getCenterDimensions(),
-          'fill': this._shape.getFill()
+          centerDimensions: this._shape.getCenterDimensions(),
+          fill: this._shape.getFill()
         };
-        shape.getCenterDimensions = () => {return shape['centerDimensions']};
-        shape.getFill = () => {return shape['fill']};
+        shape.getCenterDimensions = () => {
+          return shape['centerDimensions'];
+        };
+        shape.getFill = () => {
+          return shape['fill'];
+        };
       }
       if (this._labelObj) {
-        label = {'matrix' : this._labelObj.getMatrix()};
-        label.getMatrix = () => {return label['matrix']};
+        label = { matrix: this._labelObj.getMatrix() };
+        label.getMatrix = () => {
+          return label['matrix'];
+        };
       }
       if (this.isDisclosed() && this._containerShape) {
         containerShape = {
-          'fill': this._containerShape.getFill(),
-          'width': this._containerShape.getWidth(),
-          'height': this._containerShape.getHeight()
+          fill: this._containerShape.getFill(),
+          width: this._containerShape.getWidth(),
+          height: this._containerShape.getHeight()
         };
-        containerShape.getFill = () => {return containerShape['fill']};
-        containerShape.getWidth = () => {return containerShape['width']};
-        containerShape.getHeight = () => {return containerShape['height']};
+        containerShape.getFill = () => {
+          return containerShape['fill'];
+        };
+        containerShape.getWidth = () => {
+          return containerShape['width'];
+        };
+        containerShape.getHeight = () => {
+          return containerShape['height'];
+        };
       }
       if (keepOrigContent) {
         //move the original node content to a temporary container,
@@ -4856,7 +5319,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         this._cleanUp(origContent);
         origContent.setTranslate(this.getTranslateX(), this.getTranslateY());
       }
-      return { partialUpdate: true,
+      return {
+        partialUpdate: true,
         id: this.getId(),
         disclosed: this.isDisclosed(),
         tx: this.getTranslateX(),
@@ -4866,11 +5330,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         _shape: shape,
         _labelObj: label,
         _containerShape: containerShape,
-        getId: function() {return this.id},
-        isDisclosed: function() {return this.disclosed},
-        getTranslateX: function() {return this.tx},
-        getTranslateY: function() {return this.ty},
-        getContentBounds: function() {return this.contentBounds}
+        getId: function () {
+          return this.id;
+        },
+        isDisclosed: function () {
+          return this.disclosed;
+        },
+        getTranslateX: function () {
+          return this.tx;
+        },
+        getTranslateY: function () {
+          return this.ty;
+        },
+        getContentBounds: function () {
+          return this.contentBounds;
+        }
       };
     }
 
@@ -4880,8 +5354,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {number} index to insert nodes
      */
     appendChildNodesData(childNodesData, index) {
-      if (!(this._data['nodes'] instanceof Array))
-        this._data['nodes'] = [];
+      if (!(this._data['nodes'] instanceof Array)) this._data['nodes'] = [];
       this._data['nodes'] = dvt.ArrayUtils.insert(this._data['nodes'], childNodesData, index);
     }
 
@@ -4965,7 +5438,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     setLabelRotationAngle(angle) {
       this._labelRotAngle = angle;
-      DvtDiagramNode.PositionLabel(this._labelObj, this.getLabelPosition(), angle, this.getLabelRotationPoint());
+      DvtDiagramNode.PositionLabel(
+        this._labelObj,
+        this.getLabelPosition(),
+        angle,
+        this.getLabelRotationPoint()
+      );
     }
 
     /**
@@ -4982,7 +5460,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     setLabelRotationPoint(point) {
       this._labelRotPoint = point;
-      DvtDiagramNode.PositionLabel(this._labelObj, this.getLabelPosition(), this.getLabelRotationAngle(), point);
+      DvtDiagramNode.PositionLabel(
+        this._labelObj,
+        this.getLabelPosition(),
+        this.getLabelRotationAngle(),
+        point
+      );
     }
 
     /**
@@ -5013,8 +5496,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         //label coords are relative to containing node
         bounds.x = Math.min(nodeBounds.x, labelBounds.x + labelPos.x);
         bounds.y = Math.min(nodeBounds.y, labelBounds.y + labelPos.y);
-        bounds.w = Math.max(nodeBounds.x + nodeBounds.w, labelBounds.x + labelPos.x + labelBounds.w) - bounds.x;
-        bounds.h = Math.max(nodeBounds.y + nodeBounds.h, labelBounds.y + labelPos.y + labelBounds.h) - bounds.y;
+        bounds.w =
+          Math.max(nodeBounds.x + nodeBounds.w, labelBounds.x + labelPos.x + labelBounds.w) -
+          bounds.x;
+        bounds.h =
+          Math.max(nodeBounds.y + nodeBounds.h, labelBounds.y + labelPos.y + labelBounds.h) -
+          bounds.y;
       }
 
       return bounds;
@@ -5032,7 +5519,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var mat = new dvt.Matrix();
       if (rotAngle != null) {
         if (rotPoint) {
-          mat = mat.translate(- rotPoint.x, - rotPoint.y);
+          mat = mat.translate(-rotPoint.x, -rotPoint.y);
         }
         mat = mat.rotate(rotAngle);
         if (rotPoint) {
@@ -5054,8 +5541,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     static PositionLabel(label, pos, rotAngle, rotPoint) {
-      if (!label)
-        return;
+      if (!label) return;
       var mat = DvtDiagramNode.CalcLabelMatrix(pos, rotAngle, rotPoint);
       label.setMatrix(mat);
     }
@@ -5068,33 +5554,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     SetPosition(xx, yy) {
       this.setTranslate(xx, yy);
-    };
+    }
 
     /**
      * Gets position of the node
      * @return {dvt.Point} node position
      * @protected
      */
-    GetPosition()
-    {
+    GetPosition() {
       return new dvt.Point(this.getTranslateX(), this.getTranslateY());
     }
 
     /**
      * @override
      */
-    getKeyboardBoundingBox(targetCoordinateSpace)
-    {
+    getKeyboardBoundingBox(targetCoordinateSpace) {
       // return the bounding box for the diagram node, in stage coordinates
       // we don't call this.getDimensions(this.getCtx().getStage() because
       // that would take into account any selection/keyboard focus effects.
       // so instead, we get the content bounds of the node and convert that
       // to stage coordinates, based on code in dvt.Displayable.getDimensions()
-      if (this._customNodeContent)
-        return this._diagram.getCustomObjKeyboardBoundingBox(this);
-
+      if (this._customNodeContent) return this._diagram.getCustomObjKeyboardBoundingBox(this);
       else {
-
         var bounds = this.getContentBounds(targetCoordinateSpace);
         var stageP1 = this.localToStage(new dvt.Point(bounds.x, bounds.y));
         var stageP2 = this.localToStage(new dvt.Point(bounds.x + bounds.w, bounds.y + bounds.h));
@@ -5105,11 +5586,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     /**
      * @override
      */
-    getTargetElem()
-    {
+    getTargetElem() {
       return this.getElem();
     }
-
 
     /**
      * Stores an id of an outgoing link for the node
@@ -5126,8 +5605,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Removes an id of the outgoing link
      * @param {string} id an id for the outgoing link
      */
-    removeOutLinkId(id)
-    {
+    removeOutLinkId(id) {
       if (this._outLinkIds) {
         var idx = this._outLinkIds.indexOf(id);
         if (idx != -1) {
@@ -5148,10 +5626,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Stores an id of an incoming link for the node
      * @param {string} id an id for the incoming link
      */
-    addInLinkId(id)
-    {
-      if (!this._inLinkIds)
-      {
+    addInLinkId(id) {
+      if (!this._inLinkIds) {
         this._inLinkIds = [];
       }
       this._inLinkIds.push(id);
@@ -5161,8 +5637,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Removes an id of the incoming link
      * @param {string} id an id for the incoming link
      */
-    removeInLinkId(id)
-    {
+    removeInLinkId(id) {
       if (this._inLinkIds) {
         var idx = this._inLinkIds.indexOf(id);
         if (idx != -1) {
@@ -5175,8 +5650,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Gets ids of incoming links for the node
      * @return {array} ids of incoming links for the node
      */
-    getInLinkIds()
-    {
+    getInLinkIds() {
       return this._inLinkIds;
     }
   }
@@ -5279,18 +5753,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
 
       // set timeout to stay in editable/actionable mode if focus comes back into the diagram
-      this._focusoutTimeout = setTimeout(function () { // @HTMLUpdateOK
-        var keyboardUtils = this._component.getOptions()._keyboardUtils;
-        if (this._component.activeInnerElemsItemId) {
-          const activeItem = this._component.getNodeById(this._component.activeInnerElemsItemId) || this._component.getLinkById(this._component.activeInnerElemsItemId);
-          keyboardUtils.disableAllFocusable(activeItem.getElem());
-          activeItem.hasActiveInnerElems = false;
-          this._component.activeInnerElems = null;
-          this._component.activeInnerElemsItemId = null;
-        }
-      }.bind(this), 100);
+      // prettier-ignore
+      this._focusoutTimeout = setTimeout( // @HTMLUpdateOK
+        function () {
+          var keyboardUtils = this._component.getOptions()._keyboardUtils;
+          if (this._component.activeInnerElemsItemId) {
+            const activeItem =
+              this._component.getNodeById(this._component.activeInnerElemsItemId) ||
+              this._component.getLinkById(this._component.activeInnerElemsItemId);
+            keyboardUtils.disableAllFocusable(activeItem.getElem());
+            activeItem.hasActiveInnerElems = false;
+            this._component.activeInnerElems = null;
+            this._component.activeInnerElemsItemId = null;
+          }
+        }.bind(this),
+        100
+      );
     }
-
 
     /**
      * @private
@@ -5316,8 +5795,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @override
      */
     ShowFocusEffect(event, obj) {
-      if (!this._component.isPanning())
-        super.ShowFocusEffect(event, obj);
+      if (!this._component.isPanning()) super.ShowFocusEffect(event, obj);
     }
 
     /**
@@ -5326,21 +5804,33 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     ProcessRolloverEvent(event, obj, bOver) {
       // Don't continue if not enabled
       var options = this._component.getOptions();
-      if (options['hoverBehavior'] != 'dim')
-        return;
+      if (options['hoverBehavior'] != 'dim') return;
       // prevent a problem processing highlight over and over for the same object
       // which happens on FF after reparenting a highlighted node for flat diagram
-      if (this._prevRolloverEvent && this._prevRolloverEvent.obj === obj &&
-          this._prevRolloverEvent.bOver === bOver)
+      if (
+        this._prevRolloverEvent &&
+        this._prevRolloverEvent.obj === obj &&
+        this._prevRolloverEvent.bOver === bOver
+      )
         return;
 
       // Compute the new highlighted categories and update the options
       var categories = obj.getCategories ? obj.getCategories() : [];
       options['highlightedCategories'] = bOver ? categories.slice() : null;
 
-      var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
-      var hoverBehaviorDelay = dvt.CSSStyle.getTimeMilliseconds(options['styleDefaults']['hoverBehaviorDelay']);
-      this.RolloverHandler.processEvent(rolloverEvent, this._component.GetAllNodeObjects(), hoverBehaviorDelay, options['highlightMatch'] == 'any');
+      var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(
+        options['highlightedCategories'],
+        bOver
+      );
+      var hoverBehaviorDelay = dvt.CSSStyle.getTimeMilliseconds(
+        options['styleDefaults']['hoverBehaviorDelay']
+      );
+      this.RolloverHandler.processEvent(
+        rolloverEvent,
+        this._component.GetAllNodeObjects(),
+        hoverBehaviorDelay,
+        options['highlightMatch'] == 'any'
+      );
       this._prevRolloverEvent = { obj: obj, bOver: bOver };
     }
 
@@ -5354,8 +5844,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     /**
      * @override
      */
-    ProcessKeyboardEvent(event)
-    {
+    ProcessKeyboardEvent(event) {
       var eventConsumed = true;
       var keyCode = event.keyCode;
       var focusObj = this.getFocus();
@@ -5365,7 +5854,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (focusDisp && keyCode != dvt.KeyboardEvent.TAB && this._bPassOnEvent) {
         focusDisp.fireKeyboardListener(event);
         event.preventDefault();
-      }// Mashups
+      } // Mashups
       else if (keyCode == dvt.KeyboardEvent.TAB && focusDisp instanceof dvt.BaseComponent) {
         // If displayable is already focused, then tab enters stamp and all future events pass to stamp until shift+tab
         // or tab out
@@ -5383,53 +5872,65 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         }
         // All other tab cases should be handled by superclass and will move focus out of component
         else {
-          if (this._bPassOnEvent)
-            focusObj.showKeyboardFocusEffect(); // checked by superclass to tab out of component
+          if (this._bPassOnEvent) focusObj.showKeyboardFocusEffect(); // checked by superclass to tab out of component
           eventConsumed = super.ProcessKeyboardEvent(event);
           this._bPassOnEvent = false;
         }
-      }
-      else if (keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey && event.shiftKey) {
+      } else if (keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey && event.shiftKey) {
         if (focusObj && focusObj.HandleKeyboardEvent) {
           focusObj.HandleKeyboardEvent(event);
         }
-      }
-      else if ((keyCode == dvt.KeyboardEvent.ZERO || keyCode == dvt.KeyboardEvent.NUMPAD_ZERO) &&
-              event.ctrlKey && event.altKey) {
+      } else if (
+        (keyCode == dvt.KeyboardEvent.ZERO || keyCode == dvt.KeyboardEvent.NUMPAD_ZERO) &&
+        event.ctrlKey &&
+        event.altKey
+      ) {
         if (focusObj) {
           var pzc = this._component.getPanZoomCanvas();
           var stageDims = focusObj.getKeyboardBoundingBox(this.getCtx().getStage());
-          var localPos1 = pzc.getContentPane().stageToLocal({x: stageDims.x, y: stageDims.y});
-          var localPos2 = pzc.getContentPane().stageToLocal({x: stageDims.x + stageDims.w, y: stageDims.y + stageDims.h});
-          var finBounds = {x: localPos1.x, y: localPos1.y, w: localPos2.x - localPos1.x, h: localPos2.y - localPos1.y};
+          var localPos1 = pzc.getContentPane().stageToLocal({ x: stageDims.x, y: stageDims.y });
+          var localPos2 = pzc
+            .getContentPane()
+            .stageToLocal({ x: stageDims.x + stageDims.w, y: stageDims.y + stageDims.h });
+          var finBounds = {
+            x: localPos1.x,
+            y: localPos1.y,
+            w: localPos2.x - localPos1.x,
+            h: localPos2.y - localPos1.y
+          };
 
-          var animator = DvtDiagramStyleUtils.getAnimOnDataChange(this._component) != 'none' ?
-                  new dvt.Animator(this.getCtx(), this._component.getAnimDur()) : null;
+          var animator =
+            DvtDiagramStyleUtils.getAnimOnDataChange(this._component) != 'none'
+              ? new dvt.Animator(this.getCtx(), this._component.getAnimDur())
+              : null;
           pzc.zoomToFit(animator, finBounds);
           animator && animator.play();
         }
-      }
-      else {
+      } else {
         if (keyCode == dvt.KeyboardEvent.TAB && focusObj) {
-            // If there are activeElems, tab between them
-            var activeInnerSize = this._component.activeInnerElems ? this._component.activeInnerElems.length : undefined;
-            if (activeInnerSize) {
-              var testElement = event.shiftKey ? this._component.activeInnerElems[0] : this._component.activeInnerElems[activeInnerSize-1];
-              // Want to prevent the tab focus from leaving the focusable elements within the node/link
-              if (testElement === document.activeElement) {
-                if (event.shiftKey) {
-                  this._component.activeInnerElems[activeInnerSize-1].focus();
-                } else {
-                  this._component.activeInnerElems[0].focus();
-                }
-                event.preventDefault();
+          // If there are activeElems, tab between them
+          var activeInnerSize = this._component.activeInnerElems
+            ? this._component.activeInnerElems.length
+            : undefined;
+          if (activeInnerSize) {
+            var testElement = event.shiftKey
+              ? this._component.activeInnerElems[0]
+              : this._component.activeInnerElems[activeInnerSize - 1];
+            // Want to prevent the tab focus from leaving the focusable elements within the node/link
+            if (testElement === document.activeElement) {
+              if (event.shiftKey) {
+                this._component.activeInnerElems[activeInnerSize - 1].focus();
+              } else {
+                this._component.activeInnerElems[0].focus();
               }
-              return eventConsumed;
+              event.preventDefault();
             }
-            this._component.ensureObjInViewport(event, focusObj);
-            var keyboardUtils = this._component.Options._keyboardUtils;
-            keyboardUtils.disableAllFocusable(this._component.getNodesPane().getElem(), true);
-            keyboardUtils.disableAllFocusable(this._component.getLinksPane().getElem(), true);
+            return eventConsumed;
+          }
+          this._component.ensureObjInViewport(event, focusObj);
+          var keyboardUtils = this._component.Options._keyboardUtils;
+          keyboardUtils.disableAllFocusable(this._component.getNodesPane().getElem(), true);
+          keyboardUtils.disableAllFocusable(this._component.getLinksPane().getElem(), true);
         }
         eventConsumed = super.ProcessKeyboardEvent(event);
       }
@@ -5446,7 +5947,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       else if (options['touchResponse'] === dvt.EventManager.TOUCH_RESPONSE_TOUCH_START)
         return dvt.EventManager.TOUCH_RESPONSE_TOUCH_START;
       return dvt.EventManager.TOUCH_RESPONSE_AUTO;
-    };
+    }
 
     /**
      * @override
@@ -5478,8 +5979,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     GetDragSourceType(event) {
       var obj = this.DragSource.getDragObject();
-      if (obj && obj.__dragType)
-        return obj.__dragType;
+      if (obj && obj.__dragType) return obj.__dragType;
 
       if (obj instanceof DvtDiagramNode) {
         if (this._linkDragSelector === null) {
@@ -5487,7 +5987,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         }
         var dragPort;
         if (this._linkDragSelector) {
-          dragPort = this._getPortElement(document.elementFromPoint(event.getNativeEvent().clientX, event.getNativeEvent().clientY), this._linkDragSelector);
+          dragPort = this._getPortElement(
+            document.elementFromPoint(event.getNativeEvent().clientX, event.getNativeEvent().clientY),
+            this._linkDragSelector
+          );
           if (dragPort) {
             this.LinkCreationStarted = true;
             obj.__dragPort = dragPort;
@@ -5507,27 +6010,33 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var obj = this.DragSource.getDragObject();
       var contexts = [];
       var context;
-      if (this._component.isSelectionSupported() && this._component.getSelectionHandler().getSelectedCount() > 1) {
+      if (
+        this._component.isSelectionSupported() &&
+        this._component.getSelectionHandler().getSelectedCount() > 1
+      ) {
         var selection = this._component.getSelectionHandler().getSelection();
         var contentPosition = this._getTopLeftContentCorner(selection);
         var zoom = this._component.getPanZoomCanvas().getZoom();
         for (var i = 0; i < selection.length; i++) {
-          if (selection[i] instanceof DvtDiagramNode) { //don't drag links yet
+          if (selection[i] instanceof DvtDiagramNode) {
+            //don't drag links yet
             context = selection[i].getDataContext();
             var bounds = selection[i].getDimensions(this._context.getStage());
-            context['nodeOffset'] = new dvt.Point((bounds.x - contentPosition.x) / zoom, (bounds.y - contentPosition.y) / zoom);
-            if (bSanitize)
-              dvt.ToolkitUtils.cleanDragDataContext(context);
+            context['nodeOffset'] = new dvt.Point(
+              (bounds.x - contentPosition.x) / zoom,
+              (bounds.y - contentPosition.y) / zoom
+            );
+            if (bSanitize) dvt.ToolkitUtils.cleanDragDataContext(context);
             contexts.push(context);
           }
         }
-      }
-      else if (obj instanceof DvtDiagramNode) {
+      } else if (obj instanceof DvtDiagramNode) {
         context = obj.getDataContext();
-        if (bSanitize)
-          dvt.ToolkitUtils.cleanDragDataContext(context);
+        if (bSanitize) dvt.ToolkitUtils.cleanDragDataContext(context);
         if (obj.__dragType === 'ports' && obj.__dragPort) {
-          return bSanitize ? {'dataContext': context} : {'dataContext': context, 'portElement': obj.__dragPort};
+          return bSanitize
+            ? { dataContext: context }
+            : { dataContext: context, portElement: obj.__dragPort };
         }
         context['nodeOffset'] = new dvt.Point(0, 0);
         contexts.push(context);
@@ -5540,10 +6049,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     GetDropOffset(event) {
       var contentPosition;
-      if (this._component.isSelectionSupported() && this._component.getSelectionHandler().getSelectedCount() > 1) {
-        contentPosition = this._getTopLeftContentCorner(this._component.getSelectionHandler().getSelection());
-      }
-      else {
+      if (
+        this._component.isSelectionSupported() &&
+        this._component.getSelectionHandler().getSelectedCount() > 1
+      ) {
+        contentPosition = this._getTopLeftContentCorner(
+          this._component.getSelectionHandler().getSelection()
+        );
+      } else {
         var obj = this.DragSource.getDragObject();
         if (obj instanceof DvtDiagramNode) {
           contentPosition = obj.getDimensions(this._context.getStage());
@@ -5552,7 +6065,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (contentPosition) {
         var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
         var zoom = this._component.getPanZoomCanvas().getZoom();
-        return new dvt.Point((contentPosition.x - relPos.x) / zoom, (contentPosition.y - relPos.y) / zoom);
+        return new dvt.Point(
+          (contentPosition.x - relPos.x) / zoom,
+          (contentPosition.y - relPos.y) / zoom
+        );
       }
       return null;
     }
@@ -5619,7 +6135,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       //the panning is disabled on mousedown event to prevent panning for potential node drag
       //if the node was not dragged, the component will not get dragend event and the panning is reenabled on mouseup
       //if the node was dragged, the component will get dragend event, but it might not get mouseup event
-      this._component.getPanZoomCanvas().panZoomEnd();//done to reset the state and prevent panBy on mousemove
+      this._component.getPanZoomCanvas().panZoomEnd(); //done to reset the state and prevent panBy on mousemove
       this._setPanningEnabled(true);
     }
 
@@ -5642,8 +6158,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     IsDragSupported() {
       if (!this._isDragSupported) {
         var options = this._component.getOptions();
-        this._isDragSupported = this.isDndSupported() &&
-            (options['dnd']['drag']['nodes']['dataTypes'] ||
+        this._isDragSupported =
+          this.isDndSupported() &&
+          (options['dnd']['drag']['nodes']['dataTypes'] ||
             options['dnd']['drag']['ports']['dataTypes']);
       }
       return this._isDragSupported;
@@ -5710,8 +6227,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._component.getCache().putToCache('dropTarget', obj);
       if (!obj) {
         return 'background';
-      }
-      else if (obj instanceof DvtDiagramNode) {
+      } else if (obj instanceof DvtDiagramNode) {
         var dropPort;
         if (this._linkDropSelector === null) {
           this._linkDropSelector = this._component.getOptions()['dnd']['drop']['ports']['selector'];
@@ -5721,8 +6237,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         }
         obj.__dropPort = dropPort; //save the value for the payload call
         return dropPort ? 'ports' : 'nodes';
-      }
-      else if (obj instanceof DvtDiagramLink) {
+      } else if (obj instanceof DvtDiagramLink) {
         return 'links';
       }
       return null;
@@ -5740,12 +6255,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var offsetY = Number(dataTransfer.getData(dvt.EventManager.DROP_OFFSET_Y_DATA_TYPE)) || 0;
 
       //point relative to content pane
-      var relPos = this._component.getPanZoomCanvas().getContentPane().stageToLocal(this.getCtx().pageToStageCoords(event.pageX, event.pageY));
+      var relPos = this._component
+        .getPanZoomCanvas()
+        .getContentPane()
+        .stageToLocal(this.getCtx().pageToStageCoords(event.pageX, event.pageY));
       var layoutOffset = this._component.getLayoutOffset();
 
       var payload = {
-        'x' : relPos.x - layoutOffset.x + offsetX,
-        'y' : relPos.y - layoutOffset.y + offsetY
+        x: relPos.x - layoutOffset.x + offsetX,
+        y: relPos.y - layoutOffset.y + offsetY
       };
       //add node or link context if drop accepted by the node or link
       var obj = this.GetLogicalObject(event.target);
@@ -5753,16 +6271,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (obj.__dropPort) {
           payload['dataContext'] = obj.getDataContext();
           payload['portElement'] = obj.__dropPort;
-        }
-        else {
+        } else {
           payload['nodeContext'] = obj.getDataContext();
         }
         var bounds = obj.getDimensions(this._context.getStage());
-        var relNodePos = bounds ? this._component.getPanZoomCanvas().getContentPane().stageToLocal({x: bounds.x, y: bounds.y}) : null;
+        var relNodePos = bounds
+          ? this._component
+              .getPanZoomCanvas()
+              .getContentPane()
+              .stageToLocal({ x: bounds.x, y: bounds.y })
+          : null;
         payload['nodeX'] = relNodePos ? relPos.x - relNodePos.x + offsetX : null;
         payload['nodeY'] = relNodePos ? relPos.y - relNodePos.y + offsetY : null;
-      }
-      else if (obj instanceof DvtDiagramLink) {
+      } else if (obj instanceof DvtDiagramLink) {
         payload['linkContext'] = obj.getDataContext();
       }
       return payload;
@@ -5777,13 +6298,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (dropTargetType === 'background') {
         var background = this._component.getPanZoomCanvas().getBackgroundPane();
         background.setClassName(this.OJ_ACTIVE_DROP);
-      }
-      else if (dropTargetType === 'nodes' || dropTargetType === 'links') {
+      } else if (dropTargetType === 'nodes' || dropTargetType === 'links') {
         if (obj && obj.ShowDropEffect) {
           obj.ShowDropEffect();
         }
-      }
-      else if (obj && dropTargetType === 'ports' && obj.__dropPort) {
+      } else if (obj && dropTargetType === 'ports' && obj.__dropPort) {
         dvt.ToolkitUtils.addClassName(obj.__dropPort, this.OJ_ACTIVE_DROP);
       }
     }
@@ -5797,13 +6316,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (dropTargetType === 'background') {
         var background = this._component.getPanZoomCanvas().getBackgroundPane();
         background.setClassName(this.OJ_INVALID_DROP);
-      }
-      else if (dropTargetType === 'nodes' || dropTargetType === 'links') {
+      } else if (dropTargetType === 'nodes' || dropTargetType === 'links') {
         if (obj && obj.ShowRejectedDropEffect) {
           obj.ShowRejectedDropEffect();
         }
-      }
-      else if (obj && dropTargetType === 'ports' && obj.__dropPort) {
+      } else if (obj && dropTargetType === 'ports' && obj.__dropPort) {
         dvt.ToolkitUtils.addClassName(obj.__dropPort, this.OJ_INVALID_DROP);
       }
     }
@@ -5855,8 +6372,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     /**
      * @override
      */
-    isNavigationEvent(event)
-    {
+    isNavigationEvent(event) {
       var retVal = false;
       switch (event.keyCode) {
         case dvt.KeyboardEvent.OPEN_BRACKET:
@@ -5871,7 +6387,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           retVal = super.isNavigationEvent(event);
       }
       return retVal;
-    };
+    }
 
     /**
      * @override
@@ -5890,8 +6406,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (currentNavigable) {
           dvt.EventManager.consumeEvent(event);
           return currentNavigable;
-        }
-        else {
+        } else {
           // navigate to the default
           var arNodes = diagram.GetRootNodeObjects();
           if (arNodes.length > 0) {
@@ -5905,10 +6420,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         // navigating inside using F2
         this._eventManager.hideTooltip();
         var enabled = keyboardUtils.enableAllFocusable(currentNavigable.getElem());
-        if (currentNavigable instanceof DvtDiagramNode && currentNavigable.isDisclosed() && currentNavigable.GetChildNodePane(true)) {
+        if (
+          currentNavigable instanceof DvtDiagramNode &&
+          currentNavigable.isDisclosed() &&
+          currentNavigable.GetChildNodePane(true)
+        ) {
           keyboardUtils.disableAllFocusable(currentNavigable.GetChildNodePane().getElem());
           enabled = Array.from(enabled);
-          enabled = enabled.filter(item => item.tabIndex !== -1);
+          enabled = enabled.filter((item) => item.tabIndex !== -1);
         }
         if (enabled.length > 0) {
           diagram.activeInnerElems = enabled;
@@ -5916,7 +6435,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           diagram.activeInnerElemsItemId = currentNavigable.getId();
           enabled[0].focus();
         }
-      } else if (isActionableMode && currentNavigable && (keyCode == dvt.KeyboardEvent.ESCAPE || event.keyCode === dvt.KeyboardEvent.F2)) {
+      } else if (
+        isActionableMode &&
+        currentNavigable &&
+        (keyCode == dvt.KeyboardEvent.ESCAPE || event.keyCode === dvt.KeyboardEvent.F2)
+      ) {
         // navigating outside using Esc or F2
         diagram.activeInnerElems = null;
         keyboardUtils.disableAllFocusable(currentNavigable.getElem());
@@ -5953,19 +6476,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     /**
      * @override
      */
-    isSelectionEvent(event)
-    {
-      if (event.keyCode == dvt.KeyboardEvent.TAB)
-        return false;
-      else
-        return this.isNavigationEvent(event) && !event.ctrlKey;
+    isSelectionEvent(event) {
+      if (event.keyCode == dvt.KeyboardEvent.TAB) return false;
+      else return this.isNavigationEvent(event) && !event.ctrlKey;
     }
 
     /**
      * @override
      */
-    isMultiSelectEvent(event)
-    {
+    isMultiSelectEvent(event) {
       return event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey;
     }
 
@@ -5978,18 +6497,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     getFirstNavigableLink(node, event, listOfLinks) {
       var direction = event.keyCode;
-      if (!listOfLinks || listOfLinks.length < 1 || !node)
-        return null;
+      if (!listOfLinks || listOfLinks.length < 1 || !node) return null;
       var link = listOfLinks[0];
       var nodeBB = node.getKeyboardBoundingBox();
       var nodeCenterX = nodeBB.x + nodeBB.w / 2;
-      for (var i = 0; i < listOfLinks.length; i++)
-      {
+      for (var i = 0; i < listOfLinks.length; i++) {
         var object = listOfLinks[i];
         var linkBB = object.getKeyboardBoundingBox();
         var linkCenterX = linkBB.x + linkBB.w / 2;
-        if ((direction == dvt.KeyboardEvent.OPEN_ANGLED_BRACKET && linkCenterX <= nodeCenterX) ||
-            (direction == dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET && linkCenterX >= nodeCenterX)) {
+        if (
+          (direction == dvt.KeyboardEvent.OPEN_ANGLED_BRACKET && linkCenterX <= nodeCenterX) ||
+          (direction == dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET && linkCenterX >= nodeCenterX)
+        ) {
           link = object;
           break;
         }
@@ -6007,27 +6526,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {DvtDiagramLink} next navigable link
      */
     getNextNavigableLink(node, currentLink, event, listOfLinks) {
-      if (!listOfLinks)
-        return null;
+      if (!listOfLinks) return null;
 
-      if (!currentLink)
-        return listOfLinks[0];
+      if (!currentLink) return listOfLinks[0];
 
-      if (!node)
-        return currentLink;
+      if (!node) return currentLink;
       this._addSortingAttributes(node, listOfLinks);
       listOfLinks.sort(this._getLinkComparator());
       this._removeSortingAttributes(listOfLinks);
       //clockwise direction
-      var bForward = (event.keyCode == dvt.KeyboardEvent.DOWN_ARROW) ? true : false;
+      var bForward = event.keyCode == dvt.KeyboardEvent.DOWN_ARROW ? true : false;
       var index = 0;
       for (var i = 0; i < listOfLinks.length; i++) {
         var link = listOfLinks[i];
         if (link === currentLink) {
-          if (bForward)
-            index = (i == listOfLinks.length - 1) ? 0 : i + 1;
-          else
-            index = (i == 0) ? listOfLinks.length - 1 : i - 1;
+          if (bForward) index = i == listOfLinks.length - 1 ? 0 : i + 1;
+          else index = i == 0 ? listOfLinks.length - 1 : i - 1;
           break;
         }
       }
@@ -6041,10 +6555,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {number} an link angle from 0 to 2*PI
      * @private
      */
-    _getClockwiseAngle(node, link)
-    {
+    _getClockwiseAngle(node, link) {
       //find opposite node
-      var startNode = this.GetVisibleNode(link.getStartId ? link.getStartId() : link.getData().getStartId());
+      var startNode = this.GetVisibleNode(
+        link.getStartId ? link.getStartId() : link.getData().getStartId()
+      );
       var endNode = this.GetVisibleNode(link.getEndId ? link.getEndId() : link.getData().getEndId());
       var oppositeNode = node == startNode ? endNode : startNode;
 
@@ -6066,7 +6581,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       return new dvt.Point(nodeBB.x + nodeBB.w / 2, nodeBB.y + nodeBB.h / 2);
     }
 
-
     /**
      * Get distance between start and end nodes for the given link
      * @param {DvtDiagramLink} link a link
@@ -6074,13 +6588,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @private
      */
     _getNodesDistance(link) {
-      var startNode = this.GetVisibleNode(link.getStartId ? link.getStartId() : link.getData().getStartId());
+      var startNode = this.GetVisibleNode(
+        link.getStartId ? link.getStartId() : link.getData().getStartId()
+      );
       var endNode = this.GetVisibleNode(link.getEndId ? link.getEndId() : link.getData().getEndId());
       var p1 = this._getNodeCenter(startNode);
       var p2 = this._getNodeCenter(endNode);
       return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
     }
-
 
     /**
      * Get link direction for the given node
@@ -6092,10 +6607,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     _getLinkDirection(node, link) {
       if (node == this.GetVisibleNode(link.getEndId ? link.getEndId() : link.getData().getEndId()))
         return this._INGOING;
-      else
-        return this._OUTGOING;
+      else return this._OUTGOING;
     }
-
 
     /**
      * Get function that compares two link around a given node
@@ -6109,18 +6622,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var linkAngle2 = link2.__angle;
         var res = -1;
 
-        if (!DvtDiagramKeyboardHandler._anglesAreEqualWithinTolerance(linkAngle1, linkAngle2) && linkAngle1 > linkAngle2) {
+        if (
+          !DvtDiagramKeyboardHandler._anglesAreEqualWithinTolerance(linkAngle1, linkAngle2) &&
+          linkAngle1 > linkAngle2
+        ) {
           res = 1;
-        }
-        else if (DvtDiagramKeyboardHandler._anglesAreEqualWithinTolerance(linkAngle1, linkAngle2)) {
+        } else if (DvtDiagramKeyboardHandler._anglesAreEqualWithinTolerance(linkAngle1, linkAngle2)) {
           //check distance and direction
           if (link1.__distance > link2.__distance) {
             res = 1;
-          }
-          else if (link2.__distance == link1.__distance && link1.__direction > link2.__direction) { //outgoing to ingoing
+          } else if (link2.__distance == link1.__distance && link1.__direction > link2.__direction) {
+            //outgoing to ingoing
             res = 1;
-          }
-          else if (link2.__distance == link1.__distance && link1.__direction == link2.__direction) {
+          } else if (link2.__distance == link1.__distance && link1.__direction == link2.__direction) {
             res = 0;
           }
         }
@@ -6178,7 +6692,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
    * @class
    */
   const DvtDiagramOverviewUtils = {
-
     /**
      * @protected
      * Calculates the overview window viewport from a pan zoom canvas matrix
@@ -6239,10 +6752,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     CreateOverviewContent: (diagram, overview, width, height) => {
       var ovContent = new dvt.Container(diagram.getCtx());
       ovContent.setMouseEnabled(false);
-      overview.Nodes = new (diagram.getCtx()).ojMap();
+      overview.Nodes = new (diagram.getCtx().ojMap)();
       var contentBounds = diagram.GetViewBounds();
       overview.ContentBounds = contentBounds ? contentBounds.clone() : null;
-      overview.StretchFactor = { h : 1, v : 1};
+      overview.StretchFactor = { h: 1, v: 1 };
       var rootNodes = diagram.GetRootNodeObjects();
       if (rootNodes.length > 0) {
         rootNodes.forEach((node) => {
@@ -6263,8 +6776,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {dvt.Container} container container to attach the node
      */
     CreateOverviewNode: (diagram, overview, node, container) => {
-      if (!node)
-        return;
+      if (!node) return;
       var ovNode = DvtDiagramOverviewUtils._createOverviewNodeShape(diagram, node);
       DvtDiagramOverviewUtils._positionOverviewNode(node, ovNode);
       overview.Nodes.set(node.getId(), ovNode);
@@ -6274,10 +6786,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         ovNode._ovChildNodePane = new dvt.Container(diagram.getCtx());
         ovNode.addChild(ovNode._ovChildNodePane);
         var cp = node.getContainerPadding();
-        ovNode._ovChildNodePane.setTranslate(cp.left,cp.top);
+        ovNode._ovChildNodePane.setTranslate(cp.left, cp.top);
         node.getChildNodeIds().forEach((childId) => {
           var childNode = diagram.getNodeById(childId);
-          DvtDiagramOverviewUtils.CreateOverviewNode(diagram, overview, childNode, ovNode._ovChildNodePane);
+          DvtDiagramOverviewUtils.CreateOverviewNode(
+            diagram,
+            overview,
+            childNode,
+            ovNode._ovChildNodePane
+          );
         });
       }
     },
@@ -6309,7 +6826,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       DvtDiagramOverviewUtils._updateOverviewNodes(diagram, overview);
 
       if (overview.Nodes.size > 0)
-        DvtDiagramOverviewUtils.ZoomToFitOverviewContent(diagram, overview, overview.Content, overview.Width, overview.Height);
+        DvtDiagramOverviewUtils.ZoomToFitOverviewContent(
+          diagram,
+          overview,
+          overview.Content,
+          overview.Width,
+          overview.Height
+        );
       overview.UpdateViewport();
 
       var ovWidth = overview.getOverviewWidth();
@@ -6339,8 +6862,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     UpdateOverviewContent: (diagram, overview, type, event) => {
       var eventNodes = event['data']['nodes'];
-      if (!eventNodes || eventNodes.length === 0)
-        return;
+      if (!eventNodes || eventNodes.length === 0) return;
 
       var parentId = event['parentId'];
       var parentNode = parentId ? diagram.getNodeById(parentId) : null;
@@ -6354,36 +6876,31 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           rootNode = DvtDiagramOverviewUtils._findRootNode(diagram, parentNode);
           DvtDiagramOverviewUtils._removeNode(overview, rootNode.getId());
           nodesToUpdate.push(rootNode);
-        }
-        else {
+        } else {
           eventNodes.forEach((nodeData) => {
             nodesToUpdate.push(diagram.getNodeById(nodeData.id));
           });
         }
-      }
-      else if (type == 'change') {
+      } else if (type == 'change') {
         // find all roots to update
         // rerender starting with roots
-        var roots = new (diagram.getCtx()).ojMap();
+        var roots = new (diagram.getCtx().ojMap)();
         eventNodes.forEach((nodeData) => {
           rootNode = DvtDiagramOverviewUtils._findRootNode(diagram, diagram.getNodeById(nodeData.id));
-          if (rootNode)
-            roots.set(rootNode.getId(), rootNode);
+          if (rootNode) roots.set(rootNode.getId(), rootNode);
         });
         roots.forEach((root, nodeId, map) => {
           DvtDiagramOverviewUtils._removeNode(overview, nodeId);
           nodesToUpdate.push(root);
         });
-      }
-      else if (type == 'remove') {
+      } else if (type == 'remove') {
         //When removing child nodes from container,
         //find root parent and update the subtree
         if (parentNode) {
           rootNode = DvtDiagramOverviewUtils._findRootNode(diagram, parentNode);
           DvtDiagramOverviewUtils._removeNode(overview, rootNode.getId());
           nodesToUpdate.push(rootNode);
-        }
-        else {
+        } else {
           //remove nodes
           eventNodes.forEach((nodeData) => {
             DvtDiagramOverviewUtils._removeNode(overview, nodeData.id);
@@ -6414,7 +6931,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var stretchH = overview.StretchFactor.h;
       var stretchV = overview.StretchFactor.v;
       var vx = cx * sx * stretchH + tx;
-      var vy = cy * sy * stretchV+ ty;
+      var vy = cy * sy * stretchV + ty;
       return new dvt.Point(vx, vy);
     },
 
@@ -6465,22 +6982,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {number} width overview width
      * @param {number} height overview height
      */
-    _adjustNodePositionsForAspectRatio:  (diagram, overview, width, height) => {
+    _adjustNodePositionsForAspectRatio: (diagram, overview, width, height) => {
       if (diagram.Options.overview.preserveAspectRatio !== 'meet') {
         var diagramBounds = diagram.GetViewBounds();
-        var ovPadding = 2 * dvt.CSSStyle.toNumber(diagram.Options.styleDefaults._overviewStyles.overviewContent.padding);
+        var ovPadding =
+          2 *
+          dvt.CSSStyle.toNumber(
+            diagram.Options.styleDefaults._overviewStyles.overviewContent.padding
+          );
         // canvas meet and canvas none cases
         var diagramRatio;
         if (diagram.Options.overview.fitArea === 'canvas') {
           var canvasDimensions = DvtDiagramOverviewUtils._getCanvasDimensions(diagram);
-          diagramRatio = canvasDimensions.w/ canvasDimensions.h; // option #2
+          diagramRatio = canvasDimensions.w / canvasDimensions.h; // option #2
+        } else {
+          diagramRatio = diagramBounds.w / diagramBounds.h; // option 1 is for content meet and content none
         }
-        else {
-          diagramRatio = diagramBounds.w/diagramBounds.h; // option 1 is for content meet and content none
-        }
-        var overviewRatio = (width - ovPadding)/(height - ovPadding);
-        if (overviewRatio == diagramRatio)
-          return;
+        var overviewRatio = (width - ovPadding) / (height - ovPadding);
+        if (overviewRatio == diagramRatio) return;
 
         // stretch factors
         var stretchFactorH = overviewRatio > diagramRatio ? overviewRatio / diagramRatio : 1;
@@ -6495,22 +7014,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         // adjust positions only for none
         var rootNodes = diagram.GetRootNodeObjects();
         if (rootNodes.length > 0) {
-          var nodeStretchFactor = DvtDiagramOverviewUtils._getNodesStretchFactor(overview, rootNodes, overview.StretchFactor);
+          var nodeStretchFactor = DvtDiagramOverviewUtils._getNodesStretchFactor(
+            overview,
+            rootNodes,
+            overview.StretchFactor
+          );
 
           // edge case where we don't stretch nodes because of the layout
           if (nodeStretchFactor.h === 1 && nodeStretchFactor.v === 1) {
             overview.ContentBounds = diagramBounds.clone();
-            overview.StretchFactor = {h : 1, v : 1};
+            overview.StretchFactor = { h: 1, v: 1 };
             return;
           }
 
           rootNodes.forEach((node) => {
-            DvtDiagramOverviewUtils._adjustNodePosition(overview.Nodes.get(node.getId()), nodeStretchFactor);
+            DvtDiagramOverviewUtils._adjustNodePosition(
+              overview.Nodes.get(node.getId()),
+              nodeStretchFactor
+            );
           });
         }
       }
     },
-
 
     /**
      * @private
@@ -6522,11 +7047,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var dims;
       if (diagram.Options.panning === 'fixed' || diagram.Options.panning === 'none') {
         dims = new dvt.Dimension(diagram.Width, diagram.Height);
-      }
-      else { // panning is 'auto' or 'centerContent'
-        var contentDims =  diagram.GetViewBounds();
+      } else {
+        // panning is 'auto' or 'centerContent'
+        var contentDims = diagram.GetViewBounds();
         var zoom = diagram.getPanZoomCanvas().getMinZoom();
-        dims = new dvt.Dimension(2* contentDims.w * zoom, 2* contentDims.h * zoom);
+        dims = new dvt.Dimension(2 * contentDims.w * zoom, 2 * contentDims.h * zoom);
       }
       return dims;
     },
@@ -6542,12 +7067,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var currX = ovNode.getTranslateX();
       var currY = ovNode.getTranslateY();
       if (nodeStretchFactor.h > 1) {
-        var centerX = (currX + centerDims.x - nodeStretchFactor.tx) * nodeStretchFactor.h + nodeStretchFactor.tx;
-        ovNode.setTranslateX(centerX - centerDims.w * .5);
-      }
-      else if (nodeStretchFactor.v > 1) {
-        var centerY = (currY + centerDims.y - nodeStretchFactor.ty) * nodeStretchFactor.v + nodeStretchFactor.ty;
-        ovNode.setTranslateY(centerY - centerDims.h * .5);
+        var centerX =
+          (currX + centerDims.x - nodeStretchFactor.tx) * nodeStretchFactor.h + nodeStretchFactor.tx;
+        ovNode.setTranslateX(centerX - centerDims.w * 0.5);
+      } else if (nodeStretchFactor.v > 1) {
+        var centerY =
+          (currY + centerDims.y - nodeStretchFactor.ty) * nodeStretchFactor.v + nodeStretchFactor.ty;
+        ovNode.setTranslateY(centerY - centerDims.h * 0.5);
       }
     },
 
@@ -6562,7 +7088,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
 
     _getNodesStretchFactor: (overview, rootNodes, stretchFactor) => {
-      var nodeStretchFactor = { h: 1, v: 1};
+      var nodeStretchFactor = { h: 1, v: 1 };
       if (stretchFactor.h > 1) {
         // find left-most and right-most node centers
         var minX = Number.MAX_VALUE;
@@ -6570,15 +7096,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var minBounds, maxBounds;
         rootNodes.forEach((node) => {
           var bounds = node.getContentBounds();
-          var centerX = node.getTranslateX() + bounds.x + bounds.w * .5;
+          var centerX = node.getTranslateX() + bounds.x + bounds.w * 0.5;
           minBounds = centerX < minX ? bounds : minBounds;
           maxBounds = centerX > maxX ? bounds : maxBounds;
           minX = Math.min(centerX, minX);
           maxX = Math.max(centerX, maxX);
         });
-        var halfMin = minBounds.w * .5;
-        var halfMax = maxBounds.w * .5;
-        var horizontalStretch = maxX === minX ? 1 : (overview.ContentBounds.w - halfMin - halfMax) / (maxX - minX);
+        var halfMin = minBounds.w * 0.5;
+        var halfMax = maxBounds.w * 0.5;
+        var horizontalStretch =
+          maxX === minX ? 1 : (overview.ContentBounds.w - halfMin - halfMax) / (maxX - minX);
         nodeStretchFactor = { h: horizontalStretch, v: 1, tx: halfMin };
       }
       if (stretchFactor.v > 1) {
@@ -6588,15 +7115,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var minBoundsTop, maxBoundsTop;
         rootNodes.forEach((node) => {
           var bounds = node.getContentBounds();
-          var centerY = node.getTranslateY() + bounds.y + bounds.h * .5;
+          var centerY = node.getTranslateY() + bounds.y + bounds.h * 0.5;
           minBoundsTop = centerY < minY ? bounds : minBoundsTop;
           maxBoundsTop = centerY > maxY ? bounds : maxBoundsTop;
           minY = Math.min(centerY, minY);
           maxY = Math.max(centerY, maxY);
         });
-        var halfMinTop = minBoundsTop.h * .5;
-        var halfMaxTop = maxBoundsTop.h * .5;
-        var verticalStretch = maxY === minY ? 1 : (overview.ContentBounds.h - halfMinTop - halfMaxTop) / (maxY - minY);
+        var halfMinTop = minBoundsTop.h * 0.5;
+        var halfMaxTop = maxBoundsTop.h * 0.5;
+        var verticalStretch =
+          maxY === minY ? 1 : (overview.ContentBounds.h - halfMinTop - halfMaxTop) / (maxY - minY);
         nodeStretchFactor = { h: 1, v: verticalStretch, ty: halfMinTop };
       }
 
@@ -6612,28 +7140,31 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {number} height overview height
      * @param {DvtDiagramOverview} overview the overview component
      */
-    _calcOverviewScale: (diagram, ztfBounds, width, height, overview) =>
-    {
-      var ovPadding = 2 * dvt.CSSStyle.toNumber(diagram.Options.styleDefaults._overviewStyles.overviewContent.padding);
+    _calcOverviewScale: (diagram, ztfBounds, width, height, overview) => {
+      var ovPadding =
+        2 *
+        dvt.CSSStyle.toNumber(diagram.Options.styleDefaults._overviewStyles.overviewContent.padding);
       var cw = width - ovPadding; //use padding for the content from each side
       var ch = height - ovPadding; //use padding for the content from each side
       if (diagram.Options.overview.fitArea === 'canvas') {
         var diagramBounds = diagram.GetViewBounds();
         var minZoom = diagram.getPanZoomCanvas().getMinZoom();
         var canvasDims = DvtDiagramOverviewUtils._getCanvasDimensions(diagram);
-        var contentPadding  = Math.min ((canvasDims.h - diagramBounds.h * minZoom)/2,
-        (canvasDims.w - diagramBounds.w * minZoom)/2); // make this variable
+        var contentPadding = Math.min(
+          (canvasDims.h - diagramBounds.h * minZoom) / 2,
+          (canvasDims.w - diagramBounds.w * minZoom) / 2
+        ); // make this variable
         var stretchFactorH = overview.StretchFactor.h;
         var stretchFactorV = overview.StretchFactor.v;
-        var vzx = cw / canvasDims.w * stretchFactorH;
-        var vzh = ch / canvasDims.h * stretchFactorV;
+        var vzx = (cw / canvasDims.w) * stretchFactorH;
+        var vzh = (ch / canvasDims.h) * stretchFactorV;
         var vz = Math.min(vzx, vzh);
         var diagramPaddingW = 2 * contentPadding * stretchFactorH * vz;
         var diagramPaddingH = 2 * contentPadding * stretchFactorV * vz;
         cw -= diagramPaddingW; // adjust for diagram/viewport padding
         ch -= diagramPaddingH; // adjust for diagram/viewport padding
       }
-      var dzx = cw / ztfBounds.w ;
+      var dzx = cw / ztfBounds.w;
       var dzy = ch / ztfBounds.h;
       return Math.min(dzx, dzy);
     },
@@ -6658,19 +7189,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var iconShape = ovIconData['shape'];
       if (node.isDisclosed() || (diagram.Options.renderer && iconShape == 'inherit')) {
         iconShape = 'rectangle';
-      }
-      else if (iconShape == 'inherit') {
+      } else if (iconShape == 'inherit') {
         iconShape = nodeData['icon']['shape'];
       }
       var dims = node.getLayoutBounds();
       var iconWidth = dims.w;
       var iconHeight = dims.h;
-      var ovNode = new dvt.SimpleMarker(diagram.getCtx(), iconShape, iconWidth / 2, iconHeight / 2, iconWidth, iconHeight, 0);
+      var ovNode = new dvt.SimpleMarker(
+        diagram.getCtx(),
+        iconShape,
+        iconWidth / 2,
+        iconHeight / 2,
+        iconWidth,
+        iconHeight,
+        0
+      );
       ovNode.setSolidFill(nodeData['icon']['color']);
 
       //apply styles - svg style and class names
       // oj-diagram-overview-node class is a placeholder in case want to add styling later
-      var className = [(node.isDisclosed() ? 'oj-diagram-overview-container-node' : 'oj-diagram-overview-node')];
+      var className = [
+        node.isDisclosed() ? 'oj-diagram-overview-container-node' : 'oj-diagram-overview-node'
+      ];
       if (ovIconData['svgClassName']) {
         className.push(ovIconData['svgClassName']);
       }
@@ -6688,7 +7228,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     _findRootNode: (diagram, node) => {
       var rootNode = node;
       var groupId = node ? node.getGroupId() : null;
-      while(groupId) {
+      while (groupId) {
         rootNode = diagram.getNodeById(groupId) ? diagram.getNodeById(groupId) : rootNode;
         groupId = rootNode.getGroupId();
       }
@@ -6716,27 +7256,30 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     _positionOverviewWindow: (diagram, overview) => {
       var halign = diagram.Options['overview']['halign'];
       var valign = diagram.Options['overview']['valign'];
-      var padding = dvt.CSSStyle.toNumber(diagram.Options.styleDefaults._overviewStyles.overview.padding);
+      var padding = dvt.CSSStyle.toNumber(
+        diagram.Options.styleDefaults._overviewStyles.overview.padding
+      );
       var overviewWidth = overview.getOverviewWidth();
       var overviewHeight = overview.getOverviewHeight();
       var availableWidth = diagram.Width;
       var availableHeight = diagram.Height;
 
-      switch(halign) {
+      switch (halign) {
         case 'start':
           halign = dvt.Agent.isRightToLeft(diagram.getCtx()) ? 'right' : 'left';
           break;
         case 'end':
           halign = dvt.Agent.isRightToLeft(diagram.getCtx()) ? 'left' : 'right';
           break;
-        default: break;
+        default:
+          break;
       }
 
-      var rightPadding = halign == 'right' ? availableWidth - overviewWidth - padding: padding;
-      var positionX = halign == 'center' ? (availableWidth - overviewWidth)/2 : rightPadding;
+      var rightPadding = halign == 'right' ? availableWidth - overviewWidth - padding : padding;
+      var positionX = halign == 'center' ? (availableWidth - overviewWidth) / 2 : rightPadding;
 
-      var bottomPadding = valign == 'bottom' ? availableHeight - overviewHeight - padding: padding;
-      var positionY = valign == 'middle' ? (availableHeight - overviewHeight)/2 : bottomPadding;
+      var bottomPadding = valign == 'bottom' ? availableHeight - overviewHeight - padding : padding;
+      var positionY = valign == 'middle' ? (availableHeight - overviewHeight) / 2 : bottomPadding;
       var ovContainer = overview.getParent();
       ovContainer.setTranslate(positionX, positionY);
     },
@@ -6749,8 +7292,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _removeNode: (overview, nodeId) => {
       var ovNode = overview.Nodes.get(nodeId);
-      if (ovNode)
-        ovNode.getParent().removeChild(ovNode);
+      if (ovNode) ovNode.getParent().removeChild(ovNode);
     },
 
     /**
@@ -6764,15 +7306,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var node = diagram.getNodeById(nodeId);
         if (node && ovNode) {
           DvtDiagramOverviewUtils._positionOverviewNode(node, ovNode);
-        }
-        else if (ovNode && !node) {
+        } else if (ovNode && !node) {
           // node could be removed by partial update
           // it should be already removed from DOM
           // now just remove the reference to it
           overview.Nodes.delete(nodeId);
         }
       });
-      DvtDiagramOverviewUtils._adjustNodePositionsForAspectRatio(diagram, overview, overview.Width, overview.Height);
+      DvtDiagramOverviewUtils._adjustNodePositionsForAspectRatio(
+        diagram,
+        overview,
+        overview.Width,
+        overview.Height
+      );
     }
   };
 
@@ -6785,8 +7331,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
    */
   class DvtDiagramPoint {
     constructor(x, y) {
-      this.x = ((x === null || isNaN(x)) ? 0 : x);
-      this.y = ((y === null || isNaN(y)) ? 0 : y);
+      this.x = x === null || isNaN(x) ? 0 : x;
+      this.y = y === null || isNaN(y) ? 0 : y;
     }
   }
 
@@ -6802,10 +7348,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
    */
   class DvtDiagramRectangle {
     constructor(x, y, w, h) {
-      this.x = ((x === null || isNaN(x)) ? 0 : x);
-      this.y = ((y === null || isNaN(y)) ? 0 : y);
-      this.w = ((w === null || isNaN(w)) ? 0 : w);
-      this.h = ((h === null || isNaN(h)) ? 0 : h);
+      this.x = x === null || isNaN(x) ? 0 : x;
+      this.y = y === null || isNaN(y) ? 0 : y;
+      this.w = w === null || isNaN(w) ? 0 : w;
+      this.h = h === null || isNaN(h) ? 0 : h;
     }
   }
 
@@ -6942,12 +7488,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
                 position['x'] += containerPadding['left'];
                 position['y'] += containerPadding['top'];
               }
-            }
-            else {
+            } else {
               node = null;
             }
-          }
-          else {
+          } else {
             bFoundAncestor = true;
             node = null;
           }
@@ -6969,7 +7513,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._labelPosition = pos;
       this.setDirty();
     }
-
 
     /**
      * Get the position of the node label.  The position is in the coordinate
@@ -7128,15 +7671,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (obj) {
           if (this._origBounds) {
             this._origBounds = new DvtDiagramRectangle(
-                this._origBounds['x'], this._origBounds['y'],
-                this._origBounds['w'] - (obj['left'] + obj['right']),
-                this._origBounds['h'] - (obj['top'] + obj['bottom']));
+              this._origBounds['x'],
+              this._origBounds['y'],
+              this._origBounds['w'] - (obj['left'] + obj['right']),
+              this._origBounds['h'] - (obj['top'] + obj['bottom'])
+            );
           }
           if (this._origContentBounds) {
             this._origContentBounds = new DvtDiagramRectangle(
-                this._origContentBounds['x'], this._origContentBounds['y'],
-                this._origContentBounds['w'] - (obj['left'] + obj['right']),
-                this._origContentBounds['h'] - (obj['top'] + obj['bottom']));
+              this._origContentBounds['x'],
+              this._origContentBounds['y'],
+              this._origContentBounds['w'] - (obj['left'] + obj['right']),
+              this._origContentBounds['h'] - (obj['top'] + obj['bottom'])
+            );
           }
         }
       }
@@ -7185,15 +7732,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         //plus the new container padding
         if (this._origBounds) {
           this._bounds = new DvtDiagramRectangle(
-              this._origBounds['x'], this._origBounds['y'],
-              this._origBounds['w'] + left + right,
-              this._origBounds['h'] + top + bottom);
+            this._origBounds['x'],
+            this._origBounds['y'],
+            this._origBounds['w'] + left + right,
+            this._origBounds['h'] + top + bottom
+          );
         }
         if (this._origContentBounds) {
           this._contentBounds = new DvtDiagramRectangle(
-              this._origContentBounds['x'], this._origContentBounds['y'],
-              this._origContentBounds['w'] + left + right,
-              this._origContentBounds['h'] + top + bottom);
+            this._origContentBounds['x'],
+            this._origContentBounds['y'],
+            this._origContentBounds['w'] + left + right,
+            this._origContentBounds['h'] + top + bottom
+          );
         }
         this.setDirty();
       }
@@ -7390,7 +7941,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._bPromoted = false;
     }
 
-
     /**
      * @protected
      * Set the id of the link.
@@ -7451,13 +8001,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {array|string} points array of points or a string with SVG path to use for rendering this link
      */
     setPoints(points) {
-      if (typeof points == 'string')
-        this._points = dvt.PathUtils.createPathArray(points);
-      else
-        this._points = points;
+      if (typeof points == 'string') this._points = dvt.PathUtils.createPathArray(points);
+      else this._points = points;
       this.setDirty();
     }
-
 
     /**
      * Get the points to use for rendering this link.  The returned array can
@@ -7727,7 +8274,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._data = data;
     }
 
-
     /**
      * Gets data for the link. If the link is not promoted, the methods retrieves a data object for the link.
      * If the link is promoted, the methods retrieves an array of data objects for the links that are represented by
@@ -7776,10 +8322,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {DvtDiagramRectangle}
      */
     convertRectToDiagramRect: (rect) => {
-      if (rect === undefined || rect == null)
-        return null;
-      else
-        return new DvtDiagramRectangle(rect.x, rect.y, rect.w, rect.h);
+      if (rect === undefined || rect == null) return null;
+      else return new DvtDiagramRectangle(rect.x, rect.y, rect.w, rect.h);
     },
 
     /**
@@ -7788,10 +8332,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {DvtDiagramPoint}
      */
     convertPointToDiagramPoint: (point) => {
-      if (point === undefined || point == null)
-        return null;
-      else
-        return new DvtDiagramPoint(point.x, point.y);
+      if (point === undefined || point == null) return null;
+      else return new DvtDiagramPoint(point.x, point.y);
     },
 
     /**
@@ -7802,9 +8344,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     convertDiagramRectToRect: (diagramRect) => {
       if (!diagramRect) {
         return null;
-      }
-      else {
-        return new dvt.Rectangle(diagramRect['x'], diagramRect['y'], diagramRect['w'], diagramRect['h']);
+      } else {
+        return new dvt.Rectangle(
+          diagramRect['x'],
+          diagramRect['y'],
+          diagramRect['w'],
+          diagramRect['h']
+        );
       }
     },
 
@@ -7816,8 +8362,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     convertDiagramPointToPoint: (diagramPoint) => {
       if (!diagramPoint) {
         return null;
-      }
-      else {
+      } else {
         return new dvt.Point(diagramPoint['x'], diagramPoint['y']);
       }
     },
@@ -7831,9 +8376,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var x = viewport.x;
       var y = viewport.y;
       var zoom = width / w;
-      var cxVal = x + width*.5/zoom;
-      var cyVal = y + height*.5/zoom;
-      return {zoom: zoom, centerX: cxVal, centerY: cyVal};
+      var cxVal = x + (width * 0.5) / zoom;
+      var cyVal = y + (height * 0.5) / zoom;
+      return { zoom: zoom, centerX: cxVal, centerY: cyVal };
     },
 
     /**
@@ -7845,8 +8390,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var cxVal = panZoomState.centerX;
       var cyVal = panZoomState.centerY;
       var zoom = panZoomState.zoom ? panZoomState.zoom : 1;
-      var x = cxVal - width*.5/zoom;
-      var y = cyVal - height*.5/zoom;
+      var x = cxVal - (width * 0.5) / zoom;
+      var y = cyVal - (height * 0.5) / zoom;
       var w = width / zoom;
       var h = height / zoom;
       return new dvt.Rectangle(x, y, w, h);
@@ -7874,7 +8419,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this.Context = context;
     }
 
-
     /**
      * @protected
      * Set the name of the layout.
@@ -7884,7 +8428,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._layout = layout;
     }
 
-
     /**
      * Get the name of the layout.
      * @return {string}
@@ -7892,7 +8435,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     getLayout() {
       return this._layout;
     }
-
 
     /**
      * @protected
@@ -7903,7 +8445,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._layoutAttrs = layoutAttrs;
     }
 
-
     /**
      * Get the map of global layout attributes.
      * @return {object}
@@ -7911,7 +8452,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     getLayoutAttributes() {
       return this._layoutAttrs;
     }
-
 
     /**
      * @protected
@@ -7926,7 +8466,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       this._nodes.set(node.getId(), node);
     }
-
 
     /**
      * @protected
@@ -7945,19 +8484,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {DvtDiagramLayoutContextNode} node node context to remove from this layout
      */
     removeNode(parent, node) {
-      if (!node)
-        return;
+      if (!node) return;
       if (parent) {
         dvt.ArrayUtils.removeItem(parent.getChildNodes(), node);
-      }
-      else {
+      } else {
         dvt.ArrayUtils.removeItem(this._arNodes, node);
         this._nodeCount--;
       }
 
       this._nodes.delete(node.getId());
     }
-
 
     /**
      * Get a node context by id.  Nodes being laid out and read-only nodes provided
@@ -7970,7 +8506,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       return this._nodes.get(id);
     }
 
-
     /**
      * Get a node context by index.  Only nodes being laid out can be retrieved
      * through this function.
@@ -7981,7 +8516,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       return this._arNodes[index];
     }
 
-
     /**
      * Get the number of nodes to layout.  This number does not include any
      * read-only nodes provided as additional information to this layout.
@@ -7990,7 +8524,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     getNodeCount() {
       return this._nodeCount;
     }
-
 
     /**
      * Add a link context for this layout.
@@ -8011,8 +8544,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     removeLink(link) {
-      if (!link)
-        return;
+      if (!link) return;
       if (this.getLinkById(link.getId())) {
         dvt.ArrayUtils.removeItem(this._arLinks, link);
         this._linkCount--;
@@ -8029,7 +8561,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       return this._links.get(id);
     }
 
-
     /**
      * Get a link context by index.
      * @param {number} index index of link context to get
@@ -8039,7 +8570,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       return this._arLinks[index];
     }
 
-
     /**
      * Get the number of links to layout.
      * @return {number}
@@ -8047,7 +8577,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     getLinkCount() {
       return this._linkCount;
     }
-
 
     /**
      * Convert a point in the coordinate system of the given node to the global
@@ -8065,7 +8594,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       return new DvtDiagramPoint(point['x'] + offset['x'], point['y'] + offset['y']);
     }
-
 
     /**
      * @protected
@@ -8092,15 +8620,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
               offset['y'] += containerPadding['top'];
             }
           }
-        }
-        else {
+        } else {
           node = null;
         }
       }
 
       return offset;
     }
-
 
     /**
      * @protected
@@ -8111,7 +8637,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._bLocaleR2L = bR2L;
     }
 
-
     /**
      * Get whether the reading direction for the locale is right-to-left.
      * @return {boolean}
@@ -8119,7 +8644,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     isLocaleR2L() {
       return this._bLocaleR2L;
     }
-
 
     /**
      * @protected
@@ -8130,7 +8654,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._componentSize = compSize;
     }
 
-
     /**
      * Get the size of the Diagram.
      * @return {DvtDiagramRectangle}
@@ -8139,7 +8662,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       return this._componentSize;
     }
 
-
     /**
      * Set the viewport the component should use after the layout, in the layout's
      * coordinate system.
@@ -8147,10 +8669,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * after the layout
      */
     setViewport(viewport) {
-      this._panZoomState = viewport ? DvtDiagramLayoutUtils.convertViewportToPanZoomState(viewport,
-        this._componentSize.w, this._componentSize.h) : null;
+      this._panZoomState = viewport
+        ? DvtDiagramLayoutUtils.convertViewportToPanZoomState(
+            viewport,
+            this._componentSize.w,
+            this._componentSize.h
+          )
+        : null;
     }
-
 
     /**
      * Get the viewport the component should use after the layout, in the layout's
@@ -8158,27 +8684,32 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {DvtDiagramRectangle}
      */
     getViewport() {
-      return this._panZoomState ? DvtDiagramLayoutUtils.convertPanZoomStateToViewport(this._panZoomState,
-        this._componentSize.w, this._componentSize.h) : null;
+      return this._panZoomState
+        ? DvtDiagramLayoutUtils.convertPanZoomStateToViewport(
+            this._panZoomState,
+            this._componentSize.w,
+            this._componentSize.h
+          )
+        : null;
     }
 
-  /**
-   * Set the panZoom state the component should use after the layout.
-   * @param {Object} panZoomState panZoomState the component should use
-   * after the layout
-   */
-   setPanZoomState(panZoomState) {
-    this._panZoomState = panZoomState;
-  }
+    /**
+     * Set the panZoom state the component should use after the layout.
+     * @param {Object} panZoomState panZoomState the component should use
+     * after the layout
+     */
+    setPanZoomState(panZoomState) {
+      this._panZoomState = panZoomState;
+    }
 
-  /**
-   * Get the panZoomState the component should use after the layout, in the layout's
-   * coordinate system.
-   * @return {Object}
-   */
-   getPanZoomState() {
-    return this._panZoomState;
-  }
+    /**
+     * Get the panZoomState the component should use after the layout, in the layout's
+     * coordinate system.
+     * @return {Object}
+     */
+    getPanZoomState() {
+      return this._panZoomState;
+    }
 
     /**
      * @protected
@@ -8190,7 +8721,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._containerId = containerId;
     }
 
-
     /**
      * Get the id of the container whose nodes are being laid out, or null if this
      * is the top level Diagram layout.
@@ -8199,7 +8729,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     getContainerId() {
       return this._containerId;
     }
-
 
     /**
      * Set the padding of the container whose children are being laid out.
@@ -8241,7 +8770,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
     }
 
-
     /**
      * Get the padding of the container whose children are being laid out.
      * Values can be retrieved from the returned map using keys 'top', 'left',
@@ -8251,7 +8779,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     getContainerPadding() {
       return this._containerPadding;
     }
-
 
     /**
      * Set the current viewport used by the component in the layout's coordinate system.
@@ -8266,8 +8793,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {DvtDiagramRectangle} current viewport
      */
     getCurrentViewport() {
-      return this._currentPanZoomState ? DvtDiagramLayoutUtils.convertPanZoomStateToViewport(this._currentPanZoomState,
-        this._componentSize.w, this._componentSize.h) : null;
+      return this._currentPanZoomState
+        ? DvtDiagramLayoutUtils.convertPanZoomStateToViewport(
+            this._currentPanZoomState,
+            this._componentSize.w,
+            this._componentSize.h
+          )
+        : null;
     }
 
     /**
@@ -8282,7 +8814,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var containerId = context.getNodeById(id) ? context.getNodeById(id).getContainerId() : null;
         while (containerId) {
           ids.push(containerId);
-          containerId = context.getNodeById(containerId) ? context.getNodeById(containerId).getContainerId() : null;
+          containerId = context.getNodeById(containerId)
+            ? context.getNodeById(containerId).getContainerId()
+            : null;
         }
         ids.reverse();
         return ids;
@@ -8293,8 +8827,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var commonId = null;
 
       for (var i = 0; i < startPath.length && i < endPath.length; i++) {
-        if (!DvtDiagramDataUtils.compareValues(this.Context, startPath[i], endPath[i]))
-          break;
+        if (!DvtDiagramDataUtils.compareValues(this.Context, startPath[i], endPath[i])) break;
         commonId = startPath[i];
       }
       return commonId;
@@ -8354,7 +8887,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @override
      */
     renderData(width, height) {
-      this.Content = DvtDiagramOverviewUtils.CreateOverviewContent(this._callbackObj, this, width, height);
+      this.Content = DvtDiagramOverviewUtils.CreateOverviewContent(
+        this._callbackObj,
+        this,
+        width,
+        height
+      );
       this.addChild(this.Content);
       this.Content.setMouseEnabled(false);
     }
@@ -8368,27 +8906,27 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var height = Math.min(this._callbackObj.Height, this._callbackObj.Options.overview.height);
       var styleMap = this._callbackObj.Options.styleDefaults._overviewStyles;
       var options = {
-          'xMin': 0,
-          'xMax': width,
-          'yMin': 0,
-          'yMax': height,
-          'x1': 0,
-          'x2': width,
-          'y1': 0,
-          'y2': height,
-          'style' : {
-            'overviewBackgroundColor': styleMap.overview.backgroundColor,
-            'windowBackgroundColor': styleMap.viewport.backgroundColor,
-            'windowBorderTopColor': styleMap.viewport.borderColor,
-            'windowBorderRightColor': styleMap.viewport.borderColor,
-            'windowBorderBottomColor': styleMap.viewport.borderColor,
-            'windowBorderLeftColor': styleMap.viewport.borderColor,
-            'timeAxisBarColor': '#00000000' // render time axis bar invisible - diagram does not need it
-          },
-          'animationOnClick' : 'off',
-          'featuresOff' : 'zoom'
+        xMin: 0,
+        xMax: width,
+        yMin: 0,
+        yMax: height,
+        x1: 0,
+        x2: width,
+        y1: 0,
+        y2: height,
+        style: {
+          overviewBackgroundColor: styleMap.overview.backgroundColor,
+          windowBackgroundColor: styleMap.viewport.backgroundColor,
+          windowBorderTopColor: styleMap.viewport.borderColor,
+          windowBorderRightColor: styleMap.viewport.borderColor,
+          windowBorderBottomColor: styleMap.viewport.borderColor,
+          windowBorderLeftColor: styleMap.viewport.borderColor,
+          timeAxisBarColor: '#00000000' // render time axis bar invisible - diagram does not need it
+        },
+        animationOnClick: 'off',
+        featuresOff: 'zoom'
       };
-      var isEmpty = this._callbackObj.GetAllRoots().length === 0 ? true: false;
+      var isEmpty = this._callbackObj.GetAllRoots().length === 0 ? true : false;
       this._viewportConstraints = {
         xMin: isEmpty ? 0 : -Number.MAX_VALUE,
         yMin: isEmpty ? 0 : -Number.MAX_VALUE,
@@ -8424,23 +8962,42 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     animateUpdate(animationHandler, oldDiagramOverview) {
       // animate content  - fade in/out and matrix
       this.Content.setAlpha(0);
-      animationHandler.add(new dvt.AnimFadeIn(this.getCtx(), this.Content, animationHandler.getAnimDur()), DvtDiagramDataAnimationPhase.UPDATE);
+      animationHandler.add(
+        new dvt.AnimFadeIn(this.getCtx(), this.Content, animationHandler.getAnimDur()),
+        DvtDiagramDataAnimationPhase.UPDATE
+      );
 
       var idx = this.getChildIndex(this.Content);
-      this.addChildAt(oldDiagramOverview.Content, idx+1);
+      this.addChildAt(oldDiagramOverview.Content, idx + 1);
       var removeFunc = () => {
         oldDiagramOverview.Content.getParent().removeChild(oldDiagramOverview.Content);
       };
-      var fadeOutAnim = new dvt.AnimFadeOut(this.getCtx(), oldDiagramOverview.Content, animationHandler.getAnimDur());
+      var fadeOutAnim = new dvt.AnimFadeOut(
+        this.getCtx(),
+        oldDiagramOverview.Content,
+        animationHandler.getAnimDur()
+      );
       dvt.Playable.appendOnEnd(fadeOutAnim, removeFunc);
       animationHandler.add(fadeOutAnim, DvtDiagramDataAnimationPhase.UPDATE);
 
       //animate viewport
-      var customContentAnim = new dvt.CustomAnimation(this.getCtx(), null, animationHandler.getAnimDur());
+      var customContentAnim = new dvt.CustomAnimation(
+        this.getCtx(),
+        null,
+        animationHandler.getAnimDur()
+      );
       var oldAnimationParams = oldDiagramOverview.GetAnimParams();
       var newAnimationParams = this.GetAnimParams();
       this.SetAnimParams(oldAnimationParams);
-      customContentAnim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER_ARRAY, this, this.GetAnimParams, this.SetAnimParams, newAnimationParams);
+      customContentAnim
+        .getAnimator()
+        .addProp(
+          dvt.Animator.TYPE_NUMBER_ARRAY,
+          this,
+          this.GetAnimParams,
+          this.SetAnimParams,
+          newAnimationParams
+        );
 
       animationHandler.add(customContentAnim, DvtDiagramDataAnimationPhase.UPDATE);
     }
@@ -8452,13 +9009,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {number} maxPanX max x coordinate for the diagram content
      * @param {number} maxPanY max y coordinate for the diagram content
      */
-    updateConstraints (minPanX,minPanY,maxPanX,maxPanY) {
+    updateConstraints(minPanX, minPanY, maxPanX, maxPanY) {
       var zoom = this._callbackObj.getPanZoomCanvas().getZoom();
 
       // maxPanX/maxPanY: bottom right point for the content with zoom adjustment corresponds to top left point in overview viewport
       // minPanX,minPanY: top left point for the content with zoom adjustment corresponds to bottom right point in overview viewport
-      var topLeft = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(- maxPanX / zoom, - maxPanY / zoom, this);
-      var bottomRight = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(- minPanX / zoom, - minPanY / zoom, this);
+      var topLeft = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(
+        -maxPanX / zoom,
+        -maxPanY / zoom,
+        this
+      );
+      var bottomRight = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(
+        -minPanX / zoom,
+        -minPanY / zoom,
+        this
+      );
       var width = this._viewportPosition.x2 - this._viewportPosition.x1;
       var height = this._viewportPosition.y2 - this._viewportPosition.y1;
       var panDirection = this._callbackObj.getPanDir();
@@ -8474,64 +9039,56 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     /**
      * @override
      */
-    getMinimumPositionX()
-    {
+    getMinimumPositionX() {
       return this._viewportConstraints.xMin;
     }
 
     /**
      * @override
      */
-    getMinimumPositionY()
-    {
+    getMinimumPositionY() {
       return this._viewportConstraints.yMin;
     }
 
     /**
      * @override
      */
-    getMaximumPositionX()
-    {
+    getMaximumPositionX() {
       return this._viewportConstraints.xMax;
     }
 
     /**
      * @override
      */
-    getMaximumPositionY()
-    {
+    getMaximumPositionY() {
       return this._viewportConstraints.yMax;
     }
 
     /**
      * @override
      */
-    getMinimumWindowWidth()
-    {
+    getMinimumWindowWidth() {
       return 0;
     }
 
     /**
      * @override
      */
-    getMaximumWindowWidth()
-    {
+    getMaximumWindowWidth() {
       return Number.MAX_VALUE;
     }
 
     /**
      * @override
      */
-    getMinimumWindowHeight()
-    {
+    getMinimumWindowHeight() {
       return 0;
     }
 
     /**
      * @override
      */
-    getMaximumWindowHeight()
-    {
+    getMaximumWindowHeight() {
       return Number.MAX_VALUE;
     }
 
@@ -8540,34 +9097,49 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     UpdateViewport() {
-      if (this._bCancelUpdateViewport)
-        return;
+      if (this._bCancelUpdateViewport) return;
       var newViewport = DvtDiagramOverviewUtils.CalcViewportFromMatrix(this._callbackObj);
-      var topLeft = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(newViewport.x , newViewport.y, this);
-      var bottomRight = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(newViewport.x + newViewport.w, newViewport.y + newViewport.h, this);
+      var topLeft = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(
+        newViewport.x,
+        newViewport.y,
+        this
+      );
+      var bottomRight = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(
+        newViewport.x + newViewport.w,
+        newViewport.y + newViewport.h,
+        this
+      );
 
-      this._viewportPosition = {x1: topLeft.x, x2: bottomRight.x, y1: topLeft.y, y2: bottomRight.y};
+      this._viewportPosition = { x1: topLeft.x, x2: bottomRight.x, y1: topLeft.y, y2: bottomRight.y };
       this.setViewportRange(topLeft.x, bottomRight.x, topLeft.y, bottomRight.y);
     }
 
-      /**
+    /**
      * Viewport change handler
      * @protected
      */
     HandleViewportChange(event) {
       var newX1 = event.newX1 !== undefined ? event.newX1 : this._viewportPosition.x1;
       var newY1 = event.newY1 !== undefined ? event.newY1 : this._viewportPosition.y1;
-      var oldTopLeft = DvtDiagramOverviewUtils.TransformFromViewportToContentCoords(this._viewportPosition.x1, this._viewportPosition.y1, this);
-      var newTopLeft = DvtDiagramOverviewUtils.TransformFromViewportToContentCoords(newX1, newY1, this);
+      var oldTopLeft = DvtDiagramOverviewUtils.TransformFromViewportToContentCoords(
+        this._viewportPosition.x1,
+        this._viewportPosition.y1,
+        this
+      );
+      var newTopLeft = DvtDiagramOverviewUtils.TransformFromViewportToContentCoords(
+        newX1,
+        newY1,
+        this
+      );
 
       this._viewportPosition.x1 = newX1;
       this._viewportPosition.y1 = newY1;
 
       var zoom = this._callbackObj.getPanZoomCanvas().getZoom();
-      var dx = ((newTopLeft.x - oldTopLeft.x) * zoom);
-      var dy = ((newTopLeft.y - oldTopLeft.y) * zoom);
+      var dx = (newTopLeft.x - oldTopLeft.x) * zoom;
+      var dy = (newTopLeft.y - oldTopLeft.y) * zoom;
       if (dx !== 0 || dy !== 0) {
-        this._bCancelUpdateViewport = true;  // cancel HandleViewportChange as redundant
+        this._bCancelUpdateViewport = true; // cancel HandleViewportChange as redundant
         this._callbackObj.getPanZoomCanvas().panBy(-dx, -dy, null, null, true);
         this._bCancelUpdateViewport = false;
       }
@@ -8586,30 +9158,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var bottomBar = this.getBottomBar();
       var topBar = this.getTopBar();
 
-      params.push(slidingWindow.getTranslateX(),
+      params.push(
+        slidingWindow.getTranslateX(),
         slidingWindow.getTranslateY(),
         slidingWindow.getWidth(),
-        slidingWindow.getHeight());
+        slidingWindow.getHeight()
+      );
 
-      params.push(leftHandle.getX1(),
-        leftHandle.getY1(),
-        leftHandle.getX2(),
-        leftHandle.getY2());
+      params.push(leftHandle.getX1(), leftHandle.getY1(), leftHandle.getX2(), leftHandle.getY2());
 
-      params.push(rightHandle.getX1(),
-        rightHandle.getY1(),
-        rightHandle.getX2(),
-        rightHandle.getY2());
+      params.push(rightHandle.getX1(), rightHandle.getY1(), rightHandle.getX2(), rightHandle.getY2());
 
-      params.push(bottomBar.getX1(),
-        bottomBar.getY1(),
-        bottomBar.getX2(),
-        bottomBar.getY2());
+      params.push(bottomBar.getX1(), bottomBar.getY1(), bottomBar.getX2(), bottomBar.getY2());
 
-      params.push(topBar.getX1(),
-        topBar.getY1(),
-        topBar.getX2(),
-        topBar.getY2());
+      params.push(topBar.getX1(), topBar.getY1(), topBar.getX2(), topBar.getY2());
 
       return params;
     }
@@ -8671,9 +9233,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var rootNodes = this._callbackObj.GetRootNodeObjects();
       if (rootNodes.length > 0) {
         rootNodes.forEach((node) => {
-          DvtDiagramOverviewUtils.CreateOverviewNode(overviewClone.Diagram, overviewClone, node, ovContentClone);
+          DvtDiagramOverviewUtils.CreateOverviewNode(
+            overviewClone.Diagram,
+            overviewClone,
+            node,
+            ovContentClone
+          );
         });
-        DvtDiagramOverviewUtils.ZoomToFitOverviewContent(overviewClone.Diagram, overviewClone, ovContentClone, this.Width, this.Height);
+        DvtDiagramOverviewUtils.ZoomToFitOverviewContent(
+          overviewClone.Diagram,
+          overviewClone,
+          ovContentClone,
+          this.Width,
+          this.Height
+        );
       }
 
       var cloneAnimationParams = this.GetAnimParams();
@@ -8693,7 +9266,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
    *  @constructor
    */
   class DvtDiagramAutomation extends dvt.Automation {
-
     /**
      * Valid subIds include:
      * <ul>
@@ -8705,10 +9277,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     GetSubIdForDomElement(displayable) {
       var logicalObj = this._comp.getEventManager().GetLogicalObject(displayable);
-      if (logicalObj && (logicalObj instanceof DvtDiagramNode)) {
+      if (logicalObj && logicalObj instanceof DvtDiagramNode) {
         return 'node[' + this._comp.GetAllNodes().indexOf(logicalObj.getId()) + ']';
-      }
-      else if (logicalObj && (logicalObj instanceof DvtDiagramLink)) {
+      } else if (logicalObj && logicalObj instanceof DvtDiagramLink) {
         return 'link[' + this._comp.GetAllLinks().indexOf(logicalObj.getId()) + ']';
       }
       return null;
@@ -8724,8 +9295,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @override
      */
     getDomElementForSubId(subId) {
-      if (subId == dvt.Automation.TOOLTIP_SUBID)
-        return this.GetTooltipElement(this._comp);
+      if (subId == dvt.Automation.TOOLTIP_SUBID) return this.GetTooltipElement(this._comp);
 
       var parsedSubId = this._parseSubId(subId);
       var component = parsedSubId['component'];
@@ -8733,8 +9303,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var displayable = null;
       if (component == 'node') {
         displayable = this._getNode(index);
-      }
-      else if (component == 'link') {
+      } else if (component == 'link') {
         displayable = this._getLink(index);
       }
       return displayable ? displayable.getElem() : null;
@@ -8748,13 +9317,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _parseSubId(subId) {
       var component = subId;
-      var index = - 1;
+      var index = -1;
       var substring = subId.substring(0, subId.indexOf('['));
       if (substring) {
         component = substring == 'node' || substring == 'link' ? substring : null;
         index = parseInt(subId.substring(subId.indexOf('[') + 1, subId.indexOf(']')));
       }
-      return {component, index};
+      return { component, index };
     }
 
     /**
@@ -8837,8 +9406,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     getPromotedLink(startIndex, endIndex) {
       var startNode = this._getNode(startIndex);
       var endNode = this._getNode(endIndex);
-      if (!startNode || !endNode)
-        return null;
+      if (!startNode || !endNode) return null;
       var linkId = DvtDiagramLink.GetPromotedLinkId(this._comp, startNode.getId(), endNode.getId());
       var link = this._comp.getLinkById(linkId);
       if (link) {
@@ -8868,8 +9436,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     _getLinkStyleFromObject(linkStyle) {
       if (this._comp.getCtx().isCustomElement()) {
         return dvt.CSSStyle.cssObjectToString(linkStyle);
-      }
-      else if (linkStyle && linkStyle instanceof Object) {
+      } else if (linkStyle && linkStyle instanceof Object) {
         //For custom link style, convert the object to string
         if (linkStyle['_type'] == DvtDiagramLink.CUSTOM_STYLE) {
           var styleObj = dvt.JsonUtils.clone(linkStyle);
@@ -8900,9 +9467,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (marker) {
         var data = {};
         // public api expects image markers to return a shape of 'none'
-        data['shape'] = (marker instanceof dvt.SimpleMarker ? marker.getType() : 'none');
-        if (marker.getFill())
-          data['color'] = marker.getFill().getColor();
+        data['shape'] = marker instanceof dvt.SimpleMarker ? marker.getType() : 'none';
+        if (marker.getFill()) data['color'] = marker.getFill().getColor();
         return data;
       }
       return null;
@@ -8916,7 +9482,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _getNode(nodeIndex) {
       var nodeIds = this._comp.GetAllNodes();
-      return (nodeIndex >= 0 && nodeIndex < nodeIds.length) ? this._comp.getNodeById(nodeIds[nodeIndex]) : null;
+      return nodeIndex >= 0 && nodeIndex < nodeIds.length
+        ? this._comp.getNodeById(nodeIds[nodeIndex])
+        : null;
     }
 
     /**
@@ -8927,7 +9495,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _getLink(linkIndex) {
       var linkIds = this._comp.GetAllLinks();
-      return (linkIndex >= 0 && linkIndex < linkIds.length) ? this._comp.getLinkById(linkIds[linkIndex]) : null;
+      return linkIndex >= 0 && linkIndex < linkIds.length
+        ? this._comp.getLinkById(linkIds[linkIndex])
+        : null;
     }
   }
 
@@ -8985,7 +9555,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     getId() {
       return this._diagram.getId();
-    };
+    }
 
     /**
      * Gets options for the diagram state
@@ -9035,8 +9605,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {Object} event event data
      */
     updateStateFromEvent(type, event) {
-      if (!event)
-        return;
+      if (!event) return;
       var nodes = event['data']['nodes'];
       var links = event['data']['links'];
       var i, link, linkId;
@@ -9047,26 +9616,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           if (node) {
             // animate new nodes if they are added to the top level
             // or already disclosed container
-            if (this._wasParentDisclosed === true)
-              this._newNodes.push(node);
+            if (this._wasParentDisclosed === true) this._newNodes.push(node);
             this._processedObjMap.set(node.getId(), true);
           }
         }
         for (i = 0; links && i < links.length; i++) {
           linkId = links[i]['id'];
-          link = this._diagram.getLinkById(linkId) ||
-              (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
+          link =
+            this._diagram.getLinkById(linkId) ||
+            (this._diagram._linkToPromotedMap &&
+              this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
           if (link) {
             this._newLinks.push(link);
             this._processedObjMap.set(link.getId(), true);
           }
         }
-      }
-      else if (type == 'change') {
+      } else if (type == 'change') {
         for (i = 0; links && i < links.length; i++) {
           linkId = links[i]['id'];
-          link = this._diagram.getLinkById(linkId) ||
-                  (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
+          link =
+            this._diagram.getLinkById(linkId) ||
+            (this._diagram._linkToPromotedMap &&
+              this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
           if (link) {
             this._newLinks.push(link);
             this._processedObjMap.set(link.getId(), true);
@@ -9086,13 +9657,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var dirtyLayoutContext = layoutContext.getDirtyContext();
         dirtyLayoutContext.forEach((obj, objId, map) => {
           if (!thisRef._processedObjMap.has(objId)) {
-            var objFromMap = thisRef._diagram.getNodeById(objId) || thisRef._diagram.getLinkById(objId);
+            var objFromMap =
+              thisRef._diagram.getNodeById(objId) || thisRef._diagram.getLinkById(objId);
             if (objFromMap instanceof DvtDiagramNode) {
               thisRef._nodes.push(objFromMap.getAnimationState());
               thisRef._newNodes.push(objFromMap);
               thisRef._processedObjMap.set(objId, true);
-            }
-            else if (objFromMap instanceof DvtDiagramLink) {
+            } else if (objFromMap instanceof DvtDiagramLink) {
               thisRef._links.push(objFromMap.getAnimationState());
               thisRef._newLinks.push(objFromMap);
               thisRef._processedObjMap.set(objId, true);
@@ -9115,8 +9686,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var node;
         if (type == 'add') {
           this._addAncestorStates(parentId);
-        }
-        else if (type == 'change') {
+        } else if (type == 'change') {
           for (var i = 0; nodes && i < nodes.length; i++) {
             node = this._diagram.getNodeById(nodes[i]['id']);
             if (node) {
@@ -9126,8 +9696,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
               this._processedObjMap.set(node.getId(), true);
             }
           }
-        }
-        else if (type == 'remove') {
+        } else if (type == 'remove') {
           this._addAncestorStates(parentId);
           if (nodes && !parentId) {
             for (var j = 0; j < nodes.length; j++) {
@@ -9139,8 +9708,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             }
           }
         }
-      }
-      else {
+      } else {
         this._nodes = this._diagram.GetRootNodeObjects();
       }
     }
@@ -9154,33 +9722,34 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     _setLinks(type, event) {
       if (this.IsPartialUpdate) {
         var links = event['data']['links'];
-        if (!links)
-          return;
+        if (!links) return;
         var i, link, linkId;
         if (type == 'change') {
           for (i = 0; i < links.length; i++) {
             linkId = links[i]['id'];
-            link = this._diagram.getLinkById(linkId) ||
-                    (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
+            link =
+              this._diagram.getLinkById(linkId) ||
+              (this._diagram._linkToPromotedMap &&
+                this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
             if (link) {
               this._links.push(link.getAnimationState());
               this._processedObjMap.set(link.getId(), true);
             }
           }
-        }
-        else if (type == 'remove') {
+        } else if (type == 'remove') {
           for (i = 0; i < links.length; i++) {
             linkId = links[i]['id'];
-            link = this._diagram.getLinkById(linkId) ||
-                    (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
+            link =
+              this._diagram.getLinkById(linkId) ||
+              (this._diagram._linkToPromotedMap &&
+                this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
             if (link) {
               this._links.push(link);
               this._processedObjMap.set(link.getId(), true);
             }
           }
         }
-      }
-      else {
+      } else {
         this._links = this._diagram.GetAllLinkObjects();
       }
     }
@@ -9196,13 +9765,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       // added to to the top level or an already disclosed container
       this._wasParentDisclosed = parentNode ? parentNode.isDisclosed() : true;
       while (parentNode) {
-        var keepOriginal = DvtDiagramDataUtils.compareValues(this._context, parentNode.getId(), parentId) ||
-        (parentNode.isDisclosed() && this._diagram.getOptions()['renderer']);
+        var keepOriginal =
+          DvtDiagramDataUtils.compareValues(this._context, parentNode.getId(), parentId) ||
+          (parentNode.isDisclosed() && this._diagram.getOptions()['renderer']);
         var oldState = parentNode.getAnimationState(keepOriginal);
         this._nodes.push(oldState);
         this._newNodes.push(parentNode);
         this._processedObjMap.set(parentNode.getId(), true);
-        parentNode = parentNode.getGroupId() ? this._diagram.getNodeById(parentNode.getGroupId()) : null;
+        parentNode = parentNode.getGroupId()
+          ? this._diagram.getNodeById(parentNode.getGroupId())
+          : null;
       }
     }
   }
@@ -9231,7 +9803,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     getOldDiagram() {
       return this._oldDiagram;
     }
-
 
     /**
      * Returns the new diagram state
@@ -9262,7 +9833,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var context = this.getCtx();
         // process diagram links - check expanding a promoted link or collapsing multiple into a promoted link
         var oldLinksMap = DvtDiagramDataAnimationHandler._expandLinksArrayToMap(context, oldList),
-            newLinksMap = DvtDiagramDataAnimationHandler._expandLinksArrayToMap(context, newList);
+          newLinksMap = DvtDiagramDataAnimationHandler._expandLinksArrayToMap(context, newList);
         var oldLink, newLink, oldId;
         var skip = new context.ojMap();
         var thisRef = this;
@@ -9271,7 +9842,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         oldLinksMap.forEach((link, linkId, map) => {
           oldLink = link;
           newLink = newLinksMap.get(linkId);
-
 
           //do nothing if the link is invisible
           if (!newLink) {
@@ -9291,16 +9861,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           else {
             var oldLinksCount = oldLink.isPromoted() ? oldLink.getData()['_links'].length : 1;
             var newLinksCount = newLink.isPromoted() ? newLink.getData()['_links'].length : 1;
-            if (oldLinksCount > newLinksCount && !skip.has(oldLink.getId())) { //expand
+            if (oldLinksCount > newLinksCount && !skip.has(oldLink.getId())) {
+              //expand
               thisRef._constructExpandCollapseAnimation(oldLink, newLinksMap, skip, true);
-            }
-            else if (oldLinksCount < newLinksCount && !skip.has(newLink.getId())) { //collapse
+            } else if (oldLinksCount < newLinksCount && !skip.has(newLink.getId())) {
+              //collapse
               thisRef._constructExpandCollapseAnimation(newLink, oldLinksMap, skip, false);
-            }
-            else if (oldLinksCount == newLinksCount && !skip.has(newLink.getId())) {
+            } else if (oldLinksCount == newLinksCount && !skip.has(newLink.getId())) {
               //a single link inside of promoted - plain update, no need to update that link multiple times
               newLink.animateUpdate(thisRef, oldLink);
-              skip.set(newLink.getId(),true);
+              skip.set(newLink.getId(), true);
             }
           }
         });
@@ -9314,8 +9884,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             newLink.animateInsert(thisRef);
           }
         });
-      }
-      else {
+      } else {
         super.constructAnimation(oldList, newList);
       }
     }
@@ -9338,11 +9907,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         }
       }
       if (linksToAnimate.length > 0) {
-        if (expandFlag)
-          linkToAnimate.animateExpand(this, linksToAnimate);
-        else
-          linkToAnimate.animateCollapse(this, linksToAnimate);
-        skipMap.set(linkToAnimate.getId(),true);
+        if (expandFlag) linkToAnimate.animateExpand(this, linksToAnimate);
+        else linkToAnimate.animateCollapse(this, linksToAnimate);
+        skipMap.set(linkToAnimate.getId(), true);
       }
     }
 
@@ -9363,11 +9930,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (link.isPromoted()) {
           var consolidatedLinks = link.getData()['_links'];
           for (var li = 0; li < consolidatedLinks.length; li++) {
-            list.set(consolidatedLinks[li]['id'],link);
+            list.set(consolidatedLinks[li]['id'], link);
           }
-        }
-        else {
-          list.set(link.getId(),link);
+        } else {
+          list.set(link.getId(), link);
         }
       }
       return list;
@@ -9443,9 +10009,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var panY = pzc.getPanY();
       var zoom = pzc.getZoom();
       var offset = this.getLayoutOffset();
-      var centerX = (this.Width*.5 - panX)/zoom  - offset.x;
-      var centerY = (this.Height*.5 - panY)/zoom - offset.y;
-      return {'zoom': zoom, 'centerX': centerX, 'centerY': centerY};
+      var centerX = (this.Width * 0.5 - panX) / zoom - offset.x;
+      var centerY = (this.Height * 0.5 - panY) / zoom - offset.y;
+      return { zoom: zoom, centerX: centerX, centerY: centerY };
     }
 
     /**
@@ -9468,10 +10034,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         this.ResetNodesAndLinks();
         this._oldLayoutContext = this._layoutContext;
         this._layoutContext = null;
-      }
-      else if (this._layoutContext) {
+      } else if (this._layoutContext) {
         this._layoutContext.setEventData(null);
-        this._layoutContext.setComponentSize(new DvtDiagramRectangle(0, 0, this.getWidth(), this.getHeight()));
+        this._layoutContext.setComponentSize(
+          new DvtDiagramRectangle(0, 0, this.getWidth(), this.getHeight())
+        );
       }
     }
 
@@ -9503,7 +10070,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       DvtDiagramOverviewUtils.RemoveOverviewWindow(this, this.Overview);
       this.Overview = null;
 
-      if(this.activeInnerElems) {
+      if (this.activeInnerElems) {
         var activeElem = document.activeElement;
         if (this.getElem().contains(activeElem)) {
           // oldActiveElemId is the id of the tabbable element
@@ -9511,7 +10078,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           if (!this._oldActiveElemId) {
             // if active elem does not have id, look for the nearest custom element that does have an id
             // stop looking when you hit the diagram
-            while (!((ojcustomelementUtils.CustomElementUtils.isElementRegistered(activeElem.tagName) && activeElem.id) || activeElem.tagName === 'OJ-DIAGRAM')) {
+            while (
+              !(
+                (ojcustomelementUtils.CustomElementUtils.isElementRegistered(activeElem.tagName) && activeElem.id) ||
+                activeElem.tagName === 'OJ-DIAGRAM'
+              )
+            ) {
               activeElem = activeElem.parentElement;
             }
             if (activeElem.tagName !== 'OJ-DIAGRAM') {
@@ -9521,7 +10093,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         } else {
           this.activeInnerElems = null;
         }
-
       }
     }
 
@@ -9530,7 +10101,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @private
      */
     _onAnimationEnd() {
-
       if (this._deleteContainer) {
         this.removeChild(this._deleteContainer);
         this._deleteContainer.destroy();
@@ -9558,16 +10128,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {DvtDiagramDataAnimationHandler} animationHandler the animation handler, which can be used to chain animations
      * @param {Object} oldDiagramState the old diagram state to animate from
      */
-     animateUpdate(animationHandler, oldDiagramState) {
+    animateUpdate(animationHandler, oldDiagramState) {
       var playable = new dvt.CustomAnimation(this.getCtx(), null, animationHandler.getAnimDur());
       var oldMat = oldDiagramState.PanZoomMatrix;
       var newMat = this.getPanZoomCanvas().getContentPane().getMatrix();
       if (!oldMat.equals(newMat)) {
         this.getPanZoomCanvas().getContentPane().setMatrix(oldMat);
-        playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, this.getPanZoomCanvas().getContentPane(), this.getPanZoomCanvas().getContentPane().getMatrix, this.getPanZoomCanvas().getContentPane().setMatrix, newMat);
+        playable
+          .getAnimator()
+          .addProp(
+            dvt.Animator.TYPE_MATRIX,
+            this.getPanZoomCanvas().getContentPane(),
+            this.getPanZoomCanvas().getContentPane().getMatrix,
+            this.getPanZoomCanvas().getContentPane().setMatrix,
+            newMat
+          );
       }
-      var newNodes = oldDiagramState.IsPartialUpdate ? oldDiagramState.getNewNodes() : this.GetRootNodeObjects();
-      var newLinks = oldDiagramState.IsPartialUpdate ? oldDiagramState.getNewLinks() : this.GetAllLinkObjects();
+      var newNodes = oldDiagramState.IsPartialUpdate
+        ? oldDiagramState.getNewNodes()
+        : this.GetRootNodeObjects();
+      var newLinks = oldDiagramState.IsPartialUpdate
+        ? oldDiagramState.getNewLinks()
+        : this.GetAllLinkObjects();
       animationHandler.constructAnimation(oldDiagramState.getNodes(), newNodes);
       animationHandler.constructAnimation(oldDiagramState.getLinks(), newLinks);
       animationHandler.constructAnimation([oldDiagramState.Overview], [this.Overview]);
@@ -9581,18 +10163,32 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @private
      */
     _resolveDeferredData(dataSource, nodeData) {
-      if (nodeData == null || this._isNodeDisclosed(nodeData['id']) || this._discoverLinks(dataSource, nodeData)) {
+      if (
+        nodeData == null ||
+        this._isNodeDisclosed(nodeData['id']) ||
+        this._discoverLinks(dataSource, nodeData)
+      ) {
         var childData = dataSource['getData'](nodeData);
         this._deferredObjCount++;
         var thisRef = this;
         var renderCount = this._renderCount;
         childData.then(
-            (value) => {
-              thisRef._renderDeferredData(renderCount, dataSource, nodeData ? nodeData : thisRef.getOptions(), value);
-            },
-            (reason) => {
-              thisRef._renderDeferredData(renderCount, dataSource, nodeData ? nodeData : thisRef.getOptions(), null);
-            }
+          (value) => {
+            thisRef._renderDeferredData(
+              renderCount,
+              dataSource,
+              nodeData ? nodeData : thisRef.getOptions(),
+              value
+            );
+          },
+          (reason) => {
+            thisRef._renderDeferredData(
+              renderCount,
+              dataSource,
+              nodeData ? nodeData : thisRef.getOptions(),
+              null
+            );
+          }
         );
       }
     }
@@ -9621,8 +10217,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
               this._resolveDeferredData(dataSource, this._nodesToResolve.shift());
             }
           }
-        }
-        else {
+        } else {
           nodeData['nodes'] = null;
         }
         this._deferredObjCount--;
@@ -9642,8 +10237,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     _findUnresolvedLinks(data, deepWalk) {
       // do nothing if the component does not display promoted links
       // or if data came from data provider and promoted link behavior is 'lazy'
-      if (this.getOptions()['promotedLinkBehavior'] === 'none' ||
-          (this.isDataProviderMode() && this.getOptions()['promotedLinkBehavior'] === 'lazy')) {
+      if (
+        this.getOptions()['promotedLinkBehavior'] === 'none' ||
+        (this.isDataProviderMode() && this.getOptions()['promotedLinkBehavior'] === 'lazy')
+      ) {
         return;
       }
 
@@ -9689,8 +10286,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _discoverLinks(dataSource, containerData) {
       var behaviorValue = this.getOptions()['promotedLinkBehavior'];
-      if (behaviorValue === 'none' || this._unresolvedNodeIds.length == 0 ||
-          (behaviorValue == 'lazy' && dataSource['getChildCount'](containerData) <= 0)) {
+      if (
+        behaviorValue === 'none' ||
+        this._unresolvedNodeIds.length == 0 ||
+        (behaviorValue == 'lazy' && dataSource['getChildCount'](containerData) <= 0)
+      ) {
         return false;
       }
       return dataSource['getDescendantsConnectivity'](containerData) != 'disjoint';
@@ -9703,8 +10303,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @private
      */
     _setDataSourceListeners(dataSource, attach) {
-      if (!dataSource)
-        return;
+      if (!dataSource) return;
       if (!this._dataSourceAddEventHandler) {
         this._dataSourceAddEventHandler = this.handleDataSourceChangeEvent.bind(this, 'add');
       }
@@ -9718,8 +10317,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         dataSource['on']('add', this._dataSourceAddEventHandler);
         dataSource['on']('remove', this._dataSourceRemoveEventHandler);
         dataSource['on']('change', this._dataSourceChangeEventHandler);
-      }
-      else {
+      } else {
         dataSource['off']('add', this._dataSourceAddEventHandler);
         dataSource['off']('remove', this._dataSourceRemoveEventHandler);
         dataSource['off']('change', this._dataSourceChangeEventHandler);
@@ -9750,14 +10348,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @private
      */
     _fetchDataProviderData(rootDataProvider, nodesArray) {
-
-      var collapsedContainers = this.isTreeDataProvider() ? DvtDiagramDataUtils.GetCollapsedContainers(rootDataProvider, nodesArray, []) : [];
+      var collapsedContainers = this.isTreeDataProvider()
+        ? DvtDiagramDataUtils.GetCollapsedContainers(rootDataProvider, nodesArray, [])
+        : [];
 
       if (collapsedContainers.length > 0) {
         var thisRef = this;
 
         var containerChildDataPromises = collapsedContainers.map((containerNode) => {
-          return thisRef.Options._fetchDataHandler(rootDataProvider, thisRef._context.KeySetImpl([containerNode.id]), containerNode, containerNode.id);
+          return thisRef.Options._fetchDataHandler(
+            rootDataProvider,
+            thisRef._context.KeySetImpl([containerNode.id]),
+            containerNode,
+            containerNode.id
+          );
         });
 
         var renderCount = this._renderCount;
@@ -9782,14 +10386,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             }
             if (thisRef._unresolvedNodeIds.length > 0) {
               thisRef._fetchDataProviderData(rootDataProvider, nodesArray);
-            }
-            else {
+            } else {
               thisRef.RenderComponentInternal();
             }
           }
         });
-      }
-      else {
+      } else {
         this.RenderComponentInternal();
       }
     }
@@ -9823,39 +10425,39 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         this._renderCount++;
         if (this.isDataProviderMode()) {
           // find out if the component should discover additional nodes to render promoted links
-          this._findUnresolvedLinks({ nodes: this.Options['nodes'], links: this.Options['links'] }, true);
+          this._findUnresolvedLinks(
+            { nodes: this.Options['nodes'], links: this.Options['links'] },
+            true
+          );
           var nodesToSearch = this._unresolvedNodeIds.length > 0 ? this.Options['nodes'].slice() : [];
           this._fetchDataProviderData(this.Options['nodeData'], nodesToSearch);
-        }
-        else if (this.getOptions()['data']) {
+        } else if (this.getOptions()['data']) {
           var dataSource = this.getOptions()['data'];
           this._setDataSourceListeners(dataSource, false);
           this._resolveDeferredData(dataSource, null);
-        }
-        else {
+        } else {
           this.RenderComponentInternal();
         }
-      }
-      else if (this._deferredObjCount === 0) {
+      } else if (this._deferredObjCount === 0) {
         this.RenderComponentInternal();
       }
     }
 
     /**
-   * @protected
-   * Called by the renderComponent() method. Used to initialize or reinitialize the component before rendering.
-   */
-  InitComponentInternal() {
-    // Create the event handler and add event listeners
-    var pzc = this.getPanZoomCanvas();
-    pzc.setMinZoom(this.getMinZoom());
-    pzc.setMaxZoom(this.getMaxZoom());
-    pzc.setAnimDur(this.getAnimDur());
-    pzc.getContentPane().addChild(this._linksPane);
-    pzc.getContentPane().addChild(this._nodesPane);
-    pzc.getContentPane().addChild(this._topPane);
-    this._touchEventPane && pzc.getContentPane().addChild(this._touchEventPane);
-  }
+     * @protected
+     * Called by the renderComponent() method. Used to initialize or reinitialize the component before rendering.
+     */
+    InitComponentInternal() {
+      // Create the event handler and add event listeners
+      var pzc = this.getPanZoomCanvas();
+      pzc.setMinZoom(this.getMinZoom());
+      pzc.setMaxZoom(this.getMaxZoom());
+      pzc.setAnimDur(this.getAnimDur());
+      pzc.getContentPane().addChild(this._linksPane);
+      pzc.getContentPane().addChild(this._nodesPane);
+      pzc.getContentPane().addChild(this._topPane);
+      this._touchEventPane && pzc.getContentPane().addChild(this._touchEventPane);
+    }
 
     /**
      * Renders a Diagram component after it was initialized.
@@ -9873,32 +10475,31 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       emptyDiagram = this._nodes.size === 0;
       if (!emptyDiagram) {
         // the child is going to be removed by  _processContent() function or layout failure function
-        if (!this.contains(this._oldPanZoomCanvas))
-          this.addChild(this._oldPanZoomCanvas);
+        if (!this.contains(this._oldPanZoomCanvas)) this.addChild(this._oldPanZoomCanvas);
 
         var res = this.layout();
         var thisRef = this;
         var renderCount = this._renderCount;
         res.then(
-            () => {
-              if (renderCount === thisRef._renderCount) {
-                thisRef._processContent(emptyDiagram);
+          () => {
+            if (renderCount === thisRef._renderCount) {
+              thisRef._processContent(emptyDiagram);
+            }
+          }, //success
+          () => {
+            if (renderCount === thisRef._renderCount) {
+              if (thisRef._oldPanZoomCanvas) {
+                thisRef.removeChild(thisRef._oldPanZoomCanvas);
+                thisRef._oldPanZoomCanvas.destroy();
+                thisRef._oldPanZoomCanvas = null;
               }
-            }, //success
-            () => {
-              if (renderCount === thisRef._renderCount) {
-                if (thisRef._oldPanZoomCanvas) {
-                  thisRef.removeChild(thisRef._oldPanZoomCanvas);
-                  thisRef._oldPanZoomCanvas.destroy();
-                  thisRef._oldPanZoomCanvas = null;
-                }
-                thisRef._bRendered = true;
-                this._currentPanZoomState = null;
-              }
-            } //failure
+              thisRef._bRendered = true;
+              this._currentPanZoomState = null;
+            }
+          } //failure
         );
-      }
-      else { //empty diagram - nothing to layout, might need to run data change animation
+      } else {
+        //empty diagram - nothing to layout, might need to run data change animation
         this._processContent(emptyDiagram);
       }
     }
@@ -9932,11 +10533,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
 
       // add overview window
-      if (!this.Overview  && this.Options.overview && this.Options.overview.rendered == 'on') {
+      if (!this.Overview && this.Options.overview && this.Options.overview.rendered == 'on') {
         this.Overview = new DvtDiagramOverview(this);
         DvtDiagramOverviewUtils.ConfigureOverviewWindow(this, this.Overview);
-      }
-      else if (this.Overview) {
+      } else if (this.Overview) {
         DvtDiagramOverviewUtils.UpdateOverviewWindow(this, this.Overview);
       }
 
@@ -9950,14 +10550,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       if (!this._bRendered && animationOnDisplay !== 'none' && !this._oldDataAnimState) {
         //initial animation
-        this.Animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(),
-                        dvt.BlackBoxAnimationHandler.ALPHA_FADE, this, null,
-                        DvtDiagramStyleUtils.getAnimDur(this));
-      }
-      else if (animationOnDataChange !== 'none' && this._oldDataAnimState) {
+        this.Animation = dvt.BlackBoxAnimationHandler.getInAnimation(
+          this.getCtx(),
+          dvt.BlackBoxAnimationHandler.ALPHA_FADE,
+          this,
+          null,
+          DvtDiagramStyleUtils.getAnimDur(this)
+        );
+      } else if (animationOnDataChange !== 'none' && this._oldDataAnimState) {
         this._deleteContainer = new dvt.Container(this.getCtx(), 'g', 'Delete Container');
         this.addChild(this._deleteContainer);
-        var ah = new DvtDiagramDataAnimationHandler(this.getCtx(), this._deleteContainer, this._oldDataAnimState, this);
+        var ah = new DvtDiagramDataAnimationHandler(
+          this.getCtx(),
+          this._deleteContainer,
+          this._oldDataAnimState,
+          this
+        );
         ah.constructAnimation([this._oldDataAnimState], [this]);
         this.Animation = ah.getAnimation();
       }
@@ -10000,17 +10608,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Fit and position diagram content into container if necessary
      * @param {Object} panZoomState optional the panZoomState to set the diagram to.
      */
-     panZoom(panZoomState) {
+    panZoom(panZoomState) {
       var pzc = this.getPanZoomCanvas();
       var offset = this.getLayoutOffset();
       if (!panZoomState) {
         panZoomState = this.GetLayoutPanZoomState();
-        panZoomState = panZoomState ? panZoomState :
-          {zoom: 0, centerX: null, centerY: null};
+        panZoomState = panZoomState ? panZoomState : { zoom: 0, centerX: null, centerY: null };
       }
       var zoom = panZoomState['zoom'];
-      var centerX = panZoomState['centerX'] ;
-      var centerY = panZoomState['centerY'] ;
+      var centerX = panZoomState['centerX'];
+      var centerY = panZoomState['centerY'];
 
       var panningEnabled = this.IsPanningEnabled();
       var zoomingEnabled = this.IsZoomingEnabled();
@@ -10023,15 +10630,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           this.AdjustMinZoom();
           zoom = pzc.ConstrainZoom(zoom);
           pzc.zoomTo(zoom, 0, 0, null, true);
-          if (centerX !== null|| centerY !== null) {
-            pzc.panTo(this.Width/2 - (centerX + offset.x)*zoom, this.Height/2 - (centerY + offset.y)*zoom);
+          if (centerX !== null || centerY !== null) {
+            pzc.panTo(
+              this.Width / 2 - (centerX + offset.x) * zoom,
+              this.Height / 2 - (centerY + offset.y) * zoom
+            );
           } else {
             pzc.center(null, this._cachedViewBounds);
           }
         } else {
           this._zoomToFit();
-          if (centerX !== null|| centerY !== null) {
-            pzc.panTo(this.Width/2 - (centerX + offset.x)*zoom, this.Height/2 - (centerY + offset.y)*zoom);
+          if (centerX !== null || centerY !== null) {
+            pzc.panTo(
+              this.Width / 2 - (centerX + offset.x) * zoom,
+              this.Height / 2 - (centerY + offset.y) * zoom
+            );
           }
         }
       } finally {
@@ -10039,7 +10652,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         pzc.setPanningEnabled(panningEnabled);
         pzc.setZoomingEnabled(zoomingEnabled);
       }
-    };
+    }
 
     /**
      * Process zoom to fit
@@ -10049,8 +10662,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (!this._bRendered) {
         this.AdjustMinZoom();
         pzc.zoomToFit(null, this._cachedViewBounds);
-      }
-      else if (this.IsResize() || this._partialUpdate) {
+      } else if (this.IsResize() || this._partialUpdate) {
         // Update the min zoom if it's unspecified
         var viewBounds = this.AdjustMinZoom();
         var fitBounds = viewBounds ? viewBounds : this._cachedViewBounds;
@@ -10072,14 +10684,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (!this._emptyTextDisplay) {
           // Create the text and position it in the middle of the available space
           this._emptyTextDisplay = this.CreateEmptyText(this.getEmptyText());
-        }
-        else {
+        } else {
           this._emptyTextDisplay.setX(this.Width / 2);
           this._emptyTextDisplay.setY(this.Height / 2);
-          dvt.TextUtils.fitText(this._emptyTextDisplay, this.getWidth() - 2 * dvt.TextUtils.EMPTY_TEXT_BUFFER, Infinity, this);
+          dvt.TextUtils.fitText(
+            this._emptyTextDisplay,
+            this.getWidth() - 2 * dvt.TextUtils.EMPTY_TEXT_BUFFER,
+            Infinity,
+            this
+          );
         }
-      }
-      else {
+      } else {
         if (this._emptyTextDisplay) {
           var parent = this._emptyTextDisplay.getParent();
           if (parent) {
@@ -10098,7 +10713,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     CreateEmptyText(text) {
       var options = this.getOptions();
-      return this.renderEmptyText(this, text, new dvt.Rectangle(0, 0, this.getWidth(), this.getHeight()), this.getEventManager(), options['_statusMessageStyle']);
+      return this.renderEmptyText(
+        this,
+        text,
+        new dvt.Rectangle(0, 0, this.getWidth(), this.getHeight()),
+        this.getEventManager(),
+        options['_statusMessageStyle']
+      );
     }
 
     /**
@@ -10130,7 +10751,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this.SetPanningEnabled(this.Options['panning'] != 'none');
       this.SetZoomingEnabled(this.Options['zooming'] != 'none');
       this.setSelectionMode(this.Options['selectionMode']);
-      this.setEmptyText(this.Options['emptyText'] ? this.Options['emptyText'] : this.Options.translations.labelNoData);
+      this.setEmptyText(
+        this.Options['emptyText'] ? this.Options['emptyText'] : this.Options.translations.labelNoData
+      );
     }
 
     /**
@@ -10139,7 +10762,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {object} The object containing defaults for this component.
      */
     static getDefaults(skin) {
-      return (new DvtDiagramDefaults()).getDefaults(skin);
+      return new DvtDiagramDefaults().getDefaults(skin);
     }
 
     /**
@@ -10227,22 +10850,27 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     setSelectionMode(selectionMode) {
       if (selectionMode == 'single')
-        this._selectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_SINGLE);
+        this._selectionHandler = new dvt.SelectionHandler(
+          this.getCtx(),
+          dvt.SelectionHandler.TYPE_SINGLE
+        );
       else if (selectionMode == 'multiple')
-        this._selectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_MULTIPLE);
-      else
-        this._selectionHandler = null;
+        this._selectionHandler = new dvt.SelectionHandler(
+          this.getCtx(),
+          dvt.SelectionHandler.TYPE_MULTIPLE
+        );
+      else this._selectionHandler = null;
 
       // Event Handler delegates to other handlers
       this.getEventManager().setSelectionHandler(this._selectionHandler);
     }
 
     /**
-      *  Returns whether selecton is supported on the diagram.
-      *  @return {boolean} True if selection is turned on for the nbox and false otherwise.
-      */
+     *  Returns whether selecton is supported on the diagram.
+     *  @return {boolean} True if selection is turned on for the nbox and false otherwise.
+     */
     isSelectionSupported() {
-      return (this._selectionHandler ? true : false);
+      return this._selectionHandler ? true : false;
     }
 
     /**
@@ -10309,14 +10937,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var type = event['type'];
       if (type == 'categoryHighlight') {
         this._processHighlighting(true);
-      }
-      else if (type == 'selection') {
+      } else if (type == 'selection') {
         this.getOptions()['selection'] = event['selection'];
-      }
-      else if (type == 'overview') {
+      } else if (type == 'overview') {
         var subtype = event.subtype;
-        if (subtype == 'scrollPos' ||
-            subtype == 'scrollTime') {
+        if (subtype == 'scrollPos' || subtype == 'scrollTime') {
           this.Overview.HandleViewportChange(event);
         } else if (subtype == 'scrollEnd') {
           this.getPanZoomCanvas().writebackPan();
@@ -10334,14 +10959,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {array} nodesData an array of node data objects
      */
     prepareNodes(nodesData) {
-      if (!nodesData)
-        return;
+      if (!nodesData) return;
       this._prepareNodes(null, nodesData);
 
       // on custom elements expanded is as an ojKeySet, on widgets it is an array
       // if expanded is an array, update internal array of disclosed nodes if neccessary - initial rendering or option change case
       var origExpanded = this.getOptions()['expanded'];
-      if (!origExpanded || (!(origExpanded['has']) && !this.DisclosedNodes)) {
+      if (!origExpanded || (!origExpanded['has'] && !this.DisclosedNodes)) {
         var resp = origExpanded === 'all' ? this._arNodeIds.slice(0) : origExpanded;
         this.DisclosedNodes = !origExpanded ? [] : resp;
       }
@@ -10352,8 +10976,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {array} linksData an array of link data objects
      */
     renderLinks(linksData) {
-      if (!linksData)
-        return;
+      if (!linksData) return;
 
       var linkDefaults = DvtDiagramStyleUtils.getLinkDefaultStyles(this, 'linkDefaults');
       for (var i = 0; i < linksData.length; i++) {
@@ -10416,7 +11039,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     layout() {
       var layoutFunc = this.getOptions()['layout'];
       var layoutContext = this._getLayoutContext();
-      layoutContext.setDirtyContext(new (this.getCtx()).ojMap());
+      layoutContext.setDirtyContext(new (this.getCtx().ojMap)());
 
       var panZoomState = this._currentPanZoomState;
       if (panZoomState) {
@@ -10454,27 +11077,25 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         this.setAlphas(0);
         var renderCount = this._renderCount;
         promise.then(
-            (response) => {
-              if (thisRef._renderCount === renderCount || thisRef.IsResize()) {
-                thisRef.setAlphas(1.0);
-                if (thisRef._oldDataAnimState)
-                  thisRef._oldDataAnimState.updateStateFromLayoutContext(layoutContext);
-                //render nodes if they not rendered yet
-                var rootNodesCount = layoutContext.getNodeCount();
-                for (var i = 0; i < rootNodesCount; i++) {
-                  var rootNode = layoutContext.getNodeByIndex(i);
-                  thisRef.renderNodeFromContext(rootNode, true);
-                }
-                thisRef.ApplyLayoutContext(layoutContext, true);
+          (response) => {
+            if (thisRef._renderCount === renderCount || thisRef.IsResize()) {
+              thisRef.setAlphas(1.0);
+              if (thisRef._oldDataAnimState)
+                thisRef._oldDataAnimState.updateStateFromLayoutContext(layoutContext);
+              //render nodes if they not rendered yet
+              var rootNodesCount = layoutContext.getNodeCount();
+              for (var i = 0; i < rootNodesCount; i++) {
+                var rootNode = layoutContext.getNodeByIndex(i);
+                thisRef.renderNodeFromContext(rootNode, true);
               }
-            },
-            (error) => {
+              thisRef.ApplyLayoutContext(layoutContext, true);
             }
+          },
+          (error) => {}
         );
         return promise;
-      }
-      else {
-        this.Log('Diagram: Layout function is not defined', 1);// LEVEL_ERROR
+      } else {
+        this.Log('Diagram: Layout function is not defined', 1); // LEVEL_ERROR
       }
     }
 
@@ -10521,7 +11142,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     GetAllLinksMap() {
-      var linksMap = new (this.getCtx()).ojMap();
+      var linksMap = new (this.getCtx().ojMap)();
       if (this._links) {
         this._links.forEach((link, linkId, map) => {
           linksMap.set(linkId, link);
@@ -10559,7 +11180,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     GetAllNodesMap() {
-      var nodesMap = new (this.getCtx()).ojMap();
+      var nodesMap = new (this.getCtx().ojMap)();
       if (this._nodes) {
         this._nodes.forEach((value, key, map) => {
           nodesMap.set(key, value);
@@ -10615,9 +11236,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _setPanZoomState(x, y, zoom) {
       var offset = this.getLayoutOffset();
-      var centerX = x!== null && zoom ? (this.Width*.5 - x)/zoom - offset.x: this.Options['panZoomState']['centerX'];
-      var centerY = y!== null && zoom ? (this.Height*.5 - y)/zoom - offset.y: this.Options['panZoomState']['centerY'];
-      this.dispatchEvent(new dvt.EventFactory.newOptionChangeEvent('panZoomState', {'zoom': zoom, 'centerX': centerX, 'centerY': centerY}));
+      var centerX =
+        x !== null && zoom
+          ? (this.Width * 0.5 - x) / zoom - offset.x
+          : this.Options['panZoomState']['centerX'];
+      var centerY =
+        y !== null && zoom
+          ? (this.Height * 0.5 - y) / zoom - offset.y
+          : this.Options['panZoomState']['centerY'];
+      this.dispatchEvent(
+        new dvt.EventFactory.newOptionChangeEvent('panZoomState', {
+          zoom: zoom,
+          centerX: centerX,
+          centerY: centerY
+        })
+      );
     }
 
     /**
@@ -10625,7 +11258,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     HandlePanEvent(event) {
       super.HandlePanEvent(event);
-      if(event.subtype === 'panned') {
+      if (event.subtype === 'panned') {
         this._setPanZoomState(event.newX, event.newY, event.zoom);
       }
       if (this.Overview) {
@@ -10688,8 +11321,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var startId = link.getStartId();
         var endId = link.getEndId();
 
-        if ((startId == nodeId || endId == nodeId) && link.getVisible())
-          links.push(link);
+        if ((startId == nodeId || endId == nodeId) && link.getVisible()) links.push(link);
       });
       return links;
     }
@@ -10700,8 +11332,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _processInitialSelections() {
       var selection = this.Options['selection'];
-      if (!selection)
-        return;
+      if (!selection) return;
       if (this.isSelectionSupported()) {
         var targets = [];
         this._nodes.forEach((node, nodeId, map) => {
@@ -10720,7 +11351,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @private
      */
     _processHighlighting(handleEventListeners) {
-
       //  - edge: highlight blinks on hover over node label positioned over the link
       // We get extra mouseover/mouseout events as we reparent diagram objects in _updateAlphas()
       // the problem is more prominent in IE
@@ -10743,15 +11373,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
 
       var bAnyMatched = this.Options['highlightMatch'] == 'any';
-      this._highlightedObjects = new (this.getCtx()).ojMap();
+      this._highlightedObjects = new (this.getCtx().ojMap)();
       var highlightedNodes = [];
       var thisRef = this;
       //find highlighted nodes
       this._nodes.forEach((node, nodeId, map) => {
-        var match = bAnyMatched ? dvt.ArrayUtils.hasAnyItem(node.getCategories(), categories) :
-                    dvt.ArrayUtils.hasAllItems(node.getCategories(), categories);
+        var match = bAnyMatched
+          ? dvt.ArrayUtils.hasAnyItem(node.getCategories(), categories)
+          : dvt.ArrayUtils.hasAllItems(node.getCategories(), categories);
         if (match) {
-          thisRef._highlightedObjects.set(nodeId,node);
+          thisRef._highlightedObjects.set(nodeId, node);
           highlightedNodes.push(node);
         }
       });
@@ -10760,10 +11391,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       //find highlighted links
       var highlightedLinks = [];
       this._links.forEach((link, linkId, map) => {
-        var match = bAnyMatched ? dvt.ArrayUtils.hasAnyItem(link.getCategories(), categories) :
-                    dvt.ArrayUtils.hasAllItems(link.getCategories(), categories);
+        var match = bAnyMatched
+          ? dvt.ArrayUtils.hasAnyItem(link.getCategories(), categories)
+          : dvt.ArrayUtils.hasAllItems(link.getCategories(), categories);
         if (match) {
-          thisRef._highlightedObjects.set(linkId,link);
+          thisRef._highlightedObjects.set(linkId, link);
           highlightedLinks.push(link);
         }
       });
@@ -10778,7 +11410,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       // Reattach the listenes after updating alphas. The timeout seems to alow extra time to finish
       // a browser reparenting highlighted objects in DOM
       if (handleEventListeners) {
-        setTimeout(() => {thisRef.getEventManager().addListeners(thisRef);}, 0);
+        setTimeout(() => {
+          thisRef.getEventManager().addListeners(thisRef);
+        }, 0);
       }
     }
 
@@ -10790,9 +11424,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     _processNodeConnections(highlightedNodes) {
       var nodeHighlightMode = this.Options['nodeHighlightMode'];
       if (nodeHighlightMode != 'node') {
-
-        var incoming = (nodeHighlightMode == 'nodeAndIncomingLinks' || nodeHighlightMode == 'nodeAndLinks');
-        var outgoing = (nodeHighlightMode == 'nodeAndOutgoingLinks' || nodeHighlightMode == 'nodeAndLinks');
+        var incoming =
+          nodeHighlightMode == 'nodeAndIncomingLinks' || nodeHighlightMode == 'nodeAndLinks';
+        var outgoing =
+          nodeHighlightMode == 'nodeAndOutgoingLinks' || nodeHighlightMode == 'nodeAndLinks';
         var highlightedLinks = [];
 
         for (var nodeIdx = 0; nodeIdx < highlightedNodes.length; nodeIdx++) {
@@ -10824,7 +11459,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
     }
 
-
     /**
      * Highlight objects by setting alpha on links and nodes panes and
      * bringing highlighted objects to either content pane or corresponding link/nodes pane
@@ -10838,33 +11472,29 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         return;
       }
       //is diagram flat or does it have containers - don't reparent objects for container case
-      if (this._arNodeIds.length == this._arRootIds.length) { //flat
+      if (this._arNodeIds.length == this._arRootIds.length) {
+        //flat
         var highlightAlpha = bHighlight ? this.Options['styleDefaults']['_highlightAlpha'] : 1.0;
         var linksPane = this.getLinksPane();
         var nodesPane = this.getNodesPane();
 
-        if (highlightedObjects.size > objectsTotal * .5 ) {
+        if (highlightedObjects.size > objectsTotal * 0.5) {
           // keep highlighted objects in place - move other objects to the faded bottom pane
           var bottomPane = this.getBottomPane();
           bottomPane.setAlpha(highlightAlpha);
 
           this._links.forEach((link, id, map) => {
             var highlighted = highlightedObjects.get(id);
-            if (!highlighted && bHighlight)
-              bottomPane.addChild(link);
-            else if (!highlighted)
-              linksPane.addChild(link);
+            if (!highlighted && bHighlight) bottomPane.addChild(link);
+            else if (!highlighted) linksPane.addChild(link);
           });
 
           this._nodes.forEach((node, id, map) => {
             var highlighted = highlightedObjects.get(id);
-            if (!highlighted && bHighlight)
-              bottomPane.addChild(node);
-            else if (!highlighted)
-              nodesPane.addChild(node);
+            if (!highlighted && bHighlight) bottomPane.addChild(node);
+            else if (!highlighted) nodesPane.addChild(node);
           });
-        }
-        else {
+        } else {
           var topPane = this.getTopPane();
           //update alphas on link and node panes
           linksPane.setAlpha(highlightAlpha);
@@ -10874,28 +11504,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           var highlightedLinksArray = [];
           var highlightedNodesArray = [];
           highlightedObjects.forEach((item, id, map) => {
-            if (item instanceof DvtDiagramLink)
-              highlightedLinksArray.push(item);
-            else if (item instanceof DvtDiagramNode)
-              highlightedNodesArray.push(item);
+            if (item instanceof DvtDiagramLink) highlightedLinksArray.push(item);
+            else if (item instanceof DvtDiagramNode) highlightedNodesArray.push(item);
           });
 
           for (var elt = 0; elt < highlightedLinksArray.length; elt++) {
-            if (bHighlight)
-              topPane.addChild(highlightedLinksArray[elt]);
-            else
-              linksPane.addChild(highlightedLinksArray[elt]);
+            if (bHighlight) topPane.addChild(highlightedLinksArray[elt]);
+            else linksPane.addChild(highlightedLinksArray[elt]);
           }
           for (var elt1 = 0; elt1 < highlightedNodesArray.length; elt1++) {
-            if (bHighlight)
-              topPane.addChild(highlightedNodesArray[elt1]);
-            else
-              nodesPane.addChild(highlightedNodesArray[elt1]);
+            if (bHighlight) topPane.addChild(highlightedNodesArray[elt1]);
+            else nodesPane.addChild(highlightedNodesArray[elt1]);
           }
         }
-      }
-      else {  //has containers
-        if (bHighlight) { //highlight objects
+      } else {
+        //has containers
+        if (bHighlight) {
+          //highlight objects
           highlightedObjects.forEach((item, id, map) => {
             item.highlight(true);
           });
@@ -10909,8 +11534,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
               link.highlight(false);
             }
           });
-        }
-        else { //remove highlight
+        } else {
+          //remove highlight
           this._nodes.forEach((node, nodeId, map) => {
             node.highlight(true);
           });
@@ -10947,11 +11572,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {DvtDiagramAutomation} the automation object
      */
     getAutomation() {
-      if (!this.Automation)
-        this.Automation = new DvtDiagramAutomation(this);
+      if (!this.Automation) this.Automation = new DvtDiagramAutomation(this);
       return this.Automation;
     }
-
 
     /**
      * Logs diagram messages
@@ -10963,14 +11586,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var logger = this.getOptions()['_logger'];
       if (logger) {
         switch (level) {
-          case 1: if (logger.error) logger.error(message);
-                  break;
-          case 2: if (logger.warn) logger.warn(message);
-                  break;
-          case 3: if (logger.info) logger.info(message);
-                  break;
-          default: if (logger.log) logger.log(message);
-                  break;
+          case 1:
+            if (logger.error) logger.error(message);
+            break;
+          case 2:
+            if (logger.warn) logger.warn(message);
+            break;
+          case 3:
+            if (logger.info) logger.info(message);
+            break;
+          default:
+            if (logger.log) logger.log(message);
+            break;
         }
       }
     }
@@ -10982,8 +11609,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     processDefaultHoverEffect(nodeId, hovered) {
       var node = this.getNodeById(nodeId);
-      if (node)
-        node.processDefaultHoverEffect(hovered);
+      if (node) node.processDefaultHoverEffect(hovered);
     }
 
     /**
@@ -10993,8 +11619,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     processDefaultSelectionEffect(nodeId, selected) {
       var node = this.getNodeById(nodeId);
-      if (node)
-        node.processDefaultSelectionEffect(selected);
+      if (node) node.processDefaultSelectionEffect(selected);
     }
 
     /**
@@ -11004,8 +11629,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     processDefaultFocusEffect(nodeId, focused) {
       var node = this.getNodeById(nodeId);
-      if (node)
-        node.processDefaultFocusEffect(focused);
+      if (node) node.processDefaultFocusEffect(focused);
     }
 
     /**
@@ -11016,12 +11640,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     updateNodeDims(nodeContext) {
       if (!nodeContext.IsRendered) {
         this.renderNodeFromContext(nodeContext, true);
-      }
-      else {
+      } else {
         var node = this.getNodeById(nodeContext.getId());
-        nodeContext.setBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLayoutBounds(true)));
-        nodeContext.setContentBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds(true)));
-        nodeContext.setLabelBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLabelBounds(true)));
+        nodeContext.setBounds(
+          DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLayoutBounds(true))
+        );
+        nodeContext.setContentBounds(
+          DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds(true))
+        );
+        nodeContext.setLabelBounds(
+          DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLabelBounds(true))
+        );
       }
     }
 
@@ -11039,8 +11668,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           var childNode = childNodes[i];
           this.renderLeafNodeFromContext(childNode);
         }
-      }
-      else {
+      } else {
         this.renderNodeFromContext(nodeContext, false);
       }
     }
@@ -11056,8 +11684,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (node.isDisclosed()) {
           //render all child nodes and apply layout context
           var layoutContext = this.CreateEmptyLayoutContext();
-          layoutContext.setDirtyContext(nodeContext.LayoutContext ?
-              nodeContext.LayoutContext.getDirtyContext() : null);
+          layoutContext.setDirtyContext(
+            nodeContext.LayoutContext ? nodeContext.LayoutContext.getDirtyContext() : null
+          );
           if (this._oldDataAnimState)
             this._oldDataAnimState.updateStateFromLayoutContext(layoutContext);
           var childNodes = nodeContext.getChildNodes();
@@ -11080,9 +11709,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var padding = node.isDisclosed() ? node.getContainerPadding() : null;
         if (padding)
           nodeContext.setContainerPadding(padding.top, padding.right, padding.bottom, padding.left);
-        nodeContext.setBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLayoutBounds(forceDims)));
-        nodeContext.setContentBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds(forceDims)));
-        nodeContext.setLabelBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLabelBounds(forceDims)));
+        nodeContext.setBounds(
+          DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLayoutBounds(forceDims))
+        );
+        nodeContext.setContentBounds(
+          DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds(forceDims))
+        );
+        nodeContext.setLabelBounds(
+          DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLabelBounds(forceDims))
+        );
         nodeContext.IsRendered = true;
       }
     }
@@ -11095,8 +11730,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @private
      */
     _prepareNodes(parent, nodesData) {
-      if (!nodesData)
-        return;
+      if (!nodesData) return;
 
       var nodeDefaults = DvtDiagramStyleUtils.getNodeDefaultStyles(this);
       for (var i = 0; i < nodesData.length; i++) {
@@ -11106,8 +11740,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (parent) {
           parent.addChildNodeId(nodeId);
           node.setGroupId(parent.getId());
-        }
-        else {
+        } else {
           this._arRootIds.push(nodeId);
         }
         this._arNodeIds.push(nodeId);
@@ -11116,17 +11749,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           if (this._isNodeDisclosed(nodeId)) {
             node.setDisclosed(true);
             this._prepareNodes(node, nodeData['nodes']);
-          }
-          else {
+          } else {
             this._addToCollapsedArray(node);
           }
         }
 
         if (!node.isHidden()) {
-          if (parent && parent.GetChildNodePane())
-            parent.GetChildNodePane().addChild(node);
-          else
-            this.getNodesPane().addChild(node);
+          if (parent && parent.GetChildNodePane()) parent.GetChildNodePane().addChild(node);
+          else this.getNodesPane().addChild(node);
           this._nodes.set(nodeId, node);
         }
       }
@@ -11139,7 +11769,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     setNodeDisclosed(nodeId, disclosed) {
       if (disclosed != this._isNodeDisclosed(nodeId))
-        this.dispatchEvent(new dvt.EventFactory.newEvent(disclosed ? 'beforeExpand' : 'beforeCollapse', nodeId));
+        this.dispatchEvent(
+          new dvt.EventFactory.newEvent(disclosed ? 'beforeExpand' : 'beforeCollapse', nodeId)
+        );
     }
 
     /**
@@ -11149,14 +11781,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     expand(nodeId) {
       var triggerEvent = false;
       var expanded = this.getOptions()['expanded'];
-      if (expanded && expanded['has'] && !expanded['has'](nodeId)) { // key set - component created a custom element
+      if (expanded && expanded['has'] && !expanded['has'](nodeId)) {
+        // key set - component created a custom element
         triggerEvent = true;
         expanded = expanded['add']([nodeId]);
-        this.applyOptions({'expanded': expanded}, this.Defaults.getNoCloneObject());
-      }
-      else { // rely internally on this.DisclosedNodes - component created as a widget
-        if (!this.DisclosedNodes)
-          this.DisclosedNodes = [];
+        this.applyOptions({ expanded: expanded }, this.Defaults.getNoCloneObject());
+      } else {
+        // rely internally on this.DisclosedNodes - component created as a widget
+        if (!this.DisclosedNodes) this.DisclosedNodes = [];
         var index = this.DisclosedNodes.indexOf(nodeId);
         if (index < 0) {
           this.DisclosedNodes.push(nodeId);
@@ -11172,15 +11804,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           // fetch data from data provider
           var thisRef = this;
           var renderCount = this._renderCount;
-          var fetchDataPromise = this.getOptions()._fetchDataHandler(this.getOptions().nodeData, expanded, nodeOption, nodeId);
+          var fetchDataPromise = this.getOptions()._fetchDataHandler(
+            this.getOptions().nodeData,
+            expanded,
+            nodeOption,
+            nodeId
+          );
           fetchDataPromise.then((value) => {
             if (renderCount === thisRef._renderCount) {
               thisRef.render(thisRef.getOptions(), thisRef.Width, thisRef.Height);
               thisRef.dispatchEvent(new dvt.EventFactory.newEvent('expand', nodeId));
             }
           });
-        }
-        else {
+        } else {
           this.render(this.getOptions(), this.Width, this.Height);
           this.dispatchEvent(new dvt.EventFactory.newEvent('expand', nodeId));
         }
@@ -11194,12 +11830,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     collapse(nodeId) {
       var triggerEvent = false;
       var expanded = this.getOptions()['expanded'];
-      if (expanded && expanded['has'] && expanded['has'](nodeId)) { // key set - component created a custom element
+      if (expanded && expanded['has'] && expanded['has'](nodeId)) {
+        // key set - component created a custom element
         triggerEvent = true;
         expanded = expanded['delete']([nodeId]);
-        this.applyOptions({'expanded': expanded}, this.Defaults.getNoCloneObject());
-      }
-      else { // rely internally on this.DisclosedNodes - component created as a widget
+        this.applyOptions({ expanded: expanded }, this.Defaults.getNoCloneObject());
+      } else {
+        // rely internally on this.DisclosedNodes - component created as a widget
         var index = -1;
         if (this.DisclosedNodes) {
           index = this.DisclosedNodes.indexOf(nodeId);
@@ -11216,7 +11853,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
     }
 
-
     /**
      * Adds child layout context to the parent layout context
      * @param {DvtDiagramNode} parentNode parent node
@@ -11229,7 +11865,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     _addLayoutContextForChildNodes(parentNode, lcParentNode, layoutContext, bRenderAfter) {
       if (parentNode.isDisclosed()) {
         var arChildIds = parentNode.getChildNodeIds();
-        var lcChildNodes = this._createLayoutContextForChildNodes(lcParentNode, layoutContext, arChildIds, bRenderAfter);
+        var lcChildNodes = this._createLayoutContextForChildNodes(
+          lcParentNode,
+          layoutContext,
+          arChildIds,
+          bRenderAfter
+        );
         lcParentNode.setChildNodes(lcChildNodes);
       }
     }
@@ -11249,12 +11890,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           acc.push(obj['id']);
           return acc;
         }, []);
-        var lcChildNodes = this._createLayoutContextForChildNodes(lcParentNode, layoutContext, arChildIds, true);
+        var lcChildNodes = this._createLayoutContextForChildNodes(
+          lcParentNode,
+          layoutContext,
+          arChildIds,
+          true
+        );
         var lcChildNodesExisting = lcParentNode.getChildNodes() || [];
         lcChildNodes = dvt.ArrayUtils.insert(lcChildNodesExisting, lcChildNodes, index);
         lcParentNode.setChildNodes(lcChildNodes);
         lcParentNode.setDisclosed(true);
-        lcParentNode.SetContainerPaddingObj(Diagram.getLayoutContainerPadding(parentNode.getContainerPadding()));
+        lcParentNode.SetContainerPaddingObj(
+          Diagram.getLayoutContainerPadding(parentNode.getContainerPadding())
+        );
         lcParentNode.UpdateParentNodes();
       }
     }
@@ -11274,8 +11922,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       for (var j = 0; j < arChildIds.length; j++) {
         var childNode = this.getNodeById(arChildIds[j]);
         if (childNode.getVisible()) {
-          var lcChildNode = this.CreateLayoutContextNode(childNode, null, bRenderAfter, layoutContext);
-          lcChildNode.copyFrom(this._oldLayoutContext ? this._oldLayoutContext.getNodeById(arChildIds[j]) : null);
+          var lcChildNode = this.CreateLayoutContextNode(
+            childNode,
+            null,
+            bRenderAfter,
+            layoutContext
+          );
+          lcChildNode.copyFrom(
+            this._oldLayoutContext ? this._oldLayoutContext.getNodeById(arChildIds[j]) : null
+          );
           layoutContext.addNodeToMap(lcChildNode);
           lcChildNode.setParentNode(lcParentNode);
           lcChildNodes.push(lcChildNode);
@@ -11293,12 +11948,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     _isNodeDisclosed(nodeId) {
       var expanded = this.getOptions()['expanded'];
-      if (expanded && expanded['has']) // key set - component created a custom element
+      if (expanded && expanded['has'])
+        // key set - component created a custom element
         return expanded['has'](nodeId);
-      else { // rely internally on this.DisclosedNodes - component created as a widget
+      else {
+        // rely internally on this.DisclosedNodes - component created as a widget
         var disclosedNodes = this.DisclosedNodes ? this.DisclosedNodes : expanded;
-        return (disclosedNodes && disclosedNodes.indexOf(nodeId) > -1) ||
-            (disclosedNodes && disclosedNodes.indexOf('all') > -1);
+        return (
+          (disclosedNodes && disclosedNodes.indexOf(nodeId) > -1) ||
+          (disclosedNodes && disclosedNodes.indexOf('all') > -1)
+        );
       }
     }
 
@@ -11309,7 +11968,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @return {boolean} true if the link is promoted
      */
     _isLinkPromoted(linkData) {
-
       var startNode = this.getNodeById(linkData['startNode']);
       var endNode = this.getNodeById(linkData['endNode']);
 
@@ -11320,16 +11978,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
 
       // do not process promoted links if the promotedLinkBehavior is set to 'none'
-      if (this.getOptions()['promotedLinkBehavior'] === 'none')
-        return true;
+      if (this.getOptions()['promotedLinkBehavior'] === 'none') return true;
 
-      var startPromotedId = startNode ? startNode.getId() : this._findFirstVisibleAncestor(linkData['startNode']);
-      var endPromotedId = endNode ? endNode.getId() : this._findFirstVisibleAncestor(linkData['endNode']);
+      var startPromotedId = startNode
+        ? startNode.getId()
+        : this._findFirstVisibleAncestor(linkData['startNode']);
+      var endPromotedId = endNode
+        ? endNode.getId()
+        : this._findFirstVisibleAncestor(linkData['endNode']);
       if (!(startPromotedId && endPromotedId)) {
         // start or end node for the link does not exist - could be hidden
         return false;
-      }
-      else if (startPromotedId === endPromotedId) {
+      } else if (startPromotedId === endPromotedId) {
         //unaccessible link that belongs to the same collapsed container - should be ignored
         return false;
       }
@@ -11338,22 +11998,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       // One for promoted link data objects - used for rendering and layout.
       // One for keeping track of original links converted to promoted - used in data source events.
       var linkId = DvtDiagramLink.GetPromotedLinkId(this, startPromotedId, endPromotedId);
-      if (!this._promotedLinksMap)
-        this._promotedLinksMap = new (this.getCtx()).ojMap();
+      if (!this._promotedLinksMap) this._promotedLinksMap = new (this.getCtx().ojMap)();
       if (!this._promotedLinksMap.has(linkId)) {
-        this._promotedLinksMap.set(linkId,
-          { 'id': linkId,
-            'startNode' : startPromotedId,
-            'endNode' : endPromotedId,
-            '_links': [linkData] });
+        this._promotedLinksMap.set(linkId, {
+          id: linkId,
+          startNode: startPromotedId,
+          endNode: endPromotedId,
+          _links: [linkData]
+        });
+      } else {
+        this._promotedLinksMap.get(linkId)['_links'].push(linkData);
       }
-      else {
-        this._promotedLinksMap
-            .get(linkId)['_links']
-            .push(linkData);
-      }
-      if (!this._linkToPromotedMap)
-        this._linkToPromotedMap = new (this.getCtx()).ojMap();
+      if (!this._linkToPromotedMap) this._linkToPromotedMap = new (this.getCtx().ojMap)();
       this._linkToPromotedMap.set(linkData['id'], linkId);
       return true;
     }
@@ -11364,8 +12020,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @private
      */
     _addToCollapsedArray(node) {
-      if (!this._collapsedNodes)
-        this._collapsedNodes = [];
+      if (!this._collapsedNodes) this._collapsedNodes = [];
       this._collapsedNodes.push(node);
     }
 
@@ -11381,7 +12036,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var isDescendant = (data, chId) => {
         if (data) {
           for (var i = 0; i < data.length; i++) {
-            if ( DvtDiagramDataUtils.compareValues(context, data[i]['id'], chId) || isDescendant(data[i]['nodes'], chId)) {
+            if (
+              DvtDiagramDataUtils.compareValues(context, data[i]['id'], chId) ||
+              isDescendant(data[i]['nodes'], chId)
+            ) {
               return true;
             }
           }
@@ -11406,14 +12064,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var navigable = this.getEventManager().getFocus();
       var keyboardUtils = this.Options._keyboardUtils;
       var busyContext = oj.Context.getContext(this.getContainerElem()).getBusyContext();
-      busyContext.whenReady().then(() =>{
+      busyContext.whenReady().then(() => {
         keyboardUtils.disableAllFocusable(this.getElem());
         if (this.activeInnerElems) {
           var node = this.getNodeById(this.activeInnerElemsItemId);
           // if neither the old active elem had an ID and elem was successfully focused
           // nor if old custom elem had an ID and was succesffuly focused
-          if (!(this._oldActiveElemId && this._enableActiveElems(this._oldActiveElemId, node) ||
-            (this._oldActiveCustomElemId && this._enableActiveElems(this._oldActiveCustomElemId, node)))) {
+          if (
+            !(
+              (this._oldActiveElemId && this._enableActiveElems(this._oldActiveElemId, node)) ||
+              (this._oldActiveCustomElemId &&
+                this._enableActiveElems(this._oldActiveCustomElemId, node))
+            )
+          ) {
             // Take out actionable mode and just put focus on the nearest node.
             this.activeInnerElems = null;
             this._context._parentDiv.focus();
@@ -11430,8 +12093,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var newNavigable;
         if (navigable instanceof DvtDiagramNode) {
           newNavigable = this.getNodeById(navigable.getId());
-        }
-        else if (navigable instanceof DvtDiagramLink) {
+        } else if (navigable instanceof DvtDiagramLink) {
           newNavigable = this.getLinkById(navigable.getId());
         }
         isShowingKeyboardFocusEffect = navigable.isShowingKeyboardFocusEffect();
@@ -11456,7 +12118,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (node instanceof DvtDiagramNode && node.isDisclosed() && node.GetChildNodePane(true)) {
           keyboardUtils.disableAllFocusable(node.GetChildNodePane().getElem());
           enabled = Array.from(enabled);
-          enabled = enabled.filter(item => item.tabIndex !== -1);
+          enabled = enabled.filter((item) => item.tabIndex !== -1);
         }
         if (enabled.length > 0) {
           activeElem ? activeElem.focus() : enabled[0].focus();
@@ -11484,31 +12146,41 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     ShowLinkCreationFeedback(event) {
       if (this.getEventManager().LinkCreationStarted) {
         var stagePos = this._context.pageToStageCoords(event.pageX, event.pageY);
-        var localPos = this.getPanZoomCanvas().getContentPane().stageToLocal({x: stagePos.x, y: stagePos.y});
+        var localPos = this.getPanZoomCanvas()
+          .getContentPane()
+          .stageToLocal({ x: stagePos.x, y: stagePos.y });
         if (this._linkCreationFeedBack) {
           var points = this._linkCreationFeedBack.GetCreationFeedbackPoints(localPos);
           this._linkCreationFeedBack.setPoints(points);
-        }
-        else {
+        } else {
           var obj = this.getEventManager().DragSource.getDragObject();
           if (obj instanceof DvtDiagramNode) {
             var startStagePos = this.getEventManager().DragSource.getDragCoords();
-            var startLocalPos = this.getPanZoomCanvas().getContentPane().stageToLocal({x: startStagePos.x, y: startStagePos.y});
+            var startLocalPos = this.getPanZoomCanvas()
+              .getContentPane()
+              .stageToLocal({ x: startStagePos.x, y: startStagePos.y });
             var linkDefaults = this.getOptions()['styleDefaults']['linkDefaults'];
             DvtDiagramStyleUtils.prepareLinkStyle(linkDefaults, 'style');
             //get additional styles from callback
             var styleCallback = this.getOptions()['dnd']['drag']['ports']['linkStyle'];
             if (styleCallback && typeof styleCallback === 'function') {
-              var linkFeedbackStyle = styleCallback({'dataContext': obj.getDataContext(), 'portElement': obj.__dragPort});
+              var linkFeedbackStyle = styleCallback({
+                dataContext: obj.getDataContext(),
+                portElement: obj.__dragPort
+              });
               if (linkFeedbackStyle) {
-                linkDefaults['style'] = dvt.JsonUtils.merge(linkFeedbackStyle['svgStyle'], linkDefaults['style']);
-                linkDefaults['svgClassName'] = linkFeedbackStyle['svgClassName'] || linkDefaults['className'];
+                linkDefaults['style'] = dvt.JsonUtils.merge(
+                  linkFeedbackStyle['svgStyle'],
+                  linkDefaults['style']
+                );
+                linkDefaults['svgClassName'] =
+                  linkFeedbackStyle['svgClassName'] || linkDefaults['className'];
               }
             }
             var linkData = {
-              'id': 'linkFeedback',
-              'startNode' : obj.getId(),
-              'endNode' : obj.getId()
+              id: 'linkFeedback',
+              startNode: obj.getId(),
+              endNode: obj.getId()
             };
             linkData = dvt.JsonUtils.merge(linkData, linkDefaults);
             var link = new DvtDiagramLink(this.getCtx(), this, linkData, false);
@@ -11557,16 +12229,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (type == 'add') {
         parentId = event['parentId'];
         parentNode = parentId ? this.getNodeById(parentId) : null;
-        if (this.getOptions()['expanded'] === "all") {
+        if (this.getOptions()['expanded'] === 'all') {
           if (nodes) {
             var disclosedNodes = this.DisclosedNodes;
             var updateDisclosed = (nodeArr) => {
-              for (var i=0; i < nodeArr.length; i++) {
+              for (var i = 0; i < nodeArr.length; i++) {
                 disclosedNodes.push(nodeArr[i].id);
-                if (nodeArr[i].nodes)
-                  updateDisclosed(nodeArr[i].nodes);
-                }
-              };
+                if (nodeArr[i].nodes) updateDisclosed(nodeArr[i].nodes);
+              }
+            };
             updateDisclosed(nodes);
           }
         }
@@ -11576,13 +12247,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             parentNode.setDisclosed(true);
             this._prepareNodes(parentNode, nodes);
           }
-        }
-        else {
+        } else {
           this._prepareNodes(null, nodes);
         }
         this.renderLinks(links);
-      }
-      else if (type == 'change') {
+      } else if (type == 'change') {
         if (nodes) {
           var nodeDefaults = DvtDiagramStyleUtils.getNodeDefaultStyles(this);
           for (var i = 0; i < nodes.length; i++) {
@@ -11599,8 +12268,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           this._removeLinks(links);
           this.renderLinks(links);
         }
-      }
-      else if (type == 'remove') {
+      } else if (type == 'remove') {
         parentId = event['parentId'];
         parentNode = parentId ? this.getNodeById(parentId) : null;
         if (parentNode) {
@@ -11609,15 +12277,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           if (!parentNode.getData()['nodes'] || parentNode.getData()['nodes'].length === 0) {
             parentNode.setDisclosed(false);
           }
-        }
-        else {
+        } else {
           this._removeNodes(null, nodes);
         }
         this._removeLinks(links);
       }
       //update animation state with new nodes and links objects if necessary
       this._oldDataAnimState && this._oldDataAnimState.updateStateFromEvent(type, event);
-
 
       this._updateLayoutContext(type, event);
       var emptyDiagram = this.GetAllNodes().length === 0;
@@ -11627,25 +12293,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var thisRef = this;
         var renderCount = this._renderCount;
         res.then(
-            () => {
-              if (renderCount === thisRef._renderCount) {
-                thisRef._partialUpdate = true;
-                thisRef._updateOverview(type, event);
-                thisRef._processContent(false);
-                thisRef._partialUpdate = false;
-              }
-            }, //success
-            () => {
-              if (renderCount === thisRef._renderCount) {
-                thisRef.removeChild(thisRef._oldPanZoomCanvas);
-                thisRef._oldPanZoomCanvas = null;
-                thisRef._bRendered = true;
-                this._currentPanZoomState = null;
-              }
-            } //failure
+          () => {
+            if (renderCount === thisRef._renderCount) {
+              thisRef._partialUpdate = true;
+              thisRef._updateOverview(type, event);
+              thisRef._processContent(false);
+              thisRef._partialUpdate = false;
+            }
+          }, //success
+          () => {
+            if (renderCount === thisRef._renderCount) {
+              thisRef.removeChild(thisRef._oldPanZoomCanvas);
+              thisRef._oldPanZoomCanvas = null;
+              thisRef._bRendered = true;
+              this._currentPanZoomState = null;
+            }
+          } //failure
         );
-      }
-      else {
+      } else {
         this._processContent(emptyDiagram);
       }
     }
@@ -11673,7 +12338,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         this._layoutContext = this.CreateEmptyLayoutContext();
       }
       var layoutContext = this._layoutContext;
-      layoutContext.setEventData({'type': type, 'data': event});
+      layoutContext.setEventData({ type: type, data: event });
 
       var nodes = event['data']['nodes'];
       var links = event['data']['links'];
@@ -11692,13 +12357,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           // to the existing parent or add node context to the top level
           if (pc && parentNode) {
             pc.Reset();
-            this._appendLayoutContextForChildNodes(parentNode, pc, layoutContext, nodes, event['index']);
-          }
-          else {
+            this._appendLayoutContextForChildNodes(
+              parentNode,
+              pc,
+              layoutContext,
+              nodes,
+              event['index']
+            );
+          } else {
             for (i = 0; i < nodes.length; i++) {
               nodeId = nodes[i]['id'];
-              if (!this.getNodeById(nodeId))
-                continue;
+              if (!this.getNodeById(nodeId)) continue;
               nc = this.CreateLayoutContextNode(this.getNodeById(nodeId), null, true, layoutContext);
               this._addLayoutContextForChildNodes(this.getNodeById(nodeId), nc, layoutContext, true);
               layoutContext.addNode(nc);
@@ -11710,19 +12379,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             linkId = links[i]['id'];
             link = this.getLinkById(linkId) || this.getLinkById(this._linkToPromotedMap.get(linkId));
             if (link) {
-              if (layoutContext.getLinkById(link.getId())) { // links exists - case of promoted link
+              if (layoutContext.getLinkById(link.getId())) {
+                // links exists - case of promoted link
                 continue;
               }
               startId = link.getData()['startNode'];
               endId = link.getData()['endNode'];
               if (layoutContext.getNodeById(startId) && layoutContext.getNodeById(endId)) {
-                layoutContext.addLink(this.CreateLayoutContextLink(link, startId, endId, layoutContext));
+                layoutContext.addLink(
+                  this.CreateLayoutContextLink(link, startId, endId, layoutContext)
+                );
               }
             }
           }
         }
-      }
-      else if (type == 'change') {
+      } else if (type == 'change') {
         if (nodes) {
           // Update nodes
           for (i = 0; i < nodes.length; i++) {
@@ -11753,13 +12424,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
               startId = link.getData()['startNode'];
               endId = link.getData()['endNode'];
               if (layoutContext.getNodeById(startId) && layoutContext.getNodeById(endId)) {
-                layoutContext.addLink(this.CreateLayoutContextLink(link, startId, endId, layoutContext));
+                layoutContext.addLink(
+                  this.CreateLayoutContextLink(link, startId, endId, layoutContext)
+                );
               }
             }
           }
         }
-      }
-      else if (type == 'remove') {
+      } else if (type == 'remove') {
         if (nodes) {
           // Remove node context for the requested nodes,
           // set parent nodes as not rendered,
@@ -11799,12 +12471,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         // add all nodes starting with root nodes
         for (var n = 0; n < this._arRootIds.length; n++) {
           var nodeId = this._arRootIds[n];
-          if (!this.getNodeById(nodeId))
-            continue;
+          if (!this.getNodeById(nodeId)) continue;
           var bRenderAfter = this._bRendered ? false : true;
           var rootNode = this.getNodeById(nodeId);
           var lcRootNode = this.CreateLayoutContextNode(rootNode, null, bRenderAfter, layoutContext);
-          lcRootNode.copyFrom(this._oldLayoutContext ? this._oldLayoutContext.getNodeById(nodeId) : null);
+          lcRootNode.copyFrom(
+            this._oldLayoutContext ? this._oldLayoutContext.getNodeById(nodeId) : null
+          );
           this._addLayoutContextForChildNodes(rootNode, lcRootNode, layoutContext, bRenderAfter);
           layoutContext.addNode(lcRootNode);
         }
@@ -11815,7 +12488,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           var endId = link.getData()['endNode'];
           if (layoutContext.getNodeById(startId) && layoutContext.getNodeById(endId)) {
             var lcLink = thisRef.CreateLayoutContextLink(link, startId, endId, layoutContext);
-            lcLink.copyFrom(thisRef._oldLayoutContext ? thisRef._oldLayoutContext.getLinkById(linkId) : null);
+            lcLink.copyFrom(
+              thisRef._oldLayoutContext ? thisRef._oldLayoutContext.getLinkById(linkId) : null
+            );
             layoutContext.addLink(lcLink);
           }
         });
@@ -11859,7 +12534,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var layoutContext = new DvtDiagramLayoutContext(this.getCtx());
       //: inform layout of reading direction
       layoutContext.setLocaleR2L(dvt.Agent.isRightToLeft(this.getCtx()));
-      layoutContext.setComponentSize(new DvtDiagramRectangle(0, 0, this.getWidth(), this.getHeight()));
+      layoutContext.setComponentSize(
+        new DvtDiagramRectangle(0, 0, this.getWidth(), this.getHeight())
+      );
       return layoutContext;
     }
 
@@ -11878,7 +12555,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       //the node on the layout context
       nc.setBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLayoutBounds()));
       nc.setContentBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds()));
-      var nodeData = node.getLayoutAttributes ? node.getLayoutAttributes(layout) : node.getData()['_itemData'];
+      var nodeData = node.getLayoutAttributes
+        ? node.getLayoutAttributes(layout)
+        : node.getData()['_itemData'];
       nc.setLayoutAttributes(nodeData);
       nc.setData(nodeData);
       nc.setLabelBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLabelBounds()));
@@ -11943,7 +12622,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         miny = Math.min(miny, linkBounds['y']);
       }
 
-      var lopt = new dvt.Point(- minx, - miny);
+      var lopt = new dvt.Point(-minx, -miny);
       var tx = lopt.x;
       var ty = lopt.y;
       var dirtyLayoutContext = layoutContext.getDirtyContext();
@@ -11952,8 +12631,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (nc.getContainerId()) {
           nc.ContentOffset = new DvtDiagramPoint(lopt.x, lopt.y); // adjust content offset that is used by global layout
         }
-        if (!dirtyLayoutContext.has(nc.getId()))
-          continue;
+        if (!dirtyLayoutContext.has(nc.getId())) continue;
         var node = this.getNodeById(nc.getId());
         pos = nc.getPosition();
         if (pos) {
@@ -11972,11 +12650,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       for (var lj = 0; lj < layoutContext.getLinkCount(); lj++) {
         lc = layoutContext.getLinkByIndex(lj);
-        if (!dirtyLayoutContext.has(lc.getId()))
-          continue;
+        if (!dirtyLayoutContext.has(lc.getId())) continue;
         var link = this.getLinkById(lc.getId());
         var linkOffset = this.GetLinkTranslationOffset(link, lc, lopt);
-        var linkOffsetX = linkOffset.x, linkOffsetY = linkOffset.y;
+        var linkOffsetX = linkOffset.x,
+          linkOffsetY = linkOffset.y;
         var points = lc.getPoints();
         if (points) {
           link.setPoints(points);
@@ -11991,8 +12669,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         this._layoutPanZoomState = layoutPanZoomState;
       }
 
-      if (bSaveOffset)
-        this._layoutOffset = new dvt.Point(tx, ty);
+      if (bSaveOffset) this._layoutOffset = new dvt.Point(tx, ty);
     }
 
     /**
@@ -12009,8 +12686,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (!link.getGroupId()) {
         //top level container - use top level layout offset
         offset = lopt;
-      }
-      else if ( !DvtDiagramDataUtils.compareValues(context, link.getGroupId(), lc.getCoordinateSpace())) {
+      } else if (
+        !DvtDiagramDataUtils.compareValues(context, link.getGroupId(), lc.getCoordinateSpace())
+      ) {
         //link position is given either global or relative to some ancestor container
         var ancestorId = lc.getCoordinateSpace();
         var node = this.getNodeById(link.getGroupId());
@@ -12019,9 +12697,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           offset['x'] -= padding['left'] - node.GetPosition()['x'];
           offset['y'] -= padding['top'] - node.GetPosition()['y'];
           var containerId = node.getGroupId();
-          node = !DvtDiagramDataUtils.compareValues(context, containerId, ancestorId) ? this.getNodeById(containerId) : null;
+          node = !DvtDiagramDataUtils.compareValues(context, containerId, ancestorId)
+            ? this.getNodeById(containerId)
+            : null;
         }
-        if (!ancestorId) { //should adjust for top level offset that is already added to the top level nodes
+        if (!ancestorId) {
+          //should adjust for top level offset that is already added to the top level nodes
           offset['x'] += lopt.x;
           offset['y'] += lopt.y;
         }
@@ -12046,7 +12727,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     IsLayoutPanZoomState() {
       return this._layoutPanZoomState ? true : false;
-    };
+    }
 
     /**
      * @protected
@@ -12054,7 +12735,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     ClearLayoutPanZoomState() {
       this._layoutPanZoomState = null;
-    };
+    }
 
     /**
      * Adjusts the minimum zoom level of the panZoomCanvas if the diagram minZoom was set to 0.0
@@ -12082,8 +12763,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     CalculateMinimumScale(bounds) {
-      if (!bounds)
-        return 0;
+      if (!bounds) return 0;
       var panZoomCanvas = this.getPanZoomCanvas();
       var minScaleX = (this.Width - 2 * panZoomCanvas.getZoomToFitPadding()) / bounds.w;
       var minScaleY = (this.Height - 2 * panZoomCanvas.getZoomToFitPadding()) / bounds.h;
@@ -12096,8 +12776,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @protected
      */
     GetViewBounds() {
-      if (this._cachedViewBounds)
-        return this._cachedViewBounds;
+      if (this._cachedViewBounds) return this._cachedViewBounds;
       var bounds = null;
       var dims;
       var tx;
@@ -12121,8 +12800,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           dims.y += ty;
           if (!bounds) {
             bounds = dims;
-          }
-          else {
+          } else {
             bx = bounds.x;
             by = bounds.y;
             bounds.x = Math.min(bounds.x, dims.x);
@@ -12151,8 +12829,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
           if (!bounds) {
             bounds = dims;
-          }
-          else {
+          } else {
             bx = bounds.x;
             by = bounds.y;
             bounds.x = Math.min(bounds.x, dims.x);
@@ -12194,8 +12871,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         minPanY = leftCornerY + minZoomY * zoomRatio;
         maxPanX = minZoomX * zoomRatio;
         maxPanY = minZoomY * zoomRatio;
-      }
-      else {  //for auto and centerContent
+      } else {
+        //for auto and centerContent
         var halfViewportW = pzc.getSize().w / 2;
         var halfViewportH = pzc.getSize().h / 2;
         minPanX = halfViewportW - (w + x) * zoom;
@@ -12208,26 +12885,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         // adjust the constraints symmetrically to include the viewport bounds
         var offset = this.getLayoutOffset();
         var panZoom = this.GetLayoutPanZoomState();
-        var boundsX = panZoom.centerX ? (panZoom.centerX + offset.x) * zoom  - this.Width/2 : - offset.x * zoom;
-        var boundsY = panZoom.centerY ? (panZoom.centerY + offset.y) * zoom - this.Height/2 : - offset.y * zoom;
+        var boundsX = panZoom.centerX
+          ? (panZoom.centerX + offset.x) * zoom - this.Width / 2
+          : -offset.x * zoom;
+        var boundsY = panZoom.centerY
+          ? (panZoom.centerY + offset.y) * zoom - this.Height / 2
+          : -offset.y * zoom;
         var dx, dy;
-        if (- boundsX * zoom < minPanX) {
+        if (-boundsX * zoom < minPanX) {
           dx = minPanX + boundsX * zoom;
           minPanX -= dx;
           maxPanX += dx;
-        }
-        else if (- boundsX * zoom > maxPanX) {
-          dx = - boundsX * zoom - maxPanX;
+        } else if (-boundsX * zoom > maxPanX) {
+          dx = -boundsX * zoom - maxPanX;
           minPanX -= dx;
           maxPanX += dx;
         }
-        if (- boundsY * zoom < minPanY) {
+        if (-boundsY * zoom < minPanY) {
           dy = minPanY + boundsY * zoom;
           minPanY -= dy;
           maxPanY += dy;
-        }
-        else if (- boundsY * zoom > maxPanY) {
-          dy = - boundsY * zoom - maxPanY;
+        } else if (-boundsY * zoom > maxPanY) {
+          dy = -boundsY * zoom - maxPanY;
           minPanY -= dy;
           maxPanY += dy;
         }
@@ -12238,7 +12917,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       pzc.setMaxPanX(maxPanX);
       pzc.setMaxPanY(maxPanY);
       if (this.Overview) {
-        this.Overview.updateConstraints(minPanX,minPanY,maxPanX,maxPanY);
+        this.Overview.updateConstraints(minPanX, minPanY, maxPanX, maxPanY);
       }
     }
 
@@ -12247,30 +12926,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @param {object} layoutContainerPadding the object with the layout container padding values
      * @return {object} object with the container padding values
      */
-    static getContainerPadding(layoutContainerPadding)
-    {
+    static getContainerPadding(layoutContainerPadding) {
       var containerPadding = new Object();
       containerPadding.top = layoutContainerPadding['top'];
       containerPadding.right = layoutContainerPadding['right'];
       containerPadding.bottom = layoutContainerPadding['bottom'];
       containerPadding.left = layoutContainerPadding['left'];
       return containerPadding;
-    };
+    }
 
     /**
      * Convert dot notation into key notation
      * @param {object} containerPadding the object with the container padding values
      * @return {object} object with the container padding values
      */
-    static getLayoutContainerPadding(containerPadding)
-    {
+    static getLayoutContainerPadding(containerPadding) {
       var layoutContainerPadding = new Object();
       layoutContainerPadding['top'] = containerPadding.top;
       layoutContainerPadding['right'] = containerPadding.right;
       layoutContainerPadding['bottom'] = containerPadding.bottom;
       layoutContainerPadding['left'] = containerPadding.left;
       return layoutContainerPadding;
-    };
+    }
 
     /**
      * Updates layout context for the node/link
@@ -12287,7 +12964,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         // translate to make these relative to the node or link
         var translatedPos = new dvt.Point(labelPos['x'] - pos.x, labelPos['y'] - pos.y);
         var labelRotAngle = objc.getLabelRotationAngle();
-        var labelRotPoint = DvtDiagramLayoutUtils.convertDiagramPointToPoint(objc.getLabelRotationPoint());
+        var labelRotPoint = DvtDiagramLayoutUtils.convertDiagramPointToPoint(
+          objc.getLabelRotationPoint()
+        );
         obj.setLabelBounds(labelBounds);
         obj.setLabelPosition(translatedPos);
         obj.setLabelAlignments(objc.getLabelHalign(), objc.getLabelValign());
@@ -12315,12 +12994,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     getCustomObjKeyboardBoundingBox(obj) {
       var objCoords = obj.getElem().getBoundingClientRect();
-      var contentPaneCoords = this.getPanZoomCanvas().getContentPane().getElem().getBoundingClientRect();
+      var contentPaneCoords = this.getPanZoomCanvas()
+        .getContentPane()
+        .getElem()
+        .getBoundingClientRect();
       var cpMatrix = this.getPanZoomCanvas().getContentPane().getMatrix();
       return new dvt.Rectangle(
-          objCoords.left - contentPaneCoords.left + cpMatrix.getTx(),
-          objCoords.top - contentPaneCoords.top + cpMatrix.getTy(),
-          objCoords.width, objCoords.height);
+        objCoords.left - contentPaneCoords.left + cpMatrix.getTx(),
+        objCoords.top - contentPaneCoords.top + cpMatrix.getTy(),
+        objCoords.width,
+        objCoords.height
+      );
     }
 
     /**
@@ -12341,10 +13025,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (link.isPromoted()) {
         linkData = link.getData()['_links'];
         if (this.isDataProviderMode()) {
-          linkData = linkData.map((item) => {return item['_itemData']});
+          linkData = linkData.map((item) => {
+            return item['_itemData'];
+          });
         }
-      }
-      else {
+      } else {
         linkData = link.getData()['_itemData'];
       }
       lc.setLayoutAttributes(linkData);
@@ -12387,8 +13072,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         //remove itself
         if (parent) {
           parent.removeChildNode(node);
-        }
-        else {
+        } else {
           dvt.ArrayUtils.removeItem(this._arRootIds, nodeId);
           this.getNodesPane().removeChild(node);
         }
@@ -12422,8 +13106,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           endNode && endNode.removeInLinkId(linkId);
           dvt.ArrayUtils.removeItem(this._arLinkIds, linkId);
           this._links.delete(linkId);
-        }
-        else if (this._linkToPromotedMap && this._linkToPromotedMap.has(linkId)) {
+        } else if (this._linkToPromotedMap && this._linkToPromotedMap.has(linkId)) {
           var promotedLinkId = this._linkToPromotedMap.get(linkId);
           var promotedLink = this._links.get(promotedLinkId);
           var data = promotedLink ? promotedLink.getData()['_links'] : null;
@@ -12439,8 +13122,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             this._links.delete(promotedLink.getId());
             this._promotedLinksMap.delete(promotedLink.getId());
             this._linkToPromotedMap.delete(linkId);
-          }
-          else if (data) {
+          } else if (data) {
             // don't remove the promoted link, but update its links data
             // don't need to update layout context for the link, since it has a reference to the data
             for (var j = 0; j < data.length; j++) {
@@ -12466,8 +13148,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     handleTouchEnd() {
       this._clearTouchEventContent();
-      if (this._touchEventContentDiagramObjRef
-        && this._touchEventContentDiagramObjRef.handleTouchEnd) {
+      if (
+        this._touchEventContentDiagramObjRef &&
+        this._touchEventContentDiagramObjRef.handleTouchEnd
+      ) {
         // Clear the states in the node/link as this will not be called
         // if the event is not ended on them
         this._touchEventContentDiagramObjRef.handleTouchEnd();
@@ -12490,9 +13174,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._touchEventContentDiagramObjRef = diagramObj;
       if (content.namespaceURI === dvt.ToolkitUtils.SVG_NS) {
         dvt.ToolkitUtils.appendChildElem(this.getTouchEventPane().getElem(), content);
-      }
-      else if (Array.isArray(content)) {
-        content.forEach((node) => {dvt.ToolkitUtils.appendChildElem(this.getTouchEventPane().getElem(), node);});
+      } else if (Array.isArray(content)) {
+        content.forEach((node) => {
+          dvt.ToolkitUtils.appendChildElem(this.getTouchEventPane().getElem(), node);
+        });
       }
     }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -19,7 +19,18 @@ var __oj_indexer_metadata =
 {
   "properties": {
     "data": {
-      "type": "object"
+      "type": "object",
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "14.0.0",
+              "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
+            }
+          ]
+        }
+      }
     },
     "translations": {
       "type": "object",
@@ -63,7 +74,7 @@ var __oj_indexer_metadata =
   __oj_indexer_metadata.extension._INNER_ELEM = 'ul';
   __oj_indexer_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-label', 'aria-labelledby'];
   oj.CustomElementBridge.register('oj-indexer', { metadata: __oj_indexer_metadata });
-}());
+})();
 
 /**
  * The interface for oj.IndexerModel which should be implemented by all object instances
@@ -73,8 +84,7 @@ var __oj_indexer_metadata =
  * @interface oj.IndexerModel
  */
 
-const IndexerModel = function () {
-};
+const IndexerModel = function () {};
 oj._registerLegacyNamespaceProp('IndexerModel', IndexerModel);
 
 // without the at-name tag, JSDoc tool prepends a "." to the field name for some reason, which messes up the QuickNav.
@@ -158,6 +168,7 @@ IndexerModel.SECTION_OTHERS = {
    * @ojshortdesc An indexer displays a list of sections that corresponds to group headers of a list.
    * @ojrole slider
    *
+   * @ojoracleicon 'oj-ux-ico-indexer'
    * @ojuxspecs ['indexer']
    *
    * @classdesc
@@ -287,566 +298,565 @@ IndexerModel.SECTION_OTHERS = {
   //                   Styling
   //-----------------------------------------------------
   /**
-  * @ojstylevariableset oj-indexer-css-set1
-  * @ojstylevariable oj-indexer-text-color {description: "Indexer text color", formats: ["color"], help: "#css-variables"}
-  * @ojstylevariable oj-indexer-font-size {description: "Indexer font size", formats: ["length"], help: "#css-variables"}
-  * @memberof oj.ojIndexer
-  */
+   * @ojstylevariableset oj-indexer-css-set1
+   * @ojstylevariable oj-indexer-text-color {description: "Indexer text color", formats: ["color"], help: "#css-variables"}
+   * @ojstylevariable oj-indexer-font-size {description: "Indexer font size", formats: ["length"], help: "#css-variables"}
+   * @memberof oj.ojIndexer
+   */
   // --------------------------------------------------- oj.ojIndexer Styling End -----------------------------------------------------------
 
-  oj.__registerWidget('oj.ojIndexer', $.oj.baseComponent,
-    {
-      defaultElement: '<ul>',
-      version: '1.2',
-      widgetEventPrefix: 'oj',
+  oj.__registerWidget('oj.ojIndexer', $.oj.baseComponent, {
+    defaultElement: '<ul>',
+    version: '1.2',
+    widgetEventPrefix: 'oj',
 
-      options:
-      {
-        /**
-         * The data model for the Indexer which must be a oj.IndexerModel.  Currently the <a href="IndexerModelTreeDataProvider.html">IndexerModelTreeDataProvider</a>
-         * is available that applications can use as the data for both ListView and the Indexer.  If not specified, then an empty indexer is rendered.
-         *
-         * @ojshortdesc The data provider for the Indexer.
-         * @expose
-         * @memberof! oj.ojIndexer
-         * @instance
-         * @type {Object}
-         * @ojsignature {target:"Type", value:"IndexerModel", jsdocOverride:true}
-         * @default null
-         *
-         * @example <caption>Initialize the Indexer with an IndexModel:</caption>
-         * &lt;oj-indexer data='{{myIndexerModel}}'>&lt;/oj-indexer>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">data</code> property after initialization:</caption>
-         * // getter
-         * var dataValue = myIndexer.data;
-         *
-         * // setter
-         * myIndexer.data = myIndexerModel;
-         */
-        data: null
-      },
-
+    options: {
       /**
-       * Creates the indexer
-       * @override
-       * @memberof! oj.ojIndexer
-       * @protected
-       */
-      _ComponentCreate: function () {
-        this._super();
-        this._setup();
-      },
-
-      /**
-       * Initialize the indexer after creation
-       * @protected
-       * @override
-       * @memberof! oj.ojIndexer
-       */
-      _AfterCreate: function () {
-        this._super();
-        this._createIndexerContent();
-        this._setAriaProperties();
-        this._createInstructionText();
-      },
-
-      /**
-       * Destroy the indexer
-       * @memberof! oj.ojIndexer
-       * @override
-       * @private
-       */
-      _destroy: function () {
-        this._super();
-
-        var container = this._getIndexerContainer();
-
-        this._unregisterResizeListener(container);
-        this._unregisterTouchHandler(container);
-        this._unsetAriaProperties();
-        this.element.removeClass('oj-component-initnode');
-
-        unwrap(this.element, container);
-      },
-
-      /**
-       * Sets a single option
-       * @memberof! oj.ojIndexer
-       * @override
-       * @private
-       */
-      // eslint-disable-next-line no-unused-vars
-      _setOption: function (key, value) {
-        this._superApply(arguments);
-        if (key === 'data') {
-          this.refresh();
-        }
-      },
-
-      /**
-       * Sets up resources needed by indexer
-       * @memberof! oj.ojIndexer
-       * @instance
-       * @override
-       * @protected
-       */
-      _SetupResources: function () {
-        this._super();
-
-        // register a resize listener and swipe handler
-        var container = this._getIndexerContainer()[0];
-        this._registerResizeListener(container);
-        this._registerTouchHandler(container);
-      },
-
-      /**
-       * Release resources held by indexer
-       * @memberof! oj.ojIndexer
-       * @instance
-       * @override
-       * @protected
-       */
-      _ReleaseResources: function () {
-        this._super();
-
-        var container = this._getIndexerContainer()[0];
-        this._unregisterResizeListener(container);
-        this._unregisterTouchHandler(container);
-
-        // if there's outstanding busy state, release it now
-        this._resolveBusyState();
-      },
-
-      /**
-       * @private
-       */
-      _resolveBusyState: function () {
-        if (this.busyStateResolve) {
-          this.busyStateResolve(null);
-          this.busyStateResolve = null;
-        }
-      },
-
-      /**
-       * Returns a jQuery object containing the root dom element of the indexer
-       * @ignore
-       * @expose
-       * @override
-       * @memberof! oj.ojIndexer
-       * @instance
-       * @return {jQuery} the root DOM element of the indexer
-       */
-      widget: function () {
-        return this._getIndexerContainer();
-      },
-
-      /**
-       * Redraw the entire indexer after having made some external modification.
+       * The data model for the Indexer which must be a oj.IndexerModel.  Currently the <a href="IndexerModelTreeDataProvider.html">IndexerModelTreeDataProvider</a>
+       * is available that applications can use as the data for both ListView and the Indexer.  If not specified, then an empty indexer is rendered.
        *
-       * <p>This method does not accept any arguments.
-       *
-       * @ojshortdesc Redraw the entire indexer.
+       * @ojshortdesc The data provider for the Indexer.
        * @expose
        * @memberof! oj.ojIndexer
        * @instance
-       * @return {void}
-       * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-       * $( ".selector" ).ojIndexer( "refresh" );
+       * @type {Object}
+       * @ojsignature {target:"Type", value:"IndexerModel", jsdocOverride:true}
+       * @default null
+       * @ojwebelementstatus {type: "deprecated", since: "14.0.0",
+       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+       *
+       * @example <caption>Initialize the Indexer with an IndexModel:</caption>
+       * &lt;oj-indexer data='{{myIndexerModel}}'>&lt;/oj-indexer>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">data</code> property after initialization:</caption>
+       * // getter
+       * var dataValue = myIndexer.data;
+       *
+       * // setter
+       * myIndexer.data = myIndexerModel;
        */
-      refresh: function () {
-        this._super();
+      data: null
+    },
 
-        this.element.empty();
-        this._createIndexerContent();
-        this._setAriaProperties();
-        this.m_current = null;
-      },
+    /**
+     * Creates the indexer
+     * @override
+     * @memberof! oj.ojIndexer
+     * @protected
+     */
+    _ComponentCreate: function () {
+      this._super();
+      this._setup();
+    },
 
+    /**
+     * Initialize the indexer after creation
+     * @protected
+     * @override
+     * @memberof! oj.ojIndexer
+     */
+    _AfterCreate: function () {
+      this._super();
+      this._createIndexerContent();
+      this._setAriaProperties();
+      this._createInstructionText();
+    },
 
-      getNodeBySubId: function (locator) {
-        if (locator == null) {
-          return this.element ? this.element[0] : null;
-        }
+    /**
+     * Destroy the indexer
+     * @memberof! oj.ojIndexer
+     * @override
+     * @private
+     */
+    _destroy: function () {
+      this._super();
 
-        var subId = locator.subId;
-        if (subId === 'oj-indexer-section') {
-          var section = locator.section;
-          var sections = this.element.children('li');
-          for (var i = 0; i < sections.length; i++) {
-            var node = sections.get(i);
-            var data = $(node).data(_DATA_RANGE);
-            if (data === section) {
-              return node;
-            }
+      var container = this._getIndexerContainer();
 
-            // it's a separator, check the sections included in the range
-            var includes = $(node).data(_DATA_INCLUDES);
-            if (includes != null) {
-              for (var j = 0; j < includes.length; j++) {
-                if (includes[j] === section) {
-                  return node;
-                }
+      this._unregisterResizeListener(container);
+      this._unregisterTouchHandler(container);
+      this._unsetAriaProperties();
+      this.element.removeClass('oj-component-initnode');
+
+      unwrap(this.element, container);
+    },
+
+    /**
+     * Sets a single option
+     * @memberof! oj.ojIndexer
+     * @override
+     * @private
+     */
+    // eslint-disable-next-line no-unused-vars
+    _setOption: function (key, value) {
+      this._superApply(arguments);
+      if (key === 'data') {
+        this.refresh();
+      }
+    },
+
+    /**
+     * Sets up resources needed by indexer
+     * @memberof! oj.ojIndexer
+     * @instance
+     * @override
+     * @protected
+     */
+    _SetupResources: function () {
+      this._super();
+
+      // register a resize listener and swipe handler
+      var container = this._getIndexerContainer()[0];
+      this._registerResizeListener(container);
+      this._registerTouchHandler(container);
+    },
+
+    /**
+     * Release resources held by indexer
+     * @memberof! oj.ojIndexer
+     * @instance
+     * @override
+     * @protected
+     */
+    _ReleaseResources: function () {
+      this._super();
+
+      var container = this._getIndexerContainer()[0];
+      this._unregisterResizeListener(container);
+      this._unregisterTouchHandler(container);
+
+      // if there's outstanding busy state, release it now
+      this._resolveBusyState();
+    },
+
+    /**
+     * @private
+     */
+    _resolveBusyState: function () {
+      if (this.busyStateResolve) {
+        this.busyStateResolve(null);
+        this.busyStateResolve = null;
+      }
+    },
+
+    /**
+     * Returns a jQuery object containing the root dom element of the indexer
+     * @ignore
+     * @expose
+     * @override
+     * @memberof! oj.ojIndexer
+     * @instance
+     * @return {jQuery} the root DOM element of the indexer
+     */
+    widget: function () {
+      return this._getIndexerContainer();
+    },
+
+    /**
+     * Redraw the entire indexer after having made some external modification.
+     *
+     * <p>This method does not accept any arguments.
+     *
+     * @ojshortdesc Redraw the entire indexer.
+     * @expose
+     * @memberof! oj.ojIndexer
+     * @instance
+     * @return {void}
+     * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
+     * $( ".selector" ).ojIndexer( "refresh" );
+     */
+    refresh: function () {
+      this._super();
+
+      this.element.empty();
+      this._createIndexerContent();
+      this._setAriaProperties();
+      this.m_current = null;
+    },
+
+    getNodeBySubId: function (locator) {
+      if (locator == null) {
+        return this.element ? this.element[0] : null;
+      }
+
+      var subId = locator.subId;
+      if (subId === 'oj-indexer-section') {
+        var section = locator.section;
+        var sections = this.element.children('li');
+        for (var i = 0; i < sections.length; i++) {
+          var node = sections.get(i);
+          var data = $(node).data(_DATA_RANGE);
+          if (data === section) {
+            return node;
+          }
+
+          // it's a separator, check the sections included in the range
+          var includes = $(node).data(_DATA_INCLUDES);
+          if (includes != null) {
+            for (var j = 0; j < includes.length; j++) {
+              if (includes[j] === section) {
+                return node;
               }
             }
           }
         }
-        // Non-null locators have to be handled by the component subclasses
-        return null;
-      },
+      }
+      // Non-null locators have to be handled by the component subclasses
+      return null;
+    },
 
-
-      getSubIdByNode: function (node) {
-        if (node != null) {
-          var section = $(node).data(_DATA_RANGE);
-          if (section != null) {
-            return { subId: 'oj-indexer-section', section: section };
-          }
+    getSubIdByNode: function (node) {
+      if (node != null) {
+        var section = $(node).data(_DATA_RANGE);
+        if (section != null) {
+          return { subId: 'oj-indexer-section', section: section };
         }
+      }
 
-        return null;
-      },
+      return null;
+    },
 
-      /** **************************** core rendering **********************************/
-      /**
-       * Sets wai-aria properties on root element
-       * @private
-       */
-      _setAriaProperties: function () {
-        this.element.attr('role', 'slider')
-                    .attr('aria-orientation', 'vertical')
-                    .attr('aria-describedby', this.element.prop('id') + ':desc')
-                    .attr('aria-valuemin', 0)
-                    .attr('aria-valuemax', Math.max(0, this.element.children().length - 1));
-      },
+    /** **************************** core rendering **********************************/
+    /**
+     * Sets wai-aria properties on root element
+     * @private
+     */
+    _setAriaProperties: function () {
+      this.element
+        .attr('role', 'slider')
+        .attr('aria-orientation', 'vertical')
+        .attr('aria-describedby', this.element.prop('id') + ':desc')
+        .attr('aria-valuemin', 0)
+        .attr('aria-valuemax', Math.max(0, this.element.children().length - 1));
+    },
 
-      /**
-       * Removes wai-aria properties on root element
-       * @private
-       */
-      _unsetAriaProperties: function () {
-        this.element.removeAttr('role')
-                    .removeAttr('aria-orientation')
-                    .removeAttr('aria-describedby')
-                    .removeAttr('aria-valuemin')
-                    .removeAttr('aria-valuemax')
-                    .removeAttr('aria-valuetext');
-      },
+    /**
+     * Removes wai-aria properties on root element
+     * @private
+     */
+    _unsetAriaProperties: function () {
+      this.element
+        .removeAttr('role')
+        .removeAttr('aria-orientation')
+        .removeAttr('aria-describedby')
+        .removeAttr('aria-valuemin')
+        .removeAttr('aria-valuemax')
+        .removeAttr('aria-valuetext');
+    },
 
-      /**
-       * Create instruction text for screen reader
-       * @private
-       */
-      _createInstructionText: function () {
-        var key;
+    /**
+     * Create instruction text for screen reader
+     * @private
+     */
+    _createInstructionText: function () {
+      var key;
 
-        if (isTouchSupported()) {
-          key = 'ariaTouchInstructionText';
-        } else {
-          key = 'ariaKeyboardInstructionText';
-        }
+      if (isTouchSupported()) {
+        key = 'ariaTouchInstructionText';
+      } else {
+        key = 'ariaKeyboardInstructionText';
+      }
 
-        var text = $(document.createElement('div'));
-        text.prop('id', this.element.prop('id') + ':desc');
-        text.addClass('oj-helper-hidden-accessible')
-            .text(this.getTranslatedString(key));
+      var text = $(document.createElement('div'));
+      text.prop('id', this.element.prop('id') + ':desc');
+      text.addClass('oj-helper-hidden-accessible').text(this.getTranslatedString(key));
 
-        this._getIndexerContainer().append(text); // @HTMLUpdateOK
-      },
+      this._getIndexerContainer().append(text); // @HTMLUpdateOK
+    },
 
-      /**
-       * Retrieves the div around the root element, create one if needed.
-       * @return {jQuery} the div around the root element
-       * @private
-       */
-      _getIndexerContainer: function () {
-        if (this.m_container == null) {
-          this.m_container = this._createIndexerContainer();
-        }
-        return this.m_container;
-      },
+    /**
+     * Retrieves the div around the root element, create one if needed.
+     * @return {jQuery} the div around the root element
+     * @private
+     */
+    _getIndexerContainer: function () {
+      if (this.m_container == null) {
+        this.m_container = this._createIndexerContainer();
+      }
+      return this.m_container;
+    },
 
-      /**
-       * Creates the div around the root element.
-       * @return {jQuery} the div around the root element
-       * @private
-       */
-      _createIndexerContainer: function () {
-        var container;
-        if (this.OuterWrapper) {
-          container = $(this.OuterWrapper);
-        } else {
-          container = $(document.createElement('div'));
-          this.element.parent()[0].replaceChild(container[0], this.element[0]);
-        }
-        container.addClass('oj-indexer oj-component');
-        container.prepend(this.element); // @HTMLUpdateOK
+    /**
+     * Creates the div around the root element.
+     * @return {jQuery} the div around the root element
+     * @private
+     */
+    _createIndexerContainer: function () {
+      var container;
+      if (this.OuterWrapper) {
+        container = $(this.OuterWrapper);
+      } else {
+        container = $(document.createElement('div'));
+        this.element.parent()[0].replaceChild(container[0], this.element[0]);
+      }
+      container.addClass('oj-indexer oj-component');
+      container.prepend(this.element); // @HTMLUpdateOK
 
-        return container;
-      },
+      return container;
+    },
 
-      /**
-       * @private
-       */
-      _createIndexerContent: function () {
-        var model = this._getIndexerModel();
-        if (model == null) {
-          return;
-        }
+    /**
+     * @private
+     */
+    _createIndexerContent: function () {
+      var model = this._getIndexerModel();
+      if (model == null) {
+        return;
+      }
 
-        var root = this.element;
-        var missingSections;
-        var sections = model.getIndexableSections();
-        if (model.getMissingSections) {
-          missingSections = model.getMissingSections();
-        }
-        var sectionOthers = this.getTranslatedString('indexerOthers');
-        var height = this.widget().outerHeight();
+      var root = this.element;
+      var missingSections;
+      var sections = model.getIndexableSections();
+      if (model.getMissingSections) {
+        missingSections = model.getMissingSections();
+      }
+      var sectionOthers = this.getTranslatedString('indexerOthers');
+      var height = this.widget().outerHeight();
 
-        // the first character is always present, use it to test height
-        var first = this._createItem(sections[0], missingSections);
-        root.append(first); // @HTMLUpdateOK
+      // the first character is always present, use it to test height
+      var first = this._createItem(sections[0], missingSections);
+      root.append(first); // @HTMLUpdateOK
 
-        // remove abbr first otherwise it will affect item height
-        this._getIndexerContainer().removeClass('oj-indexer-abbr');
-        if (this.m_itemHeight == null) {
-          this.m_itemHeight = first.outerHeight();
-        }
-        // safeguard this.m_itemHeight from being 0, which shouldn't happen
-        var itemHeight = Math.max(1, this.m_itemHeight);
-        var max = Math.floor(height / itemHeight);
+      // remove abbr first otherwise it will affect item height
+      this._getIndexerContainer().removeClass('oj-indexer-abbr');
+      if (this.m_itemHeight == null) {
+        this.m_itemHeight = first.outerHeight();
+      }
+      // safeguard this.m_itemHeight from being 0, which shouldn't happen
+      var itemHeight = Math.max(1, this.m_itemHeight);
+      var max = Math.floor(height / itemHeight);
 
-        // first +1 is to include the '#', second +1 is to include rendering of the symbol between letters
-        var skip = Math.floor((sections.length + 1) / max) + 1;
+      // first +1 is to include the '#', second +1 is to include rendering of the symbol between letters
+      var skip = Math.floor((sections.length + 1) / max) + 1;
+      if (skip > 1) {
+        // the height of item is a little different
+        this._getIndexerContainer().addClass('oj-indexer-abbr');
+      }
+
+      for (var i = 1 + skip; i < sections.length; i = i + skip + 1) {
         if (skip > 1) {
-            // the height of item is a little different
-          this._getIndexerContainer().addClass('oj-indexer-abbr');
-        }
-
-        for (var i = 1 + skip; i < sections.length; i = i + skip + 1) {
-          if (skip > 1) {
-            var separator = this._createSeparator(sections, i - skip, i - 1);
-            root.append(separator); // @HTMLUpdateOK
-          } else {
-            i -= 1;
-          }
-
-          var section = sections[i];
-          var item = this._createItem(section, missingSections);
-          root.append(item); // @HTMLUpdateOK
-        }
-
-        // the last character is always present
-        var last = this._createItem(sections[sections.length - 1], missingSections);
-        root.append(last); // @HTMLUpdateOK
-
-        // the special others character is always present
-        var others = this._createItem(sectionOthers);
-        others.attr('data-others', 'true');
-        root.append(others); // @HTMLUpdateOK
-
-        if (this.m_height == null) {
-          this.m_height = height;
-        }
-      },
-
-      /**
-       * @private
-       */
-      _createItem: function (section, missingSections) {
-        var label = section.label ? section.label : section;
-
-        var item = $(document.createElement('li'));
-        item.data(_DATA_RANGE, section)
-            .text(label);
-
-        if (missingSections != null && missingSections.indexOf(section) > -1) {
-          item.addClass('oj-disabled');
-        }
-
-        return item;
-      },
-
-      /**
-       * @private
-       */
-      _createSeparator: function (sections, from, to) {
-        var includes = [];
-        var item = $(document.createElement('li'));
-        item.addClass('oj-indexer-ellipsis')
-            .data(_DATA_RANGE, sections[from + Math.round((to - from) / 2)]);
-        for (var i = from; i <= to; i++) {
-          includes.push(sections[i]);
-        }
-        item.data(_DATA_INCLUDES, includes);
-        return item;
-      },
-      /** ************************** end core rendering **********************************/
-
-      /** ****************************** event handler **********************************/
-      /**
-       * Initialize the indexer
-       * @private
-       */
-      _setup: function () {
-        var self = this;
-
-        this.element
-            .uniqueId()
-            .addClass('oj-component-initnode')
-            .attr('tabIndex', 0);
-
-        this._on(this.element, {
-          click: function (event) {
-            self._handleClick(event);
-          },
-          keydown: function (event) {
-            self._handleKeyDown(event);
-          },
-          focus: function (event) {
-            self._handleFocus(event);
-          },
-          blur: function (event) {
-            self._handleBlur(event);
-          }
-        });
-
-        this._focusable({
-          applyHighlight: true,
-          setupHandlers: function (focusInHandler, focusOutHandler) {
-            self._focusInHandler = focusInHandler;
-            self._focusOutHandler = focusOutHandler;
-          }
-        });
-      },
-
-      /**
-       * Event handler for when mouse click anywhere in the indexer
-       * @param {Event} event mouseclick event
-       * @private
-       */
-      _handleClick: function (event) {
-        var target;
-
-        // only perform events on left mouse, (right in rtl culture)
-        if (event.button === 0) {
-          target = $(event.target);
-          this._setCurrent(target);
-        }
-      },
-
-      /**
-       * Handler for focus event
-       * @param {Event} event the focus event
-       * @private
-       */
-      // eslint-disable-next-line no-unused-vars
-      _handleFocus: function (event) {
-        this._getIndexerContainer().addClass('oj-focus-ancestor');
-        if (this.m_current == null) {
-          this._setFocus(this.element.children('li').first());
+          var separator = this._createSeparator(sections, i - skip, i - 1);
+          root.append(separator); // @HTMLUpdateOK
         } else {
-          this._setFocus(this.m_current);
-        }
-      },
-
-      /**
-       * Handler for blur event
-       * @param {Event} event the blur event
-       * @private
-       */
-      // eslint-disable-next-line no-unused-vars
-      _handleBlur: function (event) {
-        this._getIndexerContainer().removeClass('oj-focus-ancestor');
-      },
-
-      /**
-       * Event handler for when user press down a key
-       * @param {Event} event keydown event
-       * @private
-       */
-      _handleKeyDown: function (event) {
-        var next;
-        var processed = false;
-
-        switch (event.keyCode) {
-            // UP key
-          case 38:
-            next = this.m_current.prev();
-            break;
-            // DOWN key
-          case 40:
-            next = this.m_current.next();
-            break;
-            // ENTER key
-          case 13:
-            this._setCurrent(this.m_current);
-            processed = true;
-            break;
-          default:
-            break;
+          i -= 1;
         }
 
-        if (next != null && next.length > 0) {
+        var section = sections[i];
+        var item = this._createItem(section, missingSections);
+        root.append(item); // @HTMLUpdateOK
+      }
+
+      // the last character is always present
+      var last = this._createItem(sections[sections.length - 1], missingSections);
+      root.append(last); // @HTMLUpdateOK
+
+      // the special others character is always present
+      var others = this._createItem(sectionOthers);
+      others.attr('data-others', 'true');
+      root.append(others); // @HTMLUpdateOK
+
+      if (this.m_height == null) {
+        this.m_height = height;
+      }
+    },
+
+    /**
+     * @private
+     */
+    _createItem: function (section, missingSections) {
+      var label = section.label ? section.label : section;
+
+      var item = $(document.createElement('li'));
+      item.data(_DATA_RANGE, section).text(label);
+
+      if (missingSections != null && missingSections.indexOf(section) > -1) {
+        item.addClass('oj-disabled');
+      }
+
+      return item;
+    },
+
+    /**
+     * @private
+     */
+    _createSeparator: function (sections, from, to) {
+      var includes = [];
+      var item = $(document.createElement('li'));
+      item
+        .addClass('oj-indexer-ellipsis')
+        .data(_DATA_RANGE, sections[from + Math.round((to - from) / 2)]);
+      for (var i = from; i <= to; i++) {
+        includes.push(sections[i]);
+      }
+      item.data(_DATA_INCLUDES, includes);
+      return item;
+    },
+    /** ************************** end core rendering **********************************/
+
+    /** ****************************** event handler **********************************/
+    /**
+     * Initialize the indexer
+     * @private
+     */
+    _setup: function () {
+      var self = this;
+
+      this.element.uniqueId().addClass('oj-component-initnode').attr('tabIndex', 0);
+
+      this._on(this.element, {
+        click: function (event) {
+          self._handleClick(event);
+        },
+        keydown: function (event) {
+          self._handleKeyDown(event);
+        },
+        focus: function (event) {
+          self._handleFocus(event);
+        },
+        blur: function (event) {
+          self._handleBlur(event);
+        }
+      });
+
+      this._focusable({
+        applyHighlight: true,
+        setupHandlers: function (focusInHandler, focusOutHandler) {
+          self._focusInHandler = focusInHandler;
+          self._focusOutHandler = focusOutHandler;
+        }
+      });
+    },
+
+    /**
+     * Event handler for when mouse click anywhere in the indexer
+     * @param {Event} event mouseclick event
+     * @private
+     */
+    _handleClick: function (event) {
+      var target;
+
+      // only perform events on left mouse, (right in rtl culture)
+      if (event.button === 0) {
+        target = $(event.target);
+        this._setCurrent(target);
+      }
+    },
+
+    /**
+     * Handler for focus event
+     * @param {Event} event the focus event
+     * @private
+     */
+    // eslint-disable-next-line no-unused-vars
+    _handleFocus: function (event) {
+      this._getIndexerContainer().addClass('oj-focus-ancestor');
+      if (this.m_current == null) {
+        this._setFocus(this.element.children('li').first());
+      } else {
+        this._setFocus(this.m_current);
+      }
+    },
+
+    /**
+     * Handler for blur event
+     * @param {Event} event the blur event
+     * @private
+     */
+    // eslint-disable-next-line no-unused-vars
+    _handleBlur: function (event) {
+      this._getIndexerContainer().removeClass('oj-focus-ancestor');
+    },
+
+    /**
+     * Event handler for when user press down a key
+     * @param {Event} event keydown event
+     * @private
+     */
+    _handleKeyDown: function (event) {
+      var next;
+      var processed = false;
+
+      switch (event.keyCode) {
+        // UP key
+        case 38:
+          next = this.m_current.prev();
+          break;
+        // DOWN key
+        case 40:
+          next = this.m_current.next();
+          break;
+        // ENTER key
+        case 13:
+          this._setCurrent(this.m_current);
           processed = true;
-          this._setFocus(next);
-        }
+          break;
+        default:
+          break;
+      }
 
-        if (processed) {
-          event.preventDefault();
-        }
-      },
+      if (next != null && next.length > 0) {
+        processed = true;
+        this._setFocus(next);
+      }
 
-      _setFocus: function (item) {
-        if (this.m_current != null) {
-          this._focusOutHandler(this.m_current);
-        }
-        this._focusInHandler(item);
+      if (processed) {
+        event.preventDefault();
+      }
+    },
 
-        this._updateAriaProperties(item);
-        this.m_current = item;
-      },
+    _setFocus: function (item) {
+      if (this.m_current != null) {
+        this._focusOutHandler(this.m_current);
+      }
+      this._focusInHandler(item);
 
-      /**
-       * Retrieves the indexer model.
-       * @private
-       */
-      _getIndexerModel: function () {
-        var model = this.option('data');
-        if (model != null && (model.setSection === undefined ||
-                              model.getIndexableSections === undefined)) {
-          throw new Error('Invalid IndexerModel');
-        }
-        return model;
-      },
+      this._updateAriaProperties(item);
+      this.m_current = item;
+    },
 
-      /**
-       * Sets the character item as current
-       * @param {jQuery} item
-       * @private
-       */
-      _setCurrent: function (item) {
-        var section = item.data(_DATA_RANGE);
-        if (item.attr(_DATA_OTHERS)) {
-          section = IndexerModel.SECTION_OTHERS;
-        }
+    /**
+     * Retrieves the indexer model.
+     * @private
+     */
+    _getIndexerModel: function () {
+      var model = this.option('data');
+      if (
+        model != null &&
+        (model.setSection === undefined || model.getIndexableSections === undefined)
+      ) {
+        throw new Error('Invalid IndexerModel');
+      }
+      return model;
+    },
 
-        this._setCurrentSection(section);
-      },
+    /**
+     * Sets the character item as current
+     * @param {jQuery} item
+     * @private
+     */
+    _setCurrent: function (item) {
+      var section = item.data(_DATA_RANGE);
+      if (item.attr(_DATA_OTHERS)) {
+        section = IndexerModel.SECTION_OTHERS;
+      }
 
-      /**
-       * Sets the section as current
-       * @param {Object} section
-       * @private
-       */
-      _setCurrentSection: function (section) {
-        var self = this;
-        var busyContext = Context.getContext(this.element[0]).getBusyContext();
-        this.busyStateResolve = busyContext.addBusyState({ description: 'setCurrentSection' });
+      this._setCurrentSection(section);
+    },
 
-        // sets on the IndexerModel
-        var promise = /** @type {Promise} */ (this._getIndexerModel().setSection(section));
-        promise.then(function (val) {
+    /**
+     * Sets the section as current
+     * @param {Object} section
+     * @private
+     */
+    _setCurrentSection: function (section) {
+      var self = this;
+      var busyContext = Context.getContext(this.element[0]).getBusyContext();
+      this.busyStateResolve = busyContext.addBusyState({ description: 'setCurrentSection' });
+
+      // sets on the IndexerModel
+      var promise = /** @type {Promise} */ (this._getIndexerModel().setSection(section));
+      promise.then(
+        function (val) {
           // the resolve value is the section that actually scrolls to
           if (val != null) {
             var item = self._findItem(val);
@@ -856,228 +866,230 @@ IndexerModel.SECTION_OTHERS = {
           }
 
           self._resolveBusyState();
-        }, function () {
+        },
+        function () {
           self._resolveBusyState();
-        });
-      },
-
-      /**
-       * Update wai-aria properties
-       * @param {jQuery} item the item
-       * @private
-       */
-      _updateAriaProperties: function (item) {
-        var includes = item.data(_DATA_INCLUDES);
-        var valueText = '';
-
-        if (includes != null) {
-          // length should always be > 0
-          if (includes.length > 0) {
-            var first = includes[0].label ? includes[0].label : includes[0];
-            var second = (includes[includes.length - 1].label ?
-                          includes[includes.length - 1].label :
-                          includes[includes.length - 1]);
-            valueText = this.getTranslatedString('ariaInBetweenText',
-                                                 { first: first, second: second });
-          }
-        } else {
-          var val = item.data(_DATA_RANGE);
-          // checks if it's the special others section
-          if (val === IndexerModel.SECTION_OTHERS) {
-            valueText = this.getTranslatedString('ariaOthersLabel');
-          } else {
-            valueText = val;
-          }
         }
+      );
+    },
 
-        // convey to screen reader that it's disabled
-        if (item.hasClass('oj-disabled')) {
-          valueText = valueText + '. ' + this.getTranslatedString('ariaDisabledLabel');
-        }
+    /**
+     * Update wai-aria properties
+     * @param {jQuery} item the item
+     * @private
+     */
+    _updateAriaProperties: function (item) {
+      var includes = item.data(_DATA_INCLUDES);
+      var valueText = '';
 
-        this.element.attr('aria-valuetext', valueText);
-        this.element.attr('aria-valuenow', item.index());
-      },
-
-      /**
-       * Finds the item with the specified section
-       * @param {Object} section
-       * @return {jQuery} the item, null if not found
-       * @private
-       */
-      _findItem: function (section) {
-        var children = this.element.children();
-
-        for (var i = 0; i < children.length; i++) {
-          var item = children.get(i);
-          var value = $(item).data(_DATA_RANGE);
-          var includes = $(item).data(_DATA_INCLUDES);
-
-          if ((value != null && value === section) ||
-              (includes != null && includes.indexOf(section) > -1)) {
-            return $(item);
-          }
-        }
-
-        return null;
-      },
-
-      /**
-       * Unregister event listeners for resize the container DOM element.
-       * @param {Element} element the container DOM element
-       * @private
-       */
-      _unregisterResizeListener: function (element) {
-        if (element && this._resizeHandler) {
-          // remove existing listener
-          removeResizeListener(element, this._resizeHandler);
-        }
-      },
-
-      /**
-       * Register event listeners for resize the container DOM element.
-       * @param {Element} element  DOM element
-       * @private
-       */
-      _registerResizeListener: function (element) {
-        if (element) {
-          if (this._resizeHandler == null) {
-            this._resizeHandler = this._handleResize.bind(this);
-          }
-
-          addResizeListener(element, this._resizeHandler);
-        }
-      },
-
-      /**
-       * Unregister panning handler
-       * @param {Element} element  DOM element
-       * @private
-       */
-      _unregisterTouchHandler: function (element) {
-        if (this.hammer) {
-          this.hammer.off('panstart panmove panend');
-          $(element).ojHammer('destroy');
-        }
-        this.hammer = null;
-      },
-
-      /**
-       * Register panning handler
-       * @param {Element} element  DOM element
-       * @private
-       */
-      _registerTouchHandler: function (element) {
-        var self = this;
-        var x;
-        var y;
-        var currentTarget;
-        var currentSection;
-        var currentY;
-
-        var options = {
-          recognizers: [
-            [
-              Pan, { direction: DIRECTION_VERTICAL }
-            ]
-          ]
-        };
-
-        this.hammer = $(element)
-          .ojHammer(options)
-          .on('panstart', function (event) {
-            var target = event.gesture.target;
-            // for x, don't use the target, use x relative to the indexer to ensure it reflects item in Indexer
-            // even if the finger is off the Indexer
-            x = self.element[0].getBoundingClientRect().left + 5;
-            y = target.getBoundingClientRect().top;
-            self._setCurrent($(target));
-
-            currentTarget = target;
-            currentSection = $(target).data(_DATA_RANGE);
-            currentY = y;
-          })
-          .on('panmove', function (event) {
-            // calculate point instead of using screenX/Y from touch is better since
-            // 1) x stays constant
-            // 2) in voiceover user could have pan anywhere on the screen
-            var previousY = currentY;
-            currentY = y + event.gesture.deltaY;
-
-            var target = document.elementFromPoint(x, currentY);
-
-            // should not happen
-            if (target == null) {
-              return;
-            }
-
-            var delta = currentY - previousY;
-            var range;
-            var section;
-
-            if (currentTarget === target) {
-              range = $(target).data(_DATA_INCLUDES);
-              // if the section is a range (dot), then try to set the next section inside the range current
-              // for example, if move on * which represents range BCD, if current is C then move up should go to B and move down should go to D
-              if (range != null) {
-                var index = range.indexOf(currentSection);
-                section = null;
-                if (delta > 0 && index < range.length - 1) {
-                  section = range[index + 1];
-                } else if (delta < 0 && index > 0) {
-                  section = range[index - 1];
-                }
-
-                if (section != null) {
-                  currentSection = section;
-                  self._setCurrentSection(section);
-                }
-              }
-            } else if ($(target).data(_DATA_RANGE)) {
-              range = $(target).data(_DATA_INCLUDES);
-              section = null;
-              // if the target is a range (dot), check to see if we should set the section to the beginning of
-              // range or end of range.  For example, if you have A * E with * represents BCD, coming from A should go to B
-              // where as coming from E should go to D.
-              if (range != null) {
-                if (delta > 0 && target === currentTarget.nextElementSibling) {
-                  section = range[0];
-                } else if (delta < 0 && target === currentTarget.previousElementSibling) {
-                  section = range[range.length - 1];
-                }
-              }
-
-              if (section == null) {
-                section = $(target).data(_DATA_RANGE);
-              }
-
-              currentTarget = target;
-              currentSection = section;
-
-              self._setCurrentSection(currentSection);
-            }
-          })
-          .on('panend', function () {
-            currentTarget = null;
-            currentSection = null;
-            currentY = null;
+      if (includes != null) {
+        // length should always be > 0
+        if (includes.length > 0) {
+          var first = includes[0].label ? includes[0].label : includes[0];
+          var second = includes[includes.length - 1].label
+            ? includes[includes.length - 1].label
+            : includes[includes.length - 1];
+          valueText = this.getTranslatedString('ariaInBetweenText', {
+            first: first,
+            second: second
           });
-      },
-
-      /**
-       * The resize handler.
-       * @param {number} width the new width
-       * @param {number} height the new height
-       * @private
-       */
-      _handleResize: function (width, height) {
-        if (height > 0 && height !== this.m_height) {
-          this.refresh();
-          this.m_height = height;
+        }
+      } else {
+        var val = item.data(_DATA_RANGE);
+        // checks if it's the special others section
+        if (val === IndexerModel.SECTION_OTHERS) {
+          valueText = this.getTranslatedString('ariaOthersLabel');
+        } else {
+          valueText = val;
         }
       }
-    });
-}());
+
+      // convey to screen reader that it's disabled
+      if (item.hasClass('oj-disabled')) {
+        valueText = valueText + '. ' + this.getTranslatedString('ariaDisabledLabel');
+      }
+
+      this.element.attr('aria-valuetext', valueText);
+      this.element.attr('aria-valuenow', item.index());
+    },
+
+    /**
+     * Finds the item with the specified section
+     * @param {Object} section
+     * @return {jQuery} the item, null if not found
+     * @private
+     */
+    _findItem: function (section) {
+      var children = this.element.children();
+
+      for (var i = 0; i < children.length; i++) {
+        var item = children.get(i);
+        var value = $(item).data(_DATA_RANGE);
+        var includes = $(item).data(_DATA_INCLUDES);
+
+        if (
+          (value != null && value === section) ||
+          (includes != null && includes.indexOf(section) > -1)
+        ) {
+          return $(item);
+        }
+      }
+
+      return null;
+    },
+
+    /**
+     * Unregister event listeners for resize the container DOM element.
+     * @param {Element} element the container DOM element
+     * @private
+     */
+    _unregisterResizeListener: function (element) {
+      if (element && this._resizeHandler) {
+        // remove existing listener
+        removeResizeListener(element, this._resizeHandler);
+      }
+    },
+
+    /**
+     * Register event listeners for resize the container DOM element.
+     * @param {Element} element  DOM element
+     * @private
+     */
+    _registerResizeListener: function (element) {
+      if (element) {
+        if (this._resizeHandler == null) {
+          this._resizeHandler = this._handleResize.bind(this);
+        }
+
+        addResizeListener(element, this._resizeHandler);
+      }
+    },
+
+    /**
+     * Unregister panning handler
+     * @param {Element} element  DOM element
+     * @private
+     */
+    _unregisterTouchHandler: function (element) {
+      if (this.hammer) {
+        this.hammer.off('panstart panmove panend');
+        $(element).ojHammer('destroy');
+      }
+      this.hammer = null;
+    },
+
+    /**
+     * Register panning handler
+     * @param {Element} element  DOM element
+     * @private
+     */
+    _registerTouchHandler: function (element) {
+      var self = this;
+      var x;
+      var y;
+      var currentTarget;
+      var currentSection;
+      var currentY;
+
+      var options = {
+        recognizers: [[Pan, { direction: DIRECTION_VERTICAL }]]
+      };
+
+      this.hammer = $(element)
+        .ojHammer(options)
+        .on('panstart', function (event) {
+          var target = event.gesture.target;
+          // for x, don't use the target, use x relative to the indexer to ensure it reflects item in Indexer
+          // even if the finger is off the Indexer
+          x = self.element[0].getBoundingClientRect().left + 5;
+          y = target.getBoundingClientRect().top;
+          self._setCurrent($(target));
+
+          currentTarget = target;
+          currentSection = $(target).data(_DATA_RANGE);
+          currentY = y;
+        })
+        .on('panmove', function (event) {
+          // calculate point instead of using screenX/Y from touch is better since
+          // 1) x stays constant
+          // 2) in voiceover user could have pan anywhere on the screen
+          var previousY = currentY;
+          currentY = y + event.gesture.deltaY;
+
+          var target = document.elementFromPoint(x, currentY);
+
+          // should not happen
+          if (target == null) {
+            return;
+          }
+
+          var delta = currentY - previousY;
+          var range;
+          var section;
+
+          if (currentTarget === target) {
+            range = $(target).data(_DATA_INCLUDES);
+            // if the section is a range (dot), then try to set the next section inside the range current
+            // for example, if move on * which represents range BCD, if current is C then move up should go to B and move down should go to D
+            if (range != null) {
+              var index = range.indexOf(currentSection);
+              section = null;
+              if (delta > 0 && index < range.length - 1) {
+                section = range[index + 1];
+              } else if (delta < 0 && index > 0) {
+                section = range[index - 1];
+              }
+
+              if (section != null) {
+                currentSection = section;
+                self._setCurrentSection(section);
+              }
+            }
+          } else if ($(target).data(_DATA_RANGE)) {
+            range = $(target).data(_DATA_INCLUDES);
+            section = null;
+            // if the target is a range (dot), check to see if we should set the section to the beginning of
+            // range or end of range.  For example, if you have A * E with * represents BCD, coming from A should go to B
+            // where as coming from E should go to D.
+            if (range != null) {
+              if (delta > 0 && target === currentTarget.nextElementSibling) {
+                section = range[0];
+              } else if (delta < 0 && target === currentTarget.previousElementSibling) {
+                section = range[range.length - 1];
+              }
+            }
+
+            if (section == null) {
+              section = $(target).data(_DATA_RANGE);
+            }
+
+            currentTarget = target;
+            currentSection = section;
+
+            self._setCurrentSection(currentSection);
+          }
+        })
+        .on('panend', function () {
+          currentTarget = null;
+          currentSection = null;
+          currentY = null;
+        });
+    },
+
+    /**
+     * The resize handler.
+     * @param {number} width the new width
+     * @param {number} height the new height
+     * @private
+     */
+    _handleResize: function (width, height) {
+      if (height > 0 && height !== this.m_height) {
+        this.refresh();
+        this.m_height = height;
+      }
+    }
+  });
+})();
 
 /**
  * Implementation of the IndexerModel used by ListView.  This implementation groups the data based on the first letter of the

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -53,7 +53,7 @@ var __oj_optgroup_metadata =
     __oj_optgroup_metadata.properties.customOptgroupRenderer = {};
     __oj_optgroup_metadata.extension._CONSTRUCTOR = ojOptGroup;
     oj.CustomElementBridge.register('oj-optgroup', { metadata: __oj_optgroup_metadata });
-  }());
+  })();
 
   /**
    * @ojcomponent oj.ojOptgroup
@@ -65,6 +65,8 @@ var __oj_optgroup_metadata =
    * @ojsignature class ojOptgroup extends JetElement<ojOptgroupSettableProperties>
    *
    * @ojpropertylayout {propertyGroup: "common", items: ["label", "disabled"]}
+   *
+   * @ojoracleicon 'oj-ux-ico-get-options'
    *
    * @classdesc
    * <h3 id="optgroupOverview-section">

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -142,8 +142,9 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
     var translations = Translations;
     var messageSummary = this._messageSummary;
     var messageDetail = this._messageDetail;
-    var valueDateParam = value ?
-    ConverterUtilsI18n.IntlConverterUtils._dateTime(value, ['fullYear', 'month', 'date'], true) : null;
+    var valueDateParam = value
+      ? ConverterUtilsI18n.IntlConverterUtils._dateTime(value, ['fullYear', 'month', 'date'], true)
+      : null;
 
     if (value === null) {
       return value;
@@ -151,14 +152,16 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
 
     if (this._inDisabled(valueDateParam)) {
       var generateValidationError = function (valueStr) {
-        summary = (messageSummary ?
-                   translations.applyParameters(messageSummary, { value: valueStr }) :
-                   translations.getTranslatedString('oj-validator.restriction.date.messageSummary',
-                                                    { value: valueStr }));
-        detail = (messageDetail ?
-                  translations.applyParameters(messageDetail, { value: valueStr }) :
-                  translations.getTranslatedString('oj-validator.restriction.date.messageDetail',
-                                                   { value: valueStr }));
+        summary = messageSummary
+          ? translations.applyParameters(messageSummary, { value: valueStr })
+          : translations.getTranslatedString('oj-validator.restriction.date.messageSummary', {
+              value: valueStr
+            });
+        detail = messageDetail
+          ? translations.applyParameters(messageDetail, { value: valueStr })
+          : translations.getTranslatedString('oj-validator.restriction.date.messageDetail', {
+              value: valueStr
+            });
         return [summary, detail];
       };
 

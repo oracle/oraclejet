@@ -4,9 +4,12 @@
   this.classTypeParams = data.classTypeParams;
   this.classTypeParamsDeclaration = data.classTypeParamsDeclaration;
   this.propsClassTypeParams = data.propsClassTypeParams;
-  var props = data.properties? Object.keys(data.properties).sort(): undefined;
-  var methods = data.methods? Object.keys(data.methods).sort(): undefined;
-
+  var props = data.properties ? Object.keys(data.properties).sort() : undefined;
+  var methods = data.funcVCompMethodSignatures ?
+                  Object.keys(data.funcVCompMethodSignatures).sort() :
+                  data.methods ?
+                    Object.keys(data.methods).sort() :
+                    undefined;
   if (data.imports){
     for (let i = 0; i < data.imports.length; i++){ ?>
 <?js= data.imports[i] ?>
@@ -40,10 +43,16 @@ export interface <?js= data.vcomponentName ?><?js= data.classTypeParamsDeclarati
   setProperty<T extends string>(property: T, value: JetSetPropertyType<T, <?js= data.settablePropertiesInterface ?><?js= data.propsTypeParams ?>>): void;
   setProperties(properties: <?js= data.settablePropertiesLenientInterface ?><?js= data.propsTypeParams ?>): void;
   <?js
-  // NOTE: Only class-based VComponents support custom element methods!
-  for (let m of methods) {?>
+  if (methods) {
+    for (let m of methods) {
+      if (data.funcVCompMethodSignatures) {?>
+  <?js= m ?>: <?js= data.funcVCompMethodSignatures[m] ?>;
+  <?js
+      } else {?>
   <?js= m ?>: <?js= data.vcomponentClassName ?><?js= this.classTypeParams ?>['<?js= m ?>'];
   <?js
+      }
+    }
   }?>
 }
 <?js= this.partial('namespace.tmpl', { data, props, componentName: data.vcomponentName }) ?>

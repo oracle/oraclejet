@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -144,7 +144,7 @@ const DvtTimeComponentScale = function () {};
  * @instance
  */
 
- /**
+/**
  * Takes in an arbitrary date, and returns the date representing the start of the interval in this scale
  * that the specified date belongs to. For example, if the scale is weeks and begins on Sunday, and the
  * input date represents Thursday, January 7, 2021, then the returned date should represent Sunday, January 3, 2021.

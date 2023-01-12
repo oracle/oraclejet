@@ -1,2 +1,2 @@
-export { MessageBannerItem } from './ojmessagebannertypes';
+export { MessageBannerItem,MessageBannerTemplateContext} from './ojmessagebanner';
 export { MessageBannerElementEventMap, MessageBannerElementSettableProperties, MessageBannerElementSettablePropertiesLenient, MessageBannerElement } from './ojmessagebanner';

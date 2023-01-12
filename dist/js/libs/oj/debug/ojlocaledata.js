@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/localeElements', 'ojs/ojcalendarutils'], function (exports, oj, ojldimport, ojcalendarutils) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojconfig', 'ojL10n!ojtranslations/nls/localeElements', 'ojs/ojcalendarutils'], function (exports, oj, Config, ojldimport, ojcalendarutils) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   ojldimport = ojldimport && Object.prototype.hasOwnProperty.call(ojldimport, 'default') ? ojldimport['default'] : ojldimport;
@@ -111,8 +111,20 @@ define(['exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/localeElements'
     }
     var months = LocaleData._getCalendarData().months['stand-alone'][type];
 
-    return [months['1'], months['2'], months['3'], months['4'], months['5'], months['6'],
-      months['7'], months['8'], months['9'], months['10'], months['11'], months['12']];
+    return [
+      months['1'],
+      months['2'],
+      months['3'],
+      months['4'],
+      months['5'],
+      months['6'],
+      months['7'],
+      months['8'],
+      months['9'],
+      months['10'],
+      months['11'],
+      months['12']
+    ];
   };
 
   /**
@@ -127,12 +139,12 @@ define(['exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/localeElements'
    */
   LocaleData.isMonthPriorToYear = function () {
     var options = { dateStyle: 'long' };
-    var locale = oj.Config.getLocale();
+    var locale = Config.getLocale();
     var d = new Date();
     var intlFormatter = new Intl.DateTimeFormat(locale, options);
     var parts = intlFormatter.formatToParts(d);
-    var monthIndex = parts.findIndex(obj => obj.type === 'month');
-    var yearIndex = parts.findIndex(obj => obj.type === 'year');
+    var monthIndex = parts.findIndex((obj) => obj.type === 'month');
+    var yearIndex = parts.findIndex((obj) => obj.type === 'year');
     return monthIndex < yearIndex;
   };
 
@@ -161,7 +173,7 @@ define(['exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/localeElements'
    * @private
    */
   LocaleData._getCalendarData = function () {
-    var locale = oj.Config.getLocale();
+    var locale = Config.getLocale();
     var cal = ojcalendarutils.CalendarUtils.getCalendar(locale, 'gregory');
     return cal;
   };
@@ -171,12 +183,13 @@ define(['exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/localeElements'
    * @private
    */
   LocaleData._getRegion = function () {
-    var locale = oj.Config.getLocale();
+    var locale = Config.getLocale();
     if (locale) {
       var tokens = locale.toUpperCase().split(/-|_/);
       if (tokens.length >= 2) {
         var tag = tokens[1];
-        if (tag.length === 4) { // this is a script tag
+        if (tag.length === 4) {
+          // this is a script tag
           if (tokens.length >= 3) {
             return tokens[2];
           }

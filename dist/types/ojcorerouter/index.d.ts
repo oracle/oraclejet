@@ -1,34 +1,12 @@
 import 'knockout';
-declare class CoreRouter<D extends {
-    [key: string]: any;
-} = {
-    [key: string]: any;
-}, P extends {
-    [key: string]: any;
-} = {
-    [key: string]: any;
-}, ParentD extends {
-    [key: string]: any;
-} = {
-    [key: string]: any;
-}, ParentP extends {
-    [key: string]: any;
-} = {
-    [key: string]: any;
-}> {
+declare class CoreRouter<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>, ParentD extends Record<string, any> = Record<string, any>,
+   ParentP extends Record<string, any> = Record<string, any>> {
     beforeStateChange: CoreRouter.Observable<CoreRouter.VetoableState<D, P>>;
     childRouter: CoreRouter;
     currentState: CoreRouter.Observable<CoreRouter.ActionableState<D, P>>;
     constructor(routes: Array<CoreRouter.DetailedRouteConfig<D> | CoreRouter.RedirectedRouteConfig>, options?: CoreRouter.CreateOptions<P>, parentRouter?: CoreRouter<ParentD, ParentP>);
-    createChildRouter<ChildD extends {
-        [key: string]: any;
-    } = {
-        [key: string]: any;
-    }, ChildP extends {
-        [key: string]: any;
-    } = {
-        [key: string]: any;
-    }>(routes: Array<CoreRouter.DetailedRouteConfig<ChildD> | CoreRouter.RedirectedRouteConfig>, options?: CoreRouter.CreateOptions<ChildP>): CoreRouter<ChildD, ChildP>;
+    createChildRouter<ChildD extends Record<string, any> = Record<string, any>, ChildP extends Record<string, any> = Record<string, any>>(routes: Array<CoreRouter.DetailedRouteConfig<ChildD> |
+       CoreRouter.RedirectedRouteConfig>, options?: CoreRouter.CreateOptions<ChildP>): CoreRouter<ChildD, ChildP>;
     destroy(): any;
     go(...route: CoreRouter.Route<P>[]): Promise<CoreRouter.CoreRouterState<D, P>>;
     reconfigure(routeConfigs: Array<(CoreRouter.DetailedRouteConfig | CoreRouter.RedirectedRouteConfig)>, navigateTo?: CoreRouter.Route<P> |
@@ -37,25 +15,17 @@ declare class CoreRouter<D extends {
 }
 declare namespace CoreRouter {
     // tslint:disable-next-line interface-over-type-literal
-    type ActionableState<D = {
-        [key: string]: any;
-    }, P = {
-        [key: string]: any;
-    }> = {
+    type ActionableState<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>> = {
         complete: ((param0: Promise<any>) => void);
         state: CoreRouterState<D, P>;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type CreateOptions<P = {
-        [key: string]: any;
-    }> = {
+    type CreateOptions<P extends Record<string, any> = Record<string, any>> = {
         history?: 'skip';
         urlAdapter?: UrlAdapter<P>;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type DetailedRouteConfig<D = {
-        [key: string]: any;
-    }> = {
+    type DetailedRouteConfig<D extends Record<string, any> = Record<string, any>> = {
         detail?: D;
         path: string | RegExp;
     };
@@ -73,42 +43,22 @@ declare namespace CoreRouter {
         redirect?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type VetoableState<D = {
-        [key: string]: any;
-    }, P = {
-        [key: string]: any;
-    }> = {
+    type VetoableState<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>> = {
         accept: ((param0: Promise<any>) => void);
         state: CoreRouterState<D, P>;
     };
-    interface Route<P extends {
-        [key: string]: any;
-    } = {
-        [key: string]: any;
-    }> {
+    interface Route<P extends Record<string, any> = Record<string, any>> {
         params?: P;
         path: string;
     }
-    interface CoreRouterState<D extends {
-        [key: string]: any;
-    } = {
-        [key: string]: any;
-    }, P extends {
-        [key: string]: any;
-    } = {
-        [key: string]: any;
-    }> {
+    interface CoreRouterState<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>> {
         readonly detail: D;
         readonly params: P;
         readonly path: string;
         readonly pathParams: string[];
         readonly redirect?: string;
     }
-    interface UrlAdapter<P extends {
-        [key: string]: any;
-    } = {
-        [key: string]: any;
-    }> {
+    interface UrlAdapter<P extends Record<string, any> = Record<string, any>> {
         getRoutesForUrl(routePathParams?: {
             offset: number;
             pathParams: string[];

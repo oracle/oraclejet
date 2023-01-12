@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -14,7 +14,7 @@ import { IntlNumberConverter } from 'ojs/ojconverter-number';
  * @constructor
  * @extends {dvt.Obj}
  */
- class BaseAxisInfo {
+class BaseAxisInfo {
   /**
    * Calculates and stores the axis information.
    * @param {dvt.Context} context
@@ -81,7 +81,6 @@ import { IntlNumberConverter } from 'ojs/ojconverter-number';
     return this._context;
   }
 
-
   /**
    * Returns the options settings for the axis.
    * @return {object} The options for the axis.
@@ -89,7 +88,6 @@ import { IntlNumberConverter } from 'ojs/ojconverter-number';
   getOptions() {
     return this.Options;
   }
-
 
   /**
    * Returns the value for the specified coordinate along the axis.  Returns null
@@ -112,7 +110,6 @@ import { IntlNumberConverter } from 'ojs/ojconverter-number';
     return this.getUnboundedValAt(coord);
   }
 
-
   /**
    * Returns the coordinate for the specified value.  Returns null if the value is
    * not within the axis.
@@ -128,7 +125,6 @@ import { IntlNumberConverter } from 'ojs/ojconverter-number';
     }
     return this.getUnboundedCoordAt(value);
   }
-
 
   /**
    * Returns the value for the specified coordinate along the axis.  If a coordinate
@@ -152,7 +148,6 @@ import { IntlNumberConverter } from 'ojs/ojconverter-number';
     return this.getUnboundedValAt(cord);
   }
 
-
   /**
    * Returns the coordinate for the specified value along the axis.  If a value
    * is not within the axis, returns the coordinate of the closest value within the axis.
@@ -174,7 +169,6 @@ import { IntlNumberConverter } from 'ojs/ojconverter-number';
     return this.getUnboundedCoordAt(val);
   }
 
-
   /**
    * Returns the value for the specified coordinate along the axis.
    * @param {number} coord The coordinate along the axis.
@@ -183,7 +177,6 @@ import { IntlNumberConverter } from 'ojs/ojconverter-number';
   getUnboundedValAt(coord) {
     return null; // subclasses should override
   }
-
 
   /**
    * Returns the coordinate for the specified value.
@@ -209,394 +202,410 @@ BaseAxisInfo.MIN_AXIS_BUFFER = 10;
  * @constructor
  * @extends {BaseAxisInfo}
  */
-const DataAxisInfoMixin = Base => class extends Base {
-  constructor(context, options, availSpace) {
-    super(context, options, availSpace);
+const DataAxisInfoMixin = (Base) =>
+  class extends Base {
+    constructor(context, options, availSpace) {
+      super(context, options, availSpace);
 
-    /** @private @const */
-    this.MAX_NUMBER_OF_GRIDS_AUTO = 10;
-    /** @private @const */
-    this.MINOR_TICK_COUNT = 2;
+      /** @private @const */
+      this.MAX_NUMBER_OF_GRIDS_AUTO = 10;
+      /** @private @const */
+      this.MINOR_TICK_COUNT = 2;
+
+      /**
+       * Constant used to address javascript floating point errors when calculating the majoriTick count
+       * and generating the labels and coords. ()
+       * @private
+       * @const
+       */
+      this.MAJOR_TICK_INCREMENT_BUFFER = 0.0000000001;
+
+      /** Minimum bar size for log scale; prevents tiny bar with values close to axis min
+       * @private
+       * @const
+       * */
+      this.MIN_BAR_SIZE_IN_LOG = 10;
+
+      // Figure out the coords for the min/max values
+      if (this.Position === 'top' || this.Position === 'bottom') {
+        // Provide at least the minimum buffer at each side to accommodate labels
+        if (options.tickLabel.rendered !== 'off' && options.rendered !== 'off') {
+          this.StartOverflow = Math.max(BaseAxisInfo.MIN_AXIS_BUFFER - options.leftBuffer, 0);
+          this.EndOverflow = Math.max(BaseAxisInfo.MIN_AXIS_BUFFER - options.rightBuffer, 0);
+        }
+
+        // Axis is horizontal, so flip for BIDI if needed
+        if (options.isRTL) {
+          this.MinCoord = this.EndCoord - this.EndOverflow;
+          this.MaxCoord = this.StartCoord + this.StartOverflow;
+        } else {
+          this.MinCoord = this.StartCoord + this.StartOverflow;
+          this.MaxCoord = this.EndCoord - this.EndOverflow;
+        }
+      } else if (this.Position === 'tangential' || this.Position === 'radial') {
+        this.MinCoord = this.StartCoord;
+        this.MaxCoord = this.EndCoord;
+      } else {
+        this.MinCoord = this.EndCoord;
+        this.MaxCoord = this.StartCoord;
+      }
+
+      this.DataMin = options.dataMin;
+      this.DataMax = options.dataMax;
+
+      this.utilsLogOptions = options._utils && options.scale === 'log';
+      this.IsLog =
+        this.utilsLogOptions || (options.scale === 'log' && this.DataMin > 0 && this.DataMax > 0);
+
+      this.LinearGlobalMin = this.actualToLinear(options.min);
+      this.LinearGlobalMax = this.actualToLinear(options.max);
+      this.LinearMinValue =
+        options.viewportMin == null
+          ? this.LinearGlobalMin
+          : this.actualToLinear(options.viewportMin);
+      this.LinearMaxValue =
+        options.viewportMax == null
+          ? this.LinearGlobalMax
+          : this.actualToLinear(options.viewportMax);
+      this._dataMin = this.actualToLinear(this.DataMin);
+      this._dataMax = this.actualToLinear(this.DataMax);
+
+      this.MajorIncrement = this.actualToLinear(options.step);
+      this.MinorIncrement = this.actualToLinear(options.minorStep);
+      this._minMajorIncrement = this.actualToLinear(options.minStep);
+      this.MajorTickCount = options._majorTickCount;
+      this.MinorTickCount = options._minorTickCount;
+
+      this.LogScaleUnit = options._logScaleUnit;
+      this.ZeroBaseline = !this.IsLog && options.baselineScaling === 'zero';
+      this._continuousExtent = this.Options ? this.Options._continuousExtent === 'on' : null;
+
+      this.Converter = null;
+      if (options.tickLabel != null) {
+        this.Converter = options.tickLabel.converter;
+      }
+      this._calcAxisExtents();
+
+      this.GlobalMin = this.linearToActual(this.LinearGlobalMin);
+      this.GlobalMax = this.linearToActual(this.LinearGlobalMax);
+      this.MinValue = this.linearToActual(this.LinearMinValue);
+      this.MaxValue = this.linearToActual(this.LinearMaxValue);
+    }
 
     /**
-     * Constant used to address javascript floating point errors when calculating the majoriTick count
-     * and generating the labels and coords. ()
-     * @private
-     * @const
+     * @override
      */
-    this.MAJOR_TICK_INCREMENT_BUFFER = 0.0000000001;
+    getBaselineCoord() {
+      return this.IsLog ? this.MinCoord : this.getBoundedCoordAt(0);
+    }
 
-    /** Minimum bar size for log scale; prevents tiny bar with values close to axis min
+    /**
+     * @override
+     */
+    getUnboundedValAt(coord) {
+      if (coord == null) {
+        return null;
+      }
+      var ratio = (coord - this.MinCoord) / (this.MaxCoord - this.MinCoord);
+      var value = this.LinearMinValue + ratio * (this.LinearMaxValue - this.LinearMinValue);
+      return this.linearToActual(value);
+    }
+
+    /**
+     * @override
+     */
+    getUnboundedCoordAt(value) {
+      return this.GetUnboundedCoordAt(this.actualToLinear(value));
+    }
+
+    /**
+     * Returns the unbounded coord at the specified linearized value.
+     * @param {number} value The linearized value.
+     * @return {number}
      * @private
-     * @const
-     * */
-    this.MIN_BAR_SIZE_IN_LOG = 10;
+     */
+    GetUnboundedCoordAt(value) {
+      if (value == null) {
+        return null;
+      }
+      var ratio =
+        this.LinearMaxValue === this.LinearMinValue
+          ? 0
+          : (value - this.LinearMinValue) / (this.LinearMaxValue - this.LinearMinValue);
+      // Make sure the the ratio is not way too large so the browser does not fail to render
+      ratio = Math.max(Math.min(1000, ratio), -1000);
+      return this.MinCoord + ratio * (this.MaxCoord - this.MinCoord);
+    }
 
-    // Figure out the coords for the min/max values
-    if (this.Position === 'top' || this.Position === 'bottom') {
-      // Provide at least the minimum buffer at each side to accommodate labels
-      if (options.tickLabel.rendered !== 'off' && options.rendered !== 'off') {
-        this.StartOverflow = Math.max(BaseAxisInfo.MIN_AXIS_BUFFER - options.leftBuffer, 0);
-        this.EndOverflow = Math.max(BaseAxisInfo.MIN_AXIS_BUFFER - options.rightBuffer, 0);
+    /**
+     * Determines the number of major and minor tick counts and increments for the axis if values were not given.
+     * The default minor tick count is 2.
+     * @param {number} scaleUnit The scale unit of the axis.
+     * @private
+     */
+    CalcMajorMinorIncr(scaleUnit) {
+      if (!this.MajorIncrement) {
+        if (this.MajorTickCount) {
+          this.MajorIncrement = (this.LinearMaxValue - this.LinearMinValue) / this.MajorTickCount;
+        } else {
+          this.MajorIncrement = Math.max(scaleUnit, this._minMajorIncrement);
+        }
       }
 
-      // Axis is horizontal, so flip for BIDI if needed
-      if (options.isRTL) {
-        this.MinCoord = this.EndCoord - this.EndOverflow;
-        this.MaxCoord = this.StartCoord + this.StartOverflow;
-      } else {
-        this.MinCoord = this.StartCoord + this.StartOverflow;
-        this.MaxCoord = this.EndCoord - this.EndOverflow;
+      if (!this.MajorTickCount) {
+        this.MajorTickCount = (this.LinearMaxValue - this.LinearMinValue) / this.MajorIncrement;
+
+        // Check if we have a floating point inaccuracy that causes the tick count to be undercalculated
+        // within the allowable buffer. If so, tick count is supposed to be the rounded up integer.
+        if (
+          Math.ceil(this.MajorTickCount) - this.MajorTickCount <
+          this.MAJOR_TICK_INCREMENT_BUFFER
+        ) {
+          this.MajorTickCount = Math.ceil(this.MajorTickCount);
+        }
       }
-    } else if (this.Position === 'tangential' || this.Position === 'radial') {
-      this.MinCoord = this.StartCoord;
-      this.MaxCoord = this.EndCoord;
-    } else {
-      this.MinCoord = this.EndCoord;
-      this.MaxCoord = this.StartCoord;
-    }
 
-    this.DataMin = options.dataMin;
-    this.DataMax = options.dataMax;
+      if (!this.MinorTickCount) {
+        if (this.MinorIncrement) {
+          this.MinorTickCount = this.MajorIncrement / this.MinorIncrement;
+        } else if (this.IsLog) {
+          this.MinorTickCount = this.MajorIncrement;
+        } else {
+          this.MinorTickCount = this.MINOR_TICK_COUNT;
+        }
+      }
 
-    this.utilsLogOptions = options._utils && options.scale === 'log';
-    this.IsLog = this.utilsLogOptions || (options.scale === 'log' && this.DataMin > 0 && this.DataMax > 0);
-
-    this.LinearGlobalMin = this.actualToLinear(options.min);
-    this.LinearGlobalMax = this.actualToLinear(options.max);
-    this.LinearMinValue = options.viewportMin == null ?
-                        this.LinearGlobalMin :
-                        this.actualToLinear(options.viewportMin);
-    this.LinearMaxValue = options.viewportMax == null ?
-                      this.LinearGlobalMax :
-                      this.actualToLinear(options.viewportMax);
-    this._dataMin = this.actualToLinear(this.DataMin);
-    this._dataMax = this.actualToLinear(this.DataMax);
-
-    this.MajorIncrement = this.actualToLinear(options.step);
-    this.MinorIncrement = this.actualToLinear(options.minorStep);
-    this._minMajorIncrement = this.actualToLinear(options.minStep);
-    this.MajorTickCount = options._majorTickCount;
-    this.MinorTickCount = options._minorTickCount;
-
-    this.LogScaleUnit = options._logScaleUnit;
-    this.ZeroBaseline = !this.IsLog && options.baselineScaling === 'zero';
-    this._continuousExtent = this.Options ? this.Options._continuousExtent === 'on' : null;
-
-    this.Converter = null;
-    if (options.tickLabel != null) {
-      this.Converter = options.tickLabel.converter;
-    }
-    this._calcAxisExtents();
-
-    this.GlobalMin = this.linearToActual(this.LinearGlobalMin);
-    this.GlobalMax = this.linearToActual(this.LinearGlobalMax);
-    this.MinValue = this.linearToActual(this.LinearMinValue);
-    this.MaxValue = this.linearToActual(this.LinearMaxValue);
-  }
-
-  /**
-   * @override
-   */
-  getBaselineCoord() {
-    return this.IsLog ? this.MinCoord : this.getBoundedCoordAt(0);
-  }
-
-  /**
-   * @override
-   */
-  getUnboundedValAt(coord) {
-    if (coord == null) {
-      return null;
-    }
-    var ratio = (coord - this.MinCoord) / (this.MaxCoord - this.MinCoord);
-    var value = this.LinearMinValue + (ratio * (this.LinearMaxValue - this.LinearMinValue));
-    return this.linearToActual(value);
-  }
-
-  /**
-   * @override
-   */
-  getUnboundedCoordAt(value) {
-    return this.GetUnboundedCoordAt(this.actualToLinear(value));
-  }
-
-  /**
-   * Returns the unbounded coord at the specified linearized value.
-   * @param {number} value The linearized value.
-   * @return {number}
-   * @private
-   */
-  GetUnboundedCoordAt(value) {
-    if (value == null) {
-      return null;
-    }
-    var ratio = (this.LinearMaxValue === this.LinearMinValue) ? 0 :
-                    (value - this.LinearMinValue) / (this.LinearMaxValue - this.LinearMinValue);
-    // Make sure the the ratio is not way too large so the browser does not fail to render
-    ratio = Math.max(Math.min(1000, ratio), -1000);
-    return this.MinCoord + (ratio * (this.MaxCoord - this.MinCoord));
-  }
-
-  /**
-   * Determines the number of major and minor tick counts and increments for the axis if values were not given.
-   * The default minor tick count is 2.
-   * @param {number} scaleUnit The scale unit of the axis.
-   * @private
-   */
-  CalcMajorMinorIncr(scaleUnit) {
-    if (!this.MajorIncrement) {
-      if (this.MajorTickCount) {
-        this.MajorIncrement = (this.LinearMaxValue - this.LinearMinValue) / this.MajorTickCount;
-      } else {
-        this.MajorIncrement = Math.max(scaleUnit, this._minMajorIncrement);
+      if (!this.MinorIncrement) {
+        this.MinorIncrement = this.MajorIncrement / this.MinorTickCount;
       }
     }
 
-    if (!this.MajorTickCount) {
-      this.MajorTickCount = ((this.LinearMaxValue - this.LinearMinValue) / this.MajorIncrement);
-
-      // Check if we have a floating point inaccuracy that causes the tick count to be undercalculated
-      // within the allowable buffer. If so, tick count is supposed to be the rounded up integer.
-      if (Math.ceil(this.MajorTickCount) - this.MajorTickCount < this.MAJOR_TICK_INCREMENT_BUFFER) {
-        this.MajorTickCount = Math.ceil(this.MajorTickCount);
+    /**
+     * Determines the axis extents based on given start and end value
+     * or calculated from the min and max data values of the chart.
+     * @private
+     */
+    _calcAxisExtents() {
+      // Include 0 in the axis if we're scaling from the baseline
+      if (this.ZeroBaseline) {
+        this._dataMin = Math.min(0, this._dataMin);
+        this._dataMax = Math.max(0, this._dataMax);
       }
-    }
 
-    if (!this.MinorTickCount) {
-      if (this.MinorIncrement) {
-        this.MinorTickCount = this.MajorIncrement / this.MinorIncrement;
-      } else if (this.IsLog) {
-        this.MinorTickCount = this.MajorIncrement;
-      } else {
-        this.MinorTickCount = this.MINOR_TICK_COUNT;
+      var maxValue = this.LinearGlobalMax != null ? this.LinearGlobalMax : this._dataMax;
+      var minValue = this.LinearGlobalMin != null ? this.LinearGlobalMin : this._dataMin;
+      var scaleUnit = Math.max(this._calcAxisScale(minValue, maxValue), this._minMajorIncrement);
+
+      // If there's only a single value on the axis, we need to adjust the
+      // this._dataMin and this._dataMax to produce a nice looking axis with around 6 ticks.
+      if (this._dataMin === this._dataMax) {
+        if (this._dataMin === 0) {
+          this._dataMax += 5 * scaleUnit;
+        } else {
+          this._dataMin -= 2 * scaleUnit;
+          this._dataMax += 2 * scaleUnit;
+        }
       }
-    }
 
-    if (!this.MinorIncrement) {
-      this.MinorIncrement = this.MajorIncrement / this.MinorTickCount;
-    }
-  }
+      // Set the default global min
+      if (this.LinearGlobalMin == null) {
+        if (this.ZeroBaseline && this._dataMin >= 0) {
+          this.LinearGlobalMin = 0;
+        } else if (this._continuousExtent) {
+          // allow smooth pan/zoom transition
+          this.LinearGlobalMin = this._dataMin - (this._dataMax - this._dataMin) * 0.1;
+        } else if (!this.ZeroBaseline && this.LinearGlobalMax != null) {
+          this.LinearGlobalMin = this.LinearGlobalMax;
+          this.LinearGlobalMin -=
+            scaleUnit * (Math.floor((this.LinearGlobalMin - this._dataMin) / scaleUnit) + 1);
+        } else {
+          this.LinearGlobalMin = (Math.ceil(this._dataMin / scaleUnit) - 1) * scaleUnit;
+        }
 
-  /**
-   * Determines the axis extents based on given start and end value
-   * or calculated from the min and max data values of the chart.
-   * @private
-   */
-  _calcAxisExtents() {
-    // Include 0 in the axis if we're scaling from the baseline
-    if (this.ZeroBaseline) {
-      this._dataMin = Math.min(0, this._dataMin);
-      this._dataMax = Math.max(0, this._dataMax);
-    }
-
-    var maxValue = this.LinearGlobalMax != null ? this.LinearGlobalMax : this._dataMax;
-    var minValue = this.LinearGlobalMin != null ? this.LinearGlobalMin : this._dataMin;
-    var scaleUnit = Math.max(this._calcAxisScale(minValue, maxValue),
-      this._minMajorIncrement);
-
-    // If there's only a single value on the axis, we need to adjust the
-    // this._dataMin and this._dataMax to produce a nice looking axis with around 6 ticks.
-    if (this._dataMin === this._dataMax) {
-      if (this._dataMin === 0) {
-        this._dataMax += 5 * scaleUnit;
-      } else {
-        this._dataMin -= 2 * scaleUnit;
-        this._dataMax += 2 * scaleUnit;
+        // If all data points are positive, the axis min shouldn't be less than zero
+        if (this._dataMin >= 0 && !this.IsLog) {
+          this.LinearGlobalMin = Math.max(this.LinearGlobalMin, 0);
+        }
       }
-    }
 
-    // Set the default global min
-    if (this.LinearGlobalMin == null) {
-      if (this.ZeroBaseline && this._dataMin >= 0) {
+      // Set the default global max
+      if (this.LinearGlobalMax == null) {
+        if (this.MajorTickCount) {
+          this.LinearGlobalMax = this.LinearGlobalMin + this.MajorTickCount * scaleUnit;
+
+          // JET-28098 - wrong y2 max
+          if (this.LinearGlobalMax < this._dataMax) {
+            scaleUnit = Math.max(
+              this._calcAxisScale(minValue, maxValue + scaleUnit),
+              this._minMajorIncrement
+            );
+            this.LinearGlobalMax = this.LinearGlobalMin + this.MajorTickCount * scaleUnit;
+          }
+        } else if (this.ZeroBaseline && this._dataMax <= 0) {
+          this.LinearGlobalMax = 0;
+        } else if (this._continuousExtent) {
+          // allow smooth pan/zoom transition
+          this.LinearGlobalMax = this._dataMax + (this._dataMax - this._dataMin) * 0.1;
+        } else if (!this.ZeroBaseline) {
+          this.LinearGlobalMax = this.LinearGlobalMin;
+          this.LinearGlobalMax +=
+            scaleUnit * (Math.floor((this._dataMax - this.LinearGlobalMax) / scaleUnit) + 1);
+        } else {
+          this.LinearGlobalMax = (Math.floor(this._dataMax / scaleUnit) + 1) * scaleUnit;
+        }
+
+        // If all data points are negative, the axis max shouldn't be more that zero
+        if (this._dataMax <= 0) {
+          this.LinearGlobalMax = Math.min(this.LinearGlobalMax, 0);
+        }
+      }
+
+      if (this.LinearGlobalMax === this.LinearGlobalMin) {
+        // happens if this._dataMin == this._dataMax == 0
+        this.LinearGlobalMax = 100;
         this.LinearGlobalMin = 0;
-      } else if (this._continuousExtent) { // allow smooth pan/zoom transition
-        this.LinearGlobalMin = this._dataMin - ((this._dataMax - this._dataMin) * 0.1);
-      } else if (!this.ZeroBaseline && this.LinearGlobalMax != null) {
-        this.LinearGlobalMin = this.LinearGlobalMax;
-        this.LinearGlobalMin -= scaleUnit *
-                    (Math.floor((this.LinearGlobalMin - this._dataMin) / scaleUnit) + 1);
-      } else {
-        this.LinearGlobalMin = (Math.ceil(this._dataMin / scaleUnit) - 1) * scaleUnit;
+        scaleUnit = (this.LinearGlobalMax - this.LinearGlobalMin) / this.MAX_NUMBER_OF_GRIDS_AUTO;
       }
 
-      // If all data points are positive, the axis min shouldn't be less than zero
-      if (this._dataMin >= 0 && !this.IsLog) {
-        this.LinearGlobalMin = Math.max(this.LinearGlobalMin, 0);
+      if (this.LinearMinValue == null) {
+        this.LinearMinValue = this.LinearGlobalMin;
       }
+      if (this.LinearMaxValue == null) {
+        this.LinearMaxValue = this.LinearGlobalMax;
+      }
+
+      // if data min and axis min are too close (less than 10px) in log scale, decrease the axis min by a step
+      // when called from ojchart-utils (getLabelsFormatInfo) - always subtract one log scale unit from axis min regardless the diff
+      var diff = Math.abs(
+        this.GetUnboundedCoordAt(this.LinearGlobalMin) - this.GetUnboundedCoordAt(this._dataMin)
+      );
+      if ((this.IsLog && diff < this.MIN_BAR_SIZE_IN_LOG) || this.utilsLogOptions) {
+        this.LinearGlobalMin -= scaleUnit;
+        this.LinearMinValue = this.LinearGlobalMin;
+      }
+
+      // Recalc the scale unit if the axis viewport is limited
+      if (
+        this.LinearMinValue !== this.LinearGlobalMin ||
+        this.LinearMaxValue !== this.LinearGlobalMax
+      ) {
+        scaleUnit = this._calcAxisScale(this.LinearMinValue, this.LinearMaxValue);
+      }
+
+      if (this.LinearGlobalMin > this.LinearMinValue) {
+        this.LinearGlobalMin = this.LinearMinValue;
+      }
+
+      if (this.LinearGlobalMax < this.LinearMaxValue) {
+        this.LinearGlobalMax = this.LinearMaxValue;
+      }
+
+      // Calculate major and minor gridlines
+      this.CalcMajorMinorIncr(scaleUnit);
     }
 
-    // Set the default global max
-    if (this.LinearGlobalMax == null) {
+    /**
+     * Determines the scale unit of the axis based on a given start and end axis extent.
+     * @param {number} min The start data value for the axis.
+     * @param {number} max The end data value for the axis.
+     * @return {number} The scale unit of the axis.
+     * @private
+     */
+    _calcAxisScale(min, max) {
+      if (this.MajorIncrement) {
+        return this.MajorIncrement;
+      }
+      var spread = max - min;
+
+      if (this.IsLog) {
+        var scaleUnit = Math.floor(spread / 8) + 1;
+
+        // Store the scaleUnit for aligning log axes
+        if (!this.LogScaleUnit || this.LogScaleUnit < scaleUnit) {
+          this.LogScaleUnit = scaleUnit;
+        }
+        return this.LogScaleUnit;
+      }
+
+      if (spread === 0) {
+        if (min === 0) {
+          return 10;
+        }
+        return Math.pow(10, Math.floor(Math.log10(min)) - 1);
+      }
+
+      var testVal;
       if (this.MajorTickCount) {
-        this.LinearGlobalMax = this.LinearGlobalMin + (this.MajorTickCount * scaleUnit);
-
-        // JET-28098 - wrong y2 max
-        if (this.LinearGlobalMax < this._dataMax) {
-          scaleUnit = Math.max(this._calcAxisScale(minValue, maxValue + scaleUnit),
-            this._minMajorIncrement);
-          this.LinearGlobalMax = this.LinearGlobalMin + (this.MajorTickCount * scaleUnit);
+        //  - y2 axis should show better labels when tick marks are aligned
+        var increment = spread / this.MajorTickCount;
+        testVal = Math.pow(10, Math.ceil(Math.log10(increment) - 1));
+        var firstDigit = increment / testVal;
+        if (firstDigit > 1 && firstDigit <= 1.5) {
+          firstDigit = 1.5;
+        } else if (firstDigit > 5) {
+          firstDigit = 10;
+        } else {
+          firstDigit = Math.ceil(firstDigit);
         }
-      } else if (this.ZeroBaseline && this._dataMax <= 0) {
-        this.LinearGlobalMax = 0;
-      } else if (this._continuousExtent) { // allow smooth pan/zoom transition
-        this.LinearGlobalMax = this._dataMax + ((this._dataMax - this._dataMin) * 0.1);
-      } else if (!this.ZeroBaseline) {
-        this.LinearGlobalMax = this.LinearGlobalMin;
-        this.LinearGlobalMax += scaleUnit *
-                              (Math.floor((this._dataMax - this.LinearGlobalMax) / scaleUnit) + 1);
+        return firstDigit * testVal;
+      }
+
+      var t = Math.log10(spread);
+      testVal = Math.pow(10, Math.ceil(t) - 2);
+      var first2Digits = Math.round(spread / testVal);
+
+      // Aesthetically choose a scaling factor limiting to a max number of steps
+      var scaleFactor = 1;
+      if (first2Digits >= 10 && first2Digits <= 14) {
+        scaleFactor = 2;
+      } else if (first2Digits >= 15 && first2Digits <= 19) {
+        scaleFactor = 3;
+      } else if (first2Digits >= 20 && first2Digits <= 24) {
+        scaleFactor = 4;
+      } else if (first2Digits >= 25 && first2Digits <= 45) {
+        scaleFactor = 5;
+      } else if (first2Digits >= 46 && first2Digits <= 80) {
+        scaleFactor = 10;
       } else {
-        this.LinearGlobalMax = (Math.floor(this._dataMax / scaleUnit) + 1) * scaleUnit;
+        scaleFactor = 20;
+      }
+      return scaleFactor * testVal;
+    }
+
+    /**
+     * @override
+     */
+    linearToActual(value) {
+      if (value == null) {
+        return null;
+      }
+      return this.IsLog ? Math.pow(10, value) : value;
+    }
+
+    /**
+     * @override
+     */
+    actualToLinear(value) {
+      if (value == null) {
+        return null;
       }
 
-      // If all data points are negative, the axis max shouldn't be more that zero
-      if (this._dataMax <= 0) {
-        this.LinearGlobalMax = Math.min(this.LinearGlobalMax, 0);
+      if (this.IsLog) {
+        return value > 0 ? Math.log10(value) : null;
       }
+      return value;
     }
 
-    if (this.LinearGlobalMax === this.LinearGlobalMin) { // happens if this._dataMin == this._dataMax == 0
-      this.LinearGlobalMax = 100;
-      this.LinearGlobalMin = 0;
-      scaleUnit = (this.LinearGlobalMax - this.LinearGlobalMin) / this.MAX_NUMBER_OF_GRIDS_AUTO;
+    getAxisData() {
+      return {
+        isLog: this.IsLog,
+        max: this.LinearGlobalMax,
+        min: this.LinearGlobalMin,
+        step: this.MajorIncrement,
+        numSteps: this.MajorTickCount
+      };
     }
-
-    if (this.LinearMinValue == null) {
-      this.LinearMinValue = this.LinearGlobalMin;
-    }
-    if (this.LinearMaxValue == null) {
-      this.LinearMaxValue = this.LinearGlobalMax;
-    }
-
-    // if data min and axis min are too close (less than 10px) in log scale, decrease the axis min by a step
-    // when called from ojchart-utils (getLabelsFormatInfo) - always subtract one log scale unit from axis min regardless the diff
-    var diff = Math.abs(
-      this.GetUnboundedCoordAt(this.LinearGlobalMin) - this.GetUnboundedCoordAt(this._dataMin));
-    if ((this.IsLog && diff < this.MIN_BAR_SIZE_IN_LOG) || this.utilsLogOptions) {
-      this.LinearGlobalMin -= scaleUnit;
-      this.LinearMinValue = this.LinearGlobalMin;
-    }
-
-    // Recalc the scale unit if the axis viewport is limited
-    if (this.LinearMinValue !== this.LinearGlobalMin
-        || this.LinearMaxValue !== this.LinearGlobalMax) {
-          scaleUnit = this._calcAxisScale(this.LinearMinValue, this.LinearMaxValue);
-        }
-
-    if (this.LinearGlobalMin > this.LinearMinValue) {
-      this.LinearGlobalMin = this.LinearMinValue;
-    }
-
-    if (this.LinearGlobalMax < this.LinearMaxValue) {
-      this.LinearGlobalMax = this.LinearMaxValue;
-    }
-
-    // Calculate major and minor gridlines
-    this.CalcMajorMinorIncr(scaleUnit);
-  }
-
-  /**
-   * Determines the scale unit of the axis based on a given start and end axis extent.
-   * @param {number} min The start data value for the axis.
-   * @param {number} max The end data value for the axis.
-   * @return {number} The scale unit of the axis.
-   * @private
-   */
-  _calcAxisScale(min, max) {
-    if (this.MajorIncrement) {
-      return this.MajorIncrement;
-    }
-    var spread = max - min;
-
-    if (this.IsLog) {
-      var scaleUnit = Math.floor(spread / 8) + 1;
-
-      // Store the scaleUnit for aligning log axes
-      if (!this.LogScaleUnit || this.LogScaleUnit < scaleUnit) {
-        this.LogScaleUnit = scaleUnit;
-      }
-      return this.LogScaleUnit;
-    }
-
-    if (spread === 0) {
-      if (min === 0) {
-        return 10;
-      }
-      return Math.pow(10, Math.floor(Math.log10(min)) - 1);
-    }
-
-    var testVal;
-    if (this.MajorTickCount) {
-      //  - y2 axis should show better labels when tick marks are aligned
-      var increment = spread / this.MajorTickCount;
-      testVal = Math.pow(10, Math.ceil(Math.log10(increment) - 1));
-      var firstDigit = increment / testVal;
-      if (firstDigit > 1 && firstDigit <= 1.5) {
-        firstDigit = 1.5;
-      } else if (firstDigit > 5) {
-        firstDigit = 10;
-      } else {
-        firstDigit = Math.ceil(firstDigit);
-      }
-      return firstDigit * testVal;
-    }
-
-    var t = Math.log10(spread);
-    testVal = Math.pow(10, Math.ceil(t) - 2);
-    var first2Digits = Math.round(spread / testVal);
-
-    // Aesthetically choose a scaling factor limiting to a max number of steps
-    var scaleFactor = 1;
-    if (first2Digits >= 10 && first2Digits <= 14) {
-      scaleFactor = 2;
-    } else if (first2Digits >= 15 && first2Digits <= 19) {
-      scaleFactor = 3;
-    } else if (first2Digits >= 20 && first2Digits <= 24) {
-      scaleFactor = 4;
-    } else if (first2Digits >= 25 && first2Digits <= 45) {
-      scaleFactor = 5;
-    } else if (first2Digits >= 46 && first2Digits <= 80) {
-      scaleFactor = 10;
-    } else {
-      scaleFactor = 20;
-    }
-    return scaleFactor * testVal;
-  }
-
-  /**
-   * @override
-   */
-  linearToActual(value) {
-    if (value == null) {
-      return null;
-    }
-    return this.IsLog ? Math.pow(10, value) : value;
-  }
-
-  /**
-   * @override
-   */
-  actualToLinear(value) {
-    if (value == null) {
-      return null;
-    }
-
-    if (this.IsLog) {
-      return value > 0 ? Math.log10(value) : null;
-    }
-    return value;
-  }
-
-  getAxisData() {
-    return {
-      isLog: this.IsLog,
-      max: this.LinearGlobalMax,
-      min: this.LinearGlobalMin,
-      step: this.MajorIncrement,
-      numSteps: this.MajorTickCount
-    };
-  }
-};
+  };
 
 /**
  * Formatter for an axis with a linear scale.
@@ -621,9 +630,8 @@ const DataAxisInfoMixin = Base => class extends Base {
  * @constructor
  */
 
- class LinearScaleAxisValueFormatter {
+class LinearScaleAxisValueFormatter {
   constructor(minValue, maxValue, tickStep, scale, autoPrecision, translations) {
-
     // Allowed scales that can be used as formatter scale param values
     /** @const **/
     this.SCALE_NONE = 'none';
@@ -648,13 +656,11 @@ const DataAxisInfoMixin = Base => class extends Base {
 
     this._translations = translations;
     // array of successive scale values
-    this._scales = {
-    };
+    this._scales = {};
     // array of scale values ordered by scale factor asc
     this._scalesOrder = [];
     // mapping of scale factors to corresponding scale objects
-    this._factorToScaleMapping = {
-    };
+    this._factorToScaleMapping = {};
 
     this.InitScales();
     this.InitFormatter(minValue, maxValue, tickStep, scale, autoPrecision);
@@ -680,7 +686,8 @@ const DataAxisInfoMixin = Base => class extends Base {
       }
 
       var scale = {
-        scaleFactor: scaleFactor, localizedSuffix: suffix
+        scaleFactor: scaleFactor,
+        localizedSuffix: suffix
       };
 
       // update private properties
@@ -705,10 +712,9 @@ const DataAxisInfoMixin = Base => class extends Base {
       } else if (scale1.scaleFactor > scale2.scaleFactor) {
         return 1;
       }
-        return 0;
+      return 0;
     });
   }
-
 
   /**
    * Initializes properties used for values formatting (e.g. scale factor that should be applied etc.).
@@ -721,8 +727,7 @@ const DataAxisInfoMixin = Base => class extends Base {
    * @protected
    *
    */
-  InitFormatter(
-    minValue, maxValue, tickStep, scale, autoPrecision) {
+  InitFormatter(minValue, maxValue, tickStep, scale, autoPrecision) {
     var findScale = false;
     var decimalPlaces;
     var scaleFactor;
@@ -734,7 +739,7 @@ const DataAxisInfoMixin = Base => class extends Base {
     }
     // try to use scale given by "scale" param and if no scale factor is found find appropriate scale
     scaleFactor = this._getScaleFactor(scale);
-    if ((typeof scaleFactor) !== 'number') {
+    if (typeof scaleFactor !== 'number') {
       findScale = true;
     }
 
@@ -779,7 +784,6 @@ const DataAxisInfoMixin = Base => class extends Base {
     this._decimalPlaces = decimalPlaces;
   }
 
-
   /**
    * Finds a scale factor 'x' such that x <= value (e.g. if value equals 4 then returned scale factor equals 3)
    * @param {number} value value representing an order of magnitude
@@ -808,7 +812,6 @@ const DataAxisInfoMixin = Base => class extends Base {
     return scaleFactor;
   }
 
-
   /**
    * Returns scale factor of scale given by scale name.
    * @param {string} scaleName
@@ -826,7 +829,6 @@ const DataAxisInfoMixin = Base => class extends Base {
     return scaleFactor;
   }
 
-
   /**
    * Formats given value using previously computed scale factor and decimal digits count. In case that parsed value equals NaN an unformatted value is returned.
    * @override
@@ -837,12 +839,17 @@ const DataAxisInfoMixin = Base => class extends Base {
   format(value, converter) {
     var defaultConverter;
     var parsed = value != null ? parseFloat(value) : value;
-    if (typeof (parsed) === 'number') {
+    if (typeof parsed === 'number') {
       var scale = Math.pow(10, this._scaleFactor);
-      var userConverterStyle = converter && converter.getOptions &&
-                              converter.getOptions() && converter.getOptions().style;
+      var userConverterStyle =
+        converter && converter.getOptions && converter.getOptions() && converter.getOptions().style;
       // Use nu to make sure the digits are latin
-      var scaleConverterOptions = { style: 'decimal', decimalFormat: userConverterStyle === 'unit' ? 'standard' : 'short', nu: 'latn', useGrouping: false };
+      var scaleConverterOptions = {
+        style: 'decimal',
+        decimalFormat: userConverterStyle === 'unit' ? 'standard' : 'short',
+        nu: 'latn',
+        useGrouping: false
+      };
       defaultConverter = new IntlNumberConverter(scaleConverterOptions);
 
       // Formatting for scale
@@ -857,10 +864,16 @@ const DataAxisInfoMixin = Base => class extends Base {
         formattedScaledNumber = converter.format(formattedScaledNumber); // Convert the number itself
       } else {
         // skip nu if you want the digits in native locale digits
-        var numberConverterOptions = { style: 'decimal', minimumFractionDigits: this._decimalPlaces, maximumFractionDigits: this._decimalPlaces };
+        var numberConverterOptions = {
+          style: 'decimal',
+          minimumFractionDigits: this._decimalPlaces,
+          maximumFractionDigits: this._decimalPlaces
+        };
         defaultConverter = new IntlNumberConverter(numberConverterOptions);
         formattedScaledNumber = defaultConverter.format(
-                                      formattedScaledNumber, numberConverterOptions);
+          formattedScaledNumber,
+          numberConverterOptions
+        );
       }
       // Add the scale factor suffix, unless value is zero
       if (typeof suffix === 'string' && value !== 0) {
@@ -868,9 +881,8 @@ const DataAxisInfoMixin = Base => class extends Base {
       }
       return formattedScaledNumber;
     }
-      return value;
+    return value;
   }
-
 
   /**
    * Formats fraction part of given value (adds zeroes if needed).
@@ -903,7 +915,6 @@ const DataAxisInfoMixin = Base => class extends Base {
     return formatted;
   }
 
-
   /**
    * Fro given value it returns its order of magnitude.
    * @param {number} value for which order of magnitude should be found
@@ -912,11 +923,11 @@ const DataAxisInfoMixin = Base => class extends Base {
    */
   _getPowerOfTen(value) {
     // more comprehensive and easier than working with value returned by Math.log(value)/Math.log(10)
-    var val = (value >= 0) ? value : -value;
+    var val = value >= 0 ? value : -value;
     var power = 0;
 
     // Check for degenerate and zero values
-    if (val < 1E-15) {
+    if (val < 1e-15) {
       return 0;
     } else if (val === Infinity) {
       return Number.MAX_VALUE;
@@ -943,6 +954,6 @@ const DataAxisInfoMixin = Base => class extends Base {
   getDecimalPlaces() {
     return this._decimalPlaces;
   }
- }
+}
 
 export { BaseAxisInfo, DataAxisInfoMixin, LinearScaleAxisValueFormatter };

@@ -44,8 +44,12 @@ function transformer(program, buildOptions) {
     _CHECKER = program.getTypeChecker();
     _COMPILER_OPTIONS = program.getCompilerOptions();
     function visitor(ctx, sf) {
+        var _a;
         const vexportToAlias = {};
         const aliasToVExport = {};
+        TransformerError_1.TransformerError.setDisabledList(!(((_a = _BUILD_OPTIONS.disabledExceptionKeys) === null || _a === void 0 ? void 0 : _a.length) > 0)
+            ? null
+            : _BUILD_OPTIONS.disabledExceptionKeys);
         _BUILD_OPTIONS.componentToMetadata = null;
         _BUILD_OPTIONS.importMaps = null;
         const isTsx = path.extname(sf.fileName) === '.tsx';
@@ -84,13 +88,13 @@ function generateClassElementMetadata(classNode, vexportToAlias, aliasToVExport)
         return classNode;
     }
     let elementName = custElemDecorator.expression['arguments'][0].text;
-    let vcompClassInfo = ComponentUtils.getVCompClassInfo(elementName, classNode, vexportToAlias, _CHECKER, _COMPILER_OPTIONS, _BUILD_OPTIONS.translationBundleIds);
+    let vcompClassInfo = ComponentUtils.getVCompClassInfo(elementName, classNode, vexportToAlias, _CHECKER, _COMPILER_OPTIONS, _BUILD_OPTIONS);
     if (!vcompClassInfo || !vcompClassInfo.className) {
         return classNode;
     }
     const metaUtilObj = getNewMetaUtilObj(_CHECKER, _BUILD_OPTIONS, vcompClassInfo, vexportToAlias, aliasToVExport);
     MetaUtils.updateCompilerCompMetadata(vcompClassInfo, metaUtilObj);
-    ComponentUtils.getDtMetadataForComponent(classNode, metaUtilObj);
+    ComponentUtils.getDtMetadataForComponent(vcompClassInfo, metaUtilObj);
     const propsInfo = vcompClassInfo.propsInfo;
     if (ts.isSourceFile(classNode.parent)) {
         const fileName = classNode.parent.fileName;
@@ -102,10 +106,10 @@ function generateClassElementMetadata(classNode, vexportToAlias, aliasToVExport)
     }
     if (propsInfo) {
         if (!propsInfo.propsName) {
-            throw new TransformerError_1.TransformerError(vcompClassInfo.className, "Invalid Component 'Props' argument type -- must be a Class, Interface, or Type reference.", propsInfo.propsNode);
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_PROPS_TYPE, TransformerError_1.ExceptionType.THROW_ERROR, vcompClassInfo.className, "Invalid Component 'Props' argument type -- must be a Class, Interface, or Type reference.", propsInfo.propsNode);
         }
         else if (MetaUtils.isConditionalType(propsInfo.propsType)) {
-            throw new TransformerError_1.TransformerError(vcompClassInfo.className, `The Component 'Props' object cannot be declared as a Conditional type.
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.CONDITIONAL_PROPS_TYPE, TransformerError_1.ExceptionType.THROW_ERROR, vcompClassInfo.className, `The Component 'Props' object cannot be declared as a Conditional type.
 Instead, declare individual properties of the 'Props' object with Conditional types.`, propsInfo.propsNode);
         }
         PropertyUtils.checkReservedProps(propsInfo, metaUtilObj);
@@ -124,12 +128,11 @@ Instead, declare individual properties of the 'Props' object with Conditional ty
     return MetaUtils.addMetadataToClassNode(vcompClassInfo, metaUtilObj.rtMetadata);
 }
 function generateFunctionalElementMetadata(functionalCompNode, vexportToAlias, aliasToVExport) {
-    let vcompFunctionInfo = ComponentUtils.getVCompFunctionInfo(functionalCompNode, vexportToAlias, _CHECKER, _COMPILER_OPTIONS, _BUILD_OPTIONS.translationBundleIds);
+    let vcompFunctionInfo = ComponentUtils.getVCompFunctionInfo(functionalCompNode, vexportToAlias, _CHECKER, _COMPILER_OPTIONS, _BUILD_OPTIONS);
     if (vcompFunctionInfo) {
         const metaUtilObj = getNewMetaUtilObj(_CHECKER, _BUILD_OPTIONS, vcompFunctionInfo, vexportToAlias, aliasToVExport);
         MetaUtils.updateCompilerCompMetadata(vcompFunctionInfo, metaUtilObj);
-        metaUtilObj.fullMetadata,
-            ComponentUtils.getDtMetadataForComponent(vcompFunctionInfo.componentNode, metaUtilObj);
+        ComponentUtils.getDtMetadataForComponent(vcompFunctionInfo, metaUtilObj);
         if (ts.isSourceFile(functionalCompNode.parent)) {
             const fileName = functionalCompNode.parent.fileName;
             metaUtilObj.fullMetadata['jsdoc'] = metaUtilObj.fullMetadata['jsdoc'] || {};
@@ -141,7 +144,7 @@ function generateFunctionalElementMetadata(functionalCompNode, vexportToAlias, a
         const propsInfo = vcompFunctionInfo.propsInfo;
         if (propsInfo) {
             if (!propsInfo.propsName) {
-                throw new TransformerError_1.TransformerError(metaUtilObj.componentName, "Invalid Component 'Props' argument type -- must be a Class, Interface, or Type reference.", propsInfo.propsNode);
+                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_PROPS_TYPE, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, "Invalid Component 'Props' argument type -- must be a Class, Interface, or Type reference.", propsInfo.propsNode);
             }
             PropertyUtils.checkReservedProps(propsInfo, metaUtilObj);
             let { readOnlyPropNameNodes, writebackPropNameNodes } = PropertyUtils.generatePropertiesMetadata(propsInfo, metaUtilObj);
@@ -150,6 +153,9 @@ function generateFunctionalElementMetadata(functionalCompNode, vexportToAlias, a
         }
         storeImportsInBuildOptions(vexportToAlias, aliasToVExport);
         metaUtilObj.fullMetadata.methods = {};
+        if (vcompFunctionInfo.methodsInfo) {
+            MethodUtils.processRegisteredMethodsInfo(vcompFunctionInfo.methodsInfo, metaUtilObj);
+        }
         MethodUtils.updateJetElementMethods(metaUtilObj);
         if (vcompFunctionInfo.defaultProps) {
             PropertyUtils.updateDefaultsFromDefaultProps(vcompFunctionInfo.defaultProps, metaUtilObj);
@@ -158,7 +164,7 @@ function generateFunctionalElementMetadata(functionalCompNode, vexportToAlias, a
         SlotUtils.validateDynamicSlots(metaUtilObj);
         generateApiDocMetadata(metaUtilObj);
         writeMetaFiles(metaUtilObj);
-        return MetaUtils.addArgumentsToRegisterCustomElementCall(functionalCompNode, vcompFunctionInfo, metaUtilObj);
+        return MetaUtils.updateFunctionalVCompNode(functionalCompNode, vcompFunctionInfo, metaUtilObj);
     }
     return functionalCompNode;
 }
@@ -183,8 +189,8 @@ function walkClassElements(classNode, walkElements, metaUtilObj) {
     }
     const members = classNode.members;
     members.forEach((member) => {
-        if (MethodUtils.isCustomElementMethod(member, metaUtilObj)) {
-            MethodUtils.generateMethodMetadata(member, metaUtilObj);
+        if (MethodUtils.isCustomElementClassMethod(member, metaUtilObj)) {
+            MethodUtils.generateClassMethodMetadata(member, metaUtilObj);
         }
         else if (walkElements !== WALK_CLASS.METHODS_ONLY && PropertyUtils.isDefaultProps(member)) {
             const prop = member;
@@ -237,32 +243,42 @@ function storeImportsInBuildOptions(vexportToAlias, aliasToVExport) {
 }
 const _EXCLUDED_NAMED_EXPORT_TYPES = ['ObservedGlobalProps'];
 function getNewMetaUtilObj(typeChecker, buildOptions, componentInfo, namedExportToAlias, aliasToNamedExport) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     if (!buildOptions['reservedGlobalProps']) {
         const RGPSet = generateReservedGlobalPropsSet(componentInfo, typeChecker);
         if (RGPSet) {
             buildOptions['reservedGlobalProps'] = RGPSet;
         }
     }
-    let componentName = MetaTypes.isClassInfo(componentInfo)
+    const componentName = MetaTypes.isClassInfo(componentInfo)
         ? componentInfo.className
         : (_b = (_a = componentInfo.componentName) !== null && _a !== void 0 ? _a : componentInfo.functionName) !== null && _b !== void 0 ? _b : componentInfo.elementName;
+    const isInMonoPack = (_c = componentInfo.packInfo) === null || _c === void 0 ? void 0 : _c.isMonoPack();
     let rtnObj = {
         componentName,
+        componentInfo,
         typeChecker,
         namedExportToAlias,
         aliasToNamedExport,
         rtMetadata: {},
         fullMetadata: {
             name: componentInfo.elementName,
-            version: buildOptions['version'],
-            jetVersion: buildOptions['jetVersion'],
-            type: (_d = (_c = buildOptions['coreJetBuildOptions']) === null || _c === void 0 ? void 0 : _c.defaultCompType) !== null && _d !== void 0 ? _d : 'composite'
+            version: isInMonoPack ? componentInfo.packInfo.version : buildOptions['version'],
+            jetVersion: isInMonoPack && componentInfo.packInfo.jetVersion
+                ? componentInfo.packInfo.jetVersion
+                : buildOptions['jetVersion'],
+            type: (_e = (_d = buildOptions['coreJetBuildOptions']) === null || _d === void 0 ? void 0 : _d.defaultCompType) !== null && _e !== void 0 ? _e : 'composite'
         },
         dynamicSlotsInUse: 0b0000,
         dynamicSlotNameNodes: []
     };
-    if ((_e = componentInfo.propsInfo) === null || _e === void 0 ? void 0 : _e.propsName) {
+    if (componentInfo.packInfo) {
+        rtnObj.fullMetadata.pack = componentInfo.packInfo.name;
+        if (isInMonoPack && componentInfo.packInfo.license) {
+            rtnObj.fullMetadata.license = componentInfo.packInfo.license;
+        }
+    }
+    if ((_f = componentInfo.propsInfo) === null || _f === void 0 ? void 0 : _f.propsName) {
         rtnObj.propsName = componentInfo.propsInfo.propsName;
     }
     if (buildOptions['reservedGlobalProps']) {
@@ -347,7 +363,8 @@ const _VCOMPONENT_EXPORTS = new Set([
     'ElementReadOnly',
     'ExtendGlobalProps',
     'GlobalProps',
-    'ObservedGlobalProps'
+    'ObservedGlobalProps',
+    'consumedContexts'
 ]);
 const _VCOMPONENT_BINDING_EXPORTS = new Set(['consumedBindings', 'providedBindings']);
 function storeImport(node, vexportToAlias, aliasToVExport) {
@@ -382,8 +399,7 @@ function generateApiDocMetadata(metaUtilObj) {
             writeApiDocFiles(apidoc, metaUtilObj.componentName);
         }
         catch (e) {
-            const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName);
-            console.log(`${logHeader} Unexpected error happened during ApiDoc metadata processing.`);
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNEXPECTED_APIDOC_EXCEPTION, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, 'Unexpected error happened during ApiDoc metadata processing.');
         }
     }
 }

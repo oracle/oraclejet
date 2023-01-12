@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,6 +20,8 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
    * @ojpropertylayout {propertyGroup: "common", items: ["valid"]}
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 2
+   *
+   * @ojoracleicon 'oj-ux-ico-validation'
    *
    * @classdesc
    * <h3 id="optionOverview-section">
@@ -128,7 +130,6 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
    * var valid = myValidationGroupElement.valid;
    */
 
-
   /**
    * Sets a property or a single subproperty for complex properties and notifies the component
    * of the change, triggering a [property]Changed event.
@@ -199,7 +200,6 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
 
     var _trackedComponents = [];
     var _ojDiv;
-
 
     // Our version of GCC has a bug where the second param of MutationObserver.observe must be of
     // type MutationObserverInit which isn't a real class that we can instantiate. Work around is to
@@ -330,26 +330,29 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
       // Create a busy state on the element which is resolved after the valid state
       // has been set. This allows anything waiting on the whenReady Promise to run
       // after the state is set.
-      let validStateResolve = Context.getContext(element).getBusyContext().addBusyState({
-        description: `oj-validation-group#${element.id} initial valid state`
-      });
-      busyContext.whenReady().then(function () {
-        // if this is the initial render, _trackedComponents.length is 0
-        var length = _trackedComponents.length;
-        for (var i = 0; i < length; i++) {
-          _removeEventListenersFromNode(_trackedComponents[i]);
-        }
+      let validStateResolve = Context.getContext(element)
+        .getBusyContext()
+        .addBusyState({
+          description: `oj-validation-group#${element.id} initial valid state`
+        });
+      busyContext
+        .whenReady()
+        .then(function () {
+          // if this is the initial render, _trackedComponents.length is 0
+          var length = _trackedComponents.length;
+          for (var i = 0; i < length; i++) {
+            _removeEventListenersFromNode(_trackedComponents[i]);
+          }
 
-        _refreshTrackedComponents();
+          _refreshTrackedComponents();
 
-        // Pay attention to mutations.  The mutations
-        // we care about are added elements and removed elements.
-        // We need to update the trackedComponents and their listeners in these cases.
-        self._rootElementMutationObserver.observe(element, { childList: true, subtree: true });
-      })
-      .finally(validStateResolve);
+          // Pay attention to mutations.  The mutations
+          // we care about are added elements and removed elements.
+          // We need to update the trackedComponents and their listeners in these cases.
+          self._rootElementMutationObserver.observe(element, { childList: true, subtree: true });
+        })
+        .finally(validStateResolve);
     };
-
 
     // Handles property changes for oj-validation-group.
     // handlePropertyChanged is an optional DefinitionalElementBridge method where if defined,
@@ -456,7 +459,8 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
         // which is now only '@firstInvalidShown'.
         // this behaves the same way html's focus() works.
         Logger.info(
-          "focusOn's parameter value is not '@firstInvalidShown' or empty, so it's a no-op.");
+          "focusOn's parameter value is not '@firstInvalidShown' or empty, so it's a no-op."
+        );
       }
     };
 
@@ -561,7 +565,6 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
       // eslint-disable-next-line no-param-reassign
       context.props.valid = _consolidateValid();
     }
-
 
     /**
      * Handles any disabledChanged and readonlyChanged
@@ -828,7 +831,6 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
     function _getFirstInvalidComponent() {
       var invalidComponents = [];
 
-
       if (element.valid !== 'invalidShown') {
         return null;
       }
@@ -856,8 +858,7 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
         // If elementA precedes elementB in dom order, return -1
         // Node.DOCUMENT_POSITION_FOLLOWING returns a bitmask, so the & is intentional
         // eslint-disable-next-line no-bitwise
-        return (elementA.compareDocumentPosition(elementB) & Node.DOCUMENT_POSITION_FOLLOWING) ?
-          -1 : 1;
+        return elementA.compareDocumentPosition(elementB) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
       });
 
       // invalidComponents is sorted now by document order, so return the first one.
@@ -930,8 +931,9 @@ var __oj_validation_group_metadata =
     __oj_validation_group_metadata.extension._CONSTRUCTOR = ojValidationGroup;
     __oj_validation_group_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
     Object.freeze(__oj_validation_group_metadata);
-    oj.CustomElementBridge.register('oj-validation-group',
-    { metadata: __oj_validation_group_metadata });
-  }());
+    oj.CustomElementBridge.register('oj-validation-group', {
+      metadata: __oj_validation_group_metadata
+    });
+  })();
 
 });

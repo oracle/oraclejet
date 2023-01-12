@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -58,7 +58,11 @@ const IndexerModelTreeDataSource = function (data, idAttribute, listener, option
 };
 oj._registerLegacyNamespaceProp('IndexerModelTreeDataSource', IndexerModelTreeDataSource);
 // Subclass from TreeDataSource
-oj.Object.createSubclass(IndexerModelTreeDataSource, oj.TreeDataSource, 'oj.IndexerModelTreeDataSource');
+oj.Object.createSubclass(
+  IndexerModelTreeDataSource,
+  oj.TreeDataSource,
+  'oj.IndexerModelTreeDataSource'
+);
 
 /**
  * Initializes the instance.
@@ -244,7 +248,6 @@ IndexerModelTreeDataSource.prototype.getChildCount = function (parentKey) {
     return nextPos - pos;
   }
 
-
   // should not get here (ex: unexpected parentKey)
   return 0;
 };
@@ -270,9 +273,13 @@ IndexerModelTreeDataSource.prototype.getChildCount = function (parentKey) {
  * @instance
  */
 IndexerModelTreeDataSource.prototype.fetchChildren = function (
-  // eslint-disable-next-line no-unused-vars
-  parentKey, range, callbacks, options
+  /* eslint-disable no-unused-vars */
+  parentKey,
+  range,
+  callbacks,
+  options
 ) {
+  /* eslint-enable no-unused-vars */
   var nodeSet;
   var self = this;
 

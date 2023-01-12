@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -24,9 +24,16 @@ import { Collection, Model, Events } from 'ojs/ojmodel';
  * @param {number} count the number of nodes in this NodeSet
  * @export
  * @ojtsignore
+ * @ojdeprecated {since: '14.0.0', description: 'CollectionNodeSet has been deprecated with CollectionTreeDataSource.'}
  */
-const CollectionNodeSet = function (parentKey, collection, models, treeDataSource,
-  start, count) {
+const CollectionNodeSet = function (
+  parentKey,
+  collection,
+  models,
+  treeDataSource,
+  start,
+  count
+) {
   this.parentKey = parentKey;
   this.collection = collection;
   this.models = models;
@@ -46,7 +53,6 @@ const CollectionNodeSet = function (parentKey, collection, models, treeDataSourc
   this.count = count === -1 ? models.length : Math.min(models.length, count);
 };
 oj._registerLegacyNamespaceProp('CollectionNodeSet', CollectionNodeSet);
-
 
 /**
  * @protected
@@ -69,15 +75,17 @@ CollectionNodeSet.prototype._fetchDescendants = function (nodeSet) {
     // Walk over each node in this node set, and fetch all the descendants of each
     function nextNode(index) {
       if (index < count) {
-        nodeSet.FetchChildNodeSet(index, { success: function (childNodeSet) {
-          if (childNodeSet !== null) {
-            nodeSet._fetchDescendants(childNodeSet).then(function () {
+        nodeSet.FetchChildNodeSet(index, {
+          success: function (childNodeSet) {
+            if (childNodeSet !== null) {
+              nodeSet._fetchDescendants(childNodeSet).then(function () {
+                nextNode(index + 1);
+              });
+            } else {
               nextNode(index + 1);
-            });
-          } else {
-            nextNode(index + 1);
+            }
           }
-        } });
+        });
       } else {
         resolve(undefined);
       }
@@ -102,10 +110,18 @@ CollectionNodeSet.prototype.FetchChildNodeSet = function (index, callbacks) {
   var collection = this.treeDataSource.GetChildCollection(model);
   var parentKey = this.treeDataSource.parseMetadata(model).key;
   var self = this;
-  this.treeDataSource.FetchCollection(collection, 0, -1, { success: function (nodeSet) {
-    self.childNodeSet[index] = nodeSet;
-    callbacks.success(nodeSet);
-  } }, parentKey);
+  this.treeDataSource.FetchCollection(
+    collection,
+    0,
+    -1,
+    {
+      success: function (nodeSet) {
+        self.childNodeSet[index] = nodeSet;
+        callbacks.success(nodeSet);
+      }
+    },
+    parentKey
+  );
 };
 
 /**
@@ -116,44 +132,44 @@ CollectionNodeSet.prototype._getCollection = function () {
 };
 
 /**
-* Gets the parent key for this result set.
-* @return {any} the parent key for this result set.
-* @export
-* @memberof CollectionNodeSet
-*/
+ * Gets the parent key for this result set.
+ * @return {any} the parent key for this result set.
+ * @export
+ * @memberof CollectionNodeSet
+ */
 CollectionNodeSet.prototype.getParent = function () {
   return this.parentKey;
 };
 
 /**
-* Gets the start index of the result set.
-* @return {number} the start index of the result set.
-* @export
-* @memberof CollectionNodeSet
-*/
+ * Gets the start index of the result set.
+ * @return {number} the start index of the result set.
+ * @export
+ * @memberof CollectionNodeSet
+ */
 CollectionNodeSet.prototype.getStart = function () {
   return this.start;
 };
 
 /**
-* Gets the actual count of the result set.
-* @return {number} the actual count of the result set.
-* @export
-* @memberof CollectionNodeSet
-*/
+ * Gets the actual count of the result set.
+ * @return {number} the actual count of the result set.
+ * @export
+ * @memberof CollectionNodeSet
+ */
 CollectionNodeSet.prototype.getCount = function () {
   return this.count;
 };
 
 /**
-* Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
-* 2) the index specified is out of bounds.
-* @param {number} index the index of the node/row in which we want to retrieve the data from.
-* @return {any} the data for the specified index.  RowData should be returned for data that represents a row
-*         with a number of columns.
-* @export
-* @memberof CollectionNodeSet
-*/
+ * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
+ * 2) the index specified is out of bounds.
+ * @param {number} index the index of the node/row in which we want to retrieve the data from.
+ * @return {any} the data for the specified index.  RowData should be returned for data that represents a row
+ *         with a number of columns.
+ * @export
+ * @memberof CollectionNodeSet
+ */
 CollectionNodeSet.prototype.getData = function (index) {
   this._checkRange(index);
   return this.models[index].attributes;
@@ -170,17 +186,17 @@ CollectionNodeSet.prototype._checkRange = function (index) {
 };
 
 /**
-* Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and
-* 2) the index specified is out of bounds.
-* The metadata that the data source must return are:
-*  1) key - Object, the key of the node/row.
-*  2) leaf - boolean, true if it's a leaf, false otherwise.
-*  3) depth? - number, the depth of the node/row. (or should the caller just calculate it?)
-* @param {number} index the index of the node/row in which we want to retrieve the metadata from.
-* @return {{key: *, leaf: boolean, depth: number}} the metadata object for the specific index.
-* @export
-* @memberof CollectionNodeSet
-*/
+ * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and
+ * 2) the index specified is out of bounds.
+ * The metadata that the data source must return are:
+ *  1) key - Object, the key of the node/row.
+ *  2) leaf - boolean, true if it's a leaf, false otherwise.
+ *  3) depth? - number, the depth of the node/row. (or should the caller just calculate it?)
+ * @param {number} index the index of the node/row in which we want to retrieve the metadata from.
+ * @return {{key: *, leaf: boolean, depth: number}} the metadata object for the specific index.
+ * @export
+ * @memberof CollectionNodeSet
+ */
 CollectionNodeSet.prototype.getMetadata = function (index) {
   this._checkRange(index);
 
@@ -229,6 +245,8 @@ CollectionNodeSet.prototype.getChildNodeSet = function (index) {
  * @export
  * @extends TreeDataSource
  * @ojtsignore
+ * @ojdeprecated {since: '14.0.0', description: 'CollectionTreeDataSource has been deprecated,
+ * use RESTTreeDataProvider instead.'}
  */
 const CollectionTreeDataSource = function (options) {
   // eslint-disable-next-line no-param-reassign
@@ -257,7 +275,11 @@ CollectionTreeDataSource.prototype.parseMetadata = function (model) {
 };
 
 // Subclass from oj.TreeDataSource
-oj.Object.createSubclass(CollectionTreeDataSource, oj.TreeDataSource, 'oj.CollectionTreeDataSource');
+oj.Object.createSubclass(
+  CollectionTreeDataSource,
+  oj.TreeDataSource,
+  'oj.CollectionTreeDataSource'
+);
 
 /**
  * Initializes the data source.
@@ -270,7 +292,6 @@ CollectionTreeDataSource.prototype.Init = function () {
   // super
   CollectionTreeDataSource.superclass.Init.call(this);
 };
-
 
 /**
  * Returns the number of children for a specified parent.  If the value returned is not >= 0 then it is automatically assumed
@@ -301,10 +322,12 @@ CollectionTreeDataSource.prototype.getChildCount = function (parent) {
  * @memberof CollectionTreeDataSource
  */
 CollectionTreeDataSource.prototype.getChildCollection = function (key, callbacks) {
-  this.fetchChildren(key, null, { success: function (nodeSet) {
-    callbacks.success(nodeSet._getCollection());
-  },
-    error: callbacks.error });
+  this.fetchChildren(key, null, {
+    success: function (nodeSet) {
+      callbacks.success(nodeSet._getCollection());
+    },
+    error: callbacks.error
+  });
 };
 
 /**
@@ -353,7 +376,6 @@ CollectionTreeDataSource.prototype.fetchChildren = function (parent, range, call
   });
 };
 
-
 /**
  * Called by common model when a model is added to a collection
  * @private
@@ -365,7 +387,13 @@ CollectionTreeDataSource.prototype.ModelAdded = function (model, collection, opt
   }
   var parents = this._getParentChain(collection);
   var parent = parents != null && parents.length > 0 ? parents[parents.length - 1] : null;
-  var event = this._createEvent(this, 'insert', index, parents, this._putModelInNodeSet(parent, model));
+  var event = this._createEvent(
+    this,
+    'insert',
+    index,
+    parents,
+    this._putModelInNodeSet(parent, model)
+  );
   this.handleEvent('change', event);
 };
 
@@ -397,7 +425,13 @@ CollectionTreeDataSource.prototype.ModelUpdated = function (model, options) {
     parents = this._getParentChain(collectionForModel);
   }
   var parent = parents != null && parents.length > 0 ? parents[parents.length - 1] : null;
-  var event = this._createEvent(this, 'update', index, parents, this._putModelInNodeSet(parent, model));
+  var event = this._createEvent(
+    this,
+    'update',
+    index,
+    parents,
+    this._putModelInNodeSet(parent, model)
+  );
   this.handleEvent('change', event);
 };
 
@@ -451,7 +485,7 @@ CollectionTreeDataSource.prototype._getCacheKey = function (model) {
   // If model is not an oj.Model, just use it as the key
   var key = model instanceof Model ? this.parseMetadata(model).key : model;
   // Handle model === 0 case
-  return (model != null) ? key : CollectionTreeDataSource.ROOT_CACHE_KEY;
+  return model != null ? key : CollectionTreeDataSource.ROOT_CACHE_KEY;
 };
 
 /**
@@ -577,7 +611,11 @@ CollectionTreeDataSource.prototype.GetChildCollection = function (parentModel) {
  * @private
  */
 CollectionTreeDataSource.prototype._createEvent = function (
-  source, operation, index, parent, data
+  source,
+  operation,
+  index,
+  parent,
+  data
 ) {
   return { source: source, operation: operation, index: index, parent: parent, data: data };
 };
@@ -587,7 +625,11 @@ CollectionTreeDataSource.prototype._createEvent = function (
  * @protected
  */
 CollectionTreeDataSource.prototype.FetchCollection = function (
-  collectionObj, start, count, callbacks, parent
+  collectionObj,
+  start,
+  count,
+  callbacks,
+  parent
 ) {
   var self = this;
   if (collectionObj === null) {
@@ -607,16 +649,22 @@ CollectionTreeDataSource.prototype.FetchCollection = function (
     }
   }
   if (collectionObj) {
-    self._fetch(collectionObj, start, count, function (coll, models) {
-      // Check for virtual
-      if (coll.IsVirtual()) {
-        self._virtual = true;
-      }
-      if (callbacks.success) {
-        // return a nodeset version of this fetched collection via the callback
-        callbacks.success(self._getNodeSet(coll, parent, start, count, models));
-      }
-    }, callbacks.error);
+    self._fetch(
+      collectionObj,
+      start,
+      count,
+      function (coll, models) {
+        // Check for virtual
+        if (coll.IsVirtual()) {
+          self._virtual = true;
+        }
+        if (callbacks.success) {
+          // return a nodeset version of this fetched collection via the callback
+          callbacks.success(self._getNodeSet(coll, parent, start, count, models));
+        }
+      },
+      callbacks.error
+    );
   }
 };
 
@@ -625,7 +673,11 @@ CollectionTreeDataSource.prototype.FetchCollection = function (
  * @private
  */
 CollectionTreeDataSource.prototype._getNodeSet = function (
-  collection, parent, start, count, models
+  collection,
+  parent,
+  start,
+  count,
+  models
 ) {
   return new oj.CollectionNodeSet(parent, collection, models, this, start, count);
 };
@@ -676,7 +728,11 @@ CollectionTreeDataSource.prototype._scanForKey = function (collection, key) {
  * @private
  */
 CollectionTreeDataSource.prototype._getModelForId = function (
-  collection, start, count, key, depth
+  collection,
+  start,
+  count,
+  key,
+  depth
 ) {
   var self = this;
 
@@ -707,24 +763,31 @@ CollectionTreeDataSource.prototype._getModelForId = function (
             getNextCollection(index, models, tds);
           } else {
             // Fetch the child collection if necessary
-            // eslint-disable-next-line no-unused-vars
-            tds._fetch(childColl, start, count, function (fetchColl, nextModels) {
-              // Now check the child collection recursively for the key, moving depth down 1
-              tds._getModelForId(fetchColl, start, count, key, depth + 1)
-                .then(function (childModel) {
-                  // Found the model in this collection: unwind
-                  if (childModel) {
-                    // Found somewhere down this tree
-                    resolve(childModel);
-                  } else {
-                    // Not found down that tree
-                    // Move to the next model
-                    // eslint-disable-next-line no-param-reassign
-                    index += 1;
-                    getNextCollection(index, models, tds);
-                  }
-                });
-            }, null);
+            tds._fetch(
+              childColl,
+              start,
+              count,
+              // eslint-disable-next-line no-unused-vars
+              function (fetchColl, nextModels) {
+                // Now check the child collection recursively for the key, moving depth down 1
+                tds
+                  ._getModelForId(fetchColl, start, count, key, depth + 1)
+                  .then(function (childModel) {
+                    // Found the model in this collection: unwind
+                    if (childModel) {
+                      // Found somewhere down this tree
+                      resolve(childModel);
+                    } else {
+                      // Not found down that tree
+                      // Move to the next model
+                      // eslint-disable-next-line no-param-reassign
+                      index += 1;
+                      getNextCollection(index, models, tds);
+                    }
+                  });
+              },
+              null
+            );
           }
         } else {
           // Hit the end
@@ -737,20 +800,26 @@ CollectionTreeDataSource.prototype._getModelForId = function (
           // do this to avoid calling getChildCollection on unfetched collections.
           var childColl = self.__getParentsChildCollectionFromCache(models[index]);
           if (childColl) {
-            tds._fetch({ collection: childColl, cached: true }, start, count,
-            // eslint-disable-next-line no-unused-vars
-            function (fetchColl, nextModels) {
-              tds._getModelForId(fetchColl, start, count, key, depth + 1)
-                .then(function (childModel) {
-                  if (childModel) {
-                    resolve(childModel);
-                  } else {
-                    // eslint-disable-next-line no-param-reassign
-                    index += 1;
-                    getNextCachedCollection(index, models, tds);
-                  }
-                });
-            }, null);
+            tds._fetch(
+              { collection: childColl, cached: true },
+              start,
+              count,
+              // eslint-disable-next-line no-unused-vars
+              function (fetchColl, nextModels) {
+                tds
+                  ._getModelForId(fetchColl, start, count, key, depth + 1)
+                  .then(function (childModel) {
+                    if (childModel) {
+                      resolve(childModel);
+                    } else {
+                      // eslint-disable-next-line no-param-reassign
+                      index += 1;
+                      getNextCachedCollection(index, models, tds);
+                    }
+                  });
+              },
+              null
+            );
           } else {
             // eslint-disable-next-line no-param-reassign
             index += 1;
@@ -813,7 +882,11 @@ CollectionTreeDataSource.prototype._getModelsFromCollection = function (collecti
  * @private
  */
 CollectionTreeDataSource.prototype._fetch = function (
-  collectionCacheObj, start, count, success, error
+  collectionCacheObj,
+  start,
+  count,
+  success,
+  error
 ) {
   var self = this;
   var cached = collectionCacheObj.cached;
@@ -830,8 +903,10 @@ CollectionTreeDataSource.prototype._fetch = function (
       // eslint-disable-next-line no-param-reassign
       collectionCacheObj.collection.sortDirection = this.sortdir;
     }
-    if (collectionCacheObj.collection.length > 0 ||
-        !collectionCacheObj.collection.IsUrlBased(null)) {
+    if (
+      collectionCacheObj.collection.length > 0 ||
+      !collectionCacheObj.collection.IsUrlBased(null)
+    ) {
       // Already fetched: just return
       success(collectionCacheObj.collection, collectionCacheObj.collection.models);
       return;
@@ -841,13 +916,15 @@ CollectionTreeDataSource.prototype._fetch = function (
       // Don't want any records thrown out if virtual--rely on the fetched models to be there once cached
       // eslint-disable-next-line no-param-reassign
       collectionCacheObj.collection.modelLimit = -1;
-      collectionCacheObj.collection.fetch({ success: function (fetchColl) {
-        // Tack on handlers
-        self._getModelsFromCollection(fetchColl).then(function (models) {
-          success(fetchColl, models);
-        });
-      },
-        error: error });
+      collectionCacheObj.collection.fetch({
+        success: function (fetchColl) {
+          // Tack on handlers
+          self._getModelsFromCollection(fetchColl).then(function (models) {
+            success(fetchColl, models);
+          });
+        },
+        error: error
+      });
     } else {
       // Ensure a range if we have one
       // Don't want any records thrown out if virtual--rely on the fetched models to be there once cached
@@ -885,26 +962,46 @@ CollectionTreeDataSource.prototype.fetchDescendants = function (parent, callback
   var self = this;
   if (parent === null) {
     // Do root
-    this.FetchCollection(null, 0, -1, { success: function (nodeSet) {
-      nodeSet.FetchDescendants({ success: function () {
-        if (callbacks.success) {
-          callbacks.success(nodeSet);
+    this.FetchCollection(
+      null,
+      0,
+      -1,
+      {
+        success: function (nodeSet) {
+          nodeSet.FetchDescendants({
+            success: function () {
+              if (callbacks.success) {
+                callbacks.success(nodeSet);
+              }
+            }
+          });
         }
-      } });
-    } }, null);
+      },
+      null
+    );
     return;
   }
   // Use child collection callback to set up child collection, then fetch it
   this._getModelForId(this.rootCollection, 0, -1, parent, 0).then(function (parentModel) {
     if (parentModel) {
       var collection = self.GetChildCollection(parentModel.model);
-      self.FetchCollection(collection, 0, -1, { success: function (nodeSet) {
-        nodeSet.FetchDescendants({ success: function () {
-          if (callbacks.success) {
-            callbacks.success(nodeSet);
+      self.FetchCollection(
+        collection,
+        0,
+        -1,
+        {
+          success: function (nodeSet) {
+            nodeSet.FetchDescendants({
+              success: function () {
+                if (callbacks.success) {
+                  callbacks.success(nodeSet);
+                }
+              }
+            });
           }
-        } });
-      } }, parent);
+        },
+        parent
+      );
     }
   });
 };
@@ -955,10 +1052,10 @@ CollectionTreeDataSource.prototype.sort = function (criteria, callbacks) {
  * @private
  */
 CollectionTreeDataSource.prototype._applySortToCollection = function (collection) {
-// eslint-disable-next-line no-param-reassign
+  // eslint-disable-next-line no-param-reassign
   collection.comparator = this.sortkey;
-// eslint-disable-next-line no-param-reassign
-  collection.sortDirection = (this.sortdir === 'ascending') ? 1 : -1;
+  // eslint-disable-next-line no-param-reassign
+  collection.sortDirection = this.sortdir === 'ascending' ? 1 : -1;
   collection.sort();
 };
 
@@ -993,8 +1090,12 @@ CollectionTreeDataSource.prototype.getSortCriteria = function () {
  * @memberof CollectionTreeDataSource
  */
 CollectionTreeDataSource.prototype.move = function (
-  // eslint-disable-next-line no-unused-vars
-  rowToMove, referenceRow, position, callbacks
+  /* eslint-disable no-unused-vars */
+  rowToMove,
+  referenceRow,
+  position,
+  callbacks
+  /* eslint-enable no-unused-vars */
 ) {
   oj.Assert.failedInAbstractFunction();
 };

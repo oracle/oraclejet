@@ -361,7 +361,7 @@
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v13.1.0"}' !important; }
+  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v14.0.0"}' !important; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -5877,6 +5877,13 @@ oj-collapsible {
   color: var(--oj-heading-text-color);
   display: flex;
   align-items: center;
+  flex-grow: 1;
+  position: relative;
+  margin: 0; }
+
+.oj-collapsible-header-wrapper {
+  display: flex;
+  align-items: center;
   position: relative;
   padding: var(--oj-core-spacing-1x) 0;
   margin: 0; }
@@ -5899,20 +5906,28 @@ oj-collapsible {
 /*
      * add space around the header border
      */
-.oj-collapsible-header.oj-header-border {
+.oj-collapsible-header-wrapper.oj-header-border {
   padding-top: var(--oj-core-spacing-2x);
   padding-bottom: var(--oj-core-spacing-2x); }
 
 /*
+    * ignore original header border, it's moved to the wraper
+    */
+.oj-collapsible-header.oj-header-border {
+  border: 0;
+  padding-top: 0;
+  padding-bottom: 0; }
+
+/*
      * applied to the disabled collapsible header
      */
-.oj-collapsible.oj-disabled > .oj-collapsible-header {
+.oj-collapsible.oj-disabled .oj-collapsible-header {
   color: var(--oj-core-text-color-disabled); }
 
 /*
      * remove top padding for the first nested collapsible
      */
-.oj-collapsible-content > .oj-collapsible:first-child > .oj-collapsible-header {
+.oj-collapsible-content > .oj-collapsible:first-child > .oj-collapsible-header-wrapper {
   padding-top: 0; }
 
 /* collapsible content transition effects */
@@ -5933,11 +5948,11 @@ oj-collapsible {
 
 /* suppress all browser decorations of anchors in the header */
 /* --------------------------------------------------------- */
-.oj-collapsible-header a,
-.oj-collapsible-header a:active,
-.oj-collapsible-header a:visited,
-.oj-collapsible-header a:hover,
-.oj-collapsible-header a:focus {
+.oj-collapsible-header-wrapper a,
+.oj-collapsible-header-wrapper a:active,
+.oj-collapsible-header-wrapper a:visited,
+.oj-collapsible-header-wrapper a:hover,
+.oj-collapsible-header-wrapper a:focus {
   text-decoration: none; }
 
 /* disclosure icons for headers */
@@ -5955,15 +5970,14 @@ oj-collapsible {
 /*
      * set hand cursor while over the clickable area & hover background color
      */
-.oj-collapsible-header.oj-hover,
-.oj-collapsible-header-icon.oj-hover {
+.oj-collapsible-header-wrapper.oj-hover * {
   cursor: var(--oj-core-cursor-clickable); }
 
 /*
      * applied to the disclosure icon
      */
-.oj-collapsible-header .oj-collapsible-header-icon,
-.oj-collapsible-header .oj-collapsible-header-icon:hover {
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon,
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon:hover {
   color: var(--oj-private-icon-color-default); }
 
 /*
@@ -5971,32 +5985,32 @@ oj-collapsible {
      * add .oj-collapsible-header .oj-collapsible-header-icon.oj-hover
      * to override color set in a:hover.oj-clickable-icon-nocontext
      */
-.oj-collapsible-header.oj-hover .oj-collapsible-header-icon,
-.oj-collapsible-header .oj-collapsible-header-icon.oj-hover {
+.oj-collapsible-header-wrapper.oj-hover .oj-collapsible-header-icon,
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon.oj-hover {
   color: var(--oj-private-icon-color-hover); }
 
 /*
      * applied to the disclosure icon when it's active
      */
-.oj-collapsible-header.oj-active .oj-collapsible-header-icon,
-.oj-collapsible-header .oj-collapsible-header-icon.oj-active {
+.oj-collapsible-header-wrapper.oj-active .oj-collapsible-header-icon,
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon.oj-active {
   color: var(--oj-private-icon-color-active); }
 
 /*
      * For disabled header icons
      */
-.oj-collapsible.oj-disabled > .oj-collapsible-header > .oj-collapsible-header-icon {
+.oj-collapsible.oj-disabled > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
   color: var(--oj-private-icon-color-disabled); }
 
-.oj-collapsible-header .oj-collapsible-header-icon {
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon {
   /*
        * For a basic collapsible (not in an accordion)
        * the closed font icon has some whitespace on the left side,
        * use a negative margin to move over the icon
        */ }
-  html:not([dir="rtl"]) .oj-collapsible-header .oj-collapsible-header-icon {
+  html:not([dir="rtl"]) .oj-collapsible-header-wrapper .oj-collapsible-header-icon {
     margin: 0 0 0 -8px; }
-  html[dir="rtl"] .oj-collapsible-header .oj-collapsible-header-icon {
+  html[dir="rtl"] .oj-collapsible-header-wrapper .oj-collapsible-header-icon {
     margin: 0 -8px 0 0; }
 
 :root {
@@ -6014,7 +6028,7 @@ oj-collapsible {
   --oj-collection-header-bg-color-hover:                   var(--oj-core-bg-color-hover);
   --oj-collection-header-bg-color-selected:                rgba(var(--oj-palette-neutral-rgb-190), 0.08);
   --oj-collection-header-bg-color-partial-selected:        rgba(var(--oj-palette-neutral-rgb-190), 0.03);
-  --oj-collection-cell-banded-bg-color:                    rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-collection-cell-banded-bg-color:                    rgb(var(--oj-palette-neutral-rgb-190), 0.03);
   --oj-collection-grid-cell-padding:                       .5rem;
   --oj-collection-editable-cell-border-color-focus:        var(--oj-core-border-color-selected);
   --oj-collection-editable-cell-bg-color-read-only:        var(--oj-core-bg-color-hover);
@@ -6064,7 +6078,7 @@ oj-accordion {
 /*
      * applied to the accordion header but not to any nested collapsible headers
      */
-.oj-accordion-collapsible > .oj-collapsible-header {
+.oj-accordion-collapsible > .oj-collapsible-header-wrapper {
   padding-top: 3px;
   padding-bottom: 3px;
   border: 0 solid var(--oj-core-divider-color);
@@ -6074,21 +6088,29 @@ oj-accordion {
   background-color: var(--oj-list-view-group-header-bg-color); }
 
 /*
+     * applied to the accordion header but not to any nested collapsible headers
+     */
+.oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header {
+  font-size: var(--oj-list-view-group-header-font-size);
+  font-weight: var(--oj-list-view-group-header-font-weight);
+  background-color: var(--oj-list-view-group-header-bg-color); }
+
+/*
      * need to restore top padding for the first nested collapsible,
      * because it's being reset in collapsible
      */
-.oj-collapsible-content > .oj-accordion-collapsible.oj-collapsible:first-child > .oj-collapsible-header {
+.oj-collapsible-content > .oj-accordion-collapsible.oj-collapsible:first-child > .oj-collapsible-header-wrapper {
   padding-top: 3px; }
 
 /*
      * need to reset margin because it's being set in collapsible to -7px
      */
-.oj-accordion-collapsible > .oj-collapsible-header > .oj-collapsible-header-icon {
+.oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
   padding: 9px;
   outline-offset: -9px; }
-  html:not([dir="rtl"]) .oj-accordion-collapsible > .oj-collapsible-header > .oj-collapsible-header-icon {
+  html:not([dir="rtl"]) .oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
     margin: 0; }
-  html[dir="rtl"] .oj-accordion-collapsible > .oj-collapsible-header > .oj-collapsible-header-icon {
+  html[dir="rtl"] .oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
     margin: 0; }
 
 /*
@@ -6100,13 +6122,13 @@ oj-accordion {
 /*
      * applied to the accordion header border bottom when collapsed
      */
-.oj-accordion-collapsible.oj-collapsed > .oj-collapsible-header {
+.oj-accordion-collapsible.oj-collapsed > .oj-collapsible-header-wrapper {
   border-width: 0 0 1px; }
 
 /*
      * applied to the accordion header border for the last child when collapsed
      */
-.oj-accordion-collapsible.oj-collapsed:last-child > .oj-collapsible-header {
+.oj-accordion-collapsible.oj-collapsed:last-child > .oj-collapsible-header-wrapper {
   border-bottom-width: 1px; }
 
 :root {
@@ -6159,7 +6181,7 @@ oj-action-card:not(.oj-complete) {
   --oj-avatar-text-color:                     var(--oj-core-neutral-contrast);
   --oj-avatar-pattern-display:                block;
   --oj-avatar-size:                        4.5rem;
-  --oj-avatar-border-radius:               var(--oj-core-border-radius-md);
+  --oj-avatar-border-radius:               var(--oj-core-border-radius-xl);
   --oj-avatar-initials-font-size:          var(--oj-typography-heading-lg-font-size);
   --oj-avatar-initials-font-weight:        lighter;
   --oj-avatar-icon-font-size:              2rem;
@@ -6277,7 +6299,7 @@ div.oj-avatar.oj-avatar-image {
 .oj-avatar-xs, .oj-icon-circle-xs .oj-icon-circle-inner,
 .oj-icon-xs .oj-icon-circle-inner {
   --oj-avatar-size:                        2.75rem;
-  --oj-avatar-border-radius:               var(--oj-core-border-radius-md);
+  --oj-avatar-border-radius:               var(--oj-core-border-radius-lg);
   --oj-avatar-initials-font-size:          var(--oj-typography-body-md-font-size);
   --oj-avatar-initials-font-weight:        400;
   --oj-avatar-icon-font-size:              1rem; }
@@ -6285,7 +6307,7 @@ div.oj-avatar.oj-avatar-image {
 .oj-avatar-sm, .oj-icon-circle-sm .oj-icon-circle-inner,
 .oj-icon-sm .oj-icon-circle-inner {
   --oj-avatar-size:                        3.5rem;
-  --oj-avatar-border-radius:               var(--oj-core-border-radius-md);
+  --oj-avatar-border-radius:               var(--oj-core-border-radius-lg);
   --oj-avatar-initials-font-size:          var(--oj-typography-heading-xs-font-size);
   --oj-avatar-initials-font-weight:        normal;
   --oj-avatar-icon-font-size:              1.5rem; }
@@ -6293,7 +6315,7 @@ div.oj-avatar.oj-avatar-image {
 .oj-avatar-lg, .oj-icon-circle-lg .oj-icon-circle-inner,
 .oj-icon-lg .oj-icon-circle-inner {
   --oj-avatar-size:                        6rem;
-  --oj-avatar-border-radius:               var(--oj-core-border-radius-lg);
+  --oj-avatar-border-radius:               var(--oj-core-border-radius-xl);
   --oj-avatar-initials-font-size:          2.5rem;
   --oj-avatar-icon-font-size:              2.25rem; }
 
@@ -9062,6 +9084,9 @@ html .oj-form-control {
 .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-invalid):not(.oj-warning) .oj-text-field-container {
   border-width: 0; }
 
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field.oj-focus:not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-text-field-container {
+  box-shadow: inherit; }
+
 .oj-text-field-label-inside .oj-text-field-input.oj-hover {
   background-color: transparent; }
 
@@ -9834,7 +9859,8 @@ oj-list-view:not(.oj-complete) {
 .oj-listview-collapse-icon:focus,
 .oj-listview-group-item:focus,
 .oj-listview-item-element:focus,
-.oj-listview-cell-element:focus {
+.oj-listview-cell-element:focus,
+.oj-listview-no-data-cell-element:focus {
   outline: none; }
 
 /* styling to hide the gridline */
@@ -9891,7 +9917,9 @@ oj-list-view:not(.oj-complete) {
 /* Styling on list item hover */
 .oj-listview-item.oj-hover,
 .oj-listview-card.oj-hover,
-.oj-listview-group-item.oj-hover {
+.oj-listview-group-item.oj-hover,
+.oj-listview-item-element.oj-expanded .oj-listview-group-item.oj-hover,
+.oj-listview-item-element.oj-collapsed .oj-listview-group-item.oj-hover {
   background-color: var(--oj-core-bg-color-hover); }
 
 .oj-listview:not(.oj-listview-card-layout) .oj-listview-item.oj-hover,
@@ -9930,12 +9958,14 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
 /* Styling on focused list or group item */
 .oj-listview-card.oj-focus-highlight,
 .oj-listview-item.oj-focus-highlight,
-.oj-listview-group-item.oj-focus-highlight {
+.oj-listview-group-item.oj-focus-highlight,
+.oj-listview-no-data-item.oj-focus-highlight {
   position: relative; }
 
 .oj-listview-card.oj-focus-highlight::after,
 .oj-listview-item.oj-focus-highlight::after,
-.oj-listview-group-item.oj-focus-highlight::after {
+.oj-listview-group-item.oj-focus-highlight::after,
+.oj-listview-no-data-item.oj-focus-highlight::after {
   content: "";
   position: absolute;
   pointer-events: none;
@@ -9945,11 +9975,13 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
   outline: dotted 1px var(--oj-core-focus-border-color); }
   html:not([dir="rtl"]) .oj-listview-card.oj-focus-highlight::after, html:not([dir="rtl"])
   .oj-listview-item.oj-focus-highlight::after, html:not([dir="rtl"])
-  .oj-listview-group-item.oj-focus-highlight::after {
+  .oj-listview-group-item.oj-focus-highlight::after, html:not([dir="rtl"])
+  .oj-listview-no-data-item.oj-focus-highlight::after {
     left: 1px; }
   html[dir="rtl"] .oj-listview-card.oj-focus-highlight::after, html[dir="rtl"]
   .oj-listview-item.oj-focus-highlight::after, html[dir="rtl"]
-  .oj-listview-group-item.oj-focus-highlight::after {
+  .oj-listview-group-item.oj-focus-highlight::after, html[dir="rtl"]
+  .oj-listview-no-data-item.oj-focus-highlight::after {
     right: 1px; }
 
 /* Styling on expand/collapse icon when it has focus highlight */
@@ -10007,14 +10039,18 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
   line-height: var(--oj-list-view-group-header-line-height);
   color: var(--oj-heading-text-color);
   padding: var(--oj-collection-list-cell-padding-vertical) var(--oj-list-view-item-padding-horizontal);
-  border: 0 solid var(--oj-core-divider-color);
   background-color: var(--oj-list-view-group-header-bg-color);
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  background-image: linear-gradient(var(--oj-core-divider-color), var(--oj-core-divider-color));
+  background-position: 0 0;
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  border: 0 solid var(--oj-core-divider-color); }
 
 /* Styling override for small group headers */
 .oj-group-header-sm .oj-listview-group-item {
-  font-size: var(--oj-typography-body-xs-font-size);
-  color: var(--oj-core-text-color-secondary); }
+  font-size: var(--oj-typography-body-sm-font-size);
+  color: var(--oj-core-text-color-primary); }
 
 /* Styling override for large group headers */
 .oj-group-header-lg .oj-listview-group-item {
@@ -10024,8 +10060,7 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
 .oj-listview-item-element.oj-collapsed .oj-listview-group-item {
   padding: 0; }
 
-/* Styling for group items when it has no children or in collapsed state */
-.oj-listview-item-element.oj-collapsed .oj-listview-group-item,
+/* Styling for group items when it has no children */
 .oj-listview-group-item.oj-empty {
   border-width: 0 0 1px; }
 
@@ -10059,7 +10094,8 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
 /* Styling for group item element that is stucked when scrolled */
 .oj-listview-group-item.oj-stuck {
   background-color: var(--oj-list-view-group-header-bg-color-sticky);
-  box-shadow: var(--oj-core-box-shadow-xs); }
+  box-shadow: var(--oj-core-box-shadow-xs);
+  background-size: 0; }
 
 /* Remove borders on listview header when gridlines are visible in sticky mode */
 .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-group-item.oj-stuck {
@@ -10097,16 +10133,6 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
   justify-content: center;
   margin: 0 0.375rem;
   text-decoration: none; }
-
-/* Overrides for expand/collapse icon in small group header */
-.oj-group-header-sm .oj-listview-expand-icon,
-.oj-group-header-sm .oj-listview-collapse-icon,
-.oj-group-header-sm a:visited.oj-listview-expand-icon,
-.oj-group-header-sm a:visited.oj-listview-collapse-icon {
-  width: var(--oj-button-sm-height);
-  height: var(--oj-button-sm-height);
-  font-size: 1rem;
-  color: var(--oj-core-text-color-secondary); }
 
 /* Styling for item when display mode is card */
 .oj-listview-card {
@@ -11892,7 +11918,7 @@ html[dir="rtl"] .oj-conveyorbelt-overflow-indicator.oj-end {
   color: var(--oj-button-borderless-chrome-text-color-active); }
 
 :root {
-  --oj-data-grid-column-width:                     6.25rem; }
+  --oj-data-grid-column-width:                             6.25rem; }
 
 oj-data-grid:not(.oj-complete) {
   visibility: hidden; }
@@ -11920,7 +11946,9 @@ oj-data-grid:not(.oj-complete) {
 .oj-datagrid-header-label:focus,
 .oj-datagrid-end-header-cell:focus,
 .oj-datagrid-scrollers:focus,
-.oj-datagrid-databody:focus {
+.oj-datagrid-databody:focus,
+.oj-datagrid-no-data-container:focus,
+.oj-datagrid-empty-text:focus {
   outline: none; }
 
 /* The default column width should be set here*/
@@ -11944,6 +11972,14 @@ oj-data-grid:not(.oj-complete) {
 .oj-datagrid-column-header,
 .oj-datagrid-column-end-header {
   box-sizing: border-box; }
+
+/* Styling for no data container. */
+.oj-datagrid-no-data-container,
+.oj-datagrid-empty-text {
+  box-sizing: border-box;
+  position: absolute;
+  display: inline-block;
+  margin: 1px; }
 
 /* Style for disabling horizontal gridlines on cells */
 .oj-datagrid-cell.oj-datagrid-border-horizontal-none,
@@ -12365,6 +12401,10 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
   .oj-datagrid.oj-focus .oj-datagrid-end-header-cell.oj-focus-highlight::before {
     right: 1px; }
 
+.oj-datagrid-no-data-container:focus,
+.oj-datagrid-empty-text:focus {
+  outline: dotted 1px var(--oj-core-focus-border-color); }
+
 .oj-datagrid.oj-focus .oj-datagrid-column-end-header-cell.oj-focus-highlight::before {
   height: calc(100% - 2px); }
 
@@ -12406,7 +12446,8 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
 /* Styling on header cells when hovered both for rows and columns */
 .oj-datagrid-header-label.oj-hover,
 .oj-datagrid-header-cell.oj-hover,
-.oj-datagrid-end-header-cell.oj-hover {
+.oj-datagrid-end-header-cell.oj-hover,
+.oj-datagrid-top-corner.oj-hover {
   background-color: var(--oj-collection-header-bg-color-hover); }
 
 /* Styling for headers when a sub set > 1 of its respective cells are selected */
@@ -12435,11 +12476,6 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
   .oj-datagrid-loading-icon:before {
     content: url("images/spinner_full.gif");
     transform: translate(-37.5%, -37.5%) scale(0.25); }
-
-/* Styling for the empty data grid text, default only used for positioning */
-.oj-datagrid-empty-text {
-  position: absolute;
-  padding: var(--oj-collection-grid-cell-padding); }
 
 /* Styling for the corner between row and column headers and scrollbars */
 .oj-datagrid-row-header-spacer,
@@ -12500,7 +12536,8 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
   margin-inline-end: 0.5rem; }
 
 .oj-datagrid-required-icon {
-  padding: 0.25rem; }
+  padding: 0.25rem;
+  cursor: default; }
 
 .oj-datagrid-required-icon:before {
   content: "*"; }
@@ -12637,11 +12674,47 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
 .oj-datagrid-row-header-cell.oj-datagrid-hierarchical-group .oj-datagrid-icon-container.oj-datagrid-disclosure-icon {
   margin-top: calc(-1 * var(--oj-collection-grid-cell-padding)); }
 
+.oj-datagrid-draggable {
+  cursor: grab; }
+
+.oj-datagrid-drag-active {
+  cursor: grabbing; }
+
+.drag-source-opaque, .oj-datagrid-disabled-element {
+  opacity: 0.3; }
+
+.oj-datagrid-row-drop-target-line {
+  border-bottom: 2px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+html:not([dir="rtl"]) .oj-datagrid-col-drop-target-line {
+  border-right: 2px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+html[dir="rtl"] .oj-datagrid-col-drop-target-line {
+  border-left: 2px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+.dndContainer {
+  position: absolute;
+  overflow: auto;
+  top: -10000px;
+  opacity: 0.92; }
+
+.dndContainer::-webkit-scrollbar {
+  display: none; }
+
+.oj-datagrid-drop-target {
+  background-color: var(--oj-core-drag-drop-color-1); }
+
 /* Styling for the default sort icon */
 /* Styling for the sort ascending icon */
 /* Styling for the sort descending icon */
 /* Styling for a collapsed icon */
 /* Styling for an expanded icon */
+.oj-datagrid {
+  --oj-c-PRIVATE-DO-NOT-USE-text-field-embedded-padding:    var(--oj-collection-grid-cell-padding); }
+
 :root {
   --oj-date-picker-cell-font-size:               var(--oj-typography-body-sm-font-size);
   --oj-date-picker-cell-border-color-today:      rgb(var(--oj-palette-neutral-rgb-160)); }
@@ -12970,7 +13043,8 @@ html[dir="rtl"] .oj-datepicker-prev-icon {
 
 .oj-datepicker-calendar.oj-focus-highlight td.oj-datepicker-days-cell-over a,
 .oj-datepicker-calendar.oj-focus-highlight td.oj-datepicker-days-cell-over span {
-  border: 2px solid var(--oj-core-border-color-selected); }
+  outline: dotted 1px var(--oj-core-focus-border-color);
+  outline-offset: 1px; }
 
 .oj-datepicker-week-col {
   color: var(--oj-label-color);
@@ -13235,6 +13309,9 @@ html[dir="rtl"] .oj-timepicker-ok-button {
 oj-drawer-layout:not(.oj-complete) {
   visibility: hidden; }
 
+.oj-drawer-hidden {
+  display: none !important; }
+
 .oj-drawer-disable-body-overflow {
   overflow: hidden !important; }
 
@@ -13371,9 +13448,6 @@ oj-drawer-popup:not(.oj-complete) {
   width: 100vw;
   max-width: 100vw;
   max-height: 100vh; }
-
-.oj-drawer-popup-surrogate .oj-drawer-bottom.oj-drawer-full-overlay {
-  height: 100vh; }
 
 @supports (-webkit-touch-callout: none) {
   .oj-drawer-popup-surrogate .oj-drawer-bottom {
@@ -14040,7 +14114,7 @@ oj-form-layout {
     text-align: right; }
 
 .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):not(.oj-formlayout-nested-labelvalue) {
-  margin: 0 0 calc(var(--oj-form-layout-margin-bottom) - var(--oj-private-core-wrappable-margin-bottom)) 0; }
+  padding: 0 0 calc(var(--oj-form-layout-margin-bottom) - var(--oj-private-core-wrappable-margin-bottom)) 0; }
 
 .oj-form.oj-label-value > .oj-flex > .oj-flex-item:first-child {
   margin: 0; }
@@ -14368,7 +14442,10 @@ oj-gantt:not(.oj-complete) {
 /* Styling related to interactivity */
 .oj-gantt-task.oj-draggable,
 .oj-gantt-task-label.oj-draggable,
-.oj-gantt-task-progress.oj-draggable {
+.oj-gantt-task-progress.oj-draggable,
+.oj-gantt-task-overtime.oj-draggable,
+.oj-gantt-task-downtime.oj-draggable,
+.oj-gantt-task-attribute.oj-draggable {
   cursor: move; }
 
 .oj-gantt-task-drag-image {
@@ -14381,6 +14458,26 @@ oj-gantt:not(.oj-complete) {
   opacity: 0; }
 
 .oj-gantt-task-resize-handle.oj-draggable {
+  cursor: col-resize; }
+
+.oj-gantt-dnd-move-droppable,
+.oj-gantt-task.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-label.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-progress.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-overtime.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-downtime.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-attribute.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-resize-handle.oj-gantt-dnd-move-droppable {
+  cursor: move; }
+
+.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-label.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-progress.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-overtime.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-downtime.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-attribute.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-resize-handle.oj-gantt-dnd-resize-droppable {
   cursor: col-resize; }
 
 /* Styling for all task labels */
@@ -16008,20 +16105,17 @@ oj-menu {
   padding: 0 var(--oj-menu-text-to-edge-padding);
   position: relative;
   text-decoration: none;
-  display: block;
+  display: flex;
+  align-items: center;
   font-weight: normal;
   box-sizing: border-box; }
 
 .oj-menu-item > a {
   height: var(--oj-collection-list-row-height);
-  line-height: var(--oj-collection-list-row-height);
   color: var(--oj-menu-item-text-color);
   border-top-width: 1px;
   border-top-color: transparent;
   border-top-style: solid; }
-
-.oj-menu-item > a > span {
-  vertical-align: top; }
 
 .oj-menu-item:last-child > a {
   border-bottom-width: 1px;
@@ -16089,9 +16183,10 @@ a.oj-menu-option-text-only {
 .oj-menu-item-icon,
 .oj-menu-item-end-icon {
   color: var(--oj-menu-icon-color);
+  display: flex;
+  align-items: center;
   position: absolute;
-  height: var(--oj-menu-icon-size);
-  line-height: var(--oj-collection-list-row-height) !important; }
+  height: var(--oj-menu-icon-size); }
 
 html:not([dir="rtl"]) .oj-menu-item-icon {
   margin-left: calc(0px - var(--oj-menu-icon-size) - var(--oj-menu-text-to-start-icon-padding));
@@ -16125,8 +16220,9 @@ html[dir="rtl"] .oj-menu-item-end-icon {
 .oj-menu-submenu-icon {
   color: var(--oj-menu-icon-color);
   position: absolute;
-  line-height: var(--oj-collection-list-row-height);
-  height: var(--oj-menu-icon-size); }
+  height: var(--oj-menu-icon-size);
+  display: flex;
+  align-items: center; }
   html:not([dir="rtl"]) .oj-menu-submenu-icon {
     right: var(--oj-menu-icon-to-edge-padding); }
   html[dir="rtl"] .oj-menu-submenu-icon {
@@ -17347,7 +17443,8 @@ html .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlis
   justify-content: center; }
 
 .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
-  padding: 0 var(--oj-navigation-list-item-padding); }
+  padding: 0 var(--oj-navigation-list-item-padding);
+  justify-content: end; }
 
 .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-icon {
   padding-bottom: var(--oj-navigation-list-icon-to-text-padding); }
@@ -19531,6 +19628,9 @@ oj-selector:not(.oj-complete) {
   top: 0;
   left: 0; }
 
+:root {
+  --oj-spark-chart-item-color:         rgb(var(--oj-palette-dvt-rgb-1)); }
+
 oj-spark-chart:not(.oj-complete) {
   visibility: hidden; }
 
@@ -19543,6 +19643,9 @@ oj-spark-chart {
 
 .oj-sparkchart.oj-focus-highlight {
   outline: dotted 1px var(--oj-core-focus-border-color); }
+
+.oj-spark-chart-item {
+  color: var(--oj-spark-chart-item-color); }
 
 oj-status-meter-gauge:not(.oj-complete) {
   visibility: hidden; }
@@ -20516,7 +20619,8 @@ html:not([dir="rtl"]) .oj-hicontrast .oj-tabbar-horizontal:not(.oj-tabbar-icon-o
   border-bottom: 0; }
 
 .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
-  padding: var(--oj-tab-bar-item-padding); }
+  padding: var(--oj-tab-bar-item-padding);
+  justify-content: end; }
 
 .oj-tabbar-horizontal:not(.oj-tabbar-stack-icon-label):not(.oj-tabbar-icon-only) .oj-tabbar-item-icon {
   align-self: center;
@@ -20995,10 +21099,14 @@ table.oj-table-element.oj-table-column-header-resizing {
   vertical-align: middle;
   float: none;
   white-space: nowrap;
-  text-overflow: ellipsis;
   overflow: hidden;
   text-align: start;
   box-sizing: border-box; }
+
+.oj-table-header-cell-wrap-text {
+  overflow-wrap: anywhere;
+  -webkit-hyphens: none;
+          hyphens: none; }
 
 .oj-table-column-header-cell,
 .oj-table-data-cell,
@@ -21024,22 +21132,41 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* Styling for the vertical grid lines for header, data, and footer cells. */
 .oj-table-column-header-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-column-header-cell.oj-table-vgrid-lines + .oj-table-gutter-end-header-cell:not(.oj-table-frozen-end.oj-table-frozen-edge),
 .oj-table-data-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-data-cell.oj-table-vgrid-lines + .oj-table-gutter-end-body-cell:not(.oj-table-frozen-end.oj-table-frozen-edge),
 .oj-table-footer-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
-.oj-table-add-row-placeholder > td.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible) {
+.oj-table-footer-cell.oj-table-vgrid-lines + .oj-table-gutter-end-footer-cell:not(.oj-table-frozen-end.oj-table-frozen-edge),
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines + .oj-table-gutter-end-body-cell:not(.oj-table-frozen-end.oj-table-frozen-edge) {
   border-inline-start-style: solid;
   border-inline-start-color: var(--oj-core-divider-color);
   border-inline-start-width: 1px; }
 
+/* selection borders for column selection when vertical grid lines are enabled. */
+.oj-table-column-header-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-column-header-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(.oj-helper-hidden-accessible) + .oj-table-column-header-cell,
+.oj-table-data-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-data-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(.oj-helper-hidden-accessible) + .oj-table-data-cell,
+.oj-table-footer-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-footer-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(.oj-helper-hidden-accessible) + .oj-table-footer-cell,
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(.oj-helper-hidden-accessible) + td {
+  border-inline-start-color: var(--oj-core-border-color-selected); }
+
 /* selection borders for column selection */
 .oj-table-column-header-cell.oj-selected:not(:first-child),
 .oj-table-column-header-cell.oj-selected + .oj-table-column-header-cell,
+.oj-table-column-header-cell.oj-selected:not(.oj-table-vgrid-lines) + .oj-table-gutter-end-header-cell,
 .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected:not(:first-child),
 .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected + .oj-table-data-cell,
+.oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected:not(.oj-table-vgrid-lines) + .oj-table-gutter-end-body-cell,
 .oj-table-add-row-placeholder > td.oj-selected:not(:first-child),
 .oj-table-add-row-placeholder > td.oj-selected + td,
+.oj-table-add-row-placeholder > td.oj-selected:not(.oj-table-vgrid-lines) + .oj-table-gutter-end-body-cell,
 .oj-table-footer-cell.oj-selected:not(:first-child),
-.oj-table-footer-cell.oj-selected + .oj-table-footer-cell {
+.oj-table-footer-cell.oj-selected + .oj-table-footer-cell,
+.oj-table-footer-cell.oj-selected:not(.oj-table-vgrid-lines) + .oj-table-gutter-end-footer-cell {
   border-inline-start-style: solid;
   border-inline-start-color: var(--oj-core-border-color-selected);
   border-inline-start-width: 1px; }
@@ -21096,22 +21223,34 @@ table.oj-table-element.oj-table-column-header-resizing {
 .oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row) > .oj-table-data-cell,
 .oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row) > .oj-table-selector-cell,
 .oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row) > .oj-table-skeleton-cell,
+.oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child:not(.oj-table-stuck-row)) > .oj-table-gutter-start-body-cell,
+.oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row) > .oj-table-gutter-end-body-cell,
 .oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-data-cell,
 .oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-selector-cell,
 .oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-skeleton-cell,
+.oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-gutter-start-body-cell,
+.oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-gutter-end-body-cell,
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-fetch-skeleton-row:not(:first-child) > .oj-table-skeleton-cell {
   border-top: 1px solid var(--oj-core-divider-color); }
 
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-data-cell,
-.oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-selector-cell {
+.oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-selector-cell,
+.oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-gutter-start-body-cell,
+.oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-gutter-end-body-cell {
   border-bottom: 1px solid var(--oj-core-divider-color); }
 
 /* selection borders for row selection */
 .oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:first-child):not(.oj-table-stuck-row) > .oj-table-data-cell.oj-selected,
-.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row:not(.oj-table-stuck-row) > .oj-table-data-cell {
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row:not(.oj-table-stuck-row) > .oj-table-data-cell,
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:first-child):not(.oj-table-stuck-row) > .oj-table-gutter-start-body-cell.oj-selected,
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:first-child):not(.oj-table-stuck-row) > .oj-table-gutter-end-body-cell.oj-selected,
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row:not(.oj-table-stuck-row) > .oj-table-gutter-start-body-cell,
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row:not(.oj-table-stuck-row) > .oj-table-gutter-end-body-cell {
   border-top: 1px solid var(--oj-core-border-color-selected); }
 
-.oj-table-sticky.oj-table-add-row:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:nth-child(2) > .oj-table-data-cell.oj-selected {
+.oj-table-sticky.oj-table-add-row:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:nth-child(2) > .oj-table-data-cell.oj-selected,
+.oj-table-sticky.oj-table-add-row:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:nth-child(2) > .oj-table-gutter-start-body-cell.oj-selected,
+.oj-table-sticky.oj-table-add-row:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:nth-child(2) > .oj-table-gutter-end-body-cell.oj-selected {
   border-top: none; }
 
 .oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:last-child > .oj-table-data-cell.oj-selected {
@@ -21134,7 +21273,9 @@ table.oj-table-element.oj-table-column-header-resizing {
   padding-top: var(--oj-collection-grid-cell-padding); }
 
 .oj-table-sticky .oj-table-column-header-cell:not(.oj-helper-hidden-accessible),
-.oj-table-sticky .oj-table-column-header-selector-cell:not(.oj-helper-hidden-accessible) {
+.oj-table-sticky .oj-table-column-header-selector-cell:not(.oj-helper-hidden-accessible),
+.oj-table-sticky .oj-table-gutter-start-header-cell:not(.oj-helper-hidden-accessible),
+.oj-table-sticky .oj-table-gutter-end-header-cell:not(.oj-helper-hidden-accessible) {
   position: sticky;
   top: 0;
   border-bottom: 1px solid var(--oj-collection-border-color); }
@@ -21152,12 +21293,15 @@ table.oj-table-element.oj-table-column-header-resizing {
   padding: 0px; }
 
 .oj-table-data-cell.oj-table-frozen-start,
+.oj-table-gutter-start-body-cell.oj-table-frozen-start,
 .oj-table-frozen-start {
   position: sticky; }
   html:not([dir="rtl"]) .oj-table-data-cell.oj-table-frozen-start, html:not([dir="rtl"])
+  .oj-table-gutter-start-body-cell.oj-table-frozen-start, html:not([dir="rtl"])
   .oj-table-frozen-start {
     left: 0; }
   html[dir="rtl"] .oj-table-data-cell.oj-table-frozen-start, html[dir="rtl"]
+  .oj-table-gutter-start-body-cell.oj-table-frozen-start, html[dir="rtl"]
   .oj-table-frozen-start {
     right: 0; }
 
@@ -21168,12 +21312,15 @@ html[dir="rtl"] .oj-table-frozen-start.oj-table-frozen-edge {
   box-shadow: -2px 0px 0px var(--oj-collection-border-color); }
 
 .oj-table-data-cell.oj-table-frozen-end,
+.oj-table-gutter-end-body-cell.oj-table-frozen-end,
 .oj-table-frozen-end {
   position: sticky; }
   html:not([dir="rtl"]) .oj-table-data-cell.oj-table-frozen-end, html:not([dir="rtl"])
+  .oj-table-gutter-end-body-cell.oj-table-frozen-end, html:not([dir="rtl"])
   .oj-table-frozen-end {
     right: 0; }
   html[dir="rtl"] .oj-table-data-cell.oj-table-frozen-end, html[dir="rtl"]
+  .oj-table-gutter-end-body-cell.oj-table-frozen-end, html[dir="rtl"]
   .oj-table-frozen-end {
     left: 0; }
 
@@ -21184,48 +21331,66 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
   box-shadow: 2px 0px 0px var(--oj-collection-border-color); }
 
 .oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-start {
+.oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-start,
+.oj-table-sticky .oj-table-gutter-start-header-cell.oj-table-frozen-start {
   z-index: 100007; }
 
-.oj-table-sticky .oj-table-column-header-cell {
+.oj-table-sticky .oj-table-column-header-cell,
+.oj-table-sticky .oj-table-gutter-start-header-cell,
+.oj-table-sticky .oj-table-gutter-end-header-cell {
   z-index: 100006; }
 
-.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end {
+.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end,
+.oj-table-sticky .oj-table-gutter-end-header-cell.oj-table-frozen-end {
   z-index: 100008; }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start {
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-start {
   z-index: 100001; }
 
-.oj-table-sticky .oj-table-add-row-placeholder td {
+.oj-table-sticky .oj-table-add-row-placeholder td,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell {
   z-index: 100000; }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end {
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-end {
   z-index: 100002; }
 
-.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-start {
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-start,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-start {
   z-index: 4; }
 
-.oj-table-sticky .oj-table-sticky-row td {
+.oj-table-sticky .oj-table-sticky-row td,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell {
   z-index: 3; }
 
-.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-end {
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-end,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell.oj-table-frozen-end {
   z-index: 5; }
 
 .oj-table-sticky .oj-table-data-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-selector-cell.oj-table-frozen-start {
+.oj-table-sticky .oj-table-selector-cell.oj-table-frozen-start,
+.oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-start {
   z-index: 1; }
 
-.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end {
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end,
+.oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-end {
   z-index: 2; }
 
 .oj-table-sticky .oj-table-footer-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-start {
+.oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-start,
+.oj-table-sticky .oj-table-gutter-start-footer-cell.oj-table-frozen-start {
   z-index: 100004; }
 
-.oj-table-sticky .oj-table-footer-cell {
+.oj-table-sticky .oj-table-footer-cell,
+.oj-table-sticky .oj-table-gutter-start-footer-cell,
+.oj-table-sticky .oj-table-gutter-end-footer-cell {
   z-index: 100003; }
 
-.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end {
+.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end,
+.oj-table-sticky .oj-table-gutter-end-footer-cell.oj-table-frozen-end {
   z-index: 100005; }
 
 .oj-table-body-row .oj-selector,
@@ -21479,7 +21644,9 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td::after,
-.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td::after {
+.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td::after,
+.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-start-body-cell::after,
+.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-end-body-cell::after {
   position: absolute;
   box-sizing: border-box;
   top: 0;
@@ -21493,6 +21660,8 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-data-cell::after,
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell::after,
+.oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-start-body-cell::after,
+.oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-end-body-cell::after,
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td::after,
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td::after,
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td::after {
@@ -21501,6 +21670,7 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 /* Styling for the data row elements in focus state. */
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-data-cell:first-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell:first-child::after,
+.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-start-body-cell:first-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td:first-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td:first-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td:first-child::after {
@@ -21511,6 +21681,7 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 /* Styling for the data row elements in focus state. */
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-data-cell:last-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell:last-child::after,
+.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-end-body-cell:last-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td:last-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td:last-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td:last-child::after {
@@ -21623,18 +21794,26 @@ html[dir="rtl"] .oj-table-body-row-drag-image td:last-child {
 /* Styling for the data cell elements in selected state when table focused. */
 .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected,
 .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-selector-cell.oj-selected,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-gutter-start-body-cell.oj-selected,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-gutter-end-body-cell.oj-selected,
 .oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected,
-.oj-table:not(.oj-focus) .oj-table-selector-cell.oj-selected {
+.oj-table:not(.oj-focus) .oj-table-selector-cell.oj-selected,
+.oj-table-element:not(.oj-focus) .oj-table-gutter-start-body-cell.oj-selected,
+.oj-table-element:not(.oj-focus) .oj-table-gutter-end-body-cell.oj-selected {
   background-image: linear-gradient(var(--oj-core-bg-color-selected), var(--oj-core-bg-color-selected)); }
 
 /* Styling for the data cell elements in selected state when table in high contrast mode. */
 .oj-hicontrast .oj-table-data-cell.oj-selected,
-.oj-hicontrast .oj-table-selector-cell.oj-selected {
+.oj-hicontrast .oj-table-selector-cell.oj-selected,
+.oj-hicontrast .oj-table-gutter-start-body-cell.oj-selected,
+.oj-hicontrast .oj-table-gutter-end-body-cell.oj-selected {
   border: 3px double; }
 
 /* Styling for the data cell elements in hover state. */
 .oj-table-data-cell.oj-hover,
-.oj-table-selector-cell.oj-hover {
+.oj-table-selector-cell.oj-hover,
+.oj-table-gutter-start-body-cell.oj-hover,
+.oj-table-gutter-end-body-cell.oj-hover {
   background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover)); }
 
 /* Styling on form controls stamped inside a table */
@@ -22019,7 +22198,9 @@ html[dir="rtl"]
 
 /* Styling for the footer cells. */
 .oj-table-footer-cell,
-.oj-table-footer-selector-cell {
+.oj-table-footer-selector-cell,
+.oj-table-gutter-start-footer-cell,
+.oj-table-gutter-end-footer-cell {
   background-color: inherit;
   float: none;
   height: var(--oj-collection-list-row-height);
@@ -22029,7 +22210,9 @@ html[dir="rtl"]
   box-sizing: border-box; }
 
 .oj-table-sticky .oj-table-footer-cell,
-.oj-table-sticky .oj-table-footer-selector-cell {
+.oj-table-sticky .oj-table-footer-selector-cell,
+.oj-table-sticky .oj-table-gutter-start-footer-cell,
+.oj-table-sticky .oj-table-gutter-end-footer-cell {
   position: sticky;
   bottom: 0;
   border-top: 1px solid var(--oj-collection-border-color); }
@@ -22148,9 +22331,38 @@ html[dir="rtl"] .oj-table-sort .oj-table-column-header-show-required-icon {
 .oj-table-hidden-cell {
   display: none; }
 
+.oj-table-gutter-start-header-cell,
+.oj-table-gutter-end-header-cell,
+.oj-table-gutter-start-body-cell,
+.oj-table-gutter-end-body-cell,
+.oj-table-gutter-start-footer-cell,
+.oj-table-gutter-end-footer-cell {
+  padding: 0px;
+  background-color: inherit;
+  position: relative; }
+
+.oj-table-gutter-start-header-cell,
+.oj-table-gutter-start-body-cell,
+.oj-table-gutter-start-footer-cell {
+  width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal)); }
+
+.oj-table-gutter-end-header-cell,
+.oj-table-gutter-end-body-cell,
+.oj-table-gutter-end-footer-cell {
+  width: calc(var(--oj-core-gutter-end, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal)); }
+
+.oj-table-custom-header {
+  text-overflow: ellipsis; }
+
 /* Styling for the default sort icon */
 /* Styling for the sort ascending icon */
 /* Styling for the sort descending icon */
+.oj-table {
+  --oj-c-PRIVATE-DO-NOT-USE-text-field-embedded-padding:    var(--oj-table-cell-padding-horizontal); }
+
+.oj-table.oj-table-grid-display {
+  --oj-c-PRIVATE-DO-NOT-USE-text-field-embedded-padding:    var(--oj-collection-grid-cell-padding); }
+
 oj-text-area:not(.oj-complete) {
   visibility: hidden; }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -63,8 +63,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojthemeutils'], function (exports, oj
     totalHeight += getAxisHeight(minorAxis, 'minor');
 
     // todo: investigate offset required for IE/Edge
-    if (oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE ||
-      oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.IE) {
+    if (
+      oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE ||
+      oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.IE
+    ) {
       totalHeight -= 1;
     }
 
@@ -112,10 +114,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojthemeutils'], function (exports, oj
     var defaultAxisHeight = parseInt(window.getComputedStyle(dummyAxisContainerDiv).height, 10);
     root.removeChild(dummyParent);
 
-    var timeAxisPreferredHeight = Math.max(labelHeight + (2 * TIMEAXIS_DEFAULT_INTERVAL_PADDING),
-      TIMEAXIS_DEFAULT_INTERVAL_HEIGHT);
-    var finalGanttAxisHeight = Math.max(timeAxisPreferredHeight, defaultAxisHeight -
-      BORDER_WIDTH);
+    var timeAxisPreferredHeight = Math.max(
+      labelHeight + 2 * TIMEAXIS_DEFAULT_INTERVAL_PADDING,
+      TIMEAXIS_DEFAULT_INTERVAL_HEIGHT
+    );
+    var finalGanttAxisHeight = Math.max(timeAxisPreferredHeight, defaultAxisHeight - BORDER_WIDTH);
 
     return finalGanttAxisHeight + BORDER_WIDTH;
   };

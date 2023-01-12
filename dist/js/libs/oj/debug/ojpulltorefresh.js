@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -86,7 +86,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
     var mOptions;
     var isTouch;
     var type;
-    var loadingIcon = (ThemeUtils.parseJSONFromFontFamily('oj-refresher-option-defaults') || {}).loadingIcon;
+    var loadingIcon = (ThemeUtils.parseJSONFromFontFamily('oj-refresher-option-defaults') || {})
+      .loadingIcon;
 
     // bind the refresherElement to the scrollerElement for busyState if it exists
     if (options && options.refresherElement) {
@@ -114,9 +115,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
     } else {
       type = 'pan';
       mOptions = {
-        recognizers: [
-           [Hammer.Pan, { direction: Hammer.DIRECTION_VERTICAL }]
-        ] };
+        recognizers: [[Hammer.Pan, { direction: Hammer.DIRECTION_VERTICAL }]]
+      };
       panel.ojHammer(mOptions);
     }
 
@@ -172,8 +172,9 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
         }
 
         // see how far it's been pull
-        height = isTouch ? event.originalEvent.touches[0].clientY
-          - parseInt(start, 10) : event.gesture.deltaY;
+        height = isTouch
+          ? event.originalEvent.touches[0].clientY - parseInt(start, 10)
+          : event.gesture.deltaY;
 
         // wrong direction
         if (height < 0) {
@@ -198,8 +199,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
         }
 
         if (checkTolerance) {
-          movex = isTouch ? event.originalEvent.touches[0].clientX
-            - parseInt($.data(content[0], 'data-pullstart-horiz'), 10) : event.gesture.deltaX;
+          movex = isTouch
+            ? event.originalEvent.touches[0].clientX -
+              parseInt($.data(content[0], 'data-pullstart-horiz'), 10)
+            : event.gesture.deltaX;
 
           // check if the intention is swipe left, if it is don't show the panel yet
           if (Math.abs(movex) > height) {
@@ -212,9 +215,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
 
         content.css('height', height);
 
-
-          // apply pull-to-refresh-action class to block children events in the panel element
-          panel[0].classList.add('oj-pulltorefresh-action');
+        // apply pull-to-refresh-action class to block children events in the panel element
+        panel[0].classList.add('oj-pulltorefresh-action');
 
         // fire pull event
         PullToRefreshUtils._fireEvent(event, 'pull', content, height);
@@ -230,18 +232,20 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
           if (isNaN(heightRatio) || heightRatio < 0) {
             heightRatio = 0;
           }
-          ratio = Math.round((heightRatio) * 10) * 10;
+          ratio = Math.round(heightRatio * 10) * 10;
           if (ratio >= 100) {
             iconClass = 'oj-pulltorefresh-icon-full';
             title = Translations.getTranslatedString('oj-pullToRefresh.titleIconFull');
           } else {
             iconClass = 'oj-pulltorefresh-icon-' + ratio + '-percent';
-            title = Translations.getTranslatedString('oj-pullToRefresh.titleIcon' + ratio + 'percent');
+            title = Translations.getTranslatedString(
+              'oj-pullToRefresh.titleIcon' + ratio + 'percent'
+            );
           }
 
           if (loadingIcon === 'progresscircle') {
             // recalculate ratio for progress circle
-            ratio = Math.min(Math.round((heightRatio) * 100), 100);
+            ratio = Math.min(Math.round(heightRatio * 100), 100);
             icon[0].setAttribute('value', ratio);
           } else {
             // remove last class
@@ -286,8 +290,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
 
         // less than threshold, hide panel and do nothing
         if (content.outerHeight() < threshold) {
-          content.addClass('oj-pulltorefresh-transition')
-            .css('height', 0);
+          content.addClass('oj-pulltorefresh-transition').css('height', 0);
 
           PullToRefreshUtils._cleanup(content);
         } else {
@@ -314,7 +317,9 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
       PullToRefreshUtils._createDefaultContent(content, primaryText, secondaryText);
     }
 
-    content.prev().text(PullToRefreshUtils._getTranslatedString('oj-pullToRefresh.ariaRefreshingLink'));
+    content
+      .prev()
+      .text(PullToRefreshUtils._getTranslatedString('oj-pullToRefresh.ariaRefreshingLink'));
 
     // set it back to auto so we can get the actual height
     content.css('height', 'auto');
@@ -328,11 +333,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
     var busyContext;
     var busyStateResolve;
     var listener;
-    var loadingIcon = (ThemeUtils.parseJSONFromFontFamily('oj-refresher-option-defaults') || {}).loadingIcon;
+    var loadingIcon = (ThemeUtils.parseJSONFromFontFamily('oj-refresher-option-defaults') || {})
+      .loadingIcon;
 
     height = $.data(content[0], 'data-panelheight');
-    content.addClass('oj-pulltorefresh-transition')
-      .css('height', height);
+    content.addClass('oj-pulltorefresh-transition').css('height', height);
 
     PullToRefreshUtils._fireEvent(event, 'release', content, height);
 
@@ -357,61 +362,67 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
     // register busy state with host as the context, note you can't pull again until release is done
     // if refresher element exists, bind busystate to the refresher element.
     // check if the refresher element is set on the scroller element
-    var busyElement = ($.data($(element)[0], 'data-pulltorefresh-refresher')) ?
-      ($.data($(element)[0], 'data-pulltorefresh-refresher')) : element;
+    var busyElement = $.data($(element)[0], 'data-pulltorefresh-refresher')
+      ? $.data($(element)[0], 'data-pulltorefresh-refresher')
+      : element;
     busyContext = Context.getContext(busyElement).getBusyContext();
     busyStateResolve = busyContext.addBusyState({ description: 'PullToRefresh:handleRelease' });
     $.data($(busyElement)[0], 'data-pulltorefresh-busystate', busyStateResolve);
 
-    refreshFunc().then(function () {
-      listener = function () {
-        PullToRefreshUtils._fireEvent(event, 'complete', content, height);
+    refreshFunc().then(
+      function () {
+        listener = function () {
+          PullToRefreshUtils._fireEvent(event, 'complete', content, height);
 
-        // cleanup after everything is complete
-        PullToRefreshUtils._cleanup(content);
+          // cleanup after everything is complete
+          PullToRefreshUtils._cleanup(content);
 
-        content.off('transitionend', listener);
+          content.off('transitionend', listener);
 
-        // clear the text, otherwise voice over will allow text to be focusable
-        content.prev().text('');
+          // clear the text, otherwise voice over will allow text to be focusable
+          content.prev().text('');
 
-        // clear busy state
-        PullToRefreshUtils._resolveBusyState(element);
-      };
+          // clear busy state
+          PullToRefreshUtils._resolveBusyState(element);
+        };
 
-      // change text to complete
-      content.prev().text(PullToRefreshUtils._getTranslatedString('oj-pullToRefresh.ariaRefreshCompleteLink'));
-      // hide the link
-      content.prev().prev().css('position', '');
+        // change text to complete
+        content
+          .prev()
+          .text(PullToRefreshUtils._getTranslatedString('oj-pullToRefresh.ariaRefreshCompleteLink'));
+        // hide the link
+        content.prev().prev().css('position', '');
 
-      // mark that we are in the middle of closing the panel, we want this to complete without interruption
-      $.data(content[0], 'data-closing', true);
+        // mark that we are in the middle of closing the panel, we want this to complete without interruption
+        $.data(content[0], 'data-closing', true);
 
-      content.on('transitionend', listener);
-      content.css('height', 0);
-    }, function () {
-      listener = function () {
-        // cleanup after everything is complete
-        PullToRefreshUtils._cleanup(content);
+        content.on('transitionend', listener);
+        content.css('height', 0);
+      },
+      function () {
+        listener = function () {
+          // cleanup after everything is complete
+          PullToRefreshUtils._cleanup(content);
 
-        content.off('transitionend', listener);
+          content.off('transitionend', listener);
 
-        // clear the text, otherwise voice over will allow text to be focusable
-        content.prev().text('');
+          // clear the text, otherwise voice over will allow text to be focusable
+          content.prev().text('');
 
-        // clear busy state
-        PullToRefreshUtils._resolveBusyState(element);
-      };
+          // clear busy state
+          PullToRefreshUtils._resolveBusyState(element);
+        };
 
-      // hide the link
-      content.prev().prev().css('position', '');
+        // hide the link
+        content.prev().prev().css('position', '');
 
-      // mark that we are in the middle of closing the panel, we want this to complete without interruption
-      $.data(content[0], 'data-closing', true);
+        // mark that we are in the middle of closing the panel, we want this to complete without interruption
+        $.data(content[0], 'data-closing', true);
 
-      content.on('transitionend', listener);
-      content.css('height', 0);
-    });
+        content.on('transitionend', listener);
+        content.css('height', 0);
+      }
+    );
   };
 
   /**
@@ -447,8 +458,9 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
     var busyStateResolve;
 
     // check if the refresher element is set on the scroller element
-    var busyElement = ($.data(element, 'data-pulltorefresh-refresher')) ?
-      ($.data(element, 'data-pulltorefresh-refresher')) : element;
+    var busyElement = $.data(element, 'data-pulltorefresh-refresher')
+      ? $.data(element, 'data-pulltorefresh-refresher')
+      : element;
 
     elem = $(busyElement)[0];
 
@@ -479,10 +491,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
     var iconContainer;
     var primary;
     var secondary;
-    var loadingIcon = (ThemeUtils.parseJSONFromFontFamily('oj-refresher-option-defaults') || {}).loadingIcon;
+    var loadingIcon = (ThemeUtils.parseJSONFromFontFamily('oj-refresher-option-defaults') || {})
+      .loadingIcon;
 
-    content.addClass('oj-pulltorefresh-content')
-             .attr('aria-hidden', 'true');
+    content.addClass('oj-pulltorefresh-content').attr('aria-hidden', 'true');
 
     if (loadingIcon === 'progresscircle') {
       // for redwood, use
@@ -558,7 +570,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
 
     link = $(document.createElement('a'));
     link.text(PullToRefreshUtils._getTranslatedString('oj-pullToRefresh.ariaRefreshLink'));
-    link.addClass('oj-helper-hidden-accessible')
+    link
+      .addClass('oj-helper-hidden-accessible')
       .attr('href', '#')
       .focus(function () {
         // the link should be visible when tab to
@@ -579,8 +592,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
       });
 
     status = $(document.createElement('div'));
-    status.addClass('oj-helper-hidden-accessible')
-      .attr('aria-live', 'polite');
+    status.addClass('oj-helper-hidden-accessible').attr('aria-live', 'polite');
 
     panel.append(link); // @HTMLUpdateOK
     panel.append(status); // @HTMLUpdateOK

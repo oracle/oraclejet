@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -73,8 +73,10 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
       }
     }
 
-    if ((options != null && (options.startFetch === 'enabled' || options.startFetch == null))
-      || options == null) {
+    if (
+      (options != null && (options.startFetch === 'enabled' || options.startFetch == null)) ||
+      options == null
+    ) {
       this._startFetchEnabled = true;
     }
   };
@@ -239,9 +241,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
     }
 
     if (!silent && rowArray.data.length > 0) {
-      ojdatasourceCommon.TableDataSource.superclass.handleEvent.call(this,
-                                                     ojdatasourceCommon.TableDataSource.EventType.CHANGE,
-                                                     rowArray);
+      ojdatasourceCommon.TableDataSource.superclass.handleEvent.call(this, ojdatasourceCommon.TableDataSource.EventType.CHANGE, rowArray);
     }
 
     return Promise.resolve(rowArray);
@@ -467,10 +467,9 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
         if (this._sorted === true && this._rows.data.length > 0) {
           var self = this;
           for (var j = 0; j < this._rows.data.length; j++) {
-            if (ArrayTableDataSource._sortFunc(row,
-                                                  this._rows.data[j],
-                                                  self._getComparator(),
-                                                  self) < 0) {
+            if (
+              ArrayTableDataSource._sortFunc(row, this._rows.data[j], self._getComparator(), self) < 0
+            ) {
               this._rows.data.splice(j, 0, row);
               rowArray.indexes.push(j);
               break;
@@ -493,9 +492,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
     }
 
     if (!silent && rowArray.data.length > 0) {
-      ojdatasourceCommon.TableDataSource.superclass.handleEvent.call(this,
-                                                     ojdatasourceCommon.TableDataSource.EventType.ADD,
-                                                     rowArray);
+      ojdatasourceCommon.TableDataSource.superclass.handleEvent.call(this, ojdatasourceCommon.TableDataSource.EventType.ADD, rowArray);
     }
 
     return Promise.resolve(rowArray);
@@ -507,7 +504,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
       if (this.data instanceof Array) {
         dataArray = this.data;
       } else if (this._isObservableArray(this.data)) {
-        dataArray = (/** @type {Function} */(this.data)).peek();
+        dataArray = /** @type {Function} */ (this.data).peek();
         this._subscribeObservableArray(this.data);
       }
       this._rows = this._getRowArray(dataArray);
@@ -703,8 +700,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
     this._realignRowIndices();
 
     if (!silent && rowArray.data.length > 0) {
-      ojdatasourceCommon.TableDataSource.superclass.handleEvent.call(self,
-                                                     ojdatasourceCommon.TableDataSource.EventType.REMOVE, rowArray);
+      ojdatasourceCommon.TableDataSource.superclass.handleEvent.call(self, ojdatasourceCommon.TableDataSource.EventType.REMOVE, rowArray);
     }
 
     return Promise.resolve(rowArray);
@@ -724,8 +720,9 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
    */
   ArrayTableDataSource.prototype._startFetch = function (options) {
     if (!options.silent) {
-      ojdatasourceCommon.TableDataSource.superclass.handleEvent.call(this, ojdatasourceCommon.TableDataSource.EventType.REQUEST,
-                                                     { startIndex: options.startIndex });
+      ojdatasourceCommon.TableDataSource.superclass.handleEvent.call(this, ojdatasourceCommon.TableDataSource.EventType.REQUEST, {
+        startIndex: options.startIndex
+      });
     }
   };
 
@@ -774,7 +771,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
     var endIndex = rows.data.length - 1;
 
     if (pageSize > 0) {
-      endIndex = (startIndex + pageSize) - 1;
+      endIndex = startIndex + pageSize - 1;
       endIndex = endIndex > rows.data.length - 1 ? rows.data.length - 1 : endIndex;
     }
 
@@ -782,7 +779,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
   };
 
   ArrayTableDataSource._getKey = function (val, attr) {
-    if (typeof (val[attr]) === 'function') {
+    if (typeof val[attr] === 'function') {
       return val[attr]();
     }
     return val[attr];
@@ -838,7 +835,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
         } else {
           errDetail = Translations.applyParameters(
             ArrayTableDataSource._LOGGER_MSG._ERR_ARRAY_TABLE_DATASOURCE_IDATTR_NOT_IN_ROW,
-            [idAttribute[i]]);
+            [idAttribute[i]]
+          );
           throw new Error(errDetail);
         }
       }
@@ -847,7 +845,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
     } else {
       errDetail = Translations.applyParameters(
         ArrayTableDataSource._LOGGER_MSG._ERR_ARRAY_TABLE_DATASOURCE_IDATTR_NOT_IN_ROW,
-        [idAttribute]);
+        [idAttribute]
+      );
       throw new Error(errDetail);
     }
 
@@ -921,69 +920,77 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
     if (!(data instanceof Array)) {
       var self = this;
       // subscribe to observableArray arrayChange event to get individual updates
-      this._arrayChangeSubscription = (/** @type {{subscribe: Function}} */(data)).subscribe(
-          function (changes) {
-            var updatedIndexes = [];
-            var removeDuplicate = [];
-            var i;
-            var j;
-            var index;
-            var status;
-            for (i = 0; i < changes.length; i++) {
-              index = changes[i].index;
-              status = changes[i].status;
-              for (j = 0; j < changes.length; j++) {
-                if (j !== i &&
-                    index === changes[j].index &&
-                    status !== changes[j].status &&
-                    updatedIndexes.indexOf(i) < 0 &&
-                    removeDuplicate.indexOf(i) < 0) {
-                  if (status === 'deleted') {
-                    removeDuplicate.push(i);
-                    updatedIndexes.push(j);
-                  } else {
-                    removeDuplicate.push(j);
-                    updatedIndexes.push(i);
-                  }
+      this._arrayChangeSubscription = /** @type {{subscribe: Function}} */ (data).subscribe(
+        function (changes) {
+          var updatedIndexes = [];
+          var removeDuplicate = [];
+          var i;
+          var j;
+          var index;
+          var status;
+          for (i = 0; i < changes.length; i++) {
+            index = changes[i].index;
+            status = changes[i].status;
+            for (j = 0; j < changes.length; j++) {
+              if (
+                j !== i &&
+                index === changes[j].index &&
+                status !== changes[j].status &&
+                updatedIndexes.indexOf(i) < 0 &&
+                removeDuplicate.indexOf(i) < 0
+              ) {
+                if (status === 'deleted') {
+                  removeDuplicate.push(i);
+                  updatedIndexes.push(j);
+                } else {
+                  removeDuplicate.push(j);
+                  updatedIndexes.push(i);
                 }
               }
             }
-            var rowArray = [];
-            for (i = 0; i < changes.length; i++) {
-              if (updatedIndexes.indexOf(i) >= 0) {
-                var key = self._getId(self._rows.data[changes[i].index]);
-                var updatedKey = self._getId(changes[i].value);
-                if (updatedKey != null &&
-                  !oj.Object.compareValues(updatedKey, key)) {
-                  self._rows.data[changes[i].index] = changes[i].value;
-                }
-                rowArray.push(changes[i].value);
+          }
+          var rowArray = [];
+          for (i = 0; i < changes.length; i++) {
+            if (updatedIndexes.indexOf(i) >= 0) {
+              var key = self._getId(self._rows.data[changes[i].index]);
+              var updatedKey = self._getId(changes[i].value);
+              if (updatedKey != null && !oj.Object.compareValues(updatedKey, key)) {
+                self._rows.data[changes[i].index] = changes[i].value;
               }
+              rowArray.push(changes[i].value);
             }
-            self.change(rowArray, null);
-            rowArray = [];
-            var indexArray = [];
-            for (i = 0; i < changes.length; i++) {
-              if (updatedIndexes.indexOf(i) < 0 &&
-                removeDuplicate.indexOf(i) < 0 &&
-                changes[i].status === 'deleted') {
-                rowArray.push(changes[i].value);
-              }
+          }
+          self.change(rowArray, null);
+          rowArray = [];
+          var indexArray = [];
+          for (i = 0; i < changes.length; i++) {
+            if (
+              updatedIndexes.indexOf(i) < 0 &&
+              removeDuplicate.indexOf(i) < 0 &&
+              changes[i].status === 'deleted'
+            ) {
+              rowArray.push(changes[i].value);
             }
-            self.remove(rowArray, null);
+          }
+          self.remove(rowArray, null);
 
-            rowArray = [];
-            indexArray = [];
-            for (i = 0; i < changes.length; i++) {
-              if (updatedIndexes.indexOf(i) < 0 &&
-                removeDuplicate.indexOf(i) < 0 &&
-                changes[i].status === 'added') {
-                rowArray.push(changes[i].value);
-                indexArray.push(changes[i].index);
-              }
+          rowArray = [];
+          indexArray = [];
+          for (i = 0; i < changes.length; i++) {
+            if (
+              updatedIndexes.indexOf(i) < 0 &&
+              removeDuplicate.indexOf(i) < 0 &&
+              changes[i].status === 'added'
+            ) {
+              rowArray.push(changes[i].value);
+              indexArray.push(changes[i].index);
             }
-            self.add(rowArray, { at: indexArray });
-          }, null, 'arrayChange');
+          }
+          self.add(rowArray, { at: indexArray });
+        },
+        null,
+        'arrayChange'
+      );
     }
   };
 
@@ -1006,27 +1013,27 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
   // To check for observableArray, we can't do instanceof check because it's
   // a function. So we just check if it contains a subscribe function.
   ArrayTableDataSource.prototype._isObservableArray = function (obj) {
-    return (typeof (obj) === 'function' && typeof (obj.subscribe) === 'function');
+    return typeof obj === 'function' && typeof obj.subscribe === 'function';
   };
 
   ArrayTableDataSource._defineProperty = function (row, m, prop) {
-    Object.defineProperty(row, prop,
-      {
-        get: function () {
-          return m[prop];
-        },
-        set: function (newValue) {
-          // eslint-disable-next-line no-param-reassign
-          m[prop] = newValue;
-        },
-        enumerable: true
-      });
+    Object.defineProperty(row, prop, {
+      get: function () {
+        return m[prop];
+      },
+      set: function (newValue) {
+        // eslint-disable-next-line no-param-reassign
+        m[prop] = newValue;
+      },
+      enumerable: true
+    });
   };
 
-  ArrayTableDataSource._LOGGER_MSG =
-  {
-    _INFO_ARRAY_TABLE_DATASOURCE_IDATTR: "idAttribute option has not been specified. Will default to using 'id' if the field exists. If not, will use all the fields.",
-    _ERR_ARRAY_TABLE_DATASOURCE_IDATTR_NOT_IN_ROW: 'Specified idAttribute {0} not in row data. Please ensure all specified idAttribute fields are in the row data or do not specify idAttribute and all fields will be used as id.'
+  ArrayTableDataSource._LOGGER_MSG = {
+    _INFO_ARRAY_TABLE_DATASOURCE_IDATTR:
+      "idAttribute option has not been specified. Will default to using 'id' if the field exists. If not, will use all the fields.",
+    _ERR_ARRAY_TABLE_DATASOURCE_IDATTR_NOT_IN_ROW:
+      'Specified idAttribute {0} not in row data. Please ensure all specified idAttribute fields are in the row data or do not specify idAttribute and all fields will be used as id.'
   };
 
   /**

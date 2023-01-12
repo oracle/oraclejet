@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -163,8 +163,7 @@ const LengthValidator = function (options) {
  * @name defaults
  * @static
  */
-LengthValidator.defaults =
-{
+LengthValidator.defaults = {
   countBy: 'codeUnit'
 };
 
@@ -195,16 +194,17 @@ LengthValidator.prototype.Init = function (options) {
     throw new Error("length validator's max option is not a number. max option is " + options.min);
   }
   if (this._min !== null && this._min < 0) {
-    throw new Error("length validator's min option cannot be less than 0. min option is " +
-                    options.min);
+    throw new Error(
+      "length validator's min option cannot be less than 0. min option is " + options.min
+    );
   }
   if (this._max !== null && this._max < 1) {
-    throw new Error("length validator's max option cannot be less than 1. max option is " +
-                    options.max);
+    throw new Error(
+      "length validator's max option cannot be less than 1. max option is " + options.max
+    );
   }
 
-  this._countBy = (countByOptions === undefined) ?
-  LengthValidator.defaults.countBy : countByOptions;
+  this._countBy = countByOptions === undefined ? LengthValidator.defaults.countBy : countByOptions;
 
   if (options) {
     this._hint = options.hint || {};
@@ -239,21 +239,25 @@ LengthValidator.prototype.getHint = function () {
   if (min !== null && max !== null) {
     if (min !== max) {
       params = { min: min, max: max };
-      hint = hintInRange ? translations.applyParameters(hintInRange, params) :
-      translations.getTranslatedString('oj-validator.length.hint.inRange', params);
+      hint = hintInRange
+        ? translations.applyParameters(hintInRange, params)
+        : translations.getTranslatedString('oj-validator.length.hint.inRange', params);
     } else {
       params = { length: min };
-      hint = hintExact ? translations.applyParameters(hintExact, params) :
-      translations.getTranslatedString('oj-validator.length.hint.exact', params);
+      hint = hintExact
+        ? translations.applyParameters(hintExact, params)
+        : translations.getTranslatedString('oj-validator.length.hint.exact', params);
     }
   } else if (min !== null) {
     params = { min: min };
-    hint = hintMinimum ? translations.applyParameters(hintMinimum, params) :
-    translations.getTranslatedString('oj-validator.length.hint.min', params);
+    hint = hintMinimum
+      ? translations.applyParameters(hintMinimum, params)
+      : translations.getTranslatedString('oj-validator.length.hint.min', params);
   } else if (max !== null) {
     params = { max: max };
-    hint = hintMaximum ? translations.applyParameters(hintMaximum, params) :
-    translations.getTranslatedString('oj-validator.length.hint.max', params);
+    hint = hintMaximum
+      ? translations.applyParameters(hintMaximum, params)
+      : translations.getTranslatedString('oj-validator.length.hint.max', params);
   }
 
   return hint;
@@ -291,27 +295,28 @@ LengthValidator.prototype.validate = function (value) {
   // if only max is set and length is at most max, or
   // if length is between min and max or
   // if neither min or max is set return with no error.
-  if ((min === null || length >= this._min) &&
-  ((max === null) || (length <= this._max))) {
+  if ((min === null || length >= this._min) && (max === null || length <= this._max)) {
     return;
   }
 
-  if (length < this._min) { // too short
+  if (length < this._min) {
+    // too short
     params = { value: value, min: min };
-    summary = messageSummaryTooShort ?
-      translations.applyParameters(messageSummaryTooShort, params) :
-      translations.getTranslatedString('oj-validator.length.messageSummary.tooShort');
-    detail = messageTooShort ?
-      translations.applyParameters(messageTooShort, params) :
-      translations.getTranslatedString('oj-validator.length.messageDetail.tooShort', params);
-  } else { // too long
+    summary = messageSummaryTooShort
+      ? translations.applyParameters(messageSummaryTooShort, params)
+      : translations.getTranslatedString('oj-validator.length.messageSummary.tooShort');
+    detail = messageTooShort
+      ? translations.applyParameters(messageTooShort, params)
+      : translations.getTranslatedString('oj-validator.length.messageDetail.tooShort', params);
+  } else {
+    // too long
     params = { value: value, max: max };
-    summary = messageSummaryTooLong ?
-      translations.applyParameters(messageSummaryTooLong, params) :
-      translations.getTranslatedString('oj-validator.length.messageSummary.tooLong');
-    detail = messageTooLong ?
-      translations.applyParameters(messageTooLong, params) :
-      translations.getTranslatedString('oj-validator.length.messageDetail.tooLong', params);
+    summary = messageSummaryTooLong
+      ? translations.applyParameters(messageSummaryTooLong, params)
+      : translations.getTranslatedString('oj-validator.length.messageSummary.tooLong');
+    detail = messageTooLong
+      ? translations.applyParameters(messageTooLong, params)
+      : translations.getTranslatedString('oj-validator.length.messageDetail.tooLong', params);
   }
 
   throw new ValidatorError(summary, detail);
@@ -329,7 +334,7 @@ LengthValidator.prototype._getLength = function (text) {
   var surrogateLength = 0;
 
   switch (countBy) {
-    case 'codepoint' :
+    case 'codepoint':
       // if countBy is "codePoint", then count supplementary characters as length of one
       // For UTF-16, a "Unicode  surrogate pair" represents a single supplementary character.
       // The first (high) surrogate is a 16-bit code value in the range U+D800 to U+DBFF.
@@ -338,18 +343,20 @@ LengthValidator.prototype._getLength = function (text) {
       // increments surrogateLength
       for (var i = 0; i < codeUnitLength; i++) {
         // eslint-disable-next-line no-bitwise
-        if ((text.charCodeAt(i) & 0xF800) === 0xD800) {
+        if ((text.charCodeAt(i) & 0xf800) === 0xd800) {
           surrogateLength += 1;
         }
       }
       // e.g., if the string is two supplementary characters, codeUnitLength is 4, and the
       // surrogateLength is 4, so we will return two.
-      oj.Assert.assert(surrogateLength % 2 === 0,
-        'the number of surrogate chars must be an even number.');
-      length = (codeUnitLength - (surrogateLength / 2));
+      oj.Assert.assert(
+        surrogateLength % 2 === 0,
+        'the number of surrogate chars must be an even number.'
+      );
+      length = codeUnitLength - surrogateLength / 2;
       break;
-    case 'codeunit' :
-    default :
+    case 'codeunit':
+    default:
       // Javascript's length function counts # of code units.
       // A supplementary character has a length of 2 code units.
       length = codeUnitLength;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -68,7 +68,6 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
   DateTimeConverter.prototype.format = function (value) {
     return DateTimeConverter.superclass.format.call(this, value);
   };
-
 
   /**
    * Returns true if a 24-hour format is set; false otherwise.
@@ -311,15 +310,15 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
 
     // d2 and d1 same month
     function _isSameMonth(d1, d2) {
-      return _isSameYear(d1, d2) && (d1.getMonth() === d2.getMonth());
+      return _isSameYear(d1, d2) && d1.getMonth() === d2.getMonth();
     }
 
     // d2 is next month
     function _isNextMonth(d1, d2) {
       if (_isSameYear(d1, d2)) {
-        return (d2.getMonth() - d1.getMonth()) === 1;
+        return d2.getMonth() - d1.getMonth() === 1;
       } else if (_isNextYear(d1, d2)) {
-        return d1.getMonth() === 11 && (d2.getMonth() === 0);
+        return d1.getMonth() === 11 && d2.getMonth() === 0;
       }
       return false;
     }
@@ -365,7 +364,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
         // eslint-disable-next-line no-param-reassign
         d2 = tmp;
       }
-      if ((!_isSameMonth(d1, d2)) && (!_isNextMonth(d1, d2))) {
+      if (!_isSameMonth(d1, d2) && !_isNextMonth(d1, d2)) {
         return false;
       }
       var dif = _getDaysDif(d1, d2) + _getDayIndex(localeElements, d1.getDay());
@@ -374,7 +373,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
 
     // d2 is next week
     function _isNextWeek(localeElements, d1, d2) {
-      if ((!_isSameMonth(d1, d2)) && (!_isNextMonth(d1, d2))) {
+      if (!_isSameMonth(d1, d2) && !_isNextMonth(d1, d2)) {
         return false;
       }
       var dif = _getDaysDif(d1, d2) + _getDayIndex(localeElements, d1.getDay());
@@ -388,16 +387,15 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
 
     // d1 and d2 same day
     function _isSameDay(d1, d2) {
-      return _isSameYear(d1, d2) && _isSameMonth(d1, d2) &&
-        (d1.getDate() === d2.getDate());
+      return _isSameYear(d1, d2) && _isSameMonth(d1, d2) && d1.getDate() === d2.getDate();
     }
 
     // d2 is next day
     function _isNextDay(d1, d2) {
-      if ((!_isSameMonth(d1, d2)) && (!_isNextMonth(d1, d2))) {
+      if (!_isSameMonth(d1, d2) && !_isNextMonth(d1, d2)) {
         return false;
       }
-      return (_getDaysDif(d1, d2) === 1);
+      return _getDaysDif(d1, d2) === 1;
     }
 
     // d2 is previous day
@@ -432,18 +430,32 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
         datetime1 = Date.UTC(datetime1[0], datetime1[1] - 1, datetime1[2], 0, 0, 0, 0);
         datetime2 = Date.UTC(datetime2[0], datetime2[1] - 1, datetime2[2], 0, 0, 0, 0);
       } else {
-        datetime1 = Date.UTC(datetime1[0], datetime1[1] - 1, datetime1[2], datetime1[3],
-                             datetime1[4], datetime1[5], datetime1[6]);
-        datetime2 = Date.UTC(datetime2[0], datetime2[1] - 1, datetime2[2], datetime2[3],
-                             datetime2[4], datetime2[5], datetime2[6]);
+        datetime1 = Date.UTC(
+          datetime1[0],
+          datetime1[1] - 1,
+          datetime1[2],
+          datetime1[3],
+          datetime1[4],
+          datetime1[5],
+          datetime1[6]
+        );
+        datetime2 = Date.UTC(
+          datetime2[0],
+          datetime2[1] - 1,
+          datetime2[2],
+          datetime2[3],
+          datetime2[4],
+          datetime2[5],
+          datetime2[6]
+        );
       }
-      return (datetime1 - datetime2);
+      return datetime1 - datetime2;
     }
 
     function _getAtString() {
       var intlCnv = new Intl.DateTimeFormat(ojconfig.getLocale(), { dateStyle: 'long', timeStyle: 'short' });
       var parts = intlCnv.formatToParts(new Date());
-      var index = parts.findIndex(obj => obj.type === 'hour') - 1;
+      var index = parts.findIndex((obj) => obj.type === 'hour') - 1;
       if (!parts[index]) {
         return ' ';
       }
@@ -472,13 +484,13 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
       var isoInfo = __ConverterUtilsI18n.OraI18nUtils.getISOStrFormatInfo(d);
       var isoInfoFormat = isoInfo.format;
       // if ISO string is zulu or offset , use Date object to convert it to local date
-      if ((isoInfoFormat === _OFFSET) || (isoInfoFormat === _ZULU)) {
+      if (isoInfoFormat === _OFFSET || isoInfoFormat === _ZULU) {
         var localDate = new Date(d);
         var localIso = __ConverterUtilsI18n.OraI18nUtils.dateToLocalIso(localDate);
         return localIso;
       }
       // if ISO string is local and no time zone in options return it as is
-      var isLocal = (isoInfoFormat === _LOCAL) && (!srcTimeZone);
+      var isLocal = isoInfoFormat === _LOCAL && !srcTimeZone;
       if (isLocal) {
         return d;
       }
@@ -492,7 +504,8 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
       var units = _getUnits(absdiff);
       if (field === null) {
         // eslint-disable-next-line no-param-reassign
-        field = (units.second < _THRESHOLDS.s && 'second') ||
+        field =
+          (units.second < _THRESHOLDS.s && 'second') ||
           (units.minute < _THRESHOLDS.m && 'minute') ||
           (units.hour < _THRESHOLDS.h && 'hour') ||
           (units.day < _THRESHOLDS.d && 'day') ||
@@ -551,10 +564,19 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     }
 
     function _formatRelativeDisplayName(isoNow, isoValue, options, localeElements) {
-      var getOption = __ConverterUtilsI18n.OraI18nUtils.getGetOption(options,
-                                                   'OraDateTimeConverter.formatRelative');
-      var option = getOption('dateField', 'string',
-                             ['day', 'week', 'month', 'year', 'hour', 'minute', 'second']);
+      var getOption = __ConverterUtilsI18n.OraI18nUtils.getGetOption(
+        options,
+        'OraDateTimeConverter.formatRelative'
+      );
+      var option = getOption('dateField', 'string', [
+        'day',
+        'week',
+        'month',
+        'year',
+        'hour',
+        'minute',
+        'second'
+      ]);
       var now = __ConverterUtilsI18n.OraI18nUtils.isoToLocalDate(isoNow);
       var value = __ConverterUtilsI18n.OraI18nUtils.isoToLocalDate(isoValue);
       var diff = _getTimeDiff(isoValue, isoNow, false);
@@ -563,7 +585,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
       var fields = [];
       var val;
       switch (option) {
-        case 'day' :
+        case 'day':
           if (_isSameDay(now, value)) {
             fields = [0, 'day', 'auto'];
           } else if (_isNextDay(now, value)) {
@@ -575,7 +597,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
             fields = [val, 'day', 'always'];
           }
           break;
-        case 'week' :
+        case 'week':
           if (_isSameWeek(localeElements, now, value)) {
             fields = [0, 'week', 'auto'];
           } else if (_isNextWeek(localeElements, now, value)) {
@@ -587,7 +609,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
             fields = [val, 'week', 'always'];
           }
           break;
-        case 'month' :
+        case 'month':
           if (_isSameMonth(now, value)) {
             fields = [0, 'month', 'auto'];
           } else if (_isNextMonth(now, value)) {
@@ -599,7 +621,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
             fields = [val, 'month', 'always'];
           }
           break;
-        case 'year' :
+        case 'year':
           if (_isSameYear(now, value)) {
             fields = [0, 'year', 'auto'];
           } else if (_isNextYear(now, value)) {
@@ -611,19 +633,19 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
             fields = [val, 'year', 'always'];
           }
           break;
-        case 'hour' :
+        case 'hour':
           val = diff > 0 ? units.hour : -units.hour;
           fields = [val, 'hour', 'auto'];
           break;
-        case 'minute' :
+        case 'minute':
           val = diff > 0 ? units.minute : -units.minute;
           fields = [val, 'minute', 'auto'];
           break;
-        case 'second' :
+        case 'second':
           val = diff > 0 ? units.second : -units.second;
           fields = [val, 'second', 'auto'];
           break;
-        default :
+        default:
           break;
       }
       var intlRelativeCnv = new Intl.RelativeTimeFormat(ojconfig.getLocale(), { numeric: fields[2] });
@@ -647,24 +669,36 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
         // eslint-disable-next-line no-param-reassign
         options = { formatUsing: 'displayName' };
       }
-      var getOption = __ConverterUtilsI18n.OraI18nUtils.getGetOption(options,
-                                                   'OraDateTimeConverter.formatRelative');
-      var relativeTime = getOption('relativeTime', 'string',
-                                   ['fromNow', 'toNow'], 'fromNow');
-      var fieldOption = getOption('dateField', 'string',
-                                  ['day', 'week', 'month', 'year', 'hour', 'minute', 'second']);
+      var getOption = __ConverterUtilsI18n.OraI18nUtils.getGetOption(
+        options,
+        'OraDateTimeConverter.formatRelative'
+      );
+      var relativeTime = getOption('relativeTime', 'string', ['fromNow', 'toNow'], 'fromNow');
+      var fieldOption = getOption('dateField', 'string', [
+        'day',
+        'week',
+        'month',
+        'year',
+        'hour',
+        'minute',
+        'second'
+      ]);
 
       // eslint-disable-next-line no-param-reassign
       value = _convertToLocalDate(value, options, localeElements);
-      var toNow = (relativeTime === 'toNow');
+      var toNow = relativeTime === 'toNow';
       if (toNow) {
         var tmp = now;
         now = value;
         // eslint-disable-next-line no-param-reassign
         value = tmp;
       }
-      var formatUsing = getOption('formatUsing', 'string',
-                                  ['displayName', 'calendar'], 'displayName');
+      var formatUsing = getOption(
+        'formatUsing',
+        'string',
+        ['displayName', 'calendar'],
+        'displayName'
+      );
       if (formatUsing === 'calendar') {
         var dateOnly = getOption('dateOnly', 'boolean', [true, false], false);
         return _formatRelativeCalendar(now, value, dateOnly);
@@ -684,12 +718,12 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
       };
     }
     return {
-    /**
-     * getInstance.
-     * Returns the singleton instance of RelativeDateTimeFormatter class.
-     * @memberof RelativeDateTimeFormatter
-     * @return {Object} The singleton RelativeDateTimeFormatter instance.
-    */
+      /**
+       * getInstance.
+       * Returns the singleton instance of RelativeDateTimeFormatter class.
+       * @memberof RelativeDateTimeFormatter
+       * @return {Object} The singleton RelativeDateTimeFormatter instance.
+       */
       getInstance: function () {
         if (!instance) {
           instance = _init();
@@ -697,7 +731,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
         return instance;
       }
     };
-  }());
+  })();
 
   /**
    * @export
@@ -819,8 +853,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
 
     // Next we merge in User Preferences pattern and timezone, if any.
     // Options passed into the converter's constructor takes precedence.
-    const mo =
-      ojconverterNativedatetime.DateTimePreferencesUtils.getPreferencesMergedWithConverterOptions(mappedOptions);
+    const mo = ojconverterNativedatetime.DateTimePreferencesUtils.getPreferencesMergedWithConverterOptions(mappedOptions);
 
     const defaultOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
     const optionsAreEmpty = Object.keys(mo).length === 0;
@@ -1059,9 +1092,13 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    * </table>
    * </p>
    *
-   * @property {('offset'|'zulu'|'local'|'auto')=} isoStrFormat - specifies in which format the ISO string is returned.
-   * The possible values of isoStrFormat are: "offset", "zulu", "local", "auto".
-   * The default format is auto.
+   * @property {('offset'|'zulu'|'local'|'auto')=} isoStrFormat - specifies the time zone offset
+   * of the ISO string that is returned from the parse method. isoStrFormat only applies to the
+   * parse method. The possible values of isoStrFormat are: "offset", "zulu", "local".
+   * The default is offset. local applies to time-only and date-only ISO strings. If the returned ISO
+   * string is date-time, local is ignored and the date-time ISO string is returned with offset.
+   * This is necessary for the result to be a valid RFC-3339 date-time so that it may be transferred over REST.
+   * Note: auto is deprecated and ignored since the default is now offset.
    * <p style='padding-left: 5px;'>
    * <table class="generic-table styling-table">
    *   <thead>
@@ -1075,7 +1112,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    *     <tr>
    *       <td>offset</td>
    *       <td>time zone offset from UTC.</td>
-   *       <td>2016-01-05T11:30:00-08:00</td>
+   *       <td>2016-01-05T11:30:00-08:00<br>T11:30:00-06:00</td>
    *     </tr>
    *     <tr>
    *       <td>zulu</td>
@@ -1084,47 +1121,12 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    *     </tr>
    *     <tr>
    *       <td>local</td>
-   *       <td>local time, does not contain time zone offset.</td>
-   *       <td>2016-01-05T19:30:00</td>
-   *     </tr>
-   *     <tr>
-   *       <td>auto</td>
-   *       <td>auto means the returned ISO string depends on the input string and options</td>
-   *       <td></td>
+   *       <td>local date or time, does not contain time zone offset.</td>
+   *       <td>T19:30:00<br>2016-01-05</td>
    *     </tr>
    *   </tbody>
    * </table>
    * </p>
-   *
-   * @property {(boolean)=} dst - The dst option can be used for time only values in conjunction with offset.
-   * Setting dst to true indicates the time is in DST. By default the time is interpreted as standard time.
-   * The possible values of dst are: "true" or "false". Default is "false".
-   * <p style='padding-left: 5px;'>
-   * Due to Daylight Saving Time, there is a possibility that a time exists twice If the time falls in the duplicate window
-   * (switching from daylight saving time to standard time). The application can disambiguate the time in the overlapping
-   * period using the dst option. Setting dst to true indicates the time is in DST. By default the time is interpreted as
-   * standard time.<br/><br/>
-   * Example: On November 1st, 2105 in US the time between 1 and 2 AM will be repeated. The dst option can indicate the
-   * distinction as follows. Initially the time is in DST, so dst:'true' is specified.<br/>
-   * var options = {formatType:'datetime', dateFormat:'short', timeFormat:'medium', timeZone:'America/Los_Angeles', isoStrFormat: 'offset', dst : true};<br/>
-   * var localeElements = oj.getLocaleElemnts();<br/>
-   * var str= "11/1/15 1:59:59 AM";<br/>
-   * cnv.parse(str, localeElements, options);-->2015-11-01T01:59:59-07:00
-   * <br/><br/>
-   * If the user does not pass the dst option, the time will be interpreted as standard time.
-   * var options = {formatType:'datetime', dateFormat:'short', timeFormat:'medium', timeZone:'America/Los_Angeles'};<br/>
-   * var localeElements = oj.getLocaleElemnts();<br/>
-   * var str= "11/1/15 1:59:59 AM";<br/>
-   * cnv.parse(str, localeElements, options);-->2015-11-01T01:59:59-08:00
-   * <br/><br/>
-   * At 2AM, DST will be over and the clock brings back to 1AM. Then the dst option should be false or not specified.
-   * var options = {formatType:'datetime', dateFormat:'short', timeFormat:'medium', timeZone:'America/Los_Angeles', isoStrFormat: 'offset'};<br/>
-   * var localeElements = oj.getLocaleElemnts();<br/>
-   * var str= "11/1/15 1:00:00 AM";<br/>
-   * cnv.parse(str, localeElements, options);-->2015-11-01T01:00:00-08:00
-   * </p>
-   * @ojdeprecated {target: 'property', for:'dst', since: '11.0.0',
-   * description: 'Use timezone option and rely on the default behavior of the timezone conversion.'}
    *
    * @property {boolean=} hour12 - specifies what time notation is used for formatting the time.
    * A true value uses the 12-hour clock and false uses the 24-hour clock (often called military time
@@ -1169,11 +1171,11 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    *       <td>h12</td>
    *       <td>T00:00:00 is formatted as "12:00:00 AM"</td>
    *     </tr>
-  *     <tr>
+   *     <tr>
    *       <td>h23</td>
    *       <td>T00:00:00 is formatted as "00:00:00"</td>
    *     </tr>
-  *     <tr>
+   *     <tr>
    *       <td>h24</td>
    *       <td>T00:00:00 is formatted as "24:00:00"</td>
    *     </tr>
@@ -1513,8 +1515,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    * be thrown.</p>
    */
   // Subclass from oj.Object
-  oj$1.Object.createSubclass(IntlDateTimeConverter, DateTimeConverter,
-    'oj.IntlDateTimeConverter');
+  oj$1.Object.createSubclass(IntlDateTimeConverter, DateTimeConverter, 'oj.IntlDateTimeConverter');
   IntlDateTimeConverter._DEFAULT_DATE = new Date(1998, 10, 29, 15, 45, 31);
 
   /**
@@ -1551,13 +1552,6 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     } else {
       this._wrapped = new ojconverterNativedatetime.NativeDateTimeConverter(thisOptions);
     }
-    // in order to conserve backward compatibility with old converter
-    // remove timeZone from resolved options otherwise all the ISO strings
-    // from the parse will be in offset format. Because when timeZone is present
-    // default value of isoStrFormat is 'offset'
-    if (!thisOptions.timeZone) {
-      delete this._wrapped.resOptions.timeZone;
-    }
   };
   /**
    * Formats the isoString value using the options provided and returns a string value.
@@ -1566,10 +1560,6 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    * And if the value is zulu or offset, then the timezone the converter uses
    * will be the system's timezone if no timeZone option is specified.
    * </p>
-   * <p>If the isoStr value is local, and a timezone option is set,
-   * the timeZone affects the UI only; the time shown to the user does not
-   * change if the timeZone changes, only the timeZone string
-   * tacked on to the end of the time changes.
    *
    * @param {string} value to be formatted for display which should be an isoString
    * @return {string|null} the formatted value suitable for display
@@ -1594,8 +1584,11 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     // undefined, null and empty string values all return null. If value is NaN then return "".
     // TODO: Should we automatically parse() the integer value representing the number of milliseconds
     // since 1 January 1970 00:00:00 UTC (Unix Epoch)?
-    if (value === null || value === undefined ||
-        (typeof value === 'string' && (oj$1.StringUtils.trim('' + value)).length === 0)) {
+    if (
+      value === null ||
+      value === undefined ||
+      (typeof value === 'string' && oj$1.StringUtils.trim('' + value).length === 0)
+    ) {
       return '';
     }
     // for backward compatibiliity
@@ -1611,7 +1604,6 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     }
     return this._getWrapped().format(valToFormat);
   };
-
 
   /**
    * Formats an ISOString as a relative date time, using the relativeOptions.
@@ -1765,9 +1757,18 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
       // so if dateStyle/timeStyle are set in resolvedOptions, remove the ecma options,
       // so that we maintain bw compatibility.
       // e.g., timeStyle: "full" expands to have timeStyle: 'full' plus hour,minute,dayPeriod etc.
-      const optionsExcluded =
-        ['hour', 'minute', 'second', 'millisecond', 'day', 'month', 'year',
-        'weekday', 'timeZoneName', 'dayPeriod'];
+      const optionsExcluded = [
+        'hour',
+        'minute',
+        'second',
+        'millisecond',
+        'day',
+        'month',
+        'year',
+        'weekday',
+        'timeZoneName',
+        'dayPeriod'
+      ];
       if (this._resolvedOptions.dateFormat || this._resolvedOptions.timeFormat) {
         const localResolvedOptionsKeys = Object.keys(this._resolvedOptions);
         // loop through all the ecma options and make sure those are not in the resolvedOptions
@@ -1934,9 +1935,9 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     var time;
     var checkDate = new Date(Date.UTC(d[0], d[1] - 1, d[2]));
     // Find Thursday of this week starting on Monday
-    checkDate.setUTCDate((checkDate.getUTCDate() + 4) - (checkDate.getUTCDay() || 7));
+    checkDate.setUTCDate(checkDate.getUTCDate() + 4 - (checkDate.getUTCDay() || 7));
     time = checkDate.getTime();
-    checkDate.setUTCMonth(0);// Compare with Jan 1
+    checkDate.setUTCMonth(0); // Compare with Jan 1
     checkDate.setUTCDate(1);
     return Math.floor(Math.round((time - checkDate) / 86400000) / 7) + 1;
   };
@@ -2006,18 +2007,18 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     if (testIsoStr) {
       timePart = value.substring(value.indexOf('T'));
       var isZuluStr = timePart.indexOf('Z') !== -1;
-      if ((isZuluStr) && (!timeZone)) {
+      if (isZuluStr && !timeZone) {
         return value;
       }
     }
     var isoStr = this._getWrapped().parse(value);
     timePart = isoStr.substring(isoStr.indexOf('T'));
     var isLocalValue =
-        timePart.indexOf('Z') === -1 && timePart.indexOf('+') === -1 && timePart.indexOf('-') === -1;
+      timePart.indexOf('Z') === -1 && timePart.indexOf('+') === -1 && timePart.indexOf('-') === -1;
     // If the options have no timeZone but have isoStrFormat, parse will not do time zone
     // conversion. We need to do the time zone conversion after the parseImpl except when the
     // returned value from parseImpl is not local.
-    if ((!timeZone) && (isoStrFormat) && (isLocalValue)) {
+    if (!timeZone && isoStrFormat && isLocalValue) {
       isoStr = __ConverterUtilsI18n.OraI18nUtils.convertISOString(isoStr, isoStrFormat);
     }
     return isoStr;
@@ -2040,7 +2041,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     // the converter's compareISODates method did (we are deprecating it), andd the less
     // behavior change, the better.
     const today = new Date();
-    const month = (today.getMonth() + 1);
+    const month = today.getMonth() + 1;
     let monthStr = __ConverterUtilsI18n.OraI18nUtils.zeroPad(month.toString(), 2, true);
     const day = today.getDate();
     let dayStr = __ConverterUtilsI18n.OraI18nUtils.zeroPad(day.toString(), 2, true);
@@ -2142,9 +2143,17 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    * @static
    */
   IntlDateTimeConverter.isECMAOptionSet = function (options) {
-    var flag = options.year || options.month || options.day || options.weekday ||
-            options.hour || options.minute || options.second || options.millisecond ||
-            options.dayPeriod || options.timeZoneName;
+    var flag =
+      options.year ||
+      options.month ||
+      options.day ||
+      options.weekday ||
+      options.hour ||
+      options.minute ||
+      options.second ||
+      options.millisecond ||
+      options.dayPeriod ||
+      options.timeZoneName;
     return flag;
   };
 
@@ -2157,40 +2166,40 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    * @returns {Object}
    * @private
    * @static
-  */
+   */
   IntlDateTimeConverter.mapOptions = function (options) {
-      let newOptions = {};
-      const keys = Object.keys(options);
-      let i = 0;
-      var ecmaoptionSet = IntlDateTimeConverter.isECMAOptionSet(options);
-      // For bw compatibility, if formatType is not set, and either dateFormat or timeFormat are,
-      // we set formatType to 'date' and dateFormat to 'short', so do
-      // the same behavior here.
-      if (!keys.includes('formatType') && (options.dateFormat || options.timeFormat)) {
-        if ((!ecmaoptionSet)) {
+    let newOptions = {};
+    const keys = Object.keys(options);
+    let i = 0;
+    var ecmaoptionSet = IntlDateTimeConverter.isECMAOptionSet(options);
+    // For bw compatibility, if formatType is not set, and either dateFormat or timeFormat are,
+    // we set formatType to 'date' and dateFormat to 'short', so do
+    // the same behavior here.
+    if (!keys.includes('formatType') && (options.dateFormat || options.timeFormat)) {
+      if (!ecmaoptionSet) {
+        newOptions.dateStyle = options.dateFormat || 'short';
+      }
+    }
+
+    for (i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (key === 'formatType' && !ecmaoptionSet) {
+        if (options[key] === 'datetime' || options[key] === 'date') {
           newOptions.dateStyle = options.dateFormat || 'short';
         }
-      }
-
-      for (i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        if ((key === 'formatType') && (!ecmaoptionSet)) {
-          if (options[key] === 'datetime' || options[key] === 'date') {
-            newOptions.dateStyle = options.dateFormat || 'short';
-          }
-          if (options[key] === 'datetime' || options[key] === 'time') {
-           newOptions.timeStyle = options.timeFormat || 'short';
-          }
-        } else if (key === 'millisecond') {
-          newOptions.fractionalSecondDigits = 3;
-        } else if (key === 'two-digit-year-start') {
-          newOptions.twoDigitYearStart = options[key];
-        } else {
-          newOptions[key] = options[key];
+        if (options[key] === 'datetime' || options[key] === 'time') {
+          newOptions.timeStyle = options.timeFormat || 'short';
         }
+      } else if (key === 'millisecond') {
+        newOptions.fractionalSecondDigits = 3;
+      } else if (key === 'two-digit-year-start') {
+        newOptions.twoDigitYearStart = options[key];
+      } else {
+        newOptions[key] = options[key];
       }
-      return newOptions;
-    };
+    }
+    return newOptions;
+  };
 
   exports.DateTimeConverter = DateTimeConverter;
   exports.IntlDateTimeConverter = IntlDateTimeConverter;

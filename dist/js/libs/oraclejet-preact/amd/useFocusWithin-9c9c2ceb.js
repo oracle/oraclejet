@@ -1,2 +1,0 @@
-define(["exports","preact/hooks"],(function(s,e){"use strict";s.useFocusWithin=function({isDisabled:s,onBlurWithin:o,onFocusWithin:u}={}){const[n,t]=e.useState(!1),c=e.useCallback((s=>{n||(null==u||u(s),t(!0))}),[u,n]),i=e.useCallback((s=>{!n||null!=s.relatedTarget&&s.currentTarget.contains(s.relatedTarget)||(null==o||o(s),t(!1))}),[o,n]);return s?{isFocused:!1,focusProps:{}}:{isFocused:n,focusProps:{onfocusin:c,onfocusout:i}}}}));
-//# sourceMappingURL=useFocusWithin-9c9c2ceb.js.map

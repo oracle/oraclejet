@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -35,13 +35,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             super(...arguments);
             this.state = {
                 opened: this.props.opened,
-                id: ojvcomponent.getUniqueId(),
                 viewportResolvedDisplayMode: this.getViewportResolvedDisplayMode(),
                 viewportResolvedDisplayModeVertical: this.getViewportResolvedDisplayModeVertical()
             };
             this.rootRef = preact.createRef();
             this.isShiftKeyActive = false;
             this.drawerResizeHandler = null;
+            this.windowResizeHandler = null;
             this.handleKeyDown = (event) => {
                 if (event.key === ojdrawerutils.DrawerConstants.keys.ESC) {
                     this.selfClose();
@@ -91,7 +91,6 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                         return;
                     }
                     if (!isTargetWithin) {
-                        DrawerPopup_1.idsClosedWithAutoDismiss.push(this.state.id);
                         this.selfClose();
                     }
                 }
@@ -106,6 +105,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 $drawerElement.position(this.getDrawerPosition(edge));
                 PopupService.getInstance().triggerOnDescendents($drawerElement, PopupService.EVENT.POPUP_REFRESH);
             };
+            this.destroyHandler = () => {
+                const $drawerElement = $(this.rootRef.current);
+                const status = ZOrderUtils.getStatus($drawerElement);
+                if (status === ZOrderUtils.STATUS.OPEN) {
+                    ZOrderUtils.removeFromAncestorLayer($drawerElement);
+                }
+            };
             this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings = (zorderLayer, target) => {
                 const zorderLayersBuffer = [zorderLayer];
                 let nextZorderLayer = zorderLayer.nextSibling;
@@ -117,7 +123,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                     return zorderLayerItem.contains(target);
                 });
             };
-            this.resizeHandler = () => {
+            this.windowResizeCallback = () => {
                 const updatedState = {};
                 const prevViewportResolvedDisplayMode = this.state.viewportResolvedDisplayMode;
                 const nextViewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
@@ -138,18 +144,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             };
         }
         static getDerivedStateFromProps(props, state) {
-            if (DrawerPopup_1.idsClosedWithAutoDismiss.indexOf(state.id) > -1 && props.opened) {
-                return { opened: false };
-            }
             if (props.opened !== state.opened) {
                 return { opened: props.opened };
             }
             return null;
         }
         render(props) {
-            if (this.isDrawerOpened() ||
-                this.wasDrawerOpenedInPrevState() ||
-                this.isDrawerClosedWithAutoDismiss()) {
+            if (this.isDrawerOpened() || this.wasDrawerOpenedInPrevState()) {
                 return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this.rootRef, class: this.getPopupStyleClasses(this.props.edge), tabIndex: -1, role: this.props.role || 'dialog', onKeyDown: this.handleKeyDown }, { children: jsxRuntime.jsx("div", Object.assign({ class: "oj-drawer-full-height" }, { children: props.children })) })));
             }
             return jsxRuntime.jsx(ojvcomponent.Root, {});
@@ -159,9 +160,6 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         }
         wasDrawerOpenedInPrevState() {
             return this.openedPrevState;
-        }
-        isDrawerClosedWithAutoDismiss() {
-            return DrawerPopup_1.idsClosedWithAutoDismiss.indexOf(this.state.id) > -1;
         }
         selfClose() {
             var _a, _b, _c, _d;
@@ -204,6 +202,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             PSOptions[PSoption.LAYER_SELECTORS] = this.getDrawerSurrogateLayerSelectors();
             PSOptions[PSoption.LAYER_LEVEL] = PopupService.LAYER_LEVEL.TOP_LEVEL;
             PSOptions[PSoption.POSITION] = this.getDrawerPosition(edge);
+            PSOptions[PSoption.CUSTOM_ELEMENT] = true;
             const PSEvent = PopupService.EVENT;
             PSOptions[PSoption.EVENTS] = {
                 [PSEvent.POPUP_BEFORE_OPEN]: () => this.beforeOpenHandler(edge, PSOptions),
@@ -211,7 +210,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 [PSEvent.POPUP_BEFORE_CLOSE]: () => this.beforeCloseHandler(edge),
                 [PSEvent.POPUP_AFTER_CLOSE]: () => this.afterCloseHandler(prevState),
                 [PSEvent.POPUP_AUTODISMISS]: (event) => this.autoDismissHandler(event),
-                [PSEvent.POPUP_REFRESH]: () => this.refreshHandler(edge)
+                [PSEvent.POPUP_REFRESH]: () => this.refreshHandler(edge),
+                [PSEvent.POPUP_REMOVE]: () => this.destroyHandler()
             };
             return PSOptions;
         }
@@ -266,6 +266,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             ojdrawerutils.DrawerUtils.disableBodyOverflow();
             this.elementWithFocusBeforeDrawerCloses = document.activeElement;
             DomUtils.removeResizeListener(this.rootRef.current, this.drawerResizeHandler);
+            this.drawerResizeHandler = null;
             const busyContext = ojet.Context.getContext(this.rootRef.current).getBusyContext();
             const resolveFunc = busyContext.addBusyState({ description: 'Animation in progress' });
             const animationPromise = AnimationUtils.slideOut(this.rootRef.current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideOut, edge));
@@ -273,16 +274,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             return animationPromise;
         }
         afterCloseHandler(prevState) {
-            var _a, _b;
             ojdrawerutils.DrawerUtils.enableBodyOverflow();
             const $drawerElement = $(this.rootRef.current);
             const status = ZOrderUtils.getStatus($drawerElement);
-            if (this.isDrawerClosedWithAutoDismiss()) {
-                DrawerPopup_1.idsClosedWithAutoDismiss.splice(DrawerPopup_1.idsClosedWithAutoDismiss.indexOf(this.state.id), 1);
-                if (status === ZOrderUtils.STATUS.CLOSE && this.props.opened) {
-                    (_b = (_a = this.props).onOpenedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, false);
-                }
-            }
             if (this.rootRef.current.contains(this.elementWithFocusBeforeDrawerCloses)) {
                 ojdrawerutils.DrawerUtils.moveFocusToElementOrNearestAncestor(this.drawerOpener);
             }
@@ -334,9 +328,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             this.handleComponentUpdate(prevState);
         }
         componentDidMount() {
-            window.addEventListener(ojdrawerutils.DrawerConstants.stringResize, () => {
-                this.resizeHandler();
-            });
+            if (this.windowResizeHandler === null) {
+                this.windowResizeHandler = this.windowResizeCallback.bind(this);
+            }
+            window.addEventListener(ojdrawerutils.DrawerConstants.stringResize, this.windowResizeHandler);
             this.openedPrevState = this.props.opened;
             if (DrawerPopup_1.defaultProps.opened != this.props.opened) {
                 const stateCopy = Object.assign({}, this.state);
@@ -345,9 +340,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             }
         }
         componentWillUnmount() {
-            window.removeEventListener(ojdrawerutils.DrawerConstants.stringResize, () => {
-                this.resizeHandler();
-            });
+            window.removeEventListener(ojdrawerutils.DrawerConstants.stringResize, this.windowResizeHandler);
+            this.windowResizeHandler = null;
         }
         getViewportResolvedDisplayMode() {
             const viewportWidth = ojdrawerutils.DrawerUtils.getViewportWidth();
@@ -407,8 +401,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         opened: false,
         closeGesture: 'swipe'
     };
-    exports.DrawerPopup.idsClosedWithAutoDismiss = [];
-    exports.DrawerPopup.metadata = { "slots": { "": {} }, "properties": { "opened": { "type": "boolean", "writeback": true }, "edge": { "type": "string", "enumValues": ["start", "end", "bottom"] }, "modality": { "type": "string", "enumValues": ["modal", "modeless"] }, "autoDismiss": { "type": "string", "enumValues": ["focus-loss", "none"] }, "closeGesture": { "type": "string", "enumValues": ["swipe", "none"] } }, "events": { "ojBeforeClose": { "cancelable": true } }, "extension": { "_WRITEBACK_PROPS": ["opened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
+    exports.DrawerPopup._metadata = { "slots": { "": {} }, "properties": { "opened": { "type": "boolean", "writeback": true }, "edge": { "type": "string", "enumValues": ["end", "start", "bottom"] }, "modality": { "type": "string", "enumValues": ["modal", "modeless"] }, "autoDismiss": { "type": "string", "enumValues": ["none", "focus-loss"] }, "closeGesture": { "type": "string", "enumValues": ["none", "swipe"] } }, "events": { "ojBeforeClose": { "cancelable": true } }, "extension": { "_WRITEBACK_PROPS": ["opened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
     exports.DrawerPopup = DrawerPopup_1 = __decorate([
         ojvcomponent.customElement('oj-drawer-popup')
     ], exports.DrawerPopup);

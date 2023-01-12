@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -544,9 +544,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/
      * @name dispatchEvent
      */
 
-    /**
-     * End of jsdoc
-     */
+    // end of jsdoc
 
     class MutableArrayTreeDataProvider {
         constructor(data, keyAttribute, options, _rootDataProvider) {
@@ -677,11 +675,15 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/
                     metadata = this._getTreeMetadata(metadata, data);
                     newResults.push({ data, metadata });
                 }
-                return {
+                const data = {
                     done: result['done'],
                     fetchParameters: result['fetchParameters'],
                     results: newResults
                 };
+                if (params.includeFilteredRowCount === 'enabled') {
+                    data['totalFilteredRowCount'] = result.totalFilteredRowCount;
+                }
+                return data;
             });
         }
         fetchByKeys(params) {

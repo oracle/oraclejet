@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -127,7 +127,7 @@ define(['exports', 'knockout', 'ojs/ojkeyset'], function (exports, ko, ojkeyset)
      * @ojsignature [{target: "Type", value: "class ObservableKeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]},
      *               {target: "Type", value: "KeySetImpl<K>|AllKeySetImpl<K>", for:"initialValue"}]
      */
-     /**
+    /**
      * Equivalent to the <a href="KeySet.html#add">add</a> method on KeySet.  Calls add method on the underlying KeySet
      * and updates the observable with the returned KeySet.
      *

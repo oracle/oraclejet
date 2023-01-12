@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -30,6 +30,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @ojvbdefaultcolumns 2
    * @ojvbmincolumns 1
    *
+   * @ojoracleicon 'oj-ux-ico-messages'
    * @ojuxspecs ['messages']
    *
    * @classdesc
@@ -112,34 +113,36 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * </h3>
    *
    * {@ojinclude "name":"keyboardDoc"}
+   *
+   * {@ojinclude "name":"migrationDoc"}
    */
   // --------------------------------------------------- oj.ojMessages Styling Start -----------------------------------------------------------
-    // ---------------- oj-messages-inline-remove-bottom-border --------------
-    /**
-    * Inline messages will include a bottom border so that the messages section is demarcated from the contents below it. If this border is not desirable for certain page layouts, it can be removed by setting this marker class on oj-messages.
-    * @ojstyleclass oj-messages-inline-remove-bottom-border
-    * @ojdisplayname No Border
-    * @memberof oj.ojMessages
-    * @ojtsexample
-    * &lt;oj-messages class="oj-messages-inline-remove-bottom-border">
-    *   &lt;!-- Content -->
-    * &lt;/oj-messages>
-    */
+  // ---------------- oj-messages-inline-remove-bottom-border --------------
+  /**
+   * Inline messages will include a bottom border so that the messages section is demarcated from the contents below it. If this border is not desirable for certain page layouts, it can be removed by setting this marker class on oj-messages.
+   * @ojstyleclass oj-messages-inline-remove-bottom-border
+   * @ojdisplayname No Border
+   * @memberof oj.ojMessages
+   * @ojtsexample
+   * &lt;oj-messages class="oj-messages-inline-remove-bottom-border">
+   *   &lt;!-- Content -->
+   * &lt;/oj-messages>
+   */
 
-    // ---------------- oj-messages-outlined --------------
-    /**
-     * Inline messages (Banners) can be either Edge-to-Edge or Outlined. By default, the inline messages are rendered as Edge-to-Edge Banner messages.
-     * If Outlined Banner messages are preferred instead, add oj-messages-outlined class on the oj-messages element.
-     * @ojstyleclass oj-messages-outlined
-     * @since 10.0.0
-     * @ojdisplayname Outlined Banner Messages
-     * @memberof oj.ojMessages
-     * @ojtsexample
-     * &lt;oj-messages class="oj-messages-outlined"&gt;
-     *   &lt;!-- Content --&gt;
-     * &lt;/oj-messages&gt;
-     */
-    // --------------------------------------------------- oj.ojMessages Styling Start -----------------------------------------------------------
+  // ---------------- oj-messages-outlined --------------
+  /**
+   * Inline messages (Banners) can be either Edge-to-Edge or Outlined. By default, the inline messages are rendered as Edge-to-Edge Banner messages.
+   * If Outlined Banner messages are preferred instead, add oj-messages-outlined class on the oj-messages element.
+   * @ojstyleclass oj-messages-outlined
+   * @since 10.0.0
+   * @ojdisplayname Outlined Banner Messages
+   * @memberof oj.ojMessages
+   * @ojtsexample
+   * &lt;oj-messages class="oj-messages-outlined"&gt;
+   *   &lt;!-- Content --&gt;
+   * &lt;/oj-messages&gt;
+   */
+  // --------------------------------------------------- oj.ojMessages Styling Start -----------------------------------------------------------
 
   /**
    * <table class="keyboard-table">
@@ -174,6 +177,110 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    *
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc.
    * @memberof oj.ojMessages
+   */
+
+  /**
+   * <h3 id="migration-section">
+   *   Migration (Message Toast)
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   *
+   * <p>
+   * To migrate from oj-messages to oj-c-message-toast, you need to revise the import statement
+   * and references to oj-c-message-toast in your app. Please note the changes between the two
+   * components below.
+   * </p>
+   *
+   * <h5>Display attribute</h5>
+   * <p>
+   * In <code class="prettyprint">oj-messages</code>, the messages are rendered as toasts if the <code class="prettyprint">display</code>
+   * attribute is set to "notification". But, the <code class="prettyprint">oj-c-message-toast</code> is a dedicated component for rendering
+   * messages as toasts. So, this attribute is not needed.
+   * </p>
+   *
+   * <h5>Display Options attribute</h5>
+   * <p>
+   * This attribute allows one to configure whether or not to show the category text in the <code class="prettyprint">oj-messages</code> component.
+   * But, in the <code class="prettyprint">oj-c-message-toast</code> component, the category texts are not supported and thus no need for this attribute.
+   * </p>
+   *
+   * <h5>Messages attribute</h5>
+   * <p>
+   * The <code class="prettyprint">oj-c-message-toast</code> component uses <code class="prettyprint">data</code> attribute instead of the <code class="prettyprint">messages</code>
+   * attribute. The new <code class="prettyprint">data</code> attribute only supports having a DataProvider as its value. If you were using an array for the <code class="prettyprint">messages</code>
+   * attribute, you need to wrap it in a DataProvider when migrating to the new component. Also, the new attribute is a required attribute. So, if you were not setting the <code class="prettyprint">messages</code>
+   * attribute, you will still need to set the <code class="prettyprint">data</code> attribute in the new component to a DataProvider but it can be initialized with an empty array.
+   * </p>
+   *
+   * <h5>Position attribute</h5>
+   * <p>
+   * In the <code class="prettyprint">oj-c-message-toast</code> component this attribute will take a string instead of an object. In the new component, the messages
+   * are always positioned with respect to the widow and thus it only takes the following string values for this property:
+   * <ul>
+   * <li><code class="prettyprint">"top"</code></li>
+   * <li><code class="prettyprint">"top-left"</code></li>
+   * <li><code class="prettyprint">"top-start"</code></li>
+   * <li><code class="prettyprint">"top-right"</code></li>
+   * <li><code class="prettyprint">"top-end"</code></li>
+   * <li><code class="prettyprint">"bottom"</code></li>
+   * <li><code class="prettyprint">"bottom-left"</code></li>
+   * <li><code class="prettyprint">"bottom-start"</code></li>
+   * <li><code class="prettyprint">"bottom-right"</code></li>
+   * <li><code class="prettyprint">"bottom-end"</code></li>
+   * </ul>
+   * The <code class="prettyprint">offset</code> property of the position object is moved as a separate attribute.
+   * </p>
+   *
+   * <h5>Position.offset property</h5>
+   * <p>
+   * If one were setting offset using the <code class="prettyprint">position.offset</code> property of the <code class="prettyprint">oj-messages</code> component,
+   * the same can be done using the <code class="prettyprint">offset</code> attribute of the <code class="prettyprint">oj-c-message-toast</code> component. One can
+   * either set it to a number, which will then be used for both horizontal and vertical offset, or set it to an object with horizontal and vertical properties set.
+   * </p>
+   *
+   * <h5>Translations attribute</h5>
+   * <p>
+   * Per instance translations object is not supported in the new <code class="prettyprint">oj-c-message-toast</code> component. Use the translations bundle instead.
+   * </p>
+   *
+   * <h5>ojClose event</h5>
+   * <p>
+   * In <code class="prettyprint">oj-c-message-toast</code> component, <code class="prettyprint">ojClose</code> event is triggered when one tries to close a message
+   * in the page. But, this will not automatically close the message on the UI. The application needs to listen to this event and remove the corresponding item from
+   * DataProvider. This will in turn remove the messages from the UI.
+   * </p>
+   *
+   * <h5>Close methods</h5>
+   * <p>
+   * The <code class="prettyprint">oj-c-message-toast</code> component does not support <code class="prettyprint">close</code> and <code class="prettyprint">closeAll</code>
+   * methods. To close a single message or all messages, simply remove the corresponding items from the DataProvider.
+   * </p>
+   *
+   * <h5>messageTemplate</h5>
+   * <p>
+   * The <code class="prettyprint">messageTemplate</code> or the usage of <code class="prettyprint">oj-message</code> component is not supported in the
+   * <code class="prettyprint">oj-c-message-toast</code> component. Instead, one can have any number of arbitrarily named template slots. In these templates,
+   * one can directly provide the content without having to wrap them in an <code class="prettyprint">oj-message</code> component. Then using the
+   * <code class="prettyprint">detail-template-value</code> attribute, one can specify which template will be used for which message. In the similar way,
+   * one can also configure the start-icon of the component using the <code class="prettyprint">icon-template-value</code> attribute.
+   * </p>
+   *
+   * <h5>Message type</h5>
+   * <p>
+   * The <code class="prettyprint">oj-c-message-toast</code> component uses the <code class="prettyprint">MessageToastItem</code> type for the items in the DataProvider.
+   * Please note the changes in properties below:
+   * <ul>
+   * <li>autoTimeout - changed to <code class="prettyprint">"on" | "off" | number</code>. Use 'on' instead of 0 and 'off' instead of -1.</li>
+   * <li>category - not supported as it is not an approved redwood-pattern</li>
+   * <li>closeAffordance - changed to <code class="prettyprint">"on" | "off"</code>. Use 'off' instead of 'none' and leave the attribute unset instead of 'defaults'.</li>
+   * <li>icon - not supported as it is not an approved redwood-pattern</li>
+   * <li>timestamp - not supported as it is not an approved redwood-pattern</li>
+   * </ul>
+   * </p>
+   *
+   * @ojfragment migrationDoc
+   * @memberof oj.ojMessages
+   * @instance
    */
 
   // Attributes
@@ -221,7 +328,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @ojsignature { target: "Type",
    *                value: "Array<oj.ojMessage.Message> | null | DataProvider<any, oj.ojMessage.Message>",
    *                jsdocOverride: true}
-  **/
+   **/
 
   /**
    * <p>Specifies the display purpose of messages. The valid values for display are
@@ -732,7 +839,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
    **/
 
-
   // Type Defs
   // //////////
 
@@ -871,8 +977,9 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
     if (inlinedMessageChildren.length !== 0) {
       // Add a busy state before we start animating open action for all inlined oj-message children
       var busyContext = Context.getContext(this._composite).getBusyContext();
-      this._inlinedMessagesOpenBusyStateResolve =
-        busyContext.addBusyState({ description: 'oj-messages is busy opening inlined messages' });
+      this._inlinedMessagesOpenBusyStateResolve = busyContext.addBusyState({
+        description: 'oj-messages is busy opening inlined messages'
+      });
 
       this._showMessagesContainer();
       for (var i = 0; i < inlinedMessageChildren.length; i++) {
@@ -881,18 +988,22 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
           'open',
           this._resolveInlinedMessagesOpenBusyState(
             inlinedMessageChildren[i].getProperty('message'),
-            inlinedMessageChildren.length));
+            inlinedMessageChildren.length
+          )
+        );
       }
     }
   };
 
   MessagesViewModel.prototype._resolveInlinedMessagesOpenBusyState = function (
     message,
-    numInlinedChildren) {
+    numInlinedChildren
+  ) {
     this._updateLiveRegionAndContainer(message);
 
-    this._numInlinedChildrenAnimated =
-      this._numInlinedChildrenAnimated ? this._numInlinedChildrenAnimated + 1 : 1;
+    this._numInlinedChildrenAnimated = this._numInlinedChildrenAnimated
+      ? this._numInlinedChildrenAnimated + 1
+      : 1;
 
     if (this._numInlinedChildrenAnimated === numInlinedChildren) {
       this._numInlinedChildrenAnimated = 0;
@@ -1038,7 +1149,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
     var keySegments = key.split('.');
 
     // key is a dot separated qualifier, break it so we can use in [] notation to access sub-props
-    for (var i = 0; (i < keySegments.length) && val; i++) {
+    for (var i = 0; i < keySegments.length && val; i++) {
       val = val[keySegments[i]];
     }
 
@@ -1166,8 +1277,12 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
 
   MessagesViewModel.prototype._getThemedAnimateOptions = function (display, action) {
     var themedDefaults = ThemeUtils.parseJSONFromFontFamily('oj-messages-option-defaults');
-    if (themedDefaults && themedDefaults[display] && themedDefaults[display].animation &&
-        themedDefaults[display].animation[action]) {
+    if (
+      themedDefaults &&
+      themedDefaults[display] &&
+      themedDefaults[display].animation &&
+      themedDefaults[display].animation[action]
+    ) {
       return themedDefaults[display].animation[action];
     }
     return MessagesViewModel._DEFAULTS[display].animation[action];
@@ -1233,8 +1348,10 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
       if (body[i].nodeName !== 'OJ-MESSAGE') {
         // we included oj-bind-if in our view def, so make an exception
         if (body[i].nodeName !== 'OJ-BIND-IF') {
-          Logger.error('JET oj-messages: can contain only oj-message children in its default slot. '
-            + `Found <${body[i].nodeName}> instead.`);
+          Logger.error(
+            'JET oj-messages: can contain only oj-message children in its default slot. ' +
+              `Found <${body[i].nodeName}> instead.`
+          );
         }
       } else {
         messageElements.push(body[i]);
@@ -1330,9 +1447,11 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   MessagesViewModel.prototype._isOverlayOpen = function () {
     var composite = this._composite;
     var status = oj.ZOrderUtils.getStatus(composite);
-    return (status === oj.ZOrderUtils.STATUS.OPENING ||
-            status === oj.ZOrderUtils.STATUS.OPEN ||
-            status === oj.ZOrderUtils.STATUS.CLOSING);
+    return (
+      status === oj.ZOrderUtils.STATUS.OPENING ||
+      status === oj.ZOrderUtils.STATUS.OPEN ||
+      status === oj.ZOrderUtils.STATUS.CLOSING
+    );
   };
 
   MessagesViewModel._overlayEventsListener = function (element, event) {
@@ -1341,7 +1460,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
     }
 
     // keyCode is deprecated and it's not supported on some browsers.
-    if ((event.keyCode === $.ui.keyCode.TAB) || event.key === 'Tab') {
+    if (event.keyCode === $.ui.keyCode.TAB || event.key === 'Tab') {
       var target = event.target;
       var nodes = element.find(':tabbable');
       if (nodes.length > 0) {
@@ -1393,13 +1512,16 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @param {boolean=} isFocusWithin true if focus navigation is to the messages container
    */
   MessagesViewModel.prototype._announceNavigation = function (isFocusWithin) {
-    var isVOSupported = (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS ||
-                         oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.ANDROID);
+    var isVOSupported =
+      oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS ||
+      oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.ANDROID;
     var key;
     if (isFocusWithin) {
       key = isVOSupported ? undefined : 'ariaLiveRegion.navigationFromKeyboard';
     } else {
-      key = isVOSupported ? 'ariaLiveRegion.navigationToTouch' : 'ariaLiveRegion.navigationToKeyboard';
+      key = isVOSupported
+        ? 'ariaLiveRegion.navigationToTouch'
+        : 'ariaLiveRegion.navigationToKeyboard';
     }
 
     if (key) {
@@ -1433,8 +1555,10 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
 
       // We will reposition only if messages are fully in viewport. Otherwise overflowing messages
       //  cannot be scrolled with page scroll since our popup repositions for scroll events.
-      if (messagesBoundingRect.height < document.documentElement.clientHeight &&
-          messagesBoundingRect.width < document.documentElement.clientWidth) {
+      if (
+        messagesBoundingRect.height < document.documentElement.clientHeight &&
+        messagesBoundingRect.width < document.documentElement.clientWidth
+      ) {
         var position = this._getPositionAsJqUi();
         $(this._composite).position(position);
       }
@@ -1603,8 +1727,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
       var messagesContainerIds = this._messagesContainerIds;
       for (var i = 0; i < messagesContainerIds.length; i++) {
         var messagesContainerDiv = document.getElementById(messagesContainerIds[i]);
-        if (messagesContainerDiv &&
-            DomUtils.isAncestorOrSelf(messagesContainerDiv, target)) {
+        if (messagesContainerDiv && DomUtils.isAncestorOrSelf(messagesContainerDiv, target)) {
           return i;
         }
       }
@@ -1627,7 +1750,11 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
       var messagesContainerIds = this._messagesContainerIds;
       // F6 keypress
       // keyCode is deprecated and it's not supported on some browsers.
-      if (event.type === 'keydown' && (event.keyCode === 117 || event.key === 'F6') && messagesContainerIds.length > 0) {
+      if (
+        event.type === 'keydown' &&
+        (event.keyCode === 117 || event.key === 'F6') &&
+        messagesContainerIds.length > 0
+      ) {
         // Look to see if the event target is already within a message area.  If focus is within
         // do nothing as the F6 listener on the mesage area will handle.
         var s = this._indexOfFocusWithin(event.target);
@@ -1641,8 +1768,11 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
           var messagesContainerDiv = document.getElementById(messagesContainerIds[i]);
 
           // if the container doesn't exist or is not visible continue to the next most recently used
-          if (messagesContainerDiv && $(messagesContainerDiv).is(':visible') &&
-              oj.ZOrderUtils.isAboveTopModalLayer(messagesContainerDiv)) {
+          if (
+            messagesContainerDiv &&
+            $(messagesContainerDiv).is(':visible') &&
+            oj.ZOrderUtils.isAboveTopModalLayer(messagesContainerDiv)
+          ) {
             // At this point we need to focus the title of the current message element.
             // A message by default has a category text, and that should be the one that
             // receives the initial focus. But, when the category text is hidden, the summary
@@ -1681,20 +1811,28 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
       }
 
       if (event.type === 'focus' || event.type === 'click') {
-         // if prior focus was outside the messgaes container and new focus is within, capture
-         // what had prior focus. This is the best attempt to capture F2 navigation when using
-         // mouse or touch to navigate to the message container versus F2 keyboard.
+        // if prior focus was outside the messgaes container and new focus is within, capture
+        // what had prior focus. This is the best attempt to capture F2 navigation when using
+        // mouse or touch to navigate to the message container versus F2 keyboard.
 
-         /** @type {?} */
+        /** @type {?} */
         var messagesContainerDiv = document.getElementById(id);
         var prevActiveElement = this._prevActiveElement;
-        if (prevActiveElement && messagesContainerDiv &&
-             !DomUtils.isAncestorOrSelf(messagesContainerDiv, prevActiveElement)) {
+        if (
+          prevActiveElement &&
+          messagesContainerDiv &&
+          !DomUtils.isAncestorOrSelf(messagesContainerDiv, prevActiveElement)
+        ) {
           // attached to visible message components.  Tracks previous focus.
           this._addPriorFocusCache(id, prevActiveElement);
         }
-      } else if (event.type === 'keydown' &&
-              (event.keyCode === 117 || event.keyCode === $.ui.keyCode.ESCAPE || event.key === 'F6' || event.key === 'Escape')) {
+      } else if (
+        event.type === 'keydown' &&
+        (event.keyCode === 117 ||
+          event.keyCode === $.ui.keyCode.ESCAPE ||
+          event.key === 'F6' ||
+          event.key === 'Escape')
+      ) {
         // F6 or ESC keypress from within the content of the messages container will toggle focus back
         // to to what had prior focus. An attempt is made to fixup the navigate even if arriving
         // using the mouse or touch.
@@ -1705,7 +1843,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
       }
     }
   };
-
 
   /**
    * Utility for handling voice over messages sent to a aria live region.  Messages
@@ -1761,9 +1898,8 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   LiveRegion.prototype.announce = function (message) {
     var liveRegion = LiveRegion._getLiveRegion();
     var id = this._id;
-    $('<div>').attr('data-container-id', id).text(message).appendTo(liveRegion);// @HTMLUpdateOK
+    $('<div>').attr('data-container-id', id).text(message).appendTo(liveRegion); // @HTMLUpdateOK
   };
-
 
   /**
    * Creates or returns an existing aria live region used by messages.
@@ -1775,12 +1911,14 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
     if (liveRegion.length === 0) {
       // only tracks additions
       liveRegion = $('<div>');
-      liveRegion.attr({ id: LiveRegion._LIVE_REGION_ID,
+      liveRegion.attr({
+        id: LiveRegion._LIVE_REGION_ID,
         role: 'log',
         'aria-live': 'polite',
-        'aria-relevant': 'additions' });
+        'aria-relevant': 'additions'
+      });
       liveRegion.addClass('oj-helper-hidden-accessible');
-      liveRegion.appendTo(document.body);// @HTMLUpdateOK
+      liveRegion.appendTo(document.body); // @HTMLUpdateOK
     }
     return liveRegion;
   };
@@ -1929,11 +2067,10 @@ var __oj_messages_metadata =
 };
   /* global __oj_messages_metadata */
   // eslint-disable-next-line no-undef
-  Composite.register('oj-messages',
-    {
-      view: _MESSAGES_VIEW,
-      viewModel: MessagesViewModel,
-      metadata: __oj_messages_metadata
-    });
+  Composite.register('oj-messages', {
+    view: _MESSAGES_VIEW,
+    viewModel: MessagesViewModel,
+    metadata: __oj_messages_metadata
+  });
 
 });

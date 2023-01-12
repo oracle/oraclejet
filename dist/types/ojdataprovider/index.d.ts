@@ -191,6 +191,7 @@ export interface FetchByKeysParameters<K> {
     attributes?: Array<string | FetchAttribute>;
     keys: Set<K>;
     scope?: FetchByKeysParameters.Scope;
+    signal?: AbortSignal;
 }
 export namespace FetchByKeysParameters {
     type Scope = "local" | "global";
@@ -203,6 +204,7 @@ export interface FetchByOffsetCapability {
     attributeFilter?: AttributeFilterCapability;
     caching?: 'all' | 'none' | 'visitedByCurrentIterator';
     implementation: 'iteration' | 'randomAccess';
+    totalFilteredRowCount?: 'exact' | 'none';
 }
 export namespace FetchByOffsetMixin {
     function applyMixin(derivedCtor: {
@@ -212,11 +214,13 @@ export namespace FetchByOffsetMixin {
 export interface FetchByOffsetParameters<D> extends FetchListParameters<D> {
     attributes?: Array<string | FetchAttribute>;
     offset: number;
+    signal?: AbortSignal;
 }
 export interface FetchByOffsetResults<K, D> {
     done: boolean;
     fetchParameters: FetchByOffsetParameters<D>;
     results: Array<Item<K, D>>;
+    totalFilteredRowCount?: number;
 }
 export interface FetchCapability {
     attributeFilter?: AttributeFilterCapability;
@@ -233,6 +237,7 @@ export interface FetchListParameters<D> {
     clientId?: symbol;
     filterCriterion?: DataFilter.Filter<D>;
     includeFilteredRowCount?: 'enabled' | 'disabled';
+    signal?: AbortSignal;
     size?: number;
     sortCriteria?: Array<SortCriterion<D>>;
 }

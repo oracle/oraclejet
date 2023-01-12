@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -14,7 +14,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
    * Released under the MIT license.
    * http://jquery.org/license
    */
-
 
   /* jslint browser: true,devel:true*/
   /**
@@ -35,6 +34,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
    * @final
    * @since 1.0
    * @ojtsignore
+   * @ojdeprecated {since: '14.0.0', description: 'PagingTableDataSource has been deprecated,
+   * use PagingDataProviderView instead.'}
    */
   // eslint-disable-next-line no-unused-vars
   const PagingTableDataSource = function (dataSource, options) {
@@ -56,17 +57,16 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
 
     // PagingTableDataSource doesn't need its own copy of sortCriteria and can
     // just act as a proxy for the underlying dataSource
-    Object.defineProperty(this, 'sortCriteria',
-      {
-        configurable: false,
-        enumerable: true,
-        get: function () {
-          return this.dataSource.sortCriteria;
-        },
-        set: function (newValue) {
-          this.dataSource.sortCriteria = newValue;
-        }
-      });
+    Object.defineProperty(this, 'sortCriteria', {
+      configurable: false,
+      enumerable: true,
+      get: function () {
+        return this.dataSource.sortCriteria;
+      },
+      set: function (newValue) {
+        this.dataSource.sortCriteria = newValue;
+      }
+    });
   };
 
   oj._registerLegacyNamespaceProp('PagingTableDataSource', PagingTableDataSource);
@@ -129,9 +129,10 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
     value = parseInt(value, 10);
 
     try {
-      PagingTableDataSource.superclass.handleEvent
-        .call(this, oj.PagingModel.EventType.BEFOREPAGE,
-              { page: value, previousPage: this._getPageFromStartIndex() });
+      PagingTableDataSource.superclass.handleEvent.call(this, oj.PagingModel.EventType.BEFOREPAGE, {
+        page: value,
+        previousPage: this._getPageFromStartIndex()
+      });
     } catch (err) {
       return Promise.reject(err);
     }
@@ -147,23 +148,26 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
     return new Promise(function (resolve, reject) {
       // we only support paged fetches
       if (self._pageSize > 0) {
-        self.dataSource.fetch(options).then(function (result) {
-          // eslint-disable-next-line no-param-reassign
-          result.startIndex = 0;
-          if (result.data.length > 0) {
-            self._updateEndIndex((self._startIndex + result.data.length) - 1, true);
-          } else {
-            self._updateEndIndex(-1, true);
+        self.dataSource.fetch(options).then(
+          function (result) {
+            // eslint-disable-next-line no-param-reassign
+            result.startIndex = 0;
+            if (result.data.length > 0) {
+              self._updateEndIndex(self._startIndex + result.data.length - 1, true);
+            } else {
+              self._updateEndIndex(-1, true);
+            }
+            PagingTableDataSource.superclass.handleEvent.call(self, oj.PagingModel.EventType.PAGE, {
+              page: self._getPageFromStartIndex(),
+              previousPage: previousPage
+            });
+            resolve(null);
+          },
+          function (e) {
+            self._startIndex = previousPage * self._pageSize;
+            reject(e);
           }
-          PagingTableDataSource.superclass.handleEvent
-            .call(self, oj.PagingModel.EventType.PAGE,
-                  { page: self._getPageFromStartIndex(), previousPage: previousPage });
-          resolve(null);
-        },
-        function (e) {
-          self._startIndex = previousPage * self._pageSize;
-          reject(e);
-        });
+        );
       } else {
         resolve(null);
       }
@@ -281,17 +285,19 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
     return new Promise(function (resolve, reject) {
       // we only support paged fetches
       if (pageSize > 0) {
-        self.dataSource.fetch(options).then(function (result) {
-          if (result.data.length > 0) {
-            self._updateEndIndex((self._startIndex + result.data.length) - 1, true);
-          } else {
-            self._updateEndIndex(-1, true);
+        self.dataSource.fetch(options).then(
+          function (result) {
+            if (result.data.length > 0) {
+              self._updateEndIndex(self._startIndex + result.data.length - 1, true);
+            } else {
+              self._updateEndIndex(-1, true);
+            }
+            resolve(result);
+          },
+          function (e) {
+            reject(e);
           }
-          resolve(result);
-        },
-        function (e) {
-          reject(e);
-        });
+        );
       } else {
         resolve(null);
       }
@@ -347,7 +353,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
    */
   PagingTableDataSource.prototype.on = function (eventType, eventHandler) {
     var self = this;
-    var dataSource = (/** @type {{on: Function}} */ (this.dataSource));
+    var dataSource = /** @type {{on: Function}} */ (this.dataSource);
     var ev;
 
     if (eventType === oj.TableDataSource.EventType.SYNC) {
@@ -360,9 +366,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
         wrappedEventHandler: ev
       });
       dataSource.on(eventType, ev);
-    } else if (eventType === oj.TableDataSource.EventType.ADD ||
-               eventType === oj.TableDataSource.EventType.REMOVE ||
-               eventType === oj.TableDataSource.EventType.CHANGE) {
+    } else if (
+      eventType === oj.TableDataSource.EventType.ADD ||
+      eventType === oj.TableDataSource.EventType.REMOVE ||
+      eventType === oj.TableDataSource.EventType.CHANGE
+    ) {
       ev = function (event) {
         self._handleRowEvent(event, eventHandler);
       };
@@ -372,8 +380,10 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
         wrappedEventHandler: ev
       });
       dataSource.on(eventType, ev);
-    } else if (eventType === oj.TableDataSource.EventType.REFRESH ||
-               eventType === oj.TableDataSource.EventType.RESET) {
+    } else if (
+      eventType === oj.TableDataSource.EventType.REFRESH ||
+      eventType === oj.TableDataSource.EventType.RESET
+    ) {
       ev = function (event) {
         self._startIndex = 0;
         eventHandler(event);
@@ -384,9 +394,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
         wrappedEventHandler: ev
       });
       dataSource.on(eventType, ev);
-    } else if (eventType === oj.PagingModel.EventType.PAGE ||
-               eventType === oj.PagingModel.EventType.BEFOREPAGE ||
-               eventType === oj.PagingModel.EventType.PAGECOUNT) {
+    } else if (
+      eventType === oj.PagingModel.EventType.PAGE ||
+      eventType === oj.PagingModel.EventType.BEFOREPAGE ||
+      eventType === oj.PagingModel.EventType.PAGECOUNT
+    ) {
       PagingTableDataSource.superclass.on.call(this, eventType, eventHandler);
     } else {
       dataSource.on(eventType, eventHandler);
@@ -404,18 +416,22 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
    * @instance
    */
   PagingTableDataSource.prototype.off = function (eventType, eventHandler) {
-    if (eventType === oj.PagingModel.EventType.PAGE ||
-        eventType === oj.PagingModel.EventType.PAGECOUNT) {
+    if (
+      eventType === oj.PagingModel.EventType.PAGE ||
+      eventType === oj.PagingModel.EventType.PAGECOUNT
+    ) {
       PagingTableDataSource.superclass.off.call(this, eventType, eventHandler);
     }
-    var dataSource = (/** @type {{off: Function}} */ (this.dataSource));
+    var dataSource = /** @type {{off: Function}} */ (this.dataSource);
 
     if (this._dataSourceWrappedEventHandlers != null) {
       var dataSourceWrappedEventHandlersCount = this._dataSourceWrappedEventHandlers.length;
       var i;
       for (i = 0; i < dataSourceWrappedEventHandlersCount; i++) {
-        if (this._dataSourceWrappedEventHandlers[i].eventType === eventType &&
-            this._dataSourceWrappedEventHandlers[i].eventHandler === eventHandler) {
+        if (
+          this._dataSourceWrappedEventHandlers[i].eventType === eventType &&
+          this._dataSourceWrappedEventHandlers[i].eventHandler === eventHandler
+        ) {
           dataSource.off(eventType, this._dataSourceWrappedEventHandlers[i].wrappedEventHandler);
           this._dataSourceWrappedEventHandlers.splice(i, 1);
           break;
@@ -524,7 +540,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
     }
 
     if (event.data.length > 0) {
-      this._updateEndIndex((event.startIndex + event.data.length) - 1, true);
+      this._updateEndIndex(event.startIndex + event.data.length - 1, true);
     } else {
       this._updateEndIndex(-1, true);
     }
@@ -562,8 +578,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojpagingmod
    * @enum {string}
    * @memberof PagingTableDataSource
    */
-  PagingTableDataSource.EventType =
-  {
+  PagingTableDataSource.EventType = {
     /** Triggered when a Row is added to a PagingDataSource */
     ADD: 'add',
     /** Triggered when a Row is removed from a PagingDataSource */

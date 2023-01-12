@@ -74,6 +74,9 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
     selectionMode: 'none' | 'single' | 'multiple';
     selectionRequired: boolean;
     translations: {
+        accessibleExpandCollapseInstructionText?: string;
+        accessibleGroupCollapse?: string;
+        accessibleGroupExpand?: string;
         accessibleNavigateSkipItems?: string;
         accessibleReorderAfterItem?: string;
         accessibleReorderBeforeItem?: string;
@@ -361,6 +364,9 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
     selectionMode: 'none' | 'single' | 'multiple';
     selectionRequired: boolean;
     translations: {
+        accessibleExpandCollapseInstructionText?: string;
+        accessibleGroupCollapse?: string;
+        accessibleGroupExpand?: string;
         accessibleNavigateSkipItems?: string;
         accessibleReorderAfterItem?: string;
         accessibleReorderBeforeItem?: string;

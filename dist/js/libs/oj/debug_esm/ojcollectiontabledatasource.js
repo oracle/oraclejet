@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -46,8 +46,10 @@ const CollectionTableDataSource = function (data, options) {
 
   this.Init();
 
-  if ((options != null && (options.startFetch === 'enabled' || options.startFetch == null))
-    || options == null) {
+  if (
+    (options != null && (options.startFetch === 'enabled' || options.startFetch == null)) ||
+    options == null
+  ) {
     this._startFetchEnabled = true;
   }
 };
@@ -55,8 +57,11 @@ const CollectionTableDataSource = function (data, options) {
 oj._registerLegacyNamespaceProp('CollectionTableDataSource', CollectionTableDataSource);
 
 // Subclass from oj.DataSource
-oj.Object.createSubclass(CollectionTableDataSource, oj.TableDataSource,
-                         'oj.CollectionTableDataSource');
+oj.Object.createSubclass(
+  CollectionTableDataSource,
+  oj.TableDataSource,
+  'oj.CollectionTableDataSource'
+);
 
 /**
  * @export
@@ -111,16 +116,22 @@ CollectionTableDataSource.prototype.at = function (index, options) {
   var row;
   return new Promise(function (resolve, reject) {
     if (model != null) {
-      model.then(function (resolvedModel) {
-        self._isFetchingForAt = false;
-        row = { data: resolvedModel.attributes, index: index, key: resolvedModel.id };
-        resolve(row);
-      },
-      function (e) {
-        self._isFetchingForAt = false;
-        oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType.ERROR, e);
-        reject(e);
-      });
+      model.then(
+        function (resolvedModel) {
+          self._isFetchingForAt = false;
+          row = { data: resolvedModel.attributes, index: index, key: resolvedModel.id };
+          resolve(row);
+        },
+        function (e) {
+          self._isFetchingForAt = false;
+          oj.TableDataSource.superclass.handleEvent.call(
+            self,
+            oj.TableDataSource.EventType.ERROR,
+            e
+          );
+          reject(e);
+        }
+      );
     } else {
       resolve(null);
     }
@@ -190,19 +201,25 @@ CollectionTableDataSource.prototype.get = function (id, options) {
 
   return new Promise(function (resolve, reject) {
     if (model != null) {
-      model.then(function (resolvedModel) {
-        if (resolvedModel) {
-          var wrappedRow = self._wrapWritableValue(resolvedModel, resolvedModel.attributes);
-          var row = { data: wrappedRow, index: resolvedModel.index, key: resolvedModel.id };
-          resolve(row);
-        } else {
-          resolve(null);
+      model.then(
+        function (resolvedModel) {
+          if (resolvedModel) {
+            var wrappedRow = self._wrapWritableValue(resolvedModel, resolvedModel.attributes);
+            var row = { data: wrappedRow, index: resolvedModel.index, key: resolvedModel.id };
+            resolve(row);
+          } else {
+            resolve(null);
+          }
+        },
+        function (e) {
+          oj.TableDataSource.superclass.handleEvent.call(
+            self,
+            oj.TableDataSource.EventType.ERROR,
+            e
+          );
+          reject(e);
         }
-      },
-      function (e) {
-        oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType.ERROR, e);
-        reject(e);
-      });
+      );
     } else {
       resolve(null);
     }
@@ -271,7 +288,6 @@ CollectionTableDataSource.prototype.totalSize = function () {
     return this._collection.size();
   }
 
-
   return totalSize;
 };
 
@@ -309,12 +325,11 @@ CollectionTableDataSource.prototype._addCollectionEventListeners = function () {
   var self = this;
   this._collection.on(Events.EventType.SYNC, function (event) {
     if (event instanceof Model) {
-      oj.TableDataSource.superclass.handleEvent.call(self,
-                                                     oj.TableDataSource.EventType.CHANGE, {
-                                                       data: [event.attributes],
-                                                       keys: [event.id],
-                                                       indexes: [event.index]
-                                                     });
+      oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType.CHANGE, {
+        data: [event.attributes],
+        keys: [event.id],
+        indexes: [event.index]
+      });
     } else if (event instanceof Collection) {
       if (!self._isFetchingForAt && !self._isFetching) {
         var startIndex = event.offset;
@@ -329,8 +344,7 @@ CollectionTableDataSource.prototype._addCollectionEventListeners = function () {
           self._pageSize = pageSize;
           var endIndex = 0;
 
-          if (self._collection.totalResults > 0 ||
-            self._collection.hasMore) {
+          if (self._collection.totalResults > 0 || self._collection.hasMore) {
             endIndex = startIndex + pageSize;
           }
 
@@ -371,12 +385,11 @@ CollectionTableDataSource.prototype._addCollectionEventListeners = function () {
       keyArray.push(model.id);
       indexArray.push(model.index);
     }
-    oj.TableDataSource.superclass.handleEvent.call(self,
-                                                   oj.TableDataSource.EventType.ADD, {
-                                                     data: rowArray,
-                                                     keys: keyArray,
-                                                     indexes: indexArray
-                                                   });
+    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType.ADD, {
+      data: rowArray,
+      keys: keyArray,
+      indexes: indexArray
+    });
   });
   this._collection.on(Events.EventType.ALLREMOVED, function (event, modelArray) {
     var rowArray = [];
@@ -390,16 +403,14 @@ CollectionTableDataSource.prototype._addCollectionEventListeners = function () {
       keyArray.push(model.id);
       indexArray.push(model.index);
     }
-    oj.TableDataSource.superclass.handleEvent.call(self,
-                                                   oj.TableDataSource.EventType.REMOVE, {
-                                                     data: rowArray,
-                                                     keys: keyArray,
-                                                     indexes: indexArray
-                                                   });
+    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType.REMOVE, {
+      data: rowArray,
+      keys: keyArray,
+      indexes: indexArray
+    });
   });
   this._collection.on(Events.EventType.RESET, function (event) {
-    oj.TableDataSource.superclass.handleEvent.call(self,
-                                                   oj.TableDataSource.EventType.RESET, event);
+    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType.RESET, event);
   });
   this._collection.on(Events.EventType.SORT, function (event, eventOpts) {
     if (eventOpts == null || !eventOpts.add) {
@@ -409,42 +420,53 @@ CollectionTableDataSource.prototype._addCollectionEventListeners = function () {
         sortCriteria.header = event.comparator;
         sortCriteria.direction = event.sortDirection === 1 ? 'ascending' : 'descending';
       }
-      oj.TableDataSource.superclass.handleEvent.call(self,
-                                                     oj.TableDataSource.EventType.SORT,
-                                                     sortCriteria);
+      oj.TableDataSource.superclass.handleEvent.call(
+        self,
+        oj.TableDataSource.EventType.SORT,
+        sortCriteria
+      );
     }
   });
   this._collection.on(Events.EventType.CHANGE, function (event) {
-    oj.TableDataSource.superclass.handleEvent.call(self,
-                                                   oj.TableDataSource.EventType.CHANGE, {
-                                                     data: [event.attributes],
-                                                     keys: [event.id],
-                                                     indexes: [event.index]
-                                                   });
+    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType.CHANGE, {
+      data: [event.attributes],
+      keys: [event.id],
+      indexes: [event.index]
+    });
   });
   this._collection.on(Events.EventType.DESTROY, function (event) {
-    oj.TableDataSource.superclass.handleEvent.call(self,
-                                                   oj.TableDataSource.EventType.DESTROY,
-                                                   event);
+    oj.TableDataSource.superclass.handleEvent.call(
+      self,
+      oj.TableDataSource.EventType.DESTROY,
+      event
+    );
   });
   this._collection.on(Events.EventType.REFRESH, function (event) {
-    oj.TableDataSource.superclass.handleEvent.call(self,
-                                                   oj.TableDataSource.EventType.REFRESH,
-                                                   event);
+    oj.TableDataSource.superclass.handleEvent.call(
+      self,
+      oj.TableDataSource.EventType.REFRESH,
+      event
+    );
   });
   this._collection.on(Events.EventType.ERROR, function (collection, xhr, options) {
-    oj.TableDataSource.superclass.handleEvent.call(self,
-                                                   oj.TableDataSource.EventType.ERROR,
-                                                   collection, xhr, options);
+    oj.TableDataSource.superclass.handleEvent.call(
+      self,
+      oj.TableDataSource.EventType.ERROR,
+      collection,
+      xhr,
+      options
+    );
   });
   this._collection.on(Events.EventType.REQUEST, function (event) {
     // If this datasource is fetching, it calls setRangeLocal on the collection, which
     // causes the collection to fire the REQUEST event.  In this case we don't want this
     // datasource to fire its own REQUEST event since it has already done that in _startFetch.
     if (!self._isFetching) {
-      oj.TableDataSource.superclass.handleEvent.call(self,
-                                                    oj.TableDataSource.EventType.REQUEST,
-                                                    event);
+      oj.TableDataSource.superclass.handleEvent.call(
+        self,
+        oj.TableDataSource.EventType.REQUEST,
+        event
+      );
     }
   });
 };
@@ -468,44 +490,46 @@ CollectionTableDataSource.prototype._fetchInternal = function (_options) {
       pageSize = 25;
     }
 
-    self._collection.setRangeLocal(self._startIndex, pageSize).then(function (actual) {
-      var result;
+    self._collection.setRangeLocal(self._startIndex, pageSize).then(
+      function (actual) {
+        var result;
 
         // Do not call _getRowArray if this datasource is paged,
         // or if the underlying Collection is virtual since _getRowArray
         // assumes collection.at returns Model objects, which is not the case
         // for virtual collection.
-      if (self._isPaged || self._collection.IsVirtual()) {
-        var rowArray = [];
-        var keyArray = [];
+        if (self._isPaged || self._collection.IsVirtual()) {
+          var rowArray = [];
+          var keyArray = [];
 
-        for (var i = 0; i < actual.models.length; i++) {
-          var model = actual.models[i];
-          var wrappedRow = self._wrapWritableValue(model, model.attributes);
-          rowArray[i] = wrappedRow;
-          keyArray[i] = model.id;
-        }
-        result = { data: rowArray, keys: keyArray, startIndex: self._startIndex };
+          for (var i = 0; i < actual.models.length; i++) {
+            var model = actual.models[i];
+            var wrappedRow = self._wrapWritableValue(model, model.attributes);
+            rowArray[i] = wrappedRow;
+            keyArray[i] = model.id;
+          }
+          result = { data: rowArray, keys: keyArray, startIndex: self._startIndex };
 
-        if (actual.models.length < self._pageSize) {
+          if (actual.models.length < self._pageSize) {
             // it returned less than a page of data so we're at the end
             // set the totalSize if unknown
-          if (self.totalSize() < 0) {
-            self._fetchResultSize = self._startIndex + actual.models.length;
+            if (self.totalSize() < 0) {
+              self._fetchResultSize = self._startIndex + actual.models.length;
+            }
+          } else {
+            self._fetchResultSize = null;
           }
         } else {
-          self._fetchResultSize = null;
+          result = self._getRowArray();
         }
-      } else {
-        result = self._getRowArray();
-      }
 
-      self._endFetch.call(self, options, result);
-      resolve(result);
-    },
+        self._endFetch.call(self, options, result);
+        resolve(result);
+      },
       function (error) {
         reject(error);
-      });
+      }
+    );
   });
 };
 
@@ -518,9 +542,9 @@ CollectionTableDataSource.prototype._fetchInternal = function (_options) {
 CollectionTableDataSource.prototype._startFetch = function (options) {
   this._isFetching = true;
   if (!options.silent) {
-    oj.TableDataSource.superclass.handleEvent.call(this,
-                                                   oj.TableDataSource.EventType.REQUEST,
-                                                   { startIndex: options.startIndex });
+    oj.TableDataSource.superclass.handleEvent.call(this, oj.TableDataSource.EventType.REQUEST, {
+      startIndex: options.startIndex
+    });
   }
 };
 
@@ -578,18 +602,16 @@ CollectionTableDataSource.prototype._wrapWritableValue = function (model, m) {
     var prop = props[i];
     (function (localProp) {
       var localModel = model;
-      Object.defineProperty(
-          returnObj, localProp,
-        {
-          get: function () {
-            return localModel.get(localProp);
-          },
-          set: function (newValue) {
-            localModel.set(localProp, newValue, { silent: true });
-          },
-          enumerable: true
-        });
-    }(prop));
+      Object.defineProperty(returnObj, localProp, {
+        get: function () {
+          return localModel.get(localProp);
+        },
+        set: function (newValue) {
+          localModel.set(localProp, newValue, { silent: true });
+        },
+        enumerable: true
+      });
+    })(prop);
   }
 
   return returnObj;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -414,15 +414,20 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var l;
       for (l = str.length; l < count; l += 1) {
         // eslint-disable-next-line no-param-reassign
-        str = (left ? ('0' + str) : (str + '0'));
+        str = left ? '0' + str : str + '0';
       }
       return str;
     }
 
     function _throwNumberOutOfRange(value, minimum, maximum, property) {
-      var msg = value +
-          ' is out of range.  Enter a value between ' + minimum +
-          ' and ' + maximum + ' for ' + property;
+      var msg =
+        value +
+        ' is out of range.  Enter a value between ' +
+        minimum +
+        ' and ' +
+        maximum +
+        ' for ' +
+        property;
       var rangeError = new RangeError(msg);
       var errorInfo = {
         errorCode: 'numberOptionOutOfRange',
@@ -494,11 +499,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var numberSettings = _numberSettings;
       var pat;
       var localeElementsMainNode =
-      __ConverterUtilsI18n.OraI18nUtils.getLocaleElementsMainNode(localeElements);
+        __ConverterUtilsI18n.OraI18nUtils.getLocaleElementsMainNode(localeElements);
       var numberingSystemKey = _getNumberingSystemKey(localeElementsMainNode, locale);
       numberSettings.numberingSystemKey = numberingSystemKey;
-      numberSettings.numberingSystem = 'symbols-numberSystem-' +
-        numberingSystemKey;
+      numberSettings.numberingSystem = 'symbols-numberSystem-' + numberingSystemKey;
       var lenient = options.lenientParse;
       numberSettings.lenientParse = lenient || 'full';
       numberSettings.style = options.style;
@@ -508,13 +512,13 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       } else {
         var key;
         switch (numberSettings.style) {
-          case 'decimal' :
+          case 'decimal':
             key = 'decimalFormats-numberSystem-';
             break;
-          case 'currency' :
+          case 'currency':
             key = 'currencyFormats-numberSystem-';
             break;
-          case 'percent' :
+          case 'percent':
             key = 'percentFormats-numberSystem-';
             break;
           default:
@@ -531,16 +535,17 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         decFormatLength = options.currencyFormat;
       }
       // if either decimalFormat or currencyFormat is set, save it in number settings
-      if (decFormatLength !== undefined &&
-          (numberSettings.style === 'decimal' || numberSettings.style === 'currency')) {
+      if (
+        decFormatLength !== undefined &&
+        (numberSettings.style === 'decimal' || numberSettings.style === 'currency')
+      ) {
         numberSettings.shortDecimalFormat =
-          localeElementsMainNode.numbers['decimalFormats-numberSystem-latn'][decFormatLength]
-          .decimalFormat;
+          localeElementsMainNode.numbers['decimalFormats-numberSystem-latn'][
+            decFormatLength
+          ].decimalFormat;
       }
-      var decimalSeparator =
-          localeElementsMainNode.numbers[numberSettings.numberingSystem].decimal;
-      var groupSeparator =
-          localeElementsMainNode.numbers[numberSettings.numberingSystem].group;
+      var decimalSeparator = localeElementsMainNode.numbers[numberSettings.numberingSystem].decimal;
+      var groupSeparator = localeElementsMainNode.numbers[numberSettings.numberingSystem].group;
       var separators = options.separators;
       if (separators !== undefined) {
         numberSettings.separators = separators;
@@ -554,7 +559,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         }
       }
       var mainNodeKey =
-      __ConverterUtilsI18n.OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
+        __ConverterUtilsI18n.OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
       var lang = _getBCP47Lang(mainNodeKey);
       numberSettings.lang = lang;
       numberSettings.pat = pat;
@@ -573,33 +578,47 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       }
       _applyPatternImpl(options, pat, localeElementsMainNode, numberSettings);
       if (options.pattern === undefined) {
-        numberSettings.minimumIntegerDigits =
-          _getNumberOption(options,
-                           'minimumIntegerDigits', 1, 21,
-                           numberSettings.minimumIntegerDigits);
+        numberSettings.minimumIntegerDigits = _getNumberOption(
+          options,
+          'minimumIntegerDigits',
+          1,
+          21,
+          numberSettings.minimumIntegerDigits
+        );
         if (options.maximumFractionDigits !== undefined) {
-          numberSettings.maximumFractionDigits =
-            _getNumberOption(options,
-                             'maximumFractionDigits', 0, 20,
-                             numberSettings.maximumFractionDigits);
+          numberSettings.maximumFractionDigits = _getNumberOption(
+            options,
+            'maximumFractionDigits',
+            0,
+            20,
+            numberSettings.maximumFractionDigits
+          );
           if (numberSettings.maximumFractionDigits < numberSettings.minimumFractionDigits) {
             numberSettings.minimumFractionDigits = numberSettings.maximumFractionDigits;
           }
         }
         if (options.minimumFractionDigits !== undefined) {
-          numberSettings.minimumFractionDigits =
-            _getNumberOption(options,
-                             'minimumFractionDigits', 0, 20,
-                             numberSettings.minimumFractionDigits);
+          numberSettings.minimumFractionDigits = _getNumberOption(
+            options,
+            'minimumFractionDigits',
+            0,
+            20,
+            numberSettings.minimumFractionDigits
+          );
         }
         if (numberSettings.maximumFractionDigits < numberSettings.minimumFractionDigits) {
           numberSettings.maximumFractionDigits = numberSettings.minimumFractionDigits;
-          Logger.info('maximumFractionDigits is less than minimumFractionDigits, so maximumFractionDigits will be set to minimumFractionDigits');
+          Logger.info(
+            'maximumFractionDigits is less than minimumFractionDigits, so maximumFractionDigits will be set to minimumFractionDigits'
+          );
         }
         // set currency fractions based on currencyData in root bundle. Do not apply
         // it for short and long currencyFormats
-        if (numberSettings.style === 'currency' && options.minimumFractionDigits === undefined &&
-            (decFormatLength === undefined || decFormatLength === 'standard')) {
+        if (
+          numberSettings.style === 'currency' &&
+          options.minimumFractionDigits === undefined &&
+          (decFormatLength === undefined || decFormatLength === 'standard')
+        ) {
           var currencyFractions = localeElements.supplemental.currencyData.fractions;
           var specialCurrency = currencyFractions[options.currency];
           if (specialCurrency !== undefined) {
@@ -612,10 +631,13 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     }
 
     function _throwMissingCurrency(prop) {
-      var typeError = new TypeError('The property "currency" is required when' +
-                                    ' the property "' + prop +
-                                    '" is "currency". An accepted value is a ' +
-                                    'three-letter ISO 4217 currency code.');
+      var typeError = new TypeError(
+        'The property "currency" is required when' +
+          ' the property "' +
+          prop +
+          '" is "currency". An accepted value is a ' +
+          'three-letter ISO 4217 currency code.'
+      );
       var errorInfo = {
         errorCode: 'optionTypesMismatch',
         parameterMap: {
@@ -630,9 +652,12 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     }
 
     function _throwMissingUnit(prop) {
-      var typeError = new TypeError('The property "unit" is required when' +
-                                    ' the property "' + prop +
-                                    '" is "unit". An accepted value is "byte" or "bit".');
+      var typeError = new TypeError(
+        'The property "unit" is required when' +
+          ' the property "' +
+          prop +
+          '" is "unit". An accepted value is "byte" or "bit".'
+      );
       var errorInfo = {
         errorCode: 'optionTypesMismatch',
         parameterMap: {
@@ -664,10 +689,14 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     // provided. parse does not support short and long decimalFormat.
     function _validateNumberOptions(options, caller) {
       var getOption = __ConverterUtilsI18n.OraI18nUtils.getGetOption(options, caller);
-      var s = getOption('style', 'string',
-                        ['currency', 'decimal', 'percent', 'unit', 'perMill'], 'decimal');
+      var s = getOption(
+        'style',
+        'string',
+        ['currency', 'decimal', 'percent', 'unit', 'perMill'],
+        'decimal'
+      );
       if (s === 'decimal' || s === 'currency') {
-        var fmt = (s === 'decimal') ? 'decimalFormat' : 'currencyFormat';
+        var fmt = s === 'decimal' ? 'decimalFormat' : 'currencyFormat';
         s = getOption(fmt, 'string', ['standard', 'short', 'long']);
         if (caller === 'OraNumberConverter.parse' && s !== undefined && s !== 'standard') {
           _throwUnsupportedParseOption(fmt);
@@ -682,8 +711,15 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       if (s === 'unit' && c === undefined) {
         _throwMissingUnit('style');
       }
-      s = getOption('roundingMode', 'string',
-              ['UP', 'DOWN', 'FLOOR', 'CEILING', 'HALF_UP', 'HALF_DOWN', 'HALF_EVEN']);
+      s = getOption('roundingMode', 'string', [
+        'UP',
+        'DOWN',
+        'FLOOR',
+        'CEILING',
+        'HALF_UP',
+        'HALF_DOWN',
+        'HALF_EVEN'
+      ]);
     }
 
     // _toDigitalByte does compact formatting like 300MB, 300Mb
@@ -783,7 +819,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       if (typeVal[1] !== null) {
         var lang = numberSettings.lang;
         var plural = new Intl.PluralRules(lang).select(
-                     Math.floor(absVal / _decimalTypeValuesMap[typeVal[0]]));
+          Math.floor(absVal / _decimalTypeValuesMap[typeVal[0]])
+        );
         decimalFormatType = '' + typeVal[1] + '-count-' + plural;
         decimalFormatType = numberSettings.shortDecimalFormat[decimalFormatType];
         if (decimalFormatType === undefined) {
@@ -795,7 +832,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         zeros = tokens[1];
         prefix = tokens[0];
         if (zeros < decimalFormatType.length) {
-          var i = (1 * Math.pow(10, zeros));
+          var i = 1 * Math.pow(10, zeros);
           i = (typeVal[1] / i) * 10;
           // eslint-disable-next-line no-param-reassign
           absVal /= i;
@@ -843,7 +880,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       numStr1 += '';
       numStr1 = _zeroPad(numStr1, padLen, false);
       if (numStr0.indexOf('.') !== -1) {
-        exponent -= (numberSettings.minimumIntegerDigits - numStr0.indexOf('.')) + trimExp;
+        exponent -= numberSettings.minimumIntegerDigits - numStr0.indexOf('.') + trimExp;
       } else {
         exponent -= padLen - numStr.length - numberSettings.minimumFractionDigits;
       }
@@ -855,9 +892,11 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var str1 = numStr1.slice(0, numberSettings.minimumIntegerDigits);
       var str2 = numStr1.slice(numberSettings.minimumIntegerDigits);
       if (str2.length > 0) {
-        str1 += numberSettings.decimalSeparator +
+        str1 +=
+          numberSettings.decimalSeparator +
           numStr1.slice(numberSettings.minimumIntegerDigits) +
-          numberSettings.exponential + posExp;
+          numberSettings.exponential +
+          posExp;
       } else {
         str1 += numberSettings.exponential + posExp;
       }
@@ -877,8 +916,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       numberString = split[0];
       split = numberString.split('.');
       var right = split.length > 1 ? split[1] : '';
-      var precision = Math.min(numberSettings.maximumFractionDigits,
-            right.length - exponent);
+      var precision = Math.min(numberSettings.maximumFractionDigits, right.length - exponent);
       // round the number only if it has decimal points
       if (split.length > 1 && right.length > exponent) {
         var mode = options.roundingMode || 'DEFAULT';
@@ -905,8 +943,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         numberString = numberString.slice(0, -exponent);
       }
       if (precision > 0 && right.length > 0) {
-        right = ((right.length > precision) ? right.slice(0, precision) :
-                 _zeroPad(right, precision, false));
+        right =
+          right.length > precision ? right.slice(0, precision) : _zeroPad(right, precision, false);
         // if right is only zeros, truncate it to minimumFractionDigits
         if (_REGEX_ONLY_ZEROS.test(right) === true) {
           right = right.slice(0, numberSettings.minimumFractionDigits);
@@ -920,27 +958,25 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       // trim trailing zeros from right
       right = __ConverterUtilsI18n.OraI18nUtils.trimRightZeros(right);
       // insert grouping separator in the integer part based on groupingSize
-      var padLen = decimalSeparator.length +
-          numberSettings.minimumFractionDigits;
+      var padLen = decimalSeparator.length + numberSettings.minimumFractionDigits;
       right = _zeroPad(right, padLen, false);
       var sep = numberSettings.groupingSeparator;
       var ret = '';
       if (options.useGrouping === false && options.pattern === undefined) {
         sep = '';
       }
-      numberString = _zeroPad(numberString,
-                              numberSettings.minimumIntegerDigits, true);
+      numberString = _zeroPad(numberString, numberSettings.minimumIntegerDigits, true);
       var stringIndex = numberString.length - 1;
       right = right.length > 1 ? right : '';
       var rets;
       while (stringIndex >= 0) {
         if (curSize === 0 || curSize > stringIndex) {
-          rets = numberString.slice(0, stringIndex + 1) +
-            (ret.length ? (sep + ret + right) : right);
+          rets = numberString.slice(0, stringIndex + 1) + (ret.length ? sep + ret + right : right);
           return rets;
         }
-        ret = numberString.slice((stringIndex - curSize) + 1, stringIndex + 1) +
-          (ret.length ? (sep + ret) : '');
+        ret =
+          numberString.slice(stringIndex - curSize + 1, stringIndex + 1) +
+          (ret.length ? sep + ret : '');
         stringIndex -= curSize;
         if (curSize0 > 0) {
           curSize = curSize0;
@@ -964,7 +1000,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       if (part2 > 0) {
         str = part1.substr(0, 1) + part1.substr(2);
         if (str.length - 1 < part2) {
-          var e = (part2 + 1) - str.length;
+          var e = part2 + 1 - str.length;
           while (e > 0) {
             str += '0';
             e -= 1;
@@ -1069,7 +1105,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var v1 = strValue[1];
       // shift the decimal point based on the scale so that we can apply ceil or floor
       // scale is a number, no need to parse it, just parse v1.
-      var s = v0 + 'e' + (v1 ? (parseInt(v1, 10) - scale) : -scale);
+      var s = v0 + 'e' + (v1 ? parseInt(v1, 10) - scale : -scale);
       var num = parseFloat(s);
       var _value = Math[mode](num);
       strValue = _value.toString().split('e');
@@ -1077,17 +1113,16 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       v0 = strValue[0];
       v1 = strValue[1];
       // shift the decimal point back to its original position
-      s = v0 + 'e' + (v1 ? (parseInt(v1, 10) + scale) : scale);
+      s = v0 + 'e' + (v1 ? parseInt(v1, 10) + scale : scale);
       num = parseFloat(s);
       return num;
     }
 
     // first call _toRawFixed then add prefixes and suffixes. Display the
     // number using native digits based on the numbering system
-    function _formatNumberImpl(value, options, localeElements,
-      numberSettings, locale) {
+    function _formatNumberImpl(value, options, localeElements, numberSettings, locale) {
       var localeElementsMainNode =
-      __ConverterUtilsI18n.OraI18nUtils.getLocaleElementsMainNode(localeElements);
+        __ConverterUtilsI18n.OraI18nUtils.getLocaleElementsMainNode(localeElements);
       if (!isFinite(value)) {
         if (value === Infinity) {
           return localeElementsMainNode.numbers[numberSettings.numberingSystem].infinity;
@@ -1101,8 +1136,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         return 'NaN';
       }
       var number = value;
-      if (numberSettings.isPercent === true ||
-          numberSettings.style === 'percent') {
+      if (numberSettings.isPercent === true || numberSettings.style === 'percent') {
         number *= 100;
       } else if (numberSettings.isPerMill === true) {
         number *= 1000;
@@ -1113,9 +1147,11 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         formatType = options.currencyFormat;
       }
       var optStyle = numberSettings.style;
-      if ((optStyle === 'decimal' || optStyle === 'currency')
-          && formatType !== undefined
-          && formatType !== 'standard') {
+      if (
+        (optStyle === 'decimal' || optStyle === 'currency') &&
+        formatType !== undefined &&
+        formatType !== 'standard'
+      ) {
         number = _toCompactNumber(number, options, numberSettings);
       } else if (numberSettings.useExponentialNotation === true) {
         number = _toExponentialPrecision(number, numberSettings);
@@ -1128,10 +1164,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var ret = '';
       // add negative prefix and suffix if number is negative
       // and the new formatted value isn't zero
-      if (value < 0 && (number - 0 !== 0)) {
+      if (value < 0 && number - 0 !== 0) {
         ret += numberSettings.negativePrefix + number + numberSettings.negativeSuffix;
       } else {
-      // add positive prefix and suffix if number is positive
+        // add positive prefix and suffix if number is positive
         ret += numberSettings.positivePrefix + number + numberSettings.positiveSuffix;
       }
       // display the digits based on the numbering system
@@ -1145,7 +1181,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         for (idx = 0; idx < ret.length; idx++) {
           if (ret[idx] >= '0' && ret[idx] <= '9') {
             nativeRet.push(
-              __ConverterUtilsI18n.OraI18nUtils.numeringSystems[numberingSystemKey][ret[idx]]);
+              __ConverterUtilsI18n.OraI18nUtils.numeringSystems[numberingSystemKey][ret[idx]]
+            );
           } else {
             nativeRet.push(ret[idx]);
           }
@@ -1157,8 +1194,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
 
     // remove prefix and suffix, return a sign and value. First try to extract
     // a number using exact match. If it fails try lenient parsing.
-    function _parseNegativePattern(value, options, numberSettings,
-      localeElements) {
+    function _parseNegativePattern(value, options, numberSettings, localeElements) {
       var ret;
       var num = __ConverterUtilsI18n.OraI18nUtils.trimNumber(value);
       var sign = '';
@@ -1166,24 +1202,46 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var posSign = localeElements.numbers[numberSettings.numberingSystem].plusSign;
       var posSignRegExp = new RegExp('^' + posSign.replace(_ESCAPE_REGEXP, '\\$1'));
       num = num.replace(posSignRegExp, '');
-      var nbSettingPosPrefix =
-      __ConverterUtilsI18n.OraI18nUtils.trimNumber(numberSettings.positivePrefix);
-      var nbSettingPosSuffix =
-      __ConverterUtilsI18n.OraI18nUtils.trimNumber(numberSettings.positiveSuffix);
-      var nbSettingNegPrefix =
-      __ConverterUtilsI18n.OraI18nUtils.trimNumber(numberSettings.negativePrefix);
-      var nbSettingNegSuffix =
-      __ConverterUtilsI18n.OraI18nUtils.trimNumber(numberSettings.negativeSuffix);
+      // The pattern of a number may contain positive prefix (nbSettingPosPrefix),
+      // positive suffix (nbSettingPosSuffix),
+      // negative prefix (nbSettingNegPrefix) ,
+      // negative suffix (nbSettingNegSuffix).
+      // We first try exact match of these prefix/suffix to determine the sign of
+      // the number. If the number pattern pattern contain these prefix/suffix
+      // and no exact match is found, we go to lenient parse.
+      var nbSettingPosPrefix = __ConverterUtilsI18n.OraI18nUtils.trimNumber(
+        numberSettings.positivePrefix
+      );
+      var nbSettingPosSuffix = __ConverterUtilsI18n.OraI18nUtils.trimNumber(
+        numberSettings.positiveSuffix
+      );
+      var nbSettingNegPrefix = __ConverterUtilsI18n.OraI18nUtils.trimNumber(
+        numberSettings.negativePrefix
+      );
+      var nbSettingNegSuffix = __ConverterUtilsI18n.OraI18nUtils.trimNumber(
+        numberSettings.negativeSuffix
+      );
+      // Create regular expressions for the prefixes and suffixes in order to
+      // match them with the input number. We need to escape the special
+      // characters in them by using _ESCAPE_REGEXP. For example if the prefix
+      // conatain '$' it need to be escaped to '\\$'
+      // positive prefix regular expression
+      var posPrefRegexp = new RegExp(
+        '^' + (nbSettingPosPrefix || '').replace(_ESCAPE_REGEXP, '\\$1')
+      );
+      // positive suffix regular expression
+      var posSuffRegexp = new RegExp(
+        (nbSettingPosSuffix || '').replace(_ESCAPE_REGEXP, '\\$1') + '$'
+      );
+      // negative prefix regular expression
+      var negPrefRegexp = new RegExp(
+        '^' + (nbSettingNegPrefix || '').replace(_ESCAPE_REGEXP, '\\$1')
+      );
+      // negative suffix regular expression
+      var negSuffRegexp = new RegExp(
+        (nbSettingNegSuffix || '').replace(_ESCAPE_REGEXP, '\\$1') + '$'
+      );
       // try exact match of negative prefix and suffix
-      var posPrefRegexp = new RegExp('^' + (nbSettingPosPrefix || '')
-                                     .replace(_ESCAPE_REGEXP, '\\$1'));
-      var posSuffRegexp = new RegExp((nbSettingPosSuffix || '')
-                                     .replace(_ESCAPE_REGEXP, '\\$1') + '$');
-      var negPrefRegexp = new RegExp('^' + (nbSettingNegPrefix || '')
-                                     .replace(_ESCAPE_REGEXP, '\\$1'));
-      var negSuffRegexp = new RegExp((nbSettingNegSuffix || '')
-                                     .replace(_ESCAPE_REGEXP, '\\$1') + '$');
-
       if (negPrefRegexp.test(num) === true && negSuffRegexp.test(num) === true) {
         num = num.replace(negPrefRegexp, '');
         num = num.replace(negSuffRegexp, '');
@@ -1204,27 +1262,30 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         if (localeElements.numbers.currencies[code] !== undefined) {
           symbol = localeElements.numbers.currencies[code].symbol;
         }
-        if (numberSettings.currencyDisplay === undefined ||
-            numberSettings.currencyDisplay === 'symbol') {
+        if (
+          numberSettings.currencyDisplay === undefined ||
+          numberSettings.currencyDisplay === 'symbol'
+        ) {
           repStr = symbol;
         } else if (numberSettings.currencyDisplay === 'code') {
           repStr = code;
         }
         if (repStr !== undefined) {
+          // Remove the currency code/symbol from the prefix/suffix
           var posPrefix = (nbSettingPosPrefix || '').replace(repStr, '');
           var posSuffix = (nbSettingPosSuffix || '').replace(repStr, '');
           var negPrefix = (nbSettingNegPrefix || '').replace(repStr, '');
           var negSuffix = (nbSettingNegSuffix || '').replace(repStr, '');
-          posPrefRegexp = new RegExp(('^' + posPrefix).replace(
-              _ESCAPE_REGEXP, '\\$1'));
-          posSuffRegexp = new RegExp(posSuffix.replace(
-              _ESCAPE_REGEXP, '\\$1') + '$');
-          negPrefRegexp = new RegExp(('^' + negPrefix).replace(
-              _ESCAPE_REGEXP, '\\$1'));
-          negSuffRegexp = new RegExp(negSuffix.replace(
-              _ESCAPE_REGEXP, '\\$1') + '$');
+          // positive prefix regular expression without currency code/symbol
+          posPrefRegexp = new RegExp('^' + posPrefix.replace(_ESCAPE_REGEXP, '\\$1'));
+          // positive suffix regular expression without currency code/symbol
+          posSuffRegexp = new RegExp(posSuffix.replace(_ESCAPE_REGEXP, '\\$1') + '$');
+          // negative prefix regular expression without currency code/symbol
+          negPrefRegexp = new RegExp('^' + negPrefix.replace(_ESCAPE_REGEXP, '\\$1'));
+          // negative suffix regular expression without currency code/symbol
+          negSuffRegexp = new RegExp(negSuffix.replace(_ESCAPE_REGEXP, '\\$1') + '$');
 
-          // try  match of positive prefix and suffix
+          // try  match of positive prefix and suffix without currency code/symbol
           if (negPrefRegexp.test(num) === true && negSuffRegexp.test(num) === true) {
             num = num.replace(negPrefRegexp, '');
             num = num.replace(negSuffRegexp, '');
@@ -1266,8 +1327,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var minusSign = '-';
       var sign = '';
       var dot = '';
-      var exponential =
-          __ConverterUtilsI18n.OraI18nUtils.toUpper(numberSettings.exponential);
+      var exponential = __ConverterUtilsI18n.OraI18nUtils.toUpper(numberSettings.exponential);
       var num = __ConverterUtilsI18n.OraI18nUtils.toUpper(_num);
       num = num.split(exponential).join('E');
       // remove grouping separator from string
@@ -1306,8 +1366,12 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       pos = __ConverterUtilsI18n.OraI18nUtils.trimNumber(pos);
       if (__ConverterUtilsI18n.OraI18nUtils.startsWith(value, neg)) {
         ret = ['-', value.substr(neg.length)];
-      } else if (__ConverterUtilsI18n.OraI18nUtils.startsWith(value,
-        __ConverterUtilsI18n.OraI18nUtils.trimNumber(pos))) {
+      } else if (
+        __ConverterUtilsI18n.OraI18nUtils.startsWith(
+          value,
+          __ConverterUtilsI18n.OraI18nUtils.trimNumber(pos)
+        )
+      ) {
         ret = ['+', value.substr(pos.length)];
       }
       return ret || ['', value];
@@ -1321,8 +1385,9 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var idx;
       var latnStr = [];
       for (idx = 0; idx < str.length; idx++) {
-        var pos =
-        __ConverterUtilsI18n.OraI18nUtils.numeringSystems[numberingSystemKey].indexOf(str[idx]);
+        var pos = __ConverterUtilsI18n.OraI18nUtils.numeringSystems[numberingSystemKey].indexOf(
+          str[idx]
+        );
         if (pos !== -1) {
           latnStr.push(pos);
         } else {
@@ -1385,7 +1450,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         // eslint-disable-next-line no-param-reassign
         ret /= 1000;
       }
-      var getOption = __ConverterUtilsI18n.OraI18nUtils.getGetOption(options, 'OraNumberConverter.parse');
+      var getOption = __ConverterUtilsI18n.OraI18nUtils.getGetOption(
+        options,
+        'OraNumberConverter.parse'
+      );
       var roundDuringParse = getOption('roundDuringParse', 'boolean', [true, false], false);
       if (roundDuringParse) {
         // eslint-disable-next-line no-param-reassign
@@ -1398,13 +1466,13 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var code;
       var msg = 'Enter a number in this format:' + numberSettings.pat;
       switch (style) {
-        case 'decimal' :
+        case 'decimal':
           code = 'decimalFormatMismatch';
           break;
-        case 'currency' :
+        case 'currency':
           code = 'currencyFormatMismatch';
           break;
-        case 'percent' :
+        case 'percent':
           code = 'percentFormatMismatch';
           break;
         default:
@@ -1424,7 +1492,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
 
     function _parseNumberImpl(str, localeElements, options, locale) {
       var localeElementsMainNode =
-      __ConverterUtilsI18n.OraI18nUtils.getLocaleElementsMainNode(localeElements);
+        __ConverterUtilsI18n.OraI18nUtils.getLocaleElementsMainNode(localeElements);
       var numberSettings = {};
       var numStr = _getLatnDigits(str, locale);
       _getNumberSettings(localeElements, numberSettings, options, locale);
@@ -1435,8 +1503,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         ret = parseFloat(numStr);
         return ret;
       }
-      var signInfo = _parseNegativePattern(numStr, options, numberSettings,
-          localeElementsMainNode);
+      var signInfo = _parseNegativePattern(numStr, options, numberSettings, localeElementsMainNode);
       var sign = signInfo[0];
       var num = signInfo[1];
       sign = sign || '+';
@@ -1485,7 +1552,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     var _SEPARATOR = ';';
     var _EXPONENT = 'E';
     var _MINUS = '-';
-    var _QUOT = '\'';
+    var _QUOT = "'";
     var _CURRENCY = '\u00A4';
 
     var posPrefixPattern;
@@ -1498,9 +1565,12 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
 
     function _throwSyntaxError(pattern) {
       var samplePattern = '#,##0.###';
-      var msg = 'Unexpected character(s) encountered in the pattern "' +
-          pattern + ' An example of a valid pattern is "' + samplePattern +
-          '".';
+      var msg =
+        'Unexpected character(s) encountered in the pattern "' +
+        pattern +
+        ' An example of a valid pattern is "' +
+        samplePattern +
+        '".';
       var syntaxError = new SyntaxError(msg);
       var errorInfo = {
         errorCode: 'optionValueInvalid',
@@ -1517,27 +1587,43 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     function _regionMatches(str1, offset1, str2) {
       var sub1 = str1.substr(offset1, str2.length);
       var regExp = new RegExp(str2, 'i');
-      return (regExp.exec(sub1) !== null);
+      return regExp.exec(sub1) !== null;
     }
 
     function _expandAffixes(localeElements, _numberSettings) {
       var numberSettings = _numberSettings;
       var curDisplay = {};
       if (posPrefixPattern !== null) {
-        numberSettings.positivePrefix = _expandAffix(posPrefixPattern,
-            localeElements, numberSettings, curDisplay);
+        numberSettings.positivePrefix = _expandAffix(
+          posPrefixPattern,
+          localeElements,
+          numberSettings,
+          curDisplay
+        );
       }
       if (posSuffixPattern !== null) {
-        numberSettings.positiveSuffix = _expandAffix(posSuffixPattern,
-            localeElements, numberSettings, curDisplay);
+        numberSettings.positiveSuffix = _expandAffix(
+          posSuffixPattern,
+          localeElements,
+          numberSettings,
+          curDisplay
+        );
       }
       if (negPrefixPattern !== null) {
-        numberSettings.negativePrefix = _expandAffix(negPrefixPattern,
-            localeElements, numberSettings, curDisplay);
+        numberSettings.negativePrefix = _expandAffix(
+          negPrefixPattern,
+          localeElements,
+          numberSettings,
+          curDisplay
+        );
       }
       if (negSuffixPattern !== null) {
-        numberSettings.negativeSuffix = _expandAffix(negSuffixPattern,
-            localeElements, numberSettings, curDisplay);
+        numberSettings.negativeSuffix = _expandAffix(
+          negSuffixPattern,
+          localeElements,
+          numberSettings,
+          curDisplay
+        );
       }
       if (curDisplay.name !== undefined) {
         numberSettings.positiveSuffix = '\u00a0' + curDisplay.name;
@@ -1545,7 +1631,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         if (numberSettings.lang === 'ar') {
           numberSettings.negativeSuffix =
             localeElements.numbers[numberSettings.numberingSystem].minusSign +
-            '\u00a0' + curDisplay.name;
+            '\u00a0' +
+            curDisplay.name;
           numberSettings.negativePrefix = '';
         } else {
           numberSettings.negativeSuffix = '\u00a0' + curDisplay.name;
@@ -1557,7 +1644,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
 
     function _expandAffix(pattern, localeElements, numberSettings, currencyDisplay) {
       var buffer = '';
-      for (var i = 0; i < pattern.length;) {
+      for (var i = 0; i < pattern.length; ) {
         var c = pattern.charAt(i);
         i += 1;
         if (c !== _QUOT) {
@@ -1572,8 +1659,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
                 name = localeElements.numbers.currencies[code].displayName;
                 symbol = localeElements.numbers.currencies[code].symbol;
               }
-              if (numberSettings.currencyDisplay === undefined ||
-                  numberSettings.currencyDisplay === 'symbol') {
+              if (
+                numberSettings.currencyDisplay === undefined ||
+                numberSettings.currencyDisplay === 'symbol'
+              ) {
                 c = symbol;
               } else if (numberSettings.currencyDisplay === 'code') {
                 // Currency code need to be followed by a space character
@@ -1634,7 +1723,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
               // Process the prefix / suffix characters
               if (inQuote) {
                 if (ch === _QUOT) {
-                  if ((pos + 1) < pattern.length && pattern.charAt(pos + 1) === _QUOT) {
+                  if (pos + 1 < pattern.length && pattern.charAt(pos + 1) === _QUOT) {
                     pos += 1;
                     if (isPrefix) {
                       prefix = prefix.concat("''");
@@ -1646,10 +1735,12 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
                   }
                   continue;
                 }
-              } else if (ch === _DIGIT ||
-                         ch === _ZERO_DIGIT ||
-                         ch === _GROUPING_SEPARATOR ||
-                         ch === _DECIMAL_SEPARATOR) {
+              } else if (
+                ch === _DIGIT ||
+                ch === _ZERO_DIGIT ||
+                ch === _GROUPING_SEPARATOR ||
+                ch === _DECIMAL_SEPARATOR
+              ) {
                 // Process unquoted characters seen in prefix or suffix phase.
                 phase = 1;
                 pos -= 1; // Reprocess this character
@@ -1658,12 +1749,12 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
                 if (options.currency === undefined) {
                   _throwMissingCurrency('style');
                 }
-                  // Use lookahead to determine if the currency sign
-                  // is doubled or not.
+                // Use lookahead to determine if the currency sign
+                // is doubled or not.
                 numberSettings.style = 'currency';
-                var doubled = (pos + 1) < pattern.length &&
-                      pattern.charAt(pos + 1) === _CURRENCY;
-                if (doubled) { // Skip over the doubled character
+                var doubled = pos + 1 < pattern.length && pattern.charAt(pos + 1) === _CURRENCY;
+                if (doubled) {
+                  // Skip over the doubled character
                   pos += 1;
                 }
                 if (isPrefix) {
@@ -1674,8 +1765,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
                 continue;
               } else if (ch === _QUOT) {
                 if (ch === _QUOT) {
-                  if ((pos + 1) < pattern.length &&
-                        pattern.charAt(pos + 1) === _QUOT) {
+                  if (pos + 1 < pattern.length && pattern.charAt(pos + 1) === _QUOT) {
                     pos += 1;
                     if (isPrefix) {
                       prefix = prefix.concat("''"); // o''clock
@@ -1695,7 +1785,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
                 pos = pattern.length;
                 continue;
               } else if (ch === _PERCENT) {
-                  // Next handle characters which are appended directly.
+                // Next handle characters which are appended directly.
                 numberSettings.style = 'percent';
                 if (multiplier !== 1) {
                   _throwSyntaxError(pattern);
@@ -1772,8 +1862,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
                 if (decimalPos >= 0) {
                   _throwSyntaxError(pattern);
                 }
-                decimalPos = digitLeftCount + zeroDigitCount +
-                    digitRightCount;
+                decimalPos = digitLeftCount + zeroDigitCount + digitRightCount;
               } else if (_regionMatches(pattern, pos, _EXPONENT)) {
                 if (useExponentialNotation) {
                   _throwSyntaxError(pattern);
@@ -1787,8 +1876,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
                   pos += 1;
                 }
 
-                if ((digitLeftCount + zeroDigitCount) < 1 ||
-                    minExponentDigits < 1) {
+                if (digitLeftCount + zeroDigitCount < 1 || minExponentDigits < 1) {
                   _throwSyntaxError(pattern);
                 }
                 phase = 2;
@@ -1809,11 +1897,11 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         }
         /* eslint-enable no-continue */
 
-
         if (zeroDigitCount === 0 && digitLeftCount > 0 && decimalPos >= 0) {
           // Handle "###.###" and "###." and ".###"
           var n = decimalPos;
-          if (n === 0) { // Handle ".###"
+          if (n === 0) {
+            // Handle ".###"
             n += 1;
           }
           digitRightCount = digitLeftCount - n;
@@ -1822,10 +1910,13 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         }
 
         // Do syntax checking on the digits.
-        if ((decimalPos < 0 && digitRightCount > 0) ||
-            (decimalPos >= 0 && (decimalPos < digitLeftCount ||
-                decimalPos > (digitLeftCount + zeroDigitCount))) ||
-            groupingCount === 0 || inQuote) {
+        if (
+          (decimalPos < 0 && digitRightCount > 0) ||
+          (decimalPos >= 0 &&
+            (decimalPos < digitLeftCount || decimalPos > digitLeftCount + zeroDigitCount)) ||
+          groupingCount === 0 ||
+          inQuote
+        ) {
           _throwSyntaxError(pattern);
         }
 
@@ -1838,21 +1929,15 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
           // The effectiveDecimalPos is the position the decimal is at or
           // would be at if there is no decimal. Note that if decimalPos<0,
           // then digitTotalCount == digitLeftCount + zeroDigitCount.
-          var effectiveDecimalPos = decimalPos >= 0 ?
-              decimalPos : digitTotalCount;
-          numberSettings.minimumIntegerDigits = (effectiveDecimalPos - digitLeftCount);
-          numberSettings.maximumIntegerDigits =
-            (useExponentialNotation ?
-             digitLeftCount + numberSettings.minimumIntegerDigits :
-             _MAXIMUM_INTEGER_DIGITS);
-          numberSettings.maximumFractionDigits = (decimalPos >= 0 ?
-                                                  (digitTotalCount - decimalPos) : 0);
+          var effectiveDecimalPos = decimalPos >= 0 ? decimalPos : digitTotalCount;
+          numberSettings.minimumIntegerDigits = effectiveDecimalPos - digitLeftCount;
+          numberSettings.maximumIntegerDigits = useExponentialNotation
+            ? digitLeftCount + numberSettings.minimumIntegerDigits
+            : _MAXIMUM_INTEGER_DIGITS;
+          numberSettings.maximumFractionDigits = decimalPos >= 0 ? digitTotalCount - decimalPos : 0;
           numberSettings.minimumFractionDigits =
-            (decimalPos >= 0 ?
-             ((digitLeftCount + zeroDigitCount) - decimalPos) :
-             0);
-          numberSettings.groupingSize =
-            (groupingCount > 0) ? groupingCount : 0;
+            decimalPos >= 0 ? digitLeftCount + zeroDigitCount - decimalPos : 0;
+          numberSettings.groupingSize = groupingCount > 0 ? groupingCount : 0;
           numberSettings.groupingSize0 = groupingCount0;
         } else {
           negPrefixPattern = prefix;
@@ -1874,9 +1959,11 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       // If there was no negative pattern, or if the negative pattern is
       // identical to the positive pattern, then prepend the minus sign to
       // the positive pattern to form the negative pattern.
-      if (!gotNegative ||
-          ((negPrefixPattern.localeCompare(posPrefixPattern) === 0)
-           && (negSuffixPattern.localeCompare(posSuffixPattern) === 0))) {
+      if (
+        !gotNegative ||
+        (negPrefixPattern.localeCompare(posPrefixPattern) === 0 &&
+          negSuffixPattern.localeCompare(posSuffixPattern) === 0)
+      ) {
         if (numberSettings.style === 'currency' && numberSettings.lang === 'ar') {
           negSuffixPattern = posSuffixPattern + "'\u200f-";
           negPrefixPattern = posPrefixPattern;
@@ -1901,8 +1988,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       _validateNumberOptions(options, 'OraNumberConverter.resolvedOptions');
       _getNumberSettings(localeElements, numberSettings, options, locale);
       numberSettings.numberingSystemKey = _getNumberingExtension(locale);
-      if (__ConverterUtilsI18n.OraI18nUtils.numeringSystems[numberSettings.numberingSystemKey] ===
-        undefined) {
+      if (
+        __ConverterUtilsI18n.OraI18nUtils.numeringSystems[numberSettings.numberingSystemKey] ===
+        undefined
+      ) {
         numberSettings.numberingSystemKey = 'latn';
       }
       return numberSettings;
@@ -1911,8 +2000,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     function _resolveOptions(numberSettings, options, locale) {
       var resOptions = {
         locale: locale,
-        style: (numberSettings.style === undefined) ? 'decimal' : numberSettings.style,
-        useGrouping: (options.useGrouping === undefined) ? true : options.useGrouping,
+        style: numberSettings.style === undefined ? 'decimal' : numberSettings.style,
+        useGrouping: options.useGrouping === undefined ? true : options.useGrouping,
         numberingSystem: numberSettings.numberingSystemKey
       };
       resOptions.minimumIntegerDigits = numberSettings.minimumIntegerDigits;
@@ -1926,8 +2015,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       }
       if (numberSettings.style === 'currency') {
         resOptions.currency = options.currency;
-        resOptions.currencyDisplay = (options.currencyDisplay === undefined) ?
-          'symbol' : options.currencyDisplay;
+        resOptions.currencyDisplay =
+          options.currencyDisplay === undefined ? 'symbol' : options.currencyDisplay;
       }
       if (options.unit !== undefined) {
         resOptions.unit = options.unit;
@@ -1956,10 +2045,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     }
 
     /*
-    * Checks through the converter options.
-    * Based on the options the appropriate virtualKeyboardHint is returned.
-    * @return {string} virtual keyboard hint type - 'number' or 'text'
-    */
+     * Checks through the converter options.
+     * Based on the options the appropriate virtualKeyboardHint is returned.
+     * @return {string} virtual keyboard hint type - 'number' or 'text'
+     */
     function _getVirtualKeyboardHint(numberSettings, options) {
       var virtualKeyboardHint = 'text';
       var converterStyle = options.style;
@@ -1994,9 +2083,9 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     }
 
     /*
-    * Based on converter's options.useGrouping the virtualKeyboardHint is decided.
-    * @return {string} virtualKeyboardHint value
-    */
+     * Based on converter's options.useGrouping the virtualKeyboardHint is decided.
+     * @return {string} virtualKeyboardHint value
+     */
     function _parseUseGrouping(numberSettings, options) {
       if (options.useGrouping === undefined || options.useGrouping) {
         if (numberSettings.decimalSeparator === '.' && numberSettings.groupingSeparator === '') {
@@ -2009,9 +2098,9 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     }
 
     /*
-    * Based on converter's options.pattern the virtualKeyboardHint is decided.
-    * @return {string} virtualKeyboardHint value
-    */
+     * Based on converter's options.pattern the virtualKeyboardHint is decided.
+     * @return {string} virtualKeyboardHint value
+     */
     function _parsePatternOption(numberSettings, options) {
       var patternHasNonNumericChar = _checkPatternForNonNumericChar(options.pattern);
       if (patternHasNonNumericChar) {
@@ -2044,10 +2133,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     }
 
     /*
-    * Checks if the converter's options.pattern has non-numeric characters
-    * that cannot be rendered by input type 'number'.
-    * @return {boolean} indicates whether pattern has non-numeric characters or not.
-    */
+     * Checks if the converter's options.pattern has non-numeric characters
+     * that cannot be rendered by input type 'number'.
+     * @return {boolean} indicates whether pattern has non-numeric characters or not.
+     */
 
     function _checkPatternForNonNumericChar(pattern) {
       var nonNumericPattern = /[^0-9.#]/i;
@@ -2055,10 +2144,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     }
 
     /*
-    * Checks if the converter's options.pattern has group separator symbol
-    * that cannot be rendered by input type 'number'.
-    * @return {boolean} indicates whether pattern has group separator symbol or not.
-    */
+     * Checks if the converter's options.pattern has group separator symbol
+     * that cannot be rendered by input type 'number'.
+     * @return {boolean} indicates whether pattern has group separator symbol or not.
+     */
     function _checkPatternForGroupSeparator(pattern) {
       if (pattern.indexOf(',') !== -1) {
         return true;
@@ -2067,11 +2156,11 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     }
 
     /*
-    * Checks if the converter's options.pattern has decimal separator symbol
-    * that cannot be rendered by input type 'number'.
-    * @return {boolean} indicates whether pattern has
-    *  decimal separator symbol or not.
-    */
+     * Checks if the converter's options.pattern has decimal separator symbol
+     * that cannot be rendered by input type 'number'.
+     * @return {boolean} indicates whether pattern has
+     *  decimal separator symbol or not.
+     */
     function _checkPatternForDecimalSeparator(pattern) {
       if (pattern.indexOf('.') !== -1) {
         return true;
@@ -2147,8 +2236,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
           _validateNumberOptions(options, 'OraNumberConverter.format');
           var numberSettings = {};
           _getNumberSettings(localeElements, numberSettings, options, locale);
-          return _formatNumberImpl(value, options, localeElements,
-              numberSettings, locale);
+          return _formatNumberImpl(value, options, localeElements, numberSettings, locale);
         },
         /**
          * Parse a number.
@@ -2300,7 +2388,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         return instance;
       }
     };
-  }());
+  })();
 
   /**
    * oj.NumberConverter Contract.
@@ -2412,6 +2500,16 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
    * Lenient parse can be disabled by setting the property lenientParse to "none". In which case the user input must
    * be an exact match of the expected pattern and all the leniency described above will be disabled.
    * <p>
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   *
+   * <p>
+   * Please be aware that newer converters are available and IntlNumberConverter will be deprecated in the future.
+   * See the docs for <a href="BigDecimalStringConverter.html" target="_blank">BigDecimalStringConverter</a> and
+   * <a href="NumberConverter.html" target="_blank">NumberConverter</a> for more details.
+   * </p>
    * @param {Object=} options - an object literal used to provide optional information to
    * initialize the converter.
    *
@@ -2769,7 +2867,6 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     IntlNumberConverter.superclass.Init.call(this, options);
   };
 
-
   // Returns the wrapped number converter implementation object.
   // FA is overriding our ojs/ojconverter-datetime bundle and needs to define this function
   // or else they will get an error.
@@ -2799,9 +2896,11 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
    */
   IntlNumberConverter.prototype.format = function (value) {
     // undefined, null and empty string values all return null. If value is NaN then return "".
-    if (value == null ||
-        (typeof value === 'string' && (oj$1.StringUtils.trim('' + value)).length === 0) ||
-        (typeof value === 'number' && isNaN(value))) {
+    if (
+      value == null ||
+      (typeof value === 'string' && oj$1.StringUtils.trim('' + value).length === 0) ||
+      (typeof value === 'number' && isNaN(value))
+    ) {
       return '';
     }
 
@@ -2812,8 +2911,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
     var formatValue;
 
     try {
-      formatValue =
-        this._getWrapped().format(value, localeElements, resolvedOptions, locale);
+      formatValue = this._getWrapped().format(value, localeElements, resolvedOptions, locale);
     } catch (e) {
       converterError = this._processConverterError(e, value);
       throw converterError;
@@ -2828,14 +2926,11 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         'oj-converter.number.invalidNumberFormat.summary',
         { value: value }
       );
-      var detail = Translations.getTranslatedString(
-        'oj-converter.number.invalidNumberFormat.detail'
-      );
+      var detail = Translations.getTranslatedString('oj-converter.number.invalidNumberFormat.detail');
       Logger.error(summary + ' ' + detail);
     }
     return formatValue;
   };
-
 
   /**
    * In general, returns hint for the converter. For a IntlNumberConverter returned value is always null.
@@ -2891,7 +2986,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
 
     // null and empty string values are ignored and not parsed. It
     // undefined.
-    if (value == null || value === '') { // check for undefined, null and ""
+    if (value == null || value === '') {
+      // check for undefined, null and ""
       return null;
     }
 
@@ -2901,10 +2997,12 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
 
     try {
       // we want to trim the value for leading spaces before and after
-      return this._getWrapped().parse(oj$1.StringUtils.trim(value),
-                                      localeElements,
-                                      resolvedOptions,
-                                      locale);
+      return this._getWrapped().parse(
+        oj$1.StringUtils.trim(value),
+        localeElements,
+        resolvedOptions,
+        locale
+      );
     } catch (e) {
       converterError = this._processConverterError(e, value);
       throw converterError;
@@ -2954,7 +3052,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
 
     // options are resolved and cached for the current locale. when locale changes resolvedOptions
     // is reevaluated as it contains locale specific info.
-    if ((locale !== this._locale) || !this._resolvedOptions) {
+    if (locale !== this._locale || !this._resolvedOptions) {
       // leave this line unchanged so that we can test that LocaleData can also be accessed from the oj namespace.
       localeElements = LocaleData.__getBundle();
       try {
@@ -2964,9 +3062,11 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         }
 
         // cache if successfully resolved
-        this._resolvedOptions = this._getWrapped().resolvedOptions(localeElements,
-                                                                   this.getOptions(),
-                                                                   locale);
+        this._resolvedOptions = this._getWrapped().resolvedOptions(
+          localeElements,
+          this.getOptions(),
+          locale
+        );
         this._locale = locale;
       } catch (e) {
         converterError = this._processConverterError(e);
@@ -3005,15 +3105,21 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         case 'optionTypesMismatch':
         case 'optionTypeInvalid':
           converterError = __ConverterUtilsI18n.IntlConverterUtils.__getConverterOptionError(
-            errorCode, parameterMap);
+            errorCode,
+            parameterMap
+          );
           break;
         case 'optionOutOfRange':
           converterError = __ConverterUtilsI18n.IntlConverterUtils.__getConverterOptionError(
-            errorCode, parameterMap);
+            errorCode,
+            parameterMap
+          );
           break;
         case 'optionValueInvalid':
           converterError = __ConverterUtilsI18n.IntlConverterUtils.__getConverterOptionError(
-            errorCode, parameterMap);
+            errorCode,
+            parameterMap
+          );
           break;
         case 'decimalFormatMismatch':
           // The '{value}' does not match the expected number format
@@ -3052,8 +3158,9 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
 
         // _getHintValue is smart. It uses the converter's 'format' function
         //  to get the example format to show the end user.
-        detail = Translations.getTranslatedString('oj-converter.hint.detail',
-          { exampleValue: this._getHintValue() });
+        detail = Translations.getTranslatedString('oj-converter.hint.detail', {
+          exampleValue: this._getHintValue()
+        });
 
         converterError = new ojvalidationError.ConverterError(summary, detail);
       }

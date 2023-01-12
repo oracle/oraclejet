@@ -23,30 +23,35 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateJetElementMethods = exports.isCustomElementMethod = exports.generateMethodMetadata = void 0;
+exports.updateJetElementMethods = exports.processRegisteredMethodsInfo = exports.isCustomElementClassMethod = exports.generateClassMethodMetadata = void 0;
 const MetaUtils = __importStar(require("./MetadataUtils"));
 const ts = __importStar(require("typescript"));
 const TypeUtils = __importStar(require("./MetadataTypeUtils"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
-function generateMethodMetadata(node, metaUtilObj) {
+const TransformerError_1 = require("./TransformerError");
+function generateClassMethodMetadata(node, metaUtilObj) {
     if (!metaUtilObj.rtMetadata.methods) {
         metaUtilObj.rtMetadata.methods = {};
     }
     const methodName = node.name.getText();
     metaUtilObj.rtMetadata.methods[methodName] = {};
-    metaUtilObj.fullMetadata.methods[methodName] = getDtMetadataForMethod(node, metaUtilObj);
+    metaUtilObj.fullMetadata.methods[methodName] = getDtMetadataForClassMethod(node, metaUtilObj);
 }
-exports.generateMethodMetadata = generateMethodMetadata;
-function getDtMetadataForMethod(method, metaUtilObj) {
-    const dt = MetaUtils.getDtMetadata(method, metaUtilObj);
+exports.generateClassMethodMetadata = generateClassMethodMetadata;
+function getDtMetadataForClassMethod(method, metaUtilObj) {
+    const dt = MetaUtils.getDtMetadata(method, MetaTypes.MDFlags.METHOD, null, metaUtilObj);
+    if (dt.internalName) {
+        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_OJMETADATA_INTERNALNAME, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'@ojmetadata internalName' annotations are ignored, and should be removed.`, method);
+        delete dt.internalName;
+    }
     dt.params = dt.params || [];
     const findParameter = (pname) => dt.params.find((param) => param.name === pname);
     const methodParams = [];
     if (method.parameters) {
         method.parameters.forEach((parameter) => {
             const name = parameter.name.getText();
-            const typeObj = TypeUtils.getAllMetadataForDeclaration(parameter, MetaTypes.MetadataScope.DT, metaUtilObj);
+            const typeObj = TypeUtils.getAllMetadataForDeclaration(parameter, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.METHOD | MetaTypes.MDFlags.METHOD_PARAM, null, null, metaUtilObj);
             let mParamObj = { name, type: typeObj.type };
             let dtParamObj = findParameter(name);
             if (dtParamObj) {
@@ -61,15 +66,91 @@ function getDtMetadataForMethod(method, metaUtilObj) {
     else {
         delete dt.params;
     }
-    const returnTypeObj = TypeUtils.getAllMetadataForDeclaration(method, MetaTypes.MetadataScope.DT, metaUtilObj);
+    const returnTypeObj = TypeUtils.getAllMetadataForDeclaration(method, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.METHOD | MetaTypes.MDFlags.METHOD_RETURN, null, null, metaUtilObj);
     dt.return = returnTypeObj.type;
     return dt;
 }
-function isCustomElementMethod(node, metaUtilObj) {
+function isCustomElementClassMethod(node, metaUtilObj) {
     return (ts.isMethodDeclaration(node) &&
         DecoratorUtils.getDecorator(node, metaUtilObj.namedExportToAlias.method) != null);
 }
-exports.isCustomElementMethod = isCustomElementMethod;
+exports.isCustomElementClassMethod = isCustomElementClassMethod;
+function processRegisteredMethodsInfo(methodsInfo, metaUtilObj) {
+    const rtMethods = {};
+    const dtMethods = {};
+    const dtsMethodSignatures = {};
+    const regMetadata = methodsInfo.metadata;
+    MetaUtils.walkTypeNodeMembers(methodsInfo.signaturesTypeNode, metaUtilObj, (signatureSymbol, signatureKey, mappedSymbol) => {
+        const signatureDecl = signatureSymbol.valueDeclaration;
+        if (signatureDecl &&
+            ts.isPropertySignature(signatureDecl) &&
+            signatureDecl.type &&
+            ts.isFunctionTypeNode(signatureDecl.type)) {
+            const methodName = signatureKey;
+            rtMethods[methodName] = {};
+            dtMethods[methodName] = {};
+            const rtMethod = rtMethods[methodName];
+            const dtMethod = dtMethods[methodName];
+            const regMethodMD = regMetadata === null || regMetadata === void 0 ? void 0 : regMetadata[methodName];
+            if (regMethodMD) {
+                for (const regKey in regMethodMD) {
+                    switch (regKey) {
+                        case 'params':
+                            break;
+                        case 'extension':
+                            dtMethod.extension = Object.assign({}, regMethodMD.extension);
+                            break;
+                        case 'status':
+                            dtMethod.status = [...regMethodMD.status];
+                            break;
+                        case 'apidocDescription':
+                            dtMethod['jsdoc'] = dtMethod['jsdoc'] || {};
+                            dtMethod['jsdoc']['description'] = regMethodMD.apidocDescription;
+                            break;
+                        case 'apidocRtnDescription':
+                            dtMethod['jsdoc'] = dtMethod['jsdoc'] || {};
+                            dtMethod['jsdoc']['returns'] = regMethodMD.apidocRtnDescription;
+                            break;
+                        case 'internalName':
+                            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_INTERNALNAME_METADATA, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'internalName' method metadata is ignored, and should be removed.`, methodsInfo.metadataNode);
+                            break;
+                        default:
+                            dtMethod[regKey] = regMethodMD[regKey];
+                            break;
+                    }
+                }
+            }
+            const findRegMethodParam = (pname) => { var _a; return (_a = regMethodMD === null || regMethodMD === void 0 ? void 0 : regMethodMD.params) === null || _a === void 0 ? void 0 : _a.find((param) => param.name === pname); };
+            const funcNode = signatureDecl.type;
+            const dtParams = funcNode.parameters.map((param) => {
+                const name = param.name.getText();
+                const typeObj = TypeUtils.getAllMetadataForDeclaration(param, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.METHOD | MetaTypes.MDFlags.METHOD_PARAM, null, null, metaUtilObj);
+                let dtParamObj = { name, type: typeObj.type };
+                const regParamObj = findRegMethodParam(name);
+                if (regParamObj) {
+                    dtParamObj = Object.assign(Object.assign({}, dtParamObj), regParamObj);
+                }
+                return dtParamObj;
+            });
+            if (dtParams.length > 0) {
+                dtMethod.params = dtParams;
+            }
+            const returnTypeObj = TypeUtils.getAllMetadataForDeclaration(funcNode, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.METHOD | MetaTypes.MDFlags.METHOD_RETURN, null, null, metaUtilObj);
+            dtMethod.return = returnTypeObj.type;
+            const signatureType = metaUtilObj.typeChecker.getTypeAtLocation(funcNode);
+            dtsMethodSignatures[methodName] = metaUtilObj.typeChecker.typeToString(signatureType);
+        }
+        else {
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_IMPERATIVE_HANDLE_TYPE, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `UNEXPECTED - Invalid imperative handle type argument to 'registerCustomElement' call!`, methodsInfo.signaturesTypeNode);
+        }
+    });
+    if (Object.keys(rtMethods).length > 0) {
+        metaUtilObj.rtMetadata.methods = rtMethods;
+        metaUtilObj.fullMetadata.methods = dtMethods;
+        metaUtilObj.fullMetadata['funcVCompMethodSignatures'] = dtsMethodSignatures;
+    }
+}
+exports.processRegisteredMethodsInfo = processRegisteredMethodsInfo;
 function updateJetElementMethods(metaObjUtils) {
     metaObjUtils.fullMetadata.methods = Object.assign(metaObjUtils.fullMetadata.methods || {}, _ELEMENT_METHODS);
 }

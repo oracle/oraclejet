@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -29,7 +29,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
    * @ojtsnoexport
    */
 
-
   const OraI18nUtils = {};
   // supported numbering systems
   OraI18nUtils.numeringSystems = {
@@ -51,14 +50,22 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
   OraI18nUtils._ISO_DATE_REGEXP =
     /^[+-]?\d{4}(?:-\d{2}(?:-\d{2})?)?(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}(?::?\d{2})?)?)?$|^T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}(?::?\d{2})?)?$/;
   /**
-   * Returns the timezone offset between UTC and the local time in Etc/GMT[+-]hh:mm syntax.
+   * Returns the timezone offset between UTC and the local time in Etc/GMT[+-]h syntax.
+   * <p>
    * The offset is positive if the local timezone is behind UTC and negative if
    * it is ahead. The offset range is between Etc/GMT-14 and Etc/GMT+12 (UTC-12 and UTC+14)
    * Examples:
    * 1- The local time is UTC-7 (Pacific Daylight Time):
-   * OraI18nUtils. getLocalTimeZoneOffset() will return the string "Etc/GMT+07:00"
+   * OraI18nUtils. getLocalTimeZoneOffset() will return the string "Etc/GMT+7"
    * 2- The local time is UTC+1 (Central European Standard Time):
-   * OraI18nUtils. getLocalTimeZoneOffset() will return the string "Etc/GMT-01:00"
+   * OraI18nUtils. getLocalTimeZoneOffset() will return the string "Etc/GMT-1"
+   * </p>
+   * <p>
+   * NOTE: Since JET v12.0.0, the IntlDateTimeConverter will fallback to the local system time zone
+   * if no timeZone is in the options.
+   * So instead of using this API to get a local timezone offset to pass the converter,
+   * you should not set any timeZone in the converter options.
+   * </p>
    * @param {Date=} date optional Date object. If not present return the local time zone
    * offset of the current date, otherwise return the local time zone offset at the
    * particular date.
@@ -69,7 +76,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
   OraI18nUtils.getLocalTimeZoneOffset = function (date) {
     var d = date || new Date();
     var offset = d.getTimezoneOffset();
-    return OraI18nUtils.getTimeStringFromOffset('Etc/GMT', offset, false, false);
+
+    // getTimeStringFromOffset recently changed to return 'z' for offset 0, and we don't want to return that from this method.
+    // this code will still work if getTimeStringFromOffset decides not to return 'z' for offset 0.
+    return offset !== 0
+      ? OraI18nUtils.getTimeStringFromOffset('Etc/GMT', offset, false, false)
+      : 'Etc/GMT+0';
   };
 
   /*
@@ -118,15 +130,20 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     if (typeof date === 'number') {
       date = new Date(date);
     }
-    var isoStr = (OraI18nUtils.padZeros(date.getFullYear(), 4) + '-' +
-                  OraI18nUtils.padZeros((date.getMonth() + 1), 2) + '-' +
-                  OraI18nUtils.padZeros(date.getDate(), 2) + 'T' +
-                  OraI18nUtils.padZeros((date.getHours()), 2) + ':' +
-                  OraI18nUtils.padZeros((date.getMinutes()), 2) + ':' +
-                  OraI18nUtils.padZeros((date.getSeconds()), 2));
+    var isoStr =
+      OraI18nUtils.padZeros(date.getFullYear(), 4) +
+      '-' +
+      OraI18nUtils.padZeros(date.getMonth() + 1, 2) +
+      '-' +
+      OraI18nUtils.padZeros(date.getDate(), 2) +
+      'T' +
+      OraI18nUtils.padZeros(date.getHours(), 2) +
+      ':' +
+      OraI18nUtils.padZeros(date.getMinutes(), 2) +
+      ':' +
+      OraI18nUtils.padZeros(date.getSeconds(), 2);
     if (date.getMilliseconds() > 0) {
-      isoStr +=
-        '.' + OraI18nUtils.trimRightZeros(OraI18nUtils.padZeros(date.getMilliseconds(), 3));
+      isoStr += '.' + OraI18nUtils.trimRightZeros(OraI18nUtils.padZeros(date.getMilliseconds(), 3));
     }
     return isoStr;
   };
@@ -159,12 +176,18 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
    * @method partsToIsoString
    */
   OraI18nUtils.partsToIsoString = function (parts) {
-    var isoStr = (OraI18nUtils.padZeros(parts[0], 4) + '-' +
-                  OraI18nUtils.padZeros(parts[1], 2) + '-' +
-                  OraI18nUtils.padZeros(parts[2], 2) + 'T' +
-                  OraI18nUtils.padZeros(parts[3], 2) + ':' +
-                  OraI18nUtils.padZeros(parts[4], 2) + ':' +
-                  OraI18nUtils.padZeros(parts[5], 2));
+    var isoStr =
+      OraI18nUtils.padZeros(parts[0], 4) +
+      '-' +
+      OraI18nUtils.padZeros(parts[1], 2) +
+      '-' +
+      OraI18nUtils.padZeros(parts[2], 2) +
+      'T' +
+      OraI18nUtils.padZeros(parts[3], 2) +
+      ':' +
+      OraI18nUtils.padZeros(parts[4], 2) +
+      ':' +
+      OraI18nUtils.padZeros(parts[5], 2);
     if (parts[6] > 0) {
       isoStr += '.' + OraI18nUtils.trimRightZeros(OraI18nUtils.padZeros(parts[6], 3));
     }
@@ -188,8 +211,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
 
   OraI18nUtils._isoToLocalDateIgnoreTimezone = function (isoString) {
     var datetime = OraI18nUtils._IsoStrParts(isoString);
-    var date = new Date(datetime[0], datetime[1] - 1, datetime[2], datetime[3],
-                    datetime[4], datetime[5], datetime[6]);
+    var date = new Date(
+      datetime[0],
+      datetime[1] - 1,
+      datetime[2],
+      datetime[3],
+      datetime[4],
+      datetime[5],
+      datetime[6]
+    );
     // As per the documentation:
     // new Date(year, monthIndex [, day [, hours [, minutes [, seconds [, milliseconds]]]]]);
     // year - Integer value representing the year and
@@ -297,7 +327,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
       res.isoStrParts = OraI18nUtils._IsoStrParts(res.dateTime);
       return res;
     }
-    res.timeZone = (exe[1] !== undefined) ? exe[1] : exe[2];
+    res.timeZone = exe[1] !== undefined ? exe[1] : exe[2];
     if (res.timeZone === 'Z') {
       res.format = 'zulu';
     } else {
@@ -319,7 +349,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
    * @memberof oj.OraI18nUtils
    * @method getISOStrFormatType
    */
-   OraI18nUtils.getISOStrFormatType = function (isoStr) {
+  OraI18nUtils.getISOStrFormatType = function (isoStr) {
     let format;
     const exe = OraI18nUtils._ISO_DATE_REGEXP.exec(isoStr);
 
@@ -330,7 +360,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
       format = 'local';
       return format;
     }
-    let timeZone = (exe[1] !== undefined) ? exe[1] : exe[2];
+    let timeZone = exe[1] !== undefined ? exe[1] : exe[2];
     if (timeZone === 'Z') {
       format = 'zulu';
     } else {
@@ -365,13 +395,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
   // Get days in month depending on month and leap year
   OraI18nUtils._getDaysInMonth = function (y, m) {
     switch (m) {
-      case 0 :
-      case 2 :
-      case 4 :
-      case 6 :
-      case 7 :
-      case 9 :
-      case 11 :
+      case 0:
+      case 2:
+      case 4:
+      case 6:
+      case 7:
+      case 9:
+      case 11:
         return 31;
       case 1:
         if (OraI18nUtils._isLeapYear(y)) {
@@ -382,11 +412,24 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
         return 30;
     }
   };
-  OraI18nUtils._throwInvalidISOStringRange = function (isoStr, name, displayValue,
-    displayLow, displayHigh) {
-    var msg = 'The string ' + isoStr + ' is not a valid ISO 8601 string: ' + displayValue +
-            ' is out of range.  Enter a value between ' + displayLow +
-            ' and ' + displayHigh + ' for ' + name;
+  OraI18nUtils._throwInvalidISOStringRange = function (
+    isoStr,
+    name,
+    displayValue,
+    displayLow,
+    displayHigh
+  ) {
+    var msg =
+      'The string ' +
+      isoStr +
+      ' is not a valid ISO 8601 string: ' +
+      displayValue +
+      ' is out of range.  Enter a value between ' +
+      displayLow +
+      ' and ' +
+      displayHigh +
+      ' for ' +
+      name;
     var rangeError = new RangeError(msg);
     var errorInfo = {
       errorCode: 'isoStringOutOfRange',
@@ -423,7 +466,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     return (value + '').replace(OraI18nUtils.regexTrimRightZeros, '');
   };
 
-
   OraI18nUtils.trimNumber = function (value) {
     var s = (value + '').replace(OraI18nUtils.regexTrimNumber, '');
     return s;
@@ -446,7 +488,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
       isNegative = true;
     }
     if (c > 1 && s.length < c) {
-      s = (OraI18nUtils.zeros[c - 2] + s);
+      s = OraI18nUtils.zeros[c - 2] + s;
       s = s.substr(s.length - c, c);
     }
     if (isNegative) {
@@ -459,7 +501,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     var result = '' + str;
 
     for (var l = result.length; l < count; l += 1) {
-      result = (left ? ('0' + result) : (result + '0'));
+      result = left ? '0' + result : result + '0';
     }
     return result;
   };
@@ -469,7 +511,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
    * @method getTimeStringFromOffset
    */
   OraI18nUtils.getTimeStringFromOffset = function (prefix, offset, reverseSign, alwaysMinutes) {
-    var isNegative = reverseSign ? offset > 0 : offset <= 0;
+    // when offset is 0 return 'Z' instead of '+00:00'. This is standard practice and is what Java does as well.
+    // This changed in JET v14.0.0.
+    if (offset === 0) {
+      return 'Z';
+    }
+    var isNegative = reverseSign ? offset > 0 : offset < 0;
     var absOffset = Math.abs(offset);
     var hours = Math.floor(absOffset / 60);
     var minutes = absOffset % 60;
@@ -528,7 +575,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     return '001';
   };
 
-
   // get the unicode numbering system extension.
   OraI18nUtils.getNumberingExtension = function (_locale) {
     var locale = _locale || 'en-US';
@@ -582,8 +628,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
   // fallback value if necessary.
   OraI18nUtils.getGetOption = function (options, getOptionCaller) {
     if (options === undefined) {
-      throw new Error('Internal ' + getOptionCaller +
-          ' error. Default options missing.');
+      throw new Error('Internal ' + getOptionCaller + ' error. Default options missing.');
     }
 
     var getOption = function (property, type, values, defaultValue) {
@@ -607,10 +652,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
           for (var i = 0; i < values.length; i++) {
             expectedValues.push(values[i]);
           }
-          var msg = "The value '" + options[property] +
-              "' is out of range for '" + getOptionCaller +
-              "' options property '" + property + "'. Valid values: " +
-              expectedValues;
+          var msg =
+            "The value '" +
+            options[property] +
+            "' is out of range for '" +
+            getOptionCaller +
+            "' options property '" +
+            property +
+            "'. Valid values: " +
+            expectedValues;
           var rangeError = new RangeError(msg);
           var errorInfo = {
             errorCode: 'optionOutOfRange',
@@ -661,8 +711,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     // eslint-disable-next-line no-param-reassign
     options.usage = getOption('usage', 'string', ['sort', 'search'], 'sort');
     // eslint-disable-next-line no-param-reassign
-    options.sensitivity = getOption('sensitivity', 'string',
-                                    ['base', 'accent', 'case', 'variant'], 'base');
+    options.sensitivity = getOption(
+      'sensitivity',
+      'string',
+      ['base', 'accent', 'case', 'variant'],
+      'base'
+    );
     var len = str.length;
     var patLen = pat.length - 1;
     for (var i = 0; i < len; i++) {
@@ -728,9 +782,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     var fromTimeIndex = fromIsoString.indexOf('T');
     var toTimeIndex = normalizedToIsoString.indexOf('T');
     var toDatePortion = normalizedToIsoString.substring(0, toTimeIndex);
-    var fromTimePortion = (fromTimeIndex !== -1 ?
-                           fromIsoString.substring(fromTimeIndex) :
-                           _DEFAULT_TIME_PORTION);
+    var fromTimePortion =
+      fromTimeIndex !== -1 ? fromIsoString.substring(fromTimeIndex) : _DEFAULT_TIME_PORTION;
 
     return toDatePortion + fromTimePortion;
   };
@@ -778,8 +831,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     var dateTimeKeys = _DATE_TIME_KEYS;
     var oraUtilsPadZero = this.padZeros;
     var isoStringNormalized = this._normalizeIsoString(isoString); // note intentionally normalizing
-    var captured = (/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):?(\d{2})?\.?(\d{3})?(.*)?/
-                    .exec(isoStringNormalized));
+    var captured = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):?(\d{2})?\.?(\d{3})?(.*)?/.exec(
+      isoStringNormalized
+    );
 
     if (!captured) {
       throw new Error('Unable to capture anything');
@@ -825,8 +879,21 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
         captured[pos] = dtKey.pad ? oraUtilsPadZero(value, dtKey.pad) : value;
       }
       // "2015-02-02T21:12:30.255Z"
-      retVal = captured[0] + '-' + captured[1] + '-' + captured[2] + 'T' + captured[3] + ':' + captured[4] + ':' + captured[5] +
-          (captured.length > 6 && captured[6] ? ('.' + captured[6] + (captured.length === 8 && captured[7] ? captured[7] : '')) : '');
+      retVal =
+        captured[0] +
+        '-' +
+        captured[1] +
+        '-' +
+        captured[2] +
+        'T' +
+        captured[3] +
+        ':' +
+        captured[4] +
+        ':' +
+        captured[5] +
+        (captured.length > 6 && captured[6]
+          ? '.' + captured[6] + (captured.length === 8 && captured[7] ? captured[7] : '')
+          : '');
     }
 
     return retVal;
@@ -869,9 +936,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     var todayDatePortion = todayIsoString.substring(0, todayIsoString.indexOf('T'));
     var timeIndex = isoString.indexOf('T');
     var datePortion = timeIndex === -1 ? isoString : isoString.substring(0, timeIndex);
-    var timePortion = (timeIndex !== -1 ?
-                       checkTime(isoString.substring(timeIndex)) :
-                       _DEFAULT_TIME_PORTION);
+    var timePortion =
+      timeIndex !== -1 ? checkTime(isoString.substring(timeIndex)) : _DEFAULT_TIME_PORTION;
 
     datePortion = datePortion || todayDatePortion;
 
@@ -913,27 +979,34 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
    * @since 12.0.0
    */
   OraI18nUtils.convertISOString = function (isoStr, isoStrFormat) {
-    // return the ISO string as is if it is time only
-    if (isoStr.startsWith('T')) {
-      return isoStr;
-    }
     var formattedIsoStr = isoStr;
     if (isoStrFormat === 'offset') {
-      var localOffset = new Date(isoStr).getTimezoneOffset();
+      var localOffset;
+      if (isoStr.startsWith('T')) {
+        localOffset = new Date().getTimezoneOffset();
+      } else {
+        localOffset = new Date(isoStr).getTimezoneOffset();
+      }
       localOffset = OraI18nUtils.getTimeStringFromOffset('', localOffset, true, true);
-      formattedIsoStr = isoStr + localOffset;
+      formattedIsoStr += localOffset;
     } else if (isoStrFormat === 'zulu') {
       var parts = OraI18nUtils._IsoStrParts(isoStr);
-      var date = new Date(parts[0], parts[1] - 1, parts[2], parts[3],
-                    parts[4], parts[5], parts[6]);
-      formattedIsoStr = (OraI18nUtils.padZeros(date.getUTCFullYear(), 4) + '-' +
-                  OraI18nUtils.padZeros((date.getUTCMonth() + 1), 2) + '-' +
-                  OraI18nUtils.padZeros(date.getUTCDate(), 2) + 'T' +
-                  OraI18nUtils.padZeros((date.getUTCHours()), 2) + ':' +
-                  OraI18nUtils.padZeros((date.getUTCMinutes()), 2) + ':' +
-                  OraI18nUtils.padZeros((date.getUTCSeconds()), 2));
+      var date = new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5], parts[6]);
+      formattedIsoStr =
+        OraI18nUtils.padZeros(date.getUTCFullYear(), 4) +
+        '-' +
+        OraI18nUtils.padZeros(date.getUTCMonth() + 1, 2) +
+        '-' +
+        OraI18nUtils.padZeros(date.getUTCDate(), 2) +
+        'T' +
+        OraI18nUtils.padZeros(date.getUTCHours(), 2) +
+        ':' +
+        OraI18nUtils.padZeros(date.getUTCMinutes(), 2) +
+        ':' +
+        OraI18nUtils.padZeros(date.getUTCSeconds(), 2);
       if (date.getMilliseconds() > 0) {
-        formattedIsoStr += '.' + OraI18nUtils.trimRightZeros(OraI18nUtils.padZeros(date.getUTCMilliseconds(), 3));
+        formattedIsoStr +=
+          '.' + OraI18nUtils.trimRightZeros(OraI18nUtils.padZeros(date.getUTCMilliseconds(), 3));
       }
       formattedIsoStr += 'Z';
     }
@@ -968,23 +1041,27 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     }
 
     // Arabic characters. Return empty string
-    if (c >= 0x0600 && c <= 0x06FF) {
+    if (c >= 0x0600 && c <= 0x06ff) {
       return '';
     }
 
     // Hindi characters. Return first letter of the first name
-    if (c >= 0x0900 && c <= 0x097F) {
+    if (c >= 0x0900 && c <= 0x097f) {
       return firstName.charAt(0);
     }
 
     // Thai characters. Return first letter of the first name
-    if (c >= 0x0E00 && c <= 0x0E7F) {
+    if (c >= 0x0e00 && c <= 0x0e7f) {
       return firstName.charAt(0);
     }
 
     // Korean characters. Return first name
-    if ((c >= 0x1100 && c <= 0x11FF) || (c >= 0x3130 && c <= 0x318F) ||
-        (c >= 0xA960 && c <= 0xA97F) || (c >= 0xAC00 && c <= 0xD7FF)) {
+    if (
+      (c >= 0x1100 && c <= 0x11ff) ||
+      (c >= 0x3130 && c <= 0x318f) ||
+      (c >= 0xa960 && c <= 0xa97f) ||
+      (c >= 0xac00 && c <= 0xd7ff)
+    ) {
       return firstName;
     }
 
@@ -992,29 +1069,39 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     if (lastName !== undefined && lastName.length > 0) {
       c = lastName.charCodeAt(0);
     }
-    if ((c >= 0x2E80 && c <= 0x2FDF) || (c >= 0x3000 && c <= 0x312F) ||
-        (c >= 0x3190 && c <= 0x31FF) || (c >= 0x3300 && c <= 0x4DBF) ||
-        (c >= 0x4E00 && c <= 0x9FFF) || (c >= 0xF900 && c <= 0xFAFF)) {
+    if (
+      (c >= 0x2e80 && c <= 0x2fdf) ||
+      (c >= 0x3000 && c <= 0x312f) ||
+      (c >= 0x3190 && c <= 0x31ff) ||
+      (c >= 0x3300 && c <= 0x4dbf) ||
+      (c >= 0x4e00 && c <= 0x9fff) ||
+      (c >= 0xf900 && c <= 0xfaff)
+    ) {
       return lastName;
     }
 
     // Handle surrogate characters for Japanese and Chinese characters.
-    if (c >= 0xD800 && c <= 0xDBFF) {
+    if (c >= 0xd800 && c <= 0xdbff) {
       if (lastName && lastName.length < 2) {
         return '';
       }
       c1 = lastName.charCodeAt(1);
       // c1 must be in DC00-DFFF range
-      if (c1 < 0xDC00 || c1 > 0xDFFF) {
+      if (c1 < 0xdc00 || c1 > 0xdfff) {
         return '';
       }
       // Convert high and low surrogates into unicode scalar.
-      u = ((c - 0xD800) * 0x400) + (c1 - 0xDC00) + 0x10000;
+      u = (c - 0xd800) * 0x400 + (c1 - 0xdc00) + 0x10000;
       // test the blocks
-      if ((u >= 0x1B000 && u <= 0x1B0FF) || (u >= 0x1F200 && u <= 0x1F2FF) ||
-          (u >= 0x20000 && u <= 0x2A6DF) || (u >= 0x2A700 && u <= 0x2B73F) ||
-          (u >= 0x2B740 && u <= 0x2B81F) || (u >= 0x2B820 && u <= 0x2CEAF) ||
-          (u >= 0x2F800 && u <= 0x2FA1F)) {
+      if (
+        (u >= 0x1b000 && u <= 0x1b0ff) ||
+        (u >= 0x1f200 && u <= 0x1f2ff) ||
+        (u >= 0x20000 && u <= 0x2a6df) ||
+        (u >= 0x2a700 && u <= 0x2b73f) ||
+        (u >= 0x2b740 && u <= 0x2b81f) ||
+        (u >= 0x2b820 && u <= 0x2ceaf) ||
+        (u >= 0x2f800 && u <= 0x2fa1f)
+      ) {
         return lastName;
       }
     }
@@ -1123,16 +1210,21 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
   // };
 
   /**
-   * Returns the timezone offset between UTC and the local time in Etc/GMT[+-]hh:mm syntax.
+   * Returns the timezone offset between UTC and the local time in Etc/GMT[+-]h syntax.
    * The offset is positive if the local timezone is behind UTC and negative if
    * it is ahead. The offset range is between Etc/GMT-14 and Etc/GMT+12 (UTC-12 and UTC+14)
    *
    * @example <caption>The local time is UTC-7 (Pacific Daylight Time)</caption>
-   * oj.IntlConverterUtils.getLocalTimeZoneOffset() will return the string "Etc/GMT+07:00"
+   * oj.IntlConverterUtils.getLocalTimeZoneOffset() will return the string "Etc/GMT+7"
    *
    * @example <caption>The local time is UTC+1 (Central European Standard Time)</caption>
-   * oj.IntlConverterUtils.getLocalTimeZoneOffset() will return the string "Etc/GMT-01:00"
-   *
+   * oj.IntlConverterUtils.getLocalTimeZoneOffset() will return the string "Etc/GMT-1"
+   * <p>
+   * NOTE: Since JET v12.0.0, the IntlDateTimeConverter will fallback to the local system time zone
+   * if no timeZone is in the options.
+   * So instead of using this API to get a local timezone offset to pass the converter,
+   * you should not set any timeZone in the converter options.
+   * </p>
    * @export
    * @param {Date=} date If date is undefined, it returns the local timezone offset of the current
    * date, otherwise it returns the local timezone offset at that given date.
@@ -1212,7 +1304,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     return OraI18nUtils.getISOStrFormatType(isoStr);
   };
 
-
   /**
    * Checks that min and max and value are parseable isoStrings,
    * Logs a warning if value, min, max are not all iso strings.
@@ -1228,7 +1319,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
    * @method _verifyValueMinMax
    * @private
    */
-   IntlConverterUtils._verifyValueMinMax = function (value, min, max) {
+  IntlConverterUtils._verifyValueMinMax = function (value, min, max) {
     // If value or min or max is not an iso string (say 'abc' or '2021/03/03'),
     // the datepicker renders, but you see an inline converter error meant only for an application
     // developer under the field, 'Please provide valid ISO 8601 string'.
@@ -1237,17 +1328,16 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     // In v11 we logged the warning and monitored FA tests for this warning. After six months or so
     // we saw no warnings and so now in v12 we will throw an error.
 
-    Object.entries({ value, min, max }).forEach(
-      ([k, v]) => {
-        if (v) {
-          try {
-            IntlConverterUtils._getISOStrFormatType(v);
-          } catch (e) {
-            // We weren't checking this in pre-v11.
-            throw new Error(`${k} must be an iso string: ${e}`);
-          }
+    Object.entries({ value, min, max }).forEach(([k, v]) => {
+      if (v) {
+        try {
+          IntlConverterUtils._getISOStrFormatType(v);
+        } catch (e) {
+          // We weren't checking this in pre-v11.
+          throw new Error(`${k} must be an iso string: ${e}`);
         }
-      });
+      }
+    });
   };
 
   /**
@@ -1261,11 +1351,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
    * @private
    */
   IntlConverterUtils._getTodaysDateIsoStr = function () {
-      const now = new Date();
-      const localDateIsoStr = OraI18nUtils.padZeros(now.getFullYear(), 4) + '-' +
-                      OraI18nUtils.padZeros(now.getMonth() + 1, 2) + '-' +
-                      OraI18nUtils.padZeros(now.getDate(), 2);
-      return localDateIsoStr;
+    const now = new Date();
+    const localDateIsoStr =
+      OraI18nUtils.padZeros(now.getFullYear(), 4) +
+      '-' +
+      OraI18nUtils.padZeros(now.getMonth() + 1, 2) +
+      '-' +
+      OraI18nUtils.padZeros(now.getDate(), 2);
+    return localDateIsoStr;
   };
 
   /**
@@ -1339,10 +1432,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     // but is currently allowed. It should only accept dates, no time.
     // This method needs to handle if one of the strings is date only, and the other is date/time;
     // if one is time only and the other is datetime, etc.
-    const comparableIsoStrings =
-      IntlConverterUtils._makeIsoDateStringsDateComparable(isoStr1, isoStr2);
+    const comparableIsoStrings = IntlConverterUtils._makeIsoDateStringsDateComparable(
+      isoStr1,
+      isoStr2
+    );
 
-    return (new Date(comparableIsoStrings[0]) - new Date(comparableIsoStrings[1]));
+    return new Date(comparableIsoStrings[0]) - new Date(comparableIsoStrings[1]);
   };
 
   /**
@@ -1365,33 +1460,37 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
       propValueValid = parameterMap.requiredPropertyValueValid;
       // Summary: A value for the property '{requiredPropertyName}' is required when the property
       // '{propertyName}' is set to '{propertyValue}'.
-      summary = Translations.getTranslatedString('oj-converter.optionTypesMismatch.summary',
-        { propertyName: propName,
-          propertyValue: parameterMap.propertyValue,
-          requiredPropertyName: reqPropName });
+      summary = Translations.getTranslatedString('oj-converter.optionTypesMismatch.summary', {
+        propertyName: propName,
+        propertyValue: parameterMap.propertyValue,
+        requiredPropertyName: reqPropName
+      });
 
       detail = IntlConverterUtils._getOptionValueDetailMessage(reqPropName, propValueValid);
     } else if (errorCode === 'optionTypeInvalid') {
       // Summary: A value of the expected type was not provided for '{propertyName}'.
       propName = parameterMap.propertyName;
       propValueValid = parameterMap.propertyValueValid;
-      summary = Translations.getTranslatedString('oj-converter.optionTypeInvalid.summary',
-        { propertyName: propName });
+      summary = Translations.getTranslatedString('oj-converter.optionTypeInvalid.summary', {
+        propertyName: propName
+      });
 
       detail = IntlConverterUtils._getOptionValueDetailMessage(propName, propValueValid);
     } else if (errorCode === 'optionOutOfRange') {
       // The value {propertyValue} is out of range for the option '{propertyName}'.
-      summary = Translations.getTranslatedString('oj-converter.optionOutOfRange.summary',
-        { propertyName: propName,
-          propertyValue: parameterMap.propertyValue });
+      summary = Translations.getTranslatedString('oj-converter.optionOutOfRange.summary', {
+        propertyName: propName,
+        propertyValue: parameterMap.propertyValue
+      });
 
       propValueValid = parameterMap.propertyValueValid;
       detail = IntlConverterUtils._getOptionValueDetailMessage(propName, propValueValid);
     } else if (errorCode === 'optionValueInvalid') {
       // An invalid value '{propertyValue}' was specified for the option '{propertyName}'..
-      summary = Translations.getTranslatedString('oj-converter.optionValueInvalid.summary',
-        { propertyName: propName,
-          propertyValue: parameterMap.propertyValue });
+      summary = Translations.getTranslatedString('oj-converter.optionValueInvalid.summary', {
+        propertyName: propName,
+        propertyValue: parameterMap.propertyValue
+      });
 
       propValueValid = parameterMap.propertyValueHint;
       detail = IntlConverterUtils._getOptionValueDetailMessage(propName, propValueValid);
@@ -1435,12 +1534,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
         // we have an array of values
         resourceKey = 'oj-converter.optionHint.detail-plural';
         // eslint-disable-next-line no-param-reassign
-        propValueValid =
-           propValueValid.join(Translations.getTranslatedString('oj-converter.plural-separator'));
+        propValueValid = propValueValid.join(
+          Translations.getTranslatedString('oj-converter.plural-separator')
+        );
       }
-      return Translations.getTranslatedString(resourceKey,
-        { propertyName: propName,
-          propertyValueValid: propValueValid });
+      return Translations.getTranslatedString(resourceKey, {
+        propertyName: propName,
+        propertyValueValid: propValueValid
+      });
     }
 
     return '';

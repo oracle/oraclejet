@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -25,6 +25,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
    * @hideconstructor
    * @ojtsignore
    * @see ArrayDataGridDataSource
+   * @ojdeprecated {since: '14.0.0', description: 'ArrayCellSet has been deprecated along with
+   * ArrayDataGridDataSource.'}
    */
   const ArrayCellSet = function (startRow, endRow, startColumn, endColumn, callback) {
     this.m_startRow = startRow;
@@ -213,11 +215,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
    * @since 1.0
    * @extends DataGridDataSource
    * @ojtsignore
+   * @ojdeprecated {since: '14.0.0', description: 'ArrayDataGridDataSource has been deprecated,
+   * use RowDataGridProvider instead.'}
    */
   const ArrayDataGridDataSource = function (data, options) {
-    if (!(data instanceof Array) &&
-        (typeof (data) !== 'function' &&
-         typeof (data.subscribe) !== 'function')) {
+    if (
+      !(data instanceof Array) &&
+      typeof data !== 'function' &&
+      typeof data.subscribe !== 'function'
+    ) {
       // we only support Array or ko.observableArray. To
       // check for observableArray, we can't do instanceof check because it's
       // a function. So we just check if it contains a subscribe function.
@@ -238,7 +244,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
 
   oj._registerLegacyNamespaceProp('ArrayDataGridDataSource', ArrayDataGridDataSource);
   // Subclass from oj.DataGridDataSource
-  oj.Object.createSubclass(ArrayDataGridDataSource, oj.DataGridDataSource, 'oj.ArrayDataGridDataSource');
+  oj.Object.createSubclass(
+    ArrayDataGridDataSource,
+    oj.DataGridDataSource,
+    'oj.ArrayDataGridDataSource'
+  );
 
   /**
    * Initial the array based data source.
@@ -255,7 +265,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
     this._initializeRowKeys();
 
     // if the data is an observable array subscribe to array change notifications
-    if (typeof (this.data) === 'function') {
+    if (typeof this.data === 'function') {
       this.data.subscribe(this._subscribe.bind(this), null, 'arrayChange');
     }
 
@@ -335,7 +345,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
    * @memberof ArrayDataGridDataSource
    */
   ArrayDataGridDataSource.prototype._getColumnsForScaffolding = function (data) {
-    if ((typeof data.length !== 'number') || data.length === 0) {
+    if (typeof data.length !== 'number' || data.length === 0) {
       return [];
     }
 
@@ -459,7 +469,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
    * @return {undefined}
    */
   ArrayDataGridDataSource.prototype.fetchHeaders = function (
-    headerRange, callbacks, callbackObjects
+    headerRange,
+    callbacks,
+    callbackObjects
   ) {
     var axis = headerRange.axis;
     var start = headerRange.start;
@@ -548,9 +560,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
    * @instance
    * @memberof ArrayDataGridDataSource
    */
-  ArrayDataGridDataSource.prototype.fetchCells = function (
-    cellRanges, callbacks, callbackObjects
-  ) {
+  ArrayDataGridDataSource.prototype.fetchCells = function (cellRanges, callbacks, callbackObjects) {
     var rowStart;
     var rowEnd;
     var colStart;
@@ -611,9 +621,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
     var rowIndex = indexes.row;
     var columnIndex = indexes.column;
 
-    return new Promise(function (resolve) {
-      resolve({ row: this._getRowKeyByIndex(rowIndex), column: this.columns[columnIndex] });
-    }.bind(this));
+    return new Promise(
+      function (resolve) {
+        resolve({ row: this._getRowKeyByIndex(rowIndex), column: this.columns[columnIndex] });
+      }.bind(this)
+    );
   };
 
   /**
@@ -632,9 +644,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
     var rowKey = keys.row;
     var columnKey = keys.column;
 
-    return new Promise(function (resolve) {
-      resolve({ row: this._getRowIndexByKey(rowKey), column: this.columns.indexOf(columnKey) });
-    }.bind(this));
+    return new Promise(
+      function (resolve) {
+        resolve({ row: this._getRowIndexByKey(rowKey), column: this.columns.indexOf(columnKey) });
+      }.bind(this)
+    );
   };
 
   /**
@@ -758,7 +772,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
    * @method
    * @instance
    * @memberof ArrayDataGridDataSource
-  */
+   */
   ArrayDataGridDataSource.prototype.getCapability = function (feature) {
     if (feature === 'sort') {
       // array based data source supports column sorting only
@@ -920,8 +934,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
    * @return {undefined}
    */
   ArrayDataGridDataSource.prototype.move = function (
-    // eslint-disable-next-line no-unused-vars
-    rowToMove, referenceRow, position, callbacks, callbackObjects
+    /* eslint-disable no-unused-vars */
+    rowToMove,
+    referenceRow,
+    position,
+    callbacks,
+    callbackObjects
+    /* eslint-enable no-unused-vars */
   ) {
     var atKeyIndex;
     var event;
@@ -970,7 +989,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
    * @method
    * @instance
    * @memberof ArrayDataGridDataSource
-  */
+   */
   // eslint-disable-next-line no-unused-vars
   ArrayDataGridDataSource.prototype.moveOK = function (rowToMove, referenceRow, position) {
     return 'valid';
@@ -983,7 +1002,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
    * @memberof ArrayDataGridDataSource
    */
   ArrayDataGridDataSource.prototype.getDataArray = function () {
-    if (typeof (this.data) === 'function') {
+    if (typeof this.data === 'function') {
       return this.data();
     }
     return this.data;
@@ -1037,7 +1056,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
    * @memberof ArrayDataGridDataSource
    */
   ArrayDataGridDataSource.prototype._getModelEvent = function (
-    operation, rowKey, columnKey, rowIndex, columnIndex, silent
+    operation,
+    rowKey,
+    columnKey,
+    rowIndex,
+    columnIndex,
+    silent
   ) {
     var event = {};
     event.source = this;
@@ -1208,6 +1232,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common'], function (expo
    * @hideconstructor
    * @ojtsignore
    * @see ArrayDataGridDataSource
+   * @ojdeprecated {since: '14.0.0', description: 'ArrayHeaderSet has been deprecated with
+   * ArrayDataGridDataSourced.'}
    */
   const ArrayHeaderSet = function (start, end, axis, callback) {
     this.m_start = start;

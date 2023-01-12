@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -13,7 +13,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
  * @param {function} callback The callback for this PanZoomCanvasEventManager
  * @param {Object} callbackObj The callback object for this PanZoomCanvasEventManager
  */
- class PanZoomCanvasEventManager extends EventManager {
+class PanZoomCanvasEventManager extends EventManager {
   constructor(context, callback, callbackObj) {
     super(context, callback, callbackObj);
     /**
@@ -40,7 +40,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     displayable.addEvtListener(MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
   }
 
-
   /**
    * @override
    */
@@ -48,7 +47,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     super.RemoveListeners(displayable);
     displayable.removeEvtListener(MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
   }
-
 
   /**
    * @override
@@ -93,8 +91,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     // and preventing the selection.
     // Check for position to verify if this is a legitimate mousemove
     var pos = this._callbackObj.GetRelativeMousePosition(event);
-    if (Math.abs(pos.x - this._px) <= 3 && Math.abs(pos.y - this._py) <= 3)
-      return;
+    if (Math.abs(pos.x - this._px) <= 3 && Math.abs(pos.y - this._py) <= 3) return;
 
     if (this._bDown) {
       this._bDragging = true;
@@ -114,16 +111,14 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
         //var dz = 1 + (this._my - yy) / 100;
         //to emulate the behavior from the line above, which scaled by 1% for each pixel, need to
         //take that 1% with the correct sign and raise it to the power of the total number of pixels moved
-        var sign = (this._py >= yy) ? 1 : -1;
-        var zz = this._origZoom * Math.pow(1 + sign * .01, Math.abs(this._py - yy));
+        var sign = this._py >= yy ? 1 : -1;
+        var zz = this._origZoom * Math.pow(1 + sign * 0.01, Math.abs(this._py - yy));
         if (!this._callbackObj.isPanningEnabled()) {
           this._callbackObj.zoomTo(zz, null, null);
-        }
-        else {
+        } else {
           this._callbackObj.zoomTo(zz, this._px, this._py);
         }
-      }
-      else {
+      } else {
         this._handlePanMove(xx, yy);
       }
 
@@ -197,7 +192,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
 
     //: divide by the absolute value of the delta so that the zoom only changes by the increment,
     //just like in native Flash
-    var zz = currZoom * (1 + this._callbackObj.getZoomIncr() * delta / Math.abs(delta));
+    var zz = currZoom * (1 + (this._callbackObj.getZoomIncr() * delta) / Math.abs(delta));
     var pos = this._callbackObj.GetRelativeMousePosition(event);
 
     //cancel the mouse wheel event so that the browser doesn't scroll the page
@@ -209,8 +204,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     //this._callbackObj.SetElasticConstraints(true);
     if (!this._callbackObj.isPanningEnabled()) {
       this._callbackObj.zoomTo(zz, null, null, this._zoomAnimator);
-    }
-    else {
+    } else {
       this._callbackObj.zoomTo(zz, pos.x, pos.y, this._zoomAnimator);
     }
 
@@ -242,11 +236,11 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
    */
   _handleMomentumTimer() {
     //percent to slow down momentum each iteration
-    var fraction = .04;//.02;
+    var fraction = 0.04; //.02;
     //quadratic damping function
     var ratio = 1 - fraction * this._momentumIterCount;
     ratio *= ratio;
-    var interval = this._momentumTimer.getInterval();//this._MOMENTUM_START_TIMER_INTERVAL;
+    var interval = this._momentumTimer.getInterval(); //this._MOMENTUM_START_TIMER_INTERVAL;
     //deltas to pan by for this iteration
     var dx = ratio * this._momentumXperMS * interval;
     var dy = ratio * this._momentumYperMS * interval;
@@ -259,18 +253,19 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this._callbackObj.panTo(newX, newY, null, true);
     var bStop = false;
     //stop just before ratio goes to 0
-    if (this._momentumIterCount >= (1 / fraction) - 1) {
+    if (this._momentumIterCount >= 1 / fraction - 1) {
       bStop = true;
-    }
-    else {
+    } else {
       //stop if we've hit elastic constraints
       var currX = this._callbackObj.getPanX();
       var currY = this._callbackObj.getPanY();
       //if the difference between the desired and actual pan positions is greater than the delta for this timer
       //iteration, we must be hitting the elastic constraints, so stop iterating
       var panDirection = this._pzc.getPanDir();
-      if ((Math.abs(currX - newX) > Math.abs(dx) && panDirection != 'y')
-          || (Math.abs(currY - newY) > Math.abs(dy) && panDirection != 'x')) {
+      if (
+        (Math.abs(currX - newX) > Math.abs(dx) && panDirection != 'y') ||
+        (Math.abs(currY - newY) > Math.abs(dy) && panDirection != 'x')
+      ) {
         bStop = true;
       }
     }
@@ -281,24 +276,26 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       this._momentumTimer.reset();
       //turn off elastic constraints when momentum stops
       this._callbackObj.SetElasticConstraints(false);
-    }
-    else {
+    } else {
       this._momentumIterCount++;
     }
   }
-
 
   /**
    * @override
    */
   HandleImmediateTouchStartInternal(event) {
     if (this._callbackObj.isZoomingEnabled())
-      this.TouchManager.processAssociatedTouchAttempt(event, 'zoomTouch', this.ZoomStartTouch, this);
+      this.TouchManager.processAssociatedTouchAttempt(
+        event,
+        'zoomTouch',
+        this.ZoomStartTouch,
+        this
+      );
 
     if (this._callbackObj.isPanningEnabled())
       this.TouchManager.processAssociatedTouchAttempt(event, 'panTouch', this.PanStartTouch, this);
   }
-
 
   /**
    * @override
@@ -315,7 +312,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       event.preventDefault();
   }
 
-
   /**
    * @override
    */
@@ -327,7 +323,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       this.TouchManager.processAssociatedTouchEnd(event, 'panTouch');
   }
 
-
   /**
    * Handles zoom start for touch device
    * @param {dvt.TouchEvent} event Touch event to handle
@@ -337,7 +332,16 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
   ZoomStartTouch(event, touch) {
     var touchIds = this.TouchManager.getTouchIdsForObj('zoomTouch');
     if (touchIds.length <= 1) {
-      this.TouchManager.saveProcessedTouch(touch.identifier, 'zoomTouch', null, 'zoomTouch', 'zoomTouch', this.ZoomMoveTouch, this.ZoomEndTouch, this);
+      this.TouchManager.saveProcessedTouch(
+        touch.identifier,
+        'zoomTouch',
+        null,
+        'zoomTouch',
+        'zoomTouch',
+        this.ZoomMoveTouch,
+        this.ZoomEndTouch,
+        this
+      );
       this._mx = touch.pageX;
       this._my = touch.pageY;
       this._px = this._mx;
@@ -362,7 +366,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     }
   }
 
-
   /**
    * Handles zoom move for touch device
    * @param {dvt.TouchEvent} event Touch event to handle
@@ -379,7 +382,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
           this._bZooming = true;
           this.TouchManager.blockTouchHold();
           this._callback.call(this._callbackObj, EventFactory.newZoomEvent('dragZoomBegin'));
-
         }
         //turn on elastic constraints for the duration of this drag
         this._callbackObj.SetElasticConstraints(true);
@@ -403,7 +405,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
         this._callbackObj.panBy(data.dcx, data.dcy);
       }
     }
-
   }
 
   /**
@@ -422,7 +423,10 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     var touchIds = this.TouchManager.getTouchIdsForObj('zoomTouch');
     this._callbackObj.setCurrentTouchTargets(this.TouchManager.getStartTargetsByIds(touchIds));
     if (touchIds.length == 0)
-      this._callback.call(this._callbackObj, EventFactory.newZoomEvent('zoomEnd', this._callbackObj.getZoom(), this._origZoom));
+      this._callback.call(
+        this._callbackObj,
+        EventFactory.newZoomEvent('zoomEnd', this._callbackObj.getZoom(), this._origZoom)
+      );
   }
 
   /**
@@ -435,7 +439,16 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     if (!this._bZooming) {
       var touchIds = this.TouchManager.getTouchIdsForObj('panTouch');
       if (touchIds.length <= 1) {
-        this.TouchManager.saveProcessedTouch(touch.identifier, 'panTouch', null, 'panTouch', 'panTouch', this.PanMoveTouch, this.PanEndTouch, this);
+        this.TouchManager.saveProcessedTouch(
+          touch.identifier,
+          'panTouch',
+          null,
+          'panTouch',
+          'panTouch',
+          this.PanMoveTouch,
+          this.PanEndTouch,
+          this
+        );
         this._mx = touch.pageX;
         this._my = touch.pageY;
         this._px = this._mx;
@@ -526,7 +539,12 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     //for elastic constraints, use a panTo so that the delta is relative to the mouseDown point,
     //resulting in more consistent values and smoother elastic animation
     //this._callbackObj.panBy(xx - this._mx, yy - this._my);
-    this._callbackObj.panTo(this._origPanX + xx - this._px, this._origPanY + yy - this._py, null, true);
+    this._callbackObj.panTo(
+      this._origPanX + xx - this._px,
+      this._origPanY + yy - this._py,
+      null,
+      true
+    );
 
     if (this._bMomentumPanning) {
       //get new timestamp for momentum-based panning
@@ -540,12 +558,21 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
           this._callbackObj._view.dispatchEvent(EventFactory.newEvent('ready'));
         }
         this._momentumStartTimer.reset();
-      }
-      else {
-        this._momentumStartTimer = new Timer(this._context, this._MOMENTUM_START_TIMER_INTERVAL, this._handleMomentumStartTimer, this, 1);
+      } else {
+        this._momentumStartTimer = new Timer(
+          this._context,
+          this._MOMENTUM_START_TIMER_INTERVAL,
+          this._handleMomentumStartTimer,
+          this,
+          1
+        );
       }
       //save the info for this mouse move
-      this._arLastNMouseMoves.push({dt: (this._currTime - this._lastTime), dx: (xx - this._mx), dy: (yy - this._my)});
+      this._arLastNMouseMoves.push({
+        dt: this._currTime - this._lastTime,
+        dx: xx - this._mx,
+        dy: yy - this._my
+      });
       //only save last N moves, so drop the oldest
       if (this._arLastNMouseMoves.length > 5) {
         this._arLastNMouseMoves.splice(0, 1);
@@ -557,7 +584,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       this._momentumStartTimer.start();
     }
   }
-
 
   /**
    * Helper function called on mouseup or touchend events. Handles end of panning movement.
@@ -576,9 +602,13 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       //create or reset the momentum panning timer
       if (!this._momentumTimer) {
         //initialize with start timer interval, but it will later be changed based on mousemove event intervals
-        this._momentumTimer = new Timer(this._context, this._MOMENTUM_START_TIMER_INTERVAL, this._handleMomentumTimer, this);
-      }
-      else {
+        this._momentumTimer = new Timer(
+          this._context,
+          this._MOMENTUM_START_TIMER_INTERVAL,
+          this._handleMomentumTimer,
+          this
+        );
+      } else {
         this._momentumTimer.reset();
       }
 
@@ -597,7 +627,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       this._momentumXperMS = dx / dt;
       this._momentumYperMS = dy / dt;
       //use timer interval similar to mousemove interval
-      this._momentumTimer.setInterval(Math.ceil(dt / numMoves));//@HTMLUpdateOK
+      this._momentumTimer.setInterval(Math.ceil(dt / numMoves)); //@HTMLUpdateOK
       this._momentumIterCount = 1;
       this._momentumDx = 0;
       this._momentumDy = 0;
@@ -606,8 +636,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
         this._callbackObj._view.dispatchEvent(EventFactory.newEvent('notready'));
         this._momentumTimer.start();
       }
-    }
-    else {
+    } else {
       //turn off elastic constraints, which will animate a bounce back to constrained values, if necessary
       this._callbackObj.SetElasticConstraints(false);
     }
@@ -651,23 +680,23 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
 }
 
 /**
-  *  Creates a canvas that supports panning and zooming.
-  *  @extends {dvt.Container}
-  *  @class PanZoomCanvas is a platform independent class representing a
-  *  pannable, zoomable canvas.
-  *  @constructor
-  *  @param {dvt.Context} context The context object
-  *  @param {number} ww The width of the canvas
-  *  @param {number} hh The height of the canvas
-  */
+ *  Creates a canvas that supports panning and zooming.
+ *  @extends {dvt.Container}
+ *  @class PanZoomCanvas is a platform independent class representing a
+ *  pannable, zoomable canvas.
+ *  @constructor
+ *  @param {dvt.Context} context The context object
+ *  @param {number} ww The width of the canvas
+ *  @param {number} hh The height of the canvas
+ */
 
- class PanZoomCanvas extends Container {
+class PanZoomCanvas extends Container {
   constructor(context, ww, hh, view) {
     super(context);
 
     this.DEFAULT_PAN_INCREMENT = 15;
-    this.DEFAULT_ZOOM_INCREMENT = .05;
-    this.DEFAULT_ANIMATION_DURATION = .5;
+    this.DEFAULT_ZOOM_INCREMENT = 0.05;
+    this.DEFAULT_ANIMATION_DURATION = 0.5;
 
     this._view = view;
 
@@ -683,7 +712,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this._maxPanX = null;
     this._minPanY = null;
     this._maxPanY = null;
-    this._minZoom = .1;
+    this._minZoom = 0.1;
     this._maxZoom = 1;
 
     this._panIncrement = this.DEFAULT_PAN_INCREMENT;
@@ -695,8 +724,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this._bZoomingEnabled = true;
     this._bZoomToFitEnabled = true;
 
-    this._backgroundPane = new Rect(this.getCtx(),
-                                      0, 0, this._ww, this._hh);
+    this._backgroundPane = new Rect(this.getCtx(), 0, 0, this._ww, this._hh);
     this.addChild(this._backgroundPane);
     this._backgroundPane.setInvisibleFill();
 
@@ -741,7 +769,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     return new Dimension(this._ww, this._hh);
   }
 
-
   /**
    *  Sets a clipping region for the panZoomCanvas.
    *  @param {number} ww width
@@ -753,13 +780,12 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this.setClipPath(clipPath);
   }
 
-
   /**
-    * Get the content pane of the canvas.  The content pane is the
-    * object that will be panned and zoomed.  Content should be
-    * added as a child of the content pane, not the canvas itself.
-    * @return {dvt.Container} the content pane of the canvas
-    */
+   * Get the content pane of the canvas.  The content pane is the
+   * object that will be panned and zoomed.  Content should be
+   * added as a child of the content pane, not the canvas itself.
+   * @return {dvt.Container} the content pane of the canvas
+   */
   getContentPane() {
     return this._contentPane;
   }
@@ -768,17 +794,15 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this._contentPane = contentPane;
   }
 
-
   /**
-    * Get the background pane of the canvas.  The background
-    * pane appears behind the content pane, and should be used
-    * for styling.
-    * @return {dvt.Rect} the background pane of the canvas
-    */
+   * Get the background pane of the canvas.  The background
+   * pane appears behind the content pane, and should be used
+   * for styling.
+   * @return {dvt.Rect} the background pane of the canvas
+   */
   getBackgroundPane() {
     return this._backgroundPane;
   }
-
 
   /**
    * Gets the matrix for this pan zoom canvas
@@ -795,64 +819,58 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     return this._contentPane.getMatrix();
   }
 
-
   /**
-    * Get the current zoom level.
-    * @param {dvt.Animator} animator (optional) The animator to check for a more current value
-    * @return {number} the current zoom level
-    */
+   * Get the current zoom level.
+   * @param {dvt.Animator} animator (optional) The animator to check for a more current value
+   * @return {number} the current zoom level
+   */
   getZoom(animator) {
     return this.getContentPaneMatrix(animator).getA();
   }
 
-
   /**
-    * Get the current horizontal pan position.
-    * @param {dvt.Animator} animator (optional) The animator to check for a more current value
-    * @return {number} the current horizontal pan position
-    */
+   * Get the current horizontal pan position.
+   * @param {dvt.Animator} animator (optional) The animator to check for a more current value
+   * @return {number} the current horizontal pan position
+   */
   getPanX(animator) {
     return this.getContentPaneMatrix(animator).getTx();
   }
 
-
   /**
-    * Get the current vertical pan position.
-    * @param {dvt.Animator} animator (optional) The animator to check for a more current value
-    * @return {number} the current vertical pan position
-    */
+   * Get the current vertical pan position.
+   * @param {dvt.Animator} animator (optional) The animator to check for a more current value
+   * @return {number} the current vertical pan position
+   */
   getPanY(animator) {
     return this.getContentPaneMatrix(animator).getTy();
   }
 
-
   /**
-    * Set the padding to leave around the content when it is zoomed-to-fit.
-    * The default value is 20.
-    * @param {number} n new zoom-to-fit padding
-    */
+   * Set the padding to leave around the content when it is zoomed-to-fit.
+   * The default value is 20.
+   * @param {number} n new zoom-to-fit padding
+   */
   setZoomToFitPadding(n) {
     this._zoomToFitPadding = n;
   }
 
-
   /**
-    * Get the padding to leave around the content when it is zoomed-to-fit.
-    * @return {number} zoom-to-fit padding
-    */
+   * Get the padding to leave around the content when it is zoomed-to-fit.
+   * @return {number} zoom-to-fit padding
+   */
   getZoomToFitPadding() {
     return this._zoomToFitPadding;
   }
 
-
   /**
-    * Pan by the given amount.
-    * @param {number} dx horizontal amount to pan by
-    * @param {number} dy vertical amount to pan by
-    * @param {dvt.Animator} animator optional animator to use to animate the pan
-    * @param {function=} panEndFunc Additional optional callback function panning completed
-    * @param {boolean} noWriteback optional if true, don't writeback to options
-    */
+   * Pan by the given amount.
+   * @param {number} dx horizontal amount to pan by
+   * @param {number} dy vertical amount to pan by
+   * @param {dvt.Animator} animator optional animator to use to animate the pan
+   * @param {function=} panEndFunc Additional optional callback function panning completed
+   * @param {boolean} noWriteback optional if true, don't writeback to options
+   */
   panBy(dx, dy, animator, panEndFunc, noWriteback) {
     if (!this.isPanningEnabled()) {
       return;
@@ -876,7 +894,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
 
     mat = mat.translate(deltaX, deltaY);
 
-
     var thisRef = this;
     var fireStartEventFunc = () => {
       thisRef.FirePanEvent('panning', newX, newY, oldX, oldY, animator, this.getZoom());
@@ -888,11 +905,13 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     };
 
     if (animator) {
-      animator.addProp(Animator.TYPE_MATRIX,
-                      this._contentPane,
-                      this._contentPane.getMatrix,
-                      this._contentPane.setMatrix,
-                      mat);
+      animator.addProp(
+        Animator.TYPE_MATRIX,
+        this._contentPane,
+        this._contentPane.getMatrix,
+        this._contentPane.setMatrix,
+        mat
+      );
       Playable.prependOnInit(animator, fireStartEventFunc);
       Playable.appendOnEnd(animator, fireEndEventFunc);
       if (panEndFunc) {
@@ -908,14 +927,13 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     }
   }
 
-
   /**
-    * Pan to the given position.
-    * @param {number} xx horizontal position to pan to
-    * @param {number} yy vertical position to pan to
-    * @param {dvt.Animator} animator optional animator to use to animate the pan
-    * @param {boolean} noWriteback optional, if true, don't writeback to options
-    */
+   * Pan to the given position.
+   * @param {number} xx horizontal position to pan to
+   * @param {number} yy vertical position to pan to
+   * @param {dvt.Animator} animator optional animator to use to animate the pan
+   * @param {boolean} noWriteback optional, if true, don't writeback to options
+   */
   panTo(xx, yy, animator, noWriteback) {
     if (!this.isPanningEnabled()) {
       return;
@@ -930,17 +948,25 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
    * Writeback the pan value to options
    */
   writebackPan() {
-    this.FirePanEvent('panned', this.getPanX(), this.getPanY(), this.getPanX(), this.getPanY(), null, this.getZoom());
+    this.FirePanEvent(
+      'panned',
+      this.getPanX(),
+      this.getPanY(),
+      this.getPanX(),
+      this.getPanY(),
+      null,
+      this.getZoom()
+    );
   }
 
   /**
-    * Zoom by the given amount.
-    * @param {number} dz amount to zoom by
-    * @param {number} xx horizontal center of zoom (if not specified, treated as the horizontal center of the canvas)
-    * @param {number} yy vertical center of zoom (if not specified, treated as the vertical center of the canvas)
-    * @param {dvt.Animator} animator optional animator to use to animate the zoom
-    * @param {boolean} panAndZoom optional if true, both zoom + pan changes are occurring
-    */
+   * Zoom by the given amount.
+   * @param {number} dz amount to zoom by
+   * @param {number} xx horizontal center of zoom (if not specified, treated as the horizontal center of the canvas)
+   * @param {number} yy vertical center of zoom (if not specified, treated as the vertical center of the canvas)
+   * @param {dvt.Animator} animator optional animator to use to animate the zoom
+   * @param {boolean} panAndZoom optional if true, both zoom + pan changes are occurring
+   */
   zoomBy(dz, xx, yy, animator, panAndZoom) {
     if (!this.isZoomingEnabled()) {
       return;
@@ -975,7 +1001,16 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
 
     var thisRef = this;
     var fireStartEventFunc = () => {
-      thisRef.FireZoomEvent('zooming', newZoom, oldZoom, animator, xx, yy, thisRef.getPanX(), thisRef.getPanY());
+      thisRef.FireZoomEvent(
+        'zooming',
+        newZoom,
+        oldZoom,
+        animator,
+        xx,
+        yy,
+        thisRef.getPanX(),
+        thisRef.getPanY()
+      );
     };
     var fireEndEventFunc = () => {
       //use current zoom level at time of firing event as new zoom level
@@ -983,15 +1018,27 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       //zoom animation gets interrupted by the next one, so each event
       //doesn't actually zoom all the way to the desired scale until the
       //last event
-      thisRef.FireZoomEvent('zoomed', thisRef.getZoom(), oldZoom, animator, xx, yy, thisRef.getPanX(), thisRef.getPanY(), panAndZoom);
+      thisRef.FireZoomEvent(
+        'zoomed',
+        thisRef.getZoom(),
+        oldZoom,
+        animator,
+        xx,
+        yy,
+        thisRef.getPanX(),
+        thisRef.getPanY(),
+        panAndZoom
+      );
     };
 
     if (animator) {
-      animator.addProp(Animator.TYPE_MATRIX,
-                      this._contentPane,
-                      this._contentPane.getMatrix,
-                      this._contentPane.setMatrix,
-                      mat);
+      animator.addProp(
+        Animator.TYPE_MATRIX,
+        this._contentPane,
+        this._contentPane.getMatrix,
+        this._contentPane.setMatrix,
+        mat
+      );
       Playable.prependOnInit(animator, fireStartEventFunc);
       Playable.appendOnEnd(animator, fireEndEventFunc);
     } else {
@@ -1001,15 +1048,14 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     }
   }
 
-
   /**
-    * Zoom to the given scale.
-    * @param {number} zz new scale
-    * @param {number} xx horizontal center of zoom (if not specified, treated as the horizontal center of the canvas)
-    * @param {number} yy vertical center of zoom (if not specified, treated as the vertical center of the canvas)
-    * @param {dvt.Animator} animator optional animator to use to animate the zoom
-    * @param {boolean} panAndZoom optional if true, both zoom + pan changes are occurring
-    */
+   * Zoom to the given scale.
+   * @param {number} zz new scale
+   * @param {number} xx horizontal center of zoom (if not specified, treated as the horizontal center of the canvas)
+   * @param {number} yy vertical center of zoom (if not specified, treated as the vertical center of the canvas)
+   * @param {dvt.Animator} animator optional animator to use to animate the zoom
+   * @param {boolean} panAndZoom optional if true, both zoom + pan changes are occurring
+   */
   zoomTo(zz, xx, yy, animator, panAndZoom) {
     if (!this.isZoomingEnabled()) {
       return;
@@ -1018,36 +1064,33 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this.zoomBy(dz, xx, yy, animator, panAndZoom);
   }
 
-
   /**
-    * Pan the content pane to be centered in the canvas.
-    * @param {dvt.Animator} animator optional animator to use to animate the zoom-to-fit
-    * @param {dvt.Rectangle} fitBounds optional bounds in content pane coordinate system to zoom-to-fit to
-    */
+   * Pan the content pane to be centered in the canvas.
+   * @param {dvt.Animator} animator optional animator to use to animate the zoom-to-fit
+   * @param {dvt.Rectangle} fitBounds optional bounds in content pane coordinate system to zoom-to-fit to
+   */
   center(animator, fitBounds) {
     var panningEnabled = this.isPanningEnabled();
     var panDirection = this.getPanDir();
     this.setPanningEnabled(true);
     this.setPanDir('auto');
     var bounds = fitBounds;
-    if (!bounds)
-      bounds = this._contentPane.getDimensions();
+    if (!bounds) bounds = this._contentPane.getDimensions();
 
     var cxBounds = (bounds.x + bounds.w / 2) * this.getZoom();
     var cyBounds = (bounds.y + bounds.h / 2) * this.getZoom();
-    var dx = (this._ww / 2) - cxBounds;
-    var dy = (this._hh / 2) - cyBounds;
+    var dx = this._ww / 2 - cxBounds;
+    var dy = this._hh / 2 - cyBounds;
     this.panTo(dx, dy, animator);
     this.setPanningEnabled(panningEnabled);
     this.setPanDir(panDirection);
   }
 
-
   /**
-    * Zoom and pan the content pane to fit the canvas size.
-    * @param {dvt.Animator} animator optional animator to use to animate the zoom-to-fit
-    * @param {dvt.Rectangle} fitBounds optional bounds in content pane coordinate system to zoom-to-fit to
-    */
+   * Zoom and pan the content pane to fit the canvas size.
+   * @param {dvt.Animator} animator optional animator to use to animate the zoom-to-fit
+   * @param {dvt.Rectangle} fitBounds optional bounds in content pane coordinate system to zoom-to-fit to
+   */
   zoomToFit(animator, fitBounds) {
     if (!this.isZoomToFitEnabled()) {
       return;
@@ -1062,18 +1105,17 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this.setZoomingEnabled(true);
     try {
       var bounds = fitBounds ? fitBounds : this._contentPane.getDimensions();
-      if (!bounds)
-        return;
+      if (!bounds) return;
 
-      var dzx = (this._ww - 2 * this._zoomToFitPadding) / (bounds.w);
-      var dzy = (this._hh - 2 * this._zoomToFitPadding) / (bounds.h);
+      var dzx = (this._ww - 2 * this._zoomToFitPadding) / bounds.w;
+      var dzy = (this._hh - 2 * this._zoomToFitPadding) / bounds.h;
       var dz = Math.min(dzx, dzy);
       dz = this.ConstrainZoom(dz);
 
       var cxBounds = (bounds.x + bounds.w / 2) * dz;
       var cyBounds = (bounds.y + bounds.h / 2) * dz;
-      var dx = (this._ww / 2) - cxBounds;
-      var dy = (this._hh / 2) - cyBounds;
+      var dx = this._ww / 2 - cxBounds;
+      var dy = this._hh / 2 - cyBounds;
 
       var oldZoom = this.getZoom(animator);
       var thisRef = this;
@@ -1084,10 +1126,8 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
         thisRef.FireZoomEvent('zoomToFitEnd', thisRef.getZoom(), oldZoom, animator);
       };
 
-      if (!animator)
-        fireStartEventFunc();
-      else
-        Playable.prependOnInit(animator, fireStartEventFunc);
+      if (!animator) fireStartEventFunc();
+      else Playable.prependOnInit(animator, fireStartEventFunc);
 
       this.zoomTo(dz, 0, 0, animator, true);
       this.panTo(dx, dy, animator);
@@ -1104,28 +1144,26 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     }
   }
 
-
   /**
-    * Calculate the zoom-to-fit scale.
-    * @param {dvt.Rectangle} bounds optional bounds in content pane coordinate system to calculate zoom-to-fit scale to
-    */
+   * Calculate the zoom-to-fit scale.
+   * @param {dvt.Rectangle} bounds optional bounds in content pane coordinate system to calculate zoom-to-fit scale to
+   */
   calcZoomToFitScale(bounds) {
     if (!bounds) {
       bounds = this._contentPane.getDimensions();
     }
 
-    var dzx = (this._ww - 2 * this._zoomToFitPadding) / (bounds.w);
-    var dzy = (this._hh - 2 * this._zoomToFitPadding) / (bounds.h);
+    var dzx = (this._ww - 2 * this._zoomToFitPadding) / bounds.w;
+    var dzy = (this._hh - 2 * this._zoomToFitPadding) / bounds.h;
     var dz = Math.min(dzx, dzy);
     dz = this.ConstrainZoom(dz);
 
     return dz;
   }
 
-
   /**
-    * Calculate the zoom-to-fit dimensions.
-    */
+   * Calculate the zoom-to-fit dimensions.
+   */
   calcZoomToFitBounds() {
     var bounds = this._contentPane.getDimensions();
     bounds.x -= this._zoomToFitPadding;
@@ -1136,7 +1174,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     return bounds;
   }
 
-
   /**
    * Get the current viewport in the coordinate system of the content pane.
    * @return  {dvt.Rectangle}  current viewport
@@ -1146,9 +1183,12 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     var bottomRightGlobal = this.localToStage(new Point(this._ww, this._hh));
     var topLeftLocal = this.getContentPane().stageToLocal(topLeftGlobal);
     var bottomRightLocal = this.getContentPane().stageToLocal(bottomRightGlobal);
-    return new Rectangle(topLeftLocal.x, topLeftLocal.y,
-        bottomRightLocal.x - topLeftLocal.x,
-        bottomRightLocal.y - topLeftLocal.y);
+    return new Rectangle(
+      topLeftLocal.x,
+      topLeftLocal.y,
+      bottomRightLocal.x - topLeftLocal.x,
+      bottomRightLocal.y - topLeftLocal.y
+    );
   }
 
   /**
@@ -1172,27 +1212,45 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
       var currX = this.getPanX();
       var currY = this.getPanY();
       var currZoom = this.getZoom();
-      this._bElasticPan = (currX != this.ConstrainPanX(currX) || currY != this.ConstrainPanY(currY));
-      this._bElasticZoom = (currZoom != this.ConstrainZoom(currZoom));
+      this._bElasticPan = currX != this.ConstrainPanX(currX) || currY != this.ConstrainPanY(currY);
+      this._bElasticZoom = currZoom != this.ConstrainZoom(currZoom);
       if (this._bElasticPan || this._bElasticZoom) {
-        this._elasticConstraintsAnim = new Animator(this.getCtx(), .4);
+        this._elasticConstraintsAnim = new Animator(this.getCtx(), 0.4);
         //do cubicOut easing so that the anim happens fast at the beginning and slows down at the end,
         //to make it seem like an elastic
         this._elasticConstraintsAnim.setEasing(Easing.cubicOut);
         //if zoom beyond constraint, constrain it
         if (this._bElasticZoom) {
-          this.zoomBy(1, .5 * this._ww, .5 * this._hh, this._elasticConstraintsAnim);
+          this.zoomBy(1, 0.5 * this._ww, 0.5 * this._hh, this._elasticConstraintsAnim);
         }
         //if pan is beyond constraints, constrain it
         if (this._bElasticPan) {
           this.panBy(0, 0, this._elasticConstraintsAnim);
         }
 
-        Playable.appendOnEnd(this._elasticConstraintsAnim, this._elasticConstraintsAnimOnEnd, this);
+        Playable.appendOnEnd(
+          this._elasticConstraintsAnim,
+          this._elasticConstraintsAnimOnEnd,
+          this
+        );
         if (this._bElasticPan)
-          this.FirePanEvent('elasticAnimBegin', null, null, null, null, this._elasticConstraintsAnim);
+          this.FirePanEvent(
+            'elasticAnimBegin',
+            null,
+            null,
+            null,
+            null,
+            this._elasticConstraintsAnim
+          );
         if (this._bElasticZoom)
-          this.FireZoomEvent('elasticAnimBegin', null, null, null, null, this._elasticConstraintsAnim);
+          this.FireZoomEvent(
+            'elasticAnimBegin',
+            null,
+            null,
+            null,
+            null,
+            this._elasticConstraintsAnim
+          );
         this._view.dispatchEvent(EventFactory.newEvent('notready'));
         this._elasticConstraintsAnim.play();
       } else {
@@ -1202,7 +1260,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     }
   }
 
-
   /**
    * @protected
    * Determine whether constraints are elastic, with overflow and bounce back.
@@ -1211,19 +1268,15 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     return this._bElasticConstraints;
   }
 
-
   /**
    * @private
    */
   _elasticConstraintsAnimOnEnd() {
     this._elasticConstraintsAnim = null;
-    if (this._bElasticPan)
-      this.FirePanEvent('elasticAnimEnd');
-    if (this._bElasticZoom)
-      this.FireZoomEvent('elasticAnimEnd');
+    if (this._bElasticPan) this.FirePanEvent('elasticAnimEnd');
+    if (this._bElasticZoom) this.FireZoomEvent('elasticAnimEnd');
     this._view.dispatchEvent(EventFactory.newEvent('ready'));
   }
-
 
   /**
    * @private
@@ -1231,10 +1284,9 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
    */
   _panDampingFunc(delta, whole) {
     //parabola centered at (0,0) expanding to the right: y ^ 2 = 4 * a * x
-    var a = .01 * whole;
+    var a = 0.01 * whole;
     return Math.sqrt(4 * a * delta);
   }
-
 
   /**
    * @private
@@ -1242,10 +1294,9 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
    */
   _zoomDampingFunc(delta, whole) {
     //parabola centered at (0,0) expanding to the right: y ^ 2 = 4 * a * x
-    var a = .002 * whole;
+    var a = 0.002 * whole;
     return Math.sqrt(4 * a * delta);
   }
-
 
   /**
    * @protected
@@ -1277,7 +1328,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     return offsetX;
   }
 
-
   /**
    * @protected
    * Constrain vertical panning if needed
@@ -1307,7 +1357,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     }
     return offsetY;
   }
-
 
   /**
    * Applies zoom constraints to the specified zoom level
@@ -1345,9 +1394,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     return Math.round(n * 100000);
   }
 
-
-
-
   /**
    * @protected
    * Get the position relative to the stage of the given mouse event.
@@ -1358,7 +1404,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     return this.getCtx().pageToStageCoords(event.pageX, event.pageY);
   }
 
-
   /**
    * @protected
    */
@@ -1366,7 +1411,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     var panEvent = EventFactory.newPanEvent(subtype, newX, newY, oldX, oldY, animator, zoom);
     this.FireListener(panEvent);
   }
-
 
   /**
    * Fires a zoom event to listeners
@@ -1384,16 +1428,22 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
    */
   FireZoomEvent(subtype, newZoom, oldZoom, animator, xx, yy, panX, panY, panAndZoom) {
     var point = panX != null && panY != null ? new Point(panX, panY) : null;
-    var zoomEvent = EventFactory.newZoomEvent(subtype, newZoom, oldZoom, animator, new Point(xx, yy), point, panAndZoom);
+    var zoomEvent = EventFactory.newZoomEvent(
+      subtype,
+      newZoom,
+      oldZoom,
+      animator,
+      new Point(xx, yy),
+      point,
+      panAndZoom
+    );
     this.FireListener(zoomEvent);
     return zoomEvent;
   }
 
-
   zoomAndCenter() {
     this.FireZoomEvent('zoomAndCenter');
   }
-
 
   /**
    * Get the next incremental, increasing, zoom level.
@@ -1406,12 +1456,10 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     var zoomLevel = currZoom;
 
     zoomLevel += this.getZoomIncr();
-    if (zoomLevel > this.getMaxZoom())
-      zoomLevel = this.getMaxZoom();
+    if (zoomLevel > this.getMaxZoom()) zoomLevel = this.getMaxZoom();
 
     return zoomLevel;
   }
-
 
   /**
    * Get the previous incremental, decreasing, zoom level.
@@ -1424,8 +1472,7 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     var zoomLevel = currZoom;
 
     zoomLevel -= this.getZoomIncr();
-    if (zoomLevel < this.getMinZoom())
-      zoomLevel = this.getMinZoom();
+    if (zoomLevel < this.getMinZoom()) zoomLevel = this.getMinZoom();
 
     return zoomLevel;
   }
@@ -1448,7 +1495,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     return this._panIncrement;
   }
 
-
   /**
    * Set the minimum zoom factor allowed.
    * The default is .1.
@@ -1459,7 +1505,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this._minZoom = n;
   }
 
-
   /**
    * Get the minimum zoom factor allowed.
    *
@@ -1469,18 +1514,15 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     return this._minZoom;
   }
 
-
   /**
    * Set the maximum zoom factor allowed.
    *
    * @param n maximum zoom factor
    */
   setMaxZoom(n) {
-    if (n < 0)
-      n = 1;
+    if (n < 0) n = 1;
     this._maxZoom = n;
   }
-
 
   /**
    * Get the maximum zoom factor allowed.
@@ -1490,7 +1532,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
   getMaxZoom() {
     return this._maxZoom;
   }
-
 
   /**
    * Set the minimum x coord allowed.
@@ -1502,7 +1543,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this._minPanX = n;
   }
 
-
   /**
    * Get the minimum x coord allowed.
    *
@@ -1511,7 +1551,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
   getMinPanX() {
     return this._minPanX;
   }
-
 
   /**
    * Set the maximum x coord allowed.
@@ -1523,7 +1562,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this._maxPanX = n;
   }
 
-
   /**
    * Get the maximum x coord allowed.
    *
@@ -1532,7 +1570,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
   getMaxPanX() {
     return this._maxPanX;
   }
-
 
   /**
    * Set the minimum y coord allowed.
@@ -1544,7 +1581,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this._minPanY = n;
   }
 
-
   /**
    * Get the minimum y coord allowed.
    *
@@ -1553,7 +1589,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
   getMinPanY() {
     return this._minPanY;
   }
-
 
   /**
    * Set the maximum y coord allowed.
@@ -1565,7 +1600,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this._maxPanY = n;
   }
 
-
   /**
    * Get the maximum y coord allowed.
    *
@@ -1574,7 +1608,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
   getMaxPanY() {
     return this._maxPanY;
   }
-
 
   /**
    * Sets the animation duration (in seconds) for zoom interactions
@@ -1585,13 +1618,12 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this._animationDuration = animationDuration;
   }
 
-
   /**
    * Gets the animation duration (in seconds) for zoom interactions
    *
    * @return the animation duration (in seconds)
    */
-   getAnimDur() {
+  getAnimDur() {
     return this._animationDuration;
   }
   /**
@@ -1644,7 +1676,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     return this._bZoomToFitEnabled;
   }
 
-
   /**
    * Stores current touch targets (for zoom events)
    * @param {array} targets an array of the current touch targets
@@ -1653,7 +1684,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
     this._currTargets = targets;
   }
 
-
   /**
    * Returns current touch targets (for zoom events)
    * @return {array} an array of the current touch targets
@@ -1661,7 +1691,6 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
   getCurrentTouchTargets() {
     return this._currTargets;
   }
-
 
   /**
    * Resets touch info, touch map and timers. The method is called after DnD event when touches stored by PanZoomCanvasEventManager become irrelevant.
@@ -1688,10 +1717,8 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
    * @param {boolean} bEnabled True to enable interaction
    */
   setInteractionEnabled(bEnabled) {
-    if (!bEnabled)
-      this._eventManager.removeListeners(this);
-    else
-      this._eventManager.addListeners(this);
+    if (!bEnabled) this._eventManager.removeListeners(this);
+    else this._eventManager.addListeners(this);
   }
 
   /**
@@ -1721,10 +1748,8 @@ import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rec
   getCursor(panOn) {
     if (this._bPanningEnabled) {
       return panOn ? ToolkitUtils.getGrabbingCursor() : ToolkitUtils.getGrabCursor();
-    } else
-      return 'inherit';
+    } else return 'inherit';
   }
-
 }
 
 PanZoomCanvas.DEFAULT_PADDING = 20;
@@ -1735,7 +1760,7 @@ PanZoomCanvas.DEFAULT_PADDING = 20;
  *  @extends {dvt.KeyboardHandler}
  *  @constructor
  */
- class PanZoomCanvasKeyboardHandler extends KeyboardHandler {
+class PanZoomCanvasKeyboardHandler extends KeyboardHandler {
   constructor(component, manager) {
     super(manager);
     this._comp = component;
@@ -1749,29 +1774,24 @@ PanZoomCanvas.DEFAULT_PADDING = 20;
     var canvas = this._comp.getPanZoomCanvas();
     if (keyCode == KeyboardEvent.PAGE_UP) {
       //TODO handle BiDi panning left/right
-      if (event.ctrlKey || event.shiftKey)
-        canvas.panBy(canvas.getPanIncr(), 0);
-      else
-        canvas.panBy(0, canvas.getPanIncr());
+      if (event.ctrlKey || event.shiftKey) canvas.panBy(canvas.getPanIncr(), 0);
+      else canvas.panBy(0, canvas.getPanIncr());
       event.preventDefault();
-    }
-    else if (keyCode == KeyboardEvent.PAGE_DOWN) {
-      if (event.ctrlKey || event.shiftKey)
-        canvas.panBy(-canvas.getPanIncr(), 0);
-      else
-        canvas.panBy(0, -canvas.getPanIncr());
+    } else if (keyCode == KeyboardEvent.PAGE_DOWN) {
+      if (event.ctrlKey || event.shiftKey) canvas.panBy(-canvas.getPanIncr(), 0);
+      else canvas.panBy(0, -canvas.getPanIncr());
       event.preventDefault();
-    }
-    else if (KeyboardEvent.isEquals(event) || KeyboardEvent.isPlus(event)) {
+    } else if (KeyboardEvent.isEquals(event) || KeyboardEvent.isPlus(event)) {
       canvas.zoomTo(canvas.getZoom() + canvas.getZoomIncr());
-    }
-    else if (KeyboardEvent.isMinus(event) || KeyboardEvent.isUnderscore(event)) {
+    } else if (KeyboardEvent.isMinus(event) || KeyboardEvent.isUnderscore(event)) {
       canvas.zoomTo(canvas.getZoom() - canvas.getZoomIncr());
-    }
-    else if ((keyCode == KeyboardEvent.ZERO || keyCode == KeyboardEvent.NUMPAD_ZERO) && !event.ctrlKey && !event.shiftKey) {
+    } else if (
+      (keyCode == KeyboardEvent.ZERO || keyCode == KeyboardEvent.NUMPAD_ZERO) &&
+      !event.ctrlKey &&
+      !event.shiftKey
+    ) {
       canvas.zoomToFit();
-    }
-    else {
+    } else {
       return super.processKeyDown(event);
     }
     return undefined;
@@ -1786,11 +1806,14 @@ PanZoomCanvas.DEFAULT_PADDING = 20;
  * @constructor
  * @protected
  */
- class PanZoomComponent extends BaseComponent {
+class PanZoomComponent extends BaseComponent {
   constructor(context, callback, callbackObj) {
     super(context, callback, callbackObj);
     // IE11 does not support vector-effects=non-scaling-stroke so we still need to set stroke width based on zoom
-    this._bSupportsVectorEffects = !((Agent.browser === 'ie' || Agent.browser === 'edge') && Agent.version <= 11);
+    this._bSupportsVectorEffects = !(
+      (Agent.browser === 'ie' || Agent.browser === 'edge') &&
+      Agent.version <= 11
+    );
     this._resourcesMap = null;
     this._panAnimator = null;
     this._panningInterrupted = false;
@@ -1815,14 +1838,13 @@ PanZoomCanvas.DEFAULT_PADDING = 20;
     // - buttons not responding in firefox if hierarchy viewer present
     //If component is resized before initializing the canvas, don't render the component
     //There is nothing to resize without pan zoom canvas
-    if (this.IsResize() && !this.getPanZoomCanvas())
-      return;
+    if (this.IsResize() && !this.getPanZoomCanvas()) return;
 
     this.PreRender();
 
     // Process data
     if (!this.IsResize()) {
-        this.SetOptions(options);
+      this.SetOptions(options);
     }
 
     this.Render(options, width, height);
@@ -1836,7 +1858,6 @@ PanZoomCanvas.DEFAULT_PADDING = 20;
   supportsVectorEffects() {
     return this._bSupportsVectorEffects;
   }
-
 
   /**
    * A hook for handling a canvas pan event
@@ -1886,11 +1907,15 @@ PanZoomCanvas.DEFAULT_PADDING = 20;
       }
 
       // Create the pan zoom canvas
-      this._panZoomCanvas = new PanZoomCanvas(this.getCtx(), this.getWidth(), this.getHeight(), this);
+      this._panZoomCanvas = new PanZoomCanvas(
+        this.getCtx(),
+        this.getWidth(),
+        this.getHeight(),
+        this
+      );
       this._panZoomCanvas.addEvtListener('dvtPan', this.HandlePanEvent, false, this);
       this._panZoomCanvas.addEvtListener('dvtZoom', this.HandleZoomEvent, false, this);
       this.addChild(this._panZoomCanvas);
-
     } else {
       this._panZoomCanvas.setSize(this.getWidth(), this.getHeight());
     }
@@ -1899,15 +1924,13 @@ PanZoomCanvas.DEFAULT_PADDING = 20;
     this.setClipPath(clipPath);
   }
 
-
-/**
- * @override
- */
-SetOptions(options) {
-  super.SetOptions(options);
-  this.Options = this.Defaults ? this.Defaults.calcOptions(options) : options;
-}
-
+  /**
+   * @override
+   */
+  SetOptions(options) {
+    super.SetOptions(options);
+    this.Options = this.Defaults ? this.Defaults.calcOptions(options) : options;
+  }
 
   /**
    * @override
@@ -1951,24 +1974,20 @@ SetOptions(options) {
     if (objW <= width) {
       if (objX < 0) {
         panX = objX;
-      }
-      else if (objX + objW > width) {
+      } else if (objX + objW > width) {
         panX = objX + objW - width;
       }
-    }
-    else {
-      panX = (objX + 0.5 * objW) - (0.5 * width);
+    } else {
+      panX = objX + 0.5 * objW - 0.5 * width;
     }
     if (objH <= height) {
       if (objY < 0) {
         panY = objY;
-      }
-      else if (objY + objH > height) {
+      } else if (objY + objH > height) {
         panY = objY + objH - height;
       }
-    }
-    else {
-      panY = (objY + 0.5 * objH) - (0.5 * height);
+    } else {
+      panY = objY + 0.5 * objH - 0.5 * height;
     }
 
     var animator = new Animator(this.getCtx(), this.getAnimDur());

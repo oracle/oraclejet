@@ -23,6 +23,7 @@ export declare class ActionCard extends Component<ExtendGlobalProps<Props>, Stat
     private _handleOjAction;
     private readonly _handleStart;
     private readonly _handleUpEnd;
+    private readonly _handleClick;
     private readonly _handleTouchcancel;
     private readonly _handleMove;
     private readonly _handleKeydown;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -400,9 +400,7 @@ obData()[0].children.push(moveNode);</td>
  * @name dispatchEvent
  */
 
-/**
- * End of jsdoc
- */
+// end of jsdoc
 
 class ArrayTreeDataProvider {
     constructor(treeData, options, _rootDataProvider) {
@@ -444,6 +442,7 @@ class ArrayTreeDataProvider {
         this._mapArrayToSequenceNum = new Map();
         this._mapKoArrayToSubscriptions = new Map();
         this._mapKeyToParentNodePath = new Map();
+        this._parentNodeKeys = new Set();
         this._childrenAttr =
             this.options && this.options['childrenAttribute']
                 ? this.options['childrenAttribute']
@@ -451,6 +450,9 @@ class ArrayTreeDataProvider {
         if (_rootDataProvider == null) {
             this._parentNodePath = [];
             this._processTreeArray(treeData, []);
+        }
+        else {
+            this._getTreeKeys(this.treeData);
         }
     }
     containsKeys(params) {
@@ -480,14 +482,20 @@ class ArrayTreeDataProvider {
         return this._baseDataProvider.createOptimizedKeyMap(initialMap);
     }
     getChildDataProvider(parentKey, options) {
+        const rootDP = this._getRootDataProvider();
         const node = this._getNodeForKey(parentKey);
         if (node) {
             const children = this._getChildren(node);
             if (children) {
-                const childDataProvider = new ArrayTreeDataProvider(children, this.options, this._getRootDataProvider());
+                const childDataProvider = new ArrayTreeDataProvider(children, this.options, rootDP);
                 if (childDataProvider != null) {
-                    const rootDataProvider = this._getRootDataProvider();
-                    childDataProvider._parentNodePath = rootDataProvider._mapKeyToParentNodePath.get(JSON.stringify(parentKey));
+                    childDataProvider._parentNodePath = rootDP._mapKeyToParentNodePath.get(JSON.stringify(parentKey));
+                    rootDP.addEventListener('refresh', (e) => {
+                        childDataProvider._getTreeKeys(children);
+                    });
+                    rootDP.addEventListener('mutate', (e) => {
+                        childDataProvider._getTreeKeys(children);
+                    });
                 }
                 return childDataProvider;
             }
@@ -511,22 +519,38 @@ class ArrayTreeDataProvider {
                 metadata = this._getTreeMetadata(metadata, data);
                 newResults.push({ data, metadata });
             }
-            return {
+            const data = {
                 done: result['done'],
                 fetchParameters: result['fetchParameters'],
                 results: newResults
             };
+            if (params.includeFilteredRowCount === 'enabled') {
+                data['totalFilteredRowCount'] = result.totalFilteredRowCount;
+            }
+            return data;
         });
     }
     fetchByKeys(params) {
         const results = new Map();
         params['keys'].forEach((key) => {
-            const node = this._getNodeForKey(key);
-            if (node) {
-                results.set(key, { metadata: { key }, data: node });
+            if (this._parentNodePath.length === 0 || this._parentNodeKeys.has(key)) {
+                const node = this._getNodeForKey(key);
+                if (node) {
+                    results.set(key, { metadata: { key }, data: node });
+                }
             }
         });
         return Promise.resolve({ fetchParameters: params, results });
+    }
+    _getTreeKeys(treeData) {
+        const arrTreeData = treeData instanceof Array ? treeData : treeData();
+        for (const node of arrTreeData) {
+            const key = this._getKeyForNode(node);
+            this._parentNodeKeys.add(key);
+            if (node[this._childrenAttr]) {
+                this._getTreeKeys(node[this._childrenAttr]);
+            }
+        }
     }
     _getChildren(node) {
         return this._getVal(node, this._childrenAttr, true);

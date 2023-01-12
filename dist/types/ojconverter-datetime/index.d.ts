@@ -47,7 +47,6 @@ export namespace IntlDateTimeConverter {
     type ConverterOptions = {
         dateFormat?: 'short' | 'medium' | 'long' | 'full';
         day?: '2-digit' | 'numeric';
-        dst?: boolean;
         era?: 'narrow' | 'short' | 'long';
         formatType?: 'date' | 'time' | 'datetime';
         hour?: '2-digit' | 'numeric';

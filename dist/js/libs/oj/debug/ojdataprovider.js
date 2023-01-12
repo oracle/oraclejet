@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -291,11 +291,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
      * }
      * </code></pre>
      */
-    oj.DataProvider = function () {
-    };
+    oj.DataProvider = function () {};
 
     /**
-     * Get an AsyncIterable object for iterating the data.
+     * Get an AsyncIterable object for iterating the data. Iterating data on this AsyncIterable object can be
+     * aborted if an AbortSignal is specified when getting this AsyncIterable object.
      * <p>
      * AsyncIterable contains a Symbol.asyncIterator method that returns an AsyncIterator.
      * AsyncIterator contains a “next” method for fetching the next block of data.
@@ -346,6 +346,30 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
      * });
      * // true or false for done
      * let done = result.done;
+     * @ojtsexample <caption>How to abort fetchFirst</caption>
+     * // abort on an AbortController instance will abort all requests that are associated
+     * // with the signal from that abortController.
+     * const abortController = new AbortController();
+     * // component passes AbortSignal as part of FetchListParameters to fetchFirst
+     * // on dataProvider to get an iterator that carries AbortSignal in it.
+     * const asyncIterator = dataprovider
+     *        .fetchFirst({
+     *           size: this.size,
+     *           signal: abortController.signal,
+     *            ...
+     *         })[Symbol.asyncIterator]();
+     * try {
+     *  const result = await asyncIterator.next();
+     * } catch (err) {
+     *  // if the data fetch has been aborted, retrieving data from the fetched result
+     *  // will be rejected with DOMException named AbortError
+     * }
+     * // later when abort is desired, component can invoke abort() on the cached
+     * // abort controller to abort any outstanding data retrieval it requested
+     * // on asyncIterator.
+     * if (abort_is_desired) {
+     *   abortController.abort();
+     * }
      */
 
     /**
@@ -404,7 +428,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
      */
 
     /**
-     * Fetch rows by keys. The resulting key map will only contain keys which were actually found.
+     * Fetch rows by keys. The resulting key map will only contain keys which were actually found. Fetch can be
+     * aborted if an AbortSignal is specified when calling fetchByKeys.
      *
      *
      * @since 4.2.0
@@ -426,6 +451,27 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
      * let value = await dataprovider.fetchByKeys({keys: keySet});
      * // get the data for key 1001
      * console.log(value.results.get(1001).data);
+     * @ojtsexample <caption>How to abort fetchByKeys</caption>
+     * // abort on an AbortController instance will abort all requests that are associated
+     * // with the signal from that abortController.
+     * const abortController = new AbortController();
+     * let keySet = new Set();
+     * keySet.add(1001);
+     * keySet.add(556);
+     * // component passes AbortSignal as part of FetchByKeysParameters to fetchByKeys
+     * // on dataProvider
+     * try {
+     *  let value = await dataprovider.fetchByKeys({keys: keySet, signal: abortController.signal});
+     * } catch (err) {
+     *  // if the data fetch has been aborted, retrieving data from the fetched result
+     *  // will be rejected with DOMException named AbortError
+     * }
+     * // later when abort is desired, component can invoke abort() on the cached
+     * // abort controller to abort any outstanding data retrieval it requested
+     * // on asyncIterator.
+     * if (abort_is_desired) {
+     *   abortController.abort();
+     * }
      */
 
     /**
@@ -458,7 +504,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
      */
 
     /**
-     * Fetch rows by offset
+     * Fetch rows by offset. Fetch can be aborted if an AbortSignal is specified when calling fetchByOffset.
      * <p>
      * A generic implementation of this method is available from {@link FetchByOffsetMixin}.
      * It is for convenience and may not provide the most efficient implementation for your data provider.
@@ -486,6 +532,29 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
      * let keys = results.map(function(value) {
      *   return value['metadata']['key'];
      * });
+     * @ojtsexample <caption>How to abort fetchByOffset</caption>
+     * // abort on an AbortController instance will abort all requests that are associated
+     * // with the signal from that abortController.
+     * const abortController = new AbortController();
+     * // component passes AbortSignal as part of FetchByOffsetParameters to fetchByOffset
+     * // on dataProvider
+     *
+     * try {
+     *  let value = await dataprovider.fetchByOffset({
+     *                  size: 5,
+     *                  offset: 2,
+     *                  signal: abortController.signal
+     *              });
+     * } catch (err) {
+     *  // if the data fetch has been aborted, retrieving data from the fetched result
+     *  // will be rejected with DOMException named AbortError
+     * }
+     * // later when abort is desired, component can invoke abort() on the cached
+     * // abort controller to abort any outstanding data retrieval it requested
+     * // on asyncIterator.
+     * if (abort_is_desired) {
+     *   abortController.abort();
+     * }
      */
 
     /**
@@ -624,10 +693,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
      *               value: "(evt: Event): boolean"}
      */
 
-
-    /**
-     * End of jsdoc
-     */
+    // end of jsdoc
 
     (function (AttributeFilterOperator) {
         let AttributeOperator;
@@ -823,13 +889,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
                 }
             };
             this.FetchByOffsetResults = class {
-                constructor(fetchParameters, results, done) {
+                constructor(fetchParameters, results, done, totalFilteredRowCount) {
                     this.fetchParameters = fetchParameters;
                     this.results = results;
                     this.done = done;
+                    this.totalFilteredRowCount = totalFilteredRowCount;
                     this[DataCache._FETCHPARAMETERS] = fetchParameters;
                     this[DataCache._RESULTS] = results;
                     this[DataCache._DONE] = done;
+                    if ((fetchParameters === null || fetchParameters === void 0 ? void 0 : fetchParameters.includeFilteredRowCount) === 'enabled') {
+                        this.totalFilteredRowCount = totalFilteredRowCount;
+                    }
                 }
             };
             this._items = [];
@@ -882,7 +952,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
             if (params) {
                 results = this._items.slice(params.offset, params.offset + params.size);
             }
-            return new this.FetchByOffsetResults(params, results, done);
+            return new this.FetchByOffsetResults(params, results, done, this.getSize());
         }
         processMutations(detail) {
             if (detail.remove != null) {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -24,14 +24,14 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
    */
   GestureUtils._EVENT_NAMESPACE = '.contextMenu';
 
-
   /**
    * Utility method to tear down any artifacts created by GestureUtils.startDetectContextMenuGesture
    * @param {Element} rootNode the root element of the component
    */
   GestureUtils.stopDetectContextMenuGesture = function (rootNode) {
     if (rootNode._clickListener) {
-      $(rootNode).off(GestureUtils._EVENT_NAMESPACE)
+      $(rootNode)
+        .off(GestureUtils._EVENT_NAMESPACE)
         .removeClass('oj-menu-context-menu-launcher')[0]
         .removeEventListener('click', rootNode._clickListener, true);
 
@@ -44,7 +44,9 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
       delete rootNode._contextMenuPressHoldTimer;
     }
     if (rootNode._touchStartAndMouseDownListener) {
-      rootNode.removeEventListener('touchstart', rootNode._touchStartAndMouseDownListener, { passive: false });
+      rootNode.removeEventListener('touchstart', rootNode._touchStartAndMouseDownListener, {
+        passive: false
+      });
       // eslint-disable-next-line no-param-reassign
       delete rootNode._touchStartAndMouseDownListener;
     }
@@ -135,9 +137,11 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
       // Note: Another option is a platform-specific solution where we only use pressHold for platforms that need
       // it (that don't already fire a contextmenu event for pressHold), but architectural preference is to avoid
       // platform-specific solutions if possible.
-      if ((doubleOpenType === 'touchstart' && event.type === 'contextmenu')
-          || (doubleOpenType === 'contextmenu' && event.type === 'touchstart')
-          || (doubleOpenType === 'keydown' && event.type === 'contextmenu')) {
+      if (
+        (doubleOpenType === 'touchstart' && event.type === 'contextmenu') ||
+        (doubleOpenType === 'contextmenu' && event.type === 'touchstart') ||
+        (doubleOpenType === 'keydown' && event.type === 'contextmenu')
+      ) {
         // FF 60.2.2esr (32-bit) Win fires a rogue contextmenu event following the prevented keydown. What's odd is
         // preventing the keydown for shift+F10 prevents keypress but still files the contextmenu event.
         // Seems like "fallout" (behavior not yet correct) from bug https://bugzilla.mozilla.org/show_bug.cgi?id=1382199
@@ -156,9 +160,11 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
       // This never seems to happen with right-click and Shift-F10 events.  Has nothing to do with the setTimeout: the events
       // received by the rootNode.on("touchstart"...) code are different (firstWrapper==secondWrapper returns false).
       // TODO: link to JQ bug once filed.
-      if ((event.isDefaultPrevented && event.isDefaultPrevented()) ||
-          (event.originalEvent && event.originalEvent.defaultPrevented) ||
-          (event.defaultPrevented)) {
+      if (
+        (event.isDefaultPrevented && event.isDefaultPrevented()) ||
+        (event.originalEvent && event.originalEvent.defaultPrevented) ||
+        event.defaultPrevented
+      ) {
         return;
       }
 
@@ -218,8 +224,11 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
         touchPageY = firstTouch.pageY;
 
         touchInProgress = true;
-        contextMenuPressHoldTimer =
-          setTimeout(launch.bind(undefined, event, 'touch', true), pressHoldThreshold); // @HTMLUpdateOK
+        // prettier-ignore
+        contextMenuPressHoldTimer = setTimeout( // @HTMLUpdateOK
+          launch.bind(undefined, event, 'touch', true),
+          pressHoldThreshold
+        );
         // eslint-disable-next-line no-param-reassign
         rootNode._contextMenuPressHoldTimer = contextMenuPressHoldTimer;
       }
@@ -234,8 +243,10 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
 
     var _touchMoveListener = function (event) {
       var firstTouch = event.touches[0];
-      if (Math.abs(touchPageX - firstTouch.pageX) > maxAllowedMovement
-          || Math.abs(touchPageY - firstTouch.pageY) > maxAllowedMovement) {
+      if (
+        Math.abs(touchPageX - firstTouch.pageX) > maxAllowedMovement ||
+        Math.abs(touchPageY - firstTouch.pageY) > maxAllowedMovement
+      ) {
         touchInProgress = false;
         clearTimeout(contextMenuPressHoldTimer);
       }
@@ -249,32 +260,33 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
 
     $(rootNode)
       .on('mousedown' + namespace, _touchStartAndMouseDownListener)
-    // if the touch moves too much, it's not a pressHold
-    // if the touch ends before the 750ms is up, it's not a long enough pressHold to show the CM
-      .on('touchend' + namespace + ' ' +
-          'touchcancel' + namespace, function () {
-            touchInProgress = false;
-            clearTimeout(contextMenuPressHoldTimer);
-            return true;
-          })
-      .on('keydown' + namespace + ' ' +
-          'contextmenu' + namespace, function (event) {
-            if (event.type === 'contextmenu' // right-click.  pressHold for Android but not iOS
-                || (event.keyCode === 121 && event.shiftKey)) { // Shift-F10
-              var eventType;
-              if (touchInProgress) {
-                eventType = 'touch';
-              } else if (event.type === 'keydown') {
-                eventType = 'keyboard';
-              } else {
-                eventType = 'mouse';
-              }
+      // if the touch moves too much, it's not a pressHold
+      // if the touch ends before the 750ms is up, it's not a long enough pressHold to show the CM
+      .on('touchend' + namespace + ' touchcancel' + namespace, function () {
+        touchInProgress = false;
+        clearTimeout(contextMenuPressHoldTimer);
+        return true;
+      })
+      .on('keydown' + namespace + ' contextmenu' + namespace, function (event) {
+        if (
+          event.type === 'contextmenu' || // right-click.  pressHold for Android but not iOS
+          (event.keyCode === 121 && event.shiftKey)
+        ) {
+          // Shift-F10
+          var eventType;
+          if (touchInProgress) {
+            eventType = 'touch';
+          } else if (event.type === 'keydown') {
+            eventType = 'keyboard';
+          } else {
+            eventType = 'mouse';
+          }
 
-              launch(event, eventType, false);
-            }
+          launch(event, eventType, false);
+        }
 
-            return true;
-          });
+        return true;
+      });
 
     // Does 2 things:
     // 1) Prevents native context menu / callout from appearing in Mobile Safari.  E.g. for links, native CM has "Open in New Tab".

@@ -55,7 +55,7 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
     if (isEvent) {
         if (!memberKey.startsWith('on')) {
             const suggestion = `on${memberKey[0].toUpperCase()}${memberKey.substring(1)}`;
-            throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `"${memberKey}" is not a valid property name for defining a custom event. Did you mean "${suggestion}"?`, propDeclaration);
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_CUSTOM_EVENT_PROPNAME, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `'${memberKey}' is not a valid property name for defining a custom Event. Did you mean '${suggestion}'?`, propDeclaration);
         }
         const eventProp = `${memberKey[2].toLowerCase()}${memberKey.substring(3)}`;
         if (!metaUtilObj.rtMetadata.events) {
@@ -67,7 +67,7 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
     }
     else {
         if (memberKey.match(_REGEX_RESERVED_EVENT_PREFIX)) {
-            throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `'${memberKey}' - property names beginning with the 'on' prefix are reserved for custom element Events.`, propDeclaration);
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.RESERVED_CUSTOM_EVENT_PREFIX, TransformerError_1.ExceptionType.WARN_IF_DISABLED, metaUtilObj.componentName, `'${memberKey}' - property names beginning with the 'on' prefix are reserved for custom element Events.`, propDeclaration);
         }
     }
     return isEvent;
@@ -76,7 +76,7 @@ exports.generateEventsMetadata = generateEventsMetadata;
 function getDtMetadataForEvent(propDeclaration, typeName, typeNode, metaUtilObj) {
     var _a, _b;
     const checker = metaUtilObj.typeChecker;
-    const dt = MetaUtils.getDtMetadata(propDeclaration, metaUtilObj);
+    const dt = MetaUtils.getDtMetadata(propDeclaration, MetaTypes.MDFlags.EVENT, null, metaUtilObj);
     const typeRefNode = typeNode;
     let cancelableDetail = null;
     let detailObj = null;
@@ -148,15 +148,16 @@ function getEventDetails(detailNode, metaUtilObj) {
             const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(symbol, propSignature);
             if (ts.isPropertySignature(propSignature) || ts.isPropertyDeclaration(propSignature)) {
                 const property = key.toString();
-                const eventDetailMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MetadataScope.DT, metaUtilObj, MetaTypes.GETMD_FLAGS_NONE, symbol);
+                const propertyPath = [property];
+                const eventDetailMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.EVENT | MetaTypes.MDFlags.EVENT_DETAIL, propertyPath, symbol, metaUtilObj);
                 details = details || {};
                 details[property] = eventDetailMetadata;
                 if (TypeUtils.possibleComplexProperty(symbolType, eventDetailMetadata.type, MetaTypes.MetadataScope.DT)) {
-                    let stack = [];
+                    let nestedArrayStack = [];
                     if (eventDetailMetadata.type === 'Array<object>') {
-                        stack.push(key);
+                        nestedArrayStack.push(key);
                     }
-                    const subprops = TypeUtils.getComplexPropertyMetadata(symbol, eventDetailMetadata.type, detailName, MetaTypes.MetadataScope.DT, stack, metaUtilObj);
+                    const subprops = TypeUtils.getComplexPropertyMetadata(symbol, eventDetailMetadata.type, detailName, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.EVENT | MetaTypes.MDFlags.EVENT_DETAIL, propertyPath, nestedArrayStack, metaUtilObj);
                     if (subprops) {
                         if (subprops.circRefDetected) {
                             details[property].type =
@@ -171,10 +172,10 @@ function getEventDetails(detailNode, metaUtilObj) {
                             details[property].type = 'object';
                             details[property].properties = subprops;
                         }
-                        const typeDefName = TypeUtils.getPossibleTypeDef(property, symbol, eventDetailMetadata, metaUtilObj);
-                        if (typeDefName) {
+                        const typeDef = TypeUtils.getPossibleTypeDef(property, symbol, eventDetailMetadata, metaUtilObj);
+                        if (typeDef && typeDef.name) {
                             details[property]['jsdoc'] = details[property]['jsdoc'] || {};
-                            details[property]['jsdoc']['typedef'] = typeDefName;
+                            details[property]['jsdoc']['typedef'] = typeDef;
                         }
                     }
                 }

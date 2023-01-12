@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,10 +8,10 @@
 import oj from 'ojs/ojcore-base';
 import ojSet from 'ojs/ojset';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { ExpandedKeySet } from 'ojs/ojkeyset';
 import { BehaviorSubject } from 'ojs/ojobservable';
 import ojMap from 'ojs/ojmap';
 import { SortUtils, DataProviderMutationEvent, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
+import { KeySetImpl } from 'ojs/ojkeyset';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -59,6 +59,14 @@ import { SortUtils, DataProviderMutationEvent, DataProviderRefreshEvent } from '
  * };
  * dataProvider.addEventListener("mutate", listener);
  * </code></pre>
+ * <h3 id="perf-section">
+ *   Performance
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
+ * <h4>Fetch Performance</h4>
+ * <p>FlattenedTreeDataProviderView will fetch depth first on expanded items. </p>
+ * <p>If items are expanded and a fetch size requested is satisfied by the fetching of child nodes, the leftover unreturned higher level items will be discarded and may be re-fetched. Applications can implement their own caching data provider layer to avoid multiple fetches of the same data.</p>
+ * </h3>
+ *
  *
  * @param {TreeDataProvider} dataProvider the wrapped TreeDataProvider to flatten.
  * @param {FlattenedTreeDataProviderView.Options=} options Options for FlattenedTreeDataProviderView
@@ -264,10 +272,17 @@ import { SortUtils, DataProviderMutationEvent, DataProviderRefreshEvent } from '
  * @name dispatchEvent
  */
 
-/**
- * End of jsdoc
- */
+// end of jsdoc
 
+var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 class FlattenedTreeDataProviderView {
     constructor(dataProvider, options) {
         var _a;
@@ -280,6 +295,8 @@ class FlattenedTreeDataProviderView {
                     this[Symbol.asyncIterator] = () => {
                         return this._asyncIterator;
                     };
+                    this._clientId = Symbol();
+                    this._parent._mapClientIdToIteratorInfo.set(this._clientId, 0);
                 }
             },
             Symbol.asyncIterator,
@@ -433,13 +450,14 @@ class FlattenedTreeDataProviderView {
             this.options = {};
         }
         if (!this.options.expanded) {
-            this.options.expanded = new ExpandedKeySet([]);
+            this.options.expanded = new KeySetImpl([]);
         }
         this._expandedObservable = new BehaviorSubject(this._getExpandedObservableValue(this.options.expanded, Promise.resolve()));
         this.dataProvider.addEventListener('mutate', this._handleUnderlyingMutation.bind(this));
         this.dataProvider.addEventListener('refresh', this._handleUnderlyingRefresh.bind(this));
         this._cache = [];
-        this._iterators = new ojMap();
+        this._mapClientIdToIteratorInfo = new Map();
+        this._mapParentKeyToInfo = new ojMap();
         this._done = false;
     }
     _getChildrenFromCacheByParentKey(parentKey) {
@@ -550,22 +568,24 @@ class FlattenedTreeDataProviderView {
             const addAfterKeySet = new Set();
             const addKeySet = new Set();
             addEvent.parentKeys.forEach((parentKey, index) => {
-                if (parentKey === null || (this._isExpanded(parentKey) && this._getItemByKey(parentKey))) {
-                    if (!this._currentFilterCriteria ||
+                if ((parentKey === null || (this._isExpanded(parentKey) && this._getItemByKey(parentKey))) &&
+                    (!this._currentFilterCriteria ||
                         (this._currentFilterCriteria &&
-                            this._currentFilterCriteria.filter(addEvent.data[index]))) {
-                        let newIndex = this._calculateItemIndex(parentKey, addEvent, index);
-                        const item = this._updateItemMetadata(new this.Item(this, addEvent.metadata[index], addEvent.data[index]), parentKey, addEvent.indexes[index]);
-                        this._spliceItemToCache(item, newIndex);
-                        this._incrementIndexFromParent(newIndex + 1, addEvent.metadata[index].treeDepth);
-                        addDataArray.push(item.data);
-                        addMetadataArray.push(item.metadata);
-                        addIndexArray.push(newIndex + 1);
-                        addParentKeys.push(parentKey);
-                        addKeySet.add(addEvent.metadata[index].key);
-                        addBeforeKeys.push(this._getKeyByIndex(newIndex + 2));
-                        this._incrementIteratorOffset(newIndex + 1);
-                    }
+                            this._currentFilterCriteria.filter(addEvent.data[index])))) {
+                    let newIndex = this._calculateItemIndex(parentKey, addEvent, index);
+                    const item = this._updateItemMetadata(new this.Item(this, addEvent.metadata[index], addEvent.data[index]), parentKey, addEvent.indexes[index]);
+                    this._spliceItemToCache(item, newIndex);
+                    this._incrementIndexFromParent(newIndex + 1, item.metadata.treeDepth);
+                    addDataArray.push(item.data);
+                    addMetadataArray.push(item.metadata);
+                    addIndexArray.push(newIndex + 1);
+                    addParentKeys.push(parentKey);
+                    addKeySet.add(addEvent.metadata[index].key);
+                    addBeforeKeys.push(this._getKeyByIndex(newIndex + 2));
+                    this._incrementIteratorOffset(newIndex + 1);
+                }
+                else {
+                    this._mapParentKeyToInfo.delete(parentKey);
                 }
             });
             if (addKeySet.size > 0) {
@@ -585,7 +605,7 @@ class FlattenedTreeDataProviderView {
                 const cacheIndex = this._getItemIndexByKey(key);
                 if (cacheIndex != -1) {
                     const count = this._getLocalDescendentCount(key) + 1;
-                    this._decrementIndexFromParent(cacheIndex, removeEvent.metadata[index].treeDepth);
+                    this._decrementIndexFromParent(cacheIndex, this._cache[cacheIndex].metadata.treeDepth);
                     const deletedItems = this._cache.splice(cacheIndex, count);
                     deletedItems.forEach((item, index) => {
                         removeKeySet.add(item.metadata.key);
@@ -593,6 +613,7 @@ class FlattenedTreeDataProviderView {
                         removeDataArray.push(item.data);
                         removeIndexArray.push(cacheIndex + index);
                         this._decrementIteratorOffset(cacheIndex);
+                        this._mapParentKeyToInfo.delete(item.metadata.key);
                     });
                 }
             });
@@ -607,6 +628,7 @@ class FlattenedTreeDataProviderView {
             const updateIndexArray = [];
             const updateKeySet = new Set();
             updateEvent.metadata.forEach((metadata, index) => {
+                this._mapParentKeyToInfo.delete(metadata.key);
                 const item = this._getItemByKey(metadata.key);
                 if (item != null) {
                     const itemIndex = this._getItemIndexByKey(metadata.key);
@@ -635,10 +657,12 @@ class FlattenedTreeDataProviderView {
             for (let i = 0; i < this._cache.length; i++) {
                 const item = this._cache[i];
                 if (keys.has(item.metadata.key)) {
+                    this._mapParentKeyToInfo.delete(item.metadata.key);
                     const refreshEvent = new DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(item.metadata.key));
-                    const removedItems = this._cache.splice(i, this._cache.length);
-                    removedItems.forEach(() => {
+                    const removedItems = this._cache.splice(i + 1, this._cache.length);
+                    removedItems.forEach((item) => {
                         this._decrementIteratorOffset(i + 1);
+                        this._mapParentKeyToInfo.delete(item.metadata.key);
                     });
                     this.dispatchEvent(refreshEvent);
                     break;
@@ -646,7 +670,7 @@ class FlattenedTreeDataProviderView {
             }
         }
         else {
-            this._clearCache();
+            this._clearCaches();
             this.dispatchEvent(new DataProviderRefreshEvent());
         }
     }
@@ -656,23 +680,30 @@ class FlattenedTreeDataProviderView {
             completionPromise: completionPromise
         };
     }
-    getChildDataProvider(parentKey, options) {
-        return this.dataProvider.getChildDataProvider(parentKey, options);
+    getChildDataProvider(parentKey) {
+        if (!this._mapParentKeyToInfo.has(parentKey)) {
+            this._mapParentKeyToInfo.set(parentKey, { done: false });
+        }
+        return this.dataProvider.getChildDataProvider(parentKey);
     }
     containsKeys(params) {
         return this.dataProvider.containsKeys(params);
     }
     fetchByKeys(params) {
+        const results = new ojMap();
+        params.keys.forEach((key) => {
+            const item = this._getItemByKey(key);
+            if (item) {
+                results.set(key, item);
+                params.keys.delete(key);
+            }
+        });
+        if (params.keys.size === 0) {
+            return Promise.resolve(new this.FetchByKeysResults(this, params, results));
+        }
         return this.dataProvider.fetchByKeys(params).then((byKeysResult) => {
-            const results = new ojMap();
             byKeysResult.results.forEach((value, searchKey) => {
-                const cachedItem = this._getItemByKey(searchKey);
-                if (cachedItem) {
-                    results.set(searchKey, cachedItem);
-                }
-                else {
-                    results.set(searchKey, value);
-                }
+                results.set(searchKey, value);
             });
             return new this.FetchByKeysResults(this, byKeysResult.fetchParameters, results);
         });
@@ -690,7 +721,7 @@ class FlattenedTreeDataProviderView {
             }
         }
         else {
-            this._clearCache();
+            this._clearCaches();
             this._currentSortCriteria = sortCriteria;
             this._currentFilterCriteria = filterCriterion;
         }
@@ -704,10 +735,10 @@ class FlattenedTreeDataProviderView {
         if (!this._isSameCriteria(sortCriteria, filterCriterion)) {
             this._currentSortCriteria = sortCriteria;
             this._currentFilterCriteria = filterCriterion;
-            this._clearCache();
+            this._clearCaches();
         }
         const iteratorFunction = () => {
-            const currentOffset = this._iterators.get(newIterator);
+            const currentOffset = this._mapClientIdToIteratorInfo.get(newIterator._clientId);
             let updatedParams = new this.FetchByOffsetParameters(this, currentOffset, this._fetchSize, sortCriteria, filterCriterion, fetchAttributes);
             return this.fetchByOffset(updatedParams).then((result) => {
                 const results = result.results;
@@ -722,7 +753,7 @@ class FlattenedTreeDataProviderView {
                     updatedParams.sortCriteria = result.fetchParameters.sortCriteria;
                     updatedParams.filterCriterion = result.fetchParameters.filterCriterion;
                 }
-                this._iterators.set(newIterator, currentOffset + metadata.length);
+                this._mapClientIdToIteratorInfo.set(newIterator._clientId, currentOffset + metadata.length);
                 if (done) {
                     return new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, updatedParams, data, metadata));
                 }
@@ -732,10 +763,23 @@ class FlattenedTreeDataProviderView {
         const newIterator = new this.AsyncIterable(this, new this.AsyncIterator(this, (() => {
             return iteratorFunction;
         })(), params));
-        this._iterators.set(newIterator, 0);
         return newIterator;
     }
     getCapability(capabilityName) {
+        if (capabilityName === 'fetchByOffset') {
+            const capabilityObject = {
+                caching: 'visitedByCurrentIterator',
+                implementation: 'randomAccess'
+            };
+            return capabilityObject;
+        }
+        else if (capabilityName === 'fetchFirst') {
+            const capabilityObject = {
+                caching: 'visitedByCurrentIterator',
+                iterationSpeed: 'delayed'
+            };
+            return capabilityObject;
+        }
         return this.dataProvider.getCapability(capabilityName);
     }
     getTotalSize() {
@@ -814,8 +858,9 @@ class FlattenedTreeDataProviderView {
         }
         return new this.FetchByOffsetResults(this, params, data, done);
     }
-    _clearCache() {
+    _clearCaches() {
         this._cache = [];
+        this._mapParentKeyToInfo.clear();
     }
     _fetchByOffset(params) {
         if (this._cache.length === 0) {
@@ -863,8 +908,14 @@ class FlattenedTreeDataProviderView {
             return { fetchResult: result };
         });
     }
-    _fetchChildrenByOffsetFromDataProvider(params, dataprovider, parentKey, finalParams, expandKey) {
-        const handleNextItemInResults = (result) => {
+    _fetchChildrenByOffsetFromDataProvider(params, dataProvider, parentKey, finalParams, expandKey) {
+        var _a;
+        if ((_a = this._mapParentKeyToInfo.get(parentKey)) === null || _a === void 0 ? void 0 : _a.done) {
+            return Promise.resolve({
+                fetchResult: new this.FetchByOffsetResults(this, params, [], true)
+            });
+        }
+        const handleNextItemInResults = (result) => __awaiter(this, void 0, void 0, function* () {
             const results = result.results;
             if (!this._isSameCriteria(result.fetchParameters.sortCriteria, result.fetchParameters.filterCriterion)) {
                 finalParams.sortCriteria = result.fetchParameters.sortCriteria;
@@ -874,27 +925,31 @@ class FlattenedTreeDataProviderView {
                 if (expandKey && result.done === true) {
                     return Promise.resolve({ expandKey: expandKey, done: result.done });
                 }
-                return Promise.resolve();
+                return Promise.resolve({ done: results.length === 0 ? result.done : false });
             }
             const item = results.shift();
             const updatedItem = this._updateItemMetadata(item, parentKey);
             this._pushItemToCache(updatedItem, parentKey);
             if (this._isExpanded(updatedItem.metadata.key)) {
+                const parentKeyInfo = this._mapParentKeyToInfo.get(updatedItem.metadata.key);
                 const childDataProvider = this.getChildDataProvider(updatedItem.metadata.key);
-                if (childDataProvider != null) {
-                    const newParams = new this.FetchByOffsetParameters(this, 0, this._getRemainingSize(finalParams), params.sortCriteria, params.filterCriterion, params.attributes);
-                    const childrenPromise = this._fetchChildrenByOffsetFromDataProvider(newParams, childDataProvider, updatedItem.metadata.key, finalParams, expandKey);
-                    return childrenPromise.then(handleNextItemInResults.bind(this, new this.FetchByOffsetResults(this, params, results, false)));
+                const remainingSize = this._getRemainingSize(finalParams);
+                if (childDataProvider != null && !parentKeyInfo.done && remainingSize !== 0) {
+                    const newParams = new this.FetchByOffsetParameters(this, 0, remainingSize, params.sortCriteria, params.filterCriterion, params.attributes);
+                    yield this._fetchChildrenByOffsetFromDataProvider(newParams, childDataProvider, updatedItem.metadata.key, finalParams, expandKey);
                 }
             }
             return handleNextItemInResults(new this.FetchByOffsetResults(this, params, results, result.done));
-        };
-        return dataprovider
+        });
+        return dataProvider
             .fetchByOffset(params)
             .then(handleNextItemInResults)
             .then((returnObject) => {
+            this._mapParentKeyToInfo.set(parentKey, {
+                done: returnObject.done
+            });
             const result = this._getFetchByOffsetResultsFromCache(finalParams);
-            if (returnObject) {
+            if (returnObject.expandKey) {
                 return { returnObject: returnObject, fetchResult: result };
             }
             return { fetchResult: result };
@@ -946,7 +1001,7 @@ class FlattenedTreeDataProviderView {
             });
         }
         else {
-            this._clearCache();
+            this._clearCaches();
             this.dispatchEvent(new DataProviderRefreshEvent());
             this.getExpandedObservable().next(this._getExpandedObservableValue(this.options.expanded, Promise.resolve()));
             return;
@@ -1094,8 +1149,8 @@ class FlattenedTreeDataProviderView {
         const promises = [];
         keys.forEach((key) => {
             const params = new this.FetchByOffsetParameters(this, 0, this._fetchSize, this._currentSortCriteria, this._currentFilterCriteria, null);
-            const dataprovider = this.getChildDataProvider(key);
-            promises.push(this._fetchChildrenByOffsetFromDataProvider(params, dataprovider, key, params, key));
+            const dataProvider = this.getChildDataProvider(key);
+            promises.push(this._fetchChildrenByOffsetFromDataProvider(params, dataProvider, key, params, key));
         });
         return Promise.all(promises).then((value) => {
             const keySet = this.createOptimizedKeySet();
@@ -1149,10 +1204,12 @@ class FlattenedTreeDataProviderView {
         const keySet = this.createOptimizedKeySet();
         keys.forEach((key) => {
             const count = this._getLocalDescendentCount(key);
+            this._mapParentKeyToInfo.delete(key);
             if (count > 0) {
                 const cacheIndex = this._getItemIndexByKey(key);
                 const deletedItems = this._cache.splice(cacheIndex + 1, count);
                 deletedItems.forEach((item, index) => {
+                    this._mapParentKeyToInfo.delete(item.metadata.key);
                     keySet.add(item.metadata.key);
                     metadataArray.push(item.metadata);
                     dataArray.push(item.data);
@@ -1164,16 +1221,16 @@ class FlattenedTreeDataProviderView {
         return new this.DataProviderOperationEventDetail(this, keySet, metadataArray, dataArray, indexArray, true);
     }
     _decrementIteratorOffset(index) {
-        this._iterators.forEach((offset, iterator) => {
+        this._mapClientIdToIteratorInfo.forEach((offset, symbol) => {
             if (index < offset) {
-                this._iterators.set(iterator, offset - 1);
+                this._mapClientIdToIteratorInfo.set(symbol, offset - 1);
             }
         });
     }
     _incrementIteratorOffset(index) {
-        this._iterators.forEach((offset, iterator) => {
+        this._mapClientIdToIteratorInfo.forEach((offset, symbol) => {
             if (index < offset) {
-                this._iterators.set(iterator, offset + 1);
+                this._mapClientIdToIteratorInfo.set(symbol, offset + 1);
             }
         });
     }

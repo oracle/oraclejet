@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -779,7 +779,7 @@ var __oj_diagram_metadata =
       'style-defaults.node-defaults.icon.shape': true
     })
   });
-}());
+})();
 
 var __oj_diagram_node_metadata = 
 {
@@ -914,7 +914,10 @@ var __oj_diagram_node_metadata =
   };
 
   var nodeShapeParseFunc = DvtAttributeUtils.shapeParseFunction({ 'icon.shape': true });
-  var overviewNodeShapeParseFunc = DvtAttributeUtils.shapeParseFunction({ 'overview.icon.shape': true }, _OVERVIEW_SHAPE_ENUMS);
+  var overviewNodeShapeParseFunc = DvtAttributeUtils.shapeParseFunction(
+    { 'overview.icon.shape': true },
+    _OVERVIEW_SHAPE_ENUMS
+  );
 
   function shapePropertyParser(value, name, meta, defaultParseFunction) {
     if (name === 'icon.shape') {
@@ -928,7 +931,7 @@ var __oj_diagram_node_metadata =
     metadata: __oj_diagram_node_metadata,
     parseFunction: shapePropertyParser
   });
-}());
+})();
 
 var __oj_diagram_link_metadata = 
 {
@@ -1008,7 +1011,7 @@ var __oj_diagram_link_metadata =
   oj.CustomElementBridge.register('oj-diagram-link', {
     metadata: __oj_diagram_link_metadata
   });
-}());
+})();
 
 oj._registerLegacyNamespaceProp('DiagramUtils', DiagramUtils);
 // bleed DiagramUtils into oj to keep backward compatibility
@@ -1037,7 +1040,11 @@ const ConversionDiagramDataSource = function (data, options) {
 oj._registerLegacyNamespaceProp('ConversionDiagramDataSource', ConversionDiagramDataSource);
 
 // Subclass from oj.DiagramDataSource
-oj.Object.createSubclass(ConversionDiagramDataSource, oj.DiagramDataSource, 'oj.ConversionDiagramDataSource');
+oj.Object.createSubclass(
+  ConversionDiagramDataSource,
+  oj.DiagramDataSource,
+  'oj.ConversionDiagramDataSource'
+);
 
 /**
  * Returns child data for the given parent.
@@ -1064,18 +1071,19 @@ oj.Object.createSubclass(ConversionDiagramDataSource, oj.DiagramDataSource, 'oj.
  * @ignore
  */
 ConversionDiagramDataSource.prototype.getData = function (parentData) {
-  if (parentData) { // retrieve child data
+  if (parentData) {
+    // retrieve child data
     var childData = parentData.nodes;
     if (childData === undefined && this.childDataCallback) {
       var childNodes = this.childDataCallback(parentData);
       return Promise.resolve(childNodes).then(
-          function (values) {
-            return Promise.resolve({ nodes: values });
-          },
-          function () {
-            return Promise.resolve({ nodes: [] });
-          }
-        );
+        function (values) {
+          return Promise.resolve({ nodes: values });
+        },
+        function () {
+          return Promise.resolve({ nodes: [] });
+        }
+      );
     }
     return Promise.resolve({ nodes: childData });
   }
@@ -1089,13 +1097,13 @@ ConversionDiagramDataSource.prototype.getData = function (parentData) {
     links = links();
   }
   return Promise.all([nodes, links]).then(
-      function (values) {
-        return Promise.resolve({ nodes: values[0], links: values[1] });
-      },
-      function () {
-        return Promise.resolve({ nodes: [], links: [] });
-      }
-    );
+    function (values) {
+      return Promise.resolve({ nodes: values[0], links: values[1] });
+    },
+    function () {
+      return Promise.resolve({ nodes: [], links: [] });
+    }
+  );
 };
 
 /**
@@ -1171,6 +1179,8 @@ ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (nod
  * @ojpropertylayout {propertyGroup: "data", items: ["nodeData", "linkData", "layout", "selection"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 6
+ *
+ * @ojoracleicon 'oj-ux-ico-chart-network-circular'
  *
  * @classdesc
  * <h3 id="diagramOverview-section">
@@ -1252,1293 +1262,1179 @@ ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (nod
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
-  {
-    widgetEventPrefix: 'oj',
-    options: {
-      /**
-       * Specifies the animation that is applied on data changes.
-       * @expose
-       * @name animationOnDataChange
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "auto"
-       * @ojvalue {string} "none"
-       * @default "none"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">animation-on-data-change</code> attribute specified:</caption>
-       * &lt;oj-diagram animation-on-data-change='auto'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">animationOnDataChange</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.animationOnDataChange;
-       *
-       * // setter
-       * myDiagram.animationOnDataChange="auto";
-       */
-      animationOnDataChange: 'none',
+oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
+  widgetEventPrefix: 'oj',
+  options: {
+    /**
+     * Specifies the animation that is applied on data changes.
+     * @expose
+     * @name animationOnDataChange
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "auto"
+     * @ojvalue {string} "none"
+     * @default "none"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">animation-on-data-change</code> attribute specified:</caption>
+     * &lt;oj-diagram animation-on-data-change='auto'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">animationOnDataChange</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.animationOnDataChange;
+     *
+     * // setter
+     * myDiagram.animationOnDataChange="auto";
+     */
+    animationOnDataChange: 'none',
 
-      /**
-       * Specifies the animation that is shown on initial display.
-       * @expose
-       * @name animationOnDisplay
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "auto"
-       * @ojvalue {string} "none"
-       * @default "none"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">animation-on-display</code> attribute specified:</caption>
-       * &lt;oj-diagram animation-on-display='auto'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">animationOnDisplay</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.animationOnDisplay;
-       *
-       * // setter
-       * myDiagram.animationOnDisplay="auto";
-       */
-      animationOnDisplay: 'none',
+    /**
+     * Specifies the animation that is shown on initial display.
+     * @expose
+     * @name animationOnDisplay
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "auto"
+     * @ojvalue {string} "none"
+     * @default "none"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">animation-on-display</code> attribute specified:</caption>
+     * &lt;oj-diagram animation-on-display='auto'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">animationOnDisplay</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.animationOnDisplay;
+     *
+     * // setter
+     * myDiagram.animationOnDisplay="auto";
+     */
+    animationOnDisplay: 'none',
 
+    /**
+     * Provides support for HTML5 Drag and Drop events. Please refer to <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop">third party documentation</a> on HTML5 Drag and Drop to learn how to use it.
+     * @ojshortdesc Used to customize the drag and drop features.
+     * @expose
+     * @name dnd
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {Object=}
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">dnd</code> attribute specified:</caption>
+     *
+     * <!-- Using dot notation -->
+     * &lt;oj-diagram dnd.drop.background.data-types = '["text/shape"]' dnd.drop.background.drop = '[[onDropFunc]]'>&lt;/oj-diagram>
+     *
+     * &lt;oj-diagram dnd='[[dndObject]]'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">dnd</code>
+     * property after initialization:</caption>
+     * // Get one
+     * var value = myDiagram.dnd.drag.nodes.dataTypes;
+     *
+     * // Get all
+     * var values = myDiagram.dnd;
+     *
+     * // Set one, leaving the others intact. Always use the setProperty API for
+     * // subproperties rather than setting a subproperty directly.
+     * myDiagram.setProperty('dnd.drop.nodes.drop', onDropFunc);
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myDiagram.dnd=dndObject;
+     */
+    dnd: {
       /**
-       * Provides support for HTML5 Drag and Drop events. Please refer to <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop">third party documentation</a> on HTML5 Drag and Drop to learn how to use it.
-       * @ojshortdesc Used to customize the drag and drop features.
+       * An object that describes drag functionality.
+       * @ojshortdesc Used to customize drag functionality.
        * @expose
-       * @name dnd
-       * @memberof oj.ojDiagram
+       * @name dnd.drag
+       * @memberof! oj.ojDiagram
        * @instance
        * @type {Object=}
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">dnd</code> attribute specified:</caption>
-       *
-       * <!-- Using dot notation -->
-       * &lt;oj-diagram dnd.drop.background.data-types = '["text/shape"]' dnd.drop.background.drop = '[[onDropFunc]]'>&lt;/oj-diagram>
-       *
-       * &lt;oj-diagram dnd='[[dndObject]]'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">dnd</code>
-       * property after initialization:</caption>
-       * // Get one
-       * var value = myDiagram.dnd.drag.nodes.dataTypes;
-       *
-       * // Get all
-       * var values = myDiagram.dnd;
-       *
-       * // Set one, leaving the others intact. Always use the setProperty API for
-       * // subproperties rather than setting a subproperty directly.
-       * myDiagram.setProperty('dnd.drop.nodes.drop', onDropFunc);
-       *
-       * // Set all. Must list every resource key, as those not listed are lost.
-       * myDiagram.dnd=dndObject;
        */
-      dnd: {
-        /**
-         * An object that describes drag functionality.
-         * @ojshortdesc Used to customize drag functionality.
-         * @expose
-         * @name dnd.drag
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {Object=}
-         */
-        drag: null,
-        /**
-         * If this object is specified, the diagram will initiate drag operation when the user drags on diagram nodes.
-         * @ojshortdesc Used to customize the drag features for nodes.
-         * @expose
-         * @name dnd.drag.nodes
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {Object=}
-         */
-        /**
-         * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected data items. The dataContext is the JSON version of the dataContext that we use for "tooltip" option, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
-         * @ojshortdesc Specifies MIME type for dragged data.
-         * @expose
-         * @name dnd.drag.nodes.dataTypes
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(string|Array.<string>)=}
-         * @default null
-         */
-        /**
-         * An optional callback function that receives the "drag" event as argument.
-         * @ojshortdesc Optional handler for drag event.
-         * @expose
-         * @name dnd.drag.nodes.drag
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event))=}
-         * @default null
-         */
-        /**
-         * An optional callback function that receives the "dragend" event as argument.
-         * @ojshortdesc Optional handler for dragend event.
-         * @expose
-         * @name dnd.drag.nodes.dragEnd
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event))=}
-         * @default null
-         */
-        /**
-         * An optional callback function that receives the "dragstart" event and context information as arguments.
-         * The context information is as follows:
-         * <ul>
-         *   <li>nodes {Array.(object)}: An array of data contexts of the dragged data nodes.</li>
-         * </ul>
-         * This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.
-         * @ojshortdesc Optional handler for dragstart event.
-         * @expose
-         * @name dnd.drag.nodes.dragStart
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {nodes: oj.ojDiagram.DndNodeContext<K1,D1>[]}) => void)", jsdocOverride: true}
-         */
-        /**
-         * If this object is specified, the diagram will initiate link creation when the user starts dragging from a port.
-         * @ojshortdesc Defines link creation functionality.
-         * @expose
-         * @name dnd.drag.ports
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {Object=}
-         */
-        /**
-         * An optional callback function for customizing link feedback based on a starting node and a port.
-         * If the function is not specified the link feedback will use default link styles.
-         * The function will take a single parameter - a context object with the following properties:
-         * <ul>
-         *   <li>portElement DOM element recognized as a port that received drag event.</li>
-         *   <li>dataContext The dataContext object of the link start node.</li>
-         * </ul>
-         * The function should return one of the following:
-         * <ul>
-         *   <li>an object with the following properties:
-         *     <ul>
-         *       <li> svgStyle : Inline style object to be applied on the link feedback </li>
-         *       <li> svgClassName : A name of a style class to be applied on the link </li>
-         *     </ul>
-         *   </li>
-         *   <li>null or undefined : the default link styles will be used for the link feedback </li>
-         * </ul>
-         * @ojshortdesc Specifies link creation feedback.
-         * @expose
-         * @name dnd.drag.ports.linkStyle
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((context: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => ({svgStyle?: Partial<CSSStyleDeclaration>, svgClassName?: string} | null))", jsdocOverride: true}
-         */
-        /**
-         * A string, containing a selector expression, that will be used to identify the descendant DOM element in a diagram node that can be used for link creation. This property is requred.
-         * @ojshortdesc Specifies DOM element selector used to start link creation.
-         * @expose
-         * @name dnd.drag.ports.selector
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {string=}
-         * @default null
-         */
-        /**
-         * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
-         * @ojshortdesc Specifies MIME type for dragged data.
-         * @expose
-         * @name dnd.drag.ports.dataTypes
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(string|Array.<string>)=}
-         * @default null
-         */
-        /**
-         * An optional callback function that receives the "drag" event as argument.
-         * @ojshortdesc Optional handler for drag event.
-         * @expose
-         * @name dnd.drag.ports.drag
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event))=}
-         * @default null
-         */
-        /**
-         * An optional callback function that receives the "dragend" event as argument.
-         * @ojshortdesc Optional handler for dragend event.
-         * @expose
-         * @name dnd.drag.ports.dragEnd
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event))=}
-         * @default null
-         */
-        /**
-         * An optional callback function that receives the "dragstart" event and context information as arguments.
-         * The context information is as follows:
-         * <ul>
-         *   <li> ports {object}: An object with the following properties:
-         *     <ul>
-         *       <li> portElement : DOM element recognized as a port that received drag event. </li>
-         *       <li> dataContext : The dataContext object of the link start node</li>
-         *     </ul>
-         *   </li>
-         * </ul>
-         * @ojshortdesc Optional handler for dragstart event.
-         * @expose
-         * @name dnd.drag.ports.dragStart
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {ports: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}}) => void)", jsdocOverride: true}
-         */
-        /**
-         * An object that describes drop functionality.
-         * @expose
-         * @name dnd.drop
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {Object=}
-         */
-        drop: null
-        /**
-         * Allows dropping on the diagram background.
-         * @expose
-         * @name dnd.drop.background
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {Object=}
-         */
-        /**
-         * An array of MIME data types the Diagram background can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
-         * @ojshortdesc Specifies MIME types of objects that can be dropped on the Diagram background.
-         * @expose
-         * @name dnd.drop.background.dataTypes
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(string|Array.<string>)=}
-         * @default null
-         */
-        /**
-         * An optional callback function that receives the "dragenter" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"backgroundDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
-         * @ojshortdesc Optional handler for dragenter event.
-         * @expose
-         * @name dnd.drop.background.dragEnter
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
-         */
-        /**
-         * An optional callback function that receives the "dragover" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"backgroundDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
-         * @ojshortdesc Optional handler for dragover event.
-         * @expose
-         * @name dnd.drop.background.dragOver
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
-         */
-        /**
-         * An optional callback function that receives the "dragleave" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"backgroundDropContext"}
-         * @ojshortdesc Optional handler for dragleave event.
-         * @expose
-         * @name dnd.drop.background.dragLeave
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
-         */
-        /**
-         * A callback function that receives the "drop" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"backgroundDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
-         * @ojshortdesc Handler for drop event.
-         * @expose
-         * @name dnd.drop.background.drop
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
-         */
-        /**
-         * Allows dropping on diagram nodes.
-         * @expose
-         * @name dnd.drop.nodes
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {Object=}
-         */
-        /**
-         *  An array of MIME data types the Diagram nodes can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
-         * @ojshortdesc Specifies MIME types of objects that can be dropped on the Diagram nodes.
-         * @expose
-         * @name dnd.drop.nodes.dataTypes
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(string|Array.<string>)=}
-         * @default null
-         */
-        /**
-         * An optional callback function that receives the "dragenter" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"nodeDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
-         * @ojshortdesc Optional handler for dragenter event.
-         * @expose
-         * @name dnd.drop.nodes.dragEnter
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
-         */
-        /**
-         * An optional callback function that receives the "dragover" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"nodeDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
-         * @ojshortdesc Optional handler for dragover event.
-         * @expose
-         * @name dnd.drop.nodes.dragOver
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
-         */
-        /**
-         * An optional callback function that receives the "dragleave" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"nodeDropContext"}
-         * @ojshortdesc Optional handler for dragleave event.
-         * @expose
-         * @name dnd.drop.nodes.dragLeave
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
-         */
-        /**
-         * A callback function that receives the "drop" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"nodeDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
-         * @ojshortdesc Handler for drop event.
-         * @expose
-         * @name dnd.drop.nodes.drop
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
-         */
-        /**
-         * Allows dropping on diagram links.
-         * @expose
-         * @name dnd.drop.links
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {Object=}
-         */
-        /**
-         * An array of MIME data types the Diagram links can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
-         * @ojshortdesc Specifies MIME types of objects that can be dropped on the Diagram links.
-         * @expose
-         * @name dnd.drop.links.dataTypes
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(string|Array.<string>)=}
-         * @default null
-         */
-        /**
-         * An optional callback function that receives the "dragenter" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"linkDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
-         * @ojshortdesc Optional handler for dragenter event.
-         * @expose
-         * @name dnd.drop.links.dragEnter
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {
-         *  target: "Type",
-         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
-         *  jsdocOverride: true}
-         */
-        /**
-         * An optional callback function that receives the "dragover" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"linkDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
-         * @ojshortdesc Optional handler for dragover event.
-         * @expose
-         * @name dnd.drop.links.dragOver
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {
-         *  target: "Type",
-         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
-         *  jsdocOverride: true}
-         */
-        /**
-         * An optional callback function that receives the "dragleave" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"linkDropContext"}
-         * @ojshortdesc Optional handler for dragleave event.
-         * @expose
-         * @name dnd.drop.links.dragLeave
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {
-         *  target: "Type",
-         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
-         *  jsdocOverride: true}
-         */
-        /**
-         * A callback function that receives the "drop" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"linkDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
-         * @ojshortdesc Handler for drop event.
-         * @expose
-         * @name dnd.drop.links.drop
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {
-         *  target: "Type",
-         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
-         *  jsdocOverride: true}
-         */
-        /**
-         * Allows dropping a link end on a port.
-         * @expose
-         * @name dnd.drop.ports
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {Object=}
-         */
-        /**
-         * A string, containing a selector expression, that will be used to identify the descendant DOM element in a diagram node that can be used for link creation. This property is requred.
-         * @ojshortdesc Specifies DOM element selector used for link creation end.
-         * @expose
-         * @name dnd.drop.ports.selector
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {string}
-         * @default null
-         */
-        /**
-         *  An array of MIME data types the Diagram ports can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
-         * @ojshortdesc Specifies MIME types of objects that can be dropped on the Diagram ports.
-         * @expose
-         * @name dnd.drop.ports.dataTypes
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(string|Array.<string>)=}
-         * @default null
-         */
-        /**
-         * An optional callback function that receives the "dragenter" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"portDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
-         * @ojshortdesc Optional handler for dragenter event.
-         * @expose
-         * @name dnd.drop.ports.dragEnter
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
-         */
-        /**
-         * An optional callback function that receives the "dragover" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"portDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
-         * @ojshortdesc Optional handler for dragover event.
-         * @expose
-         * @name dnd.drop.ports.dragOver
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
-         */
-        /**
-         * An optional callback function that receives the "dragleave" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"portDropContext"}
-         * @ojshortdesc Optional handler for dragleave event.
-         * @expose
-         * @name dnd.drop.ports.dragLeave
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
-         */
-        /**
-         * A callback function that receives the "drop" event and context information as arguments.
-         * The context information is as follows: {@ojinclude "name":"portDropContext"}
-         * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
-         * @ojshortdesc Handler for drop event.
-         * @expose
-         * @name dnd.drop.ports.drop
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Event, Object))=}
-         * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
-         */
-      },
+      drag: null,
+      /**
+       * If this object is specified, the diagram will initiate drag operation when the user drags on diagram nodes.
+       * @ojshortdesc Used to customize the drag features for nodes.
+       * @expose
+       * @name dnd.drag.nodes
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {Object=}
+       */
+      /**
+       * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected data items. The dataContext is the JSON version of the dataContext that we use for "tooltip" option, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
+       * @ojshortdesc Specifies MIME type for dragged data.
+       * @expose
+       * @name dnd.drag.nodes.dataTypes
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(string|Array.<string>)=}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "drag" event as argument.
+       * @ojshortdesc Optional handler for drag event.
+       * @expose
+       * @name dnd.drag.nodes.drag
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event))=}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragend" event as argument.
+       * @ojshortdesc Optional handler for dragend event.
+       * @expose
+       * @name dnd.drag.nodes.dragEnd
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event))=}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragstart" event and context information as arguments.
+       * The context information is as follows:
+       * <ul>
+       *   <li>nodes {Array.(object)}: An array of data contexts of the dragged data nodes.</li>
+       * </ul>
+       * This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.
+       * @ojshortdesc Optional handler for dragstart event.
+       * @expose
+       * @name dnd.drag.nodes.dragStart
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {nodes: oj.ojDiagram.DndNodeContext<K1,D1>[]}) => void)", jsdocOverride: true}
+       */
+      /**
+       * If this object is specified, the diagram will initiate link creation when the user starts dragging from a port.
+       * @ojshortdesc Defines link creation functionality.
+       * @expose
+       * @name dnd.drag.ports
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {Object=}
+       */
+      /**
+       * An optional callback function for customizing link feedback based on a starting node and a port.
+       * If the function is not specified the link feedback will use default link styles.
+       * The function will take a single parameter - a context object with the following properties:
+       * <ul>
+       *   <li>portElement DOM element recognized as a port that received drag event.</li>
+       *   <li>dataContext The dataContext object of the link start node.</li>
+       * </ul>
+       * The function should return one of the following:
+       * <ul>
+       *   <li>an object with the following properties:
+       *     <ul>
+       *       <li> svgStyle : Inline style object to be applied on the link feedback </li>
+       *       <li> svgClassName : A name of a style class to be applied on the link </li>
+       *     </ul>
+       *   </li>
+       *   <li>null or undefined : the default link styles will be used for the link feedback </li>
+       * </ul>
+       * @ojshortdesc Specifies link creation feedback.
+       * @expose
+       * @name dnd.drag.ports.linkStyle
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((context: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => ({svgStyle?: Partial<CSSStyleDeclaration>, svgClassName?: string} | null))", jsdocOverride: true}
+       */
+      /**
+       * A string, containing a selector expression, that will be used to identify the descendant DOM element in a diagram node that can be used for link creation. This property is requred.
+       * @ojshortdesc Specifies DOM element selector used to start link creation.
+       * @expose
+       * @name dnd.drag.ports.selector
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {string=}
+       * @default null
+       */
+      /**
+       * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
+       * @ojshortdesc Specifies MIME type for dragged data.
+       * @expose
+       * @name dnd.drag.ports.dataTypes
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(string|Array.<string>)=}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "drag" event as argument.
+       * @ojshortdesc Optional handler for drag event.
+       * @expose
+       * @name dnd.drag.ports.drag
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event))=}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragend" event as argument.
+       * @ojshortdesc Optional handler for dragend event.
+       * @expose
+       * @name dnd.drag.ports.dragEnd
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event))=}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragstart" event and context information as arguments.
+       * The context information is as follows:
+       * <ul>
+       *   <li> ports {object}: An object with the following properties:
+       *     <ul>
+       *       <li> portElement : DOM element recognized as a port that received drag event. </li>
+       *       <li> dataContext : The dataContext object of the link start node</li>
+       *     </ul>
+       *   </li>
+       * </ul>
+       * @ojshortdesc Optional handler for dragstart event.
+       * @expose
+       * @name dnd.drag.ports.dragStart
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {ports: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}}) => void)", jsdocOverride: true}
+       */
+      /**
+       * An object that describes drop functionality.
+       * @expose
+       * @name dnd.drop
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {Object=}
+       */
+      drop: null
+      /**
+       * Allows dropping on the diagram background.
+       * @expose
+       * @name dnd.drop.background
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {Object=}
+       */
+      /**
+       * An array of MIME data types the Diagram background can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+       * @ojshortdesc Specifies MIME types of objects that can be dropped on the Diagram background.
+       * @expose
+       * @name dnd.drop.background.dataTypes
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(string|Array.<string>)=}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragenter" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"backgroundDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @ojshortdesc Optional handler for dragenter event.
+       * @expose
+       * @name dnd.drop.background.dragEnter
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
+       */
+      /**
+       * An optional callback function that receives the "dragover" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"backgroundDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @ojshortdesc Optional handler for dragover event.
+       * @expose
+       * @name dnd.drop.background.dragOver
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
+       */
+      /**
+       * An optional callback function that receives the "dragleave" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"backgroundDropContext"}
+       * @ojshortdesc Optional handler for dragleave event.
+       * @expose
+       * @name dnd.drop.background.dragLeave
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
+       */
+      /**
+       * A callback function that receives the "drop" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"backgroundDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+       * @ojshortdesc Handler for drop event.
+       * @expose
+       * @name dnd.drop.background.drop
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
+       */
+      /**
+       * Allows dropping on diagram nodes.
+       * @expose
+       * @name dnd.drop.nodes
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {Object=}
+       */
+      /**
+       *  An array of MIME data types the Diagram nodes can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+       * @ojshortdesc Specifies MIME types of objects that can be dropped on the Diagram nodes.
+       * @expose
+       * @name dnd.drop.nodes.dataTypes
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(string|Array.<string>)=}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragenter" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"nodeDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @ojshortdesc Optional handler for dragenter event.
+       * @expose
+       * @name dnd.drop.nodes.dragEnter
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
+       */
+      /**
+       * An optional callback function that receives the "dragover" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"nodeDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @ojshortdesc Optional handler for dragover event.
+       * @expose
+       * @name dnd.drop.nodes.dragOver
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
+       */
+      /**
+       * An optional callback function that receives the "dragleave" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"nodeDropContext"}
+       * @ojshortdesc Optional handler for dragleave event.
+       * @expose
+       * @name dnd.drop.nodes.dragLeave
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
+       */
+      /**
+       * A callback function that receives the "drop" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"nodeDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+       * @ojshortdesc Handler for drop event.
+       * @expose
+       * @name dnd.drop.nodes.drop
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
+       */
+      /**
+       * Allows dropping on diagram links.
+       * @expose
+       * @name dnd.drop.links
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {Object=}
+       */
+      /**
+       * An array of MIME data types the Diagram links can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+       * @ojshortdesc Specifies MIME types of objects that can be dropped on the Diagram links.
+       * @expose
+       * @name dnd.drop.links.dataTypes
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(string|Array.<string>)=}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragenter" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"linkDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @ojshortdesc Optional handler for dragenter event.
+       * @expose
+       * @name dnd.drop.links.dragEnter
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {
+       *  target: "Type",
+       *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+       *  jsdocOverride: true}
+       */
+      /**
+       * An optional callback function that receives the "dragover" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"linkDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @ojshortdesc Optional handler for dragover event.
+       * @expose
+       * @name dnd.drop.links.dragOver
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {
+       *  target: "Type",
+       *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+       *  jsdocOverride: true}
+       */
+      /**
+       * An optional callback function that receives the "dragleave" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"linkDropContext"}
+       * @ojshortdesc Optional handler for dragleave event.
+       * @expose
+       * @name dnd.drop.links.dragLeave
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {
+       *  target: "Type",
+       *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+       *  jsdocOverride: true}
+       */
+      /**
+       * A callback function that receives the "drop" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"linkDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+       * @ojshortdesc Handler for drop event.
+       * @expose
+       * @name dnd.drop.links.drop
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {
+       *  target: "Type",
+       *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+       *  jsdocOverride: true}
+       */
+      /**
+       * Allows dropping a link end on a port.
+       * @expose
+       * @name dnd.drop.ports
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {Object=}
+       */
+      /**
+       * A string, containing a selector expression, that will be used to identify the descendant DOM element in a diagram node that can be used for link creation. This property is requred.
+       * @ojshortdesc Specifies DOM element selector used for link creation end.
+       * @expose
+       * @name dnd.drop.ports.selector
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       *  An array of MIME data types the Diagram ports can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+       * @ojshortdesc Specifies MIME types of objects that can be dropped on the Diagram ports.
+       * @expose
+       * @name dnd.drop.ports.dataTypes
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(string|Array.<string>)=}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragenter" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"portDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @ojshortdesc Optional handler for dragenter event.
+       * @expose
+       * @name dnd.drop.ports.dragEnter
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
+       */
+      /**
+       * An optional callback function that receives the "dragover" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"portDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @ojshortdesc Optional handler for dragover event.
+       * @expose
+       * @name dnd.drop.ports.dragOver
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
+       */
+      /**
+       * An optional callback function that receives the "dragleave" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"portDropContext"}
+       * @ojshortdesc Optional handler for dragleave event.
+       * @expose
+       * @name dnd.drop.ports.dragLeave
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
+       */
+      /**
+       * A callback function that receives the "drop" event and context information as arguments.
+       * The context information is as follows: {@ojinclude "name":"portDropContext"}
+       * This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+       * @ojshortdesc Handler for drop event.
+       * @expose
+       * @name dnd.drop.ports.drop
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {(function(Event, Object))=}
+       * @default null
+       * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
+       */
+    },
 
+    /**
+     * Specifies the key set containing the ids of diagram nodes that should be expanded on initial render.
+     * Use the <a href="KeySetImpl.html">KeySetImpl</a> class to specify nodes to expand.
+     * Use the <a href="AllKeySetImpl.html">AllKeySetImpl</a> class to expand all nodes.
+     * @ojshortdesc Specifies the key set of ids for expanded diagram nodes.
+     * @expose
+     * @name expanded
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {KeySet=}
+     * @default new KeySetImpl()
+     * @ojsignature {target:"Type", value:"oj.KeySet<K1>"}
+     * @ojwriteback
+     *
+     * @example <caption>Initialize the diagram with specific items expanded:</caption>
+     * myDiagram.expanded = new KeySetImpl(['N0', 'N00']);
+     *
+     * @example <caption>Initialize the diagram with all items expanded:</caption>
+     * myDiagram.expanded = new AllKeySetImpl();
+     */
+    expanded: new KeySetImpl(),
+    /**
+     * An array containing the ids of the selected nodes and links.
+     * @expose
+     * @name selection
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(Array.<any>)=}
+     * @ojsignature {target:"Type", value:"Array<K1|K2>"}
+     * @default []
+     * @ojwriteback
+     * @ojeventgroup common
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">selection</code> attribute specified:</caption>
+     * &lt;oj-diagram selection='["N1", "N2", "L0"]'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">selection</code>
+     * property after initialization:</caption>
+     * // Get one
+     * var value = myDiagram.selection[0];
+     *
+     * // Get all
+     * var values = myDiagram.selection;
+     *
+     * // Set all (There is no permissible "set one" syntax.)
+     * myDiagram.selection=["N1", "N2", "L0"];
+     */
+    selection: [],
+    /**
+     * <p>The type of selection behavior that is enabled on the diagram. This attribute controls the number of selections that can be made via selection gestures at any given time.
+     *
+     * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the diagram's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+     * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the diagram's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+     *
+     * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
+     *
+     * @expose
+     * @name selectionMode
+     * @memberof oj.ojDiagram
+     * @ojshortdesc Specifies the selection behavior on the diagram. See the Help documentation for more information.
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "none" Selection is disabled.
+     * @ojvalue {string} "single" Only a single item can be selected at a time.
+     * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
+     * @default "none"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">selection-mode</code> attribute specified:</caption>
+     * &lt;oj-diagram selection-mode='multiple'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">selectionMode</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.selectionMode;
+     *
+     * // setter
+     * myDiagram.selectionMode="multiple";
+     */
+    selectionMode: 'none',
+    /**
+     * Specifies whether panning is allowed in Diagram.
+     * @expose
+     * @name panning
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "fixed" {"description": "Panning is restricted to the visible region when the diagram is rendered at minZoom."}
+     * @ojvalue {string} "centerContent" {"description": "Panning is restricted based on the current zoom level to allow any area of the content to be centered. If an overview is being rendered, the overview.fitArea property should also be set to 'content' in most situations."}
+     * @ojvalue {string} "none" {"description": "Panning is not allowed."}
+     * @ojvalue {string} "auto" {"description": "One of the other described behaviors will be chosen at runtime based on the theme, form factor etc."}
+     * @default "none"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">panning</code> attribute specified:</caption>
+     * &lt;oj-diagram panning='auto'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">panning</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.panning;
+     *
+     * // setter
+     * myDiagram.panning="auto";
+     */
+    panning: 'none',
+    /**
+     * Specifies if panning allowed in horizontal and vertical directions.
+     * @expose
+     * @name panDirection
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "x"
+     * @ojvalue {string} "y"
+     * @ojvalue {string} "auto"
+     * @default "auto"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">pan-direction</code> attribute specified:</caption>
+     * &lt;oj-diagram pan-direction='x'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">panDirection</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.panDirection;
+     *
+     * // setter
+     * myDiagram.panDirection="y";
+     */
+    panDirection: 'auto',
+    /**
+     * A writeback object that contains properties zoom, centerX, and centerY that represent the panZoomState
+     * @expose
+     * @name panZoomState
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {Object=}
+     * @ojwriteback
+     */
+    panZoomState: {
       /**
-       * Specifies the key set containing the ids of diagram nodes that should be expanded on initial render.
-       * Use the <a href="KeySetImpl.html">KeySetImpl</a> class to specify nodes to expand.
-       * Use the <a href="AllKeySetImpl.html">AllKeySetImpl</a> class to expand all nodes.
-       * @ojshortdesc Specifies the key set of ids for expanded diagram nodes.
+       * Specifies the zoom value of the diagram.  The specified value should be between the diagram minZoom and maxZoom values.
+       * A value of 0, the default, indicates that the diagram should be zoomed in as much as possible while keeping all content visible.
+       * @ojshortdesc The zoom value in the range of min/max-zoom
        * @expose
-       * @name expanded
-       * @memberof oj.ojDiagram
+       * @name panZoomState.zoom
+       * @memberof! oj.ojDiagram
        * @instance
-       * @type {KeySet=}
-       * @default new KeySetImpl()
-       * @ojsignature {target:"Type", value:"oj.KeySet<K1>"}
-       * @ojwriteback
-       *
-       * @example <caption>Initialize the diagram with specific items expanded:</caption>
-       * myDiagram.expanded = new KeySetImpl(['N0', 'N00']);
-       *
-       * @example <caption>Initialize the diagram with all items expanded:</caption>
-       * myDiagram.expanded = new AllKeySetImpl();
-       */
-      expanded: new KeySetImpl(),
-      /**
-       * An array containing the ids of the selected nodes and links.
-       * @expose
-       * @name selection
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {(Array.<any>)=}
-       * @ojsignature {target:"Type", value:"Array<K1|K2>"}
-       * @default []
-       * @ojwriteback
-       * @ojeventgroup common
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">selection</code> attribute specified:</caption>
-       * &lt;oj-diagram selection='["N1", "N2", "L0"]'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">selection</code>
-       * property after initialization:</caption>
-       * // Get one
-       * var value = myDiagram.selection[0];
-       *
-       * // Get all
-       * var values = myDiagram.selection;
-       *
-       * // Set all (There is no permissible "set one" syntax.)
-       * myDiagram.selection=["N1", "N2", "L0"];
-       */
-      selection: [],
-      /**
-       * <p>The type of selection behavior that is enabled on the diagram. This attribute controls the number of selections that can be made via selection gestures at any given time.
-       *
-       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the diagram's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
-       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the diagram's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
-       *
-       * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
-       *
-       * @expose
-       * @name selectionMode
-       * @memberof oj.ojDiagram
-       * @ojshortdesc Specifies the selection behavior on the diagram. See the Help documentation for more information.
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "none" Selection is disabled.
-       * @ojvalue {string} "single" Only a single item can be selected at a time.
-       * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
-       * @default "none"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">selection-mode</code> attribute specified:</caption>
-       * &lt;oj-diagram selection-mode='multiple'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">selectionMode</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.selectionMode;
-       *
-       * // setter
-       * myDiagram.selectionMode="multiple";
-       */
-      selectionMode: 'none',
-      /**
-       * Specifies whether panning is allowed in Diagram.
-       * @expose
-       * @name panning
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "fixed" {"description": "Panning is restricted to the visible region when the diagram is rendered at minZoom."}
-       * @ojvalue {string} "centerContent" {"description": "Panning is restricted based on the current zoom level to allow any area of the content to be centered. If an overview is being rendered, the overview.fitArea property should also be set to 'content' in most situations."}
-       * @ojvalue {string} "none" {"description": "Panning is not allowed."}
-       * @ojvalue {string} "auto" {"description": "One of the other described behaviors will be chosen at runtime based on the theme, form factor etc."}
-       * @default "none"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">panning</code> attribute specified:</caption>
-       * &lt;oj-diagram panning='auto'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">panning</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.panning;
-       *
-       * // setter
-       * myDiagram.panning="auto";
-       */
-      panning: 'none',
-      /**
-       * Specifies if panning allowed in horizontal and vertical directions.
-       * @expose
-       * @name panDirection
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "x"
-       * @ojvalue {string} "y"
-       * @ojvalue {string} "auto"
-       * @default "auto"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">pan-direction</code> attribute specified:</caption>
-       * &lt;oj-diagram pan-direction='x'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">panDirection</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.panDirection;
-       *
-       * // setter
-       * myDiagram.panDirection="y";
-       */
-      panDirection: 'auto',
-      /**
-       * A writeback object that contains properties zoom, centerX, and centerY that represent the panZoomState
-       * @expose
-       * @name panZoomState
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {Object=}
-       * @ojwriteback
-       */
-       panZoomState: {
-        /**
-         * Specifies the zoom value of the diagram.  The specified value should be between the diagram minZoom and maxZoom values.
-         * A value of 0, the default, indicates that the diagram should be zoomed in as much as possible while keeping all content visible.
-         * @ojshortdesc The zoom value in the range of min/max-zoom
-         * @expose
-         * @name panZoomState.zoom
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {number}
-         * @default 0.0
-         */
-        zoom: 0.0,
-        /**
-         * The x coordinate of the center of the viewport in the layout coordinate space.
-         * By default the content will be centered horizontally.
-         * @ojshortdesc The x coordinate of the center of the viewport
-         * @expose
-         * @name panZoomState.centerX
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {number|null}
-         * @default null
-         */
-        centerX: null,
-        /**
-         * The y coordinate of the center of the viewport in the layout coordinate space
-         * By default the content will be centered vertically.
-         * @ojshortdesc The y coordinate of the center of the viewport
-         * @expose
-         * @name panZoomState.centerY
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {number|null}
-         * @default null
-         */
-        centerY: null
-      },
-      /**
-       * An object containing an optional callback function for tooltip customization.
-       * @expose
-       * @name tooltip
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {Object=}
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">tooltip</code> attribute specified:</caption>
-       * <!-- Using dot notation -->
-       * &lt;oj-diagram tooltip.renderer='[[tooltipFun]]'>&lt;/oj-diagram>
-       *
-       * &lt;oj-diagram tooltip='[[{"renderer": tooltipFun}]]'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">tooltip</code>
-       * property after initialization:</caption>
-       * // Get one
-       * var value = myDiagram.tooltip.renderer;
-       *
-       * // Get all
-       * var values = myDiagram.tooltip;
-       *
-       * // Set one, leaving the others intact. Always use the setProperty API for
-       * // subproperties rather than setting a subproperty directly.
-       * myDiagram.setProperty('tooltip.renderer', tooltipFun);
-       *
-       * // Set all. Must list every resource key, as those not listed are lost.
-       * myDiagram.tooltip={'renderer': tooltipFun};
-       */
-      tooltip: {
-        /**
-         * A function that returns a custom tooltip. The function takes a dataContext argument,
-         * provided by the diagram. The function should return an Object that contains only one of the two properties:
-         *  <ul>
-         *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
-         *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
-         *  </ul>
-         * @ojshortdesc Specifies a function for a custom tooltip.
-         * @expose
-         * @name tooltip.renderer
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {function(Object):Object|null}
-         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.TooltipContext<K1,K2,D1,D2>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
-         * @default null
-         */
-        renderer: null
-      },
-      /**
-       * Specifies whether zooming is allowed in Diagram.
-       * @expose
-       * @name zooming
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "auto"
-       * @ojvalue {string} "none"
-       * @default "none"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">zooming</code> attribute specified:</caption>
-       * &lt;oj-diagram panDirection='auto'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">zooming</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.zooming;
-       *
-       * // setter
-       * myDiagram.zooming="auto";
-       */
-      zooming: 'none',
-      /**
-       * Specifies the minimum zoom level for this diagram. If minZoom is greater than zero, it indicates
-       * the minimum point to which Diagram objects can be scaled. A value of 0.1 implies that
-       * the Diagram can be zoomed out until Nodes appear at one-tenth their natural size.
-       * By default, minZoom is set to zoom-to-fit level based on the currently visible Nodes and Links.
-       * @ojshortdesc Specifies the minimum zoom level for this diagram.
-       * @expose
-       * @name minZoom
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {number=}
+       * @type {number}
        * @default 0.0
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">min-zoom</code> attribute specified:</caption>
-       * &lt;oj-diagram min-zoom='0.5'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">minZoom</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.minZoom;
-       *
-       * // setter
-       * myDiagram.minZoom=1.0;
        */
-      minZoom: 0.0,
+      zoom: 0.0,
       /**
-       * Specifies the maximum zoom level for this diagram. This can be any number greater than zero
-       * which indicates the maximum point to which Diagram objects can be scaled.
-       * A value of 2.0 implies that the Diagram can be zoomed in until Nodes appear at twice their natural size.
-       * By default, maxZoom is 1.0.
-       * @ojshortdesc Specifies the maximum zoom level for this diagram.
+       * The x coordinate of the center of the viewport in the layout coordinate space.
+       * By default the content will be centered horizontally.
+       * @ojshortdesc The x coordinate of the center of the viewport
        * @expose
-       * @name maxZoom
-       * @memberof oj.ojDiagram
+       * @name panZoomState.centerX
+       * @memberof! oj.ojDiagram
        * @instance
-       * @type {number=}
-       * @default 1.0
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">max-zoom</code> attribute specified:</caption>
-       * &lt;oj-diagram max-zoom='10.0'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">maxZoom</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.maxZoom;
-       *
-       * // setter
-       * myDiagram.maxZoom=5.0;
+       * @type {number|null}
+       * @default null
        */
-      maxZoom: 1.0,
+      centerX: null,
       /**
-       * An array of category strings used for category filtering. Diagram nodes and links with a category in hiddenCategories will be filtered.
-       * @ojshortdesc Specifies categories used for filtering.
+       * The y coordinate of the center of the viewport in the layout coordinate space
+       * By default the content will be centered vertically.
+       * @ojshortdesc The y coordinate of the center of the viewport
        * @expose
-       * @name hiddenCategories
-       * @memberof oj.ojDiagram
+       * @name panZoomState.centerY
+       * @memberof! oj.ojDiagram
        * @instance
-       * @type {(Array.<string>)=}
-       * @default []
-       * @ojwriteback
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">hidden-categories</code> attribute specified:</caption>
-       * &lt;oj-diagram hidden-categories='["green", "blue"]'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">hiddenCategories</code>
-       * property after initialization:</caption>
-       * // Get one
-       * var value = myDiagram.hiddenCategories[0];
-       *
-       * // Get all
-       * var values = myDiagram.hiddenCategories;
-       *
-       * // Set all (There is no permissible "set one" syntax.)
-       * myDiagram.hiddenCategories=["green", "blue"];
+       * @type {number|null}
+       * @default null
        */
-      hiddenCategories: [],
+      centerY: null
+    },
+    /**
+     * An object containing an optional callback function for tooltip customization.
+     * @expose
+     * @name tooltip
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {Object=}
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">tooltip</code> attribute specified:</caption>
+     * <!-- Using dot notation -->
+     * &lt;oj-diagram tooltip.renderer='[[tooltipFun]]'>&lt;/oj-diagram>
+     *
+     * &lt;oj-diagram tooltip='[[{"renderer": tooltipFun}]]'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">tooltip</code>
+     * property after initialization:</caption>
+     * // Get one
+     * var value = myDiagram.tooltip.renderer;
+     *
+     * // Get all
+     * var values = myDiagram.tooltip;
+     *
+     * // Set one, leaving the others intact. Always use the setProperty API for
+     * // subproperties rather than setting a subproperty directly.
+     * myDiagram.setProperty('tooltip.renderer', tooltipFun);
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myDiagram.tooltip={'renderer': tooltipFun};
+     */
+    tooltip: {
       /**
-       * Defines the behavior applied when hovering over diagram nodes and links.
+       * A function that returns a custom tooltip. The function takes a dataContext argument,
+       * provided by the diagram. The function should return an Object that contains only one of the two properties:
+       *  <ul>
+       *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
+       *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
+       *  </ul>
+       * @ojshortdesc Specifies a function for a custom tooltip.
        * @expose
-       * @name hoverBehavior
-       * @memberof oj.ojDiagram
+       * @name tooltip.renderer
+       * @memberof! oj.ojDiagram
        * @instance
-       * @type {string=}
-       * @ojvalue {string} "dim"
-       * @ojvalue {string} "none"
-       * @default "none"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">hover-behavior</code> attribute specified:</caption>
-       * &lt;oj-diagram max-zoom='dim'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">hoverBehavior</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.hoverBehavior;
-       *
-       * // setter
-       * myDiagram.hoverBehavior='dim';
+       * @type {function(Object):Object|null}
+       * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.TooltipContext<K1,K2,D1,D2>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+       * @default null
        */
-      hoverBehavior: 'none',
+      renderer: null
+    },
+    /**
+     * Specifies whether zooming is allowed in Diagram.
+     * @expose
+     * @name zooming
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "auto"
+     * @ojvalue {string} "none"
+     * @default "none"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">zooming</code> attribute specified:</caption>
+     * &lt;oj-diagram panDirection='auto'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">zooming</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.zooming;
+     *
+     * // setter
+     * myDiagram.zooming="auto";
+     */
+    zooming: 'none',
+    /**
+     * Specifies the minimum zoom level for this diagram. If minZoom is greater than zero, it indicates
+     * the minimum point to which Diagram objects can be scaled. A value of 0.1 implies that
+     * the Diagram can be zoomed out until Nodes appear at one-tenth their natural size.
+     * By default, minZoom is set to zoom-to-fit level based on the currently visible Nodes and Links.
+     * @ojshortdesc Specifies the minimum zoom level for this diagram.
+     * @expose
+     * @name minZoom
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {number=}
+     * @default 0.0
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">min-zoom</code> attribute specified:</caption>
+     * &lt;oj-diagram min-zoom='0.5'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">minZoom</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.minZoom;
+     *
+     * // setter
+     * myDiagram.minZoom=1.0;
+     */
+    minZoom: 0.0,
+    /**
+     * Specifies the maximum zoom level for this diagram. This can be any number greater than zero
+     * which indicates the maximum point to which Diagram objects can be scaled.
+     * A value of 2.0 implies that the Diagram can be zoomed in until Nodes appear at twice their natural size.
+     * By default, maxZoom is 1.0.
+     * @ojshortdesc Specifies the maximum zoom level for this diagram.
+     * @expose
+     * @name maxZoom
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {number=}
+     * @default 1.0
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">max-zoom</code> attribute specified:</caption>
+     * &lt;oj-diagram max-zoom='10.0'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">maxZoom</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.maxZoom;
+     *
+     * // setter
+     * myDiagram.maxZoom=5.0;
+     */
+    maxZoom: 1.0,
+    /**
+     * An array of category strings used for category filtering. Diagram nodes and links with a category in hiddenCategories will be filtered.
+     * @ojshortdesc Specifies categories used for filtering.
+     * @expose
+     * @name hiddenCategories
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(Array.<string>)=}
+     * @default []
+     * @ojwriteback
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">hidden-categories</code> attribute specified:</caption>
+     * &lt;oj-diagram hidden-categories='["green", "blue"]'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">hiddenCategories</code>
+     * property after initialization:</caption>
+     * // Get one
+     * var value = myDiagram.hiddenCategories[0];
+     *
+     * // Get all
+     * var values = myDiagram.hiddenCategories;
+     *
+     * // Set all (There is no permissible "set one" syntax.)
+     * myDiagram.hiddenCategories=["green", "blue"];
+     */
+    hiddenCategories: [],
+    /**
+     * Defines the behavior applied when hovering over diagram nodes and links.
+     * @expose
+     * @name hoverBehavior
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "dim"
+     * @ojvalue {string} "none"
+     * @default "none"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">hover-behavior</code> attribute specified:</caption>
+     * &lt;oj-diagram max-zoom='dim'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">hoverBehavior</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.hoverBehavior;
+     *
+     * // setter
+     * myDiagram.hoverBehavior='dim';
+     */
+    hoverBehavior: 'none',
+    /**
+     * An array of category strings used for category highlighting. Diagram nodes and links with a category in highlightedCategories will be highlighted.
+     * @ojshortdesc Specifies categories used for highlighting.
+     * @expose
+     * @name highlightedCategories
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(Array.<string>)=}
+     * @default []
+     * @ojwriteback
+     *
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">highlighted-categories</code> attribute specified:</caption>
+     * &lt;oj-diagram highlighted-categories='["green", "blue"]'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">highlightedCategories</code>
+     * property after initialization:</caption>
+     * // Get one
+     * var value = myDiagram.highlightedCategories[0];
+     *
+     * // Get all
+     * var values = myDiagram.highlightedCategories;
+     *
+     * // Set all (There is no permissible "set one" syntax.)
+     * myDiagram.highlightedCategories=["green", "blue"];
+     */
+    highlightedCategories: [],
+    /**
+     * The matching condition for the highlightedCategories option. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
+     * @ojshortdesc Specifies matching condition used for category highlighting.
+     * @expose
+     * @name highlightMatch
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "any"
+     * @ojvalue {string} "all"
+     * @default "all"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">highlight-match</code> attribute specified:</caption>
+     * &lt;oj-diagram highlight-match='any'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">highlightMatch</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.highlightMatch;
+     *
+     * // setter
+     * myDiagram.highlightMatch="any";
+     */
+    highlightMatch: 'all',
+    /**
+     * Defines node highlighting mode.
+     * @expose
+     * @name nodeHighlightMode
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "nodeAndIncomingLinks"
+     * @ojvalue {string} "nodeAndOutgoingLinks"
+     * @ojvalue {string} "nodeAndLinks"
+     * @ojvalue {string} "node"
+     * @default "node"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">node-highlight-mode</code> attribute specified:</caption>
+     * &lt;oj-diagram node-highlight-mode='nodeAndLinks'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">nodeHighlightMode</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.nodeHighlightMode;
+     *
+     * // setter
+     * myDiagram.nodeHighlightMode="nodeAndLinks";
+     */
+    nodeHighlightMode: 'node',
+    /**
+     * Defines link highlighting mode.
+     * @expose
+     * @name linkHighlightMode
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "linkAndNodes"
+     * @ojvalue {string} "link"
+     * @default "link"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">link-highlight-mode</code> attribute specified:</caption>
+     * &lt;oj-diagram link-highlight-mode='linkAndNodes'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">linkHighlightMode</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.linkHighlightMode;
+     *
+     * // setter
+     * myDiagram.linkHighlightMode="linkAndNodes";
+     */
+    linkHighlightMode: 'link',
+    /**
+     * An object containing an optional callbacks function for link customization.
+     * @expose
+     * @name linkContent
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {Object=}
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">link-content</code> attribute specified:</caption>
+     * <!-- Using dot notation -->
+     * &lt;oj-diagram link-content.renderer='[[linkRendererFunc]]'>&lt;/oj-diagram>
+     *
+     * &lt;oj-diagram link-content='[[{"renderer": linkRendererFunc}]]'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">linkContent</code>
+     * property after initialization:</caption>
+     * // Get one
+     * var value = myDiagram.linkContent.renderer;
+     *
+     * // Get all
+     * var values = myDiagram.linkContent;
+     *
+     * // Set one, leaving the others intact. Always use the setProperty API for
+     * // subproperties rather than setting a subproperty directly.
+     * myDiagram.setProperty('linkContent.renderer', linkRendererFunc);
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myDiagram.linkContent={'renderer': linkRendererFunc};
+     */
+    linkContent: {
       /**
-       * An array of category strings used for category highlighting. Diagram nodes and links with a category in highlightedCategories will be highlighted.
-       * @ojshortdesc Specifies categories used for highlighting.
+       * A callback function - a custom renderer - that will be used for initial link rendering.
+       * The function should return an Object with the following property:
+       * <ul>
+       *   <li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li>
+       * </ul>
+       *
+       * <p><b>Note</b> that a link can be represented by any SVG content. However if an application
+       * wants to take advantage of built-in path animation provided by the Diagram component,
+       * then the main shape of a link should be represented by a single path element and that
+       * path element should be marked by <i>oj-diagram-link-path</i> class. When the class
+       * is applied to the path element, its <i>d</i> attribute value will be populated by the
+       * component and the path transformation will be applied to the element during data change
+       * animation. Fade-in animation will be used for other elements of the link.</p>
+       * <p>When the <i>oj-diagram-link-path</i> class is not used for any element of the link, then
+       * the entire custom content will fade-in during data change animation.<p>
+       *
+       * <p><b>Note</b> that when linkContent.renderer is specified, but the other state renderer functions are not, then
+       * the linkContent.renderer will be used to render the state.</p>
+       *
+       * <p><b>Note</b> that when the content returned by the renderer is an <code>svg</code> element,
+       * the children of this element will be inserted into the DOM by the component,
+       * omitting the <code>svg</code> element itself.</p>
+       *
+       * @ojshortdesc Specifies custom renderer for the diagram links used for initial rendering.
        * @expose
-       * @name highlightedCategories
-       * @memberof oj.ojDiagram
+       * @name linkContent.renderer
+       * @memberof! oj.ojDiagram
        * @instance
-       * @type {(Array.<string>)=}
-       * @default []
-       * @ojwriteback
-       *
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">highlighted-categories</code> attribute specified:</caption>
-       * &lt;oj-diagram highlighted-categories='["green", "blue"]'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">highlightedCategories</code>
-       * property after initialization:</caption>
-       * // Get one
-       * var value = myDiagram.highlightedCategories[0];
-       *
-       * // Get all
-       * var values = myDiagram.highlightedCategories;
-       *
-       * // Set all (There is no permissible "set one" syntax.)
-       * myDiagram.highlightedCategories=["green", "blue"];
+       * @type {function(Object):Object|null}
+       * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => ({insert: SVGElement}))", jsdocOverride: true}
+       * @default null
        */
-      highlightedCategories: [],
+      renderer: null,
       /**
-       * The matching condition for the highlightedCategories option. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
-       * @ojshortdesc Specifies matching condition used for category highlighting.
+       * An optional callback function to update the link in response to changes in hover state.
+       * The function should return one of the following:
+       * <ul>
+       *   <li>An Object with the following property:
+       *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li></ul>
+       *   </li>
+       *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+       * </ul>
+       *
+       * <p>See <a href="#linkContent.renderer">linkContent.renderer</a> for additional details on custom content for Diagram links.</p>
+       * @ojshortdesc Specifies custom renderer for the diagram links used for hover updates.
        * @expose
-       * @name highlightMatch
-       * @memberof oj.ojDiagram
+       * @name linkContent.hoverRenderer
+       * @memberof! oj.ojDiagram
        * @instance
-       * @type {string=}
-       * @ojvalue {string} "any"
-       * @ojvalue {string} "all"
-       * @default "all"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">highlight-match</code> attribute specified:</caption>
-       * &lt;oj-diagram highlight-match='any'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">highlightMatch</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.highlightMatch;
-       *
-       * // setter
-       * myDiagram.highlightMatch="any";
+       * @type {(function(Object):Object|null)=}
+       * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+       * @default null
        */
-      highlightMatch: 'all',
+      hoverRenderer: null,
       /**
-       * Defines node highlighting mode.
+       * An optional callback function to update the link in response to changes in selection state.
+       * The function should return one of the following:
+       * <ul>
+       *   <li>An Object with the following property:
+       *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li></ul>
+       *   </li>
+       *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+       * </ul>
+       *
+       * <p>See <a href="#linkContent.renderer">linkContent.renderer</a> for additional details on custom content for Diagram links.</p>
+       * @ojshortdesc Specifies custom renderer for the diagram links used for selection updates.
        * @expose
-       * @name nodeHighlightMode
-       * @memberof oj.ojDiagram
+       * @name linkContent.selectionRenderer
+       * @memberof! oj.ojDiagram
        * @instance
-       * @type {string=}
-       * @ojvalue {string} "nodeAndIncomingLinks"
-       * @ojvalue {string} "nodeAndOutgoingLinks"
-       * @ojvalue {string} "nodeAndLinks"
-       * @ojvalue {string} "node"
-       * @default "node"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">node-highlight-mode</code> attribute specified:</caption>
-       * &lt;oj-diagram node-highlight-mode='nodeAndLinks'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">nodeHighlightMode</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.nodeHighlightMode;
-       *
-       * // setter
-       * myDiagram.nodeHighlightMode="nodeAndLinks";
+       * @type {(function(Object):Object|null)=}
+       * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+       * @default null
        */
-      nodeHighlightMode: 'node',
-      /**
-       * Defines link highlighting mode.
-       * @expose
-       * @name linkHighlightMode
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {string=}
-       * @ojvalue {string} "linkAndNodes"
-       * @ojvalue {string} "link"
-       * @default "link"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">link-highlight-mode</code> attribute specified:</caption>
-       * &lt;oj-diagram link-highlight-mode='linkAndNodes'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">linkHighlightMode</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.linkHighlightMode;
-       *
-       * // setter
-       * myDiagram.linkHighlightMode="linkAndNodes";
-       */
-      linkHighlightMode: 'link',
-      /**
-       * An object containing an optional callbacks function for link customization.
-       * @expose
-       * @name linkContent
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {Object=}
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">link-content</code> attribute specified:</caption>
-       * <!-- Using dot notation -->
-       * &lt;oj-diagram link-content.renderer='[[linkRendererFunc]]'>&lt;/oj-diagram>
-       *
-       * &lt;oj-diagram link-content='[[{"renderer": linkRendererFunc}]]'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">linkContent</code>
-       * property after initialization:</caption>
-       * // Get one
-       * var value = myDiagram.linkContent.renderer;
-       *
-       * // Get all
-       * var values = myDiagram.linkContent;
-       *
-       * // Set one, leaving the others intact. Always use the setProperty API for
-       * // subproperties rather than setting a subproperty directly.
-       * myDiagram.setProperty('linkContent.renderer', linkRendererFunc);
-       *
-       * // Set all. Must list every resource key, as those not listed are lost.
-       * myDiagram.linkContent={'renderer': linkRendererFunc};
-       */
-      linkContent: {
-        /**
-         * A callback function - a custom renderer - that will be used for initial link rendering.
-         * The function should return an Object with the following property:
-         * <ul>
-         *   <li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li>
-         * </ul>
-         *
-         * <p><b>Note</b> that a link can be represented by any SVG content. However if an application
-         * wants to take advantage of built-in path animation provided by the Diagram component,
-         * then the main shape of a link should be represented by a single path element and that
-         * path element should be marked by <i>oj-diagram-link-path</i> class. When the class
-         * is applied to the path element, its <i>d</i> attribute value will be populated by the
-         * component and the path transformation will be applied to the element during data change
-         * animation. Fade-in animation will be used for other elements of the link.</p>
-         * <p>When the <i>oj-diagram-link-path</i> class is not used for any element of the link, then
-         * the entire custom content will fade-in during data change animation.<p>
-         *
-         * <p><b>Note</b> that when linkContent.renderer is specified, but the other state renderer functions are not, then
-         * the linkContent.renderer will be used to render the state.</p>
-         *
-         * <p><b>Note</b> that when the content returned by the renderer is an <code>svg</code> element,
-         * the children of this element will be inserted into the DOM by the component,
-         * omitting the <code>svg</code> element itself.</p>
-         *
-         * @ojshortdesc Specifies custom renderer for the diagram links used for initial rendering.
-         * @expose
-         * @name linkContent.renderer
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {function(Object):Object|null}
-         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => ({insert: SVGElement}))", jsdocOverride: true}
-         * @default null
-         */
-        renderer: null,
-        /**
-         * An optional callback function to update the link in response to changes in hover state.
-         * The function should return one of the following:
-         * <ul>
-         *   <li>An Object with the following property:
-         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li></ul>
-         *   </li>
-         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
-         * </ul>
-         *
-         * <p>See <a href="#linkContent.renderer">linkContent.renderer</a> for additional details on custom content for Diagram links.</p>
-         * @ojshortdesc Specifies custom renderer for the diagram links used for hover updates.
-         * @expose
-         * @name linkContent.hoverRenderer
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Object):Object|null)=}
-         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
-         * @default null
-         */
-        hoverRenderer: null,
-        /**
-         * An optional callback function to update the link in response to changes in selection state.
-         * The function should return one of the following:
-         * <ul>
-         *   <li>An Object with the following property:
-         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li></ul>
-         *   </li>
-         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
-         * </ul>
-         *
-         * <p>See <a href="#linkContent.renderer">linkContent.renderer</a> for additional details on custom content for Diagram links.</p>
-         * @ojshortdesc Specifies custom renderer for the diagram links used for selection updates.
-         * @expose
-         * @name linkContent.selectionRenderer
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Object):Object|null)=}
-         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
-         * @default null
-         */
-        selectionRenderer: null,
+      selectionRenderer: null,
 
-        /**
-         * An optional callback function to update the link in response to changes in keyboard focus state.
-         * The function should return one of the following:
-         * <ul>
-         *   <li>An Object with the following property:
-         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li></ul>
-         *   </li>
-         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
-         * </ul>
-         *
-         * <p>See <a href="#linkContent.renderer">linkContent.renderer</a> for additional details on custom content for Diagram links.</p>
-         * @ojshortdesc Specifies custom renderer for the diagram links used for focus updates.
-         * @expose
-         * @name linkContent.focusRenderer
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Object):Object|null)=}
-         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
-         * @default null
-         */
-        focusRenderer: null
-      },
       /**
-       * An object containing an optional callbacks function for node customization.
+       * An optional callback function to update the link in response to changes in keyboard focus state.
+       * The function should return one of the following:
+       * <ul>
+       *   <li>An Object with the following property:
+       *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram link.</li></ul>
+       *   </li>
+       *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+       * </ul>
+       *
+       * <p>See <a href="#linkContent.renderer">linkContent.renderer</a> for additional details on custom content for Diagram links.</p>
+       * @ojshortdesc Specifies custom renderer for the diagram links used for focus updates.
        * @expose
-       * @name nodeContent
-       * @memberof oj.ojDiagram
+       * @name linkContent.focusRenderer
+       * @memberof! oj.ojDiagram
        * @instance
-       * @type {Object=}
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">node-content</code> attribute specified:</caption>
-       * <!-- Using dot notation -->
-       * &lt;oj-diagram node-content.renderer='[[linkRendererFunc]]'>&lt;/oj-diagram>
-       *
-       * &lt;oj-diagram node-content='[[{"renderer": linkRendererFunc}]]'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">nodeContent</code>
-       * property after initialization:</caption>
-       * // Get one
-       * var value = myDiagram.nodeContent.renderer;
-       *
-       * // Get all
-       * var values = myDiagram.nodeContent;
-       *
-       * // Set one, leaving the others intact. Always use the setProperty API for
-       * // subproperties rather than setting a subproperty directly.
-       * myDiagram.setProperty('nodeContent.renderer', linkRendererFunc);
-       *
-       * // Set all. Must list every resource key, as those not listed are lost.
-       * myDiagram.linkContent={'renderer': linkRendererFunc};
+       * @type {(function(Object):Object|null)=}
+       * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+       * @default null
        */
-      nodeContent: {
-        /**
-         * A callback function - a custom renderer - that will be used for initial node rendering.
-         * The function should return an Object with the following property:
-         * <ul>
-         *   <li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li>
-         * </ul>
-         *
-         * <p>The callback function is responsible for placing the child content by positioning either the content object passed on the RendererContext
-         * or [oj-diagram-child-content]{@link oj.ojDiagramChildContent} element.
-         * If an oj-diagram-child-content element is used, diagram will replace this element with the node child contents.</p>
-         *
-         * <p><b>Note</b> that when nodeContent.renderer is specified, but the other state renderer functions are not, then
-         * the default state renderer will be used to render the state.</p>
-         *
-         * @ojshortdesc Specifies custom renderer for the diagram nodes used for initial rendering.
-         * @expose
-         * @name nodeContent.renderer
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {function(Object):(Object)}
-         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => ({insert: SVGElement}))", jsdocOverride: true}
-         * @default null
-         */
-        renderer: null,
-        /**
-         * An optional callback function to update the node in response to changes in hover state.
-         * The function should return one of the following:
-         * <ul>
-         *   <li>An Object with the following property:
-         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
-         *   </li>
-         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
-         * </ul>
-         *
-         * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
-         *
-         * @ojshortdesc Specifies custom renderer for the diagram nodes used for hover updates.
-         * @expose
-         * @name nodeContent.hoverRenderer
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Object):(Object|void)|null)=}
-         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
-         * @default null
-         */
-        hoverRenderer: null,
-        /**
-         * An optional callback function to update the node in response to changes in selection state.
-         * The function should return one of the following:
-         * <ul>
-         *   <li>An Object with the following property:
-         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
-         *   </li>
-         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
-         * </ul>
-         *
-         * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
-         *
-         * @ojshortdesc Specifies custom renderer for the diagram nodes used for selection updates.
-         * @expose
-         * @name nodeContent.selectionRenderer
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Object):(Object|void)|null)=}
-         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
-         * @default null
-         */
-        selectionRenderer: null,
-        /**
-         * An optional callback function to update the node in response to changes in keyboard focus state.
-         * The function should return one of the following:
-         * <ul>
-         *   <li>An Object with the following property:
-         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
-         *   </li>
-         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
-         * </ul>
-         *
-         * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
-         *
-         * @ojshortdesc Specifies custom renderer for the diagram nodes used for focus updates.
-         * @expose
-         * @name nodeContent.focusRenderer
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Object):(Object|void)|null)=}
-         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
-         * @default null
-         */
-        focusRenderer: null,
-        /**
-         * An optional callback function to update the node in response to changes in zoom level.
-         * The function should return one of the following:
-         * <ul>
-         *   <li>An Object with the following property:
-         *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
-         *   </li>
-         *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
-         * </ul>
-         *
-         * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
-         *
-         * @ojshortdesc Specifies custom renderer for the diagram nodes used for zoom updates.
-         * @expose
-         * @name nodeContent.zoomRenderer
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {(function(Object):(Object|void)|null)=}
-         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
-         * @default null
-         */
-        zoomRenderer: null
-      },
+      focusRenderer: null
+    },
+    /**
+     * An object containing an optional callbacks function for node customization.
+     * @expose
+     * @name nodeContent
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {Object=}
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">node-content</code> attribute specified:</caption>
+     * <!-- Using dot notation -->
+     * &lt;oj-diagram node-content.renderer='[[linkRendererFunc]]'>&lt;/oj-diagram>
+     *
+     * &lt;oj-diagram node-content='[[{"renderer": linkRendererFunc}]]'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">nodeContent</code>
+     * property after initialization:</caption>
+     * // Get one
+     * var value = myDiagram.nodeContent.renderer;
+     *
+     * // Get all
+     * var values = myDiagram.nodeContent;
+     *
+     * // Set one, leaving the others intact. Always use the setProperty API for
+     * // subproperties rather than setting a subproperty directly.
+     * myDiagram.setProperty('nodeContent.renderer', linkRendererFunc);
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myDiagram.linkContent={'renderer': linkRendererFunc};
+     */
+    nodeContent: {
       /**
        * A callback function - a custom renderer - that will be used for initial node rendering.
        * The function should return an Object with the following property:
@@ -2546,25 +2442,21 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        *   <li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li>
        * </ul>
        *
+       * <p>The callback function is responsible for placing the child content by positioning either the content object passed on the RendererContext
+       * or [oj-diagram-child-content]{@link oj.ojDiagramChildContent} element.
+       * If an oj-diagram-child-content element is used, diagram will replace this element with the node child contents.</p>
+       *
+       * <p><b>Note</b> that when nodeContent.renderer is specified, but the other state renderer functions are not, then
+       * the default state renderer will be used to render the state.</p>
+       *
        * @ojshortdesc Specifies custom renderer for the diagram nodes used for initial rendering.
-       * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.renderer instead.'}
        * @expose
-       * @name renderer
-       * @memberof oj.ojDiagram
+       * @name nodeContent.renderer
+       * @memberof! oj.ojDiagram
        * @instance
-       * @type {(function(Object):(Object))=}
+       * @type {function(Object):(Object)}
        * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => ({insert: SVGElement}))", jsdocOverride: true}
        * @default null
-       *
-       * @example <caption>Initialize the diagram with the <code class="prettyprint">renderer</code> attribute specified:</caption>
-       * &lt;oj-diagram renderer='{{rendererFunc}}'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">renderer</code> property after initialization:</caption>
-       * // getter
-       * var renderer = myDiagram.renderer;
-       *
-       * // setter
-       * myDiagram.renderer = rendererFunc;
        */
       renderer: null,
       /**
@@ -2577,25 +2469,16 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
        * </ul>
        *
+       * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
+       *
        * @ojshortdesc Specifies custom renderer for the diagram nodes used for hover updates.
-       * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.hoverRenderer instead.'}
        * @expose
-       * @name hoverRenderer
-       * @memberof oj.ojDiagram
+       * @name nodeContent.hoverRenderer
+       * @memberof! oj.ojDiagram
        * @instance
        * @type {(function(Object):(Object|void)|null)=}
        * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
        * @default null
-       *
-       * @example <caption>Initialize the diagram with the <code class="prettyprint">hover-renderer</code> attribute specified:</caption>
-       * &lt;oj-diagram hover-renderer='{{rendererFunc}}'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">hoverRenderer</code> property after initialization:</caption>
-       * // getter
-       * var renderer = myDiagram.hoverRenderer;
-       *
-       * // setter
-       * myDiagram.hoverRenderer = rendererFunc;
        */
       hoverRenderer: null,
       /**
@@ -2608,26 +2491,16 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
        * </ul>
        *
+       * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
+       *
        * @ojshortdesc Specifies custom renderer for the diagram nodes used for selection updates.
-       * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.selectionRenderer instead.'}
        * @expose
-       * @name selectionRenderer
-       * @memberof oj.ojDiagram
+       * @name nodeContent.selectionRenderer
+       * @memberof! oj.ojDiagram
        * @instance
        * @type {(function(Object):(Object|void)|null)=}
        * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
        * @default null
-       *
-       *
-       * @example <caption>Initialize the diagram with the <code class="prettyprint">selection-renderer</code> attribute specified:</caption>
-       * &lt;oj-diagram selection-renderer='{{rendererFunc}}'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">selectionRenderer</code> property after initialization:</caption>
-       * // getter
-       * var renderer = myDiagram.selectionRenderer;
-       *
-       * // setter
-       * myDiagram.selectionRenderer = rendererFunc;
        */
       selectionRenderer: null,
       /**
@@ -2640,25 +2513,16 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
        * </ul>
        *
+       * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
+       *
        * @ojshortdesc Specifies custom renderer for the diagram nodes used for focus updates.
-       * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.focusRenderer instead.'}
        * @expose
-       * @name focusRenderer
-       * @memberof oj.ojDiagram
+       * @name nodeContent.focusRenderer
+       * @memberof! oj.ojDiagram
        * @instance
        * @type {(function(Object):(Object|void)|null)=}
        * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
        * @default null
-       *
-       * @example <caption>Initialize the diagram with the <code class="prettyprint">focus-renderer</code> attribute specified:</caption>
-       * &lt;oj-diagram focus-renderer='{{rendererFunc}}'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">focusRenderer</code> property after initialization:</caption>
-       * // getter
-       * var renderer = myDiagram.focusRenderer;
-       *
-       * // setter
-       * myDiagram.focusRenderer = rendererFunc;
        */
       focusRenderer: null,
       /**
@@ -2671,28 +2535,173 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
        * </ul>
        *
+       * <p>See <a href="#nodeContent.renderer">nodeContent.renderer</a> for additional details on custom content for Diagram nodes.</p>
+       *
        * @ojshortdesc Specifies custom renderer for the diagram nodes used for zoom updates.
-       * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.zoomRenderer instead.'}
        * @expose
-       * @name zoomRenderer
-       * @memberof oj.ojDiagram
+       * @name nodeContent.zoomRenderer
+       * @memberof! oj.ojDiagram
        * @instance
        * @type {(function(Object):(Object|void)|null)=}
        * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
        * @default null
-       *
-       * @example <caption>Initialize the diagram with the <code class="prettyprint">zoom-renderer</code> attribute specified:</caption>
-       * &lt;oj-diagram zoom-renderer='{{rendererFunc}}'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">zoomRenderer</code> property after initialization:</caption>
-       * // getter
-       * var renderer = myDiagram.zoomRenderer;
-       *
-       * // setter
-       * myDiagram.zoomRenderer = rendererFunc;
        */
-      zoomRenderer: null,
-      /**
+      zoomRenderer: null
+    },
+    /**
+     * A callback function - a custom renderer - that will be used for initial node rendering.
+     * The function should return an Object with the following property:
+     * <ul>
+     *   <li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li>
+     * </ul>
+     *
+     * @ojshortdesc Specifies custom renderer for the diagram nodes used for initial rendering.
+     * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.renderer instead.'}
+     * @expose
+     * @name renderer
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(function(Object):(Object))=}
+     * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => ({insert: SVGElement}))", jsdocOverride: true}
+     * @default null
+     *
+     * @example <caption>Initialize the diagram with the <code class="prettyprint">renderer</code> attribute specified:</caption>
+     * &lt;oj-diagram renderer='{{rendererFunc}}'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">renderer</code> property after initialization:</caption>
+     * // getter
+     * var renderer = myDiagram.renderer;
+     *
+     * // setter
+     * myDiagram.renderer = rendererFunc;
+     */
+    renderer: null,
+    /**
+     * An optional callback function to update the node in response to changes in hover state.
+     * The function should return one of the following:
+     * <ul>
+     *   <li>An Object with the following property:
+     *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
+     *   </li>
+     *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+     * </ul>
+     *
+     * @ojshortdesc Specifies custom renderer for the diagram nodes used for hover updates.
+     * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.hoverRenderer instead.'}
+     * @expose
+     * @name hoverRenderer
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(function(Object):(Object|void)|null)=}
+     * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+     * @default null
+     *
+     * @example <caption>Initialize the diagram with the <code class="prettyprint">hover-renderer</code> attribute specified:</caption>
+     * &lt;oj-diagram hover-renderer='{{rendererFunc}}'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">hoverRenderer</code> property after initialization:</caption>
+     * // getter
+     * var renderer = myDiagram.hoverRenderer;
+     *
+     * // setter
+     * myDiagram.hoverRenderer = rendererFunc;
+     */
+    hoverRenderer: null,
+    /**
+     * An optional callback function to update the node in response to changes in selection state.
+     * The function should return one of the following:
+     * <ul>
+     *   <li>An Object with the following property:
+     *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
+     *   </li>
+     *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+     * </ul>
+     *
+     * @ojshortdesc Specifies custom renderer for the diagram nodes used for selection updates.
+     * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.selectionRenderer instead.'}
+     * @expose
+     * @name selectionRenderer
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(function(Object):(Object|void)|null)=}
+     * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+     * @default null
+     *
+     *
+     * @example <caption>Initialize the diagram with the <code class="prettyprint">selection-renderer</code> attribute specified:</caption>
+     * &lt;oj-diagram selection-renderer='{{rendererFunc}}'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">selectionRenderer</code> property after initialization:</caption>
+     * // getter
+     * var renderer = myDiagram.selectionRenderer;
+     *
+     * // setter
+     * myDiagram.selectionRenderer = rendererFunc;
+     */
+    selectionRenderer: null,
+    /**
+     * An optional callback function to update the node in response to changes in keyboard focus state.
+     * The function should return one of the following:
+     * <ul>
+     *   <li>An Object with the following property:
+     *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
+     *   </li>
+     *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+     * </ul>
+     *
+     * @ojshortdesc Specifies custom renderer for the diagram nodes used for focus updates.
+     * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.focusRenderer instead.'}
+     * @expose
+     * @name focusRenderer
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(function(Object):(Object|void)|null)=}
+     * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+     * @default null
+     *
+     * @example <caption>Initialize the diagram with the <code class="prettyprint">focus-renderer</code> attribute specified:</caption>
+     * &lt;oj-diagram focus-renderer='{{rendererFunc}}'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">focusRenderer</code> property after initialization:</caption>
+     * // getter
+     * var renderer = myDiagram.focusRenderer;
+     *
+     * // setter
+     * myDiagram.focusRenderer = rendererFunc;
+     */
+    focusRenderer: null,
+    /**
+     * An optional callback function to update the node in response to changes in zoom level.
+     * The function should return one of the following:
+     * <ul>
+     *   <li>An Object with the following property:
+     *     <ul><li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li></ul>
+     *   </li>
+     *   <li>undefined: Indicates that the existing DOM has been directly modified and no further action is required.</li>
+     * </ul>
+     *
+     * @ojshortdesc Specifies custom renderer for the diagram nodes used for zoom updates.
+     * @ojdeprecated {since: '8.0.0', description: 'Use nodeContent.zoomRenderer instead.'}
+     * @expose
+     * @name zoomRenderer
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(function(Object):(Object|void)|null)=}
+     * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
+     * @default null
+     *
+     * @example <caption>Initialize the diagram with the <code class="prettyprint">zoom-renderer</code> attribute specified:</caption>
+     * &lt;oj-diagram zoom-renderer='{{rendererFunc}}'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">zoomRenderer</code> property after initialization:</caption>
+     * // getter
+     * var renderer = myDiagram.zoomRenderer;
+     *
+     * // setter
+     * myDiagram.zoomRenderer = rendererFunc;
+     */
+    zoomRenderer: null,
+    /**
        * The data source for the Diagram element. See <a href="DiagramDataSource.html">oj.DiagramDataSource</a> for details.
        * @ojshortdesc Specifies the data for the component.
        * @ojdeprecated {since: '6.0.0', description: 'Use nodeData and linkData instead.'}
@@ -2717,1637 +2726,1694 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
        * myDiagram.data = myDataSource;
 
        */
-      data: null,
+    data: null,
+    /**
+     * The DataProvider for the diagram links. It should provide rows where each row corresponds to a single diagram link.
+     * The row key will be used as the id for diagram links. Note that when
+     * using this attribute, a template for the <a href="#linkTemplate">linkTemplate</a> slot should be provided.
+     * The DataProvider can either have an arbitrary data shape, in which case an <oj-diagram-link> element must be specified
+     * in the linkTemplate slot or it can have oj.ojDiagram.Link{@link oj.ojDiagram.Link} as its data shape, in which case no template is required.
+     * @expose
+     * @name linkData
+     * @ojshortdesc Specifies the DataProvider for the diagram links. See the Help documentation for more information.
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(Object|null)=}
+     * @ojsignature {target: "Type", value: "DataProvider<K2, D2>|null", jsdocOverride:true}
+     * @default null
+     * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
+     *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">link-data</code> attribute specified:</caption>
+     * &lt;oj-diagram link-data='[[linkDataProvider]]' node-data='[[nodeDataProvider]]'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">linkData</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.linkData;
+     *
+     * // setter
+     * myDiagram.linkData = linkDataProvider;
+     */
+    linkData: null,
+    /**
+     * The DataProvider for the diagram nodes. It should provide rows where each row corresponds to a single diagram node.
+     * The row key will be used as the id for diagram nodes. Note that when
+     * using this attribute, a template for the <a href="#nodeTemplate">nodeTemplate</a> slot should be provided.
+     * The DataProvider can either have an arbitrary data shape, in which case an <oj-diagram-node> element must be specified
+     * in the nodeTemplate slot or it can have oj.ojDiagram.Node{@link oj.ojDiagram.Node} as its data shape, in which case no template is required.
+     * @expose
+     * @name nodeData
+     * @ojshortdesc Specifies the DataProvider for the diagram nodes. See the Help documentation for more information.
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {Object|null}
+     * @ojsignature {target: "Type", value: "DataProvider<K1, D1>|null", jsdocOverride:true}
+     * @default null
+     * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
+     *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">node-data</code> attribute specified:</caption>
+     * &lt;oj-diagram node-data='[[nodeDataProvider]]'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">nodeData</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.nodeData;
+     *
+     * // setter
+     * myDiagram.nodeData = nodeDataProvider;
+     */
+    nodeData: null,
+    /**
+     * An alias for the $current context variable when referenced inside nodeTemplate or linkTemplate when using a DataProvider.
+     * @expose
+     * @name as
+     * @memberof oj.ojDiagram
+     * @ojshortdesc An alias for the '$current' context variable passed to slot content for the nodeTemplate or linkTemplate slots.
+     * @instance
+     * @type {string=}
+     * @default ""
+     * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
+     **/
+    as: '',
+    /**
+     * Optional callback that provides a way to customize an appearance of the specific link, the function maps link data into link styles.
+     * The function takes a data object for the link provided by the diagram.
+     * The following properties are supported on the return object:
+     * <ul>
+     *  <li>labelStyle {Object}: The CSS style object defining the style of the link label. The CSS max-width property can be used to truncate labels.</li>
+     *  <li>color {string}: Link color.</li>
+     *  <li>svgStyle {Object}: The SVG CSS style object defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.</li>
+     *  <li>svgClassName {string}: The SVG CSS style class defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.</li>
+     *  <li>width {number}: Link width in pixels.</li>
+     *  <li>startConnectorType {string}: Specifies the type of start connector on the link. <br/>Supported values are "arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none". <br/>Default value is <code class="prettyprint">"none"</code>.</li>
+     *  <li>endConnectorType {string}: Specifies the type of end connector on the link. <br/>Supported values are "arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none". <br/>Default value is <code class="prettyprint">"none"</code>.</li>
+     * </ul>
+     *
+     * @example <caption>Customizing link color using <code class="prettyprint">customColor</code> property defined on the link data object</caption>
+     * &lt;oj-diagram
+     *    layout = '{{layoutFunc}}'
+     *    data = '{{dataSource}}'
+     *    link-properties = '[[function(data){return {color:data.customColor};}]]'>
+     * &lt;/oj-diagram>
+     *
+     * @ojshortdesc Optional callback for customizing link appearance based on link data.
+     * @ojdeprecated {since: '6.0.0', description: 'See nodeData and linkData usage.'}
+     * @ojtsignore
+     * @expose
+     * @name linkProperties
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(null|function(Object):Object)=}
+     * @default null
+     */
+    linkProperties: null,
+    /**
+     * Optional callback that provides a way to customize an appearance of the specific node, the function maps node data into node styles.
+     * The function takes a data object for the node provided by the diagram. The following properties are supported on the return object:
+     * <ul>
+     *  <li>showDisclosure {string}: Determines when to display the expand/collapse button.<br/>Supported values are "on", "off". <br/>Default value is <code class="prettyprint">"on"</code>.</li>
+     *  <li>labelStyle {Object}: The CSS style object defining the style of the node label.</li>
+     *  <li>icon {Object}: Object specfiying an icon to be used as a graphical element for the node. Its properties are:
+     *    <ul>
+     *      <li>borderColor {string}: The border color of the icon.</li>
+     *      <li>borderRadius {string}: The border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.</li>
+     *      <li>borderWidth {number}: The border width in pixels.</li>
+     *      <li>color {string}: The fill color of the icon.</li>
+     *      <li>pattern {string}: The fill pattern of the icon.<br/>Supported values are "smallChecker", "smallCrosshatch", "smallDiagonalLeft", "smallDiagonalRight", "smallDiamond", "smallTriangle", "largeChecker", "largeCrosshatch", "largeDiagonalLeft", "largeDiagonalRight", "largeDiamond", "largeTriangle", "none".<br/>Default value is <code class="prettyprint">"none"</code>.</li>
+     *      <li>opacity {number}: The opacity of the icon.</li>
+     *      <li>shape {string}: The shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.<br/>Supported built-in shapes:"ellipse", "square", "plus", "diamond", "triangleUp", "triangleDown", "human", "rectangle", "star", "circle".<br/>Default value is <code class="prettyprint">"circle"</code>.</li>
+     *      <li>source {string}: The URI of the node image.</li>
+     *      <li>sourceHover {string}: The optional URI of the node hover image. If not defined, the source image will be used.</li>
+     *      <li>sourceHoverSelected {string}: The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.</li>
+     *      <li>sourceSelected {string}: The optional URI of the selected image. If not defined, the source image will be used.</li>
+     *      <li>width {number}: The width of the icon.</li>
+     *      <li>height {number}: The height of the icon.</li>
+     *      <li>svgStyle {Object}: The CSS style object defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.</li>
+     *      <li>svgClassName {string}: The CSS style class defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.</li>
+     *    </ul>
+     *  </li>
+     *  <li>overview {Object}: Object specfiying the overview node shape. Its properties are:
+     *    <ul>
+     *      <li>icon {Object}: Object specifying an icon for the node in the overview window. The width and height of the overview node is determined from the rendered node in the diagram. The following properties can be used to customize the overview node:
+     *        <ul>
+     *          <li>shape {string}: The shape of the icon in the overview window. Can take one of the following values for the shape name or the svg path commands for a custom shape.<br/>Supported built-in shapes:"inherit", "ellipse", "square", "plus", "diamond", "triangleUp", "triangleDown", "human", "rectangle", "star", "circle".<br/> The default value is always "inherit", but that means different things for custom nodes and default nodes. When "inherit" value is specified for a default node, the shape is determined from the node in the diagram. When "inherit" value is specified for a custom node, "rectangle" shape will be used.<br>This property doesn't apply at all to containers (custom or default).</li>
+     *          <li>svgStyle {Object}: The CSS style object defining the style of the node icon in the overview.</li>
+     *          <li>svgClassName {string}: The CSS style class defining the style of the node icon in the overview.</li>
+     *        </ul>
+     *      </li>
+     *    </ul>
+     *  </li>
+     * </ul>
+     *
+     * @example <caption>Customizing node icon color using <code class="prettyprint">customColor</code> property defined on the node data object</caption>
+     * &lt;oj-diagram
+     *    layout = '{{layoutFunc}}'
+     *    data = '{{dataSource}}'
+     *    node-properties = '[[function(data){return {icon:{color:data.customColor}};}]]'>
+     * &lt;/oj-diagram>
+     *
+     * @ojshortdesc Optional callback for customizing node appearance based on node data.
+     * @ojdeprecated {since: '6.0.0', description: 'See nodeData and linkData usage.'}
+     * @ojtsignore
+     * @expose
+     * @name nodeProperties
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(null|function(Object):Object)=}
+     * @default null
+     */
+    nodeProperties: null,
+    /**
+     * Defines promoted link behavior for the component. <br/> If the value is set to none, the diagram will not retrieve additional data to resolve promoted links and will not display promoted links.<br/> If the value is set to lazy, the diagram will retrieve additional data to resolve promoted links if the data is already available and will display available promoted links. The component will not retrieve additional data if the data is not available yet. <br/> If the value is set to full, the diagram will retrieve additional data to resolve all promoted links and will display promoted links.
+     *
+     * @ojshortdesc Defines promoted link behavior for the component.
+     * @expose
+     * @name promotedLinkBehavior
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "none"
+     * @ojvalue {string} "full"
+     * @ojvalue {string} "lazy"
+     * @default "lazy"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">promoted-link-behavior</code> attribute specified:</caption>
+     * &lt;oj-diagram promoted-link-behavior='none'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">promotedLinkBehavior</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.promotedLinkBehavior;
+     *
+     * // setter
+     * myDiagram.promotedLinkBehavior="none";
+     */
+    promotedLinkBehavior: 'lazy',
+    /**
+     * An object, used to define a diagram overview. If not specified, no overview will be shown.
+     * @expose
+     * @name overview
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {Object=}
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">overview</code> attribute specified:</caption>
+     *
+     * <!-- Using dot notation -->
+     * &lt;oj-diagram overview.rendered = 'on' overview.width = '150'>&lt;/oj-diagram>
+     *
+     * &lt;oj-diagram overview='[[overviewObject]]'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">overview</code>
+     * property after initialization:</caption>
+     * // Get one
+     * var value = myDiagram.overview.width;
+     *
+     * // Get all
+     * var values = myDiagram.overview;
+     *
+     * // Set one, leaving the others intact. Always use the setProperty API for
+     * // subproperties rather than setting a subproperty directly.
+     * myDiagram.setProperty('overview.width', '150');
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myDiagram.overview=overviewObject;
+     */
+    overview: {
       /**
-       * The DataProvider for the diagram links. It should provide rows where each row corresponds to a single diagram link.
-       * The row key will be used as the id for diagram links. Note that when
-       * using this attribute, a template for the <a href="#linkTemplate">linkTemplate</a> slot should be provided.
-       * The DataProvider can either have an arbitrary data shape, in which case an <oj-diagram-link> element must be specified
-       * in the linkTemplate slot or it can have oj.ojDiagram.Link{@link oj.ojDiagram.Link} as its data shape, in which case no template is required.
+       * Specifies whether the overview scrollbar is rendered.
+       * <br></br>See the <a href="#overview">overview</a> attribute for usage examples.
        * @expose
-       * @name linkData
-       * @ojshortdesc Specifies the DataProvider for the diagram links. See the Help documentation for more information.
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {(Object|null)=}
-       * @ojsignature {target: "Type", value: "DataProvider<K2, D2>|null", jsdocOverride:true}
-       * @default null
-       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
-       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">link-data</code> attribute specified:</caption>
-       * &lt;oj-diagram link-data='[[linkDataProvider]]' node-data='[[nodeDataProvider]]'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">linkData</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.linkData;
-       *
-       * // setter
-       * myDiagram.linkData = linkDataProvider;
-       */
-      linkData: null,
-      /**
-       * The DataProvider for the diagram nodes. It should provide rows where each row corresponds to a single diagram node.
-       * The row key will be used as the id for diagram nodes. Note that when
-       * using this attribute, a template for the <a href="#nodeTemplate">nodeTemplate</a> slot should be provided.
-       * The DataProvider can either have an arbitrary data shape, in which case an <oj-diagram-node> element must be specified
-       * in the nodeTemplate slot or it can have oj.ojDiagram.Node{@link oj.ojDiagram.Node} as its data shape, in which case no template is required.
-       * @expose
-       * @name nodeData
-       * @ojshortdesc Specifies the DataProvider for the diagram nodes. See the Help documentation for more information.
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {Object|null}
-       * @ojsignature {target: "Type", value: "DataProvider<K1, D1>|null", jsdocOverride:true}
-       * @default null
-       * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
-       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">node-data</code> attribute specified:</caption>
-       * &lt;oj-diagram node-data='[[nodeDataProvider]]'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">nodeData</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.nodeData;
-       *
-       * // setter
-       * myDiagram.nodeData = nodeDataProvider;
-       */
-      nodeData: null,
-      /**
-      * An alias for the $current context variable when referenced inside nodeTemplate or linkTemplate when using a DataProvider.
-      * @expose
-      * @name as
-      * @memberof oj.ojDiagram
-      * @ojshortdesc An alias for the '$current' context variable passed to slot content for the nodeTemplate or linkTemplate slots.
-      * @instance
-      * @type {string=}
-      * @default ""
-      * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
-      **/
-      as: '',
-      /**
-       * Optional callback that provides a way to customize an appearance of the specific link, the function maps link data into link styles.
-       * The function takes a data object for the link provided by the diagram.
-       * The following properties are supported on the return object:
-       * <ul>
-       *  <li>labelStyle {Object}: The CSS style object defining the style of the link label. The CSS max-width property can be used to truncate labels.</li>
-       *  <li>color {string}: Link color.</li>
-       *  <li>svgStyle {Object}: The SVG CSS style object defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.</li>
-       *  <li>svgClassName {string}: The SVG CSS style class defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.</li>
-       *  <li>width {number}: Link width in pixels.</li>
-       *  <li>startConnectorType {string}: Specifies the type of start connector on the link. <br/>Supported values are "arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none". <br/>Default value is <code class="prettyprint">"none"</code>.</li>
-       *  <li>endConnectorType {string}: Specifies the type of end connector on the link. <br/>Supported values are "arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none". <br/>Default value is <code class="prettyprint">"none"</code>.</li>
-       * </ul>
-       *
-       * @example <caption>Customizing link color using <code class="prettyprint">customColor</code> property defined on the link data object</caption>
-       * &lt;oj-diagram
-       *    layout = '{{layoutFunc}}'
-       *    data = '{{dataSource}}'
-       *    link-properties = '[[function(data){return {color:data.customColor};}]]'>
-       * &lt;/oj-diagram>
-       *
-       * @ojshortdesc Optional callback for customizing link appearance based on link data.
-       * @ojdeprecated {since: '6.0.0', description: 'See nodeData and linkData usage.'}
-       * @ojtsignore
-       * @expose
-       * @name linkProperties
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {(null|function(Object):Object)=}
-       * @default null
-       */
-      linkProperties: null,
-      /**
-       * Optional callback that provides a way to customize an appearance of the specific node, the function maps node data into node styles.
-       * The function takes a data object for the node provided by the diagram. The following properties are supported on the return object:
-       * <ul>
-       *  <li>showDisclosure {string}: Determines when to display the expand/collapse button.<br/>Supported values are "on", "off". <br/>Default value is <code class="prettyprint">"on"</code>.</li>
-       *  <li>labelStyle {Object}: The CSS style object defining the style of the node label.</li>
-       *  <li>icon {Object}: Object specfiying an icon to be used as a graphical element for the node. Its properties are:
-       *    <ul>
-       *      <li>borderColor {string}: The border color of the icon.</li>
-       *      <li>borderRadius {string}: The border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.</li>
-       *      <li>borderWidth {number}: The border width in pixels.</li>
-       *      <li>color {string}: The fill color of the icon.</li>
-       *      <li>pattern {string}: The fill pattern of the icon.<br/>Supported values are "smallChecker", "smallCrosshatch", "smallDiagonalLeft", "smallDiagonalRight", "smallDiamond", "smallTriangle", "largeChecker", "largeCrosshatch", "largeDiagonalLeft", "largeDiagonalRight", "largeDiamond", "largeTriangle", "none".<br/>Default value is <code class="prettyprint">"none"</code>.</li>
-       *      <li>opacity {number}: The opacity of the icon.</li>
-       *      <li>shape {string}: The shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.<br/>Supported built-in shapes:"ellipse", "square", "plus", "diamond", "triangleUp", "triangleDown", "human", "rectangle", "star", "circle".<br/>Default value is <code class="prettyprint">"circle"</code>.</li>
-       *      <li>source {string}: The URI of the node image.</li>
-       *      <li>sourceHover {string}: The optional URI of the node hover image. If not defined, the source image will be used.</li>
-       *      <li>sourceHoverSelected {string}: The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.</li>
-       *      <li>sourceSelected {string}: The optional URI of the selected image. If not defined, the source image will be used.</li>
-       *      <li>width {number}: The width of the icon.</li>
-       *      <li>height {number}: The height of the icon.</li>
-       *      <li>svgStyle {Object}: The CSS style object defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.</li>
-       *      <li>svgClassName {string}: The CSS style class defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.</li>
-       *    </ul>
-       *  </li>
-       *  <li>overview {Object}: Object specfiying the overview node shape. Its properties are:
-       *    <ul>
-       *      <li>icon {Object}: Object specifying an icon for the node in the overview window. The width and height of the overview node is determined from the rendered node in the diagram. The following properties can be used to customize the overview node:
-       *        <ul>
-       *          <li>shape {string}: The shape of the icon in the overview window. Can take one of the following values for the shape name or the svg path commands for a custom shape.<br/>Supported built-in shapes:"inherit", "ellipse", "square", "plus", "diamond", "triangleUp", "triangleDown", "human", "rectangle", "star", "circle".<br/> The default value is always "inherit", but that means different things for custom nodes and default nodes. When "inherit" value is specified for a default node, the shape is determined from the node in the diagram. When "inherit" value is specified for a custom node, "rectangle" shape will be used.<br>This property doesn't apply at all to containers (custom or default).</li>
-       *          <li>svgStyle {Object}: The CSS style object defining the style of the node icon in the overview.</li>
-       *          <li>svgClassName {string}: The CSS style class defining the style of the node icon in the overview.</li>
-       *        </ul>
-       *      </li>
-       *    </ul>
-       *  </li>
-       * </ul>
-       *
-       * @example <caption>Customizing node icon color using <code class="prettyprint">customColor</code> property defined on the node data object</caption>
-       * &lt;oj-diagram
-       *    layout = '{{layoutFunc}}'
-       *    data = '{{dataSource}}'
-       *    node-properties = '[[function(data){return {icon:{color:data.customColor}};}]]'>
-       * &lt;/oj-diagram>
-       *
-       * @ojshortdesc Optional callback for customizing node appearance based on node data.
-       * @ojdeprecated {since: '6.0.0', description: 'See nodeData and linkData usage.'}
-       * @ojtsignore
-       * @expose
-       * @name nodeProperties
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {(null|function(Object):Object)=}
-       * @default null
-       */
-      nodeProperties: null,
-      /**
-       * Defines promoted link behavior for the component. <br/> If the value is set to none, the diagram will not retrieve additional data to resolve promoted links and will not display promoted links.<br/> If the value is set to lazy, the diagram will retrieve additional data to resolve promoted links if the data is already available and will display available promoted links. The component will not retrieve additional data if the data is not available yet. <br/> If the value is set to full, the diagram will retrieve additional data to resolve all promoted links and will display promoted links.
-       *
-       * @ojshortdesc Defines promoted link behavior for the component.
-       * @expose
-       * @name promotedLinkBehavior
-       * @memberof oj.ojDiagram
+       * @name overview.rendered
+       * @ojshortdesc Specifies whether the overview scrollbar is rendered.
+       * @memberof! oj.ojDiagram
        * @instance
        * @type {string=}
-       * @ojvalue {string} "none"
-       * @ojvalue {string} "full"
-       * @ojvalue {string} "lazy"
-       * @default "lazy"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">promoted-link-behavior</code> attribute specified:</caption>
-       * &lt;oj-diagram promoted-link-behavior='none'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">promotedLinkBehavior</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.promotedLinkBehavior;
-       *
-       * // setter
-       * myDiagram.promotedLinkBehavior="none";
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
        */
-      promotedLinkBehavior: 'lazy',
+      rendered: 'off',
       /**
-       * An object, used to define a diagram overview. If not specified, no overview will be shown.
+       * Specifies the region that will be scaled to fit within the overview.
        * @expose
-       * @name overview
-       * @memberof oj.ojDiagram
+       * @name overview.fitArea
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "content" {"description": "The bounding box of the Diagram nodes will be scaled to fit within the overview."}
+       * @ojvalue {string} "canvas" {"description": "The canvas (the <a href='oj.ojDiagram.html#panning'>pannable</a> area when the diagram is at minZoom) will be scaled to fit within the overview. The diagram panning property should also be set to 'fixed' in most situations."}
+       * @default "content"
+       */
+      fitArea: 'content',
+      /**
+       * Controls how the fit area is scaled within the overview.
+       * @expose
+       * @name overview.preserveAspectRatio
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "none" {"description": "The aspect ratio of the fit area may not be preserved as it is scaled to fit the overview."}
+       * @ojvalue {string} "meet" {"description": "The aspect ratio of the fit area will be preserved as it is scaled to fit the overview."}
+       * @default "meet"
+       */
+      preserveAspectRatio: 'meet',
+      /**
+       * Overview window width. The width can't exceed the diagram width.
+       * If the specified width exceeds the width of the diagram itself, the width of the diagram will be used instead.
+       * @ojshortdesc Overview window width.
+       * @expose
+       * @name overview.width
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {number=}
+       * @default 200
+       */
+      width: 200,
+      /**
+       * Overview window height. The height can't exceed the diagram height.
+       * If the specified height exceeds the height of the diagram itself, the height of the diagram will be used instead.
+       * @ojshortdesc Overview window height.
+       * @expose
+       * @name overview.height
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {number=}
+       * @default 100
+       */
+      height: 100,
+      /**
+       * Horizontal alignment for diagram overview window
+       * @expose
+       * @name overview.halign
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "start"
+       * @ojvalue {string} "end"
+       * @ojvalue {string} "center"
+       * @default "end"
+       */
+      halign: 'end',
+      /**
+       * Vertical alignment for diagram overview window
+       * @expose
+       * @name overview.valign
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "top"
+       * @ojvalue {string} "bottom"
+       * @ojvalue {string} "middle"
+       * @default "bottom"
+       */
+      valign: 'bottom'
+    },
+    /**
+     * An object defining the style defaults for this diagram.
+     * @expose
+     * @name styleDefaults
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {Object=}
+     *
+     * @example <caption>Get or set the <code class="prettyprint">styleDefaults</code>
+     * property after initialization:</caption>
+     * // Get one
+     * var value = myDiagram.styleDefaults.animationDuration;
+     *
+     * // Get all
+     * var values = myDiagram.styleDefaults;
+     *
+     * // Set one, leaving the others intact. Always use the setProperty API for
+     * // subproperties rather than setting a subproperty directly.
+     * myDiagram.setProperty('styleDefaults.nodeDefaults', {'icon': {width: 125, height: 125}});
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myDiagram.styleDefaults={'nodeDefaults': {'icon': {width: 125, height: 125}}};
+     */
+    styleDefaults: {
+      /**
+       * We recommend using the component CSS classes to set component wide styling. This API should be used
+       * only for styling a specific instance of the component. The default values come from the CSS classes and
+       * varies based on theme. The duration of the animations in milliseconds.
+       * @ojshortdesc Defines animation duration in milliseconds.
+       * @expose
+       * @name styleDefaults.animationDuration
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {number=}
+       * @ojunits milliseconds
+       */
+      /**
+       * Specifies initial hover delay in ms for highlighting data items.
+       * @expose
+       * @name styleDefaults.hoverBehaviorDelay
+       * @ojshortdesc Specifies initial hover delay in milliseconds for highlighting data items.
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {number=}
+       * @default 200
+       * @ojunits milliseconds
+       */
+      hoverBehaviorDelay: 200,
+      /**
+       * Default node styles
+       * @expose
+       * @name styleDefaults.nodeDefaults
+       * @memberof! oj.ojDiagram
        * @instance
        * @type {Object=}
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">overview</code> attribute specified:</caption>
-       *
-       * <!-- Using dot notation -->
-       * &lt;oj-diagram overview.rendered = 'on' overview.width = '150'>&lt;/oj-diagram>
-       *
-       * &lt;oj-diagram overview='[[overviewObject]]'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">overview</code>
-       * property after initialization:</caption>
-       * // Get one
-       * var value = myDiagram.overview.width;
-       *
-       * // Get all
-       * var values = myDiagram.overview;
-       *
-       * // Set one, leaving the others intact. Always use the setProperty API for
-       * // subproperties rather than setting a subproperty directly.
-       * myDiagram.setProperty('overview.width', '150');
-       *
-       * // Set all. Must list every resource key, as those not listed are lost.
-       * myDiagram.overview=overviewObject;
        */
-      overview: {
+      nodeDefaults: {
         /**
-         * Specifies whether the overview scrollbar is rendered.
-         * <br></br>See the <a href="#overview">overview</a> attribute for usage examples.
+         * The CSS style object defining the style of the node label.
+         * Supports backgroundColor, borderColor, borderRadius, borderWidth, color, cursor, fontFamily, fontSize, fontStyle, fontWeight, maxWidth, textDecoration properties.
+         * @ojshortdesc Specifies CSS styles for the node label.
          * @expose
-         * @name overview.rendered
-         * @ojshortdesc Specifies whether the overview scrollbar is rendered.
+         * @name styleDefaults.nodeDefaults.labelStyle
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {Object=}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+         * @default {}
+         */
+        labelStyle: {},
+        /**
+         * Determines when to display the expand/collapse button.
+         * @expose
+         * @name styleDefaults.nodeDefaults.showDisclosure
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string=}
-         * @ojvalue {string} "on"
          * @ojvalue {string} "off"
-         * @default "off"
+         * @ojvalue {string} "on"
+         * @default "on"
          */
-        rendered: 'off',
+        showDisclosure: 'on',
         /**
-         * Specifies the region that will be scaled to fit within the overview.
+         * Default style for the node icon.
          * @expose
-         * @name overview.fitArea
+         * @name styleDefaults.nodeDefaults.icon
          * @memberof! oj.ojDiagram
          * @instance
-         * @type {string=}
-         * @ojvalue {string} "content" {"description": "The bounding box of the Diagram nodes will be scaled to fit within the overview."}
-         * @ojvalue {string} "canvas" {"description": "The canvas (the <a href='oj.ojDiagram.html#panning'>pannable</a> area when the diagram is at minZoom) will be scaled to fit within the overview. The diagram panning property should also be set to 'fixed' in most situations."}
-         * @default "content"
+         * @type {Object=}
          */
-        fitArea: 'content',
-        /**
-         * Controls how the fit area is scaled within the overview.
-         * @expose
-         * @name overview.preserveAspectRatio
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "none" {"description": "The aspect ratio of the fit area may not be preserved as it is scaled to fit the overview."}
-         * @ojvalue {string} "meet" {"description": "The aspect ratio of the fit area will be preserved as it is scaled to fit the overview."}
-         * @default "meet"
-         */
-        preserveAspectRatio: 'meet',
-        /**
-         * Overview window width. The width can't exceed the diagram width.
-         * If the specified width exceeds the width of the diagram itself, the width of the diagram will be used instead.
-         * @ojshortdesc Overview window width.
-         * @expose
-         * @name overview.width
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {number=}
-         * @default 200
-         */
-        width: 200,
-        /**
-         * Overview window height. The height can't exceed the diagram height.
-         * If the specified height exceeds the height of the diagram itself, the height of the diagram will be used instead.
-         * @ojshortdesc Overview window height.
-         * @expose
-         * @name overview.height
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {number=}
-         * @default 100
-         */
-        height: 100,
-        /**
-         * Horizontal alignment for diagram overview window
-         * @expose
-         * @name overview.halign
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "start"
-         * @ojvalue {string} "end"
-         * @ojvalue {string} "center"
-         * @default "end"
-         */
-        halign: 'end',
-        /**
-         * Vertical alignment for diagram overview window
-         * @expose
-         * @name overview.valign
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {string=}
-         * @ojvalue {string} "top"
-         * @ojvalue {string} "bottom"
-         * @ojvalue {string} "middle"
-         * @default "bottom"
-         */
-        valign: 'bottom'
+        icon: {
+          /**
+           * Default border color of the icon.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.borderColor
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {string=}
+           * @ojformat color
+           */
+          /**
+           * The default border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.
+           * @ojshortdesc Specifies default border radius of the icon.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.borderRadius
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {string=}
+           */
+          /**
+           * Default border width of the icon in pixels.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.borderWidth
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {number=}
+           * @ojunits pixels
+           */
+          /**
+           * Default color of the icon.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.color
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {string=}
+           * @ojformat color
+           */
+          /**
+           * Default fill pattern of the icon.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.pattern
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {string=}
+           * @ojvalue {string} "smallChecker"
+           * @ojvalue {string} "smallCrosshatch"
+           * @ojvalue {string} "smallDiagonalLeft"
+           * @ojvalue {string} "smallDiagonalRight"
+           * @ojvalue {string} "smallDiamond"
+           * @ojvalue {string} "smallTriangle"
+           * @ojvalue {string} "largeChecker"
+           * @ojvalue {string} "largeCrosshatch"
+           * @ojvalue {string} "largeDiagonalLeft"
+           * @ojvalue {string} "largeDiagonalRight"
+           * @ojvalue {string} "largeDiamond"
+           * @ojvalue {string} "largeTriangle"
+           * @ojvalue {string} "none"
+           * @default "none"
+           */
+          pattern: 'none',
+          /**
+           * Default shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.
+           * @ojshortdesc Specifies default shape of the icon.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.shape
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {("circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string)=}
+           * @default "circle"
+           */
+          shape: 'circle',
+          /**
+           * The URI of the node image
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.source
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {string=}
+           */
+          /**
+           * The optional URI of the node hover image. If not defined, the source image will be used.
+           * @ojshortdesc The optional URI of the node hover image.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.sourceHover
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {string=}
+           */
+          /**
+           * The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.
+           * @ojshortdesc The optional URI of the selected image on hover.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.sourceHoverSelected
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {string=}
+           */
+          /**
+           * The optional URI of the selected image. If not defined, the source image will be used.
+           * @ojshortdesc The optional URI of the selected image.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.sourceSelected
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {string=}
+           */
+          /**
+           * Default icon width.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.width
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {number=}
+           * @default 10
+           * @ojunits pixels
+           */
+          width: 10,
+          /**
+           * Default icon height.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.height
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {number=}
+           * @default 10
+           * @ojunits pixels
+           */
+          height: 10,
+          /**
+           * The default SVG CSS style object defining the style of the icon.
+           * Only SVG CSS style properties are supported.
+           * @ojshortdesc Specifies CSS styles for the icon.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.svgStyle
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {Object=}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+           * @default {}
+           */
+          /**
+           * The SVG CSS style class to apply to the node icon.
+           * @expose
+           * @name styleDefaults.nodeDefaults.icon.svgClassName
+           * @memberof! oj.ojDiagram
+           * @instance
+           * @type {string=}
+           * @default ""
+           */
+          svgClassName: ''
+        }
       },
       /**
-       * An object defining the style defaults for this diagram.
+       * Default link styles
        * @expose
-       * @name styleDefaults
-       * @memberof oj.ojDiagram
+       * @name styleDefaults.linkDefaults
+       * @memberof! oj.ojDiagram
        * @instance
        * @type {Object=}
-       *
-       * @example <caption>Get or set the <code class="prettyprint">styleDefaults</code>
-       * property after initialization:</caption>
-       * // Get one
-       * var value = myDiagram.styleDefaults.animationDuration;
-       *
-       * // Get all
-       * var values = myDiagram.styleDefaults;
-       *
-       * // Set one, leaving the others intact. Always use the setProperty API for
-       * // subproperties rather than setting a subproperty directly.
-       * myDiagram.setProperty('styleDefaults.nodeDefaults', {'icon': {width: 125, height: 125}});
-       *
-       * // Set all. Must list every resource key, as those not listed are lost.
-       * myDiagram.styleDefaults={'nodeDefaults': {'icon': {width: 125, height: 125}}};
        */
-      styleDefaults: {
+      linkDefaults: {
         /**
-         * We recommend using the component CSS classes to set component wide styling. This API should be used
-         * only for styling a specific instance of the component. The default values come from the CSS classes and
-         * varies based on theme. The duration of the animations in milliseconds.
-         * @ojshortdesc Defines animation duration in milliseconds.
+         * Default link color. The default value comes from the CSS and varies based on theme.
          * @expose
-         * @name styleDefaults.animationDuration
+         * @name styleDefaults.linkDefaults.color
+         * @ojshortdesc Default link color.
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {string=}
+         * @ojformat color
+         */
+        /**
+         * The default style object represents the SVG CSS style of the link. User defined custom SVG CSS Styles will be applied directly on the link.
+         * Only SVG CSS style properties are supported.
+         * @ojshortdesc Specifies SVG CSS styles for the link.
+         * @expose
+         * @name styleDefaults.linkDefaults.svgStyle
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {Object=}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+         * @default {}
+         */
+        /**
+         * The default SVG CSS style class to apply to the link.
+         * @expose
+         * @name styleDefaults.linkDefaults.svgClassName
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {string=}
+         * @default ""
+         */
+        svgClassName: '',
+        /**
+         * Default link width in pixels.
+         * @expose
+         * @name styleDefaults.linkDefaults.width
          * @memberof! oj.ojDiagram
          * @instance
          * @type {number=}
-         * @ojunits milliseconds
+         * @ojunits pixels
+         * @default 1.0
          */
+        width: 1.0,
         /**
-         * Specifies initial hover delay in ms for highlighting data items.
+         * The CSS style object defining the style of the link label.
+         * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, maxWidth, textDecoration.
+         * The default value comes from the CSS and varies based on theme.
+         * @ojshortdesc Specifies CSS styles for the link label.
          * @expose
-         * @name styleDefaults.hoverBehaviorDelay
-         * @ojshortdesc Specifies initial hover delay in milliseconds for highlighting data items.
-         * @memberof! oj.ojDiagram
-         * @instance
-         * @type {number=}
-         * @default 200
-         * @ojunits milliseconds
-         */
-        hoverBehaviorDelay: 200,
-        /**
-         * Default node styles
-         * @expose
-         * @name styleDefaults.nodeDefaults
+         * @name styleDefaults.linkDefaults.labelStyle
          * @memberof! oj.ojDiagram
          * @instance
          * @type {Object=}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          */
-        nodeDefaults: {
-          /**
-           * The CSS style object defining the style of the node label.
-           * Supports backgroundColor, borderColor, borderRadius, borderWidth, color, cursor, fontFamily, fontSize, fontStyle, fontWeight, maxWidth, textDecoration properties.
-           * @ojshortdesc Specifies CSS styles for the node label.
-           * @expose
-           * @name styleDefaults.nodeDefaults.labelStyle
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {Object=}
-           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-           * @default {}
-           */
-          labelStyle: {},
-          /**
-           * Determines when to display the expand/collapse button.
-           * @expose
-           * @name styleDefaults.nodeDefaults.showDisclosure
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {string=}
-           * @ojvalue {string} "off"
-           * @ojvalue {string} "on"
-           * @default "on"
-           */
-          showDisclosure: 'on',
-          /**
-           * Default style for the node icon.
-           * @expose
-           * @name styleDefaults.nodeDefaults.icon
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {Object=}
-           */
-          icon: {
-            /**
-             * Default border color of the icon.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.borderColor
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {string=}
-             * @ojformat color
-             */
-            /**
-             * The default border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.
-             * @ojshortdesc Specifies default border radius of the icon.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.borderRadius
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {string=}
-             */
-            /**
-             * Default border width of the icon in pixels.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.borderWidth
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {number=}
-             * @ojunits pixels
-             */
-            /**
-             * Default color of the icon.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.color
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {string=}
-             * @ojformat color
-             */
-            /**
-             * Default fill pattern of the icon.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.pattern
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {string=}
-             * @ojvalue {string} "smallChecker"
-             * @ojvalue {string} "smallCrosshatch"
-             * @ojvalue {string} "smallDiagonalLeft"
-             * @ojvalue {string} "smallDiagonalRight"
-             * @ojvalue {string} "smallDiamond"
-             * @ojvalue {string} "smallTriangle"
-             * @ojvalue {string} "largeChecker"
-             * @ojvalue {string} "largeCrosshatch"
-             * @ojvalue {string} "largeDiagonalLeft"
-             * @ojvalue {string} "largeDiagonalRight"
-             * @ojvalue {string} "largeDiamond"
-             * @ojvalue {string} "largeTriangle"
-             * @ojvalue {string} "none"
-             * @default "none"
-             */
-            pattern: 'none',
-            /**
-             * Default shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.
-             * @ojshortdesc Specifies default shape of the icon.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.shape
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {("circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string)=}
-             * @default "circle"
-             */
-            shape: 'circle',
-            /**
-             * The URI of the node image
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.source
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {string=}
-             */
-            /**
-             * The optional URI of the node hover image. If not defined, the source image will be used.
-             * @ojshortdesc The optional URI of the node hover image.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.sourceHover
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {string=}
-             */
-            /**
-             * The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.
-             * @ojshortdesc The optional URI of the selected image on hover.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.sourceHoverSelected
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {string=}
-             */
-            /**
-             * The optional URI of the selected image. If not defined, the source image will be used.
-             * @ojshortdesc The optional URI of the selected image.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.sourceSelected
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {string=}
-             */
-            /**
-             * Default icon width.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.width
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {number=}
-             * @default 10
-             * @ojunits pixels
-             */
-            width: 10,
-            /**
-             * Default icon height.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.height
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {number=}
-             * @default 10
-             * @ojunits pixels
-             */
-            height: 10,
-            /**
-             * The default SVG CSS style object defining the style of the icon.
-             * Only SVG CSS style properties are supported.
-             * @ojshortdesc Specifies CSS styles for the icon.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.svgStyle
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {Object=}
-             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-             * @default {}
-             */
-            /**
-             * The SVG CSS style class to apply to the node icon.
-             * @expose
-             * @name styleDefaults.nodeDefaults.icon.svgClassName
-             * @memberof! oj.ojDiagram
-             * @instance
-             * @type {string=}
-             * @default ""
-             */
-            svgClassName: ''
-          }
-        },
+        labelStyle: {},
         /**
-         * Default link styles
+         * Specifies the type of start connector on the link.
          * @expose
-         * @name styleDefaults.linkDefaults
+         * @name styleDefaults.linkDefaults.startConnectorType
          * @memberof! oj.ojDiagram
          * @instance
-         * @type {Object=}
+         * @type {string=}
+         * @ojvalue {string} "arrowOpen"
+         * @ojvalue {string} "arrow"
+         * @ojvalue {string} "arrowConcave"
+         * @ojvalue {string} "circle"
+         * @ojvalue {string} "rectangle"
+         * @ojvalue {string} "rectangleRounded"
+         * @ojvalue {string} "none"
+         * @default "none"
          */
-        linkDefaults: {
-          /**
-           * Default link color. The default value comes from the CSS and varies based on theme.
-           * @expose
-           * @name styleDefaults.linkDefaults.color
-           * @ojshortdesc Default link color.
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {string=}
-           * @ojformat color
-           */
-          /**
-           * The default style object represents the SVG CSS style of the link. User defined custom SVG CSS Styles will be applied directly on the link.
-           * Only SVG CSS style properties are supported.
-           * @ojshortdesc Specifies SVG CSS styles for the link.
-           * @expose
-           * @name styleDefaults.linkDefaults.svgStyle
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {Object=}
-           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-           * @default {}
-           */
-          /**
-           * The default SVG CSS style class to apply to the link.
-           * @expose
-           * @name styleDefaults.linkDefaults.svgClassName
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {string=}
-           * @default ""
-           */
-          svgClassName: '',
-          /**
-           * Default link width in pixels.
-           * @expose
-           * @name styleDefaults.linkDefaults.width
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {number=}
-           * @ojunits pixels
-           * @default 1.0
-           */
-          width: 1.0,
-          /**
-           * The CSS style object defining the style of the link label.
-           * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, maxWidth, textDecoration.
-           * The default value comes from the CSS and varies based on theme.
-           * @ojshortdesc Specifies CSS styles for the link label.
-           * @expose
-           * @name styleDefaults.linkDefaults.labelStyle
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {Object=}
-           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-           */
-          labelStyle: {},
-          /**
-           * Specifies the type of start connector on the link.
-           * @expose
-           * @name styleDefaults.linkDefaults.startConnectorType
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {string=}
-           * @ojvalue {string} "arrowOpen"
-           * @ojvalue {string} "arrow"
-           * @ojvalue {string} "arrowConcave"
-           * @ojvalue {string} "circle"
-           * @ojvalue {string} "rectangle"
-           * @ojvalue {string} "rectangleRounded"
-           * @ojvalue {string} "none"
-           * @default "none"
-           */
-          startConnectorType: 'none',
-          /**
-           * Specifies the type of end connector on the link.
-           * @expose
-           * @name styleDefaults.linkDefaults.endConnectorType
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {string=}
-           * @ojvalue {string} "arrowOpen"
-           * @ojvalue {string} "arrow"
-           * @ojvalue {string} "arrowConcave"
-           * @ojvalue {string} "circle"
-           * @ojvalue {string} "rectangle"
-           * @ojvalue {string} "rectangleRounded"
-           * @ojvalue {string} "none"
-           * @default "none"
-           */
-          endConnectorType: 'none'
-        },
+        startConnectorType: 'none',
         /**
-         * Promoted link styles
+         * Specifies the type of end connector on the link.
          * @expose
-         * @name styleDefaults.promotedLink
+         * @name styleDefaults.linkDefaults.endConnectorType
          * @memberof! oj.ojDiagram
          * @instance
-         * @type {Object=}
+         * @type {string=}
+         * @ojvalue {string} "arrowOpen"
+         * @ojvalue {string} "arrow"
+         * @ojvalue {string} "arrowConcave"
+         * @ojvalue {string} "circle"
+         * @ojvalue {string} "rectangle"
+         * @ojvalue {string} "rectangleRounded"
+         * @ojvalue {string} "none"
+         * @default "none"
          */
-        promotedLink: {
-          /**
-           * Default promoted link color. The default value varies based on theme.
-           * @expose
-           * @name styleDefaults.promotedLink.color
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {string=}
-           * @ojformat color
-           */
-          color: '#778999',
-          /**
-           * The promoted style object represents the CSS style of the link. User defined custom CSS Styles will be applied directly on the link.
-           * Only SVG CSS style properties are supported.
-           * @expose
-           * @ojshortdesc Specifies CSS styles of the promoted link.
-           * @name styleDefaults.promotedLink.svgStyle
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {Object=}
-           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-           * @default {}
-           */
-          /**
-           * The SVG CSS style class to apply to the promoted link.
-           * @expose
-           * @name styleDefaults.promotedLink.svgClassName
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {string=}
-           * @default ""
-           */
-          svgClassName: '',
-          /**
-           * Default link width in pixels.
-           * @expose
-           * @name styleDefaults.promotedLink.width
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {number=}
-           * @ojunits pixels
-           * @default 1.0
-           */
-          width: 1.0,
-          /**
-           * Specifies the type of start connector on the promoted link.
-           * @expose
-           * @name styleDefaults.promotedLink.startConnectorType
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {string=}
-           * @ojvalue {string} "arrowOpen"
-           * @ojvalue {string} "arrow"
-           * @ojvalue {string} "arrowConcave"
-           * @ojvalue {string} "circle"
-           * @ojvalue {string} "rectangle"
-           * @ojvalue {string} "rectangleRounded"
-           * @ojvalue {string} "none"
-           * @default "none"
-           */
-          startConnectorType: 'none',
-          /**
-           * Specifies the type of end connector on the promoted link.
-           * @expose
-           * @name styleDefaults.promotedLink.endConnectorType
-           * @memberof! oj.ojDiagram
-           * @instance
-           * @type {string=}
-           * @ojvalue {string} "arrowOpen"
-           * @ojvalue {string} "arrow"
-           * @ojvalue {string} "arrowConcave"
-           * @ojvalue {string} "circle"
-           * @ojvalue {string} "rectangle"
-           * @ojvalue {string} "rectangleRounded"
-           * @ojvalue {string} "none"
-           * @default "none"
-           */
-          endConnectorType: 'none'
-        }
+        endConnectorType: 'none'
       },
       /**
-       * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the component will instantly trigger the touch gesture and consume the page pan events if the component does not require an internal feature that requires a touch start gesture like panning or zooming. If touchResponse is auto, the component will behave like touchStart if it determines that it is not rendered within scrolling content and if component panning is not available for those components that support the feature.
-       *
-       * @ojshortdesc Specifies touch response behavior.
+       * Promoted link styles
        * @expose
-       * @name touchResponse
-       * @memberof oj.ojDiagram
+       * @name styleDefaults.promotedLink
+       * @memberof! oj.ojDiagram
        * @instance
-       * @type {string=}
-       * @ojvalue {string} "touchStart"
-       * @ojvalue {string} "auto"
-       * @default "auto"
-       *
-       * @example <caption>Initialize the diagram with the
-       * <code class="prettyprint">touch-response</code> attribute specified:</caption>
-       * &lt;oj-diagram touch-response='touchStart'>&lt;/oj-diagram>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">touchResponse</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myDiagram.touchResponse;
-       *
-       * // setter
-       * myDiagram.touchResponse="touchStart";
+       * @type {Object=}
        */
-      touchResponse: 'auto',
-      /**
-       * A custom JavaScript client layout method - a custom code developed by a customer used to position Diagram nodes and links. The layout code must conform to the pluggable layout contract.
-       * @ojshortdesc Specifies layout callback used to position nodes and links.
-       * @expose
-       * @name layout
-       * @memberof oj.ojDiagram
-       * @instance
-       * @type {(function(DvtDiagramLayoutContext):void)=}
-       * @see <a href="oj.DvtDiagramLayoutContext.html">DvtDiagramLayoutContext</a>
-       * @see <a href="oj.DvtDiagramLayoutContextLink.html">DvtDiagramLayoutContextLink</a>
-       * @see <a href="oj.DvtDiagramLayoutContextNode.html">DvtDiagramLayoutContextNode</a>
-       * @ojsignature {target: "Type", value: "((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void)", jsdocOverride: true}
-       */
-      /**
-       * Triggered immediately before any container node in the diagram is expanded.
-       *
-       * @ojshortdesc Event handler for when a node is about to expand.
-       * @ojcancelable
-       * @expose
-       * @property {any} nodeId the id of the expanding object
-       * @event
-       * @memberof oj.ojDiagram
-       * @instance
-       * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
-       *               {target:"Type", value:"K1", for:"nodeId"}]
-       * @ojdeprecated {since: '12.1.0', description: 'The oj-before-expand event has been deprecated.  Lazy loading of data can be done through the data provider.'}
-       */
-      beforeExpand: null,
-      /**
-       * Triggered when a node has been expanded. The ui object contains one property, "nodeId", which is the id of the node that has been expanded.
-       *
-       * @ojshortdesc Event handler for after a node has expanded.
-       * @expose
-       * @property {any} nodeId the id of the expanded object
-       * @event
-       * @memberof oj.ojDiagram
-       * @instance
-       * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
-       *               {target:"Type", value:"K1", for:"nodeId"}]
-       * @ojdeprecated {since: '12.1.0', description: 'The oj-expand event has been deprecated.  Use on-expanded-changed instead.'}
-       */
-      expand: null,
-      /**
-       * Triggered immediately before any container node in the diagram is collapsed.
-       *
-       * @ojshortdesc Event handler for when a node is about to collapse.
-       * @ojcancelable
-       * @expose
-       * @property {any} nodeId the id of the collapsing object
-       * @event
-       * @memberof oj.ojDiagram
-       * @instance
-       * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
-       *               {target:"Type", value:"K1", for:"nodeId"}]
-       * @ojdeprecated {since: '12.1.0', description: 'The oj-before-collapse event has been deprecated.  Lazy loading of data can be done through the data provider.'}
-       */
-      beforeCollapse: null,
-      /**
-       * Triggered when a node has been collapsed.
-       *
-       * @ojshortdesc Event handler for after a node has collapsed.
-       * @expose
-       * @property {any} nodeId the id of the collapsed object
-       * @event
-       * @memberof oj.ojDiagram
-       * @instance
-       * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
-       *               {target:"Type", value:"K1", for:"nodeId"}]
-       * @ojdeprecated {since: '12.1.0', description: 'The oj-collapse event has been deprecated.  Use on-expanded-changed instead.'}
-       */
-      collapse: null,
-      /**
-       * Triggered in response to property changes and component resizes. By default,
-       * the panZoomState is reset in these cases such that the content is centered and zoomed to fit.
-       * This behavior can be prevented by listening to this event and calling
-       * event.preventDefault() which will cause the current panZoomState to be preserved.
-       * @ojshortdesc Event that is fired before the panZoomState is reset.
-       * @ojcancelable
-       * @expose
-       * @event
-       * @memberof oj.ojDiagram
-       * @instance
-       */
-      beforePanZoomReset: null,
+      promotedLink: {
+        /**
+         * Default promoted link color. The default value varies based on theme.
+         * @expose
+         * @name styleDefaults.promotedLink.color
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {string=}
+         * @ojformat color
+         */
+        color: '#778999',
+        /**
+         * The promoted style object represents the CSS style of the link. User defined custom CSS Styles will be applied directly on the link.
+         * Only SVG CSS style properties are supported.
+         * @expose
+         * @ojshortdesc Specifies CSS styles of the promoted link.
+         * @name styleDefaults.promotedLink.svgStyle
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {Object=}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+         * @default {}
+         */
+        /**
+         * The SVG CSS style class to apply to the promoted link.
+         * @expose
+         * @name styleDefaults.promotedLink.svgClassName
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {string=}
+         * @default ""
+         */
+        svgClassName: '',
+        /**
+         * Default link width in pixels.
+         * @expose
+         * @name styleDefaults.promotedLink.width
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {number=}
+         * @ojunits pixels
+         * @default 1.0
+         */
+        width: 1.0,
+        /**
+         * Specifies the type of start connector on the promoted link.
+         * @expose
+         * @name styleDefaults.promotedLink.startConnectorType
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {string=}
+         * @ojvalue {string} "arrowOpen"
+         * @ojvalue {string} "arrow"
+         * @ojvalue {string} "arrowConcave"
+         * @ojvalue {string} "circle"
+         * @ojvalue {string} "rectangle"
+         * @ojvalue {string} "rectangleRounded"
+         * @ojvalue {string} "none"
+         * @default "none"
+         */
+        startConnectorType: 'none',
+        /**
+         * Specifies the type of end connector on the promoted link.
+         * @expose
+         * @name styleDefaults.promotedLink.endConnectorType
+         * @memberof! oj.ojDiagram
+         * @instance
+         * @type {string=}
+         * @ojvalue {string} "arrowOpen"
+         * @ojvalue {string} "arrow"
+         * @ojvalue {string} "arrowConcave"
+         * @ojvalue {string} "circle"
+         * @ojvalue {string} "rectangle"
+         * @ojvalue {string} "rectangleRounded"
+         * @ojvalue {string} "none"
+         * @default "none"
+         */
+        endConnectorType: 'none'
+      }
     },
+    /**
+     * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the component will instantly trigger the touch gesture and consume the page pan events if the component does not require an internal feature that requires a touch start gesture like panning or zooming. If touchResponse is auto, the component will behave like touchStart if it determines that it is not rendered within scrolling content and if component panning is not available for those components that support the feature.
+     *
+     * @ojshortdesc Specifies touch response behavior.
+     * @expose
+     * @name touchResponse
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "touchStart"
+     * @ojvalue {string} "auto"
+     * @default "auto"
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">touch-response</code> attribute specified:</caption>
+     * &lt;oj-diagram touch-response='touchStart'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">touchResponse</code>
+     * property after initialization:</caption>
+     * // getter
+     * var value = myDiagram.touchResponse;
+     *
+     * // setter
+     * myDiagram.touchResponse="touchStart";
+     */
+    touchResponse: 'auto',
+    /**
+     * A custom JavaScript client layout method - a custom code developed by a customer used to position Diagram nodes and links. The layout code must conform to the pluggable layout contract.
+     * @ojshortdesc Specifies layout callback used to position nodes and links.
+     * @expose
+     * @name layout
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {(function(DvtDiagramLayoutContext):void)=}
+     * @see <a href="oj.DvtDiagramLayoutContext.html">DvtDiagramLayoutContext</a>
+     * @see <a href="oj.DvtDiagramLayoutContextLink.html">DvtDiagramLayoutContextLink</a>
+     * @see <a href="oj.DvtDiagramLayoutContextNode.html">DvtDiagramLayoutContextNode</a>
+     * @ojsignature {target: "Type", value: "((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void)", jsdocOverride: true}
+     */
+    /**
+     * Triggered immediately before any container node in the diagram is expanded.
+     *
+     * @ojshortdesc Event handler for when a node is about to expand.
+     * @ojcancelable
+     * @expose
+     * @property {any} nodeId the id of the expanding object
+     * @event
+     * @memberof oj.ojDiagram
+     * @instance
+     * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"K1", for:"nodeId"}]
+     * @ojdeprecated {since: '12.1.0', description: 'The oj-before-expand event has been deprecated.  Lazy loading of data can be done through the data provider.'}
+     */
+    beforeExpand: null,
+    /**
+     * Triggered when a node has been expanded. The ui object contains one property, "nodeId", which is the id of the node that has been expanded.
+     *
+     * @ojshortdesc Event handler for after a node has expanded.
+     * @expose
+     * @property {any} nodeId the id of the expanded object
+     * @event
+     * @memberof oj.ojDiagram
+     * @instance
+     * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"K1", for:"nodeId"}]
+     * @ojdeprecated {since: '12.1.0', description: 'The oj-expand event has been deprecated.  Use on-expanded-changed instead.'}
+     */
+    expand: null,
+    /**
+     * Triggered immediately before any container node in the diagram is collapsed.
+     *
+     * @ojshortdesc Event handler for when a node is about to collapse.
+     * @ojcancelable
+     * @expose
+     * @property {any} nodeId the id of the collapsing object
+     * @event
+     * @memberof oj.ojDiagram
+     * @instance
+     * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"K1", for:"nodeId"}]
+     * @ojdeprecated {since: '12.1.0', description: 'The oj-before-collapse event has been deprecated.  Lazy loading of data can be done through the data provider.'}
+     */
+    beforeCollapse: null,
+    /**
+     * Triggered when a node has been collapsed.
+     *
+     * @ojshortdesc Event handler for after a node has collapsed.
+     * @expose
+     * @property {any} nodeId the id of the collapsed object
+     * @event
+     * @memberof oj.ojDiagram
+     * @instance
+     * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"K1", for:"nodeId"}]
+     * @ojdeprecated {since: '12.1.0', description: 'The oj-collapse event has been deprecated.  Use on-expanded-changed instead.'}
+     */
+    collapse: null,
+    /**
+     * Triggered in response to property changes and component resizes. By default,
+     * the panZoomState is reset in these cases such that the content is centered and zoomed to fit.
+     * This behavior can be prevented by listening to this event and calling
+     * event.preventDefault() which will cause the current panZoomState to be preserved.
+     * @ojshortdesc Event that is fired before the panZoomState is reset.
+     * @ojcancelable
+     * @expose
+     * @event
+     * @memberof oj.ojDiagram
+     * @instance
+     */
+    beforePanZoomReset: null
+  },
 
+  _InitOptions: function (originalDefaults, constructorOptions) {
+    this._super(originalDefaults, constructorOptions);
 
-    _InitOptions: function (originalDefaults, constructorOptions) {
-      this._super(originalDefaults, constructorOptions);
+    // styleDefaults subproperty defaults are dynamically generated
+    // so we need to retrieve it here and override the dynamic getter by
+    // setting the returned object as the new value.
+    var styleDefaults = this.options.styleDefaults;
+    this.options.styleDefaults = styleDefaults;
+  },
 
-      // styleDefaults subproperty defaults are dynamically generated
-      // so we need to retrieve it here and override the dynamic getter by
-      // setting the returned object as the new value.
-      var styleDefaults = this.options.styleDefaults;
-      this.options.styleDefaults = styleDefaults;
-    },
-
-
-    _ProcessOptions: function () {
-      this._super();
-      this.options._logger = Logger;
-      // convert deprecated node renderers into new format
-      if (this.options.renderer && !this.options.nodeContent.renderer) {
-        this.options.nodeContent = {
-          renderer: this.options.renderer,
-          hoverRenderer: this.options.hoverRenderer,
-          selectionRenderer: this.options.selectionRenderer,
-          focusRenderer: this.options.focusRenderer,
-          zoomRenderer: this.options.zoomRenderer,
-        };
-      }
-      if (this.options._templateFunction) {
-        this.options.nodeContent.renderer = this._GetTemplateDataRenderer(this.options._templateFunction, 'node');
-      }
-      if (this.options.renderer || this._TemplateHandler.getTemplates().nodeContentTemplate ||
-        this.options.linkContent || this._TemplateHandler.getTemplates().linkContentTemplate) {
-        this.options._contextHandler = this._getContextHandler();
-        this.options._cleanTemplate = this._cleanTemplateMap();
-      }
-      if (this.options.nodeData) {
-        this.options._fetchDataHandler = this._getFetchDataHandler('nodeData');
-      }
-      // convert nodes, links and childNodes options to DiagramDataSource
-      if (this.options.nodes) {
-        this.options.nodeProperties = this.options.nodeProperties ?
-          this.options.nodeProperties : function (data) {
+  _ProcessOptions: function () {
+    this._super();
+    this.options._logger = Logger;
+    // convert deprecated node renderers into new format
+    if (this.options.renderer && !this.options.nodeContent.renderer) {
+      this.options.nodeContent = {
+        renderer: this.options.renderer,
+        hoverRenderer: this.options.hoverRenderer,
+        selectionRenderer: this.options.selectionRenderer,
+        focusRenderer: this.options.focusRenderer,
+        zoomRenderer: this.options.zoomRenderer
+      };
+    }
+    if (this.options._templateFunction) {
+      this.options.nodeContent.renderer = this._GetTemplateDataRenderer(
+        this.options._templateFunction,
+        'node'
+      );
+    }
+    if (
+      this.options.renderer ||
+      this._TemplateHandler.getTemplates().nodeContentTemplate ||
+      this.options.linkContent ||
+      this._TemplateHandler.getTemplates().linkContentTemplate
+    ) {
+      this.options._contextHandler = this._getContextHandler();
+      this.options._cleanTemplate = this._cleanTemplateMap();
+    }
+    if (this.options.nodeData) {
+      this.options._fetchDataHandler = this._getFetchDataHandler('nodeData');
+    }
+    // convert nodes, links and childNodes options to DiagramDataSource
+    if (this.options.nodes) {
+      this.options.nodeProperties = this.options.nodeProperties
+        ? this.options.nodeProperties
+        : function (data) {
             return data;
           };
-        this.options.linkProperties = this.options.linkProperties ?
-          this.options.linkProperties : function (data) {
+      this.options.linkProperties = this.options.linkProperties
+        ? this.options.linkProperties
+        : function (data) {
             return data;
           };
-        this.options.data =
-          new ConversionDiagramDataSource(
-            { nodes: this.options.nodes, links: this.options.links },
-            { childData: this.options.childNodes });
+      this.options.data = new ConversionDiagramDataSource(
+        { nodes: this.options.nodes, links: this.options.links },
+        { childData: this.options.childNodes }
+      );
+    }
+    // if expanded not declared, pass default empty expanded key set to the toolkit
+    if (!this.options.expanded) {
+      this.options.expanded = new KeySetImpl();
+    }
+    if (!this.options.dnd.drag) {
+      this.options.dnd.drag = {
+        nodes: {},
+        ports: {}
+      };
+    }
+    if (!this.options.dnd.drop) {
+      this.options.dnd.drop = {
+        background: {},
+        nodes: {},
+        links: {},
+        ports: {}
+      };
+    }
+    // Add these enable/disable all focusable functions to enable actionable mode
+    this.options._keyboardUtils = {
+      enableAllFocusable: enableAllFocusableElements,
+      disableAllFocusable: disableAllFocusableElements,
+      getActionableElementsInNode: getActionableElementsInNode,
+      getFocusableElementsInNode: getFocusableElementsInNode
+    };
+  },
+
+  _IsDraggable: function () {
+    var dragObj = this.options.dnd ? this.options.dnd.drag : null;
+    return (
+      (dragObj && dragObj.nodes && Object.keys(dragObj.nodes).length > 0) ||
+      (dragObj && dragObj.ports && Object.keys(dragObj.ports).length > 0)
+    );
+  },
+
+  _GetComponentRendererOptions: function () {
+    return [
+      { path: 'tooltip/renderer', slot: 'tooltipTemplate' },
+      { path: 'nodeContent/renderer', slot: 'nodeContentTemplate' },
+      { path: 'nodeContent/focusRenderer', slot: 'nodeContentTemplate' },
+      { path: 'nodeContent/hoverRenderer', slot: 'nodeContentTemplate' },
+      { path: 'nodeContent/selectionRenderer', slot: 'nodeContentTemplate' },
+      { path: 'nodeContent/zoomRenderer', slot: 'nodeContentTemplate' },
+      { path: 'linkContent/renderer', slot: 'linkContentTemplate' },
+      { path: 'linkContent/focusRenderer', slot: 'linkContentTemplate' },
+      { path: 'linkContent/hoverRenderer', slot: 'linkContentTemplate' },
+      { path: 'linkContent/selectionRenderer', slot: 'linkContentTemplate' }
+    ];
+  },
+
+  _SetupResources: function () {
+    this._super();
+    if (this._component) {
+      this._component.addDataSourceEventListeners();
+    }
+  },
+
+  _ReleaseResources: function () {
+    this._super();
+    if (this._component) {
+      this._component.removeDataSourceEventListeners();
+    }
+  },
+
+  /**
+   * This property is used by the TemplateHandler to indicate that the template engine for diagram needs
+   * needs knockout module.
+   * @protected
+   * @ignore
+   */
+  _NeedsTrackableProperties: true,
+
+  /**
+   * Creates a callback function that will be used by DvtDiagramNode to populate context for the custom renderer
+   * @return {Function} context handler callback used to create context for a custom renderer
+   * @private
+   * @instance
+   * @memberof oj.ojDiagram
+   */
+  _getContextHandler: function () {
+    var thisRef = this;
+    return function (
+      type,
+      parentElement,
+      rootElement,
+      childContent,
+      dataContext,
+      state,
+      previousState,
+      linkPoints
+    ) {
+      var context = {
+        component: __GetWidgetConstructor(thisRef.element),
+        parentElement: parentElement,
+        rootElement: rootElement,
+        content: childContent,
+        data: dataContext.data,
+        itemData: dataContext.itemData,
+        state: state,
+        previousState: previousState,
+        id: dataContext.id,
+        type: type,
+        label: dataContext.label,
+        points: linkPoints
+      };
+      if (type === 'node' && thisRef._IsCustomElement()) {
+        context.renderDefaultHover = thisRef.renderDefaultHover.bind(thisRef, context);
+        context.renderDefaultSelection = thisRef.renderDefaultSelection.bind(thisRef, context);
+        context.renderDefaultFocus = thisRef.renderDefaultFocus.bind(thisRef, context);
       }
-      // if expanded not declared, pass default empty expanded key set to the toolkit
-      if (!this.options.expanded) {
-        this.options.expanded = new KeySetImpl();
+      return thisRef._FixRendererContext(context);
+    };
+  },
+
+  /**
+   * Renders default hover effect for the diagram node
+   * @param {Object} context - property object with the following fields
+   * <ul>
+   *  <li>{Element} componentElement - Diagram element</li>
+   *  <li>{Object} data - a data object for the node</li>
+   *  <li>{SVGElement} parentElement  - a parent group element that takes a custom SVG fragment as the node content. Used for measurements and reading properties.
+   *                Modifications of the parentElement are not supported</li>
+   *  <li>{SVGElement} rootElement  - an SVG fragment created as a node content passed for subsequent modifications</li>
+   *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
+   *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
+   *  <li>{string} id - node id</li>
+   *  <li>{string} type - object type - node</li>
+   *  <li>{string} label - object label</li>
+   * </ul>
+   * @expose
+   * @ignore
+   * @instance
+   * @memberof oj.ojDiagram
+   */
+  renderDefaultHover: function (context) {
+    if (!context.previousState || context.state.hovered !== context.previousState.hovered) {
+      var comp = this._GetDvtComponent(this.element);
+      comp.processDefaultHoverEffect(context.id, context.state.hovered);
+    }
+  },
+
+  /**
+   * Renders default selection effect for the diagram node
+   * @param {Object} context - property object with the following fields
+   * <ul>
+   *  <li>{Element} componentElement - Diagram element</li>
+   *  <li>{Object} data - a data object for the node</li>
+   *  <li>{SVGElement} parentElement  - a parent group element that takes a custom SVG fragment as the node content. Used for measurements and reading properties.
+   *                Modifications of the parentElement are not supported</li>
+   *  <li>{SVGElement} rootElement  - an SVG fragment created as a node content passed for subsequent modifications</li>
+   *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
+   *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
+   *  <li>{string} id - node id</li>
+   *  <li>{string} type - object type - node</li>
+   *  <li>{string} label - object label</li>
+   * </ul>
+   * @expose
+   * @ignore
+   * @instance
+   * @memberof oj.ojDiagram
+   */
+  renderDefaultSelection: function (context) {
+    if (!context.previousState || context.state.selected !== context.previousState.selected) {
+      var comp = this._GetDvtComponent(this.element);
+      comp.processDefaultSelectionEffect(context.id, context.state.selected);
+    }
+  },
+
+  /**
+   * Renders default focus effect for the diagram node
+   * @param {Object} context - property object with the following fields
+   * <ul>
+   *  <li>{Element} componentElement - Diagram element</li>
+   *  <li>{Object} data - a data object for the node</li>
+   *  <li>{SVGElement} parentElement  - a parent group element that takes a custom SVG fragment as the node content. Used for measurements and reading properties.
+   *                Modifications of the parentElement are not supported</li>
+   *  <li>{SVGElement} rootElement  - an SVG fragment created as a node content passed for subsequent modifications</li>
+   *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
+   *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
+   *  <li>{string} id - node id</li>
+   *  <li>{string} type - object type - node</li>
+   *  <li>{string} label - object label</li>
+   * </ul>
+   * @expose
+   * @ignore
+   * @instance
+   * @memberof oj.ojDiagram
+   */
+  renderDefaultFocus: function (context) {
+    if (!context.previousState || context.state.focused !== context.previousState.focused) {
+      var comp = this._GetDvtComponent(this.element);
+      comp.processDefaultFocusEffect(context.id, context.state.focused);
+    }
+  },
+
+  _CreateDvtComponent: function (context, callback, callbackObj) {
+    return new Diagram(context, callback, callbackObj);
+  },
+
+  _ConvertLocatorToSubId: function (locator) {
+    var subId = locator.subId;
+
+    // Convert the supported locators
+    if (subId === 'oj-diagram-link') {
+      // link[index]
+      subId = 'link[' + locator.index + ']';
+    } else if (subId === 'oj-diagram-node') {
+      // node[index]
+      subId = 'node[' + locator.index + ']';
+    } else if (subId === 'oj-diagram-tooltip') {
+      subId = 'tooltip';
+    }
+
+    // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
+    // support for the old subId syntax in 1.2.0.
+    return subId;
+  },
+
+  _ConvertSubIdToLocator: function (subId) {
+    var locator = {};
+
+    if (subId.indexOf('link') === 0) {
+      // link[index]
+      locator.subId = 'oj-diagram-link';
+      locator.index = this._GetFirstIndex(subId);
+    } else if (subId.indexOf('node') === 0) {
+      // node[index]
+      locator.subId = 'oj-diagram-node';
+      locator.index = this._GetFirstIndex(subId);
+    } else if (subId === 'tooltip') {
+      locator.subId = 'oj-diagram-tooltip';
+    }
+
+    return locator;
+  },
+
+  _GetComponentStyleClasses: function () {
+    var styleClasses = this._super();
+    styleClasses.push('oj-diagram');
+    return styleClasses;
+  },
+
+  _GetChildStyleClasses: function () {
+    var styleClasses = this._super();
+    styleClasses['oj-dvtbase oj-diagram'] = {
+      path: 'styleDefaults/animationDuration',
+      property: 'ANIM_DUR'
+    };
+    styleClasses['oj-diagram-node-label'] = {
+      path: 'styleDefaults/nodeDefaults/labelStyle',
+      property: 'TEXT'
+    };
+    styleClasses['oj-diagram-node oj-selected'] = {
+      path: 'styleDefaults/nodeDefaults/selectionColor',
+      property: 'border-color'
+    };
+    styleClasses['oj-diagram-node oj-hover'] = [
+      { path: 'styleDefaults/nodeDefaults/hoverOuterColor', property: 'border-top-color' },
+      { path: 'styleDefaults/nodeDefaults/hoverInnerColor', property: 'border-bottom-color' }
+    ];
+    styleClasses['oj-diagram-link'] = [
+      { path: 'styleDefaults/linkDefaults/color', property: 'color' },
+      { path: 'styleDefaults/linkDefaults/_hitDetectionOffset', property: 'padding' },
+      { path: 'styleDefaults/promotedLink/_hitDetectionOffset', property: 'padding' }
+    ];
+    styleClasses['oj-diagram-link-label'] = {
+      path: 'styleDefaults/linkDefaults/labelStyle',
+      property: 'TEXT'
+    };
+    styleClasses['oj-diagram-link oj-selected'] = {
+      path: 'styleDefaults/linkDefaults/selectionColor',
+      property: 'border-color'
+    };
+    styleClasses['oj-diagram-link oj-hover'] = [
+      { path: 'styleDefaults/linkDefaults/hoverOuterColor', property: 'border-top-color' },
+      { path: 'styleDefaults/linkDefaults/hoverInnerColor', property: 'border-bottom-color' }
+    ];
+    styleClasses['oj-diagram-overview'] = [
+      {
+        path: 'styleDefaults/_overviewStyles/overview/backgroundColor',
+        property: 'background-color'
+      },
+      { path: 'styleDefaults/_overviewStyles/overview/padding', property: 'padding' }
+    ];
+    styleClasses['oj-diagram-node'] = [
+      { path: 'styleDefaults/nodeDefaults/icon/color', property: 'fill' }
+    ];
+    styleClasses['oj-diagram-overview-content'] = [
+      { path: 'styleDefaults/_overviewStyles/overviewContent/padding', property: 'padding' }
+    ];
+    styleClasses['oj-diagram-overview-viewport'] = [
+      { path: 'styleDefaults/_overviewStyles/viewport/borderColor', property: 'border-color' },
+      {
+        path: 'styleDefaults/_overviewStyles/viewport/backgroundColor',
+        property: 'background-color'
       }
-      if (!this.options.dnd.drag) {
-        this.options.dnd.drag = {
-          nodes: {}, ports: {}
-        };
+    ];
+    return styleClasses;
+  },
+
+  _GetEventTypes: function () {
+    return [
+      'optionChange',
+      'beforeExpand',
+      'beforeCollapse',
+      'expand',
+      'collapse',
+      'beforePanZoomReset'
+    ];
+  },
+
+  _GetOptimizedOptions: function () {
+    return this._super().concat('panZoomState');
+  },
+
+  _UpdateNoRenderOptions: function (options) {
+    if (options.panZoomState !== undefined) {
+      this._component.panZoom(options.panZoomState);
+    }
+    this._super(options);
+  },
+
+  _HandleEvent: function (event) {
+    var type = event.type;
+    if (type === 'beforeExpand') {
+      this.expand(event.id, true);
+    } else if (type === 'beforeCollapse') {
+      this.collapse(event.id, true);
+    } else if (type === 'expand' || type === 'collapse') {
+      if (this._IsCustomElement()) {
+        var expanded = this.options.expanded;
+        var value = type === 'expand' ? expanded.add([event.id]) : expanded.delete([event.id]);
+        this._UserOptionChange('expanded', value);
       }
-      if (!this.options.dnd.drop) {
-        this.options.dnd.drop = {
-          background: {}, nodes: {}, links: {}, ports: {}
-        };
-      }
-      // Add these enable/disable all focusable functions to enable actionable mode
-      this.options._keyboardUtils = { enableAllFocusable: enableAllFocusableElements,
-                                      disableAllFocusable: disableAllFocusableElements,
-                                      getActionableElementsInNode: getActionableElementsInNode,
-                                      getFocusableElementsInNode: getFocusableElementsInNode };
-    },
+      this._trigger(type, null, { nodeId: event.id });
+    } else if (type === 'notready') {
+      this._NotReady();
+    } else if (type === 'beforePanZoomReset') {
+      this._panZoomReset();
+    } else {
+      this._super(event);
+    }
+  },
 
-    _IsDraggable: function () {
-      var dragObj = this.options.dnd ? this.options.dnd.drag : null;
-      return (dragObj && dragObj.nodes && Object.keys(dragObj.nodes).length > 0) ||
-        (dragObj && dragObj.ports && Object.keys(dragObj.ports).length > 0);
-    },
-
-
-    _GetComponentRendererOptions: function () {
-      return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
-              { path: 'nodeContent/renderer', slot: 'nodeContentTemplate' },
-              { path: 'nodeContent/focusRenderer', slot: 'nodeContentTemplate' },
-              { path: 'nodeContent/hoverRenderer', slot: 'nodeContentTemplate' },
-              { path: 'nodeContent/selectionRenderer', slot: 'nodeContentTemplate' },
-              { path: 'nodeContent/zoomRenderer', slot: 'nodeContentTemplate' },
-              { path: 'linkContent/renderer', slot: 'linkContentTemplate' },
-              { path: 'linkContent/focusRenderer', slot: 'linkContentTemplate' },
-              { path: 'linkContent/hoverRenderer', slot: 'linkContentTemplate' },
-              { path: 'linkContent/selectionRenderer', slot: 'linkContentTemplate' }];
-    },
-
-
-    _SetupResources: function () {
-      this._super();
-      if (this._component) {
-        this._component.addDataSourceEventListeners();
-      }
-    },
-
-
-    _ReleaseResources: function () {
-      this._super();
-      if (this._component) {
-        this._component.removeDataSourceEventListeners();
-      }
-    },
-
-    /**
-     * This property is used by the TemplateHandler to indicate that the template engine for diagram needs
-     * needs knockout module.
-     * @protected
-     * @ignore
-     */
-    _NeedsTrackableProperties: true,
-
-    /**
-     * Creates a callback function that will be used by DvtDiagramNode to populate context for the custom renderer
-     * @return {Function} context handler callback used to create context for a custom renderer
-     * @private
-     * @instance
-     * @memberof oj.ojDiagram
-     */
-    _getContextHandler: function () {
-      var thisRef = this;
-      return function (type, parentElement, rootElement,
-        childContent, dataContext, state, previousState, linkPoints) {
-        var context = {
-          component: __GetWidgetConstructor(thisRef.element),
-          parentElement: parentElement,
-          rootElement: rootElement,
-          content: childContent,
-          data: dataContext.data,
-          itemData: dataContext.itemData,
-          state: state,
-          previousState: previousState,
-          id: dataContext.id,
-          type: type,
-          label: dataContext.label,
-          points: linkPoints
-        };
-        if (type === 'node' && thisRef._IsCustomElement()) {
-          context.renderDefaultHover = thisRef.renderDefaultHover.bind(thisRef, context);
-          context.renderDefaultSelection = thisRef.renderDefaultSelection.bind(thisRef, context);
-          context.renderDefaultFocus = thisRef.renderDefaultFocus.bind(thisRef, context);
+  _RemoveKeys: function (removedKeys) {
+    this._super(removedKeys);
+    var expandedChanged;
+    var expanded = this.options.expanded;
+    if (expanded && !expanded.isAddAll()) {
+      removedKeys.forEach(function (keyValue) {
+        if (expanded.has(keyValue)) {
+          expanded = expanded.delete([keyValue]);
+          expandedChanged = true;
         }
-        return thisRef._FixRendererContext(context);
-      };
-    },
-
-    /**
-     * Renders default hover effect for the diagram node
-     * @param {Object} context - property object with the following fields
-     * <ul>
-     *  <li>{Element} componentElement - Diagram element</li>
-     *  <li>{Object} data - a data object for the node</li>
-     *  <li>{SVGElement} parentElement  - a parent group element that takes a custom SVG fragment as the node content. Used for measurements and reading properties.
-     *                Modifications of the parentElement are not supported</li>
-     *  <li>{SVGElement} rootElement  - an SVG fragment created as a node content passed for subsequent modifications</li>
-     *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
-     *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
-     *  <li>{string} id - node id</li>
-     *  <li>{string} type - object type - node</li>
-     *  <li>{string} label - object label</li>
-     * </ul>
-     * @expose
-     * @ignore
-     * @instance
-     * @memberof oj.ojDiagram
-     */
-    renderDefaultHover: function (context) {
-      if (!context.previousState || context.state.hovered !== context.previousState.hovered) {
-        var comp = this._GetDvtComponent(this.element);
-        comp.processDefaultHoverEffect(context.id, context.state.hovered);
-      }
-    },
-
-    /**
-     * Renders default selection effect for the diagram node
-     * @param {Object} context - property object with the following fields
-     * <ul>
-     *  <li>{Element} componentElement - Diagram element</li>
-     *  <li>{Object} data - a data object for the node</li>
-     *  <li>{SVGElement} parentElement  - a parent group element that takes a custom SVG fragment as the node content. Used for measurements and reading properties.
-     *                Modifications of the parentElement are not supported</li>
-     *  <li>{SVGElement} rootElement  - an SVG fragment created as a node content passed for subsequent modifications</li>
-     *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
-     *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
-     *  <li>{string} id - node id</li>
-     *  <li>{string} type - object type - node</li>
-     *  <li>{string} label - object label</li>
-     * </ul>
-     * @expose
-     * @ignore
-     * @instance
-     * @memberof oj.ojDiagram
-     */
-    renderDefaultSelection: function (context) {
-      if (!context.previousState || context.state.selected !== context.previousState.selected) {
-        var comp = this._GetDvtComponent(this.element);
-        comp.processDefaultSelectionEffect(context.id, context.state.selected);
-      }
-    },
-
-    /**
-     * Renders default focus effect for the diagram node
-     * @param {Object} context - property object with the following fields
-     * <ul>
-     *  <li>{Element} componentElement - Diagram element</li>
-     *  <li>{Object} data - a data object for the node</li>
-     *  <li>{SVGElement} parentElement  - a parent group element that takes a custom SVG fragment as the node content. Used for measurements and reading properties.
-     *                Modifications of the parentElement are not supported</li>
-     *  <li>{SVGElement} rootElement  - an SVG fragment created as a node content passed for subsequent modifications</li>
-     *  <li>{Object} state  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
-     *  <li>{Object} previousState  - property object with the following boolean properties: hovered, selected, focused, inActionableMode, zoom</li>
-     *  <li>{string} id - node id</li>
-     *  <li>{string} type - object type - node</li>
-     *  <li>{string} label - object label</li>
-     * </ul>
-     * @expose
-     * @ignore
-     * @instance
-     * @memberof oj.ojDiagram
-     */
-    renderDefaultFocus: function (context) {
-      if (!context.previousState || context.state.focused !== context.previousState.focused) {
-        var comp = this._GetDvtComponent(this.element);
-        comp.processDefaultFocusEffect(context.id, context.state.focused);
-      }
-    },
-
-
-    _CreateDvtComponent: function (context, callback, callbackObj) {
-      return new Diagram(context, callback, callbackObj);
-    },
-
-
-    _ConvertLocatorToSubId: function (locator) {
-      var subId = locator.subId;
-
-      // Convert the supported locators
-      if (subId === 'oj-diagram-link') {
-        // link[index]
-        subId = 'link[' + locator.index + ']';
-      } else if (subId === 'oj-diagram-node') {
-        // node[index]
-        subId = 'node[' + locator.index + ']';
-      } else if (subId === 'oj-diagram-tooltip') {
-        subId = 'tooltip';
-      }
-
-      // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
-      // support for the old subId syntax in 1.2.0.
-      return subId;
-    },
-
-
-    _ConvertSubIdToLocator: function (subId) {
-      var locator = {};
-
-      if (subId.indexOf('link') === 0) {
-        // link[index]
-        locator.subId = 'oj-diagram-link';
-        locator.index = this._GetFirstIndex(subId);
-      } else if (subId.indexOf('node') === 0) {
-        // node[index]
-        locator.subId = 'oj-diagram-node';
-        locator.index = this._GetFirstIndex(subId);
-      } else if (subId === 'tooltip') {
-        locator.subId = 'oj-diagram-tooltip';
-      }
-
-      return locator;
-    },
-
-
-    _GetComponentStyleClasses: function () {
-      var styleClasses = this._super();
-      styleClasses.push('oj-diagram');
-      return styleClasses;
-    },
-
-
-    _GetChildStyleClasses: function () {
-      var styleClasses = this._super();
-      styleClasses['oj-dvtbase oj-diagram'] = { path: 'styleDefaults/animationDuration', property: 'ANIM_DUR' };
-      styleClasses['oj-diagram-node-label'] = { path: 'styleDefaults/nodeDefaults/labelStyle', property: 'TEXT' };
-      styleClasses['oj-diagram-node oj-selected'] = { path: 'styleDefaults/nodeDefaults/selectionColor', property: 'border-color' };
-      styleClasses['oj-diagram-node oj-hover'] = [
-        { path: 'styleDefaults/nodeDefaults/hoverOuterColor', property: 'border-top-color' },
-        { path: 'styleDefaults/nodeDefaults/hoverInnerColor', property: 'border-bottom-color' }
-      ];
-      styleClasses['oj-diagram-link'] = [
-        { path: 'styleDefaults/linkDefaults/color', property: 'color' },
-        { path: 'styleDefaults/linkDefaults/_hitDetectionOffset', property: 'padding' },
-        { path: 'styleDefaults/promotedLink/_hitDetectionOffset', property: 'padding' }
-      ];
-      styleClasses['oj-diagram-link-label'] = { path: 'styleDefaults/linkDefaults/labelStyle', property: 'TEXT' };
-      styleClasses['oj-diagram-link oj-selected'] = { path: 'styleDefaults/linkDefaults/selectionColor', property: 'border-color' };
-      styleClasses['oj-diagram-link oj-hover'] = [
-        { path: 'styleDefaults/linkDefaults/hoverOuterColor', property: 'border-top-color' },
-        { path: 'styleDefaults/linkDefaults/hoverInnerColor', property: 'border-bottom-color' }
-      ];
-      styleClasses['oj-diagram-overview'] = [
-        { path: 'styleDefaults/_overviewStyles/overview/backgroundColor', property: 'background-color' },
-        { path: 'styleDefaults/_overviewStyles/overview/padding', property: 'padding' }
-      ];
-      styleClasses['oj-diagram-node'] = [
-        { path: 'styleDefaults/nodeDefaults/icon/color', property: 'fill' }
-      ];
-      styleClasses['oj-diagram-overview-content'] = [
-        { path: 'styleDefaults/_overviewStyles/overviewContent/padding', property: 'padding' }
-      ];
-      styleClasses['oj-diagram-overview-viewport'] = [
-        { path: 'styleDefaults/_overviewStyles/viewport/borderColor', property: 'border-color' },
-        { path: 'styleDefaults/_overviewStyles/viewport/backgroundColor', property: 'background-color' }
-      ];
-      return styleClasses;
-    },
-
-
-    _GetEventTypes: function () {
-      return ['optionChange', 'beforeExpand', 'beforeCollapse', 'expand', 'collapse', 'beforePanZoomReset'];
-    },
-
-    _GetOptimizedOptions: function () {
-      return this._super().concat('panZoomState');
-    },
-
-    _UpdateNoRenderOptions: function (options) {
-      if (options.panZoomState !== undefined) {
-        this._component.panZoom(options.panZoomState);
-      }
-      this._super(options);
-    },
-
-
-    _HandleEvent: function (event) {
-      var type = event.type;
-      if (type === 'beforeExpand') {
-        this.expand(event.id, true);
-      } else if (type === 'beforeCollapse') {
-        this.collapse(event.id, true);
-      } else if (type === 'expand' || type === 'collapse') {
-        if (this._IsCustomElement()) {
-          var expanded = this.options.expanded;
-          var value = type === 'expand' ? expanded.add([event.id]) : expanded.delete([event.id]);
-          this._UserOptionChange('expanded', value);
-        }
-        this._trigger(type, null, { nodeId: event.id });
-      } else if (type === 'notready') {
-        this._NotReady();
-      } else if (type === 'beforePanZoomReset') {
-        this._panZoomReset();
-      } else {
-        this._super(event);
-      }
-    },
-
-
-    _RemoveKeys: function (removedKeys) {
-      this._super(removedKeys);
-      var expandedChanged;
-      var expanded = this.options.expanded;
-      if (expanded && !expanded.isAddAll()) {
-        removedKeys.forEach(function (keyValue) {
-          if (expanded.has(keyValue)) {
-            expanded = expanded.delete([keyValue]);
-            expandedChanged = true;
-          }
-        });
-        if (expandedChanged) {
-          this._UserOptionChange('expanded', expanded);
-        }
-      }
-    },
-
-
-    _LoadResources: function () {
-      // Ensure the resources object exists
-      if (this.options._resources == null) {
-        this.options._resources = {};
-      }
-
-      var resources = this.options._resources;
-      // TODO: what is this?
-      resources.panUp = 'oj-chart-pan-icon';
-      resources.panUpHover = 'oj-chart-pan-icon oj-hover';
-      resources.panDown = 'oj-chart-pan-icon oj-active';
-
-      resources.collapse = {
-        icon: 'oj-fwk-icon oj-fwk-icon-minus',
-        width: 10,
-        height: 10
-      };
-      resources.expand = {
-        icon: 'oj-fwk-icon oj-fwk-icon-plus',
-        width: 10,
-        height: 10
-      };
-    },
-
-
-    _GetComponentNoClonePaths: function () {
-      var noClonePaths = this._super();
-      noClonePaths.data = true;
-      noClonePaths.nodes = true;
-      noClonePaths.links = true;
-      return noClonePaths;
-    },
-
-
-    _GetComponentDeferredDataPaths: function () {
-      return { root: ['nodeData', 'linkData'] };
-    },
-
-
-    _GetSimpleDataProviderConfigs: function () {
-      var configs = {
-        nodeData: { templateName: 'nodeTemplate', templateElementName: 'oj-diagram-node', resultPath: 'nodes' },
-        linkData: { templateName: 'linkTemplate', templateElementName: 'oj-diagram-link', resultPath: 'links' }
-      };
-      Object.defineProperty(configs.nodeData, 'expandedKeySet', {
-        get: function () {
-          return this.options.expanded;
-        }.bind(this)
       });
-      return configs;
-    },
-
-    /**
-     * @override
-     * @memberof oj.ojDiagram
-     * @protected
-     */
-    _CleanAllTemplates: function (isResize) {
-      if (!isResize) {
-        this._CleanTemplate('nodeContentTemplate');
+      if (expandedChanged) {
+        this._UserOptionChange('expanded', expanded);
       }
-      this._super(isResize);
-    },
+    }
+  },
 
-    /**
-     * @override
-     * @memberof oj.ojDiagram
-     * @protected
-     */
-    _CleanTemplate: function (templateName) {
-      if (templateName === 'nodeContentTemplate') {
-        if (this._nodeContentTemplateMap) {
-          var nodes = Object.keys(this._nodeContentTemplateMap);
-          for (var i = 0; i < nodes.length; i++) {
-            this._nodeContentTemplateMap[nodes[i]]();
-          }
-          this._nodeContentTemplateMap = {};
-        }
-      } else {
-        this._super(templateName);
-      }
-    },
+  _LoadResources: function () {
+    // Ensure the resources object exists
+    if (this.options._resources == null) {
+      this.options._resources = {};
+    }
 
-    /**
-     * @override
-     * @memberof oj.ojDiagram
-     * @protected
-     */
-    _AddTemplate: function (context) {
-      var templateName = context._templateName;
-      if (templateName === 'nodeContentTemplate') {
-        if (!this._nodeContentTemplateMap) {
-          this._nodeContentTemplateMap = {};
-        }
-        this._nodeContentTemplateMap[context.id || 'dummyDiv'] = context._templateCleanup;
-      } else {
-        this._super(context);
-      }
-    },
+    var resources = this.options._resources;
+    // TODO: what is this?
+    resources.panUp = 'oj-chart-pan-icon';
+    resources.panUpHover = 'oj-chart-pan-icon oj-hover';
+    resources.panDown = 'oj-chart-pan-icon oj-active';
 
-    /**
-     * Cleans a specific template stored by the component
-     * @private
-     * @memberof oj.ojDiagram
-     */
-    _cleanTemplateMap: function () {
-      var thisRef = this;
-      return function (id) {
-        if (thisRef._nodeContentTemplateMap && thisRef._nodeContentTemplateMap[id]) {
-          thisRef._nodeContentTemplateMap[id]();
-          delete thisRef._nodeContentTemplateMap[id];
-        }
-      };
-    },
+    resources.collapse = {
+      icon: 'oj-fwk-icon oj-fwk-icon-minus',
+      width: 10,
+      height: 10
+    };
+    resources.expand = {
+      icon: 'oj-fwk-icon oj-fwk-icon-plus',
+      width: 10,
+      height: 10
+    };
+  },
 
-     // Executes the inline template and returns the nodes from the template
-    _TemplateRenderer: function (context, templateEngine, templateElement, templateName) {
-      var states = context.state;
-      var prevStates = context.previousState;
-      var id = context.id;
-      this._nodeLinkContext[id] = context;
-      templateEngine.defineTrackableProperty(context, 'state', states);
-      templateEngine.defineTrackableProperty(context, 'prevState', prevStates);
-      return this._super(context, templateEngine, templateElement, templateName);
-    },
+  _GetComponentNoClonePaths: function () {
+    var noClonePaths = this._super();
+    noClonePaths.data = true;
+    noClonePaths.nodes = true;
+    noClonePaths.links = true;
+    return noClonePaths;
+  },
 
-    _ProcessInlineTemplateRenderer: function (options, optionPath,
-      templateElement, templateName) {
-        if (!this._nodeLinkContext) {
-          this._nodeLinkContext = {};
-        }
-        this._super(options, optionPath, templateElement, templateName);
+  _GetComponentDeferredDataPaths: function () {
+    return { root: ['nodeData', 'linkData'] };
+  },
+
+  _GetSimpleDataProviderConfigs: function () {
+    var configs = {
+      nodeData: {
+        templateName: 'nodeTemplate',
+        templateElementName: 'oj-diagram-node',
+        resultPath: 'nodes'
       },
+      linkData: {
+        templateName: 'linkTemplate',
+        templateElementName: 'oj-diagram-link',
+        resultPath: 'links'
+      }
+    };
+    Object.defineProperty(configs.nodeData, 'expandedKeySet', {
+      get: function () {
+        return this.options.expanded;
+      }.bind(this)
+    });
+    return configs;
+  },
 
-    _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {
-      var templateDataSet = this._TemplateHandler.getDataSet(templateName);
+  /**
+   * @override
+   * @memberof oj.ojDiagram
+   * @protected
+   */
+  _CleanAllTemplates: function (isResize) {
+    if (!isResize) {
+      this._CleanTemplate('nodeContentTemplate');
+    }
+    this._super(isResize);
+  },
 
-      // get the index of the interval that the zoom value is in.
-      var getInterval = (zoom, thresholds) => {
-        for (var i = 0; i < thresholds.length; i++) {
-          if (zoom < thresholds[i]) {
-            return i;
-          }
+  /**
+   * @override
+   * @memberof oj.ojDiagram
+   * @protected
+   */
+  _CleanTemplate: function (templateName) {
+    if (templateName === 'nodeContentTemplate') {
+      if (this._nodeContentTemplateMap) {
+        var nodes = Object.keys(this._nodeContentTemplateMap);
+        for (var i = 0; i < nodes.length; i++) {
+          this._nodeContentTemplateMap[nodes[i]]();
         }
-        return thresholds.length;
-      };
-
-      var hasZoomThresholdChange = (state, prevState, thresholds) => {
-        return getInterval(state, thresholds) !== getInterval(prevState, thresholds);
-      };
-
-      var mutateObservables = (context) => {
-        var id = context.id;
-        Object.assign(this._nodeLinkContext[id], context);
-      };
-
-      var getDefaultWrapperFunction = (defaultFunc) => {
-        return (context) => {
-          context[defaultFunc]();
-          return mutateObservables(context);
-        };
-      };
-
-      if (option === 'nodeContent/focusRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-focus')) {
-        return getDefaultWrapperFunction('renderDefaultFocus');
+        this._nodeContentTemplateMap = {};
       }
-      if (option === 'nodeContent/hoverRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-hover')) {
-        return getDefaultWrapperFunction('renderDefaultHover');
+    } else {
+      this._super(templateName);
+    }
+  },
+
+  /**
+   * @override
+   * @memberof oj.ojDiagram
+   * @protected
+   */
+  _AddTemplate: function (context) {
+    var templateName = context._templateName;
+    if (templateName === 'nodeContentTemplate') {
+      if (!this._nodeContentTemplateMap) {
+        this._nodeContentTemplateMap = {};
       }
-      if (option === 'nodeContent/selectionRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-selection')) {
-        return getDefaultWrapperFunction('renderDefaultSelection');
+      this._nodeContentTemplateMap[context.id || 'dummyDiv'] = context._templateCleanup;
+    } else {
+      this._super(context);
+    }
+  },
+
+  /**
+   * Cleans a specific template stored by the component
+   * @private
+   * @memberof oj.ojDiagram
+   */
+  _cleanTemplateMap: function () {
+    var thisRef = this;
+    return function (id) {
+      if (thisRef._nodeContentTemplateMap && thisRef._nodeContentTemplateMap[id]) {
+        thisRef._nodeContentTemplateMap[id]();
+        delete thisRef._nodeContentTemplateMap[id];
       }
-      if (option === 'nodeContent/zoomRenderer') {
-        if (templateDataSet.ojZoomThresholds) {
-          try {
-            var thresholds = JSON.parse(templateDataSet.ojZoomThresholds);
-            return function (context) {
-              if (hasZoomThresholdChange(context.state.zoom,
-                context.previousState.zoom, thresholds)) {
-                return mutateObservables(context);
-              }
-              return undefined;
-            };
-          } catch (error$1) {
-            error(error$1);
-          }
+    };
+  },
+
+  // Executes the inline template and returns the nodes from the template
+  _TemplateRenderer: function (context, templateEngine, templateElement, templateName) {
+    var states = context.state;
+    var prevStates = context.previousState;
+    var id = context.id;
+    this._nodeLinkContext[id] = context;
+    templateEngine.defineTrackableProperty(context, 'state', states);
+    templateEngine.defineTrackableProperty(context, 'prevState', prevStates);
+    return this._super(context, templateEngine, templateElement, templateName);
+  },
+
+  _ProcessInlineTemplateRenderer: function (options, optionPath, templateElement, templateName) {
+    if (!this._nodeLinkContext) {
+      this._nodeLinkContext = {};
+    }
+    this._super(options, optionPath, templateElement, templateName);
+  },
+
+  _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {
+    var templateDataSet = this._TemplateHandler.getDataSet(templateName);
+
+    // get the index of the interval that the zoom value is in.
+    var getInterval = (zoom, thresholds) => {
+      for (var i = 0; i < thresholds.length; i++) {
+        if (zoom < thresholds[i]) {
+          return i;
         }
-        return null;
       }
+      return thresholds.length;
+    };
 
-      if (option === 'nodeContent/renderer' || option === 'linkContent/renderer') {
-        return origRenderer;
+    var hasZoomThresholdChange = (state, prevState, thresholds) => {
+      return getInterval(state, thresholds) !== getInterval(prevState, thresholds);
+    };
+
+    var mutateObservables = (context) => {
+      var id = context.id;
+      Object.assign(this._nodeLinkContext[id], context);
+    };
+
+    var getDefaultWrapperFunction = (defaultFunc) => {
+      return (context) => {
+        context[defaultFunc]();
+        return mutateObservables(context);
+      };
+    };
+
+    if (
+      option === 'nodeContent/focusRenderer' &&
+      this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-focus')
+    ) {
+      return getDefaultWrapperFunction('renderDefaultFocus');
+    }
+    if (
+      option === 'nodeContent/hoverRenderer' &&
+      this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-hover')
+    ) {
+      return getDefaultWrapperFunction('renderDefaultHover');
+    }
+    if (
+      option === 'nodeContent/selectionRenderer' &&
+      this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-selection')
+    ) {
+      return getDefaultWrapperFunction('renderDefaultSelection');
+    }
+    if (option === 'nodeContent/zoomRenderer') {
+      if (templateDataSet.ojZoomThresholds) {
+        try {
+          var thresholds = JSON.parse(templateDataSet.ojZoomThresholds);
+          return function (context) {
+            if (
+              hasZoomThresholdChange(context.state.zoom, context.previousState.zoom, thresholds)
+            ) {
+              return mutateObservables(context);
+            }
+            return undefined;
+          };
+        } catch (error$1) {
+          error(error$1);
+        }
       }
-      return mutateObservables;
-    },
-
-
-    _OptionChangeHandler: function (options) {
-      var hasProperty = Object.prototype.hasOwnProperty.bind(options);
-      if (hasProperty('expanded') || hasProperty('data')) {
-        this._component.clearDisclosedState();
-      }
-
-      if (hasProperty('expanded')) {
-        this._ClearDataProviderState('nodeData');
-      }
-
-      this._super(options);
-    },
-
-
-    /**
-     * Resets the panZoom state if the beforePanZoomReset event is not veto'd
-     * @ignore
-     * @instance
-     * @memberof oj.ojDiagram
-     */
-    _panZoomReset: function () {
-      // if beforePanZoomReset is veto'd, we do not reset the panZoom State to zoomToFit
-      var reset = this._trigger('beforePanZoomReset');
-      this._component.panZoomReset(reset);
-    },
-
-    /**
-     * Collapses an expanded node. When vetoable is set to false, beforeExpand event will still be fired but the event cannot be veto.
-     * @param {String} nodeId The id of the node to collapse
-     * @param {boolean} vetoable Whether the event should be vetoable
-     * @ignore
-     * @expose
-     * @instance
-     * @memberof oj.ojDiagram
-     */
-    collapse: function (nodeId, vetoable) {
-      var result = this._trigger('beforeCollapse', null, { nodeId: nodeId });
-      if (!vetoable || result !== false) {
-        this._NotReady();
-        this._component.collapse(nodeId);
-      }
-    },
-
-    /**
-     * Expands a collapsed parent node. When vetoable is set to false, beforeExpand event will still be fired but the event cannot be veto.
-     * @param {String} nodeId The id of the node to expand
-     * @param {boolean} vetoable Whether the event should be vetoable
-     * @ignore
-     * @expose
-     * @instance
-     * @memberof oj.ojDiagram
-     */
-    expand: function (nodeId, vetoable) {
-      var result = this._trigger('beforeExpand', null, { nodeId: nodeId });
-      if (!vetoable || result !== false) {
-        this._NotReady();
-        this._component.expand(nodeId);
-      }
-    },
-
-    /**
-     * Returns number of diagram nodes
-     * @return {number} The number of nodes
-     * @expose
-     * @instance
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @memberof oj.ojDiagram
-     *
-     * @example <caption>Invoke the <code class="prettyprint">getNodeCount</code> method:</caption>
-     * var count = myDiagram.getNodeCount();
-     */
-    getNodeCount: function () {
-      var auto = this._component.getAutomation();
-      return auto.getNodeCount();
-    },
-
-    /**
-     * Returns an object with the following properties for automation testing verification of the diagram node at the
-     * specified index.
-     *
-     * @param {number} nodeIndex Node index
-     * @property {Object|null} icon The icon for the node, or null if none exists.
-     * @property {string} icon.color The color of the icon
-     * @property {string} icon.shape The shape of the icon
-     * @property {string} icon.pattern The pattern of the icon
-     * @property {string} label Node label
-     * @property {boolean} selected The selected state of the node
-     * @property {string} tooltip Node tooltip
-     * @return {Object|null} An object containing properties for the node at the given index, or null if none exists.
-     * @expose
-     * @instance
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @memberof oj.ojDiagram
-     * @ojshortdesc Returns an object for automation testing verification of the specified diagram node. See the Help documentation for more information.
-     *
-     * @example <caption>Invoke the <code class="prettyprint">getNode</code> method:</caption>
-     * var node = myDiagram.getNode(3);
-     */
-    getNode: function (nodeIndex) {
-      var auto = this._component.getAutomation();
-      return auto.getNode(nodeIndex);
-    },
-
-    /**
-     * Returns number of diagram links
-     * @return {number} The number of links
-     * @expose
-     * @instance
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @memberof oj.ojDiagram
-     *
-     * @example <caption>Invoke the <code class="prettyprint">getLinkCount</code> method:</caption>
-     * var count = myDiagram.getLinkCount();
-     */
-    getLinkCount: function () {
-      var auto = this._component.getAutomation();
-      return auto.getLinkCount();
-    },
-
-    /**
-     * Returns an object with the following properties for automation testing verification of the diagram link at the
-     * specified index.
-     *
-     * @param {number} linkIndex Link index
-     * @property {string} color Link color
-     * @property {string} label Link label
-     * @property {string} endConnectorType The type of end connector on the link
-     * @property {string} endNode The id of the end node.
-     * @property {boolean} selected The selected state of the link
-     * @property {string} startConnectorType The type of start connector on the link
-     * @property {string} startNode The id of the start node.
-     * @property {string} style Link style
-     * @property {string} tooltip Link tooltip
-     * @property {number} width Link width
-     * @return {Object|null} An object containing properties for the link at the given index, or null if none exists.
-     * @expose
-     * @instance
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @memberof oj.ojDiagram
-     * @ojshortdesc Returns an object for automation testing verification of the specified diagram link. See the Help documentation for more information.
-     *
-     * @example <caption>Invoke the <code class="prettyprint">getLink</code> method:</caption>
-     * var link = myDiagram.getLink(3);
-     */
-    getLink: function (linkIndex) {
-      var auto = this._component.getAutomation();
-      return auto.getLink(linkIndex);
-    },
-
-    /**
-     * Returns an object with the following properties for automation testing verification of the promoted link between
-     * specified nodes.
-     *
-     * @param {number} startNodeIndex Start node index
-     * @param {number} endNodeIndex End node index
-     * @property {string} color Link color
-     * @property {string} endConnectorType The type of end connector on the link
-     * @property {string} endNode The id of the end node.
-     * @property {boolean} selected The selected state of the link
-     * @property {string} startConnectorType The type of start connector on the link
-     * @property {string} startNode The id of the start node.
-     * @property {string} style Link style
-     * @property {string} tooltip Link tooltip
-     * @property {number} width Link width
-     * @property {number} count Number of links it represents
-     * @return {Object|null} An object containing properties for the link at the given index, or null if none exists.
-     * @expose
-     * @instance
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @memberof oj.ojDiagram
-     * @ojshortdesc Returns an object for automation testing verification of the promoted link between the specified nodes. See the Help documentation for more information.
-     */
-    getPromotedLink: function (startNodeIndex, endNodeIndex) {
-      var auto = this._component.getAutomation();
-      return auto.getPromotedLink(startNodeIndex, endNodeIndex);
-    },
-
-    /**
-     * {@ojinclude "name":"nodeContextDoc"}
-     * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
-     * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-     * @ojsignature {target: "Type", value: "oj.ojDiagram.NodeContext|null", jsdocOverride: true, for: "returns"}
-     *
-     * @example {@ojinclude "name":"nodeContextExample"}
-     *
-     * @expose
-     * @instance
-     * @memberof oj.ojDiagram
-     * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
-     */
-    getContextByNode: function (node) {
-      // context objects are documented with @ojnodecontext
-      var context = this.getSubIdByNode(node);
-      if (context && context.subId !== 'oj-diagram-tooltip') {
-        return context;
-      }
-
       return null;
     }
-  });
+
+    if (
+      option === 'nodeContent/renderer' ||
+      option === 'linkContent/renderer' ||
+      option === 'tooltip/renderer'
+    ) {
+      return origRenderer;
+    }
+    return mutateObservables;
+  },
+
+  _OptionChangeHandler: function (options) {
+    var hasProperty = Object.prototype.hasOwnProperty.bind(options);
+    if (hasProperty('expanded') || hasProperty('data')) {
+      this._component.clearDisclosedState();
+    }
+
+    if (hasProperty('expanded')) {
+      this._ClearDataProviderState('nodeData');
+    }
+
+    this._super(options);
+  },
+
+  /**
+   * Resets the panZoom state if the beforePanZoomReset event is not veto'd
+   * @ignore
+   * @instance
+   * @memberof oj.ojDiagram
+   */
+  _panZoomReset: function () {
+    // if beforePanZoomReset is veto'd, we do not reset the panZoom State to zoomToFit
+    var reset = this._trigger('beforePanZoomReset');
+    this._component.panZoomReset(reset);
+  },
+
+  /**
+   * Collapses an expanded node. When vetoable is set to false, beforeExpand event will still be fired but the event cannot be veto.
+   * @param {String} nodeId The id of the node to collapse
+   * @param {boolean} vetoable Whether the event should be vetoable
+   * @ignore
+   * @expose
+   * @instance
+   * @memberof oj.ojDiagram
+   */
+  collapse: function (nodeId, vetoable) {
+    var result = this._trigger('beforeCollapse', null, { nodeId: nodeId });
+    if (!vetoable || result !== false) {
+      this._NotReady();
+      this._component.collapse(nodeId);
+    }
+  },
+
+  /**
+   * Expands a collapsed parent node. When vetoable is set to false, beforeExpand event will still be fired but the event cannot be veto.
+   * @param {String} nodeId The id of the node to expand
+   * @param {boolean} vetoable Whether the event should be vetoable
+   * @ignore
+   * @expose
+   * @instance
+   * @memberof oj.ojDiagram
+   */
+  expand: function (nodeId, vetoable) {
+    var result = this._trigger('beforeExpand', null, { nodeId: nodeId });
+    if (!vetoable || result !== false) {
+      this._NotReady();
+      this._component.expand(nodeId);
+    }
+  },
+
+  /**
+   * Returns number of diagram nodes
+   * @return {number} The number of nodes
+   * @expose
+   * @instance
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @memberof oj.ojDiagram
+   *
+   * @example <caption>Invoke the <code class="prettyprint">getNodeCount</code> method:</caption>
+   * var count = myDiagram.getNodeCount();
+   */
+  getNodeCount: function () {
+    var auto = this._component.getAutomation();
+    return auto.getNodeCount();
+  },
+
+  /**
+   * Returns an object with the following properties for automation testing verification of the diagram node at the
+   * specified index.
+   *
+   * @param {number} nodeIndex Node index
+   * @property {Object|null} icon The icon for the node, or null if none exists.
+   * @property {string} icon.color The color of the icon
+   * @property {string} icon.shape The shape of the icon
+   * @property {string} icon.pattern The pattern of the icon
+   * @property {string} label Node label
+   * @property {boolean} selected The selected state of the node
+   * @property {string} tooltip Node tooltip
+   * @return {Object|null} An object containing properties for the node at the given index, or null if none exists.
+   * @expose
+   * @instance
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @memberof oj.ojDiagram
+   * @ojshortdesc Returns an object for automation testing verification of the specified diagram node. See the Help documentation for more information.
+   *
+   * @example <caption>Invoke the <code class="prettyprint">getNode</code> method:</caption>
+   * var node = myDiagram.getNode(3);
+   */
+  getNode: function (nodeIndex) {
+    var auto = this._component.getAutomation();
+    return auto.getNode(nodeIndex);
+  },
+
+  /**
+   * Returns number of diagram links
+   * @return {number} The number of links
+   * @expose
+   * @instance
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @memberof oj.ojDiagram
+   *
+   * @example <caption>Invoke the <code class="prettyprint">getLinkCount</code> method:</caption>
+   * var count = myDiagram.getLinkCount();
+   */
+  getLinkCount: function () {
+    var auto = this._component.getAutomation();
+    return auto.getLinkCount();
+  },
+
+  /**
+   * Returns an object with the following properties for automation testing verification of the diagram link at the
+   * specified index.
+   *
+   * @param {number} linkIndex Link index
+   * @property {string} color Link color
+   * @property {string} label Link label
+   * @property {string} endConnectorType The type of end connector on the link
+   * @property {string} endNode The id of the end node.
+   * @property {boolean} selected The selected state of the link
+   * @property {string} startConnectorType The type of start connector on the link
+   * @property {string} startNode The id of the start node.
+   * @property {string} style Link style
+   * @property {string} tooltip Link tooltip
+   * @property {number} width Link width
+   * @return {Object|null} An object containing properties for the link at the given index, or null if none exists.
+   * @expose
+   * @instance
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @memberof oj.ojDiagram
+   * @ojshortdesc Returns an object for automation testing verification of the specified diagram link. See the Help documentation for more information.
+   *
+   * @example <caption>Invoke the <code class="prettyprint">getLink</code> method:</caption>
+   * var link = myDiagram.getLink(3);
+   */
+  getLink: function (linkIndex) {
+    var auto = this._component.getAutomation();
+    return auto.getLink(linkIndex);
+  },
+
+  /**
+   * Returns an object with the following properties for automation testing verification of the promoted link between
+   * specified nodes.
+   *
+   * @param {number} startNodeIndex Start node index
+   * @param {number} endNodeIndex End node index
+   * @property {string} color Link color
+   * @property {string} endConnectorType The type of end connector on the link
+   * @property {string} endNode The id of the end node.
+   * @property {boolean} selected The selected state of the link
+   * @property {string} startConnectorType The type of start connector on the link
+   * @property {string} startNode The id of the start node.
+   * @property {string} style Link style
+   * @property {string} tooltip Link tooltip
+   * @property {number} width Link width
+   * @property {number} count Number of links it represents
+   * @return {Object|null} An object containing properties for the link at the given index, or null if none exists.
+   * @expose
+   * @instance
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @memberof oj.ojDiagram
+   * @ojshortdesc Returns an object for automation testing verification of the promoted link between the specified nodes. See the Help documentation for more information.
+   */
+  getPromotedLink: function (startNodeIndex, endNodeIndex) {
+    var auto = this._component.getAutomation();
+    return auto.getPromotedLink(startNodeIndex, endNodeIndex);
+  },
+
+  /**
+   * {@ojinclude "name":"nodeContextDoc"}
+   * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+   * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+   * @ojsignature {target: "Type", value: "oj.ojDiagram.NodeContext|null", jsdocOverride: true, for: "returns"}
+   *
+   * @example {@ojinclude "name":"nodeContextExample"}
+   *
+   * @expose
+   * @instance
+   * @memberof oj.ojDiagram
+   * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
+   */
+  getContextByNode: function (node) {
+    // context objects are documented with @ojnodecontext
+    var context = this.getSubIdByNode(node);
+    if (context && context.subId !== 'oj-diagram-tooltip') {
+      return context;
+    }
+
+    return null;
+  }
+});
 
 // Conditionally set the defaults for custom element vs widget syntax since we expose different APIs
 setDefaultOptions({
@@ -4361,7 +4427,7 @@ setDefaultOptions({
         };
       }
       return {};
-    }),
+    })
   }
 });
 
@@ -4497,52 +4563,52 @@ setDefaultOptions({
  */
 
 // COMMONLY USED FRAGMENTS, that might be converted into TS typedefs
- /**
-  * <ul>
-  *   <li>x {number}: x-coordinate value of the drop in the component coordinate system.</li>
-  *   <li>y {number}: y-coordinate value of the drop in the component coordinate system.</li>
-  * </ul>
-  * <i> Note: </i>When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content.
-  * @ojfragment backgroundDropContext - context object for the background drop used by dnd.drop.background callbacks
-  * @memberof oj.ojDiagram
-  */
+/**
+ * <ul>
+ *   <li>x {number}: x-coordinate value of the drop in the component coordinate system.</li>
+ *   <li>y {number}: y-coordinate value of the drop in the component coordinate system.</li>
+ * </ul>
+ * <i> Note: </i>When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content.
+ * @ojfragment backgroundDropContext - context object for the background drop used by dnd.drop.background callbacks
+ * @memberof oj.ojDiagram
+ */
 
- /**
-  * <ul>
-  *   <li>x {number}: x-coordinate value of the drop in the component coordinate system.</li>
-  *   <li>y {number}: y-coordinate value of the drop in the component coordinate system.</li>
-  *   <li>nodeX {number}: x-coordinate value of the drop in the target node coordinate system.</li>
-  *   <li>nodeY {number}: y-coordinate value of the drop in the target node coordinate system.</li>
-  *   <li>nodeContext {Object}: The JSON version of the data context for the target node.</li>
-  * </ul>
-  * <i> Note: </i>When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content.
-  * @ojfragment nodeDropContext - context object for the node drop used by dnd.drop.node callbacks
-  * @memberof oj.ojDiagram
-  */
+/**
+ * <ul>
+ *   <li>x {number}: x-coordinate value of the drop in the component coordinate system.</li>
+ *   <li>y {number}: y-coordinate value of the drop in the component coordinate system.</li>
+ *   <li>nodeX {number}: x-coordinate value of the drop in the target node coordinate system.</li>
+ *   <li>nodeY {number}: y-coordinate value of the drop in the target node coordinate system.</li>
+ *   <li>nodeContext {Object}: The JSON version of the data context for the target node.</li>
+ * </ul>
+ * <i> Note: </i>When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content.
+ * @ojfragment nodeDropContext - context object for the node drop used by dnd.drop.node callbacks
+ * @memberof oj.ojDiagram
+ */
 
- /**
-  * <ul>
-  *   <li>x {number}: x-coordinate value of the drop in the component coordinate system.</li>
-  *   <li>y {number}: y-coordinate value of the drop in the component coordinate system.</li>
-  *   <li>linkContext {Object}: the JSON version of the data context for the target link.</li>
-  * </ul>
-  * <i> Note: </i>When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content.
-  * @ojfragment linkDropContext - context object for the node drop used by dnd.drop.link callbacks
-  * @memberof oj.ojDiagram
-  */
+/**
+ * <ul>
+ *   <li>x {number}: x-coordinate value of the drop in the component coordinate system.</li>
+ *   <li>y {number}: y-coordinate value of the drop in the component coordinate system.</li>
+ *   <li>linkContext {Object}: the JSON version of the data context for the target link.</li>
+ * </ul>
+ * <i> Note: </i>When the dropped items are originated from Diagram, the x, y coordinates represent the upper left corner of the dropped content.
+ * @ojfragment linkDropContext - context object for the node drop used by dnd.drop.link callbacks
+ * @memberof oj.ojDiagram
+ */
 
- /**
-  * <ul>
-  *   <li>x {number}: x-coordinate value of the drop in the component coordinate system.</li>
-  *   <li>y {number}: y-coordinate value of the drop in the component coordinate system.</li>
-  *   <li>nodeX {number}: x-coordinate value of the drop in the target node coordinate system.</li>
-  *   <li>nodeY {number}: y-coordinate value of the drop in the target node coordinate system.</li>
-  *   <li>dataContext {Object}: the JSON version of the data context for the link end node.</li>
-  *   <li>portElement {Element}: DOM element that represents a port that received drop event.</li>
-  * </ul>
-  * @ojfragment portDropContext - context object for the node drop used by dnd.drop.link callbacks
-  * @memberof oj.ojDiagram
-  */
+/**
+ * <ul>
+ *   <li>x {number}: x-coordinate value of the drop in the component coordinate system.</li>
+ *   <li>y {number}: y-coordinate value of the drop in the component coordinate system.</li>
+ *   <li>nodeX {number}: x-coordinate value of the drop in the target node coordinate system.</li>
+ *   <li>nodeY {number}: y-coordinate value of the drop in the target node coordinate system.</li>
+ *   <li>dataContext {Object}: the JSON version of the data context for the link end node.</li>
+ *   <li>portElement {Element}: DOM element that represents a port that received drop event.</li>
+ * </ul>
+ * @ojfragment portDropContext - context object for the node drop used by dnd.drop.link callbacks
+ * @memberof oj.ojDiagram
+ */
 
 // TYPEDEFS
 /**
@@ -4719,7 +4785,7 @@ setDefaultOptions({
  * @property {number} index The zero-based index of the current link.
  * @property {any} key The key of the current link.
  */
- /**
+/**
  * @typedef {Object} oj.ojDiagram.NodeTemplateContext
  * @property {Object} data The data object for the current node.
  * @property {number} index The zero-based index of the current node.
@@ -5322,7 +5388,6 @@ setDefaultOptions({
  * @deprecated This attribute is deprecated, use the svgStyle attribute instead.
  */
 
-
 // SubId Locators **************************************************************
 
 /**
@@ -5337,7 +5402,7 @@ setDefaultOptions({
  * var nodes = $( ".selector" ).ojDiagram( "getNodeBySubId", {'subId': 'oj-diagram-node', 'index': 0} );
  */
 
- /**
+/**
  * <p>Sub-ID for diagram link at a specified index.</p>
  *
  * @property {number} index
@@ -5379,7 +5444,7 @@ setDefaultOptions({
  * @memberof oj.ojDiagram
  */
 
- // Slots
+// Slots
 
 /**
  * <p> The <code class="prettyprint">nodeTemplate</code> slot is used to specify the template for creating each diagram node. The slot content must be a single &lt;template> element.
@@ -5831,7 +5896,7 @@ setDefaultOptions({
  * @export
  */
 
- /**
+/**
  * The function retrieves nearest common ancestor container for two nodes.
  * @method getCommonContainer
  * @instance
@@ -5845,7 +5910,7 @@ setDefaultOptions({
  * @export
  */
 
- /**
+/**
  * Gets event data object. Values can be retrieved from the object using 'type' and 'data' keys.
  * @method getEventData
  * @instance
@@ -6087,7 +6152,6 @@ setDefaultOptions({
  * @memberof oj.DvtDiagramLayoutContextLink
  * @export
  */
-
 
 /**
  * Set the angle of rotation of the link label, relative to the label

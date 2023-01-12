@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -95,7 +95,7 @@ ListViewDndContext.prototype._getDropOptions = function () {
  */
 ListViewDndContext.prototype.IsItemReOrdering = function () {
   var option = this._getDndOptions('reorder');
-  return (option === 'enabled');
+  return option === 'enabled';
 };
 
 /**
@@ -178,9 +178,11 @@ ListViewDndContext.prototype._getSelectedItems = function (excludeContextMenuIte
   }
 
   // if the rightclicked item is not in the selection, we will only use that item.
-  if (!excludeContextMenuItem &&
-      this.m_contextMenuItem != null &&
-      this.m_contextMenuItem.length > 0) {
+  if (
+    !excludeContextMenuItem &&
+    this.m_contextMenuItem != null &&
+    this.m_contextMenuItem.length > 0
+  ) {
     // verify contextMenuItem is still valid
     if (!this.listview.element.get(0).contains(this.m_contextMenuItem.get(0))) {
       this.m_contextMenuItem = null;
@@ -226,12 +228,15 @@ ListViewDndContext.prototype.itemRenderComplete = function (elem, context) {
 /** ****************************** Mouse down/up, touch start/end helpers ***********************************************/
 ListViewDndContext.prototype._unsetSelectionDraggable = function () {
   if (this.m_draggableSelection) {
-    $.each(this.m_draggableSelection, function (index, elem) {
-      $(elem).removeClass('oj-draggable');
-      if (this.listview._isTouchSupport()) {
-        $(elem).removeAttr('draggable');
-      }
-    }.bind(this));
+    $.each(
+      this.m_draggableSelection,
+      function (index, elem) {
+        $(elem).removeClass('oj-draggable');
+        if (this.listview._isTouchSupport()) {
+          $(elem).removeAttr('draggable');
+        }
+      }.bind(this)
+    );
   }
 };
 
@@ -250,7 +255,7 @@ ListViewDndContext.prototype.setSelectionDraggable = function () {
   var selection = this.listview.GetOption('selection');
   for (var i = 0; i < selection.length; i++) {
     var elem = this.listview.FindElementByKey(selection[i]);
-        // make sure item is focusable also
+    // make sure item is focusable also
     if (elem != null && !this.listview.SkipFocus($(elem))) {
       elems.push(elem);
       $(elem).addClass('oj-draggable');
@@ -368,7 +373,7 @@ ListViewDndContext.prototype._unsetDraggable = function (target) {
  * @return {boolean} true if dnd is in progress, false otherwise
  */
 ListViewDndContext.prototype.isDndInProgress = function () {
-  return (this.m_dragImage != null);
+  return this.m_dragImage != null;
 };
 /** ********************************* Drag and drop handler ***********************************************/
 /**
@@ -432,6 +437,7 @@ ListViewDndContext.prototype._setDragItemDataTransfer = function (event, dataTyp
     var data = this.listview._getDataForItem(items[i]);
     if (data) {
       // for Elements we'll use the the inner HTML in data transfer
+      // prettier-ignore
       if (data.innerHTML && data.tagName && data.tagName === 'LI') { // @HTMLUpdateOK
         itemDataArray.push(data.innerHTML); // @HTMLUpdateOK
       } else {
@@ -458,22 +464,21 @@ ListViewDndContext.prototype._setDragItemDataTransfer = function (event, dataTyp
  * @param {Array.<Object>} itemDataArray  array of row data
  * @private
  */
-ListViewDndContext.prototype._setDragItemData =
-  function (nativeEvent, dataTypes, itemDataArray) {
-    var dataTransfer = nativeEvent.dataTransfer;
-    var jsonStr = JSON.stringify(itemDataArray);
+ListViewDndContext.prototype._setDragItemData = function (nativeEvent, dataTypes, itemDataArray) {
+  var dataTransfer = nativeEvent.dataTransfer;
+  var jsonStr = JSON.stringify(itemDataArray);
 
-    if (typeof dataTypes === 'string') {
-      dataTransfer.setData(dataTypes, jsonStr);
-    } else if (dataTypes) {
-      for (var i = 0; i < dataTypes.length; i++) {
-        dataTransfer.setData(dataTypes[i], jsonStr);
-      }
+  if (typeof dataTypes === 'string') {
+    dataTransfer.setData(dataTypes, jsonStr);
+  } else if (dataTypes) {
+    for (var i = 0; i < dataTypes.length; i++) {
+      dataTransfer.setData(dataTypes[i], jsonStr);
     }
+  }
 
-    // tag datatransfer so we could determine whether this is dnd within same listview
-    dataTransfer.setData(this.GetDragSourceType(), this.listview.element.get(0).id);
-  };
+  // tag datatransfer so we could determine whether this is dnd within same listview
+  dataTransfer.setData(this.GetDragSourceType(), this.listview.element.get(0).id);
+};
 
 /**
  * Creates the drag image element
@@ -485,12 +490,17 @@ ListViewDndContext.prototype._createDragImage = function () {
   dragImage.classList.add(this.GetDragImageClass());
 
   if (this.listview.ojContext._IsCustomElement()) {
-    var predefined = ['oj-component', 'oj-complete'].concat(this.listview.GetContainerStyleClass().split(' '));
-    this.listview.GetRootElement().get(0).classList.forEach(function (name) {
-      if (predefined.indexOf(name) === -1) {
-        dragImage.classList.add(name);
-      }
-    });
+    var predefined = ['oj-component', 'oj-complete'].concat(
+      this.listview.GetContainerStyleClass().split(' ')
+    );
+    this.listview
+      .GetRootElement()
+      .get(0)
+      .classList.forEach(function (name) {
+        if (predefined.indexOf(name) === -1) {
+          dragImage.classList.add(name);
+        }
+      });
   }
 
   return dragImage;
@@ -498,17 +508,21 @@ ListViewDndContext.prototype._createDragImage = function () {
 
 ListViewDndContext.prototype._calculateOffset = function (elem) {
   var style = window.getComputedStyle(elem);
-  var offset = parseFloat(style.marginLeft) + parseFloat(style.marginRight) +
-    parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) +
-    parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+  var offset =
+    parseFloat(style.marginLeft) +
+    parseFloat(style.marginRight) +
+    parseFloat(style.paddingLeft) +
+    parseFloat(style.paddingRight) +
+    parseFloat(style.borderLeftWidth) +
+    parseFloat(style.borderRightWidth);
 
   return offset;
 };
 
 ListViewDndContext.prototype._calculateAffordanceOffset = function (item, affordance) {
   if (this.m_cachedOffset == null) {
-    this.m_cachedOffset = Math.max(0, affordance.offsetLeft - item.offsetLeft)
-      + (affordance.offsetWidth / 2);
+    this.m_cachedOffset =
+      Math.max(0, affordance.offsetLeft - item.offsetLeft) + affordance.offsetWidth / 2;
 
     var itemOffset = this._calculateOffset(item);
     var listviewOffset = this._calculateOffset(this.listview.getListContainer().get(0));
@@ -553,12 +567,11 @@ ListViewDndContext.prototype.SetDragItemImage = function (nativeEvent, items) {
       offsetTop = items[i].offsetTop - minTop;
       var offsetWidth = items[i].offsetWidth;
       clone = $(items[i].cloneNode(true));
-      clone.removeClass('oj-selected oj-focus oj-hover')
-        .css({
-          position: 'absolute',
-          top: offsetTop,
-          width: offsetWidth
-        });
+      clone.removeClass('oj-selected oj-focus oj-hover').css({
+        position: 'absolute',
+        top: offsetTop,
+        width: offsetWidth
+      });
       if (!isCardLayout) {
         clone.addClass('oj-listview-item-drag-image');
       }
@@ -573,25 +586,25 @@ ListViewDndContext.prototype.SetDragItemImage = function (nativeEvent, items) {
       }
 
       left = this._calculateAffordanceOffset(items[0], target);
-      top = offsetTop + (target.offsetHeight / 2);
+      top = offsetTop + target.offsetHeight / 2;
     } else {
       left = Math.max(0, nativeEvent.offsetX);
       top = Math.max(0, nativeEvent.offsetY);
     }
 
     clone = $(items[0].cloneNode(true));
-    clone.removeClass('oj-selected oj-focus oj-hover')
-      .addClass('oj-drag');
+    clone.removeClass('oj-selected oj-focus oj-hover').addClass('oj-drag');
     if (!isCardLayout) {
       clone.addClass('oj-listview-item-drag-image');
     }
 
     dragImage = $(this._createDragImage());
-    dragImage.css({
-      width: this.GetDragImageWidth(items[0]),
-      height: items[0].offsetHeight * 2
-    })
-    .append(clone); // @HTMLUpdateOK
+    dragImage
+      .css({
+        width: this.GetDragImageWidth(items[0]),
+        height: items[0].offsetHeight * 2
+      })
+      .append(clone); // @HTMLUpdateOK
   }
 
   // copying class might not be sufficient since it could be on the custom element root
@@ -711,11 +724,9 @@ ListViewDndContext.prototype._handleDragEnd = function (event) {
   // remove css class and make sure it's visible again
   if (this.m_currentDragItem != null && this.m_dragItems != null) {
     // for drag affordance case
-    this.m_currentDragItem.find('.' + this.GetDragAffordanceClass())
-      .removeAttr('draggable');
+    this.m_currentDragItem.find('.' + this.GetDragAffordanceClass()).removeAttr('draggable');
 
-    this.m_currentDragItem.removeClass('oj-drag oj-draggable')
-      .removeAttr('draggable');
+    this.m_currentDragItem.removeClass('oj-drag oj-draggable').removeAttr('draggable');
 
     for (var i = 0; i < this.m_dragItems.length; i++) {
       var dragItem = this.m_dragItems[i];
@@ -759,7 +770,7 @@ ListViewDndContext.prototype._matchDragDataType = function (event) {
   var options = this._getDropOptions();
   if (options && options.dataTypes) {
     var allowedTypes = options.dataTypes;
-    var allowedTypeArray = (typeof allowedTypes === 'string') ? [allowedTypes] : allowedTypes;
+    var allowedTypeArray = typeof allowedTypes === 'string' ? [allowedTypes] : allowedTypes;
 
     // dragDataTypes can be either an array of strings (Chrome) or a
     // DOMStringList (Firefox and IE).  For cross-browser compatibility, use its
@@ -814,13 +825,11 @@ ListViewDndContext.prototype._createDropTarget = function (item) {
     var dropTarget;
     if (type === 'space') {
       dropTarget = $(item.get(0).cloneNode(false));
-      dropTarget.addClass('oj-drop')
-        .removeClass('oj-drag oj-draggable oj-hover oj-focus')
-        .css({
-          display: 'block',
-          height: item.outerHeight(),
-          width: item.outerWidth()
-        });
+      dropTarget.addClass('oj-drop').removeClass('oj-drag oj-draggable oj-hover oj-focus').css({
+        display: 'block',
+        height: item.outerHeight(),
+        width: item.outerWidth()
+      });
     } else if (type === 'line') {
       dropTarget = document.createElement('li');
       dropTarget.classList.add('oj-listview-drop-target');
@@ -836,7 +845,7 @@ ListViewDndContext.prototype._createDropTarget = function (item) {
       this.m_dropTargetElem.classList.remove('oj-drop');
     }
     this.m_dropTargetElem = elem;
-    var top = (elem.offsetTop + elem.offsetHeight) - this._getDropIndicatorHeight();
+    var top = elem.offsetTop + elem.offsetHeight - this._getDropIndicatorHeight();
     // if it's the last item and gridlines are visible, need to make an adjustment
     if (elem.nextElementSibling == null && this.listview._isGridlinesVisible()) {
       top -= 1;
@@ -877,7 +886,9 @@ ListViewDndContext.prototype._getDropIndicatorHeight = function () {
 ListViewDndContext.prototype._cleanupGroupItem = function () {
   // for group item
   if (this.m_currentDropItem != null && this.m_dropTargetIndex === -1) {
-    this.m_currentDropItem.children('.' + this.listview.getGroupItemStyleClass()).removeClass('oj-drop');
+    this.m_currentDropItem
+      .children('.' + this.listview.getGroupItemStyleClass())
+      .removeClass('oj-drop');
   }
 };
 
@@ -887,8 +898,10 @@ ListViewDndContext.prototype._cleanupGroupItem = function () {
  */
 ListViewDndContext.prototype._cleanupEmptyList = function () {
   // if it's drop on an empty list
-  if (this.m_currentDropItem != null &&
-      this.m_currentDropItem.hasClass(this.listview.getEmptyTextStyleClass())) {
+  if (
+    this.m_currentDropItem != null &&
+    this.m_currentDropItem.hasClass(this.listview.getEmptyTextStyleClass())
+  ) {
     this.m_currentDropItem.removeClass('oj-drop');
     this.m_currentDropItem.get(0).textContent = this.listview._getEmptyText();
   }
@@ -975,11 +988,10 @@ ListViewDndContext.prototype._setAccInfo = function (item, position) {
 ListViewDndContext.prototype._adjustGroupItemStyle = function () {
   // for touch we'll need to remove max height set
   if (this.m_maxHeightAdjusted == null && this.listview._isTouchSupport()) {
-    this.listview.element.find('ul.' +
-                               this.listview.getGroupStyleClass()).each(function () {
-                                 $(this).attr('oldMaxHeight', $(this).css('maxHeight').toString());
-                                 $(this).css('maxHeight', 10000);
-                               });
+    this.listview.element.find('ul.' + this.listview.getGroupStyleClass()).each(function () {
+      $(this).attr('oldMaxHeight', $(this).css('maxHeight').toString());
+      $(this).css('maxHeight', 10000);
+    });
 
     this.m_maxHeightAdjusted = 'adjusted';
   }
@@ -991,11 +1003,10 @@ ListViewDndContext.prototype._adjustGroupItemStyle = function () {
  */
 ListViewDndContext.prototype._restoreGroupItemStyle = function () {
   if (this.listview._isTouchSupport()) {
-    this.listview.element.find('ul.' +
-                               this.listview.getGroupStyleClass()).each(function () {
-                                 $(this).css('maxHeight', parseInt($(this).attr('oldMaxHeight'), 10));
-                                 $(this).removeAttr('oldMaxHeight');
-                               });
+    this.listview.element.find('ul.' + this.listview.getGroupStyleClass()).each(function () {
+      $(this).css('maxHeight', parseInt($(this).attr('oldMaxHeight'), 10));
+      $(this).removeAttr('oldMaxHeight');
+    });
   }
 
   this.m_maxHeightAdjusted = null;
@@ -1049,7 +1060,8 @@ ListViewDndContext.prototype._checkFirstItemDropTarget = function (item, dropTar
         // first item, but not in the top drop area
         this.m_dropPosition = 'after';
         // eslint-disable-next-line no-param-reassign
-        dropTarget.style.top = ((item.offsetTop + item.offsetHeight) - this._getDropIndicatorHeight()) + 'px';
+        dropTarget.style.top =
+          item.offsetTop + item.offsetHeight - this._getDropIndicatorHeight() + 'px';
       }
     } else if (this.m_firstDropTarget) {
       // not the first item, remove any first drop target artifacts
@@ -1066,8 +1078,12 @@ ListViewDndContext.prototype._checkFirstItemDropTarget = function (item, dropTar
  */
 ListViewDndContext.prototype._isDropOnDragItem = function (event, item) {
   // key equality test is fine if they are really from the same element reference
-  return this._matchDragDataType(event) && this.m_dragItems != null && this.m_dragItems.length >= 0
-    && this.m_dragItems[0].key === item.get(0).key;
+  return (
+    this._matchDragDataType(event) &&
+    this.m_dragItems != null &&
+    this.m_dragItems.length >= 0 &&
+    this.m_dragItems[0].key === item.get(0).key
+  );
 };
 
 /**
@@ -1093,15 +1109,17 @@ ListViewDndContext.prototype._handleDragOver = function (event) {
 
     // note drop is allowed in the case where reordering is enabled and drag source is itself, but only if there's no dragOver callback
     // to prevent the drop
-    if ((returnValue === -1 && this.IsItemReOrdering() && this.isDndInProgress()) ||
-        returnValue === false || event.isDefaultPrevented()) {
+    if (
+      (returnValue === -1 && this.IsItemReOrdering() && this.isDndInProgress()) ||
+      returnValue === false ||
+      event.isDefaultPrevented()
+    ) {
       dropTarget = this._createDropTarget(item);
 
       for (var i = 0; i < this.m_dragItems.length; i++) {
         // we have to override inline style instead of doing it inside style class since
         // custom style class could override it
-        $(this.m_dragItems[i]).addClass(this.GetDragItemClass())
-          .css('display', 'none');
+        $(this.m_dragItems[i]).addClass(this.GetDragItemClass()).css('display', 'none');
       }
 
       dropTarget.insertBefore(item); // @HTMLUpdateOK
@@ -1130,8 +1148,11 @@ ListViewDndContext.prototype._handleDragOver = function (event) {
 
       // note drop is allowed in the case where reordering is enabled and drag source is itself, but only if there's no dragOver callback
       // to prevent the drop
-      if ((returnValue === -1 && this.IsItemReOrdering() && this.isDndInProgress()) ||
-          returnValue === false || event.isDefaultPrevented()) {
+      if (
+        (returnValue === -1 && this.IsItemReOrdering() && this.isDndInProgress()) ||
+        returnValue === false ||
+        event.isDefaultPrevented()
+      ) {
         // if it is non-group item
         if (item.hasClass(this.listview.getItemStyleClass())) {
           this._cleanupGroupItem();
@@ -1208,8 +1229,12 @@ ListViewDndContext.prototype._isDndEventInElement = function (event, element) {
   var domEvent = event.originalEvent;
 
   // clientX and clientY are only available on the original DOM event
-  return (domEvent.clientX >= rect.left && domEvent.clientX < rect.right &&
-          domEvent.clientY >= rect.top && domEvent.clientY < rect.bottom);
+  return (
+    domEvent.clientX >= rect.left &&
+    domEvent.clientX < rect.right &&
+    domEvent.clientY >= rect.top &&
+    domEvent.clientY < rect.bottom
+  );
 };
 
 /**
@@ -1251,8 +1276,10 @@ ListViewDndContext.prototype._handleDragLeave = function (event) {
  * @private
  */
 ListViewDndContext.prototype._isEmptyItem = function (item) {
-  return item.hasClass(this.listview.getEmptyTextStyleClass()) ||
-    item.hasClass('oj-listview-no-data-item');
+  return (
+    item.hasClass(this.listview.getEmptyTextStyleClass()) ||
+    item.hasClass('oj-listview-no-data-item')
+  );
 };
 
 /**
@@ -1300,7 +1327,11 @@ ListViewDndContext.prototype._handleDrop = function (event) {
     // and items are copied to this.m_itemsDragged.
     ui.items = this.m_dragItems == null ? this.m_itemsDragged : this.m_dragItems;
 
-    this.listview.Trigger('reorder', event, this.CreateReorderPayload(ui.items, ui.position, ui.item));
+    this.listview.Trigger(
+      'reorder',
+      event,
+      this.CreateReorderPayload(ui.items, ui.position, ui.item)
+    );
 
     // the drop should be complete regardless the value of callback
     event.preventDefault();
@@ -1401,7 +1432,13 @@ ListViewDndContext.prototype._getDndContextMenuItemSelector = function () {
   var self = this;
   var query = '';
   var commands = [
-    'cut', 'copy', 'paste', 'paste-before', 'paste-after', 'pasteBefore', 'pasteAfter'
+    'cut',
+    'copy',
+    'paste',
+    'paste-before',
+    'paste-after',
+    'pasteBefore',
+    'pasteAfter'
   ];
 
   if (!this.m_dndMenuItemSelector) {
@@ -1571,10 +1608,11 @@ ListViewDndContext.prototype._handlePaste = function (event, item, position) {
   $(this.m_clipboard).removeClass(this.GetCutStyleClass());
 
   // fire reorder event
-  this.listview.Trigger('reorder', event,
-                        this.CreateReorderPayload(this.m_clipboard,
-                                                  position,
-                                                  /** @type {Element} */ (item.get(0))));
+  this.listview.Trigger(
+    'reorder',
+    event,
+    this.CreateReorderPayload(this.m_clipboard, position, /** @type {Element} */ (item.get(0)))
+  );
 
   // clear the clipboard
   this.m_clipboard = null;
@@ -1647,8 +1685,7 @@ ListViewDndContext.prototype._appendToMenuContainer = function (menuContainer, c
     }
 
     // show the menu item
-    menuContainer.find("[data-oj-command='" + command + "']")
-      .removeClass('oj-disabled');
+    menuContainer.find("[data-oj-command='" + command + "']").removeClass('oj-disabled');
   }
 };
 
@@ -1680,8 +1717,7 @@ ListViewDndContext.prototype._handleContextMenuBeforeOpen = function (event, ui)
 
   // disable all menu items first, needs to be done even if there's no default menu items since
   // there could be one from before refresh
-  menuContainer.find(this._getDndContextMenuItemSelector())
-    .addClass('oj-disabled');
+  menuContainer.find(this._getDndContextMenuItemSelector()).addClass('oj-disabled');
 
   if (item == null || this.m_menuItemsSet == null || this.m_menuItemsSet.length === 0) {
     // refresh to take effect
@@ -1725,9 +1761,11 @@ ListViewDndContext.prototype.HandleKeyDown = function (event) {
   if (event.ctrlKey || event.metaKey) {
     var keyCode = event.keyCode;
     // quickly short circuit it if it's not one of the supported keys
-    if (keyCode === ListViewDndContext.X_KEY ||
-        keyCode === ListViewDndContext.C_KEY ||
-        keyCode === ListViewDndContext.V_KEY) {
+    if (
+      keyCode === ListViewDndContext.X_KEY ||
+      keyCode === ListViewDndContext.C_KEY ||
+      keyCode === ListViewDndContext.V_KEY
+    ) {
       // capabilities depends on what's specified in context menu
       var contextMenu = this.listview.ojContext._GetContextMenu();
       if (contextMenu == null) {

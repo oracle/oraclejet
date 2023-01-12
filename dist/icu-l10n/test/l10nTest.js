@@ -1,19 +1,27 @@
 'use strict';
 const assert = require('assert');
 const path = require('path');
-const build = require('../Bundler');
+const { build, isNlsDir } = require('../Bundler');
 const fsx = require('fs-extra');
 const vm = require('vm');
 const glob = require('glob');
+
+const rootDir = path.join(__dirname, 'resources/nls');
+const outputRoot = path.resolve(__dirname, 'built');
 
 function runTestCases(extractBundle) {
   describe('Bundle files', () => {
     it('ignores unsupported types', () => {
       const bundle = extractBundle(`app-strings.js`);
       assert(Object.keys(bundle).indexOf('@count') === -1, '@count should not be in bundle');
+      assert(Object.keys(bundle).indexOf('@another_button') === -1, '@another_button should not be in bundle');
       assert(
         Object.keys(bundle).indexOf('@@x-base-bundle') === -1,
         '@@x-base-bundle should not be in bundle'
+      );
+      assert(
+        Object.keys(bundle).indexOf('@@locale') === -1,
+        '@@locale should not be in bundle'
       );
     });
 
@@ -24,6 +32,10 @@ function runTestCases(extractBundle) {
         bundle.pageIntro({ name: 'Dashboard' }),
         'To change the content of this section, you will make edits to the Dashboard file located in the /js/views folder.'
       );
+      assert.equal(bundle.alpha(), 'Alpha');
+      assert.equal(bundle.beta(), 'Beta');
+      assert.equal(bundle.delta(), 'Delta');
+      assert.equal(bundle.epsilon(), 'Epsilon');
     });
 
     it('creates the azb bundle in Azerbaijani', () => {
@@ -143,13 +155,14 @@ function runTestCases(extractBundle) {
     const bundle = extractBundle('app-strings.js');
 
     it('formats date/time', () => {
+      const testDate = new Date('2022-09-29 07:25 GMT');
       assert.equal(
         bundle.dateFormat({
-          date_time: new Date('2022-09-29 07:25 MDT'),
+          date_time: testDate,
           item: 'an alien',
           planet: 5
         }),
-        'At 25 past 07 on September 29, there was an alien on planet 5.'
+        'At 25 past, on September 29, there was an alien on planet 5.'
       );
     });
 
@@ -176,20 +189,18 @@ function runTestCases(extractBundle) {
   });
 }
 
-const outputRoot = path.resolve(__dirname, 'built');
-
 describe('TS output', () => {
   const outDir = path.resolve(outputRoot, 'ts');
   beforeAll(() => {
     fsx.removeSync(outDir);
     build({
-      rootDir: `${__dirname}/resources/nls`,
+      rootDir,
       bundleName: 'app-strings.json',
       locale: 'en-US',
       outDir
     });
     build({
-      rootDir: `${__dirname}/resources/nls`,
+      rootDir,
       bundleName: 'app-strings-x.json',
       locale: 'en-US',
       outDir
@@ -202,40 +213,43 @@ describe('TS output', () => {
 });
 
 /**
- * Read contents of ES6 file and convert to CommonJS export for Node testing
+ * Read contents of ESM file and convert to CommonJS export for Node testing
  * @param {string} outDir
  * @param {string} filePath
  */
 function extractEsmBundle(outDir, filepath) {
   const bundleContents = fsx.readFileSync(path.join(outDir, filepath)).toString();
-  const script = new vm.Script(bundleContents.replace(/export default/g, 'extracted ='));
+  const script = new vm.Script(
+    bundleContents.replace(/export default/g, '_default =').replace(/export const/, '')
+  );
   const context = vm.createContext({});
   script.runInContext(context);
-  return context.extracted;
+  return {
+    default: context._default,
+    ...context
+  };
 }
 
 describe('ESM default export', () => {
   const outDir = path.resolve(outputRoot, 'esm');
 
-  beforeAll(() => {
-    fsx.removeSync(outDir);
-    build({
-      rootDir: `${__dirname}/resources/nls`,
-      bundleName: 'app-strings.json',
-      locale: 'en-US',
-      outDir,
-      module: 'esm'
-    });
-    build({
-      rootDir: `${__dirname}/resources/nls`,
-      bundleName: 'app-strings-x.json',
-      locale: 'en-US',
-      outDir,
-      module: 'esm'
-    });
+  fsx.removeSync(outDir);
+  build({
+    rootDir,
+    bundleName: 'app-strings.json',
+    locale: 'en-US',
+    outDir,
+    module: 'esm'
+  });
+  build({
+    rootDir,
+    bundleName: 'app-strings-x.json',
+    locale: 'en-US',
+    outDir,
+    module: 'esm'
   });
 
-  runTestCases((fp) => extractEsmBundle(outDir, fp));
+  runTestCases((fp) => extractEsmBundle(outDir, fp).default);
 });
 
 describe('AMD default export', () => {
@@ -268,22 +282,20 @@ describe('AMD default export', () => {
     return rb;
   }
 
-  beforeAll(() => {
-    fsx.removeSync(outDir);
-    build({
-      rootDir: `${__dirname}/resources/nls`,
-      bundleName: 'app-strings.json',
-      locale: 'en-US',
-      outDir,
-      module: 'amd'
-    });
-    build({
-      rootDir: `${__dirname}/resources/nls`,
-      bundleName: 'app-strings-x.json',
-      locale: 'en-US',
-      outDir,
-      module: 'amd'
-    });
+  fsx.removeSync(outDir);
+  build({
+    rootDir,
+    bundleName: 'app-strings.json',
+    locale: 'en-US',
+    outDir,
+    module: 'amd'
+  });
+  build({
+    rootDir,
+    bundleName: 'app-strings-x.json',
+    locale: 'en-US',
+    outDir,
+    module: 'amd'
   });
 
   runTestCases(extractBundle);
@@ -291,27 +303,30 @@ describe('AMD default export', () => {
 
 describe('Extra locales', () => {
   const outDir = path.resolve(outputRoot, 'extra');
-  beforeAll(() => {
-    fsx.removeSync(outDir);
-    build({
-      rootDir: `${__dirname}/resources/nls`,
-      bundleName: 'app-strings.json',
-      locale: 'en-US',
-      outDir,
-      module: 'esm',
-      supportedLocales: 'de,de-DE,fr-FR,ru,ru-RU'
-    });
-    build({
-      rootDir: `${__dirname}/resources/nls`,
-      bundleName: 'app-strings-x.json',
-      locale: 'en-US',
-      outDir,
-      module: 'esm',
-      supportedLocales: 'de,de-DE,fr-FR,ru,ru-RU'
-    });
+  const additionalLocales = ['de', 'de-DE', 'fr-FR', 'ru', 'ru-RU'];
+  const allLocales = [
+    ...new Set(fsx.readdirSync(rootDir).filter(isNlsDir).concat(additionalLocales).sort())
+  ];
+
+  fsx.removeSync(outDir);
+  build({
+    rootDir,
+    bundleName: 'app-strings.json',
+    locale: 'en-US',
+    outDir,
+    module: 'esm',
+    additionalLocales
+  });
+  build({
+    rootDir,
+    bundleName: 'app-strings-x.json',
+    locale: 'en-US',
+    outDir,
+    module: 'esm',
+    additionalLocales
   });
 
-  const extractBundle = (fp) => extractEsmBundle(outDir, fp);
+  const extractBundle = (fp) => extractEsmBundle(outDir, fp).default;
   runTestCases(extractBundle);
 
   it('creates the de bundle in English', () => {
@@ -327,5 +342,10 @@ describe('Extra locales', () => {
   it('creates the fr-FR bundle in English', () => {
     const bundle = extractBundle('fr-FR/app-strings.js');
     assert.equal(bundle.welcome(), 'Welcome');
+  });
+
+  it('exports the list of supported locales', () => {
+    const supportedLocales = extractBundle('supportedLocales.js');
+    assert.deepEqual(supportedLocales, allLocales);
   });
 });

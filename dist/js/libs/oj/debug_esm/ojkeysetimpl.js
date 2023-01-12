@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -29,7 +29,7 @@ var KeySetImpl = function (initialValues) {
    * @return {boolean} true if the specified key is contained in this set, false otherwise.
    */
   this.has = function (key) {
-    return (this.get(key) !== this.NOT_A_KEY);
+    return this.get(key) !== this.NOT_A_KEY;
   };
 
   /**

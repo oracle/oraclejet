@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -144,8 +144,7 @@ NumberRangeValidator.prototype.Init = function (options) {
   if (options) {
     this._min = options.min;
     this._max = options.max;
-    this._converter =
-     ConverterUtils.getConverterInstance(options.converter);
+    this._converter = ConverterUtils.getConverterInstance(options.converter);
     this._hint = options.hint || {};
     this._customMessageSummary = options.messageSummary || {};
     this._customMessageDetail = options.messageDetail || {};
@@ -210,44 +209,51 @@ NumberRangeValidator.prototype.validate = function (value) {
     // be the messageDetail.exact message, like "Enter the number 1"
     if (max !== null && min !== null && min === max) {
       params = { value: value, num: maxStr };
-      detail = messageDetailExact ?
-        translations.applyParameters(messageDetailExact, params) :
-        translations.getTranslatedString('oj-validator.range.number.messageDetail.exact', params);
+      detail = messageDetailExact
+        ? translations.applyParameters(messageDetailExact, params)
+        : translations.getTranslatedString('oj-validator.range.number.messageDetail.exact', params);
       // if number is greater than max, the summary may say "The number is too high"
       if (numberValue > max) {
-        summary = messageSummaryRangeOverflow ||
-          translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeOverflow');
+        summary =
+          messageSummaryRangeOverflow ||
+          translations.getTranslatedString(
+            'oj-validator.range.number.messageSummary.rangeOverflow'
+          );
       } else if (numberValue < min) {
-      // if number is less than min, the summary may say "The number is too low"
-        summary = messageSummaryRangeOverflow ?
-          messageSummaryRangeUnderflow :
-          translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeUnderflow');
+        // if number is less than min, the summary may say "The number is too low"
+        summary = messageSummaryRangeOverflow
+          ? messageSummaryRangeUnderflow
+          : translations.getTranslatedString(
+              'oj-validator.range.number.messageSummary.rangeUnderflow'
+            );
       }
     } else if (max !== null && numberValue > max) {
       // Next check if we have a max, and the number we are validating is greater than the max
       // throw an error,
       // like "The number is too high." and "The number must be less than or equal to {max}"
       params = { value: value, max: maxStr };
-      summary = messageSummaryRangeOverflow ||
+      summary =
+        messageSummaryRangeOverflow ||
         translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeOverflow');
-      detail = messageDetailRangeOverflow ?
-        translations.applyParameters(messageDetailRangeOverflow, params) :
-        translations.getTranslatedString(
-          'oj-validator.range.number.messageDetail.rangeOverflow',
-          params
-        );
+      detail = messageDetailRangeOverflow
+        ? translations.applyParameters(messageDetailRangeOverflow, params)
+        : translations.getTranslatedString(
+            'oj-validator.range.number.messageDetail.rangeOverflow',
+            params
+          );
     } else {
       // Else the number we are validating is less than the min, throw an error,
       // like "The number is too low." and "The number must be greater than or equal to {min}"
       params = { value: value, min: minStr };
-      summary = messageSummaryRangeUnderflow ||
+      summary =
+        messageSummaryRangeUnderflow ||
         translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeUnderflow');
-      detail = messageDetailRangeUnderflow ?
-        translations.applyParameters(messageDetailRangeUnderflow, params) :
-        translations.getTranslatedString(
-          'oj-validator.range.number.messageDetail.rangeUnderflow',
-          params
-        );
+      detail = messageDetailRangeUnderflow
+        ? translations.applyParameters(messageDetailRangeUnderflow, params)
+        : translations.getTranslatedString(
+            'oj-validator.range.number.messageDetail.rangeUnderflow',
+            params
+          );
     }
     return [summary, detail];
   };
@@ -285,17 +291,20 @@ NumberRangeValidator.prototype.getHint = function () {
       if (min !== max) {
         // if hintInRange is specified (validator's hint.inRange option is set),
         // use that string, else use the default.
-        hint = (hintInRange ?
-                translations.applyParameters(hintInRange, { min: minStr, max: maxStr }) :
-                translations.getTranslatedString('oj-validator.range.number.hint.inRange',
-                                                 { min: minStr, max: maxStr }));
+        hint = hintInRange
+          ? translations.applyParameters(hintInRange, { min: minStr, max: maxStr })
+          : translations.getTranslatedString('oj-validator.range.number.hint.inRange', {
+              min: minStr,
+              max: maxStr
+            });
       } else {
         // if hintExact is specified (validator's hint.exact option is set),
         // use that string, else use the default.
-        hint = (hintExact ?
-                translations.applyParameters(hintExact, { num: minStr }) :
-                translations.getTranslatedString('oj-validator.range.number.hint.exact',
-                                                 { num: minStr }));
+        hint = hintExact
+          ? translations.applyParameters(hintExact, { num: minStr })
+          : translations.getTranslatedString('oj-validator.range.number.hint.exact', {
+              num: minStr
+            });
       }
     } else if (min !== null) {
       // else if min is specified, the hint may say something like "Enter a value
@@ -303,20 +312,18 @@ NumberRangeValidator.prototype.getHint = function () {
 
       // if hintMinimum is specified (validator's hint.min option is set),
       // use that string, else use the default.
-      hint = (hintMinimum ?
-              translations.applyParameters(hintMinimum, { min: minStr }) :
-              translations.getTranslatedString('oj-validator.range.number.hint.min',
-                                               { min: minStr }));
+      hint = hintMinimum
+        ? translations.applyParameters(hintMinimum, { min: minStr })
+        : translations.getTranslatedString('oj-validator.range.number.hint.min', { min: minStr });
     } else if (max !== null) {
       // else if max is specified, the hint may say something like "Enter a value
       // less than or equal to {max}".
 
       // if hintMaximum is specified (validator's hint.max option is set),
       // use that string, else use the default.
-      hint = (hintMaximum ?
-              translations.applyParameters(hintMaximum, { max: maxStr }) :
-              translations.getTranslatedString('oj-validator.range.number.hint.max',
-                                               { max: maxStr }));
+      hint = hintMaximum
+        ? translations.applyParameters(hintMaximum, { max: maxStr })
+        : translations.getTranslatedString('oj-validator.range.number.hint.max', { max: maxStr });
     }
     return hint;
   };

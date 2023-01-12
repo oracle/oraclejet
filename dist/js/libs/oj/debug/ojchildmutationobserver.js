@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -31,8 +31,9 @@ define(['ojs/ojcustomelement', 'ojs/ojcustomelement-utils'], function (ojcustome
   const ChildMutationObserver = function (element, handler) {
     var _element = element;
     var _handler = handler;
-    var _trackOption = ojcustomelementUtils.CustomElementUtils.isElementRegistered(element.tagName) ?
-      ojcustomelementUtils.CustomElementUtils.getElementState(element).getTrackChildrenOption() : 'none';
+    var _trackOption = ojcustomelementUtils.CustomElementUtils.isElementRegistered(element.tagName)
+      ? ojcustomelementUtils.CustomElementUtils.getElementState(element).getTrackChildrenOption()
+      : 'none';
     /**
      * Filter DOM mutations.
      * @param {Array} mutations all DOM mutations for the element
@@ -43,14 +44,17 @@ define(['ojs/ojcustomelement', 'ojs/ojcustomelement-utils'], function (ojcustome
 
       for (var i = 0; i < mutations.length; i++) {
         var mutation = mutations[i];
-        var testElement = mutation.type === 'childList' ? mutation.target : mutation.target.parentNode;
+        var testElement =
+          mutation.type === 'childList' ? mutation.target : mutation.target.parentNode;
         while (testElement) {
           if (testElement === _element) {
             // the mutation is relevant - push it to the array and stop the search
             filteredMutations.push(mutation);
             testElement = null;
-          } else if (_trackOption === 'nearestCustomElement'
-                && !ojcustomelementUtils.ElementUtils.isValidCustomElementName(testElement.localName)) {
+          } else if (
+            _trackOption === 'nearestCustomElement' &&
+            !ojcustomelementUtils.ElementUtils.isValidCustomElementName(testElement.localName)
+          ) {
             // we search for the nearest custom element, the mutation might be relevant, walk the DOM up to find out
             testElement = testElement.parentNode;
           } else {
@@ -80,8 +84,12 @@ define(['ojs/ojcustomelement', 'ojs/ojcustomelement-utils'], function (ojcustome
        */
       observe: function () {
         if (_trackOption !== 'none') {
-          _mutationObserver.observe(_element,
-            { attributes: true, childList: true, subtree: true, characterData: true });
+          _mutationObserver.observe(_element, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+            characterData: true
+          });
         }
       },
       /**

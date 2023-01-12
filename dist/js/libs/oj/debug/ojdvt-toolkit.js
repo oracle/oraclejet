@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -256,8 +256,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     if (!Agent._bInitialized) {
       Agent._bRtl =
         document && document.documentElement ? document.documentElement.dir == 'rtl' : false;
-      Agent._bTouchDevice =
-        (Agent.os === 'ios' || Agent.os === 'android');
+      Agent._bTouchDevice = Agent.os === 'ios' || Agent.os === 'android';
       Agent._devicePixelRatio =
         window && window.devicePixelRatio != null ? window.devicePixelRatio : 1;
       // Don't initialize again
@@ -3859,8 +3858,15 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       } else if (radius != 'auto') {
         var split = radius.trim().split(/\s+/);
         if (split.length == 1) {
-          topLeftX = topRightX = bottomRightX = bottomLeftX = topLeftY = topRightY = bottomRightY = bottomLeftY =
-            split[0];
+          topLeftX =
+            topRightX =
+            bottomRightX =
+            bottomLeftX =
+            topLeftY =
+            topRightY =
+            bottomRightY =
+            bottomLeftY =
+              split[0];
         } else if (split.length == 2) {
           topLeftX = bottomRightX = topLeftY = bottomRightY = split[0];
           topRightX = bottomLeftX = topRightY = bottomLeftY = split[1];
@@ -4203,36 +4209,46 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
             i += 1;
           } while (!isNaN(aCmds[i + 1]));
           break;
-          case 'a':
-            bRel = true;
-          case 'A':
-            do {
-              var rx = aCmds[i + 1];
-              var ry = aCmds[i + 2];
-              var xRotation = aCmds[i + 3];
-              var largeArcFlag = aCmds[i + 4];
-              var sweepFlag = aCmds[i + 5];
-              var endX = aCmds[i + 6];
-              var endY = aCmds[i + 7];
+        case 'a':
+          bRel = true;
+        case 'A':
+          do {
+            var rx = aCmds[i + 1];
+            var ry = aCmds[i + 2];
+            var xRotation = aCmds[i + 3];
+            var largeArcFlag = aCmds[i + 4];
+            var sweepFlag = aCmds[i + 5];
+            var endX = aCmds[i + 6];
+            var endY = aCmds[i + 7];
 
-              if (bRel) {
-                endX += xSubPath;
-                endY += ySubPath;
-              }
+            if (bRel) {
+              endX += xSubPath;
+              endY += ySubPath;
+            }
 
-              var arcDims = PathUtils._getArcDims(xSubPath, ySubPath, rx, ry, xRotation, largeArcFlag, sweepFlag, endX, endY);
-              aPos[j++] = arcDims[0];
-              aPos[j++] = arcDims[1];
-              aPos[j++] = arcDims[2];
-              aPos[j++] = arcDims[3];
-              iMulti+=2;
+            var arcDims = PathUtils._getArcDims(
+              xSubPath,
+              ySubPath,
+              rx,
+              ry,
+              xRotation,
+              largeArcFlag,
+              sweepFlag,
+              endX,
+              endY
+            );
+            aPos[j++] = arcDims[0];
+            aPos[j++] = arcDims[1];
+            aPos[j++] = arcDims[2];
+            aPos[j++] = arcDims[3];
+            iMulti += 2;
 
-              xSubPath = endX;
-              ySubPath = endY;
+            xSubPath = endX;
+            ySubPath = endY;
 
-              i += 7;
-            } while (!isNaN(aCmds[i + 1]));
-            break;
+            i += 7;
+          } while (!isNaN(aCmds[i + 1]));
+          break;
         case 'z':
         case 'Z':
           break;
@@ -4492,16 +4508,36 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {number} endY y coordinate for the arc end
    * @return {array} arc bounds represented by x,y for the top left and bottom right points
    */
-  PathUtils._getArcDims = function (startX, startY, rx, ry, xrotatation, largeArcFlag, sweepFlag, endX, endY) {
-    let arc = PathUtils._convertArc(startX, startY, rx, ry, xrotatation, largeArcFlag, sweepFlag, endX, endY);
+  PathUtils._getArcDims = function (
+    startX,
+    startY,
+    rx,
+    ry,
+    xrotatation,
+    largeArcFlag,
+    sweepFlag,
+    endX,
+    endY
+  ) {
+    let arc = PathUtils._convertArc(
+      startX,
+      startY,
+      rx,
+      ry,
+      xrotatation,
+      largeArcFlag,
+      sweepFlag,
+      endX,
+      endY
+    );
 
     // get updated radii
     rx = arc[2];
     ry = arc[3];
 
     const start = new Point(startX, startY); // start point
-    const end = new Point(endX, endY);      // end point
-    const c =  new Point(arc[0], arc[1]);   // ellipse center
+    const end = new Point(endX, endY); // end point
+    const c = new Point(arc[0], arc[1]); // ellipse center
     // find ellipse edges
     const edges = [
       new Point(c.x + rx, c.y),
@@ -4520,14 +4556,17 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     // calculated by _convertArc() method.
     // Find base angle using start/end points
     const baseAngle = PathUtils._getClockwiseAngle(start, end);
-    const range = sweepFlag === 0 ?
-      [baseAngle, baseAngle + Math.PI] :
-      [baseAngle + Math.PI, baseAngle + 2*Math.PI];
+    const range =
+      sweepFlag === 0
+        ? [baseAngle, baseAngle + Math.PI]
+        : [baseAngle + Math.PI, baseAngle + 2 * Math.PI];
 
     edges.forEach((pt) => {
-      var angle =  PathUtils._getClockwiseAngle(start, pt);
-      if (angle >= range[0] && angle <= range[1] ||
-        angle + 2*Math.PI >= range[0] && angle + 2*Math.PI <= range[1]) {
+      var angle = PathUtils._getClockwiseAngle(start, pt);
+      if (
+        (angle >= range[0] && angle <= range[1]) ||
+        (angle + 2 * Math.PI >= range[0] && angle + 2 * Math.PI <= range[1])
+      ) {
         points.push(pt);
       }
     });
@@ -4582,14 +4621,14 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    *   arc extent in degrees
    *   x-axis rotation angle in degrees
    */
-  PathUtils._convertArc = function(x0, y0, rx, ry, xAngle, largeArcFlag, sweepFlag, x, y) {
+  PathUtils._convertArc = function (x0, y0, rx, ry, xAngle, largeArcFlag, sweepFlag, x, y) {
     // Step 1: compute half the distance between the current
     // and final point.
     var dx2 = (x0 - x) / 2.0;
     var dy2 = (y0 - y) / 2.0;
 
     // convert angle from degrees to radians
-    var xAngle = Math.PI * (xAngle % 360.0) / 180.0;
+    var xAngle = (Math.PI * (xAngle % 360.0)) / 180.0;
     var cosXAngle = Math.cos(xAngle);
     var sinXAngle = Math.sin(xAngle);
 
@@ -4597,8 +4636,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     // of the line joining arc start (x0,y0) to arc end (x,y), followed by a rotation
     // to line up coordinate axes with the axes of the ellipse.
     // See implementation details at https://www.w3.org/TR/SVG/implnote.html
-    var x1 = (cosXAngle * dx2 + sinXAngle * dy2);
-    var y1 = (-sinXAngle * dx2 + cosXAngle * dy2);
+    var x1 = cosXAngle * dx2 + sinXAngle * dy2;
+    var y1 = -sinXAngle * dx2 + cosXAngle * dy2;
 
     // Ensure radii are large enough
     rx = Math.abs(rx);
@@ -4619,11 +4658,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     // Step 2: Compute (cx1, cy1)
     // The cx1,cy1 are center coordinates of the image of the ellipse.
     // See implementation details at https://www.w3.org/TR/SVG/implnote.html
-    var sign = (largeArcFlag == sweepFlag) ? -1 : 1;
-    var sq = ((rxSq * rySq) - (rxSq * y1Sq) - (rySq * x1Sq)) /
-      ((rxSq * y1Sq) + (rySq * x1Sq));
-    sq = (sq < 0) ? 0 : sq;
-    var coef = (sign * Math.sqrt(sq));
+    var sign = largeArcFlag == sweepFlag ? -1 : 1;
+    var sq = (rxSq * rySq - rxSq * y1Sq - rySq * x1Sq) / (rxSq * y1Sq + rySq * x1Sq);
+    sq = sq < 0 ? 0 : sq;
+    var coef = sign * Math.sqrt(sq);
     var cx1 = coef * ((rx * y1) / ry);
     var cy1 = coef * -((ry * x1) / rx);
 
@@ -4640,28 +4678,25 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var vy = (-y1 - cy1) / ry;
     var p, n;
     // Compute the angle start
-    n = Math.sqrt((ux * ux) + (uy * uy));
+    n = Math.sqrt(ux * ux + uy * uy);
     p = ux; // (1 * ux) + (0 * uy)
-    sign = (uy < 0) ? -1.0 : 1.0;
-    var angleStart = 180.0 * (sign * Math.acos(p / n)) / Math.PI;
+    sign = uy < 0 ? -1.0 : 1.0;
+    var angleStart = (180.0 * (sign * Math.acos(p / n))) / Math.PI;
 
     // Compute the angle extent
     n = Math.sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy));
     p = ux * vx + uy * vy;
-    sign = (ux * vy - uy * vx < 0) ? -1.0 : 1.0;
-    var angleExtent = 180.0 * (sign * Math.acos(p / n)) / Math.PI;
-    if(!sweepFlag && angleExtent > 0)
-    {
+    sign = ux * vy - uy * vx < 0 ? -1.0 : 1.0;
+    var angleExtent = (180.0 * (sign * Math.acos(p / n))) / Math.PI;
+    if (!sweepFlag && angleExtent > 0) {
       angleExtent -= 360.0;
-    }
-    else if (sweepFlag && angleExtent < 0)
-    {
+    } else if (sweepFlag && angleExtent < 0) {
       angleExtent += 360.0;
     }
     angleExtent %= 360;
     angleStart %= 360;
 
-    return( [cx, cy, rx, ry, angleStart, angleExtent, xAngle] );
+    return [cx, cy, rx, ry, angleStart, angleExtent, xAngle];
   };
 
   /*---------------------------------------------------------------------------*/
@@ -4846,7 +4881,6 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       // use path instead of two lines because it's more compact (uses one
       // DOM element instead of two)
       elem = document.createElementNS(ToolkitUtils.SVG_NS, 'path');
-
 
       ToolkitUtils.setAttrNullNS(elem, 'stroke', color);
       ToolkitUtils.setAttrNullNS(elem, STROKE_OPACITY, alpha);
@@ -5145,7 +5179,6 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @class
    */
   const AriaUtils = {
-
     ARIA_LABEL_STATE_DELIMITER: ', ',
     ARIA_LABEL_DESC_DELIMITER: '. ',
 
@@ -5524,7 +5557,11 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
         if (this._filter) {
           this.getCtx().appendDefs(this._filter);
           var filterId = ToolkitUtils.getAttrNullNS(this._filter, 'id');
-          ToolkitUtils.setAttrNullNS(this.getOuterElem(), 'filter', ToolkitUtils.getUrlById(filterId));
+          ToolkitUtils.setAttrNullNS(
+            this.getOuterElem(),
+            'filter',
+            ToolkitUtils.getUrlById(filterId)
+          );
         }
       }
     },
@@ -6238,7 +6275,12 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     AddElemListener: function (type, listener, options) {
       ToolkitUtils.addDomEventListener(this.getElem(), type, listener, options);
       if (type == TouchEvent.TOUCHEND) {
-        ToolkitUtils.addDomEventListener(this.getElem(), TouchEvent.TOUCHCANCEL, listener, options);
+        ToolkitUtils.addDomEventListener(
+          this.getElem(),
+          TouchEvent.TOUCHCANCEL,
+          listener,
+          options
+        );
       }
     },
 
@@ -8195,7 +8237,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     /**
      * Helper method that adds a class to DOM element.
      */
-    addClassName : function (className) {
+    addClassName: function (className) {
       ToolkitUtils.addClassName(this._elem, className);
       this._className = ToolkitUtils.getAttrNullNS(this._elem, 'class');
     },
@@ -8203,7 +8245,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     /**
      * Helper method that removes a class from DOM element.
      */
-    removeClassName : function (className) {
+    removeClassName: function (className) {
       ToolkitUtils.removeClassName(this._elem, className);
       this._className = ToolkitUtils.getAttrNullNS(this._elem, 'class');
     },
@@ -8382,7 +8424,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   /**
    * Array of SVG attributes that should be transferred to the outer element.
    */
-  DisplayableUtils.ATTRS_TRANSFERABLE_TO_OUTER = [/* 'filter', */'clip-path'];
+  DisplayableUtils.ATTRS_TRANSFERABLE_TO_OUTER = [/* 'filter', */ 'clip-path'];
 
   /*
    * Temporarily add the display object to the stage to get dimensions.
@@ -8408,12 +8450,11 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     return dim;
   };
 
-
   /**
    * Returns the dimensions of an element by calling getBBox.
    * @return {Rectangle}
    */
-   DisplayableUtils.getSvgDimensions = function (elem) {
+  DisplayableUtils.getSvgDimensions = function (elem) {
     try {
       var bbox = elem.getBBox();
     } catch (e) {
@@ -9423,7 +9464,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {function} context shortDesc Function that returns the context object
    * @return {String}
    */
-   Displayable.generateAriaLabel = function (shortDesc, states, context) {
+  Displayable.generateAriaLabel = function (shortDesc, states, context) {
     var desc = [];
     var hasStates = states && states.length > 0;
 
@@ -9443,8 +9484,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {function} context shortDesc Function that returns the context object
    * @return {String}
    */
-   Displayable.resolveShortDesc = function (shortDesc, context) {
-    if (typeof shortDesc === "function") {
+  Displayable.resolveShortDesc = function (shortDesc, context) {
+    if (typeof shortDesc === 'function') {
       return shortDesc(context());
     }
     return shortDesc;
@@ -9667,7 +9708,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var idx = this._findChild(obj);
 
     if (idx > 0) {
-      o = this._arList[idx-1];
+      o = this._arList[idx - 1];
     }
 
     return o;
@@ -9883,7 +9924,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     return this.ConvertCoordSpaceRect(localDims, targetCoordinateSpace);
   };
 
-  Container.prototype.CanOptimizeDimensions = function() {
+  Container.prototype.CanOptimizeDimensions = function () {
     return true;
   };
 
@@ -9897,7 +9938,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     return this._getDimensionsHelper((child) => child.GetDimensionsWithStroke(this));
   };
 
-  Container.prototype._getDimensionsHelper = function(childVisitor) {
+  Container.prototype._getDimensionsHelper = function (childVisitor) {
     //a pure container has no shape of its own, so calculate the
     //dims for all child shapes in the subtree rooted at this container
     //build an initial array of all direct children of this container
@@ -10318,7 +10359,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
       // Use JQuery .remove() to cleanup DOM to prevent memory leaks
       // when using JET knockout templates
-      if (typeof $ != 'undefined' && this._bCleanupChildren) {
+      if (typeof $ != 'undefined' && this._tooltipTemplateCleanup) {
+        this._tooltipTemplateCleanup();
+        this._tooltipTemplateCleanup = null;
         $(tooltip).children().remove();
       }
     }
@@ -10355,8 +10398,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   HtmlTooltipManager.prototype._getTooltipContainer = function () {
     if (tooltipContainer) {
       return tooltipContainer;
-    }
-    else {
+    } else {
       tooltipContainer = document.getElementById('_dvtTooltip_shared_container');
       if (!tooltipContainer) {
         var tooltipContainerDiv = document.createElement('div');
@@ -10416,7 +10458,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     } else {
       // Tooltips fade-in and remove themselves after a delay.
       this._timerIsRunning = true;
-      this._showTimerId = window.setTimeout( //@HTMLUpdateOK
+      // prettier-ignore
+      this._showTimerId = window.setTimeout( // @HTMLUpdateOK
         this._handleShowTimer.bind(this),
         HtmlTooltipManager._SHOW_DELAY
       );
@@ -10571,6 +10614,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var tooltipElem = this.getTooltipElem();
 
     // Clearing out the previous tooltip content
+    if (this._tooltipTemplateCleanup) {
+      this._tooltipTemplateCleanup();
+      this._tooltipTemplateCleanup = null;
+    }
     while (tooltipElem.hasChildNodes()) tooltipElem.removeChild(tooltipElem.firstChild);
 
     dataContext['parentElement'] = tooltipElem;
@@ -10588,10 +10635,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
     if (tooltipElem.style.borderColor) this._isCustomBorderColor = true;
 
-    // Set a flag for whether to cleanup tooltip elements when hideTooltip() is called by checking for the
-    // _templateCleanup callback which is added to the dataContext after the renderer is  called on the JET side.
-    // We should only cleanup children for knockout templates which will be recreated on the next show call.
-    this._bCleanupChildren = dataContext['_templateCleanup'] != null;
+    // Get a tooltip template cleanup from the dataContext after the renderer is  called on the JET side.
+    this._tooltipTemplateCleanup = dataContext['_tooltipTemplateCleanup'];
 
     // If the tooltipElem has been populated by the app and a null returned, don't overwrite it.
     if (!tooltip && tooltipElem.hasChildNodes()) return true;
@@ -10977,8 +11022,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       if (this._feedbackClassName) {
         this.addClassName(OJ_SELECTED);
         this.InnerShape.addClassName(OJ_SELECTED);
-      }
-      else if (this.isHoverEffectShown()) {
+      } else if (this.isHoverEffectShown()) {
         this.CreateSelectedHoverStrokes();
         this.InnerShape.setStroke(this.SelectedHoverInnerStroke);
         this.setStroke(this.SelectedHoverOuterStroke);
@@ -10996,8 +11040,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
           this.InnerShape.setStroke(this.HoverInnerStroke);
           this.setStroke(this.HoverOuterStroke);
         }
-      }
-      else {
+      } else {
         this.removeChild(this.InnerShape);
         this.setStroke(this.OriginalStroke);
       }
@@ -11031,8 +11074,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     if (this._feedbackClassName) {
       this.addClassName('oj-hover');
       this.InnerShape.addClassName('oj-hover');
-    }
-    else if (this.isSelected()) {
+    } else if (this.isSelected()) {
       this.CreateSelectedHoverStrokes();
       this.InnerShape.setStroke(this.SelectedHoverInnerStroke);
       this.setStroke(this.SelectedHoverOuterStroke);
@@ -11077,7 +11119,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     } else {
       this.removeChild(this.InnerShape);
       this.setStroke(this.OriginalStroke);
-  }
+    }
   };
 
   /**
@@ -11286,7 +11328,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       var isWordSpacingNormal = TextUtils._isNormalSpacing(wordSpacing);
       var isFontVariantNumericNormal = fontVariantNumeric === 'normal';
       if (isLetterSpacingNormal && isWordSpacingNormal && isFontVariantNumericNormal) {
-        var spacingChanged = TextUtils._wordSpacing || TextUtils._letterSpacing || TextUtils._fontVariantNumeric;
+        var spacingChanged =
+          TextUtils._wordSpacing || TextUtils._letterSpacing || TextUtils._fontVariantNumeric;
         TextUtils._storeCanvasContext(spacingChanged);
         TextUtils._setSpacing(null, null, null);
         width = TextUtils._getCanvasTextWidth(context, textString, cssStyle);
@@ -11294,7 +11337,11 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
         // Properties that are supported in <canvas> elements by browser
         // Chrome and Safari supports only support fontVariantNumeric
         // Firefox supports none
-        if ((Agent.browser === 'safari' || Agent.browser === 'chrome') && isLetterSpacingNormal && isWordSpacingNormal) {
+        if (
+          (Agent.browser === 'safari' || Agent.browser === 'chrome') &&
+          isLetterSpacingNormal &&
+          isWordSpacingNormal
+        ) {
           if (TextUtils._fontVariantNumeric != fontVariantNumeric) {
             TextUtils._clearCanvasContext();
             TextUtils._setSpacing(wordSpacing, letterSpacing, fontVariantNumeric);
@@ -11303,7 +11350,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
           TextUtils._attachCanvas(context);
           width = TextUtils._getCanvasTextWidth(context, textString, cssStyle);
         } else {
-          var text = new (TextUtils._rep_text_constructor)(context, textString);
+          var text = new TextUtils._rep_text_constructor(context, textString);
           text.setCSSStyle(cssStyle);
           // Add to the stage to obtain correct measurements
           var stage = text.getCtx().getStage();
@@ -11393,7 +11440,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   TextUtils._createCacheKey = function (context, cssStyle, textString) {
     var cssStyleKey = cssStyle != null ? cssStyle.hashCodeForTextMeasurement() : '';
     var text = textString ? textString : '';
-    return text + cssStyleKey + context.letterSpacing + context.wordSpacing + context.fontVariantNumeric;
+    return (
+      text + cssStyleKey + context.letterSpacing + context.wordSpacing + context.fontVariantNumeric
+    );
   };
 
   /**
@@ -11481,7 +11530,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     if (Agent.browser === 'ie' || Agent.browser === 'edge') {
       text.setY(centerY);
       text.alignMiddle();
-    } else text.setY(centerY - (text.getDimensions().h / 2));
+    } else text.setY(centerY - text.getDimensions().h / 2);
   };
 
   /**
@@ -11586,7 +11635,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var cssStyleKey = TextUtils._createCacheKey(context, cssStyle);
     var cachedDims = TextUtils._cachedRepTextDimensions[cssStyleKey];
     if (cachedDims == null) {
-      var text = new (TextUtils._rep_text_constructor)(context, TextUtils.REPRESENTATIVE_TEXT);
+      var text = new TextUtils._rep_text_constructor(context, TextUtils.REPRESENTATIVE_TEXT);
       text.alignAuto();
       text.setCSSStyle(cssStyle);
 
@@ -11620,7 +11669,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       if (valign == TextUtils.V_ALIGN_TOP) {
         return -cachedDims.y;
       } else if (valign == TextUtils.V_ALIGN_MIDDLE) {
-        return -cachedDims.y - (cachedDims.h / 2);
+        return -cachedDims.y - cachedDims.h / 2;
       } else if (valign == TextUtils.V_ALIGN_CENTRAL) {
         return -cachedDims.y / 2;
       } else if (valign == TextUtils.V_ALIGN_BOTTOM) {
@@ -11999,7 +12048,12 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       // : When html dir="rtl", Webkit and FF25+ treat the right side of the text as the start, and the left
       // side of the text as end.  Our API always treats the left side as start, so we need to adjust based on agent.
       var bAdjust = this._needsTextAnchorAdjustment();
-      ToolkitUtils.setAttrNullNS(this.getElem(), OutputText.TEXT_ANCHOR, bAdjust ? 'end' : 'start', 'start');
+      ToolkitUtils.setAttrNullNS(
+        this.getElem(),
+        OutputText.TEXT_ANCHOR,
+        bAdjust ? 'end' : 'start',
+        'start'
+      );
     }
   };
 
@@ -12033,7 +12087,12 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       // : When html dir="rtl", Webkit and FF25+ treat the right side of the text as the start, and the left
       // side of the text as end.  Our API always treats the left side as start, so we need to adjust based on agent.
       var bAdjust = this._needsTextAnchorAdjustment();
-      ToolkitUtils.setAttrNullNS(this.getElem(), OutputText.TEXT_ANCHOR, bAdjust ? 'start' : 'end', 'start');
+      ToolkitUtils.setAttrNullNS(
+        this.getElem(),
+        OutputText.TEXT_ANCHOR,
+        bAdjust ? 'start' : 'end',
+        'start'
+      );
     }
   };
 
@@ -13359,7 +13418,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var mouseMoved;
     var clickStaticCallback = function (event) {
       // Prevent click from occurring (e.g. to prevent clearing selection)
-        event.stopPropagation();
+      event.stopPropagation();
     };
 
     var dragStartStaticCallback = function (dvtEvent) {
@@ -13376,7 +13435,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
           // Solution is to set passive to false to allow event.preventDefault().
           // This should be safe, because we always want to prevent page scrolling when dragging, so having passive true
           // gives us no performance benefits.
-          document.addEventListener('touchmove', dragMoveStaticCallback, { capture: true, passive: false });
+          document.addEventListener('touchmove', dragMoveStaticCallback, {
+            capture: true,
+            passive: false
+          });
           document.addEventListener('touchend', dragEndStaticCallback, true);
         } else {
           document.addEventListener('mousemove', dragMoveStaticCallback, true);
@@ -13413,10 +13475,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
         if (Agent.browser === 'firefox' && mouseMoved && !bPreventClick) {
           // FF fires a spurious click event here, need to stop it from propagating
-          document.addEventListener('click', clickStaticCallback, {capture: true, once: true});
+          document.addEventListener('click', clickStaticCallback, { capture: true, once: true });
           // Just to be extra paranoid, remove the listener if it doesn't trigger
-          setTimeout(function() {
-            document.removeEventListener('click', clickStaticCallback, {capture: true, once: true});
+          setTimeout(function () {
+            document.removeEventListener('click', clickStaticCallback, { capture: true, once: true });
           }, 0);
         }
         mouseMoved = false;
@@ -14817,7 +14879,6 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     return ret;
   };
 
-
   /**
    * @param {array} selection The array of currently selected ids for the component.
    * @param {boolean} bComplete true if the interaction is complete.
@@ -14982,12 +15043,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {string} end
    * @return {object}
    **/
-   EventFactory.newTimelineMoveEvent = function (
-    itemContexts,
-    value,
-    start,
-    end
-  ) {
+  EventFactory.newTimelineMoveEvent = function (itemContexts, value, start, end) {
     var ret = EventFactory.newEvent('move');
     ret['itemContexts'] = itemContexts;
     ret['value'] = value;
@@ -15147,7 +15203,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {number}  zoom zoom value
    * @return {object}
    */
-    EventFactory.newPanEvent = function (subtype, newX, newY, oldX, oldY, animator, zoom) {
+  EventFactory.newPanEvent = function (subtype, newX, newY, oldX, oldY, animator, zoom) {
     var ret = EventFactory.newEvent('dvtPan');
     ret.subtype = subtype;
     ret.newX = newX;
@@ -15172,7 +15228,15 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {boolean} panAndZoom if true, both zoom + pan changes are occurring
    * @return {object}
    */
-  EventFactory.newZoomEvent = function (subtype, newZoom, oldZoom, animator, centerPoint, pos, panAndZoom) {
+  EventFactory.newZoomEvent = function (
+    subtype,
+    newZoom,
+    oldZoom,
+    animator,
+    centerPoint,
+    pos,
+    panAndZoom
+  ) {
     var ret = EventFactory.newEvent('dvtZoom');
     ret.subtype = subtype;
     ret.newZoom = newZoom;
@@ -15973,7 +16037,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       ) {
         var range = lineHeight * (lineCount - 1);
         adjustment = lineHeight * i - range / 2;
-      } else if (this._vertAlign == MultilineText.V_ALIGN_BOTTOM){
+      } else if (this._vertAlign == MultilineText.V_ALIGN_BOTTOM) {
         adjustment = -lineHeight * (lineCount - i - 1);
       }
 
@@ -16072,10 +16136,11 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
         // String doesn't fit at all, remove from parent and return
         this.getParent().removeChild(this);
         return false;
-      } else if (!this._textInstance.isTruncated()){ // No truncation needed, text fits in one line.
+      } else if (!this._textInstance.isTruncated()) {
+        // No truncation needed, text fits in one line.
         return true;
-      }
-      else if (!this.isWrapEnabled()) { // Accept text that fits partially and turn on truncated flag
+      } else if (!this.isWrapEnabled()) {
+        // Accept text that fits partially and turn on truncated flag
         this._bTruncated = true;
         return true;
       }
@@ -16447,11 +16512,11 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
   /**
    * Simple logical object for dvt text that supports tooltip and keyboard focus.
-    * @param {Container} The container of the element associated with the peer.
-    * @param {MultilineText | OutputText} text The text element associated with the
-    * @param {string} tooltip The tooltip to display.
-    * @param {string} datatip The datatip to display.
-    * @param {string} datatipColor The border color of the datatip.
+   * @param {Container} The container of the element associated with the peer.
+   * @param {MultilineText | OutputText} text The text element associated with the
+   * @param {string} tooltip The tooltip to display.
+   * @param {string} datatip The datatip to display.
+   * @param {string} datatipColor The border color of the datatip.
    * @param {object=} params Optional object containing additional parameters for use by component.
    * @class
    * @constructor
@@ -16918,8 +16983,13 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {dvt.CSSStyle} style The CSS style to apply to the empty text
    * @return {MultilineText}
    */
-  BaseComponent.prototype.renderEmptyText =
-    function (container, textStr, space, eventManager, style) {
+  BaseComponent.prototype.renderEmptyText = function (
+    container,
+    textStr,
+    space,
+    eventManager,
+    style
+  ) {
     // Create and position the text
     var text = new MultilineText(
       container.getCtx(),
@@ -16955,7 +17025,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * Specifies whether there is a context menu defined on the component
    * @param {boolean} hasMenu
    */
-   BaseComponent.prototype.setContextMenu = function (hasMenu) {
+  BaseComponent.prototype.setContextMenu = function (hasMenu) {
     this._hasContextMenu = hasMenu;
   };
 
@@ -16963,7 +17033,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * Returns whether the component has a context menu
    * @return {boolean}
    */
-   BaseComponent.prototype.hasContextMenu = function () {
+  BaseComponent.prototype.hasContextMenu = function () {
     return this._hasContextMenu;
   };
 
@@ -17327,7 +17397,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     if (type == 'over') {
       // Highlight after the appropriate delay, based on whether we're already in highlight mode.
       var hoverDelay = this._bHighlightMode ? this._hoverDelay : initialHoverDelay;
-      this._hoverDelayCallback = setTimeout( //@HTMLUpdateOK
+      // prettier-ignore
+      this._hoverDelayCallback = setTimeout( // @HTMLUpdateOK
         this.GetRolloverCallback(event, objs, bAnyMatched, customAlpha),
         hoverDelay
       );
@@ -17342,7 +17413,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       var rolloutDelay = this._bHighlightMode
         ? this._hoverDelay
         : CategoryRolloverHandler._ROLLOUT_TIMEOUT;
-      this._hoverDelayCallback = setTimeout( //@HTMLUpdateOK
+      // prettier-ignore
+      this._hoverDelayCallback = setTimeout( // @HTMLUpdateOK
         this.GetRolloutCallback(event, objs, bAnyMatched, customAlpha),
         rolloutDelay
       );
@@ -17722,7 +17794,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       // attaching the dummy event listener to parent element to trigger wheel event
       // https://github.com/d3/d3/issues/3035
       if (Agent.browser === 'safari') {
-        this.getCtx()._parentDiv.addEventListener('wheel', () => { });
+        this.getCtx()._parentDiv.addEventListener('wheel', () => {});
       }
     }
 
@@ -18856,7 +18928,13 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var bSelectionChanged = false;
     var selectionHandler = this.getSelectionHandler(dlo);
     // If onlySelect is true and object already selected, don't process selection
-    if (selectionHandler && dlo && dlo.isSelectable && dlo.isSelectable() && !(onlySelect && dlo.isSelected())) {
+    if (
+      selectionHandler &&
+      dlo &&
+      dlo.isSelectable &&
+      dlo.isSelectable() &&
+      !(onlySelect && dlo.isSelected())
+    ) {
       // Process click immediately
       bSelectionChanged = selectionHandler.processClick(dlo, true);
       // If the selection has changed, fire an event
@@ -18964,9 +19042,12 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
         }
         if (!this._hideTooltipListener) {
           this._hideTooltipListener = this._keyboardHideTooltip.bind(this);
-          document.documentElement.addEventListener(KeyboardEvent.KEYDOWN, this._hideTooltipListener, { capture: true});
+          document.documentElement.addEventListener(
+            KeyboardEvent.KEYDOWN,
+            this._hideTooltipListener,
+            { capture: true }
+          );
         }
-
 
         this.TooltipLaunched(text, borderColor);
         this.DispatchElementEvent('tooltiplaunched');
@@ -18994,7 +19075,11 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
     this.TooltipHidden();
     if (this._hideTooltipListener) {
-      document.documentElement.removeEventListener(KeyboardEvent.KEYDOWN, this._hideTooltipListener, { capture: true});
+      document.documentElement.removeEventListener(
+        KeyboardEvent.KEYDOWN,
+        this._hideTooltipListener,
+        { capture: true }
+      );
       this._hideTooltipListener = null;
     }
   };
@@ -19957,15 +20042,14 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   EventManager.prototype.ShowRejectedDropEffect = function (event) {
     // subclasses should override
     // implemented temporary for  - theming is not implemented for charts dnd
-    this.ClearDropEffect(event);
+    this.ClearDropEffect();
   };
 
   /**
    * Clears all hover effects from drop targets.
-   * @param {dvt.BaseEvent} event
    * @protected
    */
-  EventManager.prototype.ClearDropEffect = function (event) {
+  EventManager.prototype.ClearDropEffect = function () {
     // subclasses should override
     return;
   };
@@ -19995,7 +20079,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
     if (!dropRejected && showEffect) this.ShowDropEffect(event);
     else if (dropRejected && showEffect) this.ShowRejectedDropEffect(event);
-    else this.ClearDropEffect(event);
+    else this.ClearDropEffect();
   };
 
   /**
@@ -24255,20 +24339,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       point = this._arPoints[this._arPoints.length - 1];
     }
 
-    this._animator.addProp(
-      Animator.TYPE_NUMBER,
-      obj,
-      obj.getTranslateX,
-      obj.setTranslateX,
-      point.x
-    );
-    this._animator.addProp(
-      Animator.TYPE_NUMBER,
-      obj,
-      obj.getTranslateY,
-      obj.setTranslateY,
-      point.y
-    );
+    this._animator.addProp(Animator.TYPE_NUMBER, obj, obj.getTranslateX, obj.setTranslateX, point.x);
+    this._animator.addProp(Animator.TYPE_NUMBER, obj, obj.getTranslateY, obj.setTranslateY, point.y);
 
     this._currIndex++;
   };
@@ -25832,26 +25904,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
   /** @const @private **/
   SimpleMarker._SHAPE_STAR_CMDS = [
-    -50,
-    -11.22,
-    -16.69,
-    -17.94,
-    0,
-    -47.55,
-    16.69,
-    -17.94,
-    50,
-    -11.22,
-    26.69,
-    13.8,
-    30.9,
-    47.56,
-    0,
-    33.42,
-    -30.9,
-    47.56,
-    -26.69,
-    13.8
+    -50, -11.22, -16.69, -17.94, 0, -47.55, 16.69, -17.94, 50, -11.22, 26.69, 13.8, 30.9, 47.56, 0,
+    33.42, -30.9, 47.56, -26.69, 13.8
   ];
 
   /**
@@ -27887,7 +27941,11 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @return {number} The animation duration.
    */
   BaseComponentDefaults.prototype.getAnimationDuration = function (options) {
-    return options['styleDefaults'] && options['styleDefaults']['animationDuration'] ? options['styleDefaults']['animationDuration'] : options['animationDuration'] ? options['animationDuration']: null;
+    return options['styleDefaults'] && options['styleDefaults']['animationDuration']
+      ? options['styleDefaults']['animationDuration']
+      : options['animationDuration']
+      ? options['animationDuration']
+      : null;
   };
 
   /**
@@ -28178,7 +28236,13 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {string} visibleScrolling String to define whether scrolling is enabled. Set to 'always' in redwood. Valid values are 'asNeeded', 'off' and 'always'
    * @param {boolean} isHorizontalScrolling True if this container scrolls horizontally
    */
-  const SimpleScrollableContainer = function (context, width, height, visibleScrolling, isHorizontalScrolling) {
+  const SimpleScrollableContainer = function (
+    context,
+    width,
+    height,
+    visibleScrolling,
+    isHorizontalScrolling
+  ) {
     SimpleScrollableContainer.superclass.Init.call(this, context);
     this._contentSize = isHorizontalScrolling ? width : height;
     this._width = width;
@@ -28225,7 +28289,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     if (this._isHorizontalScrolling) this._contentSize = size.w + size.x;
     else this._contentSize = size.h + size.y;
 
-    // TODO 
+    // TODO
     // - Support customization of scrollbar color, width, etc.
 
     if (this.hasScrollingContent()) {
@@ -29643,7 +29707,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {Boolean=} use2d Whether or not to use perpendicular direction when comparing distance between logical objects
    * @return {DvtKeyboardNavigable} The next navigable
    */
-   KeyboardHandler.getNextNavigable = function (
+  KeyboardHandler.getNextNavigable = function (
     currentNavigable,
     event,
     navigableItems,
@@ -29665,7 +29729,6 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var direction = event.keyCode;
     var direction2 = use2d && KeyboardHandler.getPerpendicularDirection(event.keyCode);
 
-
     // get the bounds of the current navigable
     var currentBounds = currentNavigable.getKeyboardBoundingBox(targetCoordinateSpace);
     var candidateBounds;
@@ -29680,7 +29743,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       if (ignoreBounds || KeyboardHandler._isInBounds(currentBounds, candidateBounds, direction)) {
         delta = KeyboardHandler._computeDelta(currentBounds, candidateBounds, direction);
         // using Math.abs in order to equally favor equidistance items in either positive or negative dir2
-        delta2 = use2d && Math.abs(KeyboardHandler._computeDelta(currentBounds, candidateBounds, direction2));
+        delta2 =
+          use2d &&
+          Math.abs(KeyboardHandler._computeDelta(currentBounds, candidateBounds, direction2));
 
         if (
           ((direction == KeyboardEvent.UP_ARROW || direction == KeyboardEvent.LEFT_ARROW) &&
@@ -29689,7 +29754,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
           ((direction == KeyboardEvent.DOWN_ARROW || direction == KeyboardEvent.RIGHT_ARROW) &&
             delta > 0 &&
             (!nextNavigable || delta < nextNavigableDelta)) ||
-          (use2d && (delta === nextNavigableDelta) && (delta2 < nextNavigableDelta2) && delta !== 0)
+          (use2d && delta === nextNavigableDelta && delta2 < nextNavigableDelta2 && delta !== 0)
         ) {
           nextNavigable = navigable;
           nextNavigableDelta = delta;

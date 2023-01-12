@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -385,18 +385,7 @@ class WaterfallLayoutContentHandler extends IteratingDataProviderContentHandler 
         return vnodes;
     }
     decorateItem(vnodes, key, x, y, initialFetch, visible) {
-        let vnode;
-        if (Array.isArray(vnodes)) {
-            for (const curr of vnodes) {
-                if (curr.props) {
-                    vnode = curr;
-                    break;
-                }
-            }
-        }
-        else {
-            vnode = vnodes;
-        }
+        let vnode = this.findItemVNode(vnodes);
         if (vnode != null) {
             vnode.key = key;
             vnode.props.role = 'gridcell';
@@ -407,11 +396,7 @@ class WaterfallLayoutContentHandler extends IteratingDataProviderContentHandler 
                 vnode.props['data-oj-key-type'] = 'number';
             }
             const styleClasses = this.getItemStyleClass(visible, x, y, this.newItemsTracker.has(key), initialFetch);
-            const classProp = vnode.props.class ? 'class' : 'className';
-            const currentClasses = vnode.props[classProp]
-                ? [vnode.props[classProp], ...styleClasses]
-                : styleClasses;
-            vnode.props[classProp] = currentClasses.join(' ');
+            this.setStyleClass(vnode, styleClasses);
             const inlineStyle = this.getItemInlineStyle(visible, x, y, initialFetch);
             vnode.props.style = vnode.props.style ? vnode.props.style + ';' + inlineStyle : inlineStyle;
         }
@@ -746,7 +731,8 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
                 }
             }
             else if (this.contentHandler) {
-                if (oj.Object.compareValues(this.props.scrollPosition, oldProps.scrollPosition)) {
+                if (this._isRenderedDataSizeChanged(oldState.renderedData, this.state.renderedData) ||
+                    oj.Object.compareValues(this.props.scrollPosition, oldProps.scrollPosition)) {
                     this.contentHandler.postRender();
                 }
             }
@@ -772,6 +758,12 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             if (this.props.data && oldProps.data == null) {
                 this._handleNewData();
             }
+            else if (this.state.skeletonPositions != null &&
+                !isNaN(this.state.skeletonPositions.end) &&
+                this.props.scrollPolicyOptions.scroller != null) {
+                const contentDiv = this._getContentDiv();
+                contentDiv.style.height = this.state.skeletonPositions.end + 'px';
+            }
         }
     }
     componentWillUnmount() {
@@ -786,6 +778,13 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         if (this.scrollListener && this._getScroller() != null) {
             this._getScroller().removeEventListener('scroll', this.scrollListener);
         }
+    }
+    _isRenderedDataSizeChanged(oldValue, newValue) {
+        if (oldValue === newValue ||
+            (oldValue && newValue && oldValue.value.data.length === newValue.value.data.length)) {
+            return false;
+        }
+        return true;
     }
     _delayShowSkeletons() {
         window.setTimeout(() => {
@@ -1190,7 +1189,7 @@ WaterfallLayout._CSS_Vars = {
     showIndicatorDelay: '--oj-private-core-global-loading-indicator-delay-duration',
     cardAnimationDelay: '--oj-private-animation-global-card-entrance-delay-increment'
 };
-WaterfallLayout.metadata = { "properties": { "data": { "type": "object|null" }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "Element|string|null" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "any" }, "offsetY": { "type": "number" } }, "writeback": true } }, "slots": { "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["scrollPosition"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "aria-labelledby"] } };
+WaterfallLayout._metadata = { "properties": { "data": { "type": "object" }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "string|Element" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "any" }, "offsetY": { "type": "number" } }, "writeback": true } }, "slots": { "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["scrollPosition"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "aria-labelledby"] } };
 WaterfallLayout = WaterfallLayout_1 = __decorate([
     customElement('oj-waterfall-layout')
 ], WaterfallLayout);

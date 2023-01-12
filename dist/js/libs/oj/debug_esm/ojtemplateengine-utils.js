@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -19,11 +19,25 @@ class PreactTemplate {
         if (row.nodes) {
             retrieveNodes = PreactTemplate._getRetrieveNodesFunction(row.nodes);
         }
-        render(vnode, parentStub);
+        const oldConsole = console.error;
+        console.error = (msg, optionalParams) => {
+            if (msg.indexOf('Improper nesting of table.') === -1) {
+                oldConsole.apply(console, arguments);
+            }
+        };
+        try {
+            render(vnode, parentStub);
+        }
+        finally {
+            console.error = oldConsole;
+        }
         const nodes = retrieveNodes();
         nodes.forEach((node) => {
             if (node.setAttribute) {
                 node.setAttribute('data-oj-vdom-template-root', '');
+            }
+            else {
+                node['_oj_vdom_template_root'] = true;
             }
             node[ROW] = row;
             node[CACHED_BINDING_PROVIDER] = 'preact';
@@ -45,6 +59,25 @@ class PreactTemplate {
             const index = template._cachedRows.indexOf(row);
             template._cachedRows.splice(index, 1);
         }
+    }
+    static findTemplateRoots(node) {
+        let vdomTemplateRoots = node && node.querySelectorAll
+            ? Array.from(node.querySelectorAll('[data-oj-vdom-template-root=""]'))
+            : [];
+        if (node && node.hasAttribute && node.hasAttribute('data-oj-vdom-template-root')) {
+            vdomTemplateRoots.push(node);
+        }
+        if (vdomTemplateRoots.length === 0) {
+            const treeWalker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+            let currentNode = treeWalker.currentNode;
+            while (currentNode) {
+                if (currentNode['_oj_vdom_template_root']) {
+                    vdomTemplateRoots.push(currentNode);
+                }
+                currentNode = treeWalker.nextNode();
+            }
+        }
+        return vdomTemplateRoots;
     }
     static _getInsertNodesFunction(oldNodes) {
         const lastNode = oldNodes[oldNodes.length - 1];

@@ -1,0 +1,144 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example drawer-layout/themes/redwood/oj-drawer-layout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+//--------------------------------------------------------
+// include dependencies
+@include module-include-once("common.drawerlayout") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-drawer-layout:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-drawer-hidden {
+    display: none !important;
+  }
+
+  .oj-drawer-disable-body-overflow {
+    overflow: hidden !important;
+  }
+
+  // Reflow mode uses flex position
+  oj-drawer-layout {
+    display: flex;
+  };
+
+  // Middle section should use all available space (width)
+  .oj-drawer-layout-middle-section {
+    flex-grow: 1;
+    display: flex; // Has flex column layout inside
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  // Main content should use all available space (height)
+  .oj-drawer-layout-main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+  // Reflow mode
+  .oj-drawer-reflow-wrapper {
+    display: block;
+    flex: 0 0 auto;
+    background: var(--oj-drawer-overlay-bg-color);
+  };
+
+  // To support height: 100% set by user on a slot,
+  // all parents up to limiting one must have height: 100% set too.
+  .oj-drawer-reflow-wrapper .oj-drawer-reflow {
+    height: 100%;
+  }
+
+  // Divider
+  .oj-drawer-reflow-wrapper.oj-drawer-reflow.oj-drawer-start {
+    @include oj-ltr() {
+      border-right: 1px solid var(--oj-drawer-reflow-divider-color);
+    }
+    @include oj-rtl() {
+      border-left: 1px solid var(--oj-drawer-reflow-divider-color);
+    }
+  }
+  .oj-drawer-reflow-wrapper.oj-drawer-reflow.oj-drawer-end {
+    @include oj-ltr() {
+      border-left: 1px solid var(--oj-drawer-reflow-divider-color);
+    }
+    @include oj-rtl() {
+      border-right: 1px solid var(--oj-drawer-reflow-divider-color);
+    }
+  }
+  .oj-drawer-reflow-wrapper.oj-drawer-reflow.oj-drawer-bottom {
+    border-top: 1px solid var(--oj-drawer-reflow-divider-color);
+  }
+
+  // Common for Reflow and Overlay mode
+  .oj-drawer-reflow-wrapper.oj-drawer-reflow,
+  .oj-drawer-overlay {
+    overflow-y: auto;
+  }
+
+  .oj-drawer-layout-surrogate {
+    position: relative;
+    z-index: var(--oj-core-z-index-popup);
+  }
+
+  // Overlay mode
+  // Slots reparented to PopupService layer
+  .oj-drawer-layout-surrogate .oj-drawer-overlay {
+    position: absolute;
+    background: var(--oj-drawer-overlay-bg-color);
+  }
+
+  .oj-drawer-layout-surrogate .oj-drawer-start,
+  .oj-drawer-layout-surrogate .oj-drawer-end {
+    min-width: 320px;
+    max-width: 90vw;
+  }
+
+  // Max 100vh height for any screen size
+  .oj-drawer-layout-surrogate .oj-drawer-bottom {
+    max-height: 100vh;
+  }
+
+  // This media query is needed to make sure -webkit-fill-available
+  // gets applied on mobile safari only. It returns incorrect values in Chrome
+  @supports (-webkit-touch-callout: none) {
+    .oj-drawer-layout-surrogate .oj-drawer-bottom {
+      max-height: -webkit-fill-available;
+    }
+  }
+
+  .oj-drawer-layout-surrogate .oj-drawer-full-overlay.oj-drawer-start,
+  .oj-drawer-layout-surrogate .oj-drawer-full-overlay.oj-drawer-end {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .oj-drawer-full-overlay.oj-drawer-bottom {
+    max-height: 100vh;
+  }
+
+  .oj-drawer-layout-surrogate .oj-drawer-overlay.oj-drawer-start {
+    @include oj-ltr() {
+      box-shadow: 8px 0 15px rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+    @include oj-rtl() {
+      box-shadow: -8px 0 15px rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+  }
+  .oj-drawer-layout-surrogate .oj-drawer-overlay.oj-drawer-end {
+    @include oj-ltr() {
+      box-shadow: -8px 0 15px rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+    @include oj-rtl() {
+      box-shadow: 8px 0 15px rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+  }
+  .oj-drawer-layout-surrogate .oj-drawer-overlay.oj-drawer-bottom {
+    box-shadow: 0 -8px 15px rgba(var(--oj-core-box-shadow-rgb), 0.05);
+  }
+}

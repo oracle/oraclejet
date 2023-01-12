@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -22,6 +22,7 @@ import 'ojs/ojpagingtabledatasource';
  * @hideconstructor
  * @ojtsignore
  * @see PagingDataGridDataSource
+ * @ojdeprecated {since: '14.0.0', description: 'PagingCellSet has been deprecated with PagingDataGridDataSource.'}
  */
 const PagingCellSet = function (cellSet, startIndex) {
   this.m_cellSet = cellSet;
@@ -150,9 +151,11 @@ const PagingDataGridDataSource = function (dataSource, options) {
     // we only support Array, Collection, or ko.observableArray. To
     // check for observableArray, we can't do instanceof check because it's
     // a function. So we just check if it contains a subscribe function.
-    throw new Message('Not a datagridatasource',
-                         'Not a datagridatasource',
-                         Message.SEVERITY_LEVEL.ERROR);
+    throw new Message(
+      'Not a datagridatasource',
+      'Not a datagridatasource',
+      Message.SEVERITY_LEVEL.ERROR
+    );
   }
   this.dataSource = dataSource;
   this._startIndex = 0;
@@ -161,9 +164,11 @@ const PagingDataGridDataSource = function (dataSource, options) {
 
 oj._registerLegacyNamespaceProp('PagingDataGridDataSource', PagingDataGridDataSource);
 // Subclass from oj.DataSource
-oj.Object.createSubclass(PagingDataGridDataSource,
-                         oj.DataGridDataSource,
-                         'oj.PagingDataGridDataSource');
+oj.Object.createSubclass(
+  PagingDataGridDataSource,
+  oj.DataGridDataSource,
+  'oj.PagingDataGridDataSource'
+);
 
 /**
  * Initializes the instance.
@@ -216,8 +221,11 @@ PagingDataGridDataSource.prototype.setPage = function (value, options) {
   value = parseInt(value, 10);
 
   try {
-    PagingDataGridDataSource.superclass.handleEvent
-      .call(this, oj.PagingModel.EventType.BEFOREPAGE, { page: value, previousPage: this._page });
+    PagingDataGridDataSource.superclass.handleEvent.call(
+      this,
+      oj.PagingModel.EventType.BEFOREPAGE,
+      { page: value, previousPage: this._page }
+    );
   } catch (err) {
     return Promise.reject(err);
   }
@@ -231,14 +239,17 @@ PagingDataGridDataSource.prototype.setPage = function (value, options) {
   var self = this;
 
   return new Promise(function (resolve, reject) {
-    self._fetchInternal(options).then(function () {
-      resolve(null);
-    }, function (err) {
-      // restore old page
-      self._page = previousPage;
-      self._startIndex = self._page * self._pageSize;
-      reject(err);
-    });
+    self._fetchInternal(options).then(
+      function () {
+        resolve(null);
+      },
+      function (err) {
+        // restore old page
+        self._page = previousPage;
+        self._startIndex = self._page * self._pageSize;
+        reject(err);
+      }
+    );
   });
 };
 
@@ -410,7 +421,9 @@ PagingDataGridDataSource.prototype.getCountPrecision = function (axis) {
  * @return {undefined}
  */
 PagingDataGridDataSource.prototype.fetchHeaders = function (
-  headerRange, callbacks, callbackObjects
+  headerRange,
+  callbacks,
+  callbackObjects
 ) {
   if (this._initialized == null) {
     if (callbacks != null && callbacks.success) {
@@ -428,10 +441,14 @@ PagingDataGridDataSource.prototype.fetchHeaders = function (
       callbacks: callbacks,
       callbackObjects: callbackObjects
     };
-    this.dataSource.fetchHeaders(headerRange, {
-      success: this._handleRowHeaderFetchSuccess.bind(this),
-      error: this._handleRowHeaderFetchError.bind(this)
-    }, callbackObjects);
+    this.dataSource.fetchHeaders(
+      headerRange,
+      {
+        success: this._handleRowHeaderFetchSuccess.bind(this),
+        error: this._handleRowHeaderFetchError.bind(this)
+      },
+      callbackObjects
+    );
   } else {
     this.dataSource.fetchHeaders(headerRange, callbacks, callbackObjects);
   }
@@ -446,7 +463,9 @@ PagingDataGridDataSource.prototype.fetchHeaders = function (
  * @memberof PagingDataGridDataSource
  */
 PagingDataGridDataSource.prototype._handleRowHeaderFetchSuccess = function (
-  headerSet, headerRange, endHeaderSet
+  headerSet,
+  headerRange,
+  endHeaderSet
 ) {
   var pagingHeaderSet;
   var pagingEndHeaderSet;
@@ -508,9 +527,7 @@ PagingDataGridDataSource.prototype._handleRowHeaderFetchError = function (error)
  * @instance
  * @memberof PagingDataGridDataSource
  */
-PagingDataGridDataSource.prototype.fetchCells = function (
-  cellRanges, callbacks, callbackObjects
-) {
+PagingDataGridDataSource.prototype.fetchCells = function (cellRanges, callbacks, callbackObjects) {
   if (this._initialized == null) {
     var emptyCellSet = {};
     emptyCellSet.getData = function () {
@@ -554,10 +571,14 @@ PagingDataGridDataSource.prototype.fetchCells = function (
       callbacks: callbacks,
       callbackObjects: callbackObjects
     };
-    this.dataSource.fetchCells(cellRanges, {
-      success: this._handleCellsFetchSuccess.bind(this),
-      error: this._handleCellsFetchError.bind(this)
-    }, callbackObjects);
+    this.dataSource.fetchCells(
+      cellRanges,
+      {
+        success: this._handleCellsFetchSuccess.bind(this),
+        error: this._handleCellsFetchError.bind(this)
+      },
+      callbackObjects
+    );
   }
 };
 
@@ -594,7 +615,7 @@ PagingDataGridDataSource.prototype._handleCellsFetchSuccess = function (cellSet,
   var callbackObject = this._pendingCellCallback.callbackObjects.success;
   this._pendingCellCallback = null;
 
-  this._endIndex = (this._startIndex + cellSet.getCount('row')) - 1;
+  this._endIndex = this._startIndex + cellSet.getCount('row') - 1;
   // tell PC fetchEnd
   this.handleEvent('sync', {
     data: new Array(cellSet.getCount('row')),
@@ -663,7 +684,7 @@ PagingDataGridDataSource.prototype.indexes = function (keys) {
  * @method
  * @instance
  * @memberof PagingDataGridDataSource
-*/
+ */
 PagingDataGridDataSource.prototype.getCapability = function (feature) {
   return this.dataSource.getCapability(feature);
 };
@@ -753,7 +774,7 @@ PagingDataGridDataSource.prototype.totalSizeConfidence = function () {
  * @method
  * @instance
  * @memberof PagingDataGridDataSource
-*/
+ */
 PagingDataGridDataSource.prototype.moveOK = function (rowToMove, referenceRow, position) {
   return this.dataSource.moveOK(rowToMove, referenceRow, position);
 };
@@ -778,7 +799,11 @@ PagingDataGridDataSource.prototype.moveOK = function (rowToMove, referenceRow, p
  * @return {undefined}
  */
 PagingDataGridDataSource.prototype.move = function (
-  rowToMove, referenceRow, position, callbacks, callbackObjects
+  rowToMove,
+  referenceRow,
+  position,
+  callbacks,
+  callbackObjects
 ) {
   this.dataSource.move(rowToMove, referenceRow, position, callbacks, callbackObjects);
 };
@@ -796,6 +821,7 @@ PagingDataGridDataSource.prototype.move = function (
  * @export
  * @ojtsignore
  * @see PagingDataGridDataSource
+ * @ojdeprecated {since: '14.0.0', description: 'PagingHeaderSet has been deprecated with PagingDataGridDataSource.'}
  */
 const PagingHeaderSet = function (headerSet, startIndex) {
   this.m_headerSet = headerSet;

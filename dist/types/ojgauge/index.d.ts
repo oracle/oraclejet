@@ -277,6 +277,26 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
     };
     value: number | null;
     visualEffects?: 'none' | 'auto';
+    translations: {
+        accessibleContainsControls?: string;
+        componentName?: string;
+        labelAndValue?: string;
+        labelClearSelection?: string;
+        labelCountWithTotal?: string;
+        labelDataVisualization?: string;
+        labelInvalidData?: string;
+        labelNoData?: string;
+        stateCollapsed?: string;
+        stateDrillable?: string;
+        stateExpanded?: string;
+        stateHidden?: string;
+        stateIsolated?: string;
+        stateMaximized?: string;
+        stateMinimized?: string;
+        stateSelected?: string;
+        stateUnselected?: string;
+        stateVisible?: string;
+    };
     addEventListener<T extends keyof ojRatingGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojRatingGaugeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojRatingGaugeSettableProperties>(property: T): ojRatingGauge[T];
@@ -424,6 +444,26 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
     };
     value: number | null;
     visualEffects?: 'none' | 'auto';
+    translations: {
+        accessibleContainsControls?: string;
+        componentName?: string;
+        labelAndValue?: string;
+        labelClearSelection?: string;
+        labelCountWithTotal?: string;
+        labelDataVisualization?: string;
+        labelInvalidData?: string;
+        labelNoData?: string;
+        stateCollapsed?: string;
+        stateDrillable?: string;
+        stateExpanded?: string;
+        stateHidden?: string;
+        stateIsolated?: string;
+        stateMaximized?: string;
+        stateMinimized?: string;
+        stateSelected?: string;
+        stateUnselected?: string;
+        stateVisible?: string;
+    };
 }
 export interface ojRatingGaugeSettablePropertiesLenient extends Partial<ojRatingGaugeSettableProperties> {
     [key: string]: any;
@@ -491,6 +531,26 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     readonly transientValue?: number | null;
     value: number | null;
     visualEffects?: 'none' | 'auto';
+    translations: {
+        accessibleContainsControls?: string;
+        componentName?: string;
+        labelAndValue?: string;
+        labelClearSelection?: string;
+        labelCountWithTotal?: string;
+        labelDataVisualization?: string;
+        labelInvalidData?: string;
+        labelNoData?: string;
+        stateCollapsed?: string;
+        stateDrillable?: string;
+        stateExpanded?: string;
+        stateHidden?: string;
+        stateIsolated?: string;
+        stateMaximized?: string;
+        stateMinimized?: string;
+        stateSelected?: string;
+        stateUnselected?: string;
+        stateVisible?: string;
+    };
     addEventListener<T extends keyof ojStatusMeterGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojStatusMeterGaugeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojStatusMeterGaugeSettableProperties>(property: T): ojStatusMeterGauge[T];
@@ -700,6 +760,26 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
     readonly transientValue?: number | null;
     value: number | null;
     visualEffects?: 'none' | 'auto';
+    translations: {
+        accessibleContainsControls?: string;
+        componentName?: string;
+        labelAndValue?: string;
+        labelClearSelection?: string;
+        labelCountWithTotal?: string;
+        labelDataVisualization?: string;
+        labelInvalidData?: string;
+        labelNoData?: string;
+        stateCollapsed?: string;
+        stateDrillable?: string;
+        stateExpanded?: string;
+        stateHidden?: string;
+        stateIsolated?: string;
+        stateMaximized?: string;
+        stateMinimized?: string;
+        stateSelected?: string;
+        stateUnselected?: string;
+        stateVisible?: string;
+    };
 }
 export interface ojStatusMeterGaugeSettablePropertiesLenient extends Partial<ojStatusMeterGaugeSettableProperties> {
     [key: string]: any;

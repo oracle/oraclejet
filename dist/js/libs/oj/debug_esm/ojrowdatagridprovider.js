@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -21,6 +21,7 @@ var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, ge
 };
 class RowDataGridProvider {
     constructor(dataProvider, options) {
+        var _a;
         this.dataProvider = dataProvider;
         this.options = options;
         this.version = 0;
@@ -79,7 +80,7 @@ class RowDataGridProvider {
         this.sortable = options === null || options === void 0 ? void 0 : options.sortable;
         this.sortCriteria = null;
         this.supportsFilteredRowCount =
-            dataProvider.getCapability('fetchFirst').totalFilteredRowCount === 'exact';
+            ((_a = dataProvider.getCapability('fetchFirst')) === null || _a === void 0 ? void 0 : _a.totalFilteredRowCount) === 'exact';
         if (options === null || options === void 0 ? void 0 : options.expandedObservable) {
             const expandedObservable = options === null || options === void 0 ? void 0 : options.expandedObservable.subscribe((value) => {
                 this.expandedState = value.value;

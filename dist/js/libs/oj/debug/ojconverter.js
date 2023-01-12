@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -30,7 +30,6 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
   // Subclass from oj.Object
   oj.Object.createSubclass(Converter, oj.Object, 'oj.Converter');
 
-
   /**
    * Initializes converter instance with the set options
    * @param {Object=} options an object literal used to provide an optional information to
@@ -45,7 +44,6 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
     // Object.defineProperty(oj.Converter.prototype, "_options", {value: options});
     this._options = options;
   };
-
 
   /**
    * Returns a hint that describes the converter format expected.
@@ -66,9 +64,8 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
    * @export
    */
   Converter.prototype.getOptions = function () {
-    return (this._options || {});
+    return this._options || {};
   };
-
 
   /**
    * Parses a String value using the options provided.

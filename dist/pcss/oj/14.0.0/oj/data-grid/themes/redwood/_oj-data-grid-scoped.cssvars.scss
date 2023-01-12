@@ -1,0 +1,10 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.data.grid.scoped") {
+
+  // Display specific styles
+  .oj-datagrid {
+    --oj-c-PRIVATE-DO-NOT-USE-text-field-embedded-padding:    var(--oj-collection-grid-cell-padding);
+  }
+
+}

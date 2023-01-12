@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -26,6 +26,7 @@ define(['ojs/ojkoshared', 'ojs/ojcustomelement-utils', 'knockout', 'ojs/ojcore-b
    *                     {propertyGroup: "data", items: ["config.data"]} ]
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 1
+   * @ojoracleicon 'oj-ux-ico-binding-control'
    *
    * @classdesc
    * <h3 id="overview-section">
@@ -61,7 +62,6 @@ define(['ojs/ojkoshared', 'ojs/ojcustomelement-utils', 'knockout', 'ojs/ojcore-b
    * &lt;/oj-bind-dom>
    * @ojsignature {target: "Type", value: "oj.ojBindDom.Config<D>|Promise<oj.ojBindDom.Config<D>>", jsdocOverride: true}
    */
-
 
   /**
    * @ojtypedef oj.ojBindDom.Config
@@ -132,8 +132,7 @@ define(['ojs/ojkoshared', 'ojs/ojcustomelement-utils', 'knockout', 'ojs/ojcore-b
       return newNodes;
     }
 
-    BindingProviderImpl.registerPreprocessor(
-      'oj-bind-dom', _preprocessBindDom);
+    BindingProviderImpl.registerPreprocessor('oj-bind-dom', _preprocessBindDom);
 
     function _getExpression(attrValue) {
       if (attrValue != null) {
@@ -145,7 +144,7 @@ define(['ojs/ojkoshared', 'ojs/ojcustomelement-utils', 'knockout', 'ojs/ojcore-b
       }
       return null;
     }
-  }());
+  })();
 
   ko.bindingHandlers._ojBindDom_ = {
     init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
@@ -157,53 +156,68 @@ define(['ojs/ojkoshared', 'ojs/ojcustomelement-utils', 'knockout', 'ojs/ojcore-b
         registerBusyState();
         initChildrenBindingsAppliedPromise();
 
-        configPromise.then(function (config) {
-          if (configPromise === _currentPromise) {
-            try {
-              var view = config ? config.view : [];
-              var data = config ? config.data : null;
-              ko.virtualElements.setDomNodeChildren(element, view || []);
-              // Null out the parent references since we don't want the view to be able to access the outside context
-              var childBindingContext = bindingContext.createChildContext(data, undefined,
-                function (ctx) {
-                  ctx.$parent = null;
-                  ctx.$parentContext = null;
-                  ctx.$parents = null;
-                }
-              );
+        configPromise.then(
+          function (config) {
+            if (configPromise === _currentPromise) {
+              try {
+                var view = config ? config.view : [];
+                var data = config ? config.data : null;
+                ko.virtualElements.setDomNodeChildren(element, view || []);
+                // Null out the parent references since we don't want the view to be able to access the outside context
+                var childBindingContext = bindingContext.createChildContext(
+                  data,
+                  undefined,
+                  function (ctx) {
+                    ctx.$parent = null;
+                    ctx.$parentContext = null;
+                    ctx.$parents = null;
+                  }
+                );
 
-              ko.applyBindingsToDescendants(childBindingContext, element);
-            } catch (e) {
-              Logger.error('An error %o occurred during view insertion and apply bindings for oj-bind-dom.', e);
-            } finally {
-              resolveBusyState();
-              resolveChildrenBindingsAppliedPromise();
+                ko.applyBindingsToDescendants(childBindingContext, element);
+              } catch (e) {
+                Logger.error(
+                  'An error %o occurred during view insertion and apply bindings for oj-bind-dom.',
+                  e
+                );
+              } finally {
+                resolveBusyState();
+                resolveChildrenBindingsAppliedPromise();
+              }
             }
+          },
+          function (reason) {
+            // errorback
+            resolveBusyState();
+            resolveChildrenBindingsAppliedPromise();
+            Logger.error(
+              'An error %o occurred during view insertion and apply bindings for oj-bind-dom.',
+              reason
+            );
           }
-        }, function (reason) { // errorback
-          resolveBusyState();
-          resolveChildrenBindingsAppliedPromise();
-          Logger.error('An error %o occurred during view insertion and apply bindings for oj-bind-dom.', reason);
-        }
         );
       }
 
       function findNearestCustomParent(parentTrackingContext) {
         var nearestCustomParent = element.parentNode;
-        while (nearestCustomParent &&
-          !ojcustomelementUtils.ElementUtils.isValidCustomElementName(nearestCustomParent.localName)) {
+        while (
+          nearestCustomParent &&
+          !ojcustomelementUtils.ElementUtils.isValidCustomElementName(nearestCustomParent.localName)
+        ) {
           nearestCustomParent = nearestCustomParent.parentNode;
         }
         if (!nearestCustomParent) {
-          nearestCustomParent = parentTrackingContext ?
-            parentTrackingContext._nearestCustomParent : null;
+          nearestCustomParent = parentTrackingContext
+            ? parentTrackingContext._nearestCustomParent
+            : null;
         }
         return nearestCustomParent;
       }
 
       function findImmediateState(nearestCustomParent, parentTrackingContext) {
         var isImmediate = false;
-        var nestedElement = parentTrackingContext &&
+        var nestedElement =
+          parentTrackingContext &&
           Object.prototype.hasOwnProperty.call(parentTrackingContext, '_immediate');
         if (element.parentNode === nearestCustomParent) {
           isImmediate = true;
@@ -235,7 +249,8 @@ define(['ojs/ojkoshared', 'ojs/ojcustomelement-utils', 'knockout', 'ojs/ojcore-b
       function registerBusyState() {
         if (!_resolveBusyStateCallback) {
           // element is a comment node so look for the busy context on the parent node instead
-          _resolveBusyStateCallback = Context.getContext(element.parentNode).getBusyContext()
+          _resolveBusyStateCallback = Context.getContext(element.parentNode)
+            .getBusyContext()
             .addBusyState({ description: 'oj-bind-dom is waiting on config Promise resolution' });
         }
       }

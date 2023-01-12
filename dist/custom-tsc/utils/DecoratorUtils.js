@@ -23,20 +23,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDecoratorParamValue = exports.getDecoratorName = exports.getDecorators = exports.getDecorator = void 0;
+exports.getDecoratorParamValue = exports.getDecoratorArguments = exports.getDecoratorName = exports.getDecorators = exports.getDecorator = void 0;
 const ts = __importStar(require("typescript"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
 function getDecorator(node, name) {
     var _a;
-    return (_a = node.decorators) === null || _a === void 0 ? void 0 : _a.find((decorator) => {
-        return getDecoratorName(decorator) === name;
-    });
+    let rtnDecorator;
+    if (ts.canHaveDecorators(node)) {
+        rtnDecorator = (_a = ts.getDecorators(node)) === null || _a === void 0 ? void 0 : _a.find((decorator) => {
+            return getDecoratorName(decorator) === name;
+        });
+    }
+    return rtnDecorator;
 }
 exports.getDecorator = getDecorator;
 function getDecorators(node, aliasToExport) {
+    var _a;
     const decoratorMap = {};
-    if (node.decorators) {
-        node.decorators.forEach((decorator) => {
+    if (ts.canHaveDecorators(node)) {
+        (_a = ts.getDecorators(node)) === null || _a === void 0 ? void 0 : _a.forEach((decorator) => {
             decoratorMap[getDecoratorName(decorator)] = decorator;
         });
     }
@@ -53,23 +58,29 @@ function getDecoratorName(decorator) {
     }
 }
 exports.getDecoratorName = getDecoratorName;
+function getDecoratorArguments(decorator) {
+    let rtnArgs = undefined;
+    if (ts.isCallExpression(decorator.expression)) {
+        rtnArgs = decorator.expression.arguments;
+    }
+    return rtnArgs;
+}
+exports.getDecoratorArguments = getDecoratorArguments;
 function getDecoratorParamValue(decorator, paramName) {
     let param = undefined;
-    if (ts.isCallExpression(decorator.expression)) {
-        const args = decorator.expression.arguments;
-        args.forEach((arg) => {
-            if (ts.isObjectLiteralExpression(arg)) {
-                arg.properties.forEach((prop) => {
-                    if (ts.isPropertyAssignment(prop)) {
-                        const propKey = prop.name.getText();
-                        if (propKey === paramName) {
-                            param = MetaUtils.getValueFromNode(prop.initializer);
-                        }
+    const args = getDecoratorArguments(decorator);
+    args === null || args === void 0 ? void 0 : args.forEach((arg) => {
+        if (ts.isObjectLiteralExpression(arg)) {
+            arg.properties.forEach((prop) => {
+                if (ts.isPropertyAssignment(prop)) {
+                    const propKey = prop.name.getText();
+                    if (propKey === paramName) {
+                        param = MetaUtils.getValueFromNode(prop.initializer);
                     }
-                });
-            }
-        });
-    }
+                }
+            });
+        }
+    });
     return param;
 }
 exports.getDecoratorParamValue = getDecoratorParamValue;

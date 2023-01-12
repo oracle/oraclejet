@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -16,7 +16,8 @@ define(['knockout', 'ojs/ojcontext', 'ojs/ojmodule', 'ojs/ojcomposite'], functio
    * @ojshortdesc A module is a navigational element that manages content replacement within a particular region of the page.
    * @ojsignature {target: "Type", value: "class ojModule extends JetElement<ojModuleSettableProperties>"}
    *
-
+   * @ojoracleicon 'oj-ux-ico-code'
+   *
    * @classdesc
    * <h3 id="ojModuleOverview-section">
    *   JET Module
@@ -225,25 +226,30 @@ define(['knockout', 'ojs/ojcontext', 'ojs/ojmodule', 'ojs/ojcomposite'], functio
 
     function updateConfig() {
       if (!self.busyCallback) {
-        self.busyCallback = Context.getContext(element).getBusyContext().addBusyState({ description: 'oj-module is waiting on config Promise resolution' });
+        self.busyCallback = Context.getContext(element)
+          .getBusyContext()
+          .addBusyState({ description: 'oj-module is waiting on config Promise resolution' });
       }
       var configPromise = Promise.resolve(props.config);
       self.configPromise = configPromise;
-      configPromise.then(function (config) {
-        if (configPromise === self.configPromise) {
-          // Make sure the promise that just resolved is the latest one we're waiting for
-          self.config(config);
-          self.busyCallback();
-          self.busyCallback = null;
+      configPromise.then(
+        function (config) {
+          if (configPromise === self.configPromise) {
+            // Make sure the promise that just resolved is the latest one we're waiting for
+            self.config(config);
+            self.busyCallback();
+            self.busyCallback = null;
+          }
+        },
+        function (reason) {
+          if (configPromise === self.configPromise) {
+            // Make sure the promise that just resolved is the latest one we're waiting for
+            self.busyCallback();
+            self.busyCallback = null;
+            throw reason;
+          }
         }
-      }, function (reason) {
-        if (configPromise === self.configPromise) {
-          // Make sure the promise that just resolved is the latest one we're waiting for
-          self.busyCallback();
-          self.busyCallback = null;
-          throw reason;
-        }
-      });
+      );
     }
 
     updateConfig();
@@ -287,8 +293,9 @@ define(['knockout', 'ojs/ojcontext', 'ojs/ojmodule', 'ojs/ojcomposite'], functio
     }.bind(this);
   }
 
-  var moduleValue = '{"view":config().view, "viewModel":config().viewModel,' +
-                    '"cleanupMode":config().cleanupMode,"animation":animation}';
+  var moduleValue =
+    '{"view":config().view, "viewModel":config().viewModel,' +
+    '"cleanupMode":config().cleanupMode,"animation":animation}';
 
   var moduleView = '<!-- ko ojModule: ' + moduleValue + ' --><!-- /ko -->';
 
@@ -328,12 +335,11 @@ var __oj_module_metadata =
 };
   /* global __oj_module_metadata */
   // eslint-disable-next-line no-undef
-  Composite.register('oj-module',
-    {
-      view: moduleView,
-      metadata: __oj_module_metadata,
-      viewModel: moduleViewModel
-    });
+  Composite.register('oj-module', {
+    view: moduleView,
+    metadata: __oj_module_metadata,
+    viewModel: moduleViewModel
+  });
 
   /**
    * A duck-typing interface that defines a contract for managing animations during the oj-module element View transitions.
@@ -345,7 +351,7 @@ var __oj_module_metadata =
    *
    */
 
-   /**
+  /**
    * Optional method that determines whether the animated transition should proceed. If the method is not implemented, all
    * transitions will be allowed to proceed
    * @method
@@ -364,7 +370,7 @@ var __oj_module_metadata =
    * @instance
    */
 
-   /**
+  /**
    * Prepares animation by designating where the new View should be inserted and optionally specifying where the old View
    * should be moved
    * @method
@@ -390,7 +396,7 @@ var __oj_module_metadata =
    * @instance
    */
 
-   /**
+  /**
    * Prepares animation by designating where the new View should be inserted and optionally specifying where the old View
    * should be moved
    * @method
@@ -493,7 +499,7 @@ var __oj_module_metadata =
    * @ojsignature {target: "Type", value: "?(): Promise<void>"}
    */
 
-   /**
+  /**
    * This optional method may be implemented on the ViewModel and will be invoked
    * by <a href="oj.ModuleRouterAdapter.html">ModuleRouterAdapter</a> on <code>stateChange</code> event
    * assuming that oj-module is used in conjuction with ModuleRouterAdapter.

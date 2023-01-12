@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -326,14 +326,17 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    */
   function _filterNewState(changes) {
     var newChanges = changes.filter(function (change) {
-      return (change.value !== change.router._stateId());
+      return change.value !== change.router._stateId();
     });
 
     if (Logger.option('level') === Logger.LEVEL_INFO) {
       Logger.info('Potential changes are: ');
       newChanges.forEach(function (change) {
-        Logger.info('   { router: %s, value: %s }',
-                       change.router && getRouterFullName(change.router), change.value);
+        Logger.info(
+          '   { router: %s, value: %s }',
+          change.router && getRouterFullName(change.router),
+          change.value
+        );
       });
     }
 
@@ -361,7 +364,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    * @return {boolean}
    */
   function isTransitionCancelled() {
-    return (_transitionQueue[0] && _transitionQueue[0].cancel);
+    return _transitionQueue[0] && _transitionQueue[0].cancel;
   }
 
   /**
@@ -454,7 +457,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       startSegment = url.substring(0, start);
       endSegment = url.substr(end);
     } else {
-      startSegment = url + ((url.indexOf('?') === -1) ? '?' : '&');
+      startSegment = url + (url.indexOf('?') === -1 ? '?' : '&');
       endSegment = '';
     }
 
@@ -481,8 +484,10 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
     var result;
 
     router._childRouters.every(function (child) {
-      if ((!child._parentState || child._parentState === parentStateId) &&
-          child._getStateFromId(sId)) {
+      if (
+        (!child._parentState || child._parentState === parentStateId) &&
+        child._getStateFromId(sId)
+      ) {
         result = child;
         return false;
       }
@@ -492,13 +497,13 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
     return result;
   }
 
-/**
- * Traverse the tree of routers and build an array of states made of the router and an
- * undefined value.
- * The first item of the array is the root and the last is the leaf.
- * @private
- * @param  {oj.Router} router
- */
+  /**
+   * Traverse the tree of routers and build an array of states made of the router and an
+   * undefined value.
+   * The first item of the array is the root and the last is the leaf.
+   * @private
+   * @param  {oj.Router} router
+   */
   function _buildAllUndefinedState(router) {
     var states = [];
 
@@ -725,9 +730,15 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
         stateChange = new _StateChange(rt, sId);
         state = stateChange.getState();
         if (!state) {
-          throw new Error('Invalid path "' + path +
-                          '". State id "' + sId + '" does not exist on router "' +
-                          rt._name + '".');
+          throw new Error(
+            'Invalid path "' +
+              path +
+              '". State id "' +
+              sId +
+              '" does not exist on router "' +
+              rt._name +
+              '".'
+          );
         }
 
         newStates.push(stateChange);
@@ -845,7 +856,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
         sequence = Promise.resolve(true);
       } else {
         sequence = sequence.then(function (result) {
-          return (result && !isTransitionCancelled());
+          return result && !isTransitionCancelled();
         });
       }
     } else {
@@ -910,66 +921,71 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
     var oldState = change.router._getStateFromId(_getShortId(change.router._stateId()));
     var newState = change.getState();
 
-    return Promise.resolve()
-      .then(function () {
-        if (Logger.option('level') === Logger.LEVEL_INFO) {
-          Logger.info('Updating state of %s to %s.',
-                         getRouterFullName(change.router), change.value);
-        }
-      })
-      // Execute exit on the current state
-      .then(oldState ? oldState._exit : undefined)
-      .then(function () {
-        var rt = change.router;
-        var goingBackward = false;
+    return (
+      Promise.resolve()
+        .then(function () {
+          if (Logger.option('level') === Logger.LEVEL_INFO) {
+            Logger.info(
+              'Updating state of %s to %s.',
+              getRouterFullName(change.router),
+              change.value
+            );
+          }
+        })
+        // Execute exit on the current state
+        .then(oldState ? oldState._exit : undefined)
+        .then(function () {
+          var rt = change.router;
+          var goingBackward = false;
 
-        // Are we going back to the previous state?
-        if (origin === 'popState') {
-          var length = rt._navHistory.length;
-          var i;
           // Are we going back to the previous state?
-          for (i = length - 1; i >= 0; i--) {
-            if (rt._navHistory[i] === change.value) {
-              goingBackward = true;
-              // Delete all elements up the one matching
-              rt._navHistory.splice(i, length - i);
-              break;
+          if (origin === 'popState') {
+            var length = rt._navHistory.length;
+            var i;
+            // Are we going back to the previous state?
+            for (i = length - 1; i >= 0; i--) {
+              if (rt._navHistory[i] === change.value) {
+                goingBackward = true;
+                // Delete all elements up the one matching
+                rt._navHistory.splice(i, length - i);
+                break;
+              }
+            }
+
+            // Back only if going back 1
+            if (length - i === 1) {
+              rt._navigationType = 'back';
             }
           }
 
-          // Back only if going back 1
-          if ((length - i) === 1) {
-            rt._navigationType = 'back';
+          if (!goingBackward) {
+            delete rt._navigationType;
+            rt._navHistory.push(_getShortId(rt._stateId()));
           }
-        }
 
-        if (!goingBackward) {
-          delete rt._navigationType;
-          rt._navHistory.push(_getShortId(rt._stateId()));
-        }
+          // Update the parameters
+          if (change.value && newState) {
+            var segments = _getSegments(change.value);
+            newState._paramOrder.forEach(function (name, ii) {
+              var newValue = _decodeSlash(segments[ii + 1]);
+              var oldValue = newState[_parametersValue][name];
 
-        // Update the parameters
-        if (change.value && newState) {
-          var segments = _getSegments(change.value);
-          newState._paramOrder.forEach(function (name, ii) {
-            var newValue = _decodeSlash(segments[ii + 1]);
-            var oldValue = newState[_parametersValue][name];
+              // Update the parameter value
+              if (newValue !== oldValue) {
+                newState[_parametersValue][name] = newValue;
+              }
+            });
 
-            // Update the parameter value
-            if (newValue !== oldValue) {
-              newState[_parametersValue][name] = newValue;
-            }
-          });
+            // TODO: Should we execute a callback for case where state doesn't change
+            //      and using a configure with function? or disable for function configure?
+          }
 
-          // TODO: Should we execute a callback for case where state doesn't change
-          //      and using a configure with function? or disable for function configure?
-        }
-
-        // Change the value of the stateId
-        rt._stateId(change.value);
-      })
-      // Execute enter on the new state
-      .then(newState ? newState._enter : undefined);
+          // Change the value of the stateId
+          rt._stateId(change.value);
+        })
+        // Execute enter on the new state
+        .then(newState ? newState._enter : undefined)
+    );
   }
 
   /**
@@ -1000,32 +1016,35 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       });
     });
 
-    return sequence.then(function () {
-      var hasChanged = false;
-      var router;
-      var newState;
-      if (allChanges.length) {
-        hasChanged = !isTransitionCancelled();
-        /*
-         * Pass the last state of a multi-state transition as the new state to
-         * which we're transitioning.
-         */
-        var change = allChanges[allChanges.length - 1];
-        router = change.router;
-        newState = change.state;
+    return sequence.then(
+      function () {
+        var hasChanged = false;
+        var router;
+        var newState;
+        if (allChanges.length) {
+          hasChanged = !isTransitionCancelled();
+          /*
+           * Pass the last state of a multi-state transition as the new state to
+           * which we're transitioning.
+           */
+          var change = allChanges[allChanges.length - 1];
+          router = change.router;
+          newState = change.state;
+        }
+        oj.Router._updating = false;
+        Logger.info('_updateAll returns %s.', String(hasChanged));
+        return {
+          hasChanged: hasChanged,
+          router: router,
+          oldState: oldState,
+          newState: newState
+        };
+      },
+      function (error) {
+        oj.Router._updating = false;
+        return Promise.reject(error);
       }
-      oj.Router._updating = false;
-      Logger.info('_updateAll returns %s.', String(hasChanged));
-      return {
-        hasChanged: hasChanged,
-        router: router,
-        oldState: oldState,
-        newState: newState
-      };
-    }, function (error) {
-      oj.Router._updating = false;
-      return Promise.reject(error);
-    });
+    );
   }
 
   /**
@@ -1068,8 +1087,14 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       var path = transition.path ? 'path=' + transition.path : '';
       var deferString = transition.deferredHandling ? 'deferredHandling=true' : '';
       var router = transition.router ? getRouterFullName(transition.router) : 'null';
-      Logger.info('>> %s: origin=%s router=%s %s %s',
-                     action, transition.origin, router, path, deferString);
+      Logger.info(
+        '>> %s: origin=%s router=%s %s %s',
+        action,
+        transition.origin,
+        router,
+        path,
+        deferString
+      );
     }
   }
 
@@ -1116,37 +1141,40 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       promise = _executeTransition(transition);
     }
 
-    return promise.then(function (params) {
-      var done = _transitionQueue.shift();
-      _logTransition('Done with', done);
-      if (params[_HAS_CHANGED] === true) {
-         // Build the window title that will appear in the browser history
-        var titleInfo = _buildTitle(rootRouter);
-        var title;
+    return promise.then(
+      function (params) {
+        var done = _transitionQueue.shift();
+        _logTransition('Done with', done);
+        if (params[_HAS_CHANGED] === true) {
+          // Build the window title that will appear in the browser history
+          var titleInfo = _buildTitle(rootRouter);
+          var title;
 
-        if (titleInfo.title !== '') {
-          title = titleInfo.title;
-        } else if (_originalTitle && _originalTitle.length > 0) {
-          title = _originalTitle;
-          if (titleInfo.segment !== '') {
-            title += _TITLE_SEP + titleInfo.segment;
+          if (titleInfo.title !== '') {
+            title = titleInfo.title;
+          } else if (_originalTitle && _originalTitle.length > 0) {
+            title = _originalTitle;
+            if (titleInfo.segment !== '') {
+              title += _TITLE_SEP + titleInfo.segment;
+            }
+          } else {
+            title = titleInfo.segment;
           }
-        } else {
-          title = titleInfo.segment;
-        }
 
-        if (title !== window.document.title) {
-          window.document.title = title;
+          if (title !== window.document.title) {
+            window.document.title = title;
+          }
         }
+        dispatchTransitionedToState(params);
+        return params;
+      },
+      function (error) {
+        _transitionQueue = [];
+        Logger.error('Error when executing transition: %o', error);
+        dispatchTransitionedToState(_NO_CHANGE_OBJECT);
+        return Promise.reject(error);
       }
-      dispatchTransitionedToState(params);
-      return params;
-    }, function (error) {
-      _transitionQueue = [];
-      Logger.error('Error when executing transition: %o', error);
-      dispatchTransitionedToState(_NO_CHANGE_OBJECT);
-      return Promise.reject(error);
-    });
+    );
   }
 
   /**
@@ -1285,8 +1313,8 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
      * @private
      * @type {!string | undefined}
      */
-    this._parentState = parentState ||
-      (parentRouter ? _getShortId(parentRouter._stateId()) : undefined);
+    this._parentState =
+      parentState || (parentRouter ? _getShortId(parentRouter._stateId()) : undefined);
 
     /**
      * The parent router. Root router doesn't have one.
@@ -1348,11 +1376,9 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
         return _getShortId(this._stateId());
       },
       write: function (value) {
-        this.go(value).then(
-          null,
-          function (error) {
-            throw error;
-          });
+        this.go(value).then(null, function (error) {
+          throw error;
+        });
       },
       owner: router
     });
@@ -1393,7 +1419,6 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       var shortId = _getShortId(router._stateId());
       return ko.ignoreDependencies(router._getStateFromId, router, [shortId]);
     });
-
 
     /**
      * A Knockout observable on the value property of the current state.<br>
@@ -1552,12 +1577,12 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
           var retValue;
 
           // ojModule name cannot afford to be null
-          var stateId = _getShortId(this._stateId()) ||
-              this._defaultStateId || this._states[0].name;
+          var stateId =
+            _getShortId(this._stateId()) || this._defaultStateId || this._states[0].name;
           var currentState = this._getStateFromId(stateId);
           if (currentState) {
             retValue = currentState.value;
-            if (!retValue || (typeof retValue !== 'string')) {
+            if (!retValue || typeof retValue !== 'string') {
               retValue = currentState._id;
             }
           }
@@ -1704,7 +1729,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       var name;
       if (currentState) {
         name = currentState.value;
-        if (!name || (typeof name !== 'string')) {
+        if (!name || typeof name !== 'string') {
           name = currentState._id;
         }
       }
@@ -1826,7 +1851,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
   oj.Router.prototype.getChildRouter = function (name) {
     var childRouter;
 
-    if (name && (typeof name === 'string')) {
+    if (name && typeof name === 'string') {
       var trimmedName = name.trim();
       if (trimmedName.length > 0) {
         this._childRouters.every(function (sr) {
@@ -1921,8 +1946,9 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       if (sr._name === encodedName) {
         throw new Error('Invalid router name "' + encodedName + '", it already exists.');
       } else if (sr._parentState === _parentStateId) {
-        throw new Error('Cannot create more than one child router for parent state id "' +
-                        sr._parentState + '".');
+        throw new Error(
+          'Cannot create more than one child router for parent state id "' + sr._parentState + '".'
+        );
       }
     }
 
@@ -2050,8 +2076,8 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       Object.keys(option).forEach(function (key) {
         var rsOptions = option[key];
         this._states.push(new oj.RouterState(key, rsOptions, this));
-         // Set the defaultStateId of the router from the isDefault property
-        if ((typeof (rsOptions.isDefault) === 'boolean') && rsOptions.isDefault) {
+        // Set the defaultStateId of the router from the isDefault property
+        if (typeof rsOptions.isDefault === 'boolean' && rsOptions.isDefault) {
           this._defaultStateId = _getShortId(key);
         }
       }, this);
@@ -2263,8 +2289,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       if (!stateIdPath) {
         // No default defined, so nowhere to go.
         Logger.info(function () {
-          return 'Undefined state id with no default id on router ' +
-            getRouterFullName(this);
+          return 'Undefined state id with no default id on router ' + getRouterFullName(this);
         });
         return Promise.resolve(_NO_CHANGE_OBJECT);
       }
@@ -2277,8 +2302,11 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
     } else {
       path = getCurrentPath(this._parentRouter);
       if (!path) {
-        return Promise.reject(new Error('Invalid path "' + stateIdPath +
-                                        '". The parent router does not have a current state.'));
+        return Promise.reject(
+          new Error(
+            'Invalid path "' + stateIdPath + '". The parent router does not have a current state.'
+          )
+        );
       }
       path += stateIdPath;
     }
@@ -2305,18 +2333,20 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       return _canExit(this).then(function (canExit) {
         if (canExit) {
           // Only calls canEnter callback on state that are changing
-          return _canEnter(reducedState).then(_updateAll).then(function (params) {
-            if (params[_HAS_CHANGED]) {
-              if (skip) {
-                Logger.info('Skip history update.');
-              } else {
-                var url = _urlAdapter.buildUrlFromStates(newStates);
-                Logger.info('%s URL to %s', replace ? 'Replacing' : 'Pushing', url);
-                window.history[replace ? 'replaceState' : 'pushState'](null, '', url);
+          return _canEnter(reducedState)
+            .then(_updateAll)
+            .then(function (params) {
+              if (params[_HAS_CHANGED]) {
+                if (skip) {
+                  Logger.info('Skip history update.');
+                } else {
+                  var url = _urlAdapter.buildUrlFromStates(newStates);
+                  Logger.info('%s URL to %s', replace ? 'Replacing' : 'Pushing', url);
+                  window.history[replace ? 'replaceState' : 'pushState'](null, '', url);
+                }
               }
-            }
-            return params;
-          });
+              return params;
+            });
         }
         return Promise.resolve(_NO_CHANGE_OBJECT);
       });
@@ -2550,7 +2580,9 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       },
       set: function (urlAdapter) {
         if (_initialized) {
-          throw new Error('Incorrect operation. Cannot change URL adapter after calling sync() or go().');
+          throw new Error(
+            'Incorrect operation. Cannot change URL adapter after calling sync() or go().'
+          );
         }
         _urlAdapter = urlAdapter;
       },
@@ -2563,7 +2595,9 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       },
       set: function (baseUrl) {
         if (_initialized) {
-          throw new Error('Incorrect operation. Cannot change base URL after calling sync() or go().');
+          throw new Error(
+            'Incorrect operation. Cannot change base URL after calling sync() or go().'
+          );
         }
         if (!baseUrl) {
           _baseUrlProp = '/';
@@ -2581,7 +2615,9 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       },
       set: function (rootName) {
         if (_initialized) {
-          throw new Error('Incorrect operation. Cannot change the name of the root instance after calling sync() or go().');
+          throw new Error(
+            'Incorrect operation. Cannot change the name of the root instance after calling sync() or go().'
+          );
         }
 
         oj.Assert.assertString(rootName);
@@ -2811,12 +2847,11 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       var pathname = '';
       var extraState = {}; // Compound object of all extra states
 
-
       // Build the new URL by walking the array of states backward in order to eliminate
       // the default state from the URL. As soon as a value is not the default, stops the removal.
       for (var ns = newStates.pop(); ns; ns = newStates.pop()) {
         if (ns.value) {
-          if (canDefault || (ns.value !== ns.router._defaultStateId)) {
+          if (canDefault || ns.value !== ns.router._defaultStateId) {
             pathname = pathname ? ns.value + '/' + pathname : ns.value;
             canDefault = true;
           }
@@ -2933,7 +2968,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
       // the default state from the URL. As soon as a value is not the default, stops the removal.
       for (var ns = newStates.pop(); ns; ns = newStates.pop()) {
         if (ns.value) {
-          if (canDefault || (ns.value !== ns.router._defaultStateId)) {
+          if (canDefault || ns.value !== ns.router._defaultStateId) {
             // _name is already encoded
             var paramName = '&' + ns.router._name + '=';
             var paramValue = ns.value;
@@ -2959,7 +2994,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
     };
   };
   return rootRouter;
-}());
+})();
 // eslint-disable-next-line no-unused-vars
 var Router = oj.Router;
 
@@ -2977,7 +3012,6 @@ var Router = oj.Router;
   var _baseReverseDic;
 
   oj.LZString = {
-
     /**
      * Compress into a string that is URI encoded
      * @ignore
@@ -3069,7 +3103,7 @@ var Router = oj.Router;
       } else {
         if (Object.prototype.hasOwnProperty.call(contextDictionaryToCreate, contextW)) {
           if (contextW.charCodeAt(0) < 256) {
-            for (i = contextNumBits; i--;) {
+            for (i = contextNumBits; i--; ) {
               contextDataVal <<= 1;
               if (contextDataPosition === bitsPerChar - 1) {
                 contextDataPosition = 0;
@@ -3080,7 +3114,7 @@ var Router = oj.Router;
               }
             }
             value = contextW.charCodeAt(0);
-            for (i = 8; i--;) {
+            for (i = 8; i--; ) {
               contextDataVal = (contextDataVal << 1) | (value & 1);
               if (contextDataPosition === bitsPerChar - 1) {
                 contextDataPosition = 0;
@@ -3093,7 +3127,7 @@ var Router = oj.Router;
             }
           } else {
             value = 1;
-            for (i = contextNumBits; i--;) {
+            for (i = contextNumBits; i--; ) {
               contextDataVal = (contextDataVal << 1) | value;
               if (contextDataPosition === bitsPerChar - 1) {
                 contextDataPosition = 0;
@@ -3105,7 +3139,7 @@ var Router = oj.Router;
               value = 0;
             }
             value = contextW.charCodeAt(0);
-            for (i = 16; i--;) {
+            for (i = 16; i--; ) {
               contextDataVal = (contextDataVal << 1) | (value & 1);
               if (contextDataPosition === bitsPerChar - 1) {
                 contextDataPosition = 0;
@@ -3125,7 +3159,7 @@ var Router = oj.Router;
           delete contextDictionaryToCreate[contextW];
         } else {
           value = contextDictionary[contextW];
-          for (i = contextNumBits; i--;) {
+          for (i = contextNumBits; i--; ) {
             contextDataVal = (contextDataVal << 1) | (value & 1);
             if (contextDataPosition === bitsPerChar - 1) {
               contextDataPosition = 0;
@@ -3142,18 +3176,18 @@ var Router = oj.Router;
           contextEnlargeIn = Math.pow(2, contextNumBits);
           contextNumBits += 1;
         }
-         // Add wc to the dictionary.
+        // Add wc to the dictionary.
         contextDictionary[contextWc] = contextDictSize;
         contextDictSize += 1;
         contextW = String(contextC);
       }
     }
 
-   // Output the code for w.
+    // Output the code for w.
     if (contextW !== '') {
       if (Object.prototype.hasOwnProperty.call(contextDictionaryToCreate, contextW)) {
         if (contextW.charCodeAt(0) < 256) {
-          for (i = contextNumBits; i--;) {
+          for (i = contextNumBits; i--; ) {
             contextDataVal <<= 1;
             if (contextDataPosition === bitsPerChar - 1) {
               contextDataPosition = 0;
@@ -3164,7 +3198,7 @@ var Router = oj.Router;
             }
           }
           value = contextW.charCodeAt(0);
-          for (i = 8; i--;) {
+          for (i = 8; i--; ) {
             contextDataVal = (contextDataVal << 1) | (value & 1);
             if (contextDataPosition === bitsPerChar - 1) {
               contextDataPosition = 0;
@@ -3177,7 +3211,7 @@ var Router = oj.Router;
           }
         } else {
           value = 1;
-          for (i = contextNumBits; i--;) {
+          for (i = contextNumBits; i--; ) {
             contextDataVal = (contextDataVal << 1) | value;
             if (contextDataPosition === bitsPerChar - 1) {
               contextDataPosition = 0;
@@ -3189,7 +3223,7 @@ var Router = oj.Router;
             value = 0;
           }
           value = contextW.charCodeAt(0);
-          for (i = 16; i--;) {
+          for (i = 16; i--; ) {
             contextDataVal = (contextDataVal << 1) | (value & 1);
             if (contextDataPosition === bitsPerChar - 1) {
               contextDataPosition = 0;
@@ -3209,7 +3243,7 @@ var Router = oj.Router;
         delete contextDictionaryToCreate[contextW];
       } else {
         value = contextDictionary[contextW];
-        for (i = contextNumBits; i--;) {
+        for (i = contextNumBits; i--; ) {
           contextDataVal = (contextDataVal << 1) | (value & 1);
           if (contextDataPosition === bitsPerChar - 1) {
             contextDataPosition = 0;
@@ -3227,9 +3261,9 @@ var Router = oj.Router;
       }
     }
 
-   // Mark the end of the stream
+    // Mark the end of the stream
     value = 2;
-    for (i = contextNumBits; i--;) {
+    for (i = contextNumBits; i--; ) {
       contextDataVal = (contextDataVal << 1) | (value & 1);
       if (contextDataPosition === bitsPerChar - 1) {
         contextDataPosition = 0;
@@ -3432,7 +3466,7 @@ var Router = oj.Router;
       }
     }
   }
-}());
+})();
 
 
 /* jslint browser: true*/
@@ -3462,8 +3496,8 @@ var Router = oj.Router;
 
     path.forEach(function (pathItem, i) {
       /*
-        * Match pattern "{token}"
-        */
+       * Match pattern "{token}"
+       */
       var match = pathItem.match(stateParamExp);
       if (match) {
         var token = match[1];
@@ -3592,7 +3626,7 @@ var Router = oj.Router;
       }
     });
   };
-}());
+})();
 
   ;return Router; 
 });

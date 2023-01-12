@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -400,6 +400,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      * Caller should call setItemStatus to change the status
      * to "submitting" when ready to submit.  Once the edit item for a key is moved to 'submitting', new edit for the same
      * key will be tracked separately.  There can be at most one "submitting" edit item and one "unsubmitted" edit item for the same key.
+     * Since we are using key to tracking edit, the key value should be immutable. We could not update the key value in "updateItem".
      * </p>
      *
      * @since 9.0.0
@@ -475,9 +476,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      *               value: "(editItem: BufferingDataProvider.EditItem<K, D>, newStatus: 'unsubmitted' | 'submitting' | 'submitted', error?: ItemMessage, mewKey?: K): void"}
      */
 
-    /**
-     * End of jsdoc
-     */
+    // end of jsdoc
 
     /**
      * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -537,9 +536,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      *               value: "ItemWithOptionalData<K, D>"}
      */
 
-    /**
-     * End of jsdoc
-     */
+    // end of jsdoc
 
     class EditBuffer {
         constructor() {
@@ -687,6 +684,15 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         }
     }
 
+    var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
+        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    };
     class BufferingDataProvider {
         constructor(dataProvider, options) {
             var _a;
@@ -730,66 +736,89 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     }
                 }
                 _fetchNext() {
-                    return this._baseIterator.next().then((result) => {
-                        if (!this.firstBaseKey && result.value.metadata.length) {
-                            this.firstBaseKey = result.value.metadata[0].key;
+                    var _a;
+                    const signal = (_a = this._params) === null || _a === void 0 ? void 0 : _a.signal;
+                    if (signal && signal.aborted) {
+                        const reason = signal.reason;
+                        return Promise.reject(new DOMException(reason, 'AbortError'));
+                    }
+                    return new Promise((resolve, reject) => {
+                        if (signal) {
+                            const reason = signal.reason;
+                            signal.addEventListener('abort', (e) => {
+                                return reject(new DOMException(reason, 'AbortError'));
+                            });
                         }
-                        if (result.value.fetchParameters && result.value.fetchParameters.sortCriteria) {
-                            this._parent.lastSortCriteria = result.value.fetchParameters.sortCriteria;
-                        }
-                        const baseItemArray = result.value.data.map((val, index) => {
-                            return { data: result.value.data[index], metadata: result.value.metadata[index] };
-                        });
-                        this._parent._mergeEdits(baseItemArray, this.mergedItemArray, this._params.filterCriterion, this._parent.lastSortCriteria, true, this.mergedAddKeySet, result.done);
-                        let actualReturnSize = this.mergedItemArray.length - this.nextOffset;
-                        for (let i = this.nextOffset; i < this.mergedItemArray.length; i++) {
-                            const item = this.mergedItemArray[i];
-                            if (this._parent._isItemRemoved(item.metadata.key)) {
-                                --actualReturnSize;
+                        resolve(this._baseIterator.next().then((result) => __awaiter(this, void 0, void 0, function* () {
+                            var _a;
+                            if (!this.firstBaseKey && result.value.metadata.length) {
+                                this.firstBaseKey = result.value.metadata[0].key;
                             }
-                        }
-                        const params = this._params || {};
-                        if ((params.size && actualReturnSize < params.size) ||
-                            (params.size == null && actualReturnSize === 0)) {
-                            if (!result.done) {
-                                return this._fetchNext();
+                            if (result.value.fetchParameters && result.value.fetchParameters.sortCriteria) {
+                                this._parent.lastSortCriteria = result.value.fetchParameters.sortCriteria;
                             }
-                        }
-                        const newDataArray = [];
-                        const newMetaArray = [];
-                        let idx;
-                        for (idx = this.nextOffset; idx < this.mergedItemArray.length; idx++) {
-                            ++this.nextOffset;
-                            const item = this.mergedItemArray[idx];
-                            if (!this._parent._isItemRemoved(item.metadata.key)) {
-                                newDataArray.push(item.data);
-                                newMetaArray.push(item.metadata);
-                                if (params.size && newDataArray.length === params.size) {
-                                    break;
+                            const baseItemArray = result.value.data.map((val, index) => {
+                                return { data: result.value.data[index], metadata: result.value.metadata[index] };
+                            });
+                            this._parent.totalFilteredRowCount = result.value.totalFilteredRowCount;
+                            yield this._parent._mergeEdits(baseItemArray, this.mergedItemArray, this._params.filterCriterion, this._parent.lastSortCriteria, true, this.mergedAddKeySet, result.done);
+                            let actualReturnSize = this.mergedItemArray.length - this.nextOffset;
+                            for (let i = this.nextOffset; i < this.mergedItemArray.length; i++) {
+                                const item = this.mergedItemArray[i];
+                                if (this._parent._isItemRemoved(item.metadata.key)) {
+                                    --actualReturnSize;
                                 }
                             }
-                        }
-                        if (this._parent.itemsInWrongPosition.size > 0) {
-                            const detail = {
-                                remove: {
-                                    data: [],
-                                    keys: new Set(),
-                                    metadata: []
+                            const params = this._params || {};
+                            if ((params.size && actualReturnSize < params.size) ||
+                                (params.size == null && actualReturnSize === 0)) {
+                                if (!result.done) {
+                                    return this._fetchNext();
+                                }
+                            }
+                            const newDataArray = [];
+                            const newMetaArray = [];
+                            let idx;
+                            for (idx = this.nextOffset; idx < this.mergedItemArray.length; idx++) {
+                                ++this.nextOffset;
+                                const item = this.mergedItemArray[idx];
+                                if (!this._parent._isItemRemoved(item.metadata.key)) {
+                                    newDataArray.push(item.data);
+                                    newMetaArray.push(item.metadata);
+                                    if (params.size && newDataArray.length === params.size) {
+                                        break;
+                                    }
+                                }
+                            }
+                            if (this._parent.itemsInWrongPosition.size > 0) {
+                                const detail = {
+                                    remove: {
+                                        data: [],
+                                        keys: new Set(),
+                                        metadata: []
+                                    }
+                                };
+                                this._parent.itemsInWrongPosition.forEach((item) => {
+                                    detail.remove.data.push(item.data);
+                                    detail.remove.keys.add(item.metadata.key);
+                                    detail.remove.metadata.push(item.metadata);
+                                });
+                                const event = new ojdataprovider.DataProviderMutationEvent(detail);
+                                this._parent.dispatchEvent(event);
+                            }
+                            const done = result.done && newDataArray.length === 0;
+                            return {
+                                done,
+                                value: {
+                                    fetchParameters: this._params,
+                                    data: newDataArray,
+                                    metadata: newMetaArray,
+                                    totalFilteredRowCount: ((_a = this._params) === null || _a === void 0 ? void 0 : _a.includeFilteredRowCount) === 'enabled'
+                                        ? this._parent.totalFilteredRowCount
+                                        : null
                                 }
                             };
-                            this._parent.itemsInWrongPosition.forEach((item) => {
-                                detail.remove.data.push(item.data);
-                                detail.remove.keys.add(item.metadata.key);
-                                detail.remove.metadata.push(item.metadata);
-                            });
-                            const event = new ojdataprovider.DataProviderMutationEvent(detail);
-                            this._parent.dispatchEvent(event);
-                        }
-                        const done = result.done && newDataArray.length === 0;
-                        return {
-                            done,
-                            value: { fetchParameters: this._params, data: newDataArray, metadata: newMetaArray }
-                        };
+                        })));
                     });
                 }
                 ['next']() {
@@ -804,6 +833,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             this.generatedKeyMap = new Map();
             this.lastSortIndex = new Map();
             this.itemsInWrongPosition = new Set();
+            this.totalFilteredRowCount = 0;
+            this.dataBeforeUpdated = new Map();
         }
         _fetchByKeysFromBuffer(params) {
             const results = new ojMap();
@@ -838,7 +869,38 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             return 0;
         }
         _insertAddEdits(editItems, filterObj, sortCriteria, itemArray, mergedAddKeySet, lastBlock) {
-            editItems.forEach((editItem, key) => {
+            editItems.forEach((editItem, key) => __awaiter(this, void 0, void 0, function* () {
+                if (editItem.operation === 'add') {
+                    if (!filterObj || filterObj.filter(editItem.item.data)) {
+                        this.totalFilteredRowCount++;
+                    }
+                }
+                else if (editItem.operation === 'remove') {
+                    if (!filterObj || filterObj.filter(editItem.item.data)) {
+                        this.totalFilteredRowCount--;
+                    }
+                }
+                else if (editItem.operation === 'update') {
+                    if (filterObj) {
+                        let oldData = null;
+                        if (this.dataBeforeUpdated.has(key)) {
+                            oldData = this.dataBeforeUpdated.get(key);
+                        }
+                        else {
+                            let keySet = new Set();
+                            keySet.add(key);
+                            let value = yield this.dataProvider.fetchByKeys({ keys: keySet });
+                            oldData = value.results.get(key).data;
+                            this.dataBeforeUpdated.set(key, oldData);
+                        }
+                        if (filterObj.filter(oldData) && !filterObj.filter(editItem.item.data)) {
+                            this.totalFilteredRowCount--;
+                        }
+                        else if (!filterObj.filter(oldData) && filterObj.filter(editItem.item.data)) {
+                            this.totalFilteredRowCount++;
+                        }
+                    }
+                }
                 if (editItem.operation === 'add' && !mergedAddKeySet.has(key)) {
                     if (!filterObj || filterObj.filter(editItem.item.data)) {
                         itemArray.push(editItem.item);
@@ -856,7 +918,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     }
                     itemArray.push(editItem.item);
                 }
-            });
+            }));
             if (sortCriteria && sortCriteria.length) {
                 itemArray.sort((a, b) => {
                     return this._compareItem(a.data, b.data, sortCriteria);
@@ -920,50 +982,63 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             }
         }
         _fetchFromOffset(params, newItemArray) {
-            return this.dataProvider.fetchByOffset(params).then((baseResults) => {
-                const editBuffer = this.editBuffer;
-                if (!editBuffer.isEmpty()) {
-                    const baseItemArray = baseResults.results;
-                    let sortCriteria = null;
-                    if (baseResults.fetchParameters && baseResults.fetchParameters.sortCriteria) {
-                        sortCriteria = baseResults.fetchParameters.sortCriteria;
-                    }
-                    else {
-                        sortCriteria = params.sortCriteria;
-                    }
-                    this._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, params.offset === 0, new Set(), baseResults.done);
-                    let actualReturnSize = newItemArray.length;
-                    for (const newItem of newItemArray) {
-                        if (this._isItemRemoved(newItem.metadata.key)) {
-                            --actualReturnSize;
-                        }
-                    }
-                    if ((params.size && actualReturnSize < params.size) ||
-                        (params.size == null && actualReturnSize === 0)) {
-                        if (!baseResults.done) {
-                            const nextParams = {
-                                attributes: params.attributes,
-                                clientId: params.clientId,
-                                filterCriterion: params.filterCriterion,
-                                offset: params.offset + baseResults.results.length,
-                                size: params.size,
-                                sortCriteria: params.sortCriteria
-                            };
-                            return this._fetchFromOffset(nextParams, newItemArray);
-                        }
-                    }
-                    for (let i = 0; i < newItemArray.length; i++) {
-                        if (this._isItemRemoved(newItemArray[i].metadata.key)) {
-                            newItemArray.splice(i, 1);
-                            --i;
-                        }
-                    }
-                    if (params.size && params.size != -1 && newItemArray.length > params.size) {
-                        newItemArray.splice(params.size);
-                    }
-                    return { fetchParameters: params, results: newItemArray, done: baseResults.done };
+            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            if (signal && signal.aborted) {
+                const reason = signal.reason;
+                return Promise.reject(new DOMException(reason, 'AbortError'));
+            }
+            return new Promise((resolve, reject) => {
+                if (signal) {
+                    const reason = signal.reason;
+                    signal.addEventListener('abort', (e) => {
+                        return reject(new DOMException(reason, 'AbortError'));
+                    });
                 }
-                return baseResults;
+                resolve(this.dataProvider.fetchByOffset(params).then((baseResults) => {
+                    const editBuffer = this.editBuffer;
+                    if (!editBuffer.isEmpty()) {
+                        const baseItemArray = baseResults.results;
+                        let sortCriteria = null;
+                        if (baseResults.fetchParameters && baseResults.fetchParameters.sortCriteria) {
+                            sortCriteria = baseResults.fetchParameters.sortCriteria;
+                        }
+                        else {
+                            sortCriteria = params.sortCriteria;
+                        }
+                        this._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, params.offset === 0, new Set(), baseResults.done);
+                        let actualReturnSize = newItemArray.length;
+                        for (const newItem of newItemArray) {
+                            if (this._isItemRemoved(newItem.metadata.key)) {
+                                --actualReturnSize;
+                            }
+                        }
+                        if ((params.size && actualReturnSize < params.size) ||
+                            (params.size == null && actualReturnSize === 0)) {
+                            if (!baseResults.done) {
+                                const nextParams = {
+                                    attributes: params.attributes,
+                                    clientId: params.clientId,
+                                    filterCriterion: params.filterCriterion,
+                                    offset: params.offset + baseResults.results.length,
+                                    size: params.size,
+                                    sortCriteria: params.sortCriteria
+                                };
+                                return this._fetchFromOffset(nextParams, newItemArray);
+                            }
+                        }
+                        for (let i = 0; i < newItemArray.length; i++) {
+                            if (this._isItemRemoved(newItemArray[i].metadata.key)) {
+                                newItemArray.splice(i, 1);
+                                --i;
+                            }
+                        }
+                        if (params.size && params.size != -1 && newItemArray.length > params.size) {
+                            newItemArray.splice(params.size);
+                        }
+                        return { fetchParameters: params, results: newItemArray, done: baseResults.done };
+                    }
+                    return baseResults;
+                }));
             });
         }
         containsKeys(params) {
@@ -992,19 +1067,37 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             const bufferResult = this._fetchByKeysFromBuffer(params);
             const unresolvedKeys = bufferResult.unresolvedKeys;
             const results = bufferResult.results;
-            if (unresolvedKeys.size === 0) {
-                return Promise.resolve({ fetchParameters: params, results });
+            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            if (signal && signal.aborted) {
+                const reason = signal.reason;
+                return Promise.reject(new DOMException(reason, 'AbortError'));
             }
-            return this.dataProvider
-                .fetchByKeys({ attributes: params.attributes, keys: unresolvedKeys, scope: params.scope })
-                .then((baseResults) => {
-                if (results.size > 0) {
-                    baseResults.results.forEach((value, key) => {
-                        results.set(key, value);
+            return new Promise((resolve, reject) => {
+                if (signal) {
+                    const reason = signal.reason;
+                    signal.addEventListener('abort', (e) => {
+                        return reject(new DOMException(reason, 'AbortError'));
                     });
-                    return { fetchParameters: params, results };
                 }
-                return baseResults;
+                if (unresolvedKeys.size === 0) {
+                    resolve({ fetchParameters: params, results });
+                }
+                resolve(this.dataProvider
+                    .fetchByKeys({
+                    attributes: params.attributes,
+                    keys: unresolvedKeys,
+                    scope: params.scope,
+                    signal
+                })
+                    .then((baseResults) => {
+                    if (results.size > 0) {
+                        baseResults.results.forEach((value, key) => {
+                            results.set(key, value);
+                        });
+                        return { fetchParameters: params, results };
+                    }
+                    return baseResults;
+                }));
             });
         }
         fetchByOffset(params) {
@@ -1369,6 +1462,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             let sortUpd = false;
             if (this.lastIterator && this.lastSortCriteria && this.lastSortCriteria.length) {
                 const keyIdx = this._findKeyInItems(key, this.lastIterator.mergedItemArray);
+                if (keyIdx < 0) {
+                    return false;
+                }
                 const sortFields = [];
                 let i = 0;
                 if (this.lastIterator && this.lastSortCriteria) {
@@ -1431,6 +1527,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             }
         }
         _handleRefreshEvent(event) {
+            this.dataBeforeUpdated = new Map();
             const unsubmittedItems = this.editBuffer.getUnsubmittedItems();
             const keySet = new Set();
             unsubmittedItems.forEach((editItem) => {
@@ -1461,6 +1558,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             }
         }
         _handleMutateEvent(event) {
+            this.dataBeforeUpdated = new Map();
             const detailAdd = event.detail.add;
             if (detailAdd && detailAdd.metadata && detailAdd.data) {
                 detailAdd.metadata.forEach((metadata, idx) => {

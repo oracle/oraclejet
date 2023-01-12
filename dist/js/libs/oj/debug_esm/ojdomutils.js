@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -13,7 +13,8 @@ import $ from 'jquery';
  * DOM utilities.
  * @ignore
  */
-const DomUtils = { _HTML_START_TAG: '\x3chtml\x3e',
+const DomUtils = {
+  _HTML_START_TAG: '\x3chtml\x3e',
   _HTML_END_TAG: '\x3c/html\x3e',
   _LEGAL_ELEMENTS: {
     SPAN: 1,
@@ -31,7 +32,8 @@ const DomUtils = { _HTML_START_TAG: '\x3chtml\x3e',
     SMALL: 1,
     PRE: 1
   },
-  _LEGAL_ATTRIBUTES: { class: 1, style: 1 } };
+  _LEGAL_ATTRIBUTES: { class: 1, style: 1 }
+};
 
 /**
  * Returns true if the value is null or if the trimmed value is of zero length.
@@ -40,8 +42,10 @@ const DomUtils = { _HTML_START_TAG: '\x3chtml\x3e',
  * @return {boolean} true if the string is wrapped in <html> tag.
  */
 DomUtils.isHTMLContent = function (content) {
-  if (content.indexOf(DomUtils._HTML_START_TAG) === 0 &&
-      content.lastIndexOf(DomUtils._HTML_END_TAG) === content.length - 7) {
+  if (
+    content.indexOf(DomUtils._HTML_START_TAG) === 0 &&
+    content.lastIndexOf(DomUtils._HTML_END_TAG) === content.length - 7
+  ) {
     return true;
   }
 
@@ -120,11 +124,8 @@ DomUtils.isAncestorOrSelf = function (ancestorNode, node) {
   // oj.Assert.assertDomElement(ancestorNode);
   // oj.Assert.assertDomElement(node);
 
-  return (node === ancestorNode) ?
-          true :
-          DomUtils.isAncestor(ancestorNode, node);
+  return node === ancestorNode ? true : DomUtils.isAncestor(ancestorNode, node);
 };
-
 
 /**
  * Adds a resize listener for a block or inline-block element
@@ -177,14 +178,15 @@ DomUtils.removeResizeListener = function (elem, listener) {
  * @param {!Element} subtreeRoot - subtree root
  */
 DomUtils.fixResizeListeners = function (subtreeRoot) {
-  $(subtreeRoot).find('.oj-helper-detect-expansion').parent().each(
-    function (index, div) {
+  $(subtreeRoot)
+    .find('.oj-helper-detect-expansion')
+    .parent()
+    .each(function (index, div) {
       var tracker = DomUtils._RSZ_TRKR.get(div);
       if (tracker != null) {
         tracker.init(true);
       }
-    }
-  );
+    });
 };
 
 /**
@@ -197,7 +199,7 @@ DomUtils.fixResizeListeners = function (subtreeRoot) {
  */
 DomUtils.isMetaKeyPressed = function (evt) {
   var agentInfo = oj.AgentUtils.getAgentInfo();
-  return (oj.AgentUtils.OS.MAC === agentInfo.os ? evt.metaKey : evt.ctrlKey);
+  return oj.AgentUtils.OS.MAC === agentInfo.os ? evt.metaKey : evt.ctrlKey;
 };
 
 /**
@@ -224,24 +226,26 @@ DomUtils.dispatchEvent = function (element, evt) {
 /**
  * @private
  */
-DomUtils._invokeAfterPaint = (window.requestAnimationFrame ||
-                                 window.mozRequestAnimationFrame ||
-                                 window.webkitRequestAnimationFrame ||
-                                 function (fn) {
-                                   return window.setTimeout(fn, 0); // @HTMLUpdateOK
-                                 }
-                                ).bind(window);
+DomUtils._invokeAfterPaint = (
+  window.requestAnimationFrame ||
+  window.mozRequestAnimationFrame ||
+  window.webkitRequestAnimationFrame ||
+  function (fn) {
+    return window.setTimeout(fn, 0); // @HTMLUpdateOK
+  }
+).bind(window);
 
 /**
  * @private
  */
-DomUtils._cancelInvokeAfterPaint = (window.cancelAnimationFrame ||
-                                       window.mozCancelAnimationFrame ||
-                                       window.webkitCancelAnimationFrame ||
-                                       function (id) {
-                                         return window.clearTimeout(id);
-                                       }
-                                      ).bind(window);
+DomUtils._cancelInvokeAfterPaint = (
+  window.cancelAnimationFrame ||
+  window.mozCancelAnimationFrame ||
+  window.webkitCancelAnimationFrame ||
+  function (id) {
+    return window.clearTimeout(id);
+  }
+).bind(window);
 
 /**
  * Utility class for tracking resize events for a given element and  sispatching them
@@ -278,20 +282,24 @@ DomUtils._ResizeTracker = function (div, useResizeObserver) {
   var _resizeObserver = null;
 
   this.addListener = function (listener, collapseEventTimeout) {
-    if (collapseEventTimeout === undefined || isNaN(collapseEventTimeout)
-      || collapseEventTimeout === 0) {
+    if (
+      collapseEventTimeout === undefined ||
+      isNaN(collapseEventTimeout) ||
+      collapseEventTimeout === 0
+    ) {
       _listeners.add(listener);
     } else {
       // See comments above for _fireResizeDomEvent.
-      var _wrappedOrigListener = ()=>{
+      var _wrappedOrigListener = () => {
         listener.apply(null, arguments);
         div.dispatchEvent(new Event('oj-resize'));
       };
       _collapsingManagers.push(
-          new DomUtils._collapsingListenerManager(
-            _fireResizeDomEvent ? _wrappedOrigListener : listener,
-            collapseEventTimeout
-      ));
+        new DomUtils._collapsingListenerManager(
+          _fireResizeDomEvent ? _wrappedOrigListener : listener,
+          collapseEventTimeout
+        )
+      );
       _collapsingListeners.push(listener);
     }
   };
@@ -328,9 +336,9 @@ DomUtils._ResizeTracker = function (div, useResizeObserver) {
       var expansionChild = document.createElement('div');
       _detectExpansion.appendChild(expansionChild); // @HTMLUpdateOK expansionChild constructed by the code above
       if (firstChild != null) {
-        div.insertBefore(_detectExpansion, firstChild);// @HTMLUpdateOK _detectExpansion constructed by the code above
+        div.insertBefore(_detectExpansion, firstChild); // @HTMLUpdateOK _detectExpansion constructed by the code above
       } else {
-        div.appendChild(_detectExpansion);// @HTMLUpdateOK _detectExpansion constructed by the code above
+        div.appendChild(_detectExpansion); // @HTMLUpdateOK _detectExpansion constructed by the code above
       }
 
       _detectExpansion.addEventListener('scroll', _scrollListener, false);
@@ -431,12 +439,10 @@ DomUtils._ResizeTracker = function (div, useResizeObserver) {
           DomUtils._cancelInvokeAfterPaint(_invokeId);
         }
 
-        _invokeId = DomUtils._invokeAfterPaint(
-        function () {
+        _invokeId = DomUtils._invokeAfterPaint(function () {
           _invokeId = null;
           listenersWrapper(newWidth, newHeight);
-        }
-      );
+        });
       }
     }
 
@@ -450,8 +456,11 @@ DomUtils._ResizeTracker = function (div, useResizeObserver) {
     if (!_checkSize(true)) {
       // Workaround for the WebKit issue where scrollLeft gets reset to 0 without the DIV being expanded
       // We will retry to the set the scrollTop only twice to avoid infinite loops
-      if (_retrySetScroll > 0 && _detectExpansion.offsetParent != null &&
-            (_detectExpansion.scrollLeft === 0 || _detectExpansion.scrollTop === 0)) {
+      if (
+        _retrySetScroll > 0 &&
+        _detectExpansion.offsetParent != null &&
+        (_detectExpansion.scrollLeft === 0 || _detectExpansion.scrollTop === 0)
+      ) {
         _retrySetScroll -= 1;
         _adjust(_oldWidth, _oldHeight);
       }
@@ -475,9 +484,7 @@ DomUtils._ResizeTracker = function (div, useResizeObserver) {
       _detectExpansion.scrollLeft = delta;
       _detectExpansion.scrollTop = delta;
       delta += 1;
-    } while ((_detectExpansion.scrollTop === 0 || _detectExpansion.scrollLeft === 0) &&
-             delta <= 5);
-
+    } while ((_detectExpansion.scrollTop === 0 || _detectExpansion.scrollLeft === 0) && delta <= 5);
 
     _detectContraction.scrollLeft = width;
     _detectContraction.scrollTop = height;
@@ -491,7 +498,6 @@ DomUtils._RSZ_TRKR_OBS = new WeakMap();
 // a weak map with true values for observer-based resize listeners
 DomUtils._OBS_BASED = new WeakMap();
 
-
 /**
  * Returns true if the name is a valid identifier
  *
@@ -501,7 +507,6 @@ DomUtils._OBS_BASED = new WeakMap();
 DomUtils.isValidIdentifier = function (name) {
   return /^[A-Za-z][0-9A-Z_a-z-]*$/.test(name);
 };
-
 
 /**
  * @constructor
@@ -540,9 +545,11 @@ DomUtils._collapsingListenerManager = function (originalCallback, timeout) {
  * @return {boolean} true if touch is supported
  */
 DomUtils.isTouchSupported = function () {
-  return ('ontouchstart' in window) // C, FF, Safari, Edge
-    || (navigator.msMaxTouchPoints > 0) // IE10
-    || (navigator.maxTouchPoints > 0); // IE11
+  return (
+    'ontouchstart' in window || // C, FF, Safari, Edge
+    navigator.msMaxTouchPoints > 0 || // IE10
+    navigator.maxTouchPoints > 0
+  ); // IE11
 };
 
 /**
@@ -563,9 +570,9 @@ DomUtils.setInKoCleanExternal = function (node) {
 DomUtils.unwrap = function (locator, replaceLocator) {
   var koCleanNode = DomUtils._koCleanNode;
 
-
   if (koCleanNode) {
-    if (locator.get(0) === koCleanNode) { // skip unwrap
+    if (locator.get(0) === koCleanNode) {
+      // skip unwrap
       return;
     }
   }
@@ -595,15 +602,16 @@ DomUtils.isChromeEvent = function (event) {
 
   var agentInfo = oj.AgentUtils.getAgentInfo();
 
-  if (oj.AgentUtils.OS.ANDROID === agentInfo.os ||
-      oj.AgentUtils.OS.IOS === agentInfo.os) {
+  if (oj.AgentUtils.OS.ANDROID === agentInfo.os || oj.AgentUtils.OS.IOS === agentInfo.os) {
     return false;
   }
 
-  if (agentInfo.engine !== oj.AgentUtils.ENGINE.GECKO
-      && agentInfo.engine !== oj.AgentUtils.ENGINE.WEBKIT
-      && agentInfo.engine !== oj.AgentUtils.ENGINE.BLINK
-      && agentInfo.browser !== oj.AgentUtils.BROWSER.IE) {
+  if (
+    agentInfo.engine !== oj.AgentUtils.ENGINE.GECKO &&
+    agentInfo.engine !== oj.AgentUtils.ENGINE.WEBKIT &&
+    agentInfo.engine !== oj.AgentUtils.ENGINE.BLINK &&
+    agentInfo.browser !== oj.AgentUtils.BROWSER.IE
+  ) {
     // unknown engine/browser
     return false;
   }
@@ -618,20 +626,28 @@ DomUtils.isChromeEvent = function (event) {
   var pos = domTarget.getBoundingClientRect();
   var sbw = DomUtils.getScrollBarWidth();
 
-  if (isLTR && ((domTarget.nodeName === 'HTML'
-      || target.css('overflow-x') !== 'visible') && event.clientX > (pos.right - sbw))) {
+  if (
+    isLTR &&
+    (domTarget.nodeName === 'HTML' || target.css('overflow-x') !== 'visible') &&
+    event.clientX > pos.right - sbw
+  ) {
     // ltr scrollbar is always on the right
     return true;
-  } else if (!isLTR && !isMainScrollbarOnTheLeft
-        && domTarget.nodeName === 'HTML' && event.clientX > (pos.right - sbw)) {
+  } else if (
+    !isLTR &&
+    !isMainScrollbarOnTheLeft &&
+    domTarget.nodeName === 'HTML' &&
+    event.clientX > pos.right - sbw
+  ) {
     // RTL scrollbar on the document is still on the right
     return true;
-  } else if (!isLTR && target.css('overflow-x') !== 'visible'
-        && event.clientX < (pos.left + sbw)) {
+  } else if (!isLTR && target.css('overflow-x') !== 'visible' && event.clientX < pos.left + sbw) {
     // RTL scrollbar is on the left
     return true;
-  } else if ((domTarget.nodeName === 'HTML' || target.css('overflow-y') !== 'visible')
-        && event.clientY > (pos.bottom - sbw)) {
+  } else if (
+    (domTarget.nodeName === 'HTML' || target.css('overflow-y') !== 'visible') &&
+    event.clientY > pos.bottom - sbw
+  ) {
     // below the scrollbar
     return true;
   }
@@ -654,7 +670,7 @@ DomUtils.getReadingDirection = function () {
   if (dir) {
     dir = dir.toLowerCase();
   }
-  return (dir === 'rtl') ? 'rtl' : 'ltr';
+  return dir === 'rtl' ? 'rtl' : 'ltr';
 };
 
 /**
@@ -678,8 +694,7 @@ DomUtils.calculateScrollLeft = function (scrollLeft) {
   var resultScrollLeft = scrollLeft;
   if (DomUtils.getReadingDirection() === 'rtl') {
     var browser = oj.AgentUtils.getAgentInfo().browser;
-    if (browser !== oj.AgentUtils.BROWSER.IE &&
-               browser !== oj.AgentUtils.BROWSER.EDGE) {
+    if (browser !== oj.AgentUtils.BROWSER.IE && browser !== oj.AgentUtils.BROWSER.EDGE) {
       // old ie/edge still have positive values for scrollLeft
       // webkit used to not support -scrollLeft and had to be calculated, chromium 
       // mozilla always supported this a -scrollLeft, mozilla 
@@ -855,7 +870,6 @@ DomUtils.isLogicalAncestorOrSelf = function (ancestorNode, node) {
   return false;
 };
 
-
 /**
  * Checks whether the href represents a safe URL
  * @param {!string} href - HREF to test
@@ -877,7 +891,7 @@ DomUtils.validateURL = function (href, whitelist) {
   // if it isn't on the allowed list and it isn't '', throw an error.
   // IE11 returns '' for hrefs like 'abc', other browsers return 'https'
   // and we want to allow hrefs like 'abc' since those are relative urls.
-  if ((allowed.indexOf(protocol) < 0) && (protocol !== '')) {
+  if (allowed.indexOf(protocol) < 0 && protocol !== '') {
     throw new Error(protocol + ' is not a valid URL protocol');
   }
 };
@@ -887,13 +901,19 @@ DomUtils.validateURL = function (href, whitelist) {
  * @private
  */
 DomUtils._suppressNativeContextMenu = function () {
-  if ($(document.body).hasClass('oj-hybrid') && !$(document.body).hasClass('oj-hybrid-show-context-menu')) {
-    document.body.addEventListener('contextmenu',
+  if (
+    $(document.body).hasClass('oj-hybrid') &&
+    !$(document.body).hasClass('oj-hybrid-show-context-menu')
+  ) {
+    document.body.addEventListener(
+      'contextmenu',
       function (event) {
         if (event.target.nodeName !== 'INPUT' && event.target.nodeName !== 'TEXTAREA') {
           event.preventDefault();
         }
-      }, true);
+      },
+      true
+    );
   }
 };
 DomUtils._suppressNativeContextMenu();
@@ -901,7 +921,6 @@ DomUtils._suppressNativeContextMenu();
 // standard duration of a pressHold gesture.  Point of reference: default
 // JQ Mobile threshold to be a press-and-hold is 750ms.
 DomUtils.PRESS_HOLD_THRESHOLD = 750;
-
 
 // ------------------------------------------------------------------------------------------------
 // Recent touch end
@@ -932,9 +951,9 @@ DomUtils.recentTouchEnd = (function () {
 
   return function () {
     // must be at least 300 for the "300ms" delay
-    return (Date.now() - touchTimestamp) < TOUCH_THRESHOLD;
+    return Date.now() - touchTimestamp < TOUCH_THRESHOLD;
   };
-}());
+})();
 
 /**
  * Returns true if a touchstart has been detected anywhere in the document in the last 800 ms.
@@ -962,9 +981,9 @@ DomUtils.recentTouchStart = (function () {
 
   return function () {
     // must be at least TOUCH_THRESHOLD for the  delay
-    return (Date.now() - touchTimestamp) < TOUCH_THRESHOLD;
+    return Date.now() - touchTimestamp < TOUCH_THRESHOLD;
   };
-}());
+})();
 
 // ------------------------------------------------------------------------------------------------
 // Recent pointer
@@ -1015,45 +1034,58 @@ DomUtils.recentPointer = (function () {
   // threshold only for touchstart should not be a problem there.
   var TOUCHSTART_THRESHOLD = DomUtils.PRESS_HOLD_THRESHOLD + POINTER_THRESHOLD_CUSHION;
 
-
   // --- Document listeners ---
 
   // Use capture phase to make sure we hear the events before someone cancels them
-  document.addEventListener('mousedown', function () {
-    // If the mousedown immediately follows a touchstart, i.e. if it seems to be the compatibility mousedown
-    // corresponding to the touchstart, then we want to consider it a "recent pointer activity" until the end time
-    // that is max(touchstartTime + TOUCHSTART_THRESHOLD, now + POINTER_THRESHOLD), where now is mousedownTime in this
-    // case.  (I.e. it would defeat the purpose if the inevitable mousedown replaced the longer touchstart threshold with
-    // a shorter one.)  We don't do this in the touchend/mouseup listeners, as those obviously happen after the pressHold
-    // is over, in which case the following analysis applies:
-    // - If the pressHold was < PRESS_HOLD_THRESHOLD ms,
-    // - then the higher TOUCHSTART_THRESHOLD is not needed or relevant, since anything focused on pressHold
-    //   (like a context menu) never happened,
-    // - else the touchend/mouseup happened > PRESS_HOLD_THRESHOLD ms after the touchstart, so in the max() above,
-    //   the 2nd quantity is always bigger (later).
-    var now = Date.now();
-    if ((!pointerTimestampIsTouchStart) ||
-        (now > pointerTimestamp + DomUtils.PRESS_HOLD_THRESHOLD)) {
-      pointerTimestamp = now;
+  document.addEventListener(
+    'mousedown',
+    function () {
+      // If the mousedown immediately follows a touchstart, i.e. if it seems to be the compatibility mousedown
+      // corresponding to the touchstart, then we want to consider it a "recent pointer activity" until the end time
+      // that is max(touchstartTime + TOUCHSTART_THRESHOLD, now + POINTER_THRESHOLD), where now is mousedownTime in this
+      // case.  (I.e. it would defeat the purpose if the inevitable mousedown replaced the longer touchstart threshold with
+      // a shorter one.)  We don't do this in the touchend/mouseup listeners, as those obviously happen after the pressHold
+      // is over, in which case the following analysis applies:
+      // - If the pressHold was < PRESS_HOLD_THRESHOLD ms,
+      // - then the higher TOUCHSTART_THRESHOLD is not needed or relevant, since anything focused on pressHold
+      //   (like a context menu) never happened,
+      // - else the touchend/mouseup happened > PRESS_HOLD_THRESHOLD ms after the touchstart, so in the max() above,
+      //   the 2nd quantity is always bigger (later).
+      var now = Date.now();
+      if (!pointerTimestampIsTouchStart || now > pointerTimestamp + DomUtils.PRESS_HOLD_THRESHOLD) {
+        pointerTimestamp = now;
+        pointerTimestampIsTouchStart = false;
+      }
+    },
+    true
+  );
+
+  document.addEventListener(
+    'touchstart',
+    function () {
+      pointerTimestamp = Date.now();
+      pointerTimestampIsTouchStart = true;
+    },
+    { passive: true, capture: true }
+  );
+
+  document.addEventListener(
+    'mouseup',
+    function () {
+      pointerTimestamp = Date.now();
       pointerTimestampIsTouchStart = false;
-    }
-  }, true);
+    },
+    true
+  );
 
-  document.addEventListener('touchstart', function () {
-    pointerTimestamp = Date.now();
-    pointerTimestampIsTouchStart = true;
-  }, { passive: true, capture: true });
-
-  document.addEventListener('mouseup', function () {
-    pointerTimestamp = Date.now();
-    pointerTimestampIsTouchStart = false;
-  }, true);
-
-  document.addEventListener('touchend', function () {
-    pointerTimestamp = Date.now();
-    pointerTimestampIsTouchStart = false;
-  }, true);
-
+  document.addEventListener(
+    'touchend',
+    function () {
+      pointerTimestamp = Date.now();
+      pointerTimestampIsTouchStart = false;
+    },
+    true
+  );
 
   // --- The function assigned to DomUtils.recentPointer ---
 
@@ -1062,8 +1094,7 @@ DomUtils.recentPointer = (function () {
     var threshold = pointerTimestampIsTouchStart ? TOUCHSTART_THRESHOLD : POINTER_THRESHOLD;
     return millisSincePointer < threshold;
   };
-}());
-
+})();
 
 // ------------------------------------------------------------------------------------------------
 // Utility for suppressing focus ring for mouse/touch interaction, but not KB or other interaction:
@@ -1122,7 +1153,7 @@ DomUtils.makeFocusable = (function () {
   // This private var is shared by all callers that use makeFocusable() and don't supply their own focus highlight policy.
   // If the oj-focus-config SASS object ever acquires a 2nd field, should continue to call pJFFF() only once, statically.
   var FOCUS_HIGHLIGHT_POLICY = (parseJSONFromFontFamily('oj-focus-config') || {})
-      .focusHighlightPolicy;
+    .focusHighlightPolicy;
 
   /**
    * @param {function()} focusPolicyCallback Optional getter passed to makeFocusable() by callers wishing to get use a caller-
@@ -1140,8 +1171,7 @@ DomUtils.makeFocusable = (function () {
       case 'none':
         return false;
       default: // "nonPointer" or no value provided (e.g. SASS var missing)
-        return !(DomUtils.recentPointer() ||
-                 (recentPointerCallback && recentPointerCallback()));
+        return !(DomUtils.recentPointer() || (recentPointerCallback && recentPointerCallback()));
     }
   };
 
@@ -1164,8 +1194,9 @@ DomUtils.makeFocusable = (function () {
 
       // map ids to namespaces.  "2" -> ".ojFocusable2".  "2,7" -> ".ojFocusable2 .ojFocusable7"
       var namespaces = namespacePrefix + ('' + ids).split(',').join(namespaceSeparator);
-      element.off(namespaces) // remove the listeners
-             .removeData(dataKey); // clear list of listener id's needing removal
+      element
+        .off(namespaces) // remove the listeners
+        .removeData(dataKey); // clear list of listener id's needing removal
       return;
     }
 
@@ -1192,53 +1223,54 @@ DomUtils.makeFocusable = (function () {
     }
 
     var hasFocus = false;
-    var setupHandlers = options.setupHandlers || function (focusInHandler, focusOutHandler) {
-      var component = options.component;
-      var focusInListener = function (event) {
-        focusInHandler($(event.currentTarget));
-        hasFocus = true;
-      };
-      var focusOutListener = function (event) {
-        // We should only do this once, even though this event may fire multiple times.
-        if (hasFocus) {
-          focusOutHandler($(event.currentTarget));
-          hasFocus = false;
+    var setupHandlers =
+      options.setupHandlers ||
+      function (focusInHandler, focusOutHandler) {
+        var component = options.component;
+        var focusInListener = function (event) {
+          focusInHandler($(event.currentTarget));
+          hasFocus = true;
+        };
+        var focusOutListener = function (event) {
+          // We should only do this once, even though this event may fire multiple times.
+          if (hasFocus) {
+            focusOutHandler($(event.currentTarget));
+            hasFocus = false;
+          }
+        };
+
+        if (component) {
+          component._on(element, {
+            focusin: focusInListener,
+            focusout: focusOutListener
+          });
+        } else {
+          // neither options.component nor options.setupHandlers were passed, so we must provide a
+          // way for the caller to remove the listeners.  That's done via the "remove" param, which
+          // uses the namespaces that we stash via data().
+          var id = nextId;
+          nextId += 1;
+
+          // list of id's of existing listeners needing removal
+          var _ids = element.data(dataKey);
+
+          // append id to that list, or start new list if first one
+          element.data(dataKey, _ids == null ? id : _ids + ',' + id);
+
+          // add listeners namespaced by that id
+          var handlers = {};
+          var namespace = namespacePrefix + id;
+          handlers['focusin' + namespace] = focusInListener;
+          handlers['focusout' + namespace] = focusOutListener;
+          element.on(handlers);
         }
       };
-
-      if (component) {
-        component._on(element, {
-          focusin: focusInListener,
-          focusout: focusOutListener
-        });
-      } else {
-        // neither options.component nor options.setupHandlers were passed, so we must provide a
-        // way for the caller to remove the listeners.  That's done via the "remove" param, which
-        // uses the namespaces that we stash via data().
-        var id = nextId;
-        nextId += 1;
-
-        // list of id's of existing listeners needing removal
-        var _ids = element.data(dataKey);
-
-        // append id to that list, or start new list if first one
-        element.data(dataKey, _ids == null ? id : _ids + ',' + id);
-
-        // add listeners namespaced by that id
-        var handlers = {};
-        var namespace = namespacePrefix + id;
-        handlers['focusin' + namespace] = focusInListener;
-        handlers['focusout' + namespace] = focusOutListener;
-        element.on(handlers);
-      }
-    };
 
     setupHandlers(addClasses, removeClasses);
   };
 
   return makeFocusable;
-}());
-
+})();
 
 // ------------------------------------------------------------------------------------------------
 // Utility for supporting makeFocusable by providing setupHandlers in and out handlers

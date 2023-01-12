@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -57,7 +57,6 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // Resize Options
         //
         // ///////////////////////////////////////////////////////////////////////////////////
-
 
         /**
          *
@@ -183,7 +182,6 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // callbacks
         // ///////////////
 
-
         /**
          * Triggered when the ojResizable is resized.
          *
@@ -268,7 +266,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           return false;
         }
 
-        var scroll = (a && a === 'left') ? 'scrollLeft' : 'scrollTop';
+        var scroll = a && a === 'left' ? 'scrollLeft' : 'scrollTop';
         var has = false;
 
         if (el[scroll] > 0) {
@@ -279,7 +277,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // if the element doesn't have the scroll set, see if it's possible to
         // set the scroll
         el[scroll] = 1;
-        has = (el[scroll] > 0);
+        has = el[scroll] > 0;
         el[scroll] = 0;
         return has;
       },
@@ -358,18 +356,20 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         this._initialResize = true;
 
-        this.handles = o.handles || (!$(OJ_RESIZABLE_HANDLE_SELECTOR,
-                                        this.element).length ? 'e,s,se' :
-        {
-          n: '.oj-resizable-n',
-          e: '.oj-resizable-e',
-          s: '.oj-resizable-s',
-          w: '.oj-resizable-w',
-          se: '.oj-resizable-se',
-          sw: '.oj-resizable-sw',
-          ne: '.oj-resizable-ne',
-          nw: '.oj-resizable-nw'
-        });
+        this.handles =
+          o.handles ||
+          (!$(OJ_RESIZABLE_HANDLE_SELECTOR, this.element).length
+            ? 'e,s,se'
+            : {
+                n: '.oj-resizable-n',
+                e: '.oj-resizable-e',
+                s: '.oj-resizable-s',
+                w: '.oj-resizable-w',
+                se: '.oj-resizable-se',
+                sw: '.oj-resizable-sw',
+                ne: '.oj-resizable-ne',
+                nw: '.oj-resizable-nw'
+              });
 
         if (this.handles.constructor === String) {
           if (this.handles === 'all') {
@@ -440,7 +440,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         }
 
         var _destroy = function (exp) {
-          $(exp).removeClass('oj-resizable oj-resizable-disabled oj-resizable-resizing')
+          $(exp)
+            .removeClass('oj-resizable oj-resizable-disabled oj-resizable-resizing')
             .removeData('resizable')
             .removeData('oj-resizable')
             .unbind('.resizable')
@@ -476,7 +477,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         this.resizing = true;
 
         // Bugfix for http://bugs.jqueryui.com/ticket/1749
-        if ((/absolute/).test(el.css('position'))) {
+        if (/absolute/.test(el.css('position'))) {
           el.css({ position: 'absolute', top: el.css('top'), left: el.css('left') });
         } else if (el.is('.oj-draggable')) {
           el.css({ position: 'absolute', top: iniPos.top, left: iniPos.left });
@@ -503,7 +504,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         };
         this.originalMousePosition = { left: event.pageX, top: event.pageY };
 
-        this.aspectRatio = (this.originalSize.width / this.originalSize.height) || 1;
+        this.aspectRatio = this.originalSize.width / this.originalSize.height || 1;
 
         cursor = /** @type string */ ($('.oj-resizable-' + this.axis).css('cursor'));
         $('body').css('cursor', cursor === 'auto' ? this.axis + '-resize' : cursor);
@@ -523,8 +524,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         var props = {};
         var smp = this.originalMousePosition;
         var a = this.axis;
-        var dx = (event.pageX - smp.left) || 0;
-        var dy = (event.pageY - smp.top) || 0;
+        var dx = event.pageX - smp.left || 0;
+        var dy = event.pageY - smp.top || 0;
         var trigger = this._change[a];
 
         this.prevPosition = {
@@ -607,13 +608,12 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           minHeight: this._isNumber(o.minHeight) ? o.minHeight : 0,
           maxHeight: this._isNumber(o.maxHeight) ? o.maxHeight : Infinity
 
-            /*
+          /*
              minWidth: 0,
              maxWidth: Infinity,
              minHeight: 0,
              maxHeight: Infinity
              */
-
         };
 
         if (forceAspectRatio) {
@@ -659,9 +659,9 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         var a = this.axis;
 
         if (this._isNumber(data.height)) {
-          data.width = (data.height * this.aspectRatio);
+          data.width = data.height * this.aspectRatio;
         } else if (this._isNumber(data.width)) {
-          data.height = (data.width / this.aspectRatio);
+          data.height = data.width / this.aspectRatio;
         }
 
         if (a === 'sw') {
@@ -679,10 +679,10 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         var data = _data;
         var o = this._vBoundaries;
         var a = this.axis;
-        var ismaxw = this._isNumber(data.width) && o.maxWidth && (o.maxWidth < data.width);
-        var ismaxh = this._isNumber(data.height) && o.maxHeight && (o.maxHeight < data.height);
-        var isminw = this._isNumber(data.width) && o.minWidth && (o.minWidth > data.width);
-        var isminh = this._isNumber(data.height) && o.minHeight && (o.minHeight > data.height);
+        var ismaxw = this._isNumber(data.width) && o.maxWidth && o.maxWidth < data.width;
+        var ismaxh = this._isNumber(data.height) && o.maxHeight && o.maxHeight < data.height;
+        var isminw = this._isNumber(data.width) && o.minWidth && o.minWidth > data.width;
+        var isminh = this._isNumber(data.height) && o.minHeight && o.minHeight > data.height;
         var dw = this.originalPosition.left + this.originalSize.width;
         var dh = this.position.top + this.size.height;
         var cw = /sw|nw|w/.test(a);
@@ -740,8 +740,18 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
           if (!this.borderDif) {
             this.borderDif = [];
-            borders = [prel.css('borderTopWidth'), prel.css('borderRightWidth'), prel.css('borderBottomWidth'), prel.css('borderLeftWidth')];
-            paddings = [prel.css('paddingTop'), prel.css('paddingRight'), prel.css('paddingBottom'), prel.css('paddingLeft')];
+            borders = [
+              prel.css('borderTopWidth'),
+              prel.css('borderRightWidth'),
+              prel.css('borderBottomWidth'),
+              prel.css('borderLeftWidth')
+            ];
+            paddings = [
+              prel.css('paddingTop'),
+              prel.css('paddingRight'),
+              prel.css('paddingBottom'),
+              prel.css('paddingLeft')
+            ];
 
             for (j = 0; j < borders.length; j++) {
               this.borderDif[j] = (parseInt(borders[j], 10) || 0) + (parseInt(paddings[j], 10) || 0);
@@ -749,8 +759,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           }
 
           prel.css({
-            height: (element.height() - this.borderDif[0] - this.borderDif[2]) || 0,
-            width: (element.width() - this.borderDif[1] - this.borderDif[3]) || 0
+            height: element.height() - this.borderDif[0] - this.borderDif[2] || 0,
+            width: element.width() - this.borderDif[1] - this.borderDif[3] || 0
           });
         }
       },
@@ -778,20 +788,28 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           return { height: this.originalSize.height + dy };
         },
         se: function (event, dx, dy) {
-          return $.extend(this._change.s.apply(this, arguments),
-                          this._change.e.apply(this, [event, dx, dy]));
+          return $.extend(
+            this._change.s.apply(this, arguments),
+            this._change.e.apply(this, [event, dx, dy])
+          );
         },
         sw: function (event, dx, dy) {
-          return $.extend(this._change.s.apply(this, arguments),
-                          this._change.w.apply(this, [event, dx, dy]));
+          return $.extend(
+            this._change.s.apply(this, arguments),
+            this._change.w.apply(this, [event, dx, dy])
+          );
         },
         ne: function (event, dx, dy) {
-          return $.extend(this._change.n.apply(this, arguments),
-                          this._change.e.apply(this, [event, dx, dy]));
+          return $.extend(
+            this._change.n.apply(this, arguments),
+            this._change.e.apply(this, [event, dx, dy])
+          );
         },
         nw: function (event, dx, dy) {
-          return $.extend(this._change.n.apply(this, arguments),
-                          this._change.w.apply(this, [event, dx, dy]));
+          return $.extend(
+            this._change.n.apply(this, arguments),
+            this._change.w.apply(this, [event, dx, dy])
+          );
         }
       },
       _propagate: function (n, event) {
@@ -837,7 +855,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           });
         };
 
-        if (typeof (o.alsoResize) === 'object' && !o.alsoResize.parentNode) {
+        if (typeof o.alsoResize === 'object' && !o.alsoResize.parentNode) {
           if (o.alsoResize.length) {
             o.alsoResize = o.alsoResize[0];
             _store(o.alsoResize);
@@ -860,10 +878,10 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         var op = that.originalPosition;
 
         var delta = {
-          height: (that.size.height - os.height) || 0,
-          width: (that.size.width - os.width) || 0,
-          top: (that.position.top - op.top) || 0,
-          left: (that.position.left - op.left) || 0
+          height: that.size.height - os.height || 0,
+          width: that.size.width - os.width || 0,
+          top: that.position.top - op.top || 0,
+          left: that.position.left - op.left || 0
         };
         var _alsoResize = function (exp, c) {
           $(exp).each(function () {
@@ -890,7 +908,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           });
         };
 
-        if (typeof (o.alsoResize) === 'object' && !o.alsoResize.nodeType) {
+        if (typeof o.alsoResize === 'object' && !o.alsoResize.nodeType) {
           $.each(o.alsoResize, function (exp, c) {
             _alsoResize(exp, c);
           });
@@ -965,15 +983,15 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           that.containerOffset = element.offset();
           that.containerPosition = element.position();
           that.containerSize = {
-            height: (element.innerHeight() - p[3]),
-            width: (element.innerWidth() - p[1])
+            height: element.innerHeight() - p[3],
+            width: element.innerWidth() - p[1]
           };
 
           co = that.containerOffset;
           ch = that.containerSize.height;
           cw = that.containerSize.width;
-          width = (that._hasScroll(ce, 'left') ? ce.scrollWidth : cw);
-          height = (that._hasScroll(ce) ? ce.scrollHeight : ch);
+          width = that._hasScroll(ce, 'left') ? ce.scrollWidth : cw;
+          height = that._hasScroll(ce) ? ce.scrollHeight : ch;
 
           that.parentData = {
             element: ce,
@@ -1004,13 +1022,14 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         var ce = that.containerElement;
         var continueResize = true;
 
-        if (ce[0] !== document && (/static/).test(ce.css('position'))) {
+        if (ce[0] !== document && /static/.test(ce.css('position'))) {
           cop = co;
         }
 
         if (cp.left < (that._helper ? co.left : 0)) {
-          that.size.width +=
-            that._helper ? (that.position.left - co.left) : (that.position.left - cop.left);
+          that.size.width += that._helper
+            ? that.position.left - co.left
+            : that.position.left - cop.left;
           if (pRatio) {
             that.size.height = that.size.width / that.aspectRatio;
             continueResize = false;
@@ -1019,7 +1038,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         }
 
         if (cp.top < (that._helper ? co.top : 0)) {
-          that.size.height += that._helper ? (that.position.top - co.top) : that.position.top;
+          that.size.height += that._helper ? that.position.top - co.top : that.position.top;
           if (pRatio) {
             that.size.width = that.size.height * that.aspectRatio;
             continueResize = false;
@@ -1030,10 +1049,13 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         that.offset.left = that.parentData.left + that.position.left;
         that.offset.top = that.parentData.top + that.position.top;
 
-        woset = Math.abs((that._helper ? that.offset.left - cop.left :
-                          (that.offset.left - co.left)) + that.sizeDiff.width);
-        hoset = Math.abs((that._helper ? that.offset.top - cop.top :
-                          (that.offset.top - co.top)) + that.sizeDiff.height);
+        woset = Math.abs(
+          (that._helper ? that.offset.left - cop.left : that.offset.left - co.left) +
+            that.sizeDiff.width
+        );
+        hoset = Math.abs(
+          (that._helper ? that.offset.top - cop.top : that.offset.top - co.top) + that.sizeDiff.height
+        );
 
         isParent = that.containerElement.get(0) === that.element.parent().get(0);
         isOffsetRelative = /relative|absolute/.test(that.containerElement.css('position'));
@@ -1076,7 +1098,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         var w = helper.outerWidth() - that.sizeDiff.width;
         var h = helper.outerHeight() - that.sizeDiff.height;
 
-        if (that._helper && !o.animate && (/relative/).test(ce.css('position'))) {
+        if (that._helper && !o.animate && /relative/.test(ce.css('position'))) {
           $(this).css({
             left: ho.left - cop.left - co.left,
             width: w,
@@ -1084,7 +1106,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           });
         }
 
-        if (that._helper && !o.animate && (/static/).test(ce.css('position'))) {
+        if (that._helper && !o.animate && /static/.test(ce.css('position'))) {
           $(this).css({
             left: ho.left - cop.left - co.left,
             width: w,
@@ -1105,9 +1127,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           prevPosition: this.prevPosition
         };
       }
-
     });
-  }());
+  })();
 
   (function () {
     // class name constants
@@ -1121,7 +1142,6 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
     var /** @const */ OJD_OPTION_DEFAULTS = 'oj-dialog-option-defaults';
     var /** @const */ OJD_HELPER_ELEMENT_DIALOG = 'oj-helper-element-in-dialog-with-accesskey';
     var /** @const */ OJD_ACCESS_KEY = 'data-ojAccessKey';
-
 
     var /** @const */ OJD_TITLE_CLASS = '.oj-dialog-title';
     var /** @const */ OJD_FOOTER_CLASS = '.oj-dialog-footer';
@@ -1209,6 +1229,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
      * @ojvbdefaultcolumns 12
      * @ojvbmincolumns 12
      *
+     * @ojoracleicon 'oj-ux-ico-dialog'
      * @ojuxspecs ['dialog']
      *
      * @classdesc
@@ -1688,7 +1709,6 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
      * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-se'});
      */
 
-
     //-----------------------------------------------------
     //                   Styling
     //-----------------------------------------------------
@@ -1748,7 +1768,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
      * @ojstylevariable oj-dialog-body-padding {description: "Dialog body padding", formats: ["length"], help: "#css-variables"}
      * @ojstylevariable oj-dialog-footer-padding {description: "Dialog footer padding", formats: ["length"], help: "#css-variables"}
      * @memberof oj.ojDialog
-    */
+     */
     /**
      * @ojstylevariableset oj-dialog-css-set2
      * @ojdisplayname Title
@@ -1757,7 +1777,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
      * @ojstylevariable oj-dialog-title-font-weight {description: "Dialog title font weight", formats: ["font_weight"], help: "#oj-dialog-css-set2"}
      * @ojstylevariable oj-dialog-title-text-color {description: "Dialog title text color", formats: ["color"], help: "#oj-dialog-css-set2"}
      * @memberof oj.ojDialog
-    */
+     */
 
     /**
      * @ojstylevariableset oj-dialog-css-set3
@@ -1765,322 +1785,320 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
      * @ojstylevariable oj-dialog-cancel-icon-margin-top {description: "Dialog cancel icon margin top", formats: ["length"], help: "#oj-dialog-css-set3"}
      * @ojstylevariable oj-dialog-cancel-icon-margin-end {description: "Dialog cancel icon margin end", formats: ["length"], help: "#oj-dialog-css-set3"}
      * @memberof oj.ojDialog
-    */
+     */
     // ------------------------------------------------ oj-dialog Styling end ------------------------------------------------
 
     oj.__registerWidget('oj.ojDialog', $.oj.baseComponent, {
       version: '1.0.0',
       widgetEventPrefix: 'oj',
-      options:
-      {
-          /**
-           * Specifies the cancel behavior of the dialog.
-           * The default value depends on the theme.
-           * In the Redwood theme, the default is <code class="prettyprint">"none"</code>.
-           * In the deprecated Alta web theme, the default is <code class="prettyprint">"icon"</code>.
-           * In the deprecated Alta mobile themes (Android, iOS, Windows), the default is <code class="prettyprint">"none"</code>.
-           *
-           * <p> Note that the cancelBehavior applies to both automatic and user-defined headers.
-           * So, a user-defined header will use the cancelBehavior setting or a theme-specific default.
-           *
-           * @expose
-           * @memberof oj.ojDialog
-           * @ojshortdesc Specifies the cancel behavior of the dialog. See the Help documentation for more information.
-           * @instance
-           * @type {string}
-           * @ojvalue {string} "icon" A close icon will automatically be created. The dialog will close when it has focus and user presses the escape (ESC) key.
-           * @ojvalue {string} "escape" The dialog will close when it has focus and user presses the escape (ESC) key. A close icon will not be created.
-           * @ojvalue {string} "none" A close icon will not be created. No actions will be associated with the escape key.
-           *
-           * @example <caption>Initialize the dialog to disable the default <code class="prettyprint">cancelBehavior</code></caption>
-           * &lt;oj-dialog cancel-behavior="none" &gt;&lt;/oj-dialog&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">cancelBehavior</code> property, after initialization:</caption>
-           * // getter
-           * var cancelBehavior = myDialog.cancelBehavior;
-           *
-           * // setter
-           * myDialog.cancelBehavior = "icon";
-           *
-           * @example <caption>Set the default in the theme (SCSS) :</caption>
-           * $dialogCancelBehaviorOptionDefault: icon !default;
-           *
-           */
+      options: {
+        /**
+         * Specifies the cancel behavior of the dialog.
+         * The default value depends on the theme.
+         * In the Redwood theme, the default is <code class="prettyprint">"none"</code>.
+         * In the deprecated Alta web theme, the default is <code class="prettyprint">"icon"</code>.
+         * In the deprecated Alta mobile themes (Android, iOS, Windows), the default is <code class="prettyprint">"none"</code>.
+         *
+         * <p> Note that the cancelBehavior applies to both automatic and user-defined headers.
+         * So, a user-defined header will use the cancelBehavior setting or a theme-specific default.
+         *
+         * @expose
+         * @memberof oj.ojDialog
+         * @ojshortdesc Specifies the cancel behavior of the dialog. See the Help documentation for more information.
+         * @instance
+         * @type {string}
+         * @ojvalue {string} "icon" A close icon will automatically be created. The dialog will close when it has focus and user presses the escape (ESC) key.
+         * @ojvalue {string} "escape" The dialog will close when it has focus and user presses the escape (ESC) key. A close icon will not be created.
+         * @ojvalue {string} "none" A close icon will not be created. No actions will be associated with the escape key.
+         *
+         * @example <caption>Initialize the dialog to disable the default <code class="prettyprint">cancelBehavior</code></caption>
+         * &lt;oj-dialog cancel-behavior="none" &gt;&lt;/oj-dialog&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">cancelBehavior</code> property, after initialization:</caption>
+         * // getter
+         * var cancelBehavior = myDialog.cancelBehavior;
+         *
+         * // setter
+         * myDialog.cancelBehavior = "icon";
+         *
+         * @example <caption>Set the default in the theme (SCSS) :</caption>
+         * $dialogCancelBehaviorOptionDefault: icon !default;
+         *
+         */
         cancelBehavior: 'icon',
-          /**
-           * Specifies the drag affordance.
-           * The default value depends on the theme.
-           * In the Redwood theme, the default is <code class="prettyprint">"none"</code>.
-           * In the deprecated Alta web theme, the default is <code class="prettyprint">"title-bar"</code>.
-           * In the deprecated Alta mobile themes (Android, iOS, Windows), the default is <code class="prettyprint">"none"</code>.
-           *
-           * @expose
-           * @memberof oj.ojDialog
-           * @ojshortdesc Specifies the drag affordance. See the Help documentation for more information.
-           * @instance
-           * @type {string}
-           * @ojvalue {string} "title-bar" The dialog will be draggable by the title bar.
-           * @ojvalue {string} "none" The dialog will not be draggable.
-           *
-           * @example <caption>Initialize the dialog to enable dragging <code class="prettyprint">dragAffordance</code></caption>
-           * &lt;oj-dialog drag-affordance="title-bar" &gt;&lt;/oj-dialog&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">dragAffordance</code> property, after initialization:</caption>
-           * // getter
-           * var dragAffordance = myDialog.dragAffordance;
-           *
-           * // setter
-           * myDialog.dragAffordance = "title-bar";
-           */
+        /**
+         * Specifies the drag affordance.
+         * The default value depends on the theme.
+         * In the Redwood theme, the default is <code class="prettyprint">"none"</code>.
+         * In the deprecated Alta web theme, the default is <code class="prettyprint">"title-bar"</code>.
+         * In the deprecated Alta mobile themes (Android, iOS, Windows), the default is <code class="prettyprint">"none"</code>.
+         *
+         * @expose
+         * @memberof oj.ojDialog
+         * @ojshortdesc Specifies the drag affordance. See the Help documentation for more information.
+         * @instance
+         * @type {string}
+         * @ojvalue {string} "title-bar" The dialog will be draggable by the title bar.
+         * @ojvalue {string} "none" The dialog will not be draggable.
+         *
+         * @example <caption>Initialize the dialog to enable dragging <code class="prettyprint">dragAffordance</code></caption>
+         * &lt;oj-dialog drag-affordance="title-bar" &gt;&lt;/oj-dialog&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">dragAffordance</code> property, after initialization:</caption>
+         * // getter
+         * var dragAffordance = myDialog.dragAffordance;
+         *
+         * // setter
+         * myDialog.dragAffordance = "title-bar";
+         */
         dragAffordance: 'title-bar',
-          /**
-           * Set the initial visibility of the dialog.
-           *
-           * @expose
-           * @memberof oj.ojDialog
-           * @instance
-           * @type {string}
-           * @default "hide"
-           * @ojvalue {string} "hide" The dialog will stay hidden until the <a href="#open"><code class="prettyprint">open()</code></a> method is called.
-           * @ojvalue {string} "show" The dialog will automatically open upon initialization.
-           *
-           * @example <caption>Initialize the dialog with the <code class="prettyprint">initialVisibility</code> property:</caption>
-           * &lt;oj-dialog initial-visibility="show" &gt;&lt;/oj-dialog&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">initialVisibility</code> property, after initialization:</caption>
-           * // getter
-           * var initialVisibility = myDialog.initialVisibility;
-           *
-           * // setter
-           * myDialog.initialVisibility = "show";
-           */
+        /**
+         * Set the initial visibility of the dialog.
+         *
+         * @expose
+         * @memberof oj.ojDialog
+         * @instance
+         * @type {string}
+         * @default "hide"
+         * @ojvalue {string} "hide" The dialog will stay hidden until the <a href="#open"><code class="prettyprint">open()</code></a> method is called.
+         * @ojvalue {string} "show" The dialog will automatically open upon initialization.
+         *
+         * @example <caption>Initialize the dialog with the <code class="prettyprint">initialVisibility</code> property:</caption>
+         * &lt;oj-dialog initial-visibility="show" &gt;&lt;/oj-dialog&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">initialVisibility</code> property, after initialization:</caption>
+         * // getter
+         * var initialVisibility = myDialog.initialVisibility;
+         *
+         * // setter
+         * myDialog.initialVisibility = "show";
+         */
         initialVisibility: 'hide',
+        /**
+         *
+         * Defines the modality of the dialog.
+         *
+         * @expose
+         * @memberof oj.ojDialog
+         * @instance
+         * @default "modal"
+         * @type {string}
+         * @ojvalue {string} "modal" The dialog is modal. Interactions with other page elements are disabled. Modal dialogs overlay other page elements.
+         * @ojvalue {string} "modeless" Defines a modeless dialog.
+         *
+         * @example <caption>Initialize the dialog to a specific modality <code class="prettyprint">modality</code></caption>
+         * &lt;oj-dialog modality="modeless" &gt;&lt;/oj-dialog&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">modality</code> property, after initialization:</caption>
+         * // getter
+         * var modality = myDialog.modality;
+         *
+         * // setter
+         * myDialog.modality = "modeless";
+         */
+        modality: 'modal',
+        /**
+         * <p>Position object is used to establish the location the dialog will appear relative to
+         * another element. {@link oj.ojDialog.Position} defines "my" alignment "at" the alignment
+         * "of" some other thing which can be "offset" by so many pixels.</p>
+         *
+         * <p>The "my" and "at" properties define alignment points relative to the dialog and other
+         * element.  The "my" property represents the dialog's alignment where the "at" property
+         * represents the other element that can be identified by "of". The values of these properties
+         * describe horizontal and vertical alignments.</p>
+         *
+         * <p>If none of the <code class="prettyprint">position</code> properties are specified,
+         * the default dialog position is "center" on desktop and "bottom" on phone.</p>
+         *
+         * <b>Deprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with
+         * "my" or "at" is not supported.</b>
+         *
+         * @expose
+         * @memberof oj.ojDialog
+         * @ojshortdesc Establishes the location that the dialog will appear relative to another element. See the Help documentation for more information.
+         * @instance
+         * @type {Object}
+         * @ojsignature { target: "Type",
+         *                value: "oj.ojDialog.Position",
+         *                jsdocOverride: true}
+         * @name position
+         * @example <caption>Initialize the dialog with <code class="prettyprint">position</code>
+         *           property specified:</caption>
+         * &lt;oj-dialog position.my.horizontal="left"
+         *           position.my.vertical="top"
+         *           position.at.horizontal="right"
+         *           position.at.vertical="top" &gt;&lt;/oj-dialog&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">position</code> property,
+         *          after initialization:</caption>
+         * // getter
+         * var position = myDialog.position;
+         *
+         * // setter
+         * myDialog.position =
+         *    {"my": {"horizontal": "start", "vertical": "bottom"},
+         *     "at": {"horizontal": "end", "vertical": "top" },
+         *     "offset": {"x": 0, "y":5}};
+         */
+        position: {
           /**
-           *
-           * Defines the modality of the dialog.
+           * Defines which edge on the dialog to align with the target ("of") element.
            *
            * @expose
-           * @memberof oj.ojDialog
+           * @memberof! oj.ojDialog
            * @instance
-           * @default "modal"
-           * @type {string}
-           * @ojvalue {string} "modal" The dialog is modal. Interactions with other page elements are disabled. Modal dialogs overlay other page elements.
-           * @ojvalue {string} "modeless" Defines a modeless dialog.
-           *
-           * @example <caption>Initialize the dialog to a specific modality <code class="prettyprint">modality</code></caption>
-           * &lt;oj-dialog modality="modeless" &gt;&lt;/oj-dialog&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">modality</code> property, after initialization:</caption>
-           * // getter
-           * var modality = myDialog.modality;
-           *
-           * // setter
-           * myDialog.modality = "modeless";
+           * @name position.my
+           * @name position.my
+           * @type {{horizontal:string, vertical:string}}
            */
-        modality: 'modal',
-          /**
-             * <p>Position object is used to establish the location the dialog will appear relative to
-             * another element. {@link oj.ojDialog.Position} defines "my" alignment "at" the alignment
-             * "of" some other thing which can be "offset" by so many pixels.</p>
-             *
-             * <p>The "my" and "at" properties define alignment points relative to the dialog and other
-             * element.  The "my" property represents the dialog's alignment where the "at" property
-             * represents the other element that can be identified by "of". The values of these properties
-             * describe horizontal and vertical alignments.</p>
-             *
-             * <p>If none of the <code class="prettyprint">position</code> properties are specified,
-             * the default dialog position is "center" on desktop and "bottom" on phone.</p>
-             *
-             * <b>Deprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with
-             * "my" or "at" is not supported.</b>
-             *
-             * @expose
-             * @memberof oj.ojDialog
-             * @ojshortdesc Establishes the location that the dialog will appear relative to another element. See the Help documentation for more information.
-             * @instance
-             * @type {Object}
-             * @ojsignature { target: "Type",
-             *                value: "oj.ojDialog.Position",
-             *                jsdocOverride: true}
-             * @name position
-             * @example <caption>Initialize the dialog with <code class="prettyprint">position</code>
-             *           property specified:</caption>
-             * &lt;oj-dialog position.my.horizontal="left"
-             *           position.my.vertical="top"
-             *           position.at.horizontal="right"
-             *           position.at.vertical="top" &gt;&lt;/oj-dialog&gt;
-             *
-             * @example <caption>Get or set the <code class="prettyprint">position</code> property,
-             *          after initialization:</caption>
-             * // getter
-             * var position = myDialog.position;
-             *
-             * // setter
-             * myDialog.position =
-             *    {"my": {"horizontal": "start", "vertical": "bottom"},
-             *     "at": {"horizontal": "end", "vertical": "top" },
-             *     "offset": {"x": 0, "y":5}};
-             */
-        position:
-        {
-                /**
-                 * Defines which edge on the dialog to align with the target ("of") element.
-                 *
-                 * @expose
-                 * @memberof! oj.ojDialog
-                 * @instance
-                 * @name position.my
-                 * @name position.my
-                 * @type {{horizontal:string, vertical:string}}
-                 */
           my: {
-                  /**
-                   * @expose
-                   * @memberof! oj.ojDialog
-                   * @instance
-                   * @name position.my.horizontal
-                   * @name position.my.horizontal
-                   * @type {string}
-                   * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
-                   * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
-                   * @ojvalue {string} "left"
-                   * @ojvalue {string} "center"
-                   * @ojvalue {string} "right"
-                   * @default "center"
-                   */
+            /**
+             * @expose
+             * @memberof! oj.ojDialog
+             * @instance
+             * @name position.my.horizontal
+             * @name position.my.horizontal
+             * @type {string}
+             * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
+             * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
+             * @ojvalue {string} "left"
+             * @ojvalue {string} "center"
+             * @ojvalue {string} "right"
+             * @default "center"
+             */
             horizontal: 'center',
-                  /**
-                   * @expose
-                   * @memberof! oj.ojDialog
-                   * @instance
-                   * @name position.my.vertical
-                   * @name position.my.vertical
-                   * @type {string}
-                   * @ojvalue {string} "top"
-                   * @ojvalue {string} "center"
-                   * @ojvalue {string} "bottom"
-                   * @default "center"
-                   */
+            /**
+             * @expose
+             * @memberof! oj.ojDialog
+             * @instance
+             * @name position.my.vertical
+             * @name position.my.vertical
+             * @type {string}
+             * @ojvalue {string} "top"
+             * @ojvalue {string} "center"
+             * @ojvalue {string} "bottom"
+             * @default "center"
+             */
             vertical: 'center'
           },
-                /**
-                 * Defines a point offset in pixels from the ("my") alignment.
-                 * @expose
-                 * @memberof! oj.ojDialog
-                 * @instance
-                 * @name position.offset
-                 * @name position.offset
-                 * @type {{x:number, y:number}}
-                 */
+          /**
+           * Defines a point offset in pixels from the ("my") alignment.
+           * @expose
+           * @memberof! oj.ojDialog
+           * @instance
+           * @name position.offset
+           * @name position.offset
+           * @type {{x:number, y:number}}
+           */
           offset: {
-                  /**
-                   * Horizontal alignment offset.
-                   * @expose
-                   * @memberof! oj.ojDialog
-                   * @instance
-                   * @name position.offset.x
-                   * @name position.offset.x
-                   * @type {number}
-                   * @default 0
-                   */
+            /**
+             * Horizontal alignment offset.
+             * @expose
+             * @memberof! oj.ojDialog
+             * @instance
+             * @name position.offset.x
+             * @name position.offset.x
+             * @type {number}
+             * @default 0
+             */
             x: 0,
-                  /**
-                   * Vertical alignment offset.
-                   * @expose
-                   * @memberof! oj.ojDialog
-                   * @instance
-                   * @name position.offset.y
-                   * @name position.offset.y
-                   * @type {number}
-                   * @default 0
-                   */
+            /**
+             * Vertical alignment offset.
+             * @expose
+             * @memberof! oj.ojDialog
+             * @instance
+             * @name position.offset.y
+             * @name position.offset.y
+             * @type {number}
+             * @default 0
+             */
             y: 0
           },
-                /**
-                 * Defines which position on the target element ("of") to align the positioned element
-                 * against.
-                 *
-                 * @expose
-                 * @memberof! oj.ojDialog
-                 * @instance
-                 * @name position.at
-                 * @name position.at
-                 * @type {{horizontal:string, vertical:string}}
-                 */
+          /**
+           * Defines which position on the target element ("of") to align the positioned element
+           * against.
+           *
+           * @expose
+           * @memberof! oj.ojDialog
+           * @instance
+           * @name position.at
+           * @name position.at
+           * @type {{horizontal:string, vertical:string}}
+           */
           at: {
-                  /**
-                   * @expose
-                   * @memberof! oj.ojDialog
-                   * @instance
-                   * @name position.at.horizontal
-                   * @name position.at.horizontal
-                   * @type {string}
-                   * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
-                   * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
-                   * @ojvalue {string} "left"
-                   * @ojvalue {string} "center"
-                   * @ojvalue {string} "right"
-                   * @default "center"
-                   */
+            /**
+             * @expose
+             * @memberof! oj.ojDialog
+             * @instance
+             * @name position.at.horizontal
+             * @name position.at.horizontal
+             * @type {string}
+             * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
+             * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
+             * @ojvalue {string} "left"
+             * @ojvalue {string} "center"
+             * @ojvalue {string} "right"
+             * @default "center"
+             */
             horizontal: 'center',
-                  /**
-                   * @expose
-                   * @memberof! oj.ojDialog
-                   * @instance
-                   * @name position.at.vertical
-                   * @name position.at.vertical
-                   * @type {string}
-                   * @ojvalue {string} "top"
-                   * @ojvalue {string} "center"
-                   * @ojvalue {string} "bottom"
-                   * @default "center"
-                   */
+            /**
+             * @expose
+             * @memberof! oj.ojDialog
+             * @instance
+             * @name position.at.vertical
+             * @name position.at.vertical
+             * @type {string}
+             * @ojvalue {string} "top"
+             * @ojvalue {string} "center"
+             * @ojvalue {string} "bottom"
+             * @default "center"
+             */
             vertical: 'center'
           },
-                /**
-                 * Which element to position the dialog against.
-                 * If the value is a string, it should be a selector or the literal string value
-                 * of <code class="prettyprint">window</code>.  Otherwise, a point of x,y.  When a point
-                 * is used, the values are relative to the whole document.  Page horizontal and vertical
-                 * scroll offsets need to be factored into this point - see UIEvent
-                 * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageX">pageX</a>,
-                 * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageY">pageY</a>.
-                 *
-                 * @example <caption>Finding the point for an svg element:</caption>
-                 * var rect = svgDom.getBoundingClientRect();
-                 * var position = {of:{x:rect.left + window.pageXOffset, y:rect.top + window.pageYOffset}};
-                 *
-                 * @expose
-                 * @memberof! oj.ojDialog
-                 * @ojshortdesc Specifies which element to position the dialog against. See the Help documentation for more information.
-                 * @instance
-                 * @name position.of
-                 * @name position.of
-                 * @type {string|{x: number, y: number}}
-                 * @default "window"
-                 */
+          /**
+           * Which element to position the dialog against.
+           * If the value is a string, it should be a selector or the literal string value
+           * of <code class="prettyprint">window</code>.  Otherwise, a point of x,y.  When a point
+           * is used, the values are relative to the whole document.  Page horizontal and vertical
+           * scroll offsets need to be factored into this point - see UIEvent
+           * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageX">pageX</a>,
+           * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageY">pageY</a>.
+           *
+           * @example <caption>Finding the point for an svg element:</caption>
+           * var rect = svgDom.getBoundingClientRect();
+           * var position = {of:{x:rect.left + window.pageXOffset, y:rect.top + window.pageYOffset}};
+           *
+           * @expose
+           * @memberof! oj.ojDialog
+           * @ojshortdesc Specifies which element to position the dialog against. See the Help documentation for more information.
+           * @instance
+           * @name position.of
+           * @name position.of
+           * @type {string|{x: number, y: number}}
+           * @default "window"
+           */
           of: 'window',
-                /**
-                 * Rule for alternate alignment.
-                 *
-                 * @expose
-                 * @memberof! oj.ojDialog
-                 * @instance
-                 * @name position.collision
-                 * @name position.collision
-                 * @type {string}
-                 * @ojvalue {string} "flip" Flip the element to the opposite side of the target and the
-                 *  collision detection is run again to see if it will fit. Whichever side
-                 *  allows more of the element to be visible will be used.
-                 * @ojvalue {string} "fit" Shift the element away from the edge of the window.
-                 * @ojvalue {string} "flipfit" First applies the flip logic, placing the element
-                 *  on whichever side allows more of the element to be visible. Then the fit logic
-                 *  is applied to ensure as much of the element is visible as possible.
-                 * @ojvalue {string} "none" No collision detection.
-                 * @default "fit"
-                 */
+          /**
+           * Rule for alternate alignment.
+           *
+           * @expose
+           * @memberof! oj.ojDialog
+           * @instance
+           * @name position.collision
+           * @name position.collision
+           * @type {string}
+           * @ojvalue {string} "flip" Flip the element to the opposite side of the target and the
+           *  collision detection is run again to see if it will fit. Whichever side
+           *  allows more of the element to be visible will be used.
+           * @ojvalue {string} "fit" Shift the element away from the edge of the window.
+           * @ojvalue {string} "flipfit" First applies the flip logic, placing the element
+           *  on whichever side allows more of the element to be visible. Then the fit logic
+           *  is applied to ensure as much of the element is visible as possible.
+           * @ojvalue {string} "none" No collision detection.
+           * @default "fit"
+           */
           collision: 'fit',
-                // Ensure the titlebar is always visible
+          // Ensure the titlebar is always visible
           using: function (pos) {
             var topOffset = $(this).css(pos).offset().top;
             if (topOffset < 0) {
@@ -2088,313 +2106,313 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             }
           }
         },
-          /**
-           *
-           * Specifies the resizeBehavior of the dialog.
-           * The default value depends on the theme.
-           * In the Redwood theme, the default is <code class="prettyprint">"none"</code>.
-           * In the deprecated Alta web theme, the default is <code class="prettyprint">"resizable"</code>.
-           * In the deprecated Alta mobile themes (Android, iOS, Windows), the default is <code class="prettyprint">"none"</code>.
-           *
-           * @expose
-           * @memberof oj.ojDialog
-           * @ojshortdesc Specifies the resizeBehavior of the dialog. See the Help documentation for more information.
-           * @instance
-           * @type {string}
-           * @ojvalue {string} "resizable" The dialog will be interactively resizable.
-           * @ojvalue {string} "none" The dialog will not be interactively resizable.
-           *
-           * @example <caption>Initialize the dialog to a specific resizeBehavior <code class="prettyprint">resizeBehavior</code></caption>
-           * &lt;oj-dialog resize-behavior="resizable" &gt;&lt;/oj-dialog&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">resizeBehavior</code> property, after initialization:</caption>
-           *
-           * // getter
-           * var resizeBehavior = myDialog.resizeBehavior;
-           *
-           * // setter
-           * myDialog.resizeBehavior = "resizable";
-           * @example <caption>Set the default in the theme (SCSS) :</caption>
-           * $dialogResizeBehaviorOptionDefault: resizable !default;
-           */
-        resizeBehavior: 'resizable',
-          /**
-           *
-           * The WAI-ARIA role of the dialog. By default, role="dialog" is added to the generated HTML markup that surrounds the dialog.
-           * When used as an alert dialog, the user should set role to "alertdialog".
-           *
-           * @ignore
-           * @memberof oj.ojDialog
-           * @ojshortdesc The WAI-ARIA role of the dialog. See the Help documentation for more information.
-           * @instance
-           * @type {string}
-           * @default "dialog"
-           *
-           * @example <caption>Initialize the dialog with the <code class="prettyprint">role</code></caption> property specified:</caption>
-           * &lt;oj-dialog role="alertdialog" &gt;&lt;/oj-dialog&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">role</code> property, after initialization:</caption>
-           * // getter
-           * var role = myDialog.role;
-           *
-           * // setter
-           * myDialog.role = "alertdialog";
-           */
-        role: 'dialog',
-          /**
-           *
-           * Specify the title of the dialog. null is the default.
-           *
-           * @expose
-           * @memberof oj.ojDialog
-           * @ojtranslatable
-           * @instance
-           * @type {string|null}
-           *
-           * @example <caption>Initialize the <code class="prettyprint">dialogTitle</code> property.</caption>
-           * &lt;oj-dialog dialog-title="Title of Dialog" &gt;&lt;/oj-dialog&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">dialogTitle</code> property, after initialization:</caption>
-           * // getter
-           * var dialogTitle = myDialog.dialogTitle;
-           *
-           * // setter
-           * myDialog.dialogTitle = "Title of Dialog";
-           */
-        dialogTitle: null,
-          /**
-           *
-           * Specify the title of the dialog. null is the default.
-           *
-           * @expose
-           * @ignore
-           * @memberof oj.ojDialog
-           * @instance
-           * @type {string|null}
-           *
-           * @example <caption>Initialize the dialog to a specific title <code class="prettyprint">title</code></caption>
-           * &lt;oj-dialog dialog-title="Title of Dialog" &gt;&lt;/oj-dialog&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">title</code> property, after initialization:</caption>
-           * // getter
-           * var title = myDialog.title;
-           *
-           * // setter
-           * myDialog.title = "Title of Dialog";
-           */
-        title: null,
-          // /////////////////////////////////////////////////////
-          // events
-          // /////////////////////////////////////////////////////
-
-            /**
-             * Triggered before the dialog is dismissed via the
-             * <code class="prettyprint">close()</code> method. The close can be cancelled by calling
-             * <code class="prettyprint">event.preventDefault()</code>.
-             *
-             * @expose
-             * @event
-             * @memberof oj.ojDialog
-             * @instance
-             * @ojcancelable
-             * @ojbubbles
-             * @property {Event} event a custom event
-             */
-        beforeClose: null,
-            /**
-             * Triggered before the dialog is launched via the <code class="prettyprint">open()</code>
-             * method. The open can be cancelled by calling
-             * <code class="prettyprint">event.preventDefault()</code>.
-             *
-             * @expose
-             * @event
-             * @memberof oj.ojDialog
-             * @instance
-             * @ojcancelable
-             * @ojbubbles
-             * @property {Event} event a custom event
-             */
-        beforeOpen: null,
-            /**
-             * Triggered after the dialog is dismissed via the
-             * <code class="prettyprint">close()</code> method.
-             *
-             * @expose
-             * @event
-             * @memberof oj.ojDialog
-             * @instance
-             * @ojbubbles
-             * @ojeventgroup common
-             * @property {Event} event a custom event
-             */
-        close: null,
-            /**
-             * Triggered after focus has been transferred to the dialog.
-             *
-             * @expose
-             * @event
-             * @memberof oj.ojDialog
-             * @instance
-             * @ojbubbles
-             * @property {Event} event a custom event
-             */
-        focus: null,
-            /**
-             * Triggered after the dialog is launched via the <code class="prettyprint">open()</code>
-             * method.
-             *
-             * @expose
-             * @event
-             * @memberof oj.ojDialog
-             * @instance
-             * @ojcancelable
-             * @ojbubbles
-             * @property {Event} event a custom event
-             */
-        open: null,
-          /**
-           * Triggered when the dialog is being resized.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojDialog
-           * @ojshortdesc Triggered when the dialog is being resized. See the Help documentation for more information.
-           * @instance
-           * @ojbubbles
-           * @property {Object} originalEvent the underlying UI <a href="http://api.jqueryui.com/resizable/#event-resize">Event</a> object
-           * @property {Object} originalPosition the original CSS position of the dialog
-           * @property {Object} originalSize the original size of the dialog
-           * @property {Object} position the current CSS position of the dialog
-           * @property {Object} size the current size of the dialog
-           */
-        resize: null,
-          /**
-           * Triggered when the user starts resizing the dialog.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojDialog
-           * @ojshortdesc Triggered when the user starts resizing the dialog. See the Help documentation for more information.
-           * @instance
-           * @ojcancelable
-           * @ojbubbles
-           * @property {Object} originalEvent the underlying UI <a href="http://api.jqueryui.com/resizable/#event-resize">Event</a> object
-           * @property {Object} originalPosition the original CSS position of the dialog
-           * @property {Object} originalSize the original size of the dialog
-           * @property {Object} position the current CSS position of the dialog
-           * @property {Object} size the current size of the dialog
-           */
-        resizeStart: null,
-          /**
-           * Triggered when the user stops resizing the dialog.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojDialog
-           * @ojshortdesc Triggered when the user stops resizing the dialog. See the Help documentation for more information.
-           * @instance
-           * @ojcancelable
-           * @ojbubbles
-           * @property {Object} originalEvent the underlying UI <a href="http://api.jqueryui.com/resizable/#event-resize">Event</a> object
-           * @property {Object} originalPosition the original CSS position of the dialog
-           * @property {Object} originalSize the original size of the dialog
-           * @property {Object} position the current CSS position of the dialog
-           * @property {Object} size the current size of the dialog
-           */
-        resizeStop: null,
-            /**
-             * Triggered when a default animation is about to start, such as when the component is
-             * being opened/closed or a child item is being added/removed. The default animation can
-             * be cancelled by calling <code class="prettyprint">event.preventDefault</code>.
-             * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
-             *
-             * @expose
-             * @event
-             * @memberof oj.ojDialog
-             * @ojshortdesc Triggered when a default animation is about to start, such as when the component is being opened/closed or a child item is being added/removed.
-             * @instance
-             * @ojcancelable
-             * @ojbubbles
-             * @property {"open"|"close"} action The action that triggers the animation.<br><br>
-             *            The number of actions can vary from component to component.
-             *            Suggested values are:
-             *                    <ul>
-             *                      <li>"open" - when a dialog component is opened</li>
-             *                      <li>"close" - when a dialog component is closed</li>
-             *                    </ul>
-             * @property {!Element} element target of animation
-             * @property {!function():void} endCallback If the event listener calls
-             *            event.preventDefault to cancel the default animation, It must call the
-             *            endCallback function when it finishes its own animation handling and any
-             *            custom animation has ended.
-             *
-             *
-             * @example <caption>Add a listener for the
-             *          <code class="prettyprint">ojAnimateStart</code> event to override the default
-             *          "close" animation:</caption>
-             * myDialog.addEventListener("ojAnimateStart", function( event )
-             *   {
-             *     // verify that the component firing the event is a component of interest and action
-             *      is close
-             *     if (event.detail.action == "close") {
-             *       event.preventDefault();
-             *       oj.AnimationUtils.slideOut(event.detail.element).then(event.detail.endCallback);
-             *   });
-             *
-             * @example <caption>The default open and close animations are controlled via the theme
-             *          (SCSS) :</caption>
-             * $dialogOpenAnimation: ((effect: "zoomIn"), "fadeIn")  !default;
-             * $dialogCloseAnimation: ((effect: "zoomOut"), "fadeOut")  !default;
-             */
-
-        animateStart: null,
-            /**
-             * Triggered when a default animation has ended, such as when the component is being
-             * opened/closed or a child item is being added/removed. This event is not triggered if
-             * the application has called preventDefault on the animateStart
-             * event.
-             * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
-             *
-             * @expose
-             * @event
-             * @memberof oj.ojDialog
-             * @ojshortdesc Triggered when a default animation has ended, such as when the component is being opened/closed or a child item is being added/removed.
-             * @instance
-             * @ojcancelable
-             * @ojbubbles
-             * @property {!Element} element target of animation
-             * @property {"open"|"close"} action The action that triggered the animation.<br><br>
-             *                   The number of actions can vary from component to component.
-             *                   Suggested values are:
-             *                    <ul>
-             *                      <li>"open" - when a dialog component is opened</li>
-             *                      <li>"close" - when a dialog component is closed</li>
-             *                    </ul>
-             *
-             * @example <caption>Add a listener for the
-             *          <code class="prettyprint">ojAnimateEnd</code> event to listen for the "close"
-             *          ending animation:</caption>
-             * myDialog.addEventListener("ojAnimateEnd", function( event )
-             *   {
-             *     // verify that the component firing the event is a component of interest and action
-             *      is close
-             *     if (event.detail.action == "close") {}
-             *   });
-             *
-             * @example <caption>The default open and close animations are controlled via the theme
-             *          (SCSS) :</caption>
-             * $dialogOpenAnimation: (effect: "zoomIn", fade: true)  !default;
-             * $dialogCloseAnimation: (effect: "zoomOut", fade: true)  !default;
-             */
-        animateEnd: null
-      },
         /**
+         *
+         * Specifies the resizeBehavior of the dialog.
+         * The default value depends on the theme.
+         * In the Redwood theme, the default is <code class="prettyprint">"none"</code>.
+         * In the deprecated Alta web theme, the default is <code class="prettyprint">"resizable"</code>.
+         * In the deprecated Alta mobile themes (Android, iOS, Windows), the default is <code class="prettyprint">"none"</code>.
+         *
+         * @expose
+         * @memberof oj.ojDialog
+         * @ojshortdesc Specifies the resizeBehavior of the dialog. See the Help documentation for more information.
+         * @instance
+         * @type {string}
+         * @ojvalue {string} "resizable" The dialog will be interactively resizable.
+         * @ojvalue {string} "none" The dialog will not be interactively resizable.
+         *
+         * @example <caption>Initialize the dialog to a specific resizeBehavior <code class="prettyprint">resizeBehavior</code></caption>
+         * &lt;oj-dialog resize-behavior="resizable" &gt;&lt;/oj-dialog&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">resizeBehavior</code> property, after initialization:</caption>
+         *
+         * // getter
+         * var resizeBehavior = myDialog.resizeBehavior;
+         *
+         * // setter
+         * myDialog.resizeBehavior = "resizable";
+         * @example <caption>Set the default in the theme (SCSS) :</caption>
+         * $dialogResizeBehaviorOptionDefault: resizable !default;
+         */
+        resizeBehavior: 'resizable',
+        /**
+         *
+         * The WAI-ARIA role of the dialog. By default, role="dialog" is added to the generated HTML markup that surrounds the dialog.
+         * When used as an alert dialog, the user should set role to "alertdialog".
+         *
+         * @ignore
+         * @memberof oj.ojDialog
+         * @ojshortdesc The WAI-ARIA role of the dialog. See the Help documentation for more information.
+         * @instance
+         * @type {string}
+         * @default "dialog"
+         *
+         * @example <caption>Initialize the dialog with the <code class="prettyprint">role</code></caption> property specified:</caption>
+         * &lt;oj-dialog role="alertdialog" &gt;&lt;/oj-dialog&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">role</code> property, after initialization:</caption>
+         * // getter
+         * var role = myDialog.role;
+         *
+         * // setter
+         * myDialog.role = "alertdialog";
+         */
+        role: 'dialog',
+        /**
+         *
+         * Specify the title of the dialog. null is the default.
+         *
+         * @expose
+         * @memberof oj.ojDialog
+         * @ojtranslatable
+         * @instance
+         * @type {string|null}
+         *
+         * @example <caption>Initialize the <code class="prettyprint">dialogTitle</code> property.</caption>
+         * &lt;oj-dialog dialog-title="Title of Dialog" &gt;&lt;/oj-dialog&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">dialogTitle</code> property, after initialization:</caption>
+         * // getter
+         * var dialogTitle = myDialog.dialogTitle;
+         *
+         * // setter
+         * myDialog.dialogTitle = "Title of Dialog";
+         */
+        dialogTitle: null,
+        /**
+         *
+         * Specify the title of the dialog. null is the default.
+         *
+         * @expose
+         * @ignore
          * @memberof oj.ojDialog
          * @instance
-         * @protected
-         * @override
-         * @return {void}
+         * @type {string|null}
+         *
+         * @example <caption>Initialize the dialog to a specific title <code class="prettyprint">title</code></caption>
+         * &lt;oj-dialog dialog-title="Title of Dialog" &gt;&lt;/oj-dialog&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">title</code> property, after initialization:</caption>
+         * // getter
+         * var title = myDialog.title;
+         *
+         * // setter
+         * myDialog.title = "Title of Dialog";
          */
+        title: null,
+        // /////////////////////////////////////////////////////
+        // events
+        // /////////////////////////////////////////////////////
+
+        /**
+         * Triggered before the dialog is dismissed via the
+         * <code class="prettyprint">close()</code> method. The close can be cancelled by calling
+         * <code class="prettyprint">event.preventDefault()</code>.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojDialog
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         * @property {Event} event a custom event
+         */
+        beforeClose: null,
+        /**
+         * Triggered before the dialog is launched via the <code class="prettyprint">open()</code>
+         * method. The open can be cancelled by calling
+         * <code class="prettyprint">event.preventDefault()</code>.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojDialog
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         * @property {Event} event a custom event
+         */
+        beforeOpen: null,
+        /**
+         * Triggered after the dialog is dismissed via the
+         * <code class="prettyprint">close()</code> method.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojDialog
+         * @instance
+         * @ojbubbles
+         * @ojeventgroup common
+         * @property {Event} event a custom event
+         */
+        close: null,
+        /**
+         * Triggered after focus has been transferred to the dialog.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojDialog
+         * @instance
+         * @ojbubbles
+         * @property {Event} event a custom event
+         */
+        focus: null,
+        /**
+         * Triggered after the dialog is launched via the <code class="prettyprint">open()</code>
+         * method.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojDialog
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         * @property {Event} event a custom event
+         */
+        open: null,
+        /**
+         * Triggered when the dialog is being resized.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojDialog
+         * @ojshortdesc Triggered when the dialog is being resized. See the Help documentation for more information.
+         * @instance
+         * @ojbubbles
+         * @property {Object} originalEvent the underlying UI <a href="http://api.jqueryui.com/resizable/#event-resize">Event</a> object
+         * @property {Object} originalPosition the original CSS position of the dialog
+         * @property {Object} originalSize the original size of the dialog
+         * @property {Object} position the current CSS position of the dialog
+         * @property {Object} size the current size of the dialog
+         */
+        resize: null,
+        /**
+         * Triggered when the user starts resizing the dialog.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojDialog
+         * @ojshortdesc Triggered when the user starts resizing the dialog. See the Help documentation for more information.
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         * @property {Object} originalEvent the underlying UI <a href="http://api.jqueryui.com/resizable/#event-resize">Event</a> object
+         * @property {Object} originalPosition the original CSS position of the dialog
+         * @property {Object} originalSize the original size of the dialog
+         * @property {Object} position the current CSS position of the dialog
+         * @property {Object} size the current size of the dialog
+         */
+        resizeStart: null,
+        /**
+         * Triggered when the user stops resizing the dialog.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojDialog
+         * @ojshortdesc Triggered when the user stops resizing the dialog. See the Help documentation for more information.
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         * @property {Object} originalEvent the underlying UI <a href="http://api.jqueryui.com/resizable/#event-resize">Event</a> object
+         * @property {Object} originalPosition the original CSS position of the dialog
+         * @property {Object} originalSize the original size of the dialog
+         * @property {Object} position the current CSS position of the dialog
+         * @property {Object} size the current size of the dialog
+         */
+        resizeStop: null,
+        /**
+         * Triggered when a default animation is about to start, such as when the component is
+         * being opened/closed or a child item is being added/removed. The default animation can
+         * be cancelled by calling <code class="prettyprint">event.preventDefault</code>.
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojDialog
+         * @ojshortdesc Triggered when a default animation is about to start, such as when the component is being opened/closed or a child item is being added/removed.
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         * @property {"open"|"close"} action The action that triggers the animation.<br><br>
+         *            The number of actions can vary from component to component.
+         *            Suggested values are:
+         *                    <ul>
+         *                      <li>"open" - when a dialog component is opened</li>
+         *                      <li>"close" - when a dialog component is closed</li>
+         *                    </ul>
+         * @property {!Element} element target of animation
+         * @property {!function():void} endCallback If the event listener calls
+         *            event.preventDefault to cancel the default animation, It must call the
+         *            endCallback function when it finishes its own animation handling and any
+         *            custom animation has ended.
+         *
+         *
+         * @example <caption>Add a listener for the
+         *          <code class="prettyprint">ojAnimateStart</code> event to override the default
+         *          "close" animation:</caption>
+         * myDialog.addEventListener("ojAnimateStart", function( event )
+         *   {
+         *     // verify that the component firing the event is a component of interest and action
+         *      is close
+         *     if (event.detail.action == "close") {
+         *       event.preventDefault();
+         *       oj.AnimationUtils.slideOut(event.detail.element).then(event.detail.endCallback);
+         *   });
+         *
+         * @example <caption>The default open and close animations are controlled via the theme
+         *          (SCSS) :</caption>
+         * $dialogOpenAnimation: ((effect: "zoomIn"), "fadeIn")  !default;
+         * $dialogCloseAnimation: ((effect: "zoomOut"), "fadeOut")  !default;
+         */
+
+        animateStart: null,
+        /**
+         * Triggered when a default animation has ended, such as when the component is being
+         * opened/closed or a child item is being added/removed. This event is not triggered if
+         * the application has called preventDefault on the animateStart
+         * event.
+         * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojDialog
+         * @ojshortdesc Triggered when a default animation has ended, such as when the component is being opened/closed or a child item is being added/removed.
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         * @property {!Element} element target of animation
+         * @property {"open"|"close"} action The action that triggered the animation.<br><br>
+         *                   The number of actions can vary from component to component.
+         *                   Suggested values are:
+         *                    <ul>
+         *                      <li>"open" - when a dialog component is opened</li>
+         *                      <li>"close" - when a dialog component is closed</li>
+         *                    </ul>
+         *
+         * @example <caption>Add a listener for the
+         *          <code class="prettyprint">ojAnimateEnd</code> event to listen for the "close"
+         *          ending animation:</caption>
+         * myDialog.addEventListener("ojAnimateEnd", function( event )
+         *   {
+         *     // verify that the component firing the event is a component of interest and action
+         *      is close
+         *     if (event.detail.action == "close") {}
+         *   });
+         *
+         * @example <caption>The default open and close animations are controlled via the theme
+         *          (SCSS) :</caption>
+         * $dialogOpenAnimation: (effect: "zoomIn", fade: true)  !default;
+         * $dialogCloseAnimation: (effect: "zoomOut", fade: true)  !default;
+         */
+        animateEnd: null
+      },
+      /**
+       * @memberof oj.ojDialog
+       * @instance
+       * @protected
+       * @override
+       * @return {void}
+       */
 
       _ComponentCreate: function () {
         this._super();
@@ -2421,7 +2439,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         this.element.uniqueId();
         this.element.addClass('oj-dialog oj-component');
         this.element.attr({
-            // Setting tabIndex makes the div focusable
+          // Setting tabIndex makes the div focusable
           tabIndex: -1
         });
 
@@ -2431,8 +2449,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         this._on(this.element, { keydown: this._keydownHandler.bind(this) });
 
-       // fixup references to header, body and footer.  assumption is they will be immediate children
-       // of the root node.
+        // fixup references to header, body and footer.  assumption is they will be immediate children
+        // of the root node.
         this.userDefinedDialogHeader = false;
 
         this._createContainer();
@@ -2475,15 +2493,15 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         this.element[0].appendChild(this._dialogContainer); // @HTMLUpdateOK
         Components.subtreeAttached(this._dialogContainer);
 
-       // fixup dialog header
+        // fixup dialog header
         if (this.userDefinedDialogHeader) {
           this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector(OJD_TITLE_CLASS);
           this._userDefinedTitle = $(this._userDefinedTitleDiv);
 
           if (this._userDefinedTitleDiv !== null && this._userDefinedTitleDiv !== undefined) {
-           // create an id for the user-defined title
+            // create an id for the user-defined title
             this._userDefinedTitle.uniqueId();
-           // to meet accessibility requirements for user-defined headers,
+            // to meet accessibility requirements for user-defined headers,
             // associate the title id with the .oj-dialog aria-labelledby.
             this.element.attr({ 'aria-labelledby': this._userDefinedTitle.attr('id') });
           }
@@ -2497,11 +2515,17 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           this._uiDialogContent = $(this._contentDiv);
 
           if (this._userDefinedHeader) {
-            this._dialogContainer.insertBefore(this._contentDiv, // @HTMLUpdateOK
-              this._userDefinedHeaderDiv.nextSibling);
+            // prettier-ignore
+            this._dialogContainer.insertBefore( // @HTMLUpdateOK
+              this._contentDiv,
+              this._userDefinedHeaderDiv.nextSibling
+            );
           } else {
-            this._dialogContainer.insertBefore(this._contentDiv, // @HTMLUpdateOK
-              this._uiDialogTitlebarDiv.nextSibling);
+            // prettier-ignore
+            this._dialogContainer.insertBefore( // @HTMLUpdateOK
+              this._contentDiv,
+              this._uiDialogTitlebarDiv.nextSibling
+            );
           }
           Components.subtreeAttached(this._contentDiv);
         }
@@ -2519,14 +2543,18 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             mutations.forEach(function (mutation) {
               if (mutation.type === 'attributes') {
                 if (mutation.attributeName === 'title') {
-                  self._uiDialogTitleDiv.textContent =
-                    mutation.target.getAttribute(mutation.attributeName);
+                  self._uiDialogTitleDiv.textContent = mutation.target.getAttribute(
+                    mutation.attributeName
+                  );
                 }
               }
             });
           });
           // Start observing the dialog element for changes to the title attribute.
-          this._titleMutationObserver.observe(this.element[0], { attributes: true, attributeFilter: ['title'] });
+          this._titleMutationObserver.observe(this.element[0], {
+            attributes: true,
+            attributeFilter: ['title']
+          });
         }
       },
 
@@ -2612,8 +2640,13 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         for (s = 0; s < slots.length; s++) {
           slot = slots[s];
-          if (slot !== SLOT_HEADER && slot !== SLOT_FOOTER && slot !== SLOT_BODY &&
-              slot !== SLOT_DEFAULT && slot !== SLOT_CONTEXTMENU) {
+          if (
+            slot !== SLOT_HEADER &&
+            slot !== SLOT_FOOTER &&
+            slot !== SLOT_BODY &&
+            slot !== SLOT_DEFAULT &&
+            slot !== SLOT_CONTEXTMENU
+          ) {
             // silently remove as per custom component slot behavior
             slotMap[slot].parentNode.removeChild(slotMap[slot]);
           }
@@ -2730,10 +2763,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         this._uiDialogBody = null;
         this._uiDialogContent = null;
 
-        this.element
-          .removeUniqueId()
-          .removeClass('oj-dialog oj-component')
-          .css(this.originalCss);
+        this.element.removeUniqueId().removeClass('oj-dialog oj-component').css(this.originalCss);
 
         this.element.stop(true, true);
 
@@ -2796,13 +2826,17 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // to restore the disabled accesskey attributes
         if (this.options.modality === 'modal') {
           var forEach = Array.prototype.forEach;
-           // Find elements within dialog that have accesskey and remove marker added during open
-          var elementsInDialogWithAccesskey = this.element[0].querySelectorAll('.oj-helper-element-in-dialog-with-accesskey');
+          // Find elements within dialog that have accesskey and remove marker added during open
+          var elementsInDialogWithAccesskey = this.element[0].querySelectorAll(
+            '.oj-helper-element-in-dialog-with-accesskey'
+          );
           forEach.call(elementsInDialogWithAccesskey, function (element) {
             element.classList.remove(OJD_HELPER_ELEMENT_DIALOG);
           });
-           // Find elements with oj-helper-element-with-accesskey class, get accesskey value from data attr, set accesskey attr, remove class
-          var elementsInDOMWithAccesskey = document.querySelectorAll('.oj-helper-element-with-accesskey');
+          // Find elements with oj-helper-element-with-accesskey class, get accesskey value from data attr, set accesskey attr, remove class
+          var elementsInDOMWithAccesskey = document.querySelectorAll(
+            '.oj-helper-element-with-accesskey'
+          );
           forEach.call(elementsInDOMWithAccesskey, function (element) {
             element.setAttribute('accesskey', element.getAttribute(OJD_ACCESS_KEY));
             element.removeAttribute(OJD_ACCESS_KEY);
@@ -2838,8 +2872,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           this._disableBodyOverflow();
         }
 
-        var animationOptions = (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS)
-          || {}).animation;
+        var animationOptions = (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
+          .animation;
         var closeAnimation;
         if (animationOptions) {
           if (isSheet && !isFull && animationOptions.sheet) {
@@ -2853,10 +2887,11 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         }
         if (!this._ignoreBeforeCloseResultant && closeAnimation) {
           // eslint-disable-next-line no-undef
-          return AnimationUtils.startAnimation(rootElement[0], 'close',
-            closeAnimation, this).then(function () {
+          return AnimationUtils.startAnimation(rootElement[0], 'close', closeAnimation, this).then(
+            function () {
               rootElement.hide();
-            });
+            }
+          );
         }
 
         rootElement.hide();
@@ -2882,9 +2917,9 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           if (launcher.length > 0) {
             launcher[0].focus();
           } else {
-             // Hiding a focused element doesn't trigger blur in WebKit
-             // so in case we have nothing to focus on, explicitly blur the active element
-             // https://bugs.webkit.org/show_bug.cgi?id=47182
+            // Hiding a focused element doesn't trigger blur in WebKit
+            // so in case we have nothing to focus on, explicitly blur the active element
+            // https://bugs.webkit.org/show_bug.cgi?id=47182
             $(this.document[0].activeElement).blur();
           }
         }
@@ -2917,10 +2952,12 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       isOpen: function () {
         var status = oj.ZOrderUtils.getStatus(this.element);
         // the window is visible and reparented to the zorder container for these statuses
-        return (status === oj.ZOrderUtils.STATUS.OPENING ||
-                status === oj.ZOrderUtils.STATUS.OPEN ||
-                status === oj.ZOrderUtils.STATUS.BEFORE_CLOSE ||
-                status === oj.ZOrderUtils.STATUS.CLOSING);
+        return (
+          status === oj.ZOrderUtils.STATUS.OPENING ||
+          status === oj.ZOrderUtils.STATUS.OPEN ||
+          status === oj.ZOrderUtils.STATUS.BEFORE_CLOSE ||
+          status === oj.ZOrderUtils.STATUS.CLOSING
+        );
       },
       /**
        * Opens the dialog.
@@ -2947,9 +2984,13 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // than the popup which forces a sync close follwed by a reopen - dialog
         // doesn't have accessiblity launcher requirements.
         var status = oj.ZOrderUtils.getStatus(this.element);
-        if (!(status === oj.ZOrderUtils.STATUS.OPEN ||
-              status === oj.ZOrderUtils.STATUS.UNKNOWN ||
-              status === oj.ZOrderUtils.STATUS.CLOSE)) {
+        if (
+          !(
+            status === oj.ZOrderUtils.STATUS.OPEN ||
+            status === oj.ZOrderUtils.STATUS.UNKNOWN ||
+            status === oj.ZOrderUtils.STATUS.CLOSE
+          )
+        ) {
           return;
         }
 
@@ -2975,8 +3016,10 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         if (this.userDefinedDialogHeader) {
           // Add close button to user-defined header
-          if ((this.closeButton === undefined || this.closeButton === null) &&
-              this.options.cancelBehavior === 'icon') {
+          if (
+            (this.closeButton === undefined || this.closeButton === null) &&
+            this.options.cancelBehavior === 'icon'
+          ) {
             this._createCloseButton(this._userDefinedHeaderDiv);
           }
         } else {
@@ -3007,12 +3050,12 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // from being triggered while dialog is open
         if (this.options.modality === 'modal') {
           var forEach = Array.prototype.forEach;
-           // Mark elements within the dialog that have an accesskey attr. Those shouldn't have accesskey attr removed
+          // Mark elements within the dialog that have an accesskey attr. Those shouldn't have accesskey attr removed
           var elementsInDialogWithAccesskey = this.element[0].querySelectorAll('[accesskey]');
           forEach.call(elementsInDialogWithAccesskey, function (element) {
             element.classList.add(OJD_HELPER_ELEMENT_DIALOG);
           });
-           // Mark elements with accesskey attr, move accesskey value to data attr, remove accesskey attr from elements
+          // Mark elements with accesskey attr, move accesskey value to data attr, remove accesskey attr from elements
           var elementsInDOMWithAccesskey = document.querySelectorAll('[accesskey]');
           forEach.call(elementsInDOMWithAccesskey, function (element) {
             if (!element.classList.contains(OJD_HELPER_ELEMENT_DIALOG)) {
@@ -3069,8 +3112,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // This supports maintaing the visibility of a nested dialog during animation open.
         rootElement.parent().addClass('oj-animate-open');
 
-        var animationOptions = (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) ||
-          {}).animation;
+        var animationOptions = (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
+          .animation;
         var openAnimation;
         if (animationOptions) {
           if (isSheet && !isFull && animationOptions.sheet) {
@@ -3084,8 +3127,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         }
         if (openAnimation) {
           // eslint-disable-next-line no-undef
-          return AnimationUtils.startAnimation(rootElement[0], 'open',
-            openAnimation, this);
+          return AnimationUtils.startAnimation(rootElement[0], 'open', openAnimation, this);
         }
 
         return undefined;
@@ -3127,7 +3169,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @param {Element} element  DOM element
        * @private
        */
-        _unregisterResizeListener: function (element) {
+      _unregisterResizeListener: function (element) {
         if (element && this._resizeHandler) {
           // remove existing listener
           DomUtils.removeResizeListener(element, this._resizeHandler);
@@ -3157,7 +3199,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @instance
        * @private
        */
-       _handleResize: function () {
+      _handleResize: function () {
         if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
           this._adjustPosition();
         }
@@ -3222,8 +3264,12 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       },
 
       _keydownHandler: function (event) {
-        if (this.options.cancelBehavior !== 'none' && !event.isDefaultPrevented() && event.keyCode &&
-            event.keyCode === $.ui.keyCode.ESCAPE) {
+        if (
+          this.options.cancelBehavior !== 'none' &&
+          !event.isDefaultPrevented() &&
+          event.keyCode &&
+          event.keyCode === $.ui.keyCode.ESCAPE
+        ) {
           event.preventDefault();
           event.stopImmediatePropagation();
           this.close(event);
@@ -3243,16 +3289,20 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // based on activeElement.
         if (!event.shiftKey) {
           // For TAB, we cycle when we are on the last element.
-          if (FocusUtils.isLastActiveElement(this.element) ||
-              document.activeElement === this.element[0]) {
+          if (
+            FocusUtils.isLastActiveElement(this.element) ||
+            document.activeElement === this.element[0]
+          ) {
             focusItem = FocusUtils.getFirstTabStop(this.element);
             if (focusItem != null) {
               focusItem.focus();
               event.preventDefault();
             }
           }
-        } else if (FocusUtils.isFirstActiveElement(this.element) ||
-                   document.activeElement === this.element[0]) {
+        } else if (
+          FocusUtils.isFirstActiveElement(this.element) ||
+          document.activeElement === this.element[0]
+        ) {
           // For SHIFT-TAB, we cycle when we are on the first element.
           focusItem = FocusUtils.getLastTabStop(this.element);
           if (focusItem != null) {
@@ -3342,14 +3392,15 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         }
 
         if (!this._IsCustomElement()) {
-          this.closeButton = $('<button><\button>')
-            .addClass(OJD_HEADER_CLOSE_WRAPPER);
+          this.closeButton = $('<button><\button>').addClass(OJD_HEADER_CLOSE_WRAPPER);
 
-          this.closeButton.ojButton(
-            { display: 'icons',
+          this.closeButton
+            .ojButton({
+              display: 'icons',
               chroming: 'half',
               label: this.getTranslatedString('labelCloseIcon'),
-              icons: { start: 'oj-component-icon oj-fwk-icon-cross' } })
+              icons: { start: 'oj-component-icon oj-fwk-icon-cross' }
+            })
             .appendTo(divParentElement); // @HTMLUpdateOK
 
           this.closeButtonDiv = this.closeButton[0];
@@ -3360,7 +3411,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             event.preventDefault();
             event.stopImmediatePropagation();
             this.close(event);
-          },
+          }
         });
 
         // When the close button is present, add a class to the title bar.
@@ -3381,8 +3432,10 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       // Create the close button and the titlebar's mousedown handler.
       //
       _createTitlebarCloseButton: function () {
-        if ((this.closeButton === undefined || this.closeButton === null) &&
-            this.options.cancelBehavior === 'icon') {
+        if (
+          (this.closeButton === undefined || this.closeButton === null) &&
+          this.options.cancelBehavior === 'icon'
+        ) {
           this._createCloseButton(this._uiDialogTitlebarDiv);
         }
 
@@ -3413,8 +3466,11 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         this._uiDialogTitlebarDiv = document.createElement('div');
         this._uiDialogTitlebarDiv.classList.add(OJD_HEADER);
 
-        this._dialogContainer.insertBefore(this._uiDialogTitlebarDiv, // @HTMLUpdateOK
-          this._dialogContainer.firstChild);
+        // prettier-ignore
+        this._dialogContainer.insertBefore( // @HTMLUpdateOK
+          this._uiDialogTitlebarDiv,
+          this._dialogContainer.firstChild
+        );
 
         Components.subtreeAttached(this._uiDialogTitlebarDiv);
 
@@ -3529,8 +3585,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         var minHeight = Math.max(DomUtils.getCSSLengthAsFloat(this.element.css('min-height')), 10);
         var maxWidth = DomUtils.getCSSLengthAsFloat(this.element.css('max-width'));
         var maxHeight = DomUtils.getCSSLengthAsFloat(this.element.css('max-height'));
-        maxWidth = (maxWidth === 0) ? null : maxWidth;
-        maxHeight = (maxHeight === 0) ? null : maxHeight;
+        maxWidth = maxWidth === 0 ? null : maxWidth;
+        maxHeight = maxHeight === 0 ? null : maxHeight;
 
         this._resizableComponent({
           minWidth: minWidth,
@@ -3575,15 +3631,21 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       },
       _positionDescendents: function () {
         // trigger refresh of descendents
-        oj.PopupService.getInstance().triggerOnDescendents(this.element,
-                                                           oj.PopupService.EVENT.POPUP_REFRESH);
+        oj.PopupService.getInstance().triggerOnDescendents(
+          this.element,
+          oj.PopupService.EVENT.POPUP_REFRESH
+        );
       },
       _adjustPosition: function () {
         var isDraggable = this.element.hasClass(OJ_DRAGGABLE);
         var isResizable = this.element.hasClass(OJ_RESIZABLE);
         // do not adjust position for resizable, movable and big dialogs
-        if (isDraggable || isResizable || this.element.width() > window.innerWidth
-            || this.element.height() > window.innerHeight) {
+        if (
+          isDraggable ||
+          isResizable ||
+          this.element.width() > window.innerWidth ||
+          this.element.height() > window.innerHeight
+        ) {
           this._positionDescendents();
         } else {
           this._position();
@@ -3608,7 +3670,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         var width = window.innerWidth;
         var elemHeight = this.element[0].offsetHeight;
         var elemWidth = this.element[0].offsetWidth;
-        if ((elemHeight >= height * 0.95) && (elemWidth >= width * 0.95)) {
+        if (elemHeight >= height * 0.95 && elemWidth >= width * 0.95) {
           return true;
         }
         return false;
@@ -3642,7 +3704,6 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         switch (key) {
           case 'dragAffordance':
-
             isDraggable = this.element.hasClass(OJ_DRAGGABLE);
 
             if (isDraggable && value === 'none') {
@@ -3657,13 +3718,13 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             break;
 
           case 'position':
-          // convert to the internal position format and reevaluate the position.
+            // convert to the internal position format and reevaluate the position.
             this._isDefaultPosition = false;
             var options = this.options;
             options.position = oj.PositionUtils.coerceToJet(value, options.position);
             this._position();
 
-          // setting the option is handled here.  don't call on super.
+            // setting the option is handled here.  don't call on super.
             return;
 
           case 'resizeBehavior':
@@ -3686,7 +3747,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
           case 'modality':
             if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
-            /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+              /** @type {!Object.<oj.PopupService.OPTION, ?>} */
               var psOptions = {};
               psOptions[oj.PopupService.OPTION.POPUP] = this.element;
               psOptions[oj.PopupService.OPTION.MODALITY] = value;
@@ -3695,7 +3756,6 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             break;
 
           case 'cancelBehavior':
-
             if (value === 'none' || value === 'escape') {
               this._destroyCloseButton();
             } else if (value === 'icon') {
@@ -3703,9 +3763,9 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
                 this._destroyCloseButton();
                 this._createCloseButton(this._userDefinedHeaderDiv);
 
-              //
-              // Insert oj-dialog-title between oj-dialog-header and oj-dialog-header-close-wrapper
-              //
+                //
+                // Insert oj-dialog-title between oj-dialog-header and oj-dialog-header-close-wrapper
+                //
                 this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector(OJD_TITLE_CLASS);
                 this._userDefinedTitle = $(this._userDefinedTitleDiv);
               } else {
@@ -3762,14 +3822,20 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             case OJD_HEADER:
             case OJD_CONTENT:
             case OJD_FOOTER:
-              selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ' + OJD_CONTAINER_CLASS + ' > ';
+              selector =
+                this.element[0].nodeName +
+                '[id="' +
+                _escapeId(this.element.attr('id')) +
+                '"] > ' +
+                OJD_CONTAINER_CLASS +
+                ' > ';
               selector += '.' + subId;
               node = this.element.parent().find(selector);
               if (!node || node.length === 0) {
                 return null;
               }
 
-              return (node[0]);
+              return node[0];
 
             case OJ_RESIZABLE_N:
             case OJ_RESIZABLE_E:
@@ -3779,15 +3845,15 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             case OJ_RESIZABLE_SW:
             case OJ_RESIZABLE_NE:
             case OJ_RESIZABLE_NW:
-
-              selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ';
+              selector =
+                this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ';
               selector += '.' + subId;
               node = this.element.parent().find(selector);
               if (!node || node.length === 0) {
                 return null;
               }
 
-              return (node[0]);
+              return node[0];
 
             // "oj-dialog-close-icon" is deprecated as of 1.2
             // use "oj-dialog-close" instead.
@@ -3798,7 +3864,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
             // "oj-dialog-body" is deprecated as of 1.2
             case OJD_BODY:
-              selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ';
+              selector =
+                this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ';
               selector += OJD_CONTAINER_CLASS + ' > ' + OJD_CONTENT_CLASS + ' > ';
               selector += '.' + subId;
               node = this.element.parent().find(selector);
@@ -3806,16 +3873,19 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
                 return null;
               }
 
-              return (node[0]);
+              return node[0];
 
             case OJD_HEADER_CLOSE_WRAPPER:
-              selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ';
+              selector =
+                this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ';
               selector += OJD_CONTAINER_CLASS + ' > ' + OJD_HEADER_CLASS + ' > ';
               selector += '.' + subId;
               node = this.element.parent().find(selector);
-              if (!node || node.length === 0) { return null; }
+              if (!node || node.length === 0) {
+                return null;
+              }
 
-              return (node[0]);
+              return node[0];
 
             default:
               break;
@@ -3948,8 +4018,12 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           return;
         }
 
-        this._whenReadyMediator = new ojpopupcore.PopupWhenReadyMediator(this.element, operation, 'ojDialog',
-          this._IsCustomElement());
+        this._whenReadyMediator = new ojpopupcore.PopupWhenReadyMediator(
+          this.element,
+          operation,
+          'ojDialog',
+          this._IsCustomElement()
+        );
       },
 
       /**
@@ -3983,7 +4057,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @override
        */
       _NotifyDetached: function () {
-         // detaching an open popup results in implicit dismissal
+        // detaching an open popup results in implicit dismissal
         if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
           this._closeImplicitly();
         }
@@ -3992,28 +4066,20 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       }
     });
 
-    Components.setDefaultOptions(
-      {
-        ojDialog:
-        {
-          resizeBehavior: Components.createDynamicPropertyGetter(
-              function () {
-                return (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
-                  .resizeBehavior;
-              }),
-          cancelBehavior: Components.createDynamicPropertyGetter(
-              function () {
-                return (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
-                  .cancelBehavior;
-              }),
-          dragAffordance: Components.createDynamicPropertyGetter(
-              function () {
-                return (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
-                  .dragAffordance;
-              })
-        }
-      });
-  }());
+    Components.setDefaultOptions({
+      ojDialog: {
+        resizeBehavior: Components.createDynamicPropertyGetter(function () {
+          return (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {}).resizeBehavior;
+        }),
+        cancelBehavior: Components.createDynamicPropertyGetter(function () {
+          return (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {}).cancelBehavior;
+        }),
+        dragAffordance: Components.createDynamicPropertyGetter(function () {
+          return (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {}).dragAffordance;
+        })
+      }
+    });
+  })();
 
   (function () {
 var __oj_dialog_metadata = 
@@ -4180,6 +4246,6 @@ var __oj_dialog_metadata =
     __oj_dialog_metadata.extension._WIDGET_NAME = 'ojDialog';
     __oj_dialog_metadata.extension._CONTROLS_SUBTREE_HIDDEN = true;
     oj.CustomElementBridge.register('oj-dialog', { metadata: __oj_dialog_metadata });
-  }());
+  })();
 
 });

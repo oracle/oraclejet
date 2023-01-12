@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -18,8 +18,7 @@ import 'jquery';
  * @since 1.1
 
  */
-const PagingModel = function () {
-};
+const PagingModel = function () {};
 oj._registerLegacyNamespaceProp('PagingModel', PagingModel);
 
 /**
@@ -111,25 +110,24 @@ oj._registerLegacyNamespaceProp('PagingModel', PagingModel);
  * @memberof PagingModel
  * @enum {string}
  */
-PagingModel.EventType =
-{
-    /** Triggered before the current page has changed. <p>
-     * This event is vetoable.<p>
-     * The event payload contains:<p>
-     * <b>page</b> The new current page<br>
-     * <b>previousPage</b> The old current page
-     */
+PagingModel.EventType = {
+  /** Triggered before the current page has changed. <p>
+   * This event is vetoable.<p>
+   * The event payload contains:<p>
+   * <b>page</b> The new current page<br>
+   * <b>previousPage</b> The old current page
+   */
   BEFOREPAGE: 'beforePage',
-    /** Triggered when the current page has changed<p>
-     * The event payload contains:<p>
-     * <b>page</b> The new current page<br>
-     * <b>previousPage</b> The old current page
-     */
+  /** Triggered when the current page has changed<p>
+   * The event payload contains:<p>
+   * <b>page</b> The new current page<br>
+   * <b>previousPage</b> The old current page
+   */
   PAGE: 'page',
-    /** Triggered when the page count has changed<p>
-     * The event payload contains:<p>
-     * <b>pageCount</b> The new page count<br>
-     * <b>previousPageCount</b> The old page count
-     */
+  /** Triggered when the page count has changed<p>
+   * The event payload contains:<p>
+   * <b>pageCount</b> The new page count<br>
+   * <b>previousPageCount</b> The old page count
+   */
   PAGECOUNT: 'pageCount'
 };

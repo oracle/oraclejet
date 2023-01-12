@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -23,6 +23,9 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
         }
         static get styleFixedInViewport() {
             return `${this.stringOjDrawer}${this.charDash}fixed-in-viewport`;
+        }
+        static get styleDrawerHidden() {
+            return `${this.stringOjDrawer}${this.charDash}hidden`;
         }
         static get styleStartDrawer() {
             return `${this.stringOjDrawer}${this.charDash}${this.stringStart}`;
@@ -127,6 +130,9 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
             return element.querySelectorAll(safeFocusablesSelector);
         }
         static isFocusable(element) {
+            if (!element || !element.parentElement) {
+                return false;
+            }
             return Array.from(DrawerUtils.getFocusables(element.parentElement)).some((item) => {
                 return item === element;
             });
@@ -215,10 +221,14 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
             }
             else {
                 let nearestAncestor = element.parentElement;
-                while (nearestAncestor.nodeName !== 'HTML' && !DrawerUtils.isFocusable(nearestAncestor)) {
+                while (nearestAncestor &&
+                    nearestAncestor.nodeName !== 'HTML' &&
+                    !DrawerUtils.isFocusable(nearestAncestor)) {
                     nearestAncestor = nearestAncestor.parentElement;
                 }
-                nearestAncestor.focus();
+                if (nearestAncestor) {
+                    nearestAncestor.focus();
+                }
             }
         }
     }

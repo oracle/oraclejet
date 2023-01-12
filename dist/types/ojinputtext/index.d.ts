@@ -318,6 +318,20 @@ export interface ojInputText<V = any> extends inputBase<V, ojInputTextSettablePr
     };
     list: string;
     virtualKeyboard: 'auto' | 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
+    translations: {
+        accessibleClearIcon?: string;
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
+        regexp?: {
+            messageDetail?: string;
+            messageSummary?: string;
+        };
+        required?: {
+            hint?: string;
+            messageDetail?: string;
+            messageSummary?: string;
+        };
+    };
     addEventListener<T extends keyof ojInputTextEventMap<V>>(type: T, listener: (this: HTMLElement, ev: ojInputTextEventMap<V>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojInputTextSettableProperties<V>>(property: T): ojInputText<V>[T];
@@ -435,6 +449,20 @@ export interface ojInputTextSettableProperties<V = any> extends inputBaseSettabl
     };
     list: string;
     virtualKeyboard: 'auto' | 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
+    translations: {
+        accessibleClearIcon?: string;
+        accessibleMaxLengthExceeded?: string;
+        accessibleMaxLengthRemaining?: string;
+        regexp?: {
+            messageDetail?: string;
+            messageSummary?: string;
+        };
+        required?: {
+            hint?: string;
+            messageDetail?: string;
+            messageSummary?: string;
+        };
+    };
 }
 export interface ojInputTextSettablePropertiesLenient<V = any> extends Partial<ojInputTextSettableProperties<V>> {
     [key: string]: any;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -12,7 +12,7 @@ import { Component, Fragment, h, render } from 'preact';
 import { jsx } from 'preact/jsx-runtime';
 import Context from 'ojs/ojcontext';
 import { withDataProvider } from 'ojs/ojdataproviderhandler';
-import { getPropagationMetadataViaCache } from 'ojs/ojbindpropagation';
+import { getPropagationMetadataViaCache, ROOT_BINDING_PROPAGATION } from 'ojs/ojbindpropagation';
 import { getExpressionEvaluator } from 'ojs/ojconfig';
 import { getPropertyMetadata } from 'ojs/ojmetadatautils';
 import { CspExpressionEvaluatorInternal } from 'ojs/ojcspexpressionevaluator-internal';
@@ -412,18 +412,18 @@ class VTemplateEngine {
         var props = this._getElementProps(engineContext, node);
         const tagName = node.tagName;
         const localName = tagName.toLowerCase();
-        const metadataProps = CustomElementUtils.getPropertiesForElementTag(tagName);
+        const compMetadata = CustomElementUtils.getMetadata(tagName);
         return this._createHFunctionCallNode(localName, [
-            this._createPossiblyProvidedAndConsumedProperties(localName, engineContext, metadataProps, props),
+            this._createPossiblyProvidedAndConsumedProperties(localName, engineContext, compMetadata, props),
             this._createAst(engineContext, Array.from(node.childNodes))
         ]);
     }
-    _createPossiblyProvidedAndConsumedProperties(localTagName, engineContext, metadataProps, props) {
+    _createPossiblyProvidedAndConsumedProperties(localTagName, engineContext, compMetadata, props) {
         const propertyObjectNode = {
             type: 10,
             properties: props
         };
-        const provideConsumeMeta = getPropagationMetadataViaCache(localTagName, metadataProps);
+        const provideConsumeMeta = getPropagationMetadataViaCache(localTagName, compMetadata);
         if (!provideConsumeMeta) {
             return propertyObjectNode;
         }
@@ -446,6 +446,7 @@ class VTemplateEngine {
         const propertyObjNodeWithConsumers = consumingProps.length === 0
             ? propertyObjectNode
             : { type: 10, properties: propertyObjectNode.properties.concat(consumingProps) };
+        const metadataProps = compMetadata.properties;
         return this._createCallNodeWithContext(($ctx, resolvedProps) => {
             let provided = {};
             let hasProvided;
@@ -455,7 +456,10 @@ class VTemplateEngine {
                         var _a;
                         let propVal;
                         let isSet = true;
-                        if (resolvedProps.hasOwnProperty(pName)) {
+                        if (pName === ROOT_BINDING_PROPAGATION) {
+                            isSet = false;
+                        }
+                        else if (resolvedProps.hasOwnProperty(pName)) {
                             propVal = resolvedProps[pName];
                         }
                         else {
@@ -494,7 +498,18 @@ class VTemplateEngine {
             if (hasProvided) {
                 const oldProvided = $ctx[_PROVIDED_KEY];
                 if (oldProvided !== undefined) {
-                    provided = Object.assign({}, oldProvided, provided);
+                    const mergedPrivateContexts = {};
+                    const oldContextMap = oldProvided['__oj_private_contexts'];
+                    const newContextMap = provided['__oj_private_contexts'];
+                    if (oldContextMap && newContextMap) {
+                        const unwrap = this._getUnwrapObservable(engineContext);
+                        const oldMap = unwrap(oldContextMap);
+                        mergedPrivateContexts['__oj_private_contexts'] = new Map([
+                            ...oldMap,
+                            ...newContextMap
+                        ]);
+                    }
+                    provided = Object.assign({}, oldProvided, provided, mergedPrivateContexts);
                 }
                 $ctx[_PROVIDED_KEY] = provided;
             }

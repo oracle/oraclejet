@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -12,33 +12,34 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
    * @class
    */
   const DvtTimeComponentStyleUtils = {
-
     /**
      * The default time direction scrollbar style.
      * @const
      * @private
      */
-    _DEFAULT_TIME_DIR_SCROLLBAR_STYLE : 'height: 3px; width: 3px; color: #9E9E9E; background-color: #F0F0F0',
+    _DEFAULT_TIME_DIR_SCROLLBAR_STYLE:
+      'height: 3px; width: 3px; color: #9E9E9E; background-color: #F0F0F0',
 
     /**
      * The default content direction scrollbar style.
      * @const
      * @private
      */
-    _DEFAULT_CONTENT_DIR_SCROLLBAR_STYLE : 'height: 3px; width: 3px; color: #9E9E9E; background-color: #F0F0F0',
+    _DEFAULT_CONTENT_DIR_SCROLLBAR_STYLE:
+      'height: 3px; width: 3px; color: #9E9E9E; background-color: #F0F0F0',
 
     /**
      * The scrollbar padding size.
      * @const
      * @private
      */
-    _SCROLLBAR_PADDING : 4,
+    _SCROLLBAR_PADDING: 4,
 
     /**
      * Gets the horizontal scrollbar style.
      * @return {dvt.CSSStyle} The scrollbar style.
      */
-    getTimeDirScrollbarStyle : () =>{
+    getTimeDirScrollbarStyle: () => {
       return new dvt.CSSStyle(DvtTimeComponentStyleUtils._DEFAULT_TIME_DIR_SCROLLBAR_STYLE);
     },
 
@@ -46,7 +47,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * Gets the vertical scrollbar style.
      * @return {dvt.CSSStyle} The scrollbar style.
      */
-    getContentDirScrollbarStyle : () => {
+    getContentDirScrollbarStyle: () => {
       return new dvt.CSSStyle(DvtTimeComponentStyleUtils._DEFAULT_CONTENT_DIR_SCROLLBAR_STYLE);
     },
 
@@ -54,7 +55,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * Gets the default scrollbar padding size.
      * @return {number} The default scrollbar padding size.
      */
-    getScrollbarPadding : () => {
+    getScrollbarPadding: () => {
       return DvtTimeComponentStyleUtils._SCROLLBAR_PADDING;
     }
   };
@@ -103,14 +104,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     render(options, width, height) {
       if (options) {
         this._resources = options['_resources'];
-        if (this._resources == null)
-          this._resources = [];
+        if (this._resources == null) this._resources = [];
 
         this.SetOptions(options);
 
         var dragMode = this.Options['dragMode'];
         this.SetPanningEnabled(dragMode === 'pan' || dragMode == null, true);
-        this.SetMarqueeEnabled(dragMode === 'select' && this.Options['selectionMode'] === 'multiple', true);
+        this.SetMarqueeEnabled(
+          dragMode === 'select' && this.Options['selectionMode'] === 'multiple',
+          true
+        );
       }
 
       // Store the size
@@ -138,11 +141,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       var endTime = new Date(options['end']).getTime();
       var viewStartTime = new Date(options['viewportStart']).getTime();
       var viewEndTime = new Date(options['viewportEnd']).getTime();
-      if (!((viewStartTime >= startTime) && (viewStartTime < endTime))) {
+      if (!(viewStartTime >= startTime && viewStartTime < endTime)) {
         this._viewStartTime = null;
         this.Options['viewportStart'] = '';
       }
-      if (!((viewEndTime > startTime) && (viewEndTime <= endTime))) {
+      if (!(viewEndTime > startTime && viewEndTime <= endTime)) {
         this._viewEndTime = null;
         this.Options['viewportEnd'] = '';
       }
@@ -157,8 +160,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * Removes all children from the component's canvas.
      */
     clearComponent() {
-      if (this._canvas)
-        this._canvas.removeChildren();
+      if (this._canvas) this._canvas.removeChildren();
     }
 
     _applyParsedProperties(props) {
@@ -179,7 +181,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @param {string} type The raw data object type. Must be either 'series', 'item', 'row', or 'task'
      * @return {object} The sanitized data
      */
-     static sanitizeData(data, type) {
+    static sanitizeData(data, type) {
       const sanitizeNoTemplateItemData = (item) => {
         if (item._itemData.taskId) {
           // Specifically for Gantt with row data supplied and no task template,
@@ -224,8 +226,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      *
      */
     applyStyleValues() {
-      if (this._style)
-        this._style.parseInlineStyle(this._inlineStyle);
+      if (this._style) this._style.parseInlineStyle(this._inlineStyle);
     }
 
     //////////// attribute methods ////////////////////////////
@@ -259,10 +260,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     }
 
     setContentLength(length) {
-      if (this._canvasLength < length)
-        this._contentLength = length;
-      else
-        this._contentLength = this._canvasLength;
+      if (this._canvasLength < length) this._contentLength = length;
+      else this._contentLength = this._canvasLength;
 
       if (!this._virtualize) {
         this._fetchStartPos = 0;
@@ -322,34 +321,31 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
           this.setContentLength(widthFactor * (this._end - this._start));
           this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
         }
-      }
-      else {
+      } else {
         var timeAxis = this.getTimeAxis();
         var zoomLevelLength = timeAxis.getZoomLevelLengths()[timeAxis._zoomLevelOrder];
         var startTime = this._start;
         var endTime = this._end;
         if (this._viewStartTime == null) {
           if (this._viewEndTime != null) {
-            this._viewStartTime = this._viewEndTime - (this._canvasLength / zoomLevelLength) * (endTime - startTime);
-            if (this._viewStartTime < this._start)
-              this._viewStartTime = this._start;
+            this._viewStartTime =
+              this._viewEndTime - (this._canvasLength / zoomLevelLength) * (endTime - startTime);
+            if (this._viewStartTime < this._start) this._viewStartTime = this._start;
             viewTime = this._viewEndTime - this._viewStartTime;
             widthFactor = this._canvasLength / viewTime;
             this.setContentLength(widthFactor * (this._end - this._start));
             this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
-          }
-          else {
+          } else {
             this._viewStartTime = this._start;
             this.setRelativeStartPos(0);
-            this._viewEndTime = (this._canvasLength / zoomLevelLength) * (endTime - startTime) + this._viewStartTime;
-            if (this._viewEndTime > this._end)
-              this._viewEndTime = this._end;
+            this._viewEndTime =
+              (this._canvasLength / zoomLevelLength) * (endTime - startTime) + this._viewStartTime;
+            if (this._viewEndTime > this._end) this._viewEndTime = this._end;
           }
-        }
-        else {
-          this._viewEndTime = (this._canvasLength / zoomLevelLength) * (endTime - startTime) + this._viewStartTime;
-          if (this._viewEndTime > this._end)
-            this._viewEndTime = this._end;
+        } else {
+          this._viewEndTime =
+            (this._canvasLength / zoomLevelLength) * (endTime - startTime) + this._viewStartTime;
+          if (this._viewEndTime > this._end) this._viewEndTime = this._end;
           viewTime = this._viewEndTime - this._viewStartTime;
           widthFactor = this._canvasLength / viewTime;
           this.setContentLength(widthFactor * (this._end - this._start));
@@ -363,26 +359,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @param {dvt.Container} container The container to render into.
      */
     renderTimeZoomCanvas(container) {
-      if (this._timeZoomCanvas)
-        this._timeZoomCanvas.setClipPath(null);
-      else
-        this._timeZoomCanvas = new dvt.Container(this.getCtx(), 'g', 'iCanvas');
+      if (this._timeZoomCanvas) this._timeZoomCanvas.setClipPath(null);
+      else this._timeZoomCanvas = new dvt.Container(this.getCtx(), 'g', 'iCanvas');
 
       var cp = new dvt.ClipPath();
       if (this.isVertical()) {
         cp.addRect(this._startX, this._startY, this._canvasSize, this._canvasLength);
         this._timeZoomCanvas.setTranslateX(this._startX);
         this._timeZoomCanvas.setTranslateY(this._startY + this.getAbsoluteStartPos());
-      }
-      else {
+      } else {
         cp.addRect(this._startX, this._startY, this._canvasLength, this._canvasSize);
         this._timeZoomCanvas.setTranslateX(this._startX + this.getAbsoluteStartPos());
         this._timeZoomCanvas.setTranslateY(this._startY);
       }
       container.setClipPath(cp);
 
-      if (this._timeZoomCanvas.getParent() != container)
-        container.addChild(this._timeZoomCanvas);
+      if (this._timeZoomCanvas.getParent() != container) container.addChild(this._timeZoomCanvas);
     }
 
     getTimeZoomCanvas() {
@@ -417,7 +409,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       var iconStyle;
       if (this.zoomin == null) {
         iconStyle = dvt.ToolkitUtils.getIconStyle(context, iconClass);
-        this.zoomin = new dvt.TransientButton(context, iconStyle, imageSize, this.EventManager, this.EventManager.HandleZoomInClick);
+        this.zoomin = new dvt.TransientButton(
+          context,
+          iconStyle,
+          imageSize,
+          this.EventManager,
+          this.EventManager.HandleZoomInClick
+        );
         // In order for tooltips to show up, we need to associate the buttons through the event manager
         this.EventManager.associate(this.zoomin, this.zoomin);
       }
@@ -432,7 +430,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
 
       if (this.zoomout == null) {
         iconStyle = dvt.ToolkitUtils.getIconStyle(context, iconClass);
-        this.zoomout = new dvt.TransientButton(context, iconStyle, imageSize, this.EventManager, this.EventManager.HandleZoomOutClick);
+        this.zoomout = new dvt.TransientButton(
+          context,
+          iconStyle,
+          imageSize,
+          this.EventManager,
+          this.EventManager.HandleZoomOutClick
+        );
         // In order for tooltips to show up, we need to associate the buttons through the event manager
         this.EventManager.associate(this.zoomout, this.zoomout);
       }
@@ -444,9 +448,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
 
       if (ojtimeaxisToolkit.TimeAxisUtils.supportsTouch()) {
         dvt.ToolkitUtils.setAttrNullNS(this.zoomin.getElem(), 'role', 'button');
-        dvt.ToolkitUtils.setAttrNullNS(this.zoomin.getElem(), 'aria-label', translations.tooltipZoomIn);
+        dvt.ToolkitUtils.setAttrNullNS(
+          this.zoomin.getElem(),
+          'aria-label',
+          translations.tooltipZoomIn
+        );
         dvt.ToolkitUtils.setAttrNullNS(this.zoomout.getElem(), 'role', 'button');
-        dvt.ToolkitUtils.setAttrNullNS(this.zoomout.getElem(), 'aria-label', translations.tooltipZoomOut);
+        dvt.ToolkitUtils.setAttrNullNS(
+          this.zoomout.getElem(),
+          'aria-label',
+          translations.tooltipZoomOut
+        );
       }
 
       this.zoomin.setTranslateX(zoomInPosX);
@@ -455,16 +467,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       this.zoomin.setTranslateY(zoomInPosY);
       this.zoomout.setTranslateY(zoomOutPosY);
 
-      if (this.zoomin.getParent() != this._canvas)
-        this._canvas.addChild(this.zoomin);
-      if (this.zoomout.getParent() != this._canvas)
-        this._canvas.addChild(this.zoomout);
+      if (this.zoomin.getParent() != this._canvas) this._canvas.addChild(this.zoomin);
+      if (this.zoomout.getParent() != this._canvas) this._canvas.addChild(this.zoomout);
 
       var contentLength = this.getContentLength();
-      if (contentLength >= timeAxis.getMaxContentLength())
-        this.disableZoomButton(true);
-      if (this._canvasLength >= contentLength)
-        this.disableZoomButton(false);
+      if (contentLength >= timeAxis.getMaxContentLength()) this.disableZoomButton(true);
+      if (this._canvasLength >= contentLength) this.disableZoomButton(false);
     }
 
     HandleMouseWheel(event) {
@@ -476,7 +484,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
         // manually check the x delta because dvt.MouseEvent ignores x delta at the time of writing.
         // performs similar check on delta x as that of dvt.MouseEvent.Init()'s check on delta y.
         if (wheelEvent.wheelDeltaX != null)
-          event.wheelDeltaX = wheelEvent.wheelDeltaX / this.WHEEL_UNITS_PER_LINE; // number of lines scrolled per mouse wheel click
+          event.wheelDeltaX = wheelEvent.wheelDeltaX / this.WHEEL_UNITS_PER_LINE;
+        // number of lines scrolled per mouse wheel click
         else if (wheelEvent.deltaX != null) {
           if (wheelEvent.deltaMode == wheelEvent.DOM_DELTA_LINE)
             event.wheelDeltaX = -wheelEvent.deltaX;
@@ -484,22 +493,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
             event.wheelDeltaX = -wheelEvent.deltaX / TimeComponent.SCROLL_LINE_HEIGHT; // number of lines scrolled per mouse wheel click
         }
 
-        if (wheelDelta) { // if vertical mouse wheel amount is defined, non null, non zero
+        if (wheelDelta) {
+          // if vertical mouse wheel amount is defined, non null, non zero
           var compPagePos = this.getCtx().getStageAbsolutePosition();
-          if (this._isVertical)
-            var compLoc = event.pageY - compPagePos.y - this.getStartYOffset();
-          else
-            compLoc = event.pageX - compPagePos.x - this.getStartXOffset();
+          if (this._isVertical) var compLoc = event.pageY - compPagePos.y - this.getStartYOffset();
+          else compLoc = event.pageX - compPagePos.x - this.getStartXOffset();
           var widthFactor = (this._end - this._start) / this.getContentLength();
 
-          if (this.isRTL() && !this._isVertical)
-            var time = this._viewEndTime - widthFactor * compLoc;
-          else
-            time = widthFactor * compLoc + this._viewStartTime;
+          if (this.isRTL() && !this._isVertical) var time = this._viewEndTime - widthFactor * compLoc;
+          else time = widthFactor * compLoc + this._viewStartTime;
 
           event.zoomTime = time;
           event.zoomCompLoc = compLoc;
-          event.zoomWheelDelta = (wheelDelta * .02) + 1;
+          event.zoomWheelDelta = wheelDelta * 0.02 + 1;
         }
       }
     }
@@ -512,36 +518,29 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       if (time) {
         var widthFactor = (this._end - this._start) / this.getContentLength();
         if (this.isRTL() && !this._isVertical) {
-          this._viewEndTime = time + (compLoc * widthFactor);
-          if (this._viewEndTime > this._end)
-            this._viewEndTime = this._end;
+          this._viewEndTime = time + compLoc * widthFactor;
+          if (this._viewEndTime > this._end) this._viewEndTime = this._end;
           this._viewStartTime = this._viewEndTime - viewTime;
           if (this._viewStartTime < this._start) {
             this._viewStartTime = this._start;
             this._viewEndTime = this._viewStartTime + viewTime;
-            if (this._viewEndTime > this._end)
-              this._viewEndTime = this._end;
+            if (this._viewEndTime > this._end) this._viewEndTime = this._end;
           }
-        }
-        else {
-          this._viewStartTime = time - (compLoc * widthFactor);
-          if (this._viewStartTime < this._start)
-            this._viewStartTime = this._start;
+        } else {
+          this._viewStartTime = time - compLoc * widthFactor;
+          if (this._viewStartTime < this._start) this._viewStartTime = this._start;
           this._viewEndTime = this._viewStartTime + viewTime;
           if (this._viewEndTime > this._end) {
             this._viewEndTime = this._end;
             this._viewStartTime = this._viewEndTime - viewTime;
-            if (this._viewStartTime < this._start)
-              this._viewStartTime = this._start;
+            if (this._viewStartTime < this._start) this._viewStartTime = this._start;
           }
         }
         this.setRelativeStartPos((1 / widthFactor) * (this._start - this._viewStartTime));
-      }
-      else {
+      } else {
         this._viewStartTime = this._start;
         this._viewEndTime = this._viewStartTime + viewTime;
-        if (this._viewEndTime > this._end)
-          this._viewEndTime = this._end;
+        if (this._viewEndTime > this._end) this._viewEndTime = this._end;
         this.setRelativeStartPos(0);
       }
 
@@ -554,10 +553,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      */
     zoomBy(dz) {
       var shiftRatio = (1 / dz - 1) / 2 + 1;
-      if (this._isVertical)
-        var compLoc = this.Height / 2;
-      else
-        compLoc = this.Width / 2;
+      if (this._isVertical) var compLoc = this.Height / 2;
+      else compLoc = this.Width / 2;
       var widthFactor = (this._end - this._start) / this.getContentLength();
       var time = widthFactor * compLoc + this._viewStartTime;
       this.handleZoomWheel(this.getContentLength() * shiftRatio, time, compLoc, true);
@@ -566,14 +563,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     beginPinchZoom(x1, y1, x2, y2) {
       if (this._isVertical)
         this._initialPinchZoomLoc = Math.sqrt((y1 - y2) * (y1 - y2)) + (y1 < y2 ? y1 : y2);
-      else
-        this._initialPinchZoomLoc = Math.sqrt((x1 - x2) * (x1 - x2)) + (x1 < x2 ? x1 : x2);
+      else this._initialPinchZoomLoc = Math.sqrt((x1 - x2) * (x1 - x2)) + (x1 < x2 ? x1 : x2);
       var widthFactor = (this._end - this._start) / this.getContentLength();
 
       if (this.isRTL() && !this._isVertical)
         this._initialPinchZoomTime = this._viewEndTime - widthFactor * this._initialPinchZoomLoc;
-      else
-        this._initialPinchZoomTime = widthFactor * this._initialPinchZoomLoc + this._viewStartTime;
+      else this._initialPinchZoomTime = widthFactor * this._initialPinchZoomLoc + this._viewStartTime;
 
       this._initialPinchZoomDist = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
       this._initialPinchZoomLength = this.getContentLength();
@@ -581,9 +576,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
 
     contPinchZoom(x1, y1, x2, y2) {
       var currPinchZoomDist = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-      if (currPinchZoomDist != this._initialPinchZoomDist)
-        this._triggerViewportChange = true;
-      var newLength = ((currPinchZoomDist / this._initialPinchZoomDist) * this._initialPinchZoomLength);
+      if (currPinchZoomDist != this._initialPinchZoomDist) this._triggerViewportChange = true;
+      var newLength = (currPinchZoomDist / this._initialPinchZoomDist) * this._initialPinchZoomLength;
       this.handleZoomWheel(newLength, this._initialPinchZoomTime, this._initialPinchZoomLoc, false);
     }
 
@@ -652,7 +646,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @return {boolean} whether marquee selection is enabled
      */
     isMarqueeSelectEnabled() {
-      return this.getOptions()['dragMode'] === 'select' && this.getOptions()['selectionMode'] === 'multiple';
+      return (
+        this.getOptions()['dragMode'] === 'select' &&
+        this.getOptions()['selectionMode'] === 'multiple'
+      );
     }
 
     /**
@@ -682,55 +679,45 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
         var minTranslateY = -(this.getContentLength() - this._canvasLength - this._startY);
         var maxTranslateY = this._startY;
 
-        if (newTranslateY < minTranslateY)
-          newTranslateY = minTranslateY;
-        else if (newTranslateY > maxTranslateY)
-          newTranslateY = maxTranslateY;
+        if (newTranslateY < minTranslateY) newTranslateY = minTranslateY;
+        else if (newTranslateY > maxTranslateY) newTranslateY = maxTranslateY;
         this._timeZoomCanvas.setTranslateY(newTranslateY);
 
         var startPos = newTranslateY - this._startY;
         this.setAbsoluteStartPos(startPos);
         var widthFactor = this.getContentLength() / (this._end - this._start);
         var viewTime = this._viewEndTime - this._viewStartTime;
-        this._viewStartTime = this._start - (startPos / widthFactor);
+        this._viewStartTime = this._start - startPos / widthFactor;
         this._viewEndTime = this._viewStartTime + viewTime;
-        if (this._viewEndTime > this._end)
-          this._viewEndTime = this._end;
-      }
-      else {
+        if (this._viewEndTime > this._end) this._viewEndTime = this._end;
+      } else {
         var newTranslateX = this._timeZoomCanvas.getTranslateX() - delta;
         var minTranslateX = -(this.getContentLength() - this._canvasLength - this._startX);
         var maxTranslateX = this._startX;
 
-        if (newTranslateX < minTranslateX)
-          newTranslateX = minTranslateX;
-        else if (newTranslateX > maxTranslateX)
-          newTranslateX = maxTranslateX;
+        if (newTranslateX < minTranslateX) newTranslateX = minTranslateX;
+        else if (newTranslateX > maxTranslateX) newTranslateX = maxTranslateX;
         this._timeZoomCanvas.setTranslateX(newTranslateX);
 
         this.setAbsoluteStartPos(newTranslateX - this._startX);
         startPos = this.getRelativeStartPos();
         widthFactor = this.getContentLength() / (this._end - this._start);
         viewTime = this._viewEndTime - this._viewStartTime;
-        this._viewStartTime = this._start - (startPos / widthFactor);
+        this._viewStartTime = this._start - startPos / widthFactor;
         this._viewEndTime = this._viewStartTime + viewTime;
-        if (this._viewEndTime > this._end)
-          this._viewEndTime = this._end;
+        if (this._viewEndTime > this._end) this._viewEndTime = this._end;
       }
     }
 
     handleZoom(zoomIn) {
-      if (!zoomIn)
-        this.zoomBy(this.ZOOM_BY_VALUE);
-      else
-        this.zoomBy(1 / this.ZOOM_BY_VALUE);
+      if (!zoomIn) this.zoomBy(this.ZOOM_BY_VALUE);
+      else this.zoomBy(1 / this.ZOOM_BY_VALUE);
     }
 
     enableZoomButton(isZoomIn) {
       if (isZoomIn) {
         this.zoomin.setEnabled(true);
-      }
-      else {
+      } else {
         this.zoomout.setEnabled(true);
       }
     }
@@ -739,8 +726,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       if (isZoomIn) {
         this.zoomin.setEnabled(false);
         this.zoomin.setCursor(null);
-      }
-      else {
+      } else {
         this.zoomout.setEnabled(false);
         this.zoomout.setCursor(null);
       }
@@ -749,8 +735,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     applyTimeZoomCanvasPosition() {
       if (this._isVertical)
         this._timeZoomCanvas.setTranslateY(this._startY + this.getAbsoluteStartPos());
-      else
-        this._timeZoomCanvas.setTranslateX(this._startX + this.getAbsoluteStartPos());
+      else this._timeZoomCanvas.setTranslateX(this._startX + this.getAbsoluteStartPos());
     }
 
     /**
@@ -776,8 +761,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     getRelativeStartPos() {
       if (this.isRTL() && !this._isVertical)
         return this._canvasLength - this.getContentLength() - this._startPos;
-      else
-        return this._startPos;
+      else return this._startPos;
     }
 
     /**
@@ -787,8 +771,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     setRelativeStartPos(startPos) {
       if (this.isRTL() && !this._isVertical)
         this._startPos = this._canvasLength - this.getContentLength() - startPos;
-      else
-        this._startPos = startPos;
+      else this._startPos = startPos;
     }
 
     /**
@@ -863,10 +846,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @return {dvt.SimpleScrollbar} The scrollbar in the content direction.
      */
     getContentDirScrollbar(index) {
-      if (index)
-        return this.contentDirScrollbar[index];
-      else
-        return this.contentDirScrollbar;
+      if (index) return this.contentDirScrollbar[index];
+      else return this.contentDirScrollbar;
     }
 
     /**
@@ -884,13 +865,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      */
     setContentDirScrollbar(contentDirScrollbar, index) {
       if (index != null) {
-        if (this.contentDirScrollbar == null)
-          this.contentDirScrollbar = [];
+        if (this.contentDirScrollbar == null) this.contentDirScrollbar = [];
 
         this.contentDirScrollbar[index] = contentDirScrollbar;
-      }
-      else
-        this.contentDirScrollbar = contentDirScrollbar;
+      } else this.contentDirScrollbar = contentDirScrollbar;
     }
 
     /**
@@ -928,8 +906,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
         event = this.processScrollbarEvent(event, component);
       }
 
-      if (event)
-        this.dispatchEvent(event);
+      if (event) this.dispatchEvent(event);
     }
 
     /**
@@ -953,8 +930,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     }
 
     processEvent(event) {
-      if (event)
-        this.dispatchEvent(event);
+      if (event) this.dispatchEvent(event);
     }
 
     /**
@@ -998,22 +974,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     }
 
     //////////// event handlers, called by TimeComponentEventManager ////////////////////////////
-    HandleKeyDown(event) {
-    }
+    HandleKeyDown(event) {}
 
-    HandleMouseDown(event) {
-    }
-
+    HandleMouseDown(event) {}
 
     /**
      * Handles component focus events.
      * @param {object} event The focus event.
      */
     HandleFocus(event) {
-      if (this.zoomin != null)
-        this.zoomin._onFocus(event);
-      if (this.zoomout != null)
-        this.zoomout._onFocus(event);
+      if (this.zoomin != null) this.zoomin._onFocus(event);
+      if (this.zoomout != null) this.zoomout._onFocus(event);
     }
 
     /**
@@ -1021,10 +992,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @param {object} event The blur event.
      */
     HandleBlur(event) {
-      if (this.zoomin != null)
-        this.zoomin._onBlur(event);
-      if (this.zoomout != null)
-        this.zoomout._onBlur(event);
+      if (this.zoomin != null) this.zoomin._onBlur(event);
+      if (this.zoomout != null) this.zoomout._onBlur(event);
     }
 
     beginDragPan(compX, compY) {
@@ -1061,7 +1030,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       }
       if (!this._glassPane) {
         var glassPaneBounds = this.getGraphicalAreaBounds();
-        this._glassPane = new dvt.Rect(this.getCtx(), glassPaneBounds.x, glassPaneBounds.y, glassPaneBounds.w, glassPaneBounds.h);
+        this._glassPane = new dvt.Rect(
+          this.getCtx(),
+          glassPaneBounds.x,
+          glassPaneBounds.y,
+          glassPaneBounds.w,
+          glassPaneBounds.h
+        );
         this._glassPane.setInvisibleFill();
       }
 
@@ -1150,14 +1125,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
 
     HandleTouchEnd(event) {
       if (this._selectionMode != 'none')
-        this.handleShapeClick(event, (this._selectionMode == 'multiple'));
+        this.handleShapeClick(event, this._selectionMode == 'multiple');
     }
 
-    handleShapeClick(event) {
-    }
+    handleShapeClick(event) {}
 
     HandleMouseClick(event) {
-      this.handleShapeClick(event, (event.ctrlKey && this._selectionMode == 'multiple'));
+      this.handleShapeClick(event, event.ctrlKey && this._selectionMode == 'multiple');
     }
 
     /**
@@ -1175,8 +1149,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       if (this._currentX && this._currentY) {
         var deltaX = this._currentX - compX;
         var deltaY = this._currentY - compY;
-        if (deltaX == 0 && deltaY == 0)
-          return false;
+        if (deltaX == 0 && deltaY == 0) return false;
 
         this._triggerViewportChange = true;
         this._currentX = compX;
@@ -1206,7 +1179,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
    * @constructor
    */
   class TimeComponentEventManager extends dvt.EventManager {
-
     constructor(comp) {
       super(comp.getCtx(), comp.processEvent, comp, comp);
       this._comp = comp;
@@ -1219,8 +1191,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       if (callback !== undefined) {
         super.Init(obj, callback, callbackObj, comp);
         this._comp = comp;
-      }
-      else {
+      } else {
         super.Init(obj.getCtx(), obj.processEvent, obj, obj);
         this._comp = obj;
       }
@@ -1234,12 +1205,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      */
     addListeners(displayable) {
       super.addListeners(displayable);
-      dvt.SvgDocumentUtils.addDragListeners(this._comp, this._onDragStart, this._onDragMove, this._onDragEnd, this);
-      if(!dvt.Agent.isTouchDevice()) {
-        if(dvt.Agent.browser === 'firefox')
+      dvt.SvgDocumentUtils.addDragListeners(
+        this._comp,
+        this._onDragStart,
+        this._onDragMove,
+        this._onDragEnd,
+        this
+      );
+      if (!dvt.Agent.isTouchDevice()) {
+        if (dvt.Agent.browser === 'firefox')
           displayable.addEvtListener('wheel', this.OnMouseWheel, false, this);
-        else
-          displayable.addEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
+        else displayable.addEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
       }
     }
 
@@ -1248,11 +1224,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      */
     RemoveListeners(displayable) {
       super.RemoveListeners(displayable);
-      if(!dvt.Agent.isTouchDevice()) {
-        if(dvt.Agent.browser === 'firefox')
+      if (!dvt.Agent.isTouchDevice()) {
+        if (dvt.Agent.browser === 'firefox')
           displayable.removeEvtListener('wheel', this.OnMouseWheel, false, this);
-        else
-          displayable.removeEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
+        else displayable.removeEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
       }
     }
 
@@ -1332,11 +1307,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @private
      */
     _onDragStart(event) {
-      if(this._comp.hasValidOptions()) {
-        if(dvt.Agent.isTouchDevice())
-          return this._onTouchDragStart(event);
-        else
-          return this._onMouseDragStart(event);
+      if (this._comp.hasValidOptions()) {
+        if (dvt.Agent.isTouchDevice()) return this._onTouchDragStart(event);
+        else return this._onMouseDragStart(event);
       }
       return false;
     }
@@ -1348,8 +1321,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @private
      */
     _onDragMove(event) {
-      if(dvt.Agent.isTouchDevice())
-        return this._onTouchDragMove(event);
+      if (dvt.Agent.isTouchDevice()) return this._onTouchDragMove(event);
       return this._onMouseDragMove(event);
     }
 
@@ -1360,8 +1332,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @private
      */
     _onDragEnd(event) {
-      if(dvt.Agent.isTouchDevice())
-        return this._onTouchDragEnd(event);
+      if (dvt.Agent.isTouchDevice()) return this._onTouchDragEnd(event);
       return this._onMouseDragEnd(event);
     }
 
@@ -1372,11 +1343,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @return {dvt.Point} The relative position.
      * @private
      */
-    _getRelativePosition(pageX, pageY) { 
-      if(!this._stageAbsolutePosition)
+    _getRelativePosition(pageX, pageY) {
+      if (!this._stageAbsolutePosition)
         this._stageAbsolutePosition = this._context.getStageAbsolutePosition();
 
-      return new dvt.Point(pageX - this._stageAbsolutePosition.x, pageY - this._stageAbsolutePosition.y);
+      return new dvt.Point(
+        pageX - this._stageAbsolutePosition.x,
+        pageY - this._stageAbsolutePosition.y
+      );
     }
 
     /**
@@ -1386,14 +1360,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @private
      */
     _onMouseDragStart(event) {
-      if(event.button != dvt.MouseEvent.RIGHT_CLICK_BUTTON) {
+      if (event.button != dvt.MouseEvent.RIGHT_CLICK_BUTTON) {
         var relPos = this._getRelativePosition(event.pageX, event.pageY);
         var dragHandler = this._getDragHandler(relPos);
 
         // TODO: Consider encapsulate panning logic into a dragHandler, so that only the else block-like logic is needed.
-        if(this._comp.IsPanningEnabled()) {
+        if (this._comp.IsPanningEnabled()) {
           // only drag pan if inside chart/graphical area
-          if(this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y) && !this._isDragPanning) {
+          if (
+            this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y) &&
+            !this._isDragPanning
+          ) {
             // Hide any tooltip (from keyboard move) and put up a glass pane (for cursor change). Note that these are only relevant for mouse dragging.
             this.hideTooltip();
             this._comp.registerAndConstructGlassPane();
@@ -1402,11 +1379,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
             this._isDragPanning = true;
             return true;
           }
-        }
-        else if(dragHandler) {
-          if(this._comp.IsMarqueeEnabled()) {
+        } else if (dragHandler) {
+          if (this._comp.IsMarqueeEnabled()) {
             var dragHandlerEvent = dragHandler.processDragStart(relPos, event.ctrlKey);
-            if(dragHandlerEvent) {
+            if (dragHandlerEvent) {
               dragHandlerEvent._relPos = relPos;
               this.ProcessMarqueeEvent(dragHandlerEvent);
             }
@@ -1427,13 +1403,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       var relPos = this._getRelativePosition(event.pageX, event.pageY);
       var dragHandler = this._getDragHandler(); // don't pass the relPos so that the drag mode stays
 
-      if(this._comp.IsPanningEnabled() && this._comp.contDragPan(relPos.x, relPos.y) && this._isDragPanning) {
+      if (
+        this._comp.IsPanningEnabled() &&
+        this._comp.contDragPan(relPos.x, relPos.y) &&
+        this._isDragPanning
+      ) {
         this._comp.installGlassPane();
-      }
-      else if(dragHandler) {
-        if(this._comp.IsMarqueeEnabled()) {
+      } else if (dragHandler) {
+        if (this._comp.IsMarqueeEnabled()) {
           var dragHandlerEvent = dragHandler.processDragMove(relPos, event.ctrlKey);
-          if(dragHandlerEvent) {
+          if (dragHandlerEvent) {
             dragHandlerEvent._relPos = relPos;
             this.ProcessMarqueeEvent(dragHandlerEvent);
           }
@@ -1450,7 +1429,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       var relPos = this._getRelativePosition(event.pageX, event.pageY);
       var dragHandler = this._getDragHandler(); // don't pass the relPos so that the drag mode stays
 
-      if(this._comp.IsPanningEnabled() && this._isDragPanning) {
+      if (this._comp.IsPanningEnabled() && this._isDragPanning) {
         this._isDragPanning = false;
 
         this._comp.endDragPan();
@@ -1459,15 +1438,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
         this._comp.unregisterAndDestroyGlassPane();
 
         // Update cursor
-        if(this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y))
+        if (this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y))
           this._comp.setPanCursorUp();
-        else
-          this._comp.setCursor('inherit');
-      }
-      else if(dragHandler) {
-        if(this._comp.IsMarqueeEnabled()) {
+        else this._comp.setCursor('inherit');
+      } else if (dragHandler) {
+        if (this._comp.IsMarqueeEnabled()) {
           var dragHandlerEvent = dragHandler.processDragEnd(relPos, event.ctrlKey);
-          if(dragHandlerEvent) {
+          if (dragHandlerEvent) {
             dragHandlerEvent._relPos = relPos;
             this.ProcessMarqueeEvent(dragHandlerEvent);
           }
@@ -1487,17 +1464,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       // Update the cursor
       var relPos = this._getRelativePosition(event.pageX, event.pageY);
       var dragHandler = this._getDragHandler();
-      if(this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y)) {
-        if(this._comp.IsPanningEnabled()) {
-          if(this._isDragPanning)
-            this._comp.setPanCursorDown();
-          else
-            this._comp.setPanCursorUp();
+      if (this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y)) {
+        if (this._comp.IsPanningEnabled()) {
+          if (this._isDragPanning) this._comp.setPanCursorDown();
+          else this._comp.setPanCursorUp();
           return;
-        }
-        else if(dragHandler) {
-          if(this._comp.IsMarqueeEnabled())
-            this._comp.setCursor(dragHandler.getCursor(relPos));
+        } else if (dragHandler) {
+          if (this._comp.IsMarqueeEnabled()) this._comp.setCursor(dragHandler.getCursor(relPos));
           return;
         }
       }
@@ -1515,27 +1488,26 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       var bounds = this._comp.getGraphicalAreaBounds();
       var consumeEvent = (_event) => {
         _event.preventDefault();
-        if(!this._comp.isDndEnabled()) {
+        if (!this._comp.isDndEnabled()) {
           _event.stopPropagation();
         }
       };
 
-      if(touches.length == 1) {
+      if (touches.length == 1) {
         var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
         var dragHandler = this._getDragHandler();
 
         // only pan if inside chart/graphical area
-        if(bounds.containsPoint(relPos.x, relPos.y)) {
+        if (bounds.containsPoint(relPos.x, relPos.y)) {
           // TODO: Encapsulate panning logic into a dragHandler, so that only else block is needed.
-          if(this._comp.IsPanningEnabled()) {
+          if (this._comp.IsPanningEnabled()) {
             this._comp.beginDragPan(relPos.x, relPos.y);
             consumeEvent(event);
             return true;
-          }
-          else if(dragHandler) {
-            if(this._comp.IsMarqueeEnabled()) {
+          } else if (dragHandler) {
+            if (this._comp.IsMarqueeEnabled()) {
               var dragHandlerEvent = dragHandler.processDragStart(relPos, true);
-              if(dragHandlerEvent) {
+              if (dragHandlerEvent) {
                 dragHandlerEvent._relPos = relPos;
                 this.ProcessMarqueeEvent(dragHandlerEvent);
               }
@@ -1545,9 +1517,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
             }
           }
         }
-      }
-      else if(touches.length == 2) {
-        if(this._comp.IsPanningEnabled()) {
+      } else if (touches.length == 2) {
+        if (this._comp.IsPanningEnabled()) {
           this._comp.endDragPan();
         }
 
@@ -1556,7 +1527,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
         var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
 
         // only pinch zoom if inside chart/graphical area
-        if(bounds.containsPoint(relPos1.x, relPos1.y) && bounds.containsPoint(relPos2.x, relPos2.y)) {
+        if (
+          bounds.containsPoint(relPos1.x, relPos1.y) &&
+          bounds.containsPoint(relPos2.x, relPos2.y)
+        ) {
           this._comp.beginPinchZoom(relPos1.x, relPos1.y, relPos2.x, relPos2.y);
           consumeEvent(event);
           return true;
@@ -1573,18 +1547,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     _onTouchDragMove(event) {
       var touches = event.touches;
       // make sure this is a single touch and not a multi touch
-      if(touches.length == 1) {
+      if (touches.length == 1) {
         var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
         var dragHandler = this._getDragHandler();
 
-        if(this._comp.IsPanningEnabled()) {
+        if (this._comp.IsPanningEnabled()) {
           this._comp.contDragPan(relPos.x, relPos.y);
           event.preventDefault();
-        }
-        else if(dragHandler) {
-          if(this._comp.IsMarqueeEnabled()) {
+        } else if (dragHandler) {
+          if (this._comp.IsMarqueeEnabled()) {
             var dragHandlerEvent = dragHandler.processDragMove(relPos, true);
-            if(dragHandlerEvent) {
+            if (dragHandlerEvent) {
               dragHandlerEvent._relPos = relPos;
               this.ProcessMarqueeEvent(dragHandlerEvent);
             }
@@ -1592,8 +1565,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
             event.preventDefault();
           }
         }
-      }
-      else if(touches.length == 2) {
+      } else if (touches.length == 2) {
         var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
         var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
         this._comp.contPinchZoom(relPos1.x, relPos1.y, relPos2.x, relPos2.y);
@@ -1607,23 +1579,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @private
      */
     _onTouchDragEnd(event) {
-      if(!this._isPinchZoom) {
-        if(this._comp.IsPanningEnabled()) {
+      if (!this._isPinchZoom) {
+        if (this._comp.IsPanningEnabled()) {
           this._comp.endDragPan();
           event.preventDefault();
-        }
-        else if(this._comp.IsMarqueeEnabled()) {
+        } else if (this._comp.IsMarqueeEnabled()) {
           var dragHandler = this._getDragHandler();
-          if(dragHandler) {
+          if (dragHandler) {
             var dragHandlerEvent = dragHandler.processDragEnd(null, true);
           }
-          if(dragHandlerEvent) {
+          if (dragHandlerEvent) {
             this.ProcessMarqueeEvent(dragHandlerEvent);
           }
           event.preventDefault();
         }
-      }
-      else {
+      } else {
         this._isPinchZoom = false;
         this._comp.endPinchZoom();
         event.preventDefault();
@@ -1640,10 +1610,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @private
      */
     _getDragHandler(relPos) {
-      if(relPos && !this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y)) {
+      if (relPos && !this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y)) {
         return null;
       }
-      if(this._comp.isMarqueeSelectEnabled()) {
+      if (this._comp.isMarqueeSelectEnabled()) {
         return this._marqueeSelectHandler;
       }
       return null;
@@ -1671,7 +1641,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @param {dvt.BaseEvent} event The event
      */
     cancelMarquee(event) {
-      if(this._comp.isMarqueeSelectEnabled() && this._marqueeSelectHandler) {
+      if (this._comp.isMarqueeSelectEnabled() && this._marqueeSelectHandler) {
         this._marqueeSelectHandler.cancelMarquee();
       }
     }
@@ -1692,8 +1662,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     panBy(dx, dy) {
       var deltaX = dx * this._comp._canvasLength * (dvt.Agent.isRightToLeft(this._context) ? -1 : 1);
       var deltaY = dy * this._comp._canvasSize;
-      if(deltaX != 0)
-        this._comp._triggerViewportChange = true;
+      if (deltaX != 0) this._comp._triggerViewportChange = true;
 
       this._comp.panBy(deltaX, deltaY);
       this._comp.endPan();
@@ -1731,7 +1700,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
    * @constructor
    */
   class TimeComponentKeyboardHandler extends dvt.KeyboardHandler {
-
     /**
      * @override
      */
@@ -1752,25 +1720,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     processKeyDown(event) {
       if (dvt.KeyboardEvent.isPlus(event) || dvt.KeyboardEvent.isEquals(event)) {
         this._eventManager.HandleZoomInClick();
-      }
-      else if (dvt.KeyboardEvent.isMinus(event) || dvt.KeyboardEvent.isUnderscore(event)) {
+      } else if (dvt.KeyboardEvent.isMinus(event) || dvt.KeyboardEvent.isUnderscore(event)) {
         this._eventManager.HandleZoomOutClick();
-      }
-      else {
+      } else {
         var keyCode = event.keyCode;
         if (keyCode == dvt.KeyboardEvent.PAGE_UP) {
-          if (event.shiftKey)
-            this._eventManager.panBy(-0.25, 0);
-          else
-            this._eventManager.panBy(0, -0.25);
+          if (event.shiftKey) this._eventManager.panBy(-0.25, 0);
+          else this._eventManager.panBy(0, -0.25);
 
           dvt.EventManager.consumeEvent(event);
-        }
-        else if (keyCode == dvt.KeyboardEvent.PAGE_DOWN) {
-          if (event.shiftKey)
-            this._eventManager.panBy(0.25, 0);
-          else
-            this._eventManager.panBy(0, 0.25);
+        } else if (keyCode == dvt.KeyboardEvent.PAGE_DOWN) {
+          if (event.shiftKey) this._eventManager.panBy(0.25, 0);
+          else this._eventManager.panBy(0, 0.25);
 
           dvt.EventManager.consumeEvent(event);
         }

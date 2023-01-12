@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -38,8 +38,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   };
 
   // Subclass from oj.MessagingStrategy
-  oj.Object.createSubclass(BaseInsideLabelStrategy,
-    oj.MessagingStrategy, 'BaseInsideLabelStrategy');
+  oj.Object.createSubclass(BaseInsideLabelStrategy, oj.MessagingStrategy, 'BaseInsideLabelStrategy');
 
   /**
    * Adds a hook for subclass to use its own styleclass on root dom element.
@@ -74,8 +73,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     this._showUserAssistanceNotInline = component._showUserAssistanceNotInline();
     let renderRequiredIcon = options.required && this._showUserAssistanceNotInline;
     // for 'inside labels' we do not show help on the label.
-    this._createOjLabelElement(element, component, container,
-      options.labelHint, renderRequiredIcon, options.helpHints, this._showUserAssistanceNotInline);
+    this._createOjLabelElement(
+      element,
+      component,
+      container,
+      options.labelHint,
+      renderRequiredIcon,
+      options.helpHints,
+      this._showUserAssistanceNotInline
+    );
   };
 
   /**
@@ -85,8 +91,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @param {Element} label oj-label element
    * @param {CustomEvent} event requiredChanged event
    */
-  BaseInsideLabelStrategy.prototype._createOjLabelElement = function (element, component,
-    container, labelHint, showRequired, helpHintsAttrValue, showUserAssistanceOnLabel) {
+  BaseInsideLabelStrategy.prototype._createOjLabelElement = function (
+    element,
+    component,
+    container,
+    labelHint,
+    showRequired,
+    helpHintsAttrValue,
+    showUserAssistanceOnLabel
+  ) {
     var ojlabel = document.createElement('oj-label');
     ojlabel.id = BaseInsideLabelStrategy._getLabelId(element);
     ojlabel.setAttribute('data-oj-binding-provider', 'none');
@@ -141,16 +154,28 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @instance
    * @protected
    */
-  BaseInsideLabelStrategy.prototype._CreateEventHandlers = function (span, element,
-    ojlabel, component) {
-    this._labelHintChangedCallback =
-      BaseInsideLabelStrategy._labelHintChangedHandler.bind(this, span);
+  BaseInsideLabelStrategy.prototype._CreateEventHandlers = function (
+    span,
+    element,
+    ojlabel,
+    component
+  ) {
+    this._labelHintChangedCallback = BaseInsideLabelStrategy._labelHintChangedHandler.bind(
+      this,
+      span
+    );
     element.addEventListener('labelHintChanged', this._labelHintChangedCallback);
-    this._requiredChangedCallback =
-    BaseInsideLabelStrategy._requiredChangedHandler.bind(this, ojlabel, component);
+    this._requiredChangedCallback = BaseInsideLabelStrategy._requiredChangedHandler.bind(
+      this,
+      ojlabel,
+      component
+    );
     element.addEventListener('requiredChanged', this._requiredChangedCallback);
-    this._helpHintsChangedCallback =
-    BaseInsideLabelStrategy._helpHintsChangedHandler.bind(this, ojlabel, component);
+    this._helpHintsChangedCallback = BaseInsideLabelStrategy._helpHintsChangedHandler.bind(
+      this,
+      ojlabel,
+      component
+    );
     element.addEventListener('helpHintsChanged', this._helpHintsChangedCallback);
   };
 
@@ -235,7 +260,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     label.showRequired = event.detail.value && this._showUserAssistanceNotInline;
   };
 
-
   /**
    * helpHints attribute changed on form component, so update help icon on label if it is there.
    * (it could be inline to the component and not on label, if so, see InlineHelpHintsStrategy)
@@ -286,70 +310,84 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * Default validation options used by validate method.
    * @ignore
    */
-  EditableValueUtils.validateMethodOptions = { doValueChangeCheck: false,
-    validationContext: EditableValueUtils.validationContext.VALIDATE_METHOD };
+  EditableValueUtils.validateMethodOptions = {
+    doValueChangeCheck: false,
+    validationContext: EditableValueUtils.validationContext.VALIDATE_METHOD
+  };
 
   /**
    * Default validation options used when converter option changes
    * @ignore
    */
-  EditableValueUtils.converterOptionOptions = { doValueChangeCheck: false,
+  EditableValueUtils.converterOptionOptions = {
+    doValueChangeCheck: false,
     doNotClearMessages: true,
-    validationContext: EditableValueUtils.validationContext.CONVERTER_OPTION_CHANGE };
+    validationContext: EditableValueUtils.validationContext.CONVERTER_OPTION_CHANGE
+  };
 
   /**
    * Default validation options used when disabled option changes
    * @ignore
    */
-  EditableValueUtils.disabledOptionOptions = { doValueChangeCheck: false,
+  EditableValueUtils.disabledOptionOptions = {
+    doValueChangeCheck: false,
     doNotClearMessages: true,
-    validationContext: EditableValueUtils.validationContext.DISABLED_OPTION_CHANGE };
+    validationContext: EditableValueUtils.validationContext.DISABLED_OPTION_CHANGE
+  };
 
   /**
    * Default validation options used when required option changes
    * @ignore
    */
-  EditableValueUtils.requiredOptionOptions = { doValueChangeCheck: false,
+  EditableValueUtils.requiredOptionOptions = {
+    doValueChangeCheck: false,
     doNotClearMessages: true,
-    validationContext: EditableValueUtils.validationContext.REQUIRED_OPTION_CHANGE };
+    validationContext: EditableValueUtils.validationContext.REQUIRED_OPTION_CHANGE
+  };
 
   /**
    * Default validation options used when readOnly option changes
    * @ignore
    */
-  EditableValueUtils.readOnlyOptionOptions = { doValueChangeCheck: false,
+  EditableValueUtils.readOnlyOptionOptions = {
+    doValueChangeCheck: false,
     doNotClearMessages: true,
-    validationContext: EditableValueUtils.validationContext.READONLY_OPTION_CHANGE };
+    validationContext: EditableValueUtils.validationContext.READONLY_OPTION_CHANGE
+  };
 
   /**
    * Default validation options used when refresh method is called.
    * @ignore
    */
-  EditableValueUtils.refreshMethodOptions = { doValueChangeCheck: false,
+  EditableValueUtils.refreshMethodOptions = {
+    doValueChangeCheck: false,
     doNotClearMessages: true,
-    validationContext: EditableValueUtils.validationContext.REFRESH_METHOD };
+    validationContext: EditableValueUtils.validationContext.REFRESH_METHOD
+  };
   /**
    * Default validation options used when validators option changes
    * @ignore
    *  */
-  EditableValueUtils.validatorsOptionOptions = { doValueChangeCheck: false,
+  EditableValueUtils.validatorsOptionOptions = {
+    doValueChangeCheck: false,
     doNotClearMessages: true,
-    validationContext: EditableValueUtils.validationContext.VALIDATORS_OPTION_CHANGE };
+    validationContext: EditableValueUtils.validationContext.VALIDATORS_OPTION_CHANGE
+  };
 
   /**
-  * String used in the id on the span that surrounds the help icon.
-  * @const
-  * @private
-  * @ignore
-  * @type {string}
-  */
+   * String used in the id on the span that surrounds the help icon.
+   * @const
+   * @private
+   * @ignore
+   * @type {string}
+   */
   var _REQUIRED_ICON_ID = '_requiredIcon';
 
   /**
-  * Enum for validate() return values
-  * @const
-  * @ignore
-  */
+   * Enum for validate() return values
+   * @const
+   * @ignore
+   */
   EditableValueUtils.VALIDATE_VALUES = {
     VALID: 'valid',
     INVALID: 'invalid'
@@ -383,9 +421,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     if (element && attribute) {
       var elem = element[0];
       switch (attribute) {
-        case 'disabled' :
-          result = elem.hasAttribute('disabled') ?
-            !!elem.disabled : undefined;
+        case 'disabled':
+          result = elem.hasAttribute('disabled') ? !!elem.disabled : undefined;
           break;
 
         case 'pattern':
@@ -397,8 +434,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           break;
 
         case 'readonly':
-          result = elem.hasAttribute('readonly') ?
-            !!elem.readOnly : undefined;
+          result = elem.hasAttribute('readonly') ? !!elem.readOnly : undefined;
           break;
 
         case 'required':
@@ -418,8 +454,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           break;
 
         case 'title':
-          result = elem.hasAttribute('title') ?
-            elem.title : undefined;
+          result = elem.hasAttribute('title') ? elem.title : undefined;
           break;
 
         case 'value':
@@ -516,7 +551,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @public
    */
   EditableValueUtils.initializeOptionsFromDom = function (
-    props, constructorOptions, comp, postprocessCallback
+    props,
+    constructorOptions,
+    comp,
+    postprocessCallback
   ) {
     var initializedOptions = {};
 
@@ -566,8 +604,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         }
       }
 
-      var valueToValidate =
-          (option in initializedOptions) ? initializedOptions[option] : previousValue;
+      var valueToValidate = option in initializedOptions ? initializedOptions[option] : previousValue;
 
       // Step 2: validate the option value if needed
       if (validateOption) {
@@ -599,14 +636,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     var error = false;
 
     switch (option) {
-      case 'required' :
+      case 'required':
         if (value !== null && typeof value !== 'boolean') {
           error = true;
         }
         break;
 
       case 'readOnly':
-      case 'disabled' :
+      case 'disabled':
         if (value !== null && typeof value !== 'boolean') {
           error = true;
         }
@@ -619,7 +656,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       throw new Error("Option '" + option + "' has invalid value set: " + value);
     }
   };
-
 
   /**
    * Coerces the dom value being used for the option, and throws error if invalid.
@@ -634,7 +670,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   EditableValueUtils.coerceDomValueForOption = function (option, domValue) {
     var coerced = domValue;
     switch (option) {
-      case 'required' :
+      case 'required':
         coerced = !!domValue;
         break;
       default:
@@ -643,7 +679,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
     return coerced;
   };
-
 
   /**
    * set pickerAttributes on a popup picker
@@ -788,7 +823,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @private
    */
   EditableValueUtils._initInputIdLabelForConnection = function (
-    contentElement, componentId, labelledBy) {
+    contentElement,
+    componentId,
+    labelledBy
+  ) {
     if (componentId) {
       contentElement.setAttribute('id', componentId + '|input');
       if (labelledBy) {
@@ -884,14 +922,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @ignore
    * @private
    */
-   EditableValueUtils._setTabIndex = function (input, readonlyElem) {
+  EditableValueUtils._setTabIndex = function (input, readonlyElem) {
     let tabIndex = input.tabIndex;
     let readonlyElemToSet = readonlyElem;
     if (tabIndex !== null) {
       readonlyElemToSet.tabIndex = tabIndex;
     }
   };
-
 
   /**
    * @ignore
@@ -954,8 +991,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
     // clear all messages; run full validation on display value
     // _SetValue returns boolean or Promise that resolves to a Boolean.
-    returnValue = this._SetValue(
-      this._GetDisplayValue(), null, this._VALIDATE_METHOD_OPTIONS);
+    returnValue = this._SetValue(this._GetDisplayValue(), null, this._VALIDATE_METHOD_OPTIONS);
 
     if (this._IsCustomElement()) {
       if (!(returnValue instanceof Promise)) {
@@ -1213,7 +1249,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     var displayValue;
 
     this._getComponentMessaging().update(
-      this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.CONVERTER_HINT));
+      this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.CONVERTER_HINT)
+    );
 
     if (this._hasInvalidMessagesShowing()) {
       this._clearComponentMessages();
@@ -1247,7 +1284,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     var vType;
     var vTypeStr;
 
-
     validatorsOption = this.options.validators;
 
     if (validatorsOption) {
@@ -1267,11 +1303,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             //                                    'hint': {'min': 'some hint about min'}}}
             vTypeStr = validator.type;
             if (vTypeStr && typeof vTypeStr === 'string') {
-              if (oj.Validation &&
-                oj.Validation.validatorFactory) {
+              if (oj.Validation && oj.Validation.validatorFactory) {
                 vType = oj.Validation.validatorFactory(vTypeStr);
               } else {
-                Logger.error('oj.Validation.validatorFactory is not available and it is needed to support the deprecated json format for validators property. Please include the backward compatibility "ojvalidation-base" module.');
+                Logger.error(
+                  'oj.Validation.validatorFactory is not available and it is needed to support the deprecated json format for validators property. Please include the backward compatibility "ojvalidation-base" module.'
+                );
               }
               if (vType) {
                 vOptions = oj.CollectionUtils.copyInto({}, validator.options) || {};
@@ -1351,8 +1388,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       if (converterOption instanceof Promise) {
         converterPromise = converterOption;
       } else {
-        converterInstanceReturn =
-        ConverterUtils.getConverterInstance(converterOption);
+        converterInstanceReturn = ConverterUtils.getConverterInstance(converterOption);
       }
 
       if (converterPromise) {
@@ -1486,8 +1522,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       }
       description += 'to finish.';
 
-      this._resolveBusyStateAsyncConverterLoading =
-        busyContext.addBusyState({ description: description });
+      this._resolveBusyStateAsyncConverterLoading = busyContext.addBusyState({
+        description: description
+      });
     }
   };
 
@@ -1532,9 +1569,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     var agentInfo = oj.AgentUtils.getAgentInfo();
 
     // Only change the type on mobile browsers
-    if (agentInfo.os === oj.AgentUtils.OS.ANDROID ||
-        agentInfo.os === oj.AgentUtils.OS.IOS ||
-        agentInfo.os === oj.AgentUtils.OS.WINDOWSPHONE) {
+    if (
+      agentInfo.os === oj.AgentUtils.OS.ANDROID ||
+      agentInfo.os === oj.AgentUtils.OS.IOS ||
+      agentInfo.os === oj.AgentUtils.OS.WINDOWSPHONE
+    ) {
       // Get input type from component's virtualKeyboard option
       if (allowedTypes.indexOf(this.options.virtualKeyboard) >= 0) {
         inputType = this.options.virtualKeyboard;
@@ -1631,47 +1670,45 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     CONVERTER_HINT: ['placeholder', 'notewindow']
   };
 
-
   /**
-  * String used in the id on the span that surrounds the help icon.
-  * @const
-  * @private
-  * @type {string}
-  */
+   * String used in the id on the span that surrounds the help icon.
+   * @const
+   * @private
+   * @type {string}
+   */
   var _HELP_ICON_ID = '_helpIcon';
 
   /**
-  * valid state constants
-  * @const
-  * @private
-  * @type {string}
-  */
+   * valid state constants
+   * @const
+   * @private
+   * @type {string}
+   */
   var _VALID = 'valid';
 
   /**
-  * valid state constants
-  * @const
-  * @private
-  * @type {string}
-  */
+   * valid state constants
+   * @const
+   * @private
+   * @type {string}
+   */
   var _INVALID_HIDDEN = 'invalidHidden';
 
   /**
-  * valid state constants
-  * @const
-  * @private
-  * @type {string}
-  */
+   * valid state constants
+   * @const
+   * @private
+   * @type {string}
+   */
   var _INVALID_SHOWN = 'invalidShown';
 
   /**
-  * valid state constants
-  * @const
-  * @private
-  * @type {string}
-  */
+   * valid state constants
+   * @const
+   * @private
+   * @type {string}
+   */
   var _PENDING = 'pending';
-
 
   // E D I T A B L E V A L U E    A B S T R A C T   W I D G E T
   /**
@@ -1751,12 +1788,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * &nbsp;&nbsp;var salary = ko.observable('abc');
    * &lt;/script&gt;
    */
-  oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
+  oj.__registerWidget(
+    'oj.editableValue',
+    $.oj.baseComponent,
     {
       widgetEventPrefix: 'oj',
 
-      options:
-      {
+      options: {
         /**
          * The oj-label sets the described-by attribute programmatically on the form component.
          * This attribute is not meant to be set by an application developer directly.
@@ -1934,28 +1972,27 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
          * @type {Object}
          * @since 4.1.0
          */
-        helpHints:
-        {
+        helpHints: {
           /**
-          * A type of user assistance text. User assistance text is used to provide
-          * guidance to help the user understand what data to enter or select. help-hints could
-          * come from a help system.
-          * <p>In the Redwood theme for clarity only one user assistance text shows to the user.
-          * The precedence rules are:
-          * <ul>
-          * <li>help.instruction shows;</li>
-          * <li>if no help.instruction, then validator hint shows;</li>
-          * <li>if no help.instruction or validator hint, then help-hints.definition shows;</li>
-          * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
-          * <li>help-hints.source always shows along side the above.</li>
-          * </ul>
-          * </p>
-          * <p>
-          * In the Redwood theme, by default all user assistance text shows inline.
-          * For input components, it shows when the field takes focus. In other components it
-          * shows all the time. See the user-assistance-density property for other ways the user
-          * assistance text can render.
-          * </p>
+           * A type of user assistance text. User assistance text is used to provide
+           * guidance to help the user understand what data to enter or select. help-hints could
+           * come from a help system.
+           * <p>In the Redwood theme for clarity only one user assistance text shows to the user.
+           * The precedence rules are:
+           * <ul>
+           * <li>help.instruction shows;</li>
+           * <li>if no help.instruction, then validator hint shows;</li>
+           * <li>if no help.instruction or validator hint, then help-hints.definition shows;</li>
+           * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
+           * <li>help-hints.source always shows along side the above.</li>
+           * </ul>
+           * </p>
+           * <p>
+           * In the Redwood theme, by default all user assistance text shows inline.
+           * For input components, it shows when the field takes focus. In other components it
+           * shows all the time. See the user-assistance-density property for other ways the user
+           * assistance text can render.
+           * </p>
            * <p>In the Alta theme the help-hint.definition shows up when
            * the user hovers over the help icon on the label,
            * or tabs into the help icon, or press and holds the help icon on a mobile device.
@@ -2763,7 +2800,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             // change ComponentMessage's display state to ComponentMessage.DISPLAY.SHOWN
             msgHidden._forceDisplayToShown();
 
-
             //
             // .clone() clones the message and the options that were passed in when the message
             // was originally created.
@@ -2785,7 +2821,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           this._setValidOption(_INVALID_SHOWN, null);
         }
       },
-
 
       // P R O T E C T E D    C O N S T A N T S   A N D   M E T H O D S
 
@@ -2878,8 +2913,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
         this.options.messagesCustom = this.options.messagesCustom || [];
         this.options.messagesHidden = [];
-        this.options.messagesShown = this.options.messagesCustom.length > 0 ?
-          this._cloneMessagesBeforeSet(this.options.messagesCustom) : [];
+        this.options.messagesShown =
+          this.options.messagesCustom.length > 0
+            ? this._cloneMessagesBeforeSet(this.options.messagesCustom)
+            : [];
 
         // update element DOM for disabled. TODO: say why
         this._SetDisabledDom(node);
@@ -3006,7 +3043,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         // all the component strategies which in turn sets up listeners, we only want to
         // re-set up resources and when we have
         // released them in ReleaseResources.
-        if (this._IsCustomElement() && (this._hammerIsUnregistered)) {
+        if (this._IsCustomElement() && this._hammerIsUnregistered) {
           const messaging = this._getComponentMessaging();
           messaging.setupResources();
           this._hammerIsUnregistered = false;
@@ -3069,13 +3106,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             this._AfterSetOptionDisabledReadOnly(option, EditableValueUtils.disabledOptionOptions);
             break;
 
-          case 'displayOptions' :
+          case 'displayOptions':
             // clear the cached merged options; the getter setup for this.options['displayOptions']
             // will merge the new value with the defaults
             this._initComponentMessaging();
             break;
 
-          case 'labelEdge' :
+          case 'labelEdge':
             // if the labelEdge of the component changed, we need to recreate or move the label
             this._initComponentMessaging();
             this._setAriaLabelFromLabelHint();
@@ -3094,7 +3131,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
               // For custom element components, when the help option changes, we have to assume that
               // help.instruction changed. When help.instruction changes push new value to messaging.
               this._getComponentMessaging().update(
-                this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE));
+                this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE)
+              );
             }
 
             break;
@@ -3128,7 +3166,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             if (!this._IsCustomElement()) {
               // no reason to refresh component when title changes just push new value to messaging.
               this._getComponentMessaging().update(
-                this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE));
+                this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE)
+              );
             }
             break;
 
@@ -3136,7 +3175,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             this.refresh();
             break;
 
-          case 'userAssistanceDensity' :
+          case 'userAssistanceDensity':
             // if the userAssistanceDensity of the component changed,
             // we need to create or remove the user assistance display strategy.
             this._initComponentMessaging();
@@ -3241,7 +3280,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       _CanSetValue: function () {
         var disabled = this.options.disabled || false;
 
-        return !(disabled);
+        return !disabled;
       },
 
       /**
@@ -3283,13 +3322,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         if (this.$label) {
           labelLength = this.$label.length;
           for (labelIndex = 0; labelIndex < labelLength; labelIndex++) {
-            if (this.$label[labelIndex] &&
-                Components.__GetWidgetConstructor(this.$label[labelIndex]) != null) {
+            if (
+              this.$label[labelIndex] &&
+              Components.__GetWidgetConstructor(this.$label[labelIndex]) != null
+            ) {
               $(this.$label[labelIndex]).ojLabel('destroy');
             }
           }
         }
-
 
         return ret;
       },
@@ -3305,9 +3345,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
        * @since 5.0.0
        */
       GetFocusElement: function () {
-        return this.options.readOnly === true ?
-          this._GetReadonlyFocusElement() || this._GetContentElement()[0] :
-          this._GetContentElement()[0];
+        return this.options.readOnly === true
+          ? this._GetReadonlyFocusElement() || this._GetContentElement()[0]
+          : this._GetContentElement()[0];
       },
 
       /**
@@ -3383,12 +3423,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
                   description += `with id="${domElem.id}" `;
                 }
                 description += 'to be restored.';
-                this._resolveBusyStateFocusRestore =
-                  busyContext.addBusyState({ description: description });
+                this._resolveBusyStateFocusRestore = busyContext.addBusyState({
+                  description: description
+                });
               }
             }
-            this._addRemoveOjReadOnlyClassOnLabel(document.getElementById(this.options.labelledBy),
-              value);
+            this._addRemoveOjReadOnlyClassOnLabel(
+              document.getElementById(this.options.labelledBy),
+              value
+            );
             break;
           case 'displayOptions':
             // since the displayOptions defaults are theme-dependent
@@ -3403,17 +3446,21 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             // In Alta, it must be one of the accepted options that Alta supports.
             // Setting to null doesn't reset.
             var displayOptions = value;
-            var resetNeeded = (value !== null) && (value.validatorHint === undefined ||
-              value.converterHint === undefined || value.messages === undefined);
+            var resetNeeded =
+              value !== null &&
+              (value.validatorHint === undefined ||
+                value.converterHint === undefined ||
+                value.messages === undefined);
             if (resetNeeded) {
               // this will change any of the sub-properties not set back to the defaults,
               // and when super is called at the end of the method, the displayOptions option will
               // be set with defaults if necessary.
               let useUserAssistanceDensity =
-              (ojthemeutils.parseJSONFromFontFamily('oj-form-control-option-defaults') || {})
-              .useUserAssistanceOptionDefault === 'use';
-              const displayOptionsDefaults = useUserAssistanceDensity ?
-                _sDisplayOptionsRedwoodDefaults : _sDisplayOptionsAltaDefaults;
+                (ojthemeutils.parseJSONFromFontFamily('oj-form-control-option-defaults') || {})
+                  .useUserAssistanceOptionDefault === 'use';
+              const displayOptionsDefaults = useUserAssistanceDensity
+                ? _sDisplayOptionsRedwoodDefaults
+                : _sDisplayOptionsAltaDefaults;
               if (value.validatorHint === undefined) {
                 displayOptions.validatorHint = displayOptionsDefaults.VALIDATOR_HINT;
               }
@@ -3429,7 +3476,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           default:
             break;
         }
-
 
         if (skipSetOption) {
           Logger.error(name + ' option cannot be set');
@@ -3526,7 +3572,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         return null;
       },
 
-
       /**
        * Returns the element's value. Normally, this is a call to this.element.val(), but for some
        * components, it could be something else. E.g., for ojRadioset the element's value is really the
@@ -3540,7 +3585,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       _GetElementValue: function () {
         return this.element.val();
       },
-
 
       /**
        * Returns a jquery object of the element that triggers messaging behavior. The trigger element
@@ -3767,7 +3811,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         }
       },
 
-
       /**
        * This is used to set the aria label from the label hint, and also
        * updates the readonly div from aria-label if specified.
@@ -3781,9 +3824,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           var ariaLabel = ariaLabelElem.getAttribute('aria-label');
           let readonlyDiv = this._getReadonlyDiv();
 
-          if (!this.options.labelledBy && this.options.labelHint && this.options.labelEdge === 'none' &&
-              (!ariaLabel || ariaLabel === this._ariaLabelFromHint) &&
-              !this._getRootElement().getAttribute('aria-labelledby')) {
+          if (
+            !this.options.labelledBy &&
+            this.options.labelHint &&
+            this.options.labelEdge === 'none' &&
+            (!ariaLabel || ariaLabel === this._ariaLabelFromHint) &&
+            !this._getRootElement().getAttribute('aria-labelledby')
+          ) {
             // Set aria-label if all of the followings are true:
             // 1. This is a custom element.
             // 2. There is no labelledBy option.
@@ -3807,11 +3854,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             if (readonlyDiv) {
               readonlyDiv.removeAttribute('aria-label');
             }
-          } else if (ariaLabel) { // The app dev specified 'aria-label' explicitly.
+          } else if (ariaLabel) {
+            // The app dev specified 'aria-label' explicitly.
             if (readonlyDiv) {
               readonlyDiv.setAttribute('aria-label', ariaLabel);
             }
-          } else if (readonlyDiv) { // No ariaLabel, so remove it from the readonly div
+          } else if (readonlyDiv) {
+            // No ariaLabel, so remove it from the readonly div
             readonlyDiv.removeAttribute('aria-label');
           }
         }
@@ -3867,7 +3916,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         return allAsyncValidatorsWithHints;
       },
 
-     /**
+      /**
        * Initialize async validator messaging hints, if any.
        * This is called from the ComponentMessaging, not during component
        * initialization.
@@ -3896,22 +3945,23 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           this._setBusyStateAsyncValidatorHint(currentCounter);
           // get the async validators hints and show them as well as they resolve
           this._addAsyncValidatorsHintsMessagingContent(
-            allAsyncValidatorsWithHint, syncValidatorHintMC).then(function () {
-              self._clearBusyStateAsyncValidatorHint(currentCounter);
-            });
+            allAsyncValidatorsWithHint,
+            syncValidatorHintMC
+          ).then(function () {
+            self._clearBusyStateAsyncValidatorHint(currentCounter);
+          });
         }
       },
 
-     /*
+      /*
       Called from ComponentMessaging as well.
       * @memberof oj.editableValue
       * @instance
       * @private
       */
-     _getValidatorHintsMC: function () {
-        return this._getMessagingContent(
-          this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS);
-     },
+      _getValidatorHintsMC: function () {
+        return this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS);
+      },
 
       /**
        * This gets all asyncValidators that have hints,
@@ -3942,9 +3992,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           currentCounter = this._asyncValidatorHintCounter;
           this._setBusyStateAsyncValidatorHint(currentCounter);
           this._addAsyncValidatorsHintsMessagingContent(
-            allAsyncValidatorsWithHint, syncValidatorHintMC).then(function () {
-              self._clearBusyStateAsyncValidatorHint(currentCounter);
-            });
+            allAsyncValidatorsWithHint,
+            syncValidatorHintMC
+          ).then(function () {
+            self._clearBusyStateAsyncValidatorHint(currentCounter);
+          });
         } else {
           // if this is [], this causes the notewindow to close if it was open.
           // and we don't want to close/reopen if possible, so don't do this before
@@ -3969,8 +4021,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
        * @instance
        * @private
        */
-      _addAsyncValidatorsHintsMessagingContent: function (asyncValidatorsWithHint,
-        syncValidatorHintMC) {
+      _addAsyncValidatorsHintsMessagingContent: function (
+        asyncValidatorsWithHint,
+        syncValidatorHintMC
+      ) {
         var i;
         // use counter to ignore if we get a more recent update async validators hint requests
         // i.e., asyncValidators property is changed.
@@ -3987,33 +4041,35 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         }
 
         function reflect(promise) {
-          return promise.then(function (v) {
-            var status;
+          return promise.then(
+            function (v) {
+              var status;
 
-            var validatorHintMessagingContent = {};
+              var validatorHintMessagingContent = {};
 
-            // update hint as we get it
-            // use counter to ignore if we get a more recent update async validators hint requests
-            // i.e., asyncValidators property is changed.
-            if (self._asyncValidatorHintCounter === asyncValidatorHintCounter) {
-              if (v !== null) {
-                hintArray.push(v);
-                validatorHintMessagingContent.validatorHint =
-                  (syncValidatorHintMC.validatorHint).concat(hintArray);
-                compMessagings.update(validatorHintMessagingContent);
+              // update hint as we get it
+              // use counter to ignore if we get a more recent update async validators hint requests
+              // i.e., asyncValidators property is changed.
+              if (self._asyncValidatorHintCounter === asyncValidatorHintCounter) {
+                if (v !== null) {
+                  hintArray.push(v);
+                  validatorHintMessagingContent.validatorHint =
+                    syncValidatorHintMC.validatorHint.concat(hintArray);
+                  compMessagings.update(validatorHintMessagingContent);
+                }
+                status = 'resolved';
+              } else {
+                status = 'ignore';
               }
-              status = 'resolved';
-            } else {
-              status = 'ignore';
+              return { v: v, status: status };
+            },
+            function (e) {
+              // we don't update the hintArray when the hint Promise rejects.
+              // No need to check the counter in this case because there is nothing
+              // to 'ignore'.
+              return { e: e, status: 'rejected' };
             }
-            return { v: v, status: status };
-          },
-          function (e) {
-            // we don't update the hintArray when the hint Promise rejects.
-            // No need to check the counter in this case because there is nothing
-            // to 'ignore'.
-            return { e: e, status: 'rejected' };
-          });
+          );
         }
         return new Promise(function (resolve) {
           // Promise.all will end as soon as it gets its first rejection. We don't want that.
@@ -4077,16 +4133,16 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       },
 
       /**
-      * This method takes a value from a value change listener
-      * and determines if it is 'empty'. This is used to toggle a
-      * 'oj-has-no-value' style class.
-      * This method is generic enough to be used by all EditableValue components,
-      * but can be overridden by component if needed.
-      *
-      * @memberof oj.editableValue
-      * @instance
-      * @protected
-      */
+       * This method takes a value from a value change listener
+       * and determines if it is 'empty'. This is used to toggle a
+       * 'oj-has-no-value' style class.
+       * This method is generic enough to be used by all EditableValue components,
+       * but can be overridden by component if needed.
+       *
+       * @memberof oj.editableValue
+       * @instance
+       * @protected
+       */
       _IsValueEmpty: function (value) {
         if (value === undefined || value === null) {
           return true;
@@ -4097,23 +4153,25 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         } else if (Array.isArray(value)) {
           // oj-select-many setting observable(undefined) returns an array with
           // an undefined value versus an undefined value
-          return (value.length === 0) ||
-            (value.length === 1 && (value[0] === null || value[0] === undefined));
+          return (
+            value.length === 0 ||
+            (value.length === 1 && (value[0] === null || value[0] === undefined))
+          );
         }
         return false;
       },
       /**
-      * This method toggles a 'oj-has-no-value' style class as needed.
-      * The styleclass is used to position the inside label.
-      * This method also updates component messaging (specifically InlineRequiredStrategy),
-      * because the Required dom is created when the component is required and
-      * there is no value displayed to the user and the Required dom is removed
-      * when there is a value, as per the Redwood UX spec.
-      *
-      * @memberof oj.editableValue
-      * @instance
-      * @private
-      */
+       * This method toggles a 'oj-has-no-value' style class as needed.
+       * The styleclass is used to position the inside label.
+       * This method also updates component messaging (specifically InlineRequiredStrategy),
+       * because the Required dom is created when the component is required and
+       * there is no value displayed to the user and the Required dom is removed
+       * when there is a value, as per the Redwood UX spec.
+       *
+       * @memberof oj.editableValue
+       * @instance
+       * @private
+       */
       _toggleOjHasNoValueClass: function (value) {
         let element = this._getRootElement();
         const ojHasNoValueClass = 'oj-has-no-value';
@@ -4162,18 +4220,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
           case 'help':
             if (!this._IsCustomElement()) {
-            // refresh the help - need to keep the label in sync with the input.
+              // refresh the help - need to keep the label in sync with the input.
               if (this.$label) {
                 helpDef = this.options.help.definition;
                 helpSource = this.options.help.source;
-                this.$label.ojLabel('option', 'help',
-                                   { definition: helpDef, source: helpSource });
+                this.$label.ojLabel('option', 'help', { definition: helpDef, source: helpSource });
                 var label = this.$label[0];
                 if (label) {
                   let labelId = label.id;
                   if (labelId) {
                     let ariaId = labelId + _HELP_ICON_ID;
-                    if ((helpSource != null) || (helpDef != null)) {
+                    if (helpSource != null || helpDef != null) {
                       this._describedByUpdated(null, ariaId);
                     } else {
                       this._describedByUpdated(ariaId, null);
@@ -4376,8 +4433,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
        */
       _SetValue: function (newValue, event, options) {
         var clearBusyStateKey;
-        var doValueChangeCheck = (options && typeof options.doValueChangeCheck === 'boolean') ?
-          options.doValueChangeCheck : true;
+        var doValueChangeCheck =
+          options && typeof options.doValueChangeCheck === 'boolean'
+            ? options.doValueChangeCheck
+            : true;
         var self = this;
         var resolvedState = false;
         var validateReturn;
@@ -4403,22 +4462,22 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           // for non-async, it returns the parsed value or undefined if validation failed or
           // was ignored.
           clearBusyStateKey = '' + newValue + '_' + (this._asyncValidatorValidateCounter + 1);
-          validateReturn =
-            this._AsyncValidate(newValue, event, options, clearBusyStateKey);
+          validateReturn = this._AsyncValidate(newValue, event, options, clearBusyStateKey);
 
           if (!(validateReturn instanceof Promise)) {
             // Synchronous validation only.
             this._afterAsyncValidateUpdateValue(validateReturn, event, options);
             resolvedState = validateReturn !== undefined;
           } else {
-            resolvedState = validateReturn.then(function (fnv) {
-              fulfilledNewValue = fnv;
-              return self._afterAsyncValidateUpdateValue(
-                fnv, event, options);
-            }).then(function () {
-              self._clearBusyState(clearBusyStateKey);
-              return (fulfilledNewValue !== undefined);
-            });
+            resolvedState = validateReturn
+              .then(function (fnv) {
+                fulfilledNewValue = fnv;
+                return self._afterAsyncValidateUpdateValue(fnv, event, options);
+              })
+              .then(function () {
+                self._clearBusyState(clearBusyStateKey);
+                return fulfilledNewValue !== undefined;
+              });
           }
         }
         return resolvedState;
@@ -4505,16 +4564,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
        * @protected
        */
       _AsyncValidate: function (newValue, event, options, busyStateKey) {
-        var mode = options && options.validationMode ? options.validationMode :
-            this._VALIDATION_MODE.FULL;
-        var context = options && options.validationContext ? options.validationContext :
-            this._VALIDATION_CONTEXT.USER_ACTION;
+        var mode =
+          options && options.validationMode ? options.validationMode : this._VALIDATION_MODE.FULL;
+        var context =
+          options && options.validationContext
+            ? options.validationContext
+            : this._VALIDATION_CONTEXT.USER_ACTION;
         var doNotClearMessages = (options && options.doNotClearMessages) || false;
         var newMsgs;
         var successfullyParsedValue;
         var self = this;
         var validateReturn;
-
 
         // disallow setting a value of undefined by widgets
         if (newValue === undefined) {
@@ -4546,9 +4606,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             // Run validators and set valid state
             // asyncValidateValue will return a Promise if the component has async validators,
             // otherwise it returns the value if successful or undefined if not.
-            validateReturn = self._asyncValidateValue(successfullyParsedValue,
-                                  event,
-                                context);
+            validateReturn = self._asyncValidateValue(successfullyParsedValue, event, context);
             if (!(validateReturn instanceof Promise)) {
               return validateReturn;
             }
@@ -4625,13 +4683,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             }
             // update value option and then format the value and update display value.
             this._updateValueOption(
-              fulfilledNewValue, event, options && options.validationContext, updateContext, options);
+              fulfilledNewValue,
+              event,
+              options && options.validationContext,
+              updateContext,
+              options
+            );
             resolvedState = true;
           }
         }
         return resolvedState;
       },
-
 
       _CompareOptionValues: function (option, value1, value2) {
         if (option === 'value' || option === 'rawValue') {
@@ -4658,7 +4720,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         return '';
       },
 
-
       // I N T E R N A L   P R I V A T E   C O N S T A N T S    A N D   M E T H O D S
       // Subclasses should not override or call these methods
 
@@ -4682,7 +4743,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         VALIDITY_STATE: 2,
         CONVERTER_HINT: 3,
         VALIDATOR_HINTS: 4,
-        TITLE: 5 },
+        TITLE: 5
+      },
 
       /**
        * when below listed options are passed to the component, corresponding CSS will be toggled
@@ -4695,7 +4757,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         disabled: 'oj-disabled',
         required: 'oj-required'
       },
-
 
       /**
        * Clears all messages for this component. Today this only happens when <br/>
@@ -4758,7 +4819,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           this._setMessagesOption('messagesShown', shownMsgs, null, true);
         }
       },
-
 
       /**
        * Sets the messages option with the new value.
@@ -4827,8 +4887,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           // do not set if it is already set to that
           if (newValidState !== this.options.valid) {
             // 'valid' is read-only
-            flags._context =
-              { originalEvent: event, writeback: true, internalSet: true, readOnly: true };
+            flags._context = {
+              originalEvent: event,
+              writeback: true,
+              internalSet: true,
+              readOnly: true
+            };
 
             this.option('valid', newValidState, flags);
           }
@@ -4880,7 +4944,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         return msgsClone;
       },
 
-
       /**
        * Create the ojLabel component with help (required is done in the components that support
        * required) see EditableValueUtils._refreshRequired.
@@ -4905,10 +4968,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           helpSource = this.options.help.source;
 
           // create the ojLabel component
-          this.$label.ojLabel(
-            { rootAttributes: { class: this._GetDefaultStyleClass() + '-label' },
-              help: { definition: helpDef,
-                source: helpSource } });
+          this.$label.ojLabel({
+            rootAttributes: { class: this._GetDefaultStyleClass() + '-label' },
+            help: { definition: helpDef, source: helpSource }
+          });
           this._createDescribedByForLabel();
         }
       },
@@ -4923,7 +4986,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         var helpSource = this.options.help.source;
         var labelId;
 
-        if ((helpSource != null) || (helpDef != null)) {
+        if (helpSource != null || helpDef != null) {
           var label = this.$label[0];
 
           // get label's helpIconSpan get the id and add it here.
@@ -4970,8 +5033,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           // run deferred validation if comp is either showing a deferred error or has no errors.
           // But only when required is true.
           if (this._IsRequired()) {
-            this._runDeferredValidation(
-              EditableValueUtils.refreshMethodOptions.validationContext);
+            this._runDeferredValidation(EditableValueUtils.refreshMethodOptions.validationContext);
           }
           // refresh UI display value when there are no errors or where there are only deferred errors
           this._Refresh('value', this.options.value, true);
@@ -5092,7 +5154,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           return this._validityState;
         }
 
-
         this._validityState = new oj.ComponentValidity(this.isValid(), this._getMessages());
 
         return this._validityState;
@@ -5131,7 +5192,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
        * @instance
        */
       _hasInvalidMessagesShowing: function () {
-        return (!this.isValid() && this.options.messagesShown.length > 0);
+        return !this.isValid() && this.options.messagesShown.length > 0;
       },
 
       /**
@@ -5155,7 +5216,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           }
         }
 
-        return (compMsgs === undefined) ? false : !Message.isValid(compMsgs);
+        return compMsgs === undefined ? false : !Message.isValid(compMsgs);
       },
 
       /**
@@ -5225,9 +5286,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         }
 
         // set 'messagesShown' option as an internal set
-        this._setMessagesOption('messagesShown', shownMsgs,
-                                context ? context.originalEvent : null,
-                                flags && flags.changed);
+        this._setMessagesOption(
+          'messagesShown',
+          shownMsgs,
+          context ? context.originalEvent : null,
+          flags && flags.changed
+        );
       },
       /**
        * This is only needed when we use the
@@ -5243,9 +5307,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         }
         var context = (flags && flags._context) || {};
         var refreshMessagingOptions =
-            //  internalMessagingSet indicates whether the current change is from the messaging module.
-            // see ComponentMessaging for details
-            !context.internalMessagingSet;
+          //  internalMessagingSet indicates whether the current change is from the messaging module.
+          // see ComponentMessaging for details
+          !context.internalMessagingSet;
         if (refreshMessagingOptions) {
           // if placeholder was set and it's not from messaging code, then the messaging display options
           // may need to re-evaluated. E.g., the default display for
@@ -5308,7 +5372,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         this._setMessagesOption(option, msgs, event, true);
       },
 
-
       /**
        * Called after the messages* option (messagesShown, etc)
        * has changed to update messaging content
@@ -5321,7 +5384,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       _updateMessagingContent: function () {
         // update component messaging
         this._getComponentMessaging().update(
-          this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE));
+          this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE)
+        );
       },
 
       /**
@@ -5350,7 +5414,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
         // set writeback flag that determines whether value is written back.
         switch (validationContext) {
-            // value is written back outside of normal UI interaction in the following cases.
+          // value is written back outside of normal UI interaction in the following cases.
           case this._VALIDATION_CONTEXT.CONVERTER_OPTION_CHANGE:
           case this._VALIDATION_CONTEXT.DISABLED_OPTION_CHANGE:
           case this._VALIDATION_CONTEXT.READONLY_OPTION_CHANGE:
@@ -5358,7 +5422,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           case this._VALIDATION_CONTEXT.REQUIRED_OPTION_CHANGE:
           case this._VALIDATION_CONTEXT.VALIDATE_METHOD:
           case this._VALIDATION_CONTEXT.VALIDATORS_OPTION_CHANGE:
-
             context.writeback = true;
 
             // when the above options change or methods are called, and full validation is run the
@@ -5385,7 +5448,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           isValueChanged = false;
           for (var i = 0; i < options.targetOptions.length; i++) {
             valueMap[options.targetOptions[i]] = newValue;
-            isValueChanged = isValueChanged || (options.targetOptions[i] === 'value');
+            isValueChanged = isValueChanged || options.targetOptions[i] === 'value';
           }
         } else {
           // If no targetOptions is specified, just update the "value" option
@@ -5487,7 +5550,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         return this._componentMessaging;
       },
 
-
       /**
        * Returns an array of validator hints from any validator with getHint() function.
        * @param {Array} allValidators these are from the validators option
@@ -5546,9 +5608,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         var reqTrans = {};
         var reqValOptions;
 
-        if (this._implicitReqValidator == null) { // falsey check
-          reqTrans =
-            this.options.translations ? this.options.translations.required || {} : {};
+        if (this._implicitReqValidator == null) {
+          // falsey check
+          reqTrans = this.options.translations ? this.options.translations.required || {} : {};
 
           // TODO: cache required validator; purged when its options change, i.e., translations or label
           // DOM changes
@@ -5563,7 +5625,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         return this._implicitReqValidator;
       },
 
-     /**
+      /**
        * In the Alta theme, we want to continue to use the display-options properties to decide
        * where to render help-instruction, messages, validation-hint, etc. For example, if
        * display-options.messages = 'notewindow' then the messages will show up in a popup on focus.
@@ -5594,12 +5656,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         // use the displayOptions attribute.
         if (defaultOptions) {
           let useUserAssistanceOption = defaultOptions.useUserAssistanceOptionDefault;
-          return useUserAssistanceOption === 'use' ? this.options.userAssistanceDensity : 'displayOptions';
+          return useUserAssistanceOption === 'use'
+            ? this.options.userAssistanceDensity
+            : 'displayOptions';
         }
         // if no theme return displayOptions for bw compatibility.
         return 'displayOptions';
       },
-     /**
+      /**
        * In the Alta theme, we show required on the label with an * icon,
        * and help on label with a ? icon.
        * In the Redwood theme, we show 'Required'/help as text inline if
@@ -5612,10 +5676,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       _showUserAssistanceNotInline: function () {
         let resolvedUserAssistance = this._getResolvedUserAssistance();
 
-        return (resolvedUserAssistance === 'compact' ||
-        resolvedUserAssistance === 'displayOptions');
+        return resolvedUserAssistance === 'compact' || resolvedUserAssistance === 'displayOptions';
       },
-
 
       /**
        * Returns content that will be used by messaging strategies.
@@ -5639,14 +5701,18 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
         // Add validityState which includes messages, valid and severity.
         // These are shown to the user right away on initialization if they are there.
-        if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.INIT ||
-            updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE) {
+        if (
+          updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.INIT ||
+          updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE
+        ) {
           // get messages from messagesShown and messagesHidden
           messagingContent.validityState = this._getMessagingContentValidityState();
         }
 
-        if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.INIT ||
-            updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.CONVERTER_HINT) {
+        if (
+          updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.INIT ||
+          updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.CONVERTER_HINT
+        ) {
           converter = this._GetConverter();
           if (converter) {
             if (typeof converter === 'object') {
@@ -5672,8 +5738,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           messagingContent.validatorHint = syncValidatorHints;
         }
 
-        if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.INIT ||
-            updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE) {
+        if (
+          updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.INIT ||
+          updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE
+        ) {
           // For custom element components, we use help.instruction option value for the
           // messageContent title, otherwise, use the title option value.  help.instruction
           // is used by custom element components, and title is used by non-custom element components.
@@ -5733,7 +5801,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         var previousMsgs = $.extend([], pm);
         var msgs = $.extend([], m);
 
-
         if (previousMsgs.length !== msgs.length) {
           return false;
         }
@@ -5752,10 +5819,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
           match = -1;
           msgs.forEach(function (msg, j) {
-            if ((Message.getSeverityLevel(pmo.severity) ===
-                 Message.getSeverityLevel(msg.severity)) &&
-                pmo.summary === msg.summary &&
-                pmo.detail === msg.detail) {
+            if (
+              Message.getSeverityLevel(pmo.severity) === Message.getSeverityLevel(msg.severity) &&
+              pmo.summary === msg.summary &&
+              pmo.detail === msg.detail
+            ) {
               match = j;
               // found a match, so break out of loop
             }
@@ -5870,8 +5938,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
         for (var i = 0; i < msgs.length; i++) {
           msg = msgs[i];
-          componentMsgs.push(this._createComponentMessage(msg.summary, msg.detail,
-                                                          msg.severity, options));
+          componentMsgs.push(
+            this._createComponentMessage(msg.summary, msg.detail, msg.severity, options)
+          );
         }
 
         return componentMsgs || null;
@@ -5912,13 +5981,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
         // We set the last model value after the format, so this is saying,
         // has the value about to be formatted different than the one we last formatted?
-        if (fullRefresh || (value !== this._getLastModelValue())) {
+        if (fullRefresh || value !== this._getLastModelValue()) {
           // this formats the value and displays it.
           displayValueReturn = this._UpdateElementDisplayValue(value);
         }
         return displayValueReturn;
       },
-
 
       /**
        * Toggles css selector on the widget. E.g., when required option changes, the oj-required
@@ -5963,8 +6031,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
               description += 'for "' + domElem.id + '" ';
             }
             description += 'to finish.';
-            this._resolveBusyStateDeferredValidation =
-              busyContext.addBusyState({ description: description });
+            this._resolveBusyStateDeferredValidation = busyContext.addBusyState({
+              description: description
+            });
           }
           var resultPromise = this._validateValueForRequiredOnly(this.options.value, context);
           if (resultPromise instanceof Promise) {
@@ -6145,12 +6214,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
        * @return {'focus'|'always'}
        */
       _ShowHelpHints: function () {
-        return (this._IsTextFieldComponent()) ? 'focus' : 'always';
+        return this._IsTextFieldComponent() ? 'focus' : 'always';
       },
       /**
-         * This is called from InlineHelpHintsStrategy to determine
-         * the location of the inline help hints, above the component
-         * or below inline.
+       * This is called from InlineHelpHintsStrategy to determine
+       * the location of the inline help hints, above the component
+       * or below inline.
        * @ignore
        * @protected
        * @memberof oj.editableValue
@@ -6241,20 +6310,28 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             this._setValidOption(_PENDING, null);
             var validateReturned = validator.validate(oj.StringUtils.trim(value));
             if (validateReturned instanceof Promise) {
-              return validateReturned.then(function () {
-              }, function (e) {
-                newMsgs = self._processValidationErrors(e, context,
-                        Message.ComponentMessage.DISPLAY.HIDDEN);
-                if (newMsgs) {
-                  self._updateMessagesOption('messagesHidden', newMsgs);
+              return validateReturned.then(
+                function () {},
+                function (e) {
+                  newMsgs = self._processValidationErrors(
+                    e,
+                    context,
+                    Message.ComponentMessage.DISPLAY.HIDDEN
+                  );
+                  if (newMsgs) {
+                    self._updateMessagesOption('messagesHidden', newMsgs);
+                  }
                 }
-              });
+              );
             }
           } catch (e) {
             // this is a messagesHidden message
             // turn this into Array of ComponentMessage instances. This is what we set on 'messagesHidden'
-            newMsgs =
-            this._processValidationErrors(e, context, Message.ComponentMessage.DISPLAY.HIDDEN);
+            newMsgs = this._processValidationErrors(
+              e,
+              context,
+              Message.ComponentMessage.DISPLAY.HIDDEN
+            );
             if (newMsgs) {
               this._updateMessagesOption('messagesHidden', newMsgs);
             }
@@ -6326,7 +6403,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         if (implicitRequiredValidator) {
           try {
             var requiredValidatorPromise = implicitRequiredValidator.validate(
-              oj.StringUtils.trim(value));
+              oj.StringUtils.trim(value)
+            );
             if (requiredValidatorPromise) {
               promiseArray.push(requiredValidatorPromise);
             }
@@ -6387,38 +6465,40 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         // This could happen if we kick off a slow validator and the user types into the field
         // and blurs to cause a new _SetValue->validation before this one returns.
         function reflect(promise) {
-          return promise.then(function (v) {
-            var status;
+          return promise.then(
+            function (v) {
+              var status;
 
-            // Ignore validate Promise results if it is for a value that isn't the most current value
-            // we are validating. The only con is if they are in the process of typing in the field,
-            // errors might show up for value when they last pressed Enter|Blur.
-            // We decided this is fine, and we will show the value in the error message in our demos
-            // so the user won't get confused, and we'll doc that this is what the app dev should do.
-            if (self._asyncValidatorValidateCounter === asyncValidatorValidateCounter) {
-              status = 'resolved';
-            } else {
-              status = 'ignore';
-            }
-            return { v: v, status: status };
-          },
-          function (e) {
-            var status;
-            if (self._asyncValidatorValidateCounter === asyncValidatorValidateCounter) {
-              // turn this into Array of ComponentMessage instances.
-              // This is what we set on 'messagesShown'
-              newMsgs = self._processValidationErrors(e, context);
-              self._updateMessagesOption('messagesShown', newMsgs, event);
-              if (!isInvalidShownSet) {
-                self._setValidOption(_INVALID_SHOWN, event);
-                isInvalidShownSet = true;
+              // Ignore validate Promise results if it is for a value that isn't the most current value
+              // we are validating. The only con is if they are in the process of typing in the field,
+              // errors might show up for value when they last pressed Enter|Blur.
+              // We decided this is fine, and we will show the value in the error message in our demos
+              // so the user won't get confused, and we'll doc that this is what the app dev should do.
+              if (self._asyncValidatorValidateCounter === asyncValidatorValidateCounter) {
+                status = 'resolved';
+              } else {
+                status = 'ignore';
               }
-              status = 'rejected';
-            } else {
-              status = 'ignore';
+              return { v: v, status: status };
+            },
+            function (e) {
+              var status;
+              if (self._asyncValidatorValidateCounter === asyncValidatorValidateCounter) {
+                // turn this into Array of ComponentMessage instances.
+                // This is what we set on 'messagesShown'
+                newMsgs = self._processValidationErrors(e, context);
+                self._updateMessagesOption('messagesShown', newMsgs, event);
+                if (!isInvalidShownSet) {
+                  self._setValidOption(_INVALID_SHOWN, event);
+                  isInvalidShownSet = true;
+                }
+                status = 'rejected';
+              } else {
+                status = 'ignore';
+              }
+              return { e: e, status: status };
             }
-            return { e: e, status: status };
-          });
+          );
         }
 
         if (promiseArray.length > 0) {
@@ -6427,11 +6507,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             // We want to wait until all promises either resolve or reject. Then we can resolve this
             // outer promise. We do this using the reflect function defined above.
             Promise.all(promiseArray.map(reflect)).then(function (results) {
-              var ignoreList = results.filter(function (x) { return x.status === 'ignore'; });
+              var ignoreList = results.filter(function (x) {
+                return x.status === 'ignore';
+              });
               if (ignoreList.length > 0) {
                 finalValidState = 'ignoreValidation';
               } else {
-                finalValidState = (!isInvalidShownSet) ? _VALID : _INVALID_SHOWN;
+                finalValidState = !isInvalidShownSet ? _VALID : _INVALID_SHOWN;
                 // we could be showing messages, like 'messagesCustom'. If so, valid is invalidShown,
                 // even if all validators passed.
                 self._setValidOption(self._determineValidFromMessagesOptions(), event);
@@ -6448,7 +6530,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           this._setValidOption(self._determineValidFromMessagesOptions(), event);
         }
         // if no error messages returned from validating the value, return newValue
-        return (valMsgs.length === 0) ? value : undefined;
+        return valMsgs.length === 0 ? value : undefined;
       },
 
       /**
@@ -6466,7 +6548,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           for (let i = 0; i < ojlabels.length; i++) {
             var ojlabel = ojlabels[i];
             ojlabel.classList.add(this._GetDefaultStyleClass() + '-label');
-            if (this.widget().attr('data-oj-internal') === undefined && this.options.readOnly !== undefined) {
+            if (
+              this.widget().attr('data-oj-internal') === undefined &&
+              this.options.readOnly !== undefined
+            ) {
               this._addRemoveOjReadOnlyClassOnLabel(ojlabel, this.options.readOnly);
             }
           }
@@ -6528,8 +6613,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
        * @instance
        * @private
        */
-      _clearBusyStateAsyncConverterLoading:
-      EditableValueUtils._ClearBusyStateAsyncConverterLoading,
+      _clearBusyStateAsyncConverterLoading: EditableValueUtils._ClearBusyStateAsyncConverterLoading,
       /**
        * If we have asynchronous converter loading, the input is readonly and a loading indicator
        * is shown to the user.
@@ -6561,12 +6645,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       _createOrUpdateReadonlyDiv: EditableValueUtils._createOrUpdateReadonlyDiv,
 
       /**
-      * Creates the readonly div. This is called when the
-      * component is initially enabled and becomes readonly.
-      * @memberof oj.editableValue
-      * @instance
-      * @private
-      */
+       * Creates the readonly div. This is called when the
+       * component is initially enabled and becomes readonly.
+       * @memberof oj.editableValue
+       * @instance
+       * @private
+       */
       _createReadonlyDiv: EditableValueUtils._createReadonlyDiv,
 
       /**
@@ -6588,7 +6672,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
        */
       _GetFormControlContainer: function () {
         if (this._IsCustomElement()) {
-          var selector = '.' + [this._GetComponentManagedBaseLabelStyleClass(), 'container'].join('-');
+          var selector =
+            '.' + [this._GetComponentManagedBaseLabelStyleClass(), 'container'].join('-');
           return this._getRootElement().querySelector(selector);
         }
         return undefined;
@@ -6669,66 +6754,64 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         }
         return labelEdge;
       }
-
-    }, true);
-
-
-  Components.setDefaultOptions(
-    {
-
-      editableValue: // properties for all editableValue components
-      {
-        displayOptions: Components.createDynamicPropertyGetter(function (context) {
-          // displayOptions defaults are theme dependent
-          // See also _setOption when displayOptions is changed. Need to handle
-          // defaulting there as well.
-          let useUserAssistanceDensity =
-          (ojthemeutils.parseJSONFromFontFamily('oj-form-control-option-defaults') || {})
-          .useUserAssistanceOptionDefault === 'use';
-          var displayOptions;
-          if (useUserAssistanceDensity) {
-            displayOptions = {
-              messages: _sDisplayOptionsRedwoodDefaults.MESSAGES,
-              converterHint: _sDisplayOptionsRedwoodDefaults.CONVERTER_HINT,
-              validatorHint: _sDisplayOptionsRedwoodDefaults.VALIDATOR_HINT
-             };
-          } else {
-            displayOptions = {
-              messages: context.containers.indexOf('ojDataGrid') >= 0 ||
-                context.containers.indexOf('ojTable') >= 0 ? ['notewindow'] :
-                _sDisplayOptionsAltaDefaults.MESSAGES,
-              converterHint: _sDisplayOptionsAltaDefaults.CONVERTER_HINT,
-              validatorHint: _sDisplayOptionsAltaDefaults.VALIDATOR_HINT
-            };
-          }
-          displayOptions[context.isCustomElement ? 'helpInstruction' : 'title'] = ['notewindow'];
-          return displayOptions;
-        }),
-        help: Components.createDynamicPropertyGetter(function (context) {
-          // Conditionally set the defaults for custom element vs widget syntax since we expose different APIs
-          if (context.isCustomElement) {
-            return { instruction: '' };
-          }
-          return { definition: null, source: null };
-        }),
-        labelEdge: Components.createDynamicPropertyGetter(function (context) {
-          // update the labelEdge value to theme based.
-          if (context.isCustomElement) {
-            return (ojthemeutils.parseJSONFromFontFamily('oj-form-control-option-defaults') || {}).labelEdge;
-          }
-          return undefined;
-        }),
-        userAssistanceDensity: Components.createDynamicPropertyGetter(function (context) {
-          var userAssistanceDensityVar =
-            context.containers.indexOf('ojDataGrid') >= 0 ||
-            context.containers.indexOf('ojTable') >= 0 ? 'compact' : 'reflow';
-          return userAssistanceDensityVar;
-        })
-      }
-    }
-
-
+    },
+    true
   );
+
+  Components.setDefaultOptions({
+    // properties for all editableValue components
+    editableValue: {
+      displayOptions: Components.createDynamicPropertyGetter(function (context) {
+        // displayOptions defaults are theme dependent
+        // See also _setOption when displayOptions is changed. Need to handle
+        // defaulting there as well.
+        let useUserAssistanceDensity =
+          (ojthemeutils.parseJSONFromFontFamily('oj-form-control-option-defaults') || {})
+            .useUserAssistanceOptionDefault === 'use';
+        var displayOptions;
+        if (useUserAssistanceDensity) {
+          displayOptions = {
+            messages: _sDisplayOptionsRedwoodDefaults.MESSAGES,
+            converterHint: _sDisplayOptionsRedwoodDefaults.CONVERTER_HINT,
+            validatorHint: _sDisplayOptionsRedwoodDefaults.VALIDATOR_HINT
+          };
+        } else {
+          displayOptions = {
+            messages:
+              context.containers.indexOf('ojDataGrid') >= 0 ||
+              context.containers.indexOf('ojTable') >= 0
+                ? ['notewindow']
+                : _sDisplayOptionsAltaDefaults.MESSAGES,
+            converterHint: _sDisplayOptionsAltaDefaults.CONVERTER_HINT,
+            validatorHint: _sDisplayOptionsAltaDefaults.VALIDATOR_HINT
+          };
+        }
+        displayOptions[context.isCustomElement ? 'helpInstruction' : 'title'] = ['notewindow'];
+        return displayOptions;
+      }),
+      help: Components.createDynamicPropertyGetter(function (context) {
+        // Conditionally set the defaults for custom element vs widget syntax since we expose different APIs
+        if (context.isCustomElement) {
+          return { instruction: '' };
+        }
+        return { definition: null, source: null };
+      }),
+      labelEdge: Components.createDynamicPropertyGetter(function (context) {
+        // update the labelEdge value to theme based.
+        if (context.isCustomElement) {
+          return (ojthemeutils.parseJSONFromFontFamily('oj-form-control-option-defaults') || {}).labelEdge;
+        }
+        return undefined;
+      }),
+      userAssistanceDensity: Components.createDynamicPropertyGetter(function (context) {
+        var userAssistanceDensityVar =
+          context.containers.indexOf('ojDataGrid') >= 0 || context.containers.indexOf('ojTable') >= 0
+            ? 'compact'
+            : 'reflow';
+        return userAssistanceDensityVar;
+      })
+    }
+  });
 
   // ////////////////     SUB-IDS     //////////////////
   /**
@@ -6980,8 +7063,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    *
    * @private
    */
-  oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW,
-  PopupMessagingStrategy);
+  oj.ComponentMessaging.registerMessagingStrategy(
+    oj.ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW,
+    PopupMessagingStrategy
+  );
 
   // Subclass from MessagingStrategy
   oj.Object.createSubclass(PopupMessagingStrategy, oj.MessagingStrategy, 'oj.PopupMessagingStrategy');
@@ -6994,8 +7079,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * 'position' - specifies the type of element the popup is positioned against.
    * @private
    */
-  PopupMessagingStrategy._DEFAULTS_BY_COMPONENT =
-  {
+  PopupMessagingStrategy._DEFAULTS_BY_COMPONENT = {
     // mouseenter and mouseleave is what you want instead of mouseover/mouseout when the launcher
     // isn't a simple input. In the case of radioset and checkboxset, the launcher is the widget
     // which is the div that contains all the rows, inputs and labels. If we use mouseover/mouseout
@@ -7005,14 +7089,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     //
     // on touch devices: the "press" event name maps to Hammer's press event, so a touch and hold
     // will open the popup.
-    ojRadioset:
-    {
+    ojRadioset: {
       position: 'launcher',
       // when press opens popup, the user taps elsewhere to dismiss popup
       events: { open: 'focusin mouseenter press', close: 'mouseleave' }
     },
-    ojCheckboxset:
-    {
+    ojCheckboxset: {
       position: 'launcher',
       // when press opens popup, the user taps elsewhere to dismiss popup
       events: { open: 'focusin mouseenter press', close: 'mouseleave' }
@@ -7021,43 +7103,35 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     // position on the tip of the component root. Instead we want to position on the main part of the
     // component, which is in a lot of cases the launcher. In the case of inputDate/Time/Number,
     // it's the launcher's parent (inputDate/Time/Number wrap input and buttons with a parent).
-    ojInputText:
-    {
+    ojInputText: {
       position: 'launcher',
       events: { open: 'focusin' }
     },
-    ojTextArea:
-    {
+    ojTextArea: {
       position: 'launcher',
       events: { open: 'focusin' }
     },
-    ojInputPassword:
-    {
+    ojInputPassword: {
       position: 'launcher',
       events: { open: 'focusin' }
     },
-    ojSwitch:
-    {
+    ojSwitch: {
       position: 'launcher',
       events: { open: 'focusin mouseenter', close: 'mouseleave' }
     },
-    ojSlider:
-    {
+    ojSlider: {
       position: 'launcher',
       events: { open: 'focusin mouseenter', close: 'mouseleave' }
     },
-    ojColorSpectrum:
-    {
+    ojColorSpectrum: {
       position: 'launcher',
       events: { open: 'focusin mouseenter', close: 'mouseleave' }
     },
-    ojColorPalette:
-    {
+    ojColorPalette: {
       position: 'launcher',
       events: { open: 'focusin mouseenter', close: 'mouseleave' }
     },
-    default:
-    {
+    default: {
       position: 'launcher-wrapper',
       events: { open: 'focusin' }
     }
@@ -7278,7 +7352,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @instance
    */
   PopupMessagingStrategy.prototype._setActionResolver = function (
-    messagingContentRoot, eventType, resolvePromise
+    messagingContentRoot,
+    eventType,
+    resolvePromise
   ) {
     var animationOption;
 
@@ -7441,24 +7517,24 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @private
    */
   PopupMessagingStrategy.prototype._eatChangeAndClickOnPress = function (event) {
-        // on ios:
-        // if I tap quickly on an input, I get on div: touchstart/touchend/mousedown/change/click
-        // if I tap and hold on an input, I get: touchstart
-        // when I let up, I get: touchend/mousedown/change/click
-        // on android:
-        // if I tap quickly on an input, I get touchstart touchend mousedown click change
-        // if I tap and hold on an input, I get touchstart/mousedown
-        // when I let up, I get touchend. (no change or click like I do for ios)
+    // on ios:
+    // if I tap quickly on an input, I get on div: touchstart/touchend/mousedown/change/click
+    // if I tap and hold on an input, I get: touchstart
+    // when I let up, I get: touchend/mousedown/change/click
+    // on android:
+    // if I tap quickly on an input, I get touchstart touchend mousedown click change
+    // if I tap and hold on an input, I get touchstart/mousedown
+    // when I let up, I get touchend. (no change or click like I do for ios)
 
-        // After 'press' release of a radio or checkbox if we do not eat the the click and change events,
-        // the dialog closes.
+    // After 'press' release of a radio or checkbox if we do not eat the the click and change events,
+    // the dialog closes.
     if (this._inPressEvent) {
-          // For Mobile Safari capture phase at least,
-          // returning false doesn't work; must use pD() and sP() explicitly.
+      // For Mobile Safari capture phase at least,
+      // returning false doesn't work; must use pD() and sP() explicitly.
       event.preventDefault();
       event.stopPropagation();
-          // the event order is first change, then click.
-          // so when we get the click, clear the inPressEvent flag.
+      // the event order is first change, then click.
+      // so when we get the click, clear the inPressEvent flag.
       if (event.type === 'click') {
         this._inPressEvent = false;
       }
@@ -7577,9 +7653,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
       // separate out press event, namespace the events string, and attach event handler
       const needsPressEvent = this._needsPressEvent(events);
-      nonPressOpenEvents =
-      this._getNamespacedEvents(events.open.replace('press', ''),
-                                PopupMessagingStrategy._OPEN_NAMESPACE);
+      nonPressOpenEvents = this._getNamespacedEvents(
+        events.open.replace('press', ''),
+        PopupMessagingStrategy._OPEN_NAMESPACE
+      );
       jqLauncher.on(nonPressOpenEvents, this._openPopupCallback);
 
       // The pressHold gesture also fires a contextmenu event on Windows 10 touch.
@@ -7604,67 +7681,65 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         this._closePopupCallback = closePopupCallback;
       }
 
-      closeEvents = this._getNamespacedEvents(events.close,
-        PopupMessagingStrategy._CLOSE_NAMESPACE);
+      closeEvents = this._getNamespacedEvents(events.close, PopupMessagingStrategy._CLOSE_NAMESPACE);
       jqLauncher.on(closeEvents, closePopupCallback);
     }
   };
 
-    /**
-     * Symmetrical method to releaseResources. Sets up resources that get
-     * removed in releaseResources.
-     * @private
-     * @memberof oj.PopupMessagingStrategy
-     * @instance
-     */
-    PopupMessagingStrategy.prototype.setupResources = function () {
-      const events = this._getPopupEventNamesToRegisterForComp();
-      const needsPressEvent = this._needsPressEvent(events);
-      if (DomUtils.isTouchSupported() && needsPressEvent) {
-        this.registerHammerOpenCallbackOnLauncher();
-      }
-    };
+  /**
+   * Symmetrical method to releaseResources. Sets up resources that get
+   * removed in releaseResources.
+   * @private
+   * @memberof oj.PopupMessagingStrategy
+   * @instance
+   */
+  PopupMessagingStrategy.prototype.setupResources = function () {
+    const events = this._getPopupEventNamesToRegisterForComp();
+    const needsPressEvent = this._needsPressEvent(events);
+    if (DomUtils.isTouchSupported() && needsPressEvent) {
+      this.registerHammerOpenCallbackOnLauncher();
+    }
+  };
 
-    /**
-     * Register Hammer Press Event. Make sure you are on touch and you
-     * need the press event before calling this function.
-     * @private
-     * @memberof oj.PopupMessagingStrategy
-     * @instance
-     */
-    PopupMessagingStrategy.prototype.registerHammerOpenCallbackOnLauncher = function () {
+  /**
+   * Register Hammer Press Event. Make sure you are on touch and you
+   * need the press event before calling this function.
+   * @private
+   * @memberof oj.PopupMessagingStrategy
+   * @instance
+   */
+  PopupMessagingStrategy.prototype.registerHammerOpenCallbackOnLauncher = function () {
+    const jqLauncher = this.GetLauncher();
+    if (jqLauncher == null) {
+      return;
+    }
+    // for radios and checkboxes, on ios, press hold brings up popup, but release closes it
+    // and checks it, so in this case we have to eat the click/change events. this happens
+    // in the openPopupCallback
+    const hammerOptions = {
+      recognizers: [[Hammer.Press, { time: 750 }]]
+    };
+    jqLauncher.ojHammer(hammerOptions).on('press', this._openPopupCallback);
+  };
+
+  /**
+   * Releases resources that would otherwise leak memory if they were not released
+   * when the component's dom is removed.
+   * For example, Hammer events are put on the document and will result in
+   * detached dom memory leak if not removed.
+   * @private
+   * @memberof oj.PopupMessagingStrategy
+   * @instance
+   */
+  PopupMessagingStrategy.prototype.releaseResources = function () {
+    PopupMessagingStrategy.superclass.update.call(this);
+    const events = this._getPopupEventNamesToRegisterForComp();
+    const needsPressEvent = this._needsPressEvent(events);
+    if (DomUtils.isTouchSupported() && needsPressEvent) {
       const jqLauncher = this.GetLauncher();
-      if (jqLauncher == null) {
-        return;
-      }
-      // for radios and checkboxes, on ios, press hold brings up popup, but release closes it
-      // and checks it, so in this case we have to eat the click/change events. this happens
-      // in the openPopupCallback
-      const hammerOptions = {
-        recognizers: [
-          [Hammer.Press, { time: 750 }]
-        ] };
-      jqLauncher.ojHammer(hammerOptions).on('press', this._openPopupCallback);
-    };
-
-    /**
-    * Releases resources that would otherwise leak memory if they were not released
-    * when the component's dom is removed.
-    * For example, Hammer events are put on the document and will result in
-    * detached dom memory leak if not removed.
-    * @private
-    * @memberof oj.PopupMessagingStrategy
-    * @instance
-    */
-    PopupMessagingStrategy.prototype.releaseResources = function () {
-      PopupMessagingStrategy.superclass.update.call(this);
-      const events = this._getPopupEventNamesToRegisterForComp();
-      const needsPressEvent = this._needsPressEvent(events);
-      if (DomUtils.isTouchSupported() && needsPressEvent) {
-        const jqLauncher = this.GetLauncher();
-        jqLauncher.off('press').ojHammer('destroy');
-      }
-    };
+      jqLauncher.off('press').ojHammer('destroy');
+    }
+  };
 
   /**
    * Turn the events string into an array, add namespace, and turn it back into a string.
@@ -7714,10 +7789,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     var launcher;
     var popupPositionOptions;
 
-    compDefaults =
-    PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
-    compDefaultPosition = compDefaults ? compDefaults.position :
-    PopupMessagingStrategy._DEFAULTS_BY_COMPONENT.default.position;
+    compDefaults = PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
+    compDefaultPosition = compDefaults
+      ? compDefaults.position
+      : PopupMessagingStrategy._DEFAULTS_BY_COMPONENT.default.position;
 
     if (compDefaultPosition) {
       if (compDefaultPosition === 'launcher') {
@@ -7750,8 +7825,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   PopupMessagingStrategy.prototype._getPopupEventNamesToRegisterForComp = function () {
     const compDefaults =
       PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
-    return compDefaults ? compDefaults.events :
-      PopupMessagingStrategy._DEFAULTS_BY_COMPONENT.default.events;
+    return compDefaults
+      ? compDefaults.events
+      : PopupMessagingStrategy._DEFAULTS_BY_COMPONENT.default.events;
   };
 
   /**
@@ -7762,10 +7838,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @instance
    */
   PopupMessagingStrategy.prototype._needsPressEvent = function (events) {
-     if (events && events.open) {
+    if (events && events.open) {
       return events.open.indexOf('press') !== -1;
-     }
-     return false;
+    }
+    return false;
   };
 
   /**
@@ -7794,7 +7870,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     // Use default animation only for custom elements
     if (this.GetComponent()._IsCustomElement()) {
       // Get the default animation
-      var defaultAnimations = (ojthemeutils.parseJSONFromFontFamily('oj-messaging-popup-option-defaults') || {}).animation;
+      var defaultAnimations = (ojthemeutils.parseJSONFromFontFamily('oj-messaging-popup-option-defaults') || {})
+        .animation;
       defaultAnimations.actionPrefix = 'notewindow';
       popup.ojPopup('option', 'animation', defaultAnimations);
 
@@ -7939,9 +8016,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
     if (this.HasMessages()) {
       messages = this.GetMessages();
-      content =
-      PopupMessagingStrategyUtils.buildMessagesHtml(
-      document, messages, maxSeverity, renderSeveritySelectors);
+      content = PopupMessagingStrategyUtils.buildMessagesHtml(
+        document,
+        messages,
+        maxSeverity,
+        renderSeveritySelectors
+      );
     }
     return content;
   };
@@ -7963,25 +8043,36 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     if (this.ShowConverterHint()) {
       hints = this.GetConverterHint();
       hint = hints.length ? hints[0] : '';
-      hintsHtml += PopupMessagingStrategyUtils.buildHintHtml(document,
-      PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_CONVERTER,
-      hint, false,
-      PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
+      hintsHtml += PopupMessagingStrategyUtils.buildHintHtml(
+        document,
+        PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_CONVERTER,
+        hint,
+        false,
+        PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT
+      );
     }
 
     if (this.ShowValidatorHint()) {
       hints = this.GetValidatorHints();
       for (i = 0; i < hints.length; i++) {
-        hintsHtml += PopupMessagingStrategyUtils.buildHintHtml(document,
-        PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_VALIDATOR,
-        hints[i], false, PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
+        hintsHtml += PopupMessagingStrategyUtils.buildHintHtml(
+          document,
+          PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_VALIDATOR,
+          hints[i],
+          false,
+          PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT
+        );
       }
     }
 
     if (this.ShowTitle()) {
-      hintsHtml += PopupMessagingStrategyUtils.buildHintHtml(document,
-      PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_TITLE,
-      this.GetTitle(), true, PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
+      hintsHtml += PopupMessagingStrategyUtils.buildHintHtml(
+        document,
+        PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_TITLE,
+        this.GetTitle(),
+        true,
+        PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT
+      );
     }
 
     return hintsHtml ? "<div class='oj-form-control-hints'>" + hintsHtml + '</div>' : '';
@@ -7997,10 +8088,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    */
   PopupMessagingStrategy.prototype._isPopupInitialized = function () {
     // is(":oj-popup") finds the popup component if it exists
-    return (this.$messagingContentRoot) ?
-    Components.isComponentInitialized(this.$messagingContentRoot, 'ojPopup') : false;
+    return this.$messagingContentRoot
+      ? Components.isComponentInitialized(this.$messagingContentRoot, 'ojPopup')
+      : false;
   };
-
 
   /**
    * Renders the html content for a single hint.
@@ -8014,7 +8105,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @public
    */
   PopupMessagingStrategyUtils.buildHintHtml = function (
-    document, selector, hintText, htmlAllowed, formControlSelectors
+    document,
+    selector,
+    hintText,
+    htmlAllowed,
+    formControlSelectors
   ) {
     var titleDom;
 
@@ -8027,11 +8122,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       }
 
       titleDom.classList.add(selector);
-      PopupMessagingStrategyUtils._appendTextDom(titleDom,
-        PopupMessagingStrategyUtils.GetTextDom(document, hintText, htmlAllowed));
+      PopupMessagingStrategyUtils._appendTextDom(
+        titleDom,
+        PopupMessagingStrategyUtils.GetTextDom(document, hintText, htmlAllowed)
+      );
     }
 
-    return titleDom ? titleDom.outerHTML : '';// @HTMLUpdateOK
+    return titleDom ? titleDom.outerHTML : ''; // @HTMLUpdateOK
   };
 
   /**
@@ -8074,7 +8171,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     var jSeparatorDom;
     jSeparatorDom = $(document.createElement('hr'));
 
-    return jSeparatorDom ? jSeparatorDom.get(0).outerHTML : '';// @HTMLUpdateOK
+    return jSeparatorDom ? jSeparatorDom.get(0).outerHTML : ''; // @HTMLUpdateOK
   };
 
   /**
@@ -8088,8 +8185,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @memberof oj.PopupMessagingStrategyUtils
    * @instance
    */
-  PopupMessagingStrategyUtils.buildMessagesHtml =
-  function (document, messages, maxSeverity, renderSeveritySelectors) {
+  PopupMessagingStrategyUtils.buildMessagesHtml = function (
+    document,
+    messages,
+    maxSeverity,
+    renderSeveritySelectors
+  ) {
     var content = '';
     var detail;
     var i;
@@ -8101,7 +8202,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     var severityLevel;
     var severityStr;
     var summary;
-
 
     // Step1: build an indexed array of messages by severity level.
     for (i = 0; i < messages.length; i++) {
@@ -8136,8 +8236,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         // formatted html content (ADF feature)
         detail = message.detail || '';
         content = content.concat(
-        PopupMessagingStrategyUtils.buildMessageHtml(
-        document, summary, detail, severityLevel, renderSeveritySelectors));
+          PopupMessagingStrategyUtils.buildMessageHtml(
+            document,
+            summary,
+            detail,
+            severityLevel,
+            renderSeveritySelectors
+          )
+        );
       }
     }
     return content;
@@ -8152,8 +8258,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @returns {string}
    * @public
    */
-  PopupMessagingStrategyUtils.buildMessageHtml =
-  function (document, summary, detail, severityLevel, addSeverityClass) {
+  PopupMessagingStrategyUtils.buildMessageHtml = function (
+    document,
+    summary,
+    detail,
+    severityLevel,
+    addSeverityClass
+  ) {
     var msgContent;
     var msgDetail;
     var msgDom;
@@ -8168,7 +8279,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     msgDom.classList.add(PopupMessagingStrategyUtils._SELECTOR_MESSAGE);
 
     if (addSeverityClass) {
-      var severityClasses = PopupMessagingStrategyUtils._getSeveritySelector(severityLevel).split(' ');
+      var severityClasses =
+        PopupMessagingStrategyUtils._getSeveritySelector(severityLevel).split(' ');
 
       for (var i = 0, slen = severityClasses.length; i < slen; ++i) {
         msgDom.classList.add(severityClasses[i]);
@@ -8177,7 +8289,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
     // build msg icon
     msgIcon = document.createElement('span');
-    var severityIconClasses = PopupMessagingStrategyUtils._getSeverityIconSelector(severityLevel).split(' ');
+    var severityIconClasses =
+      PopupMessagingStrategyUtils._getSeverityIconSelector(severityLevel).split(' ');
 
     for (var j = 0, silen = severityIconClasses.length; j < silen; ++j) {
       msgIcon.classList.add(severityIconClasses[j]);
@@ -8197,7 +8310,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     msgContent = document.createElement('span');
     msgContent.classList.add(PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONTENT);
 
-    if ((ojthemeutils.parseJSONFromFontFamily('oj-messaging-popup-option-defaults') || {}).messageSummaryOptionDefault === 'header') {
+    if (
+      (ojthemeutils.parseJSONFromFontFamily('oj-messaging-popup-option-defaults') || {})
+        .messageSummaryOptionDefault === 'header'
+    ) {
       msgSummary = document.createElement('div');
       msgSummary.classList.add(PopupMessagingStrategyUtils._SELECTOR_MESSAGE_SUMMARY);
       msgSummary.textContent = summary;
@@ -8212,7 +8328,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
       msgDetail.classList.add(PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL);
       PopupMessagingStrategyUtils._appendTextDom(msgDetail, detailDom);
-      msgContent.appendChild(msgDetail);// @HTMLUpdateOK
+      msgContent.appendChild(msgDetail); // @HTMLUpdateOK
     }
 
     msgDom.appendChild(msgContent); // @HTMLUpdateOK
@@ -8281,7 +8397,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     return sevSelectorStr;
   };
 
-
   /**
    *  if content is html clean html by allowing only legal tags before returning, to safeguard from
    *  script injection errors.
@@ -8330,7 +8445,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @const
    * @type {string}
    */
-  PopupMessagingStrategyUtils._DEFAULT_STATUS_ICON_SELECTORS = 'oj-component-icon oj-message-status-icon ';
+  PopupMessagingStrategyUtils._DEFAULT_STATUS_ICON_SELECTORS =
+    'oj-component-icon oj-message-status-icon ';
 
   /**
    * @private
@@ -8433,14 +8549,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       popup[0].style.display = 'none';
       // popup is an empty div
       popup.appendTo(pool); // @HTMLUpdateOK
-      var popupOptions =
-        {
-          initialFocus: 'none',
-          tail: 'simple',
-          autoDismiss: 'none',
-          modality: 'modeless',
-          animation: { open: null, close: null }
-        };
+      var popupOptions = {
+        initialFocus: 'none',
+        tail: 'simple',
+        autoDismiss: 'none',
+        modality: 'modeless',
+        animation: { open: null, close: null }
+      };
       popup.ojPopup(popupOptions);
     } else {
       popup = $(popups[0]);
@@ -8512,9 +8627,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @private
    */
   PopupMessagingStrategyPoolUtils._getPopupContentHtml = function () {
-    return '<div class="' + PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING + '">' +
-      '<div class="' + PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER + '"></div>' +
-      '</div>';
+    return (
+      '<div class="' +
+      PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING +
+      '">' +
+      '<div class="' +
+      PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER +
+      '"></div>' +
+      '</div>'
+    );
   };
 
   /**
@@ -8571,8 +8692,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   //     InlineHelpHintsStrategy);
 
   // Subclass from MessagingStrategy
-  oj.Object.createSubclass(InlineHelpHintsStrategy,
-    oj.MessagingStrategy, 'InlineHelpHintsStrategy');
+  oj.Object.createSubclass(InlineHelpHintsStrategy, oj.MessagingStrategy, 'InlineHelpHintsStrategy');
 
   /**
    * @param {Object} cm a reference to an instance of ComponentMessaging that provides access to
@@ -8703,11 +8823,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    */
   InlineHelpHintsStrategy.prototype._createFocusEventHandlers = function (component) {
     var element = component._getRootElement();
-    this._focusinCallback =
-    InlineHelpHintsStrategy._focusinHandler.bind(this, component);
+    this._focusinCallback = InlineHelpHintsStrategy._focusinHandler.bind(this, component);
     element.addEventListener('focusin', this._focusinCallback);
-    this._focusoutCallback =
-    InlineHelpHintsStrategy._focusoutHandler.bind(this);
+    this._focusoutCallback = InlineHelpHintsStrategy._focusoutHandler.bind(this);
     element.addEventListener('focusout', this._focusoutCallback);
   };
 
@@ -8727,8 +8845,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    */
   InlineHelpHintsStrategy.prototype._createHelpHintsAttributeEventHandlers = function (component) {
     var element = component._getRootElement();
-    this._helpHintsChangedCallback =
-    InlineHelpHintsStrategy._helpHintsChangedHandler.bind(this);
+    this._helpHintsChangedCallback = InlineHelpHintsStrategy._helpHintsChangedHandler.bind(this);
     element.addEventListener('helpHintsChanged', this._helpHintsChangedCallback);
   };
 
@@ -8788,19 +8905,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @instance
    * @private
    */
-   InlineHelpHintsStrategy.prototype._removeHelpHintsContainerAndContent = function () {
-      var component = this.GetComponent();
-      var element = component._getRootElement();
-      var container = this._getHelpHintsInlineContainer(element);
-      if (container) {
-        this.RemoveAriaDescribedByForInlineMessaging(container);
-        container.parentElement.removeChild(container);
-        if (this._userAssistanceDivElement) {
-          this._userAssistanceDivElement.classList.remove(OJ_HAS_HELPHINTS_STYLECLASS);
-          this.containerRoot = null;
-        }
+  InlineHelpHintsStrategy.prototype._removeHelpHintsContainerAndContent = function () {
+    var component = this.GetComponent();
+    var element = component._getRootElement();
+    var container = this._getHelpHintsInlineContainer(element);
+    if (container) {
+      this.RemoveAriaDescribedByForInlineMessaging(container);
+      container.parentElement.removeChild(container);
+      if (this._userAssistanceDivElement) {
+        this._userAssistanceDivElement.classList.remove(OJ_HAS_HELPHINTS_STYLECLASS);
+        this.containerRoot = null;
       }
-   };
+    }
+  };
 
   /**
    * Creates the content, if any.
@@ -8817,10 +8934,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     let helpHints = component.options.helpHints;
 
     if (helpInstruction) {
-      let helpInstructionDom =
-        PopupMessagingStrategyUtils.GetTextDom(document, helpInstruction, true);
+      let helpInstructionDom = PopupMessagingStrategyUtils.GetTextDom(
+        document,
+        helpInstruction,
+        true
+      );
       // turn it into a string
-      let helpInstructionDomString = helpInstructionDom ? helpInstructionDom.outerHTML : '';// @HTMLUpdateOK
+      let helpInstructionDomString = helpInstructionDom ? helpInstructionDom.outerHTML : ''; // @HTMLUpdateOK
       hintsHtml = helpInstructionDomString;
     }
     if (!hintsHtml && this.ShowValidatorHint()) {
@@ -8870,7 +8990,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       } else {
         let formControlContainerDom = component._GetFormControlContainer();
         formControlContainerDom.parentElement.insertBefore(
-          this.containerRoot, formControlContainerDom);
+          this.containerRoot,
+          formControlContainerDom
+        );
       }
     }
     // Now we have created the container root, we can add the hintsHtml
@@ -8901,15 +9023,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         this._userAssistanceDivElement.classList.remove(OJ_HAS_HELPHINTS_STYLECLASS);
       }
     }
-    return (hintsHtml || helpSourceDom);
+    return hintsHtml || helpSourceDom;
   };
 
-   /**
-    * @private
-    * @memberof InlineHelpHintsStrategy
-    * @instance
-    * @param {String} source
-    */
+  /**
+   * @private
+   * @memberof InlineHelpHintsStrategy
+   * @instance
+   * @param {String} source
+   */
   InlineHelpHintsStrategy.prototype._getHelpSourceDom = function (source) {
     oj.Assert.assertString(source);
     let helpAnchorDiv = document.createElement('div');
@@ -9046,8 +9168,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       let effect = defaults.close; // e.g., {effect: 'fadeOut', duration: '200ms'}
       this._setBusyState();
       let self = this;
-      AnimationUtils.startAnimation(this.containerRoot, 'inline-hints-' + action, effect,
-      this.GetComponent()).then(() => {
+      AnimationUtils.startAnimation(
+        this.containerRoot,
+        'inline-hints-' + action,
+        effect,
+        this.GetComponent()
+      ).then(() => {
         // As of v12.0.0 we are removing the dom instead of using css.
         this._removeHelpHintsContainerAndContent();
         self._clearBusyState();
@@ -9067,15 +9193,18 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   InlineHelpHintsStrategy.prototype._getDefaultAnimation = function () {
     // Load the default animation once per page scope
     if (!InlineHelpHintsStrategy._defaultAnimation) {
-      InlineHelpHintsStrategy._defaultAnimation =
-      { open: {
+      InlineHelpHintsStrategy._defaultAnimation = {
+        open: {
           effect: 'fadeIn',
           duration: '200ms',
-          timingFunction: 'cubic-bezier(0.4,0,0.2,1)' },
+          timingFunction: 'cubic-bezier(0.4,0,0.2,1)'
+        },
         close: {
           effect: 'fadeOut',
           duration: '200ms',
-          timingFunction: 'cubic-bezier(0.4,0,0.2,1)' } };
+          timingFunction: 'cubic-bezier(0.4,0,0.2,1)'
+        }
+      };
     }
 
     return InlineHelpHintsStrategy._defaultAnimation;
@@ -9094,8 +9223,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       let defaults = this._getDefaultAnimation();
       let effect = defaults.open; // e.g., {effect: 'fadeIn', duration: '200ms'}
       let action = 'open';
-      AnimationUtils.startAnimation(this.containerRoot, 'inline-hints-' + action, effect,
-        this.GetComponent());
+      AnimationUtils.startAnimation(
+        this.containerRoot,
+        'inline-hints-' + action,
+        effect,
+        this.GetComponent()
+      );
     }
   };
 
@@ -9157,12 +9290,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    *
    * @private
    */
-  oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.INLINE,
-                                                  InlineMessagingStrategy);
+  oj.ComponentMessaging.registerMessagingStrategy(
+    oj.ComponentMessaging._STRATEGY_TYPE.INLINE,
+    InlineMessagingStrategy
+  );
 
   // Subclass from MessagingStrategy
-  oj.Object.createSubclass(InlineMessagingStrategy,
-    oj.MessagingStrategy, 'oj.InlineMessagingStrategy');
+  oj.Object.createSubclass(
+    InlineMessagingStrategy,
+    oj.MessagingStrategy,
+    'oj.InlineMessagingStrategy'
+  );
 
   /**
    * Does nothing; We do not create the inline messaging dom until we get messages to show.
@@ -9250,7 +9388,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   InlineMessagingStrategy.prototype._getDefaultAnimation = function () {
     // Load the default animation once per page scope
     if (!InlineMessagingStrategy._defaultAnimation) {
-      var animation = (ojthemeutils.parseJSONFromFontFamily('oj-messaging-inline-option-defaults') || {}).animation;
+      var animation = (ojthemeutils.parseJSONFromFontFamily('oj-messaging-inline-option-defaults') || {})
+        .animation;
       animation = animation || {};
       InlineMessagingStrategy._defaultAnimation = animation;
     }
@@ -9288,8 +9427,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       effectsAsString = effectsAsString.replace(new RegExp(key, 'g'), map[key]);
     }
 
-    var _effects = isEffectsTypeofString ? effectsAsString :
-      /** @type {Object} */ (JSON.parse(effectsAsString));
+    var _effects = isEffectsTypeofString
+      ? effectsAsString
+      : /** @type {Object} */ (JSON.parse(effectsAsString));
 
     return _effects;
   };
@@ -9313,13 +9453,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     var defaults = this._getDefaultAnimation();
     if (defaults) {
       var el = rootElem[0];
-      var oldContent = el.innerHTML;// @HTMLUpdateOK
+      var oldContent = el.innerHTML; // @HTMLUpdateOK
       var oldHeight = el.offsetHeight;
       var newHeight;
 
-      el.innerHTML = newContent;// @HTMLUpdateOK
+      el.innerHTML = newContent; // @HTMLUpdateOK
       newHeight = el.offsetHeight;
-      el.innerHTML = oldContent;// @HTMLUpdateOK
+      el.innerHTML = oldContent; // @HTMLUpdateOK
 
       if (newHeight > oldHeight) {
         action = 'open';
@@ -9334,14 +9474,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         // An example of effect is 'fadeIn' or 'expand',
         // and not all effects take oldHeight and newHeight
         if (effect) {
-          parsedEffect = this._replaceAnimationOptions(effect, { '#oldHeight': oldHeight + 'px',
-            '#newHeight': newHeight + 'px' });
+          parsedEffect = this._replaceAnimationOptions(effect, {
+            '#oldHeight': oldHeight + 'px',
+            '#newHeight': newHeight + 'px'
+          });
         }
       }
     }
 
-    return { action: action,
-      effect: parsedEffect };
+    return { action: action, effect: parsedEffect };
   };
 
   /**
@@ -9459,7 +9600,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         var effect = actionEffect.effect;
 
         if (action === 'noanimation') {
-          rootElem[0].innerHTML = contentToShow;// @HTMLUpdateOK
+          rootElem[0].innerHTML = contentToShow; // @HTMLUpdateOK
           self._addRemoveOjHasMessagesClass(contentToShow);
           self._clearBusyState();
 
@@ -9483,44 +9624,48 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
           // Set the new content first if we're opening.
           if (action === 'open') {
-            rootElem[0].innerHTML = contentToShow;// @HTMLUpdateOK
+            rootElem[0].innerHTML = contentToShow; // @HTMLUpdateOK
           }
           // Invoke animation
           self._inInlineMessagingAnimation = true;
-          AnimationUtils.startAnimation(rootElem[0], 'inline-' + action, effect,
-            self.GetComponent()).then(function () {
-              var afterAnimateContentToShow;
-              self._inInlineMessagingAnimation = false;
+          AnimationUtils.startAnimation(
+            rootElem[0],
+            'inline-' + action,
+            effect,
+            self.GetComponent()
+          ).then(function () {
+            var afterAnimateContentToShow;
+            self._inInlineMessagingAnimation = false;
 
-              // Set the new content last if we're closing; in other words,
-              // if we are closing we are animating
-              // the old content before we switch in the new content, and to prevent a JAWS re-read,
-              // we set aria-live to 'off' above. Now that we are done animating set it to
-              // polite so JAWS will read the new message.
-              if (action === 'close') {
-                rootElem[0].setAttribute('aria-live', 'polite');
-                rootElem[0].innerHTML = contentToShow;// @HTMLUpdateOK
+            // Set the new content last if we're closing; in other words,
+            // if we are closing we are animating
+            // the old content before we switch in the new content, and to prevent a JAWS re-read,
+            // we set aria-live to 'off' above. Now that we are done animating set it to
+            // polite so JAWS will read the new message.
+            if (action === 'close') {
+              rootElem[0].setAttribute('aria-live', 'polite');
+              rootElem[0].innerHTML = contentToShow; // @HTMLUpdateOK
+            }
+            // Clear busy state when animation ends. If _queueAction was called
+            // while we were animating the previous _queueAction request,
+            // we saved the _currentContentToShow and returned. Now go
+            // ahead a call _queueAction with that new content now that the
+            // animation from the previous contentToShow has ended.
+            if (self._currentContentToShow !== null) {
+              afterAnimateContentToShow = self._currentContentToShow;
+              self._currentContentToShow = null;
+              self._queueAction(afterAnimateContentToShow);
+            } else {
+              if (contentToShow === '') {
+                self._addRemoveOjHasMessagesClass(contentToShow);
               }
-              // Clear busy state when animation ends. If _queueAction was called
-              // while we were animating the previous _queueAction request,
-              // we saved the _currentContentToShow and returned. Now go
-              // ahead a call _queueAction with that new content now that the
-              // animation from the previous contentToShow has ended.
-              if (self._currentContentToShow !== null) {
-                afterAnimateContentToShow = self._currentContentToShow;
-                self._currentContentToShow = null;
-                self._queueAction(afterAnimateContentToShow);
-              } else {
-                if (contentToShow === '') {
-                  self._addRemoveOjHasMessagesClass(contentToShow);
-                }
-                self._clearBusyState();
+              self._clearBusyState();
 
-                if (self._notifyQueueActionPromiseResolve) {
-                  self._notifyQueueActionPromiseResolve();
-                }
+              if (self._notifyQueueActionPromiseResolve) {
+                self._notifyQueueActionPromiseResolve();
               }
-            });
+            }
+          });
         }
       } else {
         // Just clear the busy state if $messagingContentRoot no longer exists
@@ -9614,7 +9759,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     if (this._parentElement) {
       this._parentElement.appendChild(this.$messagingContentRoot[0]); // @HTMLUpdateOK
     } else {
-        // make it the very LAST child of the widget.
+      // make it the very LAST child of the widget.
       widget = this.GetComponent().widget();
       widget[0].appendChild(this.$messagingContentRoot[0]); // @HTMLUpdateOK
     }
@@ -9702,9 +9847,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     if (this.HasMessages()) {
       messages = this.GetMessages();
       maxSeverity = this.GetMaxSeverity();
-      content =
-        PopupMessagingStrategyUtils.buildMessagesHtml(
-          document, messages, maxSeverity, renderSeveritySelectors);
+      content = PopupMessagingStrategyUtils.buildMessagesHtml(
+        document,
+        messages,
+        maxSeverity,
+        renderSeveritySelectors
+      );
     }
     return content;
   };
@@ -9761,8 +9909,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   //     InlineRequiredStrategy);
 
   // Subclass from MessagingStrategy
-  oj.Object.createSubclass(InlineRequiredStrategy,
-    oj.MessagingStrategy, 'InlineRequiredStrategy');
+  oj.Object.createSubclass(InlineRequiredStrategy, oj.MessagingStrategy, 'InlineRequiredStrategy');
 
   /**
    * @param {Object} cm a reference to an instance of ComponentMessaging that provides access to
@@ -9811,7 +9958,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   InlineRequiredStrategy.prototype.shouldUpdate = function (content) {
     // This gets sent from EditableValue when oj-has-no-value styleclass
     // is toggled. This is how we know we need to add or remove the Required dom.
-    if (content && ('hasNoValueToggled' in content)) {
+    if (content && 'hasNoValueToggled' in content) {
       return true;
     }
     // We are registering a requiredChanged listener that
@@ -9855,7 +10002,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @instance
    * @private
    */
-   InlineRequiredStrategy.prototype._createOrUpdateInlineRequired = function () {
+  InlineRequiredStrategy.prototype._createOrUpdateInlineRequired = function () {
     var component = this.GetComponent();
 
     const options = component.options;
@@ -9874,8 +10021,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         this.AddDescribedByToElement(element, this.containerRoot.id);
       }
       // focusout will check if there is a value and if so remove required dom
-      this._focusoutCallback =
-      this._focusoutHandler.bind(this, component);
+      this._focusoutCallback = this._focusoutHandler.bind(this, component);
       element.addEventListener('focusout', this._focusoutCallback);
     }
 
@@ -9888,8 +10034,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       // whether or not we create the required dom we need to add an event listener so if required attribute
       // changes on the component, we create the required dom.
       // if required changed, we will remove or add the required dom
-      this._requiredChangedCallback =
-      this._requiredChangedHandler.bind(this, component);
+      this._requiredChangedCallback = this._requiredChangedHandler.bind(this, component);
       element.addEventListener('requiredChanged', this._requiredChangedCallback);
     }
   };
@@ -9901,10 +10046,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @instance
    * @private
    */
-   InlineRequiredStrategy.prototype._removeInlineRequired = function () {
-     const component = this.GetComponent();
-     let container = this._getRequiredInlineContainer();
-     if (container && component._AriaRequiredUnsupported()) {
+  InlineRequiredStrategy.prototype._removeInlineRequired = function () {
+    const component = this.GetComponent();
+    let container = this._getRequiredInlineContainer();
+    if (container && component._AriaRequiredUnsupported()) {
       this.RemoveDescribedByFromElement(component._getRootElement(), container.id);
     }
     if (container && this._parentElement) {
@@ -9955,7 +10100,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @private
    * @param {Component} the component
    */
-   InlineRequiredStrategy.prototype._focusoutHandler = function (component) {
+  InlineRequiredStrategy.prototype._focusoutHandler = function (component) {
     const container = this._getRequiredInlineContainer();
     const element = component._getRootElement();
     const requiredOptionValue = component.options.required;
@@ -9968,8 +10113,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       let effect = defaults.close; // e.g., {effect: 'fadeOut', duration: '200ms'}
       this._setBusyState();
       let self = this;
-      AnimationUtils.startAnimation(this.containerRoot, 'inline-required-' + action, effect,
-      this.GetComponent()).then(() => {
+      AnimationUtils.startAnimation(
+        this.containerRoot,
+        'inline-required-' + action,
+        effect,
+        this.GetComponent()
+      ).then(() => {
         // As of v12.0.0 we are removing the dom
         this._removeInlineRequired();
         self._clearBusyState();
@@ -10004,18 +10153,21 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @instance
    * @return {Object} Object with open and close key for the default animation.
    */
-   InlineRequiredStrategy.prototype._getDefaultAnimation = function () {
+  InlineRequiredStrategy.prototype._getDefaultAnimation = function () {
     // Load the default animation once per page scope
     if (!InlineRequiredStrategy._defaultAnimation) {
-      InlineRequiredStrategy._defaultAnimation =
-      { open: {
+      InlineRequiredStrategy._defaultAnimation = {
+        open: {
           effect: 'fadeIn',
           duration: '200ms',
-          timingFunction: 'cubic-bezier(0.4,0,0.2,1)' },
+          timingFunction: 'cubic-bezier(0.4,0,0.2,1)'
+        },
         close: {
           effect: 'fadeOut',
           duration: '200ms',
-          timingFunction: 'cubic-bezier(0.4,0,0.2,1)' } };
+          timingFunction: 'cubic-bezier(0.4,0,0.2,1)'
+        }
+      };
     }
 
     return InlineRequiredStrategy._defaultAnimation;
@@ -10083,11 +10235,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    */
   oj.ComponentMessaging.registerMessagingStrategy(
     oj.ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE,
-    InlineUserAssistanceStrategy);
+    InlineUserAssistanceStrategy
+  );
 
   // Subclass from MessagingStrategy
-  oj.Object.createSubclass(InlineUserAssistanceStrategy,
-    oj.MessagingStrategy, 'InlineUserAssistanceStrategy');
+  oj.Object.createSubclass(
+    InlineUserAssistanceStrategy,
+    oj.MessagingStrategy,
+    'InlineUserAssistanceStrategy'
+  );
 
   /**
    * Activate by writing an empty div and by activating the sub-strategies
@@ -10109,17 +10265,20 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     const element = component._getRootElement();
 
     // set readonly and disabled event listeners
-    this._readonlyChangedCallback =
-    this._readonlyChangedHandler.bind(this, component);
+    this._readonlyChangedCallback = this._readonlyChangedHandler.bind(this, component);
     element.addEventListener('readonlyChanged', this._readonlyChangedCallback);
-    this._disabledChangedCallback =
-    this._disabledChangedHandler.bind(this, component);
+    this._disabledChangedCallback = this._disabledChangedHandler.bind(this, component);
     element.addEventListener('disabledChanged', this._disabledChangedCallback);
 
     // set userAssistanceDensity event listener to change styleclass
-    this._userAssistanceDensityChangedCallback =
-    this._userAssistanceDensityChangedHandler.bind(this, component);
-    element.addEventListener('userAssistanceDensityChanged', this._userAssistanceDensityChangedCallback);
+    this._userAssistanceDensityChangedCallback = this._userAssistanceDensityChangedHandler.bind(
+      this,
+      component
+    );
+    element.addEventListener(
+      'userAssistanceDensityChanged',
+      this._userAssistanceDensityChangedCallback
+    );
 
     // create the user assistance dom. It is needed in readonly, disabled and enabled modes
     // so that in form layout mixed mode the fields all have this dom with a min-height
@@ -10227,12 +10386,16 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     if (this._inlineMessagingStrategy.shouldUpdate(this._shouldUpdateContent)) {
       this._inlineMessagingStrategy.update();
     }
-    if (this._inlineRequiredStrategy &&
-      this._inlineRequiredStrategy.shouldUpdate(this._shouldUpdateContent)) {
+    if (
+      this._inlineRequiredStrategy &&
+      this._inlineRequiredStrategy.shouldUpdate(this._shouldUpdateContent)
+    ) {
       this._inlineRequiredStrategy.update();
     }
-    if (this._inlineHelpHintsStrategy &&
-      this._inlineHelpHintsStrategy.shouldUpdate(this._shouldUpdateContent)) {
+    if (
+      this._inlineHelpHintsStrategy &&
+      this._inlineHelpHintsStrategy.shouldUpdate(this._shouldUpdateContent)
+    ) {
       this._inlineHelpHintsStrategy.update();
     }
   };
@@ -10266,8 +10429,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     delete this._readonlyChangedCallback;
     element.removeEventListener('disabledChanged', this._disabledChangedCallback);
     delete this._disabledChangedCallback;
-    element.removeEventListener('userAssistanceDensityChanged',
-      this._userAssistanceDensityChangedCallback);
+    element.removeEventListener(
+      'userAssistanceDensityChanged',
+      this._userAssistanceDensityChangedCallback
+    );
     delete this._userAssistanceDensityChangedCallback;
 
     InlineUserAssistanceStrategy.superclass.deactivate.call(this);
@@ -10312,7 +10477,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     this.containerRoot = null;
   };
 
-
   /**
    * Returns true if the inline div exists. This is needed
    * because it is possible that components delete their dom, including
@@ -10344,22 +10508,28 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     // we wait until this function to instantiate because we want to have the containerRoot
     // created, and we wait until activate to do that in our strategies.
     if (this._inlineMessagingStrategy === undefined) {
-      this._inlineMessagingStrategy =
-      new InlineMessagingStrategy(this._displayOptions, this.containerRoot);
+      this._inlineMessagingStrategy = new InlineMessagingStrategy(
+        this._displayOptions,
+        this.containerRoot
+      );
       this._inlineMessagingStrategy.activate(cm);
     }
 
     // Set up the strategy if the component has a required attribute. It doesn't have to be
     // set to required, but it needs to have a required attribute in its api.
     if (options.required !== undefined && this._inlineRequiredStrategy === undefined) {
-      this._inlineRequiredStrategy =
-      new InlineRequiredStrategy(this._displayOptions, this.containerRoot);
+      this._inlineRequiredStrategy = new InlineRequiredStrategy(
+        this._displayOptions,
+        this.containerRoot
+      );
       this._inlineRequiredStrategy.activate(cm);
     }
     if (this._inlineHelpHintsStrategy === undefined) {
       // setup InlineHelpHintsStrategy
-      this._inlineHelpHintsStrategy =
-      new InlineHelpHintsStrategy(this._displayOptions, this.containerRoot);
+      this._inlineHelpHintsStrategy = new InlineHelpHintsStrategy(
+        this._displayOptions,
+        this.containerRoot
+      );
       this._inlineHelpHintsStrategy.activate(cm);
     }
   };
@@ -10372,8 +10542,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @param {Component} the component
    * @param {CustomEvent} event readonlyChanged event
    */
-  InlineUserAssistanceStrategy.prototype._userAssistanceDensityChangedHandler =
-  function (component, event) {
+  InlineUserAssistanceStrategy.prototype._userAssistanceDensityChangedHandler = function (
+    component,
+    event
+  ) {
     let userAssistanceOptionValue = event.detail.value;
 
     const _OJ_REFLOW = 'oj-reflow';
@@ -10460,12 +10632,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @memberof InlineUserAssistanceStrategy
    * @instance
    */
-  InlineUserAssistanceStrategy.prototype._isDisabledOrReadonly =
-  function (options = this.GetComponent().options) {
+  InlineUserAssistanceStrategy.prototype._isDisabledOrReadonly = function (
+    options = this.GetComponent().options
+  ) {
     var isDisabled = options.disabled || false;
     var isReadOnly = options.readOnly || false;
 
-    return (isDisabled || isReadOnly);
+    return isDisabled || isReadOnly;
   };
 
   /**
@@ -10495,13 +10668,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    *
    * @private
    */
-  oj.ComponentMessaging
-    .registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL,
-      InsideFormControlLabelStrategy);
+  oj.ComponentMessaging.registerMessagingStrategy(
+    oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL,
+    InsideFormControlLabelStrategy
+  );
 
   // Subclass from BaseInsideLabelStrategy
-  oj.Object.createSubclass(InsideFormControlLabelStrategy,
-    BaseInsideLabelStrategy, 'InsideFormControlLabelStrategy');
+  oj.Object.createSubclass(
+    InsideFormControlLabelStrategy,
+    BaseInsideLabelStrategy,
+    'InsideFormControlLabelStrategy'
+  );
 
   /**
    * @param {Object} cm a reference to an instance of ComponentMessaging that provides access to
@@ -10585,8 +10762,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @param {Object} component
    * @return {string}
    */
-  InsideFormControlLabelStrategy.prototype._InsertOjLabel =
-  function (ojlabel, _container, component) {
+  InsideFormControlLabelStrategy.prototype._InsertOjLabel = function (
+    ojlabel,
+    _container,
+    component
+  ) {
     // node.insertBefore(newnode, existingnode);
     // insert the new ojlabel element as first child of the root
     let root = component._getRootElement();
@@ -10605,10 +10785,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @protected
    * @override
    */
-  InsideFormControlLabelStrategy.prototype._CreateEventHandlers = function (span, element,
-    ojlabel, component) {
+  InsideFormControlLabelStrategy.prototype._CreateEventHandlers = function (
+    span,
+    element,
+    ojlabel,
+    component
+  ) {
     InsideFormControlLabelStrategy.superclass._CreateEventHandlers.call(
-      this, span, element, ojlabel, component);
+      this,
+      span,
+      element,
+      ojlabel,
+      component
+    );
   };
 
   /**
@@ -10639,9 +10828,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   };
 
   // Subclass from MessagingStrategy
-  oj.Object.createSubclass(InsideLabelPlaceholderStrategy, oj.MessagingStrategy,
-    'oj.InsideLabelPlaceholderStrategy');
-
+  oj.Object.createSubclass(
+    InsideLabelPlaceholderStrategy,
+    oj.MessagingStrategy,
+    'oj.InsideLabelPlaceholderStrategy'
+  );
 
   /**
    * Sets up a placeholder for the component instance using the converter hint.
@@ -10692,8 +10883,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @override
    */
   InsideLabelPlaceholderStrategy.prototype.shouldUpdate = function (content) {
-    return ((content && content.converterHint !== undefined) ||
-      (this.GetComponent().options.placeholder));
+    return (
+      (content && content.converterHint !== undefined) || this.GetComponent().options.placeholder
+    );
   };
 
   /**
@@ -10882,13 +11074,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    *
    * @private
    */
-  oj.ComponentMessaging
-     .registerMessagingStrategy(oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE,
-      InsideLabelStrategy);
+  oj.ComponentMessaging.registerMessagingStrategy(
+    oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE,
+    InsideLabelStrategy
+  );
 
   // Subclass from BaseInsideLabelStrategy
-  oj.Object.createSubclass(InsideLabelStrategy,
-    BaseInsideLabelStrategy, 'oj.InsideLabelStrategy');
+  oj.Object.createSubclass(InsideLabelStrategy, BaseInsideLabelStrategy, 'oj.InsideLabelStrategy');
 
   /**
    * @param {Object} cm a reference to an instance of ComponentMessaging that provides access to
@@ -10999,9 +11191,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       // If the component has a placeholder or if it uses displayOptions+
       // has it set so that converter is shown as a placeholder.
       // Note: the Redwood theme does not use displayOptions.
-      let needsInsidePlaceholder = compOptions.placeholder ||
+      let needsInsidePlaceholder =
+        compOptions.placeholder ||
         (component._getResolvedUserAssistance() === 'displayOptions' &&
-        InsideLabelPlaceholderStrategy.ShowConverterHintAsPlaceholder(component));
+          InsideLabelPlaceholderStrategy.ShowConverterHintAsPlaceholder(component));
       if (needsInsidePlaceholder) {
         createInsideLabelPlaceholderStrategy();
       }
@@ -11048,8 +11241,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    */
   InsideLabelStrategy.prototype._GetFormControlLabelStyleClass = function () {
     let labelEdgeValue = 'inside';
-    return [InsideLabelStrategy._BASE_STYLE_CLASS,
-      'label', labelEdgeValue.toLowerCase()].join('-');
+    return [InsideLabelStrategy._BASE_STYLE_CLASS, 'label', labelEdgeValue.toLowerCase()].join('-');
   };
 
   /**

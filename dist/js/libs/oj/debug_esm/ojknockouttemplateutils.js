@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -49,19 +49,27 @@ KnockoutTemplateUtils.getRenderer = function (template, bReplaceNode) {
         // eslint-disable-next-line no-param-reassign
         binding.$context = context;
       });
-      renderTemplate(template, childContext, {
-        afterRender: function (renderedElement) {
-          $(renderedElement)._ojDetectCleanData();
-        }
-      }, parentElement, bReplaceNode ? 'replaceNode' : 'replaceChildren');
+      renderTemplate(
+        template,
+        childContext,
+        {
+          afterRender: function (renderedElement) {
+            $(renderedElement)._ojDetectCleanData();
+          }
+        },
+        parentElement,
+        bReplaceNode ? 'replaceNode' : 'replaceChildren'
+      );
     }
 
     return null;
   };
 
   return function (context) {
-    if (context.componentElement.classList &&
-        context.componentElement.classList.contains('oj-dvtbase')) {
+    if (
+      context.componentElement.classList &&
+      context.componentElement.classList.contains('oj-dvtbase')
+    ) {
       // Create a dummy div
       var dummyDiv = document.createElement('div');
       dummyDiv.style.display = 'none';

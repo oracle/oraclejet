@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2023, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../../utilities/oj.utilities";
 @import "oj.common.formcontrol.mixins";
@@ -45,7 +45,9 @@
         .oj-datagrid-header-label:focus,
         .oj-datagrid-end-header-cell:focus,
         .oj-datagrid-scrollers:focus,
-        .oj-datagrid-databody:focus,{
+        .oj-datagrid-databody:focus,
+        .oj-datagrid-empty-text:focus,
+        .oj-datagrid-no-data-container:focus {
             outline: none;
         }
 
@@ -478,6 +480,11 @@
                 right: 1px;
             }
         }
+        // styling no data state on focus
+        .oj-datagrid-empty-text:focus,
+        .oj-datagrid-no-data-container:focus {
+            @include oj-browser-focus-outline-approximation($primaryTextColor);
+        }
 
         .oj-datagrid.oj-focus .oj-datagrid-column-end-header-cell.oj-focus-highlight::after {
           height: calc(100% - 2px);
@@ -558,11 +565,12 @@
         }
 
         /* Styling for the empty data grid text, default only used for positioning */
-        .oj-datagrid-empty-text {
+        .oj-datagrid-empty-text,
+        .oj-datagrid-no-data-container {
+            box-sizing: border-box;
             position: absolute;
-
-            padding: $collectionCellPadding;
-
+            display: inline-block;
+            margin: 1px;
         }
 
         /* Styling for the corner between row and column headers and scrollbars */

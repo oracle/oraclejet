@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -206,7 +206,7 @@ import { getResourceUrl } from 'ojs/ojconfig';
  *               {target: "Type", value: "<K,D=any>", for: "genericTypeParameters"}]
  */
 
- /**
+/**
  * @typedef {Object} oj.ojSunburst.RootNodeContext
  * @property {object} outerBounds Object containing information on the rectangle circumscribing the root node area.
  * The x and y coordinates are relative to the top, left corner of the element.
@@ -230,7 +230,7 @@ import { getResourceUrl } from 'ojs/ojconfig';
  *               {target: "Type", value: "<K, D>", for: "genericTypeParameters"}]
  */
 
- /**
+/**
  * @typedef {Object} oj.ojSunburst.TooltipContext
  * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
  * @property {any} id The id of the hovered node.
@@ -260,14 +260,14 @@ import { getResourceUrl } from 'ojs/ojconfig';
  *               {target: "Type", value: "<K,D>", for: "genericTypeParameters"}]
  */
 
- // METHOD TYPEDEFS
- /**
+// METHOD TYPEDEFS
+/**
  * @typedef {Object} oj.ojSunburst.NodeContext
  * @property {string} subId The subId string to identify the particular DOM node.
  * @property {Array.<number>} indexPath The array of numerical indices for the node.
  */
 
- /**
+/**
  * @typedef {Object} oj.ojSunburst.DataContext
  * @property {string} color The fill color of the node.
  * @property {string} label The label for this node.
@@ -997,7 +997,7 @@ var __oj_sunburst_metadata =
 (function () {
   __oj_sunburst_metadata.extension._WIDGET_NAME = 'ojSunburst';
   oj.CustomElementBridge.register('oj-sunburst', { metadata: __oj_sunburst_metadata });
-}());
+})();
 
 var __oj_sunburst_node_metadata = 
 {
@@ -1112,7 +1112,7 @@ var __oj_sunburst_node_metadata =
   oj.CustomElementBridge.register('oj-sunburst-node', {
     metadata: __oj_sunburst_node_metadata
   });
-}());
+})();
 
 /**
  * @ojcomponent oj.ojSunburst
@@ -1142,6 +1142,7 @@ var __oj_sunburst_node_metadata =
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 6
  *
+ * @ojoracleicon 'oj-ux-ico-sunburst'
  * @ojuxspecs ['data-visualization-sunburst']
  *
  * @classdesc
@@ -1205,10 +1206,9 @@ var __oj_sunburst_node_metadata =
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
-  {
-    widgetEventPrefix: 'oj',
-    options: {
+oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent, {
+  widgetEventPrefix: 'oj',
+  options: {
     /**
      * Specifies the animation duration in milliseconds. For data change animations with multiple stages,
      * this attribute defines the duration of each stage. For example, if an animation contains two stages,
@@ -1221,7 +1221,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @type {number=}
      * @ojunits milliseconds
      */
-      animationDuration: undefined,
+    animationDuration: undefined,
 
     /**
      * Specifies the animation that is applied on data changes.
@@ -1234,7 +1234,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojvalue {string} "none"
      * @default "none"
      */
-      animationOnDataChange: 'none',
+    animationOnDataChange: 'none',
 
     /**
      * Specifies the animation that is shown on initial display.
@@ -1247,7 +1247,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojvalue {string} "none"
      * @default "none"
      */
-      animationOnDisplay: 'none',
+    animationOnDisplay: 'none',
 
     /**
      * The color that is displayed during a data change animation when a node is updated.
@@ -1260,7 +1260,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojformat color
      * @default ""
      */
-      animationUpdateColor: '',
+    animationUpdateColor: '',
 
     /**
      * An alias for the $current context variable passed to slot content for the nodeTemplate slot.
@@ -1273,7 +1273,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @default ""
      * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
      */
-      as: '',
+    as: '',
 
     /**
      * The DataProvider for the nodes of the sunburst. It should provide a data tree where each node in the data tree corresponds to a node in the sunburst.
@@ -1304,7 +1304,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * // setter
      * mySunburst.data = dataProvider;
      */
-      data: null,
+    data: null,
 
     /**
      * The number of levels of nodes to display. By default all nodes are displayed.
@@ -1315,7 +1315,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @type {number=}
      * @default Number.MAX_VALUE
      */
-      displayLevels: Number.MAX_VALUE,
+    displayLevels: Number.MAX_VALUE,
 
     /**
      * Specifies the key set containing the ids of sunburst nodes that should be expanded on initial render.
@@ -1332,7 +1332,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @default new AllKeySetImpl()
      * @ojwriteback
      */
-      expanded: new AllKeySetImpl(),
+    expanded: new AllKeySetImpl(),
 
     /**
      * An array of category strings used for filtering. Nodes with any category matching an item in this array will be filtered.
@@ -1344,7 +1344,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @default []
      * @ojwriteback
      */
-      hiddenCategories: [],
+    hiddenCategories: [],
 
     /**
      * An array of category strings used for highlighting. Nodes matching categories in this array will be highlighted.
@@ -1356,7 +1356,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @default []
      * @ojwriteback
      */
-      highlightedCategories: [],
+    highlightedCategories: [],
 
     /**
      * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all'
@@ -1372,23 +1372,23 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojvalue {string} "all"
      * @default "all"
      */
-      highlightMatch: 'all',
+    highlightMatch: 'all',
 
-   /**
-    * Controls which nodes are highlighted when hoverBehavior is set to 'dim'.
-    * If highlight-mode is set to 'categories', nodes with the same category as the hovered node will be highlighted.
-    * If highlight-mode is set to 'descendants', descendants of the hovered node will be highlighted; the highlighted-categories attribute will also be ignored in this case.
-    * If hover-behavior is set to 'none', highlighting can only be done by setting highlight-mode to 'categories' and populating the highlighted-categories attribute.
-    * @expose
-    * @name highlightMode
-    * @ojshortdesc Specifies whether the highlight-mode should be by category or descendants.
-    * @memberof oj.ojSunburst
-    * @instance
-    * @type {string=}
-    * @ojvalue {string} "categories"
-    * @ojvalue {string} "descendants"
-    * @default "categories"
-    */
+    /**
+     * Controls which nodes are highlighted when hoverBehavior is set to 'dim'.
+     * If highlight-mode is set to 'categories', nodes with the same category as the hovered node will be highlighted.
+     * If highlight-mode is set to 'descendants', descendants of the hovered node will be highlighted; the highlighted-categories attribute will also be ignored in this case.
+     * If hover-behavior is set to 'none', highlighting can only be done by setting highlight-mode to 'categories' and populating the highlighted-categories attribute.
+     * @expose
+     * @name highlightMode
+     * @ojshortdesc Specifies whether the highlight-mode should be by category or descendants.
+     * @memberof oj.ojSunburst
+     * @instance
+     * @type {string=}
+     * @ojvalue {string} "categories"
+     * @ojvalue {string} "descendants"
+     * @default "categories"
+     */
     highlightMode: 'categories',
 
     /**
@@ -1402,7 +1402,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojvalue {string} "none"
      * @default "none"
      */
-      hoverBehavior: 'none',
+    hoverBehavior: 'none',
 
     /**
      * Specifies initial hover delay in milliseconds for highlighting nodes.
@@ -1414,7 +1414,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @default 200
      * @ojunits milliseconds
      */
-      hoverBehaviorDelay: 200,
+    hoverBehaviorDelay: 200,
 
     /**
      * An object containing an optional callback function for tooltip customization.
@@ -1424,7 +1424,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @instance
      * @type {Object=}
      */
-      tooltip: {
+    tooltip: {
       /**
        * A function that returns a custom tooltip. The function takes a <a href="#TooltipContext">TooltipContext</a> argument,
        * provided by the sunburst. The function should return an Object that contains only one of the two properties:
@@ -1444,8 +1444,8 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
        * @default null
        * @ojsignature {target: "Type", value: "((context: oj.ojSunburst.TooltipContext<K, D>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
        */
-        renderer: null
-      },
+      renderer: null
+    },
     /**
      * <p>The type of selection behavior that is enabled on the sunburst. This attribute controls the number of selections that can be made via selection
      * gestures at any given time.
@@ -1468,7 +1468,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
      * @default "multiple"
      */
-      selectionMode: 'multiple',
+    selectionMode: 'multiple',
 
     /**
      * Specifies whether client side rotation is enabled.
@@ -1481,7 +1481,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojvalue {string} "on"
      * @default "on"
      */
-      rotation: 'on',
+    rotation: 'on',
 
     /**
      * Specifies whether the nodes are sorted by size. When sorting is enabled, nodes that have the same parent are sorted in order of descending size.
@@ -1495,7 +1495,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojvalue {string} "off"
      * @default "off"
      */
-      sorting: 'off',
+    sorting: 'off',
 
     /**
      * An object defining custom root node content for the sunburst.
@@ -1505,7 +1505,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @instance
      * @type {Object=}
      */
-      rootNodeContent: {
+    rootNodeContent: {
       /**
        * A function that returns custom root node content. The function takes a <a href="#RootNodeContext">RootNodeContext</a> argument,
        * provided by the sunburst. The function should return an Object with the following property:
@@ -1526,8 +1526,8 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
        * @default null
        * @ojsignature {target: "Type", value: "((context: oj.ojSunburst.RootNodeContext<K, D>) => ({insert: Element|string}))", jsdocOverride: true}
        */
-        renderer: null
-      },
+      renderer: null
+    },
 
     /**
      * Specifies the starting angle of the sunburst. Valid values are numbers between 0 and 360.
@@ -1542,7 +1542,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojmax 360
      * @ojwriteback
      */
-      startAngle: 90,
+    startAngle: 90,
 
     /**
      * Specifies the label describing the color metric of the sunburst. This label will be used in the legend.
@@ -1555,7 +1555,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojtranslatable
      * @default ""
      */
-      colorLabel: '',
+    colorLabel: '',
 
     /**
      * Specifies the label describing the size metric of the sunburst. This label will be used in the legend.
@@ -1568,7 +1568,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @type {string=}
      * @default ""
      */
-      sizeLabel: '',
+    sizeLabel: '',
 
     /**
      * Specifies whether drilling is enabled. Drillable nodes will show a pointer cursor on hover and fire an <code class="prettyprint">ojBeforeDrill</code>
@@ -1586,7 +1586,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojvalue {string} "off"
      * @default "off"
      */
-      drilling: 'off',
+    drilling: 'off',
 
     /**
      * The id of the root node. When specified, only the root node and children of the root will be displayed.
@@ -1597,7 +1597,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @type {any=}
      * @default ""
      */
-      rootNode: '',
+    rootNode: '',
 
     /**
      * An array of objects with the following properties that defines the data for the nodes. Also accepts a Promise for deferred data rendering.
@@ -1614,7 +1614,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      *                                           jsdocOverride: true}
      * @default null
      */
-      nodes: null,
+    nodes: null,
 
     /**
      * An object defining default properties for the nodes. Component CSS classes should be used to set component wide styling.
@@ -1627,139 +1627,139 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @instance
      * @type {Object=}
      */
-      nodeDefaults: {
-       /**
-        * The default border color of the nodes.
-        * @expose
-        * @name nodeDefaults.borderColor
-        * @memberof! oj.ojSunburst
-        * @instance
-        * @type {string=}
-        * @ojformat color
-        */
-        borderColor: 'rgba(255,255,255,0.3)',
+    nodeDefaults: {
+      /**
+       * The default border color of the nodes.
+       * @expose
+       * @name nodeDefaults.borderColor
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {string=}
+       * @ojformat color
+       */
+      borderColor: 'rgba(255,255,255,0.3)',
 
-       /**
-        * The default border width of the nodes.
-        * @expose
-        * @name nodeDefaults.borderWidth
-        * @memberof! oj.ojSunburst
-        * @instance
-        * @type {number=}
-        * @default 1
-        * @ojunits pixels
-        */
-        borderWidth: 1,
+      /**
+       * The default border width of the nodes.
+       * @expose
+       * @name nodeDefaults.borderWidth
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {number=}
+       * @default 1
+       * @ojunits pixels
+       */
+      borderWidth: 1,
 
-       /**
-        * Specifies whether to display the expand/collapse button on hover. If the button is clicked, the expanded attribute is updated with the new array of node ids.
-        * @expose
-        * @name nodeDefaults.showDisclosure
-        * @ojshortdesc Specifies whether to display the expand/collapse button on hover.
-        * @memberof! oj.ojSunburst
-        * @instance
-        * @type {string=}
-        * @ojvalue {string} "on"
-        * @ojvalue {string} "off"
-        * @default "off"
-        */
-        showDisclosure: 'off',
+      /**
+       * Specifies whether to display the expand/collapse button on hover. If the button is clicked, the expanded attribute is updated with the new array of node ids.
+       * @expose
+       * @name nodeDefaults.showDisclosure
+       * @ojshortdesc Specifies whether to display the expand/collapse button on hover.
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      showDisclosure: 'off',
 
-       /**
-        * The horizontal alignment for labels displayed within the node. Only applies to rotated text.
-        * @expose
-        * @name nodeDefaults.labelHalign
-        * @memberof! oj.ojSunburst
-        * @instance
-        * @type {string=}
-        * @ojvalue {string} "inner"
-        * @ojvalue {string} "outer"
-        * @ojvalue {string} "center"
-        * @default "center"
-        */
-        labelHalign: 'center',
+      /**
+       * The horizontal alignment for labels displayed within the node. Only applies to rotated text.
+       * @expose
+       * @name nodeDefaults.labelHalign
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "inner"
+       * @ojvalue {string} "outer"
+       * @ojvalue {string} "center"
+       * @default "center"
+       */
+      labelHalign: 'center',
 
-       /**
-        * The CSS style object defining the style of the label.
-        * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
-        * The default value comes from the CSS and varies based on theme.
-        * @expose
-        * @name nodeDefaults.labelStyle
-        * @ojshortdesc The CSS style object defining the style of the label.
-        * @memberof! oj.ojSunburst
-        * @instance
-        * @type {Object=}
-        * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}]
-        */
-        labelStyle: undefined,
+      /**
+       * The CSS style object defining the style of the label.
+       * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+       * The default value comes from the CSS and varies based on theme.
+       * @expose
+       * @name nodeDefaults.labelStyle
+       * @ojshortdesc The CSS style object defining the style of the label.
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {Object=}
+       * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}]
+       */
+      labelStyle: undefined,
 
-       /**
-        * The minimum number of visible characters needed in order to render a truncated label.
-        * If the minimum is not met when calculating the truncated label then
-        * the label is not displayed.
-        * @expose
-        * @name nodeDefaults.labelMinLength
-        * @ojshortdesc The minimum number of visible characters needed to render a truncated label. See the Help documentation for more information.
-        * @memberof! oj.ojSunburst
-        * @instance
-        * @type {number=}
-        * @default 1
-        */
-        labelMinLength: 1,
+      /**
+       * The minimum number of visible characters needed in order to render a truncated label.
+       * If the minimum is not met when calculating the truncated label then
+       * the label is not displayed.
+       * @expose
+       * @name nodeDefaults.labelMinLength
+       * @ojshortdesc The minimum number of visible characters needed to render a truncated label. See the Help documentation for more information.
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {number=}
+       * @default 1
+       */
+      labelMinLength: 1,
 
-       /**
-        * The label display behavior for the nodes. More labels are generally displayed when using rotation, with the trade off of readability.
-        * When auto is used, rotated or horizontal labels will be used based on the client browser and platform.
-        * @expose
-        * @name nodeDefaults.labelDisplay
-        * @ojshortdesc The label display behavior for the nodes. See the Help documentation for more information.
-        * @memberof! oj.ojSunburst
-        * @instance
-        * @type {string=}
-        * @ojvalue {string} "horizontal"
-        * @ojvalue {string} "rotated"
-        * @ojvalue {string} "off"
-        * @ojvalue {string} "auto"
-        * @default "auto"
-        */
-        labelDisplay: 'auto',
+      /**
+       * The label display behavior for the nodes. More labels are generally displayed when using rotation, with the trade off of readability.
+       * When auto is used, rotated or horizontal labels will be used based on the client browser and platform.
+       * @expose
+       * @name nodeDefaults.labelDisplay
+       * @ojshortdesc The label display behavior for the nodes. See the Help documentation for more information.
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "horizontal"
+       * @ojvalue {string} "rotated"
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      labelDisplay: 'auto',
 
-       /**
-        * The color of the node hover feedback. The default value comes from the CSS and varies based on theme.
-        * @expose
-        * @name nodeDefaults.hoverColor
-        * @ojshortdesc The color of the node hover feedback.
-        * @memberof! oj.ojSunburst
-        * @instance
-        * @type {string=}
-        * @ojformat color
-        */
-        hoverColor: undefined,
+      /**
+       * The color of the node hover feedback. The default value comes from the CSS and varies based on theme.
+       * @expose
+       * @name nodeDefaults.hoverColor
+       * @ojshortdesc The color of the node hover feedback.
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {string=}
+       * @ojformat color
+       */
+      hoverColor: undefined,
 
-       /**
-        * The inner color of the node selection feedback. The default value comes from the CSS and varies based on theme.
-        * @expose
-        * @name nodeDefaults.selectedInnerColor
-        * @ojshortdesc The inner color of the node selection feedback.
-        * @memberof! oj.ojSunburst
-        * @instance
-        * @type {string=}
-        * @ojformat color
-        */
-        selectedInnerColor: undefined,
+      /**
+       * The inner color of the node selection feedback. The default value comes from the CSS and varies based on theme.
+       * @expose
+       * @name nodeDefaults.selectedInnerColor
+       * @ojshortdesc The inner color of the node selection feedback.
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {string=}
+       * @ojformat color
+       */
+      selectedInnerColor: undefined,
 
-       /**
-        * The outer color of the node selection feedback. The default value comes from the CSS and varies based on theme.
-        * @expose
-        * @name nodeDefaults.selectedOuterColor
-        * @ojshortdesc The outer color of the node selection feedback.
-        * @memberof! oj.ojSunburst
-        * @instance
-        * @type {string=}
-        * @ojformat color
-        */
-        selectedOuterColor: undefined
-      },
+      /**
+       * The outer color of the node selection feedback. The default value comes from the CSS and varies based on theme.
+       * @expose
+       * @name nodeDefaults.selectedOuterColor
+       * @ojshortdesc The outer color of the node selection feedback.
+       * @memberof! oj.ojSunburst
+       * @instance
+       * @type {string=}
+       * @ojformat color
+       */
+      selectedOuterColor: undefined
+    },
 
     /**
      * An array containing the ids of the initially selected nodes.
@@ -1772,7 +1772,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojwriteback
      * @ojeventgroup common
      */
-      selection: [],
+    selection: [],
 
     /**
      * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning,
@@ -1790,7 +1790,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @ojvalue {string} "auto"
      * @default "auto"
      */
-      touchResponse: 'auto',
+    touchResponse: 'auto',
 
     /**
      * Triggered during user rotation of the sunburst.
@@ -1802,7 +1802,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @memberof oj.ojSunburst
      * @instance
      */
-      rotateInput: null,
+    rotateInput: null,
     /**
      * Triggered immediately before any node in the sunburst is drilled into. The drill event can be vetoed if the beforeDrill event's preventDefault() is called.
      *
@@ -1819,7 +1819,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @memberof oj.ojSunburst
      * @instance
      */
-      beforeDrill: null,
+    beforeDrill: null,
     /**
      * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
      *
@@ -1836,8 +1836,8 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @memberof oj.ojSunburst
      * @instance
      */
-      drill: null,
-     /**
+    drill: null,
+    /**
      * Triggered immediately before any node in the sunburst is expanded. The expand event can be vetoed if the beforeExpand event's preventDefault() is called.
      *
      * @property {any} id the id of the node to expand
@@ -1855,7 +1855,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @instance
      * @ojdeprecated {since: '12.1.0', description: 'The oj-before-expand event has been deprecated.  Lazy loading of data can be done through the data provider.'}
      */
-      beforeExpand: null,
+    beforeExpand: null,
     /**
      * Triggered when a node has been expanded. The ui object contains one property, "nodeId", which is the id of the node that has been expanded.
      *
@@ -1873,7 +1873,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @instance
      * @ojdeprecated {since: '12.1.0', description: 'The oj-expand event has been deprecated.  Use on-expanded-changed instead.'}
      */
-      expand: null,
+    expand: null,
     /**
      * Triggered immediately before any container node in the sunburst is collapsed. The collapse event can be vetoed if the beforeCollapse event's preventDefault() is called.
      *
@@ -1891,7 +1891,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @instance
      * @ojdeprecated {since: '12.1.0', description: 'The oj-before-collapse event has been deprecated.  Lazy loading of data can be done through the data provider.'}
      */
-      beforeCollapse: null,
+    beforeCollapse: null,
     /**
      * Triggered when a node has been collapsed.
      *
@@ -1908,280 +1908,281 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @instance
      * @ojdeprecated {since: '12.1.0', description: 'The oj-collapse event has been deprecated.  Use on-expanded-changed instead.'}
      */
-      collapse: null
-    },
+    collapse: null
+  },
 
+  _CreateDvtComponent: function (context, callback, callbackObj) {
+    return new Sunburst(context, callback, callbackObj);
+  },
 
-    _CreateDvtComponent: function (context, callback, callbackObj) {
-      return new Sunburst(context, callback, callbackObj);
-    },
+  _GetSimpleDataProviderConfigs: function () {
+    var configs = {
+      data: {
+        templateName: 'nodeTemplate',
+        templateElementName: 'oj-sunburst-node',
+        resultPath: 'nodes'
+      }
+    };
+    Object.defineProperties(configs.data, {
+      expandedKeySet: {
+        get: function () {
+          return this.options.expanded;
+        }.bind(this)
+      }
+    });
+    return configs;
+  },
 
+  _OptionChangeHandler: function (options) {
+    var hasProperty = Object.prototype.hasOwnProperty.bind(options);
+    // If there is a change in the expanded property, the data provider state needs to be cleared
+    if (hasProperty('expanded') || hasProperty('displayLevels')) {
+      this._ClearDataProviderState('data');
+    }
+    this._super(options);
+  },
 
-    _GetSimpleDataProviderConfigs: function () {
-      var configs = {
-        data: {
-          templateName: 'nodeTemplate',
-          templateElementName: 'oj-sunburst-node',
-          resultPath: 'nodes'
-        }
-      };
-      Object.defineProperties(configs.data, {
-        expandedKeySet: {
-          get: function () {
-            return this.options.expanded;
-          }.bind(this)
+  _ConvertLocatorToSubId: function (locator) {
+    var subId = locator.subId;
+
+    // Convert the supported locators
+    if (subId === 'oj-sunburst-node') {
+      // node[index0][index1]...[indexN]
+      subId = 'node' + this._GetStringFromIndexPath(locator.indexPath);
+    } else if (subId === 'oj-sunburst-tooltip') {
+      subId = 'tooltip';
+    }
+
+    // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
+    // support for the old subId syntax in 1.2.0.
+    return subId;
+  },
+
+  _ConvertSubIdToLocator: function (subId) {
+    var locator = {};
+    if (subId.indexOf('node') === 0) {
+      // node[index0][index1]...[indexN]
+      locator.subId = 'oj-sunburst-node';
+      locator.indexPath = this._GetIndexPath(subId);
+    } else if (subId === 'tooltip') {
+      locator.subId = 'oj-sunburst-tooltip';
+    }
+    return locator;
+  },
+
+  _ProcessOptions: function () {
+    this._super();
+    var rootNodeContent = this.options.rootNodeContent;
+    if (rootNodeContent && rootNodeContent._renderer) {
+      rootNodeContent.renderer = this._GetTemplateRenderer(
+        rootNodeContent._renderer,
+        'rootNodeContent'
+      );
+    }
+
+    // if expanded not declared, pass default expandAll key set to the toolkit
+    if (!this.options.expanded) {
+      this.options.expanded = new AllKeySetImpl();
+    }
+
+    if (this.options.data) {
+      this._fetchDataHandler = this._getFetchDataHandler('data');
+    }
+  },
+
+  _GetComponentRendererOptions: function () {
+    return [
+      { path: 'tooltip/renderer', slot: 'tooltipTemplate' },
+      { path: 'rootNodeContent/renderer', slot: 'rootNodeContentTemplate' }
+    ];
+  },
+
+  _GetComponentStyleClasses: function () {
+    var styleClasses = this._super();
+    styleClasses.push('oj-sunburst');
+    return styleClasses;
+  },
+
+  _GetChildStyleClasses: function () {
+    var styleClasses = this._super();
+    styleClasses['oj-dvtbase oj-sunburst'] = {
+      path: 'animationDuration',
+      property: 'ANIM_DUR'
+    };
+    styleClasses['oj-sunburst-attribute-type-text'] = {
+      path: 'styleDefaults/_attributeTypeTextStyle',
+      property: 'TEXT'
+    };
+    styleClasses['oj-sunburst-attribute-value-text'] = {
+      path: 'styleDefaults/_attributeValueTextStyle',
+      property: 'TEXT'
+    };
+    styleClasses['oj-sunburst-drill-text'] = {
+      path: 'styleDefaults/_drillTextStyle',
+      property: 'TEXT'
+    };
+    styleClasses['oj-sunburst-current-drill-text'] = {
+      path: 'styleDefaults/_currentTextStyle',
+      property: 'TEXT'
+    };
+    styleClasses['oj-sunburst-node'] = {
+      path: 'nodeDefaults/labelStyle',
+      property: 'TEXT'
+    };
+    styleClasses['oj-sunburst-node oj-hover'] = {
+      path: 'nodeDefaults/hoverColor',
+      property: 'border-top-color'
+    };
+    styleClasses['oj-sunburst-node oj-selected'] = [
+      { path: 'nodeDefaults/selectedOuterColor', property: 'border-top-color' },
+      { path: 'nodeDefaults/selectedInnerColor', property: 'border-bottom-color' }
+    ];
+    return styleClasses;
+  },
+
+  _GetEventTypes: function () {
+    return [
+      'optionChange',
+      'rotateInput',
+      'beforeDrill',
+      'drill',
+      'beforeExpand',
+      'expand',
+      'beforeCollapse',
+      'collapse'
+    ];
+  },
+
+  _HandleEvent: function (event) {
+    var type = event.type;
+    var data = event.data;
+    var itemData;
+    if (data && data._noTemplate) {
+      itemData = data._itemData;
+      data = data._itemData;
+    } else if (data && data._itemData) {
+      itemData = data._itemData;
+      data = $.extend({}, event.data);
+      delete data._itemData;
+    }
+    var eventData = { id: event.id, data: data, itemData: itemData };
+
+    if (!this._IsCustomElement()) {
+      eventData.component = event.component;
+    }
+
+    if (type === 'rotation') {
+      if (event.complete) {
+        this._UserOptionChange('startAngle', event.startAngle);
+      } else {
+        this._trigger('rotateInput', null, { value: event.startAngle });
+      }
+    } else if (type === 'drill') {
+      if (event.id && this._trigger('beforeDrill', null, eventData)) {
+        this._UserOptionChange('rootNode', event.id);
+        this._Render();
+        this._trigger('drill', null, eventData);
+      }
+    } else if (type === 'expand') {
+      if (event.id && this._trigger('beforeExpand', null, eventData)) {
+        var self = this;
+        this._NotReady(); // Register busy state
+        var fetchDataPromise = this.options.data
+          ? this._fetchDataHandler(this.options.data, event.expanded, null, eventData.id)
+          : Promise.resolve();
+        fetchDataPromise.then(function () {
+          self._UserOptionChange('expanded', event.expanded);
+          self._Render();
+          self._trigger('expand', null, eventData);
+        });
+      }
+    } else if (type === 'collapse') {
+      if (event.id && this._trigger('beforeCollapse', null, eventData)) {
+        this._UserOptionChange('expanded', event.expanded);
+        this._Render();
+        this._trigger('collapse', null, eventData);
+      }
+    } else {
+      this._super(event);
+    }
+  },
+
+  _RemoveKeys: function (removedKeys) {
+    this._super(removedKeys);
+    var expandedChanged;
+    var expanded = this.options.expanded;
+    if (expanded && !expanded.isAddAll()) {
+      removedKeys.forEach(function (keyValue) {
+        if (expanded.has(keyValue)) {
+          expanded = expanded.delete([keyValue]);
+          expandedChanged = true;
         }
       });
-      return configs;
-    },
-
-
-    _OptionChangeHandler: function (options) {
-      var hasProperty = Object.prototype.hasOwnProperty.bind(options);
-      // If there is a change in the expanded property, the data provider state needs to be cleared
-      if (hasProperty('expanded') || hasProperty('displayLevels')) {
-        this._ClearDataProviderState('data');
+      if (expandedChanged) {
+        this._UserOptionChange('expanded', expanded);
       }
-      this._super(options);
-    },
-
-
-    _ConvertLocatorToSubId: function (locator) {
-      var subId = locator.subId;
-
-      // Convert the supported locators
-      if (subId === 'oj-sunburst-node') {
-        // node[index0][index1]...[indexN]
-        subId = 'node' + this._GetStringFromIndexPath(locator.indexPath);
-      } else if (subId === 'oj-sunburst-tooltip') {
-        subId = 'tooltip';
-      }
-
-      // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
-      // support for the old subId syntax in 1.2.0.
-      return subId;
-    },
-
-
-    _ConvertSubIdToLocator: function (subId) {
-      var locator = {};
-      if (subId.indexOf('node') === 0) {
-        // node[index0][index1]...[indexN]
-        locator.subId = 'oj-sunburst-node';
-        locator.indexPath = this._GetIndexPath(subId);
-      } else if (subId === 'tooltip') {
-        locator.subId = 'oj-sunburst-tooltip';
-      }
-      return locator;
-    },
-
-
-    _ProcessOptions: function () {
-      this._super();
-      var rootNodeContent = this.options.rootNodeContent;
-      if (rootNodeContent && rootNodeContent._renderer) {
-        rootNodeContent.renderer =
-          this._GetTemplateRenderer(rootNodeContent._renderer, 'rootNodeContent');
-      }
-
-      // if expanded not declared, pass default expandAll key set to the toolkit
-      if (!this.options.expanded) {
-        this.options.expanded = new AllKeySetImpl();
-      }
-
-      if (this.options.data) {
-        this._fetchDataHandler = this._getFetchDataHandler('data');
-      }
-    },
-
-
-    _GetComponentRendererOptions: function () {
-      return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
-              { path: 'rootNodeContent/renderer', slot: 'rootNodeContentTemplate' }];
-    },
-
-
-    _GetComponentStyleClasses: function () {
-      var styleClasses = this._super();
-      styleClasses.push('oj-sunburst');
-      return styleClasses;
-    },
-
-
-    _GetChildStyleClasses: function () {
-      var styleClasses = this._super();
-      styleClasses['oj-dvtbase oj-sunburst'] = {
-        path: 'animationDuration',
-        property: 'ANIM_DUR'
-      };
-      styleClasses['oj-sunburst-attribute-type-text'] = {
-        path: 'styleDefaults/_attributeTypeTextStyle',
-        property: 'TEXT'
-      };
-      styleClasses['oj-sunburst-attribute-value-text'] = {
-        path: 'styleDefaults/_attributeValueTextStyle',
-        property: 'TEXT'
-      };
-      styleClasses['oj-sunburst-drill-text'] = {
-        path: 'styleDefaults/_drillTextStyle', property: 'TEXT'
-      };
-      styleClasses['oj-sunburst-current-drill-text'] = {
-        path: 'styleDefaults/_currentTextStyle', property: 'TEXT' };
-      styleClasses['oj-sunburst-node'] = {
-        path: 'nodeDefaults/labelStyle',
-        property: 'TEXT'
-      };
-      styleClasses['oj-sunburst-node oj-hover'] = {
-        path: 'nodeDefaults/hoverColor',
-        property: 'border-top-color'
-      };
-      styleClasses['oj-sunburst-node oj-selected'] = [
-        { path: 'nodeDefaults/selectedOuterColor', property: 'border-top-color' },
-        { path: 'nodeDefaults/selectedInnerColor', property: 'border-bottom-color' }
-      ];
-      return styleClasses;
-    },
-
-
-    _GetEventTypes: function () {
-      return [
-        'optionChange', 'rotateInput', 'beforeDrill', 'drill',
-        'beforeExpand', 'expand', 'beforeCollapse', 'collapse'
-      ];
-    },
-
-
-    _HandleEvent: function (event) {
-      var type = event.type;
-      var data = event.data;
-      var itemData;
-      if (data && data._noTemplate) {
-        itemData = data._itemData;
-        data = data._itemData;
-      } else if (data && data._itemData) {
-        itemData = data._itemData;
-        data = $.extend({}, event.data);
-        delete data._itemData;
-      }
-      var eventData = { id: event.id, data: data, itemData: itemData };
-
-      if (!this._IsCustomElement()) {
-        eventData.component = event.component;
-      }
-
-      if (type === 'rotation') {
-        if (event.complete) {
-          this._UserOptionChange('startAngle', event.startAngle);
-        } else {
-          this._trigger('rotateInput', null, { value: event.startAngle });
-        }
-      } else if (type === 'drill') {
-        if (event.id && this._trigger('beforeDrill', null, eventData)) {
-          this._UserOptionChange('rootNode', event.id);
-          this._Render();
-          this._trigger('drill', null, eventData);
-        }
-      } else if (type === 'expand') {
-        if (event.id && this._trigger('beforeExpand', null, eventData)) {
-          var self = this;
-          this._NotReady(); // Register busy state
-          var fetchDataPromise = this.options.data ? this._fetchDataHandler(this.options.data,
-            event.expanded, null, eventData.id) : Promise.resolve();
-          fetchDataPromise.then(function () {
-            self._UserOptionChange('expanded', event.expanded);
-            self._Render();
-            self._trigger('expand', null, eventData);
-          });
-        }
-      } else if (type === 'collapse') {
-        if (event.id && this._trigger('beforeCollapse', null, eventData)) {
-          this._UserOptionChange('expanded', event.expanded);
-          this._Render();
-          this._trigger('collapse', null, eventData);
-        }
-      } else {
-        this._super(event);
-      }
-    },
-
-
-    _RemoveKeys: function (removedKeys) {
-      this._super(removedKeys);
-      var expandedChanged;
-      var expanded = this.options.expanded;
-      if (expanded && !expanded.isAddAll()) {
-        removedKeys.forEach(function (keyValue) {
-          if (expanded.has(keyValue)) {
-            expanded = expanded.delete([keyValue]);
-            expandedChanged = true;
-          }
-        });
-        if (expandedChanged) {
-          this._UserOptionChange('expanded', expanded);
-        }
-      }
-    },
-
-
-    _LoadResources: function () {
-      // Ensure the resources object exists
-      if (this.options._resources == null) {
-        this.options._resources = {};
-      }
-
-      var resources = this.options._resources;
-
-      // Add cursors
-      resources.rotateCursor =
-        getResourceUrl('resources/internal-deps/dvt/sunburst/rotate.cur');
-
-      resources.expand = 'oj-fwk-icon oj-fwk-icon-plus';
-      resources.collapse = 'oj-fwk-icon oj-fwk-icon-minus';
-    },
-
-    /**
-     * Returns an object with the following properties for automation testing verification of the node with
-     * the specified subid path.
-     *
-     * @param {Array} subIdPath The array of indices in the subId for the desired node
-     * @ojsignature {target: "Type", value: "oj.ojSunburst.DataContext|null", jsdocOverride: true, for: "returns"}
-     * @return {Object|null} An object containing properties for the node, or null if none exists.
-     * @expose
-     * @instance
-     * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
-     * @ojtsignore
-     * @memberof oj.ojSunburst
-     * @ojshortdesc Returns information for automation testing verification of a specified node.
-     */
-    getNode: function (subIdPath) {
-      return this._component.getAutomation().getNode(subIdPath);
-    },
-
-    /**
-     * {@ojinclude "name":"nodeContextDoc"}
-     * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
-     * @ojsignature {target: "Type", value: "oj.ojSunburst.NodeContext|null", jsdocOverride: true, for: "returns"}
-     * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-     *
-     * @example {@ojinclude "name":"nodeContextExample"}
-     *
-     * @expose
-     * @instance
-     * @memberof oj.ojSunburst
-     * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
-     */
-    getContextByNode: function (node) {
-      // context objects are documented with @ojnodecontext
-      var context = this.getSubIdByNode(node);
-      if (context && context.subId !== 'oj-sunburst-tooltip') {
-        return context;
-      }
-
-      return null;
-    },
-
-
-    _GetComponentDeferredDataPaths: function () {
-      return { root: ['nodes', 'data'] };
     }
-  });
+  },
+
+  _LoadResources: function () {
+    // Ensure the resources object exists
+    if (this.options._resources == null) {
+      this.options._resources = {};
+    }
+
+    var resources = this.options._resources;
+
+    // Add cursors
+    resources.rotateCursor = getResourceUrl(
+      'resources/internal-deps/dvt/sunburst/rotate.cur'
+    );
+
+    resources.expand = 'oj-fwk-icon oj-fwk-icon-plus';
+    resources.collapse = 'oj-fwk-icon oj-fwk-icon-minus';
+  },
+
+  /**
+   * Returns an object with the following properties for automation testing verification of the node with
+   * the specified subid path.
+   *
+   * @param {Array} subIdPath The array of indices in the subId for the desired node
+   * @ojsignature {target: "Type", value: "oj.ojSunburst.DataContext|null", jsdocOverride: true, for: "returns"}
+   * @return {Object|null} An object containing properties for the node, or null if none exists.
+   * @expose
+   * @instance
+   * @ojdeprecated {since: '7.0.0', description: 'The use of this function is no longer recommended.'}
+   * @ojtsignore
+   * @memberof oj.ojSunburst
+   * @ojshortdesc Returns information for automation testing verification of a specified node.
+   */
+  getNode: function (subIdPath) {
+    return this._component.getAutomation().getNode(subIdPath);
+  },
+
+  /**
+   * {@ojinclude "name":"nodeContextDoc"}
+   * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+   * @ojsignature {target: "Type", value: "oj.ojSunburst.NodeContext|null", jsdocOverride: true, for: "returns"}
+   * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+   *
+   * @example {@ojinclude "name":"nodeContextExample"}
+   *
+   * @expose
+   * @instance
+   * @memberof oj.ojSunburst
+   * @ojshortdesc Returns an object with context for the given child DOM node. See the Help documentation for more information.
+   */
+  getContextByNode: function (node) {
+    // context objects are documented with @ojnodecontext
+    var context = this.getSubIdByNode(node);
+    if (context && context.subId !== 'oj-sunburst-tooltip') {
+      return context;
+    }
+
+    return null;
+  },
+
+  _GetComponentDeferredDataPaths: function () {
+    return { root: ['nodes', 'data'] };
+  }
+});

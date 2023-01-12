@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -29,8 +29,18 @@ const HtmlUtils = {};
 HtmlUtils.stringToNodeArray = function (html) {
   // escape html for the predefined tags
   var tags = [
-    'table', 'caption', 'colgroup', 'col', 'thead', 'tfoot', 'th',
-    'tbody', 'tr', 'td', 'template', 'p'
+    'table',
+    'caption',
+    'colgroup',
+    'col',
+    'thead',
+    'tfoot',
+    'th',
+    'tbody',
+    'tr',
+    'td',
+    'template',
+    'p'
   ];
   var i;
 
@@ -41,7 +51,9 @@ HtmlUtils.stringToNodeArray = function (html) {
   // convert tags into DOM structure
   var container = document.createElement('div');
   container.innerHTML = html; // @HTMLUpdateOK html is the oj-module or composite View which does not come from the end user
-  if (html.indexOf('<oj-bind-replace-') !== -1) { _unescapeTag(container); }
+  if (html.indexOf('<oj-bind-replace-') !== -1) {
+    _unescapeTag(container);
+  }
 
   // convert child nodes to nodes array accepted by oj-module element
   var nodesArray = [];
@@ -68,11 +80,9 @@ HtmlUtils.getTemplateContent = function (node) {
     if (content) {
       nodes.push(document.importNode(content, true));
     } else {
-      Array.prototype.forEach.call(node.childNodes,
-        function (child) {
-          nodes.push(child.cloneNode(true));
-        }
-      );
+      Array.prototype.forEach.call(node.childNodes, function (child) {
+        nodes.push(child.cloneNode(true));
+      });
     }
   } else {
     throw new Error('Invalid template node ' + node);
@@ -87,8 +97,9 @@ HtmlUtils.getTemplateContent = function (node) {
 function _escapeTag(from, str) {
   var startTag = new RegExp('<' + from + '(?=\\s|>)', 'gi');
   var endTag = new RegExp('</' + from + '(?=\\s|>)', 'gi');
-  return str.replace(startTag, '<oj-bind-replace-' +
-                      from).replace(endTag, '</oj-bind-replace-' + from);
+  return str
+    .replace(startTag, '<oj-bind-replace-' + from)
+    .replace(endTag, '</oj-bind-replace-' + from);
 }
 
 /**
@@ -115,7 +126,7 @@ function _unescapeTag(parent) {
         replNode.setAttribute(attr.name, attr.value); // @HTMLUpdateOK
       }
       var childHolder = replNode.content ? replNode.content : replNode;
-      for (j = 0; child.childNodes.length > 0;) {
+      for (j = 0; child.childNodes.length > 0; ) {
         childHolder.appendChild(child.childNodes[0]);
       }
       parent.replaceChild(replNode, child);
@@ -128,7 +139,8 @@ function _unescapeTag(parent) {
       var origHTML = child.innerHTML; // @HTMLUpdateOK
       replNode.innerHTML = origHTML.replace(new RegExp(BIND_REPLACE, 'g'), ''); // @HTMLUpdateOK
       parent.replaceChild(replNode, child);
-    } else if (child.nodeType === 8) { // comment node
+    } else if (child.nodeType === 8) {
+      // comment node
       var origValue = child.nodeValue;
       child.nodeValue = origValue.replace(new RegExp(BIND_REPLACE, 'g'), '');
     }

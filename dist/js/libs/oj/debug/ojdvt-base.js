@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -117,28 +117,32 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    * @return {Object} The resolved parameter
    * @private
    */
-  DvtJsonPath.prototype._resolveLeafObjectAndProperty =
-    function (root, path, delimiter, createIfMissing) {
-      var result = {};
-      while (root && path.indexOf(delimiter) > -1) {
-        var subProperty = path.substring(0, path.indexOf(delimiter));
-        if (createIfMissing && root[subProperty] === undefined) {
-          // eslint-disable-next-line no-param-reassign
-          root[subProperty] = {};
-        }
+  DvtJsonPath.prototype._resolveLeafObjectAndProperty = function (
+    root,
+    path,
+    delimiter,
+    createIfMissing
+  ) {
+    var result = {};
+    while (root && path.indexOf(delimiter) > -1) {
+      var subProperty = path.substring(0, path.indexOf(delimiter));
+      if (createIfMissing && root[subProperty] === undefined) {
         // eslint-disable-next-line no-param-reassign
-        root = root[subProperty];
-        // eslint-disable-next-line no-param-reassign
-        path = path.substring(path.indexOf(delimiter) + 1, path.length);
+        root[subProperty] = {};
       }
+      // eslint-disable-next-line no-param-reassign
+      root = root[subProperty];
+      // eslint-disable-next-line no-param-reassign
+      path = path.substring(path.indexOf(delimiter) + 1, path.length);
+    }
 
-      if (root) {
-        result.object = root;
-        result.parameter = path;
-      }
+    if (root) {
+      result.object = root;
+      result.parameter = path;
+    }
 
-      return result;
-    };
+    return result;
+  };
 
   /**
    * Resolves path to the leaf object and parameter of this object
@@ -147,8 +151,12 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    */
   DvtJsonPath.prototype._resolvePath = function (createIfMissing) {
     if (this._leaf === undefined) {
-      var result = this._resolveLeafObjectAndProperty(this._root, this._path, this._delimiter,
-                                                      createIfMissing);
+      var result = this._resolveLeafObjectAndProperty(
+        this._root,
+        this._path,
+        this._delimiter,
+        createIfMissing
+      );
 
       this._leaf = result.object;
       this._param = result.parameter;
@@ -219,7 +227,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       if (animDur) {
         // Convert to milliseconds
         if (animDur.slice(-2) === 'ms') {
-          animDur = parseInt((animDur.slice(0, -2)), 10);
+          animDur = parseInt(animDur.slice(0, -2), 10);
         } else if (animDur.slice(-1) === 's') {
           animDur = parseFloat(animDur.slice(0, -1)) * 1000;
         }
@@ -238,7 +246,6 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
   // Chrome adjusts px font size when zooming, so only set the font size if the inherited size is less than 4px.
   DvtStyleProcessor._FONT_SIZE_BUFFER = 4.0;
 
-
   DvtStyleProcessor.defaultStyleProcessor = function (cssDiv, property) {
     return cssDiv.css(property);
   };
@@ -255,8 +262,11 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
     if (cssDiv.css('border-top-color')) {
       cssObj.borderColor = cssDiv.css('border-top-color');
     }
-    if (cssDiv.css('border-width') && cssDiv.css('border-style') &&
-        cssDiv.css('border-style') !== 'none') {
+    if (
+      cssDiv.css('border-width') &&
+      cssDiv.css('border-style') &&
+      cssDiv.css('border-style') !== 'none'
+    ) {
       cssObj.borderWidth = cssDiv.css('border-width');
     }
     if (cssDiv.css('background-color')) {
@@ -279,19 +289,23 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       cssObj.fontFamily = value.replace(/"/g, "'");
     }
     value = cssDiv.css('font-size');
-    if (value && !(value.indexOf('px') > -1 &&
-        parseFloat(value) < DvtStyleProcessor._FONT_SIZE_BUFFER) &&
-        !ignoreProperties['font-size']) {
+    if (
+      value &&
+      !(value.indexOf('px') > -1 && parseFloat(value) < DvtStyleProcessor._FONT_SIZE_BUFFER) &&
+      !ignoreProperties['font-size']
+    ) {
       cssObj.fontSize = value;
     }
     value = cssDiv.css(DvtStyleProcessor._FONT_WEIGHT);
-    if (value && value !== DvtStyleProcessor._INHERITED_FONT_WEIGHT &&
-        !ignoreProperties[DvtStyleProcessor._FONT_WEIGHT]) {
+    if (
+      value &&
+      value !== DvtStyleProcessor._INHERITED_FONT_WEIGHT &&
+      !ignoreProperties[DvtStyleProcessor._FONT_WEIGHT]
+    ) {
       cssObj.fontWeight = value;
     }
     value = cssDiv.css('color');
-    if (value && value !== DvtStyleProcessor._INHERITED_FONT_COLOR &&
-        !ignoreProperties.color) {
+    if (value && value !== DvtStyleProcessor._INHERITED_FONT_COLOR && !ignoreProperties.color) {
       cssObj.color = value;
     }
     value = cssDiv.css('font-style');
@@ -308,8 +322,12 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    * @param {Array} componentClasses The style classes associated with the component
    * @param {Object} childClasses Style classes associated with a component's children
    */
-  DvtStyleProcessor.prototype.processStyles =
-    function (element, options, componentClasses, childClasses) {
+  DvtStyleProcessor.prototype.processStyles = function (
+    element,
+    options,
+    componentClasses,
+    childClasses
+  ) {
     var outerDummyDiv = null;
     var innerDummyDiv = null;
     var ignoreCache = element.data('no-style-cache'); // this API is purely for testing purposes and not documented
@@ -335,8 +353,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       }
 
       // Performance: Only create these divs if we need to process uncached definitions
-      var hasUncachedProperty = this._hasUncachedProperty(styleClass,
-        definitions) || ignoreCache;
+      var hasUncachedProperty = this._hasUncachedProperty(styleClass, definitions) || ignoreCache;
       if (!innerDummyDiv && !outerDummyDiv && hasUncachedProperty) {
         // Add the component style classes to a hidden dummy div
         outerDummyDiv = $(document.createElement('div'));
@@ -358,8 +375,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
 
       // create cssDivs for styles to be resolved during processing where necessary
       if (hasUncachedProperty) {
-        styleDivs[styleClass] =
-          this._createStyleDivs(innerDummyDiv, styleClass, definitions);
+        styleDivs[styleClass] = this._createStyleDivs(innerDummyDiv, styleClass, definitions);
       }
     }
 
@@ -375,8 +391,13 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
 
     for (i = 0; i < styleClassKeys.length; i++) {
       styleClass = styleClassKeys[i];
-      this._processStyle(styleDivs[styleClass], options, styleClass,
-        styleDefinitions[styleClass], ignoreCache);
+      this._processStyle(
+        styleDivs[styleClass],
+        options,
+        styleClass,
+        styleDefinitions[styleClass],
+        ignoreCache
+      );
     }
 
     // Remove the dummy div when complete
@@ -432,8 +453,13 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    * @param {boolean} ignoreCache If true, then the style cache is ignored.
    * @private
    */
-  DvtStyleProcessor.prototype._processStyle =
-    function (cssDiv, options, styleClass, definitions, ignoreCache) {
+  DvtStyleProcessor.prototype._processStyle = function (
+    cssDiv,
+    options,
+    styleClass,
+    definitions,
+    ignoreCache
+  ) {
     for (var i = 0; i < definitions.length; i++) {
       var definition = definitions[i];
       var property = definition.property;
@@ -443,14 +469,16 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
 
         if (typeof value === 'undefined' && cssDiv) {
           // Resolve and store in the cache.
-          value = styleClass === 'oj-dvt-color-ramp' ? attributeGroupHandler.ColorAttributeGroupHandler.__processAttrDiv(cssDiv)
+          value =
+            styleClass === 'oj-dvt-color-ramp'
+              ? attributeGroupHandler.ColorAttributeGroupHandler.__processAttrDiv(cssDiv)
               : DvtStyleProcessor._resolveStyle(cssDiv, property);
           if (!ignoreCache) {
             this._styleCache[styleClass][property] = value;
           }
         }
-         // If a value exists, apply to the JSON.
-         if (value != null) {
+        // If a value exists, apply to the JSON.
+        if (value != null) {
           var stylePath = definition.path;
           var path = new DvtJsonPath(options, stylePath);
           // If the value is an object, combine the value from the options with the value from the CSS.
@@ -486,8 +514,9 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
     var value = handler ? handler(cssDiv) : DvtStyleProcessor.defaultStyleProcessor(cssDiv, property);
 
     // Ensure the returned value is not null or empty string.
-    return (value != null &&
-            !(typeof value === 'string' && value.replace(/^\s+/g, '') === '')) ? value : null;
+    return value != null && !(typeof value === 'string' && value.replace(/^\s+/g, '') === '')
+      ? value
+      : null;
   };
 
   /**
@@ -535,7 +564,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       for (var j = 0; j < definitions.length; j++) {
         definition = definitions[j];
         var stylePath = definition.path;
-        var isObject = (definition.property === 'TEXT' || definition.property === 'BACKGROUND');
+        var isObject = definition.property === 'TEXT' || definition.property === 'BACKGROUND';
         // If it is a top level primitive, do nothing
         if (isObject || stylePath.indexOf('/') > -1) {
           if (!isObject) {
@@ -587,8 +616,14 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  DataProviderHandler.prototype._fetchCollection = function (dataProvider, postprocessor,
-    dataProperty, parentKey, fetchDepth, maxFetchDepth) {
+  DataProviderHandler.prototype._fetchCollection = function (
+    dataProvider,
+    postprocessor,
+    dataProperty,
+    parentKey,
+    fetchDepth,
+    maxFetchDepth
+  ) {
     var self = this;
     var finalData = { data: [], keys: [] };
 
@@ -608,8 +643,10 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
     var chunkDataFetch = function (result) {
       var nodePromises = [];
       for (var i = 0; i < result.value.data.length; i++) {
-        var nodePromise = postprocessor({ data: result.value.data[i],
-          key: result.value.metadata[i].key }, fetchDepth);
+        var nodePromise = postprocessor(
+          { data: result.value.data[i], key: result.value.metadata[i].key },
+          fetchDepth
+        );
         nodePromises.push(nodePromise);
       }
       var chunkPromise = Promise.all(nodePromises).then(function (values) {
@@ -618,8 +655,12 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
           var key = values[ii].key;
           finalData.data.push(data);
           finalData.keys.push(key);
-          self._keyDataMap[dataProperty].set(isTreeDataProvider ? key.value : key,
-            { data: data, key: key, parentKey: parentKey, depth: fetchDepth });
+          self._keyDataMap[dataProperty].set(isTreeDataProvider ? key.value : key, {
+            data: data,
+            key: key,
+            parentKey: parentKey,
+            depth: fetchDepth
+          });
         }
       });
       return chunkPromise.then(function () {
@@ -647,8 +688,12 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  DataProviderHandler.prototype._getDPPostProcessor = function (dataProvider, dataProperty,
-    expandedKeySet, maxFetchDepth) {
+  DataProviderHandler.prototype._getDPPostProcessor = function (
+    dataProvider,
+    dataProperty,
+    expandedKeySet,
+    maxFetchDepth
+  ) {
     var self = this;
     var isTreeDataProvider = this.isTreeDataProvider(dataProvider);
     // eslint-disable-next-line no-param-reassign
@@ -660,13 +705,19 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       if (fetchDepth < maxFetchDepth && expandedKeySet && expandedKeySet.has(key.value)) {
         var childDataProvider = dataProvider.getChildDataProvider(key.value);
         if (childDataProvider) {
-          return self._fetchCollection(childDataProvider, treeDPPostProcessor,
-            dataProperty, key.value, fetchDepth + 1).then(function (children) {
+          return self
+            ._fetchCollection(
+              childDataProvider,
+              treeDPPostProcessor,
+              dataProperty,
+              key.value,
+              fetchDepth + 1
+            )
+            .then(function (children) {
               data.children = children.data;
               key.children = children.keys;
               return { data: data, key: key };
-            }
-          );
+            });
         }
       }
       return Promise.resolve({ data: data, key: key });
@@ -698,16 +749,27 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
     var configs = this._configMap[dataProperty];
     this.clear(dataProperty, true);
 
-    return this._fetchCollection(dataProvider,
-      this._getDPPostProcessor(dataProvider, dataProperty, configs.expandedKeySet,
-        configs.maxFetchDepth),
-      dataProperty, null, 0, configs.maxFetchDepth).then(function (fetchedData) {
+    return this._fetchCollection(
+      dataProvider,
+      this._getDPPostProcessor(
+        dataProvider,
+        dataProperty,
+        configs.expandedKeySet,
+        configs.maxFetchDepth
+      ),
+      dataProperty,
+      null,
+      0,
+      configs.maxFetchDepth
+    ).then(
+      function (fetchedData) {
         if (isRoot) {
           this._fetchedData[dataProperty] = fetchedData;
           this._addDPEventListeners(dataProvider, dataProperty);
         }
         return fetchedData;
-      }.bind(this));
+      }.bind(this)
+    );
   };
 
   /**
@@ -785,7 +847,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
           var removedIDs = removeDetail.keys;
           if (addDetail) {
             var addKeySet = new KeySetImpl(addDetail.keys);
-            removedIDs = new Set([...removedIDs].filter(x => !addKeySet.has(x)));
+            removedIDs = new Set([...removedIDs].filter((x) => !addKeySet.has(x)));
           }
           self._fireEvent('removeKeys', { keys: removedIDs });
         }
@@ -803,10 +865,13 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
               if (isUpdate) {
                 // update operation
                 var mappedData = keyDataMap.get(keyValue);
-                if (mappedData) { // only update data that has been previously fetched
+                if (mappedData) {
+                  // only update data that has been previously fetched
                   mappedData.data.value = dataValue;
-                  dataPromise = Promise.resolve({ data: mappedData.data,
-                    key: keyDataMap.get(keyValue).key });
+                  dataPromise = Promise.resolve({
+                    data: mappedData.data,
+                    key: keyDataMap.get(keyValue).key
+                  });
                 }
               } else {
                 // add or delete operation
@@ -815,8 +880,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
                 var childDataProvider = dataProvider.getChildDataProvider(keyValue);
                 // fetch children data for add operations
                 if (childDataProvider && !isDelete) {
-                  var childDataPromise = self.fetchAllData(childDataProvider,
-                    dataProperty);
+                  var childDataPromise = self.fetchAllData(childDataProvider, dataProperty);
                   dataPromise = childDataPromise.then(function (result) {
                     data.children = result.data;
                     key.children = result.keys;
@@ -828,8 +892,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
 
                 if (!isDelete) {
                   var parentKey = detail.parentKeys ? detail.parentKeys[index] : null;
-                  keyDataMap.set(key.value,
-                    { data: data, key: key, parentKey: parentKey });
+                  keyDataMap.set(key.value, { data: data, key: key, parentKey: parentKey });
                 }
               }
             } else {
@@ -868,7 +931,8 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
                 data.splice(_index, deleteCount);
                 keys.splice(_index, deleteCount);
               } else {
-                if (!isUpdate) { // Add Operation
+                if (!isUpdate) {
+                  // Add Operation
                   // if no indices add to the end
                   var noIndex = indices.length === 0 || indices[i] == null;
                   _index = noIndex ? data.length : indices[i];
@@ -898,10 +962,12 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
         var indices;
         var updatePromise = Promise.resolve();
         if (updateDetail) {
-          indices = updateDetail.indexes || keysToIndices(componentData,
-            updateDetail.keys, isTreeDataProvider);
+          indices =
+            updateDetail.indexes ||
+            keysToIndices(componentData, updateDetail.keys, isTreeDataProvider);
 
-          if (!Array.isArray(updateDetail.data)) { // data was not sent and should be fetched
+          if (!Array.isArray(updateDetail.data)) {
+            // data was not sent and should be fetched
             updatePromise = getData(updateDetail.keys).then(function (fetchedData) {
               var detail = Object.create(updateDetail, { data: { value: fetchedData } }); // add fetched data
               return updateComponentData(indices, detail, 1);
@@ -913,8 +979,9 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
 
         var removePromise = updatePromise.then(function () {
           if (removeDetail) {
-            indices = removeDetail.indexes || keysToIndices(componentData,
-              removeDetail.keys, isTreeDataProvider);
+            indices =
+              removeDetail.indexes ||
+              keysToIndices(componentData, removeDetail.keys, isTreeDataProvider);
             return updateComponentData(indices, removeDetail, 1, true);
           }
           return Promise.resolve();
@@ -924,11 +991,16 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
           if (addDetail) {
             // afterKeys is deprecated, but continue to support it until we can remove it.
             // keysToIndices can take either array or set as its argument.
-            indices = addDetail.indexes || keysToIndices(componentData,
-              addDetail.addBeforeKeys ? addDetail.addBeforeKeys : addDetail.afterKeys,
-              isTreeDataProvider);
+            indices =
+              addDetail.indexes ||
+              keysToIndices(
+                componentData,
+                addDetail.addBeforeKeys ? addDetail.addBeforeKeys : addDetail.afterKeys,
+                isTreeDataProvider
+              );
 
-            if (!Array.isArray(addDetail.data)) { // data was not sent and should be fetched
+            if (!Array.isArray(addDetail.data)) {
+              // data was not sent and should be fetched
               return getData(addDetail.keys).then(function (fetchedData) {
                 var detail = Object.create(addDetail, { data: { value: fetchedData } }); // add fetched data
                 return updateComponentData(indices, detail, 0);
@@ -1010,8 +1082,12 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  DataProviderHandler.prototype.fetchChildrenData = function (dataProperty, rootDataProvider,
-    nodeKey, expandedKeySet) {
+  DataProviderHandler.prototype.fetchChildrenData = function (
+    dataProperty,
+    rootDataProvider,
+    nodeKey,
+    expandedKeySet
+  ) {
     // Updates cached the data provider state
     var updateDataProviderState = function (parentKey, data, keys) {
       this._keyDataMap[dataProperty].get(parentKey).data.children = data;
@@ -1022,10 +1098,20 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
     if (childDataProvider) {
       var maxFetchDepth = this._configMap[dataProperty].maxFetchDepth;
       var fetchLevel = this._keyDataMap[dataProperty].get(nodeKey).depth;
-      var treeDPPostProcessor = this._getDPPostProcessor(rootDataProvider, dataProperty,
-        expandedKeySet, maxFetchDepth);
-      var childInfoPromise = this._fetchCollection(childDataProvider,
-        treeDPPostProcessor, dataProperty, nodeKey, fetchLevel, maxFetchDepth);
+      var treeDPPostProcessor = this._getDPPostProcessor(
+        rootDataProvider,
+        dataProperty,
+        expandedKeySet,
+        maxFetchDepth
+      );
+      var childInfoPromise = this._fetchCollection(
+        childDataProvider,
+        treeDPPostProcessor,
+        dataProperty,
+        nodeKey,
+        fetchLevel,
+        maxFetchDepth
+      );
       return childInfoPromise.then(function (values) {
         // update cached data provider state
         updateDataProviderState(nodeKey, values.data, values.keys);
@@ -1103,7 +1189,6 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
     this._propertyValidatorMap = {};
   };
 
-
   /**
    * Returns a promise that resolves into a template engine
    * @return {Promise} Returns a promise that resoves into a template engine
@@ -1122,12 +1207,12 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
         needsTrackableProperties: this._component._NeedsTrackableProperties
       };
       Config.__getTemplateEngine(templateOptions).then(
-          function (engine) {
-            resolve(engine);
-          },
-          function (reason) {
-            throw new Error('Error loading template engine: ' + reason);
-          }
+        function (engine) {
+          resolve(engine);
+        },
+        function (reason) {
+          throw new Error('Error loading template engine: ' + reason);
+        }
       );
     });
 
@@ -1171,8 +1256,10 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
     var templateDataSet = this.getDataSet(templateName);
     var prop = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(attr);
     var propValue = templateDataSet && templateDataSet[prop];
-    return propValue != null && ojcustomelementUtils.AttributeUtils.coerceBooleanValue(this.getTemplate(templateName),
-      attr, propValue, 'Boolean');
+    return (
+      propValue != null &&
+      ojcustomelementUtils.AttributeUtils.coerceBooleanValue(this.getTemplate(templateName), attr, propValue, 'Boolean')
+    );
   };
 
   /**
@@ -1222,8 +1309,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
         metadataCache[property] = metadata;
       }
       try {
-        MetadataUtils.checkEnumValues(templateElement, property,
-          value, metadata);
+        MetadataUtils.checkEnumValues(templateElement, property, value, metadata);
       } catch (error) {
         throw new ojcustomelementUtils.JetElementError(element, error.message);
       }
@@ -1231,8 +1317,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       // TODO support checking for null values once we generate metadata from jsDoc and have accurate info
       // about component support for undefined/null
       if (value != null) {
-        oj.BaseCustomElementBridge.checkType(templateElement, property,
-          value, metadata);
+        oj.BaseCustomElementBridge.checkType(templateElement, property, value, metadata);
       }
     };
     this._propertyValidatorMap[elementName] = propertyValidator;
@@ -1240,8 +1325,11 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
   };
 
   // todo: function description
-  TemplateHandler.prototype._processAliasedPropertyNames = function (dataProperty,
-    templateElementName, data) {
+  TemplateHandler.prototype._processAliasedPropertyNames = function (
+    dataProperty,
+    templateElementName,
+    data
+  ) {
     var getAliasedPropertyNames = this._configMap[dataProperty].getAliasedPropertyNames;
     if (getAliasedPropertyNames) {
       var aliasedPropertyMap = getAliasedPropertyNames(templateElementName); // todo: maybe cache this for perfomance
@@ -1269,8 +1357,15 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
   };
 
   // todo: function description
-  TemplateHandler.prototype.processNodeTemplate = function (dataProperty,
-    templateEngine, template, templateElementName, context, nodeKey, isMainTemplate) {
+  TemplateHandler.prototype.processNodeTemplate = function (
+    dataProperty,
+    templateEngine,
+    template,
+    templateElementName,
+    context,
+    nodeKey,
+    isMainTemplate
+  ) {
     var currentTemplate = template.getAttribute('slot');
     var alias = this._component.options.as;
     var parentElement = this._component.element[0];
@@ -1280,34 +1375,49 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
     // Set up for template event listeners
     var getTemplateEventHandler = function (_nodeKey) {
       return function (value) {
-        var aliasedValue = this._processAliasedPropertyNames(dataProperty, templateElementName,
-          value);
+        var aliasedValue = this._processAliasedPropertyNames(
+          dataProperty,
+          templateElementName,
+          value
+        );
         var nodeData = this._templateNodeData[cacheKey];
         oj.CollectionUtils.copyInto(nodeData.get(_nodeKey).data, aliasedValue);
         this._eventUpdates.push({ key: nodeKey, data: aliasedValue });
 
         if (this._queueNextEvent) {
           this._fireEvent('notReady');
-          this._component._GetThrottlePromise().then(function () {
-            // Rerender component
-            this._fireEvent('dataUpdated', {
-              dataProperty: dataProperty,
-              templateName: currentTemplate,
-              data: this._eventUpdates.slice(0)
-            });
-            this._queueNextEvent = true;
-            this._eventUpdates = [];
-          }.bind(this));
+          this._component._GetThrottlePromise().then(
+            function () {
+              // Rerender component
+              this._fireEvent('dataUpdated', {
+                dataProperty: dataProperty,
+                templateName: currentTemplate,
+                data: this._eventUpdates.slice(0)
+              });
+              this._queueNextEvent = true;
+              this._eventUpdates = [];
+            }.bind(this)
+          );
         }
         this._queueNextEvent = false;
       }.bind(this);
     }.bind(this);
 
-    var resolvedNode = templateEngine.resolveProperties(parentElement, template,
-      templateElementName, properties, context, alias, validator);
+    var resolvedNode = templateEngine.resolveProperties(
+      parentElement,
+      template,
+      templateElementName,
+      properties,
+      context,
+      alias,
+      validator
+    );
     resolvedNode.subscribe(getTemplateEventHandler(nodeKey));
-    var aliasedData = this._processAliasedPropertyNames(dataProperty, templateElementName,
-      resolvedNode.peek());
+    var aliasedData = this._processAliasedPropertyNames(
+      dataProperty,
+      templateElementName,
+      resolvedNode.peek()
+    );
     var processedDataObj = {
       data: aliasedData,
       node: resolvedNode,
@@ -1339,8 +1449,15 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  TemplateHandler.prototype.processTemplates = function (dataProperty, data, templateEngine,
-    isTreeData, parentKey, isRoot, updateChildren) {
+  TemplateHandler.prototype.processTemplates = function (
+    dataProperty,
+    data,
+    templateEngine,
+    isTreeData,
+    parentKey,
+    isRoot,
+    updateChildren
+  ) {
     if (isRoot && this._templateResults[dataProperty]) {
       return this._templateResults[dataProperty];
     }
@@ -1353,24 +1470,43 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
     if (config) {
       paths = [];
       pathValues = [];
-      var getTemplateName = typeof config.templateName === 'string' ? function () { return config.templateName; } : config.templateName;
-      var getTemplateElementName = typeof config.templateElementName === 'string' ? function () { return config.templateElementName; } : config.templateElementName;
+      var getTemplateName =
+        typeof config.templateName === 'string'
+          ? function () {
+              return config.templateName;
+            }
+          : config.templateName;
+      var getTemplateElementName =
+        typeof config.templateElementName === 'string'
+          ? function () {
+              return config.templateElementName;
+            }
+          : config.templateElementName;
       var resultPath = config.resultPath;
       var parentElement = this._component.element[0];
       var processChildrenData = config.processChildrenData;
-      var processOptionData = config.processOptionData ||
-        function (optionData) { return optionData; };
+      var processOptionData =
+        config.processOptionData ||
+        function (optionData) {
+          return optionData;
+        };
       var nodeDataMap = self._templateNodeData[dataProperty];
 
       if (getTemplateName && getTemplateElementName && resultPath) {
         // read attributes off nodes corresponding to the nodeKey
-        var processDatum = function (nodeData, nodeKey, context, template,
-          templateElementName) {
+        var processDatum = function (nodeData, nodeKey, context, template, templateElementName) {
           var processedDatum;
           try {
             if (template) {
-              processedDatum = self.processNodeTemplate(dataProperty, templateEngine,
-                template, templateElementName, context, nodeKey, true);
+              processedDatum = self.processNodeTemplate(
+                dataProperty,
+                templateEngine,
+                template,
+                templateElementName,
+                context,
+                nodeKey,
+                true
+              );
             } else {
               if (self._useObjectAssign) {
                 processedDatum = Object.assign({}, nodeData);
@@ -1421,9 +1557,15 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
             var templateElementName = getTemplateElementName(_data[i]);
             var template = self.getTemplate(templateName);
 
-            var processedDatum = processDatum(nodeData, nodeKey, context,
-              template, templateElementName);
-            if (isTreeData && _data[i].children) { // more complex for legend need to mutate the data itself
+            var processedDatum = processDatum(
+              nodeData,
+              nodeKey,
+              context,
+              template,
+              templateElementName
+            );
+            if (isTreeData && _data[i].children) {
+              // more complex for legend need to mutate the data itself
               var newParentData = parentData.slice(0);
               newParentData.push(nodeData);
               var childCollection = { data: _data[i].children, keys: _keys[i].children };
@@ -1443,8 +1585,9 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
 
         var parentData;
         if (parentKey && nodeDataMap.has(parentKey)) {
-          parentData = nodeDataMap.get(parentKey).context.parentData
-            .concat(nodeDataMap.get(parentKey).context.data);
+          parentData = nodeDataMap
+            .get(parentKey)
+            .context.parentData.concat(nodeDataMap.get(parentKey).context.data);
         }
         var optionData = processData(data, parentData || [], parentKey);
         pathValues.push(processOptionData(optionData));
@@ -1471,26 +1614,26 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    */
   TemplateHandler.prototype.release = function (dataProperty) {
     // Remove data provider template event listeners
-      var properties;
-      if (dataProperty) {
-        var derivedTemplates = this._configMap[dataProperty].derivedTemplates;
-        properties = derivedTemplates ? [dataProperty].concat(derivedTemplates) : [dataProperty];
-      } else {
-        properties = Object.keys(this._templateNodeData);
-      }
+    var properties;
+    if (dataProperty) {
+      var derivedTemplates = this._configMap[dataProperty].derivedTemplates;
+      properties = derivedTemplates ? [dataProperty].concat(derivedTemplates) : [dataProperty];
+    } else {
+      properties = Object.keys(this._templateNodeData);
+    }
 
-      for (var i = 0; i < properties.length; i++) {
-        var valueMap = this._templateNodeData[properties[i]];
-        if (valueMap) {
-          valueMap.forEach(function (value) {
-            if (value.node) {
-              value.node.dispose();
-            }
-          });
-          // eslint-disable-next-line new-cap
-          this._templateNodeData[properties[i]] = new ojMap();
-        }
+    for (var i = 0; i < properties.length; i++) {
+      var valueMap = this._templateNodeData[properties[i]];
+      if (valueMap) {
+        valueMap.forEach(function (value) {
+          if (value.node) {
+            value.node.dispose();
+          }
+        });
+        // eslint-disable-next-line new-cap
+        this._templateNodeData[properties[i]] = new ojMap();
       }
+    }
     this.clear(dataProperty);
   };
 
@@ -1546,1636 +1689,1785 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    * @abstract
    * @hideconstructor
    */
-  oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
-    options: {
+  oj.__registerWidget(
+    'oj.dvtBaseComponent',
+    $.oj.baseComponent,
+    {
+      options: {
+        /**
+         * Defines whether the element will automatically render in response to
+         * changes in size. If set to <code class="prettyprint">off</code>, then the
+         * application is responsible for calling <code class="prettyprint">refresh</code>
+         * to render the element at the new size.
+         * @expose
+         * @name trackResize
+         * @ojshortdesc Defines whether the element will automatically render in response to changes in size. See the Help documentation for more information.
+         * @memberof oj.dvtBaseComponent
+         * @instance
+         * @type {string}
+         * @ojvalue {string} "on"
+         * @ojvalue {string} "off"
+         * @default "on"
+         *
+         * @example <caption>Initialize the data visualization element with the
+         * <code class="prettyprint">track-resize</code> attribute specified:</caption>
+         * &lt;oj-some-dvt track-resize='off'>&lt;/oj-some-dvt>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">trackResize</code>
+         * property after initialization:</caption>
+         * // getter
+         * var value = myComponent.trackResize;
+         *
+         * // setter
+         * myComponent.trackResize="off";
+         */
+        trackResize: 'on'
+      },
+
+      _ComponentCreate: function () {
+        this._super();
+        this._renderCount = 0;
+        this._numDeferredObjs = 0;
+        this._optionsCopy = null;
+        this._dataValuePromise = {};
+        this._templateMap = {};
+        this._TemplateHandler = new TemplateHandler(
+          this,
+          this._GetSimpleDataProviderConfigs(),
+          this._UseObjectAssignForShapedData()
+        );
+        this._DataProviderHandler = new DataProviderHandler(
+          this,
+          this._GetSimpleDataProviderConfigs()
+        );
+
+        // Set up data provider event handlers
+        this._DataProviderHandler.addEventListener(this._GetDPEventHandler());
+        this._TemplateHandler.addEventListener(this._GetDPEventHandler());
+
+        // Append the component style classes to the element
+        var componentStyles = this._GetComponentStyleClasses();
+        for (var i = 0; i < componentStyles.length; i++) {
+          this.element.addClass(componentStyles[i]);
+        }
+
+        // Create a reference div within the element to be used for computing relative event coords.
+        this._referenceDiv = $(document.createElement('div'));
+        this._referenceDiv.css('visibility', 'hidden');
+        this.element.append(this._referenceDiv); // @HTMLUpdateOK
+
+        dvt.Agent.setAgentInfo(oj.AgentUtils.getAgentInfo());
+
+        // Create the dvt.Context, which creates the svg element and adds it to the DOM.
+        var parentElement = this.element[0].parentElement;
+        if (parentElement && parentElement._dvtcontext) {
+          this._context = parentElement._dvtcontext;
+        } else {
+          this._context = new dvt.Context(this.element[0], null, this._referenceDiv[0]);
+        }
+
+        // Store JET reference on context so toolkit can access things like logger
+        var dataProviderProps = Object.keys(this._GetSimpleDataProviderConfigs());
+        var ref = {
+          oj: oj,
+          KeySetImpl: KeySetImpl,
+          ojMap: ojMap,
+          LocaleData: LocaleData,
+          dataProviderProps: dataProviderProps
+        };
+
+        this._context.setJetProperties(ref);
+
+        // Set the reading direction on the context
+        this._context.setReadingDirection(this._GetReadingDirection());
+
+        // Set the tooltip and datatip callbacks and div style classes
+        this._context.setTooltipAttachedCallback(Components.subtreeAttached);
+        this._context.setOverlayAttachedCallback(Components.subtreeAttached);
+
+        // Pass back method for cleaning up renderer context
+        this._context.setFixContextCallback(this._FixRendererContext.bind(this));
+
+        this._context.setCustomElement(this._IsCustomElement());
+
+        // Set high contrast mode if needed
+        if ($(document.body).hasClass('oj-hicontrast')) {
+          dvt.Agent.setHighContrast(true);
+        }
+
+        // Create and cache the component instance
+        this._component = this._CreateDvtComponent(this._context, this._HandleEvent, this);
+        this._component.setContextMenu(!!this._GetContextMenu());
+        if (dvt.Agent.isEnvironmentTest()) {
+          // Hook to ensure stable dvt-static test output
+          var testId = this.element[0].getAttribute('data-oj-dvt-test-id');
+          if (testId && testId.length > 0) {
+            this._component.setId(testId);
+          }
+        }
+
+        // Add the component to the display tree of the rendering context.
+        this._context.getStage().addChild(this._component);
+
+        // Load component resources
+        this._LoadResources();
+
+        // Pass the widget constructor through the options for JET specific behavior
+        this.options._widgetConstructor = Components.__GetWidgetConstructor(this.element);
+      },
+
+      _AfterCreate: function () {
+        // Allow superclass to process root attributes and context menus
+        this._super();
+
+        // Resize Listener Support
+        if (this.options.trackResize !== 'off') {
+          this._addResizeListener();
+        }
+
+        this._ProcessOptions();
+
+        // Render the component
+        this._Render();
+      },
       /**
-       * Defines whether the element will automatically render in response to
-       * changes in size. If set to <code class="prettyprint">off</code>, then the
-       * application is responsible for calling <code class="prettyprint">refresh</code>
-       * to render the element at the new size.
-       * @expose
-       * @name trackResize
-       * @ojshortdesc Defines whether the element will automatically render in response to changes in size. See the Help documentation for more information.
-       * @memberof oj.dvtBaseComponent
+       * The function sets Locale helpers (various converter instances for Numeric, Date or TimeZone data types) on the DvtContext object.
+       * @protected
        * @instance
-       * @type {string}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "off"
-       * @default "on"
-       *
-       * @example <caption>Initialize the data visualization element with the
-       * <code class="prettyprint">track-resize</code> attribute specified:</caption>
-       * &lt;oj-some-dvt track-resize='off'>&lt;/oj-some-dvt>
-       *
-       * @example <caption>Get or set the <code class="prettyprint">trackResize</code>
-       * property after initialization:</caption>
-       * // getter
-       * var value = myComponent.trackResize;
-       *
-       * // setter
-       * myComponent.trackResize="off";
+       * @param {Object} NumberConverter - The return value of the ojconverter-number module
+       * @param {Object} ConverterUtils - The return value of the ojconverterutils-i18n module
+       * @memberof oj.dvtBaseComponent
+       * @return {null}
        */
-      trackResize: 'on'
-    },
+      _SetLocaleHelpers: function (NumberConverter, ConverterUtils) {
+        // If requireJS is not used, can't rely on internationalization modules.
+        if (dvt.requireJS !== false) {
+          var helpers = {};
+          // Number converter factory for use in formatting default strings
+          helpers.createNumberConverter = function (options) {
+            return new NumberConverter.IntlNumberConverter(options);
+          };
 
+          // Iso to date converter to be called for JS that requires Dates
+          helpers.isoToDateConverter = function (input) {
+            if (typeof input === 'string') {
+              var dateWithTimeZone = ConverterUtils.IntlConverterUtils.isoToDate(input);
+              var localIsoTime = dateWithTimeZone.toJSON()
+                ? ConverterUtils.IntlConverterUtils.dateToLocalIso(dateWithTimeZone)
+                : input;
+              return ConverterUtils.IntlConverterUtils.isoToLocalDate(localIsoTime);
+            }
+            return input;
+          };
 
-    _ComponentCreate: function () {
-      this._super();
-      this._renderCount = 0;
-      this._numDeferredObjs = 0;
-      this._optionsCopy = null;
-      this._dataValuePromise = {};
-      this._templateMap = {};
-      this._TemplateHandler = new TemplateHandler(this, this._GetSimpleDataProviderConfigs(),
-        this._UseObjectAssignForShapedData());
-      this._DataProviderHandler = new DataProviderHandler(this,
-        this._GetSimpleDataProviderConfigs());
+          // Date to iso converter to be called before passing to the date time converter
+          helpers.dateToIsoWithTimeZoneConverter = function (input) {
+            if (input instanceof Date) {
+              var timeZoneOffest = -1 * input.getTimezoneOffset();
+              var offsetSign = timeZoneOffest >= 0 ? '+' : '-';
+              var offsetHour = Math.floor(Math.abs(timeZoneOffest) / 60);
+              var offsetMinutes = Math.abs(timeZoneOffest) % 60;
+              var isoTimeZone =
+                offsetSign +
+                (offsetHour.toString().length !== 2 ? '0' + offsetHour : offsetHour) +
+                ':' +
+                (offsetMinutes.toString().length !== 2 ? offsetMinutes + '0' : offsetMinutes);
+              return ConverterUtils.IntlConverterUtils.dateToLocalIso(input) + isoTimeZone;
+            }
+            return input;
+          };
 
-      // Set up data provider event handlers
-      this._DataProviderHandler.addEventListener(this._GetDPEventHandler());
-      this._TemplateHandler.addEventListener(this._GetDPEventHandler());
-
-      // Append the component style classes to the element
-      var componentStyles = this._GetComponentStyleClasses();
-      for (var i = 0; i < componentStyles.length; i++) {
-        this.element.addClass(componentStyles[i]);
-      }
-
-      // Create a reference div within the element to be used for computing relative event coords.
-      this._referenceDiv = $(document.createElement('div'));
-      this._referenceDiv.css('visibility', 'hidden');
-      this.element.append(this._referenceDiv); // @HTMLUpdateOK
-
-      dvt.Agent.setAgentInfo(oj.AgentUtils.getAgentInfo());
-
-      // Create the dvt.Context, which creates the svg element and adds it to the DOM.
-      var parentElement = this.element[0].parentElement;
-      if (parentElement && parentElement._dvtcontext) {
-        this._context = parentElement._dvtcontext;
-      } else {
-        this._context = new dvt.Context(this.element[0], null, this._referenceDiv[0]);
-      }
-
-      // Store JET reference on context so toolkit can access things like logger
-      var dataProviderProps = Object.keys(this._GetSimpleDataProviderConfigs());
-      var ref = {
-        oj: oj,
-        KeySetImpl: KeySetImpl,
-        ojMap: ojMap,
-        LocaleData: LocaleData,
-        dataProviderProps: dataProviderProps
-      };
-
-      this._context.setJetProperties(ref);
-
-
-      // Set the reading direction on the context
-      this._context.setReadingDirection(this._GetReadingDirection());
-
-      // Set the tooltip and datatip callbacks and div style classes
-      this._context.setTooltipAttachedCallback(Components.subtreeAttached);
-      this._context.setOverlayAttachedCallback(Components.subtreeAttached);
-
-      // Pass back method for cleaning up renderer context
-      this._context.setFixContextCallback(this._FixRendererContext.bind(this));
-
-      this._context.setCustomElement(this._IsCustomElement());
-
-      // Set high contrast mode if needed
-      if ($(document.body).hasClass('oj-hicontrast')) {
-        dvt.Agent.setHighContrast(true);
-      }
-
-      // Create and cache the component instance
-      this._component = this._CreateDvtComponent(this._context, this._HandleEvent, this);
-      this._component.setContextMenu(!!this._GetContextMenu());
-      if (dvt.Agent.isEnvironmentTest()) {
-        // Hook to ensure stable dvt-static test output
-        var testId = this.element[0].getAttribute('data-oj-dvt-test-id');
-        if (testId && testId.length > 0) {
-          this._component.setId(testId);
+          this._context.setLocaleHelpers(helpers);
         }
-      }
+      },
 
-      // Add the component to the display tree of the rendering context.
-      this._context.getStage().addChild(this._component);
+      refresh: function () {
+        this._super();
 
-      // Load component resources
-      this._LoadResources();
+        // Clear the Styles Cache to force the component to recalc
+        this._styleProcessor = null;
 
-      // Pass the widget constructor through the options for JET specific behavior
-      this.options._widgetConstructor = Components.__GetWidgetConstructor(this.element);
-    },
+        // Update the reading direction on the context
+        this._context.setReadingDirection(this._GetReadingDirection());
 
-
-    _AfterCreate: function () {
-      // Allow superclass to process root attributes and context menus
-      this._super();
-
-      // Resize Listener Support
-      if (this.options.trackResize !== 'off') {
-        this._addResizeListener();
-      }
-
-      this._ProcessOptions();
-
-      // Render the component
-      this._Render();
-    },
-    /**
-     * The function sets Locale helpers (various converter instances for Numeric, Date or TimeZone data types) on the DvtContext object.
-     * @protected
-     * @instance
-     * @param {Object} NumberConverter - The return value of the ojconverter-number module
-     * @param {Object} ConverterUtils - The return value of the ojconverterutils-i18n module
-     * @memberof oj.dvtBaseComponent
-     * @return {null}
-     */
-    _SetLocaleHelpers: function (NumberConverter, ConverterUtils) {
-      // If requireJS is not used, can't rely on internationalization modules.
-      if (dvt.requireJS !== false) {
-        var helpers = {};
-        // Number converter factory for use in formatting default strings
-        helpers.createNumberConverter = function (options) {
-          return new NumberConverter.IntlNumberConverter(options);
-        };
-
-        // Iso to date converter to be called for JS that requires Dates
-        helpers.isoToDateConverter = function (input) {
-          if (typeof (input) === 'string') {
-            var dateWithTimeZone = ConverterUtils.IntlConverterUtils.isoToDate(input);
-            var localIsoTime = dateWithTimeZone.toJSON() ?
-            ConverterUtils.IntlConverterUtils.dateToLocalIso(dateWithTimeZone) : input;
-            return ConverterUtils.IntlConverterUtils.isoToLocalDate(localIsoTime);
-          }
-          return input;
-        };
-
-        // Date to iso converter to be called before passing to the date time converter
-        helpers.dateToIsoWithTimeZoneConverter = function (input) {
-          if (input instanceof Date) {
-            var timeZoneOffest = -1 * input.getTimezoneOffset();
-            var offsetSign = (timeZoneOffest >= 0 ? '+' : '-');
-            var offsetHour = Math.floor(Math.abs(timeZoneOffest) / 60);
-            var offsetMinutes = Math.abs(timeZoneOffest) % 60;
-            var isoTimeZone = offsetSign +
-              (offsetHour.toString().length !== 2 ? '0' + offsetHour : offsetHour) + ':' +
-              (offsetMinutes.toString().length !== 2 ? offsetMinutes + '0' : offsetMinutes);
-            return ConverterUtils.IntlConverterUtils.dateToLocalIso(input) + isoTimeZone;
-          }
-          return input;
-        };
-
-        this._context.setLocaleHelpers(helpers);
-      }
-    },
-
-
-    refresh: function () {
-      this._super();
-
-      // Clear the Styles Cache to force the component to recalc
-      this._styleProcessor = null;
-
-      // Update the reading direction on the context
-      this._context.setReadingDirection(this._GetReadingDirection());
-
-      // Render the component with any changes
-      this._Render();
-    },
-
-
-    getNodeBySubId: function (locator) {
-      var automation = (this._component && this._component.getAutomation) ?
-          this._component.getAutomation() : null;
-      if (automation) {
-        // Convert the locator to the subid string, since the shared JS layer only accepts the subid string syntax.
-        var subId = this._ConvertLocatorToSubId(locator);
-        return automation.getDomElementForSubId(subId);
-      }
-      return null;
-    },
-
-
-    getSubIdByNode: function (node) {
-      var automation = (this._component && this._component.getAutomation) ?
-          this._component.getAutomation() : null;
-      if (automation) {
-        // Retrieve the subid string from the shared JS layer, and convert it to the locator object.
-        var subId = automation.getSubIdForDomElement(node);
-        return subId ? this._ConvertSubIdToLocator(subId) : null;
-      }
-      return null;
-    },
-
-    /**
-     * Converts the specified locator object into a subId string.
-     * @param {Object} locator
-     * @return {string|null}
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    // eslint-disable-next-line no-unused-vars
-    _ConvertLocatorToSubId: function (locator) {
-      // subclasses must override to support getNodeBySubId
-      return null;
-    },
-
-    /**
-     * Converts the specified subId string into a locator object.
-     * @param {string} subId
-     * @return {Object|null}
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    // eslint-disable-next-line no-unused-vars
-    _ConvertSubIdToLocator: function (subId) {
-      // subclasses must override to support getSubIdByNode
-      return null;
-    },
-
-    /**
-     * Create dummy divs for style classes and merge style class values with json .
-     * options object
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _ProcessStyles: function (options) {
-      // Process selectors for this component
-      this._styleProcessor = this._styleProcessor ?
-                             this._styleProcessor : new DvtStyleProcessor(this._component.getCtx());
-      this._styleProcessor.processStyles(this.element, options,
-                                      this._GetComponentStyleClasses(),
-                                      this._GetChildStyleClasses());
-    },
-
-    /**
-     * Returns the style classes associated with the component.
-     * @return {Array}
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _GetComponentStyleClasses: function () {
-      return ['oj-dvtbase'];
-    },
-
-    /**
-     * Returns a map of the style classes associated with a component's children.
-     * @return {Object}
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _GetChildStyleClasses: function () {
-      var styleClasses = {};
-      styleClasses['oj-dvt-no-data-message'] = { path: '_statusMessageStyle', property: 'TEXT' };
-      return styleClasses;
-    },
-
-    /**
-     * Returns an array of supported event types.  Used in conjunction with _setOptions to skip unnecessary rendering when
-     * event listeners are bound. Subclasses must override to return supported event types.
-     * @return {Array}
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _GetEventTypes: function () {
-      return [];
-    },
-
-    _VerifyConnectedForSetup: function () {
-      return true;
-    },
-
-    /**
-     * Release resources held by the component
-     * @instance
-     * @override
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-    _ReleaseResources: function () {
-      this._super();
-      this._renderNeeded = true;
-      // Hide all component tooltips and remove references to the DvtContext
-      this._context.hideTooltips();
-      this._context.releaseTooltipResources();
-      // Remove DOM resize listener
-      this._removeResizeListener();
-      this._CleanAllTemplates();
-      // Remove any pending busy states
-      this._MakeReady();
-      // Reset data provider state
-      this._DataProviderHandler.release();
-      this._TemplateHandler.release();
-      this._dataValuePromise = {};
-    },
-
-
-    _destroy: function () {
-      var parentElement = this.element[0].parentElement;
-      if (parentElement && parentElement._dvtcontext) {
-        parentElement._dvtcontext = null;
-      }
-
-      // Call destroy on the JS component
-      if (this._component.destroy) {
-        this._component.destroy();
-      }
-      this._component = null;
-
-      // Remove children and clean up DOM changes
-      this.element.children().remove();
-      this.element.removeAttr('role').removeAttr('tabIndex').removeAttr('aria-activedescendant');
-
-      // Remove style classes that were added
-      var componentStyles = this._GetComponentStyleClasses();
-      for (var i = 0; i < componentStyles.length; i++) {
-        this.element.removeClass(componentStyles[i]);
-      }
-
-      // Call super last for destroy
-      this._super();
-      this._context.destroy();
-      this._context = null;
-    },
-
-
-    // eslint-disable-next-line no-unused-vars
-    _setOptions: function (options, flags) {
-      // Call the super to update the property values
-      this._superApply(arguments);
-
-      this._OptionChangeHandler(options);
-
-      // Add or remove the resize tracking if changed.
-      var trackResize = this.options.trackResize;
-      if (trackResize === 'off' && this._resizeListener) {
-        this._removeResizeListener();
-      } else if (trackResize !== 'off' && !this._resizeListener) {
-        this._addResizeListener();
-      }
-
-      this._ProcessOptions();
-
-      // Render the component with the updated options.
-      if (this._bUserDrivenChange) {
-        // Option change fired in response to user gesture. Already reflected in UI, so no render needed.
-        return;
-      }
-      // If there are pending renders do not use the optimized option, it is going to be rewritten by
-      // the pending renderer with the old value.
-      var bRenderNeeded = this._numDeferredObjs > 0;
-      if (!bRenderNeeded) {
-        // Event listeners don't require rendering.  Iterate through options to check for non-event options.
-        // Also no render is needed if the component has exposed a method to update the option without rerendering.
-        var eventTypes = this._GetEventTypes();
-        var optimizedOptions = this._GetOptimizedOptions();
-        $.each(options, function (key) {
-          if (eventTypes.indexOf(key) < 0 && optimizedOptions.indexOf(key) < 0) {
-            bRenderNeeded = true;
-            return false;
-          }
-          return undefined;
-        });
-      }
-
-      if (bRenderNeeded) {
+        // Render the component with any changes
         this._Render();
-      } else {
-        // Update options without rerendering. Check for undefined to allow nulls.
-        this._UpdateNoRenderOptions(options);
-      }
-    },
+      },
 
-    _GetOptimizedOptions: function () {
-      return ['highlightedCategories', 'selection', 'dataCursorPosition', 'scrollPosition'];
-    },
-
-    _UpdateNoRenderOptions: function (options) {
-      if (options.highlightedCategories !== undefined) {
-        this._component.highlight(options.highlightedCategories);
-      }
-      if (options.selection !== undefined) {
-        this._component.select(options.selection);
-      }
-      if (options.dataCursorPosition !== undefined && this._component.positionDataCursor) {
-        this._component.positionDataCursor(options.dataCursorPosition);
-      }
-      if (options.scrollPosition !== undefined) {
-        this._component.scroll(options.scrollPosition);
-      }
-    },
-
-
-    /**
-     * Called by _create to instantiate the specific DVT component instance.  Subclasses must override.
-     * @param {dvt.Context} context
-     * @param {Function} callback
-     * @param {Object} callbackObj
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    // eslint-disable-next-line no-unused-vars
-    _CreateDvtComponent: function (context, callback, callbackObj) {
-      return null; // subclasses must override
-    },
-
-    /**
-     * Called by the component to process events.  Subclasses should override to delegate DVT component events to their
-     * JQuery listeners.
-     * @param {Object} event
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _HandleEvent: function (event) {
-      // TODO: hiddenCategories and highlightedCategories should use the option change event
-
-      var type = event.type;
-      if (type === 'selection') {
-        this._UserOptionChange('selection', event.selection);
-      } else if (type === 'categoryHide' || type === 'categoryShow') {
-        this._UserOptionChange('hiddenCategories', event.hiddenCategories);
-      } else if (type === 'categoryHighlight') {
-        this._UserOptionChange('highlightedCategories', event.categories);
-      } else if (type === 'optionChange') {
-        this._UserOptionChange(event.key, event.value, event.optionMetadata);
-      } else if (type === 'touchHoldRelease' && this._GetContextMenu()) {
-        this._OpenContextMenu($.Event(event.nativeEvent), 'touch');
-      } else if (type === 'dvtRender') {
-        this._Render();
-      } else if (type === 'ready') {
-        // Handles case where two option sets occur and the second set
-        // containing deferred data. We don't want to prematurely resolve
-        // any when ready promises until the deferred data has finished.
-        if (this._numDeferredObjs === 0) {
-          this._MakeReady();
+      getNodeBySubId: function (locator) {
+        var automation =
+          this._component && this._component.getAutomation ? this._component.getAutomation() : null;
+        if (automation) {
+          // Convert the locator to the subid string, since the shared JS layer only accepts the subid string syntax.
+          var subId = this._ConvertLocatorToSubId(locator);
+          return automation.getDomElementForSubId(subId);
         }
-      }
-    },
+        return null;
+      },
 
-    /**
-     * Adds a resize listener for this component.
-     * @private
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _addResizeListener: function () {
-      if (!this._resizeListener) {
-        this._resizeListener = this._handleResize.bind(this);
-        DomUtils.addResizeListener(this.element[0], this._resizeListener, 250);
-      }
-    },
+      getSubIdByNode: function (node) {
+        var automation =
+          this._component && this._component.getAutomation ? this._component.getAutomation() : null;
+        if (automation) {
+          // Retrieve the subid string from the shared JS layer, and convert it to the locator object.
+          var subId = automation.getSubIdForDomElement(node);
+          return subId ? this._ConvertSubIdToLocator(subId) : null;
+        }
+        return null;
+      },
 
-    /**
-     * Removes the resize listener for this component.
-     * @private
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _removeResizeListener: function () {
-      if (this._resizeListener) {
-        DomUtils.removeResizeListener(this.element[0], this._resizeListener);
-        this._resizeListener = null;
-      }
-    },
+      /**
+       * Converts the specified locator object into a subId string.
+       * @param {Object} locator
+       * @return {string|null}
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      // eslint-disable-next-line no-unused-vars
+      _ConvertLocatorToSubId: function (locator) {
+        // subclasses must override to support getNodeBySubId
+        return null;
+      },
 
-    /**
-     * Called when the component is resized.
-     * @param {number} width
-     * @param {number} height
-     * @private
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    // eslint-disable-next-line no-unused-vars
-    _handleResize: function (width, height) {
-      // Render the component at the new size if it changed enough
-      var newWidth = this.element.width();
-      var newHeight = this.element.height();
-      if (this._width == null || this._height == null ||
-          (Math.abs(newWidth - this._width) + Math.abs(newHeight - this._height) >= 5)) {
-        this._Render(true);
-      }
-    },
+      /**
+       * Converts the specified subId string into a locator object.
+       * @param {string} subId
+       * @return {Object|null}
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      // eslint-disable-next-line no-unused-vars
+      _ConvertSubIdToLocator: function (subId) {
+        // subclasses must override to support getSubIdByNode
+        return null;
+      },
 
-    /**
-     * Called once during component creation to load resources.
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _LoadResources: function () {
-      // subcomponents should override
-    },
+      /**
+       * Create dummy divs for style classes and merge style class values with json .
+       * options object
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _ProcessStyles: function (options) {
+        // Process selectors for this component
+        this._styleProcessor = this._styleProcessor
+          ? this._styleProcessor
+          : new DvtStyleProcessor(this._component.getCtx());
+        this._styleProcessor.processStyles(
+          this.element,
+          options,
+          this._GetComponentStyleClasses(),
+          this._GetChildStyleClasses()
+        );
+      },
 
-    /**
-     * Called to render the component at the current size.
-     * @param {boolean} isResize (optional) Whether it is a resize rerender.
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _Render: function (isResize) {
-      // Hide all component tooltips on rerender cases to avoid abandoned tooltips
-      this._context.hideTooltips();
+      /**
+       * Returns the style classes associated with the component.
+       * @return {Array}
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _GetComponentStyleClasses: function () {
+        return ['oj-dvtbase'];
+      },
 
-      // Starting a new render - no longer ready
-      this._NotReady();
+      /**
+       * Returns a map of the style classes associated with a component's children.
+       * @return {Object}
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _GetChildStyleClasses: function () {
+        var styleClasses = {};
+        styleClasses['oj-dvt-no-data-message'] = { path: '_statusMessageStyle', property: 'TEXT' };
+        return styleClasses;
+      },
 
-      // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
-      // getBBox calls will not return the correct values.
-      // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
-      //  ignore resize events fired before the component is rendered
-      if (!this._context.isReadyToRender() || (this._renderNeeded && isResize)) {
+      /**
+       * Returns an array of supported event types.  Used in conjunction with _setOptions to skip unnecessary rendering when
+       * event listeners are bound. Subclasses must override to return supported event types.
+       * @return {Array}
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _GetEventTypes: function () {
+        return [];
+      },
+
+      _VerifyConnectedForSetup: function () {
+        return true;
+      },
+
+      /**
+       * Release resources held by the component
+       * @instance
+       * @override
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      _ReleaseResources: function () {
+        this._super();
         this._renderNeeded = true;
+        // Hide all component tooltips and remove references to the DvtContext
+        this._context.hideTooltips();
+        this._context.releaseTooltipResources();
+        // Remove DOM resize listener
+        this._removeResizeListener();
+        this._CleanAllTemplates();
+        // Remove any pending busy states
         this._MakeReady();
-      } else {
-        // If flowing layout is supported, don't pass width and height to the component render method
-        this._width = this._IsFlowingLayoutSupported() ? null : this.element.width();
-        this._height = this._IsFlowingLayoutSupported() ? null : this.element.height();
+        // Reset data provider state
+        this._DataProviderHandler.release();
+        this._TemplateHandler.release();
+        this._dataValuePromise = {};
+      },
 
-        // Set the root font-family and font-size
-        this._context.setDefaultFontFamily(this._referenceDiv.css('font-family'));
-        this._context.setDefaultFontSize(this._referenceDiv.css('font-size'));
-
-        // Add the width, height, and locale as private fields in the options for debugging purposes
-        this.options._width = this._width;
-        this.options._height = this._height;
-        this.options._locale = dvt.Agent.isEnvironmentTest() && this.options._locale
-          ? this.options._locale : Config.getLocale();
-
-        // Add draggable attribute if DnD is supported
-        if (this._IsDraggable()) {
-          this.element.attr('draggable', true);
+      _destroy: function () {
+        var parentElement = this.element[0].parentElement;
+        if (parentElement && parentElement._dvtcontext) {
+          parentElement._dvtcontext = null;
         }
 
-        DvtStyleProcessor.populateOptions(this.options, this._GetChildStyleClasses());
+        // Call destroy on the JS component
+        if (this._component.destroy) {
+          this._component.destroy();
+        }
+        this._component = null;
 
-        // Skip the options on resize to suppress animation.
-        if (isResize) {
-          // Skip the resize render if Promises are not fully resolved because
-          // the component will be rerendered with the new width/height when all
-          // Promises are fully resolved.  Make sure not to increment the render
-          // count in that case so that the current pending render goes through.
-          if (this._numDeferredObjs === 0) {
-            // Render the component.
-            this._renderCount += 1;
-            this._RenderComponent(this._optionsCopy, isResize);
-          }
-        } else {
-          // Render the component.
-          this._renderCount += 1;
-          if (this._resolveDeferredDataItems()) {
-            // Component rendering will be done when all Promises are fully resolved
-            this._RenderComponent(this._optionsCopy);
-          }
+        // Remove children and clean up DOM changes
+        this.element.children().remove();
+        this.element.removeAttr('role').removeAttr('tabIndex').removeAttr('aria-activedescendant');
+
+        // Remove style classes that were added
+        var componentStyles = this._GetComponentStyleClasses();
+        for (var i = 0; i < componentStyles.length; i++) {
+          this.element.removeClass(componentStyles[i]);
         }
 
-        this._renderNeeded = false;
-      }
-    },
+        // Call super last for destroy
+        this._super();
+        this._context.destroy();
+        this._context = null;
+      },
 
-    /**
-     * Check needed for setting draggable attribute on the component.
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _IsDraggable: function () {
-      return !!this.options.dnd;
-    },
+      // eslint-disable-next-line no-unused-vars
+      _setOptions: function (options, flags) {
+        // Call the super to update the property values
+        this._superApply(arguments);
 
+        this._OptionChangeHandler(options);
 
-    _NotifyShown: function () {
-      this._super();
-      this._notifyShownAttached();
-    },
-
-
-    _NotifyAttached: function () {
-      this._super();
-      this._notifyShownAttached();
-    },
-
-
-    _NotifyDetached: function () {
-      this._super();
-      this._notifyHiddenDetached();
-    },
-
-
-    _NotifyHidden: function () {
-      this._super();
-      this._notifyHiddenDetached();
-    },
-
-    /**
-     * Helper method to perform common logic for when
-     * a DVT is hidden or detached from the DOM.
-     * @memberof oj.dvtBaseComponent
-     * @instance
-     * @private
-     */
-    _notifyShownAttached: function () {
-      if (this._renderNeeded) {
-        this._Render();
-      }
-    },
-
-    /**
-     * Helper method to perform common logic for when
-     * a DVT is shown or detached from the DOM.
-     * @memberof oj.dvtBaseComponent
-     * @instance
-     * @private
-     */
-    _notifyHiddenDetached: function () {
-      this._context.hideTooltips();
-
-      // Remove any pending busy states
-      this._MakeReady();
-    },
-
-    /**
-     * Sets an option change that was driven by user gesture.  Used in conjunction with _setOption to ensure that the
-     * correct optionMetadata flag for writeback is set.
-     * @param {string} key The name of the option to set.  Events will be suppressed for private keys (_foo)
-     * @param {Object} value The value to set for the option.
-     * @param {Object} optionMetadata The optionMetadata for the optionChange event
-     * @memberof oj.dvtBaseComponent
-     * @instance
-     * @protected
-     */
-    _UserOptionChange: function (key, value, optionMetadata) {
-      this._bUserDrivenChange = true;
-
-      this.option(key, value, {
-        _context: { writeback: true, optionMetadata: optionMetadata, internalSet: true, skipEvent: key.charAt(0) === '_' }
-      });
-
-      this._bUserDrivenChange = false;
-    },
-
-
-    _NotifyContextMenuGesture: function (menu, event, eventType) {
-      // DVTs support context menus on touch hold release which is detected by the
-      // toolkit and handled in _HandleEvent after receiving touch hold release event.
-      if (eventType !== 'touch') {
-        // Position context menus relative to the current keyboard focus when keyboard triggered
-        if (eventType === 'keyboard') {
-          var compElementRect = this.element[0].getBoundingClientRect();
-          var focusElementRect = this._component.getKeyboardFocus() ?
-              this._component.getKeyboardFocus().getBoundingClientRect() : null;
-          var position = focusElementRect ?
-              'left+' + ((focusElementRect.left + (focusElementRect.width * 0.5))
-                         - compElementRect.left) +
-              ' top+' + ((focusElementRect.top + (focusElementRect.height * 0.5))
-                         - compElementRect.top) :
-              'center';
-          this._OpenContextMenu(event, eventType, { position: { at: position } });
-        } else {
-          this._super(menu, event, eventType);
+        // Add or remove the resize tracking if changed.
+        var trackResize = this.options.trackResize;
+        if (trackResize === 'off' && this._resizeListener) {
+          this._removeResizeListener();
+        } else if (trackResize !== 'off' && !this._resizeListener) {
+          this._addResizeListener();
         }
-      }
-    },
 
-    /**
-     * Returns a DVT component associated with a DOMElement
-     * @param {Element} element The DOMElement to get the DVT component from.
-     * @return {Object} The DVT component associated with the DOMElement or null
-     * @memberof oj.dvtBaseComponent
-     * @instance
-     * @protected
-     */
-    _GetDvtComponent: function (element) {
-      var widget = Components.__GetWidgetConstructor(element)('instance');
-      if (widget) {
-        return widget._component;
-      }
-      return null;
-    },
+        this._ProcessOptions();
 
-    /**
-     * Converts an indexPath array to a string of the form '[index0][index1]...[indexN]'.
-     * @param {Array} indexPath
-     * @return {string} The resulting string.
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     * @protected
-     */
-    _GetStringFromIndexPath: function (indexPath) {
-      var ret = '';
-      for (var i = 0; i < indexPath.length; i++) {
-        ret += '[' + indexPath[i] + ']';
-      }
-      return ret;
-    },
-
-    /**
-     * Converts a string containing indices in the form '[index0][index1]...[indexN]' to an array of indices.
-     * @param {string} subId
-     * @return {Array} The resulting array to be used for locator indexPath.
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     * @protected
-     */
-    _GetIndexPath: function (subId) {
-      var indexPath = [];
-      var currentIndex = 0;
-      while (subId.indexOf('[', currentIndex) > 0) {
-        var start = subId.indexOf('[', currentIndex) + 1;
-        var end = subId.indexOf(']', currentIndex);
-        indexPath.push(Number(subId.substring(start, end)));
-        currentIndex = end + 1;
-      }
-      return indexPath;
-    },
-
-    /**
-     * Converts a string containing a single index in the form '[index]' into the numerical index.
-     * @param {string} subId
-     * @return {number}
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     * @protected
-     */
-    _GetFirstIndex: function (subId) {
-      return Number(this._GetFirstBracketedString(subId));
-    },
-
-    /**
-     * Returns the first bracketed substring in the specified string.
-     * @param {string} subId
-     * @return {string}
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     * @protected
-     */
-    _GetFirstBracketedString: function (subId) {
-      var start = subId.indexOf('[') + 1;
-      var end = subId.indexOf(']');
-      return subId.substring(start, end);
-    },
-
-    /**
-     * Returns an object containing the top level options key and subkeys for
-     * deferred data options.  'root' is used for top level keys. For example,
-     * {'areaLayers': ['areaDataLayer/areas', 'areaDataLayer/markers'] indicates
-     * that we should check this.options['areaLayers'][i]['areaDataLayer']['areas']
-     * and this.options['areaLayers'][i]['areaDataLayer']['markers']. To indicate
-     * a top level option, use the options key 'root', i.e. {'root': ['items']}.
-     * @return {Object}
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _GetComponentDeferredDataPaths: function () {
-      return {};
-    },
-
-    /**
-     * Returns an object containing the no clone paths for a component. For example,
-     * {'areaLayers': {'areaDataLayer': {'areas': true, 'markers': true}}} indicates
-     * that we should check this.options['areaLayers'][i]['areaDataLayer']['areas']
-     * and this.options['areaLayers'][i]['areaDataLayer']['markers']. The base implementation
-     * will handle the basic case where the deferred data path contains only top level data options.
-     * @return {Object}
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _GetComponentNoClonePaths: function () {
-      if (!this._noClonePaths) {
-        this._noClonePaths = {};
-        var self = this;
-        var rootPaths = this._GetComponentDeferredDataPaths().root;
-        if (rootPaths) {
-          rootPaths.forEach(function (path) {
-            self._noClonePaths[path] = true;
+        // Render the component with the updated options.
+        if (this._bUserDrivenChange) {
+          // Option change fired in response to user gesture. Already reflected in UI, so no render needed.
+          return;
+        }
+        // If there are pending renders do not use the optimized option, it is going to be rewritten by
+        // the pending renderer with the old value.
+        var bRenderNeeded = this._numDeferredObjs > 0;
+        if (!bRenderNeeded) {
+          // Event listeners don't require rendering.  Iterate through options to check for non-event options.
+          // Also no render is needed if the component has exposed a method to update the option without rerendering.
+          var eventTypes = this._GetEventTypes();
+          var optimizedOptions = this._GetOptimizedOptions();
+          $.each(options, function (key) {
+            if (eventTypes.indexOf(key) < 0 && optimizedOptions.indexOf(key) < 0) {
+              bRenderNeeded = true;
+              return false;
+            }
+            return undefined;
           });
         }
-      }
-      return this._noClonePaths;
-    },
 
-    /**
-     * Resolves document fonts to ensure they are loaded before component rendering
-     * @private
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _resolveDocumentFonts: function () {
-      var documentFonts = document.fonts;
-      if (documentFonts && documentFonts.status === 'loading') { // document.fonts is not supported by IE
-        this._numDeferredObjs += 1;
-        var renderCount = this._renderCount;
+        if (bRenderNeeded) {
+          this._Render();
+        } else {
+          // Update options without rerendering. Check for undefined to allow nulls.
+          this._UpdateNoRenderOptions(options);
+        }
+      },
 
-        documentFonts.ready.then(function () {
-          this._renderDeferredData(renderCount, null, []);
-        }.bind(this));
-      }
-    },
+      _GetOptimizedOptions: function () {
+        return ['highlightedCategories', 'selection', 'dataCursorPosition', 'scrollPosition'];
+      },
 
-    /**
-     * Resolves the deferred data for a component and returns whether there is any deferred data to wait on.
-     * @return {boolean} True if all data has been resolved
-     * @private
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _resolveDeferredDataItems: function () {
-      // Reset stored options copy so we get the updated copy
-      // Make a copy of options except for data options with the noClone parameter on DvtJsonUtils.
-      // Cloning shouldn't be expensive if we're skipping data.
-      this._optionsCopy = dvt.JsonUtils.clone(this.options, null, this._GetComponentNoClonePaths());
+      _UpdateNoRenderOptions: function (options) {
+        if (options.highlightedCategories !== undefined) {
+          this._component.highlight(options.highlightedCategories);
+        }
+        if (options.selection !== undefined) {
+          this._component.select(options.selection);
+        }
+        if (options.dataCursorPosition !== undefined && this._component.positionDataCursor) {
+          this._component.positionDataCursor(options.dataCursorPosition);
+        }
+        if (options.scrollPosition !== undefined) {
+          this._component.scroll(options.scrollPosition);
+        }
+      },
 
-      // Merge css styles with with json options object
-      this._ProcessStyles(this._optionsCopy);
-      this._numDeferredObjs = 0;
+      /**
+       * Called by _create to instantiate the specific DVT component instance.  Subclasses must override.
+       * @param {dvt.Context} context
+       * @param {Function} callback
+       * @param {Object} callbackObj
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      // eslint-disable-next-line no-unused-vars
+      _CreateDvtComponent: function (context, callback, callbackObj) {
+        return null; // subclasses must override
+      },
 
-      // Fixing custom renderers will increment _numDeferredObjs if there are template slots
-      // because the corresponding render functions cannot be created until the templateEnginePromise has resolved
-      this._FixCustomRenderers(this._optionsCopy);
+      /**
+       * Called by the component to process events.  Subclasses should override to delegate DVT component events to their
+       * JQuery listeners.
+       * @param {Object} event
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _HandleEvent: function (event) {
+        // TODO: hiddenCategories and highlightedCategories should use the option change event
 
-      this._resolveDocumentFonts();
+        var type = event.type;
+        if (type === 'selection') {
+          this._UserOptionChange('selection', event.selection);
+        } else if (type === 'categoryHide' || type === 'categoryShow') {
+          this._UserOptionChange('hiddenCategories', event.hiddenCategories);
+        } else if (type === 'categoryHighlight') {
+          this._UserOptionChange('highlightedCategories', event.categories);
+        } else if (type === 'optionChange') {
+          this._UserOptionChange(event.key, event.value, event.optionMetadata);
+        } else if (type === 'touchHoldRelease' && this._GetContextMenu()) {
+          this._OpenContextMenu($.Event(event.nativeEvent), 'touch');
+        } else if (type === 'dvtRender') {
+          this._Render();
+        } else if (type === 'ready') {
+          // Handles case where two option sets occur and the second set
+          // containing deferred data. We don't want to prematurely resolve
+          // any when ready promises until the deferred data has finished.
+          if (this._numDeferredObjs === 0) {
+            this._MakeReady();
+          }
+        }
+      },
 
-      var self = this;
-      var paths = this._GetComponentDeferredDataPaths();
-      // Do an initial loop to determine if we need to copy the options object
-      var pathKeys = Object.keys(paths);
-      for (var k = 0; k < pathKeys.length; k++) {
-        var path = pathKeys[k];
-        var subpaths = paths[path];
-        // eslint-disable-next-line no-loop-func
-        subpaths.forEach(function (subpath) {
-          if (path === 'root') {
-            self._resolveDeferredDataItem.bind(self)(self.options, self._optionsCopy, subpath);
+      /**
+       * Adds a resize listener for this component.
+       * @private
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _addResizeListener: function () {
+        if (!this._resizeListener) {
+          this._resizeListener = this._handleResize.bind(this);
+          if (this._IsFlowingLayoutSupported()) {
+            // If the component supports flowing layout (i.e. PictoChart), we cannot use ResizeObserver,
+            // so we use DomUtils.addResizeListener() instead.
+            // Reasons:
+            //   1. Naively using ResizeObserver would cause an infinite loop:
+            //     (a) Multiple resizes may happen during a flowing layout component's render() call, which can trigger
+            //        multiple _handleResize() calls, and cause multiple renders. To remedy this, in _RenderComponent(),
+            //        the resize listener is removed before the render() call (via _removeResizeListener()),
+            //        and added back after (via _addResizeListener()).
+            //     (b) If ResizeObserver is used, then calling _addResizeListener() would immediately trigger
+            //        the _handleResize() callback. This is per spec https://www.w3.org/TR/resize-observer/#intro
+            //        "Observation will fire when observation starts if Element is being rendered, and Element’s size is not 0,0"
+            //     (c) The _handleResize() callback triggers a _RenderComponent().
+            //     (d) (a) happens again, causing an infinite loop.
+            //   2. Even if we work around issue #1 above (e.g. by not removing and adding back the resize listeners,
+            //      or by using hacks to prevent the first observe() call to trigger _handleResize()), the ResizeObserver would still
+            //      throw "ResizeObserver loop limit exeeded" errors in the console during component resize due to the
+            //      (potentially multiple) resizes during the flowing layout render.
+            DomUtils.addResizeListener(this.element[0], this._resizeListener, 250);
           } else {
-            var suboptions = self.options[path];
-            // Deal with arrays suboptions that are arrays like legend's options['sections']
-            if (suboptions && suboptions instanceof Array) {
-              for (var i = 0; i < suboptions.length; i++) {
-                self._resolveDeferredDataItem.bind(self)(suboptions[i],
-                                                         self._optionsCopy[path][i],
-                                                         subpath);
+            const element = this.element[0];
+            // A resize test might add the 'data-oj-resize-notify' attribute to the component
+            // and get notified when the component receives resize notification.
+            const fireResizeDomEvent = element.hasAttribute('data-oj-resize-notify');
+            this._resizeObserver = new ResizeObserver((entries) => {
+              // we are observing only one element, so there should be a single entry
+              const outer = entries[0].borderBoxSize;
+              // Before Firefox version 92, Firefox implements borderBoxSize as a direct entry
+              // rather than an array of entries as in other browsers.
+              const newWidth = outer ? (outer[0] || outer).inlineSize : element.offsetWidth;
+              const newHeight = outer ? (outer[0] || outer).blockSize : element.offsetHeight;
+              this._resizeListener(newWidth, newHeight);
+              if (fireResizeDomEvent) {
+                element.dispatchEvent(new Event('oj-resize'));
               }
+            });
+            this._resizeObserver.observe(element, { box: 'border-box' });
+          }
+        }
+      },
+
+      /**
+       * Removes the resize listener for this component.
+       * @private
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _removeResizeListener: function () {
+        if (this._resizeObserver) {
+          this._resizeObserver.disconnect();
+          this._resizeObserver = null;
+        } else if (this._resizeListener) {
+          // Flowing layout supported
+          DomUtils.removeResizeListener(this.element[0], this._resizeListener);
+        }
+        this._resizeListener = null;
+      },
+
+      /**
+       * Called when the component is resized.
+       * @param {number} width
+       * @param {number} height
+       * @private
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      // eslint-disable-next-line no-unused-vars
+      _handleResize: function (width, height) {
+        // Render the component at the new size if it changed enough
+        var newWidth = this.element.width();
+        var newHeight = this.element.height();
+        if (
+          this._width == null ||
+          this._height == null ||
+          Math.abs(newWidth - this._width) + Math.abs(newHeight - this._height) >= 5
+        ) {
+          this._Render(true);
+        }
+      },
+
+      /**
+       * Called once during component creation to load resources.
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _LoadResources: function () {
+        // subcomponents should override
+      },
+
+      /**
+       * Called to render the component at the current size.
+       * @param {boolean} isResize (optional) Whether it is a resize rerender.
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _Render: function (isResize) {
+        // Hide all component tooltips on rerender cases to avoid abandoned tooltips
+        this._context.hideTooltips();
+
+        // Starting a new render - no longer ready
+        this._NotReady();
+
+        // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
+        // getBBox calls will not return the correct values.
+        // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
+        //  ignore resize events fired before the component is rendered
+        if (!this._context.isReadyToRender() || (this._renderNeeded && isResize)) {
+          this._renderNeeded = true;
+          this._MakeReady();
+        } else {
+          // If flowing layout is supported, don't pass width and height to the component render method
+          this._width = this._IsFlowingLayoutSupported() ? null : this.element.width();
+          this._height = this._IsFlowingLayoutSupported() ? null : this.element.height();
+
+          // Set the root font-family and font-size
+          this._context.setDefaultFontFamily(this._referenceDiv.css('font-family'));
+          this._context.setDefaultFontSize(this._referenceDiv.css('font-size'));
+
+          // Add the width, height, and locale as private fields in the options for debugging purposes
+          this.options._width = this._width;
+          this.options._height = this._height;
+          this.options._locale =
+            dvt.Agent.isEnvironmentTest() && this.options._locale
+              ? this.options._locale
+              : Config.getLocale();
+
+          // Add draggable attribute if DnD is supported
+          if (this._IsDraggable()) {
+            this.element.attr('draggable', true);
+          }
+
+          DvtStyleProcessor.populateOptions(this.options, this._GetChildStyleClasses());
+
+          // Skip the options on resize to suppress animation.
+          if (isResize) {
+            // Skip the resize render if Promises are not fully resolved because
+            // the component will be rerendered with the new width/height when all
+            // Promises are fully resolved.  Make sure not to increment the render
+            // count in that case so that the current pending render goes through.
+            if (this._numDeferredObjs === 0) {
+              // Render the component.
+              this._renderCount += 1;
+              this._RenderComponent(this._optionsCopy, isResize);
             }
-            /* DataProvider Uptake : Commented out for code coverage. Uncomment for chart/nbox support
+          } else {
+            // Render the component.
+            this._renderCount += 1;
+            if (this._resolveDeferredDataItems()) {
+              // Component rendering will be done when all Promises are fully resolved
+              this._RenderComponent(this._optionsCopy);
+            }
+          }
+
+          this._renderNeeded = false;
+        }
+      },
+
+      /**
+       * Check needed for setting draggable attribute on the component.
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _IsDraggable: function () {
+        return !!this.options.dnd;
+      },
+
+      _NotifyShown: function () {
+        this._super();
+        this._notifyShownAttached();
+      },
+
+      _NotifyAttached: function () {
+        this._super();
+        this._notifyShownAttached();
+      },
+
+      _NotifyDetached: function () {
+        this._super();
+        this._notifyHiddenDetached();
+      },
+
+      _NotifyHidden: function () {
+        this._super();
+        this._notifyHiddenDetached();
+      },
+
+      /**
+       * Helper method to perform common logic for when
+       * a DVT is hidden or detached from the DOM.
+       * @memberof oj.dvtBaseComponent
+       * @instance
+       * @private
+       */
+      _notifyShownAttached: function () {
+        if (this._renderNeeded) {
+          this._Render();
+        }
+      },
+
+      /**
+       * Helper method to perform common logic for when
+       * a DVT is shown or detached from the DOM.
+       * @memberof oj.dvtBaseComponent
+       * @instance
+       * @private
+       */
+      _notifyHiddenDetached: function () {
+        this._context.hideTooltips();
+
+        // Remove any pending busy states
+        this._MakeReady();
+      },
+
+      /**
+       * Sets an option change that was driven by user gesture.  Used in conjunction with _setOption to ensure that the
+       * correct optionMetadata flag for writeback is set.
+       * @param {string} key The name of the option to set.  Events will be suppressed for private keys (_foo)
+       * @param {Object} value The value to set for the option.
+       * @param {Object} optionMetadata The optionMetadata for the optionChange event
+       * @memberof oj.dvtBaseComponent
+       * @instance
+       * @protected
+       */
+      _UserOptionChange: function (key, value, optionMetadata) {
+        this._bUserDrivenChange = true;
+
+        this.option(key, value, {
+          _context: {
+            writeback: true,
+            optionMetadata: optionMetadata,
+            internalSet: true,
+            skipEvent: key.charAt(0) === '_'
+          }
+        });
+
+        this._bUserDrivenChange = false;
+      },
+
+      _NotifyContextMenuGesture: function (menu, event, eventType) {
+        // DVTs support context menus on touch hold release which is detected by the
+        // toolkit and handled in _HandleEvent after receiving touch hold release event.
+        if (eventType !== 'touch') {
+          // Position context menus relative to the current keyboard focus when keyboard triggered
+          if (eventType === 'keyboard') {
+            var compElementRect = this.element[0].getBoundingClientRect();
+            var focusElementRect = this._component.getKeyboardFocus()
+              ? this._component.getKeyboardFocus().getBoundingClientRect()
+              : null;
+            var position = focusElementRect
+              ? 'left+' +
+                (focusElementRect.left + focusElementRect.width * 0.5 - compElementRect.left) +
+                ' top+' +
+                (focusElementRect.top + focusElementRect.height * 0.5 - compElementRect.top)
+              : 'center';
+            this._OpenContextMenu(event, eventType, { position: { at: position } });
+          } else {
+            this._super(menu, event, eventType);
+          }
+        }
+      },
+
+      /**
+       * Returns a DVT component associated with a DOMElement
+       * @param {Element} element The DOMElement to get the DVT component from.
+       * @return {Object} The DVT component associated with the DOMElement or null
+       * @memberof oj.dvtBaseComponent
+       * @instance
+       * @protected
+       */
+      _GetDvtComponent: function (element) {
+        var widget = Components.__GetWidgetConstructor(element)('instance');
+        if (widget) {
+          return widget._component;
+        }
+        return null;
+      },
+
+      /**
+       * Converts an indexPath array to a string of the form '[index0][index1]...[indexN]'.
+       * @param {Array} indexPath
+       * @return {string} The resulting string.
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       * @protected
+       */
+      _GetStringFromIndexPath: function (indexPath) {
+        var ret = '';
+        for (var i = 0; i < indexPath.length; i++) {
+          ret += '[' + indexPath[i] + ']';
+        }
+        return ret;
+      },
+
+      /**
+       * Converts a string containing indices in the form '[index0][index1]...[indexN]' to an array of indices.
+       * @param {string} subId
+       * @return {Array} The resulting array to be used for locator indexPath.
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       * @protected
+       */
+      _GetIndexPath: function (subId) {
+        var indexPath = [];
+        var currentIndex = 0;
+        while (subId.indexOf('[', currentIndex) > 0) {
+          var start = subId.indexOf('[', currentIndex) + 1;
+          var end = subId.indexOf(']', currentIndex);
+          indexPath.push(Number(subId.substring(start, end)));
+          currentIndex = end + 1;
+        }
+        return indexPath;
+      },
+
+      /**
+       * Converts a string containing a single index in the form '[index]' into the numerical index.
+       * @param {string} subId
+       * @return {number}
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       * @protected
+       */
+      _GetFirstIndex: function (subId) {
+        return Number(this._GetFirstBracketedString(subId));
+      },
+
+      /**
+       * Returns the first bracketed substring in the specified string.
+       * @param {string} subId
+       * @return {string}
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       * @protected
+       */
+      _GetFirstBracketedString: function (subId) {
+        var start = subId.indexOf('[') + 1;
+        var end = subId.indexOf(']');
+        return subId.substring(start, end);
+      },
+
+      /**
+       * Returns an object containing the top level options key and subkeys for
+       * deferred data options.  'root' is used for top level keys. For example,
+       * {'areaLayers': ['areaDataLayer/areas', 'areaDataLayer/markers'] indicates
+       * that we should check this.options['areaLayers'][i]['areaDataLayer']['areas']
+       * and this.options['areaLayers'][i]['areaDataLayer']['markers']. To indicate
+       * a top level option, use the options key 'root', i.e. {'root': ['items']}.
+       * @return {Object}
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _GetComponentDeferredDataPaths: function () {
+        return {};
+      },
+
+      /**
+       * Returns an object containing the no clone paths for a component. For example,
+       * {'areaLayers': {'areaDataLayer': {'areas': true, 'markers': true}}} indicates
+       * that we should check this.options['areaLayers'][i]['areaDataLayer']['areas']
+       * and this.options['areaLayers'][i]['areaDataLayer']['markers']. The base implementation
+       * will handle the basic case where the deferred data path contains only top level data options.
+       * @return {Object}
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _GetComponentNoClonePaths: function () {
+        if (!this._noClonePaths) {
+          this._noClonePaths = {};
+          var self = this;
+          var rootPaths = this._GetComponentDeferredDataPaths().root;
+          if (rootPaths) {
+            rootPaths.forEach(function (path) {
+              self._noClonePaths[path] = true;
+            });
+          }
+        }
+        return this._noClonePaths;
+      },
+
+      /**
+       * Resolves document fonts to ensure they are loaded before component rendering
+       * @private
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _resolveDocumentFonts: function () {
+        var documentFonts = document.fonts;
+        if (documentFonts && documentFonts.status === 'loading') {
+          // document.fonts is not supported by IE
+          this._numDeferredObjs += 1;
+          var renderCount = this._renderCount;
+
+          documentFonts.ready.then(
+            function () {
+              this._renderDeferredData(renderCount, null, []);
+            }.bind(this)
+          );
+        }
+      },
+
+      /**
+       * Resolves the deferred data for a component and returns whether there is any deferred data to wait on.
+       * @return {boolean} True if all data has been resolved
+       * @private
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _resolveDeferredDataItems: function () {
+        // Reset stored options copy so we get the updated copy
+        // Make a copy of options except for data options with the noClone parameter on DvtJsonUtils.
+        // Cloning shouldn't be expensive if we're skipping data.
+        this._optionsCopy = dvt.JsonUtils.clone(this.options, null, this._GetComponentNoClonePaths());
+
+        // Merge css styles with with json options object
+        this._ProcessStyles(this._optionsCopy);
+        this._numDeferredObjs = 0;
+
+        // Fixing custom renderers will increment _numDeferredObjs if there are template slots
+        // because the corresponding render functions cannot be created until the templateEnginePromise has resolved
+        this._FixCustomRenderers(this._optionsCopy);
+
+        this._resolveDocumentFonts();
+
+        var self = this;
+        var paths = this._GetComponentDeferredDataPaths();
+        // Do an initial loop to determine if we need to copy the options object
+        var pathKeys = Object.keys(paths);
+        for (var k = 0; k < pathKeys.length; k++) {
+          var path = pathKeys[k];
+          var subpaths = paths[path];
+          // eslint-disable-next-line no-loop-func
+          subpaths.forEach(function (subpath) {
+            if (path === 'root') {
+              self._resolveDeferredDataItem.bind(self)(self.options, self._optionsCopy, subpath);
+            } else {
+              var suboptions = self.options[path];
+              // Deal with arrays suboptions that are arrays like legend's options['sections']
+              if (suboptions && suboptions instanceof Array) {
+                for (var i = 0; i < suboptions.length; i++) {
+                  self._resolveDeferredDataItem.bind(self)(
+                    suboptions[i],
+                    self._optionsCopy[path][i],
+                    subpath
+                  );
+                }
+              }
+              /* DataProvider Uptake : Commented out for code coverage. Uncomment for chart/nbox support
             else if (suboptions && suboptions[subpath]) {  // Deal with arrays suboptions that are keys in an object like chart's options['data']['series']
                 self._resolveDeferredDataItem.bind(self)(suboptions, self._optionsCopy[path], subpath);
             }
             */
-          }
-        });
-      }
-      return this._numDeferredObjs === 0;
-    },
-
-    /**
-     * Resolves a deferred data item for a given options object and option path.
-     * @param {Object} optionsFrom The option object to copy from
-     * @param {Object} optionsTo The option object to copy to
-     * @param {string} path  The option path to use
-     * @private
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _resolveDeferredDataItem: function (optionsFrom, optionsTo, path) {
-      var optionPath = new DvtJsonPath(optionsFrom, path);
-      var optionValue = optionPath.getValue();
-      var self = this;
-
-      if (optionValue instanceof Function) {
-        // Call functions and update the option value, creating a Promise from the result
-        optionValue = Promise.resolve(optionValue(this._GetDataContext(optionsFrom)));
-      } else if (this._IsCustomElement() && Array.isArray(optionValue)) {
-        // For custom elements, the getter always should return a Promise for
-        // data options so we just always convert arrays to Promises in the setter
-        optionValue = Promise.resolve(optionValue);
-        optionPath.setValue(optionValue, true);
-      }
-
-      if (optionValue && this._DataProviderHandler.isDataProvider(optionValue)) {
-        var isTreeDataProvider = this._DataProviderHandler.isTreeDataProvider(optionValue);
-        optionValue = self._dataValuePromise[path] || new Promise(function (resolve) {
-          var templateEnginePromise = self._TemplateHandler.getTemplateEngine();
-          var dataProviderPromise = self._DataProviderHandler.fetchAllData(optionValue, path, true); // use cached results if available
-          Promise.all([templateEnginePromise, dataProviderPromise]).then(function (values) {
-            if (optionValue === self._dataValuePromise[path]) { // make sure only the most recent data fetch is processed
-              var templateEngine = values[0];
-              var data = values[1];
-              var pathsValuesMap = self._ProcessTemplates(path, data,
-                templateEngine, isTreeDataProvider, null, true); // use cached results if available
-              self._dataValuePromise[path] = null;
-              resolve(pathsValuesMap);
             }
-          }, function () {
-            self._dataValuePromise[path] = null;
           });
-        });
-
-        self._dataValuePromise[path] = optionValue;
-      }
-
-
-      if (optionValue instanceof Promise) {
-        var renderCount = this._renderCount;
-        optionValue.then(
-          function (value) {
-            var paths = [path];
-            var values = [value];
-            if (value.paths) {
-              paths = value.paths;
-              values = value.values;
-            }
-            self._renderDeferredData(renderCount, optionsTo, paths, values);
-          },
-          function () {
-            self._renderDeferredData(renderCount, optionsTo, [path], [[]]);
-          }
-        );
-        this._numDeferredObjs += 1;
-      }
-    },
-
-    /**
-     * Checks to see if all deferred data promises have been resolved or rejected,
-     * updates the options copy with the resolved value and renders the component when ready.
-     * @param {number} renderCount The render count when this Promise was evaluated
-     * @param {Object} optionsTo The option object to copy to
-     * @param {Array<string>} paths  The option path to use
-     * @param {Array<object>} values The value to update the option path with
-     * @private
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _renderDeferredData: function (renderCount, optionsTo, paths, values) {
-      if (this._context && renderCount === this._renderCount) {
-        this._numDeferredObjs -= 1;
-        for (var i = 0; i < paths.length; i++) {
-          (new DvtJsonPath(optionsTo, paths[i])).setValue(values[i], true);
         }
+        return this._numDeferredObjs === 0;
+      },
 
-        if (this._numDeferredObjs === 0) {
-          this._RenderComponent(this._optionsCopy);
-          this._optionsCopy = null;
-        }
-      }
-    },
-
-    /**
-     * Clears the cache data provoder state for the given data property.
-     * @param {string} dataProperty The property name of the data API
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _ClearDataProviderState: function (dataProperty) {
-      this._DataProviderHandler.clear(dataProperty);
-      this._TemplateHandler.release(dataProperty);
-      this._dataValuePromise[dataProperty] = null;
-    },
-
-    /**
-     * This is called for user options changes.
-     * Any sub class that overrides this should call this._super
-     * @param {Object} options the options object
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _OptionChangeHandler: function (options) {
-      // If new data provider(s) were set, clear the corresponding data provider states.
-      // Note that the options argument contains only options deemed to be new by the framework,
-      // so any data provider values that are present in options are definitely new, and we don't need to check.
-      var dataProperties = Object.keys(this._GetSimpleDataProviderConfigs());
-      for (var i = 0; i < dataProperties.length; i++) {
-        var dataProperty = dataProperties[i];
-        if (Object.prototype.hasOwnProperty.call(options, dataProperty)) {
-          this._ClearDataProviderState(dataProperty);
-        }
-      }
-    },
-
-    /**
-     * Gets the top-level (non-event-listener) properties for the specified custom element
-     * @param {string} elementName The custom element name
-     * @return {Set} The Set of top-level (non-event-listener) properties
-     * @public
-     * @ignore
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    getElementPropertyNames: function (elementName) {
-      var propMetadata = oj.CustomElementBridge.getMetadata(elementName).properties;
-      var keys = Object.keys(propMetadata).filter(function (prop) {
-        return !propMetadata[prop]._eventListener;
-      });
-      var elementProperties = new Set();
-      keys.forEach(function (key) {
-        elementProperties.add(key);
-      });
-      return elementProperties;
-    },
-
-    /**
-     * Processes the templates using the data provider's data and returns a map of values to options to be updated.
-     * To use the default behaviour the component should override the _GetSimpleDataProviderConfigs.
-     * Any sub class implementation of this should call this._super
-     * The return's data has a _itemData that has the data for that item from the data provider.
-     * @param {string} dataProperty The property name of the data API to lookup templates for
-     * @param {Object} data The fetch results of the data provider. Contains the data and keys
-     * @param {Object} templateEngine The template engine to be used to process templates
-     * @param {boolean=} isTreeData True is the data has a tree structure, false if otherwise
-     * @param {Object=} parentKey Parent key to be used for template context
-     * @param {boolean} isRoot If true, a cache for the results is used.
-     * @return {Object} An object with paths of components options to be updated and
-     *                   their corresponding values.eg: {paths: [], values: []}
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _ProcessTemplates: function (dataProperty, data, templateEngine, isTreeData,
-      parentKey, isRoot, updateChildren) {
-      return this._TemplateHandler.processTemplates(dataProperty, data,
-        templateEngine, isTreeData, parentKey, isRoot, updateChildren);
-    },
-
-    /**
-     * Returns an object keyed by the data API name with templateName, templateElementName, resultPath, getAliasedPropertyNames, processChildrenData, processOptionData and maxFetchDepth which are used to process dataProvider data with templates.
-     * The only required fields are templateName, templateElementName and resultPath
-     * todo: add descriptions for parameters and return values for fields
-     * @return {object} Object keyed by data API names, and objects of shape {templateName: string|fxn, templateElementName: string|fxn, resultPath: string, expandedKeySet: object, getAliasedPropertyNames: fxn, processChildrenData: fxn, processOptionData: fxn, maxFetchDepth: number} as values
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _GetSimpleDataProviderConfigs: function () {
-      return {};
-    },
-
-
-    /**
-     * Allows components to switch from an Object.create-based approach to Object.assign-based approach in the TemplateHandler
-     * when dealing with a DataProvider with shaped data.  Object.assign with non-enumerable _noTemplate and _dvtNoClone properties
-     * appears to perform better, but the non-enumerable props can trip up component logic that does its own cloning (or JsonUtils.merge).
-     * As a result, making this an opt-in for now
-     *
-     * @return {boolean}
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _UseObjectAssignForShapedData: function () {
-      return false;
-    },
-
-    /**
-     * Handles events from templateHandler and dataProviderHandler
-     * Can be overriden but the sub class must call super
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _GetDPEventHandler: function () {
-      return function (event) {
-        if (event.type === 'notReady') {
-          this._NotReady();
-        } else if (event.type === 'dataUpdated') {
-          this._Render();
-        } else if (event.type === 'clearState') {
-          this._ClearDataProviderState(event.detail.dataProperty);
-        } else if (event.type === 'reset') {
-          this._TemplateHandler.clear(event.detail.dataProperty, true);
-        } else if (event.type === 'removeKeys') {
-          this._RemoveKeys(event.detail.keys);
-        }
-      }.bind(this);
-    },
-
-    /**
-     * Updates the selection
-     * @protected
-     * @instance
-     * @param {Set} removedKeys The new data
-     * @memberof oj.dvtBaseComponent
-     */
-    _RemoveKeys: function (removedKeys) {
-      var selectionChanged;
-      var selection = this.options.selection;
-      var newSelection;
-      var keySet = new KeySetImpl(removedKeys);
-      if (selection && selection.length > 0) {
-        newSelection = selection.slice(0);
-        for (var i = newSelection.length - 1; i >= 0; i--) {
-          if (keySet.has(newSelection[i])) {
-            selectionChanged = true;
-            newSelection.splice(i, 1);
-          }
-        }
-        if (selectionChanged) {
-          this._UserOptionChange('selection', newSelection);
-        }
-      }
-    },
-
-    /**
-     * Creates a callback function that will be used to fetch additional data from data provider
-     * Any sub class implementation of this should call this._super
-     * @param {string} dataProperty The property name of the data API
-     * @return {Function} fetch data callback that uses root data provider, expanded key set, node data and node key
-     * to retrieve child nodes for the specified parent node
-     * @private
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     * @ignore
-     */
-    _getFetchDataHandler: function (dataProperty) {
-      var resultPath = this._GetSimpleDataProviderConfigs()[dataProperty].resultPath;
-
-      return function (rootDataProvider, expandedKeySet, nodeData, nodeKey) {
-        // Get new data
-        var dataPromise = this._DataProviderHandler.fetchChildrenData(dataProperty, rootDataProvider,
-          nodeKey, expandedKeySet);
-        var templateEnginePromise = this._TemplateHandler.getTemplateEngine();
-        return Promise.all([dataPromise, templateEnginePromise]).then(function (values) {
-          // Get templatized data
-          var processedTemplates = this._ProcessTemplates(dataProperty,
-            { data: values[0].data, keys: values[0].keys }, values[1], true, nodeKey, false, true);
-          var childrenNodes = processedTemplates.values[0];
-
-          if (nodeData) { // update parent data
-            // eslint-disable-next-line no-param-reassign
-            nodeData[resultPath] = childrenNodes;
-          }
-          return childrenNodes;
-        }.bind(this));
-      }.bind(this);
-    },
-
-    /**
-     * Renders the component.
-     * @param {Object} options The options to render the component with
-     * @param {boolean} isResize True if we are rendering due to a resize event.
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _RenderComponent: function (options, isResize) {
-      // We do this check in _Render but since our rendering is asynchronous, the DOM state could have changed
-      // in that time, e.g. when used inside an oj-switcher
-      // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
-      // getBBox calls will not return the correct values.
-      // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
-      if (!this._context.isReadyToRender()) {
-        this._renderNeeded = true;
-        this._MakeReady();
-      } else {
-        // Cleanup
-       this._CleanAllTemplates(isResize);
-
-        // If flowing layout is supported, resize may happen during render, but we
-        // don't want the resize listener to be triggered as it causes double render.
-        // Thus we should remove the resize listener temporarily.
-        var bRemoveResizeListener = this._IsFlowingLayoutSupported() && this._resizeListener;
-        if (bRemoveResizeListener) {
-          this._removeResizeListener();
-        }
-
-        this._component.render(isResize ? null : options, this._width, this._height);
-
-        if (bRemoveResizeListener) {
-          this._addResizeListener();
-        }
-
-        // Remove the tabindex from the element to disable keyboard handling if the component
-        // does not have a role on the parent element like for non-interactive legends.
-        // Make sure not to override any app set tabindex.
-        if (!this.element.attr('role')) {
-          this.element.attr('tabindex', null);
-        } else if (!this.element[0].hasAttribute('tabindex')) {
-          this.element.attr('tabindex', 0);
-        }
-      }
-    },
-
-    /**
-     * Returns the data context passed to data function callbacks.
-     * @param {Object} options The options to retrieve the data context for
-     * @return {Object}
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    // eslint-disable-next-line no-unused-vars
-    _GetDataContext: function (options) {
-      return {};
-    },
-
-    /**
-     * Returns whether flowing layout is supported for the component.
-     * If this returns true, the component will render at the preferred size of
-     * the component if the user doesn't specify the width and height in the div.
-     * If this returns false, the component will always render at the browser-
-     * computed width and height.
-     * @return {boolean}
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _IsFlowingLayoutSupported: function () {
-      return false;
-    },
-
-    /**
-     * Returns a promise that is resolved when the component is finished rendering.
-     * This can be used to determine when it is okay to call automation and other APIs on the component.
-     * @returns {Promise}
-     * @ignore
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    whenReady: function () {
-      if (this._ready) {
-        return Promise.resolve(true);
-      }
-      if (!this._promise) {
+      /**
+       * Resolves a deferred data item for a given options object and option path.
+       * @param {Object} optionsFrom The option object to copy from
+       * @param {Object} optionsTo The option object to copy to
+       * @param {string} path  The option path to use
+       * @private
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _resolveDeferredDataItem: function (optionsFrom, optionsTo, path) {
+        var optionPath = new DvtJsonPath(optionsFrom, path);
+        var optionValue = optionPath.getValue();
         var self = this;
-        this._promise = new Promise(function (resolve) {
-          self._promiseResolve = resolve;
+
+        if (optionValue instanceof Function) {
+          // Call functions and update the option value, creating a Promise from the result
+          optionValue = Promise.resolve(optionValue(this._GetDataContext(optionsFrom)));
+        } else if (this._IsCustomElement() && Array.isArray(optionValue)) {
+          // For custom elements, the getter always should return a Promise for
+          // data options so we just always convert arrays to Promises in the setter
+          optionValue = Promise.resolve(optionValue);
+          optionPath.setValue(optionValue, true);
+        }
+
+        if (optionValue && this._DataProviderHandler.isDataProvider(optionValue)) {
+          var isTreeDataProvider = this._DataProviderHandler.isTreeDataProvider(optionValue);
+          optionValue =
+            self._dataValuePromise[path] ||
+            new Promise(function (resolve) {
+              var templateEnginePromise = self._TemplateHandler.getTemplateEngine();
+              var dataProviderPromise = self._DataProviderHandler.fetchAllData(
+                optionValue,
+                path,
+                true
+              ); // use cached results if available
+              Promise.all([templateEnginePromise, dataProviderPromise]).then(
+                function (values) {
+                  if (optionValue === self._dataValuePromise[path]) {
+                    // make sure only the most recent data fetch is processed
+                    var templateEngine = values[0];
+                    var data = values[1];
+                    var pathsValuesMap = self._ProcessTemplates(
+                      path,
+                      data,
+                      templateEngine,
+                      isTreeDataProvider,
+                      null,
+                      true
+                    ); // use cached results if available
+                    self._dataValuePromise[path] = null;
+                    resolve(pathsValuesMap);
+                  }
+                },
+                function () {
+                  self._dataValuePromise[path] = null;
+                }
+              );
+            });
+
+          self._dataValuePromise[path] = optionValue;
+        }
+
+        if (optionValue instanceof Promise) {
+          var renderCount = this._renderCount;
+          optionValue.then(
+            function (value) {
+              var paths = [path];
+              var values = [value];
+              if (value.paths) {
+                paths = value.paths;
+                values = value.values;
+              }
+              self._renderDeferredData(renderCount, optionsTo, paths, values);
+            },
+            function () {
+              self._renderDeferredData(renderCount, optionsTo, [path], [[]]);
+            }
+          );
+          this._numDeferredObjs += 1;
+        }
+      },
+
+      /**
+       * Checks to see if all deferred data promises have been resolved or rejected,
+       * updates the options copy with the resolved value and renders the component when ready.
+       * @param {number} renderCount The render count when this Promise was evaluated
+       * @param {Object} optionsTo The option object to copy to
+       * @param {Array<string>} paths  The option path to use
+       * @param {Array<object>} values The value to update the option path with
+       * @private
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _renderDeferredData: function (renderCount, optionsTo, paths, values) {
+        if (this._context && renderCount === this._renderCount) {
+          this._numDeferredObjs -= 1;
+          for (var i = 0; i < paths.length; i++) {
+            new DvtJsonPath(optionsTo, paths[i]).setValue(values[i], true);
+          }
+
+          if (this._numDeferredObjs === 0) {
+            this._RenderComponent(this._optionsCopy);
+            this._optionsCopy = null;
+          }
+        }
+      },
+
+      /**
+       * Clears the cache data provoder state for the given data property.
+       * @param {string} dataProperty The property name of the data API
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _ClearDataProviderState: function (dataProperty) {
+        this._DataProviderHandler.clear(dataProperty);
+        this._TemplateHandler.release(dataProperty);
+        this._dataValuePromise[dataProperty] = null;
+      },
+
+      /**
+       * This is called for user options changes.
+       * Any sub class that overrides this should call this._super
+       * @param {Object} options the options object
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _OptionChangeHandler: function (options) {
+        // If new data provider(s) were set, clear the corresponding data provider states.
+        // Note that the options argument contains only options deemed to be new by the framework,
+        // so any data provider values that are present in options are definitely new, and we don't need to check.
+        var dataProperties = Object.keys(this._GetSimpleDataProviderConfigs());
+        for (var i = 0; i < dataProperties.length; i++) {
+          var dataProperty = dataProperties[i];
+          if (Object.prototype.hasOwnProperty.call(options, dataProperty)) {
+            this._ClearDataProviderState(dataProperty);
+          }
+        }
+      },
+
+      /**
+       * Gets the top-level (non-event-listener) properties for the specified custom element
+       * @param {string} elementName The custom element name
+       * @return {Set} The Set of top-level (non-event-listener) properties
+       * @public
+       * @ignore
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      getElementPropertyNames: function (elementName) {
+        var propMetadata = oj.CustomElementBridge.getMetadata(elementName).properties;
+        var keys = Object.keys(propMetadata).filter(function (prop) {
+          return !propMetadata[prop]._eventListener;
         });
-      }
-      return this._promise;
-    },
+        var elementProperties = new Set();
+        keys.forEach(function (key) {
+          elementProperties.add(key);
+        });
+        return elementProperties;
+      },
 
-    /**
-     * Called by component to declare rendering is not finished. This method currently handles the ready state
-     * for the component whenReady API, the page level BusyContext, and the static whenReady API for the custom element
-     * version of this component.
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _NotReady: function () {
-      // For component whenReady API
-      this._ready = false;
+      /**
+       * Processes the templates using the data provider's data and returns a map of values to options to be updated.
+       * To use the default behaviour the component should override the _GetSimpleDataProviderConfigs.
+       * Any sub class implementation of this should call this._super
+       * The return's data has a _itemData that has the data for that item from the data provider.
+       * @param {string} dataProperty The property name of the data API to lookup templates for
+       * @param {Object} data The fetch results of the data provider. Contains the data and keys
+       * @param {Object} templateEngine The template engine to be used to process templates
+       * @param {boolean=} isTreeData True is the data has a tree structure, false if otherwise
+       * @param {Object=} parentKey Parent key to be used for template context
+       * @param {boolean} isRoot If true, a cache for the results is used.
+       * @return {Object} An object with paths of components options to be updated and
+       *                   their corresponding values.eg: {paths: [], values: []}
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _ProcessTemplates: function (
+        dataProperty,
+        data,
+        templateEngine,
+        isTreeData,
+        parentKey,
+        isRoot,
+        updateChildren
+      ) {
+        return this._TemplateHandler.processTemplates(
+          dataProperty,
+          data,
+          templateEngine,
+          isTreeData,
+          parentKey,
+          isRoot,
+          updateChildren
+        );
+      },
 
-      // For page level BusyContext
-      // Only decrement ready state when there's no deferred data. Otherwise rendering will be blocked
-      // until all deferred data are resolved and we will only get one ready state increment.
-      if (this._numDeferredObjs === 0) {
-        // If we've already registered a busy state with the page's busy context, don't need to do anything further
-        if (!this._readyResolveFunc) {
-          var busyContext = Context.getContext(this.element[0]).getBusyContext();
-          var options = {
-            description: "The component identified by '" + this.element.attr('id') +
-              "' is being loaded."
+      /**
+       * Returns an object keyed by the data API name with templateName, templateElementName, resultPath, getAliasedPropertyNames, processChildrenData, processOptionData and maxFetchDepth which are used to process dataProvider data with templates.
+       * The only required fields are templateName, templateElementName and resultPath
+       * todo: add descriptions for parameters and return values for fields
+       * @return {object} Object keyed by data API names, and objects of shape {templateName: string|fxn, templateElementName: string|fxn, resultPath: string, expandedKeySet: object, getAliasedPropertyNames: fxn, processChildrenData: fxn, processOptionData: fxn, maxFetchDepth: number} as values
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _GetSimpleDataProviderConfigs: function () {
+        return {};
+      },
+
+      /**
+       * Allows components to switch from an Object.create-based approach to Object.assign-based approach in the TemplateHandler
+       * when dealing with a DataProvider with shaped data.  Object.assign with non-enumerable _noTemplate and _dvtNoClone properties
+       * appears to perform better, but the non-enumerable props can trip up component logic that does its own cloning (or JsonUtils.merge).
+       * As a result, making this an opt-in for now
+       *
+       * @return {boolean}
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _UseObjectAssignForShapedData: function () {
+        return false;
+      },
+
+      /**
+       * Handles events from templateHandler and dataProviderHandler
+       * Can be overriden but the sub class must call super
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _GetDPEventHandler: function () {
+        return function (event) {
+          if (event.type === 'notReady') {
+            this._NotReady();
+          } else if (event.type === 'dataUpdated') {
+            this._Render();
+          } else if (event.type === 'clearState') {
+            this._ClearDataProviderState(event.detail.dataProperty);
+          } else if (event.type === 'reset') {
+            this._TemplateHandler.clear(event.detail.dataProperty, true);
+          } else if (event.type === 'removeKeys') {
+            this._RemoveKeys(event.detail.keys);
+          }
+        }.bind(this);
+      },
+
+      /**
+       * Updates the selection
+       * @protected
+       * @instance
+       * @param {Set} removedKeys The new data
+       * @memberof oj.dvtBaseComponent
+       */
+      _RemoveKeys: function (removedKeys) {
+        var selectionChanged;
+        var selection = this.options.selection;
+        var newSelection;
+        var keySet = new KeySetImpl(removedKeys);
+        if (selection && selection.length > 0) {
+          newSelection = selection.slice(0);
+          for (var i = newSelection.length - 1; i >= 0; i--) {
+            if (keySet.has(newSelection[i])) {
+              selectionChanged = true;
+              newSelection.splice(i, 1);
+            }
+          }
+          if (selectionChanged) {
+            this._UserOptionChange('selection', newSelection);
+          }
+        }
+      },
+
+      /**
+       * Creates a callback function that will be used to fetch additional data from data provider
+       * Any sub class implementation of this should call this._super
+       * @param {string} dataProperty The property name of the data API
+       * @return {Function} fetch data callback that uses root data provider, expanded key set, node data and node key
+       * to retrieve child nodes for the specified parent node
+       * @private
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       * @ignore
+       */
+      _getFetchDataHandler: function (dataProperty) {
+        var resultPath = this._GetSimpleDataProviderConfigs()[dataProperty].resultPath;
+
+        return function (rootDataProvider, expandedKeySet, nodeData, nodeKey) {
+          // Get new data
+          var dataPromise = this._DataProviderHandler.fetchChildrenData(
+            dataProperty,
+            rootDataProvider,
+            nodeKey,
+            expandedKeySet
+          );
+          var templateEnginePromise = this._TemplateHandler.getTemplateEngine();
+          return Promise.all([dataPromise, templateEnginePromise]).then(
+            function (values) {
+              // Get templatized data
+              var processedTemplates = this._ProcessTemplates(
+                dataProperty,
+                { data: values[0].data, keys: values[0].keys },
+                values[1],
+                true,
+                nodeKey,
+                false,
+                true
+              );
+              var childrenNodes = processedTemplates.values[0];
+
+              if (nodeData) {
+                // update parent data
+                // eslint-disable-next-line no-param-reassign
+                nodeData[resultPath] = childrenNodes;
+              }
+              return childrenNodes;
+            }.bind(this)
+          );
+        }.bind(this);
+      },
+
+      /**
+       * Renders the component.
+       * @param {Object} options The options to render the component with
+       * @param {boolean} isResize True if we are rendering due to a resize event.
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _RenderComponent: function (options, isResize) {
+        // We do this check in _Render but since our rendering is asynchronous, the DOM state could have changed
+        // in that time, e.g. when used inside an oj-switcher
+        // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
+        // getBBox calls will not return the correct values.
+        // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
+        if (!this._context.isReadyToRender()) {
+          this._renderNeeded = true;
+          this._MakeReady();
+        } else {
+          // Cleanup
+          this._CleanAllTemplates(isResize);
+
+          // If flowing layout is supported, resize may happen during render, but we
+          // don't want the resize listener to be triggered as it causes double render.
+          // Thus we should remove the resize listener temporarily.
+          var bRemoveResizeListener = this._IsFlowingLayoutSupported() && this._resizeListener;
+          if (bRemoveResizeListener) {
+            this._removeResizeListener();
+          }
+
+          this._component.render(isResize ? null : options, this._width, this._height);
+
+          if (bRemoveResizeListener) {
+            this._addResizeListener();
+          }
+
+          // Remove the tabindex from the element to disable keyboard handling if the component
+          // does not have a role on the parent element like for non-interactive legends.
+          // Make sure not to override any app set tabindex.
+          if (!this.element.attr('role')) {
+            this.element.attr('tabindex', null);
+          } else if (!this.element[0].hasAttribute('tabindex')) {
+            this.element.attr('tabindex', 0);
+          }
+        }
+      },
+
+      /**
+       * Returns the data context passed to data function callbacks.
+       * @param {Object} options The options to retrieve the data context for
+       * @return {Object}
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      // eslint-disable-next-line no-unused-vars
+      _GetDataContext: function (options) {
+        return {};
+      },
+
+      /**
+       * Returns whether flowing layout is supported for the component.
+       * If this returns true, the component will render at the preferred size of
+       * the component if the user doesn't specify the width and height in the div.
+       * If this returns false, the component will always render at the browser-
+       * computed width and height.
+       * @return {boolean}
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _IsFlowingLayoutSupported: function () {
+        return false;
+      },
+
+      /**
+       * Returns a promise that is resolved when the component is finished rendering.
+       * This can be used to determine when it is okay to call automation and other APIs on the component.
+       * @returns {Promise}
+       * @ignore
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      whenReady: function () {
+        if (this._ready) {
+          return Promise.resolve(true);
+        }
+        if (!this._promise) {
+          var self = this;
+          this._promise = new Promise(function (resolve) {
+            self._promiseResolve = resolve;
+          });
+        }
+        return this._promise;
+      },
+
+      /**
+       * Called by component to declare rendering is not finished. This method currently handles the ready state
+       * for the component whenReady API, the page level BusyContext, and the static whenReady API for the custom element
+       * version of this component.
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _NotReady: function () {
+        // For component whenReady API
+        this._ready = false;
+
+        // For page level BusyContext
+        // Only decrement ready state when there's no deferred data. Otherwise rendering will be blocked
+        // until all deferred data are resolved and we will only get one ready state increment.
+        if (this._numDeferredObjs === 0) {
+          // If we've already registered a busy state with the page's busy context, don't need to do anything further
+          if (!this._readyResolveFunc) {
+            var busyContext = Context.getContext(this.element[0]).getBusyContext();
+            var options = {
+              description:
+                "The component identified by '" + this.element.attr('id') + "' is being loaded."
+            };
+            this._readyResolveFunc = busyContext.addBusyState(options);
+          }
+        }
+      },
+
+      /**
+       * Called by component to declare rendering is finished. This method currently handles the ready state
+       * for the component whenReady API, the page level BusyContext, and the static whenReady API for the custom element
+       * version of this component.
+       * @protected
+       * @instance
+       * @memberof oj.dvtBaseComponent
+       */
+      _MakeReady: function () {
+        // For component whenReady API
+        if (this._promiseResolve) {
+          this._promiseResolve(true);
+          this._promiseResolve = null;
+        }
+        this._ready = true;
+        this._promise = null;
+
+        // For page level BusyContext
+        if (this._readyResolveFunc) {
+          this._readyResolveFunc();
+          this._readyResolveFunc = null;
+        }
+      },
+
+      /**
+       * Sanitize options variables
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      _ProcessOptions: function () {
+        if (dvt.Agent.isEnvironmentTest()) {
+          // Hook to pass toolkit-private API in dvt-static tests
+          this.options = Object.assign(this.options, this.element[0].__dvtToolkit);
+        }
+        // Convert the tooltip to an object if the deprecated API structure is passed in
+        var tooltip = this.options.tooltip;
+        if (tooltip && tooltip._renderer) {
+          this.options.tooltip = {
+            renderer: this._GetTemplateRenderer(tooltip._renderer, 'tooltip')
           };
-          this._readyResolveFunc = busyContext.addBusyState(options);
         }
-      }
-    },
+      },
 
-    /**
-     * Called by component to declare rendering is finished. This method currently handles the ready state
-     * for the component whenReady API, the page level BusyContext, and the static whenReady API for the custom element
-     * version of this component.
-     * @protected
-     * @instance
-     * @memberof oj.dvtBaseComponent
-     */
-    _MakeReady: function () {
-      // For component whenReady API
-      if (this._promiseResolve) {
-        this._promiseResolve(true);
-        this._promiseResolve = null;
-      }
-      this._ready = true;
-      this._promise = null;
+      /**
+       * Returns a wrapper function for custom elements that converts an object
+       * returned by a custom renderer into an old format supported by widgets
+       * and toolkit code.
+       * @param {Function} origRenderer Renderer function called to create custom content
+       * @return {Function} A wrapper function that will used to convert result into toolkit format
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      _WrapCustomElementRenderer: function (origRenderer) {
+        var self = this;
+        var customRenderer = function (context) {
+          // add dvt context for the knockout template rendering
+          // eslint-disable-next-line no-param-reassign
+          context._dvtcontext = self._context;
+          var obj = origRenderer(context);
 
-      // For page level BusyContext
-      if (this._readyResolveFunc) {
-        this._readyResolveFunc();
-        this._readyResolveFunc = null;
-      }
-    },
+          // template cleanup section - template name and cleanup function are passed through context
+          if (context._templateName && context._templateCleanup) {
+            self._AddTemplate(context);
 
-    /**
-     * Sanitize options variables
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-    _ProcessOptions: function () {
-      if (dvt.Agent.isEnvironmentTest()) {
-        // Hook to pass toolkit-private API in dvt-static tests
-        this.options = Object.assign(this.options, this.element[0].__dvtToolkit);
-      }
-      // Convert the tooltip to an object if the deprecated API structure is passed in
-      var tooltip = this.options.tooltip;
-      if (tooltip && tooltip._renderer) {
-        this.options.tooltip = { renderer: this._GetTemplateRenderer(tooltip._renderer, 'tooltip') };
-      }
-    },
-
-    /**
-     * Returns a wrapper function for custom elements that converts an object
-     * returned by a custom renderer into an old format supported by widgets
-     * and toolkit code.
-     * @param {Function} origRenderer Renderer function called to create custom content
-     * @return {Function} A wrapper function that will used to convert result into toolkit format
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-    _WrapCustomElementRenderer: function (origRenderer) {
-      var self = this;
-      var customRenderer = function (context) {
-        // add dvt context for the knockout template rendering
-        // eslint-disable-next-line no-param-reassign
-        context._dvtcontext = self._context;
-        var obj = origRenderer(context);
-
-        // template cleanup section - template name and cleanup function are passed through context
-        if (context._templateName && context._templateCleanup) {
-          self._AddTemplate(context);
-        }
-
-        // tooltip case: don't check 'insert' property, if 'preventDefault' is set to true
-        if (obj && obj.preventDefault !== true && obj.insert) {
-          var insertObj = obj.insert;
-          // handle returns for knockout template renderer
-          if (insertObj.classList && insertObj.classList.contains('oj-dvtbase')) {
-            return self._GetDvtComponent(insertObj);
+            if (context._templateName === 'tooltipTemplate') {
+              // JET-51512 - the tooltip code routinely removes the nodes on tooltip hide
+              // or tooltip replacement. The component should have a way to clean the template
+              // before removing nodes, othewise it inflates the template array and
+              // breaks the cleanup logic in Preact templates.
+              const tooltipCleanupFunc = self._cleanTooltipTemplate();
+              Object.defineProperty(context, '_tooltipTemplateCleanup', {
+                value: () => tooltipCleanupFunc(context._templateCleanup),
+                enumerable: false
+              });
+            }
           }
-          return insertObj;
-        }
 
-        return null;
-      };
-      return origRenderer ? customRenderer : null;
-    },
+          // tooltip case: don't check 'insert' property, if 'preventDefault' is set to true
+          if (obj && obj.preventDefault !== true && obj.insert) {
+            var insertObj = obj.insert;
+            // handle returns for knockout template renderer
+            if (insertObj.classList && insertObj.classList.contains('oj-dvtbase')) {
+              return self._GetDvtComponent(insertObj);
+            }
+            return insertObj;
+          }
 
-    /**
-     * Iterates through custom renderer options and replaces them with wrapper
-     * functions that supports format accepted by DVT Toolkit components
-     * @param {Object} options Options for rendering the component
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-    _FixCustomRenderers: function (options) {
-      if (this._IsCustomElement()) {
-        var renderers = this._GetComponentRendererOptions();
-        for (var i = 0; i < renderers.length; i++) {
-          var optionPath = renderers[i].path;
-          var slot = renderers[i].slot;
-          var templates = this._TemplateHandler.getTemplates();
-          if (slot && templates[slot] && templates[slot][0]) {
-            this._ProcessInlineTemplateRenderer(options, optionPath,
-              templates[slot][0], slot);
-          } else {
-            var path = new DvtJsonPath(options, optionPath);
-            var value = path.getValue();
-            if (value) {
-              path.setValue(this._WrapCustomElementRenderer(value), true);
+          return null;
+        };
+        return origRenderer ? customRenderer : null;
+      },
+
+      /**
+       * Iterates through custom renderer options and replaces them with wrapper
+       * functions that supports format accepted by DVT Toolkit components
+       * @param {Object} options Options for rendering the component
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      _FixCustomRenderers: function (options) {
+        if (this._IsCustomElement()) {
+          var renderers = this._GetComponentRendererOptions();
+          for (var i = 0; i < renderers.length; i++) {
+            var optionPath = renderers[i].path;
+            var slot = renderers[i].slot;
+            var templates = this._TemplateHandler.getTemplates();
+            if (slot && templates[slot] && templates[slot][0]) {
+              this._ProcessInlineTemplateRenderer(options, optionPath, templates[slot][0], slot);
+            } else {
+              var path = new DvtJsonPath(options, optionPath);
+              var value = path.getValue();
+              if (value) {
+                path.setValue(this._WrapCustomElementRenderer(value), true);
+              }
             }
           }
         }
-      }
-    },
+      },
 
-    /**
-     * Returns an array of options that contain custom renderer paths
-     * for the given component.
-     * @return {Array}
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-    _GetComponentRendererOptions: function () {
-      return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' }];
-    },
+      /**
+       * Returns an array of options that contain custom renderer paths
+       * for the given component.
+       * @return {Array}
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      _GetComponentRendererOptions: function () {
+        return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' }];
+      },
 
-    /**
-     * Creates a callback function that will be used as a custom renderer for a template that will be used directly.
-     * @param {Function} templateFunction Template function used to render a knockout template
-     * @param {string} templateName The name of the template
-     * @return {Function} A function that will be used as a custom renderer
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-    _GetTemplateRenderer: function (templateFunction, templateName) {
-      var self = this;
-      return function (context) {
-        // Create a dummy div
-        var dummyDiv = document.createElement('div');
-        dummyDiv.style.display = 'none';
+      /**
+       * Creates a callback function that will be used as a custom renderer for a template that will be used directly.
+       * @param {Function} templateFunction Template function used to render a knockout template
+       * @param {string} templateName The name of the template
+       * @return {Function} A function that will be used as a custom renderer
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      _GetTemplateRenderer: function (templateFunction, templateName) {
+        var self = this;
+        return function (context) {
+          // Create a dummy div
+          var dummyDiv = document.createElement('div');
+          dummyDiv.style.display = 'none';
 
-        // Call the ko template renderer with the dummy div and context
-        templateFunction({ parentElement: dummyDiv, context: context });
+          // Call the ko template renderer with the dummy div and context
+          templateFunction({ parentElement: dummyDiv, context: context });
 
-        var elem = dummyDiv.children[0];
-        if (elem) {
-          // Save a reference to cleanup function for the dummyDiv
-          // for ko cleanup to prevent memory leaks
-          self._AddTemplate({
-            _templateName: templateName,
-            _templateCleanup: function () {
-              $(dummyDiv).remove();
-            }
-          });
+          var elem = dummyDiv.children[0];
+          if (elem) {
+            // Save a reference to cleanup function for the dummyDiv
+            // for ko cleanup to prevent memory leaks
+            self._AddTemplate({
+              _templateName: templateName,
+              _templateCleanup: function () {
+                $(dummyDiv).remove();
+              }
+            });
 
-          dummyDiv.removeChild(elem);
-          $(dummyDiv).remove();
-          return elem;
-        }
-        return null;
-      };
-    },
-
-    /**
-     * Creates a callback function that will be used as a custom renderer for data items.
-     * For components like ojDiagram and ojThematicMap that supports ko templates for stamping
-     * data items, the component will reparent the svg element so we have special dummyDiv handling
-     * for these cases.
-     * @param {Function} templateFunction Template function used to render a knockout template
-     * @param {string} templateName The name of the template
-     * @return {Function} A function that will be used as a custom renderer
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-    _GetTemplateDataRenderer: function (templateFunction, templateName) {
-      var self = this;
-      return function (context) {
-        // Create a dummy div
-        var dummyDiv = document.createElement('div');
-        dummyDiv.style.display = 'none';
-        dummyDiv._dvtcontext = self._context;
-        self.element.append(dummyDiv); // @HTMLUpdateOK
-
-        // Call the ko template renderer with the dummy div and context
-        templateFunction({ parentElement: dummyDiv, data: context.data });
-
-        var elem = dummyDiv.children[0];
-        if (elem) {
-          // Save a reference to cleanup function for the dummyDiv
-          // for ko cleanup to prevent memory leaks
-          self._AddTemplate({
-            _templateName: templateName,
-            _templateCleanup: function () {
-              $(dummyDiv).remove();
-            }
-          });
-
-          // The dummy div can be removed for custom svg elements, but need to be
-          // kept around for stamped DVTs so the oj components aren't removed.
-          if (elem.namespaceURI === 'http://www.w3.org/2000/svg') {
             dummyDiv.removeChild(elem);
             $(dummyDiv).remove();
             return elem;
           }
-          return self._GetDvtComponent(elem);
+          return null;
+        };
+      },
+
+      /**
+       * Creates a callback function that will be used as a custom renderer for data items.
+       * For components like ojDiagram and ojThematicMap that supports ko templates for stamping
+       * data items, the component will reparent the svg element so we have special dummyDiv handling
+       * for these cases.
+       * @param {Function} templateFunction Template function used to render a knockout template
+       * @param {string} templateName The name of the template
+       * @return {Function} A function that will be used as a custom renderer
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      _GetTemplateDataRenderer: function (templateFunction, templateName) {
+        var self = this;
+        return function (context) {
+          // Create a dummy div
+          var dummyDiv = document.createElement('div');
+          dummyDiv.style.display = 'none';
+          dummyDiv._dvtcontext = self._context;
+          self.element.append(dummyDiv); // @HTMLUpdateOK
+
+          // Call the ko template renderer with the dummy div and context
+          templateFunction({ parentElement: dummyDiv, data: context.data });
+
+          var elem = dummyDiv.children[0];
+          if (elem) {
+            // Save a reference to cleanup function for the dummyDiv
+            // for ko cleanup to prevent memory leaks
+            self._AddTemplate({
+              _templateName: templateName,
+              _templateCleanup: function () {
+                $(dummyDiv).remove();
+              }
+            });
+
+            // The dummy div can be removed for custom svg elements, but need to be
+            // kept around for stamped DVTs so the oj components aren't removed.
+            if (elem.namespaceURI === 'http://www.w3.org/2000/svg') {
+              dummyDiv.removeChild(elem);
+              $(dummyDiv).remove();
+              return elem;
+            }
+            return self._GetDvtComponent(elem);
+          }
+          return null;
+        };
+      },
+
+      /**
+       * Returns a wrapper funtion used to render inline templates
+       * @param {Object} origRenderer The original template renderer.
+       * @param {string} templateName The name of the template
+       * @param {string} option The option name
+       * @return {Function} Returns a wrapper funtion used to render inline templates
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      // eslint-disable-next-line no-unused-vars
+      _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {
+        // default implementation does nothing.
+        return origRenderer;
+      },
+
+      /**
+       * Creates a callback function that will be used as a custom renderer for an inline template slot.
+       * @param {Object} options Options for rendering the component
+       * @param {string} optionPath The path to set the generated renderer function
+       * @param {Element} templateElement The <template> element
+       * @param {string} templateName The name of the template
+       * @return {Function} A function that will be used as a custom renderer
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      _ProcessInlineTemplateRenderer: function (options, optionPath, templateElement, templateName) {
+        var renderCount = this._renderCount;
+        this._numDeferredObjs += 1;
+        var templateEnginePromise = this._TemplateHandler.getTemplateEngine();
+        templateEnginePromise.then(
+          function (templateEngine) {
+            var templateRenderer = function (context) {
+              return this._TemplateRenderer(context, templateEngine, templateElement, templateName);
+            }.bind(this);
+            templateRenderer = this._WrapInlineTemplateRenderer(
+              templateRenderer,
+              templateName,
+              optionPath
+            );
+            this._renderDeferredData(
+              renderCount,
+              options,
+              [optionPath],
+              [this._WrapCustomElementRenderer(templateRenderer)]
+            );
+          }.bind(this)
+        );
+      },
+
+      /**
+       * Executes the inline template and returns the nodes from the template
+       * @param {Object} context
+       * @param {Object} templateEngine The template engine to be used to process templates
+       * @param {Element} templateElement The <template> element
+       * @param {string} templateName The name of the template
+       * @return {Object}
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      _TemplateRenderer: function (context, templateEngine, templateElement, templateName) {
+        var nodes = templateEngine.execute(this.element[0], templateElement, context);
+        if (nodes && nodes.length > 0) {
+          Object.defineProperty(context, '_templateCleanup', {
+            value: function () {
+              nodes.forEach(function (node) {
+                templateEngine.clean(node);
+              });
+            },
+            enumerable: false
+          });
+          Object.defineProperty(context, '_templateName', {
+            value: templateName,
+            enumerable: false
+          });
+          return { insert: nodes };
         }
-        return null;
-      };
-    },
+        return { preventDefault: true };
+      },
 
-    /**
-     * Returns a wrapper funtion used to render inline templates
-     * @param {Object} origRenderer The original template renderer.
-     * @param {string} templateName The name of the template
-     * @param {string} option The option name
-     * @return {Function} Returns a wrapper funtion used to render inline templates
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-    // eslint-disable-next-line no-unused-vars
-    _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {
-      // default implementation does nothing.
-      return origRenderer;
-    },
-
-    /**
-     * Creates a callback function that will be used as a custom renderer for an inline template slot.
-     * @param {Object} options Options for rendering the component
-     * @param {string} optionPath The path to set the generated renderer function
-     * @param {Element} templateElement The <template> element
-     * @param {string} templateName The name of the template
-     * @return {Function} A function that will be used as a custom renderer
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-    _ProcessInlineTemplateRenderer: function (options, optionPath,
-      templateElement, templateName) {
-      var renderCount = this._renderCount;
-      this._numDeferredObjs += 1;
-      var templateEnginePromise = this._TemplateHandler.getTemplateEngine();
-      templateEnginePromise.then(function (templateEngine) {
-        var templateRenderer = function (context) {
-          return this._TemplateRenderer(context, templateEngine, templateElement, templateName);
-        }.bind(this);
-        templateRenderer = this._WrapInlineTemplateRenderer(templateRenderer,
-          templateName, optionPath);
-        this._renderDeferredData(renderCount, options, [optionPath],
-          [this._WrapCustomElementRenderer(templateRenderer)]);
-      }.bind(this));
-    },
-
-  /**
-     * Executes the inline template and returns the nodes from the template
-     * @param {Object} context
-     * @param {Object} templateEngine The template engine to be used to process templates
-     * @param {Element} templateElement The <template> element
-     * @param {string} templateName The name of the template
-     * @return {Object}
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-   _TemplateRenderer: function (context, templateEngine, templateElement, templateName) {
-      var nodes = templateEngine.execute(this.element[0], templateElement,
-        context);
-      if (nodes && nodes.length > 0) {
-        Object.defineProperty(context, '_templateCleanup', {
-          value: function () {
-            nodes.forEach(function (node) { templateEngine.clean(node); });
-          },
-          enumerable: false
-        });
-        Object.defineProperty(context, '_templateName', {
-          value: templateName,
-          enumerable: false
-        });
-        return { insert: nodes };
-      }
-      return { preventDefault: true };
-    },
-
-    /**
-     * Cleans all templates stored by the component
-     * @protected
-     * @param {Boolean} isResize true if this is a resize event
-     * @memberof oj.dvtBaseComponent
-     */
-    // eslint-disable-next-line no-unused-vars
-    _CleanAllTemplates: function (isResize) {
-      var templateNames = Object.keys(this._templateMap);
-      for (var i = 0; i < templateNames.length; i++) {
-        var templateName = templateNames[i];
-        this._CleanTemplate(templateName);
-      }
-    },
-
-    /**
-     * Cleans a specific template stored by the component
-     * @param {string} templateName The name of the template to clean
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-    _CleanTemplate: function (templateName) {
-      if (this._templateMap[templateName]) {
-        var length = this._templateMap[templateName].length;
-        for (var i = 0; i < length; i++) {
-          this._templateMap[templateName][i]();
+      /**
+       * Cleans all templates stored by the component
+       * @protected
+       * @param {Boolean} isResize true if this is a resize event
+       * @memberof oj.dvtBaseComponent
+       */
+      // eslint-disable-next-line no-unused-vars
+      _CleanAllTemplates: function (isResize) {
+        var templateNames = Object.keys(this._templateMap);
+        for (var i = 0; i < templateNames.length; i++) {
+          var templateName = templateNames[i];
+          this._CleanTemplate(templateName);
         }
-        this._templateMap[templateName] = [];
+      },
+
+      /**
+       * Cleans a specific template stored by the component
+       * @param {string} templateName The name of the template to clean
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      _CleanTemplate: function (templateName) {
+        if (this._templateMap[templateName]) {
+          var length = this._templateMap[templateName].length;
+          for (var i = 0; i < length; i++) {
+            this._templateMap[templateName][i]();
+          }
+          this._templateMap[templateName] = [];
+        }
+      },
+
+      /**
+       * Cleans a specific template stored by the component
+       * @private
+       * @memberof oj.dvtBaseComponent
+       */
+      _cleanTooltipTemplate: function () {
+        return (cleanCallback) => {
+          // The array should contain a single element, so find operation should be fast.
+          const templateArray = this._templateMap.tooltipTemplate;
+          const findIndex = templateArray.findIndex((el) => el === cleanCallback);
+          if (findIndex !== -1) {
+            templateArray[findIndex]();
+            templateArray.splice(findIndex, 1);
+          }
+        };
+      },
+
+      /**
+       * Adds a cleanup function that should be used to cleanup a specific template.
+       * @param {Object} context
+       * @protected
+       * @memberof oj.dvtBaseComponent
+       */
+      _AddTemplate: function (context) {
+        var templateName = context._templateName;
+        if (!this._templateMap[templateName]) {
+          this._templateMap[templateName] = [];
+        }
+        this._templateMap[templateName].push(context._templateCleanup);
+      },
+
+      _CompareOptionValues: function (option, value1, value2) {
+        switch (option) {
+          case 'hiddenCategories':
+          case 'highlightedCategories':
+          case 'selection':
+            return oj.Object.compareValues(value1, value2);
+          default:
+            return this._super(option, value1, value2);
+        }
       }
     },
+    true
+  );
 
-    /**
-     * Adds a cleanup function that should be used to cleanup a specific template.
-     * @param {Object} context
-     * @protected
-     * @memberof oj.dvtBaseComponent
-     */
-    _AddTemplate: function (context) {
-      var templateName = context._templateName;
-      if (!this._templateMap[templateName]) {
-        this._templateMap[templateName] = [];
-      }
-      this._templateMap[templateName].push(context._templateCleanup);
-    },
-
-
-    _CompareOptionValues: function (option, value1, value2) {
-      switch (option) {
-        case 'hiddenCategories':
-        case 'highlightedCategories':
-        case 'selection':
-          return oj.Object.compareValues(value1, value2);
-        default:
-          return this._super(option, value1, value2);
-      }
-    }
-  }, true);
-
-  oj._registerLegacyNamespaceProp('AttributeGroupHandler', attributeGroupHandler.AttributeGroupHandler);
-   oj._registerLegacyNamespaceProp('ColorAttributeGroupHandler', attributeGroupHandler.ColorAttributeGroupHandler);
-   oj._registerLegacyNamespaceProp('ShapeAttributeGroupHandler', attributeGroupHandler.ShapeAttributeGroupHandler);
+  oj._registerLegacyNamespaceProp(
+    'AttributeGroupHandler',
+    attributeGroupHandler.AttributeGroupHandler
+  );
+  oj._registerLegacyNamespaceProp(
+    'ColorAttributeGroupHandler',
+    attributeGroupHandler.ColorAttributeGroupHandler
+  );
+  oj._registerLegacyNamespaceProp(
+    'ShapeAttributeGroupHandler',
+    attributeGroupHandler.ShapeAttributeGroupHandler
+  );
 
   /**
    * Utility class with functions for parsing common DVT attributes.
@@ -3214,8 +3506,9 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
         if (DvtAttributeUtils._SHAPE_REGEXP.test(value)) {
           return value;
         } else if (!shapes[value]) {
-          throw new Error("Found: '" + value + "'. Expected one of the following: " +
-                          Object.keys(shapes).toString());
+          throw new Error(
+            "Found: '" + value + "'. Expected one of the following: " + Object.keys(shapes).toString()
+          );
         } else {
           return value;
         }

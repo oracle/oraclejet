@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -23,6 +23,7 @@ import { error } from 'ojs/ojlogger';
  * @param {any} currKey the key of the parent node
  * @param {number} depth the depth of the nodes in this NodeSet
  * @export
+ * @ojdeprecated {since: '14.0.0', description: 'JsonNodeSet has been deprecated with JsonTreeDataSource.'}
  */
 const JsonNodeSet = function (startNode, endNode, data, currKey, depth) {
   // assert startNode/endNode are number
@@ -35,8 +36,7 @@ const JsonNodeSet = function (startNode, endNode, data, currKey, depth) {
   this.m_endNode = endNode;
   this.m_nodes = data;
 };
-oj._registerLegacyNamespaceProp('JsonNodeSet', JsonNodeSet
-);
+oj._registerLegacyNamespaceProp('JsonNodeSet', JsonNodeSet);
 /**
  * Gets the parent key for this result set.
  * @return {any} the parent key for this result set.
@@ -105,9 +105,9 @@ JsonNodeSet.prototype.getMetadata = function (index) {
   // adjust to relative index
   var relIndex = index - this.m_startNode;
 
-  metadata.key = (this.m_nodes[relIndex].id ?
-                  this.m_nodes[relIndex].id :
-                  this.m_nodes[relIndex].attr.id);
+  metadata.key = this.m_nodes[relIndex].id
+    ? this.m_nodes[relIndex].id
+    : this.m_nodes[relIndex].attr.id;
   metadata.leaf = this.m_nodes[relIndex].leaf;
   metadata.depth = this.m_nodes[relIndex].depth;
 
@@ -312,8 +312,7 @@ const JsonTreeDataSource = function (data) {
 
   JsonTreeDataSource.superclass.constructor.call(this, tree);
 };
-oj._registerLegacyNamespaceProp('JsonTreeDataSource', JsonTreeDataSource
-);
+oj._registerLegacyNamespaceProp('JsonTreeDataSource', JsonTreeDataSource);
 // Subclass from oj.TreeDataSource
 oj.Object.createSubclass(JsonTreeDataSource, oj.TreeDataSource, 'oj.JsonTreeDataSource');
 
@@ -324,7 +323,7 @@ oj.Object.createSubclass(JsonTreeDataSource, oj.TreeDataSource, 'oj.JsonTreeData
  * @ojtsignore
  */
 JsonTreeDataSource.prototype.Init = function () {
-    // call super
+  // call super
   JsonTreeDataSource.superclass.Init.call(this);
 };
 
@@ -373,7 +372,7 @@ JsonTreeDataSource.prototype._createTreeDataSource = function (c, target, source
 
         // eslint-disable-next-line no-restricted-syntax,guard-for-in
         for (var propr in child) {
-         // eslint-disable-next-line no-restricted-syntax,guard-for-in
+          // eslint-disable-next-line no-restricted-syntax,guard-for-in
           for (prp in node) {
             if (propr === prp && propr !== 'children') {
               node[prp] = child[propr];
@@ -604,7 +603,7 @@ JsonTreeDataSource.prototype.move = function (nodeToMove, referenceNode, positio
   var moveNodeKey = nodeToMove;
   var refNodeKey = referenceNode;
 
-  if ((refNodeKey == null || refNodeKey === this.data.id)) {
+  if (refNodeKey == null || refNodeKey === this.data.id) {
     if (pos !== 'inside') {
       error('Error: root can not be the reference node if position equals to ' + pos);
       return;
@@ -714,7 +713,7 @@ JsonTreeDataSource.prototype._getParentById = function (refNodeKey, currNode) {
   var i;
   var parent = null;
 
-  if ((refNodeKey === this.data.id)) {
+  if (refNodeKey === this.data.id) {
     return null;
   }
 
@@ -725,8 +724,10 @@ JsonTreeDataSource.prototype._getParentById = function (refNodeKey, currNode) {
 
   if (currNode.children && currNode.children.length > 0) {
     for (i = 0; i < currNode.children.length; i++) {
-      if ((currNode.children[i].id && currNode.children[i].id === refNodeKey) ||
-          (currNode.children[i].attr && currNode.children[i].attr.id === refNodeKey)) {
+      if (
+        (currNode.children[i].id && currNode.children[i].id === refNodeKey) ||
+        (currNode.children[i].attr && currNode.children[i].attr.id === refNodeKey)
+      ) {
         return currNode;
       }
     }
@@ -755,16 +756,20 @@ JsonTreeDataSource.prototype._searchTreeById = function (currChild, parentKey) {
     currChild = this.data;
   }
 
-  if ((currChild.id && currChild.id === parentKey) ||
-      (currChild.attr && currChild.attr.id === parentKey)) {
+  if (
+    (currChild.id && currChild.id === parentKey) ||
+    (currChild.attr && currChild.attr.id === parentKey)
+  ) {
     return currChild;
   } else if (currChild.children != null) {
     for (var i = 0; i < currChild.children.length; i++) {
       if (result) {
         return result;
       }
-      if ((currChild.children[i].id && currChild.children[i].id === parentKey) ||
-          (currChild.children[i].attr && currChild.children[i].attr.id === parentKey)) {
+      if (
+        (currChild.children[i].id && currChild.children[i].id === parentKey) ||
+        (currChild.children[i].attr && currChild.children[i].attr.id === parentKey)
+      ) {
         result = currChild.children[i];
       } else {
         result = this._searchTreeById(currChild.children[i], parentKey);
@@ -791,7 +796,6 @@ JsonTreeDataSource.prototype._updateDepth = function (currChild, offset) {
     }
   }
 };
-
 
 /**
  * Helper method to remove node from the tree (based on depth value).

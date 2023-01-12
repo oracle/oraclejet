@@ -1,21 +1,48 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'preact/compat';
-import { options, h, createRef, render, Component, cloneElement, Fragment } from 'preact';
-import { toSymbolizedValue, CustomElementUtils, JetElementError, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, ElementState } from 'ojs/ojcustomelement-utils';
-import { getPropertyMetadata, checkEnumValues, getFlattenedAttributes, deepFreeze } from 'ojs/ojmetadatautils';
+import { forwardRef } from 'preact/compat';
+import { jsx } from 'preact/jsx-runtime';
+import { Fragment, options, cloneElement, h, createRef, render, createContext, Component } from 'preact';
+import { CustomElementUtils, toSymbolizedValue, JetElementError, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, ElementState } from 'ojs/ojcustomelement-utils';
+import { useContext, useMemo, useLayoutEffect } from 'preact/hooks';
+import { EnvironmentContext, RootEnvironmentProvider } from '@oracle/oraclejet-preact/UNSAFE_Environment';
+import Context from 'ojs/ojcontext';
+import { getPropertyMetadata, getComplexPropertyMetadata, checkEnumValues, getFlattenedAttributes, deepFreeze } from 'ojs/ojmetadatautils';
 import oj from 'ojs/ojcore-base';
 import { OJ_SLOT_REMOVE, patchSlotParent } from 'ojs/ojpreact-patch';
 import { getLocale } from 'ojs/ojconfig';
-import { RootEnvironmentProvider } from '@oracle/oraclejet-preact/UNSAFE_Environment';
 import { getLayerHost } from 'ojs/ojpopupcore';
 import { LayerContext } from '@oracle/oraclejet-preact/UNSAFE_Layer';
 import { matchTranslationBundle } from '@oracle/oraclejet-preact/utils/UNSAFE_matchTranslationBundle';
+import supportedLocales from '@oracle/oraclejet-preact/resources/nls/supportedLocales';
+import { warn } from 'ojs/ojlogger';
+
+function EnvironmentWrapper(props) {
+    const child = props.children;
+    const contexts = CustomElementUtils.getElementRegistration(child.type).cache.contexts;
+    const allContexts = [EnvironmentContext, ...(contexts !== null && contexts !== void 0 ? contexts : [])];
+    const allValues = allContexts.map((context) => {
+        var _a;
+        const ctxValue = useContext(context);
+        const providedValue = (_a = child.props.__oj_private_contexts) === null || _a === void 0 ? void 0 : _a.get(context);
+        return providedValue === undefined ? ctxValue : providedValue;
+    });
+    const contextMap = useMemo(() => {
+        const map = new Map();
+        for (let i = 0; i < allContexts.length; i++) {
+            map.set(allContexts[i], allValues[i]);
+        }
+        return map;
+    }, allValues);
+    child.props.__oj_private_contexts = contextMap;
+    return jsx(Fragment, { children: child });
+}
+EnvironmentWrapper.__ojIsEnvironmentWrapper = true;
 
 const injectSymbols = (props, property) => {
     if (Object.prototype.hasOwnProperty.call(props, property)) {
@@ -23,6 +50,7 @@ const injectSymbols = (props, property) => {
     }
 };
 const oldVNodeHook = options.vnode;
+let isCloningElement = false;
 options.vnode = (vnode) => {
     const type = vnode.type;
     if (typeof type === 'string' && CustomElementUtils.isElementRegistered(type)) {
@@ -30,8 +58,62 @@ options.vnode = (vnode) => {
         injectSymbols(props, 'value');
         injectSymbols(props, 'checked');
     }
+    if (typeof type === 'string' && !isCloningElement && CustomElementUtils.isVComponent(type)) {
+        isCloningElement = true;
+        try {
+            const origVNode = cloneElement(vnode);
+            const wrapper = jsx(EnvironmentWrapper, { children: origVNode });
+            Object.assign(vnode, wrapper);
+        }
+        finally {
+            isCloningElement = false;
+        }
+    }
     oldVNodeHook === null || oldVNodeHook === void 0 ? void 0 : oldVNodeHook(vnode);
 };
+const originalDebounce = options.debounceRendering;
+function _debounce(task) {
+    const debouncePromise = new Promise((res) => {
+        const callback = () => {
+            res();
+            Context.__removePreactPromise(debouncePromise);
+            task();
+        };
+        if (originalDebounce) {
+            originalDebounce(callback);
+        }
+        else {
+            setTimeout(callback);
+        }
+    });
+    Context.__addPreactPromise(debouncePromise, 'Preact debounce');
+}
+options.debounceRendering = _debounce;
+const RAF_TIMEOUT = 100;
+const originalRAF = options.requestAnimationFrame;
+function _requestAnimationFrame(task) {
+    const rafPromise = new Promise((res) => {
+        const callback = () => {
+            res();
+            Context.__removePreactPromise(rafPromise);
+            task();
+        };
+        if (originalRAF) {
+            originalRAF(callback);
+        }
+        else {
+            const done = () => {
+                clearTimeout(timeout);
+                cancelAnimationFrame(raf);
+                setTimeout(callback);
+            };
+            const timeout = setTimeout(done, RAF_TIMEOUT);
+            const raf = requestAnimationFrame(done);
+        }
+    });
+    Context.__addPreactPromise(rafPromise, 'Preact requestAnimationFrame');
+}
+options.requestAnimationFrame = _requestAnimationFrame;
 
 /**
  * Class decorator for VComponent custom elements. Takes the tag name
@@ -45,8 +127,26 @@ options.vnode = (vnode) => {
  */
 
 /**
- * Method decorator for VComponent methods that should be exposed on the custom element.
- * Non decorated VComponent methods will not be made available on the custom element.
+ * Class decorator for VComponent custom elements that specifies a list of Preact Contexts
+ * whose values should be made available to the inner virtual dom tree of the VComponent when
+ * rendered as an intrinsic element.  This allows the inner virtual dom tree to have access to
+ * the Context values from the parent component when rendered either directly as part of the parent
+ * component's virtual dom tree or when rendered as template slot content in a parent VComponent.  Note
+ * that any intrinsic elements within the inner virtual dom tree must also specify a list of Contexts
+ * to further propagate their values.
+ *
+ * @param {$$$Array<Context<any>>} contexts The list of Preact Contexts
+ * @name consumedContexts
+ * @function
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojdecorator
+ */
+
+/**
+ * Method decorator for VComponent class methods that should be exposed on the custom element
+ * as part of its public API. Non-decorated VComponent class methods will not be made available
+ * on the custom element.
  * @name method
  * @function
  * @ojexports
@@ -61,10 +161,10 @@ options.vnode = (vnode) => {
  * @ojtsimport {module: "ojmetadata", type: "AMD", importName:"MetadataTypes"}
  * @classdesc
  * <p>The VComponent API is a mechanism for creating virtual DOM-based
- * Web Components.  VComponents are authored in TypeScript as
+ * Web Components.  VComponents are authored in TypeScript as either
  * <a href="https://preactjs.com/">Preact</a> class-based
- * components, with the custom element tag name specified via the
- * <a href="#customElement">&#64;customElement</a> decorator:
+ * components or function-based components.  Class-based components specify their
+ * custom element tag via the <a href="#customElement">&#64;customElement</a> decorator:
  * </p>
  * <pre class="prettyprint"><code>import { Component, ComponentChild } from 'preact';
  * import { customElement, GlobalProps } from 'ojs/ojvcomponent';
@@ -75,6 +175,18 @@ options.vnode = (vnode) => {
  *     return &lt;div&gt;Hello, World!&lt;/div&gt;;
  *   }
  * }
+ * </code></pre>
+ * Function-based components register their custom element tag with the VComponent
+ * framework via the <a href="#registerCustomElement">registerCustomElement</a>
+ * function:
+ * <pre class="prettyprint"><code>import { registerCustomElement } from 'ojs/ojvcomponent';
+ *
+ * export const HelloWorld = registerCustomElement(
+ *   'oj-hello-world',
+ *   () => {
+ *     return &lt;div&gt;Hello, World!&lt;/div&gt;;
+ *   }
+ * );
  * </code></pre>
  * <p>
  *   In order to prepare the component for use, the VComponent must be run
@@ -478,10 +590,18 @@ options.vnode = (vnode) => {
  *  components to expose methods on their custom elements.
  * </p>
  * <p>
- *  By default, no methods defined on the VComponent's class are surfaced
- *  on the custom element.  To indicate that a VComponent method should be
- *  included in the custom element's API, simply mark the method with the
+ *  By default, no methods defined on a VComponent class are surfaced
+ *  on the custom element.  To indicate that a VComponent class method should be
+ *  included in the custom element's public API, simply mark the method with the
  *  <a href="#method">&#64;method</a> decorator.
+ * </p>
+ * <p>
+ *  Function-based VComponents that wish to expose public methods must wrap their Preact
+ *  functional component implementation in a call to
+ *  <a href="https://preactjs.com/guide/v10/switching-to-preact/#forwardref">forwardRef</a>
+ *  at the time of registration with the VComponent framework, and leverage the
+ *  <code>useImperativeHandle</code> hook within their Preact implementation. See
+ *  the <a href="#registerCustomElement">registerCustomElement</a> function for further details.
  * </p>
  * <h3 id="writeback">
  *  Writeback Properties
@@ -853,7 +973,7 @@ options.vnode = (vnode) => {
  * @memberof ojvcomponent
  * @ojsignature [{target:"Type", value:"<Data>", for:"genericTypeParameters"},
  *               {target: "Type", value: "Record<string, VComponent.TemplateSlot<Data>>" }]
-*/
+ */
 
 /**
  * <p>
@@ -1202,70 +1322,177 @@ options.vnode = (vnode) => {
 
 /**
  * <p>
+ *  The Methods type specifies optional design-time method metadata that can be passed in the
+ *  <code>options</code> argument when calling <a href=#registerCustomElement>registerCustomElement</a>
+ *  to register a functional VComponent that exposes custom element methods.
+ * </p>
+ * <p>
+ *  The Methods type makes several adjustments to the
+ *  <a href=MetadataTypes.html#ComponentMetadataMethods>MetadataTypes.ComponentMetadataMethods</a> type:
+ *  <ul>
+ *   <li>
+ *    The <code>internalName</code> property does not apply to VComponents.
+ *   </li>
+ *   <li>
+ *    The return type and parameter types are explicitly omitted from
+ *    <a href=MetadataTypes.html#ComponentMetadataMethods>MetadataTypes.ComponentMetadataMethods</a> and
+ *    <a href=MetadataTypes.html#MethodParam>MetadataTypes.MethodParam</a> respectively, as these should
+ *    come from the function signatures passed as a type parameter to the
+ *    <a href=#registerCustomElement>registerCustomElement</a> call.
+ *   </li>
+ *   <li>
+ *    Optional <code>apidocDescription</code> and <code>apidocRtnDescription</code> properties are added
+ *    to specify markup text for inclusion in the generated API Doc describing the method and its return
+ *    value, respectively. If <code>apidocDescription</code> is unspecified, then the
+ *    <code>description</code> property is used in the API Doc.
+ *   </li>
+ *  </ul>
+ * </p>
+ * @typedef {Object} Methods
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojsignature [
+ *   {target:"Type", value:"<M>", for:"genericTypeParameters"},
+ *   {target:"Type", value: "{Partial<Record<keyof M, Omit<Metadata.ComponentMetadataMethods, 'internalName' | 'params' | 'return'> & { params?: Array<Omit<Metadata.MethodParam, 'type'>>; apidocDescription?: string; apidocRtnDescription?: string; }>>}"}
+ * ]
+ */
+
+/**
+ * <p>
+ *  The Contexts type allows a functional VComponent to specify a list of Preact Contexts
+ *  whose values should be made available to the inner virtual dom tree of the VComponent when
+ *  rendered as an intrinsic element.  This allows the inner virtual dom tree to have access to
+ *  the Context values from the parent component when rendered either directly as part of the parent
+ *  component's virtual dom tree or when rendered as template slot content in a parent VComponent.  Note
+ *  that any intrinsic elements within the inner virtual dom tree must also specify a list of Contexts
+ *  to further propagate their values.
+ * </p>
+ * @typedef {Object} Contexts
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojsignature [
+ *   {target:"Type", value: "$$${ consume?: Array<Context<any>> }"}
+ * ]
+ */
+
+/**
+ * <p>
  *   The Options type specifies additional options that can be passed when calling
  *   <a href=#registerCustomElement>registerCustomElement</a> to register a functional VComponent
- *   with the JET framework. Type argument inference typically resolves the type argument
- *   to the functional component's Props type.
+ *   with the JET framework.
  * </p>
  * <p>
- *   Note that the optional <code>bindings</code> metadata
- *   (see <a href="#PropertyBindings">PropertyBindings</a> for further details)
- *   are only honored when the VComponent custom element is used in a Knockout
- *   binding environment.
+ *   These additional options come into play under certain circumstances:
+ *   <ul>
+ *    <li>
+ *      Optional <code>bindings</code> metadata (see <a href="#PropertyBindings">PropertyBindings</a>
+ *      for further details) are only honored when the VComponent custom element is used in a Knockout
+ *      binding environment.
+ *    </li>
+ *    <li>
+ *      Optional <code>contexts</code> metadata (see <a href="#Contexts">Contexts</a>
+ *      for further details) are only honored when the VComponent is rendered as an intrinsic element
+ *      in a virtual dom tree.
+ *    </li>
+ *    <li>
+ *      Optional <code>methods</code> metadata (see <a href="#Methods">Methods</a> for further details)
+ *      are only honored if a type parameter mapping public method names to their function signatures is
+ *      specified in the <a href=#registerCustomElement>registerCustomElement</a> call, and if the Preact
+ *      functional component implementation is wrapped in a call to
+ *      <a href="https://preactjs.com/guide/v10/switching-to-preact/#forwardref">forwardRef</a>.
+ *    </li>
+ *   </ul>
  * </p>
  * <p>
- *   Here is an example:
+ *   In the following example:
+ *    <ul>
+ *      <li>
+ *        <code>FormFunctionalComponent</code> is a VComponent implementing a form that consumes
+ *        'labelEdge' and 'readonly' properties from its parent container. It also provides values
+ *        for 'labelEdge' and 'readonly' properties to its children with any necessary transformations.
+ *      </li>
+ *      <li>
+ *        The implementation includes an input element, and the parent function-based VComponent exposes
+ *        a public <code>focusInitialInput</code> method to set the focus on this element as needed.
+ *      </li>
+ *    </ul>
  * </p>
  * <pre class="prettyprint"><code>
- * import { h } from 'preact';
+ * import { h, Ref } from 'preact';
+ * import { useImperativeHandle, useRef } from 'preact/hooks';
+ * import { forwardRef } from 'preact/compat';
  * import { registerCustomElement } from 'ojs/ojvcomponent';
  *
- * type Props = {
+ * type Props = Readonly<{
  *   labelEdge?: 'inside' | 'start' | 'top';
  *   readonly?: boolean;
+ * }>;
+ *
+ * type FormHandle = {
+ *   focusInitialInput: () => void;
  * };
  *
- * export const FormSubsectionFunctionalComponent = registerCustomElement(
- *   'my-form-subsection-functional-component',
+ * export const FormFunctionalComponent =
+ *   registerCustomElement&lt;Props, FormHandle&gt;(
+ *     'my-form-functional-component',
+ *     forwardRef(
+ *       ({ labelEdge = 'inside', readonly = false }: Props, ref: Ref&lt;FormHandle&gt;) => {
+ *         const formInputRef = useRef&lt;HTMLInputElement&gt;(null);
  *
- *   ({ labelEdge = 'inside', readonly = false }: Props) => {
- *     return &lt;div&gt;Label position = {labelEdge}, sub-section is {readonly ? 'read only' : 'editable'}&lt;/div&gt;;
- *   },
+ *         useImperativeHandle(ref, () => ({
+ *           focusInitialInput: () => formInputRef.current?.focus()
+ *         }));
  *
- *   {
- *     bindings: {
- *       // Indicate that the component's 'labelEdge' property will consume
- *       // the 'containerLabelEdge' variable provided by its parent, as well as
- *       // provide the 'labelEdge' property value under different keys and with
- *       // different transforms as required for different consumers.
- *       labelEdge: {
- *         consume: { name: 'containerLabelEdge' },
- *         provide: [
- *           { name: 'containerLabelEdge', default: 'inside' },
- *           { name: 'labelEdge', default: 'inside', transform: {  top: 'provided', start: 'provided'  } }
- *         ]
+ *         return (
+ *           &lt;input
+ *             ref={formInputRef}
+ *             readOnly={readonly}
+ *             ...
+ *           /&gt;
+ *           ...
+ *         );
+ *       }
+ *     ),
+ *     {
+ *       bindings: {
+ *         // Indicate that the component's 'labelEdge' property will consume
+ *         // the 'containerLabelEdge' variable provided by its parent, as well as
+ *         // provide the 'labelEdge' property value under different keys and with
+ *         // different transforms as required for different consumers.
+ *         labelEdge: {
+ *           consume: { name: 'containerLabelEdge' },
+ *           provide: [
+ *             { name: 'containerLabelEdge', default: 'inside' },
+ *             { name: 'labelEdge', default: 'inside', transform: { top: 'provided', start: 'provided' } }
+ *           ]
+ *         },
+ *         // Indicate that the component's 'readonly' property will consume
+ *         // the 'containerReadonly' variable provided by its parent, as well as
+ *         // provide the 'readonly' property value under different keys for different
+ *         // consumers.
+ *         readonly: {
+ *           consume: { name: 'containerReadonly' },
+ *           provide: [
+ *             { name: 'containerReadonly' },
+ *             { name: 'readonly' }
+ *           ]
+ *         }
  *       },
- *       // Indicate that the component's 'readonly' property will consume
- *       // the 'containerReadonly' variable provided by its parent, as well as
- *       // provide the 'readonly' property value under different keys for different
- *       // consumers.
- *       readonly: {
- *         consume: { name: 'containerReadonly' },
- *         provide: [
- *           { name: 'containerReadonly' },
- *           { name: 'readonly' }
- *         ]
+ *       methods: {
+ *         focusInitialInput: {
+ *           description: 'Sets the focus on this form.',
+ *           apidocDescription: 'Sets the focus on the initial &#38lt;code&#38gt;FormInput&#38lt;/code&#38gt; control in this form.'
+ *         }
  *       }
  *     }
- *   }
- * }
+ *   );
  * </code>
  * </pre>
  * @typedef {Object} Options
  * @ojexports
  * @memberof ojvcomponent
- * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
- *               {target: "Type", value: "{ bindings?: VComponent.PropertyBindings<P> }"}]
+ * @ojsignature [{target:"Type", value:"<P, M extends Record<string, (...args) => any> = {}>", for:"genericTypeParameters"},
+ *               {target:"Type", value:"{ bindings?: VComponent.PropertyBindings<P>, contexts?: VComponent.Contexts, methods?: VComponent.Methods<M> }"}]
  */
 
 /**
@@ -1286,7 +1513,6 @@ options.vnode = (vnode) => {
  */
 
 // STATIC METHODS
-
 
 /**
  * <p>
@@ -1379,7 +1605,7 @@ options.vnode = (vnode) => {
  * <p>
  *   Class-based VComponents use the <a href="#customElement">&#64;customElement</a> decorator
  *   to specify the VComponent's custom element tag name (also known as its full name) and to register
- *   the custom element with the JET framework.  However, Function-based VComponents cannot utilize this
+ *   the custom element with the JET framework.  However, function-based VComponents cannot utilize this
  *   approach because decorators are only supported for classes and their constituent fields.
  * </p>
  * <p>
@@ -1391,15 +1617,6 @@ options.vnode = (vnode) => {
  *   for futher details).  It returns a higher-order VComponent that is registered with the
  *   framework using the specified custom element tag name.
  * </p>
- * <p>
- *   There are some other considerations to keep in mind when implementing functional VComponents:
- *   <ul>
- *    <li>Function-based VComponents will typically use an anonymous function to implement their Preact functional
- *        component, and expose the returned higher-order VComponent as their public API.</li>
- *    <li>The registration call ensures that the returned higher-order VComponent extends the Preact functional
- *        component's custom properties with the required global HTML attributes defined by <a href="#GlobalProps">GlobalProps</a>.</li>
- *    <li>Default custom property values are specified using destructuring assignment syntax in the function implementation.</li>
- *  </ul>
  * <p>
  *   Here is a simple example:
  * </p>
@@ -1417,12 +1634,35 @@ options.vnode = (vnode) => {
  *   }
  * );
  * </code></pre>
+ * <p>
+ *   There are some other considerations to keep in mind when implementing functional VComponents:
+ *   <ul>
+ *    <li>Function-based VComponents will typically use an anonymous function to implement their Preact functional
+ *        component, and expose the returned higher-order VComponent as their public API.</li>
+ *    <li>The registration call ensures that the returned higher-order VComponent extends the Preact functional
+ *        component's custom properties with the required global HTML attributes defined by <a href="#GlobalProps">GlobalProps</a>.</li>
+ *    <li>Default custom property values are specified using destructuring assignment syntax in the function implementation.</li>
+ *    <li>TypeScript can typically infer the type parameters to the <code>registerCustomElement</code> call without having
+ *        to explicitly specify them in your code. However, if the function-based VComponent exposes public methods then
+ *        the second <code>M</code> type parameter (which maps public method names to their function signatures)
+ *        <i>must</i> be provided. In addition:
+ *
+ *        <ol>
+ *          <li>the Preact functional component that implements VComponent must be wrapped inline with a
+ *            <a href="https://preactjs.com/guide/v10/switching-to-preact/#forwardref">forwardRef</a> call, and</li>
+ *          <li>the <code>useImperativeHandle</code> hook must be used within the Preact implementation.</li>
+ *        </ol>
+ *
+ *        See the <a href="#Options">Options</a> type for a detailed example.</li>
+ *  </ul>
+ * </p>
  *
  * @function registerCustomElement
  * @param {string} tagName The custom element tag name for the registered functional VComponent.
  * @param {function} functionalComponent The Preact functional component that supplies the VComponent implementation.
- * @param {VComponent.Options<P>=} options Additional options for the functional VComponent. Type argument inference typically resolves the type argument to the functional component's Props type.
+ * @param {VComponent.Options<P, M>=} options Additional options for the functional VComponent.
  * @returns {VComponent} Higher-order VComponent that wraps the Preact functional component.
+ * @ojsignature [{target:"Type", value:"<P, M extends Record<string, (...args) => any> = {}>", for:"genericTypeParameters"}]
  *
  * @memberof ojvcomponent
  * @expose
@@ -1454,12 +1694,12 @@ let _originalCreateElement;
 const _ACTIVE_SLOTS = new Map();
 const _OJ_SLOT_ID = Symbol();
 const _OJ_SLOT_PREFIX = '@oj_s';
-function convertToVNode(hostElement, node, commitQueue, handleSlotMount, handleSlotUnmount) {
+function convertToVNode(hostElement, node, handleSlotMount, handleSlotUnmount) {
     const key = _getSlotKey(node);
-    const ref = _getRef(hostElement, handleSlotMount, handleSlotUnmount, commitQueue);
+    const ref = _getRef(hostElement, handleSlotMount, handleSlotUnmount);
     return h(() => {
         _registerSlot(key, node);
-        commitQueue.add(() => _unregisterSlot(key));
+        useLayoutEffect(() => _unregisterSlot(key));
         return h(key, { ref, key });
     }, null);
 }
@@ -1483,16 +1723,12 @@ function _getSlotKey(node) {
     }
     return key;
 }
-function _getRef(hostElement, handleSlotMount, handleSlotUnmount, commitQueue) {
+function _getRef(hostElement, handleSlotMount, handleSlotUnmount) {
     let _count = 0;
     let slotNode;
     const slotRemoveHandler = () => {
         if (_count === 0) {
             slotNode.remove();
-            commitQueue.add(() => {
-                if (_count === 0)
-                    handleSlotUnmount(slotNode);
-            });
         }
     };
     return (node) => {
@@ -1508,6 +1744,12 @@ function _getRef(hostElement, handleSlotMount, handleSlotUnmount, commitQueue) {
             _count--;
             if (_count < 0) {
                 throw new JetElementError(hostElement, 'Slot replacer count underflow');
+            }
+            if (_count === 0) {
+                window.queueMicrotask(() => {
+                    if (_count === 0)
+                        handleSlotUnmount(slotNode);
+                });
             }
         }
     };
@@ -1697,22 +1939,8 @@ function eventProxyCapture(e) {
     this._listeners[e.type + true](options.event ? options.event(e) : e);
 }
 
-class ExecuteOnCommit {
-    constructor() {
-        this._queue = [];
-    }
-    add(cb) {
-        this._queue.push(cb);
-    }
-    flush() {
-        this._queue.forEach((cb) => cb());
-        this._queue = [];
-    }
-}
-
 const ELEMENT_REF = Symbol();
 const ROOT_VNODE_PATCH = Symbol();
-const EXECUTE_ON_COMMIT = Symbol();
 const _EMPTY_SET = new Set();
 const _LISTENERS = Symbol();
 const _CAPTURE_LISTENERS = Symbol();
@@ -1728,7 +1956,6 @@ class IntrinsicElement {
         this._earlySets = [];
         this._eventQueue = [];
         this._isRenderQueued = false;
-        this._executeOnCommit = new ExecuteOnCommit();
         this._state = CustomElementUtils.getElementState(element);
         this._element = element;
         this._metadata = metadata;
@@ -1764,9 +1991,9 @@ class IntrinsicElement {
                     }));
                 }
             }
-            const [prop, value, propMeta] = this._getPropValuePair(name, newValue);
-            if (prop) {
-                this._updatePropsAndQueueRenderAsNeeded(prop, value, propMeta);
+            const { propPath, propValue, propMeta, subPropMeta } = this._getPropValueInfo(name, newValue);
+            if (propPath) {
+                this._updatePropsAndQueueRenderAsNeeded(propPath, propValue, propMeta, subPropMeta);
             }
         }
     }
@@ -1788,14 +2015,14 @@ class IntrinsicElement {
         var _a;
         if (this._isPatching)
             return;
-        const meta = getPropertyMetadata(name, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
-        if (!meta) {
+        const { prop: propMeta, subProp: subPropMeta } = getComplexPropertyMetadata(name, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
+        if (!propMeta) {
             this._element[name] = value;
         }
         else {
             if (this._state.allowPropertySets()) {
-                value = transformPreactValue(this._element, meta, value);
-                this._updatePropsAndQueueRenderAsNeeded(name, value, meta);
+                value = transformPreactValue(this._element, subPropMeta, value);
+                this._updatePropsAndQueueRenderAsNeeded(name, value, propMeta, subPropMeta);
             }
             else {
                 this._earlySets.push({ property: name, value });
@@ -1842,74 +2069,113 @@ class IntrinsicElement {
             }
             this._playbackEarlyPropertySets();
         }
-        const translationBundleMap = this._state.getTranslationBundleMap();
-        if (!this._rootEnvironment) {
-            this._rootEnvironment = {
-                user: { locale: getLocale() },
-                translations: translationBundleMap
-            };
-        }
+        this._setupEnvironmentContextObj();
         if (!this._layerContext) {
             this._layerContext = { getHost: getLayerHost.bind(null, this._element) };
         }
-        const componentVDom = h(this._component, this._props);
-        const rootEnvironmentProvider = h(RootEnvironmentProvider, {
-            environment: this._rootEnvironment,
-            children: componentVDom
-        });
-        this._vdom = h(LayerContext.Provider, {
-            value: this._layerContext,
-            children: rootEnvironmentProvider
-        });
+        const componentVDom = jsx(this._component, Object.assign({}, this._props));
+        const contexts = this._element['__oj_private_contexts'];
+        const contextWrappers = contexts
+            ? Array.from(contexts).reduce((acc, [context, value]) => {
+                if (context === EnvironmentContext) {
+                    return acc;
+                }
+                return jsx(context.Provider, Object.assign({ value: value }, { children: acc }));
+            }, componentVDom)
+            : componentVDom;
+        this._vdom = (jsx(LayerContext.Provider, Object.assign({ value: this._layerContext }, { children: jsx(RootEnvironmentProvider, Object.assign({ environment: this._rootEnvironment }, { children: contextWrappers })) })));
         const props = componentVDom.props;
         props[ELEMENT_REF] = this._element;
         props[ROOT_VNODE_PATCH] = this._rootPatchCallback;
-        props[EXECUTE_ON_COMMIT] = this._executeOnCommit;
         this._isPatching = true;
         render(this._vdom, this._element);
         this._isPatching = false;
     }
-    _getPropValuePair(attrName, attrValue) {
+    _setupEnvironmentContextObj() {
+        var _a;
+        const colorScheme = this._element['__oj_private_color_scheme'];
+        const scale = this._element['__oj_private_scale'];
+        const env = (_a = this._element['__oj_private_contexts']) === null || _a === void 0 ? void 0 : _a.get(EnvironmentContext);
+        if (!this._rootEnvironment) {
+            this._rootEnvironment = env || {
+                colorScheme: colorScheme,
+                scale: scale,
+                user: { locale: getLocale() }
+            };
+            this.extendTranslationBundleMap();
+        }
+        else if (env && env !== this._rootEnvironment) {
+            this._rootEnvironment = env;
+            this.extendTranslationBundleMap();
+        }
+        else if ((colorScheme && colorScheme !== this._rootEnvironment.colorScheme) ||
+            (scale && scale !== this._rootEnvironment.scale)) {
+            this._rootEnvironment = Object.assign({}, this._rootEnvironment, colorScheme && { colorScheme }, scale && { scale });
+        }
+    }
+    extendTranslationBundleMap() {
+        const translationBundleMap = this._state.getTranslationBundleMap();
+        const env = this._rootEnvironment;
+        if (!env.translations) {
+            env.translations = translationBundleMap;
+        }
+        else if (env.translations !== translationBundleMap) {
+            Object.keys(translationBundleMap).forEach((key) => {
+                if (!env.translations[key]) {
+                    env.translations[key] = translationBundleMap[key];
+                }
+            });
+        }
+    }
+    _getPropValueInfo(attrName, attrValue) {
         var _a, _b;
         if ('knockout' !== this._state.getBindingProviderType() ||
             !AttributeUtils.getExpressionInfo(attrValue).expr) {
-            const propName = AttributeUtils.attributeToPropertyName(attrName);
-            const propMeta = getPropertyMetadata(propName, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
+            const propPath = AttributeUtils.attributeToPropertyName(attrName);
+            const { prop: propMeta, subProp: subPropMeta } = getComplexPropertyMetadata(propPath, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
             if (propMeta) {
                 if (propMeta.readOnly) {
-                    return [null, null, null];
+                    return {};
                 }
-                return [
-                    propName,
-                    AttributeUtils.attributeToPropertyValue(this._element, attrName, attrValue, propMeta),
-                    propMeta
-                ];
+                return {
+                    propPath,
+                    propValue: AttributeUtils.attributeToPropertyValue(this._element, attrName, attrValue, subPropMeta),
+                    propMeta,
+                    subPropMeta
+                };
             }
             const globalPropName = AttributeUtils.getGlobalPropForAttr(attrName);
             if (this._controlledProps.has(globalPropName)) {
-                return [globalPropName, (_b = this[globalPropName]) !== null && _b !== void 0 ? _b : attrValue, null];
+                return {
+                    propPath: globalPropName,
+                    propValue: (_b = this._element[AttributeUtils.getGlobalValuePropForAttr(attrName)]) !== null && _b !== void 0 ? _b : attrValue
+                };
             }
         }
-        return [null, null, null];
+        return {};
     }
-    _updatePropsAndQueueRenderAsNeeded(prop, value, propMeta, isOuter = true) {
-        const previousValue = this.getProperty(prop);
-        if (propMeta && ElementUtils.comparePropertyValues(propMeta, value, previousValue)) {
+    _updatePropsAndQueueRenderAsNeeded(propPath, value, propMeta, subPropMeta, isOuter = true) {
+        const previousValue = this.getProperty(propPath);
+        const newValue = value === undefined
+            ? CustomElementUtils.getPropertyValue(this._defaultProps, propPath)
+            : value;
+        if (propMeta &&
+            ElementUtils.comparePropertyValues(propMeta.writeback, newValue, previousValue)) {
             return;
         }
-        const propPath = prop.split('.');
-        const topProp = propPath[0];
-        const isSubprop = propPath.length > 1;
+        const propArray = propPath.split('.');
+        const topProp = propArray[0];
+        const isSubprop = propArray.length > 1;
         let topPropPrevValue = this.getProperty(topProp);
         if (oj.CollectionUtils.isPlainObject(topPropPrevValue)) {
             topPropPrevValue = oj.CollectionUtils.copyInto({}, topPropPrevValue, undefined, true);
         }
         if (isOuter) {
-            this._verifyProps(prop, value, propMeta);
+            this._verifyProps(propPath, value, propMeta, subPropMeta);
         }
-        this._updateProps(propPath, value);
+        this._updateProps(propArray, value);
         if (!isOuter ||
-            (this._state.allowPropertyChangedEvents() && !AttributeUtils.isGlobalOrData(prop))) {
+            (this._state.allowPropertyChangedEvents() && !AttributeUtils.isGlobalOrData(propPath))) {
             this._state.dirtyProps.add(topProp);
             const updatedFrom = isOuter ? 'external' : 'internal';
             const detail = {
@@ -1919,7 +2185,7 @@ class IntrinsicElement {
             };
             if (isSubprop) {
                 detail[_SUBPROP] = {
-                    path: prop,
+                    path: propPath,
                     value,
                     previousValue
                 };
@@ -1939,8 +2205,8 @@ class IntrinsicElement {
             this._queueFireEventsTask({ type, detail, collapse: collapseFunc, kind: _PROP_CHANGE });
         }
         const oldProps = this._oldRootProps;
-        if (oldProps && this._controlledProps.has(prop)) {
-            oldProps[prop] = value;
+        if (oldProps && this._controlledProps.has(propPath)) {
+            oldProps[propPath] = value;
         }
         this._queueRender(this._vdom && !(propMeta === null || propMeta === void 0 ? void 0 : propMeta.readOnly));
     }
@@ -1953,7 +2219,7 @@ class IntrinsicElement {
             });
         }
     }
-    _verifyProps(prop, value, propMeta) {
+    _verifyProps(prop, value, propMeta, subPropMeta) {
         if (!propMeta) {
             return;
         }
@@ -1961,7 +2227,7 @@ class IntrinsicElement {
             throw new JetElementError(this._element, `Read-only property '${prop}' cannot be set.`);
         }
         try {
-            checkEnumValues(this._element, prop, value, propMeta);
+            checkEnumValues(this._element, prop, value, subPropMeta);
         }
         catch (error) {
             throw new JetElementError(this._element, error.message);
@@ -2092,10 +2358,10 @@ class IntrinsicElement {
         const attrs = this._element.attributes;
         for (let i = 0; i < attrs.length; i++) {
             const { name, value } = attrs[i];
-            const [prop, propVal, propMeta] = this._getPropValuePair(name, value);
-            if (prop) {
-                this._verifyProps(prop, propVal, propMeta);
-                this._updateProps(prop.split('.'), propVal);
+            const { propPath, propValue, propMeta, subPropMeta } = this._getPropValueInfo(name, value);
+            if (propPath) {
+                this._verifyProps(propPath, propValue, propMeta, subPropMeta);
+                this._updateProps(propPath.split('.'), propValue);
             }
         }
     }
@@ -2251,7 +2517,7 @@ class IntrinsicElement {
             }
         }
         else {
-            const vnodes = slotNodes.map((node, index) => convertToVNode(this._element, node, this._executeOnCommit, this._handleSlotMount.bind(this), this._handleSlotUnmount.bind(this)));
+            const vnodes = slotNodes.map((node, index) => convertToVNode(this._element, node, this._handleSlotMount.bind(this), this._handleSlotUnmount.bind(this)));
             propContainer[propName] = vnodes;
         }
     }
@@ -2295,7 +2561,7 @@ class IntrinsicElement {
                 handleMount(node);
             }
             else {
-                this._executeOnCommit.add(() => handleMount(node));
+                window.queueMicrotask(() => handleMount(node));
             }
         }
     }
@@ -2333,12 +2599,12 @@ class IntrinsicElement {
         });
     }
     _initializeWritebackCallbacks(writebackProps) {
-        writebackProps.forEach((prop) => {
+        writebackProps.forEach((propPath) => {
             var _a;
-            const callbackProp = AttributeUtils.propertyNameToChangedCallback(prop);
-            const meta = getPropertyMetadata(prop, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
+            const callbackProp = AttributeUtils.propertyNameToChangedCallback(propPath);
+            const { prop: propMeta, subProp: subPropMeta } = getComplexPropertyMetadata(propPath, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
             this._props[callbackProp] = (value) => {
-                this._updatePropsAndQueueRenderAsNeeded(prop, value, meta, false);
+                this._updatePropsAndQueueRenderAsNeeded(propPath, value, propMeta, subPropMeta, false);
             };
         });
     }
@@ -2450,53 +2716,77 @@ const isInitialized = (element) => {
     return !!((_a = helper.isInitialized) === null || _a === void 0 ? void 0 : _a.call(helper));
 };
 
-const SUPPORTED_LOCALES = new Set([
-    'ar',
-    'ar-XB',
-    'bg',
-    'bs',
-    'bs-Cyrl',
-    'cs',
-    'da',
-    'de',
-    'el',
-    'en',
-    'en-XA',
-    'en-XC',
-    'es',
-    'et',
-    'fi',
-    'fr',
-    'fr-CA',
-    'he',
-    'hr',
-    'hu',
-    'is',
-    'it',
-    'ja',
-    'ko',
-    'lt',
-    'lv',
-    'ms',
-    'nl',
-    'no',
-    'pl',
-    'pt',
-    'pt-PT',
-    'ro',
-    'ru',
-    'sk',
-    'sl',
-    'sr',
-    'sr-Latn',
-    'sv',
-    'th',
-    'tr',
-    'uk',
-    'vi',
-    'zh-Hans',
-    'zh-Hant'
-]);
+const RootContext = createContext(null);
+function isGlobalProperty(prop, metadata) {
+    return (prop === 'className' ||
+        AttributeUtils.isGlobalOrData(prop) ||
+        isGlobalEventListenerProperty(prop, metadata));
+}
+const _GLOBAL_EVENT_MATCH_EXP = /^on(?!.*Changed$)([A-Za-z])([A-Za-z]*)$/;
+function isGlobalEventListenerProperty(prop, metadata) {
+    var _a, _b;
+    if ((_a = metadata === null || metadata === void 0 ? void 0 : metadata.properties) === null || _a === void 0 ? void 0 : _a[prop]) {
+        return false;
+    }
+    const match = prop.match(_GLOBAL_EVENT_MATCH_EXP);
+    if (match) {
+        const eventType = match[1].toLowerCase() + match[2];
+        return !((_b = metadata === null || metadata === void 0 ? void 0 : metadata.events) === null || _b === void 0 ? void 0 : _b[eventType]);
+    }
+    return false;
+}
+
+const InternalRoot = ({ children }) => {
+    const { tagName, metadata, isElementFirst, vcompProps } = useContext(RootContext);
+    if (isElementFirst) {
+        return children;
+    }
+    const refFunc = function (ref) {
+        if (ref) {
+            ref[CustomElementUtils.VCOMP_INSTANCE] = {
+                props: vcompProps
+            };
+        }
+    };
+    const globalPropKeys = Object.keys(vcompProps).filter((prop) => isGlobalProperty(prop, metadata));
+    const globalProps = globalPropKeys.reduce((acc, cur) => {
+        acc[cur] = vcompProps[cur];
+        return acc;
+    }, {});
+    const elem = (jsx("div", Object.assign({ ref: refFunc, "data-oj-jsx": "" }, globalProps, { children: children })));
+    elem.type = tagName;
+    return elem;
+};
+
+const _CLASS = 'class';
+const Root = forwardRef((props, ref) => {
+    const { tagName, metadata, isElementFirst, vcompProps, observedPropsSet } = useContext(RootContext);
+    if (isElementFirst) {
+        const artificialRoot = jsx("div", Object.assign({}, props, { ref: ref }));
+        artificialRoot.type = tagName;
+        vcompProps[ROOT_VNODE_PATCH](artificialRoot);
+        return jsx(Fragment, { children: props.children });
+    }
+    const propFixups = {};
+    if (vcompProps.style && props['style']) {
+        propFixups['style'] = Object.assign({}, vcompProps.style, props['style']);
+    }
+    const componentClass = vcompProps[_CLASS];
+    if (componentClass) {
+        const nodeClass = props[_CLASS] || '';
+        propFixups[_CLASS] = `${componentClass} ${nodeClass}`;
+    }
+    const parentGlobalKeys = Object.keys(vcompProps).filter((prop) => !(prop in props) && !observedPropsSet.has(prop) && isGlobalProperty(prop, metadata));
+    const parentGlobals = parentGlobalKeys.reduce((acc, cur) => {
+        acc[cur] = vcompProps[cur];
+        return acc;
+    }, {});
+    const elem = (jsx("div", Object.assign({}, props, propFixups, parentGlobals, { ref: ref, "data-oj-jsx": "" })));
+    elem.type = tagName;
+    return elem;
+});
+
+const SUPPORTED_LOCALES = new Set(supportedLocales);
 class VComponentState extends ElementState {
     constructor(element) {
         super(element);
@@ -2597,45 +2887,92 @@ class VComponentState extends ElementState {
 }
 VComponentState._bundlePromiseCache = {};
 
-const Root = () => {
-    throw new Error('The Root component should only be used as the top-level return from a VComponent render function.  It will be rewritten by VComponent code so Preact will never actually render it unless it appears in an invalid location.');
-};
-
-const _CLASS = 'class';
+const FUNCTIONAL_COMPONENT = Symbol('functional component');
 function customElement(tagName) {
     return function (constructor) {
         var _a;
-        const metadata = constructor['metadata'];
+        const metadata = constructor['_metadata'] || constructor['metadata'] || {};
+        extendMetadata(metadata);
         const observedProps = ((_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_OBSERVED_GLOBAL_PROPS']) || [];
         const observedAttrs = observedProps.map((prop) => AttributeUtils.getGlobalAttrForProp(prop));
         overrideRender(tagName, constructor, metadata, new Set(observedProps));
-        overrideCommitMethods(constructor);
-        registerElement(tagName, metadata, constructor, observedProps, observedAttrs, constructor['translationBundleMap']);
+        registerElement(tagName, metadata, constructor, observedProps, observedAttrs, constructor['_translationBundleMap'] || constructor['translationBundleMap']);
+        if (!constructor['_metadata'] && constructor['metadata']) {
+            warn(`Component ${tagName} is compiled with JET version prior to 14.0.0`);
+        }
     };
 }
 function registerCustomElement(tagName, fcomp, options) {
     class VCompWrapper extends Component {
+        constructor() {
+            var _a;
+            super();
+            this.__refCallback = (instance) => {
+                if (this.__vcompRef) {
+                    this.__vcompRef.current = instance;
+                }
+                const innerRef = this.props['innerRef'];
+                if (innerRef) {
+                    if (typeof innerRef === 'function') {
+                        innerRef(instance);
+                    }
+                    else {
+                        innerRef.current = instance;
+                    }
+                }
+            };
+            if ((_a = VCompWrapper._metadata) === null || _a === void 0 ? void 0 : _a['methods']) {
+                this.__vcompRef = createRef();
+                const rtMethodMD = VCompWrapper._metadata['methods'];
+                const extendableInstance = this;
+                for (let mName in rtMethodMD) {
+                    extendableInstance[mName] = (...args) => { var _a; return (_a = this.__vcompRef.current) === null || _a === void 0 ? void 0 : _a[mName].apply(this.__vcompRef.current, args); };
+                }
+            }
+        }
         render() {
+            arguments[0]['ref'] = this.__refCallback;
             return fcomp(arguments[0]);
         }
     }
     VCompWrapper.displayName = arguments[2];
     if (arguments.length >= 4 && arguments[3]) {
-        VCompWrapper.metadata = arguments[3];
+        VCompWrapper._metadata = arguments[3];
         if (arguments.length >= 5 && arguments[4]) {
             VCompWrapper.defaultProps = arguments[4];
         }
     }
     if (arguments.length >= 6) {
-        VCompWrapper.translationBundleMap = arguments[5];
+        VCompWrapper._translationBundleMap = arguments[5];
     }
+    if (arguments.length >= 7) {
+        VCompWrapper['_consumedContexts'] = arguments[6]['consume'];
+    }
+    VCompWrapper[FUNCTIONAL_COMPONENT] = true;
     customElement(tagName)(VCompWrapper);
-    return VCompWrapper;
+    return forwardRef((props, ref) => jsx(VCompWrapper, Object.assign({}, props, { innerRef: ref })));
+}
+function extendMetadata(metadata) {
+    if (!metadata.properties) {
+        metadata.properties = {};
+    }
+    metadata.properties.__oj_private_color_scheme = {
+        type: 'string',
+        binding: { consume: { name: 'colorScheme' } }
+    };
+    metadata.properties.__oj_private_scale = {
+        type: 'string',
+        binding: { consume: { name: 'scale' } }
+    };
+    metadata.properties.__oj_private_contexts = {
+        type: 'object',
+        binding: { consume: { name: '__oj_private_contexts' } }
+    };
 }
 function registerElement(tagName, metadata, constructor, observedProps, observedAttrs, translationBundleMap) {
     class HTMLPreactElement extends HTMLJetElement {
     }
-    HTMLPreactElement.metadata = metadata || {};
+    HTMLPreactElement.metadata = metadata;
     HTMLPreactElement.component = constructor;
     HTMLPreactElement.rootObservedAttributes = observedAttrs;
     HTMLPreactElement.rootObservedAttrSet = new Set(observedAttrs);
@@ -2649,13 +2986,14 @@ function registerElement(tagName, metadata, constructor, observedProps, observed
     CustomElementUtils.registerElement(tagName, {
         descriptor: { metadata },
         stateClass: VComponentState,
-        vcomp: true
+        vcomp: true,
+        cache: { contexts: constructor['_consumedContexts'] }
     }, HTMLPreactElement);
 }
 function overrideRender(tagName, constructor, metadata, observedPropsSet) {
     const componentRender = constructor.prototype.render;
     constructor.prototype.render = function (props, state, context) {
-        var _a;
+        var _a, _b;
         const readOnlyProps = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_READ_ONLY_PROPS'];
         if (readOnlyProps) {
             readOnlyProps.forEach((prop) => delete props[prop]);
@@ -2666,72 +3004,27 @@ function overrideRender(tagName, constructor, metadata, observedPropsSet) {
             CustomElementUtils.getElementState(element).disposeTemplateCache();
         }
         let vdom = componentRender.call(this, props, state, context);
-        if ((vdom === null || vdom === void 0 ? void 0 : vdom.type) === Root) {
-            vdom = cloneElement(vdom);
-            vdom.type = tagName;
-        }
-        if ((vdom === null || vdom === void 0 ? void 0 : vdom.type) !== tagName) {
-            const rootProps = {};
-            if (!isElementFirst) {
-                rootProps['ref'] = function (ref) {
-                    if (ref) {
-                        ref[CustomElementUtils.VCOMP_INSTANCE] = {
-                            props
-                        };
-                    }
-                };
-                rootProps['data-oj-jsx'] = '';
-                Object.keys(props).forEach((prop) => {
-                    if (isGlobalProperty(prop, metadata)) {
-                        rootProps[prop] = props[prop];
-                    }
-                });
-                return h(tagName, rootProps, vdom);
+        if (((_b = vdom === null || vdom === void 0 ? void 0 : vdom.type) === null || _b === void 0 ? void 0 : _b['__ojIsEnvironmentWrapper']) &&
+            vdom.props.children.type === tagName) {
+            const customElementNode = vdom.props.children;
+            customElementNode.type = Root;
+            try {
+                vdom = cloneElement(customElementNode);
             }
-            return vdom;
-        }
-        if (!isElementFirst) {
-            const vdomProps = vdom === null || vdom === void 0 ? void 0 : vdom.props;
-            if (props.style && vdomProps['style']) {
-                vdomProps['style'] = Object.assign({}, props.style, vdomProps['style']);
+            finally {
+                customElementNode.type = tagName;
             }
-            const componentClass = props[_CLASS];
-            if (componentClass) {
-                const nodeClass = vdomProps[_CLASS] || '';
-                vdomProps[_CLASS] = `${componentClass} ${nodeClass}`;
-            }
-            vdomProps['data-oj-jsx'] = '';
-            Object.keys(props).forEach((prop) => {
-                if (!(prop in vdomProps) &&
-                    !observedPropsSet.has(prop) &&
-                    isGlobalProperty(prop, metadata)) {
-                    vdomProps[prop] = props[prop];
-                }
-            });
-            return vdom;
         }
-        props[ROOT_VNODE_PATCH](vdom);
-        return h(Fragment, {}, vdom === null || vdom === void 0 ? void 0 : vdom.props.children);
+        const vdomType = vdom === null || vdom === void 0 ? void 0 : vdom.type;
+        if (vdomType !== Root) {
+            if (!isForwardRef(vdomType) ||
+                !vdomType[FUNCTIONAL_COMPONENT] ||
+                Object.keys(metadata.methods || {}).length === 0) {
+                vdom = jsx(InternalRoot, { children: vdom });
+            }
+        }
+        return (jsx(RootContext.Provider, Object.assign({ value: { tagName, metadata, isElementFirst, vcompProps: props, observedPropsSet } }, { children: vdom })));
     };
-}
-function overrideCommitMethods(constructor) {
-    const proto = constructor.prototype;
-    const originalMounted = proto.componentDidMount;
-    const originalUpdated = proto.componentDidUpdate;
-    proto.componentDidMount = function () {
-        _flushExecuteOnCommitQueue.call(this);
-        originalMounted === null || originalMounted === void 0 ? void 0 : originalMounted.call(this);
-    };
-    proto.componentDidUpdate = function (...args) {
-        _flushExecuteOnCommitQueue.call(this);
-        originalUpdated === null || originalUpdated === void 0 ? void 0 : originalUpdated.apply(this, args);
-    };
-}
-function _flushExecuteOnCommitQueue() {
-    const queue = this.props[EXECUTE_ON_COMMIT];
-    if (queue) {
-        queue.flush();
-    }
 }
 function addPropGetterSetters(proto, properties) {
     if (!properties)
@@ -2763,26 +3056,24 @@ function addMethods(proto, methods) {
         };
     }
 }
-function isGlobalProperty(prop, metadata) {
-    return (prop === 'className' ||
-        AttributeUtils.isGlobalOrData(prop) ||
-        isGlobalEventListenerProperty(prop, metadata));
+function isForwardRef(type) {
+    return get$$typeof(type) === getForwardRef$$typeof();
 }
-const _GLOBAL_EVENT_MATCH_EXP = /^on(?!.*Changed$)([A-Za-z])([A-Za-z]*)$/;
-function isGlobalEventListenerProperty(prop, metadata) {
-    var _a, _b;
-    if ((_a = metadata === null || metadata === void 0 ? void 0 : metadata.properties) === null || _a === void 0 ? void 0 : _a[prop]) {
-        return false;
+function get$$typeof(type) {
+    return type === null || type === void 0 ? void 0 : type['$$typeof'];
+}
+let forwardRefSymbol;
+function getForwardRef$$typeof() {
+    if (!forwardRefSymbol) {
+        forwardRefSymbol = get$$typeof(forwardRef(() => null));
     }
-    const match = prop.match(_GLOBAL_EVENT_MATCH_EXP);
-    if (match) {
-        const eventType = match[1].toLowerCase() + match[2];
-        return !((_b = metadata === null || metadata === void 0 ? void 0 : metadata.events) === null || _b === void 0 ? void 0 : _b[eventType]);
-    }
-    return false;
+    return forwardRefSymbol;
 }
 
 function method(target, propertyKey, descriptor) { }
+function consumedContexts(contexts) {
+    return function (constructor) { };
+}
 
 (function () {
     if (typeof window !== 'undefined') {
@@ -2797,4 +3088,4 @@ function method(target, propertyKey, descriptor) { }
 
 const getUniqueId = ElementUtils.getUniqueId.bind(null, null);
 
-export { Root, customElement, getUniqueId, method, registerCustomElement };
+export { Root, consumedContexts, customElement, getUniqueId, method, registerCustomElement };

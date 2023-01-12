@@ -2,6 +2,7 @@ import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults
    FetchListParameters } from '../ojdataprovider';
 declare class ArrayDataProvider<K, D> implements DataProvider<K, D> {
     constructor(data: any[] | (() => any[]), options?: ArrayDataProvider.Options<K, D> | ArrayDataProvider.DeprecatedOptions<D>);
+    static getCapability(capabilityName: string): any;
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -88,7 +88,6 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
     FATAL: 'fatal'
   };
 
-
   /**
    * Message severity level
    * @enum {number}
@@ -160,7 +159,6 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
     this.severity = severity || Message.SEVERITY_TYPE.ERROR; // defaults to ERROR
   };
 
-
   /**
    * A convenience method that returns the severity level when given either a severity level of type
    * number or a severity type of string.
@@ -187,9 +185,10 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
         } else {
           _severity = index;
         }
-      } else if (typeof _severity === 'number' &&
-                 (_severity < Message.SEVERITY_LEVEL.CONFIRMATION ||
-                  _severity > Message.SEVERITY_LEVEL.FATAL)) {
+      } else if (
+        typeof _severity === 'number' &&
+        (_severity < Message.SEVERITY_LEVEL.CONFIRMATION || _severity > Message.SEVERITY_LEVEL.FATAL)
+      ) {
         _severity = Message.SEVERITY_LEVEL.ERROR;
       }
     }
@@ -223,8 +222,7 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
           _level = Message.SEVERITY_TYPE.ERROR;
         }
       } else if (typeof _level === 'number') {
-        if (_level < Message.SEVERITY_LEVEL.CONFIRMATION ||
-            _level > Message.SEVERITY_LEVEL.FATAL) {
+        if (_level < Message.SEVERITY_LEVEL.CONFIRMATION || _level > Message.SEVERITY_LEVEL.FATAL) {
           _level = Message.SEVERITY_TYPE.ERROR;
         } else {
           _level = Message._LEVEL_TO_TYPE[level];
@@ -384,8 +382,9 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
    * @ignore
    */
   ComponentMessage.prototype.canDisplay = function () {
-    return !(this._options && this._options.display ?
-             this._options.display === ComponentMessage.DISPLAY.HIDDEN : false);
+    return !(this._options && this._options.display
+      ? this._options.display === ComponentMessage.DISPLAY.HIDDEN
+      : false);
   };
 
   /**

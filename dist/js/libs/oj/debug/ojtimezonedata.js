@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -27,7 +27,6 @@ define(['ojs/ojcore-base', 'ojs/ojlocaledata', 'ojL10n!ojtranslations/nls/timezo
     oj.CollectionUtils.copyInto(localeElements, timezoneBundle, undefined, true);
   };
 
-
   /**
    * @return {Array.<string>} names of the timezone bundles
    * @ignore
@@ -49,11 +48,10 @@ define(['ojs/ojcore-base', 'ojs/ojlocaledata', 'ojL10n!ojtranslations/nls/timezo
    */
   TimezoneData._bundleNames = [];
 
-
   (function () {
     TimezoneData.__registerBundleName('/timezoneData');
     TimezoneData.__mergeIntoLocaleElements(typeof ojtd === 'undefined' ? {} : ojtd);
-  }());
+  })();
 
   return TimezoneData;
 

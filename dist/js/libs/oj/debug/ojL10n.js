@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  *
@@ -68,7 +68,7 @@
     if (master[locale]) {
       needed.push(locale);
       if (master[locale] === true || master[locale] === 1) {
-        var loc = localePrefix ? (localePrefix + locale) : locale;
+        var loc = localePrefix ? localePrefix + locale : locale;
         toLoad.push(prefix + loc + '/' + suffix);
       }
       return true;
@@ -76,9 +76,8 @@
     return false;
   }
 
-
   function _isObject(val) {
-    return (typeof val === 'object');
+    return typeof val === 'object';
   }
 
   /**
@@ -94,19 +93,21 @@
       var t = tokens[i];
       var len = t.length;
 
-      if (len === 1) { // extension
+      if (len === 1) {
+        // extension
         break;
       }
 
       switch (phase) {
         case 1:
           phase = 2;
-          if (len === 4) { // this is a script tag
+          if (len === 4) {
+            // this is a script tag
             // capitalize the first letter
             parts.push(t.charAt(0).toUpperCase() + t.slice(1));
             break;
           }
-          // fall through to the next case
+        // fall through to the next case
         case 2: // region
           phase = 3;
           parts.push(t.toUpperCase());
@@ -147,7 +148,6 @@
     parts.splice(1, 0, scriptTag);
   }
 
-
   /**
    * Simple function to mix in properties from source into target,
    * but only if target does not already have a property of the same name.
@@ -167,7 +167,6 @@
       }
     }
   }
-
 
   define(['module'], function (module) {
     var masterConfig = module.config ? module.config() : {};
@@ -227,13 +226,17 @@
               locale = config.isBuild ? 'root' : document.documentElement.lang;
               if (!locale) {
                 // navigator may be undefined in web workers
-                locale = navigator === undefined ? 'root' :
-                  // E11 reports incorrect navigator.language, so we are checking OS language first
-                  // as a lame susbstitute for the server-side inspection of accept-language headers.
-                  // This should not affect other browsers because that navigator.systemLanguage
-                  // should be present in IE11 only
-                  navigator.systemLanguage ||
-                  navigator.language || navigator.userLanguage || 'root';
+                locale =
+                  navigator === undefined
+                    ? 'root'
+                    : // E11 reports incorrect navigator.language, so we are checking OS language first
+                      // as a lame susbstitute for the server-side inspection of accept-language headers.
+                      // This should not affect other browsers because that navigator.systemLanguage
+                      // should be present in IE11 only
+                      navigator.systemLanguage ||
+                      navigator.language ||
+                      navigator.userLanguage ||
+                      'root';
               }
             }
             masterConfig.locale = locale;
@@ -286,8 +289,7 @@
         } else {
           if (masterConfig.includeLocale === 'query') {
             masterName = req.toUrl(masterName + '.js');
-            masterName += ((masterName.indexOf('?') === -1 ? '?' : '&') + 'loc=' +
-                                         locale);
+            masterName += (masterName.indexOf('?') === -1 ? '?' : '&') + 'loc=' + locale;
           }
 
           roots = [masterName];
@@ -300,17 +302,24 @@
             var needed = [];
 
             var _addParts = function (masterBundle, pref, suff) {
-              var noMerge = noOverlay || (masterBundle.__noOverlay === true);
+              var noMerge = noOverlay || masterBundle.__noOverlay === true;
               var backupBundle = backup || masterBundle.__defaultNoOverlayLocale;
 
               var matched = false;
 
               for (var lo = locales.length - 1; lo >= 0 && !(matched && noMerge); lo--) {
-                matched = _addPart(locales[lo], masterBundle, needed,
-                                   toLoad, pref, suff, localePrefix);
+                matched = _addPart(
+                  locales[lo],
+                  masterBundle,
+                  needed,
+                  toLoad,
+                  pref,
+                  suff,
+                  localePrefix
+                );
               }
 
-              var rootOnly = (locales.length === 1 && locales[0] === 'root');
+              var rootOnly = locales.length === 1 && locales[0] === 'root';
 
               if (noMerge && (rootOnly || !matched) && backupBundle) {
                 _addPart(backupBundle, masterBundle, needed, toLoad, pref, suff, localePrefix);
@@ -331,10 +340,10 @@
 
             // Load all the parts missing.
             req(toLoad, function () {
-              var _mixinBundle = function (bundle, start, end/* exclusive*/, pref, suff) {
+              var _mixinBundle = function (bundle, start, end /* exclusive*/, pref, suff) {
                 for (var j = start; j < end && needed[j]; j++) {
                   var _part = needed[j];
-                  var prefixedLoc = localePrefix ? (localePrefix + _part) : _part;
+                  var prefixedLoc = localePrefix ? localePrefix + _part : _part;
                   var partBundle = bundle[_part];
                   if (partBundle === true || partBundle === 1) {
                     partBundle = req(pref + prefixedLoc + '/' + suff);
@@ -347,7 +356,6 @@
               _mixinBundle(extra, mainBundleCount, needed.length, ebPrefix, ebSuffix);
 
               _mixinBundle(master, 0, mainBundleCount, prefix, suffix);
-
 
               // Stash away the locale on the bundle itself to make the framework aware of the locale used
               // by Require.js
@@ -362,4 +370,4 @@
       }
     };
   });
-}());
+})();

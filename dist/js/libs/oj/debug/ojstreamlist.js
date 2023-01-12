@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -93,18 +93,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
         renderItem(key, index, data) {
             const renderer = this.callback.getItemRenderer();
             const vnodes = renderer({ data, key });
-            let vnode;
-            if (Array.isArray(vnodes)) {
-                for (const curr of vnodes) {
-                    vnode = curr;
-                    if (vnode.props) {
-                        break;
-                    }
-                }
-            }
-            else {
-                vnode = vnodes;
-            }
+            let vnode = this.findItemVNode(vnodes);
             const prunedVnodes = [vnode];
             this.newVnodesCache.set(key, { vnodes: prunedVnodes });
             return prunedVnodes;
@@ -120,11 +109,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                     vnode.props['data-oj-key-type'] = 'number';
                 }
                 const styleClasses = this.getItemStyleClass(visible, this.newItemsTracker.has(key), initialFetch);
-                const classProp = vnode.props.class ? 'class' : 'className';
-                const currentClasses = vnode.props[classProp]
-                    ? [vnode.props[classProp], ...styleClasses]
-                    : styleClasses;
-                vnode.props[classProp] = currentClasses.join(' ');
+                this.setStyleClass(vnode, styleClasses);
             }
         }
         getItemStyleClass(visible, isNew, animate) {
@@ -239,18 +224,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 parentKey: metadata.parentKey,
                 depth: metadata.treeDepth
             });
-            let vnode;
-            if (Array.isArray(vnodes)) {
-                for (const curr of vnodes) {
-                    vnode = curr;
-                    if (vnode.props) {
-                        break;
-                    }
-                }
-            }
-            else {
-                vnode = vnodes;
-            }
+            let vnode = this.findItemVNode(vnodes);
             const prunedVnodes = [vnode];
             this.newVnodesCache.set(key, { vnodes: prunedVnodes });
             return prunedVnodes;
@@ -266,11 +240,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                     vnode.props['data-oj-key-type'] = 'number';
                 }
                 const styleClasses = this.getItemStyleClass(metadata, visible, this.newItemsTracker.has(metadata.key), initialFetch);
-                const classProp = vnode.props.class ? 'class' : 'className';
-                const currentClasses = vnode.props[classProp]
-                    ? [vnode.props[classProp], ...styleClasses]
-                    : styleClasses;
-                vnode.props[classProp] = currentClasses.join(' ');
+                this.setStyleClass(vnode, styleClasses);
                 if (!metadata.isLeaf) {
                     const expandedProp = this.callback.getExpanded();
                     const expanded = expandedProp && expandedProp.has(metadata.key);
@@ -399,6 +369,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                             break;
                         }
                         case DataCollectionUtils.KEYBOARD_KEYS._F2: {
+                            event.stopPropagation();
                             if (this.actionableMode === false) {
                                 this._enterActionableMode();
                             }
@@ -605,8 +576,10 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 this.contentHandler.postRender();
             }
             const items = this.root.querySelectorAll('.oj-stream-list-item, .oj-stream-list-group');
-            this._disableAllTabbableElements(items);
-            this._restoreCurrentItem(items);
+            if (!this.actionableMode) {
+                this._disableAllTabbableElements(items);
+                this._restoreCurrentItem(items);
+            }
         }
         _getScrollPolicyOptions() {
             return {
@@ -1183,7 +1156,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             done: currentData.done
         };
     };
-    exports.StreamList.metadata = { "properties": { "data": { "type": "object|null" }, "expanded": { "type": "any", "writeback": true }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "Element|string|null" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "any" }, "offsetY": { "type": "number" }, "parentKey": { "type": "any" } }, "writeback": true } }, "slots": { "groupTemplate": { "data": {} }, "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["expanded", "scrollPosition"], "_READ_ONLY_PROPS": [] } };
+    exports.StreamList._metadata = { "properties": { "data": { "type": "object" }, "expanded": { "type": "object", "writeback": true }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "string|Element" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "any" }, "offsetY": { "type": "number" }, "parentKey": { "type": "any" } }, "writeback": true } }, "slots": { "groupTemplate": { "data": {} }, "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["expanded", "scrollPosition"], "_READ_ONLY_PROPS": [] } };
     exports.StreamList = StreamList_1 = __decorate([
         ojvcomponent.customElement('oj-stream-list')
     ], exports.StreamList);

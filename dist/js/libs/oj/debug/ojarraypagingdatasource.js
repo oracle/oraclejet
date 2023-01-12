@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -56,7 +56,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojdatasource-common'], fun
     ArrayPagingDataSource.superclass.Init.call(this);
   };
 
-
   ArrayPagingDataSource.prototype._getSize = function () {
     if (!this._hasMore()) {
       // Return a size representing only what's left if we'd go over the bounds
@@ -78,7 +77,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojdatasource-common'], fun
 
     // Update the observable array
     this._refreshObservableDataWindow();
-    this._endIndex = (this._startIndex + this.dataWindow.length) - 1;
+    this._endIndex = this._startIndex + this.dataWindow.length - 1;
 
     if (!options.silent) {
       this.handleEvent('sync', { data: this.dataWindow, startIndex: this.current });
@@ -94,7 +93,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojdatasource-common'], fun
       }
     }
   };
-
 
   ArrayPagingDataSource.prototype.handleEvent = function (eventType, event) {
     return ArrayPagingDataSource.superclass.handleEvent.call(this, eventType, event);
@@ -159,8 +157,10 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojdatasource-common'], fun
     value = parseInt(value, 10);
     var handleEvent = ArrayPagingDataSource.superclass.handleEvent;
     try {
-      handleEvent.call(this, oj.PagingModel.EventType.BEFOREPAGE,
-                       { page: value, previousPage: this._page });
+      handleEvent.call(this, oj.PagingModel.EventType.BEFOREPAGE, {
+        page: value,
+        previousPage: this._page
+      });
     } catch (err) {
       return Promise.reject(err);
     }
@@ -173,16 +173,21 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojdatasource-common'], fun
     var self = this;
 
     return new Promise(function (resolve, reject) {
-      self._fetchInternal(options).then(function () {
-        handleEvent.call(self, oj.PagingModel.EventType.PAGE,
-                         { page: self._page, previousPage: previousPage });
-        resolve(null);
-      }, function (err) {
-        // restore old page
-        self._page = previousPage;
-        self._startIndex = self._page * self.pageSize;
-        reject(err);
-      });
+      self._fetchInternal(options).then(
+        function () {
+          handleEvent.call(self, oj.PagingModel.EventType.PAGE, {
+            page: self._page,
+            previousPage: previousPage
+          });
+          resolve(null);
+        },
+        function (err) {
+          // restore old page
+          self._page = previousPage;
+          self._startIndex = self._page * self.pageSize;
+          reject(err);
+        }
+      );
     });
   };
 

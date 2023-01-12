@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -145,7 +145,7 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
     var exactPattern = '^(' + pattern + ')$';
 
     var matchArr = valueString.match(exactPattern);
-    if (!((matchArr !== null) && (matchArr[0] === valueString))) {
+    if (!(matchArr !== null && matchArr[0] === valueString)) {
       if (this._options) {
         summary = this._options.messageSummary || null;
         detail = this._options.messageDetail || null;
@@ -153,12 +153,12 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
       }
 
       var params = { label: label, pattern: pattern, value: valueString };
-      var localizedSummary = summary ?
-      Translations.applyParameters(summary, params) :
-      Translations.getTranslatedString(this._getSummaryKey(), params);
-      var localizedDetail = (detail) ?
-      Translations.applyParameters(detail, params) :
-      Translations.getTranslatedString(this._getDetailKey(), params);
+      var localizedSummary = summary
+        ? Translations.applyParameters(summary, params)
+        : Translations.getTranslatedString(this._getSummaryKey(), params);
+      var localizedDetail = detail
+        ? Translations.applyParameters(detail, params)
+        : Translations.getTranslatedString(this._getDetailKey(), params);
 
       throw new ojvalidationError.ValidatorError(localizedSummary, localizedDetail);
     }
@@ -177,7 +177,7 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
   RegExpValidator.prototype.getHint = function () {
     var hint = null;
     var params = {};
-    if (this._options && (this._options.hint)) {
+    if (this._options && this._options.hint) {
       params = { pattern: this._options.pattern };
       hint = Translations.applyParameters(this._options.hint, params);
     }

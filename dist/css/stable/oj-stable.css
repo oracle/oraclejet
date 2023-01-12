@@ -333,7 +333,7 @@
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"stable","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v13.1.0"}' !important; }
+  font-family: '{"name":"stable","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v14.0.0"}' !important; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -5985,6 +5985,13 @@ oj-collapsible {
   color: var(--oj-heading-text-color);
   display: flex;
   align-items: center;
+  flex-grow: 1;
+  position: relative;
+  margin: 0; }
+
+.oj-collapsible-header-wrapper {
+  display: flex;
+  align-items: center;
   position: relative;
   padding: var(--oj-core-spacing-1x) 0;
   margin: 0; }
@@ -6007,20 +6014,28 @@ oj-collapsible {
 /*
      * add space around the header border
      */
-.oj-collapsible-header.oj-header-border {
+.oj-collapsible-header-wrapper.oj-header-border {
   padding-top: var(--oj-core-spacing-2x);
   padding-bottom: var(--oj-core-spacing-2x); }
 
 /*
+    * ignore original header border, it's moved to the wraper
+    */
+.oj-collapsible-header.oj-header-border {
+  border: 0;
+  padding-top: 0;
+  padding-bottom: 0; }
+
+/*
      * applied to the disabled collapsible header
      */
-.oj-collapsible.oj-disabled > .oj-collapsible-header {
+.oj-collapsible.oj-disabled .oj-collapsible-header {
   color: var(--oj-core-text-color-disabled); }
 
 /*
      * remove top padding for the first nested collapsible
      */
-.oj-collapsible-content > .oj-collapsible:first-child > .oj-collapsible-header {
+.oj-collapsible-content > .oj-collapsible:first-child > .oj-collapsible-header-wrapper {
   padding-top: 0; }
 
 /* collapsible content transition effects */
@@ -6041,11 +6056,11 @@ oj-collapsible {
 
 /* suppress all browser decorations of anchors in the header */
 /* --------------------------------------------------------- */
-.oj-collapsible-header a,
-.oj-collapsible-header a:active,
-.oj-collapsible-header a:visited,
-.oj-collapsible-header a:hover,
-.oj-collapsible-header a:focus {
+.oj-collapsible-header-wrapper a,
+.oj-collapsible-header-wrapper a:active,
+.oj-collapsible-header-wrapper a:visited,
+.oj-collapsible-header-wrapper a:hover,
+.oj-collapsible-header-wrapper a:focus {
   text-decoration: none; }
 
 /* disclosure icons for headers */
@@ -6063,15 +6078,14 @@ oj-collapsible {
 /*
      * set hand cursor while over the clickable area & hover background color
      */
-.oj-collapsible-header.oj-hover,
-.oj-collapsible-header-icon.oj-hover {
+.oj-collapsible-header-wrapper.oj-hover * {
   cursor: var(--oj-core-cursor-clickable); }
 
 /*
      * applied to the disclosure icon
      */
-.oj-collapsible-header .oj-collapsible-header-icon,
-.oj-collapsible-header .oj-collapsible-header-icon:hover {
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon,
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon:hover {
   color: var(--oj-private-icon-color-default); }
 
 /*
@@ -6079,32 +6093,32 @@ oj-collapsible {
      * add .oj-collapsible-header .oj-collapsible-header-icon.oj-hover
      * to override color set in a:hover.oj-clickable-icon-nocontext
      */
-.oj-collapsible-header.oj-hover .oj-collapsible-header-icon,
-.oj-collapsible-header .oj-collapsible-header-icon.oj-hover {
+.oj-collapsible-header-wrapper.oj-hover .oj-collapsible-header-icon,
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon.oj-hover {
   color: var(--oj-private-icon-color-hover); }
 
 /*
      * applied to the disclosure icon when it's active
      */
-.oj-collapsible-header.oj-active .oj-collapsible-header-icon,
-.oj-collapsible-header .oj-collapsible-header-icon.oj-active {
+.oj-collapsible-header-wrapper.oj-active .oj-collapsible-header-icon,
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon.oj-active {
   color: var(--oj-private-icon-color-active); }
 
 /*
      * For disabled header icons
      */
-.oj-collapsible.oj-disabled > .oj-collapsible-header > .oj-collapsible-header-icon {
+.oj-collapsible.oj-disabled > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
   color: var(--oj-private-icon-color-disabled); }
 
-.oj-collapsible-header .oj-collapsible-header-icon {
+.oj-collapsible-header-wrapper .oj-collapsible-header-icon {
   /*
        * For a basic collapsible (not in an accordion)
        * the closed font icon has some whitespace on the left side,
        * use a negative margin to move over the icon
        */ }
-  html:not([dir="rtl"]) .oj-collapsible-header .oj-collapsible-header-icon {
+  html:not([dir="rtl"]) .oj-collapsible-header-wrapper .oj-collapsible-header-icon {
     margin: 0 0 0 -8px; }
-  html[dir="rtl"] .oj-collapsible-header .oj-collapsible-header-icon {
+  html[dir="rtl"] .oj-collapsible-header-wrapper .oj-collapsible-header-icon {
     margin: 0 -8px 0 0; }
 
 :root {
@@ -6172,7 +6186,7 @@ oj-accordion {
 /*
      * applied to the accordion header but not to any nested collapsible headers
      */
-.oj-accordion-collapsible > .oj-collapsible-header {
+.oj-accordion-collapsible > .oj-collapsible-header-wrapper {
   padding-top: 3px;
   padding-bottom: 3px;
   border: 0 solid var(--oj-core-divider-color);
@@ -6182,21 +6196,29 @@ oj-accordion {
   background-color: var(--oj-list-view-group-header-bg-color); }
 
 /*
+     * applied to the accordion header but not to any nested collapsible headers
+     */
+.oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header {
+  font-size: var(--oj-list-view-group-header-font-size);
+  font-weight: var(--oj-list-view-group-header-font-weight);
+  background-color: var(--oj-list-view-group-header-bg-color); }
+
+/*
      * need to restore top padding for the first nested collapsible,
      * because it's being reset in collapsible
      */
-.oj-collapsible-content > .oj-accordion-collapsible.oj-collapsible:first-child > .oj-collapsible-header {
+.oj-collapsible-content > .oj-accordion-collapsible.oj-collapsible:first-child > .oj-collapsible-header-wrapper {
   padding-top: 3px; }
 
 /*
      * need to reset margin because it's being set in collapsible to -7px
      */
-.oj-accordion-collapsible > .oj-collapsible-header > .oj-collapsible-header-icon {
+.oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
   padding: 9px;
   outline-offset: -9px; }
-  html:not([dir="rtl"]) .oj-accordion-collapsible > .oj-collapsible-header > .oj-collapsible-header-icon {
+  html:not([dir="rtl"]) .oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
     margin: 0; }
-  html[dir="rtl"] .oj-accordion-collapsible > .oj-collapsible-header > .oj-collapsible-header-icon {
+  html[dir="rtl"] .oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
     margin: 0; }
 
 /*
@@ -6208,13 +6230,13 @@ oj-accordion {
 /*
      * applied to the accordion header border bottom when collapsed
      */
-.oj-accordion-collapsible.oj-collapsed > .oj-collapsible-header {
+.oj-accordion-collapsible.oj-collapsed > .oj-collapsible-header-wrapper {
   border-width: 0 0 1px; }
 
 /*
      * applied to the accordion header border for the last child when collapsed
      */
-.oj-accordion-collapsible.oj-collapsed:last-child > .oj-collapsible-header {
+.oj-accordion-collapsible.oj-collapsed:last-child > .oj-collapsible-header-wrapper {
   border-bottom-width: 1px; }
 
 :root {
@@ -8990,6 +9012,9 @@ html .oj-form-control {
 .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-invalid):not(.oj-warning) .oj-text-field-container {
   border-width: 0; }
 
+.oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field.oj-focus:not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-text-field-container {
+  box-shadow: inherit; }
+
 .oj-text-field-label-inside .oj-text-field-input.oj-hover {
   background-color: transparent; }
 
@@ -9756,7 +9781,8 @@ oj-list-view:not(.oj-complete) {
 .oj-listview-collapse-icon:focus,
 .oj-listview-group-item:focus,
 .oj-listview-item-element:focus,
-.oj-listview-cell-element:focus {
+.oj-listview-cell-element:focus,
+.oj-listview-no-data-cell-element:focus {
   outline: none; }
 
 /* styling to hide the gridline */
@@ -9813,7 +9839,9 @@ oj-list-view:not(.oj-complete) {
 /* Styling on list item hover */
 .oj-listview-item.oj-hover,
 .oj-listview-card.oj-hover,
-.oj-listview-group-item.oj-hover {
+.oj-listview-group-item.oj-hover,
+.oj-listview-item-element.oj-expanded .oj-listview-group-item.oj-hover,
+.oj-listview-item-element.oj-collapsed .oj-listview-group-item.oj-hover {
   background-color: var(--oj-core-bg-color-hover); }
 
 .oj-listview:not(.oj-listview-card-layout) .oj-listview-item.oj-hover,
@@ -9852,12 +9880,14 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
 /* Styling on focused list or group item */
 .oj-listview-card.oj-focus-highlight,
 .oj-listview-item.oj-focus-highlight,
-.oj-listview-group-item.oj-focus-highlight {
+.oj-listview-group-item.oj-focus-highlight,
+.oj-listview-no-data-item.oj-focus-highlight {
   position: relative; }
 
 .oj-listview-card.oj-focus-highlight::after,
 .oj-listview-item.oj-focus-highlight::after,
-.oj-listview-group-item.oj-focus-highlight::after {
+.oj-listview-group-item.oj-focus-highlight::after,
+.oj-listview-no-data-item.oj-focus-highlight::after {
   content: "";
   position: absolute;
   pointer-events: none;
@@ -9867,11 +9897,13 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
   outline: dotted 1px var(--oj-core-focus-border-color); }
   html:not([dir="rtl"]) .oj-listview-card.oj-focus-highlight::after, html:not([dir="rtl"])
   .oj-listview-item.oj-focus-highlight::after, html:not([dir="rtl"])
-  .oj-listview-group-item.oj-focus-highlight::after {
+  .oj-listview-group-item.oj-focus-highlight::after, html:not([dir="rtl"])
+  .oj-listview-no-data-item.oj-focus-highlight::after {
     left: 1px; }
   html[dir="rtl"] .oj-listview-card.oj-focus-highlight::after, html[dir="rtl"]
   .oj-listview-item.oj-focus-highlight::after, html[dir="rtl"]
-  .oj-listview-group-item.oj-focus-highlight::after {
+  .oj-listview-group-item.oj-focus-highlight::after, html[dir="rtl"]
+  .oj-listview-no-data-item.oj-focus-highlight::after {
     right: 1px; }
 
 /* Styling on expand/collapse icon when it has focus highlight */
@@ -9929,14 +9961,18 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
   line-height: var(--oj-list-view-group-header-line-height);
   color: var(--oj-heading-text-color);
   padding: var(--oj-collection-list-cell-padding-vertical) var(--oj-list-view-item-padding-horizontal);
-  border: 0 solid var(--oj-core-divider-color);
   background-color: var(--oj-list-view-group-header-bg-color);
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  background-image: linear-gradient(var(--oj-core-divider-color), var(--oj-core-divider-color));
+  background-position: 0 0;
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  border: 0 solid var(--oj-core-divider-color); }
 
 /* Styling override for small group headers */
 .oj-group-header-sm .oj-listview-group-item {
-  font-size: var(--oj-typography-body-xs-font-size);
-  color: var(--oj-core-text-color-secondary); }
+  font-size: var(--oj-typography-body-sm-font-size);
+  color: var(--oj-core-text-color-primary); }
 
 /* Styling override for large group headers */
 .oj-group-header-lg .oj-listview-group-item {
@@ -9946,8 +9982,7 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
 .oj-listview-item-element.oj-collapsed .oj-listview-group-item {
   padding: 0; }
 
-/* Styling for group items when it has no children or in collapsed state */
-.oj-listview-item-element.oj-collapsed .oj-listview-group-item,
+/* Styling for group items when it has no children */
 .oj-listview-group-item.oj-empty {
   border-width: 0 0 1px; }
 
@@ -9981,7 +10016,8 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
 /* Styling for group item element that is stucked when scrolled */
 .oj-listview-group-item.oj-stuck {
   background-color: var(--oj-list-view-group-header-bg-color-sticky);
-  box-shadow: var(--oj-core-box-shadow-xs); }
+  box-shadow: var(--oj-core-box-shadow-xs);
+  background-size: 0; }
 
 /* Remove borders on listview header when gridlines are visible in sticky mode */
 .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-group-item.oj-stuck {
@@ -10019,16 +10055,6 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
   justify-content: center;
   margin: 0 0.375rem;
   text-decoration: none; }
-
-/* Overrides for expand/collapse icon in small group header */
-.oj-group-header-sm .oj-listview-expand-icon,
-.oj-group-header-sm .oj-listview-collapse-icon,
-.oj-group-header-sm a:visited.oj-listview-expand-icon,
-.oj-group-header-sm a:visited.oj-listview-collapse-icon {
-  width: var(--oj-button-sm-height);
-  height: var(--oj-button-sm-height);
-  font-size: 1rem;
-  color: var(--oj-core-text-color-secondary); }
 
 /* Styling for item when display mode is card */
 .oj-listview-card {
@@ -11808,7 +11834,7 @@ html[dir="rtl"] .oj-conveyorbelt-overflow-indicator.oj-end {
   color: var(--oj-button-borderless-chrome-text-color-active); }
 
 :root {
-  --oj-data-grid-column-width:                    6.25rem; }
+  --oj-data-grid-column-width:                             6.25rem; }
 
 oj-data-grid:not(.oj-complete) {
   visibility: hidden; }
@@ -11836,7 +11862,9 @@ oj-data-grid:not(.oj-complete) {
 .oj-datagrid-header-label:focus,
 .oj-datagrid-end-header-cell:focus,
 .oj-datagrid-scrollers:focus,
-.oj-datagrid-databody:focus {
+.oj-datagrid-databody:focus,
+.oj-datagrid-no-data-container:focus,
+.oj-datagrid-empty-text:focus {
   outline: none; }
 
 /* The default column width should be set here*/
@@ -11860,6 +11888,14 @@ oj-data-grid:not(.oj-complete) {
 .oj-datagrid-column-header,
 .oj-datagrid-column-end-header {
   box-sizing: border-box; }
+
+/* Styling for no data container. */
+.oj-datagrid-no-data-container,
+.oj-datagrid-empty-text {
+  box-sizing: border-box;
+  position: absolute;
+  display: inline-block;
+  margin: 1px; }
 
 /* Style for disabling horizontal gridlines on cells */
 .oj-datagrid-cell.oj-datagrid-border-horizontal-none,
@@ -12281,6 +12317,10 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
   .oj-datagrid.oj-focus .oj-datagrid-end-header-cell.oj-focus-highlight::before {
     right: 1px; }
 
+.oj-datagrid-no-data-container:focus,
+.oj-datagrid-empty-text:focus {
+  outline: dotted 1px var(--oj-core-focus-border-color); }
+
 .oj-datagrid.oj-focus .oj-datagrid-column-end-header-cell.oj-focus-highlight::before {
   height: calc(100% - 2px); }
 
@@ -12322,7 +12362,8 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
 /* Styling on header cells when hovered both for rows and columns */
 .oj-datagrid-header-label.oj-hover,
 .oj-datagrid-header-cell.oj-hover,
-.oj-datagrid-end-header-cell.oj-hover {
+.oj-datagrid-end-header-cell.oj-hover,
+.oj-datagrid-top-corner.oj-hover {
   background-color: var(--oj-collection-header-bg-color-hover); }
 
 /* Styling for headers when a sub set > 1 of its respective cells are selected */
@@ -12351,11 +12392,6 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
   .oj-datagrid-loading-icon:before {
     content: url("images/spinner_full.gif");
     transform: translate(-37.5%, -37.5%) scale(0.25); }
-
-/* Styling for the empty data grid text, default only used for positioning */
-.oj-datagrid-empty-text {
-  position: absolute;
-  padding: var(--oj-collection-grid-cell-padding); }
 
 /* Styling for the corner between row and column headers and scrollbars */
 .oj-datagrid-row-header-spacer,
@@ -12416,7 +12452,8 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
   margin-inline-end: 0.5rem; }
 
 .oj-datagrid-required-icon {
-  padding: 0.25rem; }
+  padding: 0.25rem;
+  cursor: default; }
 
 .oj-datagrid-required-icon:before {
   content: "*"; }
@@ -12553,11 +12590,47 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
 .oj-datagrid-row-header-cell.oj-datagrid-hierarchical-group .oj-datagrid-icon-container.oj-datagrid-disclosure-icon {
   margin-top: calc(-1 * var(--oj-collection-grid-cell-padding)); }
 
+.oj-datagrid-draggable {
+  cursor: grab; }
+
+.oj-datagrid-drag-active {
+  cursor: grabbing; }
+
+.drag-source-opaque, .oj-datagrid-disabled-element {
+  opacity: 0.3; }
+
+.oj-datagrid-row-drop-target-line {
+  border-bottom: 2px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+html:not([dir="rtl"]) .oj-datagrid-col-drop-target-line {
+  border-right: 2px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+html[dir="rtl"] .oj-datagrid-col-drop-target-line {
+  border-left: 2px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+.dndContainer {
+  position: absolute;
+  overflow: auto;
+  top: -10000px;
+  opacity: 0.92; }
+
+.dndContainer::-webkit-scrollbar {
+  display: none; }
+
+.oj-datagrid-drop-target {
+  background-color: var(--oj-core-drag-drop-color-1); }
+
 /* Styling for the default sort icon */
 /* Styling for the sort ascending icon */
 /* Styling for the sort descending icon */
 /* Styling for a collapsed icon */
 /* Styling for an expanded icon */
+.oj-datagrid {
+  --oj-c-PRIVATE-DO-NOT-USE-text-field-embedded-padding:    var(--oj-collection-grid-cell-padding); }
+
 :root {
   --oj-date-picker-cell-font-size:               var(--oj-typography-body-sm-font-size);
   --oj-date-picker-cell-border-color-today:      rgb(var(--oj-palette-neutral-rgb-160)); }
@@ -12886,7 +12959,8 @@ html[dir="rtl"] .oj-datepicker-prev-icon {
 
 .oj-datepicker-calendar.oj-focus-highlight td.oj-datepicker-days-cell-over a,
 .oj-datepicker-calendar.oj-focus-highlight td.oj-datepicker-days-cell-over span {
-  border: 2px solid var(--oj-core-border-color-selected); }
+  outline: dotted 1px var(--oj-core-focus-border-color);
+  outline-offset: 1px; }
 
 .oj-datepicker-week-col {
   color: var(--oj-label-color);
@@ -13151,6 +13225,9 @@ html[dir="rtl"] .oj-timepicker-ok-button {
 oj-drawer-layout:not(.oj-complete) {
   visibility: hidden; }
 
+.oj-drawer-hidden {
+  display: none !important; }
+
 .oj-drawer-disable-body-overflow {
   overflow: hidden !important; }
 
@@ -13287,9 +13364,6 @@ oj-drawer-popup:not(.oj-complete) {
   width: 100vw;
   max-width: 100vw;
   max-height: 100vh; }
-
-.oj-drawer-popup-surrogate .oj-drawer-bottom.oj-drawer-full-overlay {
-  height: 100vh; }
 
 @supports (-webkit-touch-callout: none) {
   .oj-drawer-popup-surrogate .oj-drawer-bottom {
@@ -13937,7 +14011,7 @@ oj-form-layout {
     text-align: right; }
 
 .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):not(.oj-formlayout-nested-labelvalue) {
-  margin: 0 0 calc(var(--oj-form-layout-margin-bottom) - var(--oj-private-core-wrappable-margin-bottom)) 0; }
+  padding: 0 0 calc(var(--oj-form-layout-margin-bottom) - var(--oj-private-core-wrappable-margin-bottom)) 0; }
 
 .oj-form.oj-label-value > .oj-flex > .oj-flex-item:first-child {
   margin: 0; }
@@ -14282,7 +14356,10 @@ oj-gantt:not(.oj-complete) {
 /* Styling related to interactivity */
 .oj-gantt-task.oj-draggable,
 .oj-gantt-task-label.oj-draggable,
-.oj-gantt-task-progress.oj-draggable {
+.oj-gantt-task-progress.oj-draggable,
+.oj-gantt-task-overtime.oj-draggable,
+.oj-gantt-task-downtime.oj-draggable,
+.oj-gantt-task-attribute.oj-draggable {
   cursor: move; }
 
 .oj-gantt-task-drag-image {
@@ -14295,6 +14372,26 @@ oj-gantt:not(.oj-complete) {
   opacity: 0; }
 
 .oj-gantt-task-resize-handle.oj-draggable {
+  cursor: col-resize; }
+
+.oj-gantt-dnd-move-droppable,
+.oj-gantt-task.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-label.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-progress.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-overtime.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-downtime.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-attribute.oj-gantt-dnd-move-droppable,
+.oj-gantt-task-resize-handle.oj-gantt-dnd-move-droppable {
+  cursor: move; }
+
+.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-label.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-progress.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-overtime.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-downtime.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-attribute.oj-gantt-dnd-resize-droppable,
+.oj-gantt-task-resize-handle.oj-gantt-dnd-resize-droppable {
   cursor: col-resize; }
 
 /* Styling for all task labels */
@@ -15704,20 +15801,17 @@ oj-menu {
   padding: 0 var(--oj-menu-text-to-edge-padding);
   position: relative;
   text-decoration: none;
-  display: block;
+  display: flex;
+  align-items: center;
   font-weight: normal;
   box-sizing: border-box; }
 
 .oj-menu-item > a {
   height: var(--oj-collection-list-row-height);
-  line-height: var(--oj-collection-list-row-height);
   color: var(--oj-menu-item-text-color);
   border-top-width: 1px;
   border-top-color: transparent;
   border-top-style: solid; }
-
-.oj-menu-item > a > span {
-  vertical-align: top; }
 
 .oj-menu-item:last-child > a {
   border-bottom-width: 1px;
@@ -15785,9 +15879,10 @@ a.oj-menu-option-text-only {
 .oj-menu-item-icon,
 .oj-menu-item-end-icon {
   color: var(--oj-menu-icon-color);
+  display: flex;
+  align-items: center;
   position: absolute;
-  height: var(--oj-menu-icon-size);
-  line-height: var(--oj-collection-list-row-height) !important; }
+  height: var(--oj-menu-icon-size); }
 
 html:not([dir="rtl"]) .oj-menu-item-icon {
   margin-left: calc(0px - var(--oj-menu-icon-size) - var(--oj-menu-text-to-start-icon-padding));
@@ -15821,8 +15916,9 @@ html[dir="rtl"] .oj-menu-item-end-icon {
 .oj-menu-submenu-icon {
   color: var(--oj-menu-icon-color);
   position: absolute;
-  line-height: var(--oj-collection-list-row-height);
-  height: var(--oj-menu-icon-size); }
+  height: var(--oj-menu-icon-size);
+  display: flex;
+  align-items: center; }
   html:not([dir="rtl"]) .oj-menu-submenu-icon {
     right: var(--oj-menu-icon-to-edge-padding); }
   html[dir="rtl"] .oj-menu-submenu-icon {
@@ -17010,7 +17106,8 @@ html .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlis
   justify-content: center; }
 
 .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
-  padding: 0 var(--oj-navigation-list-item-padding); }
+  padding: 0 var(--oj-navigation-list-item-padding);
+  justify-content: end; }
 
 .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-icon {
   padding-bottom: var(--oj-navigation-list-icon-to-text-padding); }
@@ -19189,6 +19286,549 @@ oj-selector:not(.oj-complete) {
   top: 0;
   left: 0; }
 
+:root {
+  --oj-palette-danger-rgb-10:    255, 248, 247;
+  --oj-palette-danger-rgb-20:    255, 241, 239;
+  --oj-palette-danger-rgb-30:    255, 235, 232;
+  --oj-palette-danger-rgb-40:    255, 217, 211;
+  --oj-palette-danger-rgb-50:    255, 193, 184;
+  --oj-palette-danger-rgb-60:    255, 157, 144;
+  --oj-palette-danger-rgb-70:    255, 134, 117;
+  --oj-palette-danger-rgb-80:    254, 104, 84;
+  --oj-palette-danger-rgb-90:    236, 79, 58;
+  --oj-palette-danger-rgb-100:   214, 59, 37;
+  --oj-palette-danger-rgb-110:   195, 53, 34;
+  --oj-palette-danger-rgb-120:   179, 49, 31;
+  --oj-palette-danger-rgb-130:   170, 34, 34;
+  --oj-palette-danger-rgb-140:   143, 39, 25;
+  --oj-palette-danger-rgb-150:   124, 34, 22;
+  --oj-palette-danger-rgb-160:   102, 28, 18;
+  --oj-palette-danger-rgb-170:   86, 24, 15;
+  --oj-palette-warning-rgb-10:   254, 249, 242;
+  --oj-palette-warning-rgb-20:   253, 242, 229;
+  --oj-palette-warning-rgb-30:   252, 237, 220;
+  --oj-palette-warning-rgb-40:   249, 221, 188;
+  --oj-palette-warning-rgb-50:   246, 199, 146;
+  --oj-palette-warning-rgb-60:   240, 169, 87;
+  --oj-palette-warning-rgb-70:   235, 150, 50;
+  --oj-palette-warning-rgb-80:   225, 128, 18;
+  --oj-palette-warning-rgb-90:   198, 113, 14;
+  --oj-palette-warning-rgb-100:  172, 99, 12;
+  --oj-palette-warning-rgb-110:  156, 89, 11;
+  --oj-palette-warning-rgb-120:  143, 82, 10;
+  --oj-palette-warning-rgb-130:  129, 73, 9;
+  --oj-palette-warning-rgb-140:  114, 65, 8;
+  --oj-palette-warning-rgb-150:  99, 56, 7;
+  --oj-palette-warning-rgb-160:  81, 47, 6;
+  --oj-palette-warning-rgb-170:  69, 39, 5;
+  --oj-palette-success-rgb-10:   244, 252, 235;
+  --oj-palette-success-rgb-20:   235, 248, 222;
+  --oj-palette-success-rgb-30:   228, 245, 211;
+  --oj-palette-success-rgb-40:   207, 235, 179;
+  --oj-palette-success-rgb-50:   177, 221, 136;
+  --oj-palette-success-rgb-60:   138, 201, 79;
+  --oj-palette-success-rgb-70:   125, 186, 69;
+  --oj-palette-success-rgb-80:   111, 169, 57;
+  --oj-palette-success-rgb-90:   94, 148, 43;
+  --oj-palette-success-rgb-100:  80, 130, 35;
+  --oj-palette-success-rgb-110:  73, 118, 32;
+  --oj-palette-success-rgb-120:  67, 107, 29;
+  --oj-palette-success-rgb-130:  60, 96, 26;
+  --oj-palette-success-rgb-140:  53, 86, 23;
+  --oj-palette-success-rgb-150:  46, 73, 20;
+  --oj-palette-success-rgb-160:  38, 61, 16;
+  --oj-palette-success-rgb-170:  31, 51, 14;
+  --oj-palette-info-rgb-10:      246, 250, 252;
+  --oj-palette-info-rgb-20:      237, 246, 249;
+  --oj-palette-info-rgb-30:      228, 241, 247;
+  --oj-palette-info-rgb-40:      208, 229, 238;
+  --oj-palette-info-rgb-50:      180, 213, 225;
+  --oj-palette-info-rgb-60:      143, 191, 208;
+  --oj-palette-info-rgb-70:      121, 177, 198;
+  --oj-palette-info-rgb-80:      95, 162, 186;
+  --oj-palette-info-rgb-90:      65, 144, 172;
+  --oj-palette-info-rgb-100:     34, 126, 158;
+  --oj-palette-info-rgb-110:     14, 114, 151;
+  --oj-palette-info-rgb-120:     0, 104, 140;
+  --oj-palette-info-rgb-130:     2, 94, 126;
+  --oj-palette-info-rgb-140:     4, 83, 111;
+  --oj-palette-info-rgb-150:     6, 72, 95;
+  --oj-palette-info-rgb-160:     6, 60, 78;
+  --oj-palette-info-rgb-170:     5, 50, 66;
+  --oj-palette-brand-rgb-10:     246, 250, 252;
+  --oj-palette-brand-rgb-20:     237, 246, 249;
+  --oj-palette-brand-rgb-30:     228, 241, 247;
+  --oj-palette-brand-rgb-40:     208, 229, 238;
+  --oj-palette-brand-rgb-50:     180, 213, 225;
+  --oj-palette-brand-rgb-60:     143, 191, 208;
+  --oj-palette-brand-rgb-70:     121, 177, 198;
+  --oj-palette-brand-rgb-80:     95, 162, 186;
+  --oj-palette-brand-rgb-90:     65, 144, 172;
+  --oj-palette-brand-rgb-100:    34, 126, 158;
+  --oj-palette-brand-rgb-110:    14, 114, 151;
+  --oj-palette-brand-rgb-120:    0, 104, 140;
+  --oj-palette-brand-rgb-130:    2, 94, 126;
+  --oj-palette-brand-rgb-140:    4, 83, 111;
+  --oj-palette-brand-rgb-150:    6, 72, 95;
+  --oj-palette-brand-rgb-160:    6, 60, 78;
+  --oj-palette-brand-rgb-170:    5, 50, 66;
+  --oj-palette-neutral-rgb-0:    255, 255, 255;
+  --oj-palette-neutral-rgb-10:   251, 249, 248;
+  --oj-palette-neutral-rgb-20:   245, 244, 242;
+  --oj-palette-neutral-rgb-30:   241, 239, 237;
+  --oj-palette-neutral-rgb-40:   228, 225, 221;
+  --oj-palette-neutral-rgb-50:   212, 207, 202;
+  --oj-palette-neutral-rgb-60:   188, 182, 177;
+  --oj-palette-neutral-rgb-70:   174, 168, 162;
+  --oj-palette-neutral-rgb-80:   158, 152, 146;
+  --oj-palette-neutral-rgb-90:   139, 133, 128;
+  --oj-palette-neutral-rgb-100:  123, 117, 112;
+  --oj-palette-neutral-rgb-110:  111, 105, 100;
+  --oj-palette-neutral-rgb-120:  101, 95, 91;
+  --oj-palette-neutral-rgb-130:  92, 86, 81;
+  --oj-palette-neutral-rgb-140:  81, 76, 71;
+  --oj-palette-neutral-rgb-150:  71, 66, 62;
+  --oj-palette-neutral-rgb-160:  58, 54, 50;
+  --oj-palette-neutral-rgb-170:  49, 45, 42;
+  --oj-palette-neutral-rgb-180:  32, 30, 28;
+  --oj-palette-neutral-rgb-190:  22, 21, 19;
+  --oj-palette-neutral-rgb-200:  00, 00, 00;
+  --oj-palette-dvt-rgb-1:      36, 93, 99;
+  --oj-palette-dvt-rgb-2:      222, 127, 17;
+  --oj-palette-dvt-rgb-3:      95, 185, 181;
+  --oj-palette-dvt-rgb-4:      78, 65, 55;
+  --oj-palette-dvt-rgb-5:      160, 201, 139;
+  --oj-palette-dvt-rgb-6:      180, 114, 130;
+  --oj-palette-dvt-rgb-7:      131, 64, 30;
+  --oj-palette-dvt-rgb-8:      158, 127, 204;
+  --oj-palette-dvt-rgb-9:      251, 194, 106;
+  --oj-palette-dvt-rgb-10:     88, 49, 110;
+  --oj-palette-dvt-rgb-11:     95, 162, 186;
+  --oj-palette-dvt-rgb-12:     49, 122, 69; }
+
+/* palette                    */
+/* -------------------------- */
+.oj-contrast-marker,
+.oj-color-invert {
+  --oj-palette-brand-rgb-10:     254, 249, 233;
+  --oj-palette-brand-rgb-20:     253, 244, 223;
+  --oj-palette-brand-rgb-30:     252, 239, 203;
+  --oj-palette-brand-rgb-40:     247, 224, 161;
+  --oj-palette-brand-rgb-50:     240, 204, 113;
+  --oj-palette-brand-rgb-60:     213, 179, 100;
+  --oj-palette-brand-rgb-70:     199, 165, 93;
+  --oj-palette-brand-rgb-80:     179, 149, 84;
+  --oj-palette-brand-rgb-90:     157, 130, 73;
+  --oj-palette-brand-rgb-100:    137, 114, 63;
+  --oj-palette-brand-rgb-110:    113, 94, 52;
+  --oj-palette-brand-rgb-120:    113, 94, 52;
+  --oj-palette-brand-rgb-130:    102, 85, 47;
+  --oj-palette-brand-rgb-140:    91, 74, 41;
+  --oj-palette-brand-rgb-150:    79, 66, 36;
+  --oj-palette-brand-rgb-160:    64, 54, 29;
+  --oj-palette-brand-rgb-170:    55, 44, 24; }
+
+:root {
+  --oj-core-text-color-primary:      rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-core-text-color-secondary:    rgba(var(--oj-palette-neutral-rgb-190), .65);
+  --oj-core-text-color-disabled:     rgba(var(--oj-palette-neutral-rgb-190), .4);
+  --oj-core-text-color-brand:        rgb(var(--oj-palette-brand-rgb-110));
+  --oj-core-text-color-danger:       rgb(var(--oj-palette-danger-rgb-120));
+  --oj-core-text-color-warning:      rgb(var(--oj-palette-warning-rgb-120));
+  --oj-core-text-color-success:      rgb(var(--oj-palette-success-rgb-120));
+  --oj-core-bg-color-content:       rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-bg-color-hover:         rgba(var(--oj-palette-neutral-rgb-190), .04);
+  --oj-core-bg-color-active:        rgba(var(--oj-palette-neutral-rgb-190), .06);
+  --oj-core-bg-color-selected:      rgb(var(--oj-palette-info-rgb-30));
+  --oj-core-border-color-selected:  rgb(var(--oj-palette-info-rgb-100));
+  --oj-core-color-disabled-1:      rgba(var(--oj-palette-neutral-rgb-190), 0.05);
+  --oj-core-color-disabled-2:  rgba(var(--oj-palette-neutral-rgb-190),.12);
+  --oj-core-icon-size-lg:              1.5rem;
+  --oj-core-icon-size-sm:              1rem;
+  --oj-core-divider-color:             rgba(var(--oj-palette-neutral-rgb-190),.1);
+  --oj-core-divider-margin:            0.5rem;
+  --oj-core-neutral-1:                      rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-core-neutral-2:                      rgb(var(--oj-palette-neutral-rgb-110));
+  --oj-core-neutral-3:                      rgb(var(--oj-palette-neutral-rgb-120));
+  --oj-core-neutral-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-neutral-secondary-1:            rgb(var(--oj-palette-neutral-rgb-30));
+  --oj-core-neutral-secondary-2:            rgb(var(--oj-palette-neutral-rgb-20));
+  --oj-core-neutral-secondary-3:            rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-core-neutral-secondary-contrast:     rgb(var(--oj-palette-neutral-rgb-120));
+  --oj-core-brand-1:                      rgb(var(--oj-palette-brand-rgb-100));
+  --oj-core-brand-2:                      rgb(var(--oj-palette-brand-rgb-110));
+  --oj-core-brand-3:                      rgb(var(--oj-palette-brand-rgb-120));
+  --oj-core-brand-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-danger-1:                      rgb(var(--oj-palette-danger-rgb-100));
+  --oj-core-danger-2:                      rgb(var(--oj-palette-danger-rgb-110));
+  --oj-core-danger-3:                      rgb(var(--oj-palette-danger-rgb-120));
+  --oj-core-danger-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-danger-secondary-1:            rgb(var(--oj-palette-danger-rgb-30));
+  --oj-core-danger-secondary-2:            rgb(var(--oj-palette-danger-rgb-20));
+  --oj-core-danger-secondary-3:            rgb(var(--oj-palette-danger-rgb-10));
+  --oj-core-danger-secondary-contrast:     rgb(var(--oj-palette-danger-rgb-120));
+  --oj-core-warning-1:                    rgb(var(--oj-palette-warning-rgb-100));
+  --oj-core-warning-2:                    rgb(var(--oj-palette-warning-rgb-110));
+  --oj-core-warning-3:                    rgb(var(--oj-palette-warning-rgb-120));
+  --oj-core-warning-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-warning-secondary-1:          rgb(var(--oj-palette-warning-rgb-30));
+  --oj-core-warning-secondary-2:          rgb(var(--oj-palette-warning-rgb-20));
+  --oj-core-warning-secondary-3:          rgb(var(--oj-palette-warning-rgb-10));
+  --oj-core-warning-secondary-contrast:   rgb(var(--oj-palette-warning-rgb-120));
+  --oj-core-success-1:                    rgb(var(--oj-palette-success-rgb-100));
+  --oj-core-success-2:                    rgb(var(--oj-palette-success-rgb-110));
+  --oj-core-success-3:                    rgb(var(--oj-palette-success-rgb-120));
+  --oj-core-success-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-success-secondary-1:          rgb(var(--oj-palette-success-rgb-30));
+  --oj-core-success-secondary-2:          rgb(var(--oj-palette-success-rgb-20));
+  --oj-core-success-secondary-3:          rgb(var(--oj-palette-success-rgb-10));
+  --oj-core-success-secondary-contrast:   rgb(var(--oj-palette-success-rgb-120));
+  --oj-core-info-1:                    rgb(var(--oj-palette-info-rgb-100));
+  --oj-core-info-2:                    rgb(var(--oj-palette-info-rgb-110));
+  --oj-core-info-3:                    rgb(var(--oj-palette-info-rgb-120));
+  --oj-core-info-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-info-secondary-1:          rgb(var(--oj-palette-info-rgb-30));
+  --oj-core-info-secondary-2:          rgb(var(--oj-palette-info-rgb-20));
+  --oj-core-info-secondary-3:          rgb(var(--oj-palette-info-rgb-10));
+  --oj-core-info-secondary-contrast:   rgb(var(--oj-palette-info-rgb-120));
+  --oj-core-focus-border-color:     rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-core-cursor-clickable:      pointer;
+  --oj-core-drag-drop-color-1:       rgb(var(--oj-palette-brand-rgb-40));
+  --oj-core-drag-drop-color-2:       rgb(var(--oj-palette-brand-rgb-100));
+  --oj-core-drag-drop-line-color:    rgb(var(--oj-palette-brand-rgb-100));
+  --oj-core-touch-target-min-size:    2.25rem;
+  --oj-core-box-shadow-rgb:     var(--oj-palette-neutral-rgb-200);
+  --oj-core-box-shadow-xs:      0px 1px 4px 0px    rgba(var(--oj-core-box-shadow-rgb),.12);
+  --oj-core-box-shadow-sm:      0px 4px 8px 0px    rgba(var(--oj-core-box-shadow-rgb),.16);
+  --oj-core-box-shadow-md:      0px 6px 12px 0px   rgba(var(--oj-core-box-shadow-rgb),.2);
+  --oj-core-box-shadow-lg:      0px 8px 16px 0px   rgba(var(--oj-core-box-shadow-rgb),0.24);
+  --oj-core-box-shadow-xl:      0px 12px 20px 0px  rgba(var(--oj-core-box-shadow-rgb),0.28);
+  --oj-core-dropdown-box-shadow:  var(--oj-core-box-shadow-sm);
+  --oj-private-core-global-dropdown-offset: 4;
+  --oj-core-scrim-color:   rgba(var(--oj-palette-neutral-rgb-190), .4);
+  --oj-core-spacing-1x:                  .25rem;
+  --oj-core-spacing-2x:                  .5rem;
+  --oj-core-spacing-3x:                  .75rem;
+  --oj-core-spacing-4x:                  1rem;
+  --oj-core-spacing-5x:                  1.25rem;
+  --oj-core-spacing-6x:                  1.5rem;
+  --oj-core-spacing-7x:                  1.75rem;
+  --oj-core-spacing-8x:                  2rem;
+  --oj-core-spacing-9x:                  2.25rem;
+  --oj-core-spacing-10x:                 2.5rem;
+  --oj-core-spacing-11x:                 2.75rem;
+  --oj-core-spacing-12x:                 3rem;
+  --oj-private-core-wrappable-margin-bottom:       0px;
+  --oj-core-border-radius-sm:                2px;
+  --oj-core-border-radius-md:               .25rem;
+  --oj-core-border-radius-lg:               .375rem;
+  --oj-core-border-radius-xl:               .5rem;
+  --oj-private-core-z-index-fixed:           100;
+  --oj-private-core-z-index-off-canvas:      200;
+  --oj-private-core-z-index-resizable:       900;
+  --oj-core-z-index-popup:                   1000;
+  --oj-core-z-index-dialog:                  1050;
+  --oj-core-z-index-messages:                2000;
+  --oj-private-core-global-loading-indicator-delay-duration: 0.05s; }
+
+:root {
+  --oj-typography-heading-2xl-font-size:                     2.5rem;
+  --oj-typography-heading-2xl-font-weight:                   900;
+  --oj-typography-heading-2xl-line-height:                   1.3;
+  --oj-typography-heading-xl-font-size:                      2.25rem;
+  --oj-typography-heading-xl-font-weight:                    900;
+  --oj-typography-heading-xl-line-height:                    1.222;
+  --oj-typography-heading-lg-font-size:                      2rem;
+  --oj-typography-heading-lg-font-weight:                    900;
+  --oj-typography-heading-lg-line-height:                    1.25;
+  --oj-typography-heading-md-font-size:                      1.75rem;
+  --oj-typography-heading-md-font-weight:                    900;
+  --oj-typography-heading-md-line-height:                    1.2857;
+  --oj-typography-heading-sm-font-size:                      1.5rem;
+  --oj-typography-heading-sm-font-weight:                    900;
+  --oj-typography-heading-sm-line-height:                    1.3333;
+  --oj-typography-heading-xs-font-size:                      1.25rem;
+  --oj-typography-heading-xs-font-weight:                    900;
+  --oj-typography-heading-xs-line-height:                    1.4;
+  --oj-typography-subheading-2xl-font-size:                  2.25rem;
+  --oj-typography-subheading-2xl-font-weight:                bold;
+  --oj-typography-subheading-2xl-line-height:                1.2222;
+  --oj-typography-subheading-xl-font-size:                   2rem;
+  --oj-typography-subheading-xl-font-weight:                 bold;
+  --oj-typography-subheading-xl-line-height:                 1.25;
+  --oj-typography-subheading-lg-font-size:                   1.75rem;
+  --oj-typography-subheading-lg-font-weight:                 bold;
+  --oj-typography-subheading-lg-line-height:                 1.2857;
+  --oj-typography-subheading-md-font-size:                   1.5rem;
+  --oj-typography-subheading-md-font-weight:                 bold;
+  --oj-typography-subheading-md-line-height:                 1.3333;
+  --oj-typography-subheading-sm-font-size:                   1.25rem;
+  --oj-typography-subheading-sm-font-weight:                 bold;
+  --oj-typography-subheading-sm-line-height:                 1.4;
+  --oj-typography-subheading-xs-font-size:                   1rem;
+  --oj-typography-subheading-xs-font-weight:                 bold;
+  --oj-typography-subheading-xs-line-height:                 1.5;
+  --oj-typography-body-xl-font-size:                         1.25rem;
+  --oj-typography-body-xl-line-height:                       1.4;
+  --oj-typography-body-lg-font-size:                         1.125rem;
+  --oj-typography-body-lg-line-height:                       1.3333;
+  --oj-typography-body-md-font-size:                         1rem;
+  --oj-typography-body-md-line-height:                       1.25;
+  --oj-typography-body-sm-font-size:                         0.859rem;
+  --oj-typography-body-sm-line-height:                       1.2;
+  --oj-typography-body-xs-font-size:                         0.75rem;
+  --oj-typography-body-xs-line-height:                       1.3333;
+  --oj-typography-body-2xs-font-size:                        0.625rem;
+  --oj-typography-body-2xs-line-height:                      1.2; }
+
+/* core                       */
+/* -------------------------- */
+.oj-contrast-marker,
+.oj-color-invert {
+  --oj-core-text-color-primary:   rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-text-color-secondary: rgba(var(--oj-palette-neutral-rgb-0), .6);
+  --oj-core-text-color-disabled:  rgba(var(--oj-palette-neutral-rgb-0), .3);
+  --oj-core-bg-color-content:     rgb(var(--oj-palette-neutral-rgb-170));
+  --oj-core-bg-color-hover:       rgba(var(--oj-palette-neutral-rgb-0), .08);
+  --oj-core-bg-color-active:      rgba(var(--oj-palette-neutral-rgb-0), .12);
+  --oj-core-divider-color:        rgba(var(--oj-palette-neutral-rgb-0), .3);
+  --oj-core-text-color-danger:    rgb(var(--oj-palette-danger-rgb-70));
+  --oj-core-text-color-warning:   rgb(var(--oj-palette-warning-rgb-70));
+  --oj-core-text-color-success:   rgb(var(--oj-palette-success-rgb-70));
+  --oj-core-brand-1:                      rgb(var(--oj-palette-brand-rgb-50));
+  --oj-core-brand-2:                      rgb(var(--oj-palette-brand-rgb-60));
+  --oj-core-brand-3:                      rgb(var(--oj-palette-brand-rgb-70));
+  --oj-core-brand-contrast:               rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-core-neutral-1:                      rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-core-neutral-2:                      rgb(var(--oj-palette-neutral-rgb-90));
+  --oj-core-neutral-3:                      rgb(var(--oj-palette-neutral-rgb-70));
+  --oj-core-neutral-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-neutral-secondary-1:            rgb(var(--oj-palette-neutral-rgb-140));
+  --oj-core-neutral-secondary-2:            rgb(var(--oj-palette-neutral-rgb-150));
+  --oj-core-neutral-secondary-3:            rgb(var(--oj-palette-neutral-rgb-160));
+  --oj-core-neutral-secondary-contrast:     rgb(var(--oj-palette-neutral-rgb-40));
+  --oj-core-success-1:                    rgb(var(--oj-palette-success-rgb-100));
+  --oj-core-success-2:                    rgb(var(--oj-palette-success-rgb-90));
+  --oj-core-success-3:                    rgb(var(--oj-palette-success-rgb-70));
+  --oj-core-success-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-success-secondary-1:          rgb(var(--oj-palette-success-rgb-140));
+  --oj-core-success-secondary-2:          rgb(var(--oj-palette-success-rgb-150));
+  --oj-core-success-secondary-3:          rgb(var(--oj-palette-success-rgb-160));
+  --oj-core-success-secondary-contrast:   rgb(var(--oj-palette-success-rgb-40));
+  --oj-core-warning-1:                    rgb(var(--oj-palette-warning-rgb-100));
+  --oj-core-warning-2:                    rgb(var(--oj-palette-warning-rgb-90));
+  --oj-core-warning-3:                    rgb(var(--oj-palette-warning-rgb-70));
+  --oj-core-warning-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-warning-secondary-1:          rgb(var(--oj-palette-warning-rgb-140));
+  --oj-core-warning-secondary-2:          rgb(var(--oj-palette-warning-rgb-150));
+  --oj-core-warning-secondary-3:          rgb(var(--oj-palette-warning-rgb-160));
+  --oj-core-warning-secondary-contrast:   rgb(var(--oj-palette-warning-rgb-40));
+  --oj-core-danger-1:                      rgb(var(--oj-palette-danger-rgb-100));
+  --oj-core-danger-2:                      rgb(var(--oj-palette-danger-rgb-90));
+  --oj-core-danger-3:                      rgb(var(--oj-palette-danger-rgb-70));
+  --oj-core-danger-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-danger-secondary-1:            rgb(var(--oj-palette-danger-rgb-140));
+  --oj-core-danger-secondary-2:            rgb(var(--oj-palette-danger-rgb-150));
+  --oj-core-danger-secondary-3:            rgb(var(--oj-palette-danger-rgb-160));
+  --oj-core-danger-secondary-contrast:     rgb(var(--oj-palette-danger-rgb-40));
+  --oj-core-info-1:                    rgb(var(--oj-palette-info-rgb-100));
+  --oj-core-info-2:                    rgb(var(--oj-palette-info-rgb-90));
+  --oj-core-info-3:                    rgb(var(--oj-palette-info-rgb-70));
+  --oj-core-info-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-info-secondary-1:          rgb(var(--oj-palette-info-rgb-140));
+  --oj-core-info-secondary-2:          rgb(var(--oj-palette-info-rgb-150));
+  --oj-core-info-secondary-3:          rgb(var(--oj-palette-info-rgb-160));
+  --oj-core-info-secondary-contrast:   rgb(var(--oj-palette-info-rgb-40));
+  --oj-core-box-shadow-rgb:     var(--oj-palette-neutral-rgb-200);
+  --oj-core-box-shadow-xs:      0px 1px 4px 0px    rgba(var(--oj-core-box-shadow-rgb),.12);
+  --oj-core-box-shadow-sm:      0px 4px 8px 0px    rgba(var(--oj-core-box-shadow-rgb),.16);
+  --oj-core-box-shadow-md:      0px 6px 12px 0px   rgba(var(--oj-core-box-shadow-rgb),.2);
+  --oj-core-box-shadow-lg:      0px 8px 16px 0px   rgba(var(--oj-core-box-shadow-rgb),0.24);
+  --oj-core-box-shadow-xl:      0px 12px 20px 0px  rgba(var(--oj-core-box-shadow-rgb),0.28);
+  --oj-core-focus-border-color: rgb(var(--oj-palette-neutral-rgb-0)); }
+
+:root.oj-scale-sm {
+  --oj-core-icon-size-lg: 1.3333rem; }
+
+:root.oj-scale-md {
+  --oj-core-icon-size-lg: 1.4286rem; }
+
+:root {
+  --oj-button-border-radius:        var(--oj-core-border-radius-md);
+  --oj-button-font-weight:          600;
+  --oj-button-height:                2.75rem;
+  --oj-button-sm-height:             2.25rem;
+  --oj-button-lg-height:             3.25rem;
+  --oj-button-font-size:              var(--oj-typography-body-sm-font-size);
+  --oj-button-sm-font-size:           var(--oj-typography-body-sm-font-size);
+  --oj-button-lg-font-size:           var(--oj-typography-body-sm-font-size);
+  --oj-button-text-to-edge-padding:      1rem;
+  --oj-button-sm-text-to-edge-padding:   1rem;
+  --oj-button-lg-text-to-edge-padding:   1.5rem;
+  --oj-button-icon-to-text-padding:       .625rem;
+  --oj-button-sm-icon-to-text-padding:    .5rem;
+  --oj-button-lg-icon-to-text-padding:    1rem;
+  --oj-button-icon-to-edge-padding:       .625rem;
+  --oj-button-sm-icon-to-edge-padding:    .5rem;
+  --oj-button-lg-icon-to-edge-padding:    1rem;
+  --oj-button-solid-chrome-bg-color:                      rgba(var(--oj-palette-neutral-rgb-190),.08);
+  --oj-button-solid-chrome-border-color:                  transparent;
+  --oj-button-solid-chrome-text-color:                    var(--oj-core-text-color-primary);
+  --oj-button-solid-chrome-bg-color-hover:                rgba(var(--oj-palette-neutral-rgb-190),.12);
+  --oj-button-solid-chrome-border-color-hover:            transparent;
+  --oj-button-solid-chrome-text-color-hover:              var(--oj-core-text-color-primary);
+  --oj-button-solid-chrome-bg-color-active:               rgba(var(--oj-palette-neutral-rgb-190),.16);
+  --oj-button-solid-chrome-border-color-active:           transparent;
+  --oj-button-solid-chrome-text-color-active:             var(--oj-core-text-color-primary);
+  --oj-button-solid-chrome-bg-color-disabled:             var(--oj-core-color-disabled-1);
+  --oj-button-solid-chrome-border-color-disabled:         transparent;
+  --oj-button-solid-chrome-text-color-disabled:           var(--oj-core-text-color-disabled);
+  --oj-button-solid-chrome-bg-color-selected:             var(--oj-button-solid-chrome-bg-color);
+  --oj-button-solid-chrome-border-color-selected:         var(--oj-button-solid-chrome-border-color);
+  --oj-button-solid-chrome-text-color-selected:           var(--oj-button-solid-chrome-text-color);
+  --oj-button-solid-chrome-bg-color-selected-hover:       var(--oj-button-solid-chrome-bg-color-active);
+  --oj-button-solid-chrome-border-color-selected-hover:   var(--oj-button-solid-chrome-border-color-active);
+  --oj-button-solid-chrome-text-color-selected-hover:     var(--oj-button-solid-chrome-text-color-active);
+  --oj-button-solid-chrome-bg-color-selected-disabled:     rgba(var(--oj-palette-neutral-rgb-100), .3);
+  --oj-button-solid-chrome-border-color-selected-disabled: transparent;
+  --oj-button-solid-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
+  --oj-private-button-ghost-chrome-text-color:             var(--oj-core-text-color-primary);
+  --oj-private-button-ghost-chrome-text-color-hover:       var(--oj-core-text-color-primary);
+  --oj-private-button-ghost-chrome-text-color-active:      var(--oj-core-text-color-primary);
+  --oj-button-borderless-chrome-text-color:        var(--oj-core-text-color-primary);
+  --oj-button-borderless-chrome-bg-color-hover:        var(--oj-core-bg-color-hover);
+  --oj-button-borderless-chrome-border-color-hover:    transparent;
+  --oj-button-borderless-chrome-text-color-hover:      var(--oj-core-text-color-primary);
+  --oj-button-borderless-chrome-bg-color-active:       var(--oj-core-bg-color-active);
+  --oj-button-borderless-chrome-border-color-active:   transparent;
+  --oj-button-borderless-chrome-text-color-active:     var(--oj-core-text-color-primary);
+  --oj-button-borderless-chrome-text-color-disabled:   var(--oj-core-text-color-disabled);
+  --oj-button-borderless-chrome-bg-color-selected:     transparent;
+  --oj-button-borderless-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-borderless-chrome-text-color-selected:   var(--oj-core-text-color-primary);
+  --oj-button-borderless-chrome-bg-color-selected-hover:     var(--oj-core-bg-color-hover);
+  --oj-button-borderless-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-borderless-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary);
+  --oj-button-borderless-chrome-bg-color-selected-disabled:     transparent;
+  --oj-button-borderless-chrome-border-color-selected-disabled: var(--oj-core-color-disabled-2);
+  --oj-button-borderless-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
+  --oj-button-outlined-chrome-border-color:          rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-text-color:            var(--oj-core-text-color-primary);
+  --oj-button-outlined-chrome-bg-color:              transparent;
+  --oj-button-outlined-chrome-bg-color-hover:        var(--oj-core-bg-color-hover);
+  --oj-button-outlined-chrome-border-color-hover:    rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-text-color-hover:      var(--oj-core-text-color-primary);
+  --oj-button-outlined-chrome-bg-color-active:       var(--oj-core-bg-color-active);
+  --oj-button-outlined-chrome-border-color-active:   rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-text-color-active:     var(--oj-core-text-color-primary);
+  --oj-button-outlined-chrome-border-color-disabled: var(--oj-core-text-color-disabled);
+  --oj-button-outlined-chrome-text-color-disabled:   var(--oj-core-text-color-disabled);
+  --oj-button-outlined-chrome-bg-color-disabled:     transparent;
+  --oj-button-outlined-chrome-bg-color-selected:     transparent;
+  --oj-button-outlined-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-text-color-selected:   var(--oj-core-text-color-primary);
+  --oj-button-outlined-chrome-bg-color-selected-hover:    var(--oj-core-bg-color-hover);
+  --oj-button-outlined-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary);
+  --oj-button-outlined-chrome-bg-color-selected-disabled:     transparent;
+  --oj-button-outlined-chrome-border-color-selected-disabled: var(--oj-button-outlined-chrome-border-color-disabled);
+  --oj-button-outlined-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
+  --oj-button-call-to-action-chrome-bg-color:                      rgb(var(--oj-palette-neutral-rgb-170));
+  --oj-button-call-to-action-chrome-border-color:                  transparent;
+  --oj-button-call-to-action-chrome-text-color:                    var(--oj-core-neutral-contrast);
+  --oj-button-call-to-action-chrome-bg-color-hover:                rgb(var(--oj-palette-neutral-rgb-160));
+  --oj-button-call-to-action-chrome-border-color-hover:            transparent;
+  --oj-button-call-to-action-chrome-text-color-hover:              var(--oj-core-neutral-contrast);
+  --oj-button-call-to-action-chrome-bg-color-active:               rgb(var(--oj-palette-neutral-rgb-150));
+  --oj-button-call-to-action-chrome-border-color-active:           transparent;
+  --oj-button-call-to-action-chrome-text-color-active:             var(--oj-core-neutral-contrast);
+  --oj-button-icon-size:         var(--oj-core-icon-size-lg);
+  --oj-button-sm-icon-size:      1.25rem;
+  --oj-button-lg-icon-size:      var(--oj-core-icon-size-lg);
+  --oj-private-button-global-chroming-default:   outlined; }
+
+:root {
+  --oj-private-buttonset-solid-chrome-internal-border-color:                     rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-private-buttonset-solid-chrome-internal-border-color-active:              rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-private-buttonset-solid-chrome-internal-border-color-selected:            rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-private-buttonset-solid-chrome-internal-border-color-selected-disabled:   var(--oj-button-solid-chrome-bg-color-disabled);
+  --oj-buttonset-outlined-chrome-internal-border-color:                   var(--oj-button-outlined-chrome-border-color);
+  --oj-buttonset-outlined-chrome-internal-border-color-active:            var(--oj-button-outlined-chrome-border-color);
+  --oj-buttonset-outlined-chrome-internal-border-color-selected:          var(--oj-button-outlined-chrome-border-color);
+  --oj-buttonset-outlined-chrome-internal-border-color-selected-disabled: var(--oj-core-color-disabled-1);
+  --oj-private-buttonset-global-chroming-default: outlined; }
+
+:root {
+  --oj-tooltip-text-color:    rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-tooltip-bg-color:      rgb(var(--oj-palette-neutral-rgb-170));
+  --oj-tooltip-font-size:     var(--oj-typography-body-xs-font-size);
+  --oj-tooltip-line-height:   var(--oj-typography-body-xs-line-height);
+  --oj-tooltip-padding:       var(--oj-core-spacing-2x);
+  --oj-tooltip-border-radius: var(--oj-core-border-radius-md);
+  --oj-tooltip-border-color:  rgb(var(--oj-palette-neutral-rgb-170)); }
+
+:root {
+  --oj-animation-duration-xshort:      0.1s;
+  --oj-animation-duration-short:       0.15s;
+  --oj-animation-duration-medium:      0.2s;
+  --oj-animation-duration-long:        0.3s;
+  --oj-animation-duration-xlong:       0.5s;
+  --oj-animation-ease-in-out:          cubic-bezier(0.4, 0, 0.2, 1);
+  --oj-animation-ease-out:             cubic-bezier(0, 0, 0.2, 1);
+  --oj-animation-ease-in:              cubic-bezier(0.4, 0, 1, 1);
+  --oj-animation-effect-ripple-bg-color: rgb(var(--oj-palette-neutral-rgb-160));
+  --oj-animation-skeleton-bg-start-color:  rgba(var(--oj-palette-neutral-rgb-170), 0.05);
+  --oj-animation-skeleton-bg-end-color: rgba(var(--oj-palette-neutral-rgb-170), 0.15);
+  --oj-private-animation-global-card-entrance-delay-increment: 50; }
+
+:root {
+  --oj-html-font-family:  -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --oj-html-font-size:   1em;
+  --oj-body-bg-color:                   rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-current-bg-color: ;
+  --oj-heading-text-color:                       var(--oj-core-text-color-primary);
+  --oj-heading-margin-bottom:                   1rem;
+  --oj-heading-margin-top:                      1rem;
+  --oj-subheading-margin-top:                   0;
+  --oj-subheading-margin-bottom:                0.75rem;
+  --oj-paragraph-margin-bottom:                1rem;
+  --oj-list-margin-top:                   0.5rem;
+  --oj-list-nested-padding-start:         2.5rem;
+  --oj-list-item-line-height:             1.5;
+  --oj-list-unordered-style-type:         square;
+  --oj-link-text-decoration:              none;
+  --oj-link-text-decoration-hover:        underline;
+  --oj-link-text-color:                 rgb(var(--oj-palette-info-rgb-120));
+  --oj-link-text-color-active:          var(--oj-link-text-color);
+  --oj-link-text-color-visited:         var(--oj-link-text-color);
+  --oj-link-embedded-text-decoration:              none;
+  --oj-link-embedded-text-decoration-hover:        none;
+  --oj-link-embedded-border-bottom-width:          1px;
+  --oj-link-embedded-border-bottom-width-hover:    0px; }
+
+:root {
+  --oj-dvt-danger-color:              rgb(214, 59, 37);
+  --oj-dvt-warning-color:             rgb(207, 124, 0);
+  --oj-dvt-success-color:             rgb(80, 130, 35);
+  --oj-dvt-item-border-color-selected:   rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-dvt-item-contrast-color:           rgb(var(--oj-palette-neutral-rgb-20));
+  --oj-dvt-marquee-color:                    rgba(var(--oj-palette-neutral-rgb-20),.1);
+  --oj-dvt-marquee-border-color:             rgba(var(--oj-palette-neutral-rgb-190), 0.8);
+  --oj-dvt-contrast-line-color:              rgba(var(--oj-palette-neutral-rgb-20), 0.7);
+  --oj-dvt-reference-object-area-color:      rgba(var(--oj-palette-neutral-rgb-170), 0.08);
+  --oj-dvt-reference-object-line-color:      rgba(var(--oj-palette-neutral-rgb-190), 0.8);
+  --oj-dvt-overview-bg-color:                rgb(var(--oj-palette-neutral-rgb-50));
+  --oj-dvt-overview-window-bg-color:         rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-dvt-overview-window-border-color:     rgb(var(--oj-palette-neutral-rgb-170));
+  --oj-dvt-label-font-size-sm:              var(--oj-typography-body-xs-font-size);
+  --oj-dvt-label-font-size-md:              var(--oj-typography-body-sm-font-size);
+  --oj-dvt-label-font-size-lg:              var(--oj-typography-body-md-font-size);
+  --oj-dvt-node-border-color-hover:         rgb(var(--oj-palette-neutral-rgb-20));
+  --oj-private-dvt-gridline-color:        rgba(var(--oj-palette-neutral-rgb-190), 0.3); }
+
+:root {
+  --oj-spark-chart-item-color:         #267db3; }
+
 oj-spark-chart:not(.oj-complete) {
   visibility: hidden; }
 
@@ -19201,6 +19841,9 @@ oj-spark-chart {
 
 .oj-sparkchart.oj-focus-highlight {
   outline: dotted 1px var(--oj-core-focus-border-color); }
+
+.oj-spark-chart-item {
+  color: var(--oj-spark-chart-item-color); }
 
 oj-status-meter-gauge:not(.oj-complete) {
   visibility: hidden; }
@@ -20174,7 +20817,8 @@ html:not([dir="rtl"]) .oj-hicontrast .oj-tabbar-horizontal:not(.oj-tabbar-icon-o
   border-bottom: 0; }
 
 .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
-  padding: var(--oj-tab-bar-item-padding); }
+  padding: var(--oj-tab-bar-item-padding);
+  justify-content: end; }
 
 .oj-tabbar-horizontal:not(.oj-tabbar-stack-icon-label):not(.oj-tabbar-icon-only) .oj-tabbar-item-icon {
   align-self: center;
@@ -20650,10 +21294,14 @@ table.oj-table-element.oj-table-column-header-resizing {
   vertical-align: middle;
   float: none;
   white-space: nowrap;
-  text-overflow: ellipsis;
   overflow: hidden;
   text-align: start;
   box-sizing: border-box; }
+
+.oj-table-header-cell-wrap-text {
+  overflow-wrap: anywhere;
+  -webkit-hyphens: none;
+          hyphens: none; }
 
 .oj-table-column-header-cell,
 .oj-table-data-cell,
@@ -20679,22 +21327,41 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* Styling for the vertical grid lines for header, data, and footer cells. */
 .oj-table-column-header-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-column-header-cell.oj-table-vgrid-lines + .oj-table-gutter-end-header-cell:not(.oj-table-frozen-end.oj-table-frozen-edge),
 .oj-table-data-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-data-cell.oj-table-vgrid-lines + .oj-table-gutter-end-body-cell:not(.oj-table-frozen-end.oj-table-frozen-edge),
 .oj-table-footer-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
-.oj-table-add-row-placeholder > td.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible) {
+.oj-table-footer-cell.oj-table-vgrid-lines + .oj-table-gutter-end-footer-cell:not(.oj-table-frozen-end.oj-table-frozen-edge),
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines + .oj-table-gutter-end-body-cell:not(.oj-table-frozen-end.oj-table-frozen-edge) {
   border-inline-start-style: solid;
   border-inline-start-color: var(--oj-core-divider-color);
   border-inline-start-width: 1px; }
 
+/* selection borders for column selection when vertical grid lines are enabled. */
+.oj-table-column-header-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-column-header-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(.oj-helper-hidden-accessible) + .oj-table-column-header-cell,
+.oj-table-data-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-data-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(.oj-helper-hidden-accessible) + .oj-table-data-cell,
+.oj-table-footer-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-footer-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(.oj-helper-hidden-accessible) + .oj-table-footer-cell,
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(.oj-helper-hidden-accessible) + td {
+  border-inline-start-color: var(--oj-core-border-color-selected); }
+
 /* selection borders for column selection */
 .oj-table-column-header-cell.oj-selected:not(:first-child),
 .oj-table-column-header-cell.oj-selected + .oj-table-column-header-cell,
+.oj-table-column-header-cell.oj-selected:not(.oj-table-vgrid-lines) + .oj-table-gutter-end-header-cell,
 .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected:not(:first-child),
 .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected + .oj-table-data-cell,
+.oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected:not(.oj-table-vgrid-lines) + .oj-table-gutter-end-body-cell,
 .oj-table-add-row-placeholder > td.oj-selected:not(:first-child),
 .oj-table-add-row-placeholder > td.oj-selected + td,
+.oj-table-add-row-placeholder > td.oj-selected:not(.oj-table-vgrid-lines) + .oj-table-gutter-end-body-cell,
 .oj-table-footer-cell.oj-selected:not(:first-child),
-.oj-table-footer-cell.oj-selected + .oj-table-footer-cell {
+.oj-table-footer-cell.oj-selected + .oj-table-footer-cell,
+.oj-table-footer-cell.oj-selected:not(.oj-table-vgrid-lines) + .oj-table-gutter-end-footer-cell {
   border-inline-start-style: solid;
   border-inline-start-color: var(--oj-core-border-color-selected);
   border-inline-start-width: 1px; }
@@ -20751,22 +21418,34 @@ table.oj-table-element.oj-table-column-header-resizing {
 .oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row) > .oj-table-data-cell,
 .oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row) > .oj-table-selector-cell,
 .oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row) > .oj-table-skeleton-cell,
+.oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child:not(.oj-table-stuck-row)) > .oj-table-gutter-start-body-cell,
+.oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child):not(.oj-table-stuck-row) > .oj-table-gutter-end-body-cell,
 .oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-data-cell,
 .oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-selector-cell,
 .oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-skeleton-cell,
+.oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-gutter-start-body-cell,
+.oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)):not(.oj-table-stuck-row) > .oj-table-gutter-end-body-cell,
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-fetch-skeleton-row:not(:first-child) > .oj-table-skeleton-cell {
   border-top: 1px solid var(--oj-core-divider-color); }
 
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-data-cell,
-.oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-selector-cell {
+.oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-selector-cell,
+.oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-gutter-start-body-cell,
+.oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-gutter-end-body-cell {
   border-bottom: 1px solid var(--oj-core-divider-color); }
 
 /* selection borders for row selection */
 .oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:first-child):not(.oj-table-stuck-row) > .oj-table-data-cell.oj-selected,
-.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row:not(.oj-table-stuck-row) > .oj-table-data-cell {
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row:not(.oj-table-stuck-row) > .oj-table-data-cell,
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:first-child):not(.oj-table-stuck-row) > .oj-table-gutter-start-body-cell.oj-selected,
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:first-child):not(.oj-table-stuck-row) > .oj-table-gutter-end-body-cell.oj-selected,
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row:not(.oj-table-stuck-row) > .oj-table-gutter-start-body-cell,
+.oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row:not(.oj-table-stuck-row) > .oj-table-gutter-end-body-cell {
   border-top: 1px solid var(--oj-core-border-color-selected); }
 
-.oj-table-sticky.oj-table-add-row:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:nth-child(2) > .oj-table-data-cell.oj-selected {
+.oj-table-sticky.oj-table-add-row:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:nth-child(2) > .oj-table-data-cell.oj-selected,
+.oj-table-sticky.oj-table-add-row:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:nth-child(2) > .oj-table-gutter-start-body-cell.oj-selected,
+.oj-table-sticky.oj-table-add-row:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:nth-child(2) > .oj-table-gutter-end-body-cell.oj-selected {
   border-top: none; }
 
 .oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:last-child > .oj-table-data-cell.oj-selected {
@@ -20789,7 +21468,9 @@ table.oj-table-element.oj-table-column-header-resizing {
   padding-top: var(--oj-collection-grid-cell-padding); }
 
 .oj-table-sticky .oj-table-column-header-cell:not(.oj-helper-hidden-accessible),
-.oj-table-sticky .oj-table-column-header-selector-cell:not(.oj-helper-hidden-accessible) {
+.oj-table-sticky .oj-table-column-header-selector-cell:not(.oj-helper-hidden-accessible),
+.oj-table-sticky .oj-table-gutter-start-header-cell:not(.oj-helper-hidden-accessible),
+.oj-table-sticky .oj-table-gutter-end-header-cell:not(.oj-helper-hidden-accessible) {
   position: sticky;
   top: 0;
   border-bottom: 1px solid var(--oj-collection-border-color); }
@@ -20807,12 +21488,15 @@ table.oj-table-element.oj-table-column-header-resizing {
   padding: 0px; }
 
 .oj-table-data-cell.oj-table-frozen-start,
+.oj-table-gutter-start-body-cell.oj-table-frozen-start,
 .oj-table-frozen-start {
   position: sticky; }
   html:not([dir="rtl"]) .oj-table-data-cell.oj-table-frozen-start, html:not([dir="rtl"])
+  .oj-table-gutter-start-body-cell.oj-table-frozen-start, html:not([dir="rtl"])
   .oj-table-frozen-start {
     left: 0; }
   html[dir="rtl"] .oj-table-data-cell.oj-table-frozen-start, html[dir="rtl"]
+  .oj-table-gutter-start-body-cell.oj-table-frozen-start, html[dir="rtl"]
   .oj-table-frozen-start {
     right: 0; }
 
@@ -20823,12 +21507,15 @@ html[dir="rtl"] .oj-table-frozen-start.oj-table-frozen-edge {
   box-shadow: -2px 0px 0px var(--oj-collection-border-color); }
 
 .oj-table-data-cell.oj-table-frozen-end,
+.oj-table-gutter-end-body-cell.oj-table-frozen-end,
 .oj-table-frozen-end {
   position: sticky; }
   html:not([dir="rtl"]) .oj-table-data-cell.oj-table-frozen-end, html:not([dir="rtl"])
+  .oj-table-gutter-end-body-cell.oj-table-frozen-end, html:not([dir="rtl"])
   .oj-table-frozen-end {
     right: 0; }
   html[dir="rtl"] .oj-table-data-cell.oj-table-frozen-end, html[dir="rtl"]
+  .oj-table-gutter-end-body-cell.oj-table-frozen-end, html[dir="rtl"]
   .oj-table-frozen-end {
     left: 0; }
 
@@ -20839,48 +21526,66 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
   box-shadow: 2px 0px 0px var(--oj-collection-border-color); }
 
 .oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-start {
+.oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-start,
+.oj-table-sticky .oj-table-gutter-start-header-cell.oj-table-frozen-start {
   z-index: 100007; }
 
-.oj-table-sticky .oj-table-column-header-cell {
+.oj-table-sticky .oj-table-column-header-cell,
+.oj-table-sticky .oj-table-gutter-start-header-cell,
+.oj-table-sticky .oj-table-gutter-end-header-cell {
   z-index: 100006; }
 
-.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end {
+.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end,
+.oj-table-sticky .oj-table-gutter-end-header-cell.oj-table-frozen-end {
   z-index: 100008; }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start {
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-start {
   z-index: 100001; }
 
-.oj-table-sticky .oj-table-add-row-placeholder td {
+.oj-table-sticky .oj-table-add-row-placeholder td,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell {
   z-index: 100000; }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end {
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-end {
   z-index: 100002; }
 
-.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-start {
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-start,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-start {
   z-index: 4; }
 
-.oj-table-sticky .oj-table-sticky-row td {
+.oj-table-sticky .oj-table-sticky-row td,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell {
   z-index: 3; }
 
-.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-end {
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-end,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell.oj-table-frozen-end {
   z-index: 5; }
 
 .oj-table-sticky .oj-table-data-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-selector-cell.oj-table-frozen-start {
+.oj-table-sticky .oj-table-selector-cell.oj-table-frozen-start,
+.oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-start {
   z-index: 1; }
 
-.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end {
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end,
+.oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-end {
   z-index: 2; }
 
 .oj-table-sticky .oj-table-footer-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-start {
+.oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-start,
+.oj-table-sticky .oj-table-gutter-start-footer-cell.oj-table-frozen-start {
   z-index: 100004; }
 
-.oj-table-sticky .oj-table-footer-cell {
+.oj-table-sticky .oj-table-footer-cell,
+.oj-table-sticky .oj-table-gutter-start-footer-cell,
+.oj-table-sticky .oj-table-gutter-end-footer-cell {
   z-index: 100003; }
 
-.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end {
+.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end,
+.oj-table-sticky .oj-table-gutter-end-footer-cell.oj-table-frozen-end {
   z-index: 100005; }
 
 .oj-table-body-row .oj-selector,
@@ -21134,7 +21839,9 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td::after,
-.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td::after {
+.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td::after,
+.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-start-body-cell::after,
+.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-end-body-cell::after {
   position: absolute;
   box-sizing: border-box;
   top: 0;
@@ -21148,6 +21855,8 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-data-cell::after,
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell::after,
+.oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-start-body-cell::after,
+.oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-end-body-cell::after,
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td::after,
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td::after,
 .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td::after {
@@ -21156,6 +21865,7 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 /* Styling for the data row elements in focus state. */
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-data-cell:first-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell:first-child::after,
+.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-start-body-cell:first-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td:first-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td:first-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td:first-child::after {
@@ -21166,6 +21876,7 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 /* Styling for the data row elements in focus state. */
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-data-cell:last-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell:last-child::after,
+.oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-gutter-end-body-cell:last-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td:last-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td:last-child::after,
 .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td:last-child::after {
@@ -21278,18 +21989,26 @@ html[dir="rtl"] .oj-table-body-row-drag-image td:last-child {
 /* Styling for the data cell elements in selected state when table focused. */
 .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected,
 .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-selector-cell.oj-selected,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-gutter-start-body-cell.oj-selected,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-gutter-end-body-cell.oj-selected,
 .oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected,
-.oj-table:not(.oj-focus) .oj-table-selector-cell.oj-selected {
+.oj-table:not(.oj-focus) .oj-table-selector-cell.oj-selected,
+.oj-table-element:not(.oj-focus) .oj-table-gutter-start-body-cell.oj-selected,
+.oj-table-element:not(.oj-focus) .oj-table-gutter-end-body-cell.oj-selected {
   background-image: linear-gradient(var(--oj-core-bg-color-selected), var(--oj-core-bg-color-selected)); }
 
 /* Styling for the data cell elements in selected state when table in high contrast mode. */
 .oj-hicontrast .oj-table-data-cell.oj-selected,
-.oj-hicontrast .oj-table-selector-cell.oj-selected {
+.oj-hicontrast .oj-table-selector-cell.oj-selected,
+.oj-hicontrast .oj-table-gutter-start-body-cell.oj-selected,
+.oj-hicontrast .oj-table-gutter-end-body-cell.oj-selected {
   border: 3px double; }
 
 /* Styling for the data cell elements in hover state. */
 .oj-table-data-cell.oj-hover,
-.oj-table-selector-cell.oj-hover {
+.oj-table-selector-cell.oj-hover,
+.oj-table-gutter-start-body-cell.oj-hover,
+.oj-table-gutter-end-body-cell.oj-hover {
   background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover)); }
 
 /* Styling on form controls stamped inside a table */
@@ -21674,7 +22393,9 @@ html[dir="rtl"]
 
 /* Styling for the footer cells. */
 .oj-table-footer-cell,
-.oj-table-footer-selector-cell {
+.oj-table-footer-selector-cell,
+.oj-table-gutter-start-footer-cell,
+.oj-table-gutter-end-footer-cell {
   background-color: inherit;
   float: none;
   height: var(--oj-collection-list-row-height);
@@ -21684,7 +22405,9 @@ html[dir="rtl"]
   box-sizing: border-box; }
 
 .oj-table-sticky .oj-table-footer-cell,
-.oj-table-sticky .oj-table-footer-selector-cell {
+.oj-table-sticky .oj-table-footer-selector-cell,
+.oj-table-sticky .oj-table-gutter-start-footer-cell,
+.oj-table-sticky .oj-table-gutter-end-footer-cell {
   position: sticky;
   bottom: 0;
   border-top: 1px solid var(--oj-collection-border-color); }
@@ -21803,9 +22526,38 @@ html[dir="rtl"] .oj-table-sort .oj-table-column-header-show-required-icon {
 .oj-table-hidden-cell {
   display: none; }
 
+.oj-table-gutter-start-header-cell,
+.oj-table-gutter-end-header-cell,
+.oj-table-gutter-start-body-cell,
+.oj-table-gutter-end-body-cell,
+.oj-table-gutter-start-footer-cell,
+.oj-table-gutter-end-footer-cell {
+  padding: 0px;
+  background-color: inherit;
+  position: relative; }
+
+.oj-table-gutter-start-header-cell,
+.oj-table-gutter-start-body-cell,
+.oj-table-gutter-start-footer-cell {
+  width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal)); }
+
+.oj-table-gutter-end-header-cell,
+.oj-table-gutter-end-body-cell,
+.oj-table-gutter-end-footer-cell {
+  width: calc(var(--oj-core-gutter-end, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal)); }
+
+.oj-table-custom-header {
+  text-overflow: ellipsis; }
+
 /* Styling for the default sort icon */
 /* Styling for the sort ascending icon */
 /* Styling for the sort descending icon */
+.oj-table {
+  --oj-c-PRIVATE-DO-NOT-USE-text-field-embedded-padding:    var(--oj-table-cell-padding-horizontal); }
+
+.oj-table.oj-table-grid-display {
+  --oj-c-PRIVATE-DO-NOT-USE-text-field-embedded-padding:    var(--oj-collection-grid-cell-padding); }
+
 oj-text-area:not(.oj-complete) {
   visibility: hidden; }
 

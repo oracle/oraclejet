@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -27,7 +27,6 @@ define(['exports'], function (exports) { 'use strict';
    <other useful comments, qualifications, etc.>
 
    */
-
 
   /**
    * @ignore
@@ -132,7 +131,7 @@ define(['exports'], function (exports) { 'use strict';
       // handle digits before the decimal
       for (; i < whole.length; i++) {
         num = _charCodeToInt(whole.charCodeAt(i));
-        out = (60 * out) + num;
+        out = 60 * out + num;
       }
       // handle digits after the decimal
       for (i = 0; i < fractional.length; i++) {
@@ -142,7 +141,6 @@ define(['exports'], function (exports) { 'use strict';
       }
       return out * sign;
     }
-
 
     function _arrayToInt(array) {
       for (var i = 0; i < array.length; i++) {
@@ -154,7 +152,7 @@ define(['exports'], function (exports) { 'use strict';
     function _intToUntil(array, length) {
       for (var i = 0; i < length; i++) {
         // eslint-disable-next-line no-param-reassign
-        array[i] = Math.round((array[i - 1] || 0) + (array[i] * _MINUTE)); // minutes to milliseconds
+        array[i] = Math.round((array[i - 1] || 0) + array[i] * _MINUTE); // minutes to milliseconds
       }
 
       // eslint-disable-next-line no-param-reassign
@@ -204,7 +202,8 @@ define(['exports'], function (exports) { 'use strict';
     }
 
     function _throwNonExistingTime() {
-      var msg = 'The input time does not exist because it falls during the transition to daylight saving time.';
+      var msg =
+        'The input time does not exist because it falls during the transition to daylight saving time.';
       var error = new Error(msg);
       var errorInfo = {
         errorCode: 'nonExistingTime'
@@ -214,7 +213,8 @@ define(['exports'], function (exports) { 'use strict';
     }
 
     function _throwMissingTimeZoneData() {
-      var msg = "TimeZone data is missing. Please call require 'ojs/ojtimezonedata' in order to load the TimeZone data.";
+      var msg =
+        "TimeZone data is missing. Please call require 'ojs/ojtimezonedata' in order to load the TimeZone data.";
       var error = new Error(msg);
       var errorInfo = {
         errorCode: 'missingTimeZoneData'
@@ -249,7 +249,7 @@ define(['exports'], function (exports) { 'use strict';
             return;
           }
         }
-        hours += (hours >= 0) ? minutes : -minutes;
+        hours += hours >= 0 ? minutes : -minutes;
         // offset must be between -14 and +12
         if (hours < _MIN_OFFSET || hours > _MAX_OFFSET) {
           return;
@@ -279,7 +279,7 @@ define(['exports'], function (exports) { 'use strict';
           var offset = offsets[i];
           var offset1 = offsets[i + 1];
           var until = untils[i];
-          var transitionTime = until - (offset * _MINUTE);
+          var transitionTime = until - offset * _MINUTE;
           var gapTime = transitionTime + _HOUR;
           var dupTime = transitionTime - _HOUR;
           // Transition to dst:
@@ -292,7 +292,7 @@ define(['exports'], function (exports) { 'use strict';
             if (throwException === true) {
               _throwNonExistingTime();
             } else {
-              return (i + 1);
+              return i + 1;
             }
           }
           // Test if the time falls during the duplicate hour when dst ends.
@@ -302,20 +302,20 @@ define(['exports'], function (exports) { 'use strict';
             if (dst) {
               return i;
             }
-            return (i + 1);
+            return i + 1;
           }
           // Time is outside transtition times.
-          if (target < until - (offset * _MINUTE)) {
+          if (target < until - offset * _MINUTE) {
             if (ignoreDst === false) {
               if (dst) {
                 if (offset < offset1) {
                   return i;
                 }
-                return (i + 1);
+                return i + 1;
               }
 
               if (offset < offset1) {
-                return (i + 1);
+                return i + 1;
               }
               return i;
             }
@@ -365,7 +365,6 @@ define(['exports'], function (exports) { 'use strict';
       return _zones[_normalizeName(name)] || null;
     }
 
-
     function _init() {
       return {
         getZone: function (name, localeElements) {
@@ -404,7 +403,7 @@ define(['exports'], function (exports) { 'use strict';
         return instance;
       }
     };
-  }());
+  })();
 
   exports.OraTimeZone = OraTimeZone;
 

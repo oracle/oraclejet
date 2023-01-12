@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -26,6 +26,8 @@ import 'jquery';
  * @hideconstructor
  * @ojtsignore
  * @see CollectionDataGridDataSource
+ * @ojdeprecated {since: '14.0.0', description: 'CollectionCellSet has been deprecated with
+ * CollectionDataGridDataSource.'}
  */
 const CollectionCellSet = function (startRow, endRow, startColumn, endColumn, columns) {
   // assert startRow/startColumn are number
@@ -107,7 +109,7 @@ CollectionCellSet.prototype.getMetadata = function (indexes) {
     return null;
   }
 
-    // extract column index
+  // extract column index
   var column = indexes.column;
 
   var keys = {
@@ -130,15 +132,17 @@ CollectionCellSet.prototype._getModel = function (indexes) {
 
   oj.Assert.assertObject(indexes);
 
-    // extract row and column index
+  // extract row and column index
   var row = indexes.row;
   var column = indexes.column;
 
-    // make sure index are valid
-  oj.Assert.assert(row >= this.m_startRow &&
-                   row <= this.m_endRow &&
-                   column >= this.m_startColumn &&
-                   column <= this.m_endColumn);
+  // make sure index are valid
+  oj.Assert.assert(
+    row >= this.m_startRow &&
+      row <= this.m_endRow &&
+      column >= this.m_startColumn &&
+      column <= this.m_endColumn
+  );
 
   return this.m_models[row - this.m_startRow];
 };
@@ -192,8 +196,10 @@ CollectionCellSet.prototype.getCount = function (axis) {
  */
 // eslint-disable-next-line no-unused-vars
 CollectionCellSet.prototype.getExtent = function (indexes) {
-  return { row: { extent: 1, more: { before: false, after: false } },
-    column: { extent: 1, more: { before: false, after: false } } };
+  return {
+    row: { extent: 1, more: { before: false, after: false } },
+    column: { extent: 1, more: { before: false, after: false } }
+  };
 };
 
 /**
@@ -261,6 +267,8 @@ CollectionCellSet.prototype.getColumns = function () {
  * @since 1.0
  * @extends DataGridDataSource
  * @ojtsignore
+ * @ojdeprecated {since: '14.0.0', description: 'CollectionDataGridDataSource has been deprecated,
+ * use RowDataGridProvider instead.'}
  */
 const CollectionDataGridDataSource = function (collection, options) {
   this.collection = collection;
@@ -275,8 +283,11 @@ const CollectionDataGridDataSource = function (collection, options) {
 
 oj._registerLegacyNamespaceProp('CollectionDataGridDataSource', CollectionDataGridDataSource);
 // subclass of DataGridDataSource
-oj.Object.createSubclass(CollectionDataGridDataSource, oj.DataGridDataSource,
-                         'oj.CollectionDataGridDataSource');
+oj.Object.createSubclass(
+  CollectionDataGridDataSource,
+  oj.DataGridDataSource,
+  'oj.CollectionDataGridDataSource'
+);
 
 /**
  * Initial the OJ collection based data source.
@@ -313,7 +324,7 @@ CollectionDataGridDataSource.prototype._registerEventListeners = function () {
  * @memberof CollectionDataGridDataSource
  */
 CollectionDataGridDataSource.prototype._isDataAvailable = function () {
-  return (this.data != null);
+  return this.data != null;
 };
 
 /**
@@ -340,7 +351,7 @@ CollectionDataGridDataSource.prototype.getCount = function (axis) {
       this.precision[axis] = 'estimate';
       return -1;
     }
-        // otherwise we will return the size of the collection or the pageSize
+    // otherwise we will return the size of the collection or the pageSize
     this.precision[axis] = 'exact';
     return this._size();
   }
@@ -370,7 +381,7 @@ CollectionDataGridDataSource.prototype.getCount = function (axis) {
  * @memberof CollectionDataGridDataSource
  */
 CollectionDataGridDataSource.prototype.getCountPrecision = function (axis) {
-    // if precision has not been determine for the axis, invoke getCount
+  // if precision has not been determine for the axis, invoke getCount
   if (this.precision === undefined || this.precision[axis] === undefined) {
     this.getCount(axis);
   }
@@ -400,14 +411,18 @@ CollectionDataGridDataSource.prototype.getCountPrecision = function (axis) {
  * @return {undefined}
  */
 CollectionDataGridDataSource.prototype.fetchHeaders = function (
-  headerRange, callbacks, callbackObjects
+  headerRange,
+  callbacks,
+  callbackObjects
 ) {
   // still fetching, just store the callback info
   if (callbacks != null) {
     var axis = headerRange.axis;
-    var callback = { headerRange: headerRange,
+    var callback = {
+      headerRange: headerRange,
       callbacks: callbacks,
-      callbackObjects: callbackObjects };
+      callbackObjects: callbackObjects
+    };
     this.pendingHeaderCallback[axis] = callback;
   }
 };
@@ -434,7 +449,10 @@ CollectionDataGridDataSource.prototype.fetchHeaders = function (
  * @memberof CollectionDataGridDataSource
  */
 CollectionDataGridDataSource.prototype._handleHeaderFetchSuccess = function (
-  headerRange, callbacks, callbackObjects, actualRange
+  headerRange,
+  callbacks,
+  callbackObjects,
+  actualRange
 ) {
   var axis = headerRange.axis;
   var start = headerRange.start;
@@ -527,7 +545,10 @@ CollectionDataGridDataSource.prototype._getRanges = function (cellRanges) {
  * @memberof CollectionDataGridDataSource
  */
 CollectionDataGridDataSource.prototype._handleCellFetchSuccess = function (
-  cellRanges, callbacks, callbackObjects, actualRange
+  cellRanges,
+  callbacks,
+  callbackObjects,
+  actualRange
 ) {
   // extract the start and end row/column info from cellRanges (there should only be two, one for each axis)
   var ranges = this._getRanges(cellRanges);
@@ -563,7 +584,12 @@ CollectionDataGridDataSource.prototype._handleCellFetchSuccess = function (
  * @memberof CollectionDataGridDataSource
  */
 CollectionDataGridDataSource.prototype._resolveModels = function (
-  rowStart, rowEnd, set, ranges, callbacks, callbackObjects
+  rowStart,
+  rowEnd,
+  set,
+  ranges,
+  callbacks,
+  callbackObjects
 ) {
   var promises = [];
   for (var i = rowStart; i < rowEnd; i++) {
@@ -599,7 +625,9 @@ CollectionDataGridDataSource.prototype._resolveModels = function (
  * @memberof CollectionDataGridDataSource
  */
 CollectionDataGridDataSource.prototype.fetchCells = function (
-  cellRanges, callbacks, callbackObjects
+  cellRanges,
+  callbacks,
+  callbackObjects
 ) {
   // still fetching, just store the callback info
   if (callbacks != null) {
@@ -609,7 +637,7 @@ CollectionDataGridDataSource.prototype.fetchCells = function (
     this.pendingCellCallback.callbackObjects = callbackObjects;
   }
 
-    // kick start a setRangeLocal call on the collection
+  // kick start a setRangeLocal call on the collection
   this._fetchCells(cellRanges);
 };
 
@@ -671,30 +699,35 @@ CollectionDataGridDataSource.prototype._fetchCells = function (cellRanges) {
   var rowCount = ranges.rowCount;
 
   // set the range local for the requested range
-  this.collection.setRangeLocal(rowStart, rowCount).then(function (actual) {
-    // keeps track of whether or not the data source has fetched
-    this.data = true;
+  this.collection.setRangeLocal(rowStart, rowCount).then(
+    function (actual) {
+      // keeps track of whether or not the data source has fetched
+      this.data = true;
 
-    this._setActualCallbackRanges(actual.start, actual.count);
+      this._setActualCallbackRanges(actual.start, actual.count);
 
-    // check if we need to poach columns from row
-    if (this.columns === undefined) {
-      this.collection.at(rowStart, { deferred: true }).then(function (model) {
-        if (model != null) {
-          this._setupColumns(model);
-        }
-        // now we can complete the fetch
-        this._fetchCellsComplete(cellRanges);
-      }.bind(this));
+      // check if we need to poach columns from row
+      if (this.columns === undefined) {
+        this.collection.at(rowStart, { deferred: true }).then(
+          function (model) {
+            if (model != null) {
+              this._setupColumns(model);
+            }
+            // now we can complete the fetch
+            this._fetchCellsComplete(cellRanges);
+          }.bind(this)
+        );
 
-      // process must be done after columns are discovered
-      return;
-    }
+        // process must be done after columns are discovered
+        return;
+      }
 
-    this._fetchCellsComplete(cellRanges);
-  }.bind(this), function (e) {
-    this._fetchCellsError(e);
-  }.bind(this));
+      this._fetchCellsComplete(cellRanges);
+    }.bind(this),
+    function (e) {
+      this._fetchCellsError(e);
+    }.bind(this)
+  );
 };
 
 /**
@@ -727,7 +760,8 @@ CollectionDataGridDataSource.prototype._fetchCellsError = function (error$1) {
  * @memberof CollectionDataGridDataSource
  */
 CollectionDataGridDataSource.prototype._processPendingHeaderErrorCallbacks = function (
-  axis, error
+  axis,
+  error
 ) {
   var pendingCallback = this.pendingHeaderCallback[axis];
   if (pendingCallback != null) {
@@ -876,27 +910,25 @@ CollectionDataGridDataSource.prototype.indexes = function (keys) {
   var self = this;
 
   return new Promise(function (resolve) {
-    self.collection
-      .indexOf(rowKey, { deferred: true })
-      .then(function (rowIndex) {
-        var columnIndex = -1;
-        // if the row exists but columns not yet set
-        if (rowIndex !== -1 && self.columns == null) {
-          self.collection.at(rowIndex, { deferred: true }).then(function (model) {
-            self._setupColumns(model);
-            columnIndex = self.columns.indexOf(columnKey);
-            resolve({ row: rowIndex, column: columnIndex });
-          });
-        } else {
-          // if the row exists or not and columns set
-          // can have a case where columns not set yet, and model doesn't exist
-          // should return -1, -1 in that case
-          if (self.columns != null) {
-            columnIndex = self.columns.indexOf(columnKey);
-          }
+    self.collection.indexOf(rowKey, { deferred: true }).then(function (rowIndex) {
+      var columnIndex = -1;
+      // if the row exists but columns not yet set
+      if (rowIndex !== -1 && self.columns == null) {
+        self.collection.at(rowIndex, { deferred: true }).then(function (model) {
+          self._setupColumns(model);
+          columnIndex = self.columns.indexOf(columnKey);
           resolve({ row: rowIndex, column: columnIndex });
+        });
+      } else {
+        // if the row exists or not and columns set
+        // can have a case where columns not set yet, and model doesn't exist
+        // should return -1, -1 in that case
+        if (self.columns != null) {
+          columnIndex = self.columns.indexOf(columnKey);
         }
-      });
+        resolve({ row: rowIndex, column: columnIndex });
+      }
+    });
   });
 };
 
@@ -909,7 +941,7 @@ CollectionDataGridDataSource.prototype.indexes = function (keys) {
  * @method
  * @instance
  * @memberof CollectionDataGridDataSource
-*/
+ */
 CollectionDataGridDataSource.prototype.getCapability = function (feature) {
   if (feature === 'sort') {
     // OJ collection based data source supports column sorting only
@@ -1110,33 +1142,41 @@ CollectionDataGridDataSource.prototype._setSortInfo = function (key) {
  * @return {undefined}
  */
 CollectionDataGridDataSource.prototype.move = function (
-  rowToMove, referenceRow, position, callbacks, callbackObjects
+  rowToMove,
+  referenceRow,
+  position,
+  callbacks,
+  callbackObjects
 ) {
-  this.collection.get(rowToMove, { deferred: true }).then(function (moveModel) {
-    var indexPromise;
-    if (referenceRow == null) {
-      this.collection.remove(moveModel);
-      this.collection.add(moveModel);
-      if (callbacks != null && callbacks.success != null) {
-        callbacks.success.call(callbackObjects.success);
-      }
-    } else {
-      if (rowToMove === referenceRow) {
-        indexPromise = this.collection.indexOf(referenceRow, { deferred: true });
+  this.collection.get(rowToMove, { deferred: true }).then(
+    function (moveModel) {
+      var indexPromise;
+      if (referenceRow == null) {
         this.collection.remove(moveModel);
-      } else {
-        this.collection.remove(moveModel);
-        indexPromise = this.collection.indexOf(referenceRow, { deferred: true });
-      }
-
-      indexPromise.then(function (newIndex) {
-        this.collection.add(moveModel, { at: newIndex, force: true });
+        this.collection.add(moveModel);
         if (callbacks != null && callbacks.success != null) {
           callbacks.success.call(callbackObjects.success);
         }
-      }.bind(this));
-    }
-  }.bind(this));
+      } else {
+        if (rowToMove === referenceRow) {
+          indexPromise = this.collection.indexOf(referenceRow, { deferred: true });
+          this.collection.remove(moveModel);
+        } else {
+          this.collection.remove(moveModel);
+          indexPromise = this.collection.indexOf(referenceRow, { deferred: true });
+        }
+
+        indexPromise.then(
+          function (newIndex) {
+            this.collection.add(moveModel, { at: newIndex, force: true });
+            if (callbacks != null && callbacks.success != null) {
+              callbacks.success.call(callbackObjects.success);
+            }
+          }.bind(this)
+        );
+      }
+    }.bind(this)
+  );
 };
 
 /**
@@ -1157,7 +1197,6 @@ CollectionDataGridDataSource.prototype.moveOK = function (rowToMove, referenceRo
   return 'valid';
 };
 
-
 // ////////////////////////////////// Event listeners /////////////////////////////////////
 /**
  * Returns an Object for an event
@@ -1171,12 +1210,18 @@ CollectionDataGridDataSource.prototype.moveOK = function (rowToMove, referenceRo
  * @memberof CollectionDataGridDataSource
  */
 CollectionDataGridDataSource.prototype._getModelEvent = function (
-  operation, rowKey, columnKey, rowIndex, columnIndex
+  operation,
+  rowKey,
+  columnKey,
+  rowIndex,
+  columnIndex
 ) {
-  var event = { source: this,
+  var event = {
+    source: this,
     operation: operation,
     keys: { row: rowKey, column: columnKey },
-    indexes: { row: rowIndex, column: columnIndex } };
+    indexes: { row: rowIndex, column: columnIndex }
+  };
   return event;
 };
 
@@ -1315,8 +1360,7 @@ CollectionDataGridDataSource.prototype.getData = function () {
  * @constructor
  * @private
  */
-const CollectionDataGridUtils = function () {
-};
+const CollectionDataGridUtils = function () {};
 oj._registerLegacyNamespaceProp('CollectionDataGridUtils', CollectionDataGridUtils);
 
 /**
@@ -1350,6 +1394,8 @@ CollectionDataGridUtils._getModelKey = function (model) {
  * @hideconstructor
  * @ojtsignore
  * @see CollectionDataGridDataSource
+ * @ojdeprecated {since: '14.0.0', description: 'CollectionHeaderSet has been deprecated with
+ * CollectionDataGridDataSource.'}
  */
 const CollectionHeaderSet = function (start, end, headers, rowHeader, sortInfo) {
   // assert start/end are number
@@ -1403,8 +1449,10 @@ CollectionHeaderSet.prototype.getData = function (index, level) {
   var model;
 
   // make sure index/level are valid
-  oj.Assert.assert(index <= this.m_end && index >= this.m_start,
-    CollectionHeaderSet.INDEX_OUT_OF_BOUNDS);
+  oj.Assert.assert(
+    index <= this.m_end && index >= this.m_start,
+    CollectionHeaderSet.INDEX_OUT_OF_BOUNDS
+  );
   oj.Assert.assert(level == null || level === 0, CollectionHeaderSet.LEVEL_OUT_OF_BOUNDS);
 
   // row or column header
@@ -1436,8 +1484,10 @@ CollectionHeaderSet.prototype.getData = function (index, level) {
  * @memberof CollectionHeaderSet
  */
 CollectionHeaderSet.prototype.getMetadata = function (index, level) {
-  oj.Assert.assert(index <= this.m_end && index >= this.m_start,
-    CollectionHeaderSet.INDEX_OUT_OF_BOUNDS);
+  oj.Assert.assert(
+    index <= this.m_end && index >= this.m_start,
+    CollectionHeaderSet.INDEX_OUT_OF_BOUNDS
+  );
   oj.Assert.assert(level == null || level === 0, CollectionHeaderSet.LEVEL_OUT_OF_BOUNDS);
 
   // row header case
@@ -1497,8 +1547,10 @@ CollectionHeaderSet.prototype.getLevelCount = function () {
  * @memberof CollectionHeaderSet
  */
 CollectionHeaderSet.prototype.getExtent = function (index, level) {
-  oj.Assert.assert(index <= this.m_end && index >= this.m_start,
-    CollectionHeaderSet.INDEX_OUT_OF_BOUNDS);
+  oj.Assert.assert(
+    index <= this.m_end && index >= this.m_start,
+    CollectionHeaderSet.INDEX_OUT_OF_BOUNDS
+  );
   oj.Assert.assert(level == null || level === 0, CollectionHeaderSet.LEVEL_OUT_OF_BOUNDS);
   return { extent: 1, more: { before: false, after: false } };
 };
@@ -1530,8 +1582,10 @@ CollectionHeaderSet.prototype.getLabel = function () {
  * @memberof CollectionHeaderSet
  */
 CollectionHeaderSet.prototype.getDepth = function (index, level) {
-  oj.Assert.assert(index <= this.m_end && index >= this.m_start,
-    CollectionHeaderSet.INDEX_OUT_OF_BOUNDS);
+  oj.Assert.assert(
+    index <= this.m_end && index >= this.m_start,
+    CollectionHeaderSet.INDEX_OUT_OF_BOUNDS
+  );
   oj.Assert.assert(level == null || level === 0, CollectionHeaderSet.LEVEL_OUT_OF_BOUNDS);
   return 1;
 };

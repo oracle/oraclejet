@@ -1,2 +1,0 @@
-define(["exports","preact/jsx-runtime",'module'],(function(n,e,t){"use strict";const i={banner:"tjwh2i",inline:void 0};n.MessageCloseButton=function({onAction:n,buttonRenderer:t,title:s="Close",variant:o="banner"}){const c=t?t(s,n,o):e.jsx("button",Object.assign({"aria-label":s,onClick:n,title:s},{children:"X"})),a=`oj-c-message${o}-close-icon ${i[o]}`;return e.jsx("div",Object.assign({class:a},{children:c}))}}));
-//# sourceMappingURL=MessageCloseButton-104b16ed.js.map

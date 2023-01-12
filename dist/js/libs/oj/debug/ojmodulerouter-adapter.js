@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -74,7 +74,7 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
    *                  <a href="ModuleAnimations.html#Animations">an animation type</a> supported by ModuleAnimations
    *                  or an object that implements <a href="oj.ModuleElementAnimation.html">ModuleElementAnimation</a> interface.
    * @ojsignature [
-   *    {target: "Type", value: "class ModuleRouterAdapter<D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any}>",
+   *    {target: "Type", value: "class ModuleRouterAdapter<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>",
    *     genericParameters: [{"name": "D", "description": "Detail object for the router state"},
    *                         {"name": "P", "description": "Parameters object for the router state"}]},
    *    {target:"Type", for: "router", value: "CoreRouter<D,P>"},
@@ -87,29 +87,29 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
    * @ojtsimport {module: "ojmodule-element", type: "AMD", imported: ["ModuleElementAnimation","ModuleViewModel"]}
    * @ojtsimport {module: "ojcorerouter", type: "AMD", importName: "CoreRouter"}
    */
-   /**
-    * @typedef {Object} oj.ModuleRouterAdapter.AnimationCallbackParameters
-    * @property {Element} node An oj-module element used for hosting the views
-    * @property {any} previousViewModel The instance of previous ViewModel
-    * @property {any} viewModel The instance of the current ViewModel
-    * @property {any} previousState Previous router state.
-    * @property {any} state Current router state.
-    */
+  /**
+   * @typedef {Object} oj.ModuleRouterAdapter.AnimationCallbackParameters
+   * @property {Element} node An oj-module element used for hosting the views
+   * @property {any} previousViewModel The instance of previous ViewModel
+   * @property {any} viewModel The instance of the current ViewModel
+   * @property {any} previousState Previous router state.
+   * @property {any} state Current router state.
+   */
 
-   /**
-    * @typedef {Object} oj.ModuleRouterAdapter.ViewModelParameters
-    * @property {CoreRouter} parentRouter The instance of the CoreRouter, that used by the ModuleRouterAdapter instance.
-    * @property {any} params The value of CoreRouterState params property.
-    * @property {CoreRouter} router The instance of the CoreRouter, that used by the ModuleRouterAdapter instance.
-    * @property {CoreRouter.CoreRouterState} routerState The current state of CoreRouter
-    * @ojsignature [{target: "Type", value: "CoreRouter<D, P>", for: "parentRouter"},
-    *               {target: "Type", value: "P", for: "params"},
-    *               {target: "Type", value: "CoreRouter<D, P>", for: "router"},
-    *               {target: "Type", value: "CoreRouter.CoreRouterState<D, P>", for: "routerState"},
-    *               {target: "Type", value: "<D, P>", for: "genericTypeParameters"}]
-    * @ojdeprecated [{target: "property", for: "parentRouter", since: "8.1.0", description: "Use router property instead."},
-    *                 {target: "property", for: "params", since: "8.1.0", description: "Use CoreRouter.CoreRouterState.params instead."}]
-    */
+  /**
+   * @typedef {Object} oj.ModuleRouterAdapter.ViewModelParameters
+   * @property {CoreRouter} parentRouter The instance of the CoreRouter, that used by the ModuleRouterAdapter instance.
+   * @property {any} params The value of CoreRouterState params property.
+   * @property {CoreRouter} router The instance of the CoreRouter, that used by the ModuleRouterAdapter instance.
+   * @property {CoreRouter.CoreRouterState} routerState The current state of CoreRouter
+   * @ojsignature [{target: "Type", value: "CoreRouter<D, P>", for: "parentRouter"},
+   *               {target: "Type", value: "P", for: "params"},
+   *               {target: "Type", value: "CoreRouter<D, P>", for: "router"},
+   *               {target: "Type", value: "CoreRouter.CoreRouterState<D, P>", for: "routerState"},
+   *               {target: "Type", value: "<D extends Record<string, any>, P extends Record<string, any>>", for: "genericTypeParameters"}]
+   * @ojdeprecated [{target: "property", for: "parentRouter", since: "8.1.0", description: "Use router property instead."},
+   *                 {target: "property", for: "params", since: "8.1.0", description: "Use CoreRouter.CoreRouterState.params instead."}]
+   */
   // eslint-disable-next-line no-unused-vars
   function ModuleRouterAdapter(router, options) {
     var _router = router;
@@ -145,17 +145,18 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
           // Get the 'delegate' animation
           var animation = callback(context);
 
-          _delegate = typeof (animation) === 'string' ?
-            ModuleAnimations[animation] : animation;
+          _delegate = typeof animation === 'string' ? ModuleAnimations[animation] : animation;
 
           if (!_delegate) {
             return false;
           }
 
           // Define the rest of the methods on the fly if we have a delegate
-          ['prepareAnimation', 'animate'].forEach(function (item) {
-            this[item] = _getDelegateInvoker(item);
-          }.bind(this));
+          ['prepareAnimation', 'animate'].forEach(
+            function (item) {
+              this[item] = _getDelegateInvoker(item);
+            }.bind(this)
+          );
 
           return _getDelegateInvoker(_canAnimate)(context);
         }.bind(this);
@@ -187,8 +188,11 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
         var currentModulePath = getModulePathFromState(_currentState);
         // check if model path didn't change and we can just re-apply the parameters
         // using parametersChanged() callback
-        if (modulePath === currentModulePath &&
-          _moduleConfig().viewModel && _moduleConfig().viewModel.parametersChanged) {
+        if (
+          modulePath === currentModulePath &&
+          _moduleConfig().viewModel &&
+          _moduleConfig().viewModel.parametersChanged
+        ) {
           _moduleConfig().viewModel.parametersChanged(args.state.params);
           _currentState = args.state;
           return;
@@ -222,7 +226,7 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
             Object.defineProperty(clonedViewConfig, 'view', {
               enumerable: true,
               get() {
-                return config.view.map(node => node.cloneNode(true));
+                return config.view.map((node) => node.cloneNode(true));
               }
             });
             _moduleConfig(clonedViewConfig);
@@ -230,7 +234,8 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
         },
         function (reason) {
           Logger.error('Error creating oj-module config : ', reason);
-        });
+        }
+      );
     }
 
     // create module animation object if it's requested

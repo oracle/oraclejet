@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -62,7 +62,13 @@ class DvtOverviewEventManager extends EventManager {
    * @override
    */
   addListeners(displayable) {
-    SvgDocumentUtils.addDragListeners(this._overview, this._onDragStart, this._onDragMove, this._onDragEnd, this);
+    SvgDocumentUtils.addDragListeners(
+      this._overview,
+      this._onDragStart,
+      this._onDragMove,
+      this._onDragEnd,
+      this
+    );
   }
 
   /**
@@ -72,10 +78,8 @@ class DvtOverviewEventManager extends EventManager {
    * @private
    */
   _onDragStart(event) {
-    if (Agent.isTouchDevice())
-      return this._onTouchDragStart(event);
-    else
-      return this._onMouseDragStart(event);
+    if (Agent.isTouchDevice()) return this._onTouchDragStart(event);
+    else return this._onMouseDragStart(event);
   }
 
   /**
@@ -85,10 +89,8 @@ class DvtOverviewEventManager extends EventManager {
    * @private
    */
   _onDragMove(event) {
-    if (Agent.isTouchDevice())
-      return this._onTouchDragMove(event);
-    else
-      return this._onMouseDragMove(event);
+    if (Agent.isTouchDevice()) return this._onTouchDragMove(event);
+    else return this._onMouseDragMove(event);
   }
 
   /**
@@ -98,10 +100,8 @@ class DvtOverviewEventManager extends EventManager {
    * @private
    */
   _onDragEnd(event) {
-    if (Agent.isTouchDevice())
-      return this._onTouchDragEnd(event);
-    else
-      return this._onMouseDragEnd(event);
+    if (Agent.isTouchDevice()) return this._onTouchDragEnd(event);
+    else return this._onMouseDragEnd(event);
   }
 
   /**
@@ -115,7 +115,10 @@ class DvtOverviewEventManager extends EventManager {
     if (!this._stageAbsolutePosition)
       this._stageAbsolutePosition = this._context.getStageAbsolutePosition();
 
-    return new Point(pageX - this._stageAbsolutePosition.x, pageY - this._stageAbsolutePosition.y);
+    return new Point(
+      pageX - this._stageAbsolutePosition.x,
+      pageY - this._stageAbsolutePosition.y
+    );
   }
 
   /**
@@ -141,7 +144,7 @@ class DvtOverviewEventManager extends EventManager {
     var relPos = this._getRelativePosition(event.pageX, event.pageY);
     this._overview.contDragPan(event, relPos.x, relPos.y);
     return true;
-  };
+  }
 
   /**
    * Mouse drag end callback.
@@ -209,18 +212,18 @@ class DvtOverviewEventManager extends EventManager {
  */
 class OverviewParser {
   /**
- * Initializes the component parser.
- * @param {Overview} view The Overview instance.
- */
+   * Initializes the component parser.
+   * @param {Overview} view The Overview instance.
+   */
   constructor(view) {
     this._view = view;
   }
 
   /**
- * Parses the JSON object and returns the root node of the overview.
- * @param {object} options The object describing the component.
- * @return {object} An object containing the parsed properties.
- */
+   * Parses the JSON object and returns the root node of the overview.
+   * @param {object} options The object describing the component.
+   * @return {object} An object containing the parsed properties.
+   */
   parse(options) {
     return this.ParseRootAttributes(options);
   }
@@ -238,32 +241,22 @@ class OverviewParser {
     // animation related options
     ret.animationOnClick = options['animationOnClick'];
 
-    if (options['xMin'] != null)
-      ret.xMin = options['xMin'];
-    if (options['xMax'] != null)
-      ret.xMax = options['xMax'];
+    if (options['xMin'] != null) ret.xMin = options['xMin'];
+    if (options['xMax'] != null) ret.xMax = options['xMax'];
 
-    if (options['x1'] != null)
-      ret.x1 = options['x1'];
-    if (options['x2'] != null)
-      ret.x2 = options['x2'];
+    if (options['x1'] != null) ret.x1 = options['x1'];
+    if (options['x2'] != null) ret.x2 = options['x2'];
 
-    if (options['yMin'] != null)
-      ret.yMin = options['yMin'];
-    if (options['yMax'] != null)
-      ret.yMax = options['yMax'];
+    if (options['yMin'] != null) ret.yMin = options['yMin'];
+    if (options['yMax'] != null) ret.yMax = options['yMax'];
 
-    if (options['y1'] != null)
-      ret.y1 = options['y1'];
-    if (options['y2'] != null)
-      ret.y2 = options['y2'];
+    if (options['y1'] != null) ret.y1 = options['y1'];
+    if (options['y2'] != null) ret.y2 = options['y2'];
 
-    if (options['currentTime'] != null)
-      ret.currentTime = options['currentTime'];
+    if (options['referenceObjects'] != null) ret.referenceObjects = options['referenceObjects'];
 
     ret.orientation = 'horizontal';
-    if (options['orientation'] != null)
-      ret.orientation = options['orientation'];
+    if (options['orientation'] != null) ret.orientation = options['orientation'];
 
     ret.featuresOff = options['featuresOff'];
     ret.minimumWindowSize = options['minimumWindowSize'];
@@ -273,8 +266,7 @@ class OverviewParser {
     ret.overviewPosition = 'below';
     ret.selectionMode = 'none';
     ret.isRtl = Agent.isRightToLeft(this._view.getCtx()).toString();
-    if (options['rtl'] != null)
-      ret.isRtl = options['rtl'].toString();
+    if (options['rtl'] != null) ret.isRtl = options['rtl'].toString();
 
     return ret;
   }
@@ -290,7 +282,7 @@ class OverviewParser {
    */
   calculateWidth(startTime, endTime, viewportStartTime, viewportEndTime, viewportEndPos) {
     var number = viewportEndPos * (endTime - startTime);
-    var denominator = (viewportEndTime - viewportStartTime);
+    var denominator = viewportEndTime - viewportStartTime;
     if (number === 0 || denominator === 0) {
       return 0;
     }
@@ -304,7 +296,6 @@ class OverviewParser {
  * @class
  */
 const DvtOverviewStyleUtils = {
-
   /**
    * Attribute for axis label padding.
    * @const
@@ -325,10 +316,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The handle fill color.
    */
   getHandleFillColor: (options) => {
-    if (options['_hfc'] != null)
-      return options['_hfc'];
-    else
-      return options['style']['handleFillColor'];
+    if (options['_hfc'] != null) return options['_hfc'];
+    else return options['style']['handleFillColor'];
   },
 
   /**
@@ -337,10 +326,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The handle texture color.
    */
   getHandleTextureColor: (options) => {
-    if (options['_htc'] != null)
-      return options['_htc'];
-    else
-      return options['style']['handleTextureColor'];
+    if (options['_htc'] != null) return options['_htc'];
+    else return options['style']['handleTextureColor'];
   },
 
   /**
@@ -351,16 +338,11 @@ const DvtOverviewStyleUtils = {
    */
   getHandleBackgroundClass: (options, isVertical) => {
     if (!isVertical) {
-      if (options['_hbc'] != null)
-        return options['_hbc'];
-      else
-        return options['style']['handleBackgroundClass'];
-    }
-    else {
-      if (options['_vhbc'] != null)
-        return options['_vhbc'];
-      else
-        return options['style']['vertHandleBackgroundClass'];
+      if (options['_hbc'] != null) return options['_hbc'];
+      else return options['style']['handleBackgroundClass'];
+    } else {
+      if (options['_vhbc'] != null) return options['_vhbc'];
+      else return options['style']['vertHandleBackgroundClass'];
     }
   },
 
@@ -372,16 +354,11 @@ const DvtOverviewStyleUtils = {
    */
   getHandleSize: (options, isVertical) => {
     if (!isVertical) {
-      if (options['_hs'] != null)
-        return options['_hs'];
-      else
-        return options['style']['handleSize'];
-    }
-    else {
-      if (options['_vhs'] != null)
-        return options['_vhs'];
-      else
-        return options['style']['vertHandleSize'];
+      if (options['_hs'] != null) return options['_hs'];
+      else return options['style']['handleSize'];
+    } else {
+      if (options['_vhs'] != null) return options['_vhs'];
+      else return options['style']['vertHandleSize'];
     }
   },
 
@@ -391,10 +368,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The top border color.
    */
   getBorderTopColor: (options) => {
-    if (options['_btc'] != null)
-      return options['_btc'];
-    else
-      return options['style']['borderTopColor'];
+    if (options['_btc'] != null) return options['_btc'];
+    else return options['style']['borderTopColor'];
   },
 
   /**
@@ -403,10 +378,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The top border style.
    */
   getBorderTopStyle: (options) => {
-    if (options['_bts'] != null)
-      return options['_bts'];
-    else
-      return options['style']['borderTopStyle'];
+    if (options['_bts'] != null) return options['_bts'];
+    else return options['style']['borderTopStyle'];
   },
 
   /**
@@ -415,10 +388,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The window background color.
    */
   getWindowBackgroundColor: (options) => {
-    if (options['_wbc'] != null)
-      return options['_wbc'];
-    else
-      return options['style']['windowBackgroundColor'];
+    if (options['_wbc'] != null) return options['_wbc'];
+    else return options['style']['windowBackgroundColor'];
   },
 
   /**
@@ -436,10 +407,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The top window border style.
    */
   getWindowBorderTopStyle: (options) => {
-    if (options['_wbts'] != null)
-      return options['_wbts'];
-    else
-      return options['style']['windowBorderTopStyle'];
+    if (options['_wbts'] != null) return options['_wbts'];
+    else return options['style']['windowBorderTopStyle'];
   },
 
   /**
@@ -448,10 +417,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The right window border style.
    */
   getWindowBorderRightStyle: (options) => {
-    if (options['_wbrs'] != null)
-      return options['_wbrs'];
-    else
-      return options['style']['windowBorderRightStyle'];
+    if (options['_wbrs'] != null) return options['_wbrs'];
+    else return options['style']['windowBorderRightStyle'];
   },
 
   /**
@@ -460,10 +427,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The bottom window border style.
    */
   getWindowBorderBottomStyle: (options) => {
-    if (options['_wbbs'] != null)
-      return options['_wbbs'];
-    else
-      return options['style']['windowBorderBottomStyle'];
+    if (options['_wbbs'] != null) return options['_wbbs'];
+    else return options['style']['windowBorderBottomStyle'];
   },
 
   /**
@@ -472,10 +437,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The left window border style.
    */
   getWindowBorderLeftStyle: (options) => {
-    if (options['_wbls'] != null)
-      return options['_wbls'];
-    else
-      return options['style']['windowBorderLeftStyle'];
+    if (options['_wbls'] != null) return options['_wbls'];
+    else return options['style']['windowBorderLeftStyle'];
   },
 
   /**
@@ -484,10 +447,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The top window border color.
    */
   getWindowBorderTopColor: (options) => {
-    if (options['_wbtc'] != null)
-      return options['_wbtc'];
-    else
-      return options['style']['windowBorderTopColor'];
+    if (options['_wbtc'] != null) return options['_wbtc'];
+    else return options['style']['windowBorderTopColor'];
   },
 
   /**
@@ -496,10 +457,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The right window border color.
    */
   getWindowBorderRightColor: (options) => {
-    if (options['_wbrc'] != null)
-      return options['_wbrc'];
-    else
-      return options['style']['windowBorderRightColor'];
+    if (options['_wbrc'] != null) return options['_wbrc'];
+    else return options['style']['windowBorderRightColor'];
   },
 
   /**
@@ -508,10 +467,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The bottom window border color.
    */
   getWindowBorderBottomColor: (options) => {
-    if (options['_wbbc'] != null)
-      return options['_wbbc'];
-    else
-      return options['style']['windowBorderBottomColor'];
+    if (options['_wbbc'] != null) return options['_wbbc'];
+    else return options['style']['windowBorderBottomColor'];
   },
 
   /**
@@ -520,10 +477,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The left window border color.
    */
   getWindowBorderLeftColor: (options) => {
-    if (options['_wblc'] != null)
-      return options['_wblc'];
-    else
-      return options['style']['windowBorderLeftColor'];
+    if (options['_wblc'] != null) return options['_wblc'];
+    else return options['style']['windowBorderLeftColor'];
   },
 
   /**
@@ -532,10 +487,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The overview background color.
    */
   getOverviewBackgroundColor: (options) => {
-    if (options['_obc'] != null)
-      return options['_obc'];
-    else
-      return options['style']['overviewBackgroundColor'];
+    if (options['_obc'] != null) return options['_obc'];
+    else return options['style']['overviewBackgroundColor'];
   },
 
   /**
@@ -544,10 +497,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The current time indicator color.
    */
   getCurrentTimeIndicatorColor: (options) => {
-    if (options['_ctic'] != null)
-      return options['_ctic'];
-    else
-      return options['style']['currentTimeIndicatorColor'];
+    if (options['_ctic'] != null) return options['_ctic'];
+    else return options['style']['currentTimeIndicatorColor'];
   },
 
   /**
@@ -556,10 +507,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The time axis bar color.
    */
   getTimeAxisBarColor: (options) => {
-    if (options['_tabc'] != null)
-      return options['_tabc'];
-    else
-      return options['style']['timeAxisBarColor'];
+    if (options['_tabc'] != null) return options['_tabc'];
+    else return options['style']['timeAxisBarColor'];
   },
 
   /**
@@ -568,10 +517,8 @@ const DvtOverviewStyleUtils = {
    * @return {number} The time axis bar opacity.
    */
   getTimeAxisBarAlpha: (options) => {
-    if (options['_tabo'] != null)
-      return options['_tabo'];
-    else
-      return options['style']['timeAxisBarAlpha'];
+    if (options['_tabo'] != null) return options['_tabo'];
+    else return options['style']['timeAxisBarAlpha'];
   },
 
   /**
@@ -580,10 +527,8 @@ const DvtOverviewStyleUtils = {
    * @return {string} The time indicator color.
    */
   getTimeIndicatorColor: (options) => {
-    if (options['_tic'] != null)
-      return options['_tic'];
-    else
-      return options['style']['timeIndicatorColor'];
+    if (options['_tic'] != null) return options['_tic'];
+    else return options['style']['timeIndicatorColor'];
   },
 
   /**
@@ -624,8 +569,6 @@ const DvtOverviewStyleUtils = {
 };
 
 const OverviewUtils = {
-
-
   supportsTouch: () => {
     return Agent.isTouchDevice();
   },
@@ -640,23 +583,20 @@ const OverviewUtils = {
    */
   getDatePosition: (startTime, endTime, time, width) => {
     var number = (time - startTime) * width;
-    var denominator = (endTime - startTime);
-    if (number == 0 || denominator == 0)
-      return 0;
+    var denominator = endTime - startTime;
+    if (number == 0 || denominator == 0) return 0;
 
     return number / denominator;
   },
-
 
   /**
    * @return time in millis
    */
   getPositionDate: (startTime, endTime, pos, width) => {
     var number = pos * (endTime - startTime);
-    if (number === 0 || width === 0)
-      return startTime;
+    if (number === 0 || width === 0) return startTime;
 
-    return (number / width) + startTime;
+    return number / width + startTime;
   }
 };
 
@@ -665,23 +605,20 @@ const OverviewUtils = {
  * @class
  */
 const DvtOverviewRenderer = {
-
   /**
    * Renders an overview.
    * @param {Overview} overview The overview being rendered.
    */
   renderOverview: (overview) => {
-    if (overview.isBackgroundRendered())
-      DvtOverviewRenderer._renderBackground(overview);
+    if (overview.isBackgroundRendered()) DvtOverviewRenderer._renderBackground(overview);
 
-    var interactive = (overview._callback != null || overview._callbackObj != null);
+    var interactive = overview._callback != null || overview._callbackObj != null;
 
-    if (interactive)
-      DvtOverviewRenderer._renderSlidingWindow(overview);
+    if (interactive) DvtOverviewRenderer._renderSlidingWindow(overview);
 
     DvtOverviewRenderer._renderTimeAxis(overview);
     DvtOverviewRenderer._parseFilledTimeRanges(overview);
-    DvtOverviewRenderer._updateCurrentTime(overview);
+    DvtOverviewRenderer._updateReferenceLines(overview);
 
     // render data
     overview.renderData(overview.Width, overview.Height);
@@ -735,25 +672,50 @@ const DvtOverviewRenderer = {
       if (overview.isVerticalScrollingEnabled()) {
         var slidingWindowWidth = overview.getSlidingWindowWidth();
 
-        var topHandleCmds = PathUtils.moveTo(0, 0) +
+        var topHandleCmds =
+          PathUtils.moveTo(0, 0) +
           PathUtils.quadTo(3, 6, 8, 8) +
           PathUtils.lineTo(28, 8) +
           PathUtils.quadTo(33, 6, 36, 0);
         PathUtils.closePath();
-        var bottomHandleCmds = PathUtils.moveTo(0, 0) +
+        var bottomHandleCmds =
+          PathUtils.moveTo(0, 0) +
           PathUtils.quadTo(3, -6, 8, -8) +
           PathUtils.lineTo(28, -8) +
           PathUtils.quadTo(33, -6, 36, 0);
         PathUtils.closePath();
-        var topHandleBackground = new Rect(overview.getCtx(), 0, 0, slidingWindowWidth, handleSize, 'thb');
-        var bottomHandleBackground = new Rect(overview.getCtx(), 0, 0, slidingWindowWidth, handleSize, 'bhb');
+        var topHandleBackground = new Rect(
+          overview.getCtx(),
+          0,
+          0,
+          slidingWindowWidth,
+          handleSize,
+          'thb'
+        );
+        var bottomHandleBackground = new Rect(
+          overview.getCtx(),
+          0,
+          0,
+          slidingWindowWidth,
+          handleSize,
+          'bhb'
+        );
         cursor = 'row-resize';
 
         if (overview._vertHandleBackgroundClass) {
-          var topGrippy = DvtOverviewRenderer._createGrippyImage(overview, slidingWindowWidth, grippySize, true);
-          var bottomGrippy = DvtOverviewRenderer._createGrippyImage(overview, slidingWindowWidth, grippySize, true);
-        }
-        else {
+          var topGrippy = DvtOverviewRenderer._createGrippyImage(
+            overview,
+            slidingWindowWidth,
+            grippySize,
+            true
+          );
+          var bottomGrippy = DvtOverviewRenderer._createGrippyImage(
+            overview,
+            slidingWindowWidth,
+            grippySize,
+            true
+          );
+        } else {
           topGrippy = DvtOverviewRenderer._createGrippy(overview, true);
           bottomGrippy = DvtOverviewRenderer._createGrippy(overview, true);
         }
@@ -802,25 +764,50 @@ const DvtOverviewRenderer = {
       if (overview.isHorizontalScrollingEnabled()) {
         var slidingWindowHeight = overview.getSlidingWindowHeight();
 
-        var leftHandleCmds = PathUtils.moveTo(0, 0) +
+        var leftHandleCmds =
+          PathUtils.moveTo(0, 0) +
           PathUtils.quadTo(6, 3, 8, 8) +
           PathUtils.lineTo(8, 28) +
           PathUtils.quadTo(6, 33, 0, 36);
         PathUtils.closePath();
-        var rightHandleCmds = PathUtils.moveTo(0, 0) +
+        var rightHandleCmds =
+          PathUtils.moveTo(0, 0) +
           PathUtils.quadTo(-6, 3, -8, 8) +
           PathUtils.lineTo(-8, 28) +
           PathUtils.quadTo(-6, 33, 0, 36);
         PathUtils.closePath();
-        var leftHandleBackground = new Rect(overview.getCtx(), 0 - handleStart, 0, handleSize, slidingWindowHeight, 'lhb');
-        var rightHandleBackground = new Rect(overview.getCtx(), handleStart, 0, handleSize, slidingWindowHeight, 'rhb');
+        var leftHandleBackground = new Rect(
+          overview.getCtx(),
+          0 - handleStart,
+          0,
+          handleSize,
+          slidingWindowHeight,
+          'lhb'
+        );
+        var rightHandleBackground = new Rect(
+          overview.getCtx(),
+          handleStart,
+          0,
+          handleSize,
+          slidingWindowHeight,
+          'rhb'
+        );
         cursor = 'col-resize';
 
         if (overview._horHandleBackgroundClass) {
-          var leftGrippy = DvtOverviewRenderer._createGrippyImage(overview, grippySize, slidingWindowHeight, false);
-          var rightGrippy = DvtOverviewRenderer._createGrippyImage(overview, grippySize, slidingWindowHeight, false);
-        }
-        else {
+          var leftGrippy = DvtOverviewRenderer._createGrippyImage(
+            overview,
+            grippySize,
+            slidingWindowHeight,
+            false
+          );
+          var rightGrippy = DvtOverviewRenderer._createGrippyImage(
+            overview,
+            grippySize,
+            slidingWindowHeight,
+            false
+          );
+        } else {
           leftGrippy = DvtOverviewRenderer._createGrippy(overview, false);
           rightGrippy = DvtOverviewRenderer._createGrippy(overview, false);
         }
@@ -890,13 +877,20 @@ const DvtOverviewRenderer = {
     if (!isVertical) {
       var posX = width / 2;
       var iconStyle = ToolkitUtils.getIconStyle(ctx, overview._horHandleBackgroundClass);
-      grippy = OutputText.createIcon(ctx, { style: iconStyle, size: overview._horHandleSize, pos: { x: posX, y: 0 } });
+      grippy = OutputText.createIcon(ctx, {
+        style: iconStyle,
+        size: overview._horHandleSize,
+        pos: { x: posX, y: 0 }
+      });
       grippy.setId('hgrpy');
-    }
-    else {
+    } else {
       var posY = height / 2;
       var iconStyleY = ToolkitUtils.getIconStyle(ctx, overview._vertHandleBackgroundClass);
-      grippy = OutputText.createIcon(ctx, { style: iconStyleY, size: overview._vertHandleSize, pos: { x: 0, y: posY } });
+      grippy = OutputText.createIcon(ctx, {
+        style: iconStyleY,
+        size: overview._vertHandleSize,
+        pos: { x: 0, y: posY }
+      });
       grippy.setId('vgrpy');
     }
     grippy.setMouseEnabled(false);
@@ -914,66 +908,135 @@ const DvtOverviewRenderer = {
    */
   _createGrippy: (overview, isVertical) => {
     var gap = 2; // gap between dots
-    var count = 9;  // how many dots to draw
+    var count = 9; // how many dots to draw
     var color = overview._handleTextureColor; // color of the dots
 
     if (isVertical) {
       var grippy = new Container(overview.getCtx(), 'g', 'vgrpy');
       var startx = 8;
-      var starty = 3;  // start y location of dots relative to container
+      var starty = 3; // start y location of dots relative to container
       for (var i = 0; i < count; i++) {
-        var dot = new Line(overview.getCtx(), startx + i * gap, starty, startx + i * gap + 1, starty, 'dot1' + i);
+        var dot = new Line(
+          overview.getCtx(),
+          startx + i * gap,
+          starty,
+          startx + i * gap + 1,
+          starty,
+          'dot1' + i
+        );
         dot.setSolidStroke(color);
         grippy.addChild(dot);
 
         starty = starty + gap;
-        dot = new Line(overview.getCtx(), (startx + 1) + i * gap, starty, (startx + 1) + i * gap + 1, starty, 'dot2' + i);
+        dot = new Line(
+          overview.getCtx(),
+          startx + 1 + i * gap,
+          starty,
+          startx + 1 + i * gap + 1,
+          starty,
+          'dot2' + i
+        );
         dot.setSolidStroke(color);
         grippy.addChild(dot);
 
         starty = starty + gap;
-        dot = new Line(overview.getCtx(), startx + i * gap, starty, startx + i * gap + 1, starty, 'dot3' + i);
+        dot = new Line(
+          overview.getCtx(),
+          startx + i * gap,
+          starty,
+          startx + i * gap + 1,
+          starty,
+          'dot3' + i
+        );
         dot.setSolidStroke(color);
         grippy.addChild(dot);
 
         starty = 3;
       }
 
-      dot = new Line(overview.getCtx(), startx + count * gap, starty, startx + count * gap + 1, starty, 'dot4');
+      dot = new Line(
+        overview.getCtx(),
+        startx + count * gap,
+        starty,
+        startx + count * gap + 1,
+        starty,
+        'dot4'
+      );
       dot.setSolidStroke(color);
       grippy.addChild(dot);
       starty = starty + gap * 2;
-      dot = new Line(overview.getCtx(), startx + count * gap, starty, startx + count * gap + 1, starty, 'dot5');
+      dot = new Line(
+        overview.getCtx(),
+        startx + count * gap,
+        starty,
+        startx + count * gap + 1,
+        starty,
+        'dot5'
+      );
       dot.setSolidStroke(color);
       grippy.addChild(dot);
-    }
-    else {
+    } else {
       grippy = new Container(overview.getCtx(), 'g', 'hgrpy');
-      startx = 3;  // start x location of dots relative to container
+      startx = 3; // start x location of dots relative to container
       starty = 8;
       for (i = 0; i < count; i++) {
-        dot = new Line(overview.getCtx(), startx, starty + i * gap, startx, starty + i * gap + 1, 'dot1' + i);
+        dot = new Line(
+          overview.getCtx(),
+          startx,
+          starty + i * gap,
+          startx,
+          starty + i * gap + 1,
+          'dot1' + i
+        );
         dot.setSolidStroke(color);
         grippy.addChild(dot);
 
         startx = startx + gap;
-        dot = new Line(overview.getCtx(), startx, (starty + 1) + i * gap, startx, (starty + 1) + i * gap + 1, 'dot2' + i);
+        dot = new Line(
+          overview.getCtx(),
+          startx,
+          starty + 1 + i * gap,
+          startx,
+          starty + 1 + i * gap + 1,
+          'dot2' + i
+        );
         dot.setSolidStroke(color);
         grippy.addChild(dot);
 
         startx = startx + gap;
-        dot = new Line(overview.getCtx(), startx, starty + i * gap, startx, starty + i * gap + 1, 'dot3' + i);
+        dot = new Line(
+          overview.getCtx(),
+          startx,
+          starty + i * gap,
+          startx,
+          starty + i * gap + 1,
+          'dot3' + i
+        );
         dot.setSolidStroke(color);
         grippy.addChild(dot);
 
         startx = 3;
       }
 
-      dot = new Line(overview.getCtx(), startx, starty + count * gap, startx, starty + count * gap + 1, 'dot4');
+      dot = new Line(
+        overview.getCtx(),
+        startx,
+        starty + count * gap,
+        startx,
+        starty + count * gap + 1,
+        'dot4'
+      );
       dot.setSolidStroke(color);
       grippy.addChild(dot);
       startx = startx + gap * 2;
-      dot = new Line(overview.getCtx(), startx, starty + count * gap, startx, starty + count * gap + 1, 'dot5');
+      dot = new Line(
+        overview.getCtx(),
+        startx,
+        starty + count * gap,
+        startx,
+        starty + count * gap + 1,
+        'dot5'
+      );
       dot.setSolidStroke(color);
       grippy.addChild(dot);
     }
@@ -1007,16 +1070,29 @@ const DvtOverviewRenderer = {
       var rightCenter = right - halfBorderWidth;
 
       var leftHandle = new Line(overview.getCtx(), left, topCenter, width, topCenter, 'lh');
-      var rightHandle = new Line(overview.getCtx(), left, bottomCenter, width, bottomCenter, 'rh');
+      var rightHandle = new Line(
+        overview.getCtx(),
+        left,
+        bottomCenter,
+        width,
+        bottomCenter,
+        'rh'
+      );
 
       // leftTopBar and rightTopBar are only visible in fusion skins
       var leftTopBar = new Line(overview.getCtx(), leftCenter, 0, leftCenter, top, 'ltb');
-      var rightTopBar = new Line(overview.getCtx(), leftCenter, bottom, leftCenter, height, 'rtb');
+      var rightTopBar = new Line(
+        overview.getCtx(),
+        leftCenter,
+        bottom,
+        leftCenter,
+        height,
+        'rtb'
+      );
 
       var bottomBar = new Line(overview.getCtx(), rightCenter, top, rightCenter, bottom, 'bb');
       var topBar = new Line(overview.getCtx(), leftCenter, top, leftCenter, bottom, 'tb');
-    }
-    else {
+    } else {
       top = 0;
       topCenter = top + halfBorderWidth;
       bottom = height;
@@ -1110,8 +1186,7 @@ const DvtOverviewRenderer = {
         overview.setLinePosY(topBar, topCenter, bottomCenter);
         overview.setLinePosY(bottomBar, topCenter, bottomCenter);
       }
-    }
-    else {
+    } else {
       if (overview.isHorizontalScrollingEnabled()) {
         slidingWindowWidth = slidingWindow.getWidth();
         slidingWindowPosX = overview.getSlidingWindowPosX(slidingWindow);
@@ -1153,28 +1228,34 @@ const DvtOverviewRenderer = {
 
     // find the position relative to the width of timeline overview
     if (overview.isHorizontalScrollingEnabled()) {
-      var x1Pos = Math.max(overview.getMinimumPositionX(), OverviewUtils.getDatePosition(overview._xMin, overview._xMax, overview._x1, width));
-      var posX2Max = Math.max(overview.getMinimumPositionX(), OverviewUtils.getDatePosition(overview._xMin, overview._xMax, overview._x2, width));
+      var x1Pos = Math.max(
+        overview.getMinimumPositionX(),
+        OverviewUtils.getDatePosition(overview._xMin, overview._xMax, overview._x1, width)
+      );
+      var posX2Max = Math.max(
+        overview.getMinimumPositionX(),
+        OverviewUtils.getDatePosition(overview._xMin, overview._xMax, overview._x2, width)
+      );
       var x2Pos = Math.min(overview.getMaximumPositionX(), posX2Max);
 
-      if (overview.isRTL())
-        overview.setSlidingWindowPosX(window, width - x2Pos);
-      else
-        overview.setSlidingWindowPosX(window, x1Pos);
+      if (overview.isRTL()) overview.setSlidingWindowPosX(window, width - x2Pos);
+      else overview.setSlidingWindowPosX(window, x1Pos);
       DvtOverviewRenderer._setSlidingWindowWidth(overview, window, x2Pos - x1Pos);
-    }
-    else
-      DvtOverviewRenderer._setSlidingWindowWidth(overview, window, width);
+    } else DvtOverviewRenderer._setSlidingWindowWidth(overview, window, width);
     if (overview.isVerticalScrollingEnabled()) {
-      var y1Pos = Math.max(overview.getMinimumPositionY(), OverviewUtils.getDatePosition(overview._yMin, overview._yMax, overview._y1, height));
-      var posY2Max = Math.max(overview.getMinimumPositionY(), OverviewUtils.getDatePosition(overview._yMin, overview._yMax, overview._y2, height));
+      var y1Pos = Math.max(
+        overview.getMinimumPositionY(),
+        OverviewUtils.getDatePosition(overview._yMin, overview._yMax, overview._y1, height)
+      );
+      var posY2Max = Math.max(
+        overview.getMinimumPositionY(),
+        OverviewUtils.getDatePosition(overview._yMin, overview._yMax, overview._y2, height)
+      );
       var y2Pos = Math.min(overview.getMaximumPositionY(), posY2Max);
 
       overview.setSlidingWindowPosY(window, y1Pos);
       DvtOverviewRenderer._setSlidingWindowHeight(overview, window, y2Pos - y1Pos);
-    }
-    else
-      DvtOverviewRenderer._setSlidingWindowHeight(overview, window, height);
+    } else DvtOverviewRenderer._setSlidingWindowHeight(overview, window, height);
 
     DvtOverviewRenderer._updateBorderAroundSlidingWindow(overview);
   },
@@ -1188,7 +1269,10 @@ const DvtOverviewRenderer = {
    */
   _setSlidingWindowWidth: (overview, slidingWindow, width) => {
     // make sure the width is within the maximum and minimum sizes specified
-    width = Math.min(overview.getMaximumWindowWidth(), Math.max(overview.getMinimumWindowWidth(), width));
+    width = Math.min(
+      overview.getMaximumWindowWidth(),
+      Math.max(overview.getMinimumWindowWidth(), width)
+    );
     slidingWindow.setWidth(width);
 
     // update left and right filter if one is specified
@@ -1206,8 +1290,7 @@ const DvtOverviewRenderer = {
     }
 
     // if resize feature is off then there's nothing else to do
-    if (overview.isFeatureOff('zoom'))
-      return;
+    if (overview.isFeatureOff('zoom')) return;
 
     // update the resize handles
     if (overview.isHorizontalScrollingEnabled()) {
@@ -1221,10 +1304,8 @@ const DvtOverviewRenderer = {
     }
     if (overview.isVerticalScrollingEnabled()) {
       var handleX = (slidingWindow.getWidth() - 36) / 2;
-      if (overview._vertHandleBackgroundClass)
-        var grippyX = width / 2;
-      else
-        grippyX = handleX;
+      if (overview._vertHandleBackgroundClass) var grippyX = width / 2;
+      else grippyX = handleX;
 
       var topHandleBackground = overview._windowTopHandleBackground;
       var topHandle = overview._windowTopHandle;
@@ -1253,20 +1334,20 @@ const DvtOverviewRenderer = {
    */
   _setSlidingWindowHeight: (overview, slidingWindow, height) => {
     // make sure the height is within the maximum and minimum sizes specified
-    height = Math.min(overview.getMaximumWindowHeight(), Math.max(overview.getMinimumWindowHeight(), height));
+    height = Math.min(
+      overview.getMaximumWindowHeight(),
+      Math.max(overview.getMinimumWindowHeight(), height)
+    );
     slidingWindow.setHeight(height);
 
     // if resize feature is off then there's nothing else to do
-    if (overview.isFeatureOff('zoom'))
-      return;
+    if (overview.isFeatureOff('zoom')) return;
 
     // update the resize handles
     if (overview.isHorizontalScrollingEnabled()) {
       var handleY = (height - 36) / 2;
-      if (overview._horHandleBackgroundClass)
-        var grippyY = height / 2;
-      else
-        grippyY = handleY;
+      if (overview._horHandleBackgroundClass) var grippyY = height / 2;
+      else grippyY = handleY;
 
       var leftHandleBackground = overview._windowLeftHandleBackground;
       var leftHandle = overview._windowLeftHandle;
@@ -1307,15 +1388,42 @@ const DvtOverviewRenderer = {
     // border above time axis
     if (overview.isVertical()) {
       if (overview.isRTL())
-        var timeAxisTopBar = new Line(overview.getCtx(), overview.getTimeAxisWidth(), 0, overview.getTimeAxisWidth(), height, 'tab');
+        var timeAxisTopBar = new Line(
+          overview.getCtx(),
+          overview.getTimeAxisWidth(),
+          0,
+          overview.getTimeAxisWidth(),
+          height,
+          'tab'
+        );
       else
-        timeAxisTopBar = new Line(overview.getCtx(), width - overview.getTimeAxisWidth(), 0, width - overview.getTimeAxisWidth(), height, 'tab');
-    }
-    else {
+        timeAxisTopBar = new Line(
+          overview.getCtx(),
+          width - overview.getTimeAxisWidth(),
+          0,
+          width - overview.getTimeAxisWidth(),
+          height,
+          'tab'
+        );
+    } else {
       if (overview.isOverviewAbove())
-        timeAxisTopBar = new Line(overview.getCtx(), 0, overview.getTimeAxisHeight(), width, overview.getTimeAxisHeight(), 'tab');
+        timeAxisTopBar = new Line(
+          overview.getCtx(),
+          0,
+          overview.getTimeAxisHeight(),
+          width,
+          overview.getTimeAxisHeight(),
+          'tab'
+        );
       else
-        timeAxisTopBar = new Line(overview.getCtx(), 0, height - overview.getTimeAxisHeight(), width, height - overview.getTimeAxisHeight(), 'tab');
+        timeAxisTopBar = new Line(
+          overview.getCtx(),
+          0,
+          height - overview.getTimeAxisHeight(),
+          width,
+          height - overview.getTimeAxisHeight(),
+          'tab'
+        );
     }
     timeAxisTopBar.setSolidStroke(overview._timeAxisBarColor, overview._timeAxisBarOpacity);
 
@@ -1340,27 +1448,56 @@ const DvtOverviewRenderer = {
       if (overview.isVertical()) {
         var leftBackground = new Rect(overview.getCtx(), 0, 0, width, 0, 'lbg');
         var rightBackground = new Rect(overview.getCtx(), 0, 0, width, 0, 'rbg');
-      }
-      else {
+      } else {
         leftBackground = new Rect(overview.getCtx(), 0, 0, 0, height, 'lbg');
         rightBackground = new Rect(overview.getCtx(), 0, 0, 0, height, 'rbg');
       }
 
       leftBackground.setSolidFill(overview._leftFilterPanelColor, overview._leftFilterPanelAlpha);
       overview.addChild(leftBackground);
-      rightBackground.setSolidFill(overview._rightFilterPanelColor, overview._rightFilterPanelAlpha);
+      rightBackground.setSolidFill(
+        overview._rightFilterPanelColor,
+        overview._rightFilterPanelAlpha
+      );
       overview.addChild(rightBackground);
 
       // the left and right background resize handle are needed for touch because the touch area for resize handle goes
       // beyond the handle and into the left and right background area, so we'll need something on top of the background
       if (OverviewUtils.supportsTouch() && handleStart !== undefined && handleStart !== null) {
         if (overview.isVertical()) {
-          var leftBackgroundResizeHandle = new Rect(overview.getCtx(), 0, 0, width, handleStart, 'lbgrh');
-          var rightBackgroundResizeHandle = new Rect(overview.getCtx(), 0, 0, width, handleStart, 'rbgrh');
-        }
-        else {
-          leftBackgroundResizeHandle = new Rect(overview.getCtx(), 0, 0, handleStart, height, 'lbgrh');
-          rightBackgroundResizeHandle = new Rect(overview.getCtx(), 0, 0, handleStart, height, 'rbgrh');
+          var leftBackgroundResizeHandle = new Rect(
+            overview.getCtx(),
+            0,
+            0,
+            width,
+            handleStart,
+            'lbgrh'
+          );
+          var rightBackgroundResizeHandle = new Rect(
+            overview.getCtx(),
+            0,
+            0,
+            width,
+            handleStart,
+            'rbgrh'
+          );
+        } else {
+          leftBackgroundResizeHandle = new Rect(
+            overview.getCtx(),
+            0,
+            0,
+            handleStart,
+            height,
+            'lbgrh'
+          );
+          rightBackgroundResizeHandle = new Rect(
+            overview.getCtx(),
+            0,
+            0,
+            handleStart,
+            height,
+            'rbgrh'
+          );
         }
 
         leftBackgroundResizeHandle.setSolidFill(overview._leftFilterPanelColor, 0);
@@ -1377,8 +1514,7 @@ const DvtOverviewRenderer = {
    * @private
    */
   _renderTimeAxis: (overview) => {
-    if (overview._ticks == null)
-      return;
+    if (overview._ticks == null) return;
 
     var width = overview.Width;
     var height = overview.Height;
@@ -1389,35 +1525,36 @@ const DvtOverviewRenderer = {
       var child = overview._ticks[i];
 
       var time = parseInt(child['time'], 10);
-      if (vertical)
-        var time_pos = overview.getDateYPosition(time);
-      else
-        time_pos = overview.getDateXPosition(time);
+      if (vertical) var time_pos = overview.getDateYPosition(time);
+      else time_pos = overview.getDateXPosition(time);
       var label = child['label'];
 
       var maxWidth = 0;
       if (i + 1 < overview._ticks.length) {
         var next_time = parseInt(overview._ticks[i + 1]['time'], 10);
-        if (vertical)
-          var next_time_pos = overview.getDateYPosition(next_time);
-        else
-          next_time_pos = overview.getDateXPosition(next_time);
+        if (vertical) var next_time_pos = overview.getDateYPosition(next_time);
+        else next_time_pos = overview.getDateXPosition(next_time);
         maxWidth = next_time_pos - time_pos;
-      }
-      else {
+      } else {
         // last label
         maxWidth = size - time_pos;
       }
 
-      if (overview.isHorizontalRTL())
-        time_pos = size - time_pos;
+      if (overview.isHorizontalRTL()) time_pos = size - time_pos;
 
-      if (vertical)
-        maxWidth = width;
+      if (vertical) maxWidth = width;
 
-      maxWidth -= (DvtOverviewStyleUtils._DEFAULT_AXIS_LABEL_PADDING * 2);
+      maxWidth -= DvtOverviewStyleUtils._DEFAULT_AXIS_LABEL_PADDING * 2;
       DvtOverviewRenderer._addTick(overview, time_pos, width, height, 'tick' + i);
-      DvtOverviewRenderer._addLabel(overview, time_pos, label, height, maxWidth, 'label' + i, overview._labelStyle);
+      DvtOverviewRenderer._addLabel(
+        overview,
+        time_pos,
+        label,
+        height,
+        maxWidth,
+        'label' + i,
+        overview._labelStyle
+      );
     }
   },
 
@@ -1431,10 +1568,8 @@ const DvtOverviewRenderer = {
    * @private
    */
   _addTick: (overview, pos, width, height, id) => {
-    if (overview.isVertical())
-      var line = new Line(overview.getCtx(), 0, pos, width, pos, id);
-    else
-      line = new Line(overview.getCtx(), pos, 0, pos, height, id);
+    if (overview.isVertical()) var line = new Line(overview.getCtx(), 0, pos, width, pos, id);
+    else line = new Line(overview.getCtx(), pos, 0, pos, height, id);
     var stroke = new Stroke(overview._timeIndicatorColor, 1, 1, false, { dashArray: '3' });
     line.setStroke(stroke);
 
@@ -1463,12 +1598,9 @@ const DvtOverviewRenderer = {
         var dim = label.getDimensions();
         label.setX(Math.max(4, overview.Width - dim.w - 4));
       }
-    }
-    else {
-      if (overview.isOverviewAbove())
-        var y = 2;
-      else
-        y = height - overview.getTimeAxisHeight() + 2;
+    } else {
+      if (overview.isOverviewAbove()) var y = 2;
+      else y = height - overview.getTimeAxisHeight() + 2;
 
       var padding = DvtOverviewStyleUtils._DEFAULT_AXIS_LABEL_PADDING;
       label = new OutputText(overview.getCtx(), text, pos + padding, y, id);
@@ -1491,8 +1623,7 @@ const DvtOverviewRenderer = {
    * @private
    */
   _parseFilledTimeRanges: (overview) => {
-    if (overview._formattedTimeRanges == null)
-      return;
+    if (overview._formattedTimeRanges == null) return;
 
     // draw filled time ranges so that it is over the sliding window but under the markers
     for (var i = 0; i < overview._formattedTimeRanges.length; i++) {
@@ -1520,8 +1651,7 @@ const DvtOverviewRenderer = {
       if (!overview.isVertical()) {
         var rangeStart_pos = overview.getDateXPosition(rangeStart);
         var rangeEnd_pos = overview.getDateXPosition(rangeEnd);
-      }
-      else {
+      } else {
         rangeStart_pos = overview.getDateYPosition(rangeStart);
         rangeEnd_pos = overview.getDateYPosition(rangeEnd);
       }
@@ -1531,14 +1661,27 @@ const DvtOverviewRenderer = {
       }
       var displayable;
       if (overview.isVertical())
-        displayable = new Rect(overview.getCtx(), 0, rangeStart_pos, width - overview.getTimeAxisWidth(), rangeWidth, 'ftr');
+        displayable = new Rect(
+          overview.getCtx(),
+          0,
+          rangeStart_pos,
+          width - overview.getTimeAxisWidth(),
+          rangeWidth,
+          'ftr'
+        );
       else {
         var overviewAbove = overview.isOverviewAbove() ? overview.getTimeAxisHeight() : 0;
-        displayable = new Rect(overview.getCtx(), rangeStart_pos, overviewAbove, rangeWidth, height - overview.getTimeAxisHeight(), 'ftr');
+        displayable = new Rect(
+          overview.getCtx(),
+          rangeStart_pos,
+          overviewAbove,
+          rangeWidth,
+          height - overview.getTimeAxisHeight(),
+          'ftr'
+        );
       }
 
-      if (color != null)
-        displayable.setSolidFill(color, 0.4);
+      if (color != null) displayable.setSolidFill(color, 0.4);
       displayable.setCursor('move');
 
       // Do not antialias filled time range
@@ -1553,30 +1696,56 @@ const DvtOverviewRenderer = {
    * @param {Overview} overview The overview being rendered.
    * @private
    */
-  _updateCurrentTime: (overview) => {
+  _updateReferenceLines: (overview) => {
     var width = overview.Width;
     var height = overview.Height;
 
+    var isValidTime = function (time) {
+      return !(time == null || isNaN(time) || time < overview._xMin || time > overview._xMax);
+    };
+    var renderLine = function (line) {
+      line.setSolidStroke(overview._currentTimeIndicatorColor);
+      line.setPixelHinting(true);
+      overview.addChild(line);
+    };
     // return if current time is invalid or outside of the time range
-    if (overview._currentTime == null || isNaN(overview._currentTime) || overview._currentTime < overview._xMin || overview._currentTime > overview._xMax)
+    if (overview.Options.referenceObjects == null || overview.Options.referenceObjects.length == 0)
       return;
-
+    var checkTime;
     if (overview.isVertical()) {
-      var time_pos = overview.getDateYPosition(overview._currentTime);
-      var line = new Line(overview.getCtx(), 0, time_pos, width, time_pos, 'ocd');
+      for (var i = 0; i < overview.Options.referenceObjects.length; i++) {
+        checkTime = isValidTime(overview.Options.referenceObjects[i]);
+        if (checkTime) {
+          var time_pos = overview.getDateYPosition(overview.Options.referenceObjects[i]);
+          var line = new Line(
+            overview.getCtx(),
+            0,
+            time_pos,
+            width,
+            time_pos,
+            'referenceObjects' + i
+          );
+          renderLine(line);
+        }
+      }
+    } else {
+      for (var i = 0; i < overview.Options.referenceObjects.length; i++) {
+        checkTime = isValidTime(overview.Options.referenceObjects[i]);
+        if (checkTime) {
+          time_pos = overview.getDateXPosition(overview.Options.referenceObjects[i]);
+          if (overview.isRTL()) time_pos = width - time_pos;
+          line = new Line(
+            overview.getCtx(),
+            time_pos,
+            0,
+            time_pos,
+            height,
+            'referenceObjects' + i
+          );
+          renderLine(line);
+        }
+      }
     }
-    else {
-      time_pos = overview.getDateXPosition(overview._currentTime);
-      if (overview.isRTL())
-        time_pos = width - time_pos;
-      line = new Line(overview.getCtx(), time_pos, 0, time_pos, height, 'ocd');
-    }
-    line.setSolidStroke(overview._currentTimeIndicatorColor);
-
-    // Do not antialias current time line
-    line.setPixelHinting(true);
-
-    overview.addChild(line);
   }
 };
 
@@ -1591,12 +1760,12 @@ const DvtOverviewRenderer = {
  */
 class Overview extends Container {
   /**
- * Initializes the view.
- * @param {dvt.Context} context The rendering context.
- * @param {object} callback The function that should be called to dispatch component events.
- * @param {object} callbackObj The object context for the callback function
- * @protected
- */
+   * Initializes the view.
+   * @param {dvt.Context} context The rendering context.
+   * @param {object} callback The function that should be called to dispatch component events.
+   * @param {object} callbackObj The object context for the callback function
+   * @protected
+   */
 
   constructor(context, callback, callbackObj) {
     super(context);
@@ -1613,7 +1782,7 @@ class Overview extends Container {
 
     this._lastChildIndex = 6;
 
-    var interactive = (this._callback != null || this._callbackObj != null);
+    var interactive = this._callback != null || this._callbackObj != null;
     if (interactive) {
       this.EventManager = new DvtOverviewEventManager(this, context, callback, callbackObj);
       this.EventManager.addListeners(this);
@@ -1653,17 +1822,13 @@ class Overview extends Container {
 
       // make sure it's in bounds
       if (x2Pos > x1Pos) {
-        if (x1Pos < this.getMinimumPositionX())
-          x1Pos = this.getMinimumPositionX();
-        if (x2Pos > this.getMaximumPositionX())
-          x2Pos = this.getMaximumPositionX();
+        if (x1Pos < this.getMinimumPositionX()) x1Pos = this.getMinimumPositionX();
+        if (x2Pos > this.getMaximumPositionX()) x2Pos = this.getMaximumPositionX();
 
         var width = Math.max(x2Pos - x1Pos, this.getMinimumWindowWidth());
         var slidingWindow = this.getSlidingWindow();
-        if (this.isRTL())
-          this.setSlidingWindowPosX(slidingWindow, this.Width - (x1Pos + width));
-        else
-          this.setSlidingWindowPosX(slidingWindow, x1Pos);
+        if (this.isRTL()) this.setSlidingWindowPosX(slidingWindow, this.Width - (x1Pos + width));
+        else this.setSlidingWindowPosX(slidingWindow, x1Pos);
 
         DvtOverviewRenderer._setSlidingWindowWidth(this, slidingWindow, width);
       }
@@ -1674,10 +1839,8 @@ class Overview extends Container {
 
       // make sure it's in bounds
       if (y2Pos > y1Pos) {
-        if (y1Pos < this.getMinimumPositionY())
-          y1Pos = this.getMinimumPositionY();
-        if (y2Pos > this.getMaximumPositionY())
-          y2Pos = this.getMaximumPositionY();
+        if (y1Pos < this.getMinimumPositionY()) y1Pos = this.getMinimumPositionY();
+        if (y2Pos > this.getMaximumPositionY()) y2Pos = this.getMaximumPositionY();
 
         var height = Math.max(y2Pos - y1Pos, this.getMinimumWindowHeight());
         slidingWindow = this.getSlidingWindow();
@@ -1693,20 +1856,17 @@ class Overview extends Container {
    * Checks whether a particular feature is turned off
    */
   isFeatureOff(feature) {
-    if (this._featuresOff == null)
-      return false;
+    if (this._featuresOff == null) return false;
 
-    return (this._featuresOff.indexOf(feature) !== -1);
+    return this._featuresOff.indexOf(feature) !== -1;
   }
-
 
   /**
    * Checks whether sliding window should animate when move
    */
   isAnimationOnClick() {
-    return (this._animationOnClick !== 'off');
+    return this._animationOnClick !== 'off';
   }
-
 
   /**
    * Renders the component with the specified data.  If no data is supplied to a component
@@ -1730,21 +1890,30 @@ class Overview extends Container {
         var slidingWindowPos = this.getSlidingWindowPosX(slidingWindow);
         if (slidingWindow != null && slidingWindowPos !== 0) {
           // note this.Width references the old width
-          this._x1 = OverviewUtils.getPositionDate(this._xMin, this._xMax, slidingWindowPos, this.Width);
+          this._x1 = OverviewUtils.getPositionDate(
+            this._xMin,
+            this._xMax,
+            slidingWindowPos,
+            this.Width
+          );
         }
       }
       if (this._yMin && this._yMax) {
         slidingWindowPos = this.getSlidingWindowPosY(slidingWindow);
         if (slidingWindow != null && slidingWindowPos !== 0) {
           // note this.Height references the old height
-          this._y1 = OverviewUtils.getPositionDate(this._yMin, this._yMax, slidingWindowPos, this.Height);
+          this._y1 = OverviewUtils.getPositionDate(
+            this._yMin,
+            this._yMax,
+            slidingWindowPos,
+            this.Height
+          );
         }
       }
 
       // clean out existing elements since they will be regenerate
       this.removeChildren();
-    }
-    else {
+    } else {
       this.SetOptions(obj);
 
       // If new data options are provided, parse it and apply the properties
@@ -1772,7 +1941,6 @@ class Overview extends Container {
     return parser.parse(obj);
   }
 
-
   /**
    * Applies the parsed properties to this component.
    * @param {object} props An object containing the parsed properties for this component.
@@ -1787,27 +1955,22 @@ class Overview extends Container {
     this._yMax = props.yMax;
     this._y1 = props.y1;
     this._y2 = props.y2;
-    this._currentTime = props.currentTime;
     this._animationOnClick = props.animationOnClick;
 
     // chart specific options: left and right margin
     this._leftMargin = Math.max(0, props.leftMargin);
     this._rightMargin = Math.max(0, props.rightMargin);
-    if (isNaN(this._leftMargin))
-      this._leftMargin = 0;
-    if (isNaN(this._rightMargin))
-      this._rightMargin = 0;
+    if (isNaN(this._leftMargin)) this._leftMargin = 0;
+    if (isNaN(this._rightMargin)) this._rightMargin = 0;
 
     this._orientation = props.orientation;
     this._isRtl = props.isRtl;
-    if (props.featuresOff != null)
-      this._featuresOff = props.featuresOff.split(' ');
+    if (props.featuresOff != null) this._featuresOff = props.featuresOff.split(' ');
     if (props.minimumWindowSize != null && props.minimumWindowSize > 0)
       this._minimumWindowSize = props.minimumWindowSize;
 
     this._timeAxisInfo = props.timeAxisInfo;
-    if (props.timeAxisInfo != null)
-      this._ticks = this._timeAxisInfo.ticks;
+    if (props.timeAxisInfo != null) this._ticks = this._timeAxisInfo.ticks;
     this._formattedTimeRanges = props.formattedTimeRanges;
 
     this._borderTopStyle = DvtOverviewStyleUtils.getBorderTopStyle(this.Options);
@@ -1826,13 +1989,21 @@ class Overview extends Container {
 
     this._handleTextureColor = DvtOverviewStyleUtils.getHandleTextureColor(this.Options);
     this._handleFillColor = DvtOverviewStyleUtils.getHandleFillColor(this.Options);
-    this._horHandleBackgroundClass = DvtOverviewStyleUtils.getHandleBackgroundClass(this.Options, false);
+    this._horHandleBackgroundClass = DvtOverviewStyleUtils.getHandleBackgroundClass(
+      this.Options,
+      false
+    );
     this._horHandleSize = DvtOverviewStyleUtils.getHandleSize(this.Options, false);
-    this._vertHandleBackgroundClass = DvtOverviewStyleUtils.getHandleBackgroundClass(this.Options, true);
+    this._vertHandleBackgroundClass = DvtOverviewStyleUtils.getHandleBackgroundClass(
+      this.Options,
+      true
+    );
     this._vertHandleSize = DvtOverviewStyleUtils.getHandleSize(this.Options, true);
 
     this._overviewBackgroundColor = DvtOverviewStyleUtils.getOverviewBackgroundColor(this.Options);
-    this._currentTimeIndicatorColor = DvtOverviewStyleUtils.getCurrentTimeIndicatorColor(this.Options);
+    this._currentTimeIndicatorColor = DvtOverviewStyleUtils.getCurrentTimeIndicatorColor(
+      this.Options
+    );
     this._timeIndicatorColor = DvtOverviewStyleUtils.getTimeIndicatorColor(this.Options);
     this._timeAxisBarColor = DvtOverviewStyleUtils.getTimeAxisBarColor(this.Options);
     this._timeAxisBarOpacity = DvtOverviewStyleUtils.getTimeAxisBarAlpha(this.Options);
@@ -1846,7 +2017,6 @@ class Overview extends Container {
     this._labelStyle = new CSSStyle('font-weight:bold');
   }
 
-
   /** *************************** common helper methods *********************************************/
 
   /**
@@ -1854,7 +2024,11 @@ class Overview extends Container {
    * @param {number} date The given date.
    */
   getDateXPosition(date) {
-    return Math.max(this.getMinimumPositionX(), OverviewUtils.getDatePosition(this._xMin, this._xMax, date, this.getOverviewWidth()) + this._leftMargin);
+    return Math.max(
+      this.getMinimumPositionX(),
+      OverviewUtils.getDatePosition(this._xMin, this._xMax, date, this.getOverviewWidth()) +
+        this._leftMargin
+    );
   }
 
   /**
@@ -1862,7 +2036,10 @@ class Overview extends Container {
    * @param {number} date The given date.
    */
   getDateYPosition(date) {
-    return Math.max(this.getMinimumPositionY(), OverviewUtils.getDatePosition(this._yMin, this._yMax, date, this.getOverviewHeight()));
+    return Math.max(
+      this.getMinimumPositionY(),
+      OverviewUtils.getDatePosition(this._yMin, this._yMax, date, this.getOverviewHeight())
+    );
   }
 
   /**
@@ -1870,7 +2047,12 @@ class Overview extends Container {
    * @param {number} pos The given horizontal pixel position.
    */
   getXPositionDate(pos) {
-    return OverviewUtils.getPositionDate(this._xMin, this._xMax, Math.max(this.getMinimumPositionX() - this._leftMargin, pos - this._leftMargin), this.getOverviewWidth());
+    return OverviewUtils.getPositionDate(
+      this._xMin,
+      this._xMax,
+      Math.max(this.getMinimumPositionX() - this._leftMargin, pos - this._leftMargin),
+      this.getOverviewWidth()
+    );
   }
 
   /**
@@ -1878,7 +2060,12 @@ class Overview extends Container {
    * @param {number} pos The given vertical pixel position.
    */
   getYPositionDate(pos) {
-    return OverviewUtils.getPositionDate(this._yMin, this._yMax, Math.max(this.getMinimumPositionY(), pos), this.getOverviewHeight());
+    return OverviewUtils.getPositionDate(
+      this._yMin,
+      this._yMax,
+      Math.max(this.getMinimumPositionY(), pos),
+      this.getOverviewHeight()
+    );
   }
 
   /**
@@ -1892,27 +2079,26 @@ class Overview extends Container {
    * Whether or not this is a horizontal overview that is also rendered in an RTL layout..
    */
   isHorizontalRTL() {
-    return (this.isRTL() && !this.isVertical());
+    return this.isRTL() && !this.isVertical();
   }
 
   /**
    * Whether or not this is a vertical overview.
    */
   isVertical() {
-    return (this._orientation === 'vertical');
+    return this._orientation === 'vertical';
   }
 
   /**
    * Whether or not this overview is rendered 'above'.
    */
   isOverviewAbove() {
-    return (this.Options['overviewPosition'] === 'above');
+    return this.Options['overviewPosition'] === 'above';
   }
 
   // Sets the left and right margins, used by chart
   setMargins(leftMargin, rightMargin) {
-    if (!isNaN(leftMargin) && leftMargin != null && leftMargin > 0)
-      this._leftMargin = leftMargin;
+    if (!isNaN(leftMargin) && leftMargin != null && leftMargin > 0) this._leftMargin = leftMargin;
 
     if (!isNaN(rightMargin) && rightMargin != null && rightMargin > 0)
       this._rightMargin = rightMargin;
@@ -1920,10 +2106,8 @@ class Overview extends Container {
 
   // returns the width of the overview, taking margins into account
   getOverviewSize() {
-    if (this.isVertical())
-      return this.Height - this._leftMargin - this._rightMargin;
-    else
-      return this.Width - this._leftMargin - this._rightMargin;
+    if (this.isVertical()) return this.Height - this._leftMargin - this._rightMargin;
+    else return this.Width - this._leftMargin - this._rightMargin;
   }
 
   // returns the width of the overview, taking margins into account
@@ -1958,25 +2142,30 @@ class Overview extends Container {
 
   // returns the minimum width of the sliding window
   getMinimumWindowWidth() {
-    if (this._minWinSize != null)
-      return this._minWinSize;
+    if (this._minWinSize != null) return this._minWinSize;
     else if (this._minimumWindowSize != null) {
-      this._minWinSize = OverviewUtils.getDatePosition(this._xMin, this._xMax, this._xMin + this._minimumWindowSize, this.getOverviewWidth());
+      this._minWinSize = OverviewUtils.getDatePosition(
+        this._xMin,
+        this._xMax,
+        this._xMin + this._minimumWindowSize,
+        this.getOverviewWidth()
+      );
       return this._minWinSize;
-    } else
-      return this.MIN_WINDOW_SIZE;
+    } else return this.MIN_WINDOW_SIZE;
   }
 
   // returns the minimum height of the sliding window
   getMinimumWindowHeight() {
-    if (this._minWinSize != null)
-      return this._minWinSize;
+    if (this._minWinSize != null) return this._minWinSize;
     else if (this._minimumWindowSize != null) {
-      this._minWinSize = OverviewUtils.getDatePosition(this._yMin, this._yMax, this._yMin + this._minimumWindowSize, this.getOverviewHeight());
+      this._minWinSize = OverviewUtils.getDatePosition(
+        this._yMin,
+        this._yMax,
+        this._yMin + this._minimumWindowSize,
+        this.getOverviewHeight()
+      );
       return this._minWinSize;
-    }
-    else
-      return this.MIN_WINDOW_SIZE;
+    } else return this.MIN_WINDOW_SIZE;
   }
 
   getMaximumWindowWidth() {
@@ -1993,10 +2182,8 @@ class Overview extends Container {
 
   // return the start of the resize handle
   getHandleStart() {
-    if (OverviewUtils.supportsTouch())
-      return this.getHandleSize() / 2;
-    else
-      return 0;
+    if (OverviewUtils.supportsTouch()) return this.getHandleSize() / 2;
+    else return 0;
   }
 
   // return the size of the resize handle, which is wider on touch devices
@@ -2009,37 +2196,60 @@ class Overview extends Container {
 
   isHandle(drawable) {
     var id = drawable.getId();
-    return (id === 'lh' || id === 'rh' || id === 'lhb' || id === 'rhb' || id === 'th' || id === 'bh' ||
-      id === 'thb' || id === 'bhb' || id === 'hgrpy' || id === 'vgrpy' || id === 'lbgrh' || id === 'rbgrh' ||
-      (drawable.getParent() != null && (drawable.getParent().getId() === 'hgrpy' || drawable.getParent().getId() === 'vgrpy')));
+    return (
+      id === 'lh' ||
+      id === 'rh' ||
+      id === 'lhb' ||
+      id === 'rhb' ||
+      id === 'th' ||
+      id === 'bh' ||
+      id === 'thb' ||
+      id === 'bhb' ||
+      id === 'hgrpy' ||
+      id === 'vgrpy' ||
+      id === 'lbgrh' ||
+      id === 'rbgrh' ||
+      (drawable.getParent() != null &&
+        (drawable.getParent().getId() === 'hgrpy' || drawable.getParent().getId() === 'vgrpy'))
+    );
   }
 
   isLeftOrRightHandle(drawable) {
     var id = drawable.getId();
-    return (id === 'lh' || id === 'rh' || id === 'lhb' || id === 'rhb' ||
-      id === 'hgrpy' || id === 'lbgrh' || id === 'rbgrh' ||
-      (drawable.getParent() != null && drawable.getParent().getId() === 'hgrpy'));
+    return (
+      id === 'lh' ||
+      id === 'rh' ||
+      id === 'lhb' ||
+      id === 'rhb' ||
+      id === 'hgrpy' ||
+      id === 'lbgrh' ||
+      id === 'rbgrh' ||
+      (drawable.getParent() != null && drawable.getParent().getId() === 'hgrpy')
+    );
   }
 
   isTopOrBottomHandle(drawable) {
     var id = drawable.getId();
-    return (id === 'th' || id === 'bh' || id === 'thb' || id === 'bhb' || id === 'vgrpy' ||
-      (drawable.getParent() != null && drawable.getParent().getId() === 'vgrpy'));
+    return (
+      id === 'th' ||
+      id === 'bh' ||
+      id === 'thb' ||
+      id === 'bhb' ||
+      id === 'vgrpy' ||
+      (drawable.getParent() != null && drawable.getParent().getId() === 'vgrpy')
+    );
   }
 
   // for vertical
   getTimeAxisWidth() {
     // checks if there is a time axis
-    if (this._timeAxisInfo == null)
-      return 0;
+    if (this._timeAxisInfo == null) return 0;
 
     // read from skin?
     if (this._timeAxisWidth == null) {
       var width = parseInt(this._timeAxisInfo.width, 10);
-      if (!isNaN(width) && width < this.Width)
-        this._timeAxisWidth = width;
-      else
-        this._timeAxisWidth = this.DEFAULT_VERTICAL_TIMEAXIS_SIZE;
+      if (!isNaN(width) && width < this.Width) this._timeAxisWidth = width;
+      else this._timeAxisWidth = this.DEFAULT_VERTICAL_TIMEAXIS_SIZE;
     }
 
     return this._timeAxisWidth;
@@ -2047,16 +2257,13 @@ class Overview extends Container {
 
   getTimeAxisHeight() {
     // checks if there is a time axis
-    if (this._timeAxisInfo == null)
-      return 0;
+    if (this._timeAxisInfo == null) return 0;
 
     // read from skin?
     if (this._timeAxisHeight == null) {
       var height = parseInt(this._timeAxisInfo.height, 10);
-      if (!isNaN(height) && height < this.Height)
-        this._timeAxisHeight = height;
-      else
-        this._timeAxisHeight = this.DEFAULT_HORIZONTAL_TIMEAXIS_SIZE;
+      if (!isNaN(height) && height < this.Height) this._timeAxisHeight = height;
+      else this._timeAxisHeight = this.DEFAULT_HORIZONTAL_TIMEAXIS_SIZE;
     }
 
     return this._timeAxisHeight;
@@ -2064,24 +2271,16 @@ class Overview extends Container {
 
   getPageX(event) {
     if (OverviewUtils.supportsTouch() && event.targetTouches != null) {
-      if (event.targetTouches.length > 0)
-        return event.targetTouches[0].pageX;
-      else
-        return null;
-    }
-    else
-      return event.pageX;
+      if (event.targetTouches.length > 0) return event.targetTouches[0].pageX;
+      else return null;
+    } else return event.pageX;
   }
 
   getPageY(event) {
     if (OverviewUtils.supportsTouch() && event.targetTouches != null) {
-      if (event.targetTouches.length > 0)
-        return event.targetTouches[0].pageY;
-      else
-        return null;
-    }
-    else
-      return event.pageY;
+      if (event.targetTouches.length > 0) return event.targetTouches[0].pageY;
+      else return null;
+    } else return event.pageY;
   }
 
   /**
@@ -2108,50 +2307,62 @@ class Overview extends Container {
 
   getSlidingWindowWidth() {
     if (this.isHorizontalScrollingEnabled()) {
-      var x1Pos = Math.max(this.getMinimumPositionX(), OverviewUtils.getDatePosition(this._xMin, this._xMax, this._x1, this.Width));
-      var x2Pos = Math.min(this.getMaximumPositionX(), Math.max(this.getMinimumPositionX(), OverviewUtils.getDatePosition(this._xMin, this._xMax, this._x2, this.Width)));
+      var x1Pos = Math.max(
+        this.getMinimumPositionX(),
+        OverviewUtils.getDatePosition(this._xMin, this._xMax, this._x1, this.Width)
+      );
+      var x2Pos = Math.min(
+        this.getMaximumPositionX(),
+        Math.max(
+          this.getMinimumPositionX(),
+          OverviewUtils.getDatePosition(this._xMin, this._xMax, this._x2, this.Width)
+        )
+      );
 
-      return (x2Pos - x1Pos);
+      return x2Pos - x1Pos;
     }
     return this.Width;
   }
 
   getSlidingWindowHeight() {
     if (this.isVerticalScrollingEnabled()) {
-      var y1Pos = Math.max(this.getMinimumPositionY(), OverviewUtils.getDatePosition(this._yMin, this._yMax, this._y1, this.Height));
-      var y2Pos = Math.min(this.getMaximumPositionY(), Math.max(this.getMinimumPositionY(), OverviewUtils.getDatePosition(this._yMin, this._yMax, this._y2, this.Height)));
+      var y1Pos = Math.max(
+        this.getMinimumPositionY(),
+        OverviewUtils.getDatePosition(this._yMin, this._yMax, this._y1, this.Height)
+      );
+      var y2Pos = Math.min(
+        this.getMaximumPositionY(),
+        Math.max(
+          this.getMinimumPositionY(),
+          OverviewUtils.getDatePosition(this._yMin, this._yMax, this._y2, this.Height)
+        )
+      );
 
-      return (y2Pos - y1Pos);
+      return y2Pos - y1Pos;
     }
     return this.Height;
   }
 
   getLeftBackground() {
-    if (this.isLeftAndRightFilterRendered())
-      return this.getChildAt(3);
-    else
-      return null;
+    if (this.isLeftAndRightFilterRendered()) return this.getChildAt(3);
+    else return null;
   }
 
   getRightBackground() {
-    if (this.isLeftAndRightFilterRendered())
-      return this.getChildAt(4);
-    else
-      return null;
+    if (this.isLeftAndRightFilterRendered()) return this.getChildAt(4);
+    else return null;
   }
 
   getLeftBackgroundHandle() {
     if (this.isLeftAndRightFilterRendered() && !this.isFeatureOff('zoom'))
       return this.getChildAt(5);
-    else
-      return null;
+    else return null;
   }
 
   getRightBackgroundHandle() {
     if (this.isLeftAndRightFilterRendered() && !this.isFeatureOff('zoom'))
       return this.getChildAt(6);
-    else
-      return null;
+    else return null;
   }
 
   getLeftHandle() {
@@ -2184,40 +2395,28 @@ class Overview extends Container {
 
   setLinePos(line, pos1, pos2) {
     if (this.isVertical()) {
-      if (pos1 !== -1)
-        line.setY1(pos1);
-      if (pos2 !== -1)
-        line.setY2(pos2);
-    }
-    else {
-      if (pos1 !== -1)
-        line.setX1(pos1);
-      if (pos2 !== -1)
-        line.setX2(pos2);
+      if (pos1 !== -1) line.setY1(pos1);
+      if (pos2 !== -1) line.setY2(pos2);
+    } else {
+      if (pos1 !== -1) line.setX1(pos1);
+      if (pos2 !== -1) line.setX2(pos2);
     }
   }
 
   setLinePosX(line, x1, x2) {
-    if (x1 !== -1)
-      line.setX1(x1);
-    if (x2 !== -1)
-      line.setX2(x2);
+    if (x1 !== -1) line.setX1(x1);
+    if (x2 !== -1) line.setX2(x2);
   }
 
   setLinePosY(line, y1, y2) {
-    if (y1 !== -1)
-      line.setY1(y1);
-    if (y2 !== -1)
-      line.setY2(y2);
+    if (y1 !== -1) line.setY1(y1);
+    if (y2 !== -1) line.setY2(y2);
   }
 
   getLinePos1(line) {
-    if (this.isVertical())
-      return line.getY1();
-    else
-      return line.getX1();
+    if (this.isVertical()) return line.getY1();
+    else return line.getX1();
   }
-
 
   /**
    * Returns the drawable that is the target of the event.
@@ -2227,14 +2426,18 @@ class Overview extends Container {
     var target = event.target;
     if (target != null) {
       var id = target.getId();
-      if (id == null)
-        return null;
+      if (id == null) return null;
 
       if (id.substr(id.length - 7) === '_border') {
         // if it's the border shape, returns the actual drawable
         return this.getChildAfter(target);
-      }
-      else if (id.substr(0, 4) !== 'tick' && id !== 'ltb' && id !== 'rtb' && id !== 'bb' && id !== 'tab')
+      } else if (
+        id.substr(0, 4) !== 'tick' &&
+        id !== 'ltb' &&
+        id !== 'rtb' &&
+        id !== 'bb' &&
+        id !== 'tab'
+      )
         return target;
     }
 
@@ -2242,10 +2445,12 @@ class Overview extends Container {
   }
 
   isMovable(drawable) {
-    if (drawable.getId() === 'window' ||
+    if (
+      drawable.getId() === 'window' ||
       drawable.getId() === 'ftr' ||
       drawable.getId() === 'sta' ||
-      this.isHandle(drawable))
+      this.isHandle(drawable)
+    )
       return true;
 
     return false;
@@ -2253,43 +2458,32 @@ class Overview extends Container {
 
   /* **************************** end common helper methods *********************************************/
 
-
   /* **************************** marker creation and event handling *********************************************/
 
   // orientation independent method
   setRectPos(rect, pos) {
-    if (this.isVertical())
-      rect.setY(pos);
-    else
-      rect.setX(pos);
+    if (this.isVertical()) rect.setY(pos);
+    else rect.setX(pos);
   }
 
   getRectPos(rect) {
-    if (this.isVertical())
-      return rect.getY();
-    else
-      return rect.getX();
+    if (this.isVertical()) return rect.getY();
+    else return rect.getX();
   }
 
   getRectSize(rect) {
-    if (this.isVertical())
-      return rect.getHeight();
-    else
-      return rect.getWidth();
+    if (this.isVertical()) return rect.getHeight();
+    else return rect.getWidth();
   }
 
   setRectSize(rect, size) {
-    if (this.isVertical())
-      rect.setHeight(size);
-    else
-      rect.setWidth(size);
+    if (this.isVertical()) rect.setHeight(size);
+    else rect.setWidth(size);
   }
 
   getSlidingWindowPos(slidingWindow) {
-    if (this.isVertical())
-      return slidingWindow.getTranslateY();
-    else
-      return slidingWindow.getTranslateX();
+    if (this.isVertical()) return slidingWindow.getTranslateY();
+    else return slidingWindow.getTranslateX();
   }
 
   getSlidingWindowPosX(slidingWindow) {
@@ -2332,9 +2526,7 @@ class Overview extends Container {
     return this.getRectSize(slidingWindow);
   }
 
-  renderData(width, height) {
-  }
-
+  renderData(width, height) {}
 
   /** ************************ sliding window animation *********************************************/
   animateSlidingWindow(newX, newY) {
@@ -2342,8 +2534,10 @@ class Overview extends Container {
     var slidingWindow = this.getSlidingWindow();
 
     // first check if sliding window moved or resized at all
-    if ((newX === undefined || newX === null || newX === this.getSlidingWindowPosX(slidingWindow)) &&
-      (newY === undefined || newY === null || newY === this.getSlidingWindowPosY(slidingWindow)))
+    if (
+      (newX === undefined || newX === null || newX === this.getSlidingWindowPosX(slidingWindow)) &&
+      (newY === undefined || newY === null || newY === this.getSlidingWindowPosY(slidingWindow))
+    )
       return;
 
     var leftHandle = this.getLeftHandle();
@@ -2354,7 +2548,9 @@ class Overview extends Container {
     var topBar = this.getTopBar();
 
     var playAnimator = false;
-    var animator = this.isAnimationOnClick() ? new Animator(this.getCtx(), 0.5, 0, Easing.linear) : null;
+    var animator = this.isAnimationOnClick()
+      ? new Animator(this.getCtx(), 0.5, 0, Easing.linear)
+      : null;
 
     if (this.isVerticalScrollingEnabled() && newY != null) {
       var posYGetter = slidingWindow.getTranslateY;
@@ -2387,31 +2583,85 @@ class Overview extends Container {
       if (!this.isVertical()) {
         // left and right handles
         this.animateProperty(animator, leftHandle, leftHandleY1Getter, leftHandleY1Setter, newY);
-        this.animateProperty(animator, leftHandle, leftHandleY2Getter, leftHandleY2Setter, newY + slidingWindowHeight);
+        this.animateProperty(
+          animator,
+          leftHandle,
+          leftHandleY2Getter,
+          leftHandleY2Setter,
+          newY + slidingWindowHeight
+        );
         this.animateProperty(animator, rightHandle, rightHandleY1Getter, rightHandleY1Setter, newY);
-        this.animateProperty(animator, rightHandle, rightHandleY2Getter, rightHandleY2Setter, newY + slidingWindowHeight);
+        this.animateProperty(
+          animator,
+          rightHandle,
+          rightHandleY2Getter,
+          rightHandleY2Setter,
+          newY + slidingWindowHeight
+        );
 
         // top and bottom borders
-        this.animateProperty(animator, bottomBar, bottomBarY1Getter, bottomBarY1Setter, newY + slidingWindowHeight);
+        this.animateProperty(
+          animator,
+          bottomBar,
+          bottomBarY1Getter,
+          bottomBarY1Setter,
+          newY + slidingWindowHeight
+        );
         this.animateProperty(animator, topBar, topBarY1Getter, topBarY1Setter, newY);
-        this.animateProperty(animator, bottomBar, bottomBarY2Getter, bottomBarY2Setter, newY + slidingWindowHeight);
+        this.animateProperty(
+          animator,
+          bottomBar,
+          bottomBarY2Getter,
+          bottomBarY2Setter,
+          newY + slidingWindowHeight
+        );
         this.animateProperty(animator, topBar, topBarY2Getter, topBarY2Setter, newY);
       } else {
         // left and right handles
         this.animateProperty(animator, leftHandle, leftHandleY1Getter, leftHandleY1Setter, newY);
         this.animateProperty(animator, leftHandle, leftHandleY2Getter, leftHandleY2Setter, newY);
-        this.animateProperty(animator, rightHandle, rightHandleY1Getter, rightHandleY1Setter, newY + slidingWindowHeight);
-        this.animateProperty(animator, rightHandle, rightHandleY2Getter, rightHandleY2Setter, newY + slidingWindowHeight);
+        this.animateProperty(
+          animator,
+          rightHandle,
+          rightHandleY1Getter,
+          rightHandleY1Setter,
+          newY + slidingWindowHeight
+        );
+        this.animateProperty(
+          animator,
+          rightHandle,
+          rightHandleY2Getter,
+          rightHandleY2Setter,
+          newY + slidingWindowHeight
+        );
 
         // top and bottom borders
         this.animateProperty(animator, bottomBar, bottomBarY1Getter, bottomBarY1Setter, newY);
         this.animateProperty(animator, topBar, topBarY1Getter, topBarY1Setter, newY);
-        this.animateProperty(animator, bottomBar, bottomBarY2Getter, bottomBarY2Setter, newY + slidingWindowHeight);
-        this.animateProperty(animator, topBar, topBarY2Getter, topBarY2Setter, newY + slidingWindowHeight);
+        this.animateProperty(
+          animator,
+          bottomBar,
+          bottomBarY2Getter,
+          bottomBarY2Setter,
+          newY + slidingWindowHeight
+        );
+        this.animateProperty(
+          animator,
+          topBar,
+          topBarY2Getter,
+          topBarY2Setter,
+          newY + slidingWindowHeight
+        );
 
         // left and right top bar
         this.animateProperty(animator, leftTopBar, leftTopBar.getY2, leftTopBar.setY2, newY + 1);
-        this.animateProperty(animator, rightTopBar, rightTopBar.getY1, rightTopBar.setY1, newY + slidingWindowHeight - 1);
+        this.animateProperty(
+          animator,
+          rightTopBar,
+          rightTopBar.getY1,
+          rightTopBar.setY1,
+          newY + slidingWindowHeight - 1
+        );
       }
 
       playAnimator = true;
@@ -2447,20 +2697,50 @@ class Overview extends Container {
       // left and right handles
       this.animateProperty(animator, leftHandle, leftHandleX1Getter, leftHandleX1Setter, newX);
       this.animateProperty(animator, leftHandle, leftHandleX2Getter, leftHandleX2Setter, newX);
-      this.animateProperty(animator, rightHandle, rightHandleX1Getter, rightHandleX1Setter, newX + slidingWindowWidth);
-      this.animateProperty(animator, rightHandle, rightHandleX2Getter, rightHandleX2Setter, newX + slidingWindowWidth);
+      this.animateProperty(
+        animator,
+        rightHandle,
+        rightHandleX1Getter,
+        rightHandleX1Setter,
+        newX + slidingWindowWidth
+      );
+      this.animateProperty(
+        animator,
+        rightHandle,
+        rightHandleX2Getter,
+        rightHandleX2Setter,
+        newX + slidingWindowWidth
+      );
 
       // left and right top bar
       if (!this.isVertical()) {
         this.animateProperty(animator, leftTopBar, leftTopBar.getX2, leftTopBar.setX2, newX + 1);
-        this.animateProperty(animator, rightTopBar, rightTopBar.getX1, rightTopBar.setX1, newX + slidingWindowWidth - 1);
+        this.animateProperty(
+          animator,
+          rightTopBar,
+          rightTopBar.getX1,
+          rightTopBar.setX1,
+          newX + slidingWindowWidth - 1
+        );
       }
 
       // top and bottom borders
       this.animateProperty(animator, bottomBar, bottomBarX1Getter, bottomBarX1Setter, newX);
       this.animateProperty(animator, topBar, topBarX1Getter, topBarX1Setter, newX);
-      this.animateProperty(animator, bottomBar, bottomBarX2Getter, bottomBarX2Setter, newX + slidingWindowWidth);
-      this.animateProperty(animator, topBar, topBarX2Getter, topBarX2Setter, newX + slidingWindowWidth);
+      this.animateProperty(
+        animator,
+        bottomBar,
+        bottomBarX2Getter,
+        bottomBarX2Setter,
+        newX + slidingWindowWidth
+      );
+      this.animateProperty(
+        animator,
+        topBar,
+        topBarX2Getter,
+        topBarX2Setter,
+        newX + slidingWindowWidth
+      );
 
       playAnimator = true;
     }
@@ -2469,7 +2749,13 @@ class Overview extends Container {
       var leftBackground = this.getLeftBackground();
       var leftBackgroundGetter = leftBackground.getWidth;
       var leftBackgroundSetter = leftBackground.setWidth;
-      this.animateProperty(animator, leftBackground, leftBackgroundGetter, leftBackgroundSetter, newX);
+      this.animateProperty(
+        animator,
+        leftBackground,
+        leftBackgroundGetter,
+        leftBackgroundSetter,
+        newX
+      );
 
       var rightStart = Number(newX) + slidingWindowWidth;
       var rightBackground = this.getRightBackground();
@@ -2478,8 +2764,20 @@ class Overview extends Container {
       var rightBackgroundPosGetter = rightBackground.getX;
       var rightBackgroundPosSetter = rightBackground.setX;
 
-      this.animateProperty(animator, rightBackground, rightBackgroundGetter, rightBackgroundSetter, this.Width - rightStart);
-      this.animateProperty(animator, rightBackground, rightBackgroundPosGetter, rightBackgroundPosSetter, rightStart);
+      this.animateProperty(
+        animator,
+        rightBackground,
+        rightBackgroundGetter,
+        rightBackgroundSetter,
+        this.Width - rightStart
+      );
+      this.animateProperty(
+        animator,
+        rightBackground,
+        rightBackgroundPosGetter,
+        rightBackgroundPosSetter,
+        rightStart
+      );
 
       if (OverviewUtils.supportsTouch() && !this.isFeatureOff('zoom')) {
         var handleStart = this.getHandleStart();
@@ -2490,14 +2788,25 @@ class Overview extends Container {
         var rightBackgroundHandleGetter = rightBackgroundHandle.getX;
         var rightBackgroundHandleSetter = rightBackgroundHandle.setX;
 
-        this.animateProperty(animator, leftBackgroundHandle, leftBackgroundHandleGetter, leftBackgroundHandleSetter, newX - handleStart);
-        this.animateProperty(animator, rightBackgroundHandle, rightBackgroundHandleGetter, rightBackgroundHandleSetter, rightStart);
+        this.animateProperty(
+          animator,
+          leftBackgroundHandle,
+          leftBackgroundHandleGetter,
+          leftBackgroundHandleSetter,
+          newX - handleStart
+        );
+        this.animateProperty(
+          animator,
+          rightBackgroundHandle,
+          rightBackgroundHandleGetter,
+          rightBackgroundHandleSetter,
+          rightStart
+        );
       }
       playAnimator = true;
     }
 
-    if (animator != null && playAnimator)
-      animator.play();
+    if (animator != null && playAnimator) animator.play();
   }
 
   animateProperty(animator, obj, getter, setter, value) {
@@ -2509,22 +2818,31 @@ class Overview extends Container {
   }
   /* ************************* end sliding window animation *********************************************/
 
-
   /* ************************* event handling *********************************************/
   HandleShapeMouseOver(event) {
     var drawable = this._findDrawable(event);
     // Return if no drawable is found
-    if (!drawable || drawable.getId() === 'bg' || drawable.getId() === 'ocd')
+    if (!drawable || drawable.getId() === 'bg' || drawable.getId() === 'referenceObjects')
       return undefined;
 
     // if it is a label, show a tooltip of the label if it is truncated
-    if (drawable.getId().substr(0, 5) === 'label' && (drawable instanceof OutputText || drawable instanceof BackgroundOutputText)) {
+    if (
+      drawable.getId().substr(0, 5) === 'label' &&
+      (drawable instanceof OutputText || drawable instanceof BackgroundOutputText)
+    ) {
       if (drawable.isTruncated())
-        this.getCtx().getTooltipManager().showDatatip(event.pageX, event.pageY, drawable._rawText, '#000000');
+        this.getCtx()
+          .getTooltipManager()
+          .showDatatip(event.pageX, event.pageY, drawable._rawText, '#000000');
       return undefined;
     }
 
-    if (drawable.getId() === 'window' || drawable.getId() === 'ftr' || drawable.getId() === 'arr' || this.isHandle(drawable))
+    if (
+      drawable.getId() === 'window' ||
+      drawable.getId() === 'ftr' ||
+      drawable.getId() === 'arr' ||
+      this.isHandle(drawable)
+    )
       return undefined;
 
     return drawable;
@@ -2532,12 +2850,10 @@ class Overview extends Container {
 
   HandleShapeMouseOut(event) {
     // don't change cursor yet if we are in a moving state
-    if (this._moveDrawable == null)
-      this.setCursor('default');
+    if (this._moveDrawable == null) this.setCursor('default');
 
     var drawable = this._findDrawable(event);
-    if (drawable == null)
-      return null;
+    if (drawable == null) return null;
 
     return drawable;
   }
@@ -2549,15 +2865,18 @@ class Overview extends Container {
     var drawable = this._findDrawable(event);
 
     // Return if no drawable is found
-    if (!drawable || drawable.getId() === 'window' || this.isHandle(drawable))
-      return null;
+    if (!drawable || drawable.getId() === 'window' || this.isHandle(drawable)) return null;
 
     // if clicking anywhere on the overview scroll to the location
-    if (drawable.getId() === 'bg' || drawable.getId().substr(0, 5) === 'label' || drawable.getId() === 'ocd' || drawable.getId() === 'lbg' || drawable.getId() === 'rbg') {
-      if (pageX === undefined || pageX === null)
-        pageX = event.pageX;
-      if (pageY === undefined || pageY === null)
-        pageY = event.pageY;
+    if (
+      drawable.getId() === 'bg' ||
+      drawable.getId().substr(0, 5) === 'label' ||
+      drawable.getId() === 'referenceObjects' ||
+      drawable.getId() === 'lbg' ||
+      drawable.getId() === 'rbg'
+    ) {
+      if (pageX === undefined || pageX === null) pageX = event.pageX;
+      if (pageY === undefined || pageY === null) pageY = event.pageY;
 
       var relPos = this.getCtx().pageToStageCoords(pageX, pageY);
       relPos = this.stageToLocal(relPos);
@@ -2582,13 +2901,15 @@ class Overview extends Container {
       if (newPosX != null) {
         var slidingWindowWidth = slidingWindow.getWidth();
         // make sure position is in bound
-        newPosX = Math.max(this.getMinimumPositionX(), Math.min(newPosX, width - slidingWindowWidth));
+        newPosX = Math.max(
+          this.getMinimumPositionX(),
+          Math.min(newPosX, width - slidingWindowWidth)
+        );
 
         if (this.isRTL()) {
           newX1 = this.getXPositionDate(width - (newPosX + slidingWindowWidth));
           newX2 = this.getXPositionDate(width - newPosX);
-        }
-        else {
+        } else {
           newX1 = this.getXPositionDate(newPosX);
           newX2 = this.getXPositionDate(newPosX + slidingWindowWidth);
         }
@@ -2596,7 +2917,10 @@ class Overview extends Container {
       if (newPosY != null) {
         var slidingWindowHeight = slidingWindow.getHeight();
         // make sure position is in bound
-        newPosY = Math.max(this.getMinimumPositionY(), Math.min(newPosY, height - slidingWindowHeight));
+        newPosY = Math.max(
+          this.getMinimumPositionY(),
+          Math.min(newPosY, height - slidingWindowHeight)
+        );
 
         newY1 = this.getYPositionDate(newPosY);
         newY2 = this.getYPositionDate(newPosY + slidingWindowHeight);
@@ -2639,13 +2963,17 @@ class Overview extends Container {
           drawableId = drawable.getId();
         }
 
-        if (drawableId === 'lh' || drawableId === 'rh' || drawableId === 'th' || drawableId === 'bh') {
+        if (
+          drawableId === 'lh' ||
+          drawableId === 'rh' ||
+          drawableId === 'th' ||
+          drawableId === 'bh'
+        ) {
           drawable = slidingWindow.getChildBefore(drawable);
           drawableId = drawable.getId();
         }
 
-        if (drawableId === 'lbgrh')
-          drawable = slidingWindow.getChildAt(0);
+        if (drawableId === 'lbgrh') drawable = slidingWindow.getChildAt(0);
 
         if (drawableId === 'rbgrh')
           drawable = slidingWindow.getChildAt(slidingWindow.getNumChildren() - 3);
@@ -2655,8 +2983,7 @@ class Overview extends Container {
           if (this.isRTL()) {
             this._oldEndPosX = this.Width - slidingWindow.getX();
             this._oldStartPosX = this._oldEndPosX - slidingWindow.getWidth();
-          }
-          else {
+          } else {
             this._oldStartPosX = slidingWindow.getX();
             this._oldEndPosX = this._oldStartPosX + slidingWindow.getWidth();
           }
@@ -2667,8 +2994,7 @@ class Overview extends Container {
             drawable.setX(0 - this.HANDLE_PADDING_SIZE);
             drawable.setWidth((drawable.getWidth() + this.HANDLE_PADDING_SIZE) * 2);
           }
-        }
-        else {
+        } else {
           this._isHorizontalResize = false;
           this._oldStartPosY = slidingWindow.getY();
           this._oldEndPosY = this._oldStartPosY + slidingWindow.getHeight();
@@ -2693,16 +3019,13 @@ class Overview extends Container {
       var evt = EventFactory.newOverviewEvent('dropCallback');
       this.dispatchEvent(evt);
       return true;
-    }
-    else
-      return false;
+    } else return false;
   }
 
   // Change the cursor of the sliding window and the left and right backgrounds
   overrideCursors(cursor) {
     var slidingWindow = this.getSlidingWindow();
-    if (slidingWindow != null)
-      slidingWindow.setCursor(cursor);
+    if (slidingWindow != null) slidingWindow.setCursor(cursor);
 
     if (this.isLeftAndRightFilterRendered()) {
       var leftBackground = this.getLeftBackground();
@@ -2717,8 +3040,7 @@ class Overview extends Container {
   // reset the cursor to what it was original state
   resetCursors() {
     var slidingWindow = this.getSlidingWindow();
-    if (slidingWindow != null)
-      slidingWindow.setCursor('move');
+    if (slidingWindow != null) slidingWindow.setCursor('move');
 
     if (this.isLeftAndRightFilterRendered()) {
       var leftBackground = this.getLeftBackground();
@@ -2735,8 +3057,7 @@ class Overview extends Container {
    */
   endDragPan() {
     if (this._moveDrawable != null && this._isDragPanning) {
-      if (this._moveDrawable.getId() === 'window')
-        this.handleWindowDrag('scrollEnd');
+      if (this._moveDrawable.getId() === 'window') this.handleWindowDrag('scrollEnd');
       else if (this.isHandle(this._moveDrawable)) {
         this.finishHandleDrag(0, 0);
 
@@ -2745,8 +3066,7 @@ class Overview extends Container {
           if (this.isTopOrBottomHandle(this._moveDrawable)) {
             this._moveDrawable.setY(0);
             this._moveDrawable.setHeight(this.getHandleSize());
-          }
-          else if (this.isLeftOrRightHandle(this._moveDrawable)) {
+          } else if (this.isLeftOrRightHandle(this._moveDrawable)) {
             this._moveDrawable.setX(0);
             this._moveDrawable.setWidth(this.getHandleSize());
           }
@@ -2776,8 +3096,7 @@ class Overview extends Container {
       this._initX = compX;
       this._initY = compY;
 
-      if (this._moveDrawable.getId() === 'window')
-        this.handleWindowDrag('scrollPos', diffX, diffY);
+      if (this._moveDrawable.getId() === 'window') this.handleWindowDrag('scrollPos', diffX, diffY);
       else if (this._moveDrawable.getId() === 'lh' || this._moveDrawable.getId() === 'lhb')
         this.handleLeftOrRightHandleDragPositioning(event, diffX, true);
       else if (this._moveDrawable.getId() === 'rh' || this._moveDrawable.getId() === 'rhb')
@@ -2802,8 +3121,7 @@ class Overview extends Container {
       this._touchStartX2 = touches[1].pageX;
       this._touchStartY2 = touches[1].pageY;
 
-      if (Math.abs(this._touchStartY - this._touchStartY2) < 20)
-        this._counter = 0;
+      if (Math.abs(this._touchStartY - this._touchStartY2) < 20) this._counter = 0;
       else {
         this._touchStartX = null;
         this._touchStartY = null;
@@ -2832,8 +3150,7 @@ class Overview extends Container {
 
       // reset
       this._counter = 0;
-    }
-    else {
+    } else {
       var pageDx = Math.abs(this._touchStartX - touches[0].pageX);
       var pageDy = Math.abs(this._touchStartY - touches[0].pageY);
       // null out the var to signal that this is not a click event
@@ -2849,8 +3166,7 @@ class Overview extends Container {
     if (this._touchStartX2 != null && this._touchStartY2 != null) {
       // width change gesture
       this.finishHandleDrag(0, 0);
-    }
-    else {
+    } else {
       if (this._touchStartX != null && this._touchStartY != null)
         this.HandleShapeClick(event, this._touchStartX, this._touchStartY);
     }
@@ -2868,7 +3184,6 @@ class Overview extends Container {
 
   /************************** end event handling *********************************************/
 
-
   /***************************** window scrolling and resizing *********************************************/
   handleWindowDrag(type, deltaX, deltaY) {
     var slidingWindow = this.getSlidingWindow();
@@ -2883,15 +3198,13 @@ class Overview extends Container {
       if (this.isHorizontalScrollingEnabled() && deltaX !== 0) {
         var minPosX = this.getMinimumPositionX();
         var maxPosX = this.getMaximumPositionX();
-        if ((posX + deltaX) <= minPosX) {
+        if (posX + deltaX <= minPosX) {
           // hit the left side
           this.setSlidingWindowPosX(slidingWindow, minPosX);
-        }
-        else if (posX + width + deltaX >= maxPosX) {
+        } else if (posX + width + deltaX >= maxPosX) {
           // hit the bottom
           this.setSlidingWindowPosX(slidingWindow, maxPosX - width);
-        }
-        else {
+        } else {
           this.setSlidingWindowPosX(slidingWindow, posX + deltaX);
         }
         var newPosX = this.getSlidingWindowPosX(slidingWindow);
@@ -2903,15 +3216,13 @@ class Overview extends Container {
       if (this.isVerticalScrollingEnabled() && deltaY !== 0) {
         var minPosY = this.getMinimumPositionY();
         var maxPosY = this.getMaximumPositionY();
-        if ((posY + deltaY) <= minPosY) {
+        if (posY + deltaY <= minPosY) {
           // hit the left side
           this.setSlidingWindowPosY(slidingWindow, minPosY);
-        }
-        else if (posY + height + deltaY >= maxPosY) {
+        } else if (posY + height + deltaY >= maxPosY) {
           // hit the bottom
           this.setSlidingWindowPosY(slidingWindow, maxPosY - height);
-        }
-        else {
+        } else {
           this.setSlidingWindowPosY(slidingWindow, posY + deltaY);
         }
         var newPosY = this.getSlidingWindowPosY(slidingWindow);
@@ -2935,8 +3246,7 @@ class Overview extends Container {
         if (this.isRTL()) {
           newX1 = this.getXPositionDate(this.Width - (posX + width));
           newX2 = this.getXPositionDate(this.Width - posX);
-        }
-        else {
+        } else {
           newX1 = this.getXPositionDate(posX);
           newX2 = this.getXPositionDate(posX + width);
         }
@@ -2965,8 +3275,7 @@ class Overview extends Container {
   }
 
   handleLeftOrRightHandleDragPositioning(event, delta, isLeft) {
-    if (delta === 0)
-      return;
+    if (delta === 0) return;
 
     var slidingWindow = this.getSlidingWindow();
     var windowPos = this.getSlidingWindowPosX(slidingWindow);
@@ -2974,37 +3283,34 @@ class Overview extends Container {
 
     if (isLeft) {
       // make sure width of sliding window is larger than minimum
-      if (windowWidth - delta <= this.getMinimumWindowWidth())
-        return;
+      if (windowWidth - delta <= this.getMinimumWindowWidth()) return;
 
       // make sure position of left handle is not less than minimum (delta is negative when moving handle to the left)
-      if (windowPos + delta <= this.getMinimumPositionX())
-        return;
+      if (windowPos + delta <= this.getMinimumPositionX()) return;
 
       // window should only resize when the cursor is back to where the handle is
       var relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).x;
       relPos = this.stageToLocal(relPos);
 
-      if ((delta > 0 && relPos <= windowPos) || (delta < 0 && relPos >= windowPos))
-        return;
+      if ((delta > 0 && relPos <= windowPos) || (delta < 0 && relPos >= windowPos)) return;
 
       this.setSlidingWindowPosX(slidingWindow, windowPos + delta);
       DvtOverviewRenderer._setSlidingWindowWidth(this, slidingWindow, windowWidth - delta);
-    }
-    else {
+    } else {
       // make sure width of sliding window is larger than minimum
-      if (windowWidth + delta <= this.getMinimumWindowWidth())
-        return;
+      if (windowWidth + delta <= this.getMinimumWindowWidth()) return;
 
       // make sure position of right handle is not less than minimum
-      if (windowPos + windowWidth + delta >= this.getMaximumPositionX())
-        return;
+      if (windowPos + windowWidth + delta >= this.getMaximumPositionX()) return;
 
       // window should only resize when the cursor is back to where the handle is
       relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).x;
       relPos = this.stageToLocal(relPos);
 
-      if ((delta > 0 && relPos <= windowPos + windowWidth) || (delta < 0 && relPos >= windowPos + windowWidth))
+      if (
+        (delta > 0 && relPos <= windowPos + windowWidth) ||
+        (delta < 0 && relPos >= windowPos + windowWidth)
+      )
         return;
 
       DvtOverviewRenderer._setSlidingWindowWidth(this, slidingWindow, windowWidth + delta);
@@ -3017,12 +3323,15 @@ class Overview extends Container {
     if (this.isRangeChangingSupported()) {
       var newX1, newX2;
       if (this.isRTL()) {
-        newX1 = this.getXPositionDate(this.Width - (this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth()));
+        newX1 = this.getXPositionDate(
+          this.Width - (this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth())
+        );
         newX2 = this.getXPositionDate(this.Width - this.getSlidingWindowPosX(slidingWindow));
-      }
-      else {
+      } else {
         newX1 = this.getXPositionDate(this.getSlidingWindowPosX(slidingWindow));
-        newX2 = this.getXPositionDate(this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth());
+        newX2 = this.getXPositionDate(
+          this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth()
+        );
       }
       var evt = EventFactory.newOverviewEvent('rangeChanging', newX1, newX2);
 
@@ -3031,8 +3340,7 @@ class Overview extends Container {
   }
 
   handleTopOrBottomHandleDragPositioning(event, delta, isTop) {
-    if (delta === 0)
-      return;
+    if (delta === 0) return;
 
     var slidingWindow = this.getSlidingWindow();
     var windowPos = this.getSlidingWindowPosY(slidingWindow);
@@ -3040,37 +3348,34 @@ class Overview extends Container {
 
     if (isTop) {
       // make sure width of sliding window is larger than minimum
-      if (windowHeight - delta <= this.getMinimumWindowHeight())
-        return;
+      if (windowHeight - delta <= this.getMinimumWindowHeight()) return;
 
       // make sure position of top handle is not less than minimum (delta is negative when moving handle to the top)
-      if (windowPos + delta <= this.getMinimumPositionY())
-        return;
+      if (windowPos + delta <= this.getMinimumPositionY()) return;
 
       // window should only resize when the cursor is back to where the handle is
       var relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).y;
       relPos = this.stageToLocal(relPos);
 
-      if ((delta > 0 && relPos <= windowPos) || (delta < 0 && relPos >= windowPos))
-        return;
+      if ((delta > 0 && relPos <= windowPos) || (delta < 0 && relPos >= windowPos)) return;
 
       this.setSlidingWindowPosY(slidingWindow, windowPos + delta);
       DvtOverviewRenderer._setSlidingWindowHeight(this, slidingWindow, windowHeight - delta);
-    }
-    else {
+    } else {
       // make sure width of sliding window is larger than minimum
-      if (windowHeight + delta <= this.getMinimumWindowHeight())
-        return;
+      if (windowHeight + delta <= this.getMinimumWindowHeight()) return;
 
       // make sure position of bottom handle is not less than minimum
-      if (windowPos + windowHeight + delta >= this.getMaximumPositionY())
-        return;
+      if (windowPos + windowHeight + delta >= this.getMaximumPositionY()) return;
 
       // window should only resize when the cursor is back to where the handle is
       relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).y;
       relPos = this.stageToLocal(relPos);
 
-      if ((delta > 0 && relPos <= windowPos + windowHeight) || (delta < 0 && relPos >= windowPos + windowHeight))
+      if (
+        (delta > 0 && relPos <= windowPos + windowHeight) ||
+        (delta < 0 && relPos >= windowPos + windowHeight)
+      )
         return;
 
       DvtOverviewRenderer._setSlidingWindowHeight(this, slidingWindow, windowHeight + delta);
@@ -3082,9 +3387,17 @@ class Overview extends Container {
     // tell event handler that time range is changing
     if (this.isRangeChangingSupported()) {
       var newY1 = this.getYPositionDate(this.getSlidingWindowPosY(slidingWindow));
-      var newY2 = this.getYPositionDate(this.getSlidingWindowPosY(slidingWindow) + slidingWindow.getHeight());
+      var newY2 = this.getYPositionDate(
+        this.getSlidingWindowPosY(slidingWindow) + slidingWindow.getHeight()
+      );
 
-      var evt = EventFactory.newOverviewEvent('rangeChanging', undefined, undefined, newY1, newY2);
+      var evt = EventFactory.newOverviewEvent(
+        'rangeChanging',
+        undefined,
+        undefined,
+        newY1,
+        newY2
+      );
 
       this.dispatchEvent(evt);
     }
@@ -3094,14 +3407,14 @@ class Overview extends Container {
    * Whether or not horizontal scrolling is enabled.
    */
   isHorizontalScrollingEnabled() {
-    return (this._xMin != null && this._xMax != null);
+    return this._xMin != null && this._xMax != null;
   }
 
   /**
    * Whether or not vertical scrolling is enabled.
    */
   isVerticalScrollingEnabled() {
-    return (this._yMin != null && this._yMax != null);
+    return this._yMin != null && this._yMax != null;
   }
 
   // whether to fire a range changing event, which will be fired continuously when the sliding window is resize
@@ -3117,21 +3430,43 @@ class Overview extends Container {
       var oldX1 = this.getXPositionDate(this._oldStartPosX);
       var oldX2 = this.getXPositionDate(this._oldEndPosX);
       if (this.isRTL()) {
-        var newX1 = this.getXPositionDate(this.Width - (this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth()));
+        var newX1 = this.getXPositionDate(
+          this.Width - (this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth())
+        );
         var newX2 = this.getXPositionDate(this.Width - this.getSlidingWindowPosX(slidingWindow));
-      }
-      else {
+      } else {
         newX1 = this.getXPositionDate(this.getSlidingWindowPosX(slidingWindow));
-        newX2 = this.getXPositionDate(this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth());
+        newX2 = this.getXPositionDate(
+          this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth()
+        );
       }
-      evt = EventFactory.newOverviewEvent('rangeChange', newX1, newX2, undefined, undefined, oldX1, oldX2);
-    }
-    else {
+      evt = EventFactory.newOverviewEvent(
+        'rangeChange',
+        newX1,
+        newX2,
+        undefined,
+        undefined,
+        oldX1,
+        oldX2
+      );
+    } else {
       var oldY1 = this.getYPositionDate(this._oldStartPosY);
       var oldY2 = this.getYPositionDate(this._oldEndPosY);
       var newY1 = this.getYPositionDate(this.getSlidingWindowPosY(slidingWindow));
-      var newY2 = this.getYPositionDate(this.getSlidingWindowPosY(slidingWindow) + slidingWindow.getHeight());
-      evt = EventFactory.newOverviewEvent('rangeChange', undefined, undefined, newY1, newY2, undefined, undefined, oldY1, oldY2);
+      var newY2 = this.getYPositionDate(
+        this.getSlidingWindowPosY(slidingWindow) + slidingWindow.getHeight()
+      );
+      evt = EventFactory.newOverviewEvent(
+        'rangeChange',
+        undefined,
+        undefined,
+        newY1,
+        newY2,
+        undefined,
+        undefined,
+        oldY1,
+        oldY2
+      );
     }
 
     // alert peer of time range change

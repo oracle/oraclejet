@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2023, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -28,7 +28,7 @@
     /*
      * applied to the disabled accordion headerd
      */
-    .oj-accordion-collapsible.oj-disabled > .oj-collapsible-header {
+    .oj-accordion-collapsible.oj-disabled > .oj-collapsible-header-wrapper {
 
         color: $textColorDisabled;
         background-color: $headerBgColorDisabled;
@@ -46,7 +46,7 @@
     /*
      * applied to the accordion header but not to any nested collapsible headers
      */
-    .oj-accordion-collapsible > .oj-collapsible-header {
+    .oj-accordion-collapsible > .oj-collapsible-header-wrapper {
       padding-top: 3px;
       padding-bottom: 3px;
 
@@ -54,22 +54,30 @@
         border-width: $listViewHeaderBorderWidth;
         font-size: $header3FontSize;
         background-color: $headerBgColor;
-        @include oj-background-image($headerBgImage);
 
+    }
+
+    /*
+     * applied to the accordion header but not to any nested collapsible headers
+     */
+     .oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header {
+        font-size: $header3FontSize;
+        background-color: $headerBgColor;
+        @include oj-background-image($headerBgImage);
     }
 
     /*
      * need to restore top padding for the first nested collapsible,
      * because it's being reset in collapsible
      */
-    .oj-collapsible-content > .oj-accordion-collapsible.oj-collapsible:first-child > .oj-collapsible-header {
+    .oj-collapsible-content > .oj-accordion-collapsible.oj-collapsible:first-child > .oj-collapsible-header-wrapper {
       padding-top: 3px;
     }
 
     /*
      * need to reset margin because it's being set in collapsible to -7px
      */
-    .oj-accordion-collapsible > .oj-collapsible-header > .oj-collapsible-header-icon {
+    .oj-accordion-collapsible > .oj-collapsible-header-wrapper > .oj-collapsible-header-icon {
       padding: 9px;
       outline-offset: -9px;
 
@@ -93,7 +101,7 @@
     /*
      * applied to the accordion header border bottom when collapsed
      */
-    .oj-accordion-collapsible.oj-collapsed > .oj-collapsible-header {
+    .oj-accordion-collapsible.oj-collapsed > .oj-collapsible-header-wrapper {
 
         border-width: $listViewHeaderBorderWidthCollapsed;
       
@@ -102,7 +110,7 @@
     /*
      * applied to the accordion header border for the last child when collapsed
      */
-    .oj-accordion-collapsible.oj-collapsed:last-child > .oj-collapsible-header {
+    .oj-accordion-collapsible.oj-collapsed:last-child > .oj-collapsible-header-wrapper {
       border-bottom-width: 1px;
     }
     

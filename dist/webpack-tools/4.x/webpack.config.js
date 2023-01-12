@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -23,25 +23,41 @@ module.exports = {
     filename: 'bundle.js',
     path: path.resolve(__dirname, './web') // generate bundles in the same directory where the config file is located
   },
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      }
+    ]
+  },
   resolveLoader: {
     // This adds ./loaders/ to the list of folders where Webpack is looking for loaders
     modules: ['node_modules', path.resolve(__dirname, './loaders')],
     alias: {
       ojL10n: "ojL10n-loader",
-      text: "text-loader"
+      text: "text-loader",
+      css: 'noop-loader',
+      ojcss: 'noop-loader',
+      'ojs/ojcss': 'noop-loader'
     }
   },
   resolve: {
     alias: {
       // path mappings go here
       'knockout': path.resolve(__dirname, './web/js/libs/knockout/knockout-3.5.1.debug'),
-      'jquery': path.resolve(__dirname, './web/js/libs/jquery/jquery-3.6.0'),
+      'jquery': path.resolve(__dirname, './web/js/libs/jquery/jquery-3.6.1'),
       'jqueryui-amd': path.resolve(__dirname, './web/js/libs/jquery/jqueryui-amd-1.13.2'),
       'hammerjs': path.resolve(__dirname, './web/js/libs/hammer/hammer-2.0.8'),
       'ojdnd': path.resolve(__dirname, './web/js/libs/dnd-polyfill/dnd-polyfill-1.0.2'),
-      'ojs': path.resolve(__dirname, './web/js/libs/oj/13.1.0/debug'),
-      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/13.1.0/resources'),
-      '@oracle/oraclejet-preact': path.resolve(__dirname, './web/js/libs/oraclejet-preact/amd'),
+      'ojs': path.resolve(__dirname, './web/js/libs/oj/14.0.0/debug'),
+      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/14.0.0/resources'),
+      'oj-c': '@oracle/oraclejet-core-pack/oj-c',
+      // Webpack 4 doesn't read oraclejet-preact's package exports, so point it
+      // to the AMD distribution. For projects also using oj-c, the imports start
+      // as RequireJS so we want to continue using that format (instead of ES),
+      // otherwise, the CSS imports won't be read.
+      '@oracle/oraclejet-preact': '@oracle/oraclejet-preact/amd',
       'signals': path.resolve(__dirname, './web/js/libs/js-signals/signals'),
       'touchr': path.resolve(__dirname, './web/js/libs/touchr/touchr'),
       'appController': path.resolve(__dirname, './web/js/appController')
@@ -80,7 +96,7 @@ module.exports = {
           }
         },
         // Point this setting to the root folder for the associated JET distribution (could be a CDN). Used by the oj.Config.getResourceUri() call
-        baseResourceUrl: "./web/js/libs/oj/13.1.0"
+        baseResourceUrl: "./web/js/libs/oj/14.0.0"
       }
     )
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2023, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
@@ -26,7 +26,7 @@ $allowTagSelectors: true !default;
 
 // icon colors
 //----------------------------------
-$iconColorHover:    $brandColorLight1 !default;
+$iconColorHover:    $brandColorDark1 !default;
 
 //----------------------------------------------------------------
 // GENERAL STYLING
@@ -82,7 +82,7 @@ $colorRequired:         $brandColorDark1 !default;
 // icon colors
 //----------------------------------
 $iconColorDisabled:         $neutralColor9 !default;
-$iconColorDefault:          $neutralColor12 !default;
+$iconColorDefault:          $textColor3 !default;
 $iconColorActive:           $brandColor !default;
 $iconColorSelected:         $iconColorActive !default;
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -426,7 +426,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojcore-base', 'ojs/ojdomutils', 'o
         selectOn: 'auto',
         selectionMode: 'multiple'
     };
-    exports.FilePicker.metadata = { "properties": { "accept": { "type": "Array<string>|null" }, "capture": { "type": "string|null", "enumValues": ["user", "environment", "implementation", "none"] }, "disabled": { "type": "boolean" }, "primaryText": { "type": "string|function" }, "secondaryText": { "type": "string|function" }, "selectOn": { "type": "string", "enumValues": ["auto", "click", "clickAndDrop", "drop"] }, "selectionMode": { "type": "string", "enumValues": ["multiple", "single"] } }, "slots": { "trigger": {} }, "events": { "ojBeforeSelect": { "cancelable": true }, "ojInvalidSelect": {}, "ojSelect": {} }, "extension": { "_OBSERVED_GLOBAL_PROPS": ["aria-label", "role"] }, "methods": { "_doSelectHelper": {}, "focus": {}, "blur": {} } };
+    exports.FilePicker._metadata = { "properties": { "accept": { "type": "Array<string>" }, "capture": { "type": "string", "enumValues": ["none", "environment", "user", "implementation"] }, "disabled": { "type": "boolean" }, "primaryText": { "type": "string|function" }, "secondaryText": { "type": "string|function" }, "selectOn": { "type": "string", "enumValues": ["auto", "click", "drop", "clickAndDrop"] }, "selectionMode": { "type": "string", "enumValues": ["multiple", "single"] } }, "slots": { "trigger": {} }, "events": { "ojBeforeSelect": { "cancelable": true }, "ojInvalidSelect": {}, "ojSelect": {} }, "extension": { "_OBSERVED_GLOBAL_PROPS": ["aria-label", "role"] }, "methods": { "_doSelectHelper": {}, "focus": {}, "blur": {} } };
     exports.FilePicker = __decorate([
         ojvcomponent.customElement('oj-file-picker')
     ], exports.FilePicker);

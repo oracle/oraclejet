@@ -35,6 +35,7 @@ let _BUILD_OPTIONS;
 let view;
 const _REGEX_BLANK_LINES = new RegExp(/^(?:[\t ]*(?:\r?\n|\r))+/gm);
 let _COMPILER_OPTIONS;
+let allComponents = {};
 function dtsTransformWrapper(program, buildOptions) {
     _BUILD_OPTIONS = buildOptions;
     const templatePath = buildOptions.templatePath;
@@ -72,6 +73,7 @@ function generateCustomElementTypes(context, rootNode) {
 }
 function generateCustomElementTypeContent(fileName) {
     let content = '';
+    const coreJET = !!_BUILD_OPTIONS.coreJetBuildOptions;
     const vcomponents = _BUILD_OPTIONS.componentToMetadata;
     for (let vcomponentName in vcomponents) {
         let metadata = vcomponents[vcomponentName];
@@ -111,6 +113,12 @@ function generateCustomElementTypeContent(fileName) {
             }
             try {
                 fs.writeFileSync(exportsFile, exportContent);
+                if (coreJET) {
+                    allComponents[module] = allComponents[module] || [];
+                    if (allComponents[module].indexOf(vcomponentName) < 0) {
+                        allComponents[module].push(vcomponentName);
+                    }
+                }
             }
             catch (err) {
                 console.log(`An unexpected error happened while generating ${exportsFile}.`);
@@ -208,6 +216,7 @@ function getComponentTemplateData(metadata, buildOptions, customElementName, vco
         settablePropertiesInterface: `${vcomponentElementName}SettableProperties`,
         settablePropertiesLenientInterface: `${vcomponentElementName}SettablePropertiesLenient`,
         readOnlyProps: metadata['readOnlyProps'],
+        funcVCompMethodSignatures: metadata['funcVCompMethodSignatures'],
         properties: metadata.properties,
         events: metadata.events,
         methods: sortAndFilterMethods(metadata.methods),
@@ -236,7 +245,7 @@ function getLegacyComponentName(metadata, buildOptions, vcomponentName) {
             }
         }
         catch (err) {
-            throw new TransformerError_1.TransformerError(vcomponentName, `Invalid 'since' value: ${sinceJetVersionStr}.`);
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_SINCE, TransformerError_1.ExceptionType.THROW_ERROR, vcomponentName, `Invalid 'since' value: ${sinceJetVersionStr}.`);
         }
     }
     return legacyComponentName;
@@ -315,7 +324,7 @@ function assembleTypes(buildOptions) {
     }
     const typeDefinitionFile = buildOptions.mainEntryFile;
     const pathToCompiledTsCode = buildOptions.tsBuiltDir;
-    const regexExportDep = new RegExp(/^\s*(export\s).+(\s+from\s+)['"](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
+    const regexExportDep = new RegExp(/^\s*export\s+[\w ,]*{\s*(?<exports>[\w ,]+)\s*}[\w ,]*(\s+from\s+)['"](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
     const regexImportDep = new RegExp(/^[\s]*import\s+[\w\s\{\}\*,]*["'](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
     let moduleTypeDependencies = {};
     let destFilePath;
@@ -336,22 +345,30 @@ function assembleTypes(buildOptions) {
             finalExports.push(sourceFileContent.replace(regexImportDep, '').trim());
         }
         moduleTypeDependencies[moduleName] = new Set();
-        const coreJETSuppressedExports = new Set();
         exports_files.forEach((expfile) => {
             const expFileContent = fs.readFileSync(expfile, 'utf-8');
-            if (coreJET) {
-                let injectedMatches;
-                while ((injectedMatches = regexExportDep.exec(expFileContent)) !== null) {
-                    coreJETSuppressedExports.add(injectedMatches.groups.localdep);
-                }
-            }
             finalExports.push(expFileContent);
         });
         let matches;
         while ((matches = regexExportDep.exec(sourceFileContent)) !== null) {
             const exportTypeFile = matches.groups.localdep;
-            if (coreJET && !coreJETSuppressedExports.has(exportTypeFile)) {
-                finalExports.unshift(matches[0]);
+            const exports = matches.groups.exports;
+            if (coreJET) {
+                let inject = true;
+                let statementToInject = matches[0];
+                if (exports && allComponents[moduleName]) {
+                    let namedExports = exports.split(',').map((comp) => comp.trim());
+                    namedExports = namedExports.filter((comp) => allComponents[moduleName].indexOf(comp) < 0);
+                    if (namedExports.length > 0) {
+                        statementToInject = statementToInject.replace(matches[1], namedExports.join(','));
+                    }
+                    else {
+                        inject = false;
+                    }
+                }
+                if (inject) {
+                    finalExports.unshift(statementToInject);
+                }
             }
             const typeDeclarFile = path.join(moduleDir, `${exportTypeFile}.d.ts`);
             if (!moduleTypeDependencies[moduleName].has(`${path.basename(typeDeclarFile)}`)) {

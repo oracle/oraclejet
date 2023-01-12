@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -62,7 +62,7 @@ var __oj_row_expander_metadata =
 };
     __oj_row_expander_metadata.extension._WIDGET_NAME = 'ojRowExpander';
     oj.CustomElementBridge.register('oj-row-expander', { metadata: __oj_row_expander_metadata });
-  }());
+  })();
 
   /**
    * Convenient class that represents an empty node set
@@ -73,6 +73,7 @@ var __oj_row_expander_metadata =
    * @since 1.0
    * @ojtsignore
    * @export
+   * @ojdeprecated {since: '14.0.0', description: 'EmptyNodeSet has been deprecated with FlattenedTreeDataSource.'}
    */
   const EmptyNodeSet = function (parent, start) {
     this.m_parent = parent;
@@ -147,6 +148,7 @@ var __oj_row_expander_metadata =
    * @since 1.0
    * @ojtsignore
    * @export
+   * @ojdeprecated {since: '14.0.0', description: 'FlattenedNodeSet has been deprecated with FlattenedTreeDataSource.'}
    */
   const FlattenedNodeSet = function (nodeSet, actualStart) {
     this.m_nodeSet = nodeSet;
@@ -232,9 +234,12 @@ var __oj_row_expander_metadata =
    * @export
    */
   FlattenedNodeSet.prototype.getData = function (index) {
-    return this._getDataOrMetadata(this.m_nodeSet, index,
-                                   { index: this.m_nodeSet.getStart() },
-                                   this._getData);
+    return this._getDataOrMetadata(
+      this.m_nodeSet,
+      index,
+      { index: this.m_nodeSet.getStart() },
+      this._getData
+    );
   };
 
   /**
@@ -249,9 +254,12 @@ var __oj_row_expander_metadata =
    * @export
    */
   FlattenedNodeSet.prototype.getMetadata = function (index) {
-    return this._getDataOrMetadata(this.m_nodeSet, index,
-                                   { index: this.m_nodeSet.getStart() },
-                                   this._getMetadata);
+    return this._getDataOrMetadata(
+      this.m_nodeSet,
+      index,
+      { index: this.m_nodeSet.getStart() },
+      this._getMetadata
+    );
   };
 
   /**
@@ -421,8 +429,10 @@ var __oj_row_expander_metadata =
    * @export
    */
   NodeSetWrapper.prototype.getChildNodeSet = function (index) {
-    if (this.m_collapsedKeys == null ||
-        this.m_collapsedKeys.indexOf(this.m_nodeSet.getMetadata(index).key) === -1) {
+    if (
+      this.m_collapsedKeys == null ||
+      this.m_collapsedKeys.indexOf(this.m_nodeSet.getMetadata(index).key) === -1
+    ) {
       if (this.m_nodeSet.getChildNodeSet) {
         var result = this.m_nodeSet.getChildNodeSet(index);
         if (result != null) {
@@ -445,7 +455,7 @@ var __oj_row_expander_metadata =
     if (this.m_range == null) {
       return index;
     }
-    return (index - this.m_range.start) + this.m_nodeSet.getStart();
+    return index - this.m_range.start + this.m_nodeSet.getStart();
   };
 
   /**
@@ -458,6 +468,7 @@ var __oj_row_expander_metadata =
    * @since 1.0
    * @ojtsignore
    * @export
+   * @ojdeprecated {since: '14.0.0', description: 'MergedNodeSet has been deprecated with FlattenedTreeDataSource.'}
    */
   const MergedNodeSet = function (nodeSet1, nodeSet2, mergeAt) {
     this.m_nodeSet1 = nodeSet1;
@@ -484,7 +495,7 @@ var __oj_row_expander_metadata =
     }
 
     // if the point cannot be found, the merge happens at the end
-    return (end - 1);
+    return end - 1;
   };
 
   /**
@@ -571,7 +582,7 @@ var __oj_row_expander_metadata =
     // second set, do not assume the second node set is zero indexed
     return {
       set: this.m_nodeSet2,
-      index: (index - this.m_mergeAt - 1) + this.m_nodeSet2.getStart()
+      index: index - this.m_mergeAt - 1 + this.m_nodeSet2.getStart()
     };
   };
 
@@ -585,6 +596,8 @@ var __oj_row_expander_metadata =
    * @export
    * @ojtsignore
    * @extends DataSource
+   * @ojdeprecated {since: '14.0.0', description: 'FlattenedTreeDataSource has been deprecated,
+   * use FlattenedTreeDataProviderView instead.'}
    */
   const FlattenedTreeDataSource = function (treeDataSource, options) {
     this.m_wrapped = treeDataSource;
@@ -821,9 +834,10 @@ var __oj_row_expander_metadata =
           if (count === -1) {
             fetchRange.count = Math.min(fetchSize, range.count);
           } else {
-            fetchRange.count = Math.min(maxFetchSize,
-                                        Math.min(Math.min(fetchSize, range.count),
-                                                 count - fetchRange.start));
+            fetchRange.count = Math.min(
+              maxFetchSize,
+              Math.min(Math.min(fetchSize, range.count), count - fetchRange.start)
+            );
           }
           this.m_wrapped.fetchChildren(parent, fetchRange, {
             success: function (nodeSet) {
@@ -841,8 +855,13 @@ var __oj_row_expander_metadata =
 
           if (this._isExpanded(lastEntryKey) && (lastEntryCount === -1 || lastEntryCount > 0)) {
             // if the last entry was expanded and has children fetch its children
-            processed =
-              this._fetchFromAncestors(lastEntry, depth + 1, range, callbacks, maxFetchSize);
+            processed = this._fetchFromAncestors(
+              lastEntry,
+              depth + 1,
+              range,
+              callbacks,
+              maxFetchSize
+            );
           } else {
             // fetch size is greater than the number of children remaining to fetch
             // so we'll need to go up the path (recursively if necessary) and see if
@@ -900,10 +919,9 @@ var __oj_row_expander_metadata =
    * @return {undefined}
    * @export
    */
-  FlattenedTreeDataSource.prototype.move =
-    function (rowToMove, referenceRow, position, callbacks) {
-      this.m_wrapped.move(rowToMove, referenceRow, position, callbacks);
-    };
+  FlattenedTreeDataSource.prototype.move = function (rowToMove, referenceRow, position, callbacks) {
+    this.m_wrapped.move(rowToMove, referenceRow, position, callbacks);
+  };
 
   /**
    * Determine the maximum possible fetch size.
@@ -940,46 +958,69 @@ var __oj_row_expander_metadata =
    * @param {Object=} options the original callbacks passed to the fetch operation
    * @private
    */
-  FlattenedTreeDataSource.prototype._handleFetchSuccess =
-    function (nodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options) {
-      var toExpand = [];
+  FlattenedTreeDataSource.prototype._handleFetchSuccess = function (
+    nodeSet,
+    parent,
+    depth,
+    originalRange,
+    requestedRange,
+    count,
+    callbacks,
+    options
+  ) {
+    var toExpand = [];
 
-      // first process the node set to get the rows to expand with the indexes
-      this._processNodeSet(nodeSet, parent, depth, toExpand);
+    // first process the node set to get the rows to expand with the indexes
+    this._processNodeSet(nodeSet, parent, depth, toExpand);
 
-      var flattenedRange = { start: originalRange.start, count: nodeSet.getCount() };
-      // eslint-disable-next-line no-param-reassign
-      nodeSet = new NodeSetWrapper(nodeSet, this.insertMetadata.bind(this), flattenedRange);
+    var flattenedRange = { start: originalRange.start, count: nodeSet.getCount() };
+    // eslint-disable-next-line no-param-reassign
+    nodeSet = new NodeSetWrapper(nodeSet, this.insertMetadata.bind(this), flattenedRange);
 
-      // expand the fetched nodes to get the node set as full as possible from the original fetch
-      if (toExpand.length !== 0) {
-        // there are rows to expand, so we'll need to combine the nodeset after
-        // we got the expanded nodeset
-        var queue = [];
-        queue.push(toExpand);
+    // expand the fetched nodes to get the node set as full as possible from the original fetch
+    if (toExpand.length !== 0) {
+      // there are rows to expand, so we'll need to combine the nodeset after
+      // we got the expanded nodeset
+      var queue = [];
+      queue.push(toExpand);
 
-        // we'll reuse the syncExpandRows method, which is used to combine nested expanding
-        // nodeset, the only difference is we'll include the callbacks here, see handleExpandSuccess method
-        var prevNodeSetInfo = {};
-        prevNodeSetInfo.callbacks =
-        {
-          success: function (newNodeSet) {
-            this._verifyFetchResults(newNodeSet, parent, depth, originalRange,
-                                       requestedRange, count, callbacks, options);
-          }.bind(this),
-          error: function (status) {
-            this._handleFetchError(status, callbacks);
-          }.bind(this)
-        };
-        prevNodeSetInfo.nodeSet = nodeSet;
-        prevNodeSetInfo.keys = [];
+      // we'll reuse the syncExpandRows method, which is used to combine nested expanding
+      // nodeset, the only difference is we'll include the callbacks here, see handleExpandSuccess method
+      var prevNodeSetInfo = {};
+      prevNodeSetInfo.callbacks = {
+        success: function (newNodeSet) {
+          this._verifyFetchResults(
+            newNodeSet,
+            parent,
+            depth,
+            originalRange,
+            requestedRange,
+            count,
+            callbacks,
+            options
+          );
+        }.bind(this),
+        error: function (status) {
+          this._handleFetchError(status, callbacks);
+        }.bind(this)
+      };
+      prevNodeSetInfo.nodeSet = nodeSet;
+      prevNodeSetInfo.keys = [];
 
-        this._syncExpandRows(queue, prevNodeSetInfo);
-      } else {
-        this._verifyFetchResults(nodeSet, parent, depth, originalRange, requestedRange,
-                                 count, callbacks, options);
-      }
-    };
+      this._syncExpandRows(queue, prevNodeSetInfo);
+    } else {
+      this._verifyFetchResults(
+        nodeSet,
+        parent,
+        depth,
+        originalRange,
+        requestedRange,
+        count,
+        callbacks,
+        options
+      );
+    }
+  };
 
   /**
    * Process success callback from fetchChildren, fetchFromAncestors or expand after a fetch children
@@ -993,63 +1034,77 @@ var __oj_row_expander_metadata =
    * @param {Object=} options the original callbacks passed to the fetch operation
    * @private
    */
-  FlattenedTreeDataSource.prototype._verifyFetchResults =
-    function (nodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options) {
-      var mergedNodeSet;
-      var processed;
+  FlattenedTreeDataSource.prototype._verifyFetchResults = function (
+    nodeSet,
+    parent,
+    depth,
+    originalRange,
+    requestedRange,
+    count,
+    callbacks,
+    options
+  ) {
+    var mergedNodeSet;
+    var processed;
 
-      if (options != null) {
-        // if there is a previousNodeSet merge it with the new one to try and fulfill the original fetch size
-        var prevNodeSet = options.prevNodeSet;
-        if (prevNodeSet != null) {
-          var lastNodeIndex = (prevNodeSet.getStart() + prevNodeSet.getCount()) - 1;
-          var lastNodeKey = prevNodeSet.getMetadata(lastNodeIndex).key;
-          mergedNodeSet = new MergedNodeSet(prevNodeSet, nodeSet, lastNodeKey);
-        }
+    if (options != null) {
+      // if there is a previousNodeSet merge it with the new one to try and fulfill the original fetch size
+      var prevNodeSet = options.prevNodeSet;
+      if (prevNodeSet != null) {
+        var lastNodeIndex = prevNodeSet.getStart() + prevNodeSet.getCount() - 1;
+        var lastNodeKey = prevNodeSet.getMetadata(lastNodeIndex).key;
+        mergedNodeSet = new MergedNodeSet(prevNodeSet, nodeSet, lastNodeKey);
       }
+    }
 
-      // if the nodeSet contains less nodes than originally requested, attempt to fetch the remainder from the ancestors
-      if (nodeSet.getCount() < originalRange.count && parent != null && depth > 0) {
-        var remainingRange = {
-          start: originalRange.start + nodeSet.getCount(),
-          count: originalRange.count - nodeSet.getCount()
-        };
-        var remainingOptions = {
-          prevNodeSet: null
-        };
-        remainingOptions.prevNodeSet = mergedNodeSet == null ? nodeSet : mergedNodeSet;
+    // if the nodeSet contains less nodes than originally requested, attempt to fetch the remainder from the ancestors
+    if (nodeSet.getCount() < originalRange.count && parent != null && depth > 0) {
+      var remainingRange = {
+        start: originalRange.start + nodeSet.getCount(),
+        count: originalRange.count - nodeSet.getCount()
+      };
+      var remainingOptions = {
+        prevNodeSet: null
+      };
+      remainingOptions.prevNodeSet = mergedNodeSet == null ? nodeSet : mergedNodeSet;
 
-        processed = this._fetchFromAncestors(parent, depth, remainingRange,
-                                             callbacks, undefined, remainingOptions);
-      } else if (nodeSet.getCount() > originalRange.count) {
-        // if we overfetched because of expanded children then trim the nodeSet by wrapping the nodeSet in the correct range
-        var difference = nodeSet.getCount() - originalRange.count;
-        if (mergedNodeSet != null) {
-          mergedNodeSet = new NodeSetWrapper(mergedNodeSet, this.insertMetadata.bind(this), {
-            start: mergedNodeSet.getStart(),
-            count: (mergedNodeSet.getCount() - difference)
-          });
-          // remove entries that will not be passed back via the wrapped range
-          this._removeEntry(mergedNodeSet.getStart() + mergedNodeSet.getCount(), difference);
-        } else {
-          // eslint-disable-next-line no-param-reassign
-          nodeSet = new NodeSetWrapper(nodeSet, this.insertMetadata.bind(this), {
-            start: nodeSet.getStart(),
-            count: (nodeSet.getCount() - difference)
-          });
-          // remove entries that will not be passed back via the wrapped range
-          this._removeEntry(nodeSet.getStart() + nodeSet.getCount(), difference);
-        }
+      processed = this._fetchFromAncestors(
+        parent,
+        depth,
+        remainingRange,
+        callbacks,
+        undefined,
+        remainingOptions
+      );
+    } else if (nodeSet.getCount() > originalRange.count) {
+      // if we overfetched because of expanded children then trim the nodeSet by wrapping the nodeSet in the correct range
+      var difference = nodeSet.getCount() - originalRange.count;
+      if (mergedNodeSet != null) {
+        mergedNodeSet = new NodeSetWrapper(mergedNodeSet, this.insertMetadata.bind(this), {
+          start: mergedNodeSet.getStart(),
+          count: mergedNodeSet.getCount() - difference
+        });
+        // remove entries that will not be passed back via the wrapped range
+        this._removeEntry(mergedNodeSet.getStart() + mergedNodeSet.getCount(), difference);
+      } else {
+        // eslint-disable-next-line no-param-reassign
+        nodeSet = new NodeSetWrapper(nodeSet, this.insertMetadata.bind(this), {
+          start: nodeSet.getStart(),
+          count: nodeSet.getCount() - difference
+        });
+        // remove entries that will not be passed back via the wrapped range
+        this._removeEntry(nodeSet.getStart() + nodeSet.getCount(), difference);
       }
+    }
 
-      if (!processed) {
-        if (callbacks != null && callbacks.success != null) {
-          callbacks.success.call(null, mergedNodeSet == null ? nodeSet : mergedNodeSet);
-        }
+    if (!processed) {
+      if (callbacks != null && callbacks.success != null) {
+        callbacks.success.call(null, mergedNodeSet == null ? nodeSet : mergedNodeSet);
       }
+    }
 
-      this.m_busy = false;
-    };
+    this.m_busy = false;
+  };
 
   /**
    * Returns the number of children for a specified parent.  If the value returned is not >= 0 then it is automatically assumed
@@ -1072,99 +1127,129 @@ var __oj_row_expander_metadata =
    * @return {boolean} true if results are fetched, false if nothing is fetched
    * @private
    */
-  FlattenedTreeDataSource.prototype._fetchFromAncestors =
-    function (parent, depth, range, callbacks, maxFetchSize, options) {
-      var batchFetchOptions;
+  FlattenedTreeDataSource.prototype._fetchFromAncestors = function (
+    parent,
+    depth,
+    range,
+    callbacks,
+    maxFetchSize,
+    options
+  ) {
+    var batchFetchOptions;
 
-      var fetchedChildren = false;
+    var fetchedChildren = false;
 
-      if (maxFetchSize === undefined) {
+    if (maxFetchSize === undefined) {
+      // eslint-disable-next-line no-param-reassign
+      maxFetchSize = this._getMaxFetchSize();
+    }
+
+    // fetch size is greater than the number of children remaining to fetch
+    // so we'll need to go up the path (recursively if necessary) and see if
+    // if we need to fetch from ancestors.
+    if (this._isBatchFetching()) {
+      batchFetchOptions = { queueOnly: true };
+    }
+
+    var fetchSize = this._getFetchSizeToUse(-1);
+    var current = this._getLastIndex();
+    var count;
+    var fetchRange;
+    var currDepth;
+
+    // adjusted for loop i = current-1 to i = current.
+    // this._getLastIndex automatically performs a -1
+    // so no need to set that again.
+    for (var i = current; i >= 0; i--) {
+      var currEntry = this._getEntry(i);
+      currDepth = currEntry.depth;
+      if (currDepth < depth) {
         // eslint-disable-next-line no-param-reassign
-        maxFetchSize = this._getMaxFetchSize();
-      }
+        parent = currEntry.parent;
+        count = this.m_wrapped.getChildCount(parent);
+        var index = currEntry.index;
 
-      // fetch size is greater than the number of children remaining to fetch
-      // so we'll need to go up the path (recursively if necessary) and see if
-      // if we need to fetch from ancestors.
-      if (this._isBatchFetching()) {
-        batchFetchOptions = { queueOnly: true };
-      }
+        var countUnknown = count === -1;
+        if (countUnknown || index < count - 1) {
+          fetchRange = {};
+          fetchRange.start = index + 1;
+          if (countUnknown) {
+            fetchRange.count = Math.min(maxFetchSize, Math.max(0, fetchSize));
+            // if count is unknown, we cannot do batch fetch
+            batchFetchOptions = null;
+            // stop going up parents
+          } else {
+            fetchRange.count = Math.min(maxFetchSize, Math.min(fetchSize, count - fetchRange.start));
+          }
 
-      var fetchSize = this._getFetchSizeToUse(-1);
-      var current = this._getLastIndex();
-      var count;
-      var fetchRange;
-      var currDepth;
+          // if there's nothing to fetch, quit
+          if (fetchRange.count === 0) {
+            break;
+          }
 
-      // adjusted for loop i = current-1 to i = current.
-      // this._getLastIndex automatically performs a -1
-      // so no need to set that again.
-      for (var i = current; i >= 0; i--) {
-        var currEntry = this._getEntry(i);
-        currDepth = currEntry.depth;
-        if (currDepth < depth) {
-          // eslint-disable-next-line no-param-reassign
-          parent = currEntry.parent;
-          count = this.m_wrapped.getChildCount(parent);
-          var index = currEntry.index;
-
-          var countUnknown = (count === -1);
-          if (countUnknown || index < count - 1) {
-            fetchRange = {};
-            fetchRange.start = index + 1;
-            if (countUnknown) {
-              fetchRange.count = Math.min(maxFetchSize, Math.max(0, fetchSize));
-              // if count is unknown, we cannot do batch fetch
-              batchFetchOptions = null;
-              // stop going up parents
-            } else {
-              fetchRange.count = Math.min(maxFetchSize,
-                                          Math.min(fetchSize, count - fetchRange.start));
-            }
-
-            // if there's nothing to fetch, quit
-            if (fetchRange.count === 0) {
-              break;
-            }
-
-            // it's always attached at the end
-            this.m_wrapped.fetchChildren(parent, fetchRange, {
+          // it's always attached at the end
+          this.m_wrapped.fetchChildren(
+            parent,
+            fetchRange,
+            {
               success: function (_parent, _currDepth, _fetchRange, _count, nodeSet) {
-                this._handleFetchSuccess(nodeSet, _parent, _currDepth, range, _fetchRange,
-                                         _count, callbacks, options);
+                this._handleFetchSuccess(
+                  nodeSet,
+                  _parent,
+                  _currDepth,
+                  range,
+                  _fetchRange,
+                  _count,
+                  callbacks,
+                  options
+                );
               }.bind(this, parent, currDepth, fetchRange, count),
               error: function (status) {
                 this._handleFetchError(status, callbacks);
               }.bind(this)
-            }, batchFetchOptions);
+            },
+            batchFetchOptions
+          );
 
-            fetchedChildren = true;
+          fetchedChildren = true;
 
-            break;
-          } else {
-            // eslint-disable-next-line no-param-reassign
-            depth -= 1;
-          }
+          break;
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          depth -= 1;
         }
       }
+    }
 
-      // if batching is used, fire a final fetch children call to flush the queue
-      if (batchFetchOptions != null) {
-        this.m_wrapped.fetchChildren(parent, { start: range.count, count: 0 }, {
+    // if batching is used, fire a final fetch children call to flush the queue
+    if (batchFetchOptions != null) {
+      this.m_wrapped.fetchChildren(
+        parent,
+        { start: range.count, count: 0 },
+        {
           success: function (nodeSet) {
-            this._handleFetchSuccess(nodeSet, parent, currDepth, range, fetchRange,
-                                     count, callbacks, options);
+            this._handleFetchSuccess(
+              nodeSet,
+              parent,
+              currDepth,
+              range,
+              fetchRange,
+              count,
+              callbacks,
+              options
+            );
           }.bind(this),
           error: function (status) {
             this._handleFetchError(status, callbacks);
           }.bind(this)
-        });
-        fetchedChildren = true;
-      }
+        }
+      );
+      fetchedChildren = true;
+    }
 
-      // return false if no results are fetched
-      return fetchedChildren;
-    };
+    // return false if no results are fetched
+    return fetchedChildren;
+  };
 
   /**
    * Walk the node set and do whatever processing is neccessary.
@@ -1230,14 +1315,18 @@ var __oj_row_expander_metadata =
     }
 
     // invoke method on TreeDataSource
-    this.m_wrapped.fetchDescendants(null, {
-      success: function (nodeSet) {
-        this._handleFetchDescendantsSuccess(nodeSet, range, callbacks);
-      }.bind(this),
-      error: function (status) {
-        this._handleFetchError(status, callbacks);
-      }.bind(this)
-    }, options);
+    this.m_wrapped.fetchDescendants(
+      null,
+      {
+        success: function (nodeSet) {
+          this._handleFetchDescendantsSuccess(nodeSet, range, callbacks);
+        }.bind(this),
+        error: function (status) {
+          this._handleFetchError(status, callbacks);
+        }.bind(this)
+      },
+      options
+    );
   };
 
   /**
@@ -1258,62 +1347,69 @@ var __oj_row_expander_metadata =
    * @param {Object} callbacks the original callbacks passed to the fetch operation
    * @private
    */
-  FlattenedTreeDataSource.prototype._handleFetchDescendantsSuccess =
-    function (nodeSet, range, callbacks) {
-      var options;
-      var actualStart;
-      var _nodeSet = nodeSet;
+  FlattenedTreeDataSource.prototype._handleFetchDescendantsSuccess = function (
+    nodeSet,
+    range,
+    callbacks
+  ) {
+    var options;
+    var actualStart;
+    var _nodeSet = nodeSet;
 
-      // this condition should always be true since in high-water mark scrolling we are
-      // always asking for rows after the current last row
-      if (range.start > this._getLastIndex()) {
-        var maxFetchSize = this._getMaxFetchSize();
-        var count = Math.min(maxFetchSize, range.count);
+    // this condition should always be true since in high-water mark scrolling we are
+    // always asking for rows after the current last row
+    if (range.start > this._getLastIndex()) {
+      var maxFetchSize = this._getMaxFetchSize();
+      var count = Math.min(maxFetchSize, range.count);
 
-        // wrap it to inject additional metadata
-        _nodeSet = new NodeSetWrapper(_nodeSet,
-                                        this.insertMetadata.bind(this), null, this.m_collapsedKeys);
+      // wrap it to inject additional metadata
+      _nodeSet = new NodeSetWrapper(
+        _nodeSet,
+        this.insertMetadata.bind(this),
+        null,
+        this.m_collapsedKeys
+      );
 
-        if (this._getLastIndex() >= 0) {
-          // in fetchDescendants case, the result node set would probably contains more than what
-          // we would return.  The issue is we can't really use range to filter the set since the
-          // range in the current view does not map one-to-one to the expand all node set as some
-          // node might have been collapsed before the fetch.
-          // the solution is to use the last cached entry to find where new data starts in the
-          // result node set, and use range count to limit what to return
-          var lastEntry = this._getLastEntry();
-          options = { index: 0, found: false, count: 0 };
-          this._processDescendantsNodeSet(_nodeSet, null, 0, lastEntry, count, options);
-          actualStart = options.index + 1;
-        } else {
-          // initial fetch case, just specify the count to limit result
-          options = { count: 0 };
-          this._processDescendantsNodeSet(_nodeSet, null, 0, null, count, options);
-          actualStart = 0;
-        }
-
-        if (callbacks != null && callbacks.success != null) {
-         if (options.count === 0) {
-            // nothing is used from node set, just return a empty node set
-            _nodeSet = new EmptyNodeSet(null, range.start);
-          } else {
-            // wraps node set with a filter that only returns nodes that
-            // have not been fetched already
-            _nodeSet = new FlattenedNodeSet(_nodeSet, actualStart);
-          }
-          callbacks.success.call(null, _nodeSet);
-        }
+      if (this._getLastIndex() >= 0) {
+        // in fetchDescendants case, the result node set would probably contains more than what
+        // we would return.  The issue is we can't really use range to filter the set since the
+        // range in the current view does not map one-to-one to the expand all node set as some
+        // node might have been collapsed before the fetch.
+        // the solution is to use the last cached entry to find where new data starts in the
+        // result node set, and use range count to limit what to return
+        var lastEntry = this._getLastEntry();
+        options = { index: 0, found: false, count: 0 };
+        this._processDescendantsNodeSet(_nodeSet, null, 0, lastEntry, count, options);
+        actualStart = options.index + 1;
       } else {
-        // the only case we'll ended up here is if the max count has been reached or
-        // for some reason the caller is asking for count = 0
-        this.handleMaxCountReached(range, callbacks);
+        // initial fetch case, just specify the count to limit result
+        options = { count: 0 };
+        this._processDescendantsNodeSet(_nodeSet, null, 0, null, count, options);
+        actualStart = 0;
       }
 
-      this.m_busy = false;
+      if (callbacks != null && callbacks.success != null) {
+        if (options.count === 0) {
+          // nothing is used from node set, just return a empty node set
+          _nodeSet = new EmptyNodeSet(null, range.start);
+        } else {
+          // wraps node set with a filter that only returns nodes that
+          // have not been fetched already
+          _nodeSet = new FlattenedNodeSet(_nodeSet, actualStart);
+        }
+        callbacks.success.call(null, _nodeSet);
+      }
+    } else {
+      // the only case we'll ended up here is if the max count has been reached or
+      // for some reason the caller is asking for count = 0
+      this.handleMaxCountReached(range, callbacks);
+    }
 
-      // process any outstanding operations
-      this._processQueue();
-    };
+    this.m_busy = false;
+
+    // process any outstanding operations
+    this._processQueue();
+  };
 
   /**
    * Walk the node set and do whatever processing is neccessary.
@@ -1325,79 +1421,84 @@ var __oj_row_expander_metadata =
    * @param {Object=} options this object carries information collected in this method
    * @private
    */
-  FlattenedTreeDataSource.prototype._processDescendantsNodeSet =
-    function (nodeSet, parent, depth, lastEntry, maxCount, options) {
-      var nodeStart = nodeSet.getStart();
-      var nodeCount = nodeSet.getCount();
+  FlattenedTreeDataSource.prototype._processDescendantsNodeSet = function (
+    nodeSet,
+    parent,
+    depth,
+    lastEntry,
+    maxCount,
+    options
+  ) {
+    var nodeStart = nodeSet.getStart();
+    var nodeCount = nodeSet.getCount();
 
-      // walk the node set and populate the internal cache
-      for (var i = 0; i < nodeCount; i++) {
-        // see if we have enough results
-        if (options.count === maxCount) {
-          return;
-        }
+    // walk the node set and populate the internal cache
+    for (var i = 0; i < nodeCount; i++) {
+      // see if we have enough results
+      if (options.count === maxCount) {
+        return;
+      }
 
-        var metadata = nodeSet.getMetadata(nodeStart + i);
-        var key = metadata.key;
+      var metadata = nodeSet.getMetadata(nodeStart + i);
+      var key = metadata.key;
 
-        // see if we need to check depth
-        if (options.checkDepth) {
-          if (lastEntry && lastEntry.depth >= depth) {
-            // eslint-disable-next-line no-param-reassign
-            options.found = true;
-            // eslint-disable-next-line no-param-reassign
-            options.checkDepth = false;
-          }
-        }
-
-        if (lastEntry == null || options.found) {
-          this._addEntry(key, depth, nodeStart + i, parent);
-
+      // see if we need to check depth
+      if (options.checkDepth) {
+        if (lastEntry && lastEntry.depth >= depth) {
           // eslint-disable-next-line no-param-reassign
-          options.count += 1;
-
-          // include state metadata for row expander
-          // in the fetchDescendants case the state is always 'expanded'
-          if (metadata.leaf) {
-            metadata.state = 'leaf';
-          } else {
-            metadata.state = 'expanded';
-          }
-        }
-
-        // mark we found the entry in node set that matches the last key
-        // the rest of node set we can start pushing to cache
-        if (lastEntry != null && !options.found) {
-          // we'll need to also check whether the last entry is expanded (or not leaf)
-          // if it is collapsed, then we can't add any nodes from the node set until
-          // we found child in the node set that has the same or lower depth in case no siblings
-          // just next parent
-          if (key === lastEntry.key) {
-            if (metadata.leaf || this._isExpanded(key)) {
-              // eslint-disable-next-line no-param-reassign
-              options.found = true;
-            } else {
-              // collapsed.  Mark to check the depth of the next node before
-              // setting found to true.
-              // eslint-disable-next-line no-param-reassign
-              options.checkDepth = true;
-            }
-          } else {
-            // eslint-disable-next-line no-param-reassign
-            options.index += 1;
-          }
-        }
-
-        // process child node set, if any
-        if (nodeSet.getChildNodeSet && this._isExpanded(key)) {
-          var childNodeSet = nodeSet.getChildNodeSet(i);
-          if (childNodeSet != null) {
-            this._processDescendantsNodeSet(childNodeSet, key, depth + 1,
-                                            lastEntry, maxCount, options);
-          }
+          options.found = true;
+          // eslint-disable-next-line no-param-reassign
+          options.checkDepth = false;
         }
       }
-    };
+
+      if (lastEntry == null || options.found) {
+        this._addEntry(key, depth, nodeStart + i, parent);
+
+        // eslint-disable-next-line no-param-reassign
+        options.count += 1;
+
+        // include state metadata for row expander
+        // in the fetchDescendants case the state is always 'expanded'
+        if (metadata.leaf) {
+          metadata.state = 'leaf';
+        } else {
+          metadata.state = 'expanded';
+        }
+      }
+
+      // mark we found the entry in node set that matches the last key
+      // the rest of node set we can start pushing to cache
+      if (lastEntry != null && !options.found) {
+        // we'll need to also check whether the last entry is expanded (or not leaf)
+        // if it is collapsed, then we can't add any nodes from the node set until
+        // we found child in the node set that has the same or lower depth in case no siblings
+        // just next parent
+        if (key === lastEntry.key) {
+          if (metadata.leaf || this._isExpanded(key)) {
+            // eslint-disable-next-line no-param-reassign
+            options.found = true;
+          } else {
+            // collapsed.  Mark to check the depth of the next node before
+            // setting found to true.
+            // eslint-disable-next-line no-param-reassign
+            options.checkDepth = true;
+          }
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          options.index += 1;
+        }
+      }
+
+      // process child node set, if any
+      if (nodeSet.getChildNodeSet && this._isExpanded(key)) {
+        var childNodeSet = nodeSet.getChildNodeSet(i);
+        if (childNodeSet != null) {
+          this._processDescendantsNodeSet(childNodeSet, key, depth + 1, lastEntry, maxCount, options);
+        }
+      }
+    }
+  };
 
   /**
    * Expand the specified row.
@@ -1440,14 +1541,18 @@ var __oj_row_expander_metadata =
       return;
     }
 
-    this.m_wrapped.fetchChildren(rowKey, { start: 0, count: fetchSize }, {
-      success: function (nodeSet) {
-        this.handleExpandSuccess(rowKey, nodeSet, count, options);
-      }.bind(this),
-      error: function (status) {
-        this.handleExpandError(rowKey, status);
-      }.bind(this)
-    });
+    this.m_wrapped.fetchChildren(
+      rowKey,
+      { start: 0, count: fetchSize },
+      {
+        success: function (nodeSet) {
+          this.handleExpandSuccess(rowKey, nodeSet, count, options);
+        }.bind(this),
+        error: function (status) {
+          this.handleExpandError(rowKey, status);
+        }.bind(this)
+      }
+    );
   };
 
   /**
@@ -1557,7 +1662,7 @@ var __oj_row_expander_metadata =
     if (this._isExpandAll()) {
       if (this.m_collapsedKeys && this.m_collapsedKeys.length > 0) {
         // call helper method to check collapsed keys
-        return (this._getCollapsedKeyIndex(rowKey) === -1);
+        return this._getCollapsedKeyIndex(rowKey) === -1;
       }
 
       // everything expanded
@@ -1566,7 +1671,7 @@ var __oj_row_expander_metadata =
 
     if (this.m_expandedKeys && this.m_expandedKeys.length > 0) {
       // call helper method to check expanded keys
-      return (this._getExpandedKeyIndex(rowKey) > -1);
+      return this._getExpandedKeyIndex(rowKey) > -1;
     }
 
     // nothing expanded
@@ -1609,7 +1714,6 @@ var __oj_row_expander_metadata =
 
     return index;
   };
-
 
   /**
    * Remove the row key from the expanded cache
@@ -1663,149 +1767,156 @@ var __oj_row_expander_metadata =
    * @property {Object=} options.prevNodeSetInfo.firstKey the ref row key for the FIRST expand call, this is needed when firing the insert event, where the insertion point is the first row key
    * @protected
    */
-  FlattenedTreeDataSource.prototype.handleExpandSuccess =
-    function (rowKey, nodeSet, childCount, options) {
-      var queue;
-      var prevNodeSetInfo;
+  FlattenedTreeDataSource.prototype.handleExpandSuccess = function (
+    rowKey,
+    nodeSet,
+    childCount,
+    options
+  ) {
+    var queue;
+    var prevNodeSetInfo;
 
-      // wrap it to inject additional metadata
+    // wrap it to inject additional metadata
+    // eslint-disable-next-line no-param-reassign
+    nodeSet = new NodeSetWrapper(nodeSet, this.insertMetadata.bind(this));
+
+    var refIndex = this.getIndex(rowKey) + 1;
+    var rangeStart = refIndex;
+
+    var rowStart = nodeSet.getStart();
+    var rowCount = nodeSet.getCount();
+
+    var parent = this._getEntry(refIndex - 1);
+    var depth = parent.depth + 1;
+
+    var toExpand = [];
+
+    // go through the node set and insert an entry with info about the row into internal cache
+    for (var i = rowStart; i < rowCount; i++) {
+      var metadata = nodeSet.getMetadata(i);
+      var key = metadata.key;
+      if (this._isExpanded(key)) {
+        // expand it if the user specified it to be expand (or the
+        // parent was previously collapsed before and now expanded again,
+        // the expanded child would need to be expanded also)
+        toExpand.push(key);
+      }
+
+      // add to cache
+      this._insertRow(refIndex, metadata, parent.key, i, depth);
+
+      refIndex += 1;
+    }
+
+    // keep track of expanded row or collapsed row for expand all case
+    if (this._isExpandAll()) {
+      this._removeCollapsed(rowKey);
+    } else if (this.m_expandedKeys.indexOf(rowKey) === -1) {
+      // check whether it's already in expanded keys, which is the case
+      // if it is expanded by initial expansion
+      this.m_expandedKeys.push(rowKey);
+    }
+
+    // extract optional params
+    if (options != null) {
+      queue = options.queue;
+      prevNodeSetInfo = options.prevNodeSetInfo;
+    }
+
+    // see if a previous nodeset has been set and merge with current one
+    // so that we have one nodeset that includes expanded children, a single row insert event
+    // is fired and the nodeset will be in the proper order
+    if (prevNodeSetInfo != null) {
       // eslint-disable-next-line no-param-reassign
-      nodeSet = new NodeSetWrapper(nodeSet, this.insertMetadata.bind(this));
+      nodeSet = new MergedNodeSet(prevNodeSetInfo.nodeSet, nodeSet, rowKey);
+    }
 
-      var refIndex = this.getIndex(rowKey) + 1;
-      var rangeStart = refIndex;
-
-      var rowStart = nodeSet.getStart();
-      var rowCount = nodeSet.getCount();
-
-      var parent = this._getEntry(refIndex - 1);
-      var depth = parent.depth + 1;
-
-      var toExpand = [];
-
-      // go through the node set and insert an entry with info about the row into internal cache
-      for (var i = rowStart; i < rowCount; i++) {
-        var metadata = nodeSet.getMetadata(i);
-        var key = metadata.key;
-        if (this._isExpanded(key)) {
-          // expand it if the user specified it to be expand (or the
-          // parent was previously collapsed before and now expanded again,
-          // the expanded child would need to be expanded also)
-          toExpand.push(key);
-        }
-
-        // add to cache
-        this._insertRow(refIndex, metadata, parent.key, i, depth);
-
-        refIndex += 1;
-      }
-
-      // keep track of expanded row or collapsed row for expand all case
-      if (this._isExpandAll()) {
-        this._removeCollapsed(rowKey);
-      } else if (this.m_expandedKeys.indexOf(rowKey) === -1) {
-        // check whether it's already in expanded keys, which is the case
-        // if it is expanded by initial expansion
-        this.m_expandedKeys.push(rowKey);
-      }
-
-      // extract optional params
-      if (options != null) {
-        queue = options.queue;
-        prevNodeSetInfo = options.prevNodeSetInfo;
-      }
-
-      // see if a previous nodeset has been set and merge with current one
-      // so that we have one nodeset that includes expanded children, a single row insert event
-      // is fired and the nodeset will be in the proper order
+    // check if there's nothing else to expand and process queue is empty
+    var done = toExpand.length === 0 && (queue === undefined || queue.length === 0);
+    if (done) {
+      // fire event to insert the expanded rows
       if (prevNodeSetInfo != null) {
-        // eslint-disable-next-line no-param-reassign
-        nodeSet = new MergedNodeSet(prevNodeSetInfo.nodeSet, nodeSet, rowKey);
+        // check if this is part of a fetchRows call
+        var callbacks = prevNodeSetInfo.callbacks;
+        if (callbacks != null) {
+          // invoke fetch success callback
+          callbacks.success.call(null, nodeSet);
+
+          // we are done at this point, we don't fire insert events
+          this.m_busy = false;
+          return;
+        }
+
+        // use the reference insertion point from prevNodeSetInfo instead
+        this.insertRows(prevNodeSetInfo.firstIndex, prevNodeSetInfo.firstKey, nodeSet);
+      } else {
+        this.insertRows(rangeStart, rowKey, nodeSet);
       }
 
-      // check if there's nothing else to expand and process queue is empty
-      var done = (toExpand.length === 0 && (queue === undefined || queue.length === 0));
-      if (done) {
-        // fire event to insert the expanded rows
-        if (prevNodeSetInfo != null) {
-          // check if this is part of a fetchRows call
-          var callbacks = prevNodeSetInfo.callbacks;
-          if (callbacks != null) {
-            // invoke fetch success callback
-            callbacks.success.call(null, nodeSet);
+      // if child count is > fetched or child count is unknown and requested fetch count is the same as result set size,
+      // then delete all rows that comes after the reference row so that we can trigger a fetch when user scroll to the end
+      // ALSO delete all rows that comes after reference row if the reference row is the last row (according to max row count)
+      var maxCount = this.getMaxCount();
+      if (
+        (childCount === -1 && rowCount === this.getFetchSize()) ||
+        childCount > rowCount ||
+        refIndex === maxCount
+      ) {
+        this._deleteAllRowsBelow(refIndex);
+      } else if (this._getLastIndex() >= maxCount) {
+        // also clean up rows that goes beyond max row count after expand
+        this._deleteAllRowsBelow(maxCount);
+      }
 
-            // we are done at this point, we don't fire insert events
-            this.m_busy = false;
-            return;
-          }
-
-          // use the reference insertion point from prevNodeSetInfo instead
-          this.insertRows(prevNodeSetInfo.firstIndex, prevNodeSetInfo.firstKey, nodeSet);
-        } else {
-          this.insertRows(rangeStart, rowKey, nodeSet);
+      if (prevNodeSetInfo != null) {
+        // fire expand event for each row key cached in prevNodeSetInfo
+        for (var j = 0; j < prevNodeSetInfo.keys.length; j++) {
+          this.handleEvent('expand', { rowKey: prevNodeSetInfo.keys[j] });
         }
-
-        // if child count is > fetched or child count is unknown and requested fetch count is the same as result set size,
-        // then delete all rows that comes after the reference row so that we can trigger a fetch when user scroll to the end
-        // ALSO delete all rows that comes after reference row if the reference row is the last row (according to max row count)
-        var maxCount = this.getMaxCount();
-        if ((childCount === -1 && rowCount === this.getFetchSize()) ||
-            childCount > rowCount || refIndex === maxCount) {
-          this._deleteAllRowsBelow(refIndex);
-        } else if (this._getLastIndex() >= maxCount) {
-          // also clean up rows that goes beyond max row count after expand
-          this._deleteAllRowsBelow(maxCount);
-        }
-
-        if (prevNodeSetInfo != null) {
-          // fire expand event for each row key cached in prevNodeSetInfo
-          for (var j = 0; j < prevNodeSetInfo.keys.length; j++) {
-            this.handleEvent('expand', { rowKey: prevNodeSetInfo.keys[j] });
-          }
-        }
-
-        this.m_busy = false;
-
-        // fire event
-        this.handleEvent('expand', { rowKey: rowKey });
-      } else {
-        // there are still child rows to expand
-        // create queue if not yet created
-        if (queue === undefined) {
-          queue = [];
-        }
-
-        // push expanded rows to the queue
-        if (toExpand.length > 0) {
-          queue.push(toExpand);
-        }
-
-        // create prevNodeSetInfo if not yet created
-        if (prevNodeSetInfo === undefined) {
-          prevNodeSetInfo = {};
-          // populate the initial insertion index and key, this is needed when we are actually firing
-          // the insert event
-          prevNodeSetInfo.firstIndex = rangeStart;
-          prevNodeSetInfo.firstKey = rowKey;
-          // cache of row keys for firing expand event when everything is done
-          prevNodeSetInfo.keys = [];
-        }
-
-        // update the previous node set
-        prevNodeSetInfo.nodeSet = nodeSet;
-        // update keys array for fire expand events later
-        prevNodeSetInfo.keys.push(rowKey);
-
-        // expand any child rows that should be expanded
-        this._syncExpandRows(queue, prevNodeSetInfo);
       }
 
       this.m_busy = false;
 
-      if (queue && queue.length === 0) {
-        this._processQueue();
+      // fire event
+      this.handleEvent('expand', { rowKey: rowKey });
+    } else {
+      // there are still child rows to expand
+      // create queue if not yet created
+      if (queue === undefined) {
+        queue = [];
       }
-    };
+
+      // push expanded rows to the queue
+      if (toExpand.length > 0) {
+        queue.push(toExpand);
+      }
+
+      // create prevNodeSetInfo if not yet created
+      if (prevNodeSetInfo === undefined) {
+        prevNodeSetInfo = {};
+        // populate the initial insertion index and key, this is needed when we are actually firing
+        // the insert event
+        prevNodeSetInfo.firstIndex = rangeStart;
+        prevNodeSetInfo.firstKey = rowKey;
+        // cache of row keys for firing expand event when everything is done
+        prevNodeSetInfo.keys = [];
+      }
+
+      // update the previous node set
+      prevNodeSetInfo.nodeSet = nodeSet;
+      // update keys array for fire expand events later
+      prevNodeSetInfo.keys.push(rowKey);
+
+      // expand any child rows that should be expanded
+      this._syncExpandRows(queue, prevNodeSetInfo);
+    }
+
+    this.m_busy = false;
+
+    if (queue && queue.length === 0) {
+      this._processQueue();
+    }
+  };
 
   /**
    * Expands the specified array of rows synchronously, i.e. one will not start until the previous one is finished.
@@ -1835,16 +1946,21 @@ var __oj_row_expander_metadata =
    * @param {number} depth the depth of the node
    * @private
    */
-  FlattenedTreeDataSource.prototype._insertRow =
-    function (index, metadata, parentKey, childIndex, depth) {
-      var key = metadata.key;
+  FlattenedTreeDataSource.prototype._insertRow = function (
+    index,
+    metadata,
+    parentKey,
+    childIndex,
+    depth
+  ) {
+    var key = metadata.key;
 
-      if (index <= this._getLastIndex()) {
-        this._addEntry(key, depth, childIndex, parentKey, index);
-      } else {
-        this._addEntry(key, depth, childIndex, parentKey);
-      }
-    };
+    if (index <= this._getLastIndex()) {
+      this._addEntry(key, depth, childIndex, parentKey, index);
+    } else {
+      this._addEntry(key, depth, childIndex, parentKey);
+    }
+  };
 
   /**
    * Remove all rows below the row of the specified index including this row.
@@ -1855,7 +1971,7 @@ var __oj_row_expander_metadata =
   FlattenedTreeDataSource.prototype._deleteAllRowsBelow = function (index, count) {
     var actualCount = count;
     if (count == null) {
-      actualCount = (this._getLastIndex() + 1) - index;
+      actualCount = this._getLastIndex() + 1 - index;
     }
 
     var keys = [];
@@ -1971,8 +2087,7 @@ var __oj_row_expander_metadata =
    */
   FlattenedTreeDataSource.prototype._isExpandAll = function () {
     var capability = this.m_wrapped.getCapability('fetchDescendants');
-    return (this.m_collapsedKeys != null &&
-            capability != null && capability !== 'disable');
+    return this.m_collapsedKeys != null && capability != null && capability !== 'disable';
   };
 
   /**
@@ -1982,7 +2097,7 @@ var __oj_row_expander_metadata =
    */
   FlattenedTreeDataSource.prototype._isBatchFetching = function () {
     var capability = this.m_wrapped.getCapability('batchFetch');
-    return (capability === 'enable');
+    return capability === 'enable';
   };
 
   // ///////////////////////////// helper methods subclass should find useful //////////////////////////////////////////////
@@ -2220,6 +2335,7 @@ var __oj_row_expander_metadata =
    * @ojtsimport {module: "ojtable", type: "AMD", importName: ["ojTable"]}
    * @ojtsimport {module: "ojdatagrid", type: "AMD", importName: ["ojDataGrid"]}
    *
+   * @ojoracleicon 'oj-ux-ico-row-expander'
    * @ojuxspecs ['row-expander']
    *
    * @classdesc
@@ -2352,953 +2468,977 @@ var __oj_row_expander_metadata =
    *               {target:"Type", value:"K", for:"parentKey", jsdocOverride:true}]
    */
 
-  oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
-    {
-      version: '1.0.0',
-      widgetEventPrefix: 'oj',
-      options:
-      {
-        /**
-         * The context object obtained from the column renderer (Table) or cell renderer (DataGrid)
-         *
-         * @expose
-         * @ojrequired
-         * @memberof oj.ojRowExpander
-         * @instance
-         * @type {Object}
-         * @default null
-         * @ojsignature {target: "Type", value: "(ojTable.ojTable.RowTemplateContext<K,D> | ojTable.ojTable.CellTemplateContext<K,D> | ojDataGrid.ojDataGrid.CellContext<K,D> | ojDataGrid.ojDataGrid.CellContext<K,D>)", jsdocOverride: true}
-         */
-        context: null,
-        /**
-         * Specifies if the RowExpander is expanded.  The default value is determined by the <code class="prettyprint">context</code> obtained from the column renderer (Table) or cell renderer (DataGrid), or null if no context is specified.
-         * See <a href="#perf-section">performance</a> for recommended usage regarding initial expansion state.
-         *
-         * This attribute is not supported for use with DataProvider.
-         *
-         * @expose
-         * @memberof oj.ojRowExpander
-         * @instance
-         * @type {boolean|null}
-         * @default null
-         * @ojwriteback
-         * @ojdeprecated {since: '7.0.0', description: 'The source of truth for expansion is the data source key set.'}
-         * @ojtsignore
-         * @ojshortdesc Specifies if the RowExpander is expanded.
-         *
-         * @example <caption>Initialize the RowExpander with the <code class="prettyprint">expanded</code> attribute specified:</caption>
-         * &lt;oj-row-expander expanded='true'>&lt;/oj-row-expander>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">expanded</code> property after initialization:</caption>
-         * // getter
-         * var expandedValue = myRowExpander.expanded;
-         *
-         * // setter
-         * myRowExpander.expanded = false;
-         */
-        expanded: null,
-        /**
-         * Triggered when a expand is performed on the RowExpander
-         *
-         * @expose
-         * @event
-         * @memberof oj.ojRowExpander
-         * @instance
-         * @property {any} rowKey the key of the expanded row
-         * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
-       *               {target:"Type", value:"K", for:"key"}]
-         */
-        expand: null,
-        /**
-         * Triggered when a collapse is performed on the RowExpander
-         *
-         * @expose
-         * @event
-         * @memberof oj.ojRowExpander
-         * @instance
-         * @property {any} rowKey the key of the collapsed row
-         * @ojsignature[{target:"Type", value:"<K>", for:"genericTypeParameters"},
-       *               {target:"Type", value:"K", for:"key"}]
-         */
-        collapse: null
-      },
-      classNames:
-      {
-        root: 'oj-rowexpander',
-        icon: 'oj-component-icon',
-        clickable: 'oj-clickable-icon-nocontext',
-        expand: 'oj-rowexpander-expand-icon',
-        collapse: 'oj-rowexpander-collapse-icon',
-        leaf: 'oj-rowexpander-leaf-icon',
-        lazyload: 'oj-rowexpander-lazyload-icon',
-        toucharea: 'oj-rowexpander-touch-area',
-        indent: 'oj-rowexpander-indent',
-        iconspacer: 'oj-rowexpander-icon-spacer',
-        depth0: 'oj-rowexpander-depth-0',
-        depth1: 'oj-rowexpander-depth-1',
-        depth2: 'oj-rowexpander-depth-2',
-        depth3: 'oj-rowexpander-depth-3',
-        depth4: 'oj-rowexpander-depth-4',
-        depth5: 'oj-rowexpander-depth-5',
-        depth6: 'oj-rowexpander-depth-6',
-        depth7: 'oj-rowexpander-depth-7'
-      },
-      constants: {
-        MAX_STYLE_DEPTH: 7
-      },
+  oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent, {
+    version: '1.0.0',
+    widgetEventPrefix: 'oj',
+    options: {
       /**
-       * Create the row expander
-       * @override
+       * The context object obtained from the column renderer (Table) or cell renderer (DataGrid)
+       *
+       * @expose
+       * @ojrequired
        * @memberof oj.ojRowExpander
-       * @protected
+       * @instance
+       * @type {Object}
+       * @default null
+       * @ojsignature {target: "Type", value: "(ojTable.ojTable.RowTemplateContext<K,D> | ojTable.ojTable.CellTemplateContext<K,D> | ojDataGrid.ojDataGrid.CellContext<K,D> | ojDataGrid.ojDataGrid.CellContext<K,D>)", jsdocOverride: true}
        */
-      _ComponentCreate: function () {
-        this._super();
-        this.element[0].classList.add(this.classNames.root);
-        this._initContent();
-      },
+      context: null,
       /**
-       * Initialize the row expander after creation
-       * @private
-       */
-      _initContent: function () {
-        var context = this.options.context;
-        if (context === null) {
-          ojlogger.warn('Context is not setup for the rowExpander');
-          return;
-        }
-
-        // component now widget constructor or non existent
-        if (context.component != null) {
-          this.component = typeof context.component === 'function' ?
-            context.component('instance') :
-            context.component;
-        } else if (context.componentElement) {
-          var widgetElem = context.componentElement;
-          widgetElem = widgetElem.classList.contains('oj-component-initnode') ?
-            widgetElem :
-            widgetElem.querySelector('.oj-component-initnode');
-          this.component = ojcomponentcore.__GetWidgetConstructor(widgetElem)('instance');
-        }
-        this.datasource = context.datasource;
-
-        if (!this._subscribed && this._isDataProvider()) {
-          this._subscribeToDataProvider();
-          this._subscribed = true;
-        }
-
-        // root hidden so subtract 1
-        this.depth = this._getDepth(context);
-        this.rowKey = this._getRowKey(context);
-        var state = this._getState(context);
-        var isLeaf = this._getLeaf(context);
-        if (state) {
-          this.iconState = state;
-        } else if (isLeaf) {
-          this.iconState = 'leaf';
-        } else {
-          this.iconState = this._getDataProviderExpanded().has(this.rowKey) ? 'expanded' : 'collapsed';
-        }
-        this.index = this._getIndex(context);
-
-        this.parentKey = this._getParentKey(context);
-
-        this._addIndentation();
-        this._addIcon();
-        this._setIconStateClass();
-        if (this.iconState === 'leaf') {
-          // we'll still need to handle ctrl+alt+5 for leaf node
-          this.icon.setAttribute('tabindex', -1);
-        }
-      },
-      /**
-       * Listens for touch end events on touch area.
-       * @private
-       */
-      _touchEndListener: function (event) {
-        // prevent scroll to top and # append, also prevents the following click
-        event.preventDefault();
-        this._fireExpandCollapse();
-      },
-      /**
-       * Listens for key press events on this.element[0].
-       * @private
-       */
-      _keyPressListener: function (event) {
-        var eventKey = event.key || event.keyCode;
-        if (DataCollectionUtils.isSpaceBarKeyEvent(eventKey)
-          || DataCollectionUtils.isEnterKeyEvent(eventKey)) {
-          // do expand or collapse
-          this._fireExpandCollapse();
-          // stop browser from for example scrolling the page
-          event.preventDefault();
-          // ensure focus stays
-          event.target.focus();
-        }
-      },
-      /**
-       * Listens for click events on touch area.
-       * @private
-       */
-      _clickListener: function (event) {
-        // prevent scroll to top and # append
-        event.preventDefault();
-        this._fireExpandCollapse();
-      },
-      /**
-       * Sync initial state of expanded with context/FlattenedTreeModel
-       * @private
-       */
-      _initExpanded: function () {
-        if (!this._isDataProvider()) {
-          var expanded = this.options.expanded;
-          if (expanded != null) {
-            if (expanded && this.iconState === 'collapsed') {
-              this._expand();
-            } else if (!expanded && this.iconState === 'expanded') {
-              this._collapse();
-            }
-          } else {
-            // make sure expanded value reflect the current state
-            // we don't want to trigger option change event in this case
-            this.options.expanded = this.iconState !== 'collapsed';
-          }
-        }
-      },
-      /**
-       * @private
-       */
-      _isDataProvider: function () {
-        return oj.DataProviderFeatureChecker.isDataProvider(this.datasource);
-      },
-      /**
-       * @private
-       */
-      _getDepth: function (context) {
-        var metadata = context;
-        if (context.item) {
-          metadata = context.item.metadata;
-        }
-        if (this._isDataProvider()) {
-          return metadata.treeDepth + 1;
-        }
-        return metadata.depth;
-      },
-      /**
-       * @private
-       */
-      _getRowKey: function (context) {
-        var metadata = context;
-        if (context.item) {
-          metadata = context.item.metadata;
-        }
-        return metadata.key;
-      },
-      /**
-       * @private
-       */
-      _getState: function (context) {
-        var metadata = context;
-        if (context.item) {
-          metadata = context.item.metadata;
-        }
-        return metadata.state;
-      },
-      /**
-       * @private
-       */
-      _getParentKey: function (context) {
-        var metadata = context;
-        if (context.item) {
-          metadata = context.item.metadata;
-        }
-        return metadata.parentKey;
-      },
-      /**
-       * @private
-       */
-      _getIndex: function (context) {
-        var metadata = context;
-        if (context.item) {
-          metadata = context.item.metadata;
-        }
-        if (this._isDataProvider()) {
-          return metadata.indexFromParent;
-        }
-        return metadata.index;
-      },
-      /**
-       * @private
-       */
-      _getLeaf: function (context) {
-        var metadata = context;
-        if (context.item) {
-          metadata = context.item.metadata;
-        }
-        return metadata.isLeaf;
-      },
-      /**
-       * @private
-       */
-      _getDataProviderExpanded: function () {
-        return this._dataSourceExpanded;
-      },
-      /**
-       * @private
-       */
-      _getFlattenedDataProvider: function () {
-        if (this.datasource.getExpandedObservable) {
-          return this.datasource;
-        }
-        // paging case
-        return this.datasource.dataProvider;
-      },
-      /**
-       * @private
-       */
-      _getChildCount: function (parentKey) {
-        if (this._isDataProvider()) {
-          var dataprovider;
-          if (parentKey != null) {
-            dataprovider = this._getFlattenedDataProvider().dataProvider.getChildDataProvider(
-              this.parentKey);
-          } else {
-            dataprovider = this._getFlattenedDataProvider().dataProvider;
-          }
-          return dataprovider.getTotalSize();
-        }
-        return this.datasource.getWrappedDataSource().getChildCount(this.parentKey);
-      },
-      /**
-       * Redraw the RowExpander element.
+       * Specifies if the RowExpander is expanded.  The default value is determined by the <code class="prettyprint">context</code> obtained from the column renderer (Table) or cell renderer (DataGrid), or null if no context is specified.
+       * See <a href="#perf-section">performance</a> for recommended usage regarding initial expansion state.
+       *
+       * This attribute is not supported for use with DataProvider.
        *
        * @expose
        * @memberof oj.ojRowExpander
        * @instance
-       * @return {void}
+       * @type {boolean|null}
+       * @default null
+       * @ojwriteback
+       * @ojdeprecated {since: '7.0.0', description: 'The source of truth for expansion is the data source key set.'}
+       * @ojtsignore
+       * @ojshortdesc Specifies if the RowExpander is expanded.
        *
-       * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-       * myRowExpander.refresh();
-       */
-      refresh: function () {
-        this.element.empty();
-        this._initContent();
-      },
-      /**
-       * Sets up resources after creation
-       * @protected
-       * @override
-       * @memberof oj.ojRowExpander
-       */
-      _SetupResources: function () {
-        this._super();
-        this._setupResources();
-      },
-      /**
-       * Releases resources after creation
-       * @protected
-       * @override
-       * @memberof oj.ojRowExpander
-       */
-      _ReleaseResources: function () {
-        this._super();
-        this._releaseResources();
-      },
-      /**
-       * Releases resources after creation
-       * @private
-       * @memberof oj.ojRowExpander
-       */
-      _releaseResources: function () {
-        this.component.element[0].removeEventListener('keydown', this.handleKeyDownCallback, true);
-        this.toucharea.removeEventListener('touchend', this.handleTouchEndCallback);
-        this.toucharea.removeEventListener('click', this.handleClickCallback);
-        this.element[0].removeEventListener('keydown', this.handleKeyPressCallback);
-
-
-        if (this.component._IsCustomElement()) {
-          $(this.component.element).off('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
-        } else {
-          $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
-        }
-
-        // unregister expand/collapse events
-        if (this._isDataProvider()) {
-          this._subscribed = false;
-          this._dataProviderSubscription.unsubscribe();
-        } else {
-          this.datasource.off('expand', this.handleExpandCallback, this);
-          this.datasource.off('collapse', this.handleCollapseCallback, this);
-        }
-      },
-      /**
-       * destroy the row expander
+       * @example <caption>Initialize the RowExpander with the <code class="prettyprint">expanded</code> attribute specified:</caption>
+       * &lt;oj-row-expander expanded='true'>&lt;/oj-row-expander>
        *
-       * <p>This method does not accept any arguments.
+       * @example <caption>Get or set the <code class="prettyprint">expanded</code> property after initialization:</caption>
+       * // getter
+       * var expandedValue = myRowExpander.expanded;
+       *
+       * // setter
+       * myRowExpander.expanded = false;
+       */
+      expanded: null,
+      /**
+       * Triggered when a expand is performed on the RowExpander
        *
        * @expose
+       * @event
        * @memberof oj.ojRowExpander
        * @instance
-       * @private
-       * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-       * $( ".selector" ).ojRowExpander( "destroy" );
+       * @property {any} rowKey the key of the expanded row
+       * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
+       *               {target:"Type", value:"K", for:"key"}]
        */
-      _destroy: function () {
-        // unregister keydown and active key change handlers
-        this._super();
-        this._releaseResources();
-        this.element[0].classList.remove(this.classNames.root);
-        this.element.empty();
-      },
+      expand: null,
       /**
-      * @memberof oj.ojRowExpander
-      * @private
-      */
-      _setupResources: function () {
-        if (!this._subscribed && this._isDataProvider()) {
-          this._subscribeToDataProvider();
-          this._subscribed = true;
-        }
-
-        this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
-        this.component.element[0].addEventListener('keydown', this.handleKeyDownCallback, true);
-        if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
-          this.handleTouchEndCallback = this._touchEndListener.bind(this);
-          this.toucharea.addEventListener('touchend', this.handleTouchEndCallback);
-
-          this.handleClickCallback = this._clickListener.bind(this);
-          this.toucharea.addEventListener('click', this.handleClickCallback);
-
-          this.handleKeyPressCallback = this._keyPressListener.bind(this);
-          this.element[0].addEventListener('keydown', this.handleKeyPressCallback);
-
-          // listens for expand and collapse event from flattened datasource
-          // this could be due to user clicks, keyboard shortcuts or programmatically
-          this.handleExpandCallback = this._handleExpandEvent.bind(this);
-          this.handleCollapseCallback = this._handleCollapseEvent.bind(this);
-
-          if (!this._isDataProvider()) {
-            // addEventListener not supported on datasource
-            this.datasource.on('expand', this.handleExpandCallback, this);
-            this.datasource.on('collapse', this.handleCollapseCallback, this);
-          }
-        }
-        // listen for active key change event from host component
-        this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
-
-        // These on methods need to stay jquery because were relying on jquery additions in the call
-        if (this.component._IsCustomElement()) {
-          $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
-        } else {
-          $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
-        }
-
-        if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
-          // if expanded option is explicitly specified, make sure it's in sync with current state
-          this._initExpanded();
-        }
-      },
-      _subscribeToDataProvider: function () {
-        var self = this;
-        var observable = this._getFlattenedDataProvider().getExpandedObservable();
-        self._dataProviderSubscription = observable.subscribe(function (value) {
-          var shouldCollapse = false;
-          var shouldExpand = false;
-
-          self._dataSourceExpanded = value.value;
-
-          if (self.iconState === 'expanded' && !self._dataSourceExpanded.has(self.rowKey)) {
-            shouldCollapse = true;
-            self._loading();
-          }
-
-          if (self.iconState === 'collapsed' && self._dataSourceExpanded.has(self.rowKey)) {
-            shouldExpand = true;
-            self._loading();
-          }
-
-          if (shouldExpand || shouldCollapse) {
-            var completionPromise = value.completionPromise;
-            if (completionPromise) {
-              completionPromise.then(function () {
-                if (shouldExpand) {
-                  self._handleExpandEvent({ rowKey: self.rowKey });
-                }
-                if (shouldCollapse) {
-                  self._handleCollapseEvent({ rowKey: self.rowKey });
-                }
-              });
-            }
-          }
-        });
-      },
-      /**
-       * Expand the current row expander
-       * @return {boolean} true if the expand is processed, false if it's a no op.
-       * @private
+       * Triggered when a collapse is performed on the RowExpander
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojRowExpander
+       * @instance
+       * @property {any} rowKey the key of the collapsed row
+       * @ojsignature[{target:"Type", value:"<K>", for:"genericTypeParameters"},
+       *               {target:"Type", value:"K", for:"key"}]
        */
-      _expand: function () {
-        if (this.iconState === 'collapsed') {
-          if (!this._isDataProvider()) {
-            this._loading();
-            this.datasource.expand(this.rowKey);
-          } else {
-            this._getFlattenedDataProvider().setExpanded(
-              this._getDataProviderExpanded().add([this.rowKey]));
-          }
-          return true;
-        }
-        return false;
-      },
-      /**
-       * Collapse the current row expander
-       * @return {boolean} true if the collapse is processed, false if it's a no op.
-       * @private
-       */
-      _collapse: function () {
-        if (this.iconState === 'expanded') {
-          if (!this._isDataProvider()) {
-            this._loading();
-            this.datasource.collapse(this.rowKey);
-          } else {
-            this._getFlattenedDataProvider().setExpanded(
-              this._getDataProviderExpanded().delete([this.rowKey]));
-          }
-          return true;
-        }
-        return false;
-      },
-      /**
-       * Sets a single option value
-       * @param {Object} key the option key
-       * @param {Object} value the option value
-       * @param {Object} flags additional flags for option*
-       * @override
-       * @private
-       */
-      _setOption: function (key, value, flags) {
-        if (key === 'expanded' && !this._isDataProvider() && (flags._context == null || flags._context.internalSet !== true)) {
-          if (value) {
+      collapse: null
+    },
+    classNames: {
+      root: 'oj-rowexpander',
+      icon: 'oj-component-icon',
+      clickable: 'oj-clickable-icon-nocontext',
+      expand: 'oj-rowexpander-expand-icon',
+      collapse: 'oj-rowexpander-collapse-icon',
+      leaf: 'oj-rowexpander-leaf-icon',
+      lazyload: 'oj-rowexpander-lazyload-icon',
+      toucharea: 'oj-rowexpander-touch-area',
+      indent: 'oj-rowexpander-indent',
+      iconspacer: 'oj-rowexpander-icon-spacer',
+      depth0: 'oj-rowexpander-depth-0',
+      depth1: 'oj-rowexpander-depth-1',
+      depth2: 'oj-rowexpander-depth-2',
+      depth3: 'oj-rowexpander-depth-3',
+      depth4: 'oj-rowexpander-depth-4',
+      depth5: 'oj-rowexpander-depth-5',
+      depth6: 'oj-rowexpander-depth-6',
+      depth7: 'oj-rowexpander-depth-7'
+    },
+    constants: {
+      MAX_STYLE_DEPTH: 7
+    },
+    /**
+     * Create the row expander
+     * @override
+     * @memberof oj.ojRowExpander
+     * @protected
+     */
+    _ComponentCreate: function () {
+      this._super();
+      this.element[0].classList.add(this.classNames.root);
+      this._initContent();
+    },
+    /**
+     * Initialize the row expander after creation
+     * @private
+     */
+    _initContent: function () {
+      var context = this.options.context;
+      if (context === null) {
+        ojlogger.warn('Context is not setup for the rowExpander');
+        return;
+      }
+
+      // component now widget constructor or non existent
+      if (context.component != null) {
+        this.component =
+          typeof context.component === 'function' ? context.component('instance') : context.component;
+      } else if (context.componentElement) {
+        var widgetElem = context.componentElement;
+        widgetElem = widgetElem.classList.contains('oj-component-initnode')
+          ? widgetElem
+          : widgetElem.querySelector('.oj-component-initnode');
+        this.component = ojcomponentcore.__GetWidgetConstructor(widgetElem)('instance');
+      }
+      this.datasource = context.datasource;
+
+      if (!this._subscribed && this._isDataProvider()) {
+        this._subscribeToDataProvider();
+        this._subscribed = true;
+      }
+
+      // root hidden so subtract 1
+      this.depth = this._getDepth(context);
+      this.rowKey = this._getRowKey(context);
+      var state = this._getState(context);
+      var isLeaf = this._getLeaf(context);
+      if (state) {
+        this.iconState = state;
+      } else if (isLeaf) {
+        this.iconState = 'leaf';
+      } else {
+        this.iconState = this._getDataProviderExpanded().has(this.rowKey) ? 'expanded' : 'collapsed';
+      }
+      this.index = this._getIndex(context);
+
+      this.parentKey = this._getParentKey(context);
+
+      this._addIndentation();
+      this._addIcon();
+      this._setIconStateClass();
+      if (this.iconState === 'leaf') {
+        // we'll still need to handle ctrl+alt+5 for leaf node
+        this.icon.setAttribute('tabindex', -1);
+      }
+    },
+    /**
+     * Listens for touch end events on touch area.
+     * @private
+     */
+    _touchEndListener: function (event) {
+      // prevent scroll to top and # append, also prevents the following click
+      event.preventDefault();
+      this._fireExpandCollapse();
+    },
+    /**
+     * Listens for key press events on this.element[0].
+     * @private
+     */
+    _keyPressListener: function (event) {
+      var eventKey = event.key || event.keyCode;
+      if (
+        DataCollectionUtils.isSpaceBarKeyEvent(eventKey) ||
+        DataCollectionUtils.isEnterKeyEvent(eventKey)
+      ) {
+        // do expand or collapse
+        this._fireExpandCollapse();
+        // stop browser from for example scrolling the page
+        event.preventDefault();
+        // ensure focus stays
+        event.target.focus();
+      }
+    },
+    /**
+     * Listens for click events on touch area.
+     * @private
+     */
+    _clickListener: function (event) {
+      // prevent scroll to top and # append
+      event.preventDefault();
+      this._fireExpandCollapse();
+    },
+    /**
+     * Sync initial state of expanded with context/FlattenedTreeModel
+     * @private
+     */
+    _initExpanded: function () {
+      if (!this._isDataProvider()) {
+        var expanded = this.options.expanded;
+        if (expanded != null) {
+          if (expanded && this.iconState === 'collapsed') {
             this._expand();
-          } else {
+          } else if (!expanded && this.iconState === 'expanded') {
             this._collapse();
           }
-          // don't update option, it will be update when the operation completed via expand/collapse event
+        } else {
+          // make sure expanded value reflect the current state
+          // we don't want to trigger option change event in this case
+          this.options.expanded = this.iconState !== 'collapsed';
+        }
+      }
+    },
+    /**
+     * @private
+     */
+    _isDataProvider: function () {
+      return oj.DataProviderFeatureChecker.isDataProvider(this.datasource);
+    },
+    /**
+     * @private
+     */
+    _getDepth: function (context) {
+      var metadata = context;
+      if (context.item) {
+        metadata = context.item.metadata;
+      }
+      if (this._isDataProvider()) {
+        return metadata.treeDepth + 1;
+      }
+      return metadata.depth;
+    },
+    /**
+     * @private
+     */
+    _getRowKey: function (context) {
+      var metadata = context;
+      if (context.item) {
+        metadata = context.item.metadata;
+      }
+      return metadata.key;
+    },
+    /**
+     * @private
+     */
+    _getState: function (context) {
+      var metadata = context;
+      if (context.item) {
+        metadata = context.item.metadata;
+      }
+      return metadata.state;
+    },
+    /**
+     * @private
+     */
+    _getParentKey: function (context) {
+      var metadata = context;
+      if (context.item) {
+        metadata = context.item.metadata;
+      }
+      return metadata.parentKey;
+    },
+    /**
+     * @private
+     */
+    _getIndex: function (context) {
+      var metadata = context;
+      if (context.item) {
+        metadata = context.item.metadata;
+      }
+      if (this._isDataProvider()) {
+        return metadata.indexFromParent;
+      }
+      return metadata.index;
+    },
+    /**
+     * @private
+     */
+    _getLeaf: function (context) {
+      var metadata = context;
+      if (context.item) {
+        metadata = context.item.metadata;
+      }
+      return metadata.isLeaf;
+    },
+    /**
+     * @private
+     */
+    _getDataProviderExpanded: function () {
+      return this._dataSourceExpanded;
+    },
+    /**
+     * @private
+     */
+    _getFlattenedDataProvider: function () {
+      if (this.datasource.getExpandedObservable) {
+        return this.datasource;
+      }
+      // paging case
+      return this.datasource.dataProvider;
+    },
+    /**
+     * @private
+     */
+    _getChildCount: function (parentKey) {
+      if (this._isDataProvider()) {
+        var dataprovider;
+        if (parentKey != null) {
+          dataprovider = this._getFlattenedDataProvider().dataProvider.getChildDataProvider(
+            this.parentKey
+          );
+        } else {
+          dataprovider = this._getFlattenedDataProvider().dataProvider;
+        }
+        return dataprovider.getTotalSize();
+      }
+      return this.datasource.getWrappedDataSource().getChildCount(this.parentKey);
+    },
+    /**
+     * Redraw the RowExpander element.
+     *
+     * @expose
+     * @memberof oj.ojRowExpander
+     * @instance
+     * @return {void}
+     *
+     * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
+     * myRowExpander.refresh();
+     */
+    refresh: function () {
+      this.element.empty();
+      this._initContent();
+    },
+    /**
+     * Sets up resources after creation
+     * @protected
+     * @override
+     * @memberof oj.ojRowExpander
+     */
+    _SetupResources: function () {
+      this._super();
+      this._setupResources();
+    },
+    /**
+     * Releases resources after creation
+     * @protected
+     * @override
+     * @memberof oj.ojRowExpander
+     */
+    _ReleaseResources: function () {
+      this._super();
+      this._releaseResources();
+    },
+    /**
+     * Releases resources after creation
+     * @private
+     * @memberof oj.ojRowExpander
+     */
+    _releaseResources: function () {
+      this.component.element[0].removeEventListener('keydown', this.handleKeyDownCallback, true);
+      this.toucharea.removeEventListener('touchend', this.handleTouchEndCallback);
+      this.toucharea.removeEventListener('click', this.handleClickCallback);
+      this.element[0].removeEventListener('keydown', this.handleKeyPressCallback);
+
+      if (this.component._IsCustomElement()) {
+        $(this.component.element).off('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
+        $(this.component.OuterWrapper).off('ojBeforeCurrentRow', this.handleActiveKeyChangeCallback);
+      } else {
+        $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
+        $(this.component.element).off('ojbeforecurrentrow', this.handleActiveKeyChangeCallback);
+      }
+
+      // unregister expand/collapse events
+      if (this._isDataProvider()) {
+        this._subscribed = false;
+        this._dataProviderSubscription.unsubscribe();
+      } else {
+        this.datasource.off('expand', this.handleExpandCallback, this);
+        this.datasource.off('collapse', this.handleCollapseCallback, this);
+      }
+    },
+    /**
+     * destroy the row expander
+     *
+     * <p>This method does not accept any arguments.
+     *
+     * @expose
+     * @memberof oj.ojRowExpander
+     * @instance
+     * @private
+     * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
+     * $( ".selector" ).ojRowExpander( "destroy" );
+     */
+    _destroy: function () {
+      // unregister keydown and active key change handlers
+      this._super();
+      this._releaseResources();
+      this.element[0].classList.remove(this.classNames.root);
+      this.element.empty();
+    },
+    /**
+     * @memberof oj.ojRowExpander
+     * @private
+     */
+    _setupResources: function () {
+      if (!this._subscribed && this._isDataProvider()) {
+        this._subscribeToDataProvider();
+        this._subscribed = true;
+      }
+
+      this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
+      this.component.element[0].addEventListener('keydown', this.handleKeyDownCallback, true);
+      if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
+        this.handleTouchEndCallback = this._touchEndListener.bind(this);
+        this.toucharea.addEventListener('touchend', this.handleTouchEndCallback);
+
+        this.handleClickCallback = this._clickListener.bind(this);
+        this.toucharea.addEventListener('click', this.handleClickCallback);
+
+        this.handleKeyPressCallback = this._keyPressListener.bind(this);
+        this.element[0].addEventListener('keydown', this.handleKeyPressCallback);
+
+        // listens for expand and collapse event from flattened datasource
+        // this could be due to user clicks, keyboard shortcuts or programmatically
+        this.handleExpandCallback = this._handleExpandEvent.bind(this);
+        this.handleCollapseCallback = this._handleCollapseEvent.bind(this);
+
+        if (!this._isDataProvider()) {
+          // addEventListener not supported on datasource
+          this.datasource.on('expand', this.handleExpandCallback, this);
+          this.datasource.on('collapse', this.handleCollapseCallback, this);
+        }
+      }
+      // listen for active key change event from host component
+      this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
+
+      // These on methods need to stay jquery because were relying on jquery additions in the call
+      if (this.component._IsCustomElement()) {
+        $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
+        $(this.component.OuterWrapper).on('ojBeforeCurrentRow', this.handleActiveKeyChangeCallback);
+      } else {
+        $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
+        $(this.component.element).on('ojbeforecurrentrow', this.handleActiveKeyChangeCallback);
+      }
+
+      if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
+        // if expanded option is explicitly specified, make sure it's in sync with current state
+        this._initExpanded();
+      }
+    },
+    _subscribeToDataProvider: function () {
+      var self = this;
+      var observable = this._getFlattenedDataProvider().getExpandedObservable();
+      self._dataProviderSubscription = observable.subscribe(function (value) {
+        var shouldCollapse = false;
+        var shouldExpand = false;
+
+        self._dataSourceExpanded = value.value;
+
+        if (self.iconState === 'expanded' && !self._dataSourceExpanded.has(self.rowKey)) {
+          shouldCollapse = true;
+          self._loading();
+        }
+
+        if (self.iconState === 'collapsed' && self._dataSourceExpanded.has(self.rowKey)) {
+          shouldExpand = true;
+          self._loading();
+        }
+
+        if (shouldExpand || shouldCollapse) {
+          var completionPromise = value.completionPromise;
+          if (completionPromise) {
+            completionPromise.then(function () {
+              if (shouldExpand) {
+                self._handleExpandEvent({ rowKey: self.rowKey });
+              }
+              if (shouldCollapse) {
+                self._handleCollapseEvent({ rowKey: self.rowKey });
+              }
+            });
+          }
+        }
+      });
+    },
+    /**
+     * Expand the current row expander
+     * @return {boolean} true if the expand is processed, false if it's a no op.
+     * @private
+     */
+    _expand: function () {
+      if (this.iconState === 'collapsed') {
+        if (!this._isDataProvider()) {
+          this._loading();
+          this.datasource.expand(this.rowKey);
+        } else {
+          this._getFlattenedDataProvider().setExpanded(
+            this._getDataProviderExpanded().add([this.rowKey])
+          );
+        }
+        return true;
+      }
+      return false;
+    },
+    /**
+     * Collapse the current row expander
+     * @return {boolean} true if the collapse is processed, false if it's a no op.
+     * @private
+     */
+    _collapse: function () {
+      if (this.iconState === 'expanded') {
+        if (!this._isDataProvider()) {
+          this._loading();
+          this.datasource.collapse(this.rowKey);
+        } else {
+          this._getFlattenedDataProvider().setExpanded(
+            this._getDataProviderExpanded().delete([this.rowKey])
+          );
+        }
+        return true;
+      }
+      return false;
+    },
+    /**
+     * Sets a single option value
+     * @param {Object} key the option key
+     * @param {Object} value the option value
+     * @param {Object} flags additional flags for option*
+     * @override
+     * @private
+     */
+    _setOption: function (key, value, flags) {
+      if (
+        key === 'expanded' &&
+        !this._isDataProvider() &&
+        (flags._context == null || flags._context.internalSet !== true)
+      ) {
+        if (value) {
+          this._expand();
+        } else {
+          this._collapse();
+        }
+        // don't update option, it will be update when the operation completed via expand/collapse event
+        return;
+      }
+
+      this._super(key, value, flags);
+
+      // refresh if context is updated
+      if (key === 'context' && flags._context != null && flags._context.internalSet !== true) {
+        this.refresh();
+      }
+    },
+    /**
+     * Add the indentation spacers to the row
+     * @private
+     */
+    _addIndentation: function () {
+      // 0 index the depth for style purposes
+      var depth = this.depth - 1;
+      if (depth < this.constants.MAX_STYLE_DEPTH) {
+        this._appendSpacer(depth);
+      } else {
+        for (var i = 1; i <= depth / this.constants.MAX_STYLE_DEPTH; i++) {
+          this._appendSpacer(this.constants.MAX_STYLE_DEPTH);
+        }
+        var remainder = depth % this.constants.MAX_STYLE_DEPTH;
+        if (remainder < this.constants.MAX_STYLE_DEPTH) {
+          this._appendSpacer(remainder);
+        }
+      }
+    },
+    /**
+     * Append appropriate spacer based on depth to the row expander
+     * @param {number} depth the depth
+     * @private
+     */
+    _appendSpacer: function (depth) {
+      var spacer = document.createElement('span');
+      spacer.classList.add(this.classNames.indent);
+      spacer.classList.add(this.classNames['depth' + depth]);
+      this.element[0].appendChild(spacer); // @HTMLUpdateOK
+    },
+    /**
+     * Add an icon to the row expander with appropriate class names for a clickable icon.
+     * @private
+     */
+    _addIcon: function () {
+      var iconSpacer = document.createElement('div');
+      iconSpacer.classList.add(this.classNames.iconspacer);
+      this.toucharea = document.createElement('div');
+      this.toucharea.classList.add(this.classNames.toucharea);
+      // if icon is a leaf do not add # because that will trigger navigation if entered in JAWS
+      this.icon = document.createElement('a');
+      this.icon.setAttribute('href', this.iconState === 'leaf' ? '' : '#');
+      this.icon.setAttribute('aria-labelledby', this._getLabelledBy());
+      this.icon.classList.add(this.classNames.icon);
+      this.icon.classList.add(this.classNames.clickable);
+      this.icon.setAttribute(
+        'aria-label',
+        this.getTranslatedString('accessibleLevelDescription', { level: this.depth })
+      );
+      this.toucharea.appendChild(this.icon); // @HTMLUpdateOK
+      iconSpacer.appendChild(this.toucharea); // @HTMLUpdateOK
+      this.element[0].appendChild(iconSpacer); // @HTMLUpdateOK
+
+      var self = this;
+      this._focusable({
+        element: $(self.icon),
+        applyHighlight: true
+      });
+    },
+    /**
+     * Add a class name on the icon
+     * @private
+     * @param {string} classKey the key of the appropriate icon class expand/collapse/leaf
+     */
+    _addIconClass: function (classKey) {
+      this.icon.classList.add(this.classNames[classKey]);
+    },
+    /**
+     * Remove a class name on the icon
+     * @private
+     * @param {string} classKey the key of the appropriate icon class expand/collapse/leaf
+     */
+    _removeIconClass: function (classKey) {
+      this.icon.classList.remove(this.classNames[classKey]);
+    },
+    /**
+     * Set the icon class to the the iconState property
+     * @private
+     */
+    _setIconStateClass: function () {
+      switch (this.iconState) {
+        case 'leaf':
+          this._removeIconClass('icon');
+          this._removeIconClass('clickable');
+          this._addIconClass('leaf');
+          break;
+        case 'collapsed':
+          this._addIconClass('expand');
+          this._ariaExpanded(false);
+          break;
+        case 'expanded':
+          this._addIconClass('collapse');
+          this._ariaExpanded(true);
+          break;
+        case 'loading':
+          this._removeIconClass('clickable');
+          this._addIconClass('lazyload');
+          break;
+        default:
+          break;
+      }
+    },
+    /**
+     * Removes the icon class of the iconState property
+     * @private
+     */
+    _removeIconStateClass: function () {
+      switch (this.iconState) {
+        case 'leaf':
+          this._removeIconClass('leaf');
+          this._addIconClass('icon');
+          this._addIconClass('clickable');
+          break;
+        case 'collapsed':
+          this._removeIconClass('expand');
+          break;
+        case 'expanded':
+          this._removeIconClass('collapse');
+          break;
+        case 'loading':
+          this._removeIconClass('lazyload');
+          this._addIconClass('clickable');
+          break;
+        default:
+          break;
+      }
+    },
+    /**
+     * Handles active key change event from host component (ojDataGrid or ojTable)
+     * @param {Event} event
+     * @param {Object|null|number=} ui
+     * @private
+     */
+    _handleActiveKeyChangeEvent: function (event, ui) {
+      var rowKey;
+      var previousRowKey;
+
+      if (ui == null) {
+        // eslint-disable-next-line no-param-reassign
+        ui = event.detail;
+      }
+
+      if (ui.currentCell != null) {
+        // datagrid scenario
+        rowKey = ui.currentCell.type === 'cell' ? ui.currentCell.keys.row : ui.currentCell.key;
+        if (ui.previousValue != null) {
+          previousRowKey =
+            ui.previousCurrentCell.type === 'cell'
+              ? ui.previousCurrentCell.keys.row
+              : ui.previousCurrentCell.key;
+        }
+      } else if (ui.currentRow != null) {
+        // table scenario
+        rowKey = ui.currentRow.rowKey;
+        if (ui.previousCurrentRow != null) {
+          previousRowKey = ui.previousCurrentRow.rowKey;
+        }
+      }
+      // if the event is for this row and the active key change event is triggered
+      // by row change and not column change
+      if (this.rowKey === rowKey && previousRowKey !== rowKey) {
+        // if the component allows AccessibleContext to be set
+        if (this.component._setAccessibleContext) {
+          // row context of row expander for screen reader
+          // todo: get index from TreeDataSource as well since that could change
+          var context = this.getTranslatedString('accessibleRowDescription', {
+            level: this.depth,
+            num: this.index + 1,
+            total: this._getChildCount(this.parentKey)
+          });
+          // state of row expander for screen reader
+          var state;
+          if (this.iconState === 'collapsed') {
+            state = this.getTranslatedString('accessibleStateCollapsed');
+          } else if (this.iconState === 'expanded') {
+            state = this.getTranslatedString('accessibleStateExpanded');
+          } else {
+            // for leaf node don't read anything
+            state = '';
+          }
+
+          this.component._setAccessibleContext({ context: context, state: state });
+        }
+      }
+    },
+    /**
+     * Handles keydown event from host component (ojDataGrid or ojTable)
+     * No longer returns a boolean but rather prevents default if appropriate
+     * @param {Event} event
+     * @private
+     */
+    _handleKeyDownEvent: function (event) {
+      var targetContext = ojcomponentcore.__GetWidgetConstructor(this.component.element[0])(
+        'getContextByNode',
+        event.target
+      );
+      var rowKey;
+      if (targetContext == null) {
+        var currentRow = this.component.options.currentRow;
+        if (currentRow == null || currentRow.rowKey == null) {
           return;
         }
-
-        this._super(key, value, flags);
-
-        // refresh if context is updated
-        if (key === 'context' && flags._context != null && flags._context.internalSet !== true) {
-          this.refresh();
+        rowKey = currentRow.rowKey;
+      } else {
+        rowKey = targetContext.key;
+        if (rowKey == null && targetContext.keys != null) {
+          rowKey = targetContext.keys.row;
         }
-      },
-      /**
-       * Add the indentation spacers to the row
-       * @private
-       */
-      _addIndentation: function () {
-        // 0 index the depth for style purposes
-        var depth = this.depth - 1;
-        if (depth < this.constants.MAX_STYLE_DEPTH) {
-          this._appendSpacer(depth);
-        } else {
-          for (var i = 1; i <= (depth / (this.constants.MAX_STYLE_DEPTH)); i++) {
-            this._appendSpacer(this.constants.MAX_STYLE_DEPTH);
-          }
-          var remainder = (depth % this.constants.MAX_STYLE_DEPTH);
-          if (remainder < this.constants.MAX_STYLE_DEPTH) {
-            this._appendSpacer(remainder);
-          }
-        }
-      },
-      /**
-       * Append appropriate spacer based on depth to the row expander
-       * @param {number} depth the depth
-       * @private
-       */
-      _appendSpacer: function (depth) {
-        var spacer = document.createElement('span');
-        spacer.classList.add(this.classNames.indent);
-        spacer.classList.add(this.classNames['depth' + depth]);
-        this.element[0].appendChild(spacer); // @HTMLUpdateOK
-      },
-      /**
-       * Add an icon to the row expander with appropriate class names for a clickable icon.
-       * @private
-       */
-      _addIcon: function () {
-        var iconSpacer = document.createElement('div');
-        iconSpacer.classList.add(this.classNames.iconspacer);
-        this.toucharea = document.createElement('div');
-        this.toucharea.classList.add(this.classNames.toucharea);
-        // if icon is a leaf do not add # because that will trigger navigation if entered in JAWS
-        this.icon = document.createElement('a');
-        this.icon.setAttribute('href', this.iconState === 'leaf' ? '' : '#');
-        this.icon.setAttribute('aria-labelledby', this._getLabelledBy());
-        this.icon.classList.add(this.classNames.icon);
-        this.icon.classList.add(this.classNames.clickable);
-        this.icon.setAttribute('aria-label',
-          this.getTranslatedString('accessibleLevelDescription', { level: this.depth }));
-        this.toucharea.appendChild(this.icon); // @HTMLUpdateOK
-        iconSpacer.appendChild(this.toucharea); // @HTMLUpdateOK
-        this.element[0].appendChild(iconSpacer); // @HTMLUpdateOK
-
-        var self = this;
-        this._focusable({
-          element: $(self.icon),
-          applyHighlight: true
-        });
-      },
-      /**
-       * Add a class name on the icon
-       * @private
-       * @param {string} classKey the key of the appropriate icon class expand/collapse/leaf
-       */
-      _addIconClass: function (classKey) {
-        this.icon.classList.add(this.classNames[classKey]);
-      },
-      /**
-       * Remove a class name on the icon
-       * @private
-       * @param {string} classKey the key of the appropriate icon class expand/collapse/leaf
-       */
-      _removeIconClass: function (classKey) {
-        this.icon.classList.remove(this.classNames[classKey]);
-      },
-      /**
-       * Set the icon class to the the iconState property
-       * @private
-       */
-      _setIconStateClass: function () {
-        switch (this.iconState) {
-          case 'leaf':
-            this._removeIconClass('icon');
-            this._removeIconClass('clickable');
-            this._addIconClass('leaf');
-            break;
-          case 'collapsed':
-            this._addIconClass('expand');
-            this._ariaExpanded(false);
-            break;
-          case 'expanded':
-            this._addIconClass('collapse');
-            this._ariaExpanded(true);
-            break;
-          case 'loading':
-            this._removeIconClass('clickable');
-            this._addIconClass('lazyload');
-            break;
-          default:
-            break;
-        }
-      },
-      /**
-       * Removes the icon class of the iconState property
-       * @private
-       */
-      _removeIconStateClass: function () {
-        switch (this.iconState) {
-          case 'leaf':
-            this._removeIconClass('leaf');
-            this._addIconClass('icon');
-            this._addIconClass('clickable');
-            break;
-          case 'collapsed':
-            this._removeIconClass('expand');
-            break;
-          case 'expanded':
-            this._removeIconClass('collapse');
-            break;
-          case 'loading':
-            this._removeIconClass('lazyload');
-            this._addIconClass('clickable');
-            break;
-          default:
-            break;
-        }
-      },
-      /**
-       * Handles active key change event from host component (ojDataGrid or ojTable)
-       * @param {Event} event
-       * @param {Object|null|number=} ui
-       * @private
-       */
-      _handleActiveKeyChangeEvent: function (event, ui) {
-        var previousRowKey;
-
-        if (ui == null) {
-          // eslint-disable-next-line no-param-reassign
-          ui = event.detail;
-        }
-
-        if (ui.currentCell != null) {
-          var rowKey = ui.currentCell.type === 'cell' ? ui.currentCell.keys.row : ui.currentCell.key;
-          if (ui.previousValue != null) {
-            previousRowKey = ui.previousCurrentCell.type === 'cell' ?
-              ui.previousCurrentCell.keys.row :
-              ui.previousCurrentCell.key;
-          }
-          // if the event is for this row and the active key change event is triggered
-          // by row change and not column change
-          if (this.rowKey === rowKey && previousRowKey !== rowKey) {
-            // if the component allows AccessibleContext to be set
+      }
+      if (this.rowKey === rowKey) {
+        var eventKey = event.key || event.keyCode;
+        // ctrl (or equivalent) is pressed
+        if (DomUtils.isMetaKeyPressed(event)) {
+          // Ctrl+Right expands, Ctrl+Left collapse in accordance with WAI-ARIA best practice
+          // consume the event as it's processed
+          if (DataCollectionUtils.isArrowRightKeyEvent(eventKey)) {
+            if (this._expand()) {
+              event.preventDefault();
+            }
+          } else if (DataCollectionUtils.isArrowLeftKeyEvent(eventKey)) {
+            if (this._collapse()) {
+              event.preventDefault();
+            }
+          } else if (event.altKey && DataCollectionUtils.isNumberFiveKeyEvent(eventKey)) {
+            // read current cell context
             if (this.component._setAccessibleContext) {
-              // row context of row expander for screen reader
-              // todo: get index from TreeDataSource as well since that could change
+              var ancestorInfo;
+              if (!this._isDataProvider()) {
+                var ancestors = this.datasource.getAncestors(this.rowKey);
+                if (ancestors != null && ancestors.length > 0) {
+                  ancestorInfo = [];
+                  for (var i = 0; i < ancestors.length; i++) {
+                    ancestorInfo.push({
+                      key: ancestors[i],
+                      label: this.getTranslatedString('accessibleLevelDescription', { level: i + 1 })
+                    });
+                  }
+                }
+              }
+
               var context = this.getTranslatedString('accessibleRowDescription', {
                 level: this.depth,
                 num: this.index + 1,
                 total: this._getChildCount(this.parentKey)
               });
-              // state of row expander for screen reader
-              var state;
-              if (this.iconState === 'collapsed') {
-                state = this.getTranslatedString('accessibleStateCollapsed');
-              } else if (this.iconState === 'expanded') {
-                state = this.getTranslatedString('accessibleStateExpanded');
-              } else {
-                // for leaf node don't read anything
-                state = '';
-              }
-
-              this.component._setAccessibleContext({ context: context, state: state });
+              this.component._setAccessibleContext({
+                context: context,
+                state: '',
+                ancestors: ancestorInfo
+              });
             }
           }
         }
-      },
-      /**
-       * Handles keydown event from host component (ojDataGrid or ojTable)
-       * No longer returns a boolean but rather prevents default if appropriate
-       * @param {Event} event
-       * @private
-       */
-      _handleKeyDownEvent: function (event) {
-        var targetContext =
-          ojcomponentcore.__GetWidgetConstructor(this.component.element[0])('getContextByNode',
-            event.target);
-        var rowKey;
-        if (targetContext == null) {
-          var currentRow = this.component.options.currentRow;
-          if (currentRow == null || currentRow.rowKey == null) {
-            return;
-          }
-          rowKey = currentRow.rowKey;
-        } else {
-          rowKey = targetContext.key;
-          if (rowKey == null) {
-            rowKey = targetContext.keys.row;
-          }
-        }
-        if (this.rowKey === rowKey) {
-          var eventKey = event.key || event.keyCode;
-          // ctrl (or equivalent) is pressed
-          if (DomUtils.isMetaKeyPressed(event)) {
-            // Ctrl+Right expands, Ctrl+Left collapse in accordance with WAI-ARIA best practice
-            // consume the event as it's processed
-            if (DataCollectionUtils.isArrowRightKeyEvent(eventKey)) {
-              if (this._expand()) {
-                event.preventDefault();
-              }
-            } else if (DataCollectionUtils.isArrowLeftKeyEvent(eventKey)) {
-              if (this._collapse()) {
-                event.preventDefault();
-              }
-            } else if (event.altKey &&
-              DataCollectionUtils.isNumberFiveKeyEvent(eventKey)) {
-              // read current cell context
-              if (this.component._setAccessibleContext) {
-                var ancestorInfo;
-                if (!this._isDataProvider()) {
-                  var ancestors = this.datasource.getAncestors(this.rowKey);
-                  if (ancestors != null && ancestors.length > 0) {
-                    ancestorInfo = [];
-                    for (var i = 0; i < ancestors.length; i++) {
-                      ancestorInfo.push({
-                        key: ancestors[i],
-                        label: this.getTranslatedString('accessibleLevelDescription',
-                          { level: i + 1 })
-                      });
-                    }
-                  }
-                }
-
-                var context = this.getTranslatedString('accessibleRowDescription', {
-                  level: this.depth,
-                  num: this.index + 1,
-                  total: this._getChildCount(this.parentKey)
-                });
-                this.component._setAccessibleContext({
-                  context: context,
-                  state: '',
-                  ancestors: ancestorInfo
-                });
-              }
-            }
-          }
-        }
-      },
-      /**
-       * Put row expander in a loading state.  This is called during expand/collapse.
-       * @private
-       */
-      _loading: function () {
-        this._removeIconStateClass();
-        this.iconState = 'loading';
-        this._setIconStateClass();
-      },
-      /**
-       * Handle an expand event coming from the datasource,
-       * update the icon and the aria-expand property
-       * @param {Object} event the expand event from the data source, should contain rowKey
-       * @private
-       */
-      _handleExpandEvent: function (event) {
-        var rowKey = event.rowKey != null ? event.rowKey : event.detail.key;
-        if (rowKey === this.rowKey) {
-          this._removeIconStateClass();
-          this.iconState = 'expanded';
-          this._setIconStateClass();
-          this._ariaExpanded(true);
-          this._updateContextState('expanded');
-
-          // if the event is triggered by initial setting of expanded, we should not
-          // fire expand or option change event
-          var expanded = this.options.expanded;
-          if (expanded == null || !expanded) {
-            this._trigger('expand', null, { rowKey: rowKey });
-            this._updateExpandedState(true);
-          }
-        }
-      },
-      /**
-       * Handle a collapse event coming from the datasource,
-       * update the icon and the aria-expand property
-       * @param {Object} event the collapse event from the data source, should contain rowKey
-       * @private
-       */
-      _handleCollapseEvent: function (event) {
-        var rowKey = event.rowKey != null ? event.rowKey : event.detail.key;
-        if (rowKey === this.rowKey) {
-          this._removeIconStateClass();
-          this.iconState = 'collapsed';
-          this._setIconStateClass();
-          this._ariaExpanded(false);
-          this._updateContextState('collapsed');
-
-          // if the event is triggered by initial setting of expanded, we should not
-          // fire expand or option change event
-          var expanded = this.options.expanded;
-          if (expanded == null || expanded) {
-            this._trigger('collapse', null, { rowKey: rowKey });
-            this._updateExpandedState(false);
-          }
-        }
-      },
-      /**
-       * Update the expanded option
-       * @param {boolean} expanded
-       * @private
-       */
-      _updateExpandedState: function (expanded) {
-        this.option('expanded', expanded,
-          { changed: true, _context: { internalSet: true, writeback: true } });
-      },
-      /**
-       * Update context state
-       * @param {string} newState
-       * @private
-       */
-      _updateContextState: function (newState) {
-        var context = this.options.context;
-        this._setState(context, newState);
-        // need to reuse the same object so mark it as changed ourselves
-        this.option('context', context, { changed: true, _context: { internalSet: true } });
-      },
-      /**
-       * @private
-       */
-      _setState: function (context, newSate) {
-        var metadata = context;
-        if (context.item) {
-          metadata = context.item.metadata;
-        }
-        metadata.state = newSate;
-      },
-      /**
-       * Fire the expand or collapse on the datasource and the oj event on the widget
-       * @private
-       */
-      _fireExpandCollapse: function () {
-        var state = this.iconState;
-
-        // show loading icon, note this changes the icon state to 'loading'
-        if (!this._isDataProvider()) {
-          this._loading();
-        }
-        // invoke expand/collapse on datasource
-        if (state === 'collapsed') {
-          if (!this._isDataProvider()) {
-            this.datasource.expand(this.rowKey);
-          } else {
-            this._getFlattenedDataProvider().setExpanded(
-              this._getDataProviderExpanded().add([this.rowKey]));
-          }
-        } else if (state === 'expanded') {
-          if (!this._isDataProvider()) {
-            this.datasource.collapse(this.rowKey);
-          } else {
-            this._getFlattenedDataProvider().setExpanded(
-              this._getDataProviderExpanded().delete([this.rowKey]));
-          }
-        }
-      },
-      /**
-       * Sets the icon's aria-expanded property to the boolean passed in
-       * @param {boolean|null} bool true if expanded false if not
-       * @private
-       */
-      _ariaExpanded: function (bool) {
-        this.icon.setAttribute('aria-expanded', bool);
-      },
-      // @inheritdoc
-      getNodeBySubId: function (locator) {
-        if (locator == null) {
-          return this.element ? this.element[0] : null;
-        }
-
-        var subId = locator.subId;
-        if ((subId === 'oj-rowexpander-disclosure' || subId === 'oj-rowexpander-icon') &&
-          this.icon != null) {
-          return this.icon;
-        }
-        // Non-null locators have to be handled by the component subclasses
-        return null;
-      },
-      // @inheritdoc
-      getSubIdByNode: function (node) {
-        if (node === this.icon) {
-          return { subId: 'oj-rowexpander-disclosure' };
-        }
-        return null;
-      },
-      _NotifyAttached: function () {
-        this._super();
-        this.icon.setAttribute('aria-labelledby', this._getLabelledBy());
-      },
-      /**
-       * Get the aria label of the rowexpander from the closest row expander
-       * @return {string} the closest id set to the rowexpander
-       * @private
-       */
-      _getLabelledBy: function () {
-        const parentWithID = this.element[0].parentElement.closest('[id]');
-        if (parentWithID) {
-          return parentWithID.getAttribute('id');
-        }
-        return undefined;
       }
-    });
+    },
+    /**
+     * Put row expander in a loading state.  This is called during expand/collapse.
+     * @private
+     */
+    _loading: function () {
+      this._removeIconStateClass();
+      this.iconState = 'loading';
+      this._setIconStateClass();
+    },
+    /**
+     * Handle an expand event coming from the datasource,
+     * update the icon and the aria-expand property
+     * @param {Object} event the expand event from the data source, should contain rowKey
+     * @private
+     */
+    _handleExpandEvent: function (event) {
+      var rowKey = event.rowKey != null ? event.rowKey : event.detail.key;
+      if (rowKey === this.rowKey) {
+        this._removeIconStateClass();
+        this.iconState = 'expanded';
+        this._setIconStateClass();
+        this._ariaExpanded(true);
+        this._updateContextState('expanded');
+
+        // if the event is triggered by initial setting of expanded, we should not
+        // fire expand or option change event
+        var expanded = this.options.expanded;
+        if (expanded == null || !expanded) {
+          this._trigger('expand', null, { rowKey: rowKey });
+          this._updateExpandedState(true);
+        }
+      }
+    },
+    /**
+     * Handle a collapse event coming from the datasource,
+     * update the icon and the aria-expand property
+     * @param {Object} event the collapse event from the data source, should contain rowKey
+     * @private
+     */
+    _handleCollapseEvent: function (event) {
+      var rowKey = event.rowKey != null ? event.rowKey : event.detail.key;
+      if (rowKey === this.rowKey) {
+        this._removeIconStateClass();
+        this.iconState = 'collapsed';
+        this._setIconStateClass();
+        this._ariaExpanded(false);
+        this._updateContextState('collapsed');
+
+        // if the event is triggered by initial setting of expanded, we should not
+        // fire expand or option change event
+        var expanded = this.options.expanded;
+        if (expanded == null || expanded) {
+          this._trigger('collapse', null, { rowKey: rowKey });
+          this._updateExpandedState(false);
+        }
+      }
+    },
+    /**
+     * Update the expanded option
+     * @param {boolean} expanded
+     * @private
+     */
+    _updateExpandedState: function (expanded) {
+      this.option('expanded', expanded, {
+        changed: true,
+        _context: { internalSet: true, writeback: true }
+      });
+    },
+    /**
+     * Update context state
+     * @param {string} newState
+     * @private
+     */
+    _updateContextState: function (newState) {
+      var context = this.options.context;
+      this._setState(context, newState);
+      // need to reuse the same object so mark it as changed ourselves
+      this.option('context', context, { changed: true, _context: { internalSet: true } });
+    },
+    /**
+     * @private
+     */
+    _setState: function (context, newSate) {
+      var metadata = context;
+      if (context.item) {
+        metadata = context.item.metadata;
+      }
+      metadata.state = newSate;
+    },
+    /**
+     * Fire the expand or collapse on the datasource and the oj event on the widget
+     * @private
+     */
+    _fireExpandCollapse: function () {
+      var state = this.iconState;
+
+      // show loading icon, note this changes the icon state to 'loading'
+      if (!this._isDataProvider()) {
+        this._loading();
+      }
+      // invoke expand/collapse on datasource
+      if (state === 'collapsed') {
+        if (!this._isDataProvider()) {
+          this.datasource.expand(this.rowKey);
+        } else {
+          this._getFlattenedDataProvider().setExpanded(
+            this._getDataProviderExpanded().add([this.rowKey])
+          );
+        }
+      } else if (state === 'expanded') {
+        if (!this._isDataProvider()) {
+          this.datasource.collapse(this.rowKey);
+        } else {
+          this._getFlattenedDataProvider().setExpanded(
+            this._getDataProviderExpanded().delete([this.rowKey])
+          );
+        }
+      }
+    },
+    /**
+     * Sets the icon's aria-expanded property to the boolean passed in
+     * @param {boolean|null} bool true if expanded false if not
+     * @private
+     */
+    _ariaExpanded: function (bool) {
+      this.icon.setAttribute('aria-expanded', bool);
+    },
+    // @inheritdoc
+    getNodeBySubId: function (locator) {
+      if (locator == null) {
+        return this.element ? this.element[0] : null;
+      }
+
+      var subId = locator.subId;
+      if (
+        (subId === 'oj-rowexpander-disclosure' || subId === 'oj-rowexpander-icon') &&
+        this.icon != null
+      ) {
+        return this.icon;
+      }
+      // Non-null locators have to be handled by the component subclasses
+      return null;
+    },
+    // @inheritdoc
+    getSubIdByNode: function (node) {
+      if (node === this.icon) {
+        return { subId: 'oj-rowexpander-disclosure' };
+      }
+      return null;
+    },
+    _NotifyAttached: function () {
+      this._super();
+      this.icon.setAttribute('aria-labelledby', this._getLabelledBy());
+    },
+    /**
+     * Get the aria label of the rowexpander from the closest row expander
+     * @return {string} the closest id set to the rowexpander
+     * @private
+     */
+    _getLabelledBy: function () {
+      const parentWithID = this.element[0].parentElement.closest('[id]');
+      if (parentWithID) {
+        return parentWithID.getAttribute('id');
+      }
+      return undefined;
+    }
+  });
 
 });

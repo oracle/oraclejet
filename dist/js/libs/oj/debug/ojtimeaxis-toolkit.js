@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -45,7 +45,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       } else if (scale === 'seconds') {
         _adjustedDate.setMilliseconds(0);
       } else if (scale === 'quarters') {
-        var quarter = Math.floor((_adjustedDate.getMonth()) / 3);
+        var quarter = Math.floor(_adjustedDate.getMonth() / 3);
         _adjustedDate.setDate(1);
         _adjustedDate.setHours(0, 0, 0, 0);
         _adjustedDate.setMonth(quarter * 3);
@@ -68,18 +68,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     getAdjacentDate(time, scale, direction) {
       var directionSign = direction === 'next' ? 1 : -1;
 
-      if (scale === 'seconds')
-        return new Date(time + directionSign * 1000);
-      else if (scale === 'minutes')
-        return new Date(time + directionSign * 60000);
-      else if (scale === 'hours')
-        return new Date(time + directionSign * 3600000);
+      if (scale === 'seconds') return new Date(time + directionSign * 1000);
+      else if (scale === 'minutes') return new Date(time + directionSign * 60000);
+      else if (scale === 'hours') return new Date(time + directionSign * 3600000);
       // for larger scales, no set amount of time can be added
       var _adjacentDate = new Date(time);
-      if (scale === 'days')
-        _adjacentDate.setDate(_adjacentDate.getDate() + directionSign * 1);
-      else if (scale === 'weeks')
-        _adjacentDate.setDate(_adjacentDate.getDate() + directionSign * 7);
+      if (scale === 'days') _adjacentDate.setDate(_adjacentDate.getDate() + directionSign * 1);
+      else if (scale === 'weeks') _adjacentDate.setDate(_adjacentDate.getDate() + directionSign * 7);
       else if (scale === 'months')
         _adjacentDate.setMonth(_adjacentDate.getMonth() + directionSign * 1);
       else if (scale === 'quarters')
@@ -100,7 +95,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         backgroundColor: 'rgba(255,255,255,0)',
         borderColor: '#d9dfe3',
         separatorColor: '#bcc7d2',
-        labelStyle: new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #333333;')
+        labelStyle: new dvt.CSSStyle(
+          dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #333333;'
+        )
       };
       super({ alta: VERSION_1 }, context);
     }
@@ -211,14 +208,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     getAxisStyle: (options) => {
       var axisStyles = '';
       var style = DvtTimeAxisStyleUtils.getBackgroudColor(options);
-      if (style)
-        axisStyles = axisStyles + 'background-color:' + style + ';';
+      if (style) axisStyles = axisStyles + 'background-color:' + style + ';';
       style = DvtTimeAxisStyleUtils.getBorderColor(options);
-      if (style)
-        axisStyles = axisStyles + 'border-color:' + style + ';';
+      if (style) axisStyles = axisStyles + 'border-color:' + style + ';';
       style = DvtTimeAxisStyleUtils.getBorderWidth();
-      if (style)
-        axisStyles = axisStyles + 'border-width:' + style + ';';
+      if (style) axisStyles = axisStyles + 'border-width:' + style + ';';
       return axisStyles;
     },
 
@@ -274,8 +268,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     getAxisSeparatorStyle: (options) => {
       var separatorStyles = '';
       var style = DvtTimeAxisStyleUtils.getSeparatorColor(options);
-      if (style)
-        separatorStyles = separatorStyles + 'color:' + style + ';';
+      if (style) separatorStyles = separatorStyles + 'color:' + style + ';';
       return separatorStyles;
     },
 
@@ -330,9 +323,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     getDatePosition: (startTime, endTime, time, width) => {
       var number = (time - startTime) * width;
-      var denominator = (endTime - startTime);
-      if (number === 0 || denominator === 0)
-        return 0;
+      var denominator = endTime - startTime;
+      if (number === 0 || denominator === 0) return 0;
 
       return number / denominator;
     },
@@ -347,10 +339,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     getPositionDate: (startTime, endTime, pos, width) => {
       var number = pos * (endTime - startTime);
-      if (number === 0 || width === 0)
-        return startTime;
+      if (number === 0 || width === 0) return startTime;
 
-      return (number / width) + startTime;
+      return number / width + startTime;
     }
   };
 
@@ -393,25 +384,43 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           return {
             date: date,
             pos: TimeAxisUtils.getDatePosition(
-              timeAxis._start, timeAxis._end, date.getTime(), timeAxis._contentLength)
+              timeAxis._start,
+              timeAxis._end,
+              date.getTime(),
+              timeAxis._contentLength
+            )
           };
         });
 
         // We don't need the label of the last tick.
-        const labelTexts = timeAxis.getDateLabelTexts(dates,
-          timeAxis.getScale()).slice(0, dates.length - 1);
-        const labelOutputTexts = DvtTimeAxisRenderer._renderLabels(tickLabelsContainer, timeAxis, datePositions, labelTexts);
+        const labelTexts = timeAxis
+          .getDateLabelTexts(dates, timeAxis.getScale())
+          .slice(0, dates.length - 1);
+        const labelOutputTexts = DvtTimeAxisRenderer._renderLabels(
+          tickLabelsContainer,
+          timeAxis,
+          datePositions,
+          labelTexts
+        );
 
         // Add container to DOM before rendering ref objects due to dependence on computedStyles and dimension measurements for collision detection
         timeAxis._axis.addChild(tickLabelsContainer);
-        const datesOverlappingRefObjs = DvtTimeAxisRenderer._renderReferenceObjects(tickLabelsContainer, timeAxis, referenceObjects, datePositions, labelOutputTexts);
+        const datesOverlappingRefObjs = DvtTimeAxisRenderer._renderReferenceObjects(
+          tickLabelsContainer,
+          timeAxis,
+          referenceObjects,
+          datePositions,
+          labelOutputTexts
+        );
 
         let tickDates = dates;
 
         // Determine whether to render secondary major ticks
         let showMajorTicks = false;
         const majorAxis = timeAxis.Options._secondaryAxis;
-        let majorViewportDates = majorAxis ? majorAxis.getViewportDates(majorAxis.getScale(), viewStartTime, viewEndTime) : [];
+        let majorViewportDates = majorAxis
+          ? majorAxis.getViewportDates(majorAxis.getScale(), viewStartTime, viewEndTime)
+          : [];
         if (majorAxis && timeAxis.getCtx().getThemeBehavior() !== 'alta') {
           // TODO: Unify this logic with the similar part in DvtGanttRenderer._renderVerticalGridline.
           // This is a "nice to have" implementation detail. Tracked by JET-46323.
@@ -420,31 +429,51 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           const minorViewportDates = dates;
           // If major dates is a subset of minor dates, then the two grids line up. Don't render the minor dates at overlap (due to opacity, minor line would show through major line otherwise).
           // Otherwise the major and minor axis do not "line up" (e.g. months and weeks scale together). Render minor lines only.
-          const majorViewportDatesSet = new Set(majorViewportDates.map(d => d.getTime()));
-          const minorViewportDatesSet = new Set(minorViewportDates.map(d => d.getTime()));
+          const majorViewportDatesSet = new Set(majorViewportDates.map((d) => d.getTime()));
+          const minorViewportDatesSet = new Set(minorViewportDates.map((d) => d.getTime()));
           // only consider major dates that are in range (e.g. first and/or last ticks may be out of range)
-          showMajorTicks = majorViewportDates.filter(d => (d.getTime() > viewStartTime && d.getTime() < viewEndTime) && !minorViewportDatesSet.has(d.getTime())).length === 0;
-          tickDates = showMajorTicks ? minorViewportDates.filter(d => !majorViewportDatesSet.has(d.getTime())) : minorViewportDates;
+          showMajorTicks =
+            majorViewportDates.filter(
+              (d) =>
+                d.getTime() > viewStartTime &&
+                d.getTime() < viewEndTime &&
+                !minorViewportDatesSet.has(d.getTime())
+            ).length === 0;
+          tickDates = showMajorTicks
+            ? minorViewportDates.filter((d) => !majorViewportDatesSet.has(d.getTime()))
+            : minorViewportDates;
         }
 
         // Render ticks (excluding those that collide with reference object labels)
-        const tickDatePositions = tickDates.filter(d => !datesOverlappingRefObjs.has(d.getTime())).map((date) => {
-          return {
-            date: date,
-            pos: TimeAxisUtils.getDatePosition(
-              timeAxis._start, timeAxis._end, date.getTime(), timeAxis._contentLength)
-          };
-        });
-        DvtTimeAxisRenderer._renderTicks(tickLabelsContainer, timeAxis, tickDatePositions);
-
-        if (showMajorTicks) {
-          const majorDatePositions = majorViewportDates.filter(d => !datesOverlappingRefObjs.has(d.getTime())).map((date) => {
+        const tickDatePositions = tickDates
+          .filter((d) => !datesOverlappingRefObjs.has(d.getTime()))
+          .map((date) => {
             return {
               date: date,
               pos: TimeAxisUtils.getDatePosition(
-                timeAxis._start, timeAxis._end, date.getTime(), timeAxis._contentLength)
+                timeAxis._start,
+                timeAxis._end,
+                date.getTime(),
+                timeAxis._contentLength
+              )
             };
           });
+        DvtTimeAxisRenderer._renderTicks(tickLabelsContainer, timeAxis, tickDatePositions);
+
+        if (showMajorTicks) {
+          const majorDatePositions = majorViewportDates
+            .filter((d) => !datesOverlappingRefObjs.has(d.getTime()))
+            .map((date) => {
+              return {
+                date: date,
+                pos: TimeAxisUtils.getDatePosition(
+                  timeAxis._start,
+                  timeAxis._end,
+                  date.getTime(),
+                  timeAxis._contentLength
+                )
+              };
+            });
           DvtTimeAxisRenderer._renderTicks(tickLabelsContainer, majorAxis, majorDatePositions);
         }
       };
@@ -481,26 +510,34 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       const cp = new dvt.ClipPath();
       if (timeAxis.isVertical()) {
         // eslint-disable-next-line no-param-reassign
-        timeAxis._axis = new dvt.Path(context,
+        timeAxis._axis = new dvt.Path(
+          context,
           dvt.PathUtils.roundedRectangle(
             axisStart,
             -timeAxis.getBorderWidth('top'),
             axisSize,
             timeAxis.getAxisLength(),
-            0, 0, 0, 0
+            0,
+            0,
+            0,
+            0
           ),
           'axis'
         );
         cp.addRect(axisStart, 0, axisSize, timeAxis._contentLength);
       } else {
         // eslint-disable-next-line no-param-reassign
-        timeAxis._axis = new dvt.Path(context,
+        timeAxis._axis = new dvt.Path(
+          context,
           dvt.PathUtils.roundedRectangle(
             -timeAxis.getBorderWidth('left'),
             axisStart,
             timeAxis.getAxisLength(),
             axisSize,
-            0, 0, 0, 0
+            0,
+            0,
+            0,
+            0
           ),
           'axis'
         );
@@ -545,7 +582,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Build Path command of tick marks
       const context = timeAxis.getCtx();
       const isRTL = dvt.Agent.isRightToLeft(context);
-      const axisSizeStart = timeAxis.isVertical() ? timeAxis.getBorderWidth('left') : timeAxis.getBorderWidth('top');
+      const axisSizeStart = timeAxis.isVertical()
+        ? timeAxis.getBorderWidth('left')
+        : timeAxis.getBorderWidth('top');
       const axisSizeEnd = axisSizeStart + timeAxis.getContentSize();
 
       // Refer to comment block in DvtGanttRenderer._renderVerticalGridline on why there's the 0.5 rounding for the
@@ -554,28 +593,29 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       for (let i = 0; i < datePositions.length; i++) {
         let pos = datePositions[i].pos;
         if (timeAxis.isVertical()) {
-          cmds += dvt.PathUtils.moveTo(axisSizeStart, pos)
-            + dvt.PathUtils.horizontalLineTo(axisSizeEnd);
+          cmds +=
+            dvt.PathUtils.moveTo(axisSizeStart, pos) + dvt.PathUtils.horizontalLineTo(axisSizeEnd);
         } else if (!isRTL) {
           if (i === 0) {
             pos = Math.round(pos) + 0.5;
           }
-          cmds += dvt.PathUtils.moveTo(pos, axisSizeStart)
-            + dvt.PathUtils.verticalLineTo(axisSizeEnd);
+          cmds +=
+            dvt.PathUtils.moveTo(pos, axisSizeStart) + dvt.PathUtils.verticalLineTo(axisSizeEnd);
         } else {
           pos = timeAxis._contentLength - pos;
           if (i === datePositions.length - 1) {
             pos = Math.round(pos) + 0.5;
           }
-          cmds += dvt.PathUtils.moveTo(pos, axisSizeStart)
-            + dvt.PathUtils.verticalLineTo(axisSizeEnd);
+          cmds +=
+            dvt.PathUtils.moveTo(pos, axisSizeStart) + dvt.PathUtils.verticalLineTo(axisSizeEnd);
         }
       }
 
       // Render ticks as a single giant Path
       const ticks = new dvt.Path(timeAxis.getCtx(), cmds);
       const separatorStyle = new dvt.CSSStyle(
-        DvtTimeAxisStyleUtils.getAxisSeparatorStyle(timeAxis.Options));
+        DvtTimeAxisStyleUtils.getAxisSeparatorStyle(timeAxis.Options)
+      );
       ticks.setStroke(new dvt.Stroke(separatorStyle.getStyle(dvt.CSSStyle.COLOR)));
       ticks.setPixelHinting(true);
 
@@ -596,14 +636,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     _renderLabels: (container, timeAxis, datePositions, labelTexts) => {
       const context = timeAxis.getCtx();
-      const axisStart = timeAxis.isVertical() ? timeAxis.getBorderWidth('left') : timeAxis.getBorderWidth('top');
+      const axisStart = timeAxis.isVertical()
+        ? timeAxis.getBorderWidth('left')
+        : timeAxis.getBorderWidth('top');
       const axisEnd = axisStart + timeAxis.getContentSize();
       const isRTL = dvt.Agent.isRightToLeft(context);
       const labelStyle = DvtTimeAxisStyleUtils.getAxisLabelStyle(timeAxis.Options);
       const labelClass = DvtTimeAxisStyleUtils.getAxisLabelClass(timeAxis.Options) || '';
       const scale = timeAxis.getScale();
-      const labelPosition = timeAxis.Options._scaleLabelPosition[timeAxis.isTimeComponentScale(scale) ? scale.name : scale];
-      const labelAlignment = timeAxis.Options._labelAlignment[timeAxis.isVertical() ? 'vertical' : 'horizontal'];
+      const labelPosition =
+        timeAxis.Options._scaleLabelPosition[
+          timeAxis.isTimeComponentScale(scale) ? scale.name : scale
+        ];
+      const labelAlignment =
+        timeAxis.Options._labelAlignment[timeAxis.isVertical() ? 'vertical' : 'horizontal'];
 
       const labelOutputTexts = [];
       for (let i = 0; i < datePositions.length - 1; i++) {
@@ -617,9 +663,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
         // in vertical mode, leave date positions the same in RTL
         const timeCenterPos = !(isRTL && !timeAxis.isVertical())
-          ? currentPos + ((nextPos - currentPos) / 2)
-          : timeAxis._contentLength - (currentPos + ((nextPos - currentPos) / 2));
-        const sizeCenterPos = axisStart + ((axisEnd - axisStart) / 2);
+          ? currentPos + (nextPos - currentPos) / 2
+          : timeAxis._contentLength - (currentPos + (nextPos - currentPos) / 2);
+        const sizeCenterPos = axisStart + (axisEnd - axisStart) / 2;
         let y = timeAxis.isVertical() ? timeCenterPos : sizeCenterPos;
         let x;
         switch (labelPosition) {
@@ -628,7 +674,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
               x = sizeCenterPos;
               label.alignCenter();
             } else if (isRTL) {
-              x = timeAxis._contentLength - (currentPos + DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING);
+              x =
+                timeAxis._contentLength -
+                (currentPos + DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING);
               label.alignRight();
             } else {
               x = currentPos + DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING;
@@ -670,11 +718,19 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
             let adjustedMaxLength;
             switch (labelPosition) {
               case 'start':
-                adjustedMaxLength = nextPos - Math.max(0, nextPos - currentPos - labelWidth - DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2);
+                adjustedMaxLength =
+                  nextPos -
+                  Math.max(
+                    0,
+                    nextPos -
+                      currentPos -
+                      labelWidth -
+                      DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2
+                  );
                 break;
               case 'center':
               default:
-                adjustedMaxLength = nextPos - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
+                adjustedMaxLength = nextPos - Math.max(0, (nextPos - currentPos - labelWidth) / 2);
             }
             const horizPos = Math.max(0, adjustedMaxLength);
             if (!isRTL) {
@@ -694,13 +750,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
                 const numTruncatedChars = label.getTextString().length - 1;
                 const indexEnd = untruncatedTextString.length;
                 const indexStart = Math.max(0, indexEnd - numTruncatedChars);
-                const truncatedStartString = dvt.OutputText.ELLIPSIS
-                  + untruncatedTextString.substring(indexStart, indexEnd);
+                const truncatedStartString =
+                  dvt.OutputText.ELLIPSIS + untruncatedTextString.substring(indexStart, indexEnd);
                 label.setTextString(truncatedStartString);
               }
             }
-          } else if (i === datePositions.length - 2
-            && datePositions[i + 1].date.getTime() > timeAxis._end) {
+          } else if (
+            i === datePositions.length - 2 &&
+            datePositions[i + 1].date.getTime() > timeAxis._end
+          ) {
             if (label.isTruncated()) {
               label.setTextString(label.getUntruncatedTextString());
             }
@@ -708,19 +766,23 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
             let horizPos;
             switch (labelPosition) {
               case 'start':
-                adjustedMaxLength = timeAxis._contentLength
-                  - currentPos
-                  - DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2;
+                adjustedMaxLength =
+                  timeAxis._contentLength -
+                  currentPos -
+                  DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2;
                 horizPos = currentPos + DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING;
                 break;
               case 'center':
               default: {
                 const labelWidth = label.getDimensions().w;
-                adjustedMaxLength = timeAxis._contentLength
-                  - currentPos
-                  - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
-                horizPos = Math.max(currentPos,
-                  (currentPos + ((nextPos - currentPos) / 2)) - (labelWidth / 2));
+                adjustedMaxLength =
+                  timeAxis._contentLength -
+                  currentPos -
+                  Math.max(0, (nextPos - currentPos - labelWidth) / 2);
+                horizPos = Math.max(
+                  currentPos,
+                  currentPos + (nextPos - currentPos) / 2 - labelWidth / 2
+                );
               }
             }
             if (!isRTL) {
@@ -752,7 +814,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {Set} Set of dates (in time number) that overlap the reference line labels.
      * @private
      */
-    _renderReferenceObjects: (container, timeAxis, referenceObjects, datePositions, labelOutputTexts) => {
+    _renderReferenceObjects: (
+      container,
+      timeAxis,
+      referenceObjects,
+      datePositions,
+      labelOutputTexts
+    ) => {
       if (timeAxis.isVertical()) {
         return new Set();
       }
@@ -766,7 +834,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       const labelClass = DvtTimeAxisStyleUtils.getAxisLabelClass(timeAxis.Options) || '';
       const labelAlignment = timeAxis.Options._labelAlignment['horizontal'];
 
-      const refLinesWithLabel = referenceObjects.referenceObjects.filter(refObj => {
+      const refLinesWithLabel = referenceObjects.referenceObjects.filter((refObj) => {
         const isLine = refObj.type !== 'area';
         const isValidDate = refObj.value != null && !isNaN(new Date(refObj.value).getTime());
         const hasLabel = refObj.label && refObj.label.length !== '';
@@ -774,8 +842,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       });
 
       const refLabels = [];
-      refLinesWithLabel.forEach(refObj => {
-        let datePosition = TimeAxisUtils.getDatePosition(timeAxis._start, timeAxis._end, new Date(refObj.value).getTime(), timeAxis._contentLength);
+      refLinesWithLabel.forEach((refObj) => {
+        let datePosition = TimeAxisUtils.getDatePosition(
+          timeAxis._start,
+          timeAxis._end,
+          new Date(refObj.value).getTime(),
+          timeAxis._contentLength
+        );
         if (isRTL) {
           datePosition = timeAxis._contentLength - datePosition;
         }
@@ -814,7 +887,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         } else {
           label.alignRight();
         }
-        const y = axisSizeStart + ((axisSizeEnd - axisSizeStart) / 2);
+        const y = axisSizeStart + (axisSizeEnd - axisSizeStart) / 2;
         switch (labelAlignment) {
           case 'top':
             label.setY(axisSizeStart);
@@ -828,21 +901,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         refLabels.push(label);
       });
 
-
       // Remove time axis labels that overlap with ref line labels
       // Also return the tick positions that overlap the ref line labels
       const datePosOverlappingRefObjs = [];
-      refLabels.forEach(refLabel => {
+      refLabels.forEach((refLabel) => {
         const refLabelDim = refLabel.getDimensions();
-        labelOutputTexts.forEach(axisLabel => {
+        labelOutputTexts.forEach((axisLabel) => {
           const axisLabelDim = axisLabel.getDimensions();
           if (refLabelDim.intersects(axisLabelDim)) {
             axisLabel.removeFromParent();
           }
         });
-        datePositions.forEach(datePos => {
+        datePositions.forEach((datePos) => {
           const pos = !isRTL ? datePos.pos : timeAxis._contentLength - datePos.pos;
-          if (pos >= refLabelDim.x && pos <= (refLabelDim.x + refLabelDim.w)) {
+          if (pos >= refLabelDim.x && pos <= refLabelDim.x + refLabelDim.w) {
             datePosOverlappingRefObjs.push(datePos.date.getTime());
           }
         });
@@ -861,13 +933,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @extends {dvt.BaseComponent}
    */
 
-   class TimeAxis extends dvt.BaseComponent {
+  class TimeAxis extends dvt.BaseComponent {
     constructor(context, callback, callbackObj) {
       super(context, callback, callbackObj);
       this._calendar = new DvtTimeAxisCalendar();
       this._borderWidth = DvtTimeAxisStyleUtils.DEFAULT_BORDER_WIDTH;
       this.setBorderVisibility(false, false, false, false);
-      this._dateToIsoWithTimeZoneConverter = context.getLocaleHelpers()['dateToIsoWithTimeZoneConverter'];
+      this._dateToIsoWithTimeZoneConverter =
+        context.getLocaleHelpers()['dateToIsoWithTimeZoneConverter'];
 
       // Create the defaults object
       this.Defaults = new DvtTimeAxisDefaults(context);
@@ -898,10 +971,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     _applyParsedProperties(props) {
       var orientation = props.orientation;
-      if (orientation && orientation === 'vertical')
-        this._isVertical = true;
-      else
-        this._isVertical = false;
+      if (orientation && orientation === 'vertical') this._isVertical = true;
+      else this._isVertical = false;
 
       this.setIsVertical(this._isVertical);
 
@@ -932,12 +1003,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {number=} minLength The minimum content length
      */
     setContentLength(length, minLength) {
-      if (typeof minLength === 'undefined' || minLength === null)
-        minLength = this._canvasLength;
-      if (minLength < length)
-        this._contentLength = length;
-      else
-        this._contentLength = minLength;
+      if (typeof minLength === 'undefined' || minLength === null) minLength = this._canvasLength;
+      if (minLength < length) this._contentLength = length;
+      else this._contentLength = minLength;
     }
 
     /**
@@ -998,9 +1066,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       var viewStartTime = options && options._viewStartTime ? options._viewStartTime : this._start;
       var viewEndTime = options && options._viewEndTime ? options._viewEndTime : this._end;
-      var referenceObjects = options && options._referenceObjects ? options._referenceObjects : { referenceObjects: [] };
+      var referenceObjects =
+        options && options._referenceObjects ? options._referenceObjects : { referenceObjects: [] };
       var throttle = (options && options._throttle) || false;
-      DvtTimeAxisRenderer.renderTimeAxis(this, viewStartTime, viewEndTime, referenceObjects, throttle);
+      DvtTimeAxisRenderer.renderTimeAxis(
+        this,
+        viewStartTime,
+        viewEndTime,
+        referenceObjects,
+        throttle
+      );
 
       // Done rendering...fire the ready event for standalone component case
       if (isComponentRender || isResizeRender) {
@@ -1013,9 +1088,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {boolean} Whether this timeAxis has valid options.
      */
     hasValidOptions() {
-      var hasValidScale = this._scale && (TimeAxis.VALID_SCALES.indexOf(this._scale) !== -1 || this.isTimeComponentScale(this._scale));
-      var hasValidCustomScale = this._scale && this._customTimeScales && this._customTimeScales[this._scale];
-      var hasValidStartAndEnd = this._start && this._end && (this._end > this._start);
+      var hasValidScale =
+        this._scale &&
+        (TimeAxis.VALID_SCALES.indexOf(this._scale) !== -1 || this.isTimeComponentScale(this._scale));
+      var hasValidCustomScale =
+        this._scale && this._customTimeScales && this._customTimeScales[this._scale];
+      var hasValidStartAndEnd = this._start && this._end && this._end > this._start;
 
       return (hasValidScale || hasValidCustomScale) && hasValidStartAndEnd;
     }
@@ -1025,7 +1103,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {boolean} Whether this scale is an instance of the DvtTimeComponentScale interface
      */
     isTimeComponentScale(scale) {
-      return scale.getNextDate != null && scale.getPreviousDate != null && scale.formatter != null && scale.name != null;
+      return (
+        scale.getNextDate != null &&
+        scale.getPreviousDate != null &&
+        scale.formatter != null &&
+        scale.name != null
+      );
     }
 
     /**
@@ -1033,9 +1116,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @return {boolean} Whether this scale is an instance of the DvtTimeComponentScale interface
      */
     isEqualScale(scale1, scale2) {
-      return scale1 === scale2 ||
-      (scale1.name != null && scale2 != null
-        && scale1.name === scale2.name);
+      return (
+        scale1 === scale2 || (scale1.name != null && scale2 != null && scale1.name === scale2.name)
+      );
     }
 
     /**
@@ -1076,7 +1159,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     _setAxisDimensions() {
       if (this._canvasSize !== null)
         this.setContentSize(this._canvasSize - this.getSizeBorderWidth());
-      this._axisLength = this._contentLength + this.getSizeBorderWidth() - DvtTimeAxisStyleUtils.DEFAULT_SEPARATOR_WIDTH;
+      this._axisLength =
+        this._contentLength +
+        this.getSizeBorderWidth() -
+        DvtTimeAxisStyleUtils.DEFAULT_SEPARATOR_WIDTH;
     }
 
     /**
@@ -1098,7 +1184,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._calendar.setFirstDayOfWeek(firstDayOfWeek);
 
       if (!this._dateToIsoWithTimeZoneConverter)
-        this._dateToIsoWithTimeZoneConverter = this.getCtx().getLocaleHelpers()['dateToIsoWithTimeZoneConverter'];
+        this._dateToIsoWithTimeZoneConverter =
+          this.getCtx().getLocaleHelpers()['dateToIsoWithTimeZoneConverter'];
 
       var props = this.Parse(this.Options);
       this._applyParsedProperties(props);
@@ -1112,9 +1199,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           this.setDefaultConverter(this._resources['converter']);
         }
 
-        this._zoomLevelLengths = this._zoomOrder.map(() => { return 0; });
+        this._zoomLevelLengths = this._zoomOrder.map(() => {
+          return 0;
+        });
         // update dimensions for all zoom levels, by sampling dates across the entire time range
-        var allZoomLevelOrders = this._zoomOrder.map((_, i) => { return i; });
+        var allZoomLevelOrders = this._zoomOrder.map((_, i) => {
+          return i;
+        });
         // In the horizontal case, we can sparsely sample, and estimate the largests label width
         // This should work in many cases, and even if we're wrong and cause a label truncation,
         // users can manually zoom in further to see the full label.
@@ -1123,21 +1214,21 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         // is truncated, there's no way to see the full label in the vertical case.
         var samplingStrategy = this._isVertical
           ? {
-            type: 'range',
-            params: { startTime: this._start, endTime: this._end }
-          }
+              type: 'range',
+              params: { startTime: this._start, endTime: this._end }
+            }
           : {
-            type: 'sparse',
-            // 4 sections and 10 interval sections is arbitrary, which samples some labels at every quarter.
-            // This is more than enough for the current default scales and labels because they're very equally spaced.
-            // but this may not work well with weird custom scales such as reptitions of [3 weeks, 7 days, 2 months]
-            // for a span of 1 year, in which case we may only see weeks and months in our sample, but not days,
-            // and we underestimate the content lengths.
-            // But even then, users may still be able to zoom in sufficiently to see everything they need.
-            // If it turns out this doesn't work well for some common cases, we can bump these params up
-            // to cover more intervals in the future.
-            params: { numSections: 4, numIntervalsPerSection: 10 }
-          };
+              type: 'sparse',
+              // 4 sections and 10 interval sections is arbitrary, which samples some labels at every quarter.
+              // This is more than enough for the current default scales and labels because they're very equally spaced.
+              // but this may not work well with weird custom scales such as reptitions of [3 weeks, 7 days, 2 months]
+              // for a span of 1 year, in which case we may only see weeks and months in our sample, but not days,
+              // and we underestimate the content lengths.
+              // But even then, users may still be able to zoom in sufficiently to see everything they need.
+              // If it turns out this doesn't work well for some common cases, we can bump these params up
+              // to cover more intervals in the future.
+              params: { numSections: 4, numIntervalsPerSection: 10 }
+            };
         this._maxContentLength = minViewPortLength; // will be updated in updateDimensions();
         this.updateDimensions(allZoomLevelOrders, samplingStrategy, minViewPortLength);
 
@@ -1175,28 +1266,38 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
             // heuristically sample a subset of dates for better performance.
             // Assumption is that in many usecases, label widths have small variance.
             // Even if our estimation is off and cause a label trunction, users can manually zoom in to see the full label.
-            intervals = this._sampleIntervals(scale, samplingStrategy.params.numSections,
-              samplingStrategy.params.numIntervalsPerSection);
+            intervals = this._sampleIntervals(
+              scale,
+              samplingStrategy.params.numSections,
+              samplingStrategy.params.numIntervalsPerSection
+            );
 
             // Estimate maxContentLength
             var intervalStartTimes = Object.keys(intervals);
-            var avgTimePerInterval = intervalStartTimes.reduce((sum, prevTime) => {
-              return sum + (intervals[prevTime] - prevTime);
-            }, 0) / intervalStartTimes.length;
+            var avgTimePerInterval =
+              intervalStartTimes.reduce((sum, prevTime) => {
+                return sum + (intervals[prevTime] - prevTime);
+              }, 0) / intervalStartTimes.length;
             var estNumIntervals = (this._end - this._start) / avgTimePerInterval;
-            this._maxContentLength = Math.max(this._maxContentLength,
-              estNumIntervals * minViewPortLength);
+            this._maxContentLength = Math.max(
+              this._maxContentLength,
+              estNumIntervals * minViewPortLength
+            );
           } else {
             // Estimate dimensions from ALL dates and labels
             intervals = {};
-            var viewportDates = this.getViewportDates(scale,
+            var viewportDates = this.getViewportDates(
+              scale,
               samplingStrategy.params.startTime,
-              samplingStrategy.params.endTime);
+              samplingStrategy.params.endTime
+            );
             for (var k = 0; k < viewportDates.length - 1; k++) {
               intervals[viewportDates[k].getTime()] = viewportDates[k + 1].getTime();
             }
-            this._maxContentLength = Math.max(this._maxContentLength,
-              Object.keys(intervals).length * minViewPortLength);
+            this._maxContentLength = Math.max(
+              this._maxContentLength,
+              Object.keys(intervals).length * minViewPortLength
+            );
           }
           this._updateZoomLevelLength(zoomLevelOrder, intervals);
         }
@@ -1216,7 +1317,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var context = this.getCtx();
       var cssStyle = DvtTimeAxisStyleUtils.getAxisLabelStyle(this.Options);
       var contentPadding = DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2;
-      var maxIntervalHeight = dvt.TextUtils.getTextStringHeight(this.getCtx(), cssStyle) + contentPadding;
+      var maxIntervalHeight =
+        dvt.TextUtils.getTextStringHeight(this.getCtx(), cssStyle) + contentPadding;
       var scale = this._zoomOrder[zoomLevelOrder];
 
       var maxIntervalWidth = DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_WIDTH;
@@ -1226,14 +1328,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       Object.keys(representativeIntervals).forEach((prevTime) => {
         var currTime = representativeIntervals[prevTime];
         var labelText = this.formatDate(new Date(currTime), null, 'axis', scale);
-        var contentWidth = dvt.TextUtils.getTextStringWidth(context, labelText, cssStyle) + contentPadding;
+        var contentWidth =
+          dvt.TextUtils.getTextStringWidth(context, labelText, cssStyle) + contentPadding;
         maxIntervalWidth = Math.max(maxIntervalWidth, contentWidth);
         minTimeDimFactor = Math.min(minTimeDimFactor, (currTime - prevTime) / maxIntervalWidth);
         minHeightDimFactor = Math.min(minHeightDimFactor, (currTime - prevTime) / maxIntervalHeight);
       });
 
       var minLengthFactor = this._isVertical ? minHeightDimFactor : minTimeDimFactor;
-      var zoomLevelLength = ((this._end - this._start) / minLengthFactor);
+      var zoomLevelLength = (this._end - this._start) / minLengthFactor;
       this._zoomLevelLengths[zoomLevelOrder] = zoomLevelLength;
 
       this.setContentSize(this._isVertical ? maxIntervalWidth : maxIntervalHeight);
@@ -1257,8 +1360,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       var sectionInterval = Math.floor((this._end - this._start) / numSections);
       for (var i = 0; i < numSections; i++) {
-        var sectionStartTime = this._start + (sectionInterval * i);
-        var sectionEndTime = Math.min(this._start + (sectionInterval * (i + 1)), this._end);
+        var sectionStartTime = this._start + sectionInterval * i;
+        var sectionEndTime = Math.min(this._start + sectionInterval * (i + 1), this._end);
 
         var prevTime = this.adjustDate(sectionStartTime, scale).getTime();
         for (var j = 0; j < numIntervalsPerSection; j++) {
@@ -1378,8 +1481,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {number} contentSize The TimeAxis content size
      */
     setContentSize(contentSize) {
-      if (contentSize > this._contentSize)
-        this._contentSize = contentSize;
+      if (contentSize > this._contentSize) this._contentSize = contentSize;
     }
 
     /**
@@ -1411,17 +1513,17 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     calcStrokeDashArray() {
       if (this._isVertical) {
         var borderLengths = {
-          'top': this.getSize(),
-          'right': this.getAxisLength(),
-          'bottom': this.getSize(),
-          'left': this.getAxisLength()
+          top: this.getSize(),
+          right: this.getAxisLength(),
+          bottom: this.getSize(),
+          left: this.getAxisLength()
         };
       } else {
         borderLengths = {
-          'top': this.getAxisLength(),
-          'right': this.getSize(),
-          'bottom': this.getAxisLength(),
-          'left': this.getSize()
+          top: this.getAxisLength(),
+          right: this.getSize(),
+          bottom: this.getAxisLength(),
+          left: this.getSize()
         };
       }
 
@@ -1458,11 +1560,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     getBorderWidth(side) {
       switch (side) {
-        case 'top': return this._borderTopWidth;
-        case 'right': return this._borderRightWidth;
-        case 'bottom': return this._borderBottomWidth;
-        case 'left': return this._borderLeftWidth;
-        default: return this._borderWidth;
+        case 'top':
+          return this._borderTopWidth;
+        case 'right':
+          return this._borderRightWidth;
+        case 'bottom':
+          return this._borderBottomWidth;
+        case 'left':
+          return this._borderLeftWidth;
+        default:
+          return this._borderWidth;
       }
     }
 
@@ -1516,7 +1623,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         if (direction === 'next') {
           return nextDate;
         }
-        return new Date(time*2 - nextDate);
+        return new Date(time * 2 - nextDate);
       }
       return this._calendar.getAdjacentDate(time, scale, direction);
     }
@@ -1533,7 +1640,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     formatDate(date, converter, converterType, scale) {
       var scaleVal = scale || this.getScale(); // default to current scale
       if (this.isTimeComponentScale(scaleVal)) {
-        return scaleVal.formatter((this._dateToIsoWithTimeZoneConverter ? this._dateToIsoWithTimeZoneConverter(date) : date));
+        return scaleVal.formatter(
+          this._dateToIsoWithTimeZoneConverter ? this._dateToIsoWithTimeZoneConverter(date) : date
+        );
       }
 
       converterType = converterType || 'axis'; // default converterType 'axis'
@@ -1541,15 +1650,18 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (converterType === 'axis') {
         converter = converter || this._converter; // if no converter passed in, try to use axis converter from options
         if (converter) {
-          if (converter[scaleVal])
-            converter = converter[scaleVal];
-          else if (converter['default'])
-            converter = converter['default'];
+          if (converter[scaleVal]) converter = converter[scaleVal];
+          else if (converter['default']) converter = converter['default'];
         }
         // Use default scale converter (if available), if no converter available, or if the converter not usable for this scale.
-        if ((!converter || !converter['format']) && this._defaultConverter && this._defaultConverter[scaleVal])
+        if (
+          (!converter || !converter['format']) &&
+          this._defaultConverter &&
+          this._defaultConverter[scaleVal]
+        )
           converter = this._defaultConverter[scaleVal];
-      } else { // general formatting
+      } else {
+        // general formatting
         if (!converter) {
           // Retrieves converters passed in from the JET side (which should always be available).
           // The converters are automatically app locale aware and works on all supported browsers.
@@ -1563,7 +1675,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         }
       }
 
-      return converter['format'](this._dateToIsoWithTimeZoneConverter ? this._dateToIsoWithTimeZoneConverter(date) : date);
+      return converter['format'](
+        this._dateToIsoWithTimeZoneConverter ? this._dateToIsoWithTimeZoneConverter(date) : date
+      );
     }
 
     /**
@@ -1579,10 +1693,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @param {boolean} isVertical Whether orientation is vertical.
      */
     setIsVertical(isVertical) {
-      if (isVertical)
-        this._contentSize = DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_WIDTH;
-      else
-        this._contentSize = DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_HEIGHT;
+      if (isVertical) this._contentSize = DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_WIDTH;
+      else this._contentSize = DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_HEIGHT;
     }
 
     /**
@@ -1630,7 +1742,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * Attribute for valid scales.
    * @const
    */
-  TimeAxis.VALID_SCALES = ['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'quarters', 'years'];
+  TimeAxis.VALID_SCALES = [
+    'seconds',
+    'minutes',
+    'hours',
+    'days',
+    'weeks',
+    'months',
+    'quarters',
+    'years'
+  ];
 
   exports.TimeAxis = TimeAxis;
   exports.TimeAxisUtils = TimeAxisUtils;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -71,6 +71,29 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
         }
         verifyKey(key) {
             return this.validKeyTypes.indexOf(typeof key) > -1;
+        }
+        setStyleClass(vnode, styleClasses) {
+            const classProp = vnode.props.class || vnode.props.class === '' ? 'class' : 'className';
+            const currentClasses = vnode.props[classProp]
+                ? [vnode.props[classProp], ...styleClasses]
+                : styleClasses;
+            vnode.props[classProp] = currentClasses.join(' ');
+        }
+        findItemVNode(vnodes) {
+            if (Array.isArray(vnodes)) {
+                for (const curr of vnodes) {
+                    if (curr.props) {
+                        if (curr.type == null || typeof curr.type != 'function') {
+                            return curr;
+                        }
+                        else {
+                            return this.findItemVNode(curr.props.children);
+                        }
+                    }
+                }
+                return null;
+            }
+            return vnodes;
         }
         handleModelRefresh(detail) {
             this.callback.setData(null);
@@ -1170,7 +1193,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
                 let newMetadata;
                 if (metadata && metadata.length > 0) {
                     newMetadata = [];
-                    metadata.forEach(oneMetadata => {
+                    metadata.forEach((oneMetadata) => {
                         newMetadata.push(this._updateMetadata(oneMetadata, parentKey, finalResults));
                     });
                 }

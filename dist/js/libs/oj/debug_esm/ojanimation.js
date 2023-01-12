@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -87,13 +87,18 @@ AnimationUtils._getName = function (element, baseName) {
     var style = element.style;
 
     // Property names
-    nameMap.backfaceVisibility = (style.webkitBackfaceVisibility !== undefined) ? 'webkitBackfaceVisibility' : 'backfaceVisibility';
-    nameMap.transform = (style.webkitTransform !== undefined) ? 'webkitTransform' : 'transform';
-    nameMap.transformOrigin = (style.webkitTransformOrigin !== undefined) ? 'webkitTransformOrigin' : 'transformOrigin';
-    nameMap.transition = (style.webkitTransition !== undefined) ? 'webkitTransition' : 'transition';
+    nameMap.backfaceVisibility =
+      style.webkitBackfaceVisibility !== undefined
+        ? 'webkitBackfaceVisibility'
+        : 'backfaceVisibility';
+    nameMap.transform = style.webkitTransform !== undefined ? 'webkitTransform' : 'transform';
+    nameMap.transformOrigin =
+      style.webkitTransformOrigin !== undefined ? 'webkitTransformOrigin' : 'transformOrigin';
+    nameMap.transition = style.webkitTransition !== undefined ? 'webkitTransition' : 'transition';
 
     // Event names
-    nameMap.transitionend = (style.webkitTransition !== undefined) ? 'webkitTransitionEnd' : 'transitionend';
+    nameMap.transitionend =
+      style.webkitTransition !== undefined ? 'webkitTransitionEnd' : 'transitionend';
   }
 
   var mappedName = AnimationUtils._nameMap[baseName];
@@ -127,7 +132,12 @@ AnimationUtils._setElementStyle = function (element, baseName, value) {
  * @private
  */
 AnimationUtils._animate = function (
-  element, fromState, toState, options, transProps, persistProps
+  element,
+  fromState,
+  toState,
+  options,
+  transProps,
+  persistProps
 ) {
   var propArray = [].concat(transProps);
 
@@ -137,8 +147,10 @@ AnimationUtils._animate = function (
       // event.propertyName is the hyphenated name.  Entries in propArray is the
       // camel-case name without prefix.  So we drop any prefix and convert
       // event.propertyName to camel-case before finding it in propArray.
-      var basePropName = event.propertyName.indexOf('-webkit-') === 0
-          ? event.propertyName.substr(8) : event.propertyName;
+      var basePropName =
+        event.propertyName.indexOf('-webkit-') === 0
+          ? event.propertyName.substr(8)
+          : event.propertyName;
       basePropName = AnimationUtils._getCamelCasePropName(basePropName);
       var idx = propArray.indexOf(basePropName);
       if (idx > -1) {
@@ -182,8 +194,13 @@ AnimationUtils._animate = function (
     toState.css.transition = AnimationUtils._createTransitionValue(element, transProps, options);
 
     // Save the orignal style so that we can restore it later if needed
-    var effectCount = AnimationUtils._saveStyle(element, fromState, toState, options,
-                                                   persistProps || transProps);
+    var effectCount = AnimationUtils._saveStyle(
+      element,
+      fromState,
+      toState,
+      options,
+      persistProps || transProps
+    );
 
     AnimationUtils._applyState(element, fromState, effectCount > 1);
 
@@ -239,11 +256,11 @@ AnimationUtils._animate = function (
 
   var promise = new Promise(doAnimate);
   return promise.then(function () {
-      // Remove any temporary effect class when the promise is fulfilled.
-      // Do not remove them in the endListener, since the promise fulfillment
-      // callback is not in the same animation frame and occurs later than
-      // the endListener.  Because any caller cleanup is done on promise
-      // fulfillment, the element may flash if we remove the class too early.
+    // Remove any temporary effect class when the promise is fulfilled.
+    // Do not remove them in the endListener, since the promise fulfillment
+    // callback is not in the same animation frame and occurs later than
+    // the endListener.  Because any caller cleanup is done on promise
+    // fulfillment, the element may flash if we remove the class too early.
 
     if (fromState && fromState.addClass) {
       $(element).removeClass(fromState.addClass);
@@ -264,8 +281,10 @@ AnimationUtils._saveCssValues = function (element, css, savedStyle, persistProps
 
   for (var i = 0; i < cssProps.length; i++) {
     var cssProp = cssProps[i];
-    if (!hasOwnProperty.call(savedStyle, cssProp)
-        && (!persistProps || persistProps.indexOf(cssProp) === -1)) {
+    if (
+      !hasOwnProperty.call(savedStyle, cssProp) &&
+      (!persistProps || persistProps.indexOf(cssProp) === -1)
+    ) {
       // eslint-disable-next-line no-param-reassign
       savedStyle[cssProp] = AnimationUtils._getElementStyle(element, cssProp);
     }
@@ -275,8 +294,8 @@ AnimationUtils._saveCssValues = function (element, css, savedStyle, persistProps
 // Save the original element style before animating it
 AnimationUtils._saveStyle = function (element, fromState, toState, options, persistProps) {
   var savedStyle = element._ojSavedStyle || {};
-  var fromStateCss = (fromState && fromState.css) ? fromState.css : {};
-  var toStateCss = (toState && toState.css) ? toState.css : {};
+  var fromStateCss = fromState && fromState.css ? fromState.css : {};
+  var toStateCss = toState && toState.css ? toState.css : {};
 
   var _persistProps = persistProps;
   if (!(options && options.persist === 'all')) {
@@ -356,9 +375,7 @@ AnimationUtils._getHyphenatedPropName = function (propName) {
 };
 
 // Concatenate value for style property that allows multiple values
-AnimationUtils._concatMultiValue = function (
-  element, state, propName, defaultPrefix, separator
-) {
+AnimationUtils._concatMultiValue = function (element, state, propName, defaultPrefix, separator) {
   if (state.css[propName]) {
     var currPropValue = AnimationUtils._getElementStyle(element, propName);
     if (currPropValue && currPropValue.indexOf(defaultPrefix) !== 0) {
@@ -444,8 +461,10 @@ AnimationUtils._applyState = function (element, state, isComposite) {
 
       if (state.css[transformPropName]) {
         // eslint-disable-next-line no-param-reassign
-        state.css[transformPropName] =
-          AnimationUtils._applyTransform(element, state.css[transformPropName]);
+        state.css[transformPropName] = AnimationUtils._applyTransform(
+          element,
+          state.css[transformPropName]
+        );
       }
 
       var newStyle = state.css;
@@ -473,14 +492,14 @@ AnimationUtils._getTimingValue = function (timingStr) {
     return 0;
   }
 
-  return (timingStr.indexOf('ms') > -1) ? timingValue : timingValue * 1000;
+  return timingStr.indexOf('ms') > -1 ? timingValue : timingValue * 1000;
 };
 
 AnimationUtils._getTotalTiming = function (duration, delay) {
   var durationMs = AnimationUtils._getTimingValue(duration);
   if (durationMs > 0) {
     var delayMs = delay ? AnimationUtils._getTimingValue(delay) : 0;
-    return (durationMs + delayMs);
+    return durationMs + delayMs;
   }
 
   return 0;
@@ -697,15 +716,18 @@ AnimationUtils.startAnimation = function (element, action, effects, component) {
 
 AnimationUtils._mergeOptions = function (effect, options) {
   if (AnimationUtils._defaultOptions == null) {
-    AnimationUtils._defaultOptions = parseJSONFromFontFamily('oj-animation-effect-default-options');
+    AnimationUtils._defaultOptions = parseJSONFromFontFamily(
+      'oj-animation-effect-default-options'
+    );
   }
 
   // At the minimum, we should have a duration.  Merge any theming defaults
   // and then any user options to it.
-  return $.extend({ duration: '400ms' },
-                  AnimationUtils._defaultOptions
-                    ? AnimationUtils._defaultOptions[effect] : null,
-                  options);
+  return $.extend(
+    { duration: '400ms' },
+    AnimationUtils._defaultOptions ? AnimationUtils._defaultOptions[effect] : null,
+    options
+  );
 };
 
 AnimationUtils._createTransitionValue = function (element, transProps, options) {
@@ -738,9 +760,13 @@ AnimationUtils._fade = function (element, _options, effect, startOpacity, endOpa
   var toState = { css: { opacity: endOpacity } };
 
   if (options) {
-    if (options.startOpacity) { fromState.css.opacity = options.startOpacity; }
+    if (options.startOpacity) {
+      fromState.css.opacity = options.startOpacity;
+    }
 
-    if (options.endOpacity) { toState.css.opacity = options.endOpacity; }
+    if (options.endOpacity) {
+      toState.css.opacity = options.endOpacity;
+    }
   }
 
   return AnimationUtils._animate(element, fromState, toState, options, ['opacity']);
@@ -1047,16 +1073,20 @@ AnimationUtils._expandCollapse = function (element, _options, isExpand) {
   var style = window.getComputedStyle(element);
   var transProps = [];
   if (direction === 'both' || direction === 'height') {
-    var startMaxHeight = AnimationUtils._getSizeLimit(element,
-                                                         style,
-                                                         options.startMaxHeight,
-                                                         isExpand,
-                                                         false);
-    var endMaxHeight = AnimationUtils._getSizeLimit(element,
-                                                       style,
-                                                       options.endMaxHeight,
-                                                       !isExpand,
-                                                       false);
+    var startMaxHeight = AnimationUtils._getSizeLimit(
+      element,
+      style,
+      options.startMaxHeight,
+      isExpand,
+      false
+    );
+    var endMaxHeight = AnimationUtils._getSizeLimit(
+      element,
+      style,
+      options.endMaxHeight,
+      !isExpand,
+      false
+    );
 
     fromCSS.maxHeight = startMaxHeight;
     toStateCSS.maxHeight = endMaxHeight;
@@ -1064,16 +1094,20 @@ AnimationUtils._expandCollapse = function (element, _options, isExpand) {
   }
 
   if (direction === 'both' || direction === 'width') {
-    var startMaxWidth = AnimationUtils._getSizeLimit(element,
-                                                        style,
-                                                        options.startMaxWidth,
-                                                        isExpand,
-                                                        true);
-    var endMaxWidth = AnimationUtils._getSizeLimit(element,
-                                                      style,
-                                                      options.endMaxWidth,
-                                                      !isExpand,
-                                                      true);
+    var startMaxWidth = AnimationUtils._getSizeLimit(
+      element,
+      style,
+      options.startMaxWidth,
+      isExpand,
+      true
+    );
+    var endMaxWidth = AnimationUtils._getSizeLimit(
+      element,
+      style,
+      options.endMaxWidth,
+      !isExpand,
+      true
+    );
 
     fromCSS.maxWidth = startMaxWidth;
     toStateCSS.maxWidth = endMaxWidth;
@@ -1268,10 +1302,10 @@ AnimationUtils._slide = function (element, _options, isIn) {
         offsetY = (isIn ? -element.offsetHeight : element.offsetHeight) + 'px';
         break;
       case 'end':
-        offsetX = ((isIn ? -element.offsetWidth : element.offsetWidth) * (isRTL ? -1 : 1)) + 'px';
+        offsetX = (isIn ? -element.offsetWidth : element.offsetWidth) * (isRTL ? -1 : 1) + 'px';
         break;
       default: // 'start'
-        offsetX = ((isIn ? element.offsetWidth : -element.offsetWidth) * (isRTL ? -1 : 1)) + 'px';
+        offsetX = (isIn ? element.offsetWidth : -element.offsetWidth) * (isRTL ? -1 : 1) + 'px';
         break;
     }
   }
@@ -1336,13 +1370,17 @@ AnimationUtils.ripple = function (element, options) {
 
   // prepend the rippler instead of append so that it doesn't obscure other children
   var style = window.getComputedStyle(element);
-  var position = (style.position === 'static')
-      ? { left: element.offsetLeft, top: element.offsetTop } : { left: 0, top: 0 };
+  var position =
+    style.position === 'static'
+      ? { left: element.offsetLeft, top: element.offsetTop }
+      : { left: 0, top: 0 };
   element.insertBefore(container[0], element.firstChild); // @HTMLUpdateOK container is constructed by component code and is not using string passed in through any APIs.
-  container.css({ left: position.left + 'px',
+  container.css({
+    left: position.left + 'px',
     top: position.top + 'px',
     width: width + 'px',
-    height: height + 'px' });
+    height: height + 'px'
+  });
 
   container.prepend(rippler); // @HTMLUpdateOK rippler is constructed by component code and is not using string passed in through any APIs.
 
@@ -1362,10 +1400,12 @@ AnimationUtils.ripple = function (element, options) {
   // Otherwise it may re-appear briefly on mobile Safari.
   _options.persist = 'all';
 
-  return AnimationUtils._animate(rippler[0], fromState, toState, _options, [transformPropName, 'opacity'])
-          .then(function () {
-            container.remove();
-          });
+  return AnimationUtils._animate(rippler[0], fromState, toState, _options, [
+    transformPropName,
+    'opacity'
+  ]).then(function () {
+    container.remove();
+  });
 };
 
 AnimationUtils._setRippleOptions = function (_css, rippler, parent, options) {
@@ -1389,17 +1429,15 @@ AnimationUtils._setRippleOptions = function (_css, rippler, parent, options) {
     }
   }
 
-  var position = (parent.css('position') === 'static') ? parent.position() : { left: 0, top: 0 };
+  var position = parent.css('position') === 'static' ? parent.position() : { left: 0, top: 0 };
   var offset;
 
-  offset = AnimationUtils._calcRippleOffset(options.offsetX, diameter,
-                                               parentWidth, position.left);
+  offset = AnimationUtils._calcRippleOffset(options.offsetX, diameter, parentWidth, position.left);
   if (offset != null) {
     css.left = offset + 'px';
   }
 
-  offset = AnimationUtils._calcRippleOffset(options.offsetY, diameter,
-                                               parentHeight, position.top);
+  offset = AnimationUtils._calcRippleOffset(options.offsetY, diameter, parentHeight, position.top);
   if (offset != null) {
     css.top = offset + 'px';
   }
@@ -1417,9 +1455,9 @@ AnimationUtils._calcRippleOffset = function (_offsetOption, diameter, parentSize
   var offsetInt = parseInt(offsetOption, 10);
   if (!isNaN(offsetInt)) {
     if (offsetOption.charAt(offsetOption.length - 1) === '%') {
-      offset = (parentSize * (offsetInt / 100)) - (diameter / 2);
+      offset = parentSize * (offsetInt / 100) - diameter / 2;
     } else {
-      offset = offsetInt - (diameter / 2);
+      offset = offsetInt - diameter / 2;
     }
 
     // offset should be relative to the rippler's offsetParent, which is not
@@ -1460,18 +1498,20 @@ AnimationUtils._calcBackfaceAngle = function (angle) {
 
   switch (unit) {
     case 'deg':
-      backfaceAngle = (amount - 180) + unit;
+      backfaceAngle = amount - 180 + unit;
       break;
     case 'grad':
-      backfaceAngle = (amount - 200) + unit;
+      backfaceAngle = amount - 200 + unit;
       break;
     case 'rad':
-      backfaceAngle = (amount - 3.1416) + unit;
+      backfaceAngle = amount - 3.1416 + unit;
       break;
     case 'turn':
-      backfaceAngle = (amount - 0.5) + unit;
+      backfaceAngle = amount - 0.5 + unit;
       break;
-    default: error('Unknown angle unit in flip animation: ' + unit); break;
+    default:
+      error('Unknown angle unit in flip animation: ' + unit);
+      break;
   }
 
   return backfaceAngle;
@@ -1495,8 +1535,7 @@ AnimationUtils._flip = function (element, options, effect, startAngle, endAngle)
 
     for (var i = 0; i < children.length; i++) {
       childOptions = $(children[i]).hasClass('oj-animation-backface') ? backOptions : frontOptions;
-      promises.push(AnimationUtils._flip(children[i], childOptions,
-                                            effect, startAngle, endAngle));
+      promises.push(AnimationUtils._flip(children[i], childOptions, effect, startAngle, endAngle));
     }
 
     return Promise.all(promises);
@@ -1560,8 +1599,13 @@ AnimationUtils._flip = function (element, options, effect, startAngle, endAngle)
   // backfaceVisibility and transformOrigin affects the final look of the element,
   // so they should be persisted if the persist option is set.
   return AnimationUtils._animate(
-    element, fromState, toState, options,
-    [transformPropName], [transformPropName, backfaceVisPropName, transformOriginPropName]);
+    element,
+    fromState,
+    toState,
+    options,
+    [transformPropName],
+    [transformPropName, backfaceVisPropName, transformOriginPropName]
+  );
 };
 
 /**
@@ -1665,7 +1709,6 @@ AnimationUtils.addTransition = function (element, options) {
   return AnimationUtils._animate(element, null, null, _options, _options.transitionProperties);
 };
 
-
 AnimationUtils._createHeroParent = function () {
   var viewport = document.createElement('div');
   var body = document.body;
@@ -1687,7 +1730,6 @@ AnimationUtils._createHeroParent = function () {
   return host;
 };
 
-
 AnimationUtils._removeHeroParent = function (heroParent) {
   if (heroParent) {
     var viewport = heroParent.parentNode;
@@ -1697,11 +1739,9 @@ AnimationUtils._removeHeroParent = function (heroParent) {
   }
 };
 
-
 AnimationUtils._defaultHeroCreateClonedElement = function (context) {
   return context.fromElement.cloneNode(true);
 };
-
 
 AnimationUtils._defaultHeroHideFromAndToElements = function (context) {
   var fromElement = context.fromElement;
@@ -1709,7 +1749,6 @@ AnimationUtils._defaultHeroHideFromAndToElements = function (context) {
   fromElement.style.visibility = 'hidden';
   toElement.style.visibility = 'hidden';
 };
-
 
 AnimationUtils._defaultHeroAnimateClonedElement = function (context) {
   return new Promise(function (resolve) {
@@ -1729,8 +1768,9 @@ AnimationUtils._defaultHeroAnimateClonedElement = function (context) {
       transform += ' scale(' + context.scaleX.toFixed(2) + ',' + context.scaleY.toFixed(2) + ')';
       heroStyle.transform = transform;
 
-      var waitTime = AnimationUtils._getTimingValue(context.delay) +
-                     AnimationUtils._getTimingValue(context.duration);
+      var waitTime =
+        AnimationUtils._getTimingValue(context.delay) +
+        AnimationUtils._getTimingValue(context.duration);
 
       setTimeout(function () {
         resolve();
@@ -1739,26 +1779,36 @@ AnimationUtils._defaultHeroAnimateClonedElement = function (context) {
   });
 };
 
-
 AnimationUtils._defaultHeroShowToElement = function (context) {
   var toElement = context.toElement;
   toElement.style.visibility = 'visible';
 };
 
-
-AnimationUtils._doAnimateHero = function (fromElement, toElementSelector, resolvedOptions,
-  toElementElapsedTime, resolve, reject) {
+AnimationUtils._doAnimateHero = function (
+  fromElement,
+  toElementSelector,
+  resolvedOptions,
+  toElementElapsedTime,
+  resolve,
+  reject
+) {
   var toElement = document.querySelector(toElementSelector);
 
   // Wait for toElement to appear to DOM if it is not there yet
   if (toElement == null) {
     var interval = 100;
-    if ((toElementElapsedTime + interval) > resolvedOptions.toElementWaitTime) {
+    if (toElementElapsedTime + interval > resolvedOptions.toElementWaitTime) {
       reject('toElement not found in DOM after toElementWaitTime has expired');
     } else {
       setTimeout(function () {
-        AnimationUtils._doAnimateHero(fromElement, toElementSelector, resolvedOptions,
-          toElementElapsedTime + interval, resolve, reject);
+        AnimationUtils._doAnimateHero(
+          fromElement,
+          toElementSelector,
+          resolvedOptions,
+          toElementElapsedTime + interval,
+          resolve,
+          reject
+        );
       }, interval);
     }
     return;
@@ -1792,8 +1842,8 @@ AnimationUtils._doAnimateHero = function (fromElement, toElementSelector, resolv
   var parentRect = heroParent.getBoundingClientRect();
   heroParent.appendChild(clonedElement);
   clonedElement.style.position = 'absolute';
-  clonedElement.style.left = (fromRect.left - parentRect.left) + 'px';
-  clonedElement.style.top = (fromRect.top - parentRect.top) + 'px';
+  clonedElement.style.left = fromRect.left - parentRect.left + 'px';
+  clonedElement.style.top = fromRect.top - parentRect.top + 'px';
 
   resolvedOptions.hideFromAndToElements(heroContext);
 
@@ -1805,13 +1855,16 @@ AnimationUtils._doAnimateHero = function (fromElement, toElementSelector, resolv
     AnimationUtils._removeHeroParent(heroParent);
   }
 
-  resolvedOptions.animateClonedElement(heroContext).then(function () {
-    _postAnimation();
-    resolve();
-  }).catch(function (reason) {
-    _postAnimation();
-    reject(reason);
-  });
+  resolvedOptions
+    .animateClonedElement(heroContext)
+    .then(function () {
+      _postAnimation();
+      resolve();
+    })
+    .catch(function (reason) {
+      _postAnimation();
+      reject(reason);
+    });
 };
 
 /**
@@ -1881,8 +1934,14 @@ AnimationUtils.animateHero = function (element, options) {
     } else if (!options.toElementSelector) {
       reject('No options.toElementSelector specified');
     } else {
-      AnimationUtils._doAnimateHero(fromElement, options.toElementSelector, resolvedOptions,
-        toElementElapsedTime, resolve, reject);
+      AnimationUtils._doAnimateHero(
+        fromElement,
+        options.toElementSelector,
+        resolvedOptions,
+        toElementElapsedTime,
+        resolve,
+        reject
+      );
     }
   });
 };

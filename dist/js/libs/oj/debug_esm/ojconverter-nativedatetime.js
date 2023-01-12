@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -12,7 +12,6 @@ import { IntlConverterUtils as IntlConverterUtils$1, OraI18nUtils } from 'ojs/oj
 import { getTranslatedString } from 'ojs/ojtranslation';
 import oj from 'ojs/ojcore-base';
 import { CalendarUtils } from 'ojs/ojcalendarutils';
-import { OraTimeZone } from 'ojs/ojoratimezone';
 import { getDateTimePreferences } from 'ojs/ojconverter-preferences';
 
 class NativeDateTimeConstants {
@@ -684,7 +683,82 @@ class NativeConverterErrorHandler {
     }
 }
 
+let intlConverterCache = {};
+function getISODateOffset(date, timeZone) {
+    const d = new Date(Date.UTC(date.year, date.month - 1, date.date, date.hours, date.minutes));
+    const utcDateAtTimezone = _applyTimezoneToDate(d, timeZone);
+    const offset = _getOffset(date, utcDateAtTimezone);
+    let adjustment = 0;
+    d.setTime(d.getTime() - offset * 60000);
+    if (!_compareDates(_applyTimezoneToDate(d, timeZone), date)) {
+        adjustment = -60;
+        d.setTime(d.getTime() + 60 * 60000);
+        if (!_compareDates(_applyTimezoneToDate(d, timeZone), date)) {
+            adjustment = 60;
+            d.setTime(d.getTime() - 120 * 60000);
+        }
+    }
+    const result = offset + adjustment;
+    return result;
+}
+function _applyTimezoneToDate(d, timeZone) {
+    const cnv = _getConverter(timeZone);
+    const formattedUTC = cnv.format(d);
+    const [localDate, localTime] = formattedUTC.split(',');
+    const [month, date, year] = localDate.split('/');
+    const [hours, minutes] = localTime.trim().split(':');
+    return {
+        year: parseInt(year),
+        month: parseInt(month),
+        date: parseInt(date),
+        hours: parseInt(hours),
+        minutes: parseInt(minutes)
+    };
+}
+function _getOffset(original, asUTC) {
+    let originalMins = original.hours * 60 + original.minutes;
+    let utcMinutes = asUTC.hours * 60 + asUTC.minutes;
+    let delta = original.year - asUTC.year;
+    if (delta == 0) {
+        delta = original.month - asUTC.month;
+        if (delta === 0) {
+            delta = original.date - asUTC.date;
+        }
+    }
+    if (delta > 0) {
+        originalMins += 24 * 60;
+    }
+    else if (delta < 0) {
+        utcMinutes += 24 * 60;
+    }
+    return utcMinutes - originalMins;
+}
+function _compareDates(date1, date2) {
+    return (date1.year === date2.year &&
+        date1.month === date2.month &&
+        date1.hours === date2.hours &&
+        date1.minutes === date2.minutes);
+}
+function _getConverter(timezone) {
+    let cnv = intlConverterCache[timezone];
+    if (!cnv) {
+        cnv = new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hourCycle: 'h23',
+            timeZone: timezone
+        });
+        intlConverterCache[timezone] = cnv;
+    }
+    return cnv;
+}
+
 const LocalOraI18nUtils = OraI18nUtils;
+let localSystemTimeZone = null;
 class NativeParserImpl {
     static parseImpl(str, pattern, resOptions, localeElements, cal) {
         const numberingSystemKey = resOptions.numberingSystem;
@@ -707,15 +781,18 @@ class NativeParserImpl {
         }
         isoStrInfo = LocalOraI18nUtils.getISOStrFormatInfo(parsedIsoStr);
         if (resOptions.timeZone !== undefined && isoStrInfo.format !== NativeDateTimeConstants._LOCAL) {
-            this._adjustHours(isoStrInfo, resOptions, localeElements);
+            this._adjustHours(isoStrInfo, resOptions);
         }
-        parsedIsoStr = this._createParseISOStringFromDate(dtStyle, isoStrInfo, resOptions, localeElements);
+        parsedIsoStr = this._createParseISOStringFromDate(dtStyle, isoStrInfo, resOptions);
         if (res === undefined) {
             res = { value: parsedIsoStr, warning: null };
         }
         else {
             res.value = parsedIsoStr;
             res.warning = null;
+        }
+        if (dtStyle === 2 && resOptions.isoStrFormat === NativeDateTimeConstants._LOCAL) {
+            warn('isoStrFormat was set to local for date-time ISO string. local was ignored and parse returned an ISO string with offset.');
         }
         return res;
     }
@@ -845,16 +922,6 @@ class NativeParserImpl {
         };
         error.errorInfo = errorInfo;
         throw error;
-    }
-    static _getTimeZone(timeZoneId, localeElements) {
-        const tz = OraTimeZone.getInstance();
-        const zone = tz.getZone(timeZoneId, localeElements);
-        return zone;
-    }
-    static _parseZone(zone, parts, dst, ignoreDst, dateTime) {
-        const utcDate = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
-        const index = zone.parse(utcDate, dst, ignoreDst, dateTime);
-        return index;
     }
     static _parseTimezoneOffset(_offset) {
         let parts = _offset.split(':');
@@ -1534,12 +1601,6 @@ class NativeParserImpl {
         }
         return 0;
     }
-    static _getStdOffset(zone, value) {
-        const index = this._parseZone(zone, value, false, true, false);
-        const offset0 = zone.ofset(index);
-        const offset1 = zone.ofset(index + 1);
-        return Math.max(offset0, offset1);
-    }
     static _matchPMSymbol(cal, matchGroup) {
         const loc = cal.locale;
         let isPM = false;
@@ -1694,9 +1755,7 @@ class NativeParserImpl {
         parts[6] = timeObj.millisec;
         let isoParsedDate = LocalOraI18nUtils.partsToIsoString(parts);
         if (tzID !== null) {
-            const zone = this._getTimeZone(tzID, localeElements);
-            const index = this._parseZone(zone, parts, false, true, true);
-            const zoneOffset = -zone.ofset(index);
+            const zoneOffset = this._getTimeZoneOffset(parts, tzID);
             hourOffset = LocalOraI18nUtils.getTimeStringFromOffset('', zoneOffset, false, true);
         }
         if (hourOffset !== '') {
@@ -1752,16 +1811,31 @@ class NativeParserImpl {
         }
         return 1;
     }
-    static _adjustHours(isoStrInfo, options, localeElements) {
+    static _getTimeZoneOffset(parts, tzName) {
+        const localTtimeZone = this.getLocalSystemTimeZone();
+        if (localTtimeZone === tzName) {
+            const d = new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+            const localOffset = d.getTimezoneOffset();
+            return -localOffset;
+        }
+        const dateParts = {
+            year: parts[0],
+            month: parts[1],
+            date: parts[2],
+            hours: parts[3],
+            minutes: parts[4]
+        };
+        let offset = getISODateOffset(dateParts, tzName);
+        return offset;
+    }
+    static _getAdjustedOffset(timezone, isoStrInfo) {
+        const parts = isoStrInfo.isoStrParts;
+        return this._getTimeZoneOffset(parts, timezone);
+    }
+    static _adjustHours(isoStrInfo, options) {
         let value = isoStrInfo.isoStrParts;
         const isoStrFormat = isoStrInfo.format;
-        const timeZone = options.timeZone;
-        const zone = this._getTimeZone(timeZone, localeElements);
-        let utcd = null;
         let origOffset = 0;
-        let newOffset = 0;
-        let index = 0;
-        utcd = Date.UTC(value[0], value[1] - 1, value[2], value[3], value[4], value[5]);
         switch (isoStrFormat) {
             case NativeDateTimeConstants._OFFSET:
                 let tzParts = this._parseTimezoneOffset(isoStrInfo.timeZone);
@@ -1775,13 +1849,13 @@ class NativeParserImpl {
             default:
                 break;
         }
-        newOffset = this._getStdOffset(zone, value);
-        utcd -= (newOffset + origOffset) * 60000;
-        const getOption = LocalOraI18nUtils.getGetOption(options, 'NativeDateTimeConverter');
-        const dst = getOption('dst', 'boolean', [true, false], false);
-        const isTimeOnly = isoStrInfo.dateTime.indexOf('T') === 0;
-        index = zone.parse(utcd, dst, !isTimeOnly, false);
-        newOffset = -zone.ofset(index);
+        let newOffset = this._getAdjustedOffset(options.timeZone, isoStrInfo);
+        newOffset -= origOffset;
+        let newDate = new Date(value[0], value[1] - 1, value[2], value[3], value[4], value[4]);
+        newDate.setHours(value[3] + ((newOffset / 60) << 0), newOffset % 60);
+        const newDateIso = LocalOraI18nUtils.dateToLocalIso(newDate);
+        const newDateIsoStrInfo = LocalOraI18nUtils.getISOStrFormatInfo(newDateIso);
+        newOffset = this._getAdjustedOffset(options.timeZone, newDateIsoStrInfo);
         newOffset -= origOffset;
         let adjustD = new Date(Date.UTC(value[0], value[1] - 1, value[2], value[3], value[4], value[5]));
         const adjustedMin = adjustD.getUTCMinutes() + newOffset;
@@ -1839,13 +1913,11 @@ class NativeParserImpl {
         }
         return val;
     }
-    static _getParseISOStringOffset(tzName, parts, dst, ignoreDst, localeElements, thowException) {
-        const zone = this._getTimeZone(tzName, localeElements);
-        const index = this._parseZone(zone, parts, dst, ignoreDst, thowException);
-        const offset = zone.ofset(index);
-        return LocalOraI18nUtils.getTimeStringFromOffset('', offset, true, true);
+    static _getParseISOStringOffset(tzName, parts) {
+        const offset = this._getTimeZoneOffset(parts, tzName);
+        return LocalOraI18nUtils.getTimeStringFromOffset('', offset, false, true);
     }
-    static _createParseISOStringFromDate(dtStyle, isoStrInfo, options, localeElements) {
+    static _createParseISOStringFromDate(dtStyle, isoStrInfo, options) {
         let zone = null;
         let index = 0;
         let offset = '';
@@ -1858,58 +1930,28 @@ class NativeParserImpl {
             NativeDateTimeConstants._LOCAL,
             NativeDateTimeConstants._AUTO
         ], NativeDateTimeConstants._AUTO);
-        const dst = getOption('dst', 'boolean', [true, false], false);
-        let ignoreDst = true;
         const parts = isoStrInfo.isoStrParts;
         const dTimeZone = isoStrInfo.timeZone;
         const tzName = options.timeZone;
         const isoStrFormat = isoStrInfo.format;
         const optionsFormat = options.isoStrFormat;
         let val = this._createISOStrParts(dtStyle, parts);
-        if (dtStyle === 0 || optionsFormat === NativeDateTimeConstants._LOCAL) {
+        if (dtStyle === 0) {
             return val;
-        }
-        if (dtStyle === 1 && optionsFormat === NativeDateTimeConstants._AUTO) {
-            return val;
-        }
-        if (dtStyle === 1) {
-            ignoreDst = false;
         }
         switch (isoFormat) {
             case NativeDateTimeConstants._OFFSET:
-                if (tzName === undefined && isoStrFormat === NativeDateTimeConstants._OFFSET) {
-                    val += dTimeZone;
-                }
-                else if (tzName === undefined && isoStrFormat === NativeDateTimeConstants._LOCAL) {
-                    val += '';
-                }
-                else if (tzName === undefined && isoStrFormat === NativeDateTimeConstants._ZULU) {
-                    val += '+00:00';
-                }
-                else if (tzName !== undefined) {
-                    offset = this._getParseISOStringOffset(tzName, parts, dst, ignoreDst, localeElements, true);
-                    val += offset;
+            case NativeDateTimeConstants._AUTO:
+                val += this._getParseISOStringOffset(tzName, parts);
+                break;
+            case NativeDateTimeConstants._LOCAL:
+                if (dtStyle === 2) {
+                    val += this._getParseISOStringOffset(tzName, parts);
                 }
                 break;
             case NativeDateTimeConstants._ZULU:
                 let adjustedMin = 0;
-                if (tzName === undefined) {
-                    if (isoStrFormat === NativeDateTimeConstants._OFFSET) {
-                        offsetParts = this._parseTimezoneOffset(dTimeZone);
-                        const offsetHours = parseInt(offsetParts[0], 10);
-                        const offsetMinutes = parseInt(offsetParts[1], 10);
-                        adjustedMin = offsetHours * 60 + (offsetHours < 0 ? -offsetMinutes : offsetMinutes);
-                        adjustedMin = -adjustedMin;
-                    }
-                    else {
-                        adjustedMin = new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]).getTimezoneOffset();
-                    }
-                }
-                else {
-                    zone = this._getTimeZone(tzName, localeElements);
-                    index = this._parseZone(zone, parts, dst, ignoreDst, true);
-                    adjustedMin = zone.ofset(index);
-                }
+                adjustedMin = -this._getTimeZoneOffset(parts, tzName);
                 if (adjustedMin !== 0) {
                     const adjustD = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5], parts[6]));
                     adjustedMin = adjustD.getUTCMinutes() + adjustedMin;
@@ -1924,22 +1966,35 @@ class NativeParserImpl {
                 }
                 val += 'Z';
                 break;
-            case NativeDateTimeConstants._AUTO:
-                if (tzName !== undefined) {
-                    offset = this._getParseISOStringOffset(tzName, parts, dst, ignoreDst, localeElements, true);
-                    val += offset;
-                }
-                else {
-                    offset = dTimeZone;
-                    if (offset) {
-                        val += offset;
-                    }
-                }
-                break;
             default:
                 break;
         }
         return val;
+    }
+    static getTimeZoneCurrentDate(tzName) {
+        let options = { year: 'numeric', day: '2-digit', month: '2-digit' };
+        if (tzName) {
+            options.timeZone = tzName;
+        }
+        let cnv = Intl.DateTimeFormat('en-US', options);
+        const fmt = cnv.format(new Date());
+        const parts = fmt.split('/');
+        const result = parts[2] + '-' + parts[0] + '-' + parts[1];
+        return result;
+    }
+    static getTimeZoneCurrentOffset(timezone) {
+        const d = new Date();
+        const isoStr = LocalOraI18nUtils.dateToLocalIso(d);
+        let isoStrInfo = LocalOraI18nUtils.getISOStrFormatInfo(isoStr);
+        let parts = isoStrInfo.isoStrParts;
+        return this._getAdjustedOffset(timezone, isoStrInfo);
+    }
+    static getLocalSystemTimeZone() {
+        if (!localSystemTimeZone) {
+            const intlCnv = new Intl.DateTimeFormat('en-US');
+            localSystemTimeZone = intlCnv.resolvedOptions().timeZone;
+        }
+        return localSystemTimeZone;
     }
 }
 
@@ -1992,33 +2047,21 @@ class NativeDateTimeConverter {
         }
         return this.resOptions;
     }
-    getTimeZoneOffset(isoString, timeZone, formatted) {
-        let offset = 0;
-        const parts = LocalOraI18nUtils$1._IsoStrParts(isoString);
-        if (this.inputTimeZone) {
-            const localeElements = __getBundle();
-            const oraTz = OraTimeZone.getInstance();
-            const zone = oraTz.getZone(timeZone, localeElements);
-            const utcDate = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
-            const index = zone.parse(utcDate, false, true, true);
-            offset = zone.ofset(index);
-        }
-        else {
-            offset = new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]).getTimezoneOffset();
-        }
-        const zoneOffset = -offset;
-        if (!formatted) {
-            return zoneOffset;
-        }
-        return LocalOraI18nUtils$1.getTimeStringFromOffset('', zoneOffset, false, true);
-    }
     normalizeIsoString(value) {
         if (value === undefined || value === null || value === '') {
             const msg = 'input value of the format method cannot be empty';
             throw new Error(msg);
         }
         if (value.startsWith('T')) {
-            value = '2021-01-10' + value;
+            const localeElements = __getBundle();
+            let curDate = '';
+            if (this.inputTimeZone) {
+                curDate = NativeParserImpl.getTimeZoneCurrentDate(this.resOptions.timeZone);
+            }
+            else {
+                curDate = LocalOraI18nUtils$1.dateToLocalIso(new Date()).split('T')[0];
+            }
+            value = curDate + value;
         }
         else if (value.indexOf('T') === -1) {
             value = value + 'T00:00:00';
@@ -2036,11 +2079,29 @@ class NativeDateTimeConverter {
             const e = NativeConverterErrorHandler.processError(error, '', '');
             throw e;
         }
-        let timePart = value.substring(value.indexOf('T'));
-        const isLocalValue = timePart.indexOf('Z') === -1 && timePart.indexOf('+') === -1 && timePart.indexOf('-') === -1;
-        if (isLocalValue && this.inputTimeZone) {
-            const offset = this.getTimeZoneOffset(value, this.resOptions.timeZone, true);
-            value = value + offset;
+        if (this.inputTimeZone) {
+            let islocalTimeZone = false;
+            const localTimeZone = NativeParserImpl.getLocalSystemTimeZone();
+            if (localTimeZone === this.resOptions.timeZone) {
+                islocalTimeZone = true;
+            }
+            let timePart = value.substring(value.indexOf('T'));
+            const isLocalValue = timePart.indexOf('Z') === -1 &&
+                timePart.indexOf('+') === -1 &&
+                timePart.indexOf('-') === -1;
+            if (isLocalValue && !islocalTimeZone) {
+                const parts = LocalOraI18nUtils$1._IsoStrParts(value);
+                const dateParts = {
+                    year: parts[0],
+                    month: parts[1],
+                    date: parts[2],
+                    hours: parts[3],
+                    minutes: parts[4]
+                };
+                let offset = getISODateOffset(dateParts, this.resOptions.timeZone);
+                offset = LocalOraI18nUtils$1.getTimeStringFromOffset('', offset, false, true);
+                value = value + offset;
+            }
         }
         value = value.replace(/(T.*?[+-]..$)/, '$1:00');
         return value;
@@ -2216,7 +2277,15 @@ class NativeDateTimePatternConverter extends NativeDateTimeConverter {
                 formatTokens.tokensArray[index] = timeZone;
                 continue;
             }
-            const offset = this.getTimeZoneOffset(isoStr, timeZone, false);
+            const parts = LocalOraI18nUtils$2._IsoStrParts(isoStr);
+            const dateParts = {
+                year: parts[0],
+                month: parts[1],
+                date: parts[2],
+                hours: parts[3],
+                minutes: parts[4]
+            };
+            const offset = getISODateOffset(dateParts, this.resOptions.timeZone);
             var formatOffset = '';
             if (offset === 0) {
                 formatTokens.tokensArray[index] = 'Z';
@@ -2423,4 +2492,4 @@ class DateTimePreferencesUtils {
     }
 }
 
-export { DateTimePreferencesUtils, NativeDateTimeConverter, NativeDateTimePatternConverter };
+export { DateTimePreferencesUtils, NativeDateTimeConverter, NativeDateTimePatternConverter, NativeParserImpl, getISODateOffset };

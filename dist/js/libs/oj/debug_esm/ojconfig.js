@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -39,8 +39,7 @@ let trans = ojt;
  * @export
  */
 Config.getDeviceRenderMode = function () {
-  return document.body.getAttribute('data-oj-device-render-mode') ||
-         Config.getDeviceType();
+  return document.body.getAttribute('data-oj-device-render-mode') || Config.getDeviceType();
 };
 
 /**
@@ -70,7 +69,7 @@ Config.getLocale = function () {
 
   // If Require.js internationalziation plugin resolved the locale to "root" (presumably because "lang" attribute was not
   // set, and neither navigator.language or navigator.userLanguage were not available), return "en"
-  return (rl === 'root') ? 'en' : rl;
+  return rl === 'root' ? 'en' : rl;
 };
 
 /**
@@ -95,7 +94,7 @@ Config.setLocale = function (locale, callback) {
   var prefix = 'ojL10n!ojtranslations/nls/';
   var translationBundle = prefix + locale + '/ojtranslations';
   /* ojWebpackError: 'Config.setLocale() is not supported when the ojs/ojcore module has been bundled by Webpack' */
-  const translationPromise = import(translationBundle).then(translations => {
+  const translationPromise = import(translationBundle).then((translations) => {
     trans = translations;
   });
   var promises = [translationPromise];
@@ -109,26 +108,28 @@ Config.setLocale = function (locale, callback) {
   // incurring the download hit of the ojs/ojlocaledata module.
   if (oj.LocaleData) {
     var localeBundle = prefix + locale + '/localeElements';
-    const localePromise = import(localeBundle).then(localeElements => {
+    const localePromise = import(localeBundle).then((localeElements) => {
       if (localeElements) {
         oj.LocaleData.__updateBundle(Object.assign({}, localeElements.default));
       }
     });
     promises.push(localePromise);
     if (oj.TimezoneData) {
-      var tzBundlesPromises = oj.TimezoneData.__getBundleNames()
-        .map(bundleName => import(`${prefix}${locale}${bundleName}`));
-      promises.push(Promise.all(tzBundlesPromises).then((timezoneBundles) => {
-        timezoneBundles.forEach(oj.TimezoneData.__mergeIntoLocaleElements);
-      }));
+      var tzBundlesPromises = oj.TimezoneData.__getBundleNames().map((bundleName) =>
+        import(`${prefix}${locale}${bundleName}`)
+      );
+      promises.push(
+        Promise.all(tzBundlesPromises).then((timezoneBundles) => {
+          timezoneBundles.forEach(oj.TimezoneData.__mergeIntoLocaleElements);
+        })
+      );
     }
   }
   Promise.all(promises).then(() => {
-      if (callback) {
-        callback();
-      }
+    if (callback) {
+      callback();
     }
-  );
+  });
 };
 
 /**
@@ -215,7 +216,7 @@ Config.getVersionInfo = function () {
   var info = 'Oracle JET Version: ' + oj.version + '\n';
   info += 'Oracle JET Revision: ' + oj.revision + '\n';
 
-  var windowDefined = (typeof window !== 'undefined');
+  var windowDefined = typeof window !== 'undefined';
 
   // Browser information
   if (windowDefined && window.navigator) {
@@ -252,8 +253,7 @@ Config.getVersionInfo = function () {
  * @memberof oj.Config
  * @export
  */
-Config.logVersionInfo = function () {
-};
+Config.logVersionInfo = function () {};
 
 /**
  * This method gets replaced at build time. For AMD, RequireJS is used. For ESM,
@@ -263,7 +263,7 @@ Config.logVersionInfo = function () {
  * @private
  * @ignore
  */
-Config._getOjBaseUrl = function () { };
+Config._getOjBaseUrl = function () {};
 
 /**
  * Returns specified template engine promise.
@@ -275,10 +275,15 @@ Config._getEngineByType = function (templateProp) {
   if (!Config[templateProp]) {
     let promise;
     switch (templateProp) {
-      case PREACT_TEMPLATE_PROMISE_KO: promise = import('ojs/ojtemplateengine-preact-ko'); break;
-      case PREACT_TEMPLATE_PROMISE: promise = import('ojs/ojtemplateengine-preact'); break;
+      case PREACT_TEMPLATE_PROMISE_KO:
+        promise = import('ojs/ojtemplateengine-preact-ko');
+        break;
+      case PREACT_TEMPLATE_PROMISE:
+        promise = import('ojs/ojtemplateengine-preact');
+        break;
       case TEMPLATE_ENGINE_KO:
-      default: promise = import('ojs/ojtemplateengine-ko');
+      default:
+        promise = import('ojs/ojtemplateengine-ko');
     }
     Config[templateProp] = promise.then((engine) => engine.default);
   }
@@ -296,7 +301,7 @@ Config._getEngineByType = function (templateProp) {
  * @memberof oj.Config
  * @private
  */
- Config.__getTemplateEngine = function (options) {
+Config.__getTemplateEngine = function (options) {
   let enginePromise;
   const state = CustomElementUtils.getElementState(options.customElement);
   const bpType = state.getBindingProviderType();

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -21,6 +21,7 @@ import oj from 'ojs/ojcore-base';
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
  *
+ * @ojoracleicon 'oj-ux-ico-label-value'
  * @ojuxspecs ['label']
  *
  * @classdesc
@@ -144,6 +145,18 @@ import oj from 'ojs/ojcore-base';
  */
 
 /**
+ * @member
+ * @name _calculatedLabelWidth
+ * @expose
+ * @memberof oj.ojLabelValue
+ * @ojshortdesc Specifies the calculated label width to provide to its descendants.
+ * @instance
+ * @type {string}
+ * @desc This hidden property is used to provide the calculated label width via binding propagation.
+ * @ignore
+ */
+
+/**
  * Sets a property or a single subproperty for complex properties and notifies the component
  * of the change, triggering a [property]Changed event.
  *
@@ -197,30 +210,30 @@ import oj from 'ojs/ojcore-base';
  * @instance
  */
 
-  /**
-   * <p>The <code class="prettyprint">label</code> slot is used to specify the 'label' part of a label/value form layout item.</p>
-   *
-   * @ojslot label
-   * @memberof oj.ojLabelValue
-   *
-   * @example <caption>Initialize a label/value form layout item:</caption>
-   * &lt;oj-label-value>
-   *   &lt;oj-label for="textWindow" slot="label">Type here&lt;/oj-label>
-   *   &lt;oj-textarea id="textWindow" slot="value" rows="5" style="width: 100%; min-width: 100%">&lt;/oj-textarea>
-   * &lt;/oj-label-value>
-   */
-  /**
-   * <p>The <code class="prettyprint">value</code> slot is used to specify the 'value' part of a label/value form layout item.</p>
-   *
-   * @ojslot value
-   * @memberof oj.ojLabelValue
-   *
-   * @example <caption>Initialize a label/value form layout item:</caption>
-   * &lt;oj-label-value>
-   *   &lt;oj-label for="textWindow" slot="label">Type here&lt;/oj-label>
-   *   &lt;oj-textarea id="textWindow" slot="value" rows="5" style="width: 100%; min-width: 100%">&lt;/oj-textarea>
-   * &lt;/oj-label-value>
-   */
+/**
+ * <p>The <code class="prettyprint">label</code> slot is used to specify the 'label' part of a label/value form layout item.</p>
+ *
+ * @ojslot label
+ * @memberof oj.ojLabelValue
+ *
+ * @example <caption>Initialize a label/value form layout item:</caption>
+ * &lt;oj-label-value>
+ *   &lt;oj-label for="textWindow" slot="label">Type here&lt;/oj-label>
+ *   &lt;oj-textarea id="textWindow" slot="value" rows="5" style="width: 100%; min-width: 100%">&lt;/oj-textarea>
+ * &lt;/oj-label-value>
+ */
+/**
+ * <p>The <code class="prettyprint">value</code> slot is used to specify the 'value' part of a label/value form layout item.</p>
+ *
+ * @ojslot value
+ * @memberof oj.ojLabelValue
+ *
+ * @example <caption>Initialize a label/value form layout item:</caption>
+ * &lt;oj-label-value>
+ *   &lt;oj-label for="textWindow" slot="label">Type here&lt;/oj-label>
+ *   &lt;oj-textarea id="textWindow" slot="value" rows="5" style="width: 100%; min-width: 100%">&lt;/oj-textarea>
+ * &lt;/oj-label-value>
+ */
 
 /**
  * The _ojLabelValue constructor function.
@@ -270,9 +283,14 @@ function ojLabelValue(context) {
             // make padding adjustments, etc.
             valueOjFlexItem.classList.add('oj-formlayout-nested-formlayout');
           }
+          // If we have a corepack form component, we need to hide the label flex item as the
+          // component will be rendering its own label for 'top' and 'start' in addition to 'inside'
+          if (child.tagName.toLowerCase().startsWith('oj-c-') && 'labelEdge' in child) {
+            labelOjFlexItem.classList.add('oj-helper-hidden');
+          }
           break;
-        default:
-          element.removeChild(child); // removing any non 'label'/'value' slot children
+        default: // removing any non 'label'/'value' slot children
+          element.removeChild(child);
           break;
       }
     }
@@ -304,7 +322,8 @@ function ojLabelValue(context) {
     } else if (labelEdge === 'inside') {
       element.classList.add('oj-form-control-label-inside');
       element.classList.remove('oj-formlayout-labels-inline');
-    } else { // labelEdge === 'top'
+    } else {
+      // labelEdge === 'top'
       element.classList.remove('oj-formlayout-labels-inline');
       element.classList.remove('oj-form-control-label-inside');
     }
@@ -323,6 +342,9 @@ function ojLabelValue(context) {
     labelOjFlexItem.style.width = labelWidth;
     labelOjFlexItem.style.maxWidth = labelWidth;
     valueOjFlexItem.style.flex = '1 1 0';
+
+    // update the _calculatedLabelWidth
+    element._calculatedLabelWidth = labelWidth;
   };
 
   function _getLabelEdge(customElementAncestor) {
@@ -376,7 +398,18 @@ function ojLabelValue(context) {
             var columnGap = element.getAttribute('data-oj-column-gap');
             // if it is 0, then the parent component didn't update this and we use the default.
             if (colspan > 0) {
-              labelWidth = 'calc(((' + labelWidth + ' / ' + colspan + ') - ((' + columnGap + ' * (' + (colspan - 1) + ') * ' + ((parts[1] / colspan) / 100) + ')))';
+              labelWidth =
+                'calc(((' +
+                labelWidth +
+                ' / ' +
+                colspan +
+                ') - ((' +
+                columnGap +
+                ' * (' +
+                (colspan - 1) +
+                ') * ' +
+                parts[1] / colspan / 100 +
+                ')))';
             }
             break;
           default:
@@ -441,17 +474,18 @@ var __oj_label_value_metadata =
 };
   __oj_label_value_metadata.extension._CONSTRUCTOR = ojLabelValue;
   oj.CustomElementBridge.register('oj-label-value', {
-    metadata: oj.CollectionUtils.mergeDeep(
-      __oj_label_value_metadata, {
+    metadata: oj.CollectionUtils.mergeDeep(__oj_label_value_metadata, {
       properties: {
         labelEdge: {
           binding: {
-            provide: [{ name: 'containerLabelEdge' },
-            { name: 'labelEdge', transform: { top: 'provided', start: 'provided' } }],
+            provide: [
+              { name: 'containerLabelEdge' },
+              { name: 'labelEdge', transform: { top: 'provided', start: 'provided' } }
+            ],
             consume: { name: 'containerLabelEdge' }
           }
         },
-        labelWidth: {
+        _calculatedLabelWidth: {
           binding: {
             provide: [{ name: 'labelWidth' }]
           }
@@ -459,4 +493,4 @@ var __oj_label_value_metadata =
       }
     })
   });
-}());
+})();

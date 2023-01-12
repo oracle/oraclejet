@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -133,7 +133,7 @@ CubeAxisValue.prototype.getDepth = function () {
 CubeAxisValue.prototype.getParents = function () {
   var parents = [];
   var parent = this._parent;
-    // Add parents, don't add root
+  // Add parents, don't add root
   while (parent && parent._parent) {
     parents.unshift(parent);
     parent = parent._parent;
@@ -185,10 +185,10 @@ CubeAxisValue.prototype.getStart = function () {
     return this._start;
   }
   if (!this._parent) {
-        // We're the root
+    // We're the root
     return 0;
   }
-    // Add up all my earlier siblings' extents plus my parent's start--that's my start
+  // Add up all my earlier siblings' extents plus my parent's start--that's my start
   var start = this._parent.getStart();
   var currChild = this._parent._getPrevChild(this);
   while (currChild) {
@@ -464,7 +464,6 @@ CubeAxis.prototype.getIndex = function (key) {
  */
 CubeAxis.prototype.axis = undefined;
 
-
 /**
  * Retrieve the hash code for the values at a given index
  * @protected
@@ -494,7 +493,6 @@ CubeAxis.prototype.GetPartialCubeKeys = function (index, level, keys) {
   }
   return keys;
 };
-
 
 /**
  * Distribute contents of row to this axis according to the layout, etc.
@@ -608,7 +606,7 @@ CubeDataValue.prototype._getVariance = function () {
     return NaN;
   }
   var count = this._data.rows.length;
-  return (count > 1) ? this._data.square / (count - 1) : 0.0;
+  return count > 1 ? this._data.square / (count - 1) : 0.0;
 };
 
 /**
@@ -623,7 +621,6 @@ const CubeKeys = function () {
   this._data = [];
 };
 oj._registerLegacyNamespaceProp('CubeKeys', CubeKeys);
-
 
 /**
  * @protected
@@ -652,10 +649,10 @@ CubeKeys.prototype.GetHashCodes = function () {
   if (this._data.length === 0) {
     codes.push({ key: JSON.stringify(keyHash) });
   } else {
-        // One pairing for each data value
+    // One pairing for each data value
     for (var d = 0; d < this._data.length; d++) {
       var copy = $.extend(true, {}, keyHash);
-            // This is done for easier lookups when finding child
+      // This is done for easier lookups when finding child
       copy[this._data[d].name] = this._data[d].name;
       codes.push({
         key: JSON.stringify(copy),
@@ -950,9 +947,10 @@ Cube.prototype._normalizeIndices = function (indices) {
   for (var a = 0; a < numAxes; a++) {
     var index = indices[a];
     var hasOwnProperty = Object.prototype.hasOwnProperty;
-    if (index instanceof Object &&
-        (hasOwnProperty.call(index, 'start') ||
-         hasOwnProperty.call(index, 'count'))) {
+    if (
+      index instanceof Object &&
+      (hasOwnProperty.call(index, 'start') || hasOwnProperty.call(index, 'count'))
+    ) {
       if (hasOwnProperty.call(index, 'start')) {
         if (hasOwnProperty.call(index, 'count')) {
           ind.push(this._generateIndex(index.start, index.count, a));
@@ -1126,7 +1124,6 @@ Cube.prototype._storeData = function (hash, dataHash, row) {
   }
 };
 
-
 /**
  * @private
  */
@@ -1197,7 +1194,7 @@ Cube._isNumber = function (value) {
  */
 Cube.prototype._aggregate = function (hash, currValue, row) {
   var aggObj = this.GetAggType(hash.dataValue);
-  var aggType = /** @type {Object} */(aggObj.aggregation);
+  var aggType = /** @type {Object} */ (aggObj.aggregation);
   var validCurr = Cube._isValid(currValue);
   var validHash = Cube._isValid(hash);
   var isNumCurr = validCurr && Cube._isNumber(currValue);
@@ -1206,8 +1203,13 @@ Cube.prototype._aggregate = function (hash, currValue, row) {
     case CubeAggType.SUM:
       if (validCurr && validHash) {
         if (isNumCurr && isNumHash) {
-          return this._createAggValue(currValue.value + hash.value
-                                      , aggType, currValue.rows, row, {});
+          return this._createAggValue(
+            currValue.value + hash.value,
+            aggType,
+            currValue.rows,
+            row,
+            {}
+          );
         }
         return this._createAggValue(NaN, aggType, currValue.rows, row, {});
       }
@@ -1221,9 +1223,13 @@ Cube.prototype._aggregate = function (hash, currValue, row) {
     case CubeAggType.AVERAGE:
       if (validCurr && validHash) {
         if (isNumCurr && isNumHash) {
-          return this._createAggValue((currValue.sum + hash.value) / (currValue.rows.length + 1),
-                                      aggType, currValue.rows, row,
-                                      { sum: (currValue.sum + hash.value) });
+          return this._createAggValue(
+            (currValue.sum + hash.value) / (currValue.rows.length + 1),
+            aggType,
+            currValue.rows,
+            row,
+            { sum: currValue.sum + hash.value }
+          );
         }
         return this._createAggValue(NaN, aggType, currValue.rows, row, { sum: currValue.sum });
       }
@@ -1239,9 +1245,9 @@ Cube.prototype._aggregate = function (hash, currValue, row) {
       if (validCurr && validHash) {
         if (isNumCurr && isNumHash) {
           var newCount = currValue.rows.length + 1;
-          var avg = currValue.value + ((hash.value - currValue.value) / newCount);
+          var avg = currValue.value + (hash.value - currValue.value) / newCount;
           return this._createAggValue(avg, aggType, currValue.rows, row, {
-            square: (currValue.square + ((hash.value - currValue.value) * (hash.value - avg)))
+            square: currValue.square + (hash.value - currValue.value) * (hash.value - avg)
           });
         }
         return this._createAggValue(NaN, aggType, currValue.rows, row, { square: NaN });
@@ -1266,8 +1272,13 @@ Cube.prototype._aggregate = function (hash, currValue, row) {
     case CubeAggType.MIN:
       if (validCurr && validHash) {
         if (isNumCurr && isNumHash) {
-          return this._createAggValue(Math.min(currValue.value, hash.value),
-                                      aggType, currValue.rows, row, {});
+          return this._createAggValue(
+            Math.min(currValue.value, hash.value),
+            aggType,
+            currValue.rows,
+            row,
+            {}
+          );
         }
         return this._createAggValue(NaN, aggType, currValue.rows, row, {});
       }
@@ -1281,8 +1292,13 @@ Cube.prototype._aggregate = function (hash, currValue, row) {
     case CubeAggType.MAX:
       if (validCurr && validHash) {
         if (isNumCurr && isNumHash) {
-          return this._createAggValue(Math.max(currValue.value, hash.value),
-                                      aggType, currValue.rows, row, {});
+          return this._createAggValue(
+            Math.max(currValue.value, hash.value),
+            aggType,
+            currValue.rows,
+            row,
+            {}
+          );
         }
         return this._createAggValue(NaN, aggType, currValue.rows, row, {});
       }
@@ -1303,8 +1319,11 @@ Cube.prototype._aggregate = function (hash, currValue, row) {
       return currValue;
     case CubeAggType.CUSTOM:
       var callback = aggObj.callback;
-      var val = callback.call(this, validCurr ? currValue.value : undefined,
-                              validHash ? hash.value : undefined);
+      var val = callback.call(
+        this,
+        validCurr ? currValue.value : undefined,
+        validHash ? hash.value : undefined
+      );
       return this._createAggValue(val, aggType, validCurr ? currValue.rows : [], row, {});
     default:
       return undefined;
@@ -1318,7 +1337,7 @@ Cube.prototype._aggregate = function (hash, currValue, row) {
 Cube.prototype._getAxis = function (axis, levels) {
   if (axis >= this._axes.length) {
     // Must add on enough to cover
-    var newElems = new Array((axis - this._axes.length) + 1);
+    var newElems = new Array(axis - this._axes.length + 1);
     Array.prototype.push.apply(this._axes, newElems);
   }
 
@@ -1342,7 +1361,6 @@ Cube.prototype._createCubeKeys = function (indices) {
   }
   return keys;
 };
-
 
 /**
  * @protected
@@ -1407,8 +1425,10 @@ const CubeCellSet = function (cube, cellRange) {
   this._starts = { row: startRow, column: startColumn };
 
   // Get the data
-  this._values = this._cube.getValues([{ start: startColumn, count: colCount },
-                                       { start: startRow, count: rowCount }]);
+  this._values = this._cube.getValues([
+    { start: startColumn, count: colCount },
+    { start: startRow, count: rowCount }
+  ]);
 
   var valArray = Array.isArray(this._values);
 
@@ -1433,9 +1453,9 @@ oj._registerLegacyNamespaceProp('CubeCellSet', CubeCellSet);
 CubeCellSet.prototype.getData = function (indexes) {
   var row = indexes.row;
   var col = indexes.column;
-  var cell = Array.isArray(this._values) ?
-      this._values[col - this._starts.column][row - this._starts.row] :
-      this._values;
+  var cell = Array.isArray(this._values)
+    ? this._values[col - this._starts.column][row - this._starts.row]
+    : this._values;
   if (cell) {
     return cell.getValue();
   }
@@ -1455,8 +1475,12 @@ CubeCellSet.prototype.getData = function (indexes) {
  */
 CubeCellSet.prototype.getMetadata = function (indexes) {
   // Get each axis' key
-  return { keys: { row: this._getAxisMetadata(indexes, 'row', 2),
-                   column: this._getAxisMetadata(indexes, 'column', 1) } };
+  return {
+    keys: {
+      row: this._getAxisMetadata(indexes, 'row', 2),
+      column: this._getAxisMetadata(indexes, 'column', 1)
+    }
+  };
 };
 
 /**
@@ -1544,9 +1568,8 @@ const CubeHeaderSet = function (axis, cube, start, count) {
   // The CubeAxis
   this._axis = axis;
   this._start = start === undefined ? 0 : start;
-  this._count = count === undefined ?
-    this._axis.getExtent() :
-    Math.min(count, this._axis.getExtent() - start);
+  this._count =
+    count === undefined ? this._axis.getExtent() : Math.min(count, this._axis.getExtent() - start);
   this._end = start + (count - 1);
 };
 oj._registerLegacyNamespaceProp('CubeHeaderSet', CubeHeaderSet);
@@ -1617,11 +1640,11 @@ CubeHeaderSet.prototype.getExtent = function (index, level) {
 
   if (start < this._start) {
     // Need to subtract this overage from the extent
-    extent -= (this._start - start);
+    extent -= this._start - start;
   }
   if (end > this._end) {
     // true extent overruns the header set--adjust it down by that much
-    extent -= (end - this._end);
+    extent -= end - this._end;
   }
   return { extent: extent, more: { before: before, after: after } };
 };
@@ -1707,7 +1730,11 @@ const CubeDataGridDataSource = function (cube) {
 oj._registerLegacyNamespaceProp('CubeDataGridDataSource', CubeDataGridDataSource);
 
 // Subclass CubeDataGridDataSource to DataGridDataSource
-oj.Object.createSubclass(CubeDataGridDataSource, DataSourceCommon.DataGridDataSource, 'oj.CubeDataGridDataSource');
+oj.Object.createSubclass(
+  CubeDataGridDataSource,
+  DataSourceCommon.DataGridDataSource,
+  'oj.CubeDataGridDataSource'
+);
 
 /**
  * Set a new cube on the data source
@@ -1765,7 +1792,6 @@ CubeDataGridDataSource.prototype.getCount = function (axis) {
   return axisObj ? axisObj.getExtent() : 0;
 };
 
-
 /**
  * Returns whether the total count returned in getCount function is an actual or an estimate.
  * @param {string} axis the axis in which we inquire whether the total count is an estimate.  Valid values are
@@ -1782,7 +1808,6 @@ CubeDataGridDataSource.prototype.getCount = function (axis) {
 CubeDataGridDataSource.prototype.getCountPrecision = function (axis) {
   return 'exact';
 };
-
 
 /**
  * Fetch a range of headers from the data source.
@@ -1805,18 +1830,22 @@ CubeDataGridDataSource.prototype.getCountPrecision = function (axis) {
  * @memberof CubeDataGridDataSource
  * @export
  */
-CubeDataGridDataSource.prototype.fetchHeaders = function (
-  headerRange, callbacks, callbackObjects
-) {
-  var cubeheaders = new CubeHeaderSet(this._getAxis(headerRange.axis),
-                                         this.data, headerRange.start,
-                                         headerRange.count);
-  callbacks.success.call(callbackObjects ? callbackObjects.success : undefined,
-                         cubeheaders, headerRange);
+CubeDataGridDataSource.prototype.fetchHeaders = function (headerRange, callbacks, callbackObjects) {
+  var cubeheaders = new CubeHeaderSet(
+    this._getAxis(headerRange.axis),
+    this.data,
+    headerRange.start,
+    headerRange.count
+  );
+  callbacks.success.call(
+    callbackObjects ? callbackObjects.success : undefined,
+    cubeheaders,
+    headerRange
+  );
 };
 
 /**
-  * @param {Array.<Object>} cellRange Information about the cell range.  A cell range is defined by an array
+ * @param {Array.<Object>} cellRange Information about the cell range.  A cell range is defined by an array
  *        of range info for each axis, where each range contains three properties: axis, start, count.<p>
  *        axis: the axis associated with this range where cells are fetched.  Valid
  *        values are "row" and "column".<br>
@@ -1840,21 +1869,22 @@ CubeDataGridDataSource.prototype.fetchCells = function (cellRange, callbacks, ca
     var start = cellRange[i].start === undefined ? 0 : cellRange[i].start;
     var count;
     if (cellRange[i].axis === 'row') {
-      count = cellRange[i].count === undefined ?
-        this.data.getAxes()[1].getExtent() :
-        cellRange[i].count;
+      count =
+        cellRange[i].count === undefined ? this.data.getAxes()[1].getExtent() : cellRange[i].count;
       obj.row = { start: start, count: count };
     }
     if (cellRange[i].axis === 'column') {
-      count = cellRange[i].count === undefined ?
-        this.data.getAxes()[0].getExtent() :
-        cellRange[i].count;
+      count =
+        cellRange[i].count === undefined ? this.data.getAxes()[0].getExtent() : cellRange[i].count;
       obj.column = { start: start, count: count };
     }
   }
   var cubecells = new CubeCellSet(this.data, obj);
-  callbacks.success.call(callbackObjects ? callbackObjects.success : undefined,
-                         cubecells, cellRange);
+  callbacks.success.call(
+    callbackObjects ? callbackObjects.success : undefined,
+    cubecells,
+    cellRange
+  );
 };
 
 /**
@@ -1882,7 +1912,6 @@ CubeDataGridDataSource.prototype._getKey = function (indexes, axis, retObj) {
   retObj[axis] = keys.GetHashCodes()[0].key;
   return retObj;
 };
-
 
 /**
  * Returns the keys based on the indexes.
@@ -1926,8 +1955,13 @@ CubeDataGridDataSource.prototype.sort = function (criteria, callbacks, callbackO
  * @export
  */
 CubeDataGridDataSource.prototype.move = function (
-  // eslint-disable-next-line no-unused-vars
-  rowToMove, referenceRow, position, callbacks, callbackObjects
+  /* eslint-disable no-unused-vars */
+  rowToMove,
+  referenceRow,
+  position,
+  callbacks,
+  callbackObjects
+  /* eslint-enable no-unused-vars */
 ) {
   oj.Assert.failedInAbstractFunction();
 };
@@ -1968,7 +2002,6 @@ CubeDataGridDataSource.prototype.getCapability = function (feature) {
   }
 };
 
-
 /**
  * @private
  */
@@ -1993,24 +2026,24 @@ CubeDataGridDataSource.prototype._getAxis = function (axis) {
  */
 
 const CubeLevel = function (attribute, axis, dataValue) {
-   this.Init();
-   this.attribute = attribute;
-   this._axisObj = axis;
-   this.axis = axis.axis;
-   this._dataValue = dataValue;
- };
- oj._registerLegacyNamespaceProp('CubeLevel', CubeLevel);
+  this.Init();
+  this.attribute = attribute;
+  this._axisObj = axis;
+  this.axis = axis.axis;
+  this._dataValue = dataValue;
+};
+oj._registerLegacyNamespaceProp('CubeLevel', CubeLevel);
 
- // Subclass from oj.Object
- oj.Object.createSubclass(CubeLevel, oj.Object, 'oj.CubeLevel');
+// Subclass from oj.Object
+oj.Object.createSubclass(CubeLevel, oj.Object, 'oj.CubeLevel');
 
 /**
  * Initializes instance with the set options
  * @private
  */
- CubeLevel.prototype.Init = function () {
-   CubeLevel.superclass.Init.call(this);
- };
+CubeLevel.prototype.Init = function () {
+  CubeLevel.superclass.Init.call(this);
+};
 
 /**
  * The rowset attribute this level represents
@@ -2018,7 +2051,7 @@ const CubeLevel = function (attribute, axis, dataValue) {
  * @memberof CubeLevel
  * @export
  */
- CubeLevel.prototype.attribute = undefined;
+CubeLevel.prototype.attribute = undefined;
 
 /**
  * The axis this level is a member of
@@ -2026,8 +2059,7 @@ const CubeLevel = function (attribute, axis, dataValue) {
  * @memberof CubeLevel
  * @export
  */
- CubeLevel.prototype.axis = undefined;
-
+CubeLevel.prototype.axis = undefined;
 
 /**
  * Return the CubeAxisValue at the given index within this level
@@ -2036,18 +2068,18 @@ const CubeLevel = function (attribute, axis, dataValue) {
  * @memberof CubeLevel
  * @export
  */
- CubeLevel.prototype.getValue = function (index) {
-   var values = this._axisObj.getValues(index);
-   if (values) {
-     // Find this level within the returned list
-     for (var v = 0; v < values.length; v++) {
-       if (values[v].getLevel() === this) {
-         return values[v];
-       }
-     }
-   }
-   return null;
- };
+CubeLevel.prototype.getValue = function (index) {
+  var values = this._axisObj.getValues(index);
+  if (values) {
+    // Find this level within the returned list
+    for (var v = 0; v < values.length; v++) {
+      if (values[v].getLevel() === this) {
+        return values[v];
+      }
+    }
+  }
+  return null;
+};
 
 /**
  * Does this level represent the data values within the cube?
@@ -2055,21 +2087,21 @@ const CubeLevel = function (attribute, axis, dataValue) {
  * @memberof CubeLevel
  * @export
  */
- CubeLevel.prototype.isDataValue = function () {
-   return this._dataValue;
- };
+CubeLevel.prototype.isDataValue = function () {
+  return this._dataValue;
+};
 
 /**
  * @type {boolean}
  * @private
  */
- CubeLevel.prototype._dataValue = false;
+CubeLevel.prototype._dataValue = false;
 
 /**
  * @type {CubeAxis}
  * @private
  */
- CubeLevel.prototype._axisObj = null;
+CubeLevel.prototype._axisObj = null;
 
 /**
  * @class DataColumnCube
@@ -2106,16 +2138,15 @@ const DataColumnCube = function (rowset, layout, dataValues) {
   this._valueAttr = dataValues.valueAttr;
   this._labelAttr = dataValues.labelAttr;
   var defAgg = dataValues.defaultAggregation;
-  this._defaultAggregation = (defAgg ?
-                              DataColumnCube._getDefaultAgg(defAgg) :
-                              { aggregation: CubeAggType.SUM });
+  this._defaultAggregation = defAgg
+    ? DataColumnCube._getDefaultAgg(defAgg)
+    : { aggregation: CubeAggType.SUM };
   this._aggregation = dataValues.aggregation;
   this._buildAggTypeLookup();
 
   DataColumnCube.superclass.constructor.call(this, rowset, layout);
 };
 oj._registerLegacyNamespaceProp('DataColumnCube', DataColumnCube);
-
 
 /**
  * @typedef {Object} DataColumnCube.Aggregation
@@ -2230,9 +2261,9 @@ DataColumnCube.prototype._buildAggTypeLookup = function () {
     for (var i = 0; i < this._aggregation.length; i++) {
       var dv = this._aggregation[i];
       var agg = dv.aggregation;
-      this._dataValueAggType[dv.value] = (agg ?
-                                          { aggregation: agg, callback: dv.callback } :
-                                          this._defaultAggregation);
+      this._dataValueAggType[dv.value] = agg
+        ? { aggregation: agg, callback: dv.callback }
+        : this._defaultAggregation;
     }
   }
 };
@@ -2311,7 +2342,6 @@ DataValueAttributeCube.prototype.Init = function () {
   DataValueAttributeCube.superclass.Init.call(this);
 };
 
-
 /**
  * Construct a cube given the information from the constructor.  Walk each row, assign it to its axis, aggregate values as
  * need be
@@ -2351,7 +2381,12 @@ DataValueAttributeCube.prototype.GenerateCube = function (layout) {
  * @protected
  */
 DataValueAttributeCube.prototype.ProcessLevel = function (
-  axis, levelNum, currNode, row, keys, addKeys
+  axis,
+  levelNum,
+  currNode,
+  row,
+  keys,
+  addKeys
 ) {
   if (levelNum >= axis.getLevels().length) {
     return keys;
@@ -2406,10 +2441,9 @@ DataValueAttributeCube.prototype._buildAggTypeLookup = function () {
   for (var i = 0; i < this._dataValues.length; i++) {
     var dv = this._dataValues[i];
     var agg = dv.aggregation;
-    this._dataValueAggType[dv.attribute]
-      = (agg ?
-         { aggregation: dv.aggregation, callback: dv.callback } :
-         { aggregation: CubeAggType.SUM, callback: dv.callback });
+    this._dataValueAggType[dv.attribute] = agg
+      ? { aggregation: dv.aggregation, callback: dv.callback }
+      : { aggregation: CubeAggType.SUM, callback: dv.callback };
   }
 };
 

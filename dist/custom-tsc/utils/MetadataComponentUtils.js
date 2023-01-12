@@ -28,12 +28,14 @@ const ts = __importStar(require("typescript"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
 const TypeUtils = __importStar(require("./MetadataTypeUtils"));
+const FileUtils = __importStar(require("./MetadataFileUtils"));
 const TransformerError_1 = require("./TransformerError");
-function getVCompClassInfo(elementName, classNode, vexportToAlias, checker, compilerOptions, translationBundleIds) {
+function getVCompClassInfo(elementName, classNode, vexportToAlias, checker, compilerOptions, buildOptions) {
     var _a, _b;
     let rtnInfo = null;
     let className = classNode.name.getText();
     let translationBundleInfo;
+    let packInfo;
     let heritageClauses = classNode.heritageClauses;
     for (let clause of heritageClauses) {
         for (let typeNode of clause.types) {
@@ -48,29 +50,37 @@ function getVCompClassInfo(elementName, classNode, vexportToAlias, checker, comp
                     };
                     if (!rtnInfo.propsInfo &&
                         TypeUtils.getTypeNameFromTypeReference(propsTypeNode) !== vexportToAlias.GlobalProps) {
-                        throw new TransformerError_1.TransformerError(className, 'All custom elements at a minimum support global properties. Properties should use the ExtendGlobalProps utility type, e.g. Component<ExtendGlobalProps<Props>>.', propsTypeNode);
+                        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.MISSING_PROPS_OBJECT, TransformerError_1.ExceptionType.THROW_ERROR, className, 'All custom elements at a minimum support global properties. Properties should use the ExtendGlobalProps utility type, e.g. Component<ExtendGlobalProps<Props>>.', propsTypeNode);
                     }
                     break;
                 }
                 else {
-                    throw new TransformerError_1.TransformerError(className, 'All custom elements at a minimum support global properties and should pass in GlobalProps for the property type, e.g. Component<GlobalProps>.', typeNode);
+                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.GLOBAL_PROPS_MINIMUM, TransformerError_1.ExceptionType.THROW_ERROR, className, 'All custom elements at a minimum support global properties and should pass in GlobalProps for the property type, e.g. Component<GlobalProps>.', typeNode);
                 }
             }
         }
     }
-    if (rtnInfo && translationBundleIds) {
-        translationBundleInfo = getTranslationBundleInfo(translationBundleIds, compilerOptions);
-        rtnInfo.additionalImports = translationBundleInfo.additionalImports;
-        rtnInfo.translationBundleMapExpression = translationBundleInfo.bundleMapExpression;
+    if (rtnInfo) {
+        if (buildOptions.translationBundleIds) {
+            translationBundleInfo = getTranslationBundleInfo(buildOptions.translationBundleIds, compilerOptions);
+            rtnInfo.additionalImports = translationBundleInfo.additionalImports;
+            rtnInfo.translationBundleMapExpression = translationBundleInfo.bundleMapExpression;
+        }
+        packInfo = getPackInfo(elementName, classNode, buildOptions);
+        if (packInfo) {
+            rtnInfo.packInfo = packInfo;
+        }
     }
     return rtnInfo;
 }
 exports.getVCompClassInfo = getVCompClassInfo;
-function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compilerOptions, translationBundleIds) {
-    var _a, _b;
+function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compilerOptions, buildOptions) {
+    var _a, _b, _c;
     let rtnInfo = null;
     let propsInfo = null;
+    let isForwarded = false;
     let isTypeDefintionAdjustmentRequired = false;
+    let regOptions = {};
     let callExpression;
     let compRegisterCall;
     let varDecl;
@@ -80,10 +90,9 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compi
     let functionName;
     let defaultProps;
     let propsTypeNode;
-    let propBindings;
     let translationBundleInfo;
     const findFunctionalComp = function (expression) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         if (ts.isFunctionExpression(expression) || ts.isArrowFunction(expression)) {
             componentNode = expression;
             const propsParam = expression.parameters[0];
@@ -95,6 +104,25 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compi
                         defaultProps = propsParam.name.elements;
                     }
                 }
+            }
+        }
+        else if (ts.isCallExpression(expression)) {
+            const callName = ts.isIdentifier(expression.expression)
+                ? ts.idText(expression.expression)
+                : null;
+            switch (callName) {
+                case vexportToAlias.forwardRef:
+                    isForwarded = true;
+                case vexportToAlias.memo:
+                    const firstArg = expression.arguments[0];
+                    findFunctionalComp(firstArg);
+                    break;
+                default:
+                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNRECOGNIZED_FUNCTION_WRAPPER, TransformerError_1.ExceptionType.WARN_IF_DISABLED, (_b = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _b !== void 0 ? _b : elementName, `Unrecognized '${callName}' wrapper to Preact functional component.`, expression);
+                    if (expression.arguments[0]) {
+                        findFunctionalComp(expression.arguments[0]);
+                    }
+                    break;
             }
         }
         else if (ts.isIdentifier(expression)) {
@@ -109,7 +137,6 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compi
                         const propsParam = functionalCompDecl.parameters[0];
                         if (propsParam && ts.isObjectBindingPattern(propsParam.name)) {
                             defaultProps = propsParam.name.elements;
-                            break;
                         }
                     }
                     else if (ts.isVariableStatement(symDecl)) {
@@ -134,16 +161,17 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compi
                             const binExpressionNode = left.parent;
                             if (ts.isBinaryExpression(binExpressionNode) &&
                                 ts.isObjectLiteralExpression(binExpressionNode.right)) {
-                                throw new TransformerError_1.TransformerError((_b = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _b !== void 0 ? _b : elementName, `Static defaultProps for functional VComponents are not supported.
+                                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.STATIC_DEFAULTPROPS_ON_FUNCTION, TransformerError_1.ExceptionType.WARN_IF_DISABLED, (_c = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _c !== void 0 ? _c : elementName, `Static defaultProps for functional VComponents are not supported.
 As an alternative, specify default values using ES6 destructuring assignment syntax.`, binExpressionNode);
+                                defaultProps = binExpressionNode.right.properties;
                             }
                         }
                     }
                 }
                 if (functionalCompDecl) {
-                    propsTypeNode = (_c = functionalCompDecl.parameters[0]) === null || _c === void 0 ? void 0 : _c.type;
+                    propsTypeNode = (_d = functionalCompDecl.parameters[0]) === null || _d === void 0 ? void 0 : _d.type;
                     if (propsTypeNode) {
-                        propsInfo = MetaUtils.getPropsInfo(MetaTypes.VCompType.FUNCTION, (_d = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _d !== void 0 ? _d : elementName, propsTypeNode, vexportToAlias, checker);
+                        propsInfo = MetaUtils.getPropsInfo(MetaTypes.VCompType.FUNCTION, (_e = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _e !== void 0 ? _e : elementName, propsTypeNode, vexportToAlias, checker);
                     }
                 }
             }
@@ -185,24 +213,13 @@ As an alternative, specify default values using ES6 destructuring assignment syn
         if (secondArg) {
             findFunctionalComp(secondArg);
         }
-        if (callExpression.arguments.length > 2) {
-            const thirdArg = callExpression.arguments[2];
-            if (thirdArg) {
-                const regOptions = getRegistrationOptions(thirdArg, checker);
-                if (regOptions === null || regOptions === void 0 ? void 0 : regOptions.bindings) {
-                    propBindings = regOptions.bindings;
-                }
-            }
-        }
+        regOptions = getRegistrationOptions(callExpression.arguments.length > 2 ? callExpression.arguments[2] : null, (_a = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _a !== void 0 ? _a : elementName, compRegisterCall, secondArg, isForwarded, checker);
     }
     if (!propsInfo && propsTypeNode) {
-        throw new TransformerError_1.TransformerError((_a = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _a !== void 0 ? _a : elementName, "Invalid Component 'Props' argument type -- must be a Class, Interface, or Type reference.", propsTypeNode);
+        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_PROPS_TYPE, TransformerError_1.ExceptionType.THROW_ERROR, (_b = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _b !== void 0 ? _b : elementName, "Invalid Component 'Props' argument type -- must be a Class, Interface, or Type reference.", propsTypeNode);
     }
     else if (propsInfo) {
-        isTypeDefintionAdjustmentRequired = checkForTypeDefinitionAdjustment((_b = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _b !== void 0 ? _b : elementName, functionalCompNode, varDecl, propsInfo);
-    }
-    if (translationBundleIds) {
-        translationBundleInfo = getTranslationBundleInfo(translationBundleIds, compilerOptions);
+        isTypeDefintionAdjustmentRequired = checkForTypeDefinitionAdjustment((_c = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _c !== void 0 ? _c : elementName, functionalCompNode, varDecl, propsInfo);
     }
     if (compRegisterCall && componentNode) {
         rtnInfo = {
@@ -220,25 +237,38 @@ As an alternative, specify default values using ES6 destructuring assignment syn
         if (defaultProps) {
             rtnInfo.defaultProps = defaultProps;
         }
-        if (propBindings) {
-            rtnInfo.propBindings = propBindings;
+        if (regOptions.bindings) {
+            rtnInfo.propBindings = regOptions.bindings;
         }
-        if (translationBundleInfo) {
+        if (regOptions.methodsInfo) {
+            rtnInfo.methodsInfo = regOptions.methodsInfo;
+        }
+        if (regOptions.contexts) {
+            rtnInfo.contextsExpression = regOptions.contexts;
+        }
+        if (buildOptions.translationBundleIds) {
+            translationBundleInfo = getTranslationBundleInfo(buildOptions.translationBundleIds, compilerOptions);
             rtnInfo.additionalImports = translationBundleInfo.additionalImports;
             rtnInfo.translationBundleMapExpression = translationBundleInfo.bundleMapExpression;
         }
         if (isTypeDefintionAdjustmentRequired) {
             rtnInfo.useComponentPropsForSettableProperties = true;
         }
+        const packInfo = getPackInfo(elementName, componentNode, buildOptions);
+        if (packInfo) {
+            rtnInfo.packInfo = packInfo;
+        }
     }
     return rtnInfo;
 }
 exports.getVCompFunctionInfo = getVCompFunctionInfo;
-function getDtMetadataForComponent(compNode, metaUtilObj) {
+function getDtMetadataForComponent(vcompInfo, metaUtilObj) {
+    var _a;
+    const compNode = MetaTypes.isClassInfo(vcompInfo) ? vcompInfo.classNode : vcompInfo.componentNode;
     const vcompInterfaceName = MetaUtils.tagNameToElementInterfaceName(metaUtilObj.fullMetadata['name']);
     metaUtilObj.fullMetadata['implements'] = new Array(vcompInterfaceName);
-    let dtMetadata = MetaUtils.getDtMetadata(compNode, metaUtilObj);
-    checkComponentMetadataConsistency(compNode, dtMetadata, metaUtilObj);
+    let dtMetadata = MetaUtils.getDtMetadata(compNode, MetaTypes.MDFlags.COMP, null, metaUtilObj);
+    checkComponentMetadataConsistency(compNode, (_a = vcompInfo.packInfo) === null || _a === void 0 ? void 0 : _a.isMonoPack(), dtMetadata, metaUtilObj);
     if (dtMetadata['implements']) {
         metaUtilObj.fullMetadata['implements'] = metaUtilObj.fullMetadata['implements'].concat(dtMetadata['implements']);
         delete dtMetadata['implements'];
@@ -273,8 +303,48 @@ function isVCompBaseClassFound(typeRef, vexportToAlias, checker) {
     return rtn;
 }
 exports.isVCompBaseClassFound = isVCompBaseClassFound;
-function getRegistrationOptions(node, checker) {
-    let rtnRegOptions;
+function getRegistrationOptions(metadataNode, vcompName, compRegisterCall, fcomp, isForwarded, checker) {
+    var _a;
+    const rtnRegisteredOptions = {};
+    let methodsInfo;
+    let signaturesTypeNode;
+    let regMetadata;
+    if (((_a = compRegisterCall.typeArguments) === null || _a === void 0 ? void 0 : _a.length) > 1) {
+        signaturesTypeNode = compRegisterCall.typeArguments[1];
+        if (isForwarded) {
+            methodsInfo = {
+                signaturesTypeNode
+            };
+        }
+        else {
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.MISSING_FORWARDREF_WRAPPER, TransformerError_1.ExceptionType.THROW_ERROR, vcompName, `The Preact functional component that implements this VComponent with public methods must be wrapped inline with a 'forwardRef' call.`, fcomp);
+        }
+    }
+    if (metadataNode) {
+        regMetadata = getRegisteredMetadataFromNode(metadataNode, checker);
+        if (regMetadata.methods) {
+            if (methodsInfo) {
+                methodsInfo.metadata = regMetadata.methods;
+                methodsInfo.metadataNode = metadataNode;
+            }
+            else {
+                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.MISSING_METHOD_SIGNATURES, TransformerError_1.ExceptionType.LOG_WARNING, vcompName, `The 'registerCustomElement' call is missing the generic type paramether with method signatures, so the optional 'methods' metadata will be ignored.`, metadataNode);
+            }
+        }
+        if (regMetadata.bindings) {
+            rtnRegisteredOptions.bindings = regMetadata.bindings;
+        }
+        if (regMetadata.contexts) {
+            rtnRegisteredOptions.contexts = regMetadata.contexts;
+        }
+    }
+    if (methodsInfo) {
+        rtnRegisteredOptions.methodsInfo = methodsInfo;
+    }
+    return rtnRegisteredOptions;
+}
+function getRegisteredMetadataFromNode(node, checker) {
+    let rtnRegMetadata = {};
     let objLiteralNode;
     if (ts.isObjectLiteralExpression(node)) {
         objLiteralNode = node;
@@ -297,9 +367,26 @@ function getRegistrationOptions(node, checker) {
         }
     }
     if (objLiteralNode) {
-        rtnRegOptions = MetaUtils.getValueFromNode(objLiteralNode);
+        objLiteralNode.properties.forEach((prop) => {
+            if (ts.isPropertyAssignment(prop)) {
+                const optionName = prop.name.getText();
+                switch (optionName) {
+                    case 'bindings':
+                        rtnRegMetadata.bindings = MetaUtils.getValueFromNode(prop.initializer);
+                        break;
+                    case 'methods':
+                        rtnRegMetadata.methods = MetaUtils.getValueFromNode(prop.initializer);
+                        break;
+                    case 'contexts':
+                        rtnRegMetadata.contexts = prop.initializer;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
     }
-    return rtnRegOptions;
+    return rtnRegMetadata;
 }
 function getTranslationBundleInfo(bundleIds, compilerOptions) {
     let rtnBundleInfo;
@@ -323,17 +410,40 @@ function getTranslationBundleInfo(bundleIds, compilerOptions) {
     };
     return rtnBundleInfo;
 }
-function checkComponentMetadataConsistency(compNode, docletTagMetadata, metaUtilObj) {
+function checkComponentMetadataConsistency(compNode, isInMonoPack, docletTagMetadata, metaUtilObj) {
+    var _a;
     const componentMetadata = metaUtilObj.fullMetadata;
     if (docletTagMetadata['name']) {
-        const logHeader = TransformerError_1.TransformerError.getMsgHeader(metaUtilObj.componentName, compNode);
-        console.log(`${logHeader} '@ojmetadata name' JSDoc annotations are ignored, and should be removed.`);
+        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_OJMETADATA_NAME, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'@ojmetadata name' annotations are ignored, and should be removed.`, compNode);
         delete docletTagMetadata['name'];
     }
-    if (docletTagMetadata['pack'] &&
-        componentMetadata['name'].indexOf(docletTagMetadata['pack']) !== 0) {
-        throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `Illegal custom element "${componentMetadata['name']}" included in JET Pack "${docletTagMetadata['pack']}".
-The custom element name must begin with the JET Pack name.`, compNode);
+    if (isInMonoPack) {
+        if (docletTagMetadata['version'] &&
+            componentMetadata.version !== docletTagMetadata['version']) {
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INCONSISTENT_PACK_VERSION, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Inconsistent '@ojmetadata version "${docletTagMetadata['version']}"' annotation will be ignored, and should be removed.`, compNode);
+            delete docletTagMetadata['version'];
+        }
+        if (docletTagMetadata['jetVersion'] &&
+            componentMetadata.jetVersion !== docletTagMetadata['jetVersion']) {
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INCONSISTENT_PACK_JETVERSION, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Inconsistent '@ojmetadata jetVersion "${docletTagMetadata['jetVersion']}"' annotation will be ignored, and should be removed.`, compNode);
+            delete docletTagMetadata['jetVersion'];
+        }
+        if (docletTagMetadata['license'] &&
+            componentMetadata.license !== docletTagMetadata['license']) {
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INCONSISTENT_PACK_LICENSE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Inconsistent '@ojmetadata license "${docletTagMetadata['license']}"' annotation will be ignored, and should be removed.`, compNode);
+            delete docletTagMetadata['license'];
+        }
+    }
+    const packName = (_a = componentMetadata['pack']) !== null && _a !== void 0 ? _a : docletTagMetadata['pack'];
+    if (packName) {
+        if (docletTagMetadata['pack'] && packName !== docletTagMetadata['pack']) {
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INCONSISTENT_PACK_PACKNAME, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Inconsistent '@ojmetadata pack "${docletTagMetadata['pack']}"' annotation will be ignored, and should be removed.`, compNode);
+            delete docletTagMetadata['pack'];
+        }
+        if (componentMetadata['name'].indexOf(packName) !== 0) {
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_ELEMENTNAME_IN_PACK, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Illegal custom element "${componentMetadata['name']}" included in JET Pack "${packName}".
+  The custom element name must begin with the JET Pack name.`, compNode);
+        }
     }
 }
 const D_TS_GEN_OK = 0b0000;
@@ -366,7 +476,7 @@ function checkForTypeDefinitionAdjustment(compName, functionalCompNode, varDecl,
     }
     if (dtsGenStatus & D_TS_GEN_NO_VARIABLE) {
         if (dtsGenStatus & D_TS_GEN_PROPS_ALIAS_NOT_EXPORTED) {
-            throw new TransformerError_1.TransformerError(compName, `Generation of a valid VComponent type definition file requires either:
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.YIELDS_INVALID_FUNC_VCOMP_D_TS, TransformerError_1.ExceptionType.THROW_ERROR, compName, `Generation of a valid VComponent type definition file requires either:
 1) the return value of the registerCustomElement call must be assigned to a variable, or
 2) the VComponent's Props type alias must be exported.`, functionalCompNode);
         }
@@ -377,5 +487,39 @@ function checkForTypeDefinitionAdjustment(compName, functionalCompNode, varDecl,
         }
     }
     return rtnNeedsAdjustment;
+}
+function getPackInfo(elementName, vcompNode, buildOptions) {
+    var _a;
+    let rtnPackInfo = null;
+    let node = vcompNode;
+    while (!ts.isSourceFile(node)) {
+        node = node.parent;
+    }
+    const filename = node.fileName;
+    const parentDirPath = FileUtils.getParentDirPath(filename);
+    if (parentDirPath) {
+        if ((_a = buildOptions.parentDirToPackInfo) === null || _a === void 0 ? void 0 : _a.hasOwnProperty(parentDirPath)) {
+            const vcompPack = buildOptions.parentDirToPackInfo[parentDirPath];
+            if (vcompPack === null || vcompPack === void 0 ? void 0 : vcompPack.isVCompInPack(elementName)) {
+                rtnPackInfo = vcompPack;
+            }
+        }
+        else {
+            let cacheItem = null;
+            buildOptions.parentDirToPackInfo = buildOptions.parentDirToPackInfo || {};
+            const packJsonObj = FileUtils.getComponentJSONObj(parentDirPath);
+            if (packJsonObj) {
+                const vcompPack = new MetaTypes.VCompPack(packJsonObj);
+                if (vcompPack.isJETPack()) {
+                    cacheItem = vcompPack;
+                    if (vcompPack.isVCompInPack(elementName)) {
+                        rtnPackInfo = vcompPack;
+                    }
+                }
+            }
+            buildOptions.parentDirToPackInfo[parentDirPath] = cacheItem;
+        }
+    }
+    return rtnPackInfo;
 }
 //# sourceMappingURL=MetadataComponentUtils.js.map

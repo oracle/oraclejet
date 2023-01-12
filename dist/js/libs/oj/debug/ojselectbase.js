@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -88,10 +88,14 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     if (oj.PositionUtils.isAligningPositionClipped(props)) {
       // add busy state
       var resolveBusyState = this._addBusyStateFunc('closing popup');
-      this._closeDelayTimer = window.setTimeout(function () { // @HTMLUpdateOK
-        this.closeDropdown();
-        resolveBusyState();
-      }.bind(this), 1);
+      // prettier-ignore
+      this._closeDelayTimer = window.setTimeout( // @HTMLUpdateOK
+        function () {
+          this.closeDropdown();
+          resolveBusyState();
+        }.bind(this),
+        1
+      );
     } else {
       var $containerElem = $(this._containerElem);
       var dropdownElem = this._lovDropdown.getElement();
@@ -183,7 +187,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // to be set to the window itself;
       // when there is an iframe, like in the cookbook, the window.parent will actually be different
       // from the window
-      if (deviceType === 'phone' && (window.parent && window !== window.parent)) {
+      if (deviceType === 'phone' && window.parent && window !== window.parent) {
         var parentHH = Math.min(window.parent.innerHeight, window.parent.screen.availHeight);
         var availContentHeight = Math.min(hh, parentHH);
         if (hh > availContentHeight) {
@@ -278,7 +282,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     // prevent duplicate queries against the same term
     // not applying to multi select since user can search the same term after making selection
     // it's ok for single select since the last term will be updated after selection
-    if (initial !== true && lastTerm && (term === lastTerm)) {
+    if (initial !== true && lastTerm && term === lastTerm) {
       return;
     }
 
@@ -302,7 +306,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
     if (term.length >= this._minLength) {
       if (!initial || initial === true) {
-        this._runQuery(term, focusFirstElem, (initial === true));
+        this._runQuery(term, focusFirstElem, initial === true);
       } else {
         this._runQuery(term, focusFirstElem);
       }
@@ -339,18 +343,21 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
       // lovDropdown.setSearchText(term);
       var fetchPromise = this._fetchFromDataProvider(term, initial);
-      fetchPromise.then(function () {
-        // ignore old responses
-        if (fetchPromise === this._lastDataProviderPromise) {
-          this._handleQueryResultsFetch(focusFirstElem);
-        }
-      }.bind(this), function (reason) {
-        // ignore old responses
-        if (fetchPromise === this._lastDataProviderPromise) {
-          Logger.warn('Select: _fetchFromDataProvider promise was rejected: ' + reason);
-          this._handleQueryResultsFetch(focusFirstElem);
-        }
-      }.bind(this));
+      fetchPromise.then(
+        function () {
+          // ignore old responses
+          if (fetchPromise === this._lastDataProviderPromise) {
+            this._handleQueryResultsFetch(focusFirstElem);
+          }
+        }.bind(this),
+        function (reason) {
+          // ignore old responses
+          if (fetchPromise === this._lastDataProviderPromise) {
+            Logger.warn('Select: _fetchFromDataProvider promise was rejected: ' + reason);
+            this._handleQueryResultsFetch(focusFirstElem);
+          }
+        }.bind(this)
+      );
     }
   };
 
@@ -383,9 +390,9 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // every time next is called?)
       // translation = (resultsCount === 1) ? this._getTranslatedStringFunc('oneMatchFound') :
       //   this._getTranslatedStringFunc('multipleMatchesFound', { num: ('' + resultsCount) });
-      translation = resultsCountDone ?
-        this._getTranslatedStringFunc('multipleMatchesFound', { num: String(resultsCount) }) :
-        this._getTranslatedStringFunc('nOrMoreMatchesFound', { num: String(resultsCount) });
+      translation = resultsCountDone
+        ? this._getTranslatedStringFunc('multipleMatchesFound', { num: String(resultsCount) })
+        : this._getTranslatedStringFunc('nOrMoreMatchesFound', { num: String(resultsCount) });
     }
     this.updateLiveRegion(translation);
 
@@ -438,8 +445,10 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       if (this._dataProvider) {
         var filterCapability = this._dataProvider.getCapability('filter');
         if (!filterCapability || !filterCapability.textFilter) {
-          Logger.error('Select: DataProvider does not support text filter.  ' +
-            'Filtering results in dropdown may not work correctly.');
+          Logger.error(
+            'Select: DataProvider does not support text filter.  ' +
+              'Filtering results in dropdown may not work correctly.'
+          );
         }
       }
 
@@ -448,36 +457,45 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       filterCriteria = oj.FilterFactory.getFilter({ filterDef: { text: term } });
     }
 
-    var retPromise = new Promise(function (resolve, reject) {
-      // fetch data from dataProvider
-      var renderPromise = this._lovDropdown.renderResults(term, filterCriteria,
-        this._isValueForPlaceholderFunc(this._value) ? null : this._value, initial);
+    var retPromise = new Promise(
+      function (resolve, reject) {
+        // fetch data from dataProvider
+        var renderPromise = this._lovDropdown.renderResults(
+          term,
+          filterCriteria,
+          this._isValueForPlaceholderFunc(this._value) ? null : this._value,
+          initial
+        );
 
-      var afterRenderPromiseFunc = function () {
-        if (bLoadingIndicatorAdded) {
-          this._setUiLoadingStateFunc('stop');
-        }
+        var afterRenderPromiseFunc = function () {
+          if (bLoadingIndicatorAdded) {
+            this._setUiLoadingStateFunc('stop');
+          }
 
-        // clear busy context
-        fetchResolveFunc();
+          // clear busy context
+          fetchResolveFunc();
 
-        // ignore old responses
-        if (retPromise === this._lastDataProviderPromise) {
-          resolve();
-        } else {
-          reject('AbstractLovBase._fetchFromDataProvider: rejecting earlier promise');
-        }
-      }.bind(this);
-      renderPromise.then(function () {
-        afterRenderPromiseFunc();
-      }, function (reason) {
-        // ignore old responses
-        if (retPromise === this._lastDataProviderPromise) {
-          Logger.warn('Select: renderResults promise was rejected: ' + reason);
-        }
-        afterRenderPromiseFunc();
-      });
-    }.bind(this));
+          // ignore old responses
+          if (retPromise === this._lastDataProviderPromise) {
+            resolve();
+          } else {
+            reject('AbstractLovBase._fetchFromDataProvider: rejecting earlier promise');
+          }
+        }.bind(this);
+        renderPromise.then(
+          function () {
+            afterRenderPromiseFunc();
+          },
+          function (reason) {
+            // ignore old responses
+            if (retPromise === this._lastDataProviderPromise) {
+              Logger.warn('Select: renderResults promise was rejected: ' + reason);
+            }
+            afterRenderPromiseFunc();
+          }
+        );
+      }.bind(this)
+    );
     // save the most recent promise so we can ignore old data provider responses
     this._lastDataProviderPromise = retPromise;
     return retPromise;
@@ -519,7 +537,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
     // FilteringDataProviderView
     function _compareFilterCriterion(fc1, fc2) {
-      return ((fc1 === fc2) || (!fc1 && !fc2) || (fc1 && fc2 && fc1.text === fc2.text));
+      return fc1 === fc2 || (!fc1 && !fc2) || (fc1 && fc2 && fc1.text === fc2.text);
     }
 
     // FilteringDataProviderView
@@ -535,18 +553,21 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       this.next = function () {
         var promise = iterator.next();
         return new Promise(function (resolve, reject) {
-          promise.then(function (nextResults) {
-            var nextValue = nextResults.value;
-            if (nextValue.data) {
+          promise.then(
+            function (nextResults) {
+              var nextValue = nextResults.value;
+              if (nextValue.data) {
+                // eslint-disable-next-line no-param-reassign
+                fetchedDataCount.count += nextValue.data.length;
+              }
               // eslint-disable-next-line no-param-reassign
-              fetchedDataCount.count += nextValue.data.length;
+              fetchedDataCount.done = nextResults.done;
+              resolve(nextResults);
+            },
+            function (reason) {
+              reject(reason);
             }
-            // eslint-disable-next-line no-param-reassign
-            fetchedDataCount.done = nextResults.done;
-            resolve(nextResults);
-          }, function (reason) {
-            reject(reason);
-          });
+          );
         });
       };
     }
@@ -719,10 +740,8 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
    * @private
    */
   const LovUtils = {
-
     // LovUtils
-    KEYS:
-    {
+    KEYS: {
       TAB: 9,
       ENTER: 13,
       ESC: 27,
@@ -754,7 +773,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         case LovUtils.KEYS.ALT:
           return true;
         default:
-          return (event.metaKey || event.ctrlKey);
+          return event.metaKey || event.ctrlKey;
       }
     },
 
@@ -770,7 +789,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
     // LovUtils
     isControlOrFunctionKey: function (event) {
-      return (LovUtils._isControlKey(event) || LovUtils._isFunctionKey(event));
+      return LovUtils._isControlKey(event) || LovUtils._isFunctionKey(event);
     },
 
     // LovUtils
@@ -781,7 +800,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         counter += 1;
         return ret;
       };
-    }()),
+    })(),
 
     // LovUtils
     killEvent: function (event) {
@@ -861,22 +880,23 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
     // LovUtils
     isDataProvider: function (data) {
-      return (data && ojcomponentcore.DataProviderFeatureChecker) ?
-        ojcomponentcore.DataProviderFeatureChecker.isDataProvider(data) : false;
+      return data && ojcomponentcore.DataProviderFeatureChecker
+        ? ojcomponentcore.DataProviderFeatureChecker.isDataProvider(data)
+        : false;
     },
 
     // LovUtils
     isTreeDataProvider: function (data) {
-      return (data && ojcomponentcore.DataProviderFeatureChecker) ?
-        ojcomponentcore.DataProviderFeatureChecker.isTreeDataProvider(data) : false;
+      return data && ojcomponentcore.DataProviderFeatureChecker
+        ? ojcomponentcore.DataProviderFeatureChecker.isTreeDataProvider(data)
+        : false;
     }
   };
 
   /**
    * @private
    */
-  const LovDropdown = function () {
-  };
+  const LovDropdown = function () {};
 
   LovDropdown.prototype.init = function (options) {
     // {dataProvider, className, parentId, idSuffix, fullScreenPopup, inputType,
@@ -942,8 +962,9 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       currentRowKeyChangedListener: this._handleCollectionCurrentRowKeyChanged.bind(this),
       handleRowAction: this._handleRowAction.bind(this)
     };
-    this._collectionRendererFunc = this._collectionTemplate ?
-      this._templateCollectionRenderer.bind(this) : this._defaultCollectionRenderer.bind(this);
+    this._collectionRendererFunc = this._collectionTemplate
+      ? this._templateCollectionRenderer.bind(this)
+      : this._defaultCollectionRenderer.bind(this);
     this._collectionRendererFunc(this._collectionContext);
 
     containerElem.on('change', '.' + options.className + '-input', LovUtils.stopEventPropagation);
@@ -1003,9 +1024,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
     // only load template engine if we actually have templates
     if ((this._itemTemplate || this._collectionTemplate) && this._containerElem) {
-      this._getTemplateEngineFunc().then(function (templateEngine) {
-        templateEngine.clean(this._containerElem[0]);
-      }.bind(this));
+      this._getTemplateEngineFunc().then(
+        function (templateEngine) {
+          templateEngine.clean(this._containerElem[0]);
+        }.bind(this)
+      );
     }
 
     this._removeDataProviderEventListeners();
@@ -1026,9 +1049,12 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     outerDiv.setAttribute('data-oj-containerid', options.parentId);
     outerDiv.setAttribute('data-oj-context', '');
     outerDiv.setAttribute('id', 'lovDropdown_' + idSuffix);
-    outerDiv.setAttribute('class', 'oj-listbox-drop oj-listbox-searchselect' +
-      (' oj-listbox-' + options.styleClassComponentName) +
-      (this._fullScreenPopup ? ' oj-listbox-fullscreen' : ''));
+    outerDiv.setAttribute(
+      'class',
+      'oj-listbox-drop oj-listbox-searchselect' +
+        (' oj-listbox-' + options.styleClassComponentName) +
+        (this._fullScreenPopup ? ' oj-listbox-fullscreen' : '')
+    );
     outerDiv.style.display = 'none';
     outerDiv.setAttribute('role', 'presentation');
 
@@ -1125,8 +1151,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
     // create label content
     if (templateEngine) {
-      var nodes = templateEngine.execute(renderContext.componentElement, this._itemTemplate,
-        renderContext);
+      var nodes = templateEngine.execute(
+        renderContext.componentElement,
+        this._itemTemplate,
+        renderContext
+      );
       for (var i = 0; i < nodes.length; i++) {
         // label.appendChild(nodes[i]);
         li.appendChild(nodes[i]);
@@ -1137,8 +1166,12 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     // return li;
   };
 
-  LovDropdown.prototype.renderResults = function (searchText, filterCriteria,
-    selectedValue, initial) {
+  LovDropdown.prototype.renderResults = function (
+    searchText,
+    filterCriteria,
+    selectedValue,
+    initial
+  ) {
     var resolveBusyState = this._addBusyStateFunc('LovDropdown rendering results');
 
     // save most recent filterCriteria so we know whether we need to apply highlighting
@@ -1163,27 +1196,35 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       renderPromiseReject = reject;
     });
 
-    var retPromise = new Promise(function (resolve, reject) {
-      renderPromise.then(function () {
-        // wait until the changes propagate to the collection and the collection handles the DP
-        // refresh event due to filter criteria changing before resolving the promise
-        var busyContext = Context.getContext(this._containerElem[0]).getBusyContext();
-        // Once the collection is ready, call the configureResults
-        // to set the selected and currentRow accordingly.
-        busyContext.whenReady().then(function () {
-          // JET-39227 - DYNAMIC FORM: USER NEEDS TO CLICK TWICE TO GET VALUE SELECTED FROM SINGLE
-          // SELECT WHEN IT HAS ONLY ONE RECORD IN IT
-          // don't call _configureResults unless this is the most recent render promise, because
-          // otherwise the current item may not be present in the rendered list
-          // ignore old responses
-          if (retPromise === this._lastRenderResultsPromise) {
-            this._configureResults(searchText, selectedValue, initial).then(resolve, reject);
-          } else {
-            resolve();
-          }
-        }.bind(this), reject);
-      }.bind(this), reject);
-    }.bind(this));
+    var retPromise = new Promise(
+      function (resolve, reject) {
+        renderPromise.then(
+          function () {
+            // wait until the changes propagate to the collection and the collection handles the DP
+            // refresh event due to filter criteria changing before resolving the promise
+            var busyContext = Context.getContext(this._containerElem[0]).getBusyContext();
+            // Once the collection is ready, call the configureResults
+            // to set the selected and currentRow accordingly.
+            busyContext.whenReady().then(
+              function () {
+                // JET-39227 - DYNAMIC FORM: USER NEEDS TO CLICK TWICE TO GET VALUE SELECTED FROM SINGLE
+                // SELECT WHEN IT HAS ONLY ONE RECORD IN IT
+                // don't call _configureResults unless this is the most recent render promise, because
+                // otherwise the current item may not be present in the rendered list
+                // ignore old responses
+                if (retPromise === this._lastRenderResultsPromise) {
+                  this._configureResults(searchText, selectedValue, initial).then(resolve, reject);
+                } else {
+                  resolve();
+                }
+              }.bind(this),
+              reject
+            );
+          }.bind(this),
+          reject
+        );
+      }.bind(this)
+    );
     // save the most recent promise so we can ignore old responses
     this._lastRenderResultsPromise = retPromise;
 
@@ -1196,22 +1237,24 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     // before rendering, let the _ClearSelection() call above process, which may
     // happen asynchronously when a collectionTemplate is specified because it relies on
     // ko observables under the covers
-    this._getThrottlePromiseFunc().then(function () {
-      // JET-34871 - FILTERING DANGLING BUSY STATE
-      // if there is an existing, unresolved renderPromise, reject it now so that we don't end up with
-      // orphaned busy states
-      if (collectionContext.renderError) {
-        var contextRenderError = collectionContext.renderError;
-        this._clearContextRenderPromiseFunctions(collectionContext);
-        contextRenderError('LovDropdown.renderResults: rejecting earlier promise');
-      }
-      collectionContext.renderDone = renderPromiseResolve;
-      collectionContext.renderError = renderPromiseReject;
+    this._getThrottlePromiseFunc().then(
+      function () {
+        // JET-34871 - FILTERING DANGLING BUSY STATE
+        // if there is an existing, unresolved renderPromise, reject it now so that we don't end up with
+        // orphaned busy states
+        if (collectionContext.renderError) {
+          var contextRenderError = collectionContext.renderError;
+          this._clearContextRenderPromiseFunctions(collectionContext);
+          contextRenderError('LovDropdown.renderResults: rejecting earlier promise');
+        }
+        collectionContext.renderDone = renderPromiseResolve;
+        collectionContext.renderError = renderPromiseReject;
 
-      this._dataProvider.setFilterCriterion(filterCriteria);
+        this._dataProvider.setFilterCriterion(filterCriteria);
 
-      this._collectionRendererFunc(collectionContext);
-    }.bind(this));
+        this._collectionRendererFunc(collectionContext);
+      }.bind(this)
+    );
 
     var afterRetPromiseFunc = function () {
       // ignore old responses
@@ -1221,15 +1264,18 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       resolveBusyState();
     }.bind(this);
 
-    return retPromise.then(function () {
-      afterRetPromiseFunc();
-    }, function (reason) {
-      // ignore old responses
-      if (retPromise === this._lastRenderResultsPromise) {
-        Logger.warn('Select: LovDropdown.renderResults retPromise rejected: ' + reason);
-      }
-      afterRetPromiseFunc();
-    }.bind(this));
+    return retPromise.then(
+      function () {
+        afterRetPromiseFunc();
+      },
+      function (reason) {
+        // ignore old responses
+        if (retPromise === this._lastRenderResultsPromise) {
+          Logger.warn('Select: LovDropdown.renderResults retPromise rejected: ' + reason);
+        }
+        afterRetPromiseFunc();
+      }.bind(this)
+    );
   };
 
   LovDropdown.prototype.updateLabel = function (ariaLabelId, ariaLabel) {
@@ -1256,9 +1302,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     // JET-45922 - timing issue with select-single: lov drop-down doesn't have element
     // do a granular update if item-text changes instead of a general refresh
     this._itemTextRendererFunc = itemTextRendererFunc;
-    if (!this._collectionTemplate &&
-        !this._itemTemplate &&
-        this._resultsElem) {
+    if (!this._collectionTemplate && !this._itemTemplate && this._resultsElem) {
       var listView = this._resultsElem[0];
       // add busy state around the set so our unit tests know when the resulting render is done
       var resolveBusyState = this._addBusyStateFunc('LovDropdown setting new default item renderer');
@@ -1307,13 +1351,20 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     // Do not close the dropdown since we need to proceed as if the dropdown is open (which is used
     // in other places and we would want it to work as if the dropdown is open). So instead, we just need to
     // hide the dropdown.
+    const isOpen = this._containerElem[0].offsetHeight > 0;
     if (this._resultsCount.count == null || this._resultsCount.count === 0) {
       this._containerElem.addClass(this._NO_RESULTS_FOUND_CLASSNAME);
+      if (isOpen) {
+        oj.Components.subtreeHidden(this._containerElem[0]);
+      }
       return Promise.resolve();
     }
 
     // Now that we know that we have results to show, we need to make sure that the dropdown is being shown
     this._containerElem.removeClass(this._NO_RESULTS_FOUND_CLASSNAME);
+    if (!isOpen) {
+      oj.Components.subtreeShown(this._containerElem[0]);
+    }
 
     if (initial) {
       return this._ConfigureResultsInitial(selectedValue, busyContext);
@@ -1469,7 +1520,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         // The total items count represents the number of items fetched at this level. Since
         // the item we need to select should have been fetched already, we can search only within the
         // range of this count. This would also make sure that we only search in the cache if available.
-        let fetchDone = (totalItems === 0) || (totalItems === (offset + 1));
+        let fetchDone = totalItems === 0 || totalItems === offset + 1;
         let processChunkPromise;
 
         if (results.length) {
@@ -1597,59 +1648,75 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       this._resultsElem.on('click', LovUtils.killEvent);
 
       busyContext = Context.getContext(listView).getBusyContext();
-      busyContext.whenReady().then(function () {
-        listView.addEventListener('ojItemAction', context.handleRowAction);
-        listView.addEventListener('currentItemChanged', function (event) {
-          // Call the handler to update the collection context accordingly
-          context.currentRowKeyChangedListener(event.detail.value);
-        });
-        if (context.data && oj.DataProviderFeatureChecker
-          && oj.DataProviderFeatureChecker.isTreeDataProvider(context.data)) {
-          // Only allow leaf nodes to be focusable/selectable
-          listView.setProperty('item.focusable', (fc) => fc.leaf);
-          listView.setProperty('item.selectable', (sc) => sc.leaf);
-        }
+      busyContext.whenReady().then(
+        function () {
+          listView.addEventListener('ojItemAction', context.handleRowAction);
+          listView.addEventListener('currentItemChanged', function (event) {
+            // Call the handler to update the collection context accordingly
+            context.currentRowKeyChangedListener(event.detail.value);
+          });
+          if (
+            context.data &&
+            oj.DataProviderFeatureChecker &&
+            oj.DataProviderFeatureChecker.isTreeDataProvider(context.data)
+          ) {
+            // Only allow leaf nodes to be focusable/selectable
+            listView.setProperty('item.focusable', (fc) => fc.leaf);
+            listView.setProperty('item.selectable', (sc) => sc.leaf);
+          }
 
-        if (this._itemTemplate) {
-          this._getTemplateEngineFunc().then(function (templateEngine) {
-            listView.setProperty('item.renderer', this._templateItemRenderer.bind(this, templateEngine));
+          if (this._itemTemplate) {
+            this._getTemplateEngineFunc().then(
+              function (templateEngine) {
+                listView.setProperty(
+                  'item.renderer',
+                  this._templateItemRenderer.bind(this, templateEngine)
+                );
+                this._clearContextRenderPromiseFunctions(context);
+                contextRenderDone();
+              }.bind(this),
+              function (reason) {
+                Logger.warn(
+                  'Select: template item renderer template engine promise rejected: ' + reason
+                );
+                this._clearContextRenderPromiseFunctions(context);
+                contextRenderError(reason);
+              }.bind(this)
+            );
+          } else {
+            listView.setProperty('item.renderer', this._defaultItemRenderer.bind(this));
             this._clearContextRenderPromiseFunctions(context);
             contextRenderDone();
-          }.bind(this), function (reason) {
-            Logger.warn(
-              'Select: template item renderer template engine promise rejected: ' + reason);
-            this._clearContextRenderPromiseFunctions(context);
-            contextRenderError(reason);
-          }.bind(this));
-        } else {
-          listView.setProperty('item.renderer', this._defaultItemRenderer.bind(this));
+          }
+        }.bind(this),
+        function (reason) {
+          Logger.warn('Select: creating default listView busyContext promise rejected: ' + reason);
           this._clearContextRenderPromiseFunctions(context);
-          contextRenderDone();
-        }
-      }.bind(this), function (reason) {
-        Logger.warn(
-          'Select: creating default listView busyContext promise rejected: ' + reason);
-        this._clearContextRenderPromiseFunctions(context);
-        contextRenderError(reason);
-      }.bind(this));
+          contextRenderError(reason);
+        }.bind(this)
+      );
     } else {
       listView = this._resultsElem[0];
       // Need to wait until _SetupResources is called asynchronously on listView so that when we
       // set properties on it, the internal listView.isAvailable() call returns true and
       // listView will process them
       busyContext = Context.getContext(listView).getBusyContext();
-      busyContext.whenReady().then(function () {
-        listView.data = context.data;
-        listView.selected = context.selected;
-        listView.currentItem = context.currentRow.rowKey;
-        this._clearContextRenderPromiseFunctions(context);
-        contextRenderDone();
-      }.bind(this), function (reason) {
-        Logger.warn(
-          'Select: busyContext promise rejected before setting props on listView: ' + reason);
-        this._clearContextRenderPromiseFunctions(context);
-        contextRenderError(reason);
-      }.bind(this));
+      busyContext.whenReady().then(
+        function () {
+          listView.data = context.data;
+          listView.selected = context.selected;
+          listView.currentItem = context.currentRow.rowKey;
+          this._clearContextRenderPromiseFunctions(context);
+          contextRenderDone();
+        }.bind(this),
+        function (reason) {
+          Logger.warn(
+            'Select: busyContext promise rejected before setting props on listView: ' + reason
+          );
+          this._clearContextRenderPromiseFunctions(context);
+          contextRenderError(reason);
+        }.bind(this)
+      );
     }
   };
 
@@ -1659,28 +1726,37 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     if (!this._resultsElem) {
       var $parentElem = $(context.parentElement);
       var placeholderElem = $parentElem.find('.oj-searchselect-results-placeholder')[0];
-      this._getTemplateEngineFunc().then(function (templateEngine) {
-        this._templateEngine = templateEngine;
-        this._collectionTemplateContext = this._createCollectionTemplateContext(templateEngine,
-          context);
-        var nodes = templateEngine.execute(this._templateContextComponentElement,
-          this._collectionTemplate, this._collectionTemplateContext);
+      this._getTemplateEngineFunc().then(
+        function (templateEngine) {
+          this._templateEngine = templateEngine;
+          this._collectionTemplateContext = this._createCollectionTemplateContext(
+            templateEngine,
+            context
+          );
+          var nodes = templateEngine.execute(
+            this._templateContextComponentElement,
+            this._collectionTemplate,
+            this._collectionTemplateContext
+          );
 
-        for (var i = 0; i < nodes.length; i++) {
-          placeholderElem.parentNode.insertBefore(nodes[i], placeholderElem);
-        }
-        // remove the placeholder elem because it's no longer needed
-        placeholderElem.parentNode.removeChild(placeholderElem);
-        this._resultsElem = $parentElem.find('.oj-select-results'); // '.oj-listbox-results'
-        this._resultsElem.on('click', LovUtils.killEvent);
-        this._clearContextRenderPromiseFunctions(context);
-        contextRenderDone();
-      }.bind(this), function (reason) {
-        Logger.warn(
-          'Select: template collection renderer template engine promise rejected: ' + reason);
-        this._clearContextRenderPromiseFunctions(context);
-        contextRenderError(reason);
-      }.bind(this));
+          for (var i = 0; i < nodes.length; i++) {
+            placeholderElem.parentNode.insertBefore(nodes[i], placeholderElem);
+          }
+          // remove the placeholder elem because it's no longer needed
+          placeholderElem.parentNode.removeChild(placeholderElem);
+          this._resultsElem = $parentElem.find('.oj-select-results'); // '.oj-listbox-results'
+          this._resultsElem.on('click', LovUtils.killEvent);
+          this._clearContextRenderPromiseFunctions(context);
+          contextRenderDone();
+        }.bind(this),
+        function (reason) {
+          Logger.warn(
+            'Select: template collection renderer template engine promise rejected: ' + reason
+          );
+          this._clearContextRenderPromiseFunctions(context);
+          contextRenderError(reason);
+        }.bind(this)
+      );
     } else {
       var templateContext = this._collectionTemplateContext;
       templateContext.data = context.data;
@@ -1719,13 +1795,17 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     var resolveBusyState = this._addBusyStateFunc('LovDropdown handling data provider event');
 
     var busyContext = Context.getContext(this._containerElem[0]).getBusyContext();
-    busyContext.whenReady().then(function () {
-      resolveBusyState();
-    }, function (reason) {
-      Logger.warn('Select: LovDropdown.handleDataProviderEvent busyContext promise rejected: ' +
-        reason);
-      resolveBusyState();
-    });
+    busyContext.whenReady().then(
+      function () {
+        resolveBusyState();
+      },
+      function (reason) {
+        Logger.warn(
+          'Select: LovDropdown.handleDataProviderEvent busyContext promise rejected: ' + reason
+        );
+        resolveBusyState();
+      }
+    );
   };
 
   LovDropdown.prototype.close = function () {
@@ -1842,8 +1922,10 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     //  - period character in element id prevents options box open/close;
     // escapeSelector handles special characters
     var $target = $(event.target);
-    if ($target.closest(containerElem).length ||
-        $target.closest('#' + $.escapeSelector(containerElem.attr('data-oj-containerid'))).length) {
+    if (
+      $target.closest(containerElem).length ||
+      $target.closest('#' + $.escapeSelector(containerElem.attr('data-oj-containerid'))).length
+    ) {
       return;
     }
 
@@ -1906,8 +1988,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
   LovDropdown.prototype._handleCollectionCurrentRowChanged = function (currentRow) {
     // Do nothing if called during the initialization phase or when the currentRow is null,
     // or when we're pushing changes due to the collection receiving focus
-    if (this._duringListViewInitialization || currentRow == null ||
-        this._handlingCollectionFocusinOnce) {
+    if (
+      this._duringListViewInitialization ||
+      currentRow == null ||
+      this._handlingCollectionFocusinOnce
+    ) {
       return;
     }
     // keep context up to date, make a copy since we do not want to modify the reference
@@ -1932,8 +2017,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
   LovDropdown.prototype._handleCollectionCurrentRowKeyChanged = function (rowKey) {
     // Do nothing if called during the initialization phase or when the rowKey is null,
     // or when we're pushing changes due to the collection receiving focus
-    if (this._duringListViewInitialization || rowKey == null ||
-        this._handlingCollectionFocusinOnce) {
+    if (this._duringListViewInitialization || rowKey == null || this._handlingCollectionFocusinOnce) {
       return;
     }
     // keep context up to date
@@ -1976,8 +2060,12 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       templateEngine.defineTrackableProperty(templateContext, 'selected');
 
       // pass listener so we can react to writebacks made by the collection
-      templateEngine.defineTrackableProperty(templateContext, 'selectedItem', undefined,
-        context.selectedItemChangedListener);
+      templateEngine.defineTrackableProperty(
+        templateContext,
+        'selectedItem',
+        undefined,
+        context.selectedItemChangedListener
+      );
 
       // currentRow property is an object and we expect the collection to writeback
       // we need to consider two cases here:
@@ -1987,16 +2075,25 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       //     property of the currentRow property
       // so, we need to define two trackable properties
       let currentRow = {};
-      templateEngine.defineTrackableProperty(currentRow, 'rowKey', undefined,
-        context.currentRowKeyChangedListener);
-      templateEngine.defineTrackableProperty(templateContext, 'currentRow', currentRow,
-        context.currentRowChangedListener);
+      templateEngine.defineTrackableProperty(
+        currentRow,
+        'rowKey',
+        undefined,
+        context.currentRowKeyChangedListener
+      );
+      templateEngine.defineTrackableProperty(
+        templateContext,
+        'currentRow',
+        currentRow,
+        context.currentRowChangedListener
+      );
 
       // this an event listener and so we don't expect a writeback for this property
       templateContext.handleRowAction = context.handleRowAction;
     } else {
-      Logger.error('JET Select: template engine not available when creating context' +
-            ' for collectionTemplate');
+      Logger.error(
+        'JET Select: template engine not available when creating context for collectionTemplate'
+      );
     }
 
     return templateContext;
@@ -2147,8 +2244,12 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     var rowKey = currentRow.rowKey;
     // add trackable property rowKey
     if (this._templateEngine) {
-      this._templateEngine.defineTrackableProperty(currentRow, 'rowKey', rowKey,
-        context.currentRowKeyChangedListener);
+      this._templateEngine.defineTrackableProperty(
+        currentRow,
+        'rowKey',
+        rowKey,
+        context.currentRowKeyChangedListener
+      );
     }
   };
 
@@ -2165,15 +2266,17 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
    */
   LovDropdown.prototype._FetchFirstResultForKeyboardFocus = function () {
     var busyContext = Context.getContext(this._containerElem[0]).getBusyContext();
-    return this._FetchFirstResult().then(function (data) {
-      if (data != null) {
-        // if there are results, listen on focusin in order to set the first result as current so that
-        // the table header doesn't get focus
-        this._focusinListener = this._handleCollectionFocusinOnce.bind(this, data);
-        this._containerElem[0].addEventListener('focusin', this._focusinListener);
-      }
-      return busyContext.whenReady();
-    }.bind(this));
+    return this._FetchFirstResult().then(
+      function (data) {
+        if (data != null) {
+          // if there are results, listen on focusin in order to set the first result as current so that
+          // the table header doesn't get focus
+          this._focusinListener = this._handleCollectionFocusinOnce.bind(this, data);
+          this._containerElem[0].addEventListener('focusin', this._focusinListener);
+        }
+        return busyContext.whenReady();
+      }.bind(this)
+    );
   };
 
   // JET-38215 - SELECT SINGLE - KEYBOARD NAVIGATION FOR COLLECTION TEMPLATE USAGE
@@ -2190,8 +2293,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     this._focusinListener = null;
     // only focus the first row if focus was transferred via the keyboard
     if (!DomUtils.recentPointer()) {
-      var resolveBusyState = this._addBusyStateFunc(
-        'LovDropdown setting selected KeySet on focusin');
+      var resolveBusyState = this._addBusyStateFunc('LovDropdown setting selected KeySet on focusin');
 
       // JET-39993 - Select2 options qunit tests fail using chrome and safari on Mac for master branch
       // set flag while we're setting the collection current row and selected key set because we don't
@@ -2201,10 +2303,12 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       this._SetCollectionCurrentRow({ rowKey: data.key });
 
       var busyContext = Context.getContext(this._containerElem[0]).getBusyContext();
-      busyContext.whenReady().then(function () {
-        this._handlingCollectionFocusinOnce = false;
-        resolveBusyState();
-      }.bind(this));
+      busyContext.whenReady().then(
+        function () {
+          this._handlingCollectionFocusinOnce = false;
+          resolveBusyState();
+        }.bind(this)
+      );
     }
   };
 
@@ -2258,8 +2362,10 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     var cachedMainFieldInputElement = options.cachedMainFieldInputElement;
 
     var textFieldContainer = document.createElement('div');
-    textFieldContainer.setAttribute('class',
-      'oj-text-field-container oj-searchselect-main-field oj-text-field-has-end-slot');
+    textFieldContainer.setAttribute(
+      'class',
+      'oj-text-field-container oj-searchselect-main-field oj-text-field-has-end-slot'
+    );
     textFieldContainer.setAttribute('role', 'presentation');
 
     var labelValueDiv = document.createElement('div');
@@ -2403,6 +2509,8 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
        * @instance
        * @type {Object | null}
        * @default null
+       * @ojwebelementstatus {type: "deprecated", since: "14.0.0",
+       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        * @ojsignature {target: "Type", value: "DataProvider<V, D>", jsdocOverride: true}
        * @ojmincapabilities {filter: {textFilter: true}}
        * @memberof oj.ojSelectBase
@@ -2455,64 +2563,64 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
        * @see #translations
        */
       /**
-         * <p>
-         * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
-         * This is the default.
-         * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
-         * </p>
-         * <p>
-         * In the Redwood theme, by default, a Required text is rendered inline when the field is empty.
-         * If user-assistance-density is 'compact', it will show on the label as an icon.
-         * In the Alta theme the input's label will render a required icon.
-         * </p>
-         * <p>The Required error text is based on Redwood UX designs, and it is not recommended that
-         * it be changed.
-         * To override the required error message,
-         * use the <code class="prettyprint">translations.required</code> attribute.
-         * The component's label text is passed in as a token {label} and can be used in the message detail.
-         * </p>
-         * <p>When required is set to true, an implicit
-         * required validator is created, i.e.,
-         * <code class="prettyprint">new RequiredValidator()</code>. The required validator is the only
-         * validator to run during initial render, and its error is not shown to the user at this time;
-         * this is called deferred validation. The required validator also runs during normal validation;
-         * this is when the errors are shown to the user.
-         * See the <a href="#validation-section">Validation and Messaging</a> section for details.
-         * </p>
-         * <p>
-         * When the <code class="prettyprint">required</code> property changes due to programmatic intervention,
-         * the component may clear component messages and run validation, based on the current state it's in. </br>
-         *
-         * <h4>Running Validation when required property changes</h4>
-         * <ul>
-         * <li>if component is valid when required is set to true, then it runs deferred validation on
-         * the value property. If the field is empty, the valid state is invalidHidden. No errors are
-         * shown to the user.
-         * </li>
-         * <li>if component is invalid and has deferred messages when required is set to false, then
-         * component messages are cleared (messages-custom messages are not cleared)
-         * but no deferred validation is run because required is false.
-         * </li>
-         * <li>if component is invalid and currently showing invalid messages when required is set, then
-         * component messages are cleared and normal validation is run using the current display value.
-         * <ul>
-         *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-         *   property is not updated and the error is shown.
-         *   </li>
-         *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-         *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
-         *   event on the component to clear custom errors.</li>
-         * </ul>
-         * </li>
-         * </ul>
-         *
-         * <h4>Clearing Messages when required property changes</h4>
-         * <ul>
-         * <li>Only messages created by the component, like validation messages, are cleared when the required property changes.</li>
-         * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
-         * </ul>
-         *
-         * </p>
+       * <p>
+       * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
+       * This is the default.
+       * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+       * </p>
+       * <p>
+       * In the Redwood theme, by default, a Required text is rendered inline when the field is empty.
+       * If user-assistance-density is 'compact', it will show on the label as an icon.
+       * In the Alta theme the input's label will render a required icon.
+       * </p>
+       * <p>The Required error text is based on Redwood UX designs, and it is not recommended that
+       * it be changed.
+       * To override the required error message,
+       * use the <code class="prettyprint">translations.required</code> attribute.
+       * The component's label text is passed in as a token {label} and can be used in the message detail.
+       * </p>
+       * <p>When required is set to true, an implicit
+       * required validator is created, i.e.,
+       * <code class="prettyprint">new RequiredValidator()</code>. The required validator is the only
+       * validator to run during initial render, and its error is not shown to the user at this time;
+       * this is called deferred validation. The required validator also runs during normal validation;
+       * this is when the errors are shown to the user.
+       * See the <a href="#validation-section">Validation and Messaging</a> section for details.
+       * </p>
+       * <p>
+       * When the <code class="prettyprint">required</code> property changes due to programmatic intervention,
+       * the component may clear component messages and run validation, based on the current state it's in. </br>
+       *
+       * <h4>Running Validation when required property changes</h4>
+       * <ul>
+       * <li>if component is valid when required is set to true, then it runs deferred validation on
+       * the value property. If the field is empty, the valid state is invalidHidden. No errors are
+       * shown to the user.
+       * </li>
+       * <li>if component is invalid and has deferred messages when required is set to false, then
+       * component messages are cleared (messages-custom messages are not cleared)
+       * but no deferred validation is run because required is false.
+       * </li>
+       * <li>if component is invalid and currently showing invalid messages when required is set, then
+       * component messages are cleared and normal validation is run using the current display value.
+       * <ul>
+       *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+       *   property is not updated and the error is shown.
+       *   </li>
+       *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+       *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+       *   event on the component to clear custom errors.</li>
+       * </ul>
+       * </li>
+       * </ul>
+       *
+       * <h4>Clearing Messages when required property changes</h4>
+       * <ul>
+       * <li>Only messages created by the component, like validation messages, are cleared when the required property changes.</li>
+       * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
+       * </ul>
+       *
+       * </p>
        * @expose
        * @access public
        * @instance
@@ -2699,7 +2807,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     _ComponentCreate: function () {
       this._super();
 
-      this._fullScreenPopup = (Config.getDeviceRenderMode() === 'phone');
+      this._fullScreenPopup = Config.getDeviceRenderMode() === 'phone';
     },
 
     /**
@@ -2712,7 +2820,10 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       this._super();
 
       this._initInputIdLabelForConnection(
-        this._GetContentElement()[0], this.OuterWrapper.id, this.options.labelledBy);
+        this._GetContentElement()[0],
+        this.OuterWrapper.id,
+        this.options.labelledBy
+      );
     },
 
     /**
@@ -2882,7 +2993,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     _GetTemplateSlot: function (name) {
       var slots = ojcustomelementUtils.CustomElementUtils.getSlotMap(this.OuterWrapper);
       var namedSlot = slots[name];
-      return (namedSlot && namedSlot[0] && namedSlot[0].tagName === 'TEMPLATE') ? namedSlot[0] : null;
+      return namedSlot && namedSlot[0] && namedSlot[0].tagName === 'TEMPLATE' ? namedSlot[0] : null;
     },
 
     /**
@@ -2998,16 +3109,25 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
             afterInitFunc();
           }
         }.bind(this);
-        this._initLovDropdown(idSuffix, inputType, elemId, getTranslatedStringFunc, addBusyStateFunc,
-          afterDropdownInitFunc);
+        this._initLovDropdown(
+          idSuffix,
+          inputType,
+          elemId,
+          getTranslatedStringFunc,
+          addBusyStateFunc,
+          afterDropdownInitFunc
+        );
 
         var dropdownElem = lovDropdown.getElement();
         OuterWrapper.appendChild(dropdownElem);
         dropdownElem.addEventListener('lovDropdownEvent', this._handleLovDropdownEvent.bind(this));
         if (!this._fullScreenPopup) {
-          dropdownElem.addEventListener('mousedown', function () {
-            this._mousedownOnDropdown = true;
-          }.bind(this));
+          dropdownElem.addEventListener(
+            'mousedown',
+            function () {
+              this._mousedownOnDropdown = true;
+            }.bind(this)
+          );
         }
 
         //  - Accessibility : JAWS does not read aria-controls attribute set on ojselect
@@ -3041,9 +3161,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       this._abstractLovBase = abstractLovBase;
 
       // swap main field container for the element
-      element
-        .hide()
-        .attr('aria-hidden', true);
+      element.hide().attr('aria-hidden', true);
 
       // JET-46247 - Acc: described-by resets after changing the data provider
       // if we're refreshing, restore aria-describedby on the input
@@ -3060,7 +3178,10 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // JET-46247 - Acc: described-by resets after changing the data provider
       // reconnect the input and label
       this._initInputIdLabelForConnection(
-        this._GetContentElement()[0], OuterWrapper.id, this.options.labelledBy);
+        this._GetContentElement()[0],
+        OuterWrapper.id,
+        this.options.labelledBy
+      );
 
       this._updateLabel();
 
@@ -3128,11 +3249,13 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // if there wasn't already a stored promise, queue the very first deferred operation,
       // which will be to clear the flags
       if (!storedPromise) {
-        this._queueValueChangeDeferredCallback(function () {
-          this._makingInternalValueChange = false;
-          this._makingInternalValueChangePromise = null;
-          this._deferredMakingInternalValueChangeQueueCallback = null;
-        }.bind(this));
+        this._queueValueChangeDeferredCallback(
+          function () {
+            this._makingInternalValueChange = false;
+            this._makingInternalValueChangePromise = null;
+            this._deferredMakingInternalValueChangeQueueCallback = null;
+          }.bind(this)
+        );
       }
 
       return promiseResolve;
@@ -3187,8 +3310,10 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
      */
     _queueValueChangeDeferredCallback: function (callback) {
       // JET-42413: while we're processing a value change, queue new changes to be processed later
-      var busyStateResolve = LovUtils.addBusyState(this.OuterWrapper,
-        'queueing deferred callback while making value change');
+      var busyStateResolve = LovUtils.addBusyState(
+        this.OuterWrapper,
+        'queueing deferred callback while making value change'
+      );
       var currentQueueCallback = this._deferredMakingInternalValueChangeQueueCallback;
       var queuedCallback = function () {
         // wrap in try..finally so that busy state always gets resolved
@@ -3278,9 +3403,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         .off(this._containerEventListeners);
       this._containerEventListeners = null;
 
-      this.element
-        .removeAttr('aria-hidden')
-        .show();
+      this.element.removeAttr('aria-hidden').show();
 
       this._removeDataProviderEventListeners();
       this._wrappedDataProvider = null;
@@ -3442,7 +3565,9 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       this._containerEventListeners = {
         // JET-48083 - clicking help-hints.source link does nothing
         // Do not kill events originating from user-assistance-container
-        click: LovUtils.killEventWithAncestorExceptions.bind(null, ['.oj-user-assistance-inline-container']),
+        click: LovUtils.killEventWithAncestorExceptions.bind(null, [
+          '.oj-user-assistance-inline-container'
+        ]),
         // keyup: function (event) {
         //   if (event.keyCode === 10 || event.keyCode === 13) {
         //     $elem.removeClass('oj-focus');
@@ -3609,7 +3734,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     _IsFilterInputTextCleared: function () {
       var filterInputText = this._filterInputText;
       var searchText = filterInputText.rawValue;
-      return (searchText == null || searchText === '');
+      return searchText == null || searchText === '';
     },
 
     /**
@@ -3658,11 +3783,16 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
             var agentInfo = oj.AgentUtils.getAgentInfo();
             if (agentInfo.browser === oj.AgentUtils.BROWSER.IE) {
               var resolveBusyContext = this._AddBusyState(
-                'Select showing filter field while arrowing into dropdown');
-              setTimeout(function () { // @HTMLUpdateOK
-                this._ShowFilterField(true);
-                resolveBusyContext();
-              }.bind(this), 0);
+                'Select showing filter field while arrowing into dropdown'
+              );
+              // prettier-ignore
+              setTimeout( // @HTMLUpdateOK
+                function () {
+                  this._ShowFilterField(true);
+                  resolveBusyContext();
+                }.bind(this),
+                0
+              );
             } else {
               this._ShowFilterField(true);
             }
@@ -3746,7 +3876,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       var $OuterWrapper = $(OuterWrapper);
 
       // only open dropdown on left (main) button click
-      var mainButton = (event.button === 0);
+      var mainButton = event.button === 0;
       var skipPreventDefault = false;
 
       var mainInputElem = this._lovMainField.getInputElem();
@@ -3993,7 +4123,12 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       var className = this._className;
 
       var a = document.createElement('a');
-      var styleClasses = className + '-arrow ' + className + '-open-icon ' + className +
+      var styleClasses =
+        className +
+        '-arrow ' +
+        className +
+        '-open-icon ' +
+        className +
         '-icon oj-component-icon oj-clickable-icon-nocontext';
       if (!readonly && !enabled) {
         styleClasses += ' oj-disabled';
@@ -4013,8 +4148,13 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       var className = this._className;
 
       var a = document.createElement('a');
-      var styleClasses = className + '-clear-value ' + className + '-clear-value-icon ' +
-        className + '-icon oj-component-icon oj-clickable-icon-nocontext';
+      var styleClasses =
+        className +
+        '-clear-value ' +
+        className +
+        '-clear-value-icon ' +
+        className +
+        '-icon oj-component-icon oj-clickable-icon-nocontext';
       a.setAttribute('class', styleClasses);
       a.setAttribute('role', 'button');
       var strClear = this.getTranslatedString('labelAccClearValue');
@@ -4064,7 +4204,8 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
             // cursor.)
             this._clearMainFieldFocusHandlerTimer();
             var resolveBusyContext = this._AddBusyState(
-              'Select showing filter field after focusing main field');
+              'Select showing filter field after focusing main field'
+            );
             this._mainFieldFocusHandlerTimer = TimerUtils.getTimer(0);
 
             // JET-44965 - SELECT SINGLE LOSING FOCUS LOST
@@ -4077,35 +4218,37 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
               selectionDirection: mainInputElem.selectionDirection
             };
 
-            this._mainFieldFocusHandlerTimer.getPromise().then(function (pending) {
-              // only act on the timer if it hasn't been cleared
-              if (pending) {
-                this._mainFieldFocusHandlerTimer = null;
-                this._ShowFilterField();
-                // JET-45389 - if this is the same input elem as before the timer fired, get its
-                // current selection range now that it has had time to process getting focus
-                var currMainInputElem = this._lovMainField.getInputElem();
-                if (mainInputElem === currMainInputElem) {
-                  selectionRange = {
-                    selectionStart: mainInputElem.selectionStart,
-                    selectionEnd: mainInputElem.selectionEnd,
-                    selectionDirection: mainInputElem.selectionDirection
-                  };
+            this._mainFieldFocusHandlerTimer.getPromise().then(
+              function (pending) {
+                // only act on the timer if it hasn't been cleared
+                if (pending) {
+                  this._mainFieldFocusHandlerTimer = null;
+                  this._ShowFilterField();
+                  // JET-45389 - if this is the same input elem as before the timer fired, get its
+                  // current selection range now that it has had time to process getting focus
+                  var currMainInputElem = this._lovMainField.getInputElem();
+                  if (mainInputElem === currMainInputElem) {
+                    selectionRange = {
+                      selectionStart: mainInputElem.selectionStart,
+                      selectionEnd: mainInputElem.selectionEnd,
+                      selectionDirection: mainInputElem.selectionDirection
+                    };
+                  }
+                  // JET-34889 - WHEN OJ-SELECT-SINGLE GETS FOCUS, SELECT THE INPUT TEXT TO ALLOW
+                  // TYPING WITHOUT CLEARING FIRST
+                  // transfer the selection range from the main input to the filter input
+                  var filterInputElem = this._getFilterInputElem();
+                  if (filterInputElem) {
+                    filterInputElem.setSelectionRange(
+                      selectionRange.selectionStart,
+                      selectionRange.selectionEnd,
+                      selectionRange.selectionDirection
+                    );
+                  }
                 }
-                // JET-34889 - WHEN OJ-SELECT-SINGLE GETS FOCUS, SELECT THE INPUT TEXT TO ALLOW
-                // TYPING WITHOUT CLEARING FIRST
-                // transfer the selection range from the main input to the filter input
-                var filterInputElem = this._getFilterInputElem();
-                if (filterInputElem) {
-                  filterInputElem.setSelectionRange(
-                    selectionRange.selectionStart,
-                    selectionRange.selectionEnd,
-                    selectionRange.selectionDirection
-                  );
-                }
-              }
-              resolveBusyContext();
-            }.bind(this));
+                resolveBusyContext();
+              }.bind(this)
+            );
           }
         }.bind(this)
       };
@@ -4190,8 +4333,15 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         // create a hidden icon in the end slot to account for the dropdown open icon in the main
         // field on desktop
         var a = document.createElement('a');
-        a.setAttribute('class', className + '-arrow ' + className + '-open-icon ' + className +
-          '-icon oj-component-icon oj-clickable-icon-nocontext');
+        a.setAttribute(
+          'class',
+          className +
+            '-arrow ' +
+            className +
+            '-open-icon ' +
+            className +
+            '-icon oj-component-icon oj-clickable-icon-nocontext'
+        );
         a.setAttribute('slot', 'end');
         filterInputText.appendChild(a);
       } else {
@@ -4201,59 +4351,72 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         backIcon.setAttribute('slot', 'start');
         backIcon.setAttribute('class', className + '-back-button');
         backIcon.setAttribute('aria-label', strCancel);
-        backIcon.addEventListener('click', function () {
+        backIcon.addEventListener(
+          'click',
+          function () {
             // focus the input element after canceling on mobile because we want the focus to
             // go back to the main part of the component, and the user can tab out or reopen the
             // dropdown
             this._lovMainField.getInputElem().focus();
             this._abstractLovBase.cancel();
-        }.bind(this));
+          }.bind(this)
+        );
 
         filterInputText.appendChild(backIcon);
         var innerIcon = document.createElement('span');
 
-        innerIcon.setAttribute('class', className + '-back-icon ' + className +
-          '-icon oj-component-icon oj-clickable-icon-nocontext');
+        innerIcon.setAttribute(
+          'class',
+          className +
+            '-back-icon ' +
+            className +
+            '-icon oj-component-icon oj-clickable-icon-nocontext'
+        );
         backIcon.appendChild(innerIcon);
       }
 
       var $elem = $(this.OuterWrapper);
-      filterInputText.addEventListener('rawValueChanged', function (event) {
-        if (!this._ignoreFilterFieldRawValueChanged) {
-          // JET-40375 - SELECT SINGLE - DEFAULTED VALUE OVERRIDES USER INPUT
-          // maintain flag that the user has typed filter text so that we don't override it with
-          // the selected label if a data fetch comes in afterwards
-          this._userHasTypedFilterText = true;
+      filterInputText.addEventListener(
+        'rawValueChanged',
+        function (event) {
+          if (!this._ignoreFilterFieldRawValueChanged) {
+            // JET-40375 - SELECT SINGLE - DEFAULTED VALUE OVERRIDES USER INPUT
+            // maintain flag that the user has typed filter text so that we don't override it with
+            // the selected label if a data fetch comes in afterwards
+            this._userHasTypedFilterText = true;
 
-          this._updateResults(event);
-        }
-      }.bind(this));
+            this._updateResults(event);
+          }
+        }.bind(this)
+      );
       filterInputText.addEventListener('focus', function () {
         $elem.addClass('oj-focus');
         this._mousedownOnDropdown = false;
       });
-      filterInputText.addEventListener('blur', function (event) {
-        $elem.removeClass('oj-focus');
-        if (!this._fullScreenPopup) {
-          // don't hide the filter field if:
-          // * tabbing into the dropdown, or
-          // * clicking on an empty area of the dropdown, or
-          // * JET-47185 - Acc: SelectSingle loses focus if we switch to other windows - Potential
-          //   Keyboard trap in a dialog
-          //   Alt+Tabbing to other application windows, in which case the document.activeElement
-          //   will still be in the filter field
-          var focusInDropdown = event.relatedTarget &&
-            DomUtils.isAncestor(this._lovDropdown.getElement(), event.relatedTarget);
-          var focusInFilterField = document.activeElement &&
-            DomUtils.isAncestor(filterInputText, document.activeElement);
-          if (!focusInDropdown &&
-              !this._mousedownOnDropdown &&
-              !focusInFilterField) {
-            this._showMainField();
+      filterInputText.addEventListener(
+        'blur',
+        function (event) {
+          $elem.removeClass('oj-focus');
+          if (!this._fullScreenPopup) {
+            // don't hide the filter field if:
+            // * tabbing into the dropdown, or
+            // * clicking on an empty area of the dropdown, or
+            // * JET-47185 - Acc: SelectSingle loses focus if we switch to other windows - Potential
+            //   Keyboard trap in a dialog
+            //   Alt+Tabbing to other application windows, in which case the document.activeElement
+            //   will still be in the filter field
+            var focusInDropdown =
+              event.relatedTarget &&
+              DomUtils.isAncestor(this._lovDropdown.getElement(), event.relatedTarget);
+            var focusInFilterField =
+              document.activeElement && DomUtils.isAncestor(filterInputText, document.activeElement);
+            if (!focusInDropdown && !this._mousedownOnDropdown && !focusInFilterField) {
+              this._showMainField();
+            }
           }
-        }
-        this._mousedownOnDropdown = false;
-      }.bind(this));
+          this._mousedownOnDropdown = false;
+        }.bind(this)
+      );
 
       // Add mousedown event listener only on desktop, since we do not want to toggle
       // dropdown when tapped on filter input text when using in mobile
@@ -4279,8 +4442,14 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
      * @instance
      * @private
      */
-    _initLovDropdown: function (idSuffix, inputType, containerId,
-      getTranslatedStringFunc, addBusyStateFunc, afterDropdownInitFunc) {
+    _initLovDropdown: function (
+      idSuffix,
+      inputType,
+      containerId,
+      getTranslatedStringFunc,
+      addBusyStateFunc,
+      afterDropdownInitFunc
+    ) {
       this._lovDropdown.init({
         dataProvider: this._wrappedDataProvider,
         className: 'oj-select',
@@ -4317,15 +4486,17 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       if (this._initLovDropdownFunc) {
         var initLovDropdownFunc = this._initLovDropdownFunc;
         this._initLovDropdownFunc = null;
-        initLovDropdownFunc(function () {
-          // JET-41568 - Select single in data grid causes console error when opening second before
-          // exiting edit mode on first
-          // Since this function is executed asynchronously after initializing the dropdodwn, we need
-          // to make sure that the component itself has not been released.
-          if (this._abstractLovBase) {
-            this._abstractLovBase.openDropdown();
-          }
-        }.bind(this));
+        initLovDropdownFunc(
+          function () {
+            // JET-41568 - Select single in data grid causes console error when opening second before
+            // exiting edit mode on first
+            // Since this function is executed asynchronously after initializing the dropdodwn, we need
+            // to make sure that the component itself has not been released.
+            if (this._abstractLovBase) {
+              this._abstractLovBase.openDropdown();
+            }
+          }.bind(this)
+        );
       } else {
         this._abstractLovBase.openDropdown();
       }
@@ -4341,15 +4512,17 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       if (this._initLovDropdownFunc) {
         var initLovDropdownFunc = this._initLovDropdownFunc;
         this._initLovDropdownFunc = null;
-        initLovDropdownFunc(function () {
-          // JET-41568 - Select single in data grid causes console error when opening second before
-          // exiting edit mode on first
-          // Since this function is executed asynchronously after initializing the dropdodwn, we need
-          // to make sure that the component itself has not been released.
-          if (this._abstractLovBase) {
-            this._abstractLovBase.updateResults(event);
-          }
-        }.bind(this));
+        initLovDropdownFunc(
+          function () {
+            // JET-41568 - Select single in data grid causes console error when opening second before
+            // exiting edit mode on first
+            // Since this function is executed asynchronously after initializing the dropdodwn, we need
+            // to make sure that the component itself has not been released.
+            if (this._abstractLovBase) {
+              this._abstractLovBase.updateResults(event);
+            }
+          }.bind(this)
+        );
       } else {
         this._abstractLovBase.updateResults(event);
       }
@@ -4366,20 +4539,25 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     _loadTemplateEngine: function () {
       if (!this._templateEngine) {
         var resolveBusyContext = this._AddBusyState('Select loading template engine');
-        return new Promise(function (resolve, reject) {
-          const templateOptions = {
-            customElement: this._GetCustomElement(),
-            needsTrackableProperties: true
-          };
-          Config.__getTemplateEngine(templateOptions).then(function (engine) {
-            this._templateEngine = engine;
-            resolve(engine);
-            resolveBusyContext();
-          }.bind(this), function (reason) {
-            reject(new Error('Error loading template engine: ' + reason));
-            resolveBusyContext();
-          });
-        }.bind(this));
+        return new Promise(
+          function (resolve, reject) {
+            const templateOptions = {
+              customElement: this._GetCustomElement(),
+              needsTrackableProperties: true
+            };
+            Config.__getTemplateEngine(templateOptions).then(
+              function (engine) {
+                this._templateEngine = engine;
+                resolve(engine);
+                resolveBusyContext();
+              }.bind(this),
+              function (reason) {
+                reject(new Error('Error loading template engine: ' + reason));
+                resolveBusyContext();
+              }
+            );
+          }.bind(this)
+        );
       }
 
       return Promise.resolve(this._templateEngine);
@@ -4401,9 +4579,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // changes to the component from within the change listener, we can defer processing the
       // new change until after we're done processing the current change
       if (this._makingInternalValueChange) {
-        this._queueValueChangeDeferredCallback(function () {
-          this.refresh();
-        }.bind(this));
+        this._queueValueChangeDeferredCallback(
+          function () {
+            this.refresh();
+          }.bind(this)
+        );
 
         return;
       }
@@ -4507,9 +4687,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
           resolveFunc = resolve;
           rejectFunc = reject;
         });
-        this._queueValueChangeDeferredCallback(function () {
-          this.validate().then(resolveFunc, rejectFunc);
-        }.bind(this));
+        this._queueValueChangeDeferredCallback(
+          function () {
+            this.validate().then(resolveFunc, rejectFunc);
+          }.bind(this)
+        );
 
         return promise;
       }
@@ -4570,22 +4752,26 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // changes to the component from within the change listener, we can defer processing the
       // new change until after we're done processing the current change
       if (this._makingInternalValueChange) {
-        this._queueValueChangeDeferredCallback(function () {
-          // JET-46247 - Acc: described-by resets after changing the data provider
-          // don't re-set the same labelledBy again because it can affect whether the label
-          // actually gets read out by the screen reader (because it may change how the label is
-          // configured between the main and filter inputs)
-          var newOptions = Object.assign({}, options);
-          // eslint-disable-next-line no-prototype-builtins
-          if (newOptions.hasOwnProperty('labelledBy') &&
-              newOptions.labelledBy === this.options.labelledBy) {
-            delete newOptions.labelledBy;
-            if (Object.entries(newOptions).length === 0) {
-              return;
+        this._queueValueChangeDeferredCallback(
+          function () {
+            // JET-46247 - Acc: described-by resets after changing the data provider
+            // don't re-set the same labelledBy again because it can affect whether the label
+            // actually gets read out by the screen reader (because it may change how the label is
+            // configured between the main and filter inputs)
+            var newOptions = Object.assign({}, options);
+            if (
+              // eslint-disable-next-line no-prototype-builtins
+              newOptions.hasOwnProperty('labelledBy') &&
+              newOptions.labelledBy === this.options.labelledBy
+            ) {
+              delete newOptions.labelledBy;
+              if (Object.entries(newOptions).length === 0) {
+                return;
+              }
             }
-          }
-          this._setOptions(newOptions, flags);
-        }.bind(this));
+            this._setOptions(newOptions, flags);
+          }.bind(this)
+        );
 
         return;
       }
@@ -4646,8 +4832,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // remember whether the filter field is shown before processing the new options so that
       // we can restore it afterwards, if necessary
       var showFilterField = false;
-      if (!this._fullScreenPopup && this._lovEnabled &&
-          this._filterInputText.style.visibility !== 'hidden') {
+      if (
+        !this._fullScreenPopup &&
+        this._lovEnabled &&
+        this._filterInputText.style.visibility !== 'hidden'
+      ) {
         showFilterField = true;
       }
 
@@ -4692,9 +4881,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         if (showFilterField && this._filterInputText.style.visibility === 'hidden') {
           // need to wait for the new filter oj-input-text to be upgraded
           var busyContext = Context.getContext(this._filterInputText).getBusyContext();
-          busyContext.whenReady().then(function () {
-            this._ShowFilterField();
-          }.bind(this));
+          busyContext.whenReady().then(
+            function () {
+              this._ShowFilterField();
+            }.bind(this)
+          );
         }
       } finally {
         if (resolveBusyState) {
@@ -4731,7 +4922,29 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       //  - need to be able to specify the initial value of select components bound to dprv
       if (key === this._GetValueItemPropertyName()) {
         this._valueItemSetInternally = false;
-        this._SyncValueWithValueItem(value, this.options.value);
+
+        // JET-51307 - Wrapping select single with value item and value integrations going into loop
+        // with multiple instances of LOV in a page
+        // If we're wrapped by a VComponent and there are multiple instances on the page
+        // all bound to the same valueItem, then if the user selects a new value in one instance,
+        // the page can go into an infinite loop.
+        // If we synchronously update the value on our DOM element here, then when the next preact
+        // render compares the stale vcomp value property against the new value in the DOM, preact
+        // determines it must push the stale value property back down onto us, which then causes
+        // the valueItem to get sync'ed again, and the loop goes on.
+        // By delaying updating the value on the DOM element here, we avoid preact finding a
+        // difference between its properties and the DOM value, so preact does not push the stale
+        // value prop back down on us.
+        const elemState = ojcustomelementUtils.CustomElementUtils.getElementState(this.OuterWrapper);
+        if (elemState.getBindingProviderType() === 'preact') {
+          window.queueMicrotask(
+            function () {
+              this._SyncValueWithValueItem(value, this.options.value);
+            }.bind(this)
+          );
+        } else {
+          this._SyncValueWithValueItem(value, this.options.value);
+        }
       } else if (key === 'value') {
         // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
         // save the processing function for execution in _setOptions
@@ -4872,9 +5085,9 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
      * @param {string} eventType "mouse", "touch", or "keyboard".  Never <code class="prettyprint">null</code>.
      */
     _NotifyContextMenuGesture: function (menu, event, eventType) {
-    // The default baseComponent behavior in _OpenContextMenu assumes this.element for the
-    // launcher. In this case, the original element the component is bound to is
-    // hidden (display: none). Pass in an openOption override.
+      // The default baseComponent behavior in _OpenContextMenu assumes this.element for the
+      // launcher. In this case, the original element the component is bound to is
+      // hidden (display: none). Pass in an openOption override.
       var launcher = this._GetMessagingLauncherElement();
       this._OpenContextMenu(event, eventType, { launcher: launcher });
     },
@@ -4890,9 +5103,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // timer to update messages is fired so that we can defer processing until after
       // the DOM has been changed
       this._messagingStrategyQueueActionPromise = promise;
-      promise.then(function () {
-        this._messagingStrategyQueueActionPromise = null;
-      }.bind(this));
+      promise.then(
+        function () {
+          this._messagingStrategyQueueActionPromise = null;
+        }.bind(this)
+      );
     },
 
     /**
@@ -5065,8 +5280,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // value, don't make another call to dataProvider.fetchByKeys because the previous one is in
       // flight.
       var fetchPromise;
-      if (this._cachedFetchByKeys && this._cachedFetchByKeys.promise &&
-          oj.Object.compareValues(arKeys, this._cachedFetchByKeys.key)) {
+      if (
+        this._cachedFetchByKeys &&
+        this._cachedFetchByKeys.promise &&
+        oj.Object.compareValues(arKeys, this._cachedFetchByKeys.key)
+      ) {
         fetchPromise = this._cachedFetchByKeys.promise;
       } else {
         // add busy context
@@ -5080,26 +5298,30 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
           }
         }
 
-        fetchPromise = new Promise(function (resolve, reject) {
-          // fetch the data row by its key("value")
-          var dpPromise = this._wrappedDataProvider.fetchByKeys({ keys: new Set(arKeys) });
-          dpPromise
-            .then(function (fetchResults) {
-              var data = [];
-              var metadata = [];
-              fetchResults.results.forEach(function (val) {
-                data.push(val.data);
-                metadata.push(val.metadata);
-              });
+        fetchPromise = new Promise(
+          function (resolve, reject) {
+            // fetch the data row by its key("value")
+            var dpPromise = this._wrappedDataProvider.fetchByKeys({ keys: new Set(arKeys) });
+            dpPromise.then(
+              function (fetchResults) {
+                var data = [];
+                var metadata = [];
+                fetchResults.results.forEach(function (val) {
+                  data.push(val.data);
+                  metadata.push(val.metadata);
+                });
 
-              resolve({
-                data: data,
-                metadata: metadata
-              });
-            }, function (reason) {
-              reject(reason);
-            });
-        }.bind(this));
+                resolve({
+                  data: data,
+                  metadata: metadata
+                });
+              },
+              function (reason) {
+                reject(reason);
+              }
+            );
+          }.bind(this)
+        );
 
         // save key and promise
         // eslint-disable-next-line no-param-reassign
@@ -5122,12 +5344,15 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
           }
           fetchResolveFunc();
         }.bind(this);
-        fetchPromise.then(function () {
-          afterFetchPromiseFunc();
-        }, function (reason) {
-          Logger.warn('Select: fetchByKeys promise was rejected: ' + reason);
-          afterFetchPromiseFunc();
-        });
+        fetchPromise.then(
+          function () {
+            afterFetchPromiseFunc();
+          },
+          function (reason) {
+            Logger.warn('Select: fetchByKeys promise was rejected: ' + reason);
+            afterFetchPromiseFunc();
+          }
+        );
       }
 
       return fetchPromise;
@@ -5148,14 +5373,15 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
           this._loadingIndicatorTimer.clear();
         }
         this._loadingIndicatorTimer = TimerUtils.getTimer(this._showIndicatorDelay);
-        this._loadingIndicatorTimer.getPromise()
-          .then(function (pending) {
+        this._loadingIndicatorTimer.getPromise().then(
+          function (pending) {
             // Only add the loading indicator if loading request is still pending
             // (not cleared out by request finishing)
             if (pending) {
               this._addLoadingIndicator();
             }
-          }.bind(this));
+          }.bind(this)
+        );
       } else if (state === 'stop') {
         if (this._loadingIndicatorTimer) {
           this._loadingIndicatorTimer.clear();
@@ -5210,7 +5436,6 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
      * @ignore
      * @memberof oj.ojSelectBase
      */
-
   });
 
   exports.AbstractLovBase = AbstractLovBase;

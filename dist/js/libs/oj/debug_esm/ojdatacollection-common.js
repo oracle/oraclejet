@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -24,7 +24,14 @@ DataCollectionUtils._DATA_OJ_TABMOD = 'data-oj-tabmod';
 /**
  * @private
  */
-DataCollectionUtils._FOCUSABLE_ELEMENTS_TAG = ['input', 'select', 'button', 'a', 'textarea', 'object'];
+DataCollectionUtils._FOCUSABLE_ELEMENTS_TAG = [
+  'input',
+  'select',
+  'button',
+  'a',
+  'textarea',
+  'object'
+];
 
 /**
  * Number of times checkViewport occured during initial fetch before log a warning
@@ -70,9 +77,12 @@ DataCollectionUtils.disableElement = function (element) {
  * @return {Element[]} An array of the disabled elements
  * @private
  */
-DataCollectionUtils.disableAllFocusableElements = function (element, excludeActiveElement,
-  includeReadonly) {
-    return disableAllFocusableElements$1(element, excludeActiveElement, includeReadonly);
+DataCollectionUtils.disableAllFocusableElements = function (
+  element,
+  excludeActiveElement,
+  includeReadonly
+) {
+  return disableAllFocusableElements$1(element, excludeActiveElement, includeReadonly);
 };
 
 /**
@@ -117,8 +127,9 @@ DataCollectionUtils.isElementOrAncestorFocusable = function (element, stopCondit
     return true;
   } else if (element.tabIndex >= 0) {
     return true;
-  } else if (DataCollectionUtils._FOCUSABLE_ELEMENTS_TAG.indexOf(element.tagName.toLowerCase())
-    > -1) {
+  } else if (
+    DataCollectionUtils._FOCUSABLE_ELEMENTS_TAG.indexOf(element.tagName.toLowerCase()) > -1
+  ) {
     return true;
   }
 
@@ -185,7 +196,7 @@ DataCollectionUtils.isEventClickthroughDisabled = function (event, rootElement) 
  * @returns {boolean} true if clickthrough is disabled for the given element. false otherwise
  */
 DataCollectionUtils.isClickthroughDisabled = function (element) {
-  return (element.dataset.ojClickthrough === 'disabled');
+  return element.dataset.ojClickthrough === 'disabled';
 };
 
 /** ******************* general collection utility methods *****************/
@@ -301,9 +312,11 @@ DataCollectionUtils.applyStyleObj = function (element, styleObj) {
 DataCollectionUtils.isMobileTouchDevice = function () {
   var agentInfo = oj.AgentUtils.getAgentInfo();
 
-  return (agentInfo.os === oj.AgentUtils.OS.IOS ||
-          agentInfo.os === oj.AgentUtils.OS.ANDROID ||
-          agentInfo.os === oj.AgentUtils.OS.WINDOWSPHONE);
+  return (
+    agentInfo.os === oj.AgentUtils.OS.IOS ||
+    agentInfo.os === oj.AgentUtils.OS.ANDROID ||
+    agentInfo.os === oj.AgentUtils.OS.WINDOWSPHONE
+  );
 };
 
 DataCollectionUtils.getNoJQFocusHandlers = function (focusIn, focusOut) {
@@ -353,7 +366,6 @@ DataCollectionUtils.areKeySetsEqual = function (keySet1, keySet2) {
   return true;
 };
 
-
 /** **************** keyboard event handling methods ****************** */
 
 DataCollectionUtils.KEYBOARD_KEYS = {
@@ -398,119 +410,147 @@ DataCollectionUtils.KEYBOARD_KEYS = {
  * @private
  */
 DataCollectionUtils.isEnterKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._ENTER ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._ENTER_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._ENTER ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._ENTER_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isSpaceBarKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._SPACEBAR ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._SPACEBAR_IE ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._SPACEBAR_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._SPACEBAR ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._SPACEBAR_IE ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._SPACEBAR_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isEscapeKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._ESCAPE ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._ESCAPE_IE ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._ESCAPE_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._ESCAPE ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._ESCAPE_IE ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._ESCAPE_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isTabKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._TAB ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._TAB_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._TAB ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._TAB_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isF2KeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._F2 ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._F2_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._F2 ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._F2_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isHomeKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._HOME ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._HOME_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._HOME ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._HOME_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isEndKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._END ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._END_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._END ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._END_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isArrowUpKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._UP ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._UP_IE ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._UP_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._UP ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._UP_IE ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._UP_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isArrowDownKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._DOWN ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._DOWN_IE ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._DOWN_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._DOWN ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._DOWN_IE ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._DOWN_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isArrowLeftKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._LEFT ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._LEFT_IE ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._LEFT_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._LEFT ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._LEFT_IE ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._LEFT_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isArrowRightKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._RIGHT ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._RIGHT_IE ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._RIGHT_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._RIGHT ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._RIGHT_IE ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._RIGHT_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isNumberFiveKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._NUM5_KEY ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._NUM5_KEY_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._NUM5_KEY ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._NUM5_KEY_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isLetterAKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A_UPPERCASE ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A_UPPERCASE ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A_CODE
+  );
 };
 
 /**
  * @private
  */
 DataCollectionUtils.isMetaKeyEvent = function (eventKey) {
-  return eventKey === DataCollectionUtils.KEYBOARD_KEYS._META ||
-         eventKey === DataCollectionUtils.KEYBOARD_KEYS._META_CODE;
+  return (
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._META ||
+    eventKey === DataCollectionUtils.KEYBOARD_KEYS._META_CODE
+  );
 };
 
 /** **************** data mutation event handling methods ****************** */
@@ -542,8 +582,9 @@ DataCollectionUtils.getAddEventKeysResult = function (initialKeys, addEventDetai
   var eventBeforeKeys = [];
   // afterKeys is deprecated, but continue to support it until we can remove it.
   // forEach can be called on both array and set.
-  var beforeKeyIter = addEventDetail.addBeforeKeys ?
-    addEventDetail.addBeforeKeys : addEventDetail.afterKeys;
+  var beforeKeyIter = addEventDetail.addBeforeKeys
+    ? addEventDetail.addBeforeKeys
+    : addEventDetail.afterKeys;
   if (beforeKeyIter != null) {
     beforeKeyIter.forEach(function (key) {
       eventBeforeKeys.push(key);
@@ -706,8 +747,8 @@ DataCollectionUtils.isElementIntersectingScrollerBounds = function (elem, scroll
     right = scrollerBounds.right;
   }
   var bounds = elem.getBoundingClientRect();
-  return (bounds.top <= bottom && bounds.bottom >= top &&
-   bounds.left <= right && bounds.right >= left
+  return (
+    bounds.top <= bottom && bounds.bottom >= top && bounds.left <= right && bounds.right >= left
   );
 };
 
@@ -724,9 +765,8 @@ DataCollectionUtils.getEventDetail = function (dataProvider, eventDetail) {
     } else {
       const capability = dataProvider.getCapability('fetchByKeys');
       if (capability && capability.implementation === 'lookup') {
-        dataProvider
-          .fetchByKeys({ keys: new Set(eventDetail.keys), scope: 'global' })
-          .then((fetchByKeysResult) => {
+        dataProvider.fetchByKeys({ keys: new Set(eventDetail.keys), scope: 'global' }).then(
+          (fetchByKeysResult) => {
             eventDetail.data = [];
             eventDetail.metadata = [];
             eventDetail.keys.forEach((key) => {
@@ -735,11 +775,13 @@ DataCollectionUtils.getEventDetail = function (dataProvider, eventDetail) {
               eventDetail.metadata.push(fetchByKeysValue.metadata);
             });
             resolve(eventDetail);
-          }, (reason) => {
+          },
+          (reason) => {
             // something bad happened, return null.
             error('Error fetching event detail due to fetchByKeys: ' + reason);
             resolve(null);
-          });
+          }
+        );
       } else {
         // cant validate due to capability, return null
         error('Error fetching event detail due to fetchByKeys: capability');
@@ -766,8 +808,107 @@ DataCollectionUtils.isIterateAfterDoneNotAllowed = function (dataProvider) {
  * Whether browser supports requestIdleCallback
  */
 DataCollectionUtils.isRequestIdleCallbackSupported = function () {
-  return window.requestIdleCallback != null && window.cancelIdleCallback != null &&
-    window.IdleDeadline != null;
+  return (
+    window.requestIdleCallback != null &&
+    window.cancelIdleCallback != null &&
+    window.IdleDeadline != null
+  );
+};
+
+/**
+ * Helper function which returns true if the browser is Chrome
+ * @private
+ */
+DataCollectionUtils.isChrome = function () {
+  return oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.CHROME;
+};
+
+/**
+ * Helper function which returns true if the browser is FF
+ * @private
+ */
+DataCollectionUtils.isFirefox = function () {
+  return oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.FIREFOX;
+};
+
+/**
+ * Helper function which returns true if the browser is IE
+ * @private
+ */
+DataCollectionUtils.isIE = function () {
+  return oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.IE;
+};
+
+/**
+ * Helper function which returns true if the browser is Edge
+ * @private
+ */
+DataCollectionUtils.isEdge = function () {
+  return oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE;
+};
+
+/**
+ * Helper function which returns true if the browser is Safari
+ * @private
+ */
+DataCollectionUtils.isSafari = function () {
+  return oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI;
+};
+
+/**
+ * Helper function which returns true if the os is Mac
+ * @private
+ */
+DataCollectionUtils.isMac = function () {
+  return oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.MAC;
+};
+
+/**
+ * Helper function which returns true if the os is Windows
+ * @private
+ */
+DataCollectionUtils.isWindows = function () {
+  return oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.WINDOWS;
+};
+
+/**
+ * Helper function which returns true if the os is IOS
+ * @private
+ */
+DataCollectionUtils.isIos = function () {
+  return oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS;
+};
+
+/**
+ * Helper function which returns true if the os is Android
+ * @private
+ */
+DataCollectionUtils.isAndroid = function () {
+  return oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.ANDROID;
+};
+
+/**
+ * Helper function which returns true if the engine is Blink
+ * @private
+ */
+DataCollectionUtils.isBlink = function () {
+  return oj.AgentUtils.getAgentInfo().engine === oj.AgentUtils.ENGINE.BLINK;
+};
+
+/**
+ * Helper function which returns true if the engine is webkit
+ * @private
+ */
+DataCollectionUtils.isWebkit = function () {
+  return oj.AgentUtils.getAgentInfo().engine === oj.AgentUtils.ENGINE.WEBKIT;
+};
+
+/**
+ * Helper function which returns browser version
+ * @private
+ */
+DataCollectionUtils.getBrowserVersion = function () {
+  return parseInt(oj.AgentUtils.getAgentInfo().browserVersion, 10);
 };
 
 const applyMergedInlineStyles = DataCollectionUtils.applyMergedInlineStyles;
@@ -813,5 +954,17 @@ const calculateOffsetTop = DataCollectionUtils.calculateOffsetTop;
 const isElementIntersectingScrollerBounds = DataCollectionUtils.isElementIntersectingScrollerBounds;
 const getEventDetail = DataCollectionUtils.getEventDetail;
 const isRequestIdleCallbackSupported = DataCollectionUtils.isRequestIdleCallbackSupported;
+const isChrome = DataCollectionUtils.isChrome;
+const isFirefox = DataCollectionUtils.isFirefox;
+const isSafari = DataCollectionUtils.isSafari;
+const isEdge = DataCollectionUtils.isEdge;
+const isIE = DataCollectionUtils.isIE;
+const isMac = DataCollectionUtils.isMac;
+const isWindows = DataCollectionUtils.isWindows;
+const isIos = DataCollectionUtils.isIos;
+const isAndroid = DataCollectionUtils.isAndroid;
+const isWebkit = DataCollectionUtils.isWebkit;
+const isBlink = DataCollectionUtils.isBlink;
+const getBrowserVersion = DataCollectionUtils.getBrowserVersion;
 
-export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, applyMergedInlineStyles, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, enableAllFocusableElements, getActionableElementsInNode, getAddEventKeysResult, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getLogicalChildPopup, getNoJQFocusHandlers, handleActionablePrevTab, handleActionableTab, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isClickthroughDisabled, isElementIntersectingScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFromDefaultSelector, isHomeKeyEvent, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMetaKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSpaceBarKeyEvent, isTabKeyEvent };
+export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, applyMergedInlineStyles, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, enableAllFocusableElements, getActionableElementsInNode, getAddEventKeysResult, getBrowserVersion, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getLogicalChildPopup, getNoJQFocusHandlers, handleActionablePrevTab, handleActionableTab, isAndroid, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isBlink, isChrome, isClickthroughDisabled, isEdge, isElementIntersectingScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFirefox, isFromDefaultSelector, isHomeKeyEvent, isIE, isIos, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMac, isMetaKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSafari, isSpaceBarKeyEvent, isTabKeyEvent, isWebkit, isWindows };

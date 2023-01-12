@@ -10,8 +10,19 @@ export declare const CANCELABLE_ACTION: string;
 export declare const PROPERTY_CHANGED: string;
 export declare const READ_ONLY_PROPERTY_CHANGED: string;
 export declare const DEFAULT_SLOT_PROP: string;
-export declare const GETMD_FLAGS_NONE = 0;
-export declare const GETMD_FLAGS_RO_WRITEBACK = 1;
+export declare enum MDFlags {
+    COMP = 1,
+    PROP = 2,
+    EVENT = 4,
+    SLOT = 8,
+    METHOD = 16,
+    PROP_RO_WRITEBACK = 32,
+    EVENT_DETAIL = 64,
+    SLOT_DATA = 128,
+    METHOD_PARAM = 256,
+    METHOD_RETURN = 512,
+    EXT_ITEMPROPS = 1024
+}
 export declare type ImportAliases = {
     Component?: string;
     ComponentProps?: string;
@@ -56,12 +67,7 @@ export interface ExtendedEventDetailsMetadata extends Metadata.EventDetailItem, 
 }
 export interface ExtendedPropertiesMetadata extends Metadata.ComponentMetadataProperties, ALL_TYPES {
 }
-export declare type PropertyBindingMetadata = Record<string, Metadata.PropertyBinding>;
-export declare type RegistrationOptions = {
-    bindings?: PropertyBindingMetadata;
-};
 export declare type AllMetadataTypes = Metadata.ComponentMetadata | Metadata.ComponentMetadataProperties | Metadata.ComponentMetadataMethods | Metadata.ComponentMetadataEvents | Metadata.ComponentMetadataSlots;
-export declare type NameValuePair = [string, any];
 export declare type ALL_TYPES = {
     type: string;
     reftype?: string;
@@ -69,6 +75,29 @@ export declare type ALL_TYPES = {
     enumValues?: string[];
     isArrayOfObject?: boolean;
     isStringTypeExplicit?: boolean;
+};
+export declare type NameValuePair = [string, any];
+export declare type PropertyBindingMetadata = Record<string, Metadata.PropertyBinding>;
+export declare type RegisteredMethodParam = Omit<Metadata.MethodParam, 'type'>;
+export declare type RegisteredMethodsMetadata = Record<string, Omit<Metadata.ComponentMetadataMethods, 'params' | 'return'> & {
+    params?: Array<RegisteredMethodParam>;
+    apidocDescription?: string;
+    apidocRtnDescription?: string;
+}>;
+export declare type RegisteredMetadata = {
+    bindings?: PropertyBindingMetadata;
+    methods?: RegisteredMethodsMetadata;
+    contexts?: ts.Expression;
+};
+export declare type RegisteredMethodsInfo = {
+    signaturesTypeNode: ts.TypeNode;
+    metadata?: RegisteredMetadata['methods'];
+    metadataNode?: ts.Node;
+};
+export declare type RegisteredOptions = {
+    bindings?: RegisteredMetadata['bindings'];
+    methodsInfo?: RegisteredMethodsInfo;
+    contexts?: RegisteredMetadata['contexts'];
 };
 export declare enum MetadataScope {
     RT_EXTENDED = -1,
@@ -118,6 +147,18 @@ export declare type VCompTranslationBundleInfo = {
     additionalImports: Array<string>;
     bundleMapExpression: ts.Expression;
 };
+export declare class VCompPack {
+    private _packObject;
+    constructor(packObj: Record<string, any>);
+    get name(): string;
+    get version(): string;
+    get jetVersion(): string | undefined;
+    get license(): string | undefined;
+    isStandardPack(): boolean;
+    isMonoPack(): boolean;
+    isJETPack(): boolean;
+    isVCompInPack(fullName: string): boolean;
+}
 export declare type VCompClassInfo = {
     elementName: string;
     className: string;
@@ -125,6 +166,8 @@ export declare type VCompClassInfo = {
     propsInfo: PropsInfo | null;
     additionalImports?: Array<string>;
     translationBundleMapExpression?: ts.Expression;
+    consumedContextsExpression?: ts.Expression;
+    packInfo?: VCompPack;
 };
 export declare type VCompFunctionInfo = {
     compRegisterCall: ts.CallExpression;
@@ -135,9 +178,12 @@ export declare type VCompFunctionInfo = {
     functionName?: string;
     defaultProps?: ts.NodeArray<DefaultPropsElement>;
     propBindings?: PropertyBindingMetadata;
+    methodsInfo?: RegisteredMethodsInfo;
+    contextsExpression?: ts.Expression;
     useComponentPropsForSettableProperties?: boolean;
     additionalImports?: Array<string>;
     translationBundleMapExpression?: ts.Expression;
+    packInfo?: VCompPack;
 };
 export declare type VCompInfo = VCompClassInfo | VCompFunctionInfo;
 export declare function isClassInfo(info: VCompInfo): info is VCompClassInfo;
@@ -152,6 +198,7 @@ export declare type WritebackPropInfo = {
 };
 export declare type MetaUtilObj = {
     componentName: string;
+    componentInfo: VCompInfo;
     typeChecker: ts.TypeChecker;
     rtMetadata: RuntimeMetadata;
     fullMetadata: Metadata.ComponentMetadata;
@@ -168,4 +215,10 @@ export declare type MetaUtilObj = {
     classConsumedBindingsDecorator?: ts.Decorator;
     classProvidedBindingsDecorator?: ts.Decorator;
     functionPropBindings?: PropertyBindingMetadata;
+};
+export declare type TypedefObj = {
+    name?: string;
+    jsdoc?: Record<string, string>;
+    genericsDeclaration?: string;
+    genericsTypeParams?: string;
 };

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -9,7 +9,6 @@
 define(['ojs/ojcore', 'ojs/ojdatasource-common'], function(oj)
 {
   "use strict";
-
 
 
 
@@ -42,6 +41,8 @@ define(['ojs/ojcore', 'ojs/ojdatasource-common'], function(oj)
  * @constructor
  * @final
  * @since 3.0
+ * @ojdeprecated {since: '14.0.0', description: 'JsonDiagramDataSource has been deprecated with the oj-diagram data property,
+ * use DataProvider on nodeData and linkData oj-diagram attributes instead.'}
  */
 oj.JsonDiagramDataSource = function (data, options) {
   this.childDataCallback = options ? options.childData : null;
@@ -50,7 +51,11 @@ oj.JsonDiagramDataSource = function (data, options) {
 };
 
 // Subclass from oj.DiagramDataSource
-oj.Object.createSubclass(oj.JsonDiagramDataSource, oj.DiagramDataSource, 'oj.JsonDiagramDataSource');
+oj.Object.createSubclass(
+  oj.JsonDiagramDataSource,
+  oj.DiagramDataSource,
+  'oj.JsonDiagramDataSource'
+);
 
 /**
  * Returns child data for the given parent.
@@ -82,7 +87,8 @@ oj.Object.createSubclass(oj.JsonDiagramDataSource, oj.DiagramDataSource, 'oj.Jso
  */
 oj.JsonDiagramDataSource.prototype.getData = function (parentData) {
   var childData;
-  if (parentData) { // retrieve child data
+  if (parentData) {
+    // retrieve child data
     childData = parentData.nodes;
     if (childData === undefined && this.childDataCallback) {
       childData = this.childDataCallback(parentData);
@@ -148,13 +154,15 @@ oj.JsonDiagramDataSource.prototype._updateLocalData = function (parentData, chil
           thisRef._updateNodesMap(data);
         }
         if (Array.isArray(data.links)) {
-          thisRef.data.links = Array.isArray(thisRef.data.links) ?
-                                  thisRef.data.links.concat(data.links) : data.links;
+          thisRef.data.links = Array.isArray(thisRef.data.links)
+            ? thisRef.data.links.concat(data.links)
+            : data.links;
         }
         thisRef.handleEvent('ADD', {
           data: data,
           parentId: parentData ? parentData.id : null,
-          index: 0 });
+          index: 0
+        });
       },
       function () {}
     );

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -10,14 +10,14 @@ define(['ojs/ojlogger', 'hammerjs', 'jquery'], function (Logger, Hammer, $) { 'u
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   if (Hammer) {
-      /** @export */
+    /** @export */
     $.fn.ojHammer = function (options) {
       switch (options) {
-          // $(...).ojHammer("instance") returns the Hammer instance previously instantiated on this element via $(...).ojHammer(options), or undefined if none.
+        // $(...).ojHammer("instance") returns the Hammer instance previously instantiated on this element via $(...).ojHammer(options), or undefined if none.
         case 'instance':
           return this.data('ojHammer');
 
-          // $(...).ojHammer("destroy") destroys the Hammer instance and removes it from the node's data store.
+        // $(...).ojHammer("destroy") destroys the Hammer instance and removes it from the node's data store.
         case 'destroy':
           return this.each(function () {
             var $el = $(this);
@@ -35,7 +35,7 @@ define(['ojs/ojlogger', 'hammerjs', 'jquery'], function (Logger, Hammer, $) { 'u
             var $el = $(this);
             if (!$el.data('ojHammer')) {
               const mgr = new Hammer.Manager($el[0], options);
-              $el.on('remove.ojHammer', evt => {
+              $el.on('remove.ojHammer', (evt) => {
                 if (evt.target === $el[0]) {
                   mgr.destroy();
                 }
@@ -55,7 +55,7 @@ define(['ojs/ojlogger', 'hammerjs', 'jquery'], function (Logger, Hammer, $) { 'u
           gesture: data
         });
       };
-    }(Hammer.Manager.prototype.emit));
+    })(Hammer.Manager.prototype.emit);
   } else {
     Logger.warn('Hammer jQuery extension loaded without Hammer.');
   }

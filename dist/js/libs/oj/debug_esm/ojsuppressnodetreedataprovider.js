@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -192,9 +192,7 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
  * @name dispatchEvent
  */
 
-/**
- * End of jsdoc
- */
+// end of jsdoc
 
 class SuppressNodeTreeDataProvider {
     constructor(treeDataProvider, options) {
@@ -213,17 +211,32 @@ class SuppressNodeTreeDataProvider {
             _a = Symbol.asyncIterator,
             _b);
         this.SuppressNodeTreeAsyncIterator = class {
-            constructor(_parent, _baseIterator) {
+            constructor(_parent, _baseIterator, _params) {
                 this._parent = _parent;
                 this._baseIterator = _baseIterator;
+                this._params = _params;
             }
             _fetchNext() {
                 return this._baseIterator.next();
             }
             ['next']() {
-                const promise = this._fetchNext();
-                return promise.then((result) => {
-                    return this._parent._suppressNodeIfEmptyChildrenFirst(result);
+                var _b;
+                const signal = (_b = this._params) === null || _b === void 0 ? void 0 : _b.signal;
+                if (signal && signal.aborted) {
+                    const reason = signal.reason;
+                    return Promise.reject(new DOMException(reason, 'AbortError'));
+                }
+                return new Promise((resolve, reject) => {
+                    if (signal) {
+                        const reason = signal.reason;
+                        signal.addEventListener('abort', (e) => {
+                            return reject(new DOMException(reason, 'AbortError'));
+                        });
+                    }
+                    const promise = this._fetchNext();
+                    return resolve(promise.then((result) => {
+                        return this._parent._suppressNodeIfEmptyChildrenFirst(result);
+                    }));
                 });
             }
         };
@@ -240,10 +253,11 @@ class SuppressNodeTreeDataProvider {
             }
         };
         this.FetchListResult = class {
-            constructor(fetchParameters, data, metadata) {
+            constructor(fetchParameters, data, metadata, totalFilteredRowCount) {
                 this.fetchParameters = fetchParameters;
                 this.data = data;
                 this.metadata = metadata;
+                this.totalFilteredRowCount = totalFilteredRowCount;
             }
         };
         this.FetchByOffsetResults = class {
@@ -287,12 +301,38 @@ class SuppressNodeTreeDataProvider {
         return new this.SuppressNodeTreeAsyncIterable(this, asyncIterable[Symbol.asyncIterator]());
     }
     fetchByOffset(params) {
-        return this.treeDataProvider.fetchByOffset(params).then((result) => {
-            return this._suppressNodeIfEmptyChildrenByOffset(result);
+        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        if (signal && signal.aborted) {
+            const reason = signal.reason;
+            return Promise.reject(new DOMException(reason, 'AbortError'));
+        }
+        return new Promise((resolve, reject) => {
+            if (signal) {
+                const reason = signal.reason;
+                signal.addEventListener('abort', (e) => {
+                    return reject(new DOMException(reason, 'AbortError'));
+                });
+            }
+            return resolve(this.treeDataProvider.fetchByOffset(params).then((result) => {
+                return this._suppressNodeIfEmptyChildrenByOffset(result);
+            }));
         });
     }
     fetchByKeys(params) {
-        return this.treeDataProvider.fetchByKeys(params);
+        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        if (signal && signal.aborted) {
+            const reason = signal.reason;
+            return Promise.reject(new DOMException(reason, 'AbortError'));
+        }
+        return new Promise((resolve, reject) => {
+            if (signal) {
+                const reason = signal.reason;
+                signal.addEventListener('abort', (e) => {
+                    return reject(new DOMException(reason, 'AbortError'));
+                });
+            }
+            return resolve(this.treeDataProvider.fetchByKeys(params));
+        });
     }
     _suppressNodeIfEmptyChildrenByOffset(result) {
         if (result.results && this.options && this.options.suppressNode == 'ifEmptyChildren') {
@@ -334,14 +374,22 @@ class SuppressNodeTreeDataProvider {
                     return Promise.all(promises).then((supressNodes) => {
                         for (let i = 0; i < supressNodes.length; i++) {
                             if (supressNodes[i] === false) {
-                                retItems.push({ data: data[i], metadata: metadata[i] });
+                                retItems.push({
+                                    data: data[i],
+                                    metadata: metadata[i],
+                                    totalFilteredRowCount: result.value.totalFilteredRowCount
+                                });
                             }
                         }
                         return resolve(retItems);
                     });
                 }
                 else {
-                    return { data: result.value.data, metadata: result.value.metadata };
+                    return {
+                        data: result.value.data,
+                        metadata: result.value.metadata,
+                        totalFilteredRowCount: result.value.totalFilteredRowCount
+                    };
                 }
             });
             return promiseItems.then((retItems) => {
@@ -351,7 +399,7 @@ class SuppressNodeTreeDataProvider {
                     retData.push(item.data);
                     retMetadata.push(item.metadata);
                 }
-                return new this.AsyncIteratorYieldResult(new this.FetchListResult(result.value.fetchParameters, retData, retMetadata));
+                return new this.AsyncIteratorYieldResult(new this.FetchListResult(result.value.fetchParameters, retData, retMetadata, result.value.totalFilteredRowCount));
             });
         }
         else {

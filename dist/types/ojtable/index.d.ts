@@ -144,7 +144,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         subId: 'oj-table-cell';
         rowIndex: number;
         columnIndex: number;
-        key: string;
+        key: K;
     } | {
         subId: 'oj-table-footer' | 'oj-table-header';
         index: number;

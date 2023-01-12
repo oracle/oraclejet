@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -36,9 +36,7 @@ import { startDetectContextMenuGesture, stopDetectContextMenuGesture } from 'ojs
  * @ignore
  */
 
-/**
- * End of jsdoc
- */
+// end of jsdoc
 
 /**
  * This picks a strategy for where to put each piece of information
@@ -219,7 +217,7 @@ ComponentMessaging.prototype.close = function () {
  * detached dom memory leak if not removed.
  * @private
  */
- ComponentMessaging.prototype.releaseResources = function () {
+ComponentMessaging.prototype.releaseResources = function () {
   if (this._activated) {
     $.each(this._strategies, function (i, strategy) {
       strategy.releaseResources();
@@ -232,7 +230,7 @@ ComponentMessaging.prototype.close = function () {
  * removed in releaseResources.
  * @private
  */
- ComponentMessaging.prototype.setupResources = function () {
+ComponentMessaging.prototype.setupResources = function () {
   if (this._activated) {
     $.each(this._strategies, function (i, strategy) {
       strategy.setupResources();
@@ -257,8 +255,9 @@ ComponentMessaging.prototype.close = function () {
  * @memberof !oj.ComponentMessaging
  */
 ComponentMessaging.prototype._createMessagingStrategy = function (type, artifactsForType) {
-  var Callback = ComponentMessaging._STRATEGY_TYPE_TO_CALLBACK[type] ||
-      ComponentMessaging._STRATEGY_TYPE_TO_CALLBACK[ComponentMessaging._STRATEGY_TYPE.NONE];
+  var Callback =
+    ComponentMessaging._STRATEGY_TYPE_TO_CALLBACK[type] ||
+    ComponentMessaging._STRATEGY_TYPE_TO_CALLBACK[ComponentMessaging._STRATEGY_TYPE.NONE];
 
   // dynamically instantiate the strategy objects.
   return new Callback(artifactsForType);
@@ -288,7 +287,6 @@ ComponentMessaging.prototype._getComponent = function () {
 ComponentMessaging.prototype._getLauncher = function () {
   return this._launcher || null;
 };
-
 
 /**
  * Returns the jquery element on the component to which aria-invalid
@@ -354,8 +352,7 @@ ComponentMessaging.prototype._isActive = function () {
  * When an array is specified the first display option takes precedence over the second and so on,
  * so we will only have ONE display type per artifact.
  */
-ComponentMessaging.prototype._getResolvedMessagingDisplayOptions =
-function (messagingPreferences) {
+ComponentMessaging.prototype._getResolvedMessagingDisplayOptions = function (messagingPreferences) {
   var strategyToArtifacts = {};
   var artifactStrategyTypeResolved = false;
   var options = this._component.options;
@@ -378,16 +375,22 @@ function (messagingPreferences) {
       for (var j = 0; j < strategyTypes.length; j++) {
         var strategyType = strategyTypes[j];
         if (!artifactStrategyTypeResolved) {
-          artifactStrategyTypeResolved =
-            self._resolveStrategyTypeForArtifact(artifact, strategyType, options,
-              $messagingPreferences);
+          artifactStrategyTypeResolved = self._resolveStrategyTypeForArtifact(
+            artifact,
+            strategyType,
+            options,
+            $messagingPreferences
+          );
         }
       }
     } else if (typeof strategyTypes === 'string') {
       if (!artifactStrategyTypeResolved) {
-        artifactStrategyTypeResolved =
-          self._resolveStrategyTypeForArtifact(artifact, strategyTypes, options,
-            $messagingPreferences);
+        artifactStrategyTypeResolved = self._resolveStrategyTypeForArtifact(
+          artifact,
+          strategyTypes,
+          options,
+          $messagingPreferences
+        );
       }
     }
 
@@ -462,12 +465,11 @@ ComponentMessaging.prototype._getUserAssistanceStrategyToArtifactsObj = function
     let artifact = key + '';
     // we only look at 'string' for 'none'.
     if (typeof strategyTypes === 'string' && strategyTypes === 'none') {
-      artifactPiecesToStrategyObj[artifact] =
-      ComponentMessaging._STRATEGY_TYPE.NONE;
+      artifactPiecesToStrategyObj[artifact] = ComponentMessaging._STRATEGY_TYPE.NONE;
     } else {
       // put it in the user assistance inline
       artifactPiecesToStrategyObj[artifact] =
-      ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE;
+        ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE;
     }
   }
 
@@ -505,8 +507,12 @@ ComponentMessaging.prototype._addLabelStrategy = function ($messagingPreferences
   var artifactKey = 'labelEdge';
   // The strategyTypeLabelEdge will be one of these: oj.ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE*
   var strategyTypeLabelEdge = this._component._ResolveLabelEdgeStrategyType();
-  var artifactStrategyTypeResolved = self._resolveStrategyTypeForArtifact(artifactKey,
-    strategyTypeLabelEdge, this._component.options, $messagingPreferences);
+  var artifactStrategyTypeResolved = self._resolveStrategyTypeForArtifact(
+    artifactKey,
+    strategyTypeLabelEdge,
+    this._component.options,
+    $messagingPreferences
+  );
 
   if (!artifactStrategyTypeResolved) {
     // eslint-disable-next-line no-param-reassign
@@ -518,13 +524,13 @@ ComponentMessaging.prototype._resolveStrategyTypeForArtifact = function (
   artifact,
   strategyType,
   options,
-  $messagingPreferences) {
+  $messagingPreferences
+) {
   var artifactStrategyTypeResolved = false;
   var compPH = options.placeholder;
   switch (strategyType) {
     // placeholder display is special in that it's only supported on 'converterHint'.
-    case ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER :
-
+    case ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER:
       if (artifact === 'converterHint') {
         // if placeholder is the first preference for converterHint, it's used under certain
         // conditions
@@ -551,8 +557,7 @@ ComponentMessaging.prototype._resolveStrategyTypeForArtifact = function (
 
       break;
     // inline display is special in that it's only supported on 'messages'.
-    case ComponentMessaging._STRATEGY_TYPE.INLINE :
-
+    case ComponentMessaging._STRATEGY_TYPE.INLINE:
       if (artifact === 'messages') {
         if (!artifactStrategyTypeResolved) {
           // eslint-disable-next-line no-param-reassign
@@ -566,10 +571,13 @@ ComponentMessaging.prototype._resolveStrategyTypeForArtifact = function (
 
       break;
 
-    case ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE :
-    case ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL :
-      if (artifact === 'labelEdge' && !artifactStrategyTypeResolved
-        && !oj.StringUtils.isEmptyOrUndefined(options.labelHint)) {
+    case ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE:
+    case ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL:
+      if (
+        artifact === 'labelEdge' &&
+        !artifactStrategyTypeResolved &&
+        !oj.StringUtils.isEmptyOrUndefined(options.labelHint)
+      ) {
         // eslint-disable-next-line no-param-reassign
         $messagingPreferences[artifact] = strategyType;
         artifactStrategyTypeResolved = true;
@@ -606,8 +614,7 @@ ComponentMessaging.prototype._initializeMessagingStrategies = function () {
   var strategyToArtifacts = this._strategyToArtifacts();
   var displayInNoteWindow = strategyToArtifacts[ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW];
   var displayNone = strategyToArtifacts[ComponentMessaging._STRATEGY_TYPE.NONE];
-  var displayInPlaceholder =
-      strategyToArtifacts[ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER];
+  var displayInPlaceholder = strategyToArtifacts[ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER];
   var displayInline = strategyToArtifacts[ComponentMessaging._STRATEGY_TYPE.INLINE];
   // these are input components
   var displayLabelEdgeInsideTextField =
@@ -617,7 +624,7 @@ ComponentMessaging.prototype._initializeMessagingStrategies = function () {
     strategyToArtifacts[ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL];
   // these are for user assistance inline that is used in the Redwood theme
   var displayUserAssistanceInline =
-  strategyToArtifacts[ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE];
+    strategyToArtifacts[ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE];
 
   var messagingStrategies = {};
 
@@ -625,30 +632,37 @@ ComponentMessaging.prototype._initializeMessagingStrategies = function () {
     // displayInNoteWindow is an array of the artifacts that want to be displayed in the note window
     // e.g., 'messages', 'converterHints', etc.
     messagingStrategies[ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW] =
-      this._createMessagingStrategy(ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW,
-        displayInNoteWindow);
+      this._createMessagingStrategy(
+        ComponentMessaging._STRATEGY_TYPE.NOTEWINDOW,
+        displayInNoteWindow
+      );
   }
 
   if (displayInPlaceholder.length > 0 && displayLabelEdgeInsideTextField.length === 0) {
     // displayInPlaceholder is an array of the artifacts that want to be displayed in placeholder
     // e.g., 'converterHints'
     messagingStrategies[ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER] =
-      this._createMessagingStrategy(ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER,
-        displayInPlaceholder);
+      this._createMessagingStrategy(
+        ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER,
+        displayInPlaceholder
+      );
   }
 
   if (displayInline.length > 0) {
     // displayInline is an array of the artifacts that want to be displayed in inline
     // e.g., 'messages'
-    messagingStrategies[ComponentMessaging._STRATEGY_TYPE.INLINE] =
-      this._createMessagingStrategy(ComponentMessaging._STRATEGY_TYPE.INLINE, displayInline);
+    messagingStrategies[ComponentMessaging._STRATEGY_TYPE.INLINE] = this._createMessagingStrategy(
+      ComponentMessaging._STRATEGY_TYPE.INLINE,
+      displayInline
+    );
   }
 
   if (displayUserAssistanceInline.length > 0) {
     messagingStrategies[ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE] =
-    this._createMessagingStrategy(
-      ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE,
-      displayUserAssistanceInline);
+      this._createMessagingStrategy(
+        ComponentMessaging._STRATEGY_TYPE.USER_ASSISTANCE_INLINE,
+        displayUserAssistanceInline
+      );
   }
 
   // Create one of these strategies for whatever labelEdge we are using currently
@@ -656,16 +670,20 @@ ComponentMessaging.prototype._initializeMessagingStrategies = function () {
     messagingStrategies[ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE] =
       this._createMessagingStrategy(
         ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE,
-        displayLabelEdgeInsideTextField);
+        displayLabelEdgeInsideTextField
+      );
   } else if (displayLabelEdgeInsideFormControl.length > 0) {
     messagingStrategies[ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL] =
       this._createMessagingStrategy(
         ComponentMessaging._STRATEGY_TYPE.LABEL_EDGE_INSIDE_FORM_CNTRL,
-        displayLabelEdgeInsideFormControl);
+        displayLabelEdgeInsideFormControl
+      );
   }
 
-  messagingStrategies[ComponentMessaging._STRATEGY_TYPE.NONE] =
-    this._createMessagingStrategy(ComponentMessaging._STRATEGY_TYPE.NONE, displayNone);
+  messagingStrategies[ComponentMessaging._STRATEGY_TYPE.NONE] = this._createMessagingStrategy(
+    ComponentMessaging._STRATEGY_TYPE.NONE,
+    displayNone
+  );
 
   this._strategies = messagingStrategies;
 };
@@ -755,7 +773,6 @@ const MessagingStrategy = function (displayOptions) {
 oj.Object.createSubclass(MessagingStrategy, oj.Object, 'oj.MessagingStrategy');
 oj._registerLegacyNamespaceProp('MessagingStrategy', MessagingStrategy);
 
-
 /**
  * Initializes the strategy based on the display options that specify the messaging artifacts that
  * will be displayed by this strategy.
@@ -780,8 +797,7 @@ MessagingStrategy.prototype.activate = function (cm) {
  *
  * @private
  */
-MessagingStrategy.prototype.deactivate = function () {
-};
+MessagingStrategy.prototype.deactivate = function () {};
 
 /**
  * Utility function that closes anything that needs to be closed when oj.Components.subtreeHidden
@@ -789,22 +805,19 @@ MessagingStrategy.prototype.deactivate = function () {
  *
  * @private
  */
-MessagingStrategy.prototype.close = function () {
-};
+MessagingStrategy.prototype.close = function () {};
 
 /**
  *
  * @private
  */
- MessagingStrategy.prototype.setupResources = function () {
-};
+MessagingStrategy.prototype.setupResources = function () {};
 
 /**
  *
  * @private
  */
- MessagingStrategy.prototype.releaseResources = function () {
-};
+MessagingStrategy.prototype.releaseResources = function () {};
 
 /**
  * Reinitializes with the new display options and updates component messaging using the new content.
@@ -829,14 +842,12 @@ MessagingStrategy.prototype.shouldUpdate = function (content) {
   return true;
 };
 
-
 /**
  * Updates component with instance using the content provided.
  *
  * @private
  */
-MessagingStrategy.prototype.update = function () {
-};
+MessagingStrategy.prototype.update = function () {};
 
 // P R O T E C T E D  M E T H O D S
 /**
@@ -963,7 +974,6 @@ MessagingStrategy.prototype.GetValidatorHints = function () {
   return (mc && mc.validatorHint) || [];
 };
 
-
 /**
  * Gets the short description.
  * @return {string} helpInstruction or ""
@@ -1022,8 +1032,10 @@ MessagingStrategy.prototype.ShowValidatorHint = function () {
 };
 
 MessagingStrategy.prototype.ShowTitle = function () {
-  return this._displayOptions.indexOf('title') !== -1 ||
-         this._displayOptions.indexOf('helpInstruction') !== -1;
+  return (
+    this._displayOptions.indexOf('title') !== -1 ||
+    this._displayOptions.indexOf('helpInstruction') !== -1
+  );
 };
 
 /**
@@ -1062,7 +1074,7 @@ MessagingStrategy.prototype.AddAriaDescribedByForInlineMessaging = function (con
     // Get index that id is in the tokens, if at all.
     let index = tokens.indexOf(containerRootId);
     // push id into tokens if it isn't already there
-    if ((index === -1)) {
+    if (index === -1) {
       tokens.push(containerRootId);
     }
     // join the tokens together
@@ -1099,7 +1111,7 @@ MessagingStrategy.prototype.AddDescribedByToElement = function (elem, id) {
  * @instance
  * @private
  */
- MessagingStrategy.prototype.RemoveDescribedByFromElement = function (elem, id) {
+MessagingStrategy.prototype.RemoveDescribedByFromElement = function (elem, id) {
   const attr = 'described-by';
   const currentAttributeValue = elem.getAttribute(attr);
 
@@ -1107,13 +1119,13 @@ MessagingStrategy.prototype.AddDescribedByToElement = function (elem, id) {
   let tokens = currentAttributeValue ? currentAttributeValue.split(/\s+/) : [];
 
   // remove id if it is already there
-  const filteredArray = tokens.filter(token => token !== id);
+  const filteredArray = tokens.filter((token) => token !== id);
   let newValue = filteredArray.join(' ').trim();
-    if (newValue) {
-      elem.setAttribute(attr, newValue); // @HTMLUpdateOK
-    } else {
-      elem.removeAttribute(attr);
-    }
+  if (newValue) {
+    elem.setAttribute(attr, newValue); // @HTMLUpdateOK
+  } else {
+    elem.removeAttribute(attr);
+  }
 };
 
 /**
@@ -1137,7 +1149,7 @@ MessagingStrategy.prototype.RemoveAriaDescribedByForInlineMessaging = function (
     // Get index that id is in the tokens, if at all.
     let index = tokens.indexOf(containerRootId);
     // remove id if it is there.
-    if ((index !== -1)) {
+    if (index !== -1) {
       // remove that from the tokens array
       tokens.splice(index, 1);
     }
@@ -1176,7 +1188,6 @@ MessagingStrategy.prototype._setMessagingContent = function (content) {
   return {};
 };
 
-
 /**
  * A messaging strategy that updates the component theming and accessibility attributes.
  *
@@ -1189,15 +1200,20 @@ const DefaultMessagingStrategy = function (displayOptions) {
   this.Init(displayOptions);
 };
 
-ComponentMessaging.registerMessagingStrategy(ComponentMessaging._STRATEGY_TYPE.NONE,
-  DefaultMessagingStrategy);
+ComponentMessaging.registerMessagingStrategy(
+  ComponentMessaging._STRATEGY_TYPE.NONE,
+  DefaultMessagingStrategy
+);
 
 // TODO: Need to retrieve style selectors from a Style Manager
 DefaultMessagingStrategy._SELECTOR_STATE_INVALID = 'oj-invalid';
 DefaultMessagingStrategy._SELECTOR_STATE_WARNING = 'oj-warning';
 
-oj.Object.createSubclass(DefaultMessagingStrategy, MessagingStrategy,
-  'oj.DefaultMessagingStrategy');
+oj.Object.createSubclass(
+  DefaultMessagingStrategy,
+  MessagingStrategy,
+  'oj.DefaultMessagingStrategy'
+);
 oj._registerLegacyNamespaceProp('DefaultMessagingStrategy', DefaultMessagingStrategy);
 
 /**
@@ -1238,8 +1254,7 @@ DefaultMessagingStrategy.prototype.update = function () {
     removeClasses.push(DefaultMessagingStrategy._SELECTOR_STATE_WARNING);
   }
 
-  jqRoot.removeClass(removeClasses.join(' '))
-    .addClass(addClasses.join(' ')); // classes added to root
+  jqRoot.removeClass(removeClasses.join(' ')).addClass(addClasses.join(' ')); // classes added to root
   // aria-invalid needs to be on an input/textarea
   this.GetContentElement().attr({ 'aria-invalid': invalid });
 };
@@ -1253,12 +1268,12 @@ DefaultMessagingStrategy.prototype.update = function () {
 DefaultMessagingStrategy.prototype.deactivate = function () {
   var jqRoot = this.GetComponent().widget();
 
-  jqRoot.removeClass(DefaultMessagingStrategy._SELECTOR_STATE_INVALID)
+  jqRoot
+    .removeClass(DefaultMessagingStrategy._SELECTOR_STATE_INVALID)
     .removeClass(DefaultMessagingStrategy._SELECTOR_STATE_WARNING);
   this.GetContentElement().removeAttr('aria-invalid');
   DefaultMessagingStrategy.superclass.deactivate.call(this);
 };
-
 
 /**
  * A messaging strategy that uses html5 placeholder (for now) to set/remove placeholder content.
@@ -1272,14 +1287,18 @@ const PlaceholderMessagingStrategy = function (displayOptions) {
   this.Init(displayOptions);
 };
 
-ComponentMessaging.registerMessagingStrategy(ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER,
-  PlaceholderMessagingStrategy);
+ComponentMessaging.registerMessagingStrategy(
+  ComponentMessaging._STRATEGY_TYPE.PLACEHOLDER,
+  PlaceholderMessagingStrategy
+);
 
 // Subclass from oj.MessagingStrategy
-oj.Object.createSubclass(PlaceholderMessagingStrategy, MessagingStrategy,
-  'oj.PlaceholderMessagingStrategy');
+oj.Object.createSubclass(
+  PlaceholderMessagingStrategy,
+  MessagingStrategy,
+  'oj.PlaceholderMessagingStrategy'
+);
 oj._registerLegacyNamespaceProp('PlaceholderMessagingStrategy', PlaceholderMessagingStrategy);
-
 
 /**
  * Initializer
@@ -1553,8 +1572,7 @@ Components.setDefaultOptions = function (options) {
       throw new Error('Invalid default options');
     }
     props[key] = _accumulateValues(props[key] || {}, value, false);
-  }
-  );
+  });
 
   Components._defaultProperties = props;
 };
@@ -1568,9 +1586,8 @@ Components.setDefaultOptions = function (options) {
  * @export
  */
 Components.getDefaultOptions = function () {
-  return (Components._defaultProperties || {});
+  return Components._defaultProperties || {};
 };
-
 
 /**
  * Creates a dynamic getter that can be used as a property value in Components.setDefaultOptions()
@@ -1638,7 +1655,7 @@ Components.__GetWidgetConstructor = function (element, widgetName) {
 
     if (widgetName != null) {
       var func = jelem[widgetName];
-      if ((typeof func) === 'function') {
+      if (typeof func === 'function') {
         return func.bind(jelem);
       }
     }
@@ -1660,11 +1677,9 @@ Components.__GetWidgetConstructor = function (element, widgetName) {
  */
 Components.subtreeAttached = function (node) {
   fixResizeListeners(node);
-  _applyToComponents(node,
-    function (instance) {
-      instance.__handleSubtreeAttached();
-    }
-  );
+  _applyToComponents(node, function (instance) {
+    instance.__handleSubtreeAttached();
+  });
 };
 
 /**
@@ -1681,11 +1696,9 @@ Components.subtreeAttached = function (node) {
  * @alias Components.subtreeDetached
  */
 Components.subtreeDetached = function (node) {
-  _applyToComponents(node,
-    function (instance) {
-      instance.__handleSubtreeDetached();
-    }
-  );
+  _applyToComponents(node, function (instance) {
+    instance.__handleSubtreeDetached();
+  });
 };
 
 /**
@@ -1719,18 +1732,22 @@ Components.subtreeShown = function (node, options) {
 
   unmarkSubtreeHidden(_node);
 
-  _applyHideShowToComponents(_node, function (instance) {
-    CustomElementUtils.allowSlotRelocation(true);
-    try {
-      if (isInitialRender) {
-        instance._NotifyInitShown();
-      } else {
-        instance._NotifyShown();
+  _applyHideShowToComponents(
+    _node,
+    function (instance) {
+      CustomElementUtils.allowSlotRelocation(true);
+      try {
+        if (isInitialRender) {
+          instance._NotifyInitShown();
+        } else {
+          instance._NotifyShown();
+        }
+      } finally {
+        CustomElementUtils.allowSlotRelocation(false);
       }
-    } finally {
-      CustomElementUtils.allowSlotRelocation(false);
-    }
-  }, true);
+    },
+    true
+  );
 };
 
 /**
@@ -1750,14 +1767,18 @@ Components.subtreeHidden = function (node) {
     return;
   }
 
-  _applyHideShowToComponents(_node, function (instance) {
-    CustomElementUtils.allowSlotRelocation(true);
-    try {
-      instance._NotifyHidden();
-    } finally {
-      CustomElementUtils.allowSlotRelocation(false);
-    }
-  }, false);
+  _applyHideShowToComponents(
+    _node,
+    function (instance) {
+      CustomElementUtils.allowSlotRelocation(true);
+      try {
+        instance._NotifyHidden();
+      } finally {
+        CustomElementUtils.allowSlotRelocation(false);
+      }
+    },
+    false
+  );
 
   markSubtreeHidden(_node);
 };
@@ -1791,7 +1812,6 @@ Components.markPendingSubtreeHidden = function (element) {
   element.classList.add(_OJ_PENDING_SUBTREE_HIDDEN_CLASS);
 };
 
-
 /**
  * Called by CCAs and certain custom elements right before they are first rendered.
  * This component will control whether its child subtrees are hidden.
@@ -1815,8 +1835,11 @@ Components.unmarkPendingSubtreeHidden = function (element) {
 Components.isComponentInitialized = function (jelement, widgetName) {
   /** @type {?} */
   var widgets = jelement.data(_OJ_WIDGET_NAMES_DATA);
-  if ($.isArray(widgets) && widgets.indexOf(widgetName) > -1 &&
-      jelement.is('.' + _OJ_COMPONENT_NODE_CLASS)) {
+  if (
+    $.isArray(widgets) &&
+    widgets.indexOf(widgetName) > -1 &&
+    jelement.is('.' + _OJ_COMPONENT_NODE_CLASS)
+  ) {
     return true;
   }
   return false;
@@ -1849,7 +1872,7 @@ Components.__getDefaultOptions = function (hierarchyNames) {
  * initialized.
  * @export
  * @ojtsignore
-*/
+ */
 Components.getComponentElementByNode = function (node) {
   // Temporarily exposing this private flag in order to allow
   // MonkeyTalk to access JET components that are part of the
@@ -1870,7 +1893,7 @@ Components.getComponentElementByNode = function (node) {
  * throws an error when the private, undocumented flag (mtAccessCompositeInternals)
  * is passed to recursive calls of getComponentElementByNode.
  * @private
-*/
+ */
 function _getComponentElementByNode(node, mtAccessCompositeInternals) {
   if (node == null) {
     return null;
@@ -1879,27 +1902,35 @@ function _getComponentElementByNode(node, mtAccessCompositeInternals) {
   // so we need to do an additional isElement check first
   var isElement = node.nodeType === 1;
   // for upstream or indirect dependency we will still rely components being registered on the oj namespace.
-  var containingComposite = (oj$1.Composite && !mtAccessCompositeInternals ?
-                             oj$1.Composite.getContainingComposite(node) : null);
-  if (containingComposite) { // node is in or is a composite, return composite
+  var containingComposite =
+    oj$1.Composite && !mtAccessCompositeInternals ? oj$1.Composite.getContainingComposite(node) : null;
+  if (containingComposite) {
+    // node is in or is a composite, return composite
     return containingComposite;
-  } else if (isElement && node.hasAttribute('data-oj-internal')) { // node is an internal component
-    if (node.parentNode instanceof Element &&
-        node.parentNode.hasAttribute('data-oj-surrogate-id')) { // internal component is a popup
+  } else if (isElement && node.hasAttribute('data-oj-internal')) {
+    // node is an internal component
+    if (
+      node.parentNode instanceof Element &&
+      node.parentNode.hasAttribute('data-oj-surrogate-id')
+    ) {
+      // internal component is a popup
       // eslint-disable-next-line no-param-reassign
       node = document.querySelector('[data-oj-popup-' + node.id + '-parent]'); // retrieves popups parent element
       return _getComponentElementByNode(node, mtAccessCompositeInternals);
     }
     return _getComponentElementByNode(node.parentNode, mtAccessCompositeInternals);
-  } else if (_isComponentElement(node)) { // node is a component element
+  } else if (_isComponentElement(node)) {
+    // node is a component element
     return node;
-  } else if (isElement && node.classList.contains('oj-component')) { // node is component wrapper
+  } else if (isElement && node.classList.contains('oj-component')) {
+    // node is component wrapper
     // eslint-disable-next-line no-param-reassign
     node = node.querySelector('.oj-component-initnode:not([data-oj-internal])') || node;
     if (_isJQueryUI(node)) {
       return node;
     }
-  } else if (isElement && node.hasAttribute('data-oj-containerid')) { // node is non-internal component popup e.g listbox
+  } else if (isElement && node.hasAttribute('data-oj-containerid')) {
+    // node is non-internal component popup e.g listbox
     // eslint-disable-next-line no-param-reassign
     node = document.getElementById(node.getAttribute('data-oj-containerid'));
     return _getComponentElementByNode(node, mtAccessCompositeInternals);
@@ -1917,7 +1948,7 @@ function _getComponentElementByNode(node, mtAccessCompositeInternals) {
  * or null if the node does not have a subId
  * @export
  * @ojtsignore
-*/
+ */
 Components.getSubIdByNode = function (componentElement, node) {
   return Components.callComponentMethod(componentElement, 'getSubIdByNode', node);
 };
@@ -1933,7 +1964,7 @@ Components.getSubIdByNode = function (componentElement, node) {
  * the locator, or null if none is found
  * @export
  * @ojtsignore
-*/
+ */
 Components.getNodeBySubId = function (componentElement, locator) {
   return Components.callComponentMethod(componentElement, 'getNodeBySubId', locator);
 };
@@ -1946,7 +1977,7 @@ Components.getNodeBySubId = function (componentElement, locator) {
  * @return {any} value of option
  * @export
  * @ojtsignore
-*/
+ */
 Components.getComponentOption = function (componentElement, option) {
   if (!_isComponentElement(componentElement)) {
     throw new Error(_NOT_COMP);
@@ -1969,7 +2000,7 @@ Components.getComponentOption = function (componentElement, option) {
  * @return {void}
  * @export
  * @ojtsignore
-*/
+ */
 Components.setComponentOption = function (componentElement, option, value) {
   if (!_isComponentElement(componentElement)) {
     throw new Error(_NOT_COMP);
@@ -1991,7 +2022,7 @@ Components.setComponentOption = function (componentElement, option, value) {
  * @return {any}
  * @export
  * @ojtsignore
-*/
+ */
 // eslint-disable-next-line no-unused-vars
 Components.callComponentMethod = function (componentElement, method, methodArguments) {
   if (!_isComponentElement(componentElement)) {
@@ -2001,8 +2032,10 @@ Components.callComponentMethod = function (componentElement, method, methodArgum
       return componentElement[method].apply(componentElement, [].slice.call(arguments, 2));
     }
   } else {
-    return Components.__GetWidgetConstructor(componentElement)
-      .apply($(componentElement), [].slice.call(arguments, 1));
+    return Components.__GetWidgetConstructor(componentElement).apply(
+      $(componentElement),
+      [].slice.call(arguments, 1)
+    );
   }
   return undefined;
 };
@@ -2045,8 +2078,10 @@ function _applyHideShowToComponents(subtreeRoot, jqCallback, activateDefer) {
       if (node.nodeType === Node.DOCUMENT_NODE) {
         return false; // Walked up to document.  Not hidden
       }
-      if (node.nodeType === Node.ELEMENT_NODE &&
-          node.classList.contains(_OJ_SUBTREE_HIDDEN_CLASS)) {
+      if (
+        node.nodeType === Node.ELEMENT_NODE &&
+        node.classList.contains(_OJ_SUBTREE_HIDDEN_CLASS)
+      ) {
         return true;
       }
       node = node.parentNode;
@@ -2159,8 +2194,7 @@ function _accumulateValues(target, source, valueInArray) {
     }
     // eslint-disable-next-line no-param-reassign
     target[key] = holder;
-  }
-  );
+  });
   return target;
 }
 
@@ -2178,12 +2212,11 @@ function _isJQueryUI(node) {
   return !!Components.__GetWidgetConstructor(node);
 }
 
-
 /**
  * @ignore
  */
 function _isComponentElement(node) {
-  return (_isCompositeOrCustom(node) || _isJQueryUI(node));
+  return _isCompositeOrCustom(node) || _isJQueryUI(node);
 }
 
 /**
@@ -2289,7 +2322,7 @@ oj.CollectionUtils.copyInto(DefinitionalElementBridge.proto, {
       this._CONTEXT = {
         element: element,
         props: this._PROPS_PROXY,
-        unique: unique,
+        unique: unique
       };
       this._CONTEXT.uniqueId = element.id ? element.id : unique;
       this._INSTANCE = new this._EXTENSION._CONSTRUCTOR(this._CONTEXT);
@@ -2330,7 +2363,7 @@ oj.CollectionUtils.copyInto(DefinitionalElementBridge.proto, {
           value = transformPreactValue(this._ELEMENT, propertyMeta, value);
         }
         var previousValue = this._BRIDGE._PROPS[property];
-        if (!ElementUtils.comparePropertyValues(propertyMeta, value, previousValue)) {
+        if (!ElementUtils.comparePropertyValues(propertyMeta.writeback, value, previousValue)) {
           // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
           if (bOuterSet) {
             // eslint-disable-next-line no-param-reassign
@@ -2342,13 +2375,21 @@ oj.CollectionUtils.copyInto(DefinitionalElementBridge.proto, {
           } else {
             this._BRIDGE._PROPS[property] = value;
             oj.BaseCustomElementBridge.__FirePropertyChangeEvent(
-              this._ELEMENT, property, value, previousValue, bOuterSet ? 'external' : 'internal'
+              this._ELEMENT,
+              property,
+              value,
+              previousValue,
+              bOuterSet ? 'external' : 'internal'
             );
             this._BRIDGE.State.dirtyProps.add(property);
           }
         } else {
-          info(CustomElementUtils.getElementInfo(this._ELEMENT) + ": Ignoring property set for property '" +
-            property + "' with same value.");
+          info(
+            CustomElementUtils.getElementInfo(this._ELEMENT) +
+              ": Ignoring property set for property '" +
+              property +
+              "' with same value."
+          );
         }
       }
     }
@@ -2385,8 +2426,12 @@ oj.CollectionUtils.copyInto(DefinitionalElementBridge.proto, {
 
     // Don't add event listener properties for inner props
     if (!propertyMeta._derived) {
-      oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto._propsProto, property,
-                                                               innerGet, innerSet);
+      oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(
+        proto._propsProto,
+        property,
+        innerGet,
+        innerSet
+      );
     }
     oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
   },
@@ -3209,13 +3254,13 @@ CustomElementBridge._METADATA_MAP = {};
 
 class DataProviderFeatureChecker {
     static isDataProvider(dataprovider) {
-        if (dataprovider['fetchFirst']) {
+        if (dataprovider && dataprovider['fetchFirst']) {
             return true;
         }
         return false;
     }
     static isTreeDataProvider(dataprovider) {
-        if (dataprovider['getChildDataProvider']) {
+        if (dataprovider && dataprovider['getChildDataProvider']) {
             return true;
         }
         return false;
@@ -3261,7 +3306,8 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
   }
 };
 
-(function () { // BaseComponent wrapper function, to keep "private static members" private
+(function () {
+  // BaseComponent wrapper function, to keep "private static members" private
   /**
    * @private
    */
@@ -3439,7 +3485,6 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       // Translations for all components are listed and JSDoc'ed in rt\src\main\resources\nls\root\ojtranslations.js.
       // That JSDoc appears in the same generated doc page as this top-level doc.
 
-
       // Events
       /**
        * Fired whenever a supported component option changes, whether due to user interaction or programmatic
@@ -3597,8 +3642,9 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         delete value.id; // remove the remaining supported value
         var unsupportedAttrs = Object.keys(value);
         if (unsupportedAttrs.length) {
-          throw new Error('Unsupported values passed to rootAttributes option: ' +
-                          unsupportedAttrs.toString());
+          throw new Error(
+            'Unsupported values passed to rootAttributes option: ' + unsupportedAttrs.toString()
+          );
         }
       }
     },
@@ -4019,7 +4065,6 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       return this.widgetFullName;
     },
 
-
     /**
      * Compares 2 option values for equality and returns true if they are equal; false otherwise.
      * This method is called before _setOptions()/_internalSetOptions() to prevent an extra call
@@ -4046,7 +4091,6 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
 
       return value1 === value2;
     },
-
 
     /**
      * <p>Retrieves a translated string after inserting optional parameters.
@@ -4097,8 +4141,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       }
       var pattern = this.option(_OJ_TRANSLATIONS_PREFIX + key);
       // pattern could be undefined
-      return (pattern == null) ? key :
-        applyParameters(pattern.toString(), params);
+      return pattern == null ? key : applyParameters(pattern.toString(), params);
     },
 
     // Subclasses should doc their sub-id's in the Sub-ID's section, via the ojsubid tag, not by overriding
@@ -4293,7 +4336,8 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      * overloads, dot notation cannot be used.</caption>
      * $( ".selector" ).ojFoo( "option", { disabled: true, bar: 42 } ); // Foo is Button, Menu, etc.
      */
-    option: function (optionName, value) { // actually varArgs per comment above the JSDoc, but GCC warns unless matches the @param that we wish to doc
+    option: function (optionName, value) {
+      // actually varArgs per comment above the JSDoc, but GCC warns unless matches the @param that we wish to doc
       if (arguments.length === 0) {
         // don't return a reference to the internal hash
         return $.widget.extend({}, this.options);
@@ -4376,8 +4420,12 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         if (changed || !this._CompareOptionValues(option, oldValue, newValue)) {
           newOptions[option] = newValue;
         } else if (this._IsCustomElement()) {
-          info(CustomElementUtils.getElementInfo(this.element[0]) + ": Ignoring property set for property '" +
-            option + "' with same value.");
+          info(
+            CustomElementUtils.getElementInfo(this.element[0]) +
+              ": Ignoring property set for property '" +
+              option +
+              "' with same value."
+          );
         }
       }
 
@@ -4464,16 +4512,14 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         // In the cases where this.element is different than widget(), this.element is more likely to be the right thing, so maybe change
         // default to that.
         // Update: this issue is getting even more awkward now that we have "effectively disabled".  Probably need to refactor this code!
-        this.widget()
-          .toggleClass(_DISABLED, !!value)
-          .attr('aria-disabled', value);
+        this.widget().toggleClass(_DISABLED, !!value).attr('aria-disabled', value);
 
         if (value) {
           this._removeStateClasses(this.widget());
         }
       } else {
         try {
-          var subkey = (flags == null) ? null : flags.subkey;
+          var subkey = flags == null ? null : flags.subkey;
           if (subkey != null) {
             this._settingNestedKey = subkey;
           }
@@ -4529,8 +4575,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
           }
 
           originalEvent = context.originalEvent;
-          writeback = (context.writeback === undefined) ? originalEvent != null :
-            context.writeback;
+          writeback = context.writeback === undefined ? originalEvent != null : context.writeback;
           readOnly = context.readOnly;
           optionMetadata = context.optionMetadata;
           extraData = context.extraData;
@@ -4555,7 +4600,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         updatedFrom: updatedFrom
       };
 
-      var subkey = (flags == null) ? null : flags.subkey;
+      var subkey = flags == null ? null : flags.subkey;
       // Walk previousValue object and find the subproperty previousValue
       if (subkey) {
         var subprops = subkey.split('.');
@@ -4663,9 +4708,11 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       this.element.trigger(jqEvent, eventData);
 
       return {
-        proceed: !(($.isFunction(callback) &&
-                    callback.apply(this.element[0], [jqEvent].concat(eventData)) === false) ||
-                   jqEvent.isDefaultPrevented()),
+        proceed: !(
+          ($.isFunction(callback) &&
+            callback.apply(this.element[0], [jqEvent].concat(eventData)) === false) ||
+          jqEvent.isDefaultPrevented()
+        ),
         event: jqEvent
       };
     },
@@ -4768,7 +4815,6 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       return resolved;
     },
 
-
     /**
      * <p>Sets contextMenu option from DOM if option not set.
      *
@@ -4784,10 +4830,11 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
 
       this._initialCmDomAttr = contextMenu; // TODO: remove this after the _RestoreAttributes() call in destroy() is uncommented
 
-      if (contextMenu && !('contextMenu' in constructorOptions)) { // if app set DOM attr but not option, then set the option from the DOM
-        this.option('contextMenu',
-                    document.getElementById(contextMenu),
-                    { _context: { internalSet: true } }); // writeback not needed since "not in constructorOptions" means "not bound"
+      if (contextMenu && !('contextMenu' in constructorOptions)) {
+        // if app set DOM attr but not option, then set the option from the DOM
+        this.option('contextMenu', document.getElementById(contextMenu), {
+          _context: { internalSet: true }
+        }); // writeback not needed since "not in constructorOptions" means "not bound"
       }
     },
 
@@ -4849,10 +4896,9 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         this._contextMenuGestureInit = contextMenu;
 
         var self = this;
-        startDetectContextMenuGesture(
-          this.widget()[0], function (event, eventType) {
-            self._handleContextMenuGesture(contextMenu, event, eventType);
-          });
+        startDetectContextMenuGesture(this.widget()[0], function (event, eventType) {
+          self._handleContextMenuGesture(contextMenu, event, eventType);
+        });
       }
     },
 
@@ -5075,9 +5121,9 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         var defaults = { launcher: this.element, position: position[eventType] }; // used for fields caller omitted
         var forcedOptions = { initialFocus: 'menu' };
 
-        var mergedOpenOptions = (shallow) ?
-          $.extend(defaults, openOptions, forcedOptions) :
-          $.extend(true, defaults, openOptions, forcedOptions);
+        var mergedOpenOptions = shallow
+          ? $.extend(defaults, openOptions, forcedOptions)
+          : $.extend(true, defaults, openOptions, forcedOptions);
 
         contextMenuNode.__openingContextMenu = true; // Hack.  See todo on this ivar in Menu.open().
         if (contextMenuNode.tagName === 'OJ-MENU') {
@@ -5091,9 +5137,13 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
           // jquery ui needs immediate focus to the menu on open. The contextmenu event is fired on
           // the menu versus the launcher. This logic prevents the context menu event within a 50ms
           // window after the menu is open.
-          var eatEventHandler = function (e) { e.preventDefault(); };
+          var eatEventHandler = function (e) {
+            e.preventDefault();
+          };
           contextMenuNode.addEventListener('contextmenu', eatEventHandler);
-          window.setTimeout(function () { contextMenuNode.removeEventListener('contextmenu', eatEventHandler); }, 50);
+          window.setTimeout(function () {
+            contextMenuNode.removeEventListener('contextmenu', eatEventHandler);
+          }, 50);
         }
         contextMenuNode.__openingContextMenu = false;
       }
@@ -5128,7 +5178,6 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       element.find('.oj-focus-highlight').removeClass('oj-focus-highlight');
       element.find('.oj-active').removeClass('oj-active');
     },
-
 
     /**
      * @private
@@ -5172,10 +5221,15 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       var afterToggle = options.afterToggle || $.noop;
       var markerClass = 'oj-hover';
 
-      element.on('mouseenter' + this.hoverableEventNamespace,
-                 this._hoverStartHandler.bind(this, afterToggle))
-        .on('mouseleave' + this.hoverableEventNamespace,
-            this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle));
+      element
+        .on(
+          'mouseenter' + this.hoverableEventNamespace,
+          this._hoverStartHandler.bind(this, afterToggle)
+        )
+        .on(
+          'mouseleave' + this.hoverableEventNamespace,
+          this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle)
+        );
     },
 
     /**
@@ -5241,26 +5295,35 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
           element[0].addEventListener('touchstart', this._touchstartListener, { passive: true });
         }
         element.on(
-          'touchend'
-          + this.activeableEventNamespace
-          + ' '
-          + 'touchcancel'
-          + this.activeableEventNamespace,
+          'touchend' +
+            this.activeableEventNamespace +
+            ' ' +
+            'touchcancel' +
+            this.activeableEventNamespace,
           this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle)
         );
       }
 
-      element.on('mousedown' + this.activeableEventNamespace,
-                 this._activeStartHandler.bind(this, afterToggle))
-        .on('mouseup' + this.activeableEventNamespace,
-            this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle))
+      element
+        .on(
+          'mousedown' + this.activeableEventNamespace,
+          this._activeStartHandler.bind(this, afterToggle)
+        )
+        .on(
+          'mouseup' + this.activeableEventNamespace,
+          this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle)
+        )
         // mouseenter/mouseleave is for the case where you mousedown, then move mouse
         // out of element, then move mouse back. We want oj-active to disappear when you move
         // outside and reappear when you move back.
-        .on('mouseenter' + this.activeableEventNamespace,
-            this._activeStartHandler.bind(this, afterToggle))
-        .on('mouseleave' + this.activeableEventNamespace,
-            this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle));
+        .on(
+          'mouseenter' + this.activeableEventNamespace,
+          this._activeStartHandler.bind(this, afterToggle)
+        )
+        .on(
+          'mouseleave' + this.activeableEventNamespace,
+          this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle)
+        );
     },
 
     /**
@@ -5304,8 +5367,10 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       }
 
       // do this for either touchstart or real mouse events, but not mouse compatibility event
-      if (!elem.hasClass(_DISABLED) &&
-          (event.type === 'touchstart' || this._isRealMouseEvent(event))) {
+      if (
+        !elem.hasClass(_DISABLED) &&
+        (event.type === 'touchstart' || this._isRealMouseEvent(event))
+      ) {
         elem.addClass('oj-active');
         afterToggleFunction(event.type);
 
@@ -5340,8 +5405,11 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
     _hoverAndActiveEndHandler: function (markerClass, afterToggleFunction, event) {
       // for oj-active we don't care about mouseleave unless it was triggered when _lastActiveElement
       // was set on the currentTarget. (see _activeStartHandler). If that's not the case, return.
-      if (markerClass === 'oj-active' && event.type === 'mouseleave' &&
-          !this._isTargetInActiveElement(event.currentTarget)) {
+      if (
+        markerClass === 'oj-active' &&
+        event.type === 'mouseleave' &&
+        !this._isTargetInActiveElement(event.currentTarget)
+      ) {
         return;
       }
       $(event.currentTarget).removeClass(markerClass);
@@ -5356,8 +5424,10 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      * @private
      */
     _isTargetInActiveElement: function (currentTarget) {
-      return (_lastActiveElement === currentTarget ||
-              (_lastActiveElement != null && $.contains(_lastActiveElement, currentTarget)));
+      return (
+        _lastActiveElement === currentTarget ||
+        (_lastActiveElement != null && $.contains(_lastActiveElement, currentTarget))
+      );
     },
 
     // We no longer use _hoverable, but should still override it to ensure the JQUI impl is not called.
@@ -5626,9 +5696,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      * @instance
      * @protected
      */
-    _NotifyInitShown: function () {
-
-    },
+    _NotifyInitShown: function () {},
 
     /**
      * <p>Notifies the component that its subtree has been made visible programmatically after the component has
@@ -5638,9 +5706,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      * @instance
      * @protected
      */
-    _NotifyShown: function () {
-
-    },
+    _NotifyShown: function () {},
 
     /**
      * <p>Notifies the component that its subtree has been made hidden programmatically after the component has
@@ -5650,9 +5716,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      * @instance
      * @protected
      */
-    _NotifyHidden: function () {
-
-    },
+    _NotifyHidden: function () {},
 
     /**
      * <p>Determines whether this component is effectively disabled, i.e. it has its 'disabled' attribute set to true
@@ -5664,7 +5728,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      * @return {boolean} true if the component has been effectively disabled, false otherwise
      */
     _IsEffectivelyDisabled: function () {
-      return !!((this.options.disabled || this._ancestorDisabled));
+      return !!(this.options.disabled || this._ancestorDisabled);
     },
 
     /**
@@ -5678,7 +5742,6 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
     __setAncestorComponentDisabled: function (disabled) {
       this._ancestorDisabled = disabled;
     },
-
 
     /**
      * @memberof oj.baseComponent
@@ -5698,7 +5761,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         // Since _GetTranslationsSectionName() is a protected method, we can only call it on the widget instance.
         // For superclases, we will assume that their section names can only be their full widget name
 
-        var name = (index === 0) ? self._GetTranslationsSectionName() : proto.widgetFullName;
+        var name = index === 0 ? self._GetTranslationsSectionName() : proto.widgetFullName;
         index += 1;
 
         var section = getComponentTranslations(name);
@@ -5761,10 +5824,15 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       var currVal = constructorOptions[_OJ_TRANSLATIONS_OPTION];
 
       if (translationLoader != null && (currVal === undefined || $.isPlainObject(currVal))) {
-        _defineDynamicProperty(this, undefined, constructorOptions[_OJ_TRANSLATIONS_OPTION],
-                               options, _OJ_TRANSLATIONS_OPTION, translationLoader);
+        _defineDynamicProperty(
+          this,
+          undefined,
+          constructorOptions[_OJ_TRANSLATIONS_OPTION],
+          options,
+          _OJ_TRANSLATIONS_OPTION,
+          translationLoader
+        );
       }
-
 
       // Load options specified with oj.Components.setDefaultOptions()
       this._loadGlobalDefaultOptions(originalDefaults, constructorOptions);
@@ -5781,14 +5849,11 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       var widgetHierNames = [];
 
       // walk up the widget hierarchy
-      this._traverseWidgetHierarchy(
-        function (proto) {
-          widgetHierNames.push(proto.widgetName);
-        }
-      );
+      this._traverseWidgetHierarchy(function (proto) {
+        widgetHierNames.push(proto.widgetName);
+      });
 
       widgetHierNames.push('default');
-
 
       // get properties applicable to this component
       var defaults = Components.__getDefaultOptions(widgetHierNames);
@@ -5813,8 +5878,15 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
           if (defaultValueList) {
             var callback = _getCompoundDynamicGetter(defaultValueList);
             if (callback) {
-              _defineDynamicProperty(this, originalDefaults[prop], val, options,
-                                     prop, callback, contextCallback);
+              _defineDynamicProperty(
+                this,
+                originalDefaults[prop],
+                val,
+                options,
+                prop,
+                callback,
+                contextCallback
+              );
             } else {
               var list = [originalDefaults[prop]].concat(defaultValueList);
               list.push(val);
@@ -6036,45 +6108,47 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       }
 
       if (this.connectedState === undefined) {
-        window.queueMicrotask(function () {
-          if (this.connectedState === state) {
-            if (state === _STATE_CONNECTED) {
-              this._SetupResources();
-            } else {
-              this._ReleaseResources();
+        window.queueMicrotask(
+          function () {
+            if (this.connectedState === state) {
+              if (state === _STATE_CONNECTED) {
+                this._SetupResources();
+              } else {
+                this._ReleaseResources();
+              }
             }
-          }
-          this.connectedState = undefined;
-        }.bind(this));
+            this.connectedState = undefined;
+          }.bind(this)
+        );
       }
       this.connectedState = state;
 
       return true;
     },
 
-   /**
-    * Method called by the CustomElementBridge to notify the component of changes to
-    * any watched attributes registered in its metadata extension._WATCHED_ATTRS property.
-    * @param {string} attr The name of the watched attribute
-    * @param {string} oldValue The old attribute value
-    * @param {string} newValue The new attribute value
-    * @memberof oj.baseComponent
-    * @instance
-    * @private
-    */
+    /**
+     * Method called by the CustomElementBridge to notify the component of changes to
+     * any watched attributes registered in its metadata extension._WATCHED_ATTRS property.
+     * @param {string} attr The name of the watched attribute
+     * @param {string} oldValue The old attribute value
+     * @param {string} newValue The new attribute value
+     * @memberof oj.baseComponent
+     * @instance
+     * @private
+     */
     __handleWatchedAttribute: function (attr, oldValue, newValue) {
       this._WatchedAttributeChanged(attr, oldValue, newValue);
     },
 
-   /**
-    * Method for components to override in order to handle changes to watched attributes.
-    * @param {string} attr The name of the watched attribute
-    * @param {string} oldValue The old attribute value
-    * @param {string} newValue The new attribute value
-    * @memberof oj.baseComponent
-    * @instance
-    * @protected
-    */
+    /**
+     * Method for components to override in order to handle changes to watched attributes.
+     * @param {string} attr The name of the watched attribute
+     * @param {string} oldValue The old attribute value
+     * @param {string} newValue The new attribute value
+     * @memberof oj.baseComponent
+     * @instance
+     * @protected
+     */
     // eslint-disable-next-line no-unused-vars
     _WatchedAttributeChanged: function (attr, oldValue, newValue) {},
 
@@ -6100,7 +6174,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      */
     GetFocusElement: function () {
       return this.element[0];
-    },
+    }
 
     /**
      * Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app
@@ -6138,8 +6212,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
   // directly by page authors
 
   delete $.fn[_BASE_COMPONENT];
-}()); // end of BaseComponent wrapper function
-
+})(); // end of BaseComponent wrapper function
 
 // -----------------------------------------------------------------------------
 // End of baseComponent, start of other content
@@ -6192,7 +6265,6 @@ oj.__registerWidget = function (name, base, prototype, isHidden) {
   }
 };
 
-
 /**
  * @param {Object} self
  * @param {Object|undefined} originalDefaultValue
@@ -6204,7 +6276,13 @@ oj.__registerWidget = function (name, base, prototype, isHidden) {
  * @private
  */
 function _defineDynamicProperty(
-  self, originalDefaultValue, constructorValue, options, prop, getter, contextCallback
+  self,
+  originalDefaultValue,
+  constructorValue,
+  options,
+  prop,
+  getter,
+  contextCallback
 ) {
   var override = constructorValue;
   var replaced = false;
@@ -6237,13 +6315,13 @@ function _defineDynamicProperty(
 
       if (self._settingNestedKey != null) {
         overriddenSubkeys[self._settingNestedKey] = true;
-      } else { // The entire option has been replaced
+      } else {
+        // The entire option has been replaced
         replaced = true;
       }
     },
     enumerable: true
-  }
-                       );
+  });
 }
 
 /**
@@ -6252,7 +6330,7 @@ function _defineDynamicProperty(
 function _getCompoundDynamicGetter(values) {
   if (values.length === 1) {
     var val = values[0];
-    return (val instanceof __ojDynamicGetter) ? val.getCallback() : null;
+    return val instanceof __ojDynamicGetter ? val.getCallback() : null;
   }
 
   var hasGetters = false;
@@ -6343,9 +6421,12 @@ function _mergeOptionLayers(values, overriddenSubkeys) {
       if ($.isPlainObject(value)) {
         var input = $.isPlainObject(result) ? [result, value] : [value];
         // The last object (overrides) is always fully merged in
-        result = _mergeObjectsWithExclusions({}, input,
-                                             (i === values.length - 1) ? null : overriddenSubkeys,
-                                             null);
+        result = _mergeObjectsWithExclusions(
+          {},
+          input,
+          i === values.length - 1 ? null : overriddenSubkeys,
+          null
+        );
       } else {
         result = value;
       }
@@ -6542,7 +6623,7 @@ $.cleanData = (function (orig) {
       orig(nonCustomElements);
     }
   };
-}($.cleanData));
+})($.cleanData);
 
 // Override addClass + removeClass to use classList instead of add/removeAttribute in order
 // to avoid conflicting with fixes to work with Preact's class patching logic
@@ -6597,7 +6678,6 @@ $.fn.removeClass = function (value) {
  */
 const Test = {};
 oj._registerLegacyNamespaceProp('Test', Test);
-
 
 /**
  * A global application flag that can be set by a test to indicate that all page startup processing is done

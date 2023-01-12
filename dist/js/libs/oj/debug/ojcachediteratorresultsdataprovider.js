@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -11,7 +11,7 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
 
     /**
      * @license
-     * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+     * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
      * Licensed under The Universal Permissive License (UPL), Version 1.0
      * @ignore
      */
@@ -146,9 +146,7 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
      * @name dispatchEvent
      */
 
-    /**
-     * End of jsdoc
-     */
+    // end of jsdoc
 
     class CachedIteratorResultsDataProvider {
         constructor(dataProvider, options) {
@@ -184,14 +182,27 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
                 ['next']() {
                     const params = this.params;
                     const size = (params === null || params === void 0 ? void 0 : params.size) ? params.size : -1;
-                    if (this._needLocalRowCount && this._cachedOffset === 0) {
-                        return this._checkCachedParamsAndIterate(params, -1).then((result) => {
-                            return this._getResult(params, size, this._parent.cache.getSize());
-                        });
+                    const signal = params === null || params === void 0 ? void 0 : params.signal;
+                    if (signal && signal.aborted) {
+                        const reason = signal.reason;
+                        return Promise.reject(new DOMException(reason, 'AbortError'));
                     }
-                    else {
-                        return this._getResult(params, size, this._needLocalRowCount ? this._parent.cache.getSize() : undefined);
-                    }
+                    return new Promise((resolve, reject) => {
+                        if (signal) {
+                            const reason = signal.reason;
+                            signal.addEventListener('abort', (e) => {
+                                return reject(new DOMException(reason, 'AbortError'));
+                            });
+                        }
+                        if (this._needLocalRowCount && this._cachedOffset === 0) {
+                            return resolve(this._checkCachedParamsAndIterate(params, -1).then((result) => {
+                                return this._getResult(params, size, this._parent.cache.getSize());
+                            }));
+                        }
+                        else {
+                            return resolve(this._getResult(params, size, this._needLocalRowCount ? this._parent.cache.getSize() : undefined));
+                        }
+                    });
                 }
                 _getResult(params, size, totalFilteredRowCount) {
                     let result;
@@ -199,17 +210,14 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
                         if (this.cache.isDone()) {
                             result = this.cache.getDataList(params, this._cachedOffset);
                             this._cachedOffset = this._cachedOffset + result.data.length;
-                            return Promise.resolve(new this._parent.CacheAsyncIteratorReturnResult(result, totalFilteredRowCount));
+                            return Promise.resolve(this._getFinalResult(result, totalFilteredRowCount));
                         }
                     }
                     else {
                         if (this.cache.getSize() >= this._cachedOffset + size || this.cache.isDone()) {
                             result = this.cache.getDataList(params, this._cachedOffset);
                             this._cachedOffset = this._cachedOffset + result.data.length;
-                            if (this._cachedOffset < this.cache.getSize() || !this.cache.isDone()) {
-                                return Promise.resolve(new this._parent.CacheAsyncIteratorYieldResult(result, totalFilteredRowCount));
-                            }
-                            return Promise.resolve(new this._parent.CacheAsyncIteratorReturnResult(result, totalFilteredRowCount));
+                            return Promise.resolve(this._getFinalResult(result, totalFilteredRowCount));
                         }
                         else if (this._cachedOffset > 0) {
                             return new Promise((resolve, reject) => {
@@ -233,25 +241,21 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
                             }).then(() => {
                                 return this._checkCachedParamsAndIterate(params, size).then((result) => {
                                     this._cachedOffset = this._parent._getSharedIteratorState().fetchOffset;
-                                    if (result.done) {
-                                        return new this._parent.CacheAsyncIteratorReturnResult(result.value, totalFilteredRowCount);
-                                    }
-                                    else {
-                                        return new this._parent.CacheAsyncIteratorYieldResult(result.value, totalFilteredRowCount);
-                                    }
+                                    return Promise.resolve(this._getFinalResult(result.value, totalFilteredRowCount));
                                 });
                             });
                         }
                     }
                     return this._checkCachedParamsAndIterate(params, size).then((result) => {
                         this._cachedOffset = this._parent._getSharedIteratorState().fetchOffset;
-                        if (result.done) {
-                            return new this._parent.CacheAsyncIteratorReturnResult(result.value, totalFilteredRowCount);
-                        }
-                        else {
-                            return new this._parent.CacheAsyncIteratorYieldResult(result.value, totalFilteredRowCount);
-                        }
+                        return Promise.resolve(this._getFinalResult(result.value, totalFilteredRowCount));
                     });
+                }
+                _getFinalResult(result, totalFilteredRowCount) {
+                    var _b;
+                    return ((_b = result === null || result === void 0 ? void 0 : result.data) === null || _b === void 0 ? void 0 : _b.length) > 0
+                        ? new this._parent.CacheAsyncIteratorYieldResult(result, totalFilteredRowCount)
+                        : new this._parent.CacheAsyncIteratorReturnResult(result, totalFilteredRowCount);
                 }
                 _checkCachedParamsAndIterate(params, size) {
                     let asyncIteratorFetchPromise;
@@ -363,46 +367,76 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
         fetchByKeys(params) {
             const finalResults = new Map();
             const neededKeys = new Set();
-            const cacheResults = this.cache.getDataByKeys(params);
-            params.keys.forEach((key) => {
-                const item = cacheResults.results.get(key);
-                if (item) {
-                    finalResults.set(key, item);
+            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            if (signal && signal.aborted) {
+                const reason = signal.reason;
+                return Promise.reject(new DOMException(reason, 'AbortError'));
+            }
+            return new Promise((resolve, reject) => {
+                if (signal) {
+                    const reason = signal.reason;
+                    signal.addEventListener('abort', (e) => {
+                        return reject(new DOMException(reason, 'AbortError'));
+                    });
+                }
+                const cacheResults = this.cache.getDataByKeys(params);
+                params.keys.forEach((key) => {
+                    const item = cacheResults.results.get(key);
+                    if (item) {
+                        finalResults.set(key, item);
+                    }
+                    else {
+                        neededKeys.add(key);
+                    }
+                });
+                if (neededKeys.size === 0) {
+                    return resolve({ fetchParameters: params, results: finalResults });
                 }
                 else {
-                    neededKeys.add(key);
+                    const newParams = {
+                        attributes: params.attributes,
+                        keys: neededKeys,
+                        scope: params.scope
+                    };
+                    return resolve(this.dataProvider.fetchByKeys(newParams).then((fetchByKeysResults) => {
+                        fetchByKeysResults.results.forEach((item, key) => {
+                            finalResults.set(key, item);
+                        });
+                        return { fetchParameters: params, results: finalResults };
+                    }));
                 }
             });
-            if (neededKeys.size === 0) {
-                return Promise.resolve({ fetchParameters: params, results: finalResults });
-            }
-            else {
-                const newParams = { attributes: params.attributes, keys: neededKeys, scope: params.scope };
-                return this.dataProvider.fetchByKeys(newParams).then((fetchByKeysResults) => {
-                    fetchByKeysResults.results.forEach((item, key) => {
-                        finalResults.set(key, item);
-                    });
-                    return { fetchParameters: params, results: finalResults };
-                });
-            }
         }
         fetchByOffset(params) {
             const size = params.size ? params.size : CachedIteratorResultsDataProvider._DEFAULT_SIZE;
-            if (CachedIteratorResultsDataProvider._compareCachedFetchParameters(params, this._lastFetchParams) &&
-                params.offset + size <= this.cache.getSize()) {
-                const updatedParams = JSON.parse(JSON.stringify(params, (key, value) => {
-                    if (key.startsWith('_')) {
-                        return undefined;
-                    }
-                    return value;
-                }));
-                updatedParams.size = size;
-                const results = this.cache.getDataByOffset(updatedParams);
-                if (results) {
-                    return Promise.resolve(results);
-                }
+            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            if (signal && signal.aborted) {
+                const reason = signal.reason;
+                return Promise.reject(new DOMException(reason, 'AbortError'));
             }
-            return this.dataProvider.fetchByOffset(params);
+            return new Promise((resolve, reject) => {
+                if (signal) {
+                    const reason = signal.reason;
+                    signal.addEventListener('abort', (e) => {
+                        return reject(new DOMException(reason, 'AbortError'));
+                    });
+                }
+                if (CachedIteratorResultsDataProvider._compareCachedFetchParameters(params, this._lastFetchParams) &&
+                    params.offset + size <= this.cache.getSize()) {
+                    const updatedParams = JSON.parse(JSON.stringify(params, (key, value) => {
+                        if (key.startsWith('_')) {
+                            return undefined;
+                        }
+                        return value;
+                    }));
+                    updatedParams.size = size;
+                    const results = this.cache.getDataByOffset(updatedParams);
+                    if (results) {
+                        return resolve(results);
+                    }
+                }
+                return resolve(this.dataProvider.fetchByOffset(params));
+            });
         }
         fetchFirst(params) {
             if (!CachedIteratorResultsDataProvider._compareCachedFetchParameters(params, this._lastFetchParams)) {

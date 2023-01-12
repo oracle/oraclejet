@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -104,7 +104,6 @@ Logger._METHOD_INFO = 'info';
 Logger._METHOD_LOG = 'log';
 Logger._defaultOptions = { level: Logger.LEVEL_ERROR, writer: null };
 Logger._options = Logger._defaultOptions;
-
 
 /* public members*/
 /**
@@ -220,7 +219,8 @@ Logger.option = function (key, value) {
   // setters
   if (typeof key === 'string') {
     Logger._options[key] = value;
-  } else { // case when all options are set in one call
+  } else {
+    // case when all options are set in one call
     var options = key;
     keys = Object.keys(options);
     for (i = 0; i < keys.length; i++) {
@@ -243,7 +243,7 @@ Logger._write = function (level, method, args) {
 
   var writer = Logger._getWriter();
   if (writer != null) {
-    if (args.length === 1 && (args[0] instanceof Function)) {
+    if (args.length === 1 && args[0] instanceof Function) {
       var msg = args[0]();
       // eslint-disable-next-line no-param-reassign
       args = [msg];

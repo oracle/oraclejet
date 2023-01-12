@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -240,9 +240,7 @@ import { warn } from 'ojs/ojlogger';
  * @name dispatchEvent
  */
 
-/**
- * End of jsdoc
- */
+// end of jsdoc
 
 class JoiningDataProvider {
     constructor(baseDataProvider, options) {
@@ -272,8 +270,22 @@ class JoiningDataProvider {
                 this._params = _params;
             }
             _fetchNext() {
-                return this._baseIterator.next().then((result) => {
-                    return result;
+                var _b;
+                const signal = (_b = this._params) === null || _b === void 0 ? void 0 : _b.signal;
+                if (signal && signal.aborted) {
+                    const reason = signal.reason;
+                    return Promise.reject(new DOMException(reason, 'AbortError'));
+                }
+                return new Promise((resolve, reject) => {
+                    if (signal) {
+                        const reason = signal.reason;
+                        signal.addEventListener('abort', (e) => {
+                            return reject(new DOMException(reason, 'AbortError'));
+                        });
+                    }
+                    return resolve(this._baseIterator.next().then((result) => {
+                        return result;
+                    }));
                 });
             }
             ['next']() {
@@ -357,27 +369,40 @@ class JoiningDataProvider {
         else {
             this._mapJoinAttributes = null;
         }
-        return this.baseDataProvider.fetchByKeys(baseParams).then((baseResults) => {
-            const results = new ojMap();
-            if (baseResults != undefined && baseResults.results != undefined) {
-                const data = [];
-                const metaData = [];
-                const keyValues = [];
-                let i = 0;
-                params.keys.forEach((key) => {
-                    keyValues[i] = key;
-                    i++;
-                });
-                this._fetchByKeyResultsToArray(baseResults, keyValues, metaData, data);
-                return this._joiningData(data, this.options).then((joinData) => {
-                    i = 0;
-                    params.keys.forEach((key) => {
-                        results.set(key, new this.Item(this, metaData[i], joinData[i]));
-                        i++;
-                    });
-                    return new this.FetchByKeysResults(this, params, results);
+        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        if (signal && signal.aborted) {
+            const reason = signal.reason;
+            return Promise.reject(new DOMException(reason, 'AbortError'));
+        }
+        return new Promise((resolve, reject) => {
+            if (signal) {
+                const reason = signal.reason;
+                signal.addEventListener('abort', (e) => {
+                    return reject(new DOMException(reason, 'AbortError'));
                 });
             }
+            resolve(this.baseDataProvider.fetchByKeys(baseParams).then((baseResults) => {
+                const results = new ojMap();
+                if (baseResults != undefined && baseResults.results != undefined) {
+                    const data = [];
+                    const metaData = [];
+                    const keyValues = [];
+                    let i = 0;
+                    params.keys.forEach((key) => {
+                        keyValues[i] = key;
+                        i++;
+                    });
+                    this._fetchByKeyResultsToArray(baseResults, keyValues, metaData, data);
+                    return this._joiningData(data, this.options).then((joinData) => {
+                        i = 0;
+                        params.keys.forEach((key) => {
+                            results.set(key, new this.Item(this, metaData[i], joinData[i]));
+                            i++;
+                        });
+                        return new this.FetchByKeysResults(this, params, results);
+                    });
+                }
+            }));
         });
     }
     fetchByOffset(params) {
@@ -396,24 +421,37 @@ class JoiningDataProvider {
         else {
             this._mapJoinAttributes = null;
         }
-        return this.baseDataProvider
-            .fetchByOffset(baseParams)
-            .then((baseResult) => {
-            if (baseResult.results != undefined) {
-                const metaData = [];
-                const data = [];
-                for (let i = 0; i < baseResult.results.length; i++) {
-                    metaData[i] = baseResult.results[i].metadata;
-                    data[i] = baseResult.results[i].data;
-                }
-                const resultArray = [];
-                return this._joiningData(data, this.options).then((joinData) => {
-                    for (let i = 0; i < baseResult.results.length; i++) {
-                        resultArray[i] = new this.Item(this, metaData[i], joinData[i]);
-                    }
-                    return new this.FetchByOffsetResults(this, params, resultArray, baseResult.done);
+        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        if (signal && signal.aborted) {
+            const reason = signal.reason;
+            return Promise.reject(new DOMException(reason, 'AbortError'));
+        }
+        return new Promise((resolve, reject) => {
+            if (signal) {
+                const reason = signal.reason;
+                signal.addEventListener('abort', (e) => {
+                    return reject(new DOMException(reason, 'AbortError'));
                 });
             }
+            return resolve(this.baseDataProvider
+                .fetchByOffset(baseParams)
+                .then((baseResult) => {
+                if (baseResult.results != undefined) {
+                    const metaData = [];
+                    const data = [];
+                    for (let i = 0; i < baseResult.results.length; i++) {
+                        metaData[i] = baseResult.results[i].metadata;
+                        data[i] = baseResult.results[i].data;
+                    }
+                    const resultArray = [];
+                    return this._joiningData(data, this.options).then((joinData) => {
+                        for (let i = 0; i < baseResult.results.length; i++) {
+                            resultArray[i] = new this.Item(this, metaData[i], joinData[i]);
+                        }
+                        return new this.FetchByOffsetResults(this, params, resultArray, baseResult.done);
+                    });
+                }
+            }));
         });
     }
     containsKeys(params) {

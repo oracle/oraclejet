@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -48,7 +48,7 @@ var __oj_accordion_metadata =
   __oj_accordion_metadata.extension._WIDGET_NAME = 'ojAccordion';
   __oj_accordion_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
   oj.CustomElementBridge.register('oj-accordion', { metadata: __oj_accordion_metadata });
-}());
+})();
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -69,6 +69,7 @@ var __oj_accordion_metadata =
  * @ojvbdefaultcolumns 3
  * @ojvbmincolumns 1
  *
+ * @ojoracleicon 'oj-ux-ico-accordion'
  * @ojuxspecs ['accordion']
  *
  * @classdesc
@@ -238,9 +239,9 @@ var __oj_accordion_metadata =
  * @memberof oj.ojAccordion
  */
 
- //-----------------------------------------------------------------
- //                        Widget Code
- //-----------------------------------------------------------------
+//-----------------------------------------------------------------
+//                        Widget Code
+//-----------------------------------------------------------------
 
 (function () {
   const OJA_COLLAPSIBLE = 'oj-accordion-collapsible';
@@ -251,11 +252,9 @@ var __oj_accordion_metadata =
 
   const OJ_COLLAPSIBLE_CLASS = '.oj-collapsible';
 
-  oj.__registerWidget('oj.ojAccordion', $.oj.baseComponent,
-    {
-      widgetEventPrefix: 'oj',
-      options:
-      {
+  oj.__registerWidget('oj.ojAccordion', $.oj.baseComponent, {
+    widgetEventPrefix: 'oj',
+    options: {
       /**
        * Allow multiple collapsibles to be open at the same time.
        * Note: if multiple is true, the beforeCollapse/beforeExpand/collapse/expand events will not be fired by the accordion. They are however fired by the collapsibles.
@@ -276,786 +275,792 @@ var __oj_accordion_metadata =
        * // setter
        * myAccordion.multiple=true;
        */
-        multiple: false,
-
-        /**
-         * Array contains either string ids or numeric zero-based indices or objects containing string id and/or numeric index of the collapsibles that should be expanded.<p>
-         * Setter value: array of either string ids or numeric indices or objects containing either string id or numeric index or both.  If the object contains both id and index, numeric index takes precedence.<p>
-         * Getter value: array of objects containing numeric index and string id, if available. If an expanded collapsible has a page author provided id, that id is returned.<p>
-         *
-         * Note: The default value of null means that accordion doesn't modify the expanded state of its child collapsibles.
-         * When the value is specified, it overrides the expanded state of its child collapsibles.<p>
-         *
-         * @expose
-         * @memberof oj.ojAccordion
-         * @instance
-         * @ojshortdesc A list of expanded child collapsible items.
-         * @type {Array.<string>|Array.<number>|Array.<Object>|null}
-         * @ojsignature {target: "Accessor", value: {GetterType: "Array<{id?: string, index?: number}>|null", SetterType: "Array<string>|Array<number>|Array<{id?: string, index?: number}>|null"}, jsdocOverride: true}
-         * @ojwriteback
-         * @default null
-         *
-         * @example <caption>Initialize the accordion with the
-         * <code class="prettyprint">expanded</code> attribute specified:</caption>
-         * &lt;oj-accordion expanded="['collapsible2']">&lt;/oj-accordion>
-         *
-         * @example <caption>Get or set the <code class="prettyprint">expanded</code> property
-         * after initialization:</caption>
-         * // getter
-         * var expanded = myAccordion.expanded;
-         *
-         * // setter
-         * myAccordion.expanded=['collapsible1'];
-         *
-         * @ojtsexample <caption>set Or get
-         * <code class="prettyprint">expanded</code> property:</caption>
-         * let elem = document.getElementById('accordion') as ojAccordion;
-         * //set expanded to an array of objects
-         * elem.expanded = [{id: "c2"},{id: "c3"}];
-         * //or
-         * elem.set('expanded', [{id: "c2"},{id: "c3"}]);
-         *
-         * //set expanded to an array of string
-         * //elem.expanded = ["c1", "c2"]. Please note this wont compile. Use the format below
-         * elem.set('expanded', ["c1", "c2"]);
-         *
-         * //set expanded to an array of number
-         * //elem.expanded = [2,3]. Please note this wont compile. Use the format below
-         * elem.set('expanded', [2, 3]);
-         *
-         * //get expanded property value
-         * let expanded = elem.expanded; //This is guaranteed to be of the type Array<{id?: string, index?: number}>|null
-         *
-         * //reset the value of expanded to its default,
-         * elem.unset('expanded');
-         *
-         */
-        expanded: null,
-
-        // callbacks
-        /**
-         * Triggered immediately before any collapsible in the accordion is expanded.
-         * Call <code class="prettyprint">event.preventDefault()</code> in the event listener to veto the event, which prevents the content from expanding.
-         * If multiple is true, the beforeExpand event will not be fired by the accordion.
-         *
-         * @expose
-         * @event
-         * @memberof oj.ojAccordion
-         * @instance
-         * @ojshortdesc Triggered immediately before any collapsible in the accordion is expanded.
-         * @ojcancelable
-         * @property {Element} toCollapsible The collapsible being expanded.
-         * @property {Element} fromCollapsible The collapsible being collapsed.
-         */
-        beforeExpand: null,
-
-        /**
-         * Triggered after the accordion has been expanded (after animation completes).
-         * The expand can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
-         * If multiple is true, the expand event will not be fired by the accordion.
-         *
-         * @expose
-         * @event
-         * @memberof oj.ojAccordion
-         * @instance
-         * @ojshortdesc Triggered after any collapsible in the accordion is expanded.
-         * @property {Element} toCollapsible The collapsible being expanded.
-         * @property {Element} fromCollapsible The collapsible being collapsed.
-         */
-        expand: null,
-
-        /**
-         * Triggered immediately before any collapsible in the accordion is collapsed.
-         * Call <code class="prettyprint">event.preventDefault()</code> in the event listener to veto the event, which prevents the content from collapsing.
-         * If multiple is true, the beforeCollapse event will not be fired by the accordion.
-         *
-         * @expose
-         * @event
-         * @memberof oj.ojAccordion
-         * @instance
-         * @ojshortdesc Triggered immediately before any collapsible in the accordion is collapsed.
-         * @ojcancelable
-         * @property {Element} toCollapsible The collapsible being expanded.
-         * @property {Element} fromCollapsible The collapsible being collapsed.
-         */
-        beforeCollapse: null,
-
-        /**
-         * Triggered after any collapsible in the accordion has been collapsed (after animation completes).
-         * The collapse can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
-         * If multiple is true, the collapse event will not be fired by the accordion.
-         *
-         * @expose
-         * @event
-         * @memberof oj.ojAccordion
-         * @instance
-         * @ojshortdesc Triggered after any collapsible in the accordion has been collapsed.
-         * @property {Element} toCollapsible The collapsible being expanded.
-         * @property {Element} fromCollapsible The collapsible being collapsed.
-         */
-        collapse: null
-
-      },
+      multiple: false,
 
       /**
+       * Array contains either string ids or numeric zero-based indices or objects containing string id and/or numeric index of the collapsibles that should be expanded.<p>
+       * Setter value: array of either string ids or numeric indices or objects containing either string id or numeric index or both.  If the object contains both id and index, numeric index takes precedence.<p>
+       * Getter value: array of objects containing numeric index and string id, if available. If an expanded collapsible has a page author provided id, that id is returned.<p>
+       *
+       * Note: The default value of null means that accordion doesn't modify the expanded state of its child collapsibles.
+       * When the value is specified, it overrides the expanded state of its child collapsibles.<p>
+       *
+       * @expose
        * @memberof oj.ojAccordion
        * @instance
-       * @protected
-       * @override
+       * @ojshortdesc A list of expanded child collapsible items.
+       * @type {Array.<string>|Array.<number>|Array.<Object>|null}
+       * @ojsignature {target: "Accessor", value: {GetterType: "Array<{id?: string, index?: number}>|null", SetterType: "Array<string>|Array<number>|Array<{id?: string, index?: number}>|null"}, jsdocOverride: true}
+       * @ojwriteback
+       * @default null
+       *
+       * @example <caption>Initialize the accordion with the
+       * <code class="prettyprint">expanded</code> attribute specified:</caption>
+       * &lt;oj-accordion expanded="['collapsible2']">&lt;/oj-accordion>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">expanded</code> property
+       * after initialization:</caption>
+       * // getter
+       * var expanded = myAccordion.expanded;
+       *
+       * // setter
+       * myAccordion.expanded=['collapsible1'];
+       *
+       * @ojtsexample <caption>set Or get
+       * <code class="prettyprint">expanded</code> property:</caption>
+       * let elem = document.getElementById('accordion') as ojAccordion;
+       * //set expanded to an array of objects
+       * elem.expanded = [{id: "c2"},{id: "c3"}];
+       * //or
+       * elem.set('expanded', [{id: "c2"},{id: "c3"}]);
+       *
+       * //set expanded to an array of string
+       * //elem.expanded = ["c1", "c2"]. Please note this wont compile. Use the format below
+       * elem.set('expanded', ["c1", "c2"]);
+       *
+       * //set expanded to an array of number
+       * //elem.expanded = [2,3]. Please note this wont compile. Use the format below
+       * elem.set('expanded', [2, 3]);
+       *
+       * //get expanded property value
+       * let expanded = elem.expanded; //This is guaranteed to be of the type Array<{id?: string, index?: number}>|null
+       *
+       * //reset the value of expanded to its default,
+       * elem.unset('expanded');
+       *
        */
-      _ComponentCreate: function () {
-        this._super();
-        //  - Stop using ui-helper-reset in the layout widgets.
-        this.element
-          .addClass('oj-accordion oj-component')
-          // aria
-          .attr('role', 'group');
-        //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
-        this.options.expanded = this._expandedIndexToId(this.options.expanded);
-        this._refresh();
-      },
+      expanded: null,
+
+      // callbacks
+      /**
+       * Triggered immediately before any collapsible in the accordion is expanded.
+       * Call <code class="prettyprint">event.preventDefault()</code> in the event listener to veto the event, which prevents the content from expanding.
+       * If multiple is true, the beforeExpand event will not be fired by the accordion.
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojAccordion
+       * @instance
+       * @ojshortdesc Triggered immediately before any collapsible in the accordion is expanded.
+       * @ojcancelable
+       * @property {Element} toCollapsible The collapsible being expanded.
+       * @property {Element} fromCollapsible The collapsible being collapsed.
+       */
+      beforeExpand: null,
 
       /**
+       * Triggered after the accordion has been expanded (after animation completes).
+       * The expand can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
+       * If multiple is true, the expand event will not be fired by the accordion.
+       *
+       * @expose
+       * @event
        * @memberof oj.ojAccordion
-       * @param {Object} menu The JET Menu to open as a context menu
-       * @param {Event} event What triggered the menu launch
-       * @param {string} eventType "mouse", "touch", "keyboard"
-       * @private
+       * @instance
+       * @ojshortdesc Triggered after any collapsible in the accordion is expanded.
+       * @property {Element} toCollapsible The collapsible being expanded.
+       * @property {Element} fromCollapsible The collapsible being collapsed.
        */
-      _NotifyContextMenuGesture: function (menu, event, eventType) {
+      expand: null,
+
+      /**
+       * Triggered immediately before any collapsible in the accordion is collapsed.
+       * Call <code class="prettyprint">event.preventDefault()</code> in the event listener to veto the event, which prevents the content from collapsing.
+       * If multiple is true, the beforeCollapse event will not be fired by the accordion.
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojAccordion
+       * @instance
+       * @ojshortdesc Triggered immediately before any collapsible in the accordion is collapsed.
+       * @ojcancelable
+       * @property {Element} toCollapsible The collapsible being expanded.
+       * @property {Element} fromCollapsible The collapsible being collapsed.
+       */
+      beforeCollapse: null,
+
+      /**
+       * Triggered after any collapsible in the accordion has been collapsed (after animation completes).
+       * The collapse can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
+       * If multiple is true, the collapse event will not be fired by the accordion.
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojAccordion
+       * @instance
+       * @ojshortdesc Triggered after any collapsible in the accordion has been collapsed.
+       * @property {Element} toCollapsible The collapsible being expanded.
+       * @property {Element} fromCollapsible The collapsible being collapsed.
+       */
+      collapse: null
+    },
+
+    /**
+     * @memberof oj.ojAccordion
+     * @instance
+     * @protected
+     * @override
+     */
+    _ComponentCreate: function () {
+      this._super();
+      //  - Stop using ui-helper-reset in the layout widgets.
+      this.element
+        .addClass('oj-accordion oj-component')
+        // aria
+        .attr('role', 'group');
+      //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
+      this.options.expanded = this._expandedIndexToId(this.options.expanded);
+      this._refresh();
+    },
+
+    /**
+     * @memberof oj.ojAccordion
+     * @param {Object} menu The JET Menu to open as a context menu
+     * @param {Event} event What triggered the menu launch
+     * @param {string} eventType "mouse", "touch", "keyboard"
+     * @private
+     */
+    _NotifyContextMenuGesture: function (menu, event, eventType) {
       // Setting the launcher to the "twisty" icon of the first collapsible in the accordion, since those twisties seem to be
       // the only tabbable things in the accordion, and they seem to remain tabbable even if the collapsible is disabled.
       // Component owner should feel free to specify a different launcher if appropriate, e.g. could specify the "current"
       // twisty rather than the first if desired.  See the superclass JSDoc for _OpenContextMenu for tips on choosing a launcher.
-        this._OpenContextMenu(event, eventType, {
-          launcher: this.element.find('.oj-collapsible-header-icon').first()
-        });
-      },
+      this._OpenContextMenu(event, eventType, {
+        launcher: this.element.find('.oj-collapsible-header-icon').first()
+      });
+    },
 
-      /**
-       * @memberof oj.ojAccordion
-       * @override
-       * @private
-       */
-      _destroy: function () {
+    /**
+     * @memberof oj.ojAccordion
+     * @override
+     * @private
+     */
+    _destroy: function () {
       // clean up main element
-        this.element
-          .removeClass('oj-accordion oj-component')
-          .removeAttr('role');
+      this.element.removeClass('oj-accordion oj-component').removeAttr('role');
 
-        this.element.children()
-          .removeClass(OJA_COLLAPSIBLE);
+      this.element.children().removeClass(OJA_COLLAPSIBLE);
 
-        // remove collapsibles created by accordion
-        this.element.children('.oj-accordion-created')
-          .removeClass(OJA_CREATED)
-          .ojCollapsible('destroy');
-      },
+      // remove collapsibles created by accordion
+      this.element
+        .children('.oj-accordion-created')
+        .removeClass(OJA_CREATED)
+        .ojCollapsible('destroy');
+    },
 
-      /**
-       * @memberof oj.ojAccordion
-       * @override
-       * @private
-       */
-      _setOption: function (key, value, flags) {
-        if (key === 'multiple') {
+    /**
+     * @memberof oj.ojAccordion
+     * @override
+     * @private
+     */
+    _setOption: function (key, value, flags) {
+      if (key === 'multiple') {
         // Transition multiple to single.
         // Keep the first expanded one expanded and collapse the rest.
-          if (!value && this.options.multiple) {
-            //  - when "multiple" option value is changed to false, exception is displayed
-            this.element.children('.oj-expanded')
-              .first().siblings(OJ_COLLAPSIBLE_CLASS)
-              .ojCollapsible('collapse', false);
-          }
-        } else if (key === 'expanded') {
-          this._setExpandedOption(value);
-          return;
+        if (!value && this.options.multiple) {
+          //  - when "multiple" option value is changed to false, exception is displayed
+          this.element
+            .children('.oj-expanded')
+            .first()
+            .siblings(OJ_COLLAPSIBLE_CLASS)
+            .ojCollapsible('collapse', false);
         }
+      } else if (key === 'expanded') {
+        this._setExpandedOption(value);
+        return;
+      }
 
-        this._super(key, value, flags);
-      },
+      this._super(key, value, flags);
+    },
 
-      /**
-       * Refreshes the visual state of the accordion.
-       *
-       * <p>This method does not accept any arguments.
-       *
-       * @expose
-       * @ojshortdesc Refreshes the visual state of the accordion.
-       * @memberof oj.ojAccordion
-       * @instance
-       * @return {void}
-       * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
-       * myAccordion.refresh();
-       */
-      refresh: function () {
-        this._super();
-        this._refresh();
-      },
+    /**
+     * Refreshes the visual state of the accordion.
+     *
+     * <p>This method does not accept any arguments.
+     *
+     * @expose
+     * @ojshortdesc Refreshes the visual state of the accordion.
+     * @memberof oj.ojAccordion
+     * @instance
+     * @return {void}
+     * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
+     * myAccordion.refresh();
+     */
+    refresh: function () {
+      this._super();
+      this._refresh();
+    },
 
-      /**
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _refresh: function () {
-        this._makeCollapsible();
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _refresh: function () {
+      this._makeCollapsible();
 
-        // TODO: ignore disabled until disabled propagation is supported
-        // need to propagate the option to the collapsible children
-        // this.option("disabled", this.options.disabled);
+      // TODO: ignore disabled until disabled propagation is supported
+      // need to propagate the option to the collapsible children
+      // this.option("disabled", this.options.disabled);
 
-        this._internalSetExpanded = true;
-        this._setExpandedOption(this.options.expanded);
-        this._internalSetExpanded = false;
+      this._internalSetExpanded = true;
+      this._setExpandedOption(this.options.expanded);
+      this._internalSetExpanded = false;
 
-        this._setupEvents();
-      },
+      this._setupEvents();
+    },
 
-      /**
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _makeCollapsible: function () {
-        this.collapsibles = this.element.children().not('oj-menu');
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _makeCollapsible: function () {
+      this.collapsibles = this.element.children().not('oj-menu');
 
-        if (this._IsCustomElement()) {
-          this.collapsibles.not(OJ_COLLAPSIBLE)
-            .ojCollapsible({
-              expandArea: 'header'
-            })
-            .addClass(OJA_CREATED)
-            .attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode
-        } else {
-          this.element.children(':oj-collapsible')
-            .each(function () {
-              $(this).ojCollapsible('option', 'expandArea', 'header');
-            });
-
-          this.collapsibles.not(':oj-ojCollapsible')
-            .ojCollapsible({
-              expandArea: 'header'
-            })
-            .addClass(OJA_CREATED)
-            .attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode
-        }
-
-        this.collapsibles.addClass(OJA_COLLAPSIBLE);
-      },
-
-      /**
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _setupEvents: function () {
-        var events;
-        if (this._IsCustomElement()) {
-          events = {
-            keydown: this._keydown,
-            ojBeforeExpand: this._beforeExpandHandler,
-            ojExpand: this._expandHandler,
-            ojBeforeCollapse: this._beforeCollapseHandler,
-            ojCollapse: this._collapseHandler
-          };
-        } else {
-          events = {
-            keydown: this._keydown,
-            ojbeforeexpand: this._beforeExpandHandler,
-            ojexpand: this._expandHandler,
-            ojbeforecollapse: this._beforeCollapseHandler,
-            ojcollapse: this._collapseHandler
-          };
-        }
-
-        this._off(this.collapsibles);
-        this._on(this.collapsibles, events);
-      },
-
-      /**
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _keydown: function (event) {
-        // ignore event if target is not a header
-        if (!event.altKey && !event.ctrlKey &&
-            (($(event.target).hasClass(OJ_COLLAPSIBLE_HEADER)) ||
-             ($(event.target).hasClass('oj-collapsible-header-icon')))) {
-          var keyCode = $.ui.keyCode;
-          var enabledCollapsibles = this.collapsibles.not('.oj-disabled');
-          var length = enabledCollapsibles.length;
-          var target = $(event.target).closest(OJ_COLLAPSIBLE_CLASS);
-          var currentIndex = enabledCollapsibles.index(target);
-          var toFocus = false;
-
-          if (currentIndex >= 0) {
-            switch (event.keyCode) {
-              case keyCode.RIGHT:
-              case keyCode.DOWN:
-                toFocus = enabledCollapsibles[(currentIndex + 1) % length];
-                break;
-              case keyCode.LEFT:
-              case keyCode.UP:
-                toFocus = enabledCollapsibles[((currentIndex - 1) + length) % length];
-                break;
-              case keyCode.HOME:
-                toFocus = enabledCollapsibles[0];
-                break;
-              case keyCode.END:
-                toFocus = enabledCollapsibles[length - 1];
-                break;
-              default:
-            }
-          }
-
-          if (toFocus) {
-            if (target) {
-              $(target).trigger('ojfocusout');
-            }
-            $(toFocus).trigger('ojfocus');
-
-            event.preventDefault();
-          }
-        }
-      },
-
-      /**
-       * For single expansion
-       *   returns a list of expanded collapsible widgets that are sibling
-       *   of the current event target
-       * For multiple expansion
-       *   returns an empty set.
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _findTargetSiblings: function (event) {
-        if (!this.options.multiple) {
-          var closestCollapsible = $(event.target).closest(OJ_COLLAPSIBLE_CLASS);
-          if (closestCollapsible.parent().is(':oj-ojAccordion')) {
-            return closestCollapsible
-              .siblings('.oj-collapsible.oj-expanded')
-              .map(function () {
-                return $(this).data('oj-ojCollapsible');
-              });
-          }
-        }
-        return $();
-      },
-
-      /**
-       * Trigger "beforeCollapse" on all expanded siblings in
-       * the before expand handler
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _beforeExpandHandler: function (event, eventData) {
-        if (!this._isTargetMyCollapsible(event)) {
-          return true;
-        }
-
-        this._expandTarget = $(event.target);
-        var result;
-        var collapsible = null;
-
-        this._findTargetSiblings(event).each(function () {
-          collapsible = this.element;
-
-          var beforeCollapsedData = {
-            /** @expose */
-            header: collapsible.find('.oj-collapsible-header'),
-
-            /** @expose */
-            content: collapsible.find('.oj-collapsible-content')
-          };
-
-          result = this._trigger('beforeCollapse', event, beforeCollapsedData);
-
-          if (!result) {
-            this._expandTarget = null;
-          }
-
-          return result;
+      if (this._IsCustomElement()) {
+        this.collapsibles
+          .not(OJ_COLLAPSIBLE)
+          .ojCollapsible({
+            expandArea: 'header'
+          })
+          .addClass(OJA_CREATED)
+          .attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode
+      } else {
+        this.element.children(':oj-collapsible').each(function () {
+          $(this).ojCollapsible('option', 'expandArea', 'header');
         });
 
-        if (!this.options.multiple) {
-          var newData = this._initEventData(collapsible, this._expandTarget);
-          result = this._trigger('beforeExpand', event, newData);
+        this.collapsibles
+          .not(':oj-ojCollapsible')
+          .ojCollapsible({
+            expandArea: 'header'
+          })
+          .addClass(OJA_CREATED)
+          .attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode
+      }
+
+      this.collapsibles.addClass(OJA_COLLAPSIBLE);
+    },
+
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _setupEvents: function () {
+      var events;
+      if (this._IsCustomElement()) {
+        events = {
+          keydown: this._keydown,
+          ojBeforeExpand: this._beforeExpandHandler,
+          ojExpand: this._expandHandler,
+          ojBeforeCollapse: this._beforeCollapseHandler,
+          ojCollapse: this._collapseHandler
+        };
+      } else {
+        events = {
+          keydown: this._keydown,
+          ojbeforeexpand: this._beforeExpandHandler,
+          ojexpand: this._expandHandler,
+          ojbeforecollapse: this._beforeCollapseHandler,
+          ojcollapse: this._collapseHandler
+        };
+      }
+
+      this._off(this.collapsibles);
+      this._on(this.collapsibles, events);
+    },
+
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _keydown: function (event) {
+      // ignore event if target is not a header
+      if (
+        !event.altKey &&
+        !event.ctrlKey &&
+        ($(event.target).hasClass('oj-collapsible-header-wrapper') ||
+          $(event.target).hasClass('oj-collapsible-header-icon'))
+      ) {
+        var keyCode = $.ui.keyCode;
+        var enabledCollapsibles = this.collapsibles.not('.oj-disabled');
+        var length = enabledCollapsibles.length;
+        var target = $(event.target).closest(OJ_COLLAPSIBLE_CLASS);
+        var currentIndex = enabledCollapsibles.index(target);
+        var toFocus = false;
+
+        if (currentIndex >= 0) {
+          switch (event.keyCode) {
+            case keyCode.RIGHT:
+            case keyCode.DOWN:
+              toFocus = enabledCollapsibles[(currentIndex + 1) % length];
+              break;
+            case keyCode.LEFT:
+            case keyCode.UP:
+              toFocus = enabledCollapsibles[(currentIndex - 1 + length) % length];
+              break;
+            case keyCode.HOME:
+              toFocus = enabledCollapsibles[0];
+              break;
+            case keyCode.END:
+              toFocus = enabledCollapsibles[length - 1];
+              break;
+            default:
+          }
         }
 
-        // make sure collapse all expanded collapsibles before expand others
-        var self = this;
-        if (result) {
-          this._findTargetSiblings(event).each(function () {
-            this.collapse(false, event, eventData);
-            self._collapsedCollapsible = this.widget();
+        if (toFocus) {
+          if (target) {
+            $(target).trigger('ojfocusout');
+          }
+          $(toFocus).trigger('ojfocus');
+
+          event.preventDefault();
+        }
+      }
+    },
+
+    /**
+     * For single expansion
+     *   returns a list of expanded collapsible widgets that are sibling
+     *   of the current event target
+     * For multiple expansion
+     *   returns an empty set.
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _findTargetSiblings: function (event) {
+      if (!this.options.multiple) {
+        var closestCollapsible = $(event.target).closest(OJ_COLLAPSIBLE_CLASS);
+        if (closestCollapsible.parent().is(':oj-ojAccordion')) {
+          return closestCollapsible.siblings('.oj-collapsible.oj-expanded').map(function () {
+            return $(this).data('oj-ojCollapsible');
           });
+        }
+      }
+      return $();
+    },
+
+    /**
+     * Trigger "beforeCollapse" on all expanded siblings in
+     * the before expand handler
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _beforeExpandHandler: function (event, eventData) {
+      if (!this._isTargetMyCollapsible(event)) {
+        return true;
+      }
+
+      this._expandTarget = $(event.target);
+      var result;
+      var collapsible = null;
+
+      this._findTargetSiblings(event).each(function () {
+        collapsible = this.element;
+
+        var beforeCollapsedData = {
+          /** @expose */
+          header: collapsible.find('.oj-collapsible-header'),
+
+          /** @expose */
+          content: collapsible.find('.oj-collapsible-content')
+        };
+
+        result = this._trigger('beforeCollapse', event, beforeCollapsedData);
+
+        if (!result) {
+          this._expandTarget = null;
         }
 
         return result;
-      },
+      });
 
-      /**
-       * Collapse all expanded siblings and don't allow cancel
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _expandHandler: function (event, eventData) {
-      // clear the collapsedCollapsible
-        var fromCollapsible = null;
-        if (this._collapsedCollapsible) {
-          fromCollapsible = this._collapsedCollapsible;
-          this._collapsedCollapsible = null;
-        }
+      if (!this.options.multiple) {
+        var newData = this._initEventData(collapsible, this._expandTarget);
+        result = this._trigger('beforeExpand', event, newData);
+      }
 
-        //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
-        // don't handle event during setExpandedOption
-        if (!this._isTargetMyCollapsible(event) || this._duringSetExpandedOption) {
-          return;
-        }
-
-        var newData;
-        var self = this;
-
+      // make sure collapse all expanded collapsibles before expand others
+      var self = this;
+      if (result) {
         this._findTargetSiblings(event).each(function () {
           this.collapse(false, event, eventData);
-          newData = self._initEventData(this.element, $(event.target));
+          self._collapsedCollapsible = this.widget();
         });
+      }
 
-        if (!newData) {
-          newData = self._initEventData(fromCollapsible, $(event.target));
+      return result;
+    },
+
+    /**
+     * Collapse all expanded siblings and don't allow cancel
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _expandHandler: function (event, eventData) {
+      // clear the collapsedCollapsible
+      var fromCollapsible = null;
+      if (this._collapsedCollapsible) {
+        fromCollapsible = this._collapsedCollapsible;
+        this._collapsedCollapsible = null;
+      }
+
+      //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
+      // don't handle event during setExpandedOption
+      if (!this._isTargetMyCollapsible(event) || this._duringSetExpandedOption) {
+        return;
+      }
+
+      var newData;
+      var self = this;
+
+      this._findTargetSiblings(event).each(function () {
+        this.collapse(false, event, eventData);
+        newData = self._initEventData(this.element, $(event.target));
+      });
+
+      if (!newData) {
+        newData = self._initEventData(fromCollapsible, $(event.target));
+      }
+
+      if (!this.options.multiple) {
+        this._trigger('expand', event, newData);
+      }
+
+      this._updateExpanded();
+
+      this._expandTarget = null;
+    },
+
+    /**
+     * Trigger "beforecollapse" on all collapsed siblings in
+     * the before collapse handler
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _beforeCollapseHandler: function (event, _eventData) {
+      var eventData = _eventData;
+      if (this._isTargetMyCollapsible(event) && !this.options.multiple) {
+        if (!eventData && event.originalEvent instanceof CustomEvent) {
+          eventData = event.originalEvent.detail;
         }
+
+        return this._trigger(
+          'beforeCollapse',
+          event,
+          this._initCollapseEventData(event, eventData)
+        );
+      }
+      return true;
+    },
+
+    /**
+     * Collapse all collapsed siblings and don't allow cancel
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _collapseHandler: function (event, _eventData) {
+      //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
+      // don't handle event during setExpandedOption
+      var eventData = _eventData;
+      if (!this._duringSetExpandedOption && this._isTargetMyCollapsible(event)) {
+        if (!eventData && event.originalEvent instanceof CustomEvent) {
+          eventData = event.originalEvent.detail;
+        }
+
+        var newData = this._initCollapseEventData(event, eventData);
 
         if (!this.options.multiple) {
-          this._trigger('expand', event, newData);
+          this._trigger('collapse', event, newData);
         }
 
         this._updateExpanded();
+      }
+    },
 
-        this._expandTarget = null;
-      },
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _initEventData: function (fromC, toC) {
+      return {
+        /**
+         * @expose
+         * @ignore
+         */
+        fromCollapsible: fromC, // the collapsible being collapsed.
+        /**
+         * @expose
+         * @ignore
+         */
+        toCollapsible: toC // the collapsible being expanded.
+      };
+    },
 
-      /**
-       * Trigger "beforecollapse" on all collapsed siblings in
-       * the before collapse handler
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _beforeCollapseHandler: function (event, _eventData) {
-        var eventData = _eventData;
-        if (this._isTargetMyCollapsible(event) &&
-          !this.options.multiple) {
-          if (!eventData && event.originalEvent instanceof CustomEvent) {
-            eventData = event.originalEvent.detail;
-          }
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _initCollapseEventData: function (event, eventData) {
+      var newData;
+      if (eventData.toCollapsible) {
+        newData = eventData;
+      } else if (event.originalEvent && event.originalEvent.target) {
+        newData = this._initEventData($(event.target), this._expandTarget);
+      }
 
-          return this._trigger('beforeCollapse', event,
-            this._initCollapseEventData(event, eventData));
+      if (!newData && this._expandTarget) {
+        newData = this._initEventData($(event.target), this._expandTarget);
+      }
+
+      return newData;
+    },
+
+    /**
+     * To filter out events from the nested accordion
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _isTargetMyCollapsible: function (event) {
+      return $(event.target).is(this.collapsibles);
+    },
+
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _updateExpanded: function () {
+      var cid;
+      var result = [];
+      var newexp;
+
+      this.collapsibles.each(function (index) {
+        var bExpanded = false;
+        if (this.tagName.toLowerCase() === OJ_COLLAPSIBLE) {
+          bExpanded = this.expanded;
+        } else {
+          bExpanded = $(this).ojCollapsible('option', 'expanded');
         }
-        return true;
-      },
-
-      /**
-       * Collapse all collapsed siblings and don't allow cancel
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _collapseHandler: function (event, _eventData) {
-        //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
-        // don't handle event during setExpandedOption
-        var eventData = _eventData;
-        if (!this._duringSetExpandedOption && this._isTargetMyCollapsible(event)) {
-          if (!eventData && event.originalEvent instanceof CustomEvent) {
-            eventData = event.originalEvent.detail;
+        if (bExpanded) {
+          newexp = {};
+          cid = $(this).attr('id');
+          // add id property if provided
+          if (cid) {
+            newexp.id = cid;
           }
+          // always add index property
+          newexp.index = index;
 
-          var newData = this._initCollapseEventData(event, eventData);
-
-          if (!this.options.multiple) {
-            this._trigger('collapse', event, newData);
-          }
-
-          this._updateExpanded();
+          result.push(newexp);
         }
-      },
+      });
 
-      /**
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _initEventData: function (fromC, toC) {
-        return {
-            /**
-             * @expose
-             * @ignore
-             */
-            fromCollapsible: fromC, // the collapsible being collapsed.
-            /**
-             * @expose
-             * @ignore
-             */
-            toCollapsible: toC // the collapsible being expanded.
-          };
-      },
+      // this.options.expanded == null means retrieve the status from collapsibles
+      if (
+        !this.options.expanded ||
+        !oj.Object._compareArrayIdIndexObject(result, this.options.expanded)
+      ) {
+        this.option('expanded', result, { _context: { internalSet: true, writeback: true } });
+      }
+    },
 
-      /**
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _initCollapseEventData: function (event, eventData) {
-        var newData;
-        if (eventData.toCollapsible) {
-          newData = eventData;
-        } else if (event.originalEvent && event.originalEvent.target) {
-          newData = this._initEventData($(event.target), this._expandTarget);
+    /**
+     * Return a new sorted expanded array contains IDs if they are available
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _expandedIndexToId: function (expanded) {
+      //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
+      if (Array.isArray(expanded)) {
+        var id;
+        var newExp = [];
+        var expArr = [];
+
+        // convert expanded from Array{Object} to Array{string or number}
+        for (var i = 0; i < expanded.length; i++) {
+          var exp = expanded[i];
+          if (typeof exp === 'number' || typeof exp === 'string') {
+            expArr.push(exp);
+          } else if (typeof exp.index === 'number') {
+            expArr.push(exp.index);
+          } else if (typeof exp.id === 'string') {
+            expArr.push(exp.id);
+          }
         }
 
-        if (!newData && this._expandTarget) {
-          newData = this._initEventData($(event.target), this._expandTarget);
-        }
-
-        return newData;
-      },
-
-      /**
-       * To filter out events from the nested accordion
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _isTargetMyCollapsible: function (event) {
-        return $(event.target).is(this.collapsibles);
-      },
-
-      /**
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _updateExpanded: function () {
-        var cid;
-        var result = [];
-        var newexp;
-
-        this.collapsibles.each(function (index) {
-          var bExpanded = false;
-          if (this.tagName.toLowerCase() === OJ_COLLAPSIBLE) {
-            bExpanded = this.expanded;
-          } else {
-            bExpanded = $(this).ojCollapsible('option', 'expanded');
-          }
-          if (bExpanded) {
-            newexp = {};
-            cid = $(this).attr('id');
-            // add id property if provided
-            if (cid) {
-              newexp.id = cid;
+        this.element.children().each(function (index) {
+          id = $(this).attr('id');
+          if (id) {
+            if (expArr.indexOf(id) !== -1 || expArr.indexOf(index) !== -1) {
+              newExp.push({ id: id, index: index });
             }
-            // always add index property
-            newexp.index = index;
-
-            result.push(newexp);
+          } else if (expArr.indexOf(index) !== -1) {
+            // use index if ID not available
+            newExp.push({ index: index });
           }
         });
 
-        // this.options.expanded == null means retrieve the status from collapsibles
-        if (!this.options.expanded ||
-            !oj.Object._compareArrayIdIndexObject(result, this.options.expanded)) {
-          this.option('expanded', result, { _context: { internalSet: true, writeback: true } });
-        }
-      },
-
-      /**
-       * Return a new sorted expanded array contains IDs if they are available
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _expandedIndexToId: function (expanded) {
-      //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
-        if (Array.isArray(expanded)) {
-          var id;
-          var newExp = [];
-          var expArr = [];
-
-          // convert expanded from Array{Object} to Array{string or number}
-          for (var i = 0; i < expanded.length; i++) {
-            var exp = expanded[i];
-            if (typeof exp === 'number' || typeof exp === 'string') {
-              expArr.push(exp);
-            } else if (typeof exp.index === 'number') {
-              expArr.push(exp.index);
-            } else if (typeof exp.id === 'string') {
-              expArr.push(exp.id);
-            }
-          }
-
-          this.element.children().each(function (index) {
-            id = $(this).attr('id');
-            if (id) {
-              if (expArr.indexOf(id) !== -1 || expArr.indexOf(index) !== -1) {
-                newExp.push({ id: id, index: index });
-              }
-            } else if (expArr.indexOf(index) !== -1) {
-              // use index if ID not available
-              newExp.push({ index: index });
-            }
-          });
-
-          // if more than one expanded, keep the last collapsible
-          if (!this.options.multiple && newExp.length > 1) {
-            newExp = [newExp[newExp.length - 1]];
-          }
-
-          return newExp;
+        // if more than one expanded, keep the last collapsible
+        if (!this.options.multiple && newExp.length > 1) {
+          newExp = [newExp[newExp.length - 1]];
         }
 
-        return null;
-      },
+        return newExp;
+      }
 
-      /**
-       * @memberof oj.ojAccordion
-       * @private
-       */
-      _setExpandedOption: function (_expanded) {
-        // sort expanded array if it's from external setOption
-        var expanded = _expanded;
-        if (!this._internalSetExpanded) {
-          expanded = this._expandedIndexToId(expanded); // eslint-disable-line no-param-reassign
-        }
+      return null;
+    },
 
-        // parent override children expanded setting
-        if (expanded) {
-          // loop thru collapsibles to collapse/expand based on expandedList
-          var self = this;
-          var child;
-          var childId;
-          var parentExp;
-          var exp;
-          var iexp = 0;
+    /**
+     * @memberof oj.ojAccordion
+     * @private
+     */
+    _setExpandedOption: function (_expanded) {
+      // sort expanded array if it's from external setOption
+      var expanded = _expanded;
+      if (!this._internalSetExpanded) {
+        expanded = this._expandedIndexToId(expanded); // eslint-disable-line no-param-reassign
+      }
 
-          this.collapsibles.each(function (index) {
-            child = $(this);
-            childId = child.attr('id');
+      // parent override children expanded setting
+      if (expanded) {
+        // loop thru collapsibles to collapse/expand based on expandedList
+        var self = this;
+        var child;
+        var childId;
+        var parentExp;
+        var exp;
+        var iexp = 0;
 
-            parentExp = false;
-            exp = expanded[iexp];
-            if (exp) {
-              if (childId) {
-                if (childId === exp.id) {
-                  parentExp = true;
-                }
-              } else if (index === exp.index) {
+        this.collapsibles.each(function (index) {
+          child = $(this);
+          childId = child.attr('id');
+
+          parentExp = false;
+          exp = expanded[iexp];
+          if (exp) {
+            if (childId) {
+              if (childId === exp.id) {
                 parentExp = true;
               }
-              if (parentExp) {
-                iexp += 1;
-              }
+            } else if (index === exp.index) {
+              parentExp = true;
             }
-
-            //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
-            // when the parent override the child setting:
-            // 1) log a warning
-            // 2) set child's expanded option with the writeback flag.
-            var isCustomElement = this.tagName.toLowerCase() === OJ_COLLAPSIBLE;
-            var childExp = isCustomElement ? this.expanded : child.ojCollapsible('option', 'expanded');
-
-            if (childExp !== parentExp) {
-              warn('JET Accordion: override collapsible ' + index + ' expanded setting');
-
-              // don't fire accordion "exanded" optionChange event here
-              self._duringSetExpandedOption = true;
-              if (isCustomElement) {
-                this.expanded = parentExp;
-              } else {
-                child.ojCollapsible('option', 'expanded', parentExp);
-              }
-              self._duringSetExpandedOption = false;
+            if (parentExp) {
+              iexp += 1;
             }
-          });
-        }
-
-        this._updateExpanded();
-      },
-
-
-      getNodeBySubId: function (locator) {
-        if (locator == null) {
-          return this.element ? this.element[0] : null;
-        }
-
-        var subId = locator.subId;
-        var index = locator.index;
-
-        if ((typeof index !== 'number') ||
-            index < 0 || index >= this.collapsibles.length) {
-          return null;
-        }
-
-        var collapsible = this.collapsibles[index];
-
-        switch (subId) {
-          case 'oj-accordion-content':
-            subId = 'oj-collapsible-content';
-            break;
-
-          case 'oj-accordion-header':
-            subId = OJ_COLLAPSIBLE_HEADER;
-            break;
-
-          case 'oj-accordion-disclosure':
-          case 'oj-accordion-header-icon':
-            subId = 'oj-collapsible-disclosure';
-            break;
-
-          case OJA_COLLAPSIBLE:
-            return collapsible;
-
-          default:
-            // Non-null locators have to be handled by the component subclasses
-            return null;
-        }
-        return $(collapsible).ojCollapsible('getNodeBySubId', { subId: subId });
-      },
-
-
-      getSubIdByNode: function (node) {
-        // First, find which collapsible the node is a descendant of
-        var collapsibleIndex = -1;
-        var currentNode = node;
-        while (currentNode) {
-          collapsibleIndex = Array.prototype.indexOf.call(this.collapsibles, currentNode);
-          if (collapsibleIndex !== -1) {
-            break;
           }
-          currentNode = currentNode.parentElement;
-        }
-        var subId = null;
-        // Then, find the subId from the collapsible
-        if (collapsibleIndex !== -1) {
-          var collapsibleSubId = $(this.collapsibles[collapsibleIndex]).ojCollapsible('getSubIdByNode', node);
-          collapsibleSubId = collapsibleSubId || {};
-          switch (collapsibleSubId.subId) {
-            case 'oj-collapsible-content':
-              subId = 'oj-accordion-content';
-              break;
-            case OJ_COLLAPSIBLE_HEADER:
-              subId = 'oj-accordion-header';
-              break;
-            case 'oj-collapsible-disclosure':
-            case 'oj-collapsible-header-icon':
-              subId = 'oj-accordion-disclosure';
-              break;
-            default:
-              subId = OJA_COLLAPSIBLE;
+
+          //  - accordion expanded opt. val doesn't overrides its collaspsible expanded opt.
+          // when the parent override the child setting:
+          // 1) log a warning
+          // 2) set child's expanded option with the writeback flag.
+          var isCustomElement = this.tagName.toLowerCase() === OJ_COLLAPSIBLE;
+          var childExp = isCustomElement
+            ? this.expanded
+            : child.ojCollapsible('option', 'expanded');
+
+          if (childExp !== parentExp) {
+            warn('JET Accordion: override collapsible ' + index + ' expanded setting');
+
+            // don't fire accordion "exanded" optionChange event here
+            self._duringSetExpandedOption = true;
+            if (isCustomElement) {
+              this.expanded = parentExp;
+            } else {
+              child.ojCollapsible('option', 'expanded', parentExp);
+            }
+            self._duringSetExpandedOption = false;
           }
-        }
-        if (subId) {
-          return { subId: subId, index: collapsibleIndex };
-        }
-        return null;
-      },
-
-
-      _CompareOptionValues: function (option, value1, value2) {
-        if (option === 'expanded') {
-          return oj.Object.compareValues(value1, value2);
-        }
-        return this._super(option, value1, value2);
+        });
       }
-    });
-}());
+
+      this._updateExpanded();
+    },
+
+    getNodeBySubId: function (locator) {
+      if (locator == null) {
+        return this.element ? this.element[0] : null;
+      }
+
+      var subId = locator.subId;
+      var index = locator.index;
+
+      if (typeof index !== 'number' || index < 0 || index >= this.collapsibles.length) {
+        return null;
+      }
+
+      var collapsible = this.collapsibles[index];
+
+      switch (subId) {
+        case 'oj-accordion-content':
+          subId = 'oj-collapsible-content';
+          break;
+
+        case 'oj-accordion-header':
+          subId = OJ_COLLAPSIBLE_HEADER;
+          break;
+
+        case 'oj-accordion-disclosure':
+        case 'oj-accordion-header-icon':
+          subId = 'oj-collapsible-disclosure';
+          break;
+
+        case OJA_COLLAPSIBLE:
+          return collapsible;
+
+        default:
+          // Non-null locators have to be handled by the component subclasses
+          return null;
+      }
+      return $(collapsible).ojCollapsible('getNodeBySubId', { subId: subId });
+    },
+
+    getSubIdByNode: function (node) {
+      // First, find which collapsible the node is a descendant of
+      var collapsibleIndex = -1;
+      var currentNode = node;
+      while (currentNode) {
+        collapsibleIndex = Array.prototype.indexOf.call(this.collapsibles, currentNode);
+        if (collapsibleIndex !== -1) {
+          break;
+        }
+        currentNode = currentNode.parentElement;
+      }
+      var subId = null;
+      // Then, find the subId from the collapsible
+      if (collapsibleIndex !== -1) {
+        var collapsibleSubId = $(this.collapsibles[collapsibleIndex]).ojCollapsible(
+          'getSubIdByNode',
+          node
+        );
+        collapsibleSubId = collapsibleSubId || {};
+        switch (collapsibleSubId.subId) {
+          case 'oj-collapsible-content':
+            subId = 'oj-accordion-content';
+            break;
+          case OJ_COLLAPSIBLE_HEADER:
+            subId = 'oj-accordion-header';
+            break;
+          case 'oj-collapsible-disclosure':
+          case 'oj-collapsible-header-icon':
+            subId = 'oj-accordion-disclosure';
+            break;
+          default:
+            subId = OJA_COLLAPSIBLE;
+        }
+      }
+      if (subId) {
+        return { subId: subId, index: collapsibleIndex };
+      }
+      return null;
+    },
+
+    _CompareOptionValues: function (option, value1, value2) {
+      if (option === 'expanded') {
+        return oj.Object.compareValues(value1, value2);
+      }
+      return this._super(option, value1, value2);
+    }
+  });
+})();

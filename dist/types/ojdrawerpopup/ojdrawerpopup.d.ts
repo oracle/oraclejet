@@ -12,7 +12,6 @@ declare type Modality = 'modal' | 'modeless';
 declare type ResolvedDisplayMode = 'overlay' | 'full-overlay';
 declare type State = {
     opened?: boolean;
-    id: string;
     viewportResolvedDisplayMode: ResolvedDisplayMode;
     viewportResolvedDisplayModeVertical: ResolvedDisplayMode;
 };
@@ -20,7 +19,7 @@ declare type Props = ObservedGlobalProps<'role'> & {
     children?: ComponentChildren;
     opened?: boolean;
     onOpenedChanged?: PropertyChanged<boolean>;
-    onOjBeforeClose?: CancelableAction;
+    onOjBeforeClose?: CancelableAction<{}>;
     edge?: EdgePopup;
     modality?: Modality;
     autoDismiss?: AutoDismiss;
@@ -30,18 +29,17 @@ export declare class DrawerPopup extends Component<ExtendGlobalProps<Props>, Sta
     static readonly defaultProps: Partial<Props>;
     readonly state: State;
     private readonly rootRef;
-    private static idsClosedWithAutoDismiss;
     private openedPrevState;
     private isShiftKeyActive;
     private hammerInstance;
     private drawerResizeHandler;
+    private windowResizeHandler;
     private drawerOpener;
     private elementWithFocusBeforeDrawerCloses;
     static getDerivedStateFromProps(props: Readonly<Props>, state: Readonly<State>): Partial<State> | null;
     render(props: Readonly<Props>): ComponentChildren;
     private isDrawerOpened;
     private wasDrawerOpenedInPrevState;
-    private isDrawerClosedWithAutoDismiss;
     private handleKeyDown;
     private selfClose;
     private openOrCloseDrawer;
@@ -54,6 +52,7 @@ export declare class DrawerPopup extends Component<ExtendGlobalProps<Props>, Sta
     private afterCloseHandler;
     private autoDismissHandler;
     private refreshHandler;
+    private destroyHandler;
     private isTargetDescendantOfOwnZorderLayerOrItsNextSiblings;
     private getDrawerSurrogateLayerSelectors;
     private getDrawerPosition;
@@ -61,7 +60,7 @@ export declare class DrawerPopup extends Component<ExtendGlobalProps<Props>, Sta
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>): void;
     componentDidMount(): void;
     componentWillUnmount(): void;
-    private resizeHandler;
+    private windowResizeCallback;
     private getViewportResolvedDisplayMode;
     private getViewportResolvedDisplayModeVertical;
     handleComponentUpdate(prevState: Readonly<State>): void;

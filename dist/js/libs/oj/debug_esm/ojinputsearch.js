@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -226,7 +226,8 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
             LEFT: 37,
             UP: 38,
             RIGHT: 39,
-            DOWN: 40
+            DOWN: 40,
+            INPUT_METHOD_EDITOR: 229
         };
         this._counter = 0;
         this._queryCount = 0;
@@ -410,7 +411,9 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
                 default:
                     break;
             }
-            this._updateState(updatedState);
+            if (keyCode !== this._KEYS.INPUT_METHOD_EDITOR) {
+                this._updateState(updatedState);
+            }
         };
         this._handleMobileFilterInputKeydown = (event) => {
             const updatedState = { lastEventType: 'keyboard' };
@@ -1217,7 +1220,7 @@ InputSearch.defaultProps = {
     placeholder: '',
     value: null
 };
-InputSearch.metadata = { "properties": { "suggestions": { "type": "object|null" }, "suggestionItemText": { "type": "string | number|function" }, "placeholder": { "type": "string" }, "rawValue": { "type": "string|null", "readOnly": true, "writeback": true }, "value": { "type": "string|null", "writeback": true } }, "events": { "ojValueAction": {} }, "slots": { "suggestionItemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["rawValue", "value"], "_READ_ONLY_PROPS": ["rawValue"], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "id"] }, "methods": { "focus": {}, "blur": {}, "_testChangeValue": {}, "_testChangeValueByKey": {} } };
+InputSearch._metadata = { "properties": { "suggestions": { "type": "object" }, "suggestionItemText": { "type": "string|number|function" }, "placeholder": { "type": "string" }, "rawValue": { "type": "string", "readOnly": true, "writeback": true }, "value": { "type": "string", "writeback": true } }, "events": { "ojValueAction": {} }, "slots": { "suggestionItemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["rawValue", "value"], "_READ_ONLY_PROPS": ["rawValue"], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "id"] }, "methods": { "focus": {}, "blur": {}, "_testChangeValue": {}, "_testChangeValueByKey": {} } };
 InputSearch = InputSearch_1 = __decorate([
     customElement('oj-input-search')
 ], InputSearch);

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -62,7 +62,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'ojs/ojthemeutils',
         src: null,
         iconClass: ''
     };
-    exports.Avatar.metadata = { "properties": { "background": { "type": "string", "enumValues": ["neutral", "orange", "green", "teal", "blue", "slate", "mauve", "pink", "purple", "lilac", "gray", "red", "forest"] }, "initials": { "type": "string|null" }, "size": { "type": "string", "enumValues": ["2xs", "xxs", "xs", "sm", "md", "lg", "xl", "2xl", "xxl"] }, "src": { "type": "string|null" }, "iconClass": { "type": "string" }, "shape": { "type": "string", "enumValues": ["square", "circle"] } } };
+    exports.Avatar._metadata = { "properties": { "background": { "type": "string", "enumValues": ["neutral", "orange", "green", "teal", "blue", "slate", "mauve", "pink", "purple", "lilac", "gray", "red", "forest"] }, "initials": { "type": "string" }, "size": { "type": "string", "enumValues": ["lg", "md", "sm", "2xs", "xxs", "xs", "xl", "2xl", "xxl"] }, "src": { "type": "string" }, "iconClass": { "type": "string" }, "shape": { "type": "string", "enumValues": ["square", "circle"] } } };
     exports.Avatar = __decorate([
         ojvcomponent.customElement('oj-avatar')
     ], exports.Avatar);

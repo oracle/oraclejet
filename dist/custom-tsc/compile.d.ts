@@ -1,5 +1,6 @@
 import * as ts from 'typescript';
 import * as MetadataTypes from 'ojs/ojmetadata';
+import * as MetaTypes from './utils/MetadataTypes';
 declare type CompileOptions = {
     tsconfigJson: ts.TsConfigSourceFile;
     buildOptions?: BuildOptions;
@@ -25,6 +26,8 @@ export declare type BuildOptions = {
     mainEntryFile: string;
     typesDir: string;
     translationBundleIds?: Array<string>;
+    parentDirToPackInfo?: Record<string, MetaTypes.VCompPack | null>;
+    disabledExceptionKeys?: Array<string>;
 };
 export default function compile({ tsconfigJson, buildOptions }: CompileOptions): {
     errors: any[];

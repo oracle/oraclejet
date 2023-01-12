@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -66,8 +66,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
      * @instance
      * @property {?string} description
      */
-    description:
-    {
+    description: {
       get: function () {
         if (this._description) {
           if (this._description instanceof Function) {
@@ -99,7 +98,6 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
 
     return buff;
   };
-
 
   /**
    * @private
@@ -216,6 +214,13 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
   BusyContext._defaultTimeout = Number.NaN;
 
   /**
+   * Used for debounce and requestAnimationFrame promises for Preact
+   * @ignore
+   * @private
+   */
+  BusyContext.__preactPromisesMap = new Map();
+
+  /**
    * Sets a default for the optional <code>timeout</code> argument of the {@link oj.BusyContext#whenReady}
    * for all BusyContext instances. The default value will be implicitly used if a timeout argument is not
    * provided.
@@ -276,6 +281,13 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
     this._statesMap = new Map();
 
     /**
+     * @ignore
+     * @private
+     * The set of pending Preact Promises - debounce or requestAnimationFrame - that already have a busy state associated with them.
+     */
+    this._preactSet = new Set();
+
+    /**
      * Coordinates resolution of the master when ready promise with one or more slave
      * when ready promises having a timeout period.
      *
@@ -293,8 +305,9 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
        */
       getMasterWhenReadyPromise: function () {
         if (!this._masterWhenReadyPromise) {
-          this._masterWhenReadyPromise =
-            new Promise(this._captureWhenReadyPromiseResolver.bind(this));
+          this._masterWhenReadyPromise = new Promise(
+            this._captureWhenReadyPromiseResolver.bind(this)
+          );
         }
         return this._masterWhenReadyPromise;
       },
@@ -350,8 +363,9 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
         this._slaveTimeoutPromiseTimers.push(timer);
 
         // When the master promise is resolved, all timers may be cleared
-        return Promise.race([master, slaveTimeoutPromise])
-                                    .finally(this._clearAllSlaveTimeouts.bind(this));
+        return Promise.race([master, slaveTimeoutPromise]).finally(
+          this._clearAllSlaveTimeouts.bind(this)
+        );
       },
 
       /**
@@ -410,7 +424,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
        * @private
        */
       // _masterWhenReadyPromiseResolver : undefined,
-          /**
+      /**
        * The reject function of the masterWhenReadyPromise.
        *
        * @type {Function|undefined}
@@ -521,14 +535,12 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
   BusyContext.prototype.addBusyState = function (options) {
     Logger.log("BusyContext.addBusyState: start scope='%s'", this._getDebugScope());
 
-    var statesMap = this._statesMap;
-
     /** @type {oj.BusyState} */
     var busyState = new BusyState(options[BusyContext._DESCRIPTION]);
 
     Logger.log('>> ' + busyState);
 
-    statesMap.set(busyState.id, busyState);
+    this._statesMap.set(busyState.id, busyState);
 
     this._addBusyStateToParent();
 
@@ -554,8 +566,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
    * @return {undefined}
    */
   BusyContext.prototype.dump = function (message) {
-    Logger.info("BusyContext.dump: start scope='%s' %s", this._getDebugScope(),
-                   message || '');
+    Logger.info("BusyContext.dump: start scope='%s' %s", this._getDebugScope(), message || '');
 
     var statesMap = this._statesMap;
     Logger.info('>> Busy states: %d', statesMap.size);
@@ -565,8 +576,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
       Logger.info(busyStates.join('\n'));
     }
 
-    Logger.info("BusyContext.dump: start scope='%s' %s", this._getDebugScope(),
-                   message || '');
+    Logger.info("BusyContext.dump: start scope='%s' %s", this._getDebugScope(), message || '');
   };
 
   /**
@@ -581,10 +591,8 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
    *         instance
    */
   BusyContext.prototype.getBusyStates = function () {
-    var statesMap = this._statesMap;
-
-     /** @type {?} */
-    return BusyContext._values(statesMap);
+    /** @type {?} */
+    return BusyContext._values(this._statesMap);
   };
 
   /**
@@ -601,8 +609,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
   BusyContext.prototype.clear = function () {
     Logger.log("BusyContext.clear: start scope='%s'", this._getDebugScope());
 
-    var statesMap = this._statesMap;
-    var busyStates = BusyContext._values(statesMap);
+    var busyStates = BusyContext._values(this._statesMap);
     for (var i = 0; i < busyStates.length; i++) {
       /** @type {?} **/
       var busyState = busyStates[i];
@@ -645,27 +652,13 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
     var statesMap = this._statesMap;
 
     var mediator = this._mediator;
-    var nextTickPromise = getNextTickPromise();
     var bootstrapPromise = BusyContext._BOOTSTRAP_MEDIATOR.whenReady();
     const master = mediator.getMasterWhenReadyPromise();
-    var promise = Promise.all([nextTickPromise, bootstrapPromise]).then(
+    var promise = bootstrapPromise.then(
       function () {
         Logger.log('BusyContext.whenReady: bootstrap mediator ready scope=%s', debugScope);
 
-        try {
-          // Since we are executing this code on 'next tick', it is safe to flush any JET throttled updates.
-          // Doing so will allow us to take into account any busy states added in response to the pending updates
-          BusyContext._deliverThrottledUpdates();
-        } catch (e) {
-          Logger.error('Fatal exception delivering binding updates: %o', e);
-          throw e;
-        }
-
-        if (statesMap.size === 0 && !this._waitingOnNextTickBusynessEval) {
-          // no busy states, promise resolves immediately
-          Logger.log('BusyContext.whenReady: resolved no busy states scope=%s', debugScope);
-          mediator.resolveMasterWhenReadyPromise();
-        }
+        this._evalBusyness();
 
         Logger.log('BusyContext.whenReady: busy states returning master scope=%s', debugScope);
         return master;
@@ -678,7 +671,6 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
       timeout = BusyContext._defaultTimeout;
     }
 
-
     if (!isNaN(timeout)) {
       var handleTimeout = function () {
         var error;
@@ -688,13 +680,15 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
         var busyStates = BusyContext._values(statesMap);
 
         if (!BusyContext._BOOTSTRAP_MEDIATOR.isReady()) {
-          error = new Error(expiredText + 'while the application is loading.' +
-            ' Busy state enabled by setting the "window.oj_whenReady = true;" global variable.' +
-            ' Application bootstrap busy state is released by calling' +
-            ' "oj.Context.getPageContext().getBusyContext().applicationBootstrapComplete();".');
+          error = new Error(
+            expiredText +
+              'while the application is loading.' +
+              ' Busy state enabled by setting the "window.oj_whenReady = true;" global variable.' +
+              ' Application bootstrap busy state is released by calling' +
+              ' "oj.Context.getPageContext().getBusyContext().applicationBootstrapComplete();".'
+          );
         } else {
-          error = new Error(expiredText + 'with the following busy states: ' +
-                              busyStates.join(', '));
+          error = new Error(expiredText + 'with the following busy states: ' + busyStates.join(', '));
         }
 
         error.busyStates = busyStates;
@@ -704,7 +698,6 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
       };
       promise = mediator.getSlaveTimeoutPromise(promise, handleTimeout, timeout);
     }
-
 
     Logger.log("BusyContext.whenReady: end scope='%s'", this._getDebugScope());
     return promise;
@@ -727,11 +720,9 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
     Logger.log("BusyContext.isReady: start scope='%s'", this._getDebugScope());
     var rtn = false;
 
-    if (BusyContext._BOOTSTRAP_MEDIATOR.isReady() && !this._waitingOnNextTickBusynessEval) {
-      var statesMap = this._statesMap;
-
-      rtn = statesMap.size === 0;
-      BusyContext._log(statesMap);
+    if (BusyContext._BOOTSTRAP_MEDIATOR.isReady() && !this._doubleCheckPend) {
+      rtn = this._hasNoBusyStates();
+      BusyContext._log(this._statesMap);
     }
 
     Logger.log("BusyContext.isReady: end scope='%s'", this._getDebugScope());
@@ -753,33 +744,79 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
     // descriptive message when the busy state is removed twice. The description (if provided) of
     // the busy state will be captured in the error message.
 
-    var statesMap = this._statesMap;
-
     if (busyState[BusyContext._OJ_RIP]) {
       Logger.log('Busy state has been forcefully resolved via clear:\n' + busyState);
       return;
-    } else if (!statesMap.delete(busyState.id)) { // quoted to make the closure compiler happy
+    } else if (!this._statesMap.delete(busyState.id)) {
       throw new Error('Busy state has already been resolved:\n' + busyState);
     }
 
     Logger.log('BusyContext._removeBusyState: resolving busy state:\n' + busyState);
-    if (statesMap.size === 0 && !this._waitingOnNextTickBusynessEval) {
-      // no more busy states; evaluate busyness in the next tick
-      this._waitingOnNextTickBusynessEval = true;
-      getNextTickPromise().then(this._evalBusyness.bind(this));
-    }
+
+    this._evalBusyness();
 
     Logger.log("BusyContext._removeBusyState: end scope='%s'", debugScope);
   };
 
   /**
-   * Evaluates the busyness of the context.
+   * Checks busyness
+   * @ignore
    * @private
    */
+
   BusyContext.prototype._evalBusyness = function () {
     var debugScope = this._getDebugScope();
-
     Logger.log("BusyContext._evalBusyness: begin scope='%s'", debugScope);
+
+    if (this._hasNoBusyStates() && !this._doubleCheckPend) {
+      Logger.log(
+        "BusyContext._evalBusyness: macrotask to double-check busyness, scope='%s'",
+        debugScope
+      );
+      this._doubleCheckPend = true;
+      getNextTickPromise().then(this._doubleCheckBusyness.bind(this));
+    }
+
+    Logger.log("BusyContext._evalBusyness: end scope='%s'", debugScope);
+  };
+
+  /**
+   * @ignore
+   * @private
+   */
+  BusyContext.prototype._hasNoBusyStates = function () {
+    this._syncDebounceBusyness();
+    return this._statesMap.size === 0;
+  };
+
+  /**
+   * @ignore
+   * @private
+   */
+  BusyContext.prototype._syncDebounceBusyness = function () {
+    const preactPromises = BusyContext.__preactPromisesMap;
+    preactPromises.forEach((promiseDesc, preactPromise) => {
+      // Add a busy state for Preact Promise (debounce or RAF). Note that we are using a Set
+      // to add just one busy state for a particuar Promise instance
+      if (preactPromise && !this._preactSet.has(preactPromise)) {
+        this._preactSet.add(preactPromise);
+        const resolver = this.addBusyState({ description: promiseDesc });
+        preactPromise.then(() => {
+          this._preactSet.delete(preactPromise);
+          resolver();
+        });
+      }
+    });
+  };
+
+  /**
+   * Deouble-checks that there is stil no busyness after a macrotask.
+   * @private
+   */
+  BusyContext.prototype._doubleCheckBusyness = function () {
+    var debugScope = this._getDebugScope();
+
+    Logger.log("BusyContext._doubleCheckBusyness: begin scope='%s'", debugScope);
 
     try {
       // Since we are executing this code on 'next tick', it is safe to flush any JET throttled updates.
@@ -787,28 +824,26 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
       BusyContext._deliverThrottledUpdates();
     } catch (e) {
       Logger.error('Fatal exception delivering binding updates: %o', e);
-      this._waitingOnNextTickBusynessEval = false;
+      this._doubleCheckPend = false;
       this._rejectWhenReadyPromises(e);
       return;
     }
 
-    var statesMap = this._statesMap;
-    var mediator = this._mediator;
-
     // "appears" the Edge promise invokes the resolve callback immediately after
     // resolving versus waiting next micro tick.  Toggle the flag here so if
     // isReady() is called from the promise resolve callback, it returns true.
-    this._waitingOnNextTickBusynessEval = false;
-    if (statesMap.size === 0) {
-      Logger.log('BusyContext._evalBusyness: resolving whenReady promises');
+    this._doubleCheckPend = false;
 
-      mediator.resolveMasterWhenReadyPromise();
+    if (this._hasNoBusyStates()) {
+      Logger.log('BusyContext._doubleCheckBusyness: resolving whenReady promises');
+
+      this._mediator.resolveMasterWhenReadyPromise();
       this._resolveBusyStateForParent();
     } else {
-      BusyContext._log(statesMap);
+      BusyContext._log(this._statesMap);
     }
 
-    Logger.log("BusyContext._evalBusyness: end scope='%s'", debugScope);
+    Logger.log("BusyContext._doubleCheckBusyness: end scope='%s'", debugScope);
   };
 
   /**
@@ -930,7 +965,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
    */
   BusyContext.prototype._getCompoundDescription = function () {
     var busyStates = BusyContext._values(this._statesMap);
-    return ('[' + busyStates.join(', ') + ']');
+    return '[' + busyStates.join(', ') + ']';
   };
 
   /**
@@ -962,8 +997,8 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
 
     if (!this._debugScope) {
       if (this._hostNode) {
-        this._debugScope = toSelector(this._hostNode.parentElement) + ' > ' +
-                           toSelector(this._hostNode);
+        this._debugScope =
+          toSelector(this._hostNode.parentElement) + ' > ' + toSelector(this._hostNode);
       } else {
         this._debugScope = 'page';
       }
@@ -1021,7 +1056,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
    * @private
    * @ignore
    */
-  BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */(function () {
+  BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */ (function () {
     var _tracking;
     var _readyPromise;
     var _resolveCallback;
@@ -1116,31 +1151,31 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
   };
 
   /**
-   * Returns the closest enclosing JET context for a node.
-   * Any DOM element may be designated by the page author as a host of JET context.
-   * The designation must be expressed in HTML markup by specifying the "data-oj-context"
-   * attribute on the host element:
+    * Returns the closest enclosing JET context for a node.
+    * Any DOM element may be designated by the page author as a host of JET context.
+    * The designation must be expressed in HTML markup by specifying the "data-oj-context"
+    * attribute on the host element:
 
-   * <pre class="prettyprint">
-   * &lt;div data-oj-context>&lt;div>
-   * </pre>
-   *
-   * <p>This method will walk up the element hierarchy starting with the source node to
-   * find an element that has the data-oj-context attribute. If no such element is found,
-   * the page context will be returned.</p>
-   *
-   * If the JET context is established on a particular element, the {@link oj.BusyContext}
-   * associated with that context will be tracking busy states for that element and
-   * its subtree
-   *
-   * @see oj.BusyContext for code examples
-   * @method getContext
-   * @memberof oj.Context
-   * @param {Element} node DOM element whose enclosing context will be provided
-   * @return {oj.Context} context object scoped per the target node
-   * @since 2.2.0
-   * @export
-   */
+    * <pre class="prettyprint">
+    * &lt;div data-oj-context>&lt;div>
+    * </pre>
+    *
+    * <p>This method will walk up the element hierarchy starting with the source node to
+    * find an element that has the data-oj-context attribute. If no such element is found,
+    * the page context will be returned.</p>
+    *
+    * If the JET context is established on a particular element, the {@link oj.BusyContext}
+    * associated with that context will be tracking busy states for that element and
+    * its subtree
+    *
+    * @see oj.BusyContext for code examples
+    * @method getContext
+    * @memberof oj.Context
+    * @param {Element} node DOM element whose enclosing context will be provided
+    * @return {oj.Context} context object scoped per the target node
+    * @since 2.2.0
+    * @export
+    */
   Context.getContext = function (node) {
     while (node) {
       var context = node[Context._OJ_CONTEXT_INSTANCE];
@@ -1149,8 +1184,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
       }
       if (node.hasAttribute(Context._OJ_CONTEXT_ATTRIBUTE)) {
         context = new Context(node);
-        Object.defineProperty(node, Context._OJ_CONTEXT_INSTANCE,
-                                                          { value: context });
+        Object.defineProperty(node, Context._OJ_CONTEXT_INSTANCE, { value: context });
         return context;
       }
 
@@ -1171,7 +1205,9 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
    * @memberof oj.Context
    */
   Context.getPageContext = function () {
-    if (!Context._pageContext) { Context._pageContext = new Context(); }
+    if (!Context._pageContext) {
+      Context._pageContext = new Context();
+    }
 
     return Context._pageContext;
   };
@@ -1249,12 +1285,30 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
 
     if (element && element.hasAttribute(Context._OJ_SURROGATE_ATTR)) {
       var surrogate = document.getElementById(element.getAttribute(Context._OJ_SURROGATE_ATTR));
-      if (surrogate) { return surrogate.parentElement; }
+      if (surrogate) {
+        return surrogate.parentElement;
+      }
     }
 
     // _ojReportBusy expando will be set by the TemplateEngine if busy states need to bubble
     // up to an alternate parent
     return element._ojReportBusy || element.parentElement;
+  };
+
+  /**
+   * @ignore
+   * @private
+   */
+  Context.__addPreactPromise = function (promise, description) {
+    BusyContext.__preactPromisesMap.set(promise, description);
+  };
+
+  /**
+   * @ignore
+   * @private
+   */
+  Context.__removePreactPromise = function (promise) {
+    BusyContext.__preactPromisesMap.delete(promise);
   };
 
   return Context;

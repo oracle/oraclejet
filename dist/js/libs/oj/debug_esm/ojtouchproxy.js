@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -83,10 +83,23 @@ _TouchProxy.prototype._touchHandler = function (event, simulatedType) {
   // initMouseEvent(type, canBubble, cancelable, view, clickCount,
   //                screenX, screenY, clientX, clientY, ctrlKey,
   //                altKey, shiftKey, metaKey, button, relatedTarget);
-  simulatedEvent.initMouseEvent(simulatedType, true, true, window, 1,
-                                touch.screenX, touch.screenY,
-                                touch.clientX, touch.clientY, false,
-                                false, false, false, 0/* left*/, null);
+  simulatedEvent.initMouseEvent(
+    simulatedType,
+    true,
+    true,
+    window,
+    1,
+    touch.screenX,
+    touch.screenY,
+    touch.clientX,
+    touch.clientY,
+    false,
+    false,
+    false,
+    false,
+    0 /* left*/,
+    null
+  );
 
   touch.target.dispatchEvent(simulatedEvent);
 };

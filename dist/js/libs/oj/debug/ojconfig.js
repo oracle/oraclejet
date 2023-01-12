@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -59,8 +59,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
    * @export
    */
   Config.getDeviceRenderMode = function () {
-    return document.body.getAttribute('data-oj-device-render-mode') ||
-           Config.getDeviceType();
+    return document.body.getAttribute('data-oj-device-render-mode') || Config.getDeviceType();
   };
 
   /**
@@ -90,7 +89,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
 
     // If Require.js internationalziation plugin resolved the locale to "root" (presumably because "lang" attribute was not
     // set, and neither navigator.language or navigator.userLanguage were not available), return "en"
-    return (rl === 'root') ? 'en' : rl;
+    return rl === 'root' ? 'en' : rl;
   };
 
   /**
@@ -115,7 +114,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
     var prefix = 'ojL10n!ojtranslations/nls/';
     var translationBundle = prefix + locale + '/ojtranslations';
     /* ojWebpackError: 'Config.setLocale() is not supported when the ojs/ojcore module has been bundled by Webpack' */
-    const translationPromise = new Promise(function (resolve, reject) { require([translationBundle], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(translations => {
+    const translationPromise = new Promise(function (resolve, reject) { require([translationBundle], function (m) { resolve(_interopNamespace(m)); }, reject) }).then((translations) => {
       trans = translations;
     });
     var promises = [translationPromise];
@@ -129,26 +128,28 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
     // incurring the download hit of the ojs/ojlocaledata module.
     if (oj.LocaleData) {
       var localeBundle = prefix + locale + '/localeElements';
-      const localePromise = new Promise(function (resolve, reject) { require([localeBundle], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(localeElements => {
+      const localePromise = new Promise(function (resolve, reject) { require([localeBundle], function (m) { resolve(_interopNamespace(m)); }, reject) }).then((localeElements) => {
         if (localeElements) {
           oj.LocaleData.__updateBundle(Object.assign({}, localeElements.default));
         }
       });
       promises.push(localePromise);
       if (oj.TimezoneData) {
-        var tzBundlesPromises = oj.TimezoneData.__getBundleNames()
-          .map(bundleName => new Promise(function (resolve, reject) { require([`${prefix}${locale}${bundleName}`], function (m) { resolve(_interopNamespace(m)); }, reject) }));
-        promises.push(Promise.all(tzBundlesPromises).then((timezoneBundles) => {
-          timezoneBundles.forEach(oj.TimezoneData.__mergeIntoLocaleElements);
-        }));
+        var tzBundlesPromises = oj.TimezoneData.__getBundleNames().map((bundleName) =>
+          new Promise(function (resolve, reject) { require([`${prefix}${locale}${bundleName}`], function (m) { resolve(_interopNamespace(m)); }, reject) })
+        );
+        promises.push(
+          Promise.all(tzBundlesPromises).then((timezoneBundles) => {
+            timezoneBundles.forEach(oj.TimezoneData.__mergeIntoLocaleElements);
+          })
+        );
       }
     }
     Promise.all(promises).then(() => {
-        if (callback) {
-          callback();
-        }
+      if (callback) {
+        callback();
       }
-    );
+    });
   };
 
   /**
@@ -235,7 +236,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
     var info = 'Oracle JET Version: ' + oj.version + '\n';
     info += 'Oracle JET Revision: ' + oj.revision + '\n';
 
-    var windowDefined = (typeof window !== 'undefined');
+    var windowDefined = typeof window !== 'undefined';
 
     // Browser information
     if (windowDefined && window.navigator) {
@@ -272,8 +273,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
    * @memberof oj.Config
    * @export
    */
-  Config.logVersionInfo = function () {
-  };
+  Config.logVersionInfo = function () {};
 
   /**
    * This method gets replaced at build time. For AMD, RequireJS is used. For ESM,
@@ -305,10 +305,15 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
     if (!Config[templateProp]) {
       let promise;
       switch (templateProp) {
-        case PREACT_TEMPLATE_PROMISE_KO: promise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine-preact-ko'], function (m) { resolve(_interopNamespace(m)); }, reject) }); break;
-        case PREACT_TEMPLATE_PROMISE: promise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine-preact'], function (m) { resolve(_interopNamespace(m)); }, reject) }); break;
+        case PREACT_TEMPLATE_PROMISE_KO:
+          promise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine-preact-ko'], function (m) { resolve(_interopNamespace(m)); }, reject) });
+          break;
+        case PREACT_TEMPLATE_PROMISE:
+          promise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine-preact'], function (m) { resolve(_interopNamespace(m)); }, reject) });
+          break;
         case TEMPLATE_ENGINE_KO:
-        default: promise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine-ko'], function (m) { resolve(_interopNamespace(m)); }, reject) });
+        default:
+          promise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine-ko'], function (m) { resolve(_interopNamespace(m)); }, reject) });
       }
       Config[templateProp] = promise.then((engine) => engine.default);
     }
@@ -326,7 +331,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
    * @memberof oj.Config
    * @private
    */
-   Config.__getTemplateEngine = function (options) {
+  Config.__getTemplateEngine = function (options) {
     let enginePromise;
     const state = ojcustomelementUtils.CustomElementUtils.getElementState(options.customElement);
     const bpType = state.getBindingProviderType();

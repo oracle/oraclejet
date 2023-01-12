@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -70,9 +70,7 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
      * EventTargetMixin.applyMixin(CustomDataGridProvider);
      */
 
-    /**
-     * End of jsdoc
-     */
+    // end of jsdoc
 
     class GenericEvent {
         constructor(type, options) {

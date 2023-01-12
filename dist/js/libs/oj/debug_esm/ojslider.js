@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -200,8 +200,7 @@ var __oj_slider_metadata =
   __oj_slider_metadata.extension._WIDGET_NAME = 'ojSlider';
   __oj_slider_metadata.extension._INNER_ELEM = 'input';
   oj.CustomElementBridge.register('oj-slider', {
-    metadata: oj.CollectionUtils.mergeDeep(__oj_slider_metadata,
-      bindingMeta)
+    metadata: oj.CollectionUtils.mergeDeep(__oj_slider_metadata, bindingMeta)
   });
 
 var __oj_range_slider_metadata = 
@@ -377,10 +376,9 @@ var __oj_range_slider_metadata =
   __oj_range_slider_metadata.extension._WIDGET_NAME = 'ojSlider';
   __oj_range_slider_metadata.extension._INNER_ELEM = 'input';
   oj.CustomElementBridge.register('oj-range-slider', {
-    metadata:
-      oj.CollectionUtils.mergeDeep(__oj_range_slider_metadata, bindingMeta)
+    metadata: oj.CollectionUtils.mergeDeep(__oj_range_slider_metadata, bindingMeta)
   });
-}());
+})();
 
 const OJ_SLIDER_THUMB = '.oj-slider-thumb';
 const ARIA_LABEL = 'aria-label';
@@ -424,6 +422,7 @@ const UI_DRAGGABLE = '.ui-draggable';
    * @ojvbdefaultcolumns 3
    * @ojvbmincolumns 3
    *
+   * @ojoracleicon 'oj-ux-ico-range-slider'
    * @ojuxspecs ['slider']
    *
    * @classdesc
@@ -675,6 +674,8 @@ const UI_DRAGGABLE = '.ui-draggable';
    * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
    * @ojvbdefaultcolumns 3
    * @ojvbmincolumns 3
+   *
+   * @ojoracleicon 'oj-ux-ico-slider'
    *
    * @classdesc
    * <h3 id="sliderOverview-section">
@@ -932,92 +933,92 @@ const UI_DRAGGABLE = '.ui-draggable';
    *
    */
 
- //-----------------------------------------------------
- //                   Styling
- //-----------------------------------------------------
- // ---------------- oj-focus-highlight --------------
- /**
-  * Under normal circumstances this class is applied automatically.
-  * It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
-  * The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
-  * The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
-  * <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
-  * <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
-  * <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
-  * To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
-  * @ojstyleclass oj-focus-highlight
-  * @ojdisplayname Focus Styling
-  * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
-  * @memberof oj.ojSlider
-  * @ojtsexample
-  * &lt;oj-slider class="oj-focus-highlight">
-  *   &lt;!-- Content -->
-  * &lt;/oj-slider>
-  */
- // ---------------- oj-form-control-full-width --------------
- /**
-  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
-  * @ojstyleclass oj-form-control-full-width
-  * @ojdisplayname Full Width
-  * @memberof oj.ojSlider
-  * @ojtsexample
-  * &lt;oj-slider class="oj-form-control-full-width">
-  * &lt;/oj-slider>
-  */
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+  // ---------------- oj-focus-highlight --------------
+  /**
+   * Under normal circumstances this class is applied automatically.
+   * It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
+   * The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
+   * The application-level behavior for this component is controlled in the theme by the <code class="prettyprint"><span class="pln">$focusHighlightPolicy </span></code>SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:<br/><br/>
+   * <code class="prettyprint"><span class="pln">nonPointer: </span></code>oj-focus-highlight is applied only when focus is not the result of pointer interaction. Most themes default to this value.<br/>
+   * <code class="prettyprint"><span class="pln">all: </span></code> oj-focus-highlight is applied regardless of the focus mechanism.<br/>
+   * <code class="prettyprint"><span class="pln">none: </span></code> oj-focus-highlight is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.<br/><br/>
+   * To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed.<br/>
+   * @ojstyleclass oj-focus-highlight
+   * @ojdisplayname Focus Styling
+   * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
+   * @memberof oj.ojSlider
+   * @ojtsexample
+   * &lt;oj-slider class="oj-focus-highlight">
+   *   &lt;!-- Content -->
+   * &lt;/oj-slider>
+   */
+  // ---------------- oj-form-control-full-width --------------
+  /**
+   * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+   * @ojstyleclass oj-form-control-full-width
+   * @ojdisplayname Full Width
+   * @memberof oj.ojSlider
+   * @ojtsexample
+   * &lt;oj-slider class="oj-form-control-full-width">
+   * &lt;/oj-slider>
+   */
 
- // ---------------- oj-form-control max-width --------------
- /**
-  * In the Redwood theme the default max width of a text field is 100%.
-  * These max width convenience classes are available to create a medium or small field.<br>
-  * The class is applied to the root element.
-  * @ojstyleset form-control-max-width
-  * @ojdisplayname Max Width
-  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
-  * @ojstylerelation exclusive
-  * @memberof oj.ojSlider
-  * @ojunsupportedthemes ['Alta']
-  * @ojtsexample
-  * &lt;oj-slider class="oj-form-control-max-width-md">&lt;/oj-slider>
-  */
- /**
-  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
-  * @ojshortdesc Sets the max width for a small field
-  * @ojdisplayname Small
-  * @memberof! oj.ojSlider
-  */
- /**
-  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
-  * @ojshortdesc Sets the max width for a medium field
-  * @ojdisplayname Medium
-  * @memberof! oj.ojSlider
-  */
+  // ---------------- oj-form-control max-width --------------
+  /**
+   * In the Redwood theme the default max width of a text field is 100%.
+   * These max width convenience classes are available to create a medium or small field.<br>
+   * The class is applied to the root element.
+   * @ojstyleset form-control-max-width
+   * @ojdisplayname Max Width
+   * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+   * @ojstylerelation exclusive
+   * @memberof oj.ojSlider
+   * @ojunsupportedthemes ['Alta']
+   * @ojtsexample
+   * &lt;oj-slider class="oj-form-control-max-width-md">&lt;/oj-slider>
+   */
+  /**
+   * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+   * @ojshortdesc Sets the max width for a small field
+   * @ojdisplayname Small
+   * @memberof! oj.ojSlider
+   */
+  /**
+   * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+   * @ojshortdesc Sets the max width for a medium field
+   * @ojdisplayname Medium
+   * @memberof! oj.ojSlider
+   */
 
- // ---------------- oj-form-control width --------------
- /**
-  * In the Redwood theme the default width of a text field is 100%.
-  * These width convenience classes are available to create a medium or small field.<br>
-  * The class is applied to the root element.
-  * @ojstyleset form-control-width
-  * @ojdisplayname Width
-  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
-  * @ojstylerelation exclusive
-  * @memberof oj.ojSlider
-  * @ojunsupportedthemes ['Alta']
-  * @ojtsexample
-  * &lt;oj-slider class="oj-form-control-width-md">&lt;/oj-slider>
-  */
- /**
-  * @ojstyleclass form-control-width.oj-form-control-width-sm
-  * @ojshortdesc Sets the width for a small field
-  * @ojdisplayname Small
-  * @memberof! oj.ojSlider
-  */
- /**
-  * @ojstyleclass form-control-width.oj-form-control-width-md
-  * @ojshortdesc Sets the width for a medium field
-  * @ojdisplayname Medium
-  * @memberof! oj.ojSlider
-  */
+  // ---------------- oj-form-control width --------------
+  /**
+   * In the Redwood theme the default width of a text field is 100%.
+   * These width convenience classes are available to create a medium or small field.<br>
+   * The class is applied to the root element.
+   * @ojstyleset form-control-width
+   * @ojdisplayname Width
+   * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+   * @ojstylerelation exclusive
+   * @memberof oj.ojSlider
+   * @ojunsupportedthemes ['Alta']
+   * @ojtsexample
+   * &lt;oj-slider class="oj-form-control-width-md">&lt;/oj-slider>
+   */
+  /**
+   * @ojstyleclass form-control-width.oj-form-control-width-sm
+   * @ojshortdesc Sets the width for a small field
+   * @ojdisplayname Small
+   * @memberof! oj.ojSlider
+   */
+  /**
+   * @ojstyleclass form-control-width.oj-form-control-width-md
+   * @ojshortdesc Sets the width for a medium field
+   * @ojdisplayname Medium
+   * @memberof! oj.ojSlider
+   */
   /**
    * @ojstylevariableset oj-slider-css-set1
    * @ojstylevariable oj-slider-thumb-width {description: "Slider thumb width", formats: ["length"], help: "#css-variables"}
@@ -1026,46 +1027,46 @@ const UI_DRAGGABLE = '.ui-draggable';
    * @ojstylevariable oj-slider-thumb-border-width {description: "Slider thumb border width", formats: ["length"], help: "#css-variables"}
    * @ojstylevariable oj-slider-track-thickness {description: "Slider track thickness", formats: ["length"], help: "#css-variables"}
    * @memberof oj.ojSlider
-  */
+   */
   /**
-  * CSS variables used by oj-slider when enabled
-  * @ojstylevariableset oj-slider-css-set2
-  * @ojdisplayname Enabled
-  * @ojstylevariable oj-slider-thumb-bg-color {description: "Slider thumb background color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
-  * @ojstylevariable oj-slider-thumb-border-color {description: "Slider thumb border color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
-  * @ojstylevariable oj-slider-thumb-box-shadow {description: "Slider thumb box shadow when enabled", help: "#oj-slider-css-set2"}
-  * @ojstylevariable oj-slider-track-bg-color {description: "Slider track background color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
-  * @ojstylevariable oj-slider-value-bg-color {description: "Slider value background color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
-  * @memberof oj.ojSlider
-  */
- /**
-  * CSS variables used by oj-slider when hovered
-  * @ojstylevariableset oj-slider-css-set3
-  * @ojdisplayname Hovered
-  * @ojstylevariable oj-slider-thumb-bg-color-hover {description: "Slider thumb background color when hovered", formats: ["color"], help: "#oj-slider-css-set3"}
-  * @ojstylevariable oj-slider-thumb-box-shadow-hover {description: "Slider thumb box shadow when hovered", help: "#oj-slider-css-set3"}
-  * @memberof oj.ojSlider
-  */
- /**
-  * CSS variables used by oj-slider when active
-  * @ojstylevariableset oj-slider-css-set4
-  * @ojdisplayname Active
-  * @ojstylevariable oj-slider-thumb-bg-color-active {description: "Slider thumb background color when active", formats: ["color"], help: "#oj-slider-css-set4"}
-  * @ojstylevariable oj-slider-thumb-border-color-active {description: "Slider thumb border color when active", formats: ["color"], help: "#oj-slider-css-set4"}
-  * @ojstylevariable oj-slider-thumb-box-shadow-active {description: "Slider thumb box shadow when active", help: "#oj-slider-css-set4"}
-  * @ojstylevariable oj-slider-thumb-scale-active {description: "Slider thumb scale when active", formats: ["number"], help: "#oj-slider-css-set4"}
-  * @memberof oj.ojSlider
-  */
- /**
-  * CSS variables used by oj-slider when disabled
-  * @ojstylevariableset oj-slider-css-set5
-  * @ojdisplayname Disabled
-  * @ojstylevariable oj-slider-thumb-bg-color-disabled {description: "Slider thumb background color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
-  * @ojstylevariable oj-slider-thumb-border-color-disabled {description: "Slider thumb border color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
-  * @ojstylevariable oj-slider-track-bg-color-disabled {description: "Slider track background color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
-  * @ojstylevariable oj-slider-value-bg-color-disabled {description: "Slider value background color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
-  * @memberof oj.ojSlider
-  */
+   * CSS variables used by oj-slider when enabled
+   * @ojstylevariableset oj-slider-css-set2
+   * @ojdisplayname Enabled
+   * @ojstylevariable oj-slider-thumb-bg-color {description: "Slider thumb background color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
+   * @ojstylevariable oj-slider-thumb-border-color {description: "Slider thumb border color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
+   * @ojstylevariable oj-slider-thumb-box-shadow {description: "Slider thumb box shadow when enabled", help: "#oj-slider-css-set2"}
+   * @ojstylevariable oj-slider-track-bg-color {description: "Slider track background color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
+   * @ojstylevariable oj-slider-value-bg-color {description: "Slider value background color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
+   * @memberof oj.ojSlider
+   */
+  /**
+   * CSS variables used by oj-slider when hovered
+   * @ojstylevariableset oj-slider-css-set3
+   * @ojdisplayname Hovered
+   * @ojstylevariable oj-slider-thumb-bg-color-hover {description: "Slider thumb background color when hovered", formats: ["color"], help: "#oj-slider-css-set3"}
+   * @ojstylevariable oj-slider-thumb-box-shadow-hover {description: "Slider thumb box shadow when hovered", help: "#oj-slider-css-set3"}
+   * @memberof oj.ojSlider
+   */
+  /**
+   * CSS variables used by oj-slider when active
+   * @ojstylevariableset oj-slider-css-set4
+   * @ojdisplayname Active
+   * @ojstylevariable oj-slider-thumb-bg-color-active {description: "Slider thumb background color when active", formats: ["color"], help: "#oj-slider-css-set4"}
+   * @ojstylevariable oj-slider-thumb-border-color-active {description: "Slider thumb border color when active", formats: ["color"], help: "#oj-slider-css-set4"}
+   * @ojstylevariable oj-slider-thumb-box-shadow-active {description: "Slider thumb box shadow when active", help: "#oj-slider-css-set4"}
+   * @ojstylevariable oj-slider-thumb-scale-active {description: "Slider thumb scale when active", formats: ["number"], help: "#oj-slider-css-set4"}
+   * @memberof oj.ojSlider
+   */
+  /**
+   * CSS variables used by oj-slider when disabled
+   * @ojstylevariableset oj-slider-css-set5
+   * @ojdisplayname Disabled
+   * @ojstylevariable oj-slider-thumb-bg-color-disabled {description: "Slider thumb background color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
+   * @ojstylevariable oj-slider-thumb-border-color-disabled {description: "Slider thumb border color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
+   * @ojstylevariable oj-slider-track-bg-color-disabled {description: "Slider track background color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
+   * @ojstylevariable oj-slider-value-bg-color-disabled {description: "Slider value background color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
+   * @memberof oj.ojSlider
+   */
   oj.__registerWidget('oj.ojSlider', $.oj.editableValue, {
     defaultElement: '<input>',
     version: '1.0.1',
@@ -1266,7 +1267,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        *
        * @example <caption>Initialize the slider with the
        * <code class="prettyprint">orientation</code> attribute:</caption>
-        * &lt;oj-slider orientation="vertical">&lt;/oj-slider>
+       * &lt;oj-slider orientation="vertical">&lt;/oj-slider>
        *
        * @example <caption>Get or set the <code class="prettyprint">orientation</code>
        * property after initialization:</caption>
@@ -1293,7 +1294,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        *
        * @example <caption>Initialize the range slider with the
        * <code class="prettyprint">orientation</code> attribute:</caption>
-        * &lt;oj-range-slider orientation="vertical">&lt;/oj-range-slider>
+       * &lt;oj-range-slider orientation="vertical">&lt;/oj-range-slider>
        *
        * @example <caption>Get or set the <code class="prettyprint">orientation</code>
        * property after initialization:</caption>
@@ -1330,7 +1331,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        * </p>
        * @example <caption>Initialize component with <code class="prettyprint">readOnly</code>
        * attribute:</caption>
-        * &lt;oj-slider readOnly="true">&lt;/oj-slider>
+       * &lt;oj-slider readOnly="true">&lt;/oj-slider>
        * @example <caption>Get or set the <code class="prettyprint">readOnly</code> property after initialization:</caption>
        * // Getter
        * var readOnly = myComponent.readOnly;
@@ -1356,7 +1357,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        *
        * @example <caption>Initialize component with <code class="prettyprint">readOnly</code>
        * attribute:</caption>
-        * &lt;oj-range-slider readOnly="true">&lt;/oj-range-slider>
+       * &lt;oj-range-slider readOnly="true">&lt;/oj-range-slider>
        * @example <caption>Get or set the <code class="prettyprint">readOnly</code> property after initialization:</caption>
        * // Getter
        * var readOnly = myComponent.readOnly;
@@ -1382,7 +1383,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        *
        * @example <caption>Initialize the slider with
        * <code class="prettyprint">disabled</code> attribute:</caption>
-        * &lt;oj-slider disabled="true">&lt;/oj-slider>
+       * &lt;oj-slider disabled="true">&lt;/oj-slider>
        * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
        * // Getter
        * var disabled = myComponent.disabled;
@@ -1407,7 +1408,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        *
        * @example <caption>Initialize the slider with
        * <code class="prettyprint">disabled</code> attribute:</caption>
-        * &lt;oj-range-slider disabled="true">&lt;/oj-range-slider>
+       * &lt;oj-range-slider disabled="true">&lt;/oj-range-slider>
        * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
        * // Getter
        * var disabled = myComponent.disabled;
@@ -1497,7 +1498,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        *
        * @example <caption>Initialize component with <code class="prettyprint">type</code>
        * attribute set to "fromMax":</caption>
-        * &lt;oj-slider type="fromMax">&lt;/oj-slider>
+       * &lt;oj-slider type="fromMax">&lt;/oj-slider>
        * @example <caption>Get or set the <code class="prettyprint">type</code> property after initialization:</caption>
        * // Getter
        * var type = myComponent.type;
@@ -1517,7 +1518,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        *
        * @example <caption>Initialize the slider with the
        * <code class="prettyprint">value</code> attribute:</caption>
-        * &lt;oj-slider value=55>&lt;/oj-slider>
+       * &lt;oj-slider value=55>&lt;/oj-slider>
        * @example <caption>Get or set <code class="prettyprint">value</code> property
        * after initialization:</caption>
        * // Getter
@@ -1545,7 +1546,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        *
        * @example <caption>Initialize the range-slider with the
        * <code class="prettyprint">value</code> attribute:</caption>
-        * &lt;oj-range-slider value={start:10, end:40} >&lt;/oj-range-slider>
+       * &lt;oj-range-slider value={start:10, end:40} >&lt;/oj-range-slider>
        * @example <caption>Get or set <code class="prettyprint">value</code> property
        * after initialization:</caption>
        * // Getter
@@ -1581,7 +1582,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        * @default null
        * @since 8.2.0
        */
-        // start: null,
+      // start: null,
       /**
        * End value of the range selected.
        *
@@ -1594,7 +1595,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        * @default null
        * @since 8.2.0
        */
-        // end: null
+      // end: null
       // },
       value: 0,
 
@@ -1656,7 +1657,7 @@ const UI_DRAGGABLE = '.ui-draggable';
        * @default null
        * @since 8.2.0
        */
-        // start: null,
+      // start: null,
       /**
        * End value of the range selected.
        *
@@ -1670,7 +1671,6 @@ const UI_DRAGGABLE = '.ui-draggable';
        * @since 8.2.0
        */
       rawValue: undefined
-
     },
 
     // number of pages in a slider
@@ -1720,16 +1720,16 @@ const UI_DRAGGABLE = '.ui-draggable';
       this._componentSetup();
     },
 
-     /**
-      * Convenience function to set the rawValue option. Overrides EditableValue _SetRawValue.
-      * @param {String} val value to set rawValue to
-      * @param {Event} event DOM event
-      * @return {void}
-      * @memberof oj.ojSlider
-      * @instance
-      * @override
-      * @private
-      */
+    /**
+     * Convenience function to set the rawValue option. Overrides EditableValue _SetRawValue.
+     * @param {String} val value to set rawValue to
+     * @param {Event} event DOM event
+     * @return {void}
+     * @memberof oj.ojSlider
+     * @instance
+     * @override
+     * @private
+     */
     _SetRawValue: function (val, event) {
       var flags = {
         _context: { originalEvent: event, writeback: true, internalSet: true, readOnly: true }
@@ -1741,8 +1741,7 @@ const UI_DRAGGABLE = '.ui-draggable';
     // Setup the component's styling during component creation.
     _componentCreateStyling: function () {
       var elementWrapped = this._elementWrapped[0];
-      elementWrapped.classList.add(
-        'oj-slider', 'oj-component', 'oj-form-control');
+      elementWrapped.classList.add('oj-slider', 'oj-component', 'oj-form-control');
       this._setOrientationStyles(true);
     },
     // sets the styling for vertical or horizontal orientation.
@@ -1806,20 +1805,18 @@ const UI_DRAGGABLE = '.ui-draggable';
       if (this._isCustomRangeSlider()) {
         var labelEl = document.getElementById(labelId);
         var ariaLabelText = labelEl ? labelEl.textContent : '';
-        var lowerValueThumbString = getTranslatedString(
-          'oj-ojSlider.lowerValueThumb'
-        );
+        var lowerValueThumbString = getTranslatedString('oj-ojSlider.lowerValueThumb');
         var higherValueThumbString = getTranslatedString(
           'oj-ojSlider.higherValueThumb'
         );
-        thumb.attr(ARIA_LABEL, ariaLabelText + ' ' + lowerValueThumbString);// @HTMLUpdateOK
+        thumb.attr(ARIA_LABEL, ariaLabelText + ' ' + lowerValueThumbString); // @HTMLUpdateOK
         thumb2 = thumb[1];
-        $(thumb2).attr(ARIA_LABEL, ariaLabelText + ' ' + higherValueThumbString);// @HTMLUpdateOK
+        $(thumb2).attr(ARIA_LABEL, ariaLabelText + ' ' + higherValueThumbString); // @HTMLUpdateOK
       } else {
-        thumb.attr(ARIA_LABELLEDBY, labelId);// @HTMLUpdateOK
+        thumb.attr(ARIA_LABELLEDBY, labelId); // @HTMLUpdateOK
         if (thumb.length > 1) {
           thumb2 = thumb[1];
-          $(thumb2).attr(ARIA_LABELLEDBY, String(labelId));// @HTMLUpdateOK
+          $(thumb2).attr(ARIA_LABELLEDBY, String(labelId)); // @HTMLUpdateOK
         }
       }
     },
@@ -1827,20 +1824,18 @@ const UI_DRAGGABLE = '.ui-draggable';
     _setAriaLabelToThumb: function (ariaLabel) {
       var thumb;
       if (this._isCustomRangeSlider()) {
-        var lowerValueThumbString = getTranslatedString(
-          'oj-ojSlider.lowerValueThumb'
-        );
+        var lowerValueThumbString = getTranslatedString('oj-ojSlider.lowerValueThumb');
         var higherValueThumbString = getTranslatedString(
           'oj-ojSlider.higherValueThumb'
         );
 
         thumb = this._elementWrapped.find(OJ_SLIDER_THUMB);
-        thumb.attr(ARIA_LABEL, ariaLabel + ' ' + lowerValueThumbString);// @HTMLUpdateOK
+        thumb.attr(ARIA_LABEL, ariaLabel + ' ' + lowerValueThumbString); // @HTMLUpdateOK
         var thumb2 = thumb[1];
-        $(thumb2).attr(ARIA_LABEL, ariaLabel + ' ' + higherValueThumbString);// @HTMLUpdateOK
+        $(thumb2).attr(ARIA_LABEL, ariaLabel + ' ' + higherValueThumbString); // @HTMLUpdateOK
       } else {
         thumb = this.OuterWrapper.querySelector(OJ_SLIDER_THUMB);
-        thumb.setAttribute(ARIA_LABEL, ariaLabel);// @HTMLUpdateOK
+        thumb.setAttribute(ARIA_LABEL, ariaLabel); // @HTMLUpdateOK
       }
     },
 
@@ -1862,9 +1857,10 @@ const UI_DRAGGABLE = '.ui-draggable';
       if (this.OuterWrapper) {
         if (this.options.labelledBy) {
           var defaultLabelId = this.uuid + '_Label';
-          ariaLabelledBy =
-          EditableValueUtils._getOjLabelAriaLabelledBy(
-            this.options.labelledBy, defaultLabelId);
+          ariaLabelledBy = EditableValueUtils._getOjLabelAriaLabelledBy(
+            this.options.labelledBy,
+            defaultLabelId
+          );
           this._copyLabelledbyToThumb(ariaLabelledBy);
         }
         // there is a use-case where aria-label is set on the component, and we write that to the
@@ -1903,7 +1899,7 @@ const UI_DRAGGABLE = '.ui-draggable';
             thumb = this._elementWrapped.find(OJ_SLIDER_THUMB);
 
             // Set the aria-labelledby attribute of the thumb to the returned id
-            thumb.attr(ARIA_LABEL, ariaLabelString);// @HTMLUpdateOK
+            thumb.attr(ARIA_LABEL, ariaLabelString); // @HTMLUpdateOK
           }
         }
       }
@@ -2028,13 +2024,13 @@ const UI_DRAGGABLE = '.ui-draggable';
         if (!this._elementWrapped[0].id) {
           this._elementWrapped.uniqueId();
         }
-        return (this._elementWrapped[0].id);
+        return this._elementWrapped[0].id;
       }
 
       if (!this.element[0].id) {
         this.element.uniqueId();
       }
-      return (this.element[0].id);
+      return this.element[0].id;
     },
 
     //
@@ -2042,7 +2038,7 @@ const UI_DRAGGABLE = '.ui-draggable';
     //
     _getThumbId: function (index) {
       var elementId = this._getElementId();
-      return (elementId + '-thumb' + index);
+      return elementId + '-thumb' + index;
     },
 
     //
@@ -2050,7 +2046,7 @@ const UI_DRAGGABLE = '.ui-draggable';
     //
     _getBarValueId: function () {
       var elementId = this._getElementId();
-      return (elementId + '-barValue');
+      return elementId + '-barValue';
     },
 
     //
@@ -2058,7 +2054,7 @@ const UI_DRAGGABLE = '.ui-draggable';
     //
     _getBarBackgroundId: function () {
       var elementId = this._getElementId();
-      return (elementId + '-barBack');
+      return elementId + '-barBack';
     },
 
     //
@@ -2066,7 +2062,7 @@ const UI_DRAGGABLE = '.ui-draggable';
     //
     _getSliderWrapperId: function () {
       var elementId = this._getElementId();
-      return (elementId + '-sliderWrapper');
+      return elementId + '-sliderWrapper';
     },
 
     _createThumbs: function () {
@@ -2076,8 +2072,11 @@ const UI_DRAGGABLE = '.ui-draggable';
       var ariaMax = "aria-valuemax = '" + this._valueMax() + "' ";
       var thumb = '';
       var thumbSpanStart = '<span ';
-      var thumbClasses = "class='oj-slider-thumb ui-state-default' tabindex='0' role='slider'"
-          + ariaMin + ariaMax + '></span>';
+      var thumbClasses =
+        "class='oj-slider-thumb ui-state-default' tabindex='0' role='slider'" +
+        ariaMin +
+        ariaMax +
+        '></span>';
       var thumbs = [];
 
       if (this._multipleThumbs) {
@@ -2177,7 +2176,6 @@ const UI_DRAGGABLE = '.ui-draggable';
       this._barback.on('mousedown' + this.eventNamespace, this._reposition.bind(this));
     },
 
-
     _reposition: function (event) {
       this._repositionThumb(event);
       this._mouseStop(event);
@@ -2207,9 +2205,9 @@ const UI_DRAGGABLE = '.ui-draggable';
             this.options.value.end = this._valueMax();
           }
 
-          this.option('value',
-                      this.options.value,
-                      { _context: { writeback: true, internalSet: true } });
+          this.option('value', this.options.value, {
+            _context: { writeback: true, internalSet: true }
+          });
         }
       } else if (options.type) {
         if (this.options.value == null) {
@@ -2224,9 +2222,9 @@ const UI_DRAGGABLE = '.ui-draggable';
             this.options.value = this._valueMin();
           }
 
-          this.option('value',
-                      this.options.value,
-                      { _context: { writeback: true, internalSet: true } });
+          this.option('value', this.options.value, {
+            _context: { writeback: true, internalSet: true }
+          });
         } else if (this._multipleThumbs) {
           if (this.options.value.length !== 2) {
             //
@@ -2238,9 +2236,9 @@ const UI_DRAGGABLE = '.ui-draggable';
             else firstValue = this._valueMin();
 
             this.options.value = [firstValue, this._valueMax()];
-            this.option('value',
-                        this.options.value,
-                        { _context: { writeback: true, internalSet: true } });
+            this.option('value', this.options.value, {
+              _context: { writeback: true, internalSet: true }
+            });
           }
         }
       }
@@ -2289,14 +2287,13 @@ const UI_DRAGGABLE = '.ui-draggable';
     _tearDownTouch: function (e) {
       oj._TouchProxy.removeTouchListeners(e);
     },
-// The resizeObserver listens for when a user resizes the window and recalculates the slider’s
-// width and grid, so that when a user resizes the window, the thumb will still snap to the latest grid, whether
-// in a form-layout or not.
+    // The resizeObserver listens for when a user resizes the window and recalculates the slider’s
+    // width and grid, so that when a user resizes the window, the thumb will still snap to the latest grid, whether
+    // in a form-layout or not.
     _registerResizeListener: function (element) {
       this._resizeObserver = new ResizeObserver(this._makeDraggable.bind(this));
       this._resizeObserver.observe(element);
     },
-
 
     /**
      * Setup events for slider.
@@ -2311,30 +2308,26 @@ const UI_DRAGGABLE = '.ui-draggable';
         this._AddHoverable(this._elementWrapped);
       }
 
-      this._thumbs.toArray().forEach(
+      this._thumbs.toArray().forEach(function (current) {
+        var thumb = $(current);
 
-        function (current) {
-          var thumb = $(current);
+        // setup keyboard events on each thumb.
+        this._UnregisterChildNode(thumb);
+        this._on(thumb, this._thumbEvents);
 
-          // setup keyboard events on each thumb.
-          this._UnregisterChildNode(thumb);
-          this._on(thumb, this._thumbEvents);
+        // setup touch events on each thumb
+        this._setupTouch(thumb);
 
-          // setup touch events on each thumb
-          this._setupTouch(thumb);
+        // Each thumb can be focusable.
+        this._focusable({
+          element: thumb,
+          applyHighlight: true
+        });
 
-          // Each thumb can be focusable.
-          this._focusable({
-            element: thumb,
-            applyHighlight: true
-          });
-
-          // We should double-check the need for hoverable on thumbs
-          // once there is a more consistent cross-component story for hoverable
-          // this._hoverable(thumb);
-        },
-        this
-      );
+        // We should double-check the need for hoverable on thumbs
+        // once there is a more consistent cross-component story for hoverable
+        // this._hoverable(thumb);
+      }, this);
     },
 
     // This call is necessary in order to implement popup messaging properly.
@@ -2368,13 +2361,10 @@ const UI_DRAGGABLE = '.ui-draggable';
     _destroySliderDom: function () {
       this._resizeObserver.disconnect();
       // Tear down touch events for each thumb.
-      this._thumbs.toArray().forEach(
-        function (current) {
-          var thumb = $(current);
-          this._tearDownTouch(thumb);
-        },
-        this
-      );
+      this._thumbs.toArray().forEach(function (current) {
+        var thumb = $(current);
+        this._tearDownTouch(thumb);
+      }, this);
 
       this._destroyDraggable();
 
@@ -2441,15 +2431,16 @@ const UI_DRAGGABLE = '.ui-draggable';
       position = { x: event.pageX, y: event.pageY };
       normValue = this._getNormValueFromMouse(position);
 
-      distance = (this._valueMax() - this._valueMin()) + 1;
+      distance = this._valueMax() - this._valueMin() + 1;
 
       if (this._multipleThumbs) {
         this._thumbs.each(function (i) {
           var thisDistance = Math.abs(normValue - that._getMultiValues(i));
-          if ((distance > thisDistance) ||
-              (distance === thisDistance &&
-               (i === that._lastChangedValueIndex ||
-                that._getMultiValues(i) === o.min))) {
+          if (
+            distance > thisDistance ||
+            (distance === thisDistance &&
+              (i === that._lastChangedValueIndex || that._getMultiValues(i) === o.min))
+          ) {
             distance = thisDistance;
             this._closestThumb = $(this);
             index = i;
@@ -2528,7 +2519,7 @@ const UI_DRAGGABLE = '.ui-draggable';
     },
 
     _isVertical: function () {
-      return (this.options.orientation === 'vertical');
+      return this.options.orientation === 'vertical';
     },
     //
     // Adjust the fraction for bounds limits and orientation.
@@ -2564,7 +2555,7 @@ const UI_DRAGGABLE = '.ui-draggable';
         fracMouse = 1 - fracMouse;
       }
 
-      valueMouse = this._valueMin() + (fracMouse * valueTotal);
+      valueMouse = this._valueMin() + fracMouse * valueTotal;
 
       return this._trimAlignValue(valueMouse);
     },
@@ -2589,7 +2580,7 @@ const UI_DRAGGABLE = '.ui-draggable';
 
       if (pixelTotal === 0) return 1;
 
-      fracMouse = (pixelMouse / pixelTotal);
+      fracMouse = pixelMouse / pixelTotal;
       fracMouse = this._getOrientationAdjustedFrac(fracMouse);
 
       return fracMouse;
@@ -2598,9 +2589,9 @@ const UI_DRAGGABLE = '.ui-draggable';
     // Return the active thumb
     _getActiveThumb: function () {
       if (this._multipleThumbs) {
-        return ($(this._thumbs[this._thumbIndex ? this._thumbIndex : 0]));
+        return $(this._thumbs[this._thumbIndex ? this._thumbIndex : 0]);
       }
-      return (this._thumb);
+      return this._thumb;
     },
 
     //
@@ -2636,7 +2627,7 @@ const UI_DRAGGABLE = '.ui-draggable';
         return 1;
       }
 
-      fracThumb = (pixelMouse / pixelTotal);
+      fracThumb = pixelMouse / pixelTotal;
 
       fracThumb = this._getOrientationAdjustedFrac(fracThumb);
 
@@ -2656,14 +2647,14 @@ const UI_DRAGGABLE = '.ui-draggable';
         fracThumb = 1 - fracThumb;
       }
 
-      valueMouse = this._valueMin() + (fracThumb * valueTotal);
+      valueMouse = this._valueMin() + fracThumb * valueTotal;
 
-      return (this._trimAlignValue(valueMouse));
+      return this._trimAlignValue(valueMouse);
     },
 
     // Return the value for the inactive thumb.
     _getOtherThumbValue: function (index) {
-      return (this._getMultiValues(index ? 0 : 1));
+      return this._getMultiValues(index ? 0 : 1);
     },
 
     //
@@ -2673,21 +2664,24 @@ const UI_DRAGGABLE = '.ui-draggable';
     _getNewThumbValueLimited: function (index, newVal, otherVal) {
       var returnVal;
       if (this._isCustomRangeSlider()) {
-        if ((this.options.value.start !== null && this.options.value.end !== null) &&
-            ((index === 0 && newVal > otherVal) || (index === 1 && newVal < otherVal))
-          ) {
+        if (
+          this.options.value.start !== null &&
+          this.options.value.end !== null &&
+          ((index === 0 && newVal > otherVal) || (index === 1 && newVal < otherVal))
+        ) {
           returnVal = otherVal;
         } else {
           returnVal = newVal;
         }
-      } else if ((this.options.value.length === 2) &&
+      } else if (
+        this.options.value.length === 2 &&
         ((index === 0 && newVal > otherVal) || (index === 1 && newVal < otherVal))
       ) {
         returnVal = otherVal;
       } else {
         returnVal = newVal;
       }
-      return (returnVal);
+      return returnVal;
     },
 
     _slide: function (event, index, newValParam, rawOnly) {
@@ -2698,8 +2692,8 @@ const UI_DRAGGABLE = '.ui-draggable';
         var newVal = this._getNewThumbValueLimited(index, newValParam, otherVal);
         this._setMultiValue(event, index, newVal, rawOnly);
       } else {
-         // This case handles a single value
-         // sets slider thumb value
+        // This case handles a single value
+        // sets slider thumb value
         this._setSingleValue(event, newValParam, rawOnly);
 
         if (!rawOnly) {
@@ -2833,10 +2827,13 @@ const UI_DRAGGABLE = '.ui-draggable';
             // verify that the new value is within range.
             // this._checkValueBounds(coercedValue, this._valueMin(), this._valueMax());
             var coercedValueKeys = Object.keys(coercedValue);
-              // verify that the values are all within range.
+            // verify that the values are all within range.
             for (var index = 0; index < coercedValueKeys.length; index++) {
-              this._checkValueBounds(coercedValue[coercedValueKeys[index]],
-                this._valueMin(), this._valueMax());
+              this._checkValueBounds(
+                coercedValue[coercedValueKeys[index]],
+                this._valueMin(),
+                this._valueMax()
+              );
             }
           }
         } else if (Array.isArray(value)) {
@@ -2950,7 +2947,7 @@ const UI_DRAGGABLE = '.ui-draggable';
       switch (key) {
         case 'disabled':
           this._refreshThumbOptions();
-        // disable the dragging if disabled is true.
+          // disable the dragging if disabled is true.
           if (this.options.disabled) {
             this._disableDraggable();
           } else {
@@ -2965,7 +2962,6 @@ const UI_DRAGGABLE = '.ui-draggable';
 
         case 'min':
         case 'max':
-
           this._calculateNewMax();
           this._updateUI();
           this._makeDraggable();
@@ -3061,12 +3057,12 @@ const UI_DRAGGABLE = '.ui-draggable';
       if (val >= this._valueMax()) {
         return this._valueMax();
       }
-      var step = (this.options.step > 0) ? this.options.step : 1;
+      var step = this.options.step > 0 ? this.options.step : 1;
       var valModStep = (val - this._valueMin()) % step;
       var alignValue = val - valModStep;
 
       if (Math.abs(valModStep) * 2 >= step) {
-        alignValue += (valModStep > 0) ? step : (-step);
+        alignValue += valModStep > 0 ? step : -step;
       }
 
       // Since JavaScript has problems with large floats, round
@@ -3076,9 +3072,9 @@ const UI_DRAGGABLE = '.ui-draggable';
 
     _calculateNewMax: function () {
       var min = this._valueMin();
-      if ((((this.options.max - min) / this.options.step) % 1) !== 0) {
+      if (((this.options.max - min) / this.options.step) % 1 !== 0) {
         var remainder = (this.options.max - min) % this.options.step;
-        this.max = (this.options.max - remainder) + this.options.step;
+        this.max = this.options.max - remainder + this.options.step;
       } else {
         this.max = this.options.max;
       }
@@ -3125,13 +3121,13 @@ const UI_DRAGGABLE = '.ui-draggable';
     },
 
     _getThumbsValueFrac: function (index) {
-      return ((this._getMultiValues(index) - this._valueMin())
-              / (this._valueMax() - this._valueMin()));
+      return (
+        (this._getMultiValues(index) - this._valueMin()) / (this._valueMax() - this._valueMin())
+      );
       // Note - (max - min) is checked in options to make sure that
       // it is non-zero and positive
       // Note - we always use aligned values.
     },
-
 
     //
     // Update the UI, reflecting the value.
@@ -3149,43 +3145,39 @@ const UI_DRAGGABLE = '.ui-draggable';
       // Multiple thumbs case.
       //
       if (this._multipleThumbs) {
-        this._thumbs.toArray().forEach(
+        this._thumbs.toArray().forEach(function (current, i) {
+          var thumb = $(current);
+          valPercent = this._getThumbsValueFrac(i) * 100;
 
-          function (current, i) {
-            var thumb = $(current);
-            valPercent = this._getThumbsValueFrac(i) * 100;
+          if (this._isRTL() && !this._isVertical()) {
+            valPercent = 100 - valPercent;
+          }
 
-            if (this._isRTL() && !this._isVertical()) {
-              valPercent = 100 - valPercent;
-            }
+          if (!this._isVertical()) {
+            thumb.css({ left: valPercent + '%' });
+          } else {
+            thumb.css({ top: 100 - valPercent + '%' });
+          }
 
-            if (!this._isVertical()) {
-              thumb.css({ left: valPercent + '%' });
+          if (i === 0) {
+            startThumb = thumb;
+            // if the min thumb is at the max, set its zindex to 1
+            if (valPercent === 100) {
+              thumb.css({ zIndex: 1 });
             } else {
-              thumb.css({ top: (100 - valPercent) + '%' });
+              thumb.css({ zIndex: '' });
             }
+          } else {
+            endThumb = thumb;
+          }
 
-            if (i === 0) {
-              startThumb = thumb;
-              // if the min thumb is at the max, set its zindex to 1
-              if (valPercent === 100) {
-                thumb.css({ zIndex: 1 });
-              } else {
-                thumb.css({ zIndex: '' });
-              }
-            } else {
-              endThumb = thumb;
-            }
-
-            if (!thumb.hasClass('oj-active')) {
-              thumb.attr('aria-valuenow', this._getMultiValues(i));
-              thumb.attr('aria-valuemin', valueMin);
-              thumb.attr('aria-valuemax', valueMax);
-            }
-            this._setRangeMultiThumb(valPercent, i);
-          },
-          this
-        );
+          if (!thumb.hasClass('oj-active')) {
+            thumb.attr('aria-valuenow', this._getMultiValues(i));
+            thumb.attr('aria-valuemin', valueMin);
+            thumb.attr('aria-valuemax', valueMax);
+          }
+          this._setRangeMultiThumb(valPercent, i);
+        }, this);
         if (startThumb.hasClass('oj-focus')) {
           startThumb.css({ zIndex: 1 });
           endThumb.css({ zIndex: '' });
@@ -3205,15 +3197,14 @@ const UI_DRAGGABLE = '.ui-draggable';
 
         valueMin = this._valueMin();
         valueMax = this._valueMax();
-        valPercent = (valueMax !== valueMin) ?
-          ((value - valueMin) / (valueMax - valueMin)) * 100 : 0;
+        valPercent = valueMax !== valueMin ? ((value - valueMin) / (valueMax - valueMin)) * 100 : 0;
 
         if (this._isRTL() && !this._isVertical()) valPercent = 100 - valPercent;
 
         if (!this._isVertical()) {
           this._thumb.css({ left: valPercent + '%' });
         } else {
-          this._thumb.css({ top: (100 - valPercent) + '%' });
+          this._thumb.css({ top: 100 - valPercent + '%' });
         }
 
         //
@@ -3240,11 +3231,11 @@ const UI_DRAGGABLE = '.ui-draggable';
             this._range.css({ width: val + '%' });
           }
           if (oRange === 'fromMax') {
-            this._range.css({ width: (100 - val) + '%' });
+            this._range.css({ width: 100 - val + '%' });
           }
         } else {
           if (oRange === 'fromMin') {
-            this._range.css({ width: (100 - val) + '%' });
+            this._range.css({ width: 100 - val + '%' });
           }
           if (oRange === 'fromMax') {
             this._range.css({ width: val + '%' });
@@ -3255,7 +3246,7 @@ const UI_DRAGGABLE = '.ui-draggable';
           this._range.css({ height: val + '%' });
         }
         if (oRange === 'fromMax') {
-          this._range.css({ height: (100 - val) + '%' });
+          this._range.css({ height: 100 - val + '%' });
         }
       }
     },
@@ -3271,7 +3262,6 @@ const UI_DRAGGABLE = '.ui-draggable';
 
         switch (this.options.type) {
           case 'fromMin':
-
             if (!this._isVertical()) {
               this._range.css({ width: val + '%' });
             } else {
@@ -3280,18 +3270,17 @@ const UI_DRAGGABLE = '.ui-draggable';
             break;
 
           case 'range':
-
             if (!this._isVertical()) {
               if (!this._isRTL()) {
                 this._range.css({ left: val + '%' });
-                this._range.css({ width: (thumb1Pct - val) + '%' });
+                this._range.css({ width: thumb1Pct - val + '%' });
               } else {
-                this._range.css({ left: (100 - thumb1Pct) + '%' });
-                this._range.css({ width: (thumb1Pct - (100 - val)) + '%' });
+                this._range.css({ left: 100 - thumb1Pct + '%' });
+                this._range.css({ width: thumb1Pct - (100 - val) + '%' });
               }
             } else {
-              this._range.css({ top: (100 - thumb1Pct) + '%' });
-              this._range.css({ height: (thumb1Pct - val) + '%' });
+              this._range.css({ top: 100 - thumb1Pct + '%' });
+              this._range.css({ height: thumb1Pct - val + '%' });
             }
             break;
 
@@ -3304,27 +3293,26 @@ const UI_DRAGGABLE = '.ui-draggable';
         switch (this.options.type) {
           case 'fromMax':
             if (!this._isVertical()) {
-              this._range.css({ width: (100 - val) + '%' });
+              this._range.css({ width: 100 - val + '%' });
             } else {
-              this._range.css({ height: (100 - val) + '%' });
+              this._range.css({ height: 100 - val + '%' });
             }
             break;
 
           case 'range':
-
             if (!this._isVertical()) {
               if (!this._isRTL()) {
                 if (document.getElementById(id)) {
                   var barLeft = parseInt(document.getElementById(id).style.left, 10);
-                  this._range.css({ width: (val - barLeft) + '%' });
+                  this._range.css({ width: val - barLeft + '%' });
                 }
               } else if (document.getElementById(id)) {
                 this._range.css({ left: val + '%' });
-                this._range.css({ width: ((-val + 100) - thumb0Pct) + '%' });
+                this._range.css({ width: -val + 100 - thumb0Pct + '%' });
               }
             } else if (document.getElementById(id)) {
-              this._range.css({ top: (100 - val) + '%' });
-              this._range.css({ height: (val - thumb0Pct) + '%' });
+              this._range.css({ top: 100 - val + '%' });
+              this._range.css({ height: val - thumb0Pct + '%' });
             }
 
             break;
@@ -3383,16 +3371,16 @@ const UI_DRAGGABLE = '.ui-draggable';
             break;
           case $.ui.keyCode.PAGE_UP:
             newVal = this._trimAlignValue(
-              curVal + ((this._valueMax() - this._valueMin()) / this._numPages)
+              curVal + (this._valueMax() - this._valueMin()) / this._numPages
             );
             break;
           case $.ui.keyCode.PAGE_DOWN:
             newVal = this._trimAlignValue(
-              curVal - ((this._valueMax() - this._valueMin()) / this._numPages));
+              curVal - (this._valueMax() - this._valueMin()) / this._numPages
+            );
             break;
 
           case $.ui.keyCode.UP:
-
             // upArrow always increments the value
             if (curVal === this._valueMax()) return;
             tempVal = curVal + step;
@@ -3400,7 +3388,6 @@ const UI_DRAGGABLE = '.ui-draggable';
             break;
 
           case $.ui.keyCode.RIGHT:
-
             if (!this._isRTL() || this._isVertical()) {
               if (curVal === this._valueMax()) return;
               tempVal = curVal + step;
@@ -3413,7 +3400,6 @@ const UI_DRAGGABLE = '.ui-draggable';
             break;
 
           case $.ui.keyCode.DOWN:
-
             // Down arrow always decrements the value.
             if (curVal === this._valueMin()) return;
             tempVal = curVal - step;
@@ -3422,7 +3408,6 @@ const UI_DRAGGABLE = '.ui-draggable';
             break;
 
           case $.ui.keyCode.LEFT:
-
             if (!this._isRTL() || this._isVertical()) {
               if (curVal === this._valueMin()) return;
               tempVal = curVal - step;
@@ -3450,7 +3435,6 @@ const UI_DRAGGABLE = '.ui-draggable';
           case $.ui.keyCode.RIGHT:
           case $.ui.keyCode.DOWN:
           case $.ui.keyCode.LEFT:
-
             var index = $(event.target).data(OJ_SLIDER_THUMB_INDEX);
             this._thumbIndex = index;
 
@@ -3489,24 +3473,27 @@ const UI_DRAGGABLE = '.ui-draggable';
       var self = this;
 
       this._superApply(arguments);
-      var props =
-        [{ attribute: 'disabled', validateOption: true },
-         //                 {attribute: "placeholder"},
-         { attribute: 'value' },
+      var props = [
+        { attribute: 'disabled', validateOption: true },
+        //                 {attribute: "placeholder"},
+        { attribute: 'value' },
 
-         //
-         // Once slider supports read-only, uncomment the following line.
-         // {attribute: "readonly", option: "readOnly", validateOption: true},
-         //
+        //
+        // Once slider supports read-only, uncomment the following line.
+        // {attribute: "readonly", option: "readOnly", validateOption: true},
+        //
 
-         { attribute: 'title' },
-         { attribute: 'min' },
-         { attribute: 'max' },
-         { attribute: 'step' }];
+        { attribute: 'title' },
+        { attribute: 'min' },
+        { attribute: 'max' },
+        { attribute: 'step' }
+      ];
 
       if (!this._IsCustomElement()) {
         EditableValueUtils.initializeOptionsFromDom(
-          props, constructorOptions, this,
+          props,
+          constructorOptions,
+          this,
           // post-process callback
           function (_initializedOptions) {
             var initializedOptions = _initializedOptions;
@@ -3515,8 +3502,7 @@ const UI_DRAGGABLE = '.ui-draggable';
 
             for (var i = 0; i < toParse.length; i++) {
               var opt = toParse[i];
-              var value = (opt in initializedOptions) ?
-                  initializedOptions[opt] : opts[opt];
+              var value = opt in initializedOptions ? initializedOptions[opt] : opts[opt];
               if (value != null) {
                 if (opt === 'step') {
                   initializedOptions[opt] = self._parseStep(value);
@@ -3708,14 +3694,13 @@ const UI_DRAGGABLE = '.ui-draggable';
 
     // return the endpoint of the bar
     _getEndInterval: function () {
-      return (this._barback.offset().left + this._barback.width());
+      return this._barback.offset().left + this._barback.width();
     },
 
     // return the startpoint of the bar
     _getStartInterval: function () {
-      return (this._barback.offset().left);
+      return this._barback.offset().left;
     },
-
 
     //
     // Set up the draggable with the context, thumb, and containment parameters.
@@ -3810,11 +3795,11 @@ const UI_DRAGGABLE = '.ui-draggable';
             if (!that._isVertical()) {
               var halfThumbWidth = thumbParam.outerWidth() / 2;
               var parentLeft = that._barback.offsetParent().offset().left;
-              pos2 = (otherThumb.offset().left + halfThumbWidth) - parentLeft;
+              pos2 = otherThumb.offset().left + halfThumbWidth - parentLeft;
             } else {
               var halfThumbHeight = thumbParam.outerHeight() / 2;
               var parentTop = that._barback.offsetParent().offset().top;
-              pos2 = (otherThumb.offset().top + halfThumbHeight) - parentTop;
+              pos2 = otherThumb.offset().top + halfThumbHeight - parentTop;
             }
 
             if (that._thumbIndex === 0) {
@@ -3852,14 +3837,10 @@ const UI_DRAGGABLE = '.ui-draggable';
       if (this.options.disabled) return;
 
       if (this._multipleThumbs) {
-        this._thumbs.toArray().forEach(
-
-          function (current) {
-            var thumb = $(current);
-            this._callDraggable(thumb);
-          },
-          this
-        );
+        this._thumbs.toArray().forEach(function (current) {
+          var thumb = $(current);
+          this._callDraggable(thumb);
+        }, this);
       } else {
         this._callDraggable(this._thumb);
       }
@@ -3870,16 +3851,12 @@ const UI_DRAGGABLE = '.ui-draggable';
     //
     _disableDraggable: function () {
       if (this._multipleThumbs) {
-        this._thumbs.toArray().forEach(
-
-          function (current) {
-            var thumb = $(current);
-            if (thumb.is(UI_DRAGGABLE)) {
-              thumb.draggable('disable');
-            }
-          },
-          this
-        );
+        this._thumbs.toArray().forEach(function (current) {
+          var thumb = $(current);
+          if (thumb.is(UI_DRAGGABLE)) {
+            thumb.draggable('disable');
+          }
+        }, this);
       } else if (this._thumb.is(UI_DRAGGABLE)) {
         this._thumb.draggable('disable');
       }
@@ -3890,16 +3867,12 @@ const UI_DRAGGABLE = '.ui-draggable';
     //
     _destroyDraggable: function () {
       if (this._multipleThumbs) {
-        this._thumbs.toArray().forEach(
-
-          function (current) {
-            var thumb = $(current);
-            if (thumb.is(UI_DRAGGABLE)) {
-              thumb.draggable('destroy');
-            }
-          },
-          this
-        );
+        this._thumbs.toArray().forEach(function (current) {
+          var thumb = $(current);
+          if (thumb.is(UI_DRAGGABLE)) {
+            thumb.draggable('destroy');
+          }
+        }, this);
       } else if (this._thumb.is(UI_DRAGGABLE)) {
         this._thumb.draggable('destroy');
       }
@@ -3909,4 +3882,4 @@ const UI_DRAGGABLE = '.ui-draggable';
     // Draggable - end
     // ///////////////////////////////////////////////////////////////////////////////////////
   });
-}());
+})();

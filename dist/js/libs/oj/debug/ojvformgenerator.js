@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -91,26 +91,33 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojthemeutils', 'ojs/ojla
     const NO_MIN_COLUMN_WIDTH = ' oj-form-layout-no-min-column-width';
 
     function VLabeler(props) {
+        var _a;
         let compId;
-        if (props.children) {
-            const hasSingleChild = !Array.isArray(props.children);
+        let isCorePackFormComp = false;
+        let comp = props.children;
+        if (comp) {
+            const hasSingleChild = !Array.isArray(comp);
             if (hasSingleChild) {
-                compId = ojcustomelementUtils.ElementUtils.getUniqueId(props.children.props['id']);
+                compId = ojcustomelementUtils.ElementUtils.getUniqueId(comp.props['id']);
+                if (String((_a = comp.props.children) === null || _a === void 0 ? void 0 : _a.type).toLowerCase().startsWith('oj-c-')) {
+                    isCorePackFormComp = true;
+                    comp = comp.props.children;
+                }
             }
-            if (props.labelEdge === LABELEDGE_START) {
+            if (props.labelEdge === LABELEDGE_START && !isCorePackFormComp) {
                 return jsxRuntime.jsx(VStartLabeler, Object.assign({ forid: compId }, props));
             }
-            else if (props.labelEdge === LABELEDGE_TOP) {
+            else if (props.labelEdge === LABELEDGE_TOP && !isCorePackFormComp) {
                 return jsxRuntime.jsx(VTopLabeler, Object.assign({ forid: compId }, props));
             }
             else {
                 if (hasSingleChild) {
-                    if (props.labelEdge === 'inside') {
-                        props.children.props['labelEdge'] = props.labelEdge;
-                        props.children.props['labelHint'] = props.labelText;
+                    if (props.labelEdge === 'inside' || isCorePackFormComp) {
+                        comp.props['labelEdge'] = props.labelEdge;
+                        comp.props['labelHint'] = props.labelText;
                     }
                     else {
-                        props.children.props['labelEdge'] = 'none';
+                        comp.props['labelEdge'] = 'none';
                     }
                 }
                 return jsxRuntime.jsx(preact.Fragment, { children: props.children });

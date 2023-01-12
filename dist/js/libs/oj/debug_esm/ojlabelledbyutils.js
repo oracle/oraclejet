@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,13 +20,12 @@ const LabelledByUtils = {};
 
 // S T A T I C    V A R S
 
-
 /**
-* String used in the label element's id for custom &lt;oj-label>
-* @const
-* @ignore
-* @type {string}
-*/
+ * String used in the label element's id for custom &lt;oj-label>
+ * @const
+ * @ignore
+ * @type {string}
+ */
 LabelledByUtils.CUSTOM_LABEL_ELEMENT_ID = '|label';
 
 /**
@@ -74,7 +73,11 @@ LabelledByUtils.CUSTOM_LABEL_ELEMENT_ID = '|label';
  * @ignore
  */
 LabelledByUtils._labelledByUpdatedForSet = function (
-  componentId, originalLabelledBy, newLabelledBy, $focusElem) {
+  componentId,
+  originalLabelledBy,
+  newLabelledBy,
+  $focusElem
+) {
   if (!originalLabelledBy && !newLabelledBy) {
     // nothing to update. return
     return;
@@ -119,8 +122,11 @@ LabelledByUtils._labelledByUpdatedForSet = function (
  * @private
  * @ignore
  */
-LabelledByUtils._describedByUpdated = function (originalDescribedBy, newDescribedBy,
-  $focusElem = this._GetContentElement()) {
+LabelledByUtils._describedByUpdated = function (
+  originalDescribedBy,
+  newDescribedBy,
+  $focusElem = this._GetContentElement()
+) {
   if (!originalDescribedBy && !newDescribedBy) {
     // nothing to update. return
     return;
@@ -141,7 +147,6 @@ LabelledByUtils._describedByUpdated = function (originalDescribedBy, newDescribe
   LabelledByUtils._byUpdatedTemplate(originalDescribedBy, newDescribedBy, $focusElem, callbackObj);
 };
 
-
 // Helper functions only called from within this file.
 
 /**
@@ -161,8 +166,7 @@ LabelledByUtils._describedByUpdated = function (originalDescribedBy, newDescribe
  * @ignore
  *
  */
-LabelledByUtils._byUpdatedTemplate = function (
-  originalValue, newValue, $focusElem, callbackObj) {
+LabelledByUtils._byUpdatedTemplate = function (originalValue, newValue, $focusElem, callbackObj) {
   var byId;
   var tokens;
   var originalTokens;
@@ -283,9 +287,9 @@ LabelledByUtils._addRemoveAriaBy = function ($elems, ariaAttr, id, add) {
     // Get index that id is in the tokens, if at all.
     let index = tokens.indexOf(id);
     // add id if it isn't already there, remove id if it is there.
-    if (add && (index === -1)) {
+    if (add && index === -1) {
       tokens.push(id);
-    } else if (!add && (index !== -1)) {
+    } else if (!add && index !== -1) {
       // remove that from the tokens array
       tokens.splice(index, 1);
     }
