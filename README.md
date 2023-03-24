@@ -45,17 +45,19 @@ See the [Oracle JET Developer Guide](http://www.oracle.com/pls/topic/lookup?ctx=
 
 All related projects on GitHub are associated under the [oracle-jet topic](https://github.com/search?q=topic%3Aoracle-jet+org%3Aoracle&type=Repositories).
 
-## [Documentation](http://www.oracle.com/pls/topic/lookup?ctx=jet1400&id=homepage)
+## Documentation
 
 Oracle JET comes with a full [Developers Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1400&id=homepage) to help with Getting Started and many common issues.
 
-## [Contributing](https://github.com/oracle/oraclejet/blob/master/CONTRIBUTING.md)
+## Contributing
 
-Oracle JET is an open source project. Pull Requests are currently not being accepted. See
-[CONTRIBUTING](https://github.com/oracle/oraclejet/blob/master/CONTRIBUTING.md)
-for details.
+This project is not accepting external contributions at this time. For bugs or enhancement requests, please file a GitHub issue unless it’s security related. When filing a bug remember that the better written the bug is, the more likely it is to be fixed. If you think you’ve found a security vulnerability, do not raise a GitHub issue and follow the instructions in our [security policy](./SECURITY.md).
 
-## [License](https://github.com/oracle/oraclejet/blob/master/LICENSE)
+## Security
+
+Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process
+
+## License
 
 Copyright (c) 2023 Oracle and/or its affiliates and released under the
 [Universal Permissive License (UPL)](https://oss.oracle.com/licenses/upl/), Version 1.0
