@@ -12,6 +12,7 @@ import { getDefaultValue } from 'ojs/ojmetadatautils';
 import 'ojs/ojcomposite-knockout';
 import 'ojs/ojcustomelement';
 import { ElementState, CustomElementUtils, ElementUtils, CHILD_BINDING_PROVIDER, transformPreactValue, JetElementError } from 'ojs/ojcustomelement-utils';
+import { getElementDescriptor, getElementRegistration, registerElement, isElementRegistered, isComposite } from 'ojs/ojcustomelement-registry';
 
 const CompositeInternal = {};
 
@@ -179,9 +180,7 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
     vmContext.uniqueId = element.id ? element.id : unique;
     this._VM_CONTEXT = vmContext;
 
-    var model = CustomElementUtils.getElementDescriptor(element.tagName)[
-      CompositeElementBridge.DESC_KEY_VIEW_MODEL
-    ];
+    var model = getElementDescriptor(element.tagName)[CompositeElementBridge.DESC_KEY_VIEW_MODEL];
     if (typeof model === 'function') {
       // eslint-disable-next-line new-cap
       model = new model(vmContext);
@@ -222,7 +221,7 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
         oj.Components.unmarkPendingSubtreeHidden(element);
       }
 
-      var cache = CustomElementUtils.getElementRegistration(element.tagName).cache;
+      var cache = getElementRegistration(element.tagName).cache;
       // Need to clone nodes first
       var view = CompositeElementBridge._getDomNodes(cache.view, element);
       oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
@@ -373,9 +372,9 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
     var descriptor;
 
     // Cache the View
-    var cache = CustomElementUtils.getElementRegistration(element.tagName).cache;
+    var cache = getElementRegistration(element.tagName).cache;
     if (!cache.view) {
-      descriptor = CustomElementUtils.getElementDescriptor(element.tagName);
+      descriptor = getElementDescriptor(element.tagName);
 
       var view = descriptor[CompositeElementBridge.DESC_KEY_VIEW];
       // when multiple instances of the same CCA are on the same page, because of the async
@@ -395,7 +394,7 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
     // Cache the CSS
     if (!cache.css) {
       if (!descriptor) {
-        descriptor = CustomElementUtils.getElementDescriptor(element.tagName);
+        descriptor = getElementDescriptor(element.tagName);
       }
       // The CSS Promise will be null if loaded by the require-css plugin
       var css = descriptor[CompositeElementBridge.DESC_KEY_CSS];
@@ -622,11 +621,7 @@ CompositeElementBridge.register = function (tagName, descriptor) {
 
   // __ProcessEventListeners returns a copy of the metadata so we're not updating the original here.
   descrip._metadata = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, false);
-  CustomElementUtils.registerElement(
-    tagName,
-    registration,
-    CompositeElementBridge.proto.getClass(descrip)
-  );
+  registerElement(tagName, registration, CompositeElementBridge.proto.getClass(descrip));
 };
 
 /** ***************************/
@@ -694,10 +689,7 @@ CompositeElementBridge._walkSubtree = function (subIdMap, nodeMap, node) {
   if (!node.hasAttribute('slot')) {
     CompositeElementBridge._addNodeToSubIdMap(subIdMap, nodeMap, node);
     // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-    if (
-      !CustomElementUtils.isElementRegistered(node.tagName) &&
-      !oj.Components.__GetWidgetConstructor(node)
-    ) {
+    if (!isElementRegistered(node.tagName) && !oj.Components.__GetWidgetConstructor(node)) {
       var children = node.children;
       for (var i = 0; i < children.length; i++) {
         CompositeElementBridge._walkSubtree(subIdMap, nodeMap, children[i]);
@@ -865,10 +857,10 @@ Composite.getMetadata = function (name) {
 Composite.getComponentMetadata = function (name) {
   // We have one registry where custom elements, definitional elements, and composites are all stored with
   // the JET framework so we need to check to see if the element is a composite before returning its metadata
-  if (CustomElementUtils.isComposite(name)) {
+  if (isComposite(name)) {
     // Descriptor is guaranteed to be there for registered elements because we throw an error at registration
     // time if none is given
-    var descriptor = CustomElementUtils.getElementDescriptor(name);
+    var descriptor = getElementDescriptor(name);
     return descriptor[oj.BaseCustomElementBridge.DESC_KEY_META];
   }
   return null;

@@ -14,7 +14,8 @@ import { bindingHandlers, applyBindingsToDescendants, ignoreDependencies, comput
 import * as DomUtils from 'ojs/ojdomutils';
 import { setInKoCleanExternal, isTouchSupported } from 'ojs/ojdomutils';
 import $ from 'jquery';
-import { CustomElementUtils, AttributeUtils, JetElementError, ElementUtils } from 'ojs/ojcustomelement-utils';
+import { isElementRegistered, isComposite, isVComponent, getMetadata } from 'ojs/ojcustomelement-registry';
+import { AttributeUtils, CustomElementUtils, JetElementError, ElementUtils } from 'ojs/ojcustomelement-utils';
 import { getPropagationMetadataViaCache, ROOT_BINDING_PROPAGATION } from 'ojs/ojbindpropagation';
 import KeySetImpl from 'ojs/ojkeysetimpl';
 import Context from 'ojs/ojcontext';
@@ -1339,25 +1340,22 @@ BindingProviderImpl.addPostprocessor({
     if (!oj$1.BaseCustomElementBridge) {
       return wrappedReturn;
     }
-    return (
-      wrappedReturn ||
-      (node.nodeType === 1 && CustomElementUtils.isElementRegistered(node.nodeName))
-    );
+    return wrappedReturn || (node.nodeType === 1 && isElementRegistered(node.nodeName));
   },
 
   getBindingAccessors: function (node, bindingContext, wrappedReturn) {
     if (node.nodeType === 1) {
       var name = node.nodeName;
 
-      if (CustomElementUtils.isElementRegistered(name)) {
+      if (isElementRegistered(name)) {
         // eslint-disable-next-line no-param-reassign
         wrappedReturn = wrappedReturn || {};
 
         // eslint-disable-next-line no-param-reassign
         wrappedReturn._ojCustomElement = function () {
-          const isComposite = CustomElementUtils.isComposite(name);
-          const isVComponent = CustomElementUtils.isVComponent(name);
-          return { skipThrottling: isComposite || isVComponent };
+          const isComposite$1 = isComposite(name);
+          const isVComponent$1 = isVComponent(name);
+          return { skipThrottling: isComposite$1 || isVComponent$1 };
         };
       }
     }
@@ -2188,7 +2186,7 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
       var attribute = AttributeUtils.propertyNameToAttribute(property);
       var message = `Invalid type '${typeof listener}' found for attribute '${attribute}'.\
  Expected value of type 'function'."`;
-      if (CustomElementUtils.isElementRegistered(element.tagName)) {
+      if (isElementRegistered(element.tagName)) {
         const elementState = CustomElementUtils.getElementState(element);
         elementState.rejectBindingProvider(message);
       }
@@ -2520,7 +2518,7 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
       var _expressionHandler;
       var attributeListener;
 
-      const compMetadata = CustomElementUtils.getMetadata(element.tagName);
+      const compMetadata = getMetadata(element.tagName);
       const metadataProps = compMetadata.properties || {};
 
       // Compute data about the provided and consumed properties.
@@ -3420,10 +3418,7 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
         // Handle event binding for native HTML elements.
         // The event binding for custom elements is handled by the bridge.
-        if (
-          !CustomElementUtils.isElementRegistered(node.nodeName) &&
-          attr.name.substring(0, 3) === 'on-'
-        ) {
+        if (!isElementRegistered(node.nodeName) && attr.name.substring(0, 3) === 'on-') {
           boundEvents.push(attr);
         }
       }

@@ -40,6 +40,7 @@ export declare enum ExceptionKey {
     RESERVED_CUSTOM_EVENT_PREFIX = "reserved_custom_event_prefix",
     PROP_DEFAULT_UNKNOWN_PROP = "prop_default_unknown_prop",
     MISSING_DYNAMIC_SLOT_DEF = "missing_dynamic_slot_def",
+    UNSUPPORTED_IMPLICITBUSYCONTEXT = "unsupported_implicitbusycontext",
     UNEXPECTED_APIDOC_EXCEPTION = "unexpected_apidoc_exception",
     MISSING_METHOD_SIGNATURES = "missing_method_signatures",
     IGNORED_OJMETADATA_NAME = "ignored_ojmetadata_name",

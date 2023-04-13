@@ -4240,6 +4240,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     if (value) {
       // need to preserve the time portion when of ojInputDateTime, so update only year, month, and date
       try {
+        // After this method call the value is a local datetime. no offset, no zulu. It will get converted
+        // back in the switchDone method when the user clicks the Done button or closes the picker.
         value = converterUtils._dateTime(value, {
           fullYear: tempDate.getFullYear(),
           month: tempDate.getMonth(),
@@ -6284,6 +6286,13 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     }
   },
 
+  _createOffsetConverter: function (inputConverter) {
+    var resolvedOptions = inputConverter.resolvedOptions();
+    var options = {};
+    $.extend(options, resolvedOptions, { isoStrFormat: 'offset' });
+    return new IntlDateTimeConverter(options);
+  },
+
   /**
    * TODO: Technically i think should be used for the calendar, but later since late in release
    * @ignore
@@ -6421,7 +6430,22 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
     var converter = this._GetConverter();
     if (!(converter instanceof Promise)) {
-      this._switcherPrevValue = converter.parse(this._getDateIso());
+      // switcherPrevValue is used as the base value where the new day, month and/or year is substituted into
+      // when the user selects a new day, month, and/or year. (See the switchDone method for details)
+      // switcherPrevValue can't be zulu, because if it is zulu,
+      // then substituting the day into a zulu date might be a different day in the timezone and then the formatted
+      // date will be a different day than what the user selected. (See JET-54551)
+      // So if it is zulu we change it to offset.
+      // This is what a zulu and offset format looks like
+      // zulu: 2013-12-13T04:00:00Z
+      // offset: 2013-12-01T20:00:00-08:00
+      const dateIso = this.options.value ? this._getDateIso() : '';
+      if (dateIso && IntlConverterUtils._getISOStrFormatType(dateIso) === 'zulu') {
+        const offsetConverter = this._createOffsetConverter(converter);
+        this._switcherPrevValue = offsetConverter.parse(dateIso);
+      } else {
+        this._switcherPrevValue = converter.parse(dateIso);
+      }
     } else {
       this._switcherPrevValue = this._getDateIso();
     }
@@ -12340,10 +12364,12 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
               ($.ui.keyCode.ENTER === keyCode || $.ui.keyCode.SPACE === keyCode)) ||
             evt.type === 'click'
           ) {
-            var formattedValue = self._GetConverter().format(self._getDateIso());
-            var newVal = self._GetConverter().parse(formattedValue);
+            var newVal;
             if (self._switcherDateValue) {
               newVal = self._switcherDateValue;
+            } else {
+              var formattedValue = self._GetConverter().format(self._getDateIso());
+              newVal = self._GetConverter().parse(formattedValue);
             }
 
             if (self._switcherTimeValue) {
@@ -13074,20 +13100,6 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
    */
   _ShowHTMLDatePicker: function () {
     var retVal = this._superApply(arguments);
-
-    // if there is a value, save the Iso date version as the default value. Otherwise, set to ""
-    // so that we correctly restore the empty string if there is no value.
-
-    var converter = this._GetConverter();
-    if (!(converter instanceof Promise)) {
-      this._switcherPrevValue = converter.parse(this.options.value ? this._getDateIso() : '');
-    } else {
-      this._switcherPrevValue = this.options.value ? this._getDateIso() : '';
-    }
-    this._switcherPrevDay = this._currentDay;
-    this._switcherPrevMonth = this._currentMonth;
-    this._switcherPrevYear = this._currentYear;
-
     this._updateSwitcherText();
     return retVal;
   },

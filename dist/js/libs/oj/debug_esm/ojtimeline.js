@@ -1183,10 +1183,10 @@ var __oj_timeline_series_metadata =
  * @property {boolean}  previousState.hovered True if the item was previously hovered.
  * @property {boolean}  previousState.selected True if the item was previously selected.
  * @property {boolean}  previousState.focused True if the item was previously focused.
- * @property {Number}  durationWidth width of the duration-event bubble or null if not duration-event
- * @property {Number}  contentWidth The available width in px for content.
- * If the item is not a duration-event, then this is null, and the component will automatically allocate enough width space to accommodate the content.
- *
+ * @property {Number}  durationWidth width of the duration-event bubble or null if not duration-event.
+ * @property {Number}  contentWidth The available width in pixels for content inside the duration-event bubble, or null if the item is not a duration-event.
+ * @property {Number}  maxAvailableWidth The largest value in pixels among the available width on the right, on the left, and within the duration event bubble.
+ * If the item is not a duration-event, then this is null.
  * @ojdeprecated {target: "property", for: "durationWidth", since:"13.1.0", description: "The durationWidth property is deprecated. Please use the contentWidth property instead."}
  * @ojsignature [{target: "Type", value: "oj.ojTimeline.SeriesItem<K>", for: "data"},
  *               {target: "Type", value: "oj.ojTimeline.Series<K>", for: "seriesData"},

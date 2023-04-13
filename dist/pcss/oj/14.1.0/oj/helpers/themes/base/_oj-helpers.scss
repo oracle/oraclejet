@@ -1,0 +1,547 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example theme/themes/redwood/oj-helpers.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../utilities/_oj.utilities.icons.scss";
+@import "../../../utilities/_oj.utilities.masonrylayout.scss";
+@import "../../../utilities/_oj.utilities.json.scss";
+
+
+@include module-include-once("common.helper") {
+  /* helpers
+  ----------------------------------*/
+  // todo: we won't support the old syntax
+  [data-bind*="ojComponent"]:not(.oj-component-initnode) {
+    visibility: hidden;
+  }
+
+  // write out the theme map
+  $themeRootMap: ();
+
+  @if ($privateThemeName != null) {
+    $themeRootMap: map-merge(
+      $themeRootMap,
+      (
+        name: $privateThemeName
+      )
+    );
+  }
+  @if ($privateThemeTargetPlatform != null) {
+    $themeRootMap: map-merge(
+      $themeRootMap,
+      (
+        targetPlatform: $privateThemeTargetPlatform
+      )
+    );
+  }
+  $themeRootMap: map-merge(
+    $themeRootMap,
+    (
+      behavior: "redwood"
+    )
+  );
+  $themeRootMap: map-merge(
+    $themeRootMap,
+    (
+      jetReleaseVersion: "v14.1.0"
+    )
+  );
+
+  .oj-theme-json {
+    font-family: oj-json-from-map($themeRootMap) !important;
+  }
+
+  .oj-helper-hidden-accessible {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+
+  .oj-helper-clearfix:before,
+  .oj-helper-clearfix:after {
+    content: " ";
+    display: table;
+  }
+  .oj-helper-clearfix:after {
+    clear: both;
+  }
+
+  /* Used by the framework's support for detecting resize */
+  .oj-helper-detect-expansion,
+  .oj-helper-detect-contraction {
+    position: absolute;
+    overflow: hidden;
+    visibility: hidden;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    direction: ltr;
+  }
+
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-hidden {
+    display: none !important;
+  }
+
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-inline-block {
+    display: inline-block !important;
+  }
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-tabular-nums {
+    font-variant-numeric: tabular-nums !important;
+  }
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-proportional-nums {
+    font-variant-numeric: proportional-nums !important;
+  }
+
+  
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-overflow-wrap-anywhere {
+    overflow-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-hyphens-auto {
+    hyphens: auto !important;
+  }
+
+  // todo: add a demo for these text-align classes
+
+  /* aligns text left by default, aligns right when dir="rtl" is set on html element
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-text-align-start {
+    text-align: left !important;
+    html[dir="rtl"] & {
+      text-align: right !important;
+    }
+  }
+
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-text-align-center {
+    text-align: center !important;
+  }
+
+  /* aligns text right by default, aligns left when dir="rtl" is set on html element
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-text-align-end {
+    text-align: right !important;
+    html[dir="rtl"] & {
+      text-align: left !important;
+    }
+  }
+
+  /* Sets the start margin, equivalent to setting
+     margin-left: auto in ltr languages and margin-right: auto in rtl languages */
+  .oj-helper-margin-start-auto {
+    @include oj-ltr() {
+      margin-left: auto !important;
+    }
+
+    @include oj-rtl() {
+      margin-right: auto !important;
+    }
+  }
+
+  /* Sets the left and right margins to auto */
+  .oj-helper-margin-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Sets the end margin, equivalent to setting
+     margin-right: auto in ltr languages and margin-left: auto in rtl languages */
+  .oj-helper-margin-end-auto {
+    @include oj-ltr() {
+      margin-right: auto !important;
+    }
+
+    @include oj-rtl() {
+      margin-left: auto !important;
+    }
+  }
+
+  /* aligns text right
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-text-align-right {
+    text-align: right !important;
+  }
+
+  /* aligns text left
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-text-align-left {
+    text-align: left !important;
+  }
+
+  /* Used by the ojModule binding on a DIV that will hold cached Views */
+  .oj-helper-module-cache {
+    position: absolute;
+    display: none;
+  }
+
+  // focus
+
+  $focusConfig: ();
+
+  @if ($privateFocusHighlightPolicy) {
+    $focusConfig: map-merge(
+      $focusConfig,
+      (
+        focusHighlightPolicy: $privateFocusHighlightPolicy
+      )
+    );
+  }
+
+  .oj-focus-config {
+    font-family: oj-json-from-map($focusConfig) !important;
+  }
+
+  // marker style for ojDialog accesskey bug #22685535
+  .oj-helper-element-with-accesskey {
+  }
+
+  // marker style for ojDialog accesskey bug #22685535
+  .oj-helper-element-in-dialog-with-accesskey {
+  }
+
+  /* justifies flex content start
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-flex-start {
+    justify-content: flex-start !important;
+  }
+
+  /* justifies flex content end
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-flex-end {
+    justify-content: flex-end !important;
+  }
+
+  /* justifies flex content center
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-center {
+    justify-content: center !important;
+  }
+
+  /* justifies flex content space between
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-space-between {
+    justify-content: space-between !important;
+  }
+
+  /* justifies flex content space around
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-space-around {
+    justify-content: space-around !important;
+  }
+
+  /* justifies flex content right
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-right {
+    @include oj-ltr() {
+      justify-content: flex-end !important;
+    }
+
+    @include oj-rtl() {
+      justify-content: flex-start !important;
+    }
+  }
+
+  /* justifies flex content left
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-left {
+    @include oj-ltr() {
+      justify-content: flex-start !important;
+    }
+
+    @include oj-rtl() {
+      justify-content: flex-end !important;
+    }
+  }
+
+  .oj-helper-border-box {
+    box-sizing: border-box !important;
+  }
+
+  .oj-helper-content-box {
+    box-sizing: border-content !important;
+  }
+
+  .oj-helper-white-space-normal{
+    white-space: normal !important;
+  }
+
+  .oj-helper-white-space-nowrap {
+    white-space: nowrap !important;
+  }
+
+  .oj-helper-white-space-pre{
+    white-space: pre !important;
+  }
+
+  .oj-helper-white-space-pre-wrap{
+    white-space: pre-wrap !important;
+  }
+
+  .oj-helper-white-space-pre-line{
+    white-space: pre-line !important;
+  }
+  
+
+  //colors
+  .oj-text-color-primary,
+  .oj-text-primary-color,
+  .oj-icon-color-primary {
+    color: var(--oj-core-text-color-primary) !important;
+  }
+
+  .oj-text-tertiary-color,
+  .oj-text-color-secondary,
+  .oj-text-secondary-color,
+  .oj-icon-color-secondary {
+    color: var(--oj-core-text-color-secondary) !important;
+  }
+
+
+  .oj-text-color-disabled,
+  .oj-text-disabled-color,
+  .oj-icon-color-disabled {
+    color: var(--oj-core-text-color-disabled) !important;
+  }
+  .oj-text-color-danger,
+  .oj-icon-color-danger {
+    color: var(--oj-core-danger-3) !important;
+  }
+  .oj-text-color-warning,
+  .oj-icon-color-warning {
+    color: var(--oj-core-warning-3) !important;
+  }
+  .oj-text-color-success,
+  .oj-icon-color-success {
+    color: var(--oj-core-success-3) !important;
+  }
+
+  .oj-icon-color-info {
+    color: var(--oj-core-info-3) !important;
+  }
+
+  .oj-border {
+    border: 1px solid var(--oj-core-divider-color) !important;
+  }
+
+  //DIVIDER
+
+  .oj-divider-top,
+  .oj-border-top {
+    border-top: 1px solid var(--oj-core-divider-color) !important;
+  }
+
+  .oj-divider-top.oj-divider-padding {
+    padding-top: var(--oj-core-divider-margin) !important;
+  }
+
+  .oj-divider-top.oj-divider-margin {
+    margin-top: var(--oj-core-divider-margin) !important;
+  }
+
+  .oj-divider-bottom,
+  .oj-border-bottom {
+    border-bottom: 1px solid var(--oj-core-divider-color) !important;
+  }
+
+  .oj-divider-bottom.oj-divider-padding {
+    padding-bottom: var(--oj-core-divider-margin) !important;
+  }
+
+  .oj-divider-bottom.oj-divider-margin {
+    margin-bottom: var(--oj-core-divider-margin) !important;
+  }
+
+  .oj-divider-start,
+  .oj-border-start {
+    @include oj-ltr() {
+      border-left: 1px solid var(--oj-core-divider-color) !important;
+    }
+    @include oj-rtl() {
+      border-right: 1px solid var(--oj-core-divider-color) !important;
+    }
+  }
+
+  .oj-divider-start.oj-divider-padding {
+    @include oj-ltr() {
+      padding-left: var(--oj-core-divider-margin) !important;
+    }
+    @include oj-rtl() {
+      padding-right: var(--oj-core-divider-margin) !important;
+    }
+  }
+
+  .oj-divider-start.oj-divider-margin {
+    @include oj-ltr() {
+      margin-left: var(--oj-core-divider-margin) !important;
+      margin-right: 0 !important;
+    }
+    @include oj-rtl() {
+      margin-right: var(--oj-core-divider-margin) !important;
+      margin-left: 0 !important;
+    }
+  }
+
+  .oj-divider-end,
+  .oj-border-end {
+    @include oj-ltr() {
+      border-right: 1px solid var(--oj-core-divider-color) !important;
+    }
+    @include oj-rtl() {
+      border-left: 1px solid var(--oj-core-divider-color) !important;
+    }
+  }
+
+  .oj-divider-end.oj-divider-padding {
+    @include oj-ltr() {
+      padding-right: var(--oj-core-divider-margin) !important;
+    }
+    @include oj-rtl() {
+      padding-left: var(--oj-core-divider-margin) !important;
+    }
+  }
+
+  .oj-divider-end.oj-divider-margin {
+    @include oj-ltr() {
+      margin-right: var(--oj-core-divider-margin) !important;
+    }
+    @include oj-rtl() {
+      margin-left: var(--oj-core-divider-margin) !important;
+    }
+  }
+  
+  .oj-bg-body {
+    background-color: var(--oj-body-bg-color) !important;
+  }
+
+  .oj-bg-neutral-0 {
+    background-color: RGB(var(--oj-palette-neutral-rgb-0)) !important;
+  }
+
+  .oj-bg-neutral-10 {
+    background-color: RGB(var(--oj-palette-neutral-rgb-10)) !important;
+  }
+  .oj-bg-neutral-20 {
+    background-color: RGB(var(--oj-palette-neutral-rgb-20)) !important;
+  }
+
+  .oj-bg-neutral-30 {
+    background-color: RGB(var(--oj-palette-neutral-rgb-30)) !important;
+  }
+
+  .oj-bg-neutral-170 {
+    background-color: RGB(var(--oj-palette-neutral-rgb-170)) !important;
+  }
+
+  .oj-bg-neutral-180 {
+    background-color: RGB(var(--oj-palette-neutral-rgb-180)) !important;
+  }
+  .oj-bg-neutral-190 {
+    background-color: RGB(var(--oj-palette-neutral-rgb-190)) !important;
+  }
+
+  .oj-bg-neutral-200 {
+    background-color: RGB(var(--oj-palette-neutral-rgb-200)) !important;
+  }
+  .oj-bg-danger-10 {
+    background-color: RGB(var(--oj-palette-danger-rgb-10)) !important;
+  }
+
+  .oj-bg-danger-30 {
+    background-color: RGB(var(--oj-palette-danger-rgb-30)) !important;
+  }
+  
+  .oj-bg-danger-20 {
+    background-color: RGB(var(--oj-palette-danger-rgb-20)) !important;
+  }
+
+
+  .oj-bg-warning-10 {
+    background-color: RGB(var(--oj-palette-warning-rgb-10)) !important;
+  }
+
+  .oj-bg-warning-30 {
+    background-color: RGB(var(--oj-palette-warning-rgb-30)) !important;
+  }
+  
+  .oj-bg-warning-20 {
+    background-color: RGB(var(--oj-palette-warning-rgb-20)) !important;
+  }
+
+  .oj-bg-success-10 {
+    background-color: RGB(var(--oj-palette-success-rgb-10)) !important;
+  }
+
+  .oj-bg-success-30 {
+    background-color: RGB(var(--oj-palette-success-rgb-30)) !important;
+  }
+
+  .oj-bg-success-20 {
+    background-color: RGB(var(--oj-palette-success-rgb-20)) !important;
+  }
+
+
+  .oj-bg-info-10 {
+    background-color: RGB(var(--oj-palette-info-rgb-10)) !important;
+  }
+
+  .oj-bg-info-20 {
+    background-color: RGB(var(--oj-palette-info-rgb-20)) !important;
+  }
+
+  .oj-bg-info-30 {
+    background-color: RGB(var(--oj-palette-info-rgb-30)) !important;
+  }
+
+  .oj-bg-brand-10 {
+    background-color: RGB(var(--oj-palette-brand-rgb-10)) !important;
+  }
+
+  .oj-bg-brand-20 {
+    background-color: RGB(var(--oj-palette-brand-rgb-20)) !important;
+  }
+
+  .oj-bg-brand-30 {
+    background-color: RGB(var(--oj-palette-brand-rgb-30)) !important;
+  }
+
+  .oj-line-clamp-1,
+  .oj-line-clamp-2,
+  .oj-line-clamp-3,
+  .oj-line-clamp-4 {
+    display: -webkit-box !important;
+    /* autoprefixer: ignore next */
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  .oj-line-clamp-1 {
+    -webkit-line-clamp: 1 !important;
+  }
+
+  .oj-line-clamp-2 {
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .oj-line-clamp-3 {
+    -webkit-line-clamp: 3 !important;
+  }
+
+  .oj-line-clamp-4 {
+    -webkit-line-clamp: 4 !important;
+  }
+}

@@ -475,6 +475,7 @@ var __oj_legend_section_metadata =
    * @property {string=} title The title of the legend section.
    * @property {"center"|"end"|"start"} [titleHalign="start"] The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
    * @property {Object=} titleStyle The CSS style object defining the style of the section title. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+   * @ojdeprecated {since: '14.1.0', description: 'This attribute is deprecated. Applications should use the expanded API on oj-legend instead', target: 'property', for: 'expanded' }
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "Array.<oj.ojLegend.Item<K>>", for: "items", jsdocOverride: true},
    *               {target: "Type", value: "Array.<oj.ojLegend.Section<K>>", for: "sections", jsdocOverride: true},
@@ -504,6 +505,11 @@ var __oj_legend_section_metadata =
    * @property {Object=} svgStyle The inline style to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute. Only SVG CSS style properties are supported.
    * @property {"image"|"line"|"lineWithMarker"|"marker"} [symbolType="marker"] The type of legend symbol to display.
    * @property {string} text The legend item text.
+   * @ojdeprecated [{since: '14.1.0', description: 'This is not recommended in the Redwood design system.', target: 'property', for: 'svgStyle'},
+   *                {since: '14.1.0', description: 'This is not recommended in the Redwood design system.', target: 'property', for: 'svgClassName'},
+   *                {since: '14.1.0', description: 'This is not recommended in the Redwood design system.', target: 'property', for: 'markerSvgClassName'},
+   *                {since: '14.1.0', description: 'This is not recommended in the Redwood design system.', target: 'property', for: 'markerSvgStyle'},
+   *                {since: '14.1.0', description: 'This api is deprecated. Use hidden-categories in oj-legend instead.', target: 'property', for: 'categoryVisibility'}]
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
    *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "markerSvgStyle", jsdocOverride: true},
@@ -511,7 +517,6 @@ var __oj_legend_section_metadata =
    */
 
   // METHOD TYPEDEFS
-
   /**
    * @typedef {Object} oj.ojLegend.SectionContext
    * @ojtsignore
@@ -705,7 +710,7 @@ var __oj_legend_section_metadata =
    *               }
    *              ]
    *
-   * @ojpropertylayout {propertyGroup: "common", items: ["orientation", "halign", "valign", "hoverBehavior", "hoverBehaviorDelay", "style"]}
+   * @ojpropertylayout {propertyGroup: "common", items: ["orientation", "halign", "valign", "hoverBehavior", "style"]}
    * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
    * @ojvbdefaultcolumns 2
    * @ojvbmincolumns 1
@@ -966,6 +971,7 @@ var __oj_legend_section_metadata =
        * @ojunits milliseconds
        * @ojmin 0
        * @default 200
+       * @ojdeprecated {since: '14.1.0', description: 'This is not recommended in the Redwood design system.'}
        *
        * @example <caption>Initialize the Legend with the <code class="prettyprint">hover-behavior-delay</code> attribute specified:</caption>
        * &lt;oj-legend hover-behavior-delay="150">&lt;/oj-legend>
@@ -1653,6 +1659,7 @@ var __oj_legend_section_metadata =
    * @instance
    * @type {string=}
    * @default ""
+   * @ojdeprecated {since: '14.1.0', description: 'This is not recommended in the Redwood design system.'}
    */
   /**
    * The inline style to apply to the legend item symbol. This inline style and <code> svg-class-name </code> will override any other styling specified through the options except for <code>marker-svg-style</code> and <code>marker-svg-class-name</code>.
@@ -1665,6 +1672,7 @@ var __oj_legend_section_metadata =
    * @instance
    * @type {Object=}
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+   * @ojdeprecated {since: '14.1.0', description: 'This is not recommended in the Redwood design system.'}
    */
   /**
    * The CSS style class to apply to the marker of the legend item symbol. This style class and <code> marker-svg-style </code> will override any other styling specified for the marker. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
@@ -1675,6 +1683,7 @@ var __oj_legend_section_metadata =
    * @instance
    * @type {string=}
    * @default ""
+   * @ojdeprecated {since: '14.1.0', description: 'This is not recommended in the Redwood design system.'}
    */
   /**
    * The inline style to apply to the marker of the legend item symbol. This inline style and <code> marker-svg-class-name </code> will override any other styling specified for the marker. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
@@ -1686,6 +1695,7 @@ var __oj_legend_section_metadata =
    * @instance
    * @type {Object=}
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+   * @ojdeprecated {since: '14.1.0', description: 'This is not recommended in the Redwood design system.'}
    */
   /**
    * The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
@@ -1716,6 +1726,7 @@ var __oj_legend_section_metadata =
    * @ojvalue {string} "hidden" Legend item will have a hollow symbol.
    * @ojvalue {string} "visible" Legend item will be filled.
    * @default "visible"
+   * @ojdeprecated {since: '14.1.0', description: 'This attribute is deprecated. Use hidden-categories on oj-legend instead'}
    */
   /**
    *  Whether drilling is enabled on the legend item. Drillable objects will show a pointer cursor on hover and fire <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all legend items at once, use the drilling attribute in the top level.

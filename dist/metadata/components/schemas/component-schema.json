@@ -702,6 +702,9 @@
             "help": {
               "type": "string"
             },
+            "implicitBusyContext": {
+              "type": "boolean"
+            },
             "maxItems": {
               "type": "number",
               "multipleOf": 1.0

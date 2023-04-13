@@ -9,6 +9,7 @@ export interface ojMessage extends JetElement<ojMessageSettableProperties> {
             confirmation?: string;
             error?: string;
             info?: string;
+            none?: string;
             warning?: string;
         };
         labelCloseIcon?: string;
@@ -65,6 +66,7 @@ export interface ojMessageSettableProperties extends JetSettableProperties {
             confirmation?: string;
             error?: string;
             info?: string;
+            none?: string;
             warning?: string;
         };
         labelCloseIcon?: string;

@@ -7,6 +7,7 @@
  */
 import 'ojs/ojcustomelement';
 import { CustomElementUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
+import { isElementRegistered } from 'ojs/ojcustomelement-registry';
 
 /**
  * Child mutation observer.
@@ -32,7 +33,7 @@ import { CustomElementUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
 const ChildMutationObserver = function (element, handler) {
   var _element = element;
   var _handler = handler;
-  var _trackOption = CustomElementUtils.isElementRegistered(element.tagName)
+  var _trackOption = isElementRegistered(element.tagName)
     ? CustomElementUtils.getElementState(element).getTrackChildrenOption()
     : 'none';
   /**

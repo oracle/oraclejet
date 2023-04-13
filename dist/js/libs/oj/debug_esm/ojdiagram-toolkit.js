@@ -9,7 +9,7 @@ import { BaseComponentDefaults, CSSStyle, CategoryRolloverHandler, Obj, Point, M
 import { PanZoomCanvasKeyboardHandler, PanZoomComponent, PanZoomCanvas } from 'ojs/ojdvt-panzoomcanvas';
 import { getLogicalChildPopup } from 'ojs/ojkeyboardfocus-utils';
 import { Overview } from 'ojs/ojdvt-overview';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import { isElementRegistered } from 'ojs/ojcustomelement-registry';
 
 /**
  * Default values and utility functions for component versioning.
@@ -4207,7 +4207,7 @@ class DvtDiagramNode extends Container {
       var siblings = parentNode
         ? parentNode.getChildNodes()
         : this.GetDiagram().GetRootNodeObjects();
-      next = KeyboardHandler.getNextAdjacentNavigable(this, event, siblings);
+      next = KeyboardHandler.getNextAdjacentNavigable(this, event, siblings, true);
     }
     if (event instanceof KeyboardEvent) this._diagram.ensureObjInViewport(event, next);
 
@@ -10084,7 +10084,7 @@ class Diagram extends PanZoomComponent {
           // stop looking when you hit the diagram
           while (
             !(
-              (CustomElementUtils.isElementRegistered(activeElem.tagName) && activeElem.id) ||
+              (isElementRegistered(activeElem.tagName) && activeElem.id) ||
               activeElem.tagName === 'OJ-DIAGRAM'
             )
           ) {
@@ -12059,7 +12059,23 @@ class Diagram extends PanZoomComponent {
     }
     return null;
   }
-
+  /**
+   * Shows the keyboard focus effect.  Function is called when diagram.focus() is called.
+   */
+  showFocusEffect() {
+    if (Agent.isTouchDevice()) return;
+    var navigable = this.getEventManager().getFocus();
+    if (!navigable) {
+      // navigate to the default
+      var arNodes = this.GetRootNodeObjects();
+      if (arNodes.length > 0) {
+        navigable = this.getEventManager().getKeyboardHandler().getDefaultNavigable(arNodes);
+      }
+    }
+    if (navigable) {
+      navigable.showKeyboardFocusEffect();
+    }
+  }
   /**
    * Updates keyboard focus effect
    * @private
@@ -12073,7 +12089,7 @@ class Diagram extends PanZoomComponent {
       if (this.activeInnerElems) {
         var node = this.getNodeById(this.activeInnerElemsItemId);
         // if neither the old active elem had an ID and elem was successfully focused
-        // nor if old custom elem had an ID and was succesffuly focused
+        // nor if old custom elem had an ID and was succesfully focused
         if (
           !(
             (this._oldActiveElemId && this._enableActiveElems(this._oldActiveElemId, node)) ||

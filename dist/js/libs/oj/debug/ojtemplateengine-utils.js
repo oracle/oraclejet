@@ -5,13 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojmetadatautils', 'ojs/ojlogger'], function (exports, preact, oj, ojcustomelementUtils, ojmetadatautils, Logger) { 'use strict';
+define(['exports', 'preact', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'ojs/ojmetadatautils', 'ojs/ojlogger'], function (exports, preact, oj, ojcustomelementUtils, ojcustomelementRegistry, ojmetadatautils, Logger) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
     const ROW = Symbol('row');
     class PreactTemplate {
-        static renderNodes(vnode, row, useKoFlag = false) {
+        static renderNodes(vnode, row) {
             const parentStub = row.parentStub;
             let retrieveNodes = () => Array.from(parentStub.childNodes);
             if (row.nodes) {
@@ -39,7 +39,6 @@ define(['exports', 'preact', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'oj
                 }
                 node[ROW] = row;
                 node[ojcustomelementUtils.CACHED_BINDING_PROVIDER] = 'preact';
-                node[ojcustomelementUtils.CACHED_USE_KO_FLAG] = useKoFlag;
             });
             row.vnode = vnode;
             row.nodes = nodes;
@@ -101,7 +100,7 @@ define(['exports', 'preact', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'oj
             };
         }
         static resolveVDomTemplateProps(template, renderer, elementTagName, propertySet, data, defaultValues, propertyValidator) {
-            const metadata = ojcustomelementUtils.CustomElementUtils.getPropertiesForElementTag(elementTagName);
+            const metadata = ojcustomelementRegistry.getPropertiesForElementTag(elementTagName);
             const [cache, deleteEntry] = PreactTemplate.extendTemplate(template, PreactTemplate._COMPUTED_PROPS_CACHE_FACTORY, (recalc) => {
                 for (const observable of cache) {
                     observable.recalculateValue(recalc);

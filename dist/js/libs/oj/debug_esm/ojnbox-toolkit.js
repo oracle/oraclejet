@@ -4495,8 +4495,10 @@ const DvtNBoxNodeRenderer = {
               : ' oj-avatar-bg-' + bgColor + ' oj-nbox-node-initials-' + bgColor)
         );
         if (hasSource) {
+          // for ios use a smaller cropped image JET-53563
+          var isIos = Agent.os === 'ios';
           var iconContainer = new Container(nbox.getCtx());
-          var iconBackgroundSize = icon['backgroundSize'];
+          var iconBackgroundSize = isIos ? icon['backgroundIosSize'] : icon['backgroundSize'];
           var backgroundMarker = new ImageMarker(
             nbox.getCtx(),
             iconX,
@@ -4511,7 +4513,11 @@ const DvtNBoxNodeRenderer = {
           );
           iconContainer.addChild(iconMarker);
           iconContainer.addChild(backgroundMarker);
-          backgroundMarker.setClassName('oj-nbox-node-initials-background-pattern');
+          backgroundMarker.setClassName(
+            isIos
+              ? 'oj-nbox-node-initials-background-pattern oj-nbox-ios'
+              : 'oj-nbox-node-initials-background-pattern'
+          );
           iconMarker = iconContainer;
         }
 

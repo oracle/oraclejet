@@ -352,6 +352,7 @@ const _VCOMPONENT_EXPORTS = new Set([
     'TemplateSlot',
     'DynamicSlots',
     'DynamicTemplateSlots',
+    'ImplicitBusyContext',
     'Component',
     'ComponentProps',
     'PureComponent',

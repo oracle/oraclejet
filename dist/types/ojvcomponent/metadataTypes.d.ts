@@ -4,6 +4,7 @@ export declare type DynamicSlots = Record<string, Slot>;
 export declare type DynamicTemplateSlots<Data extends object> = Record<string, TemplateSlot<Data>>;
 export declare type Slot = ComponentChildren;
 export declare type TemplateSlot<Data extends object> = (data: Data) => Slot;
+export declare type ImplicitBusyContext = unknown;
 export declare type PropertyChanged<T> = (value: T) => void;
 export declare type ReadOnlyPropertyChanged<T> = (value: T) => void;
 export declare type Action<Detail extends object = {}> = (detail?: Detail) => void;

@@ -333,7 +333,7 @@
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"stable","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v14.0.0"}' !important; }
+  font-family: '{"name":"stable","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v14.1.0"}' !important; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -12702,6 +12702,10 @@ oj-calendar:not(.oj-complete) {
 .oj-inputdatetime-time-icon.oj-disabled {
   cursor: default; }
 
+.oj-datepicker-popup {
+  min-width: 17.5rem;
+  min-height: 21.5rem; }
+
 .oj-datepicker-popup.oj-popup {
   box-shadow: var(--oj-core-dropdown-box-shadow); }
 
@@ -14014,7 +14018,7 @@ oj-form-layout {
   padding: 0 0 calc(var(--oj-form-layout-margin-bottom) - var(--oj-private-core-wrappable-margin-bottom)) 0; }
 
 .oj-form.oj-label-value > .oj-flex > .oj-flex-item:first-child {
-  margin: 0; }
+  padding: 0; }
 
 .oj-form > .oj-flex > .oj-flex-item > .oj-form-non-control {
   margin-bottom: var(--oj-private-core-wrappable-margin-bottom); }
@@ -15439,20 +15443,48 @@ oj-inputsearch:not(.oj-complete) {
 
 /* input-search */
 /*
-     * Applied to the input field
-     */
+   * Applied to the input field
+   */
 .oj-inputsearch-input {
   width: 100%; }
 
+/* 
+   * Applied to readonly mobile input field to allow scrolling
+   */
+.oj-inputsearch-mobile .oj-text-field-middle {
+  width: calc(100% - var(--oj-button-sm-icon-size) - var(--oj-text-field-icon-to-text-padding)); }
+
+.oj-inputsearch-mobile.oj-input-search-hero .oj-text-field-middle {
+  width: calc(100% - var(--oj-button-sm-icon-size) - var(--oj-text-field-icon-to-edge-padding) - var(--oj-text-field-icon-to-text-padding)); }
+
+div.oj-inputsearch-input-displayonly {
+  line-height: calc(var(--oj-text-field-height) - 2px); }
+
+div.oj-inputsearch-input-displayonly > div {
+  white-space: nowrap;
+  width: 100%;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  -ms-overflow-style: none;
+  scrollbar-width: none; }
+
+div.oj-inputsearch-input-readonly > div::-webkit-scrollbar {
+  display: none; }
+
+.oj-inputsearch-placeholder {
+  color: var(--oj-text-field-placeholder-color);
+  opacity: 1;
+  font-style: var(--oj-text-field-placeholder-font-style); }
+
 /*
-     * Applied to the input-search search icon
-     */
+   * Applied to the input-search search icon
+   */
 .oj-inputsearch.oj-loading .oj-inputsearch-search-icon {
   display: none; }
 
 /*
-     * Applied to the element containing the floating autocomplete text
-     */
+   * Applied to the element containing the floating autocomplete text
+   */
 .oj-inputsearch-autocomplete-floating-container {
   position: absolute;
   top: 0;
@@ -15463,8 +15495,8 @@ oj-inputsearch:not(.oj-complete) {
   pointer-events: none; }
 
 /*
-     * Applied to the floating autocomplete text
-     */
+   * Applied to the floating autocomplete text
+   */
 .oj-inputsearch-autocomplete-floating-text {
   font-size: var(--oj-typography-body-xs-font-size);
   color: var(--oj-core-text-color-secondary);
@@ -15476,8 +15508,8 @@ oj-inputsearch:not(.oj-complete) {
 /* icon */
 /* -----------------------------*/
 /*
-     * Applied to the input-search leading icon
-     */
+   * Applied to the input-search leading icon
+   */
 /*
    * Applied to the input-search mobile filter field back icon
    */
@@ -15489,8 +15521,8 @@ oj-inputsearch:not(.oj-complete) {
   text-decoration: none; }
 
 /* clears the 'X' from Internet Explorer */
-.oj-inputsearch input[type="search"]::-ms-clear,
-.oj-inputsearch input[type="search"]::-ms-reveal {
+.oj-inputsearch input[type='search']::-ms-clear,
+.oj-inputsearch input[type='search']::-ms-reveal {
   display: none;
   width: 0;
   height: 0; }
@@ -16460,6 +16492,10 @@ oj-n-box {
 .oj-nbox-node-initials-background {
   width: 196px;
   height: 196px; }
+
+.oj-nbox-node-initials-background.oj-nbox-ios {
+  width: 38px;
+  height: 38px; }
 
 .oj-nbox-node-initials-background-pattern {
   opacity: .3; }

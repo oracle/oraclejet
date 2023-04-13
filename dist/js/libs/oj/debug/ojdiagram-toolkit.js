@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboardfocus-utils', 'ojs/ojdvt-overview', 'ojs/ojcustomelement-utils'], function (exports, dvt, ojdvtPanzoomcanvas, ojkeyboardfocusUtils, ojdvtOverview, ojcustomelementUtils) { 'use strict';
+define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboardfocus-utils', 'ojs/ojdvt-overview', 'ojs/ojcustomelement-registry'], function (exports, dvt, ojdvtPanzoomcanvas, ojkeyboardfocusUtils, ojdvtOverview, ojcustomelementRegistry) { 'use strict';
 
   /**
    * Default values and utility functions for component versioning.
@@ -4203,7 +4203,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         var siblings = parentNode
           ? parentNode.getChildNodes()
           : this.GetDiagram().GetRootNodeObjects();
-        next = dvt.KeyboardHandler.getNextAdjacentNavigable(this, event, siblings);
+        next = dvt.KeyboardHandler.getNextAdjacentNavigable(this, event, siblings, true);
       }
       if (event instanceof dvt.KeyboardEvent) this._diagram.ensureObjInViewport(event, next);
 
@@ -10080,7 +10080,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             // stop looking when you hit the diagram
             while (
               !(
-                (ojcustomelementUtils.CustomElementUtils.isElementRegistered(activeElem.tagName) && activeElem.id) ||
+                (ojcustomelementRegistry.isElementRegistered(activeElem.tagName) && activeElem.id) ||
                 activeElem.tagName === 'OJ-DIAGRAM'
               )
             ) {
@@ -12055,7 +12055,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
       return null;
     }
-
+    /**
+     * Shows the keyboard focus effect.  Function is called when diagram.focus() is called.
+     */
+    showFocusEffect() {
+      if (dvt.Agent.isTouchDevice()) return;
+      var navigable = this.getEventManager().getFocus();
+      if (!navigable) {
+        // navigate to the default
+        var arNodes = this.GetRootNodeObjects();
+        if (arNodes.length > 0) {
+          navigable = this.getEventManager().getKeyboardHandler().getDefaultNavigable(arNodes);
+        }
+      }
+      if (navigable) {
+        navigable.showKeyboardFocusEffect();
+      }
+    }
     /**
      * Updates keyboard focus effect
      * @private
@@ -12069,7 +12085,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         if (this.activeInnerElems) {
           var node = this.getNodeById(this.activeInnerElemsItemId);
           // if neither the old active elem had an ID and elem was successfully focused
-          // nor if old custom elem had an ID and was succesffuly focused
+          // nor if old custom elem had an ID and was succesfully focused
           if (
             !(
               (this._oldActiveElemId && this._enableActiveElems(this._oldActiveElemId, node)) ||

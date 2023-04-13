@@ -6,6 +6,7 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
+import { isElementRegistered, getElementRegistration, getElementDescriptor, getMetadata, getElementProperties } from 'ojs/ojcustomelement-registry';
 import Context from 'ojs/ojcontext';
 import { warn } from 'ojs/ojlogger';
 import { verifyThemeVersion } from 'ojs/ojthemeutils';
@@ -246,57 +247,6 @@ function cacheHelper(converter, key) {
 
 const EMPTY_SET = new Set();
 class CustomElementUtils {
-    static registerElement(tagName, regObj, constructor) {
-        const tagNameUpper = tagName.toUpperCase();
-        if (!CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagNameUpper]) {
-            if (!regObj.descriptor) {
-                throw new Error(`Custom element ${tagName} must be registered with a descriptor.`);
-            }
-            CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagName] = regObj;
-            CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagNameUpper] = regObj;
-            Object.defineProperty(constructor, 'name', {
-                value: CustomElementUtils.tagNameToElementClassName(tagName)
-            });
-            customElements.define(tagName, constructor);
-        }
-    }
-    static tagNameToElementClassName(tagName) {
-        return (tagName
-            .toLowerCase()
-            .match(/-(?<match>.*)/)[0]
-            .replace(/-(.)/g, (match, group1) => group1.toUpperCase()) + 'Element');
-    }
-    static isComposite(tagName) {
-        var _a, _b;
-        return (_b = (_a = CustomElementUtils.getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.composite) !== null && _b !== void 0 ? _b : false;
-    }
-    static isVComponent(tagName) {
-        var _a, _b;
-        return (_b = (_a = CustomElementUtils.getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.vcomp) !== null && _b !== void 0 ? _b : false;
-    }
-    static isElementRegistered(tagName) {
-        return CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagName] != null;
-    }
-    static getElementRegistration(tagName) {
-        var _a;
-        return (_a = CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagName]) !== null && _a !== void 0 ? _a : null;
-    }
-    static getElementDescriptor(tagName) {
-        var _a;
-        return ((_a = CustomElementUtils.getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.descriptor) || {};
-    }
-    static getElementProperties(element) {
-        return CustomElementUtils.getPropertiesForElementTag(element.tagName);
-    }
-    static getMetadata(tagName) {
-        var _a, _b;
-        const descriptor = CustomElementUtils.getElementDescriptor(tagName);
-        return (_b = (_a = descriptor['_metadata']) !== null && _a !== void 0 ? _a : descriptor.metadata) !== null && _b !== void 0 ? _b : {};
-    }
-    static getPropertiesForElementTag(tagName) {
-        var _a;
-        return (_a = CustomElementUtils.getMetadata(tagName).properties) !== null && _a !== void 0 ? _a : {};
-    }
     static getElementInfo(element) {
         if (element) {
             return `${element.tagName.toLowerCase()} with id '${element.id}'`;
@@ -305,8 +255,8 @@ class CustomElementUtils {
     }
     static getElementState(element) {
         let state = element[CustomElementUtils._ELEMENT_STATE_KEY];
-        if (!state && CustomElementUtils.isElementRegistered(element.tagName)) {
-            const StateClass = CustomElementUtils.getElementRegistration(element.tagName).stateClass;
+        if (!state && isElementRegistered(element.tagName)) {
+            const StateClass = getElementRegistration(element.tagName).stateClass;
             state = new StateClass(element);
             Object.defineProperty(element, CustomElementUtils._ELEMENT_STATE_KEY, { value: state });
         }
@@ -314,12 +264,12 @@ class CustomElementUtils {
     }
     static getElementBridge(element) {
         let bridge = element[CustomElementUtils._ELEMENT_BRIDGE_KEY];
-        if (bridge === undefined && CustomElementUtils.isElementRegistered(element.tagName)) {
+        if (bridge === undefined && isElementRegistered(element.tagName)) {
             bridge = null;
-            const bridgeProto = CustomElementUtils.getElementRegistration(element.tagName).bridgeProto;
+            const bridgeProto = getElementRegistration(element.tagName).bridgeProto;
             if (bridgeProto !== undefined) {
                 bridge = Object.create(bridgeProto);
-                const descriptor = CustomElementUtils.getElementDescriptor(element.tagName);
+                const descriptor = getElementDescriptor(element.tagName);
                 bridge.initializeBridge(element, descriptor);
             }
             Object.defineProperty(element, CustomElementUtils._ELEMENT_BRIDGE_KEY, { value: bridge });
@@ -329,6 +279,7 @@ class CustomElementUtils {
     static getSlotMap(element) {
         const slotMap = {};
         const childNodeList = element.childNodes;
+        const metadata = childNodeList.length > 0 ? getMetadata(element.localName) : null;
         for (let i = 0; i < childNodeList.length; i++) {
             const child = childNodeList[i];
             if (CustomElementUtils.isSlotable(child)) {
@@ -336,6 +287,7 @@ class CustomElementUtils {
                 if (!slotMap[slot]) {
                     slotMap[slot] = [];
                 }
+                CustomElementUtils._possiblyApplyImplicitContext(child, slot, metadata);
                 slotMap[slot].push(child);
             }
         }
@@ -353,7 +305,7 @@ class CustomElementUtils {
         return node.nodeType === 1 || (node.nodeType === 3 && !!node.nodeValue.trim());
     }
     static getElementProperty(element, property) {
-        if (CustomElementUtils.isElementRegistered(element.tagName)) {
+        if (isElementRegistered(element.tagName)) {
             let vInst = element['_vcomp'];
             if (vInst && !vInst.isCustomElementFirst()) {
                 return CustomElementUtils.getPropertyValue(vInst.props, property);
@@ -405,8 +357,15 @@ class CustomElementUtils {
         }
         return EMPTY_SET;
     }
+    static _possiblyApplyImplicitContext(child, slot, metadata) {
+        var _a, _b;
+        if ((child === null || child === void 0 ? void 0 : child.nodeType) === Node.ELEMENT_NODE) {
+            if ((_b = (_a = metadata.slots) === null || _a === void 0 ? void 0 : _a[slot]) === null || _b === void 0 ? void 0 : _b.implicitBusyContext) {
+                child.setAttribute('data-oj-context', '');
+            }
+        }
+    }
 }
-CustomElementUtils._CUSTOM_ELEMENT_REGISTRY = {};
 CustomElementUtils._ELEMENT_STATE_KEY = '_ojElementState';
 CustomElementUtils._ELEMENT_BRIDGE_KEY = '_ojBridge';
 CustomElementUtils._ALLOW_RELOCATION_COUNT = 0;
@@ -414,7 +373,6 @@ CustomElementUtils.VCOMP_INSTANCE = Symbol('vcompInstance');
 
 const CHILD_BINDING_PROVIDER = Symbol('childBindingProvider');
 const CACHED_BINDING_PROVIDER = Symbol('cachedBindingProvider');
-const CACHED_USE_KO_FLAG = Symbol('cachedUseKoFlag');
 class ElementState {
     constructor(element) {
         this.dirtyProps = new Set();
@@ -472,7 +430,7 @@ class ElementState {
     }
     getTrackChildrenOption() {
         var _a, _b;
-        const metadata = CustomElementUtils.getElementDescriptor(this.Element.tagName).metadata;
+        const metadata = getElementDescriptor(this.Element.tagName).metadata;
         return (_b = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_TRACK_CHILDREN']) !== null && _b !== void 0 ? _b : 'none';
     }
     setCreateCallback(createComponentCallback) {
@@ -638,7 +596,7 @@ class ElementState {
     }
     GetDescriptiveValue(attrName) {
         const propName = AttributeUtils.attributeToPropertyName(attrName);
-        const properties = CustomElementUtils.getElementProperties(this.Element);
+        const properties = getElementProperties(this.Element);
         let value;
         if (properties && properties[propName]) {
             value = this.Element[propName];
@@ -706,25 +664,9 @@ class ElementState {
             this._resolveCreatedBusyState = null;
         }
     }
-    static _findKoUseFlag(element, startElement = element) {
-        let useKoFlag = element[CACHED_USE_KO_FLAG];
-        if (useKoFlag !== undefined) {
-            return useKoFlag;
-        }
-        const parent = element.parentElement;
-        if (!parent) {
-            if (element === document.documentElement) {
-                useKoFlag = false;
-            }
-            else {
-                throw new JetElementError(startElement, 'Cannot determine knockout use for a disconnected subtree.');
-            }
-        }
-        else {
-            useKoFlag = ElementState._findKoUseFlag(parent, startElement);
-        }
-        element[CACHED_USE_KO_FLAG] = useKoFlag;
-        return useKoFlag;
+    static _findKoUseFlag(element) {
+        const template = element.querySelector(':scope > template[data-oj-use-ko]');
+        return !!template;
     }
     static _walkBindingProviders(element, startElement = element) {
         var _a;
@@ -769,7 +711,7 @@ class ElementState {
                     .then(() => {
                     resolveElementDefinedBusyState();
                     clearInterval(timer);
-                    if (CustomElementUtils.isElementRegistered(trackedElement.tagName)) {
+                    if (isElementRegistered(trackedElement.tagName)) {
                         return CustomElementUtils.getElementState(trackedElement).GetCreatedPromise();
                     }
                     return null;
@@ -780,7 +722,7 @@ class ElementState {
                     throw new Error(`Error defining element ${trackedElement.localName} : ${error}`);
                 });
             }
-            else if (CustomElementUtils.isElementRegistered(trackedElement.tagName)) {
+            else if (isElementRegistered(trackedElement.tagName)) {
                 return CustomElementUtils.getElementState(trackedElement).GetCreatedPromise();
             }
             return null;
@@ -857,4 +799,4 @@ const transformPreactValue = (element, propertyMeta, originalValue) => {
     return value;
 };
 
-export { AttributeUtils, CACHED_BINDING_PROVIDER, CACHED_USE_KO_FLAG, CHILD_BINDING_PROVIDER, CustomElementUtils, ElementState, ElementUtils, JetElementError, toSymbolizedValue, transformPreactValue };
+export { AttributeUtils, CACHED_BINDING_PROVIDER, CHILD_BINDING_PROVIDER, CustomElementUtils, ElementState, ElementUtils, JetElementError, toSymbolizedValue, transformPreactValue };

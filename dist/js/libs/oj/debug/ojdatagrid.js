@@ -3407,10 +3407,12 @@ var __oj_data_grid_metadata =
    * @param {Element} element the element to remove
    */
   DvtDataGrid.prototype._remove = function (element) {
-    this._uniqueIdCallback(element, true);
+    if (element != null) {
+      this._uniqueIdCallback(element, true);
 
-    // callback allows jQuery to clean the node on a remove
-    this.m_removeCallback.call(null, element);
+      // callback allows jQuery to clean the node on a remove
+      this.m_removeCallback.call(null, element);
+    }
   };
 
   /**
@@ -4097,7 +4099,7 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype.empty = function () {
     // remove everything that will be rebuilt
     if (this.m_empty) {
-      this.m_databody.firstChild.removeChild(this.m_empty);
+      this._remove(this.m_empty);
     }
     if (this.m_corner) {
       this._remove(this.m_corner);
@@ -4229,6 +4231,7 @@ var __oj_data_grid_metadata =
 
     // selection
     this.m_discontiguousSelection = false;
+    this.m_selectionFrontier = null;
 
     // event listeners
     this.m_docMouseMoveListener = null;
@@ -4249,6 +4252,7 @@ var __oj_data_grid_metadata =
     // resizing
     this.m_resizing = false;
     this.m_resizingElement = null;
+    this.m_resizingElementSibling = null;
     this.m_resizingElementMin = null;
 
     // data states
@@ -4490,6 +4494,13 @@ var __oj_data_grid_metadata =
    */
   DvtDataGrid.prototype._getTemplateEngine = function () {
     return this.m_engine;
+  };
+
+  DvtDataGrid.prototype._cleanTemplateNodes = function (node) {
+    var templateEngine = this._getTemplateEngine();
+    if (templateEngine != null) {
+      templateEngine.clean(node);
+    }
   };
 
   /**
@@ -19165,7 +19176,9 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype._destroyEditableClone = function () {
     if (this.m_editableClone) {
       if (this.m_editableClone.parentNode != null) {
-        this.m_root.removeChild(this.m_editableClone);
+        this._remove(this.m_editableClone);
+      } else {
+        this._cleanTemplateNodes(this.m_editableClone);
       }
       delete this.m_editableClone;
     }
@@ -35820,6 +35833,8 @@ var __oj_data_grid_metadata =
 
       // remove the resize DOM listener
       this._unregisterResizeListener(this.root);
+
+      this.contextMenuEvent = null;
     },
 
     _registerEventListeners: function () {
@@ -36245,7 +36260,7 @@ var __oj_data_grid_metadata =
           (children[i].tagName !== 'OJ-MENU' ||
             (children[i].tagName === 'OJ-MENU' && children[i].slot !== 'contextMenu'))
         ) {
-          this.root.removeChild(children[i]);
+          this._remove(children[i]);
         }
       }
     },
@@ -37743,7 +37758,10 @@ var __oj_data_grid_metadata =
      * @private
      */
     _remove: function (element) {
-      $(element).remove();
+      if (element != null) {
+        this.grid._cleanTemplateNodes(element);
+        $(element).remove();
+      }
     },
 
     /**

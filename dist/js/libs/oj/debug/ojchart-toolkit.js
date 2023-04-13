@@ -5859,32 +5859,36 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         ? keyCode == dvt.KeyboardEvent.LEFT_ARROW
         : keyCode == dvt.KeyboardEvent.RIGHT_ARROW;
 
+      var isStacked = DvtChartDataUtils.isStacked(chart);
+      var isBar = DvtChartTypeUtils.isBar(chart);
+      var nextObj;
       if (isUp) {
         nextGroupIndex = groupIndex;
         nextSeriesIndex = this._findNextUpSeries(chart, seriesIndex, groupIndex);
       } else if (isDown) {
         nextGroupIndex = groupIndex;
         nextSeriesIndex = this._findNextDownSeries(chart, seriesIndex, groupIndex);
-      } else if (isRight) {
+      } else if (isRight || isLeft) {
         nextSeriesIndex = seriesIndex;
         nextGroupIndex = groupIndex;
         do {
-          nextGroupIndex++;
+          nextGroupIndex = isRight ? nextGroupIndex + 1 : nextGroupIndex - 1;
           if (isPolar && nextGroupIndex >= groupCount) nextGroupIndex = 0;
-        } while (
-          chart.getObject(nextSeriesIndex, nextGroupIndex) == null &&
-          nextGroupIndex < groupCount
-        );
-      } else if (isLeft) {
-        nextSeriesIndex = seriesIndex;
-        nextGroupIndex = groupIndex;
-        do {
-          nextGroupIndex--;
           if (isPolar && nextGroupIndex < 0) nextGroupIndex = groupCount - 1;
-        } while (chart.getObject(nextSeriesIndex, nextGroupIndex) == null && nextGroupIndex > -1);
+          nextObj = chart.getObject(nextSeriesIndex, nextGroupIndex);
+          // if stacked and next group does not have item of same series,
+          // shift focus to the item at the bottom of the stack
+          if (nextObj == null && isStacked && isBar) {
+            var nextSeries = this._findFirstSeriesInGroup(chart, nextGroupIndex);
+            nextObj = chart.getObject(nextSeries, nextGroupIndex);
+          }
+        } while (
+          nextObj == null &&
+          ((isRight && nextGroupIndex < groupCount) || (isLeft && nextGroupIndex > -1))
+        );
       }
 
-      var nextObj = chart.getObject(nextSeriesIndex, nextGroupIndex);
+      nextObj = nextObj || chart.getObject(nextSeriesIndex, nextGroupIndex);
       return nextObj && nextObj.isNavigable() ? nextObj : this;
     }
 
@@ -5950,6 +5954,26 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         }
       }
       return nextSeriesIndex;
+    }
+
+    /**
+     * Returns the index of the first series in the given group. This will be the item at the
+     * bottom of the stack when chart is stacked.
+     * @param {Chart} chart
+     * @param {number} groupIndex The group index of the group.
+     * @returns
+     */
+    _findFirstSeriesInGroup(chart, groupIndex) {
+      var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
+      for (var idx = 0; idx < seriesCount; idx++) {
+        if (
+          DvtChartDataUtils.isSeriesRendered(chart, idx) &&
+          DvtChartDataUtils.getVal(chart, idx, groupIndex) != null &&
+          chart.getObject(idx, groupIndex) != null
+        )
+          return idx;
+      }
+      return null;
     }
 
     //---------------------------------------------------------------------//
@@ -24417,8 +24441,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       var initialTimezoneOffset = anchor.getTimezoneOffset();
       anchor.setMonth(0, 1); // January 1
       anchor.setHours(0, 0, 0, 0); // 00:00:00
-      var timezoneCorrection = (initialTimezoneOffset - anchor.getTimezoneOffset()) * 60 * 1000; // . Correction is needed due to daylight savings
-      var time = anchor.getTime() + timezoneCorrection;
+      var time = anchor.getTime();
 
       var times = [];
       if (step >= DvtTimeAxisInfo.TIME_YEAR_MIN && step <= DvtTimeAxisInfo.TIME_YEAR_MAX) {
@@ -24436,7 +24459,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
           time = DvtTimeAxisInfo._addOneMonth(time);
         }
       } else {
-        time += Math.ceil((start - time) / step) * step;
+        // . Correction is needed due to daylight savings.
+        // Only apply daylight correction when step is less than a month. Daylight savings does not impact any step higher than month.
+        // JET-52348 - Ideally we should be using Date api to add and substract date offsets to calculate labels since
+        // Date will automatically handle daylight savings. This approach should solve issues for steps greater than month but we could encounter
+        // offsets in axis labels when dataset values are in different daylight savings and chart step is low (eg day or hour);
+        var timezoneCorrection = (initialTimezoneOffset - anchor.getTimezoneOffset()) * 60 * 1000;
+        var correction = step < DvtTimeAxisInfo.TIME_MONTH_MIN ? timezoneCorrection : 0;
+        time += Math.ceil((start - time - correction) / step) * step + correction;
         while (time <= end) {
           times.push(time);
           time += step;

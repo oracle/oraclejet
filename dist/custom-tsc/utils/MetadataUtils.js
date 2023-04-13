@@ -96,7 +96,7 @@ function getGenericTypeParameters(propsTypeNode) {
 }
 exports.getGenericTypeParameters = getGenericTypeParameters;
 function getTypeParametersFromType(type, checker) {
-    var _a;
+    var _a, _b;
     let typeParamsSignature;
     let typeArgs;
     if (type.aliasSymbol) {
@@ -113,7 +113,7 @@ function getTypeParametersFromType(type, checker) {
             typeParamsSignature += typeArgName;
             if ((typeArg.typeArguments && typeArg.typeArguments.length) ||
                 (typeArg.aliasTypeArguments && typeArg.aliasTypeArguments.length)) {
-                typeParamsSignature += getTypeParametersFromType(typeArg, checker);
+                typeParamsSignature += (_b = getTypeParametersFromType(typeArg, checker)) !== null && _b !== void 0 ? _b : '';
             }
             if (i < typeArgs.length - 1) {
                 typeParamsSignature += ', ';

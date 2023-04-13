@@ -742,6 +742,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
       }
       goP = this.sync().catch((ex) => {
         // Rollback transitions if navigation rejected
+        pendingTransitions = [];
         if (this._noHistory) {
           noHistorySegments = prevNoHistorySegments;
         } else {

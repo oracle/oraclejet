@@ -1581,8 +1581,8 @@ var __oj_status_meter_gauge_metadata =
    * @ojrole img
    * @ojrole application
    *
-   * @ojpropertylayout [ {propertyGroup: "common", items: ["selectedState.shape", "unselectedState.shape", "hoverState.shape", "changedState.shape", "style"]},
-   *                     {propertyGroup: "data", items: ["value", "min", "max", "step"]} ]
+   * @ojpropertylayout [ {propertyGroup: "common", items: ["style"]},
+   *                     {propertyGroup: "data", items: ["value", "max", "step"]} ]
    * @ojvbdefaultcolumns 4
    * @ojvbmincolumns 1
    *
@@ -3393,11 +3393,12 @@ var __oj_status_meter_gauge_metadata =
    * </p>
    * <h5>track-resize attribute</h5>
    * <p>track-resize attribute is no longer supported. Rating gauges now have fixed sizes. Since we are not supporting the 'fit' enum value for the 'size' api, we no longer need 'track-resize'. </p>
-   * <h5>thresholds attribute</h5>
-   * <p>For the initial release of the oj-c-rating-gauge, we are not supporting thresholds. We plan on supporting this use case in a future release.</p>
    * <h5>tooltip attribute and tooltipTemplate slot </h5>
    * <p> The support for this feature has been split into two attributes, tooltip and datatip. The datatip will be used for interactive gauges only and it will be a function that takes datatipDetail as argument.
    * Tooltip attribute, which will be a string instead of a function, will be used for readonly rating gauge.
+   * </p>
+   * <h5>title support</h5>
+   * <p>title will no longer be required to make your rating gauge accessible. Use the datatip or tooltip APIs or the aria-label attribute instead.
    * </p>
    * @ojfragment migrationDoc
    * @memberof oj.ojRatingGauge
@@ -3731,6 +3732,7 @@ var __oj_status_meter_gauge_metadata =
    * @property {number=} lineWidth=2  The width of the reference line.
    * @property {("dashed"|"dotted"|"solid")=} lineStyle="solid" The line style of the reference line.
    * @ojdeprecated {since: '14.0.0', description: 'This is not recommended in the Redwood design system', target: 'property', for: 'lineStyle' }
+   * @ojdeprecated {since: '14.1.0', description: 'This is not recommended in the Redwood design system', target: 'property', for: 'lineWidth' }
    */
   /**
    * @typedef {Object} oj.ojStatusMeterGauge.Threshold

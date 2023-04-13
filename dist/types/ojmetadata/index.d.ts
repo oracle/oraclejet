@@ -119,6 +119,7 @@ export type ComponentMetadataSlots = {
     displayName?: string;
     extension?: object;
     help?: string;
+    implicitBusyContext?: boolean;
     maxItems?: number;
     minItems?: number;
     preferredContent?: string[];

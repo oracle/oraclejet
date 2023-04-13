@@ -3,7 +3,7 @@ import * as MetaTypes from './MetadataTypes';
 import * as Metadata from 'ojs/ojmetadata';
 export declare function getGenericsAndTypeParameters(node: MetaTypes.HasTypeParameters, isPropsClass?: boolean): MetaTypes.GenericsTypes | undefined;
 export declare function getGenericsAndTypeParametersFromType(typeObj: ts.Type, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.GenericsTypes | undefined;
-export declare function getSignatureFromType(type: ts.Type, isPropSignatureType: boolean, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ALL_TYPES;
+export declare function getSignatureFromType(type: ts.Type, isPropSignatureType: boolean, seenUnionTypeAliases: Set<string> | null, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ALL_TYPES;
 export declare function getTypeNameFromTypeReference(node: ts.TypeReferenceType): string | undefined;
 export declare function getTypeNameFromType(type: ts.Type): string;
 export declare function getTypeNameFromIntersectionTypes(types: Array<ts.Type>): string;

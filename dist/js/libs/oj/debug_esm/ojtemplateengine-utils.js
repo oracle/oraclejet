@@ -7,13 +7,14 @@
  */
 import { render } from 'preact';
 import oj from 'ojs/ojcore-base';
-import { CACHED_BINDING_PROVIDER, CACHED_USE_KO_FLAG, CustomElementUtils, transformPreactValue } from 'ojs/ojcustomelement-utils';
+import { CACHED_BINDING_PROVIDER, transformPreactValue } from 'ojs/ojcustomelement-utils';
+import { getPropertiesForElementTag } from 'ojs/ojcustomelement-registry';
 import { getPropertyMetadata } from 'ojs/ojmetadatautils';
 import { info } from 'ojs/ojlogger';
 
 const ROW = Symbol('row');
 class PreactTemplate {
-    static renderNodes(vnode, row, useKoFlag = false) {
+    static renderNodes(vnode, row) {
         const parentStub = row.parentStub;
         let retrieveNodes = () => Array.from(parentStub.childNodes);
         if (row.nodes) {
@@ -41,7 +42,6 @@ class PreactTemplate {
             }
             node[ROW] = row;
             node[CACHED_BINDING_PROVIDER] = 'preact';
-            node[CACHED_USE_KO_FLAG] = useKoFlag;
         });
         row.vnode = vnode;
         row.nodes = nodes;
@@ -103,7 +103,7 @@ class PreactTemplate {
         };
     }
     static resolveVDomTemplateProps(template, renderer, elementTagName, propertySet, data, defaultValues, propertyValidator) {
-        const metadata = CustomElementUtils.getPropertiesForElementTag(elementTagName);
+        const metadata = getPropertiesForElementTag(elementTagName);
         const [cache, deleteEntry] = PreactTemplate.extendTemplate(template, PreactTemplate._COMPUTED_PROPS_CACHE_FACTORY, (recalc) => {
             for (const observable of cache) {
                 observable.recalculateValue(recalc);

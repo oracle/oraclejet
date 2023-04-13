@@ -2505,6 +2505,97 @@ var __oj_gantt_reference_object_metadata =
  */
 
 /**
+ * Class to help set css properties on the component root options object
+ * @param {Object} object The root options object from which this path should be resolved
+ * @param {string} path The string path within the options object to resolve
+ * @protected
+ * @constructor
+ * @ignore
+ */
+const DvtJsonPath = function (object, path) {
+  this._path = path;
+  this._root = object;
+  this._delimiter = '/';
+};
+
+/**
+ * Resolves the parameter of the leaf object and the leaf object itself
+ * @param {Object} root The root object to update
+ * @param {string} path The string path within the root object to resolve
+ * @param {string} delimiter The string delimiter for the path string
+ * @param {boolean} createIfMissing Flag to create the hierarchy of the namespaces if they do not exist
+ * @return {Object} The resolved parameter
+ * @private
+ */
+DvtJsonPath.prototype._resolveLeafObjectAndProperty = function (
+  root,
+  path,
+  delimiter,
+  createIfMissing
+) {
+  var result = {};
+  while (root && path.indexOf(delimiter) > -1) {
+    var subProperty = path.substring(0, path.indexOf(delimiter));
+    if (createIfMissing && root[subProperty] === undefined) {
+      // eslint-disable-next-line no-param-reassign
+      root[subProperty] = {};
+    }
+    // eslint-disable-next-line no-param-reassign
+    root = root[subProperty];
+    // eslint-disable-next-line no-param-reassign
+    path = path.substring(path.indexOf(delimiter) + 1, path.length);
+  }
+
+  if (root) {
+    result.object = root;
+    result.parameter = path;
+  }
+
+  return result;
+};
+
+/**
+ * Resolves path to the leaf object and parameter of this object
+ * @param {boolean} createIfMissing Flag to create the hierarchy of the namespaces if they do not exist
+ * @private
+ */
+DvtJsonPath.prototype._resolvePath = function (createIfMissing) {
+  if (this._leaf === undefined) {
+    var result = this._resolveLeafObjectAndProperty(
+      this._root,
+      this._path,
+      this._delimiter,
+      createIfMissing
+    );
+
+    this._leaf = result.object;
+    this._param = result.parameter;
+  }
+};
+
+/**
+ * Returns value of the leaf element of the path.
+ * @return {Object} value The value of the leaf element or undefined if path structure is not yet created
+ */
+DvtJsonPath.prototype.getValue = function () {
+  this._resolvePath(false);
+  return this._leaf === undefined ? undefined : this._leaf[this._param];
+};
+
+/**
+ * Sets value of the leaf element of the path.
+ * @param {Object} value The value of the leaf element
+ * @param {boolean} bOverride Whether to override the original value
+ */
+DvtJsonPath.prototype.setValue = function (value, bOverride) {
+  this._resolvePath(true);
+
+  if (bOverride || !this._leaf[this._param]) {
+    this._leaf[this._param] = value;
+  }
+};
+
+/**
  * For default date converter
  * @static
  * @ignore
@@ -5675,6 +5766,50 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
     if (this.options.taskData) {
       this._fetchDataHandler = this._getFetchDataHandler('taskData');
     }
+  },
+
+  /**
+   * Recalculate styles on the given childStyleClasses and update the given
+   * options object.
+   * @param {Object} options options object
+   * @param {Array<string>} childStyleClassKeys subset of keys from _GetChildStyleClasses() to target
+   * @private
+   * @instance
+   * @memberof oj.ojGantt
+   */
+  _updateStyles: function (options, childStyleClassKeys) {
+    var childStyleClasses = this._GetChildStyleClasses();
+    var targetChildStyleClasses = {};
+    childStyleClassKeys.forEach((key) => {
+      var definitions = childStyleClasses[key];
+      targetChildStyleClasses[key] = definitions;
+      if (!(definitions instanceof Array)) {
+        definitions = [definitions];
+      }
+      // Clear previous values from options
+      definitions.forEach((definition) => {
+        var stylePath = definition.path;
+        var path = new DvtJsonPath(options, stylePath);
+        path.setValue(undefined, true);
+      });
+      // Clear cached styles
+      this._styleProcessor.clearCache(key);
+    });
+
+    this._styleProcessor.processStyles(
+      this.element,
+      options,
+      this._GetComponentStyleClasses(),
+      targetChildStyleClasses
+    );
+  },
+
+  // inheritdoc
+  _BeforeResizeRender: function () {
+    // JET-54524
+    // We need to recalculate padding related styles during resize
+    var options = this._component.getOptions();
+    this._updateStyles(options, ['oj-gantt-container', 'oj-gantt-row-label']);
   },
 
   // @inheritdoc

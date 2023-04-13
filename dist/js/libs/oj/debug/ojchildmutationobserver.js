@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcustomelement', 'ojs/ojcustomelement-utils'], function (ojcustomelement, ojcustomelementUtils) { 'use strict';
+define(['ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry'], function (ojcustomelement, ojcustomelementUtils, ojcustomelementRegistry) { 'use strict';
 
   /**
    * Child mutation observer.
@@ -31,7 +31,7 @@ define(['ojs/ojcustomelement', 'ojs/ojcustomelement-utils'], function (ojcustome
   const ChildMutationObserver = function (element, handler) {
     var _element = element;
     var _handler = handler;
-    var _trackOption = ojcustomelementUtils.CustomElementUtils.isElementRegistered(element.tagName)
+    var _trackOption = ojcustomelementRegistry.isElementRegistered(element.tagName)
       ? ojcustomelementUtils.CustomElementUtils.getElementState(element).getTrackChildrenOption()
       : 'none';
     /**

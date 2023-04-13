@@ -2391,8 +2391,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         // Combine the user options with the defaults and store
         this.Options = this.Defaults.calcOptions(options);
 
-        // Transfer the category visibility properties to the hiddenCategories.
-        this._transferVisibilityProps(this.Options['sections']);
+        this._processData(this.Options['sections']);
       } else if (!this.Options)
         // Create a default options object if none has been specified
         this.Options = this.GetDefaults();
@@ -2641,24 +2640,26 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     }
 
     /**
-     * Transfer categoryVisibility property from legend item to hiddenCategories on the legend.
+     * Processes the sections data. Transfers categoryVisibility property from legend item to hiddenCategories on the legend.
      * @param {array} sections The array of legend section definitions
      * @private
      */
-    _transferVisibilityProps(sections) {
+    _processData(sections) {
+      let hasCollapsible = false;
       if (!sections || sections.length <= 0) return;
 
       var hiddenCategories = this.getOptions()['hiddenCategories'];
       for (var i = 0; i < sections.length; i++) {
         var section = sections[i];
-
+        hasCollapsible = hasCollapsible || section.collapsible === 'on';
         // If this section has nested sections, recurse.
-        if (section['sections']) this._transferVisibilityProps(section['sections']);
+        if (section['sections']) this._processData(section['sections']);
 
         // Iterate through the items and transfer properties.
         var items = section['items'];
         if (!items || items.length <= 0) continue;
 
+        // Transfer the category visibility properties to the hiddenCategories.
         for (var j = 0; j < items.length; j++) {
           var item = items[j];
           var itemCategory = DvtLegendUtils.getItemCategory(item, this);
@@ -2669,6 +2670,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           item['categoryVisibility'] = null;
         }
       }
+      this.getCache().putToCache('hasCollapsible', hasCollapsible);
     }
 
     /**
@@ -2679,7 +2681,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         var options = this.getOptions();
         var translations = options.translations;
         var hideAndShow = options['hideAndShowBehavior'];
-        if ((hideAndShow != 'off' && hideAndShow != 'none') || options['hoverBehavior'] == 'dim') {
+        const hasCollapsible = this.getCache().getFromCache('hasCollapsible');
+        if (
+          (hideAndShow != 'off' && hideAndShow != 'none') ||
+          options['hoverBehavior'] == 'dim' ||
+          hasCollapsible
+        ) {
           this.getCtx().setAriaRole('application');
           this.getCtx().setAriaLabel(
             dvt.ResourceUtils.format(translations.labelAndValue, [

@@ -29938,9 +29938,15 @@ KeyboardHandler._computeDelta = function (currentBounds, candidateBounds, direct
  * @param {DvtKeyboardNavigable} current
  * @param {DvtKeyboardEvent} event
  * @param {Array} listOfObjects Array of DvtKeyboardNavigable objects
+ * @param {Boolean=} compareCenters if true, will compare centers of the navigable instead of upper left corner
  * @return {DvtKeyboardNavigable}
  */
-KeyboardHandler.getNextAdjacentNavigable = function (current, event, listOfObjects) {
+KeyboardHandler.getNextAdjacentNavigable = function (
+  current,
+  event,
+  listOfObjects,
+  compareCenters
+) {
   var keycode = event.keyCode;
 
   if (!listOfObjects) return null;
@@ -29965,7 +29971,7 @@ KeyboardHandler.getNextAdjacentNavigable = function (current, event, listOfObjec
       continue;
     }
 
-    if (!KeyboardHandler._isValidDestination(object, current, keycode)) continue;
+    if (!KeyboardHandler._isValidDestination(object, current, keycode, compareCenters)) continue;
 
     var inContact = KeyboardHandler._calcInContact(object, current, keycode);
 
@@ -30126,12 +30132,36 @@ KeyboardHandler._calcDistanceAngleWeighted = function (object, current, keycode)
  * @param {DvtKeyboardNavigable} object
  * @param {DvtKeyboardNavigable} current
  * @param {Number} keycode
+ * @param {Boolean} compareCenters if true, will compare centers of the navigable instead of upper left corner
  * @return {Boolean}
  * @private
  */
-KeyboardHandler._isValidDestination = function (object, current, keycode) {
+KeyboardHandler._isValidDestination = function (object, current, keycode, compareCenters) {
   var objBB = object.getKeyboardBoundingBox();
   var curBB = current.getKeyboardBoundingBox();
+
+  // compare the centers of the navigable and to be valid, the navigable must be in the right direction
+  // without tolerance
+  if (compareCenters) {
+    var objCenterX = objBB.x + 0.5 * objBB.w;
+    var curCenterX = curBB.x + 0.5 * curBB.w;
+    var objCenterY = objBB.y + 0.5 * objBB.h;
+    var curCenterY = curBB.y + 0.5 * curBB.h;
+
+    switch (keycode) {
+      case KeyboardEvent.UP_ARROW:
+        return objCenterY < curCenterY;
+      case KeyboardEvent.DOWN_ARROW:
+        return objBB.y > curCenterY;
+      case KeyboardEvent.RIGHT_ARROW:
+        return objCenterX > curCenterX;
+      case KeyboardEvent.LEFT_ARROW:
+        return objCenterX < curCenterX;
+      default:
+        break;
+    }
+    return true;
+  }
 
   switch (keycode) {
     case KeyboardEvent.UP_ARROW:

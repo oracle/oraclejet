@@ -1,5 +1,4 @@
 const Parser = require('@formatjs/icu-messageformat-parser');
-const PluralCompiler = require('make-plural-compiler');
 
 module.exports = class PatternCompiler {
   constructor(locale) {
@@ -96,7 +95,7 @@ module.exports = class PatternCompiler {
     const num = this._getParameterExpression(node, paramAccumulator, 'number');
 
     const pluralMatch = opts.length === 0 ? 'undefined' :
-      `{${opts.join(',')}}[_pluralSelect(${num}${offset})]`;
+      `{${opts.join(',')}}[new Intl.PluralRules('${this._locale}').select(${num}${offset})]`;
     const exactMatch =
       exactPlurals.length > 0 ? `{${exactPlurals.join(',')}}[${num}]||` : '';
 

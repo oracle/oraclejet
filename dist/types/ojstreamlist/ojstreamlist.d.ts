@@ -2,11 +2,11 @@ import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetP
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
 import { Component } from 'preact';
-import { ExtendGlobalProps, PropertyChanged, TemplateSlot } from 'ojs/ojvcomponent';
+import { ExtendGlobalProps, PropertyChanged, ObservedGlobalProps, TemplateSlot } from 'ojs/ojvcomponent';
 import { KeySet, KeySetImpl } from 'ojs/ojkeyset';
 import { DataProvider } from 'ojs/ojdataprovider';
 import 'ojs/ojtreedataprovider';
-declare class Props<Key, Data> {
+declare type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'aria-labelledby'> & {
     data?: DataProvider<Key, Data> | null;
     expanded?: KeySet<Key>;
     onExpandedChanged?: PropertyChanged<KeySet<Key> | null>;
@@ -25,7 +25,7 @@ declare class Props<Key, Data> {
         offsetY?: number;
         parentKey?: Key;
     }>;
-}
+};
 declare type QuerySelector = keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
 declare type State<K> = {
     renderedData: any;

@@ -196,6 +196,11 @@ export declare type WritebackPropInfo = {
     propName?: string;
     isReadOnly?: boolean;
 };
+export declare type SlotTypeInfo = {
+    typeName: string;
+    typeRefNode: ts.TypeReferenceNode;
+    hasImplicitBusyContext?: boolean;
+};
 export declare type MetaUtilObj = {
     componentName: string;
     componentInfo: VCompInfo;

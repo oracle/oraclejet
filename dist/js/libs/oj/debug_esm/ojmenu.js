@@ -18,6 +18,7 @@ import { startAnimation } from 'ojs/ojanimation';
 import { warn } from 'ojs/ojlogger';
 import { getDeviceRenderMode } from 'ojs/ojconfig';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import { isElementRegistered } from 'ojs/ojcustomelement-registry';
 
 (function () {
   // -----------------------------------------------------------------------------
@@ -4327,7 +4328,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     ojMenu: {
       openOptions: createDynamicPropertyGetter(function (context) {
         var position;
-        if (CustomElementUtils.isElementRegistered(context.element.tagName)) {
+        if (isElementRegistered(context.element.tagName)) {
           if (context.containers.indexOf('ojMenu') >= 0) {
             position = {
               my: { horizontal: 'start', vertical: 'top' },

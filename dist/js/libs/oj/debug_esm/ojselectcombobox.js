@@ -8028,6 +8028,8 @@ const _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
                   this.close(e);
                   if (this._elemNm === 'ojcombobox') {
                     this._focusSearch();
+                  } else if (this._elemNm === 'ojselect') {
+                    this._getActiveContainer().focus();
                   }
                   resolveBusyState();
                 })
@@ -8407,16 +8409,28 @@ const _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     items.forEach(
       function (item) {
         values.push(this.id(item));
-        valueOptions.push({
+
+        var newValueOption = {
           label: item.label,
           value: this.id(item)
-        });
+        };
 
         // populate data and metadata only when using a data provider
         if (isDataProvider) {
+          // JET-57010 - oj-select-many valueOptionsChanged event does not contain data
+          // and metadata
+          // include the data and metadata from the data provider in the item itself so that they
+          // will be included in the valueOptionsChanged event that gets fired, similar to what
+          // would happen if the user selected an item from the dropdown
+          newValueOption.data = item.data;
+          newValueOption.metadata = item.metadata;
           valueOptionsData.push(item.data);
           valueOptionsMetadata.push(item.metadata);
         }
+
+        // valueOptions is similar to value, but each item in the array is an object containing
+        // the value and label for that item
+        valueOptions.push(newValueOption);
       }.bind(this)
     );
 

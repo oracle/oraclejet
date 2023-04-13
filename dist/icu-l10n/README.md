@@ -32,7 +32,7 @@ $ l10nBundleBuilder.js &lt;root-message-bundle.json> &lt;root-bundle-locale> &lt
 ### Example, running with a root bundle in en-US locale
 
 ```sh
-$ l10nBundleBuilder.js resources/nls/app-strings.json en-US dist
+$ l10nBundleBuilder.js --rootDir=resources/nls --bundleName=app-strings.json --locale=en-US --outDir=dist
 ```
 
 ## Output
@@ -56,6 +56,80 @@ whose name matches that of the root bundle. If found, it combines all messages
 starting from the root bundle up to the most specific bundle, with the most specific
 ones taking precendence.
 
+## Custom Hooks
+
+Custom hooks allows an external script to alter the output of the generated bundle.
+For example, if you want each bundle key to return a custom type rather than
+just the plain translation string, define a custom hook JS file and pass it using
+the `--hooks` switch:
+
+```sh
+$ l10nBundleBuilder.js --rootDir=resources/nls --bundleName=app-strings.json --outDir=dist --hooks=./custom-hooks.js
+```
+
+`custom-hooks.js`
+
+```javascript
+module.exports = {
+  typeImport: {
+    CustomMessageType: '../../resources/CustomMessageType'
+  },
+  otherImports: {
+    escape: '../../str',
+    ext: '../../utils'
+  },
+  // remap some of the parameter names to different keys
+  convertor:
+    '(args: ParamsType): CustomMessageType => ({bundle: ext(args.bundleId), key: escape(args.id), params: args.params, value: args.translation})'
+};
+```
+
+The `typeImport` field defines the custom type import that will be added to the
+Typescript file generated. This should use a single key:value mapping that contains
+the type definition for your custom type begin returned.
+
+You can optionally define `otherImports` to include other imports into the bundle.
+This map can contain an unlimited number of imports. In the example above, the
+functions `escape` and `ext` are imported because they're used by the convertor.
+
+The `convertor` string defines the _contents_ of your convertor function that'll
+be run in place of the default behavior of returning just the translation string.
+The return of this function should match the custom type defined by `typeImport`.
+
+> Note the use of the `ParamsType` as the argument to the convertor. This type
+> is automatically added by the bundler to help your convertor understand the type
+> of parameters that it can expect to be called with.
+> `ParamsType` is defined as such, and is included in each bundle file
+>
+> ```javascript
+> type ParamsType = {
+>   bundleId: string,
+>   id: string,
+>   params: { [key: string]: any } | undefined,
+>   translation: string
+> };
+> ```
+
+`CustomMessageType.d.ts`
+
+```typescript
+export declare type CustomMessageType = {
+  bundle: string;
+  key: string;
+  params: { [key: string]: any } | undefined;
+  value: string;
+};
+```
+
+This will produce a bundle with key/values similar to
+
+```javascript
+  "welcome": ():CustomMessageType => convert({bundleId:ext("app-strings.json"),id:escape("welcome"),params:undefined,translation:"Welcome"}),
+```
+
+The `convertor` function takes `ParamsType` and returns a custom object type
+conforming to `CustomMessageType`.
+
 ## Options
 
 ### **rootDir**
@@ -69,6 +143,12 @@ The root directory of your ICU bundles
 The bundle file name that should be processed
 
 > ex. `--bundleName=app-strings.json`
+
+### **hooks**
+
+A path to a file containing custom hooks
+
+> ex. `--hooks=./hooks.js`
 
 ### **locale**
 
@@ -148,3 +228,7 @@ with
 ```javascript
 import supportedLocales from './&lt;rootDir>/supportedLocales';
 ```
+
+## Changes in 2.2.0
+
+Custom hooks implemented. See [Custom Hooks](#custom-hooks) above.

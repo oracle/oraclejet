@@ -3577,6 +3577,17 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
     beforePanZoomReset: null
   },
 
+  _ComponentCreate: function () {
+    this._super();
+    let comp = this._getRootElement();
+    comp.defaultFocusFunc = comp.focus;
+    // overwriting the default focus method to also show the focus ring
+    comp.focus = () => {
+      comp.defaultFocusFunc();
+      this._component.showFocusEffect();
+    };
+  },
+
   _InitOptions: function (originalDefaults, constructorOptions) {
     this._super(originalDefaults, constructorOptions);
 

@@ -14,17 +14,13 @@ const argsMap = Array.from(process.argv)
   }, {});
 if ('rootDir' in argsMap && 'bundleName' in argsMap && 'locale' in argsMap && 'outDir' in argsMap) {
   require('./Bundler').build({
-    rootDir: argsMap.rootDir,
-    bundleName: argsMap.bundleName,
-    locale: argsMap.locale,
-    outDir: argsMap.outDir,
-    module: argsMap.module,
+    ...argsMap,
     additionalLocales: argsMap.supportedLocales && argsMap.supportedLocales.split(',')
   });
 } else {
   const procName = path.basename(process.argv[1]);
   console.warn(
-    `Usage: ${procName} --rootDir=</path/to/bundle-dir> --bundleName=<message-bundle-name.json> --locale=<bundle-locale> --outDir=<output-dir> [--module=amd|esm|ts]
+    `Usage: ${procName} --rootDir=</path/to/bundle-dir> --bundleName=<message-bundle-name.json> --locale=<bundle-locale> --outDir=<output-dir> [--module=amd|esm|ts] [--hooks=<path-to-hooks-file>]
 
     Required:
       --rootDir\tThe root directory where the bundle files are contained
@@ -33,6 +29,7 @@ if ('rootDir' in argsMap && 'bundleName' in argsMap && 'locale' in argsMap && 'o
       --outDir\tThe output directory where the built bundle will be written
     Optional:
       --module\tProduce bundles as 'amd' or 'esm' modules
+      --hooks\tThe hooks file to use (see example)
       --supportedLocales\tA list of comma-separated additional locales to build. If
       \ta locale is specified but doesn't have a directory and translation file
       \tin the rootDir, it will be built using the root translations.
@@ -55,6 +52,32 @@ if ('rootDir' in argsMap && 'bundleName' in argsMap && 'locale' in argsMap && 'o
       - de-DE
         - bundle-i18n.json
         - bundle-i18n-x.json
+
+    Example for hooks:
+    ${procName} --hooks=./custom-hooks.js
+
+    custom-hooks.js:
+    module.exports = {
+      typeImport: { CustomMessageType: './types/custom-message-type' },
+      convertor: \`({ bundleId, id, params, translation }) => ({
+        bundleId,
+        id,
+        params,
+        translation
+      })\`
+    };
+
+    Produces:
+      import { CustomMessageType } from "./types/custom-message-type";
+
+      const bundle = {
+        "greeting": (params: ParamsType): CustomMessageType => ({
+          "bundleId": "my-bundle",
+          "key": "greeting",
+          "params": [],
+          "translation": "Hello!"
+        })
+      };
       `
   );
   process.exit(1);

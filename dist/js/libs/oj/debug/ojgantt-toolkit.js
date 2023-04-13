@@ -7015,9 +7015,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       const svgClassName = this.getSvgClassName(property);
       const svgStyle = this.getSvgStyle(property);
 
-      if (svgClassName) {
-        taskShape.applyStyleClasses(svgClassName);
-      }
+      // JET-48762: We need to ensure updated default style classes are applied on every render.
+      taskShape.applyStyleClasses(svgClassName);
 
       if (svgStyle) {
         taskShape.setStyle(svgStyle);
@@ -12219,9 +12218,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           this._trackRowLevelBaselineMilestones(rowObj, rowLevelRecentTaskObjs.length);
         } else {
           taskObjs.forEach((taskObj) => {
-            if (taskObj['_rowLevel'] === 0) {
-              taskObj['y'] += rowPaddingTop;
-            }
+            taskObj['y'] += rowPaddingTop;
           });
         }
       }
@@ -12383,7 +12380,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             rowObj['depth'] = row['_depth'];
             rowObj['expanded'] = row['_expanded'];
             // child rows are always below its parent row, so at this point it must be that the parent row index < rowObjs.length
-            rowObj['parent'] = row['_parentFlatIndex'] == null ? null : rowObjs[row['_parentFlatIndex']];
+            rowObj['parent'] =
+              row['_parentFlatIndex'] == null ? null : rowObjs[row['_parentFlatIndex']];
             row['_depth'] = undefined;
             row['_expanded'] = undefined;
             row['_parentFlatIndex'] = undefined;
@@ -13103,7 +13101,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         );
         var flattenedChildrenRowObjs = this._generateRowObjs(flattenedChildrenRows);
         // Any children rows with null parents should point to the current rowObj that triggered the collapse:
-        flattenedChildrenRowObjs.forEach(r => r.parent = r.parent || rowObj);
+        flattenedChildrenRowObjs.forEach((r) => (r.parent = r.parent || rowObj));
         applyRenderState(flattenedChildrenRowObjs, 'add', 0, flattenedChildrenRowObjs.length);
         if (isAnimationOn) {
           addShiftedRowsToFinalState(this._rowObjs, index, oldViewportHeight);
