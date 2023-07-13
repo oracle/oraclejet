@@ -143,22 +143,22 @@
 
 :root {
   --oj-core-text-color-primary:      rgb(var(--oj-palette-neutral-rgb-190));
-  --oj-core-text-color-secondary:    rgba(var(--oj-palette-neutral-rgb-190), .65);
+  --oj-core-text-color-secondary:    rgba(var(--oj-palette-neutral-rgb-190), .70);
   --oj-core-text-color-disabled:     rgba(var(--oj-palette-neutral-rgb-190), .4);
   --oj-core-text-color-brand:        rgb(var(--oj-palette-brand-rgb-110));
   --oj-core-text-color-danger:       rgb(var(--oj-palette-danger-rgb-120));
   --oj-core-text-color-warning:      rgb(var(--oj-palette-warning-rgb-120));
   --oj-core-text-color-success:      rgb(var(--oj-palette-success-rgb-120));
   --oj-core-bg-color-content:       rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-bg-color-hover:         rgba(var(--oj-palette-neutral-rgb-190), .04);
-  --oj-core-bg-color-active:        rgba(var(--oj-palette-neutral-rgb-190), .06);
-  --oj-core-bg-color-selected:      rgb(var(--oj-palette-info-rgb-30));
-  --oj-core-border-color-selected:  rgb(var(--oj-palette-info-rgb-100));
-  --oj-core-color-disabled-1:      rgba(var(--oj-palette-neutral-rgb-190), 0.05);
-  --oj-core-color-disabled-2:  rgba(var(--oj-palette-neutral-rgb-190),.12);
+  --oj-core-bg-color-hover:         rgba(var(--oj-palette-neutral-rgb-190), .08);
+  --oj-core-bg-color-active:        rgba(var(--oj-palette-neutral-rgb-190), .16);
+  --oj-core-bg-color-selected:      rgb(var(--oj-palette-brand-rgb-30));
+  --oj-core-border-color-selected:  rgb(var(--oj-palette-brand-rgb-100));
+  --oj-core-color-disabled-1:      rgba(var(--oj-palette-neutral-rgb-190), 0.04);
+  --oj-core-color-disabled-2:  rgba(var(--oj-palette-neutral-rgb-190),.20);
   --oj-core-icon-size-lg:              1.5rem;
   --oj-core-icon-size-sm:              1rem;
-  --oj-core-divider-color:             rgba(var(--oj-palette-neutral-rgb-190),.1);
+  --oj-core-divider-color:             rgba(var(--oj-palette-neutral-rgb-190),.12);
   --oj-core-divider-margin:            0.5rem;
   --oj-core-neutral-1:                      rgb(var(--oj-palette-neutral-rgb-100));
   --oj-core-neutral-2:                      rgb(var(--oj-palette-neutral-rgb-110));
@@ -322,7 +322,9 @@
   --oj-core-box-shadow-md:      0px 6px 12px 0px   rgba(var(--oj-core-box-shadow-rgb),.2);
   --oj-core-box-shadow-lg:      0px 8px 16px 0px   rgba(var(--oj-core-box-shadow-rgb),0.24);
   --oj-core-box-shadow-xl:      0px 12px 20px 0px  rgba(var(--oj-core-box-shadow-rgb),0.28);
-  --oj-core-focus-border-color: rgb(var(--oj-palette-neutral-rgb-0)); }
+  --oj-core-focus-border-color: rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-color-disabled-2: rgba(var(--oj-palette-neutral-rgb-0), 0.2)
+; }
 
 :root.oj-scale-sm {
   --oj-core-icon-size-lg: 1.3333rem; }
@@ -361,7 +363,7 @@
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v14.1.0"}' !important; }
+  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v15.0.0"}' !important; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -6690,7 +6692,8 @@ input.oj-button[type="reset"] {
 
 .oj-button-toggle.oj-hover.oj-button-full-chrome,
 .oj-button.oj-hover.oj-button-full-chrome .oj-button-button {
-  background-color: var(--oj-button-solid-chrome-bg-color-hover);
+  background-color: var(--oj-button-solid-chrome-bg-color);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-solid-chrome-border-color-hover);
   color: var(--oj-button-solid-chrome-text-color-hover); }
 
@@ -6701,7 +6704,8 @@ input.oj-button[type="reset"] {
        by the mouse button or Enter or Spacebar. */
 .oj-button-toggle.oj-active.oj-button-full-chrome,
 .oj-button.oj-active.oj-button-full-chrome .oj-button-button {
-  background-color: var(--oj-button-solid-chrome-bg-color-active);
+  background-color: var(--oj-button-solid-chrome-bg-color);
+  background-image: linear-gradient(var(--oj-core-bg-color-active), var(--oj-core-bg-color-active));
   border-color: var(--oj-button-solid-chrome-border-color-active);
   color: var(--oj-button-solid-chrome-text-color-active); }
 
@@ -6717,7 +6721,8 @@ input.oj-button[type="reset"] {
 .oj-button-toggle.oj-selected.oj-hover.oj-button-full-chrome,
 .oj-button.oj-selected.oj-hover.oj-button-full-chrome .oj-button-button {
   color: var(--oj-button-solid-chrome-text-color-selected-hover);
-  background-color: var(--oj-button-solid-chrome-bg-color-selected-hover);
+  background-color: var(--oj-button-solid-chrome-bg-color);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-solid-chrome-border-color-selected-hover); }
 
 .oj-button.oj-selected.oj-button-full-chrome .oj-button-icon {
@@ -6777,13 +6782,15 @@ input.oj-button[type="reset"] {
 .oj-button-toggle.oj-hover.oj-button-half-chrome,
 .oj-button.oj-hover.oj-button-half-chrome .oj-button-button {
   color: var(--oj-button-borderless-chrome-text-color-hover);
-  background-color: var(--oj-button-borderless-chrome-bg-color-hover);
+  background-color: transparent;
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-borderless-chrome-border-color-hover); }
 
 .oj-button-toggle.oj-active.oj-button-half-chrome,
 .oj-button.oj-active.oj-button-half-chrome .oj-button-button {
   color: var(--oj-button-borderless-chrome-text-color-active);
-  background-color: var(--oj-button-borderless-chrome-bg-color-active);
+  background-color: transparent;
+  background-image: linear-gradient(var(--oj-core-bg-color-active), var(--oj-core-bg-color-active));
   border-color: var(--oj-button-borderless-chrome-border-color-active); }
 
 .oj-button-toggle.oj-selected.oj-button-half-chrome,
@@ -6795,7 +6802,8 @@ input.oj-button[type="reset"] {
 .oj-button-toggle.oj-selected.oj-hover.oj-button-half-chrome,
 .oj-button.oj-selected.oj-hover.oj-button-half-chrome .oj-button-button {
   color: var(--oj-button-borderless-chrome-text-color-selected-hover);
-  background-color: var(--oj-button-borderless-chrome-bg-color-selected-hover);
+  background-color: var(--oj-button-borderless-chrome-bg-color-selected);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-borderless-chrome-border-color-selected-hover); }
 
 .oj-button-toggle.oj-disabled.oj-button-half-chrome,
@@ -6874,13 +6882,15 @@ input.oj-button[type="reset"] {
 .oj-button-toggle.oj-hover.oj-button-outlined-chrome,
 .oj-button.oj-hover.oj-button-outlined-chrome .oj-button-button {
   color: var(--oj-button-outlined-chrome-text-color-hover);
-  background-color: var(--oj-button-outlined-chrome-bg-color-hover);
+  background-color: var(--oj-button-outlined-chrome-bg-color);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-outlined-chrome-border-color-hover); }
 
 .oj-button-toggle.oj-active.oj-button-outlined-chrome,
 .oj-button.oj-active.oj-button-outlined-chrome .oj-button-button {
   color: var(--oj-button-outlined-chrome-text-color-active);
-  background-color: var(--oj-button-outlined-chrome-bg-color-active);
+  background-color: var(--oj-button-outlined-chrome-bg-color);
+  background-image: linear-gradient(var(--oj-core-bg-color-active), var(--oj-core-bg-color-active));
   border-color: var(--oj-button-outlined-chrome-border-color-active); }
 
 .oj-button-toggle.oj-selected.oj-button-outlined-chrome,
@@ -6892,7 +6902,8 @@ input.oj-button[type="reset"] {
 .oj-button-toggle.oj-selected.oj-hover.oj-button-outlined-chrome,
 .oj-button.oj-selected.oj-hover.oj-button-outlined-chrome .oj-button-button {
   color: var(--oj-button-outlined-chrome-text-color-selected-hover);
-  background-color: var(--oj-button-outlined-chrome-bg-color-selected-hover);
+  background-color: var(--oj-button-outlined-chrome-bg-color-selected);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-outlined-chrome-border-color-selected-hover); }
 
 .oj-button-toggle.oj-disabled.oj-button-outlined-chrome,
@@ -6988,7 +6999,8 @@ input.oj-button[type="reset"] {
 
 .oj-button-toggle.oj-hover.oj-button-cta-chrome,
 .oj-button.oj-hover.oj-button-cta-chrome .oj-button-button {
-  background-color: var(--oj-button-call-to-action-chrome-bg-color-hover);
+  background-color: var(--oj-button-call-to-action-chrome-bg-color);
+  background-image: linear-gradient(rgba(var(--oj-palette-neutral-rgb-0), 0.08), rgba(var(--oj-palette-neutral-rgb-0), 0.08));
   border-color: var(--oj-button-call-to-action-chrome-border-color-hover);
   color: var(--oj-button-call-to-action-chrome-text-color-hover); }
 
@@ -6999,7 +7011,8 @@ input.oj-button[type="reset"] {
         by the mouse button or Enter or Spacebar. */
 .oj-button-toggle.oj-active.oj-button-cta-chrome,
 .oj-button.oj-active.oj-button-cta-chrome .oj-button-button {
-  background-color: var(--oj-button-call-to-action-chrome-bg-color-active);
+  background-color: var(--oj-button-call-to-action-chrome-bg-color);
+  background-image: linear-gradient(rgba(var(--oj-palette-neutral-rgb-0), 0.12), rgba(var(--oj-palette-neutral-rgb-0), 0.08));
   border-color: var(--oj-button-call-to-action-chrome-border-color-active);
   color: var(--oj-button-call-to-action-chrome-text-color-active); }
 
@@ -8191,11 +8204,11 @@ oj-chart {
 .oj-color-invert {
   --oj-text-field-text-highlight-color: rgb(var(--oj-palette-brand-rgb-50));
   --oj-text-field-bg-color:               rgb(var(--oj-palette-neutral-rgb-180));
-  --oj-text-field-border-color:           rgba(var(--oj-palette-neutral-rgb-0),.3);
+  --oj-text-field-border-color:           rgba(var(--oj-palette-neutral-rgb-0),.5);
   --oj-text-field-placeholder-color:      var(--oj-core-text-color-secondary);
   --oj-text-field-text-color:      var(--oj-core-text-color-primary);
   --oj-text-field-bg-color-disabled:      rgba(var(--oj-palette-neutral-rgb-0), 0.16);
-  --oj-text-field-border-color-disabled:  rgba(var(--oj-palette-neutral-rgb-0),.1);
+  --oj-text-field-border-color-disabled:  var(--oj-core-color-disabled-2);
   --oj-text-field-text-color-disabled:   var(--oj-core-text-color-disabled);
   --oj-text-field-border-color-focus: rgb(var(--oj-palette-brand-rgb-50));
   --oj-text-field-inside-edge-label-color-error:       var(--oj-core-danger-3);
@@ -8792,7 +8805,9 @@ oj-label:not(.oj-complete) {
 .oj-color-invert {
   --oj-label-color:         var(--oj-core-text-color-primary);
   --oj-label-color-disabled:var(--oj-core-text-color-disabled);
-  --oj-label-inside-edge-color: var(--oj-core-text-color-secondary); }
+  --oj-label-inside-edge-color: var(--oj-core-text-color-secondary);
+  --oj-text-field-inside-edge-label-color-warning:  rgb(var(--oj-palette-warning-rgb-100));
+  --oj-text-field-inside-edge-label-color-error:    rgb(var(--oj-palette-danger-rgb-100)); }
 
 :root.oj-scale-sm {
   --oj-label-font-size: var(--oj-typography-body-md-font-size);
@@ -10313,7 +10328,7 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
   flex-grow: 1; }
 
 /* Styling to suppress default padding */
-.oj-listview-item-padding-off .oj-listview-item-layout {
+.oj-listview-item-padding-off .oj-listview-item-element.oj-listview-item-layout {
   padding: 0; }
 
 /* Styling for the items alignment on list header */
@@ -10373,6 +10388,10 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
 .oj-listview-card-layout .oj-listview-group {
   padding-top: 0;
   padding-bottom: var(--oj-panel-gutter);
+  padding-inline-start: var(--oj-core-gutter-start, 0);
+  padding-inline-end: var(--oj-core-gutter-end, 0); }
+
+.oj-listview-no-data-card {
   padding-inline-start: var(--oj-core-gutter-start, 0);
   padding-inline-end: var(--oj-core-gutter-end, 0); }
 
@@ -11918,7 +11937,8 @@ html[dir="rtl"] .oj-conveyorbelt-overflow-indicator.oj-end {
   color: var(--oj-button-borderless-chrome-text-color-active); }
 
 :root {
-  --oj-data-grid-column-width:                             6.25rem; }
+  --oj-data-grid-column-width:                             6.25rem;
+  --oj-private-data-grid-global-load-indicator-default:    skeleton; }
 
 oj-data-grid:not(.oj-complete) {
   visibility: hidden; }
@@ -11954,13 +11974,15 @@ oj-data-grid:not(.oj-complete) {
 /* The default column width should be set here*/
 .oj-datagrid-cell,
 .oj-datagrid-column-header-cell,
-.oj-datagrid-column-end-header-cell {
+.oj-datagrid-column-end-header-cell,
+.oj-datagrid-skeleton-cell {
   width: var(--oj-data-grid-column-width); }
 
 /* The default row height should be set here*/
 .oj-datagrid-cell,
 .oj-datagrid-row-header-cell,
-.oj-datagrid-row-end-header-cell {
+.oj-datagrid-row-end-header-cell,
+.oj-datagrid-skeleton-cell {
   height: var(--oj-collection-grid-row-height); }
 
 /* Styling on the row header and row end header containere*/
@@ -12171,7 +12193,8 @@ html[dir="rtl"] .oj-datagrid-row-end-header-cell, html[dir="rtl"]
   border-width: 0 1px 1px 0; }
 
 /* Styling on databody cells */
-.oj-datagrid-cell {
+.oj-datagrid-cell,
+.oj-datagrid-skeleton-cell {
   position: absolute;
   box-sizing: border-box;
   border-style: solid;
@@ -12183,9 +12206,11 @@ html[dir="rtl"] .oj-datagrid-row-end-header-cell, html[dir="rtl"]
   border-color: var(--oj-core-divider-color);
   padding: var(--oj-collection-grid-cell-padding);
   display: flex; }
-  html:not([dir="rtl"]) .oj-datagrid-cell {
+  html:not([dir="rtl"]) .oj-datagrid-cell, html:not([dir="rtl"])
+  .oj-datagrid-skeleton-cell {
     border-width: 0 1px 1px 0; }
-  html[dir="rtl"] .oj-datagrid-cell {
+  html[dir="rtl"] .oj-datagrid-cell, html[dir="rtl"]
+  .oj-datagrid-skeleton-cell {
     border-width: 0 0 1px 1px; }
 
 /* Base styling on databody cell outlines when they are focused/edited */
@@ -12374,12 +12399,12 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
 
 /* Styling on row and cell hover */
 .oj-datagrid-cell.oj-hover {
-  background-color: var(--oj-core-bg-color-hover); }
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover)); }
 
 /* Styling on row and cell selection, only applied when cell is not being actively edited */
 .oj-datagrid.oj-focus .oj-datagrid-cell.oj-selected:not(.oj-datagrid-cell-edit),
 .oj-datagrid-cell.oj-selected:not(.oj-datagrid-cell-edit) {
-  background-color: var(--oj-core-bg-color-selected); }
+  background-color: var(--oj-core-bg-color-selected) !important; }
 
 /* Styling on focused row and cell outlines, to use a background color don't use the after pseudo class */
 .oj-datagrid.oj-focus.oj-read-only .oj-datagrid-cell.oj-focus-highlight::before,
@@ -12428,6 +12453,12 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
   position: absolute;
   overflow: auto; }
 
+.oj-datagrid-databody-frozen-column,
+.oj-datagrid-databody-frozen-row,
+.oj-datagrid-databody-frozen-corner {
+  position: absolute;
+  overflow: hidden; }
+
 /* Styling on scroller region, used for positioning*/
 .oj-datagrid-scroller {
   position: absolute;
@@ -12448,19 +12479,19 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
 .oj-datagrid-header-cell.oj-hover,
 .oj-datagrid-end-header-cell.oj-hover,
 .oj-datagrid-top-corner.oj-hover {
-  background-color: var(--oj-collection-header-bg-color-hover); }
+  background-image: linear-gradient(var(--oj-collection-header-bg-color-hover), var(--oj-collection-header-bg-color-hover)); }
 
 /* Styling for headers when a sub set > 1 of its respective cells are selected */
 .oj-datagrid-header-label.oj-partial-selected,
 .oj-datagrid-header-cell.oj-partial-selected,
 .oj-datagrid-end-header-cell.oj-partial-selected {
-  background-color: var(--oj-collection-header-bg-color-partial-selected); }
+  background-color: var(--oj-collection-header-bg-color-partial-selected) !important; }
 
 /* Styling for headers when all of its respective cells are selected */
 .oj-datagrid-header-label.oj-selected,
 .oj-datagrid-header-cell.oj-selected,
 .oj-datagrid-end-header-cell.oj-selected {
-  background-color: var(--oj-collection-header-bg-color-selected); }
+  background-color: var(--oj-collection-header-bg-color-selected) !important; }
 
 /* Styling on the status text, such as fetching data */
 .oj-datagrid-status {
@@ -12565,10 +12596,10 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
   color: var(--oj-private-button-ghost-chrome-text-color); }
 
 .oj-datagrid-icon-container.oj-hover .oj-component-icon, .oj-datagrid-icon-container.oj-hover .oj-menucheckbox-icon {
-  color: var(--oj-private-button-ghost-chrome-text-color-hover); }
+  color: var(--oj-core-text-color-secondary); }
 
 .oj-datagrid-icon-container.oj-active .oj-component-icon, .oj-datagrid-icon-container.oj-active .oj-menucheckbox-icon {
-  color: var(--oj-private-button-ghost-chrome-text-color-active); }
+  color: var(--oj-core-text-color-secondary); }
 
 /* Styling for the row that is cut during a context menu or CTRL-X cut and paste operation */
 .oj-datagrid-cell.oj-datagrid-cut {
@@ -12695,6 +12726,18 @@ html[dir="rtl"] .oj-datagrid-col-drop-target-line {
   border-left: 2px solid var(--oj-core-drag-drop-line-color);
   position: absolute; }
 
+.oj-datagrid-row-frozen-indicator {
+  border-bottom: 4px solid var(--oj-collection-border-color);
+  position: absolute; }
+
+html:not([dir="rtl"]) .oj-datagrid-col-frozen-indicator {
+  border-right: 4px solid var(--oj-collection-border-color);
+  position: absolute; }
+
+html[dir="rtl"] .oj-datagrid-col-frozen-indicator {
+  border-left: 4px solid var(--oj-collection-border-color);
+  position: absolute; }
+
 .dndContainer {
   position: absolute;
   overflow: auto;
@@ -12706,6 +12749,23 @@ html[dir="rtl"] .oj-datagrid-col-drop-target-line {
 
 .oj-datagrid-drop-target {
   background-color: var(--oj-core-drag-drop-color-1); }
+
+.oj-datagrid-skeleton {
+  width: 100%;
+  height: 19px;
+  background-color: var(--oj-animation-skeleton-bg-end-color); }
+
+html:not([dir="rtl"]) .oj-datagrid-row-end-header .oj-datagrid-skeleton-cell {
+  border-width: 0 0 1px 1px; }
+
+html[dir="rtl"] .oj-datagrid-row-end-header .oj-datagrid-skeleton-cell {
+  border-width: 0 1px 1px 0; }
+
+html:not([dir="rtl"]) .oj-datagrid-column-end-header .oj-datagrid-skeleton-cell {
+  border-width: 1px 1px 0 0; }
+
+html[dir="rtl"] .oj-datagrid-column-end-header .oj-datagrid-skeleton-cell {
+  border-width: 1px 0 0 1px; }
 
 /* Styling for the default sort icon */
 /* Styling for the sort ascending icon */
@@ -13384,7 +13444,7 @@ html[dir="rtl"] .oj-drawer-reflow-wrapper.oj-drawer-reflow.oj-drawer-end {
   width: 100%;
   max-width: 100%; }
 
-.oj-drawer-full-overlay.oj-drawer-bottom {
+.oj-drawer-layout-surrogate .oj-drawer-full-overlay.oj-drawer-bottom {
   max-height: 100vh; }
 
 html:not([dir="rtl"]) .oj-drawer-layout-surrogate .oj-drawer-overlay.oj-drawer-start {
@@ -13427,35 +13487,40 @@ oj-drawer-popup:not(.oj-complete) {
   z-index: calc(var(--oj-core-z-index-dialog) + 1); }
 
 .oj-drawer-popup-surrogate oj-drawer-popup {
-  position: absolute;
+  position: fixed;
   background: var(--oj-drawer-overlay-bg-color);
   overflow-y: auto; }
 
+.oj-drawer-popup-surrogate:not(.oj-drawer-modal) oj-drawer-popup {
+  overscroll-behavior: contain; }
+
 .oj-drawer-popup-surrogate .oj-drawer-start,
 .oj-drawer-popup-surrogate .oj-drawer-end {
-  height: 100vh;
-  max-height: 100vh;
   max-width: 90vw;
-  min-width: 320px; }
+  min-width: 320px;
+  top: 0;
+  bottom: 0; }
 
-@supports (-webkit-touch-callout: none) {
-  .oj-drawer-popup-surrogate .oj-drawer-start,
-  .oj-drawer-popup-surrogate .oj-drawer-end {
-    height: -webkit-fill-available;
-    max-height: -webkit-fill-available; } }
+html:not([dir="rtl"]) .oj-drawer-popup-surrogate .oj-drawer-start {
+  left: 0; }
+
+html[dir="rtl"] .oj-drawer-popup-surrogate .oj-drawer-start {
+  right: 0; }
+
+html:not([dir="rtl"]) .oj-drawer-popup-surrogate .oj-drawer-end {
+  right: 0; }
+
+html[dir="rtl"] .oj-drawer-popup-surrogate .oj-drawer-end {
+  left: 0; }
 
 .oj-drawer-popup-surrogate .oj-drawer-full-overlay {
   width: 100%;
   max-width: 100%; }
 
 .oj-drawer-popup-surrogate .oj-drawer-bottom {
-  width: 100vw;
-  max-width: 100vw;
-  max-height: 100vh; }
-
-@supports (-webkit-touch-callout: none) {
-  .oj-drawer-popup-surrogate .oj-drawer-bottom {
-    max-height: -webkit-fill-available; } }
+  left: 0;
+  right: 0;
+  bottom: 0; }
 
 html:not([dir="rtl"]) .oj-drawer-popup-surrogate .oj-drawer-start {
   box-shadow: 0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb), 0.05); }
@@ -13860,13 +13925,13 @@ oj-file-picker:not(.oj-complete) {
   border-color: var(--oj-core-danger-1); }
 
 .oj-filepicker-dropzone:active {
-  background-color: var(--oj-core-bg-color-active); }
+  background-image: linear-gradient(var(--oj-core-bg-color-active), var(--oj-core-bg-color-active)); }
 
 .oj-filepicker-dropzone.oj-valid-drop {
-  background-color: var(--oj-core-bg-color-hover); }
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover)); }
 
 .oj-filepicker-dropzone:hover:not(.oj-filepicker-disabled) {
-  background-color: var(--oj-core-bg-color-hover);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   cursor: pointer; }
 
 /* 
@@ -14381,7 +14446,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for all row labels */
 .oj-gantt-row-label {
-  fill: var(--oj-core-text-color-primary);
+  color: var(--oj-core-text-color-primary);
   font-size: var(--oj-dvt-label-font-size-lg);
   font-weight: normal;
   padding-inline-start: calc(var(--oj-core-gutter-start, 1rem) - var(--oj-core-gutter-start, 0px));
@@ -14556,7 +14621,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the major time axis labels */
 .oj-gantt-major-axis-label {
-  fill: var(--oj-core-text-color-primary);
+  color: var(--oj-core-text-color-primary);
   font-size: var(--oj-dvt-label-font-size-lg);
   font-weight: 600; }
 
@@ -14572,7 +14637,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the minor time axis labels */
 .oj-gantt-minor-axis-label {
-  fill: var(--oj-core-text-color-primary);
+  color: var(--oj-core-text-color-primary);
   font-size: var(--oj-dvt-label-font-size-md);
   font-weight: normal; }
 
@@ -21484,6 +21549,12 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
   background-image: linear-gradient(var(--oj-collection-header-bg-color-hover), var(--oj-collection-header-bg-color-hover));
   box-shadow: var(--oj-collection-border-color) 1px 0px 0px inset, var(--oj-collection-border-color) -1px 0px 0px inset; }
 
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-footer-cell.oj-selected.oj-hover,
+.oj-table:not(.oj-focus) .oj-table-column-header-cell.oj-selected.oj-hover,
+.oj-table:not(.oj-focus) .oj-table-footer-cell.oj-selected.oj-hover {
+  background-image: linear-gradient(var(--oj-collection-header-bg-color-selected), var(--oj-collection-header-bg-color-selected)), linear-gradient(var(--oj-collection-header-bg-color-hover), var(--oj-collection-header-bg-color-hover)); }
+
 /* Styling for the column header element in focused state. */
 .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-focus-highlight,
 .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-selector-cell.oj-focus-highlight,
@@ -21562,7 +21633,7 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 
 /* Styling for the sort area around the icon */
 .oj-table-sort-icon-container {
-  cursor: default;
+  cursor: var(--oj-core-cursor-clickable);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -21574,8 +21645,7 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
   border-radius: var(--oj-button-border-radius);
   position: relative;
   top: 0;
-  -webkit-user-select: none;
-  margin-inline-start: 4px; }
+  -webkit-user-select: none; }
   html:not([dir="rtl"]) .oj-table-sort-icon-container {
     right: 0; }
   html[dir="rtl"] .oj-table-sort-icon-container {
@@ -21589,16 +21659,12 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
   font-size: inherit; }
 
 /* Styling for the sort icon container in hover state*/
-.oj-table-sort-icon-container.oj-hover {
-  color: var(--oj-private-icon-color-hover);
-  background-color: var(--oj-private-icon-bg-color-hover);
-  border-color: var(--oj-private-icon-border-color-hover); }
+.oj-table-sort-icon-container.oj-hover .oj-component-icon, .oj-table-sort-icon-container.oj-hover .oj-menucheckbox-icon {
+  color: var(--oj-core-text-color-secondary); }
 
 /* Styling for the sort icon container in active state*/
-.oj-table-sort-icon-container.oj-active {
-  color: var(--oj-private-icon-color-active);
-  background-color: var(--oj-private-icon-bg-color-active);
-  border-color: var(--oj-private-icon-border-color-active); }
+.oj-table-sort-icon-container.oj-active .oj-component-icon, .oj-table-sort-icon-container.oj-active .oj-menucheckbox-icon {
+  color: var(--oj-core-text-color-secondary); }
 
 /* Styling for disabled sort icons */
 .oj-table-column-header-default-sort-icon.oj-disabled {
@@ -21867,6 +21933,17 @@ html[dir="rtl"] .oj-table-body-row-drag-image td:last-child {
 .oj-table-element:not(.oj-focus) .oj-table-gutter-start-body-cell.oj-selected,
 .oj-table-element:not(.oj-focus) .oj-table-gutter-end-body-cell.oj-selected {
   background-image: linear-gradient(var(--oj-core-bg-color-selected), var(--oj-core-bg-color-selected)); }
+
+/* Styling for the data cell elements in selected and hover state when table focused. */
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-selector-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-gutter-start-body-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-gutter-end-body-cell.oj-selected.oj-hover,
+.oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected.oj-hover,
+.oj-table:not(.oj-focus) .oj-table-selector-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-focus) .oj-table-gutter-start-body-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-focus) .oj-table-gutter-end-body-cell.oj-selected.oj-hover {
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover)), linear-gradient(var(--oj-core-bg-color-selected), var(--oj-core-bg-color-selected)); }
 
 /* Styling for the data cell elements in selected state when table in high contrast mode. */
 .oj-hicontrast .oj-table-data-cell.oj-selected,
@@ -22618,7 +22695,12 @@ oj-time-axis:not(.oj-complete) {
   --oj-private-timeline-series-bg-color:                       transparent;
   --oj-private-timeline-item-padding:                          16px;
   --oj-private-timeline-item-border-radius:                    6px;
-  --oj-private-timeline-item-duration-event-overflow-bg-color: rgb(var(--oj-palette-neutral-rgb-30)); }
+  --oj-private-timeline-item-duration-event-overflow-bg-color: rgb(var(--oj-palette-neutral-rgb-30));
+  --oj-private-timeline-item-content-max-width:                        37.5rem;
+  --oj-private-timeline-item-duration-event-overflow-bg-color: rgb(255, 255, 255);
+  --oj-private-timeline-item-duration-event-overflow-border-width: 1px;
+  --oj-private-timeline-item-duration-event-overflow-border-color: rgb(var(--oj-palette-neutral-rgb-60));
+  --oj-private-timeline-item-duration-event-overflow-border-radius: 6px; }
 
 .oj-timeline-item-bubble-bg-purple {
   --oj-private-timeline-item-bg-color:                       rgb(245, 236, 251);
@@ -22644,6 +22726,24 @@ oj-time-axis:not(.oj-complete) {
   --oj-private-timeline-item-bg-color:                      rgb(228, 241, 247);
   --oj-private-timeline-item-stripe-bg-color:                  rgb(36, 93, 99); }
 
+.oj-timeline-item-duration-event-overflow-bubble-purple {
+  --oj-private-timeline-item-duration-event-overflow-border-color:           rgb(196, 176, 209); }
+
+.oj-timeline-item-duration-event-overflow-bubble-orange {
+  --oj-private-timeline-item-duration-event-overflow-border-color:           rgb(222, 176, 104); }
+
+.oj-timeline-item-duration-event-overflow-bubble-teal {
+  --oj-private-timeline-item-duration-event-overflow-border-color:           rgb(169,187,188); }
+
+.oj-timeline-item-duration-event-overflow-bubble-green {
+  --oj-private-timeline-item-duration-event-overflow-border-color:           rgb(153, 194, 166); }
+
+.oj-timeline-item-duration-event-overflow-bubble-red {
+  --oj-private-timeline-item-duration-event-overflow-border-color:           rgb(217, 171, 182); }
+
+.oj-timeline-item-duration-event-overflow-bubble-blue {
+  --oj-private-timeline-item-duration-event-overflow-border-color:           rgb(143, 191, 208); }
+
 oj-timeline:not(.oj-complete) {
   visibility: hidden; }
 
@@ -22659,7 +22759,8 @@ oj-timeline:not(.oj-complete) {
   background-color: var(--oj-private-timeline-item-bg-color);
   border-top-color: var(--oj-private-timeline-item-border-color);
   padding-top: var(--oj-private-timeline-item-padding);
-  border-top-left-radius: var(--oj-private-timeline-item-border-radius); }
+  border-top-left-radius: var(--oj-private-timeline-item-border-radius);
+  max-width: var(--oj-private-timeline-item-content-max-width); }
 
 .oj-timeline-item.oj-hover {
   background-color: var(--oj-core-bg-color-hover);
@@ -22675,7 +22776,10 @@ oj-timeline:not(.oj-complete) {
   white-space: nowrap; }
 
 .oj-timeline-item-duration-event-overflow-bubble {
-  background-color: var(--oj-private-timeline-item-duration-event-overflow-bg-color); }
+  background-color: var(--oj-private-timeline-item-duration-event-overflow-bg-color);
+  stroke-width: var(--oj-private-timeline-item-duration-event-overflow-border-width);
+  stroke: var(--oj-private-timeline-item-duration-event-overflow-border-color);
+  border-radius: var(--oj-private-timeline-item-duration-event-overflow-border-radius); }
 
 .oj-timeline-item-title {
   color: var(--oj-core-text-color-primary);

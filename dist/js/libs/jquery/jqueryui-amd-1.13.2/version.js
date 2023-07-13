@@ -6,6 +6,7 @@
 		// AMD. Register as an anonymous module.
 		define( [ "jquery" ], factory );
   } else if (typeof module === 'object' && module.exports) {
+
     module.exports = factory( require( "jquery" ) );
 	} else {
 

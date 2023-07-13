@@ -1,16 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isFunctionInfo = exports.isClassInfo = exports.VCompPack = exports.VCompType = exports.MetadataScope = exports.MDFlags = exports.DEFAULT_SLOT_PROP = exports.READ_ONLY_PROPERTY_CHANGED = exports.PROPERTY_CHANGED = exports.CANCELABLE_ACTION = exports.ACTION = exports.CHILDREN_TYPE = exports.DYNAMIC_TEMPLATE_SLOT_TYPE = exports.DYNAMIC_SLOT_TYPE = exports.TEMPLATE_SLOT_TYPE = exports.SLOT_TYPE = void 0;
+exports.isFunctionInfo = exports.isClassInfo = exports.VCompPack = exports.VCompType = exports.MetadataScope = exports.MDFlags = exports.DEPENDENCIES_TOKEN = exports.CONTENTS_TOKEN = exports.DEFAULT_SLOT_PROP = exports.SLOT_TYPE = void 0;
 exports.SLOT_TYPE = 'Slot';
-exports.TEMPLATE_SLOT_TYPE = 'TemplateSlot';
-exports.DYNAMIC_SLOT_TYPE = 'DynamicSlots';
-exports.DYNAMIC_TEMPLATE_SLOT_TYPE = 'DynamicTemplateSlots';
-exports.CHILDREN_TYPE = 'Children';
-exports.ACTION = 'Action';
-exports.CANCELABLE_ACTION = 'CancelableAction';
-exports.PROPERTY_CHANGED = 'PropertyChanged';
-exports.READ_ONLY_PROPERTY_CHANGED = 'ReadOnlyPropertyChanged';
 exports.DEFAULT_SLOT_PROP = 'children';
+exports.CONTENTS_TOKEN = '@contents@';
+exports.DEPENDENCIES_TOKEN = '@dependencies@';
 var MDFlags;
 (function (MDFlags) {
     MDFlags[MDFlags["COMP"] = 1] = "COMP";
@@ -52,6 +46,15 @@ class VCompPack {
     get license() {
         return this._packObject['license'];
     }
+    get contents() {
+        return this._packObject['contents'];
+    }
+    get dependencies() {
+        return this._packObject['dependencies'];
+    }
+    get translationBundle() {
+        return this._packObject['translationBundle'];
+    }
     isStandardPack() {
         return this._packObject['type'] === 'pack';
     }
@@ -64,22 +67,21 @@ class VCompPack {
     isVCompInPack(fullName) {
         let rtnFound = false;
         if (this.isMonoPack()) {
-            const contents = this._packObject['contents'];
-            if (contents) {
+            if (this.contents) {
                 const vcompName = fullName.startsWith(this.name)
                     ? fullName.substring(this.name.length + 1)
                     : fullName;
                 rtnFound =
-                    contents.findIndex((elem) => elem.name === vcompName && (!elem.type || elem.type === 'component')) >= 0;
+                    this.contents.findIndex((elem) => elem === exports.CONTENTS_TOKEN ||
+                        (elem.name === vcompName && (!elem.type || elem.type === 'component'))) >= 0;
             }
         }
         else if (this.isStandardPack()) {
-            const dependencies = this._packObject['dependencies'];
-            if (dependencies === '@dependencies@') {
+            if (this.dependencies === exports.DEPENDENCIES_TOKEN) {
                 rtnFound = true;
             }
             else {
-                for (const depName of Object.keys(dependencies)) {
+                for (const depName of Object.keys(this.dependencies)) {
                     if (depName === fullName) {
                         rtnFound = true;
                         break;

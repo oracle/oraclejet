@@ -211,7 +211,8 @@
                 styletemplates = [],
                 stylevariablesets = [],
                 decorators = [],
-                slots = [];
+                slots = [],
+                observedGlobalProps = [];
             data.forEach(function(m) {
                 if (m.ojsubid){
                     //subIds.push(m);
@@ -240,6 +241,9 @@
                     stylevariablesets.push(m);
                 else if(m.ojdecorator)
                     decorators.push(m);
+                else if (m.observedGlobalProp){
+                    observedGlobalProps.push(m);
+                }
                 else if (m.access === 'protected' || m.access === 'private') {
                     // for components, don't doc internal API's. 
                     //if (!self.isCustomElement) nonPublic.push(m);
@@ -260,7 +264,8 @@
               "stylesets": stylesets,
               "styletemplates": styletemplates,
               "stylevariablesets": stylevariablesets,
-              "decorators": decorators
+              "decorators": decorators,
+              "observedGlobalProps": observedGlobalProps
             };
             return result;
         };
@@ -301,18 +306,20 @@
         }
 
         var methods;
-        if (title === 'Global'){
-          methods = self.find({kind: 'function', name:{has: self.globals}, memberof: {isUndefined:true}});
-        }
-        else{
-            methods = self.find({kind: 'function', memberof: doc.longname, ojhidden:{isBoolean: false}});
+        // data mapping elements don't have methods
+        if (!doc.ojslotcomponent){
+            if (title === 'Global'){
+                methods = self.find({kind: 'function', name:{has: self.globals}, memberof: {isUndefined:true}});
+            }
+            else{
+                methods = self.find({kind: 'function', memberof: doc.longname, ojhidden:{isBoolean: false}});
+            }
         }
         if (methods && methods.length) {
             var methodsObj = sortMembers(methods);
             if (methodsObj.decorators && methodsObj.decorators.length > 0){
               self.decorators = methodsObj.decorators;
             }
-            
         }
 
         var className = self.getDeprecatedClass(doc);
@@ -385,6 +392,7 @@ else{
 var hasChildren = membersObj && membersObj.children.length;
 var hasSlots = membersObj && membersObj.slots.length;
 var hasStyleItems = (membersObj && ( membersObj.styleclasses.length || membersObj.stylesets.length || membersObj.styletemplates.length || membersObj.stylevariablesets.length ));
+var hasObservedGlobalProps = membersObj && membersObj.observedGlobalProps.length; 
 
 const {touchDoc, keyboardDoc, accessibilityDoc} = self.getAccessibilitySections(doc);
 let hasMigrationSection = false;
@@ -401,7 +409,7 @@ var hasEventsColumn = events && events.length && events.forEach;
 var hasMethodsColumn = methods && methods.length;
 var hasTypeDefColumn = self.typedefs && self.typedefs.length;
 var hasDecorators = methodsObj && methodsObj.decorators && methodsObj.decorators.length > 0;
-var hasOtherColumn = hasStyleItems || touchDoc || keyboardDoc || accessibilityDoc || hasMigrationSection;
+var hasOtherColumn = hasStyleItems || touchDoc || keyboardDoc || accessibilityDoc || hasMigrationSection || hasObservedGlobalProps;
 
 var columnCount = !!hasDomColumn + !!hasFieldsColumn + !!hasEventsColumn + !!hasMethodsColumn + !!hasTypeDefColumn + !!hasDecorators + !!hasOtherColumn;
 
@@ -635,6 +643,10 @@ if (columnCount && !self.isStylingOrOverview) {
                         <li><a href="#a11y-section">Accessibility Section</a></li>
                     <?js 
                     }
+                    if (hasObservedGlobalProps) { ?>
+                        <li><a href="#observedglobalprops-section">Global Attributes</a></li>
+                    <?js 
+                    }
                     if (hasMigrationSection) { ?>
                         <li><a href="#migration-section">Migration Section</a></li>
                     <?js
@@ -821,7 +833,30 @@ if (!self.isStylingOrOverview) { ?>
             }); ?>
         </dl>
     <?js 
-    } ?>
+    } 
+    // OBSERVED GLOBAL PROPS
+    if (hasObservedGlobalProps){ ?>
+        <?js elemId = "observedglobalprops-section"; ?>
+        <h3 id="<?js= elemId ?>" class="subsection-title">
+            Global Attributes
+            <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
+        </h3>
+        <p>VComponents support the set of global HTML attributes defined by the <code>GlobalProps/ExtendGlobalProps</code> types.
+            In addition to the component's custom attributes, the following global attributes are also supported by this component 
+        (note the differences in data binding syntax between component and global attributes described <a href="https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview#ce-databind-global-section">here</a>)
+        </p>
+        <dl>
+            <?js 
+            for (var i=0; i < membersObj.observedGlobalProps.length; i++) {
+                self.docInProgress = membersObj.observedGlobalProps[i];
+                memberNames = memberNames + ' ' +membersObj.observedGlobalProps[i].id; ?>
+                <?js= self.partial('members.tmpl', membersObj.observedGlobalProps[i]) ?>
+            <?js 
+            }
+            self.docInProgress = null; ?>
+        </dl>
+    <?js 
+    }?>
 
     <?js 
     // [csaba] generate styling doc from doclets
@@ -872,7 +907,7 @@ if (!self.isStylingOrOverview) { ?>
         </h3>
 
         <p>JET components that allow child content support slots. 
-            Please see the <a href="<?js= env.opts.query.apidocLink ?>CustomElementOverview.html#ce-slots-section " target="_blank">slots section</a> 
+            Please see the <a href="https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview#ce-slots-section " target="_blank">slots section</a> 
             of the JET component overview doc for more information on allowed slot content and slot types.</p>
 
         <dl>

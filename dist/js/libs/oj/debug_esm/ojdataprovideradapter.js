@@ -73,7 +73,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
         const self = this;
         const resultsPromiseArray = [];
         params[TableDataSourceAdapter._KEYS].forEach(function (key) {
-            resultsPromiseArray.push(self.tableDataSource.get(key));
+            resultsPromiseArray.push(self.tableDataSource.get(key, { silent: true }));
         });
         return Promise.all(resultsPromiseArray).then(function (resultsArray) {
             const results = new Set();
@@ -259,7 +259,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
                 params != null && params[TableDataSourceAdapter._SIZE] > 0
                     ? params[TableDataSourceAdapter._SIZE]
                     : null;
-            if (!self._isPagingModelTableDataSource() && (params === null || params === void 0 ? void 0 : params[TableDataSourceAdapter._SILENT])) {
+            if (!self._isPagingModelTableDataSource() && params?.[TableDataSourceAdapter._SILENT]) {
                 options[TableDataSourceAdapter._SILENT] = params[TableDataSourceAdapter._SILENT];
             }
             if (self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA] != null &&
@@ -399,7 +399,6 @@ class TableDataSourceAdapter extends DataSourceAdapter {
         self._requestEventTriggered = false;
     }
     _handleAdd(event) {
-        var _a;
         const self = this;
         const metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
             return new self.ItemMetadata(self, value);
@@ -411,10 +410,9 @@ class TableDataSourceAdapter extends DataSourceAdapter {
         const operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, null, null, null, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
         const mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
         self.dispatchEvent(new DataProviderMutationEvent(mutationEventDetail));
-        this._adjustIteratorOffset(null, (_a = mutationEventDetail.add) === null || _a === void 0 ? void 0 : _a.indexes);
+        this._adjustIteratorOffset(null, mutationEventDetail.add?.indexes);
     }
     _handleRemove(event) {
-        var _a;
         const self = this;
         const metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
             return new self.ItemMetadata(self, value);
@@ -426,7 +424,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
         const operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
         const mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, operationEventDetail, null);
         self.dispatchEvent(new DataProviderMutationEvent(mutationEventDetail));
-        this._adjustIteratorOffset((_a = mutationEventDetail.remove) === null || _a === void 0 ? void 0 : _a.indexes, null);
+        this._adjustIteratorOffset(mutationEventDetail.remove?.indexes, null);
     }
     _handleReset(event) {
         const self = this;

@@ -82,6 +82,7 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
         accessibleReorderBeforeItem?: string;
         accessibleReorderInsideItem?: string;
         accessibleReorderTouchInstructionText?: string;
+        accessibleSuggestion?: string;
         indexerCharacters?: string;
         labelCopy?: string;
         labelCut?: string;
@@ -372,6 +373,7 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
         accessibleReorderBeforeItem?: string;
         accessibleReorderInsideItem?: string;
         accessibleReorderTouchInstructionText?: string;
+        accessibleSuggestion?: string;
         indexerCharacters?: string;
         labelCopy?: string;
         labelCut?: string;

@@ -16,6 +16,13 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   /**
    * @ojcomponent oj.ojMessages
    * @since 5.0.0
+   * @ojdeprecated [
+   *   {
+   *     type: "maintenance",
+   *     since: "15.0.0",
+   *     value: ["oj-message-banner", "oj-c-message-toast"]
+   *   }
+   * ]
    * @ojdisplayname Messages
    * @ojshortdesc Messages manages the layout and display of child messages.
    *

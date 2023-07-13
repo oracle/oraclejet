@@ -1,0 +1,117 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example drawer-popup/themes/redwood/oj-drawer-popup.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+//--------------------------------------------------------
+// include dependencies
+@include module-include-once("common.drawerpopup") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-drawer-popup:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-drawer-full-height {
+    height: 100%;
+  }
+
+  .oj-drawer-disable-body-overflow {
+    overflow: hidden !important;
+  }
+
+  .oj-drawer-popup-surrogate:not(.oj-component-overlay) {
+    position: relative; // To apply z-index
+  }
+
+  // Z-Order layer of the Modeless Drawer
+  .oj-drawer-popup-surrogate {
+    z-index: var(--oj-core-z-index-popup);
+  }
+
+  // Z-Order layer of the scrim (modal mode)
+  .oj-drawer-popup-surrogate.oj-drawer-modal {
+    z-index: var(--oj-core-z-index-dialog);
+  }
+
+  // Z-Order layer of the Modal Drawer
+  .oj-drawer-popup-surrogate.oj-drawer-modal.oj-focus-within {
+    // To render over scrim
+    z-index: calc(var(--oj-core-z-index-dialog) + 1);
+  }
+
+  // Popup reparented to PopupService layer
+  .oj-drawer-popup-surrogate oj-drawer-popup {
+    position: fixed;
+    background: var(--oj-drawer-overlay-bg-color);
+    overflow-y: auto;
+  }
+
+  // Not allow scrolling body over modeless popup
+  .oj-drawer-popup-surrogate:not(.oj-drawer-modal) oj-drawer-popup {
+    overscroll-behavior: contain;
+  }
+
+  // Size
+  // Start & End
+  .oj-drawer-popup-surrogate .oj-drawer-start,
+  .oj-drawer-popup-surrogate .oj-drawer-end {
+    max-width: 90vw;
+    min-width: 320px;
+    top: 0;
+    bottom: 0;
+  }
+
+  .oj-drawer-popup-surrogate .oj-drawer-start {
+    @include oj-ltr() {
+      left: 0;
+    }
+    @include oj-rtl() {
+      right: 0;
+    }
+  }
+  .oj-drawer-popup-surrogate .oj-drawer-end {
+    @include oj-ltr() {
+      right: 0;
+    }
+    @include oj-rtl() {
+      left: 0;
+    }
+  }
+
+  // Full-width on small screens
+  .oj-drawer-popup-surrogate .oj-drawer-full-overlay {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  // Bottom
+  .oj-drawer-popup-surrogate .oj-drawer-bottom {
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  // Dropped Shadow
+  .oj-drawer-popup-surrogate .oj-drawer-start {
+    @include oj-ltr() {
+      box-shadow: 0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+    @include oj-rtl() {
+      box-shadow: -0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+  }
+  .oj-drawer-popup-surrogate .oj-drawer-end {
+    @include oj-ltr() {
+      box-shadow: -0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+    @include oj-rtl() {
+      box-shadow: 0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+  }
+  .oj-drawer-popup-surrogate .oj-drawer-bottom {
+    box-shadow: 0 -0.3rem 0.3rem 0 rgba(var(--oj-core-box-shadow-rgb),0.05);
+  }
+}

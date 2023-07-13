@@ -16,7 +16,7 @@ import 'touchr';
  * @ojtsmodule
  * @since 1.2.0
  * @export
- * @ojdeprecated {since: '7.0.0', description: 'Use ojSwipeActions instead.'}
+ * @ojdeprecated {since: '7.0.0', value: ['oj-swipe-actions']}
  * @hideconstructor
  *
  *

@@ -1017,7 +1017,7 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  *       <td>yes</td>
  *       <td>{string}</td>
  *       <td>The component version (following <a href="http://semver.org/">semantic version</a> rules). Note that changes to the metadata even for minor updates
- *         like updating the jetVersion should result in at least a minor component version change, e.g. 1.0.0 -> 1.0.1.</td>
+ *         like updating the jetVersion should result in at least a patch component version change, e.g. 1.0.0 -> 1.0.1.</td>
  *     </tr>
  *     <tr>
  *       <td class="name">jetVersion</td>
@@ -1539,7 +1539,7 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  * <p>
  * All composite modules should contain a loader.js file which will handle registering and specifying the dependencies for a composite component.
  * We recommend using RequireJS to define your composite module with relative file dependencies.
- * Registration is done via the <a href="Composite.html#register">Composite.register</a> API.
+ * Registration is done via the <a href="Composite.html#.register">Composite.register</a> API.
  * By registering a composite component, an application links an HTML tag with provided
  * Metadata, View, ViewModel and CSS which will be used to render the composite. These optional
  * pieces can be provided via a descriptor object passed into the register API. See below for sample loader.js file configurations.
@@ -2337,7 +2337,7 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  *
  * <h4>View</h4>
  * Note that if you want to build an HTML table using &lt;oj-bind-for-each&gt; element the html content must be parsed
- * by <a href="HtmlUtils.html#stringToNodeArray">HtmlUtils.stringToNodeArray()</a> method. Keep in mind that the composite
+ * by <a href="HtmlUtils.html#.stringToNodeArray">HtmlUtils.stringToNodeArray()</a> method. Keep in mind that the composite
  * views and the oj-module views that are loaded via ModuleElementUtils are already using that method. Thus to create
  * a table you can either place the content into a view or call HtmlUtils.stringToNodeArray() explicitly to process the content.
  *

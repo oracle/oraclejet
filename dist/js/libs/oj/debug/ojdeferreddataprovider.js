@@ -193,8 +193,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore
                     this._params = _params;
                 }
                 ['next']() {
-                    var _a;
-                    const signal = (_a = this._params) === null || _a === void 0 ? void 0 : _a.signal;
+                    const signal = this._params?.signal;
                     if (signal && signal.aborted) {
                         const reason = signal.reason;
                         return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -220,7 +219,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore
             return new this.AsyncIterable(new this.AsyncIterator(asyncIteratorPromise));
         }
         fetchByKeys(params) {
-            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            const signal = params?.signal;
             if (signal && signal.aborted) {
                 const reason = signal.reason;
                 return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -238,7 +237,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore
             });
         }
         containsKeys(params) {
-            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            const signal = params?.signal;
             if (signal && signal.aborted) {
                 const reason = signal.reason;
                 return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -250,7 +249,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore
                         return reject(new DOMException(reason, 'AbortError'));
                     });
                 }
-                resolve(this._getDataProvider().then((dataProvider) => {
+                return resolve(this._getDataProvider().then((dataProvider) => {
                     return dataProvider.containsKeys(params);
                 }));
             });

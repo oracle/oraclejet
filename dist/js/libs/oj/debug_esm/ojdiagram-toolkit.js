@@ -1206,7 +1206,7 @@ class DvtDiagramLink extends Container {
     var groupId = this.getGroupId();
     var startGroupId = diagram.getNodeById(this.getStartId()).getGroupId();
     var endGroupId = diagram.getNodeById(this.getEndId()).getGroupId();
-    if (groupId) {
+    if (groupId && diagram.getNodeById(groupId)) {
       var context = this.getCtx();
       var linkParent = diagram.getNodeById(groupId).GetChildNodePane();
       if (
@@ -5240,14 +5240,15 @@ class DvtDiagramNode extends Container {
       this._containerButton = null;
     }
     if (this._customNodeContent) {
-      if (this._nodeContext) {
-        this._diagram.getOptions()['_cleanTemplate'](this.getId());
-      }
       // reparent child node pane - it is likely to be attached
       // to an element inside of custom content
       if (this._childNodePane) {
         this._childNodePane.setParent(null);
         this.addChild(this._childNodePane);
+      }
+      // JET-57658 Need to reparent the child before cleaning the template
+      if (this._nodeContext) {
+        this._diagram.getOptions()['_cleanTemplate'](this.getId());
       }
       if (this._customNodeContent.namespaceURI === ToolkitUtils.SVG_NS) {
         this.getContainerElem().removeChild(this._customNodeContent);
@@ -11925,7 +11926,7 @@ class Diagram extends PanZoomComponent {
     var lcChildNodes = [];
     for (var j = 0; j < arChildIds.length; j++) {
       var childNode = this.getNodeById(arChildIds[j]);
-      if (childNode.getVisible()) {
+      if (childNode && childNode.getVisible()) {
         var lcChildNode = this.CreateLayoutContextNode(
           childNode,
           null,

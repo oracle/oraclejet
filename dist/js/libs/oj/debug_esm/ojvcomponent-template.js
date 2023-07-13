@@ -13,7 +13,8 @@ import { Component, Fragment, h, render } from 'preact';
 import { jsx } from 'preact/jsx-runtime';
 import Context from 'ojs/ojcontext';
 import { withDataProvider } from 'ojs/ojdataproviderhandler';
-import { getPropagationMetadataViaCache, ROOT_BINDING_PROPAGATION } from 'ojs/ojbindpropagation';
+import { ManageTabStops } from 'ojs/ojpreact-managetabstops';
+import { getPropagationMetadataViaCache, CONSUMED_CONTEXT, STATIC_PROPAGATION } from 'ojs/ojbindpropagation';
 import { getExpressionEvaluator } from 'ojs/ojconfig';
 import { getPropertyMetadata } from 'ojs/ojmetadatautils';
 import { CspExpressionEvaluatorInternal } from 'ojs/ojcspexpressionevaluator-internal';
@@ -109,9 +110,8 @@ const _CONTEXT_PARAM = [
 ];
 class VTemplateEngine {
     constructor() {
-        var _a;
         this._templateAstCache = new WeakMap();
-        this._cspEvaluator = (_a = getExpressionEvaluator()) !== null && _a !== void 0 ? _a : new CspExpressionEvaluatorInternal();
+        this._cspEvaluator = getExpressionEvaluator() ?? new CspExpressionEvaluatorInternal();
     }
     static cleanupTemplateCache(templateElement) {
         if (templateElement && templateElement['_cachedRows']) {
@@ -120,12 +120,14 @@ class VTemplateEngine {
         }
     }
     executeFragment(componentElement, fragment, properties, mutationCallback, bindingProviderForFragment) {
-        var _a;
         let bindingProvider = bindingProviderForFragment;
         if (!bindingProvider) {
             bindingProvider = componentElement
-                ? (_a = CustomElementUtils.getElementState(componentElement)) === null || _a === void 0 ? void 0 : _a.getBindingProvider()
+                ? CustomElementUtils.getElementState(componentElement)?.getBindingProvider()
                 : null;
+        }
+        if (properties?.['$provided'] && !(properties['$provided'] instanceof Map)) {
+            properties['$provided'] = new Map(Object.entries(properties['$provided']));
         }
         return this._execute({
             [BINDING_PROVIDER]: bindingProvider,
@@ -285,12 +287,19 @@ class VTemplateEngine {
             key: 'render',
             value: {
                 type: 3,
-                value: (itemContext) => {
+                value: (itemContext, provided) => {
                     const ctx = Object.assign({}, engineContext[BINDING_CONTEXT], {
                         $current: itemContext
                     });
                     if (templateAlias)
                         ctx[templateAlias] = itemContext;
+                    if (ctx['$provided'] && provided) {
+                        const merged = new Map([...ctx['$provided'], ...provided]);
+                        ctx['$provided'] = merged;
+                    }
+                    else if (provided) {
+                        ctx['$provided'] = provided;
+                    }
                     const engineContextForRenderProp = {
                         [BINDING_CONTEXT]: ctx,
                         [BINDING_PROVIDER]: engineContext[BINDING_PROVIDER],
@@ -412,14 +421,23 @@ class VTemplateEngine {
         });
     }
     _createElementNode(engineContext, node) {
-        var props = this._getElementProps(engineContext, node);
+        const props = this._getElementProps(engineContext, node);
         const tagName = node.tagName;
         const localName = tagName.toLowerCase();
         const compMetadata = getMetadata(tagName);
-        return this._createHFunctionCallNode(localName, [
+        const elementNode = this._createHFunctionCallNode(localName, [
             this._createPossiblyProvidedAndConsumedProperties(localName, engineContext, compMetadata, props),
             this._createAst(engineContext, Array.from(node.childNodes))
         ]);
+        if (node.hasAttribute('data-oj-manage-tabs')) {
+            return this._createComponentNode(engineContext, null, ManageTabStops, [
+                {
+                    key: 'children',
+                    value: elementNode
+                }
+            ]);
+        }
+        return elementNode;
     }
     _createPossiblyProvidedAndConsumedProperties(localTagName, engineContext, compMetadata, props) {
         const propertyObjectNode = {
@@ -433,15 +451,35 @@ class VTemplateEngine {
         const specifiedProps = new Set();
         props.reduce((acc, def) => acc.add(def.key), specifiedProps);
         const consumingProps = [];
+        const unwrap = this._getUnwrapObservable(engineContext);
         for (const [pName, meta] of provideConsumeMeta) {
             const consumeMeta = meta[1];
             if (consumeMeta) {
-                if (!(specifiedProps.has(pName) ||
+                if (pName === CONSUMED_CONTEXT) {
+                    consumingProps.push({
+                        key: '__oj_private_contexts',
+                        value: this._createCallNodeWithContext(($ctx) => {
+                            const providedValues = new Map();
+                            const provided = unwrap($ctx)?.[_PROVIDED_KEY];
+                            consumeMeta.forEach((preactContext) => {
+                                if (provided?.has(preactContext)) {
+                                    providedValues.set(preactContext, unwrap(provided.get(preactContext)));
+                                }
+                            });
+                            return providedValues;
+                        })
+                    });
+                }
+                else if (!(specifiedProps.has(pName) ||
                     specifiedProps.has(AttributeUtils.propertyNameToAttribute(pName).toUpperCase()))) {
-                    const unwrap = this._getUnwrapObservable(engineContext);
                     consumingProps.push({
                         key: pName,
-                        value: this._createCallNodeWithContext(($ctx) => { var _a, _b; return unwrap((_b = (_a = unwrap($ctx)) === null || _a === void 0 ? void 0 : _a[_PROVIDED_KEY]) === null || _b === void 0 ? void 0 : _b[consumeMeta.name]); })
+                        value: this._createCallNodeWithContext(($ctx) => {
+                            const provided = unwrap($ctx)?.[_PROVIDED_KEY];
+                            if (provided) {
+                                return unwrap(provided.get(consumeMeta.name));
+                            }
+                        })
                     });
                 }
             }
@@ -451,15 +489,14 @@ class VTemplateEngine {
             : { type: 10, properties: propertyObjectNode.properties.concat(consumingProps) };
         const metadataProps = compMetadata.properties;
         return this._createCallNodeWithContext(($ctx, resolvedProps) => {
-            let provided = {};
+            let provided = new Map();
             let hasProvided;
             for (const [pName, [provideMeta]] of provideConsumeMeta) {
                 if (provideMeta) {
                     provideMeta.forEach((info) => {
-                        var _a;
                         let propVal;
                         let isSet = true;
-                        if (pName === ROOT_BINDING_PROPAGATION) {
+                        if (pName === STATIC_PROPAGATION) {
                             isSet = false;
                         }
                         else if (resolvedProps.hasOwnProperty(pName)) {
@@ -470,7 +507,7 @@ class VTemplateEngine {
                             const uppercaseAttr = attr.toUpperCase();
                             if (resolvedProps.hasOwnProperty(uppercaseAttr)) {
                                 propVal = resolvedProps[uppercaseAttr];
-                                const type = (_a = metadataProps === null || metadataProps === void 0 ? void 0 : metadataProps[pName]) === null || _a === void 0 ? void 0 : _a.type;
+                                const type = metadataProps?.[pName]?.type;
                                 if (type && propVal != null) {
                                     propVal = AttributeUtils.parseAttributeValue(localTagName, attr, propVal, type);
                                 }
@@ -493,7 +530,7 @@ class VTemplateEngine {
                         }
                         if (isSet) {
                             hasProvided = true;
-                            provided[info.name] = propVal;
+                            provided.set(info.name, propVal);
                         }
                     });
                 }
@@ -501,18 +538,7 @@ class VTemplateEngine {
             if (hasProvided) {
                 const oldProvided = $ctx[_PROVIDED_KEY];
                 if (oldProvided !== undefined) {
-                    const mergedPrivateContexts = {};
-                    const oldContextMap = oldProvided['__oj_private_contexts'];
-                    const newContextMap = provided['__oj_private_contexts'];
-                    if (oldContextMap && newContextMap) {
-                        const unwrap = this._getUnwrapObservable(engineContext);
-                        const oldMap = unwrap(oldContextMap);
-                        mergedPrivateContexts['__oj_private_contexts'] = new Map([
-                            ...oldMap,
-                            ...newContextMap
-                        ]);
-                    }
-                    provided = Object.assign({}, oldProvided, provided, mergedPrivateContexts);
+                    provided = new Map([...oldProvided, ...provided]);
                 }
                 $ctx[_PROVIDED_KEY] = provided;
             }
@@ -537,7 +563,7 @@ class VTemplateEngine {
         ]);
     }
     _createComponentNode(engineContext, node, component, extraProps) {
-        let props = this._getElementProps(engineContext, node);
+        let props = node ? this._getElementProps(engineContext, node) : [];
         props = extraProps ? props.concat(extraProps) : props;
         return this._createHFunctionCallNode(component, [{ type: 10, properties: props }]);
     }
@@ -612,7 +638,7 @@ class VTemplateEngine {
                         const propName = AttributeUtils.attributeToPropertyName(name);
                         const propNamePath = propName.split('.');
                         const propMeta = getPropertyMetadata(propNamePath[0], getPropertiesForElementTag(node.tagName));
-                        if (!(propMeta === null || propMeta === void 0 ? void 0 : propMeta.readOnly)) {
+                        if (!propMeta?.readOnly) {
                             if (propNamePath.length > 1) {
                                 dottedExpressions.push({ subProps: propName, expr: expValue.expr });
                             }
@@ -672,13 +698,12 @@ class VTemplateEngine {
             attrNodes.push(this._createRefPropertyNodeForNestedProps(engineContext, dottedExpressions));
         }
         writebacks.forEach((valuesArray, name) => {
-            var _a;
             const propName = `on${name}Changed`;
             const callbackPropExpr = listeners.get(propName);
             if (callbackPropExpr) {
                 listeners.delete(propName);
             }
-            attrNodes.push(this._createWritebackPropertyNode(engineContext, propName, valuesArray, (_a = AttributeUtils.getExpressionInfo(callbackPropExpr)) === null || _a === void 0 ? void 0 : _a.expr));
+            attrNodes.push(this._createWritebackPropertyNode(engineContext, propName, valuesArray, AttributeUtils.getExpressionInfo(callbackPropExpr)?.expr));
         });
         listeners.forEach((value, name) => {
             const info = AttributeUtils.getExpressionInfo(value);

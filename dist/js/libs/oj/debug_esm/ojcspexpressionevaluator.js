@@ -31,7 +31,7 @@ import 'ojs/ojkoshared';
  * <p> The default JET expression evaluator cannot be used when Content Security Policy
  * prohibits unsafe evaluations. In order to replace the default evaluator with the JET CSP-compliant evaluator,
  * create and pass an instance of CspExpressionEvaluator class to the
- * <a href="oj.Config.html#setExpressionEvaluator">Config.setExpressionEvaluator()</a> method.
+ * <a href="oj.Config.html#.setExpressionEvaluator">Config.setExpressionEvaluator()</a> method.
  * This method must be called before applying knockout bindings in the application for the first time.
  * </p>
  *

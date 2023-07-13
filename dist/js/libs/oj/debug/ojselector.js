@@ -23,7 +23,6 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojtranslation', 'ojs/ojvcomponent'
                 this.setState({ focus: false });
             };
             this._checkboxListener = (event) => {
-                var _a, _b, _c, _d;
                 const { selectedKeys, rowKey, selectionMode } = this.props;
                 let newSelectedKeys;
                 if (selectedKeys != null) {
@@ -46,8 +45,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojtranslation', 'ojs/ojvcomponent'
                             newSelectedKeys = selectedKeys.delete([rowKey]);
                         }
                     }
-                    (_b = (_a = this.props).onSelectedKeysChanged) === null || _b === void 0 ? void 0 : _b.call(_a, newSelectedKeys);
-                    (_d = (_c = this.props).onIndeterminateChanged) === null || _d === void 0 ? void 0 : _d.call(_c, false);
+                    this.props.onSelectedKeysChanged?.(newSelectedKeys);
+                    this.props.onIndeterminateChanged?.(false);
                 }
             };
             this.state = {
@@ -55,7 +54,6 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojtranslation', 'ojs/ojvcomponent'
             };
         }
         render(props, state) {
-            var _a;
             const { rowKey, indeterminate } = props;
             const isSelected = this._isSelected(rowKey);
             let spanClass = 'oj-selector-wrapper oj-component-icon';
@@ -69,13 +67,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojtranslation', 'ojs/ojvcomponent'
                 spanClass += ' oj-focus-highlight';
             }
             const ariaLabelledby = props['aria-labelledby'] || null;
-            const ariaLabel = props['aria-label'] == null || ((_a = props['aria-label']) === null || _a === void 0 ? void 0 : _a.trim()) == ''
+            const ariaLabel = props['aria-label'] == null || props['aria-label']?.trim() == ''
                 ? null
                 : props['aria-label'] +
                     (isSelected
                         ? Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabelSelected')
                         : Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabelUnselected'));
-            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: "oj-selector" }, { children: jsxRuntime.jsx("span", Object.assign({ class: spanClass }, { children: jsxRuntime.jsx("input", { type: "checkbox", class: "oj-selectorbox", "data-oj-clickthrough": "disabled", "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._checkboxListener }) })) })));
+            return (jsxRuntime.jsx(ojvcomponent.Root, { class: "oj-selector", children: jsxRuntime.jsx("span", { class: spanClass, children: jsxRuntime.jsx("input", { type: "checkbox", class: "oj-selectorbox", "data-oj-clickthrough": "disabled", "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._checkboxListener }) }) }));
         }
         _isSelected(rowKey) {
             const { selectedKeys, selectionMode } = this.props;

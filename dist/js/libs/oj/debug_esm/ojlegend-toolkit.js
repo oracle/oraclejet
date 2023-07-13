@@ -84,7 +84,7 @@ class DvtLegendObjPeer {
     this._displayables = displayables;
     this._item = item;
     this._category = DvtLegendUtils.getItemCategory(this._item, this._legend); // section title is not category
-    this._id = this._category ? this._category : item['title'];
+    this._id = this._category ? this._category : item['title'] ? item['title'] : item.id; // checking id last mainly due to backwards compatibility issues
     this._drillable = drillable;
     this._tooltip = tooltip;
     this._datatip = datatip;
@@ -2646,6 +2646,7 @@ class Legend extends BaseComponent {
    */
   _processData(sections) {
     let hasCollapsible = false;
+    let hasDrillableItem = false;
     if (!sections || sections.length <= 0) return;
 
     var hiddenCategories = this.getOptions()['hiddenCategories'];
@@ -2662,6 +2663,7 @@ class Legend extends BaseComponent {
       // Transfer the category visibility properties to the hiddenCategories.
       for (var j = 0; j < items.length; j++) {
         var item = items[j];
+        hasDrillableItem = hasDrillableItem || item.drilling === 'on';
         var itemCategory = DvtLegendUtils.getItemCategory(item, this);
 
         if (item['categoryVisibility'] == 'hidden' && hiddenCategories.indexOf(itemCategory) < 0)
@@ -2671,6 +2673,7 @@ class Legend extends BaseComponent {
       }
     }
     this.getCache().putToCache('hasCollapsible', hasCollapsible);
+    this.getCache().putToCache('hasDrillableItem', hasDrillableItem);
   }
 
   /**
@@ -2681,11 +2684,14 @@ class Legend extends BaseComponent {
       var options = this.getOptions();
       var translations = options.translations;
       var hideAndShow = options['hideAndShowBehavior'];
+      const hasDrillableItem =
+        options['drilling'] === 'on' || this.getCache().getFromCache('hasDrillableItem');
       const hasCollapsible = this.getCache().getFromCache('hasCollapsible');
       if (
         (hideAndShow != 'off' && hideAndShow != 'none') ||
         options['hoverBehavior'] == 'dim' ||
-        hasCollapsible
+        hasCollapsible ||
+        hasDrillableItem
       ) {
         this.getCtx().setAriaRole('application');
         this.getCtx().setAriaLabel(

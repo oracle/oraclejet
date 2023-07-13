@@ -21,7 +21,6 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojcore-base', 'ojs/ojdomutils', 'o
             super(props);
             this.rootRef = preact.createRef();
             this._handleSelectingFiles = (event) => {
-                var _a;
                 if (event.type === 'click' ||
                     (event.type === 'keypress' && event.code === 'Enter')) {
                     this.selecting = true;
@@ -30,7 +29,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojcore-base', 'ojs/ojdomutils', 'o
                     ojfilepickerutils.pickFiles(this._handleFileSelected, {
                         accept: props.accept,
                         selectionMode: props.selectionMode,
-                        capture: (_a = props.capture) !== null && _a !== void 0 ? _a : 'none'
+                        capture: props.capture ?? 'none'
                     });
                     return true;
                 }
@@ -145,12 +144,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojcore-base', 'ojs/ojdomutils', 'o
                 this.setState({ focus: false });
             };
             this._handleFocus = (event) => {
-                var _a;
-                (_a = this.rootRef.current) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('focus', { relatedTarget: event.relatedTarget }));
+                this.rootRef.current?.dispatchEvent(new FocusEvent('focus', { relatedTarget: event.relatedTarget }));
             };
             this._handleBlur = (event) => {
-                var _a;
-                (_a = this.rootRef.current) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('blur', { relatedTarget: event.relatedTarget }));
+                this.rootRef.current?.dispatchEvent(new FocusEvent('blur', { relatedTarget: event.relatedTarget }));
             };
             this.state = {
                 focus: false,
@@ -197,22 +194,22 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojcore-base', 'ojs/ojdomutils', 'o
         }
         _renderDisabled(props, triggerSlot) {
             const rootClasses = triggerSlot ? 'oj-filepicker' : 'oj-filepicker oj-filepicker-no-trigger';
-            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: rootClasses }, { children: jsxRuntime.jsx("div", Object.assign({ class: "oj-filepicker-disabled oj-filepicker-container" }, { children: triggerSlot || this._renderDefaultTriggerContent(props) })) })));
+            return (jsxRuntime.jsx(ojvcomponent.Root, { class: rootClasses, children: jsxRuntime.jsx("div", { class: "oj-filepicker-disabled oj-filepicker-container", children: triggerSlot || this._renderDefaultTriggerContent(props) }) }));
         }
         _renderWithCustomTrigger(props, triggerSlot, clickHandler) {
             const dndHandlers = this._getDndHandlers(props);
-            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: `oj-filepicker ${this._getFocusClass()}`, ref: this.rootRef, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, { children: jsxRuntime.jsx("div", Object.assign({ onClick: clickHandler, onKeyPress: this._handleSelectingFiles, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, class: "oj-filepicker-container", "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) }, { children: triggerSlot })) })));
+            return (jsxRuntime.jsx(ojvcomponent.Root, { class: `oj-filepicker ${this._getFocusClass()}`, ref: this.rootRef, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, children: jsxRuntime.jsx("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, class: "oj-filepicker-container", "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler), children: triggerSlot }) }));
         }
         _renderWithDefaultTrigger(props, clickHandler) {
             const validity = this.state.validity;
             const validityState = validity === 'valid' ? 'oj-valid-drop' : validity === 'invalid' ? 'oj-invalid-drop' : '';
             const dndHandlers = this._getDndHandlers(props);
-            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: `oj-filepicker oj-filepicker-no-trigger ${this._getFocusClass()}`, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, ref: this.rootRef }, { children: jsxRuntime.jsx("div", Object.assign({ onClick: clickHandler, onKeyPress: this._handleSelectingFiles, class: 'oj-filepicker-container', tabIndex: 0, "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) }, { children: jsxRuntime.jsx("div", Object.assign({ class: `oj-filepicker-dropzone ${validityState}`, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop }, { children: this._renderDefaultTriggerContent(props) })) })) })));
+            return (jsxRuntime.jsx(ojvcomponent.Root, { class: `oj-filepicker oj-filepicker-no-trigger ${this._getFocusClass()}`, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, ref: this.rootRef, children: jsxRuntime.jsx("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, class: 'oj-filepicker-container', tabIndex: 0, "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler), children: jsxRuntime.jsx("div", { class: `oj-filepicker-dropzone ${validityState}`, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, children: this._renderDefaultTriggerContent(props) }) }) }));
         }
         _renderDefaultTriggerContent(props) {
             return [
-                jsxRuntime.jsx("div", Object.assign({ class: "oj-filepicker-text" }, { children: this._getPrimaryText(props) })),
-                jsxRuntime.jsx("div", Object.assign({ class: "oj-filepicker-secondary-text" }, { children: this._getSecondaryText(props) }))
+                jsxRuntime.jsx("div", { class: "oj-filepicker-text", children: this._getPrimaryText(props) }),
+                jsxRuntime.jsx("div", { class: "oj-filepicker-secondary-text", children: this._getSecondaryText(props) })
             ];
         }
         _getRole(props, clickHandler) {
@@ -368,11 +365,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojcore-base', 'ojs/ojdomutils', 'o
             return false;
         }
         _handleFilesAdded(files, oEvent) {
-            var _a, _b;
             const list = this._createFileList(files);
-            (_b = (_a = this.props).onOjBeforeSelect) === null || _b === void 0 ? void 0 : _b.call(_a, { files: list, originalEvent: oEvent }).then(() => {
-                var _a, _b;
-                (_b = (_a = this.props).onOjSelect) === null || _b === void 0 ? void 0 : _b.call(_a, {
+            this.props.onOjBeforeSelect?.({ files: list, originalEvent: oEvent }).then(() => {
+                this.props.onOjSelect?.({
                     files: list,
                     originalEvent: oEvent
                 });
@@ -385,7 +380,6 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojcore-base', 'ojs/ojdomutils', 'o
             });
         }
         _fireInvalidSelectAction(messages, oEvent, isDrag) {
-            var _a, _b;
             if (isDrag) {
                 this.setState({ validity: 'invalid' });
             }
@@ -394,7 +388,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojcore-base', 'ojs/ojdomutils', 'o
                     this.dragPromiseResolver = resolve;
                 })
                 : null;
-            (_b = (_a = this.props).onOjInvalidSelect) === null || _b === void 0 ? void 0 : _b.call(_a, {
+            this.props.onOjInvalidSelect?.({
                 messages,
                 originalEvent: oEvent,
                 until: dragPromise

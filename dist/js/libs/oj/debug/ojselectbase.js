@@ -1027,7 +1027,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     if ((this._itemTemplate || this._collectionTemplate) && this._containerElem) {
       this._getTemplateEngineFunc().then(
         function (templateEngine) {
-          templateEngine.clean(this._containerElem[0]);
+          templateEngine.clean(this._containerElem[0], this._templateContextComponentElement);
         }.bind(this)
       );
     }
@@ -2463,7 +2463,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
    * @abstract
    * @hideconstructor
    * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
-   * @ojtsimport {module: "ojcommontypes", type: "AMD", importName: ["CommonTypes"]}
+   * @ojtsimport {module: "ojcommontypes", type: "AMD", importName: ["ojcommontypes"]}
    * @ojsignature [{
    *                target: "Type",
    *                value: "abstract class ojSelectBase<V, D, SP extends ojSelectBaseSettableProperties<V, D>> extends editableValue<V, SP>"
@@ -2746,7 +2746,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
        * @type {string|function(Object):string}
        * @ojsignature {
        *   target: "Type",
-       *   value: "keyof D | ((itemContext: CommonTypes.ItemContext<V, D>) => string)",
+       *   value: "keyof D | ((itemContext: ojcommontypes.ItemContext<V, D>) => string)",
        *   jsdocOverride: true
        * }
        * @default 'label'

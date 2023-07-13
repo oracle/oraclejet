@@ -1409,6 +1409,7 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
           // make sure it gets focus otherwise focus goes to the body as 'X' is no longer in DOM
           contentElement[0].focus();
         }
+
         this._handleRemove(event, item);
         return;
       }
@@ -4582,6 +4583,7 @@ _ojNavigationListView._CSS_Vars = {
  * @ojstyleclass oj-tabbar-item-text-wrap
  * @ojdisplayname Text Wrap
  * @memberof oj.ojTabBar
+ * @ojdeprecated {since: '15.0.0', description: 'Since vertical layout of TabBar is deprecated, this should not be used anymore. Use NavigationList instead.'}
  * @ojtsexample
  * &lt;oj-tab-bar class="oj-tabbar-item-text-wrap" >
  *   &lt;ul>
@@ -4890,7 +4892,8 @@ _ojNavigationListView._CSS_Vars = {
  */
 
 /**
- * The position of the Tab Bar. Valid Values: top, bottom, start and end.
+ *
+ *  The position of the Tab Bar. Valid Values: top and bottom.
  * @expose
  * @name edge
  * @memberof oj.ojTabBar
@@ -4902,6 +4905,7 @@ _ojNavigationListView._CSS_Vars = {
  * @ojvalue {string} "end" This renders list items vertically. Generally used when tab bar placed on right/end of content section.
  * @default start
  * @ojshortdesc Specifies the edge position of the Tab Bar.
+ * @ojdeprecated [{target:'propertyValue', for:"end", since: "15.0.0", description: "Use NavigationList instead."}]
  * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">edge</code> attribute specified:</caption>
  *  &lt;oj-tab-bar edge='top'> ... &lt;/oj-tab-bar>
  * @example <caption>Get the edge:</caption>
@@ -5023,8 +5027,8 @@ _ojNavigationListView._CSS_Vars = {
 /**
  * Whether to display both the label and icons (<code class="prettyprint">"all"</code>) or just the icons (<code class="prettyprint">"icons"</code>).
  * In the latter case, the label is displayed in a tooltip instead, unless a tooltip was already supplied at create time.
- * Note: <code class="prettyprint">display="icons"</code> is valid only when <code class="prettyprint">drillMode=none</code> and tab bar is a flat list,
- * <code class="prettyprint">display="stacked"</code> is not supported in vertical tabbar layout where the edge is end or start.
+ * Note: If <code class="prettyprint"> display="icons" </code> is used with oj-tabbar-item-end then it is supoorted only for badge and not for icon or metadata.
+ * If <code class="prettyprint"> display="stacked" </code> is used with oj-tabbar-item-end then it is supoorted only for badge and not for icon or metadata.
  * It is also mandatory to provide icons for each item as stated in <a href="#icons-section">icons section</a>.
  *
  * @expose
@@ -7234,13 +7238,6 @@ SlidingNavListHandler.prototype.IsSelectable = function (item) {
   // Slider items don't have Aria-selected tag, overrding selction for slider navlist
 
   var itemSelectionMarkerAttr = 'aria-selected';
-  var prevAnchorTag;
-  var anchor = this.m_widget.getFocusItem($(item))[0];
-  var collapseClass = this.m_widget.getCollapseIconStyleClass();
-  prevAnchorTag = anchor.previousElementSibling;
-  if (prevAnchorTag && prevAnchorTag.classList.contains(collapseClass)) {
-    return false;
-  }
   return (
     this.m_widget.getFocusItem($(item))[0].getAttribute('role') === 'menuitem' &&
     !this.m_widget.getFocusItem($(item))[0].hasAttribute(itemSelectionMarkerAttr)

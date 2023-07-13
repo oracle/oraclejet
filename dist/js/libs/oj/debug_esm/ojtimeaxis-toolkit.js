@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { BaseComponentDefaults, CSSStyle, Agent, Container, ClipPath, Path, PathUtils, ToolkitUtils, Stroke, OutputText, TextUtils, Line, BaseComponent } from 'ojs/ojdvt-toolkit';
+import { BaseComponentDefaults, CSSStyle, Agent, Container, ClipPath, Path, PathUtils, ToolkitUtils, Stroke, OutputText, TextUtils, SimpleObjPeer, Line, BaseComponent } from 'ojs/ojdvt-toolkit';
 
 class DvtTimeAxisCalendar {
   constructor() {
@@ -795,6 +795,13 @@ const DvtTimeAxisRenderer = {
           TextUtils.fitText(label, adjustedMaxLength, maxLabelHeight, container);
         }
       }
+      if (label.isTruncated() && timeAxis.parentCompEventManager) {
+        const untruncatedTextString = label.getUntruncatedTextString();
+        timeAxis.parentCompEventManager.associate(
+          label,
+          new SimpleObjPeer(untruncatedTextString)
+        );
+      }
     }
     return labelOutputTexts;
   },
@@ -1052,7 +1059,7 @@ class TimeAxis extends BaseComponent {
     // Whether this is a standalone component render/resize
     var isComponentRender = options && options._viewStartTime == null;
     var isResizeRender = options == null;
-
+    this.parentCompEventManager = isResizeRender ? null : options._eventManager;
     this.Width = width;
     this.Height = height;
     this._prepareCanvasViewport();

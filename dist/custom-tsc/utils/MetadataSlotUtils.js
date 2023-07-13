@@ -35,7 +35,6 @@ const _DYNAMIC_SLOT_INVALID_STATE = 0b0011;
 const _INVALID_MIXED_DYNAMIC_SLOT_PROPS_MSG = 'Components cannot have properties for both dynamic slots and dynamic template slots. Only a single Property is allowed to specify support for dynamic slots.';
 const _UNSUPPORTED_IMPLICIT_BUSY_CONTEXT_MSG = 'The ImplicitBusyContext marker type does not apply to Template Slots nor to Dynamic Slots, and should be removed.';
 function generateSlotsMetadata(memberKey, slotPropDeclaration, metaUtilObj) {
-    var _a, _b;
     let isSlot = false;
     const slotTypeInfo = getSlotTypeInfo(slotPropDeclaration, metaUtilObj);
     if (slotTypeInfo) {
@@ -75,7 +74,7 @@ function generateSlotsMetadata(memberKey, slotPropDeclaration, metaUtilObj) {
                     TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_MIXED_DYNAMIC_SLOT_PROPS, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, _INVALID_MIXED_DYNAMIC_SLOT_PROPS_MSG, slotPropDeclaration);
                 }
                 if (slotTypeInfo.hasImplicitBusyContext) {
-                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNSUPPORTED_IMPLICITBUSYCONTEXT, TransformerError_1.ExceptionType.WARN_IF_DISABLED, metaUtilObj.componentName, _UNSUPPORTED_IMPLICIT_BUSY_CONTEXT_MSG, (_a = slotPropDeclaration.type) !== null && _a !== void 0 ? _a : slotPropDeclaration);
+                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNSUPPORTED_IMPLICITBUSYCONTEXT, TransformerError_1.ExceptionType.WARN_IF_DISABLED, metaUtilObj.componentName, _UNSUPPORTED_IMPLICIT_BUSY_CONTEXT_MSG, slotPropDeclaration.type ?? slotPropDeclaration);
                 }
                 MetaUtils.updateRtExtensionMetadata('_DYNAMIC_SLOT', {
                     prop: memberKey,
@@ -84,7 +83,7 @@ function generateSlotsMetadata(memberKey, slotPropDeclaration, metaUtilObj) {
                 metaUtilObj.fullMetadata.dynamicSlots = metaUtilObj.fullMetadata.dynamicSlots || {};
                 metaUtilObj.dynamicSlotNameNodes.push({
                     name: '',
-                    node: (_b = slotPropDeclaration.type) !== null && _b !== void 0 ? _b : slotPropDeclaration
+                    node: slotPropDeclaration.type ?? slotPropDeclaration
                 });
                 break;
             default:
@@ -96,14 +95,13 @@ function generateSlotsMetadata(memberKey, slotPropDeclaration, metaUtilObj) {
 }
 exports.generateSlotsMetadata = generateSlotsMetadata;
 function updateSlotMetadata(slotName, propDeclaration, slotTypeInfo, isTemplateSlot, isDynamicSlot, metaUtilObj) {
-    var _a, _b;
     if (!isDynamicSlot) {
         if (!metaUtilObj.rtMetadata.slots) {
             metaUtilObj.rtMetadata.slots = {};
             metaUtilObj.fullMetadata.slots = {};
         }
         if (isTemplateSlot && slotTypeInfo.hasImplicitBusyContext) {
-            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNSUPPORTED_IMPLICITBUSYCONTEXT, TransformerError_1.ExceptionType.WARN_IF_DISABLED, metaUtilObj.componentName, _UNSUPPORTED_IMPLICIT_BUSY_CONTEXT_MSG, (_a = propDeclaration.type) !== null && _a !== void 0 ? _a : propDeclaration);
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNSUPPORTED_IMPLICITBUSYCONTEXT, TransformerError_1.ExceptionType.WARN_IF_DISABLED, metaUtilObj.componentName, _UNSUPPORTED_IMPLICIT_BUSY_CONTEXT_MSG, propDeclaration.type ?? propDeclaration);
         }
         metaUtilObj.rtMetadata.slots[slotName] = isTemplateSlot
             ? { data: {} }
@@ -114,7 +112,7 @@ function updateSlotMetadata(slotName, propDeclaration, slotTypeInfo, isTemplateS
     }
     else {
         if (slotTypeInfo.hasImplicitBusyContext) {
-            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNSUPPORTED_IMPLICITBUSYCONTEXT, TransformerError_1.ExceptionType.WARN_IF_DISABLED, metaUtilObj.componentName, _UNSUPPORTED_IMPLICIT_BUSY_CONTEXT_MSG, (_b = propDeclaration.type) !== null && _b !== void 0 ? _b : propDeclaration);
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNSUPPORTED_IMPLICITBUSYCONTEXT, TransformerError_1.ExceptionType.WARN_IF_DISABLED, metaUtilObj.componentName, _UNSUPPORTED_IMPLICIT_BUSY_CONTEXT_MSG, propDeclaration.type ?? propDeclaration);
         }
         if (isTemplateSlot) {
             metaUtilObj.fullMetadata.dynamicSlots = metaUtilObj.fullMetadata.dynamicSlots || {};
@@ -187,37 +185,34 @@ function getSlotData(detailNode, metaUtilObj) {
         if (!propSignature) {
             return;
         }
-        const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(symbol, propSignature);
         if (ts.isPropertySignature(propSignature) || ts.isPropertyDeclaration(propSignature)) {
             const property = key.toString();
             const propertyPath = [property];
             const slotDataMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.SLOT | MetaTypes.MDFlags.SLOT_DATA, propertyPath, symbol, metaUtilObj);
             data = data || {};
             data[property] = slotDataMetadata;
-            if (TypeUtils.possibleComplexProperty(symbolType, slotDataMetadata.type, MetaTypes.MetadataScope.DT)) {
-                let nestedArrayStack = [];
-                if (slotDataMetadata.type === 'Array<object>') {
-                    nestedArrayStack.push(key);
+            let nestedArrayStack = [];
+            if (slotDataMetadata.type === 'Array<object>') {
+                nestedArrayStack.push(key);
+            }
+            const subprops = TypeUtils.getComplexPropertyMetadata(symbol, slotDataMetadata.type, detailName, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.SLOT | MetaTypes.MDFlags.SLOT_DATA, propertyPath, nestedArrayStack, metaUtilObj);
+            if (subprops) {
+                if (subprops.circRefDetected) {
+                    data[property].type = TypeUtils.getSubstituteTypeForCircularReference(slotDataMetadata);
                 }
-                const subprops = TypeUtils.getComplexPropertyMetadata(symbol, slotDataMetadata.type, detailName, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.SLOT | MetaTypes.MDFlags.SLOT_DATA, propertyPath, nestedArrayStack, metaUtilObj);
-                if (subprops) {
-                    if (subprops.circRefDetected) {
-                        data[property].type = TypeUtils.getSubstituteTypeForCircularReference(slotDataMetadata);
-                    }
-                    else if (slotDataMetadata.type === 'Array<object>') {
-                        data[property].extension = {};
-                        data[property].extension.vbdt = {};
-                        data[property].extension.vbdt.itemProperties = subprops;
-                    }
-                    else {
-                        data[property].type = 'object';
-                        data[property].properties = subprops;
-                    }
-                    const typeDef = TypeUtils.getPossibleTypeDef(property, symbol, slotDataMetadata, metaUtilObj);
-                    if (typeDef && typeDef.name) {
-                        data[property]['jsdoc'] = data[property]['jsdoc'] || {};
-                        data[property]['jsdoc']['typedef'] = typeDef;
-                    }
+                else if (slotDataMetadata.type === 'Array<object>') {
+                    data[property].extension = {};
+                    data[property].extension.vbdt = {};
+                    data[property].extension.vbdt.itemProperties = subprops;
+                }
+                else {
+                    data[property].type = 'object';
+                    data[property].properties = subprops;
+                }
+                const typeDef = TypeUtils.getPossibleTypeDef(property, symbol, slotDataMetadata, metaUtilObj);
+                if (typeDef && (typeDef.name || typeDef.coreJetModule)) {
+                    data[property]['jsdoc'] = data[property]['jsdoc'] || {};
+                    data[property]['jsdoc']['typedef'] = typeDef;
                 }
             }
         }
@@ -247,14 +242,13 @@ function validateDynamicSlots(metaUtilObj) {
 }
 exports.validateDynamicSlots = validateDynamicSlots;
 function checkDefaultSlotType(propName, typeName, propDecl, metaUtilObj) {
-    var _a, _b;
     if (propName === MetaTypes.DEFAULT_SLOT_PROP &&
         typeName !== `${metaUtilObj.namedExportToAlias.ComponentChildren}`) {
-        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNSUPPORTED_DEFAULT_SLOT_TYPE, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Unsupported type '${typeName}' for reserved default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'.`, (_a = propDecl.type) !== null && _a !== void 0 ? _a : propDecl);
+        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNSUPPORTED_DEFAULT_SLOT_TYPE, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Unsupported type '${typeName}' for reserved default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'.`, propDecl.type ?? propDecl);
     }
     else if (typeName === `${metaUtilObj.namedExportToAlias.ComponentChildren}` &&
         propName !== MetaTypes.DEFAULT_SLOT_PROP) {
-        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.COMPONENT_CHILDREN_NOT_DEFAULT_SLOT, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `'${typeName}' is reserved for default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'. Did you mean to declare this property as type '${MetaTypes.SLOT_TYPE}'?`, (_b = propDecl.type) !== null && _b !== void 0 ? _b : propDecl);
+        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.COMPONENT_CHILDREN_NOT_DEFAULT_SLOT, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `'${typeName}' is reserved for default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'. Did you mean to declare this property as type '${MetaTypes.SLOT_TYPE}'?`, propDecl.type ?? propDecl);
     }
 }
 function getSlotTypeInfo(slotPropDeclaration, metaUtilObj) {

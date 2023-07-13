@@ -3106,6 +3106,10 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         rootElement.position(position);
 
+        // note the initial dialog width/height
+        this._initialWidth = rootElement.width();
+        this._initialHeight = rootElement.height();
+
         this._registerResizeListener(this.element[0]);
 
         // We add .oj-animate-open when the dialog is animating on open.
@@ -3143,6 +3147,20 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       _afterOpenHandler: function (psOptions) {
         var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
         rootElement.parent().removeClass('oj-animate-open');
+
+        // JET-44685: iOS may reveal address bar during open animation, need to make sure the position is set
+        // properly after the animation completes
+        if (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS) {
+          this._adjustPosition();
+        } else if (
+          this._initialWidth !== rootElement.width() ||
+          this._initialHeight !== rootElement.height()
+        ) {
+          this._adjustPosition();
+        }
+        delete this._initialWidth;
+        delete this._initialHeight;
+
         this._restoreBodyOverflow();
         this._makeResizable();
         this._trigger('open');
@@ -3192,7 +3210,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       },
 
       /**
-       * Resize handler to adujust dialog position when the size changes after
+       * Resize handler to adjust dialog position when the size changes after
        * initial render.
        *
        * @memberof oj.ojDialog

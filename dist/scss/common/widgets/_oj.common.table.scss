@@ -903,6 +903,7 @@
     /* Styling for the status message. */
     .oj-table-status-message {
       position: absolute;
+      pointer-events: none;
     }
 
     /* Styling for the status message text. */

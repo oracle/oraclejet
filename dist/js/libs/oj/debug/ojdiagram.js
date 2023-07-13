@@ -1214,6 +1214,9 @@ var __oj_diagram_link_metadata =
    *
    * {@ojinclude "name":"a11yKeyboard"}
    *
+   * <p>When selection is toggled through CTRL-SPACE, the screenreader may not read out the selection state.
+   * We recommend the user to press 'Insert + 8(Numpad)' to read the selection state of the node.</p>
+   *
    * <h3 id="touch-section">
    *   Touch End User Information
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>

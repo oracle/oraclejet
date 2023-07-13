@@ -16,6 +16,17 @@ define(['exports', 'preact/jsx-runtime', '@oracle/oraclejet-preact/UNSAFE_Messag
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     exports.MessageBanner = class MessageBanner extends preact.Component {
+        static getDerivedStateFromProps(props, state) {
+            const { data } = props;
+            const { dataProviderCount, previousDataProvider } = state;
+            if (data !== previousDataProvider) {
+                return {
+                    dataProviderCount: dataProviderCount + 1,
+                    previousDataProvider: data
+                };
+            }
+            return null;
+        }
         constructor(props) {
             super(props);
             this._addBusyState = (description) => {
@@ -31,26 +42,14 @@ define(['exports', 'preact/jsx-runtime', '@oracle/oraclejet-preact/UNSAFE_Messag
                 return detailTemplateValue;
             };
             this._handleCloseMessage = (context) => {
-                var _a, _b;
-                (_b = (_a = this.props).onOjClose) === null || _b === void 0 ? void 0 : _b.call(_a, context);
+                this.props.onOjClose?.(context);
             };
             this._renderCloseButton = (title, onAction) => {
-                return (jsxRuntime.jsxs("oj-button", Object.assign({ class: "oj-button-sm", display: "icons", chroming: "borderless", title: title, onojAction: onAction }, { children: [jsxRuntime.jsx("span", { slot: "startIcon", class: "oj-fwk-icon oj-fwk-icon-cross" }), jsxRuntime.jsx("span", { children: title })] })));
+                return (jsxRuntime.jsxs("oj-button", { class: "oj-button-sm", display: "icons", chroming: "borderless", title: title, onojAction: onAction, children: [jsxRuntime.jsx("span", { slot: "startIcon", class: "oj-fwk-icon oj-fwk-icon-cross" }), jsxRuntime.jsx("span", { children: title })] }));
             };
             this._rootRef = preact.createRef();
             this.state = { dataProviderCount: 0, previousDataProvider: props.data };
             this.WrapperMessagesContainer = ojdataproviderhandler.withDataProvider(UNSAFE_MessageBanner.MessageBanner, 'data');
-        }
-        static getDerivedStateFromProps(props, state) {
-            const { data } = props;
-            const { dataProviderCount, previousDataProvider } = state;
-            if (data !== previousDataProvider) {
-                return {
-                    dataProviderCount: dataProviderCount + 1,
-                    previousDataProvider: data
-                };
-            }
-            return null;
         }
         render(props) {
             const { data, detailTemplateValue, messageTemplates, type } = props;
@@ -59,7 +58,7 @@ define(['exports', 'preact/jsx-runtime', '@oracle/oraclejet-preact/UNSAFE_Messag
             const nullTreatedDetailTemplateValue = typeof detailTemplateValue === 'function'
                 ? this._detailRendererKeyProxy
                 : detailTemplateValue;
-            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this._rootRef }, { children: jsxRuntime.jsx(UNSAFE_useMessagesContext.MessagesContext.Provider, Object.assign({ value: messagesContext }, { children: jsxRuntime.jsx(this.WrapperMessagesContainer, { addBusyState: this._addBusyState, data: data, type: type, closeButtonRenderer: this._renderCloseButton, detailRendererKey: nullTreatedDetailTemplateValue, renderers: messageTemplates, onClose: this._handleCloseMessage, translations: {
+            return (jsxRuntime.jsx(ojvcomponent.Root, { ref: this._rootRef, children: jsxRuntime.jsx(UNSAFE_useMessagesContext.MessagesContext.Provider, { value: messagesContext, children: jsxRuntime.jsx(this.WrapperMessagesContainer, { addBusyState: this._addBusyState, data: data, type: type, closeButtonRenderer: this._renderCloseButton, detailRendererKey: nullTreatedDetailTemplateValue, renderers: messageTemplates, onClose: this._handleCloseMessage, translations: {
                             close: Translations.getTranslatedString('oj-ojMessageBanner.close'),
                             navigationFromMessagesRegion: Translations.getTranslatedString('oj-ojMessageBanner.navigationFromMessagesRegion'),
                             navigationToMessagesRegion: Translations.getTranslatedString('oj-ojMessageBanner.navigationToMessagesRegion'),
@@ -67,7 +66,7 @@ define(['exports', 'preact/jsx-runtime', '@oracle/oraclejet-preact/UNSAFE_Messag
                             warning: Translations.getTranslatedString('oj-ojMessageBanner.warning'),
                             info: Translations.getTranslatedString('oj-ojMessageBanner.info'),
                             confirmation: Translations.getTranslatedString('oj-ojMessageBanner.confirmation')
-                        } }, `dataProvider${dataProviderCount}`) })) })));
+                        } }, `dataProvider${dataProviderCount}`) }) }));
         }
     };
     exports.MessageBanner.defaultProps = {

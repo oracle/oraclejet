@@ -11,16 +11,16 @@ class PreactTemplateEngine {
     constructor() {
         this._defaultProps = new Map();
     }
-    execute(componentElement, templateElement, properties, alias, reportBusy) {
+    execute(componentElement, templateElement, properties, alias, reportBusy, provided) {
         const templateAlias = templateElement.getAttribute('data-oj-as');
-        const context = TemplateEngineUtils.getContext(null, componentElement, templateElement, properties, alias, templateAlias);
+        const context = TemplateEngineUtils.getContext(null, componentElement, templateElement, properties, alias, templateAlias, provided);
         if (templateElement.render) {
-            return this._executeVDomTemplate(templateElement, context);
+            return this._executeVDomTemplate(componentElement, templateElement, context, provided);
         }
         throw new Error(`The render property is expected on the template for component ${componentElement.id}`);
     }
-    clean(node) {
-        let vdomTemplateRoots = PreactTemplate.findTemplateRoots(node);
+    clean(node, componentElement) {
+        let vdomTemplateRoots = PreactTemplate.findTemplateRoots(node, componentElement);
         vdomTemplateRoots.forEach((root) => {
             PreactTemplate.clean(root);
         });
@@ -37,12 +37,12 @@ class PreactTemplateEngine {
     defineTrackableProperty(target, name, value, changeListener) {
         throw new Error('This template engine does not support trackable property');
     }
-    _executeVDomTemplate(templateElement, context) {
+    _executeVDomTemplate(componentElement, templateElement, context, provided) {
         const vNode = templateElement.render(context.$current);
         PreactTemplate.extendTemplate(templateElement, PreactTemplate._ROW_CACHE_FACTORY, (renderer) => {
             templateElement._cachedRows.forEach((rowItem) => {
                 let newVNode = renderer(rowItem.currentContext);
-                PreactTemplate.renderNodes(newVNode, rowItem);
+                PreactTemplate.renderNodes(componentElement, newVNode, rowItem, provided);
             });
         });
         const parentStub = document.createElement('div');
@@ -54,7 +54,7 @@ class PreactTemplateEngine {
             vnode: undefined,
             nodes: undefined
         };
-        PreactTemplate.renderNodes(vNode, cachedRow);
+        PreactTemplate.renderNodes(componentElement, vNode, cachedRow, provided);
         templateElement._cachedRows.push(cachedRow);
         return cachedRow.nodes;
     }

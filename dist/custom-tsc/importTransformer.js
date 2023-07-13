@@ -29,7 +29,7 @@ let _BUILD_OPTIONS;
 function importTransformWrapper(buildOptions) {
     _BUILD_OPTIONS = buildOptions;
     const importTransformer = (context) => {
-        return (sf) => {
+        return ((sf) => {
             function visit(node) {
                 if (buildOptions.componentToMetadata) {
                     return generateMissingImports(context, node);
@@ -41,7 +41,7 @@ function importTransformWrapper(buildOptions) {
             if (_BUILD_OPTIONS['debug'])
                 console.log(`${sf.fileName}: processing imports...`);
             return ts.visitNode(sf, visit);
-        };
+        });
     };
     return importTransformer;
 }

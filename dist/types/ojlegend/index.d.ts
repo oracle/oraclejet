@@ -20,6 +20,7 @@ export interface ojLegend<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | 
     symbolHeight?: number;
     symbolWidth?: number;
     textStyle?: Partial<CSSStyleDeclaration>;
+    trackResize: 'on' | 'off';
     valign?: 'middle' | 'bottom' | 'top';
     translations: {
         accessibleContainsControls?: string;
@@ -90,12 +91,9 @@ export namespace ojLegend {
     // tslint:disable-next-line interface-over-type-literal
     type textStyleChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["textStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type valignChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["valign"]>;
-    //------------------------------------------------------------
-    // Start: generated events for inherited properties
-    //------------------------------------------------------------
+    type trackResizeChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["trackResize"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type trackResizeChanged<K, D extends Item<K> | Section<K> | any> = dvtBaseComponent.trackResizeChanged<ojLegendSettableProperties<K, D>>;
+    type valignChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["valign"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         borderColor?: string;
@@ -168,8 +166,8 @@ export interface ojLegendEventMap<K, D extends ojLegend.Item<K> | ojLegend.Secti
     'symbolHeightChanged': JetElementCustomEvent<ojLegend<K, D>["symbolHeight"]>;
     'symbolWidthChanged': JetElementCustomEvent<ojLegend<K, D>["symbolWidth"]>;
     'textStyleChanged': JetElementCustomEvent<ojLegend<K, D>["textStyle"]>;
-    'valignChanged': JetElementCustomEvent<ojLegend<K, D>["valign"]>;
     'trackResizeChanged': JetElementCustomEvent<ojLegend<K, D>["trackResize"]>;
+    'valignChanged': JetElementCustomEvent<ojLegend<K, D>["valign"]>;
 }
 export interface ojLegendSettableProperties<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> extends dvtBaseComponentSettableProperties {
     as?: string;
@@ -187,6 +185,7 @@ export interface ojLegendSettableProperties<K, D extends ojLegend.Item<K> | ojLe
     symbolHeight?: number;
     symbolWidth?: number;
     textStyle?: Partial<CSSStyleDeclaration>;
+    trackResize: 'on' | 'off';
     valign?: 'middle' | 'bottom' | 'top';
     translations: {
         accessibleContainsControls?: string;
@@ -402,12 +401,9 @@ export namespace LegendElement {
     // tslint:disable-next-line interface-over-type-literal
     type textStyleChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["textStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type valignChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["valign"]>;
-    //------------------------------------------------------------
-    // Start: generated events for inherited properties
-    //------------------------------------------------------------
+    type trackResizeChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["trackResize"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type trackResizeChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = dvtBaseComponent.trackResizeChanged<ojLegendSettableProperties<K, D>>;
+    type valignChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["valign"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         borderColor?: string;
@@ -514,8 +510,8 @@ export interface LegendIntrinsicProps extends Partial<Readonly<ojLegendSettableP
     onsymbolHeightChanged?: (value: ojLegendEventMap<any, any>['symbolHeightChanged']) => void;
     onsymbolWidthChanged?: (value: ojLegendEventMap<any, any>['symbolWidthChanged']) => void;
     ontextStyleChanged?: (value: ojLegendEventMap<any, any>['textStyleChanged']) => void;
-    onvalignChanged?: (value: ojLegendEventMap<any, any>['valignChanged']) => void;
     ontrackResizeChanged?: (value: ojLegendEventMap<any, any>['trackResizeChanged']) => void;
+    onvalignChanged?: (value: ojLegendEventMap<any, any>['valignChanged']) => void;
     children?: ComponentChildren;
 }
 export interface LegendItemIntrinsicProps extends Partial<Readonly<ojLegendItemSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {

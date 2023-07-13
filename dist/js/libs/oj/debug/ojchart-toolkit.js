@@ -2755,7 +2755,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   const DvtChartStyleUtils = {
     /** @const */
     MARKER_DATA_LABEL_GAP: 4, // space separating the data label from the marker
-
+    SERIES_PATTERN_BG_COLOR: '#FFFFFF',
     /**
      * Returns the series effect for the specified chart.
      * @param {Chart} chart
@@ -3687,15 +3687,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       var styleDefaults = chart.getOptions().styleDefaults;
       var labelStyleArray = [styleDefaults._dataLabelStyle, styleDefaults.dataLabelStyle];
       var contrastingColor;
+      const seriesType = DvtChartDataUtils.getSeriesType(chart, seriesIndex);
       if (
-        dataColor &&
-        (DvtChartDataUtils.getSeriesType(chart, seriesIndex) == 'bar' ||
-          DvtChartTypeUtils.isBubble(chart)) &&
-        (position == 'center' ||
-          position == 'inBottom' ||
-          position == 'inTop' ||
-          position == 'inRight' ||
-          position == 'inLeft')
+        (dataColor &&
+          (seriesType == 'bar' || DvtChartTypeUtils.isBubble(chart)) &&
+          (position == 'center' ||
+            position == 'inBottom' ||
+            position == 'inTop' ||
+            position == 'inRight' ||
+            position == 'inLeft')) ||
+        (seriesType == 'area' &&
+          !DvtChartDataUtils.isRangeSeries(chart, seriesIndex) &&
+          position == 'bottom' &&
+          DvtChartTypeUtils.isVertical(chart)) // issue identified by JET-56558, JET-59519, JET-59520
       ) {
         contrastingColor =
           DvtChartStyleUtils.getPattern(chart, seriesIndex, groupIndex, itemIndex) != null
@@ -11771,13 +11775,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
           2
         );
         var bbox = new dvt.Path(this.getCtx(), cmd);
-        bbox.setSolidFill('#FFFFFF', 0.9);
+        bbox.setSolidFill(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR, 0.9);
         pos = pos.translate(displacement * textDim.h, -displacement * textDim.w);
         bbox.setMatrix(pos);
         this.addChild(bbox);
       }
       var labelColor = isPatternBg
-        ? '#000000'
+        ? dvt.ColorUtils.getContrastingTextColor(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR)
         : barBounds.containsPoint(sliceBounds.x, sliceBounds.y + (sliceBounds.h - textDim.w) / 2)
         ? dvt.ColorUtils.getContrastingTextColor(this._dataColor)
         : dvt.ColorUtils.getContrastingTextColor(this._backgroundColor);
@@ -13098,13 +13102,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
           2
         );
         var bbox = new dvt.Path(this.getCtx(), cmd);
-        bbox.setSolidFill('#FFFFFF', 0.9);
+        bbox.setSolidFill(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR, 0.9);
         pos = pos.translate(-0.5 * textDim.w, -0.5 * textDim.h);
         bbox.setMatrix(pos);
         this.addChild(bbox);
       }
       var labelColor = isPatternBg
-        ? '#000000'
+        ? dvt.ColorUtils.getContrastingTextColor(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR)
         : sliceBounds.containsPoint(sliceBounds.x + (sliceBounds.w - textDim.w) / 2, sliceBounds.y)
         ? dvt.ColorUtils.getContrastingTextColor(this._dataColor)
         : dvt.ColorUtils.getContrastingTextColor(null);
@@ -14737,10 +14741,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       var pieChart = slice.getPieChart();
 
       var context = pieChart.getCtx();
-      var sliceLabel = isInside ? new dvt.OutputText(context) : new dvt.MultilineText(context);
+      var isOtherSlice = slice.getId().series === DvtChartPieUtils.OTHER_ID;
+      var hasPattern =
+        DvtChartStyleUtils.getPattern(pieChart.chart, slice.getSeriesIndex(), 0) != null ||
+        (isOtherSlice && DvtChartStyleUtils.getSeriesEffect(pieChart) == 'pattern');
+      var needsPatternBg = isInside && hasPattern;
+      var sliceLabel;
+      if (needsPatternBg) {
+        sliceLabel = new dvt.BackgroundOutputText(context);
+      } else {
+        sliceLabel = isInside ? new dvt.OutputText(context) : new dvt.MultilineText(context);
+      }
 
       // Apply the label color- read all applicable styles and merge them.
-      var contrastColor = isInside
+      var contrastColor = needsPatternBg
+        ? dvt.ColorUtils.getContrastingTextColor(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR)
+        : isInside
         ? dvt.ColorUtils.getContrastingTextColor(slice.getFillColor())
         : dvt.ColorUtils.getContrastingTextColor(dvt.ColorUtils.getColorFromName('black'));
       var contrastColorStyle = new dvt.CSSStyle({ color: contrastColor });
@@ -14757,6 +14773,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
       if (isHighContrast) {
         labelStyleArray.push(contrastColorStyle);
+      }
+      if (needsPatternBg) {
+        var backgroundColorStyle = new dvt.CSSStyle({
+          'background-color': 'rgba(255, 255, 255, 0.9)',
+          'border-radius': '2px'
+        });
+        labelStyleArray.push(backgroundColorStyle);
       }
       var style = dvt.CSSStyle.mergeStyles(labelStyleArray);
       sliceLabel.setCSSStyle(style);

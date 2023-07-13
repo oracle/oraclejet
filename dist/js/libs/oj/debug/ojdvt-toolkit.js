@@ -27768,6 +27768,14 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   BackgroundMultilineText.prototype.isMultiline = function () {
     return true;
   };
+  /**
+   * Specifies the maximum number of lines to display when wrapped. Defaults to Infinity.
+   * @param {number} maxLines
+   * @return {BackgroundMultilineText}
+   */
+  BackgroundMultilineText.prototype.setMaxLines = function (maxLines) {
+    return this.TextInstance.setMaxLines(maxLines);
+  };
 
   /**
    * Base class for JSON component defaults.

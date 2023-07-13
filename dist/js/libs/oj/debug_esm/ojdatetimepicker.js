@@ -23,12 +23,11 @@ import DateRestrictionValidator from 'ojs/ojvalidator-daterestriction';
 import { IntlDateTimeConverter } from 'ojs/ojconverter-datetime';
 import { getFirstDayOfWeek, getDayNames, getMonthNames, __getBundle } from 'ojs/ojlocaledata';
 import { info, warn, error, warning } from 'ojs/ojlogger';
-import { parseJSONFromFontFamily, getCachedCSSVarValues } from 'ojs/ojthemeutils';
+import { getCachedCSSVarValues, parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import Context from 'ojs/ojcontext';
 import FocusUtils from 'ojs/ojfocusutils';
 import { makeFocusable, isTouchSupported } from 'ojs/ojdomutils';
 import LabeledByUtils from 'ojs/ojlabelledbyutils';
-import { getDateTimePreferences } from 'ojs/ojconverter-preferences';
 
 (function () {
   var bindingMeta = {
@@ -1240,8 +1239,6 @@ var __oj_input_date_time_metadata =
 /**
  * @private
  */
-var _defaultOptions = parseJSONFromFontFamily('oj-inputdatetime-option-defaults') || {};
-var _yearFormat = _defaultOptions.converterYear || 'numeric';
 var _sDefaultDateConverter;
 
 /**
@@ -1410,15 +1407,7 @@ function _getMetaData(dayMetaData, position, params) {
  * @ignore
  */
 function _getDateDefaultConverter() {
-  // if user preferences dateStyle short exists, use those for the default converter.
-  // The user preferences, including timezone,
-  // get merged in within the IntlDateTimeConverter wrapped code when dateStyle is short.
-  const userPref = getDateTimePreferences();
-  // userPref?.dateStyle?.short doesn't compile
-  if (userPref && userPref.dateStyle && userPref.dateStyle.short) {
-    return new IntlDateTimeConverter({ formatType: 'date', dateFormat: 'short' });
-  }
-  return new IntlDateTimeConverter({ day: '2-digit', month: '2-digit', year: _yearFormat });
+  return new IntlDateTimeConverter({ formatType: 'date', dateFormat: 'short' });
 }
 
 /**
@@ -1645,14 +1634,218 @@ function formatYear(year, month) {
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
- * <h3 id="label-section">
- *   Label and InputDate
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
- * </h3>
- * <p>
- * In the Alta theme, InputDate will decorate its associated label with required and help
- * information, if the <code>required</code> and <code>help</code> attributes are set.
- * </p>
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * <p>
+   * To migrate from oj-input-date to oj-c-input-date-text, you need to revise the import statement
+   * and references to oj-c-input-date-text in your app. Please note the changes between the two components below.
+   * </p>
+   * <strong>oj-c-input-date-text does not include a picker. The picker will be coming in a later release.
+   * Migrate to oj-c-input-date-text only if you do not need a picker.</strong>
+
+   * <h5>Date Picker Specific Attributes and Methods</h5>
+   * <p>oj-c-input-date-text does not have a datepicker calendar, so oj-input-date's picker-specific attributes and methods do not exist in the oj-c-input-date-text component.
+   * The following date picker specific attributes and methods do not exist on oj-c-input-date-text.
+   * </p>
+   *
+   * <ul>
+   * <li>Methods:
+   * <ul>
+   * <li>hide</li>
+   * <li>show</li>
+   * </ul>
+   * </li>
+   * <li>Attributes:
+   * <ul>
+   * <li>date-picker</li>
+   * <li>change-month</li>
+   * <li>change-year</li>
+   * <li>current-month-pos</li>
+   * <li>days-outside-month</li>
+   * <li>number-of-months</li>
+   * <li>show-on</li>
+   * <li>step-big-months</li>
+   * <li>step-months</li>
+   * <li>week-display</li>
+   * <li>year-range</li>
+   * <li>keyboard-edit</li>
+   * <li>picker-attributes: Object property class</li>
+   * <li>translations</li>
+   * <ul>
+   * <li>tooltip-calendar</li>
+   * <li>tooltip-calendar-disabled</li>
+   * <li>tooltip-calendar-time</li>
+   * <li>tooltip-calendar-time-disabled</li>
+   * <li>week-header</li>
+   * <li>next-text</li>
+   * <li>prev-text</li>
+   * <li>current-text (Today)</li>
+   * </ul>
+   * </ul>
+   * </li>
+   * </ul>
+   * <h5>Date Restriction Attributes</h5>
+   * <p>The oj-c-input-date-text does not have a datepicker calendar, so oj-input-date's date restriction attributes do not exist in the oj-c-input-date-text component.
+   * You need to write your own validators to restrict the date and throw an error if the date the user types in is a restricted date.
+   * The following date restriction specific attributes do not exist on oj-c-input-date-text.
+   * </p>
+   * <ul>
+   * <li>date-restriction</li>
+   * <ul>
+   * <li>hint</li>
+   * <li>message-detail</li>
+   * <li>message-summary</li>
+   * </ul>
+   * <li>day-formatter</li>
+   * <li>day-metadata</li>
+   * </ul>
+   *
+   * <h5>Converter attribute</h5>
+   * <p>
+   * The converter attribute no longer supports a Promise that resolves to a converter instance.
+   * The application should resolve the promise and then update the
+   * converter attribute with the resolved converter instance.
+   * </p>
+   * <p>
+   * The converter is no longer applied when the value is <code>null</code>, <code>undefined</code>, or <code>''</code>.
+   * When the field is empty, the value gets normalized to <code>null</code>, so the converter does not run on an empty field.
+   * <p>
+   * <p>
+   * The converter attribute for oj-c-input-date-text takes an instance of LocalDateConverter,
+   * an object that has {format: (value: DateISOString) => string, parse: (value: string) => DateISOString}, null or undefined.
+   * oj-c-input-date-text's converter attribute does not take an IntlDateTimeConverter instance since its format/parse functions return string|null,
+   * not just string.
+   * </p>
+   * <p>
+   * oj-c-input-date-text uses <a href="LocalDateConverter.html" target="_blank">LocalDateConverter</a> with lenient parsing as its default converter,
+   * whereas oj-input-date uses IntlDateTimeConverter as its default converter.
+   * The LocalDateConverter does not have any options related to time or timezone.
+   * </p>
+   * <p>
+   * LocalDateConverter supports dateStyle: 'short'|'medium'|'long'|'full'. Currently you cannot customize day, year, month separately for
+   * LocalDateConverter, so you cannot format partial dates with the LocalDateConverter.
+   * </p>
+   *
+   * <h5>Validators</h5>
+   * <p>
+   * Only the required validator is run for an empty field, and only if required is true. The component's other validators
+   * are no longer run when the field is empty.
+   * If you created your own validator to check that the field was filled in, it will not run if the
+   * field is empty. Set the required attribute to true instead which conforms to the Redwood UX design.
+   * </p>
+   *
+   * <h5>LabelEdge attribute</h5>
+   * <p>
+   * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
+   * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+   * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+   * attribute to the corresponding value.
+   * </p>
+   *
+   * <h5>MessagesCustom attribute</h5>
+   * <p>
+   * The type of the <code class="prettyprint">severity</code> property of the messages in the
+   * array has changed from
+   * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+   * essentially <code class="prettyprint">string | number</code>, to simply
+   * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+   * values are the same as the previously supported string values.
+   * The application can no longer specify severity as a number, including hardcoded numbers,
+   * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+   * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+   * </p>
+   *
+   * <h5>TextAlign attribute</h5>
+   * <p>
+   * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start and oj-form-control-text-align-end is now
+   * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+   * <ul>
+   * <li>
+   * .oj-form-control-text-align-right maps to 'right'
+   * </li>
+   * <li>
+   * .oj-form-control-text-align-start maps to 'start'
+   * </li>
+   * <li>
+   * .oj-form-control-text-align-end maps to 'end'
+   * </li>
+   * </ul>
+   * </p>
+   * <h5>Translations attribute</h5>
+   * <h6>Changes</h6>
+   * <ul>
+   * <li>The translations.required.message-detail attribute has changed to required-message-detail.</li>
+   * <li>The translations.date-time-range.message-detail.overflow attribute has changed to date-range-overflow-message-detail.</li>
+   * <li>The translations.date-time-range.message-detail.underflow attribute has changed to date-range-underflow-message-detail.</li>
+   * </ul>
+   * <h6>Removals</h6>
+   * <ul>
+   * <li>The translations.date-time-range.message-summary attribute is no longer supported. Redwood apps do not show a summary on the date component.</li>
+   * <li>The translations.date-time-range.hint attribute is no longer supported. Redwood apps do not show a hint on the date component.</li>
+   * <li>The translations.date-restriction attributes are no longer supported in oj-c-input-date-text because oj-c-input-date-text does not have date restrictions apis.</li>
+   * <li>The translations.accessible-max-length attributes are no longer supported because they never did anything on oj-input-date.</li>
+   * <li>The translations.regexp.messageDetail attribute is no longer supported because it never did anything on oj-input-date</li>
+   * </ul>
+   * <h5>Value attribute</h5>
+   * <h6>Clearing the field</h6>
+   * <p>
+   * Clearing the field and committing the value will now set the value attribute to <code>null</code>
+   * instead of <code>''</code>.
+   * </p>
+   * <h6>Date-only ISO string</h6>
+   * <p>
+   * In oj-input-date the value should be a date-only iso string but it was not enforced.
+   * It was coerced to a date-only iso string once the user interacted with the component.
+   * In oj-c-input-date-text the value must be a date-only iso string or the component will not render. A date-only iso string looks like "2023-04-26"; it has no time.
+   * </p>
+   * <p>
+   * If the value is not a date-only iso string, then you will need to transform it to a date-only iso string to use with oj-c-input-date-text.
+   * For example, you can use the utility method:  IntlConverterUtils.dateToLocalIsoDateString(new Date(2023, 1, 1)).
+   * </p>
+   *
+   * <h5>Refresh method</h5>
+   * <p>
+   * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+   * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+   * </p>
+   *
+   * <h5>Reset method</h5>
+   * <p>
+   * This method does not synchronously reset the component. The application should wait on the busy context of the component after
+   * invoking this method for the changes to appear.
+   * </p>
+   *
+   * <h5>ShowMessages method</h5>
+   * <p>
+   * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
+   * of the component after invoking this method for the changes to appear.
+   * </p>
+   *
+   *
+   * <h5>Animation Events</h5>
+   * <p>
+   * ojAnimateStart and ojAnimateEnd events are no longer supported.
+   * </p>
+   *
+   * <h5>Custom Label</h5>
+   * <p>
+   * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+   * label-hint attribute to add a label for the form component.
+   * </p>
+   * <p>
+   * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
+   * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+   * </p>
+   *
+   * <h5>Usage in Dynamic Form</h5>
+   * <p>
+   * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+   * </p>
+   *
+
+
  */
 // --------------------------------------------------- oj.ojInputDate Styling Start ------------------------------------------------------------
 /**
@@ -2123,7 +2316,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *
      * <p>The default options for converter vary by theme. To use different options, create a custom converter and
      * set it in this property. For example:
-     * <pre class="prettyprint"><code>inputDate.converter = new DateTimeConverter.IntlDateTimeConverter({"day":"2-digit","month":"2-digit","year":"numeric"});</code></pre>
+     * <pre class="prettyprint"><code>inputDate.converter = new DateTimeConverter.IntlDateTimeConverter({ formatType: 'date', dateFormat: 'short' });</code></pre>
      * <p>If the timezone option is provided in the converter, the Today button will highlight the current day based on the timezone specified in the converter.
      * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      * <p>
@@ -2160,6 +2353,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *                description: 'Defining a converter with an object literal with converter type and its options
      *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
      *                  work again by importing the deprecated ojvalidation-datetime module.'}
+     * @default new DateTimeConverter({ formatType: 'date', dateFormat: 'short' })
      */
     converter: undefined,
 
@@ -5107,6 +5301,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
                   (otherMonth ? ' oj-priority-secondary' : '') + // distinguish dates from other months
                   "' " +
                   (dayOverClass ? '' : "tabindex='-1' ") +
+                  (daySettings[2] ? " title='" + daySettings[2].replace(/'/g, '&#39;') + "'" : '') + // cell title
                   " href='#'>" +
                   printDate.getDate() +
                   '</a>') +
@@ -6293,6 +6488,26 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     return new IntlDateTimeConverter(options);
   },
 
+  // Call this function if you need to substitute the day, month, year, time, etc, of the date time iso
+  // string. You cannot substitute in a day or time to a zulu iso string.
+  // If the value is 'zulu', then the converter uses 'offset' isoStrFormat.
+  // Substituting the day into a zulu date might be a different day in the timezone and then the formatted
+  // date will be a different day than what the user selected. (See JET-54551)
+  // So if it is zulu we change it to offset.
+  // This is what a zulu and offset format looks like
+  // zulu: 2013-12-13T04:00:00Z
+  // offset: 2013-12-01T20:00:00-08:00
+  _parseValueToSubstituteDateOrTimePiece: function (converter, dateTimeIso) {
+    let parsedValue;
+    if (dateTimeIso && IntlConverterUtils._getISOStrFormatType(dateTimeIso) === 'zulu') {
+      const offsetConverter = this._createOffsetConverter(converter);
+      parsedValue = offsetConverter.parse(dateTimeIso);
+    } else {
+      parsedValue = converter.parse(dateTimeIso);
+    }
+    return parsedValue;
+  },
+
   /**
    * TODO: Technically i think should be used for the calendar, but later since late in release
    * @ignore
@@ -6440,12 +6655,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       // zulu: 2013-12-13T04:00:00Z
       // offset: 2013-12-01T20:00:00-08:00
       const dateIso = this.options.value ? this._getDateIso() : '';
-      if (dateIso && IntlConverterUtils._getISOStrFormatType(dateIso) === 'zulu') {
-        const offsetConverter = this._createOffsetConverter(converter);
-        this._switcherPrevValue = offsetConverter.parse(dateIso);
-      } else {
-        this._switcherPrevValue = converter.parse(dateIso);
-      }
+      this._switcherPrevValue = this._parseValueToSubstituteDateOrTimePiece(converter, dateIso);
     } else {
       this._switcherPrevValue = this._getDateIso();
     }
@@ -8434,8 +8644,8 @@ function createWheelGroup(timePickerModel) {
  *
  * @private
  */
-var _defaultOptions$1 = parseJSONFromFontFamily('oj-inputdatetime-option-defaults') || {};
-var _showPickerOnDesktop = _defaultOptions$1.showPickerOnDesktop || 'disabled';
+var _defaultOptions = parseJSONFromFontFamily('oj-inputdatetime-option-defaults') || {};
+var _showPickerOnDesktop = _defaultOptions.showPickerOnDesktop || 'disabled';
 var _sDefaultTimeConverter;
 /**
  * Helper function to split the timeIncrement into its constituents and returns the split object.
@@ -8524,13 +8734,7 @@ function _getTimePickerConverter(converter, addOpts) {
  * @ignore
  */
 function _getTimeDefaultConverter() {
-  // if user preference pattern exists for timeStyle short, use those for the default converter
-  // The user preferences, including timezone, get merged in within the IntlDateTimeConverter wrapped code.
-  const userPref = getDateTimePreferences();
-  if (userPref && userPref.timeStyle && userPref.timeStyle.short) {
-    return new IntlDateTimeConverter({ formatType: 'time', timeFormat: 'short' });
-  }
-  return new IntlDateTimeConverter({ hour: '2-digit', minute: '2-digit' });
+  return new IntlDateTimeConverter({ formatType: 'time', timeFormat: 'short' });
 }
 
 /**
@@ -8782,7 +8986,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      *                description: 'Defining a converter with an object literal with converter type and its options
      *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
      *                  work again by importing the deprecated ojvalidation-datetime module.'}
-     * @default new DateTimeConverter({"hour":"2-digit","minute":"2-digit"})
+     * @default new DateTimeConverter({ formatType: 'time', timeFormat: 'short' })
      */
     converter: undefined,
 
@@ -10363,6 +10567,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
         var isoValue = newValue;
         // check if time is an isostring and if it is not an isostring then parse it.
         try {
+          // This function will throw an error if it is not an isostring.
           converterUtils._dateTime(newValue, {
             month: date.getMonth(),
             date: date.getDate(),
@@ -11314,8 +11519,6 @@ var dateSwitcherConverter;
  */
 var timeSwitcherConverter;
 
-var _defaultOptions$2 = parseJSONFromFontFamily('oj-inputdatetime-option-defaults') || {};
-var _yearFormat$1 = _defaultOptions$2.converterYear || 'numeric';
 var _sDefaultDateTimeConverter;
 
 /**
@@ -11324,30 +11527,10 @@ var _sDefaultDateTimeConverter;
  * @ignore
  */
 function _getDateTimeDefaultConverter() {
-  // if user preferences exist, use those for the default converter
-  const userPref = getDateTimePreferences();
-  // User preference needs both dateStyle and timeStyle short set for
-  // use in the datetime component.
-  // The user preferences, including timezone, get merged in within the IntlDateTimeConverter wrapped code.
-  if (
-    userPref &&
-    userPref.dateStyle &&
-    userPref.dateStyle.short &&
-    userPref.timeStyle &&
-    userPref.timeStyle.short
-  ) {
-    return new IntlDateTimeConverter({
-      formatType: 'datetime',
-      dateFormat: 'short',
-      timeFormat: 'short'
-    });
-  }
   return new IntlDateTimeConverter({
-    day: '2-digit',
-    month: '2-digit',
-    year: _yearFormat$1,
-    hour: '2-digit',
-    minute: '2-digit'
+    formatType: 'datetime',
+    dateFormat: 'short',
+    timeFormat: 'short'
   });
 }
 
@@ -11611,7 +11794,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
 
      * <p>The default options for converter vary by theme. To use different value for options, create a custom converter and
      * set it in this property. For example:
-     * <pre class="prettyprint"><code>inputDateTime.converter = new DateTimeConverter.IntlDateTimeConverter({"day":"2-digit","month":"2-digit","year":"numeric","hour":"2-digit","minute":"2-digit"});</code></pre>
+     * <pre class="prettyprint"><code>inputDateTime.converter = new DateTimeConverter.IntlDateTimeConverter({formatType: 'datetime',dateFormat: 'short',timeFormat: 'short'});</code></pre>
      * <p>If the timezone option is provided in the converter, the Today button will highlight the current day based on the timezone specified in the converter.
     * <p>
     * The hint exposed by the converter is shown inline by default in the Redwood theme when
@@ -11647,6 +11830,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      *                description: 'Defining a converter with an object literal with converter type and its options
      *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
      *                  work again by importing the deprecated ojvalidation-datetime module.'}
+     * @default new DateTimeConverter({ formatType: 'datetime', dateFormat: 'short', timeFormat: 'short' })
      */
     converter: undefined,
 
@@ -12364,21 +12548,38 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
               ($.ui.keyCode.ENTER === keyCode || $.ui.keyCode.SPACE === keyCode)) ||
             evt.type === 'click'
           ) {
+            // All manipulation (like copying in the time the user selected)
+            // should be done in offset or local, not zulu.
+            // newVal will contain the value, but in offset or local. When it
+            // is run back through the converter in SetValue then it will be converted
+            // back into the isoStrFormat of the component's converter.
             var newVal;
+            // _switcherDateValue is the date and time that is displayed in the picker. This is
+            // a local date time with no offset or zulu. This can be manipulated to merge
+            // in a new day or a new time, no problem.
             if (self._switcherDateValue) {
               newVal = self._switcherDateValue;
             } else {
-              var formattedValue = self._GetConverter().format(self._getDateIso());
-              newVal = self._GetConverter().parse(formattedValue);
+              // dateIso could be this._switcherDateValue, this.options.value, or this._getDefaultIsoDate();
+              const dateIso = self._getDateIso();
+              const converter = self._GetConverter();
+              newVal = self._parseValueToSubstituteDateOrTimePiece(converter, dateIso);
             }
 
+            // If the user changed the time in the datetime picker, we will
+            // have a _switcherTimeValue. We want to copy this time over into the new value.
             if (self._switcherTimeValue) {
               newVal = IntlConverterUtils._copyTimeOver(self._switcherTimeValue, newVal);
             }
+            // but if we don't have a switcherTimeValue, we want to copy over the switcherPrevValue's
+            // time into the newValue.
             if (self._switcherPrevValue && newVal && !self._switcherTimeValue) {
               newVal = IntlConverterUtils._copyTimeOver(self._switcherPrevValue, newVal);
             }
 
+            // At this point we have a newVal that is what the user picked. It's in local or offset format
+            // so that the user will see the day and time they picked.
+            // SetValue will parse it to whatever isoStrFormat the converter is in.
             var formatted = self._GetConverter().format(newVal);
             self._SetDisplayValue(formatted);
             self._SetValue(formatted, {});
@@ -12787,9 +12988,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     // create a converter to format the picker text
     if (!dateSwitcherConverter) {
       dateSwitcherConverter = new IntlDateTimeConverter({
-        day: '2-digit',
-        month: '2-digit',
-        year: _yearFormat$1
+        dateStyle: 'short'
       });
     }
     var switcherText = '';
@@ -12803,8 +13002,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
       // create a converter to format the picker text
       if (!timeSwitcherConverter) {
         timeSwitcherConverter = new IntlDateTimeConverter({
-          hour: '2-digit',
-          minute: '2-digit'
+          formatType: 'time',
+          timeFormat: 'short'
         });
       }
       try {
@@ -12903,12 +13102,14 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
    */
   timeSelected: function (newValue, event) {
     // TEMP TILL FIXED pass in formatted for _SetValue (should be newValue)
+    const converter = this._GetConverter();
     if (!this._dateTimeSwitcherActive) {
-      var formatted = this._GetConverter().format(newValue);
+      var formatted = converter.format(newValue);
       this._SetDisplayValue(formatted);
       this._SetValue(formatted, event);
     } else {
-      this._switcherTimeValue = newValue;
+      // switcherTimeValue will be in offset or local, but not zulu. It is the time that the user picked.
+      this._switcherTimeValue = this._parseValueToSubstituteDateOrTimePiece(converter, newValue);
     }
   },
 

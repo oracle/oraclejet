@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocaledata', 'ojs/ojconverter-nativedatetime', 'ojs/ojconfig', 'ojs/ojcore-base', 'ojs/ojavailabletimezones'], function (exports, __ConverterUtilsI18n, Converter, LocaleData, ojconverterNativedatetime, ojconfig, oj$1, ojavailabletimezones) { 'use strict';
+define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocaledata', 'ojs/ojconverter-nativedatetime', 'ojs/ojconfig', 'ojs/ojcore-base', 'ojs/ojconverter-preferences', 'ojs/ojavailabletimezones', 'ojs/ojconverter-datetimeerror'], function (exports, __ConverterUtilsI18n, Converter, LocaleData, ojconverterNativedatetime, ojconfig, oj$1, ojconverterPreferences, ojavailabletimezones, ojconverterDatetimeerror) { 'use strict';
 
   Converter = Converter && Object.prototype.hasOwnProperty.call(Converter, 'default') ? Converter['default'] : Converter;
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
@@ -733,6 +733,8 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     };
   })();
 
+  const IntlConverterUtils = __ConverterUtilsI18n.IntlConverterUtils;
+
   /**
    * @export
    * Placeholder here as closure compiler objects to export annotation outside of top level
@@ -801,7 +803,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    * @example <caption>Create a date time converter using new IntlDateTimeConverter with no options.
    * This uses the default value for year, month, day properties</caption>
    * converter = new IntlDateTimeConverter();
-   * var resolved = converter.resolvedOpions();
+   * var resolved = converter.resolvedOptions();
    * // logs "day=numeric, month=numeric, year=numeric"
    * console.log("day=" + resolved.day + ", month=" + resolved.month + ", year=" + resolved.year);
    * <br/>
@@ -851,12 +853,15 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     // e.g., dateFormat is mapped to dateStyle (but we keep dateFormat too for bw compatibility)
     let mappedOptions = options ? IntlDateTimeConverter.mapOptions(options) : null;
 
-    // Next we merge in User Preferences pattern and timezone, if any.
-    // Options passed into the converter's constructor takes precedence.
-    const mo = ojconverterNativedatetime.DateTimePreferencesUtils.getPreferencesMergedWithConverterOptions(mappedOptions);
+    // getMergedDateTimePreferencesWithOptions merges DateTimePreferences with the options, giving precedence to options.
+    // The DateTimePreferences has dateStyle.short.year or a pattern. If it has dateStyle.short.year: 'numeric'|'2-digit', this means
+    // when dateStyle:'short', merge in the year in this format. To do this, it passes in
+    // the dateStyleShortYear option to the NativeDateTimeConverter.
+    const mo = ojconverterPreferences.getMergedDateTimePreferencesWithOptions(mappedOptions);
 
-    const defaultOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
+    // if no options, then use the default options.
     const optionsAreEmpty = Object.keys(mo).length === 0;
+    const defaultOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
     const newOptions = optionsAreEmpty ? defaultOptions : mo;
     this.Init(newOptions);
   };
@@ -1402,7 +1407,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    *     <tr>
    *       <td>VV</td>
    *       <td>Time zone ID</td>
-   *       <td>Americs/Los_Angeles</td>
+   *       <td>America/Los_Angeles</td>
    *     </tr>
    *   </tbody>
    * </table>
@@ -1507,10 +1512,10 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    * </table>
    * </p>
    *
-   *  @property {('full'|'none')=} lenientParse - The lenientParse property can be used to enable or disable leninet parsing.
+   *  @property {('full'|'none')=} lenientParse - The lenientParse property can be used to enable or disable lenient parsing.
    *  Allowed values: "full" (default), "none".
    * <p style='padding-left: 5px;'>
-   * By default the lenient parse is enabled and the leniency rules descibed above will be used. When lenientParse is
+   * By default the lenient parse is enabled and the leniency rules described above will be used. When lenientParse is
    * set to "none" the lenient parse is disabled and the user input must match the expected input otherwise an exception will
    * be thrown.</p>
    */
@@ -1543,10 +1548,13 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
 
   IntlDateTimeConverter.prototype._initConverter = function () {
     var thisOptions = this.getOptions();
-    // Always set numbering system to lain because IntlDateTimeConverter did not
+    // Always set numbering system to latn because IntlDateTimeConverter did not
     // support other numbering systems. Also the only supported calendar was gregory
     thisOptions.numberingSystem = 'latn';
     thisOptions.calendar = 'gregory';
+    // pattern is deprecated as a constructor option but still available to use.
+    // And pattern could be from the preferences and that is supported.
+    // See DateTimePreferencesUtils for more info.
     if (thisOptions.pattern) {
       this._wrapped = new ojconverterNativedatetime.NativeDateTimePatternConverter(thisOptions);
     } else {
@@ -1591,7 +1599,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     ) {
       return '';
     }
-    // for backward compatibiliity
+    // for backward compatibility
     // format should only take an iso string, but in previous versions it allowed
     // new Date() or Date.now().
     let valToFormat = value;
@@ -1602,7 +1610,12 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     } else {
       return null;
     }
-    return this._getWrapped().format(valToFormat);
+    try {
+      return this._getWrapped().format(valToFormat);
+    } catch (e) {
+      var converterError = this._processConverterError(e);
+      throw converterError;
+    }
   };
 
   /**
@@ -2011,7 +2024,14 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
         return value;
       }
     }
-    var isoStr = this._getWrapped().parse(value);
+    var isoStr;
+    try {
+      isoStr = this._getWrapped().parse(value);
+    } catch (e) {
+      var converterError = this._processConverterError(e);
+      throw converterError;
+    }
+
     timePart = isoStr.substring(isoStr.indexOf('T'));
     var isLocalValue =
       timePart.indexOf('Z') === -1 && timePart.indexOf('+') === -1 && timePart.indexOf('-') === -1;
@@ -2038,7 +2058,7 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
   IntlDateTimeConverter.prototype.compareISODates = function (isoStr1, isoStr2) {
     // If I get TIME ONLY I need to add a date to it so that I can use the javascript Date constructor.
     // You can't pass TIME ONLY to new Date. I chose today, local time, because that is what
-    // the converter's compareISODates method did (we are deprecating it), andd the less
+    // the converter's compareISODates method did (we are deprecating it), and the less
     // behavior change, the better.
     const today = new Date();
     const month = today.getMonth() + 1;
@@ -2071,6 +2091,17 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     const dateMin = new Date(isoString1);
     const dateValue = new Date(isoString2);
     return dateMin.getTime() - dateValue.getTime();
+  };
+
+  /**
+   * Processes the error returned by format or parse and returns a new oj.ConverterError.
+   * @param {Error} e the error to process.
+   * @returns an instance of oj.ConverterError.
+   * @private
+   */
+  IntlDateTimeConverter.prototype._processConverterError = function (e) {
+    const { summary, detail } = ojconverterDatetimeerror._processConverterError(e, this.format.bind(this), 'datetime');
+    return IntlConverterUtils.__getConverterError(summary, detail);
   };
 
   /**

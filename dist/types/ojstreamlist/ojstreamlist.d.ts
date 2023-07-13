@@ -2,11 +2,11 @@ import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetP
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
 import { Component } from 'preact';
-import { ExtendGlobalProps, PropertyChanged, ObservedGlobalProps, TemplateSlot } from 'ojs/ojvcomponent';
+import { ExtendGlobalProps, ObservedGlobalProps, PropertyChanged, TemplateSlot } from 'ojs/ojvcomponent';
 import { KeySet, KeySetImpl } from 'ojs/ojkeyset';
 import { DataProvider } from 'ojs/ojdataprovider';
 import 'ojs/ojtreedataprovider';
-declare type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'aria-labelledby'> & {
+type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'aria-labelledby'> & {
     data?: DataProvider<Key, Data> | null;
     expanded?: KeySet<Key>;
     onExpandedChanged?: PropertyChanged<KeySet<Key> | null>;
@@ -26,8 +26,8 @@ declare type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'aria-labelle
         parentKey?: Key;
     }>;
 };
-declare type QuerySelector = keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
-declare type State<K> = {
+type QuerySelector = keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
+type State<K> = {
     renderedData: any;
     outOfRangeData: any;
     initialSkeleton: boolean;
@@ -38,7 +38,7 @@ declare type State<K> = {
     toCollapse: Array<K>;
     lastExpanded: KeySet<K>;
 };
-declare type ScrollPositionType<Key> = {
+type ScrollPositionType<Key> = {
     y?: number;
     key?: Key;
     offsetY?: number;

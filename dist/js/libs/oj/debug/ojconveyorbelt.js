@@ -2836,6 +2836,10 @@ var __oj_conveyor_belt_metadata =
        * myConveyorBelt.scrollElementIntoView(element);
        */
       scrollElementIntoView: function (element) {
+        if (!this._cbCommon) {
+          // JET-56499 - ignore this method call until conveyor has been initialized
+          return;
+        }
         var currentScroll = this._cbCommon.getScroll();
         var currentViewportSize = this._cbCommon._getCurrViewportSize();
 

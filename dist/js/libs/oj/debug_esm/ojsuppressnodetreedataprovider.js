@@ -220,8 +220,7 @@ class SuppressNodeTreeDataProvider {
                 return this._baseIterator.next();
             }
             ['next']() {
-                var _b;
-                const signal = (_b = this._params) === null || _b === void 0 ? void 0 : _b.signal;
+                const signal = this._params?.signal;
                 if (signal && signal.aborted) {
                     const reason = signal.reason;
                     return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -301,7 +300,7 @@ class SuppressNodeTreeDataProvider {
         return new this.SuppressNodeTreeAsyncIterable(this, asyncIterable[Symbol.asyncIterator]());
     }
     fetchByOffset(params) {
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -319,7 +318,7 @@ class SuppressNodeTreeDataProvider {
         });
     }
     fetchByKeys(params) {
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));

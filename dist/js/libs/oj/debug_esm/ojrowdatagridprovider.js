@@ -10,18 +10,8 @@ import { DataGridProviderRefreshEvent, DataGridProviderRemoveEvent, DataGridProv
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 import { getAddEventKeysResult } from 'ojs/ojdatacollection-common';
 
-var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 class RowDataGridProvider {
     constructor(dataProvider, options) {
-        var _a;
         this.dataProvider = dataProvider;
         this.options = options;
         this.version = 0;
@@ -77,103 +67,100 @@ class RowDataGridProvider {
                 this.next = next;
             }
         };
-        this.sortable = options === null || options === void 0 ? void 0 : options.sortable;
+        this.sortable = options?.sortable;
         this.sortCriteria = null;
         this.supportsFilteredRowCount =
-            ((_a = dataProvider.getCapability('fetchFirst')) === null || _a === void 0 ? void 0 : _a.totalFilteredRowCount) === 'exact';
-        if (options === null || options === void 0 ? void 0 : options.expandedObservable) {
-            const expandedObservable = options === null || options === void 0 ? void 0 : options.expandedObservable.subscribe((value) => {
+            dataProvider.getCapability('fetchFirst')?.totalFilteredRowCount === 'exact';
+        if (options?.expandedObservable) {
+            const expandedObservable = options?.expandedObservable.subscribe((value) => {
                 this.expandedState = value.value;
             });
         }
         dataProvider.addEventListener('mutate', this._handleUnderlyingMutation.bind(this));
         dataProvider.addEventListener('refresh', this._handleUnderlyingRefresh.bind(this));
     }
-    fetchByOffset(parameters) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            const rowOffset = parameters.rowOffset;
-            let rowCount = parameters.rowCount;
-            let fetchResult = { results: [], done: false, fetchParameters: null };
-            if (rowCount != 0) {
-                fetchResult = yield this.dataProvider.fetchByOffset({ offset: rowOffset, size: rowCount });
-            }
-            let totalSize = -1;
-            let sameFetchParameters = this.isSameFetchParameters(fetchResult.fetchParameters);
-            if (!sameFetchParameters || this.totalRowCount == null) {
-                if (this.supportsFilteredRowCount) {
-                    let fetchFirstResult = yield this.dataProvider
-                        .fetchFirst({ size: 1, includeFilteredRowCount: 'enabled' })[Symbol.asyncIterator]()
-                        .next();
-                    if (fetchFirstResult.value.totalFilteredRowCount != null) {
-                        totalSize = fetchFirstResult.value.totalFilteredRowCount;
-                    }
+    async fetchByOffset(parameters) {
+        const rowOffset = parameters.rowOffset;
+        let rowCount = parameters.rowCount;
+        let fetchResult = { results: [], done: false, fetchParameters: null };
+        if (rowCount != 0) {
+            fetchResult = await this.dataProvider.fetchByOffset({ offset: rowOffset, size: rowCount });
+        }
+        let totalSize = -1;
+        let sameFetchParameters = this.isSameFetchParameters(fetchResult.fetchParameters);
+        if (!sameFetchParameters || this.totalRowCount == null) {
+            if (this.supportsFilteredRowCount) {
+                let fetchFirstResult = await this.dataProvider
+                    .fetchFirst({ size: 1, includeFilteredRowCount: 'enabled' })[Symbol.asyncIterator]()
+                    .next();
+                if (fetchFirstResult.value.totalFilteredRowCount != null) {
+                    totalSize = fetchFirstResult.value.totalFilteredRowCount;
                 }
-                else if (this.isUnfiltered(fetchResult.fetchParameters)) {
-                    totalSize = yield this.dataProvider.getTotalSize();
-                }
-                this.totalRowCount = totalSize;
             }
-            this.updateKeyCache(fetchResult, rowOffset);
-            this.setupLayout(fetchResult.results);
-            this.sortCriteria = (_a = fetchResult.fetchParameters) === null || _a === void 0 ? void 0 : _a.sortCriteria;
-            const columnOffset = parameters.columnOffset;
-            const columnDone = columnOffset + parameters.columnCount >= this.columns.databody.length;
-            const columnCount = Math.max(Math.min(parameters.columnCount, this.columns.databody.length - columnOffset), 0);
-            rowCount = Math.min(parameters.rowCount, fetchResult.results.length);
-            const rowDone = fetchResult.done;
-            this.lastRowKeyCached = fetchResult.done;
-            const version = this.version;
-            const requestSet = parameters.fetchRegions;
-            const isAll = requestSet == null || requestSet.has('all');
-            const requestDatabody = isAll || (requestSet === null || requestSet === void 0 ? void 0 : requestSet.has('databody'));
-            const requestRowHeader = isAll || (requestSet === null || requestSet === void 0 ? void 0 : requestSet.has('rowHeader'));
-            const requestColumnHeader = isAll || (requestSet === null || requestSet === void 0 ? void 0 : requestSet.has('columnHeader'));
-            const requestRowEndHeader = isAll || (requestSet === null || requestSet === void 0 ? void 0 : requestSet.has('rowEndHeader'));
-            const requestColumnEndHeader = isAll || (requestSet === null || requestSet === void 0 ? void 0 : requestSet.has('columnEndHeader'));
-            const requestRowHeaderLabel = isAll || (requestSet === null || requestSet === void 0 ? void 0 : requestSet.has('rowHeaderLabel'));
-            const requestColumnHeaderLabel = isAll || (requestSet === null || requestSet === void 0 ? void 0 : requestSet.has('columnHeaderLabel'));
-            const requestRowEndHeaderLabel = isAll || (requestSet === null || requestSet === void 0 ? void 0 : requestSet.has('rowEndHeaderLabel'));
-            const requestColumnEndHeaderLabel = isAll || (requestSet === null || requestSet === void 0 ? void 0 : requestSet.has('columnEndHeaderLabel'));
-            const databody = requestDatabody
-                ? this.getDatabodyResults(fetchResult.results, rowOffset, rowCount, columnOffset, columnCount)
-                : undefined;
-            const rowHeader = requestRowHeader
-                ? this.getRowHeaderResults('rowHeader', fetchResult.results, rowOffset, rowCount)
-                : undefined;
-            const rowEndHeader = requestRowEndHeader
-                ? this.getRowHeaderResults('rowEndHeader', fetchResult.results, rowOffset, rowCount)
-                : undefined;
-            const columnHeader = requestColumnHeader
-                ? this.getColumnHeaderResults('column', columnOffset, columnCount)
-                : undefined;
-            const columnEndHeader = requestColumnEndHeader
-                ? this.getColumnHeaderResults('columnEnd', columnOffset, columnCount)
-                : undefined;
-            const rowHeaderLabel = requestRowHeaderLabel ? this.getRowHeaderLabelResults() : undefined;
-            const rowEndHeaderLabel = requestRowEndHeaderLabel
-                ? this.getRowEndHeaderLabelResults()
-                : undefined;
-            const columnHeaderLabel = requestColumnHeaderLabel
-                ? this.getColumnHeaderLabelResults('column')
-                : undefined;
-            const columnEndHeaderLabel = requestColumnEndHeaderLabel
-                ? this.getColumnHeaderLabelResults('columnEnd')
-                : undefined;
-            const next = null;
-            const results = {
-                databody: databody,
-                columnHeader: columnHeader,
-                columnHeaderLabel: columnHeaderLabel,
-                columnEndHeader: columnEndHeader,
-                columnEndHeaderLabel: columnEndHeaderLabel,
-                rowHeader: rowHeader,
-                rowHeaderLabel: rowHeaderLabel,
-                rowEndHeader: rowEndHeader,
-                rowEndHeaderLabel: rowEndHeaderLabel
-            };
-            return new this.FetchByOffsetGridResults(parameters, rowDone, columnDone, rowOffset, columnOffset, rowCount, columnCount, this.totalRowCount, this.columns.databody.length, results, version, next);
-        });
+            else if (this.isUnfiltered(fetchResult.fetchParameters)) {
+                totalSize = await this.dataProvider.getTotalSize();
+            }
+            this.totalRowCount = totalSize;
+        }
+        this.updateKeyCache(fetchResult, rowOffset);
+        this.setupLayout(fetchResult.results);
+        this.sortCriteria = fetchResult.fetchParameters?.sortCriteria;
+        const columnOffset = parameters.columnOffset;
+        const columnDone = columnOffset + parameters.columnCount >= this.columns.databody.length;
+        const columnCount = Math.max(Math.min(parameters.columnCount, this.columns.databody.length - columnOffset), 0);
+        rowCount = Math.min(parameters.rowCount, fetchResult.results.length);
+        const rowDone = fetchResult.done;
+        this.lastRowKeyCached = fetchResult.done;
+        const version = this.version;
+        const requestSet = parameters.fetchRegions;
+        const isAll = requestSet == null || requestSet.has('all');
+        const requestDatabody = isAll || requestSet?.has('databody');
+        const requestRowHeader = isAll || requestSet?.has('rowHeader');
+        const requestColumnHeader = isAll || requestSet?.has('columnHeader');
+        const requestRowEndHeader = isAll || requestSet?.has('rowEndHeader');
+        const requestColumnEndHeader = isAll || requestSet?.has('columnEndHeader');
+        const requestRowHeaderLabel = isAll || requestSet?.has('rowHeaderLabel');
+        const requestColumnHeaderLabel = isAll || requestSet?.has('columnHeaderLabel');
+        const requestRowEndHeaderLabel = isAll || requestSet?.has('rowEndHeaderLabel');
+        const requestColumnEndHeaderLabel = isAll || requestSet?.has('columnEndHeaderLabel');
+        const databody = requestDatabody
+            ? this.getDatabodyResults(fetchResult.results, rowOffset, rowCount, columnOffset, columnCount)
+            : undefined;
+        const rowHeader = requestRowHeader
+            ? this.getRowHeaderResults('rowHeader', fetchResult.results, rowOffset, rowCount)
+            : undefined;
+        const rowEndHeader = requestRowEndHeader
+            ? this.getRowHeaderResults('rowEndHeader', fetchResult.results, rowOffset, rowCount)
+            : undefined;
+        const columnHeader = requestColumnHeader
+            ? this.getColumnHeaderResults('column', columnOffset, columnCount)
+            : undefined;
+        const columnEndHeader = requestColumnEndHeader
+            ? this.getColumnHeaderResults('columnEnd', columnOffset, columnCount)
+            : undefined;
+        const rowHeaderLabel = requestRowHeaderLabel ? this.getRowHeaderLabelResults() : undefined;
+        const rowEndHeaderLabel = requestRowEndHeaderLabel
+            ? this.getRowEndHeaderLabelResults()
+            : undefined;
+        const columnHeaderLabel = requestColumnHeaderLabel
+            ? this.getColumnHeaderLabelResults('column')
+            : undefined;
+        const columnEndHeaderLabel = requestColumnEndHeaderLabel
+            ? this.getColumnHeaderLabelResults('columnEnd')
+            : undefined;
+        const next = null;
+        const results = {
+            databody: databody,
+            columnHeader: columnHeader,
+            columnHeaderLabel: columnHeaderLabel,
+            columnEndHeader: columnEndHeader,
+            columnEndHeaderLabel: columnEndHeaderLabel,
+            rowHeader: rowHeader,
+            rowHeaderLabel: rowHeaderLabel,
+            rowEndHeader: rowEndHeader,
+            rowEndHeaderLabel: rowEndHeaderLabel
+        };
+        return new this.FetchByOffsetGridResults(parameters, rowDone, columnDone, rowOffset, columnOffset, rowCount, columnCount, this.totalRowCount, this.columns.databody.length, results, version, next);
     }
     updateKeyCache(fetchResult, rowOffset) {
         let fetchParameters = fetchResult.fetchParameters;
@@ -198,11 +185,10 @@ class RowDataGridProvider {
         return false;
     }
     isSameFetchParameters(fetchParameters) {
-        var _a, _b;
-        let sortCriterion = fetchParameters === null || fetchParameters === void 0 ? void 0 : fetchParameters.sortCriteria;
-        let filterCriterion = fetchParameters === null || fetchParameters === void 0 ? void 0 : fetchParameters.filterCriterion;
-        let currentSortCriterion = (_a = this.currentFetchParameters) === null || _a === void 0 ? void 0 : _a.sortCriteria;
-        let currentFilterCriterion = (_b = this.currentFetchParameters) === null || _b === void 0 ? void 0 : _b.filterCriterion;
+        let sortCriterion = fetchParameters?.sortCriteria;
+        let filterCriterion = fetchParameters?.filterCriterion;
+        let currentSortCriterion = this.currentFetchParameters?.sortCriteria;
+        let currentFilterCriterion = this.currentFetchParameters?.filterCriterion;
         if (!oj.Object.compareValues(sortCriterion, currentSortCriterion)) {
             return false;
         }
@@ -220,13 +206,12 @@ class RowDataGridProvider {
         this.setupHeaderLabels();
     }
     setupColumns(results) {
-        var _a, _b, _c, _d, _e, _f;
         if (this.columns == null) {
             this.columns = {};
             const firstResult = results[0];
-            this.columns.rowHeader = this.getFromOptions((_b = (_a = this.options) === null || _a === void 0 ? void 0 : _a.columns) === null || _b === void 0 ? void 0 : _b.rowHeader, firstResult);
-            this.columns.rowEndHeader = this.getFromOptions((_d = (_c = this.options) === null || _c === void 0 ? void 0 : _c.columns) === null || _d === void 0 ? void 0 : _d.rowEndHeader, firstResult);
-            if ((_f = (_e = this.options) === null || _e === void 0 ? void 0 : _e.columns) === null || _f === void 0 ? void 0 : _f.databody) {
+            this.columns.rowHeader = this.getFromOptions(this.options?.columns?.rowHeader, firstResult);
+            this.columns.rowEndHeader = this.getFromOptions(this.options?.columns?.rowEndHeader, firstResult);
+            if (this.options?.columns?.databody) {
                 let databody = this.options.columns.databody;
                 if (typeof databody === 'function') {
                     this.columns.databody = databody(firstResult);
@@ -240,36 +225,34 @@ class RowDataGridProvider {
             }
             else {
                 const dataKeys = Object.keys(firstResult.data);
-                this.columns.databody = dataKeys.filter((key) => { var _a, _b; return !((_a = this.columns.rowHeader) === null || _a === void 0 ? void 0 : _a.includes(key)) && !((_b = this.columns.rowEndHeader) === null || _b === void 0 ? void 0 : _b.includes(key)); });
+                this.columns.databody = dataKeys.filter((key) => !this.columns.rowHeader?.includes(key) && !this.columns.rowEndHeader?.includes(key));
             }
         }
     }
     setupColumnHeaders() {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
         if (this.columnHeaders == null) {
             this.columnHeaders = {};
-            const unparsedColumnHeaders = this.getFromOptions((_b = (_a = this.options) === null || _a === void 0 ? void 0 : _a.columnHeaders) === null || _b === void 0 ? void 0 : _b.column, (_c = this.columns) === null || _c === void 0 ? void 0 : _c.databody, (_d = this.columns) === null || _d === void 0 ? void 0 : _d.databody, (data) => {
+            const unparsedColumnHeaders = this.getFromOptions(this.options?.columnHeaders?.column, this.columns?.databody, this.columns?.databody, (data) => {
                 return { data };
             });
             this.columnHeaders.column = this.parseNestedHeaders(unparsedColumnHeaders);
-            const unparsedColumnEndHeaders = this.getFromOptions((_f = (_e = this.options) === null || _e === void 0 ? void 0 : _e.columnHeaders) === null || _f === void 0 ? void 0 : _f.columnEnd, (_g = this.columns) === null || _g === void 0 ? void 0 : _g.databody, (_h = this.columns) === null || _h === void 0 ? void 0 : _h.databody, (data) => {
+            const unparsedColumnEndHeaders = this.getFromOptions(this.options?.columnHeaders?.columnEnd, this.columns?.databody, this.columns?.databody, (data) => {
                 return { data };
             });
             this.columnHeaders.columnEnd = this.parseNestedHeaders(unparsedColumnEndHeaders);
         }
     }
     setupHeaderLabels() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
         if (this.headerLabels == null) {
             this.headerLabels = {};
-            this.headerLabels.row = this.getFromOptions((_b = (_a = this.options) === null || _a === void 0 ? void 0 : _a.headerLabels) === null || _b === void 0 ? void 0 : _b.row, (_c = this.columns) === null || _c === void 0 ? void 0 : _c.rowHeader, (_d = this.columns) === null || _d === void 0 ? void 0 : _d.rowHeader, (data) => {
+            this.headerLabels.row = this.getFromOptions(this.options?.headerLabels?.row, this.columns?.rowHeader, this.columns?.rowHeader, (data) => {
                 return data;
             });
-            this.headerLabels.rowEnd = this.getFromOptions((_f = (_e = this.options) === null || _e === void 0 ? void 0 : _e.headerLabels) === null || _f === void 0 ? void 0 : _f.rowEnd, (_g = this.columns) === null || _g === void 0 ? void 0 : _g.rowEndHeader, (_h = this.columns) === null || _h === void 0 ? void 0 : _h.rowEndHeader, (data) => {
+            this.headerLabels.rowEnd = this.getFromOptions(this.options?.headerLabels?.rowEnd, this.columns?.rowEndHeader, this.columns?.rowEndHeader, (data) => {
                 return data;
             });
-            this.headerLabels.column = this.getFromOptions((_k = (_j = this.options) === null || _j === void 0 ? void 0 : _j.headerLabels) === null || _k === void 0 ? void 0 : _k.column, (_m = (_l = this.columnHeaders) === null || _l === void 0 ? void 0 : _l.column) === null || _m === void 0 ? void 0 : _m.headerArray);
-            this.headerLabels.columnEnd = this.getFromOptions((_p = (_o = this.options) === null || _o === void 0 ? void 0 : _o.headerLabels) === null || _p === void 0 ? void 0 : _p.columnEnd, (_r = (_q = this.columnHeaders) === null || _q === void 0 ? void 0 : _q.columnEnd) === null || _r === void 0 ? void 0 : _r.headerArray);
+            this.headerLabels.column = this.getFromOptions(this.options?.headerLabels?.column, this.columnHeaders?.column?.headerArray);
+            this.headerLabels.columnEnd = this.getFromOptions(this.options?.headerLabels?.columnEnd, this.columnHeaders?.columnEnd?.headerArray);
         }
     }
     getFromOptions(option, callbackParams, mapFrom, mapFromFunction) {
@@ -333,7 +316,7 @@ class RowDataGridProvider {
         this.dataProvider = dataProvider;
     }
     getDatabodyResults(data, rowStart, rowCount, columnStart, columnCount) {
-        if ((data === null || data === void 0 ? void 0 : data.length) > 0) {
+        if (data?.length > 0) {
             const databody = [];
             for (let i = 0; i < rowCount; i++) {
                 const rowItem = data[i];
@@ -350,7 +333,7 @@ class RowDataGridProvider {
     }
     getRowHeaderResults(axis, data, offset, count) {
         const keys = this.columns[axis];
-        if ((data === null || data === void 0 ? void 0 : data.length) > 0 && (keys === null || keys === void 0 ? void 0 : keys.length) > 0) {
+        if (data?.length > 0 && keys?.length > 0) {
             const headers = [];
             for (let j = keys.length - 1; j >= 0; j--) {
                 const headerField = keys[j];
@@ -382,15 +365,14 @@ class RowDataGridProvider {
         return 'unsorted';
     }
     getColumnHeaderResults(axis, offset, count) {
-        var _a, _b;
-        if ((_a = this.columnHeaders) === null || _a === void 0 ? void 0 : _a[axis]) {
+        if (this.columnHeaders?.[axis]) {
             const headers = [];
             const tempArray = [];
             const levelCount = this.columnHeaders[axis].levelCount;
             for (let i = 0; i < count; i++) {
                 const index = offset + i;
                 for (let level = 0; level < levelCount; level++) {
-                    if ((_b = tempArray[index]) === null || _b === void 0 ? void 0 : _b[level]) {
+                    if (tempArray[index]?.[level]) {
                         continue;
                     }
                     const columnHeader = this.getColumnHeaderItem(index, level, this.columnHeaders[axis].headerArray);
@@ -437,12 +419,11 @@ class RowDataGridProvider {
         });
     }
     getRowHeaderLabelResults() {
-        var _a, _b;
         let iterArray;
-        if (((_a = this.headerLabels) === null || _a === void 0 ? void 0 : _a.row) === 'attributeName') {
+        if (this.headerLabels?.row === 'attributeName') {
             iterArray = this.columns.rowHeader;
         }
-        else if ((_b = this.headerLabels) === null || _b === void 0 ? void 0 : _b.row) {
+        else if (this.headerLabels?.row) {
             iterArray = this.headerLabels.row;
         }
         if (iterArray) {
@@ -454,12 +435,11 @@ class RowDataGridProvider {
         }
     }
     getRowEndHeaderLabelResults() {
-        var _a, _b;
         let iterArray;
-        if (((_a = this.headerLabels) === null || _a === void 0 ? void 0 : _a.rowEnd) === 'attributeName') {
+        if (this.headerLabels?.rowEnd === 'attributeName') {
             iterArray = this.columns.rowEndHeader;
         }
-        else if ((_b = this.headerLabels) === null || _b === void 0 ? void 0 : _b.rowEnd) {
+        else if (this.headerLabels?.rowEnd) {
             iterArray = this.headerLabels.rowEnd;
         }
         if (iterArray) {
@@ -471,8 +451,7 @@ class RowDataGridProvider {
         }
     }
     getColumnHeaderLabelResults(axis) {
-        var _a;
-        if ((_a = this.headerLabels) === null || _a === void 0 ? void 0 : _a[axis]) {
+        if (this.headerLabels?.[axis]) {
             let returnVal = [];
             for (let i = this.headerLabels[axis].length - 1; i >= 0; i--) {
                 returnVal.push(new this.GridItem({}, { data: this.headerLabels[axis][i] }));
@@ -493,10 +472,15 @@ class RowDataGridProvider {
         if (detail.remove && detail.remove.keys.size > 0) {
             [needsRefresh, removeEventDetail, removeItems] = this._convertEventDetail(detail.remove, 'remove', isSparse);
         }
-        removeItems === null || removeItems === void 0 ? void 0 : removeItems.sort((a, b) => {
+        removeItems
+            ?.sort((a, b) => {
             return b.index - a.index;
-        }).forEach((item) => {
+        })
+            .forEach((item) => {
             this.keyCache.splice(item.index, 1);
+            if (this.totalRowCount !== -1) {
+                this.totalRowCount -= 1;
+            }
         });
         if (!needsRefresh && detail.add && detail.add.keys.size > 0) {
             let finalKeys = getAddEventKeysResult(this.keyCache, detail.add, allLoaded);
@@ -505,7 +489,18 @@ class RowDataGridProvider {
                 let ranges = [];
                 detail.add.keys.forEach((key) => {
                     let index = finalKeys.indexOf(key);
-                    ranges.push({ offset: index, count: 1 });
+                    let range = ranges.find((r) => {
+                        return index === r.offset + r.count;
+                    });
+                    if (range) {
+                        range.count += 1;
+                    }
+                    else {
+                        ranges.push({ offset: index, count: 1 });
+                    }
+                    if (this.totalRowCount !== -1) {
+                        this.totalRowCount += 1;
+                    }
                 });
                 addEventDetail = { axis: 'row', ranges, version: this.version };
                 this.keyCache = finalKeys;
@@ -535,8 +530,7 @@ class RowDataGridProvider {
         let needsRefresh = false;
         let indexInArrays = 0;
         detail.keys.forEach((key) => {
-            var _a;
-            let givenIndex = (_a = detail.indexes) === null || _a === void 0 ? void 0 : _a[indexInArrays];
+            let givenIndex = detail.indexes?.[indexInArrays];
             let keyCacheIndex = this.keyCache.indexOf(key);
             if (keyCacheIndex != -1) {
                 itemsToModify.push({ index: keyCacheIndex, key: key });
@@ -573,8 +567,27 @@ class RowDataGridProvider {
     }
     _handleUnderlyingRefresh(event) {
         this.version++;
-        this.resetInternal();
-        this.dispatchEvent(new DataGridProviderRefreshEvent());
+        let isSparse = this.isKeyCacheSparse();
+        let fullRefresh = true;
+        let detail;
+        if (event?.detail?.disregardAfterKey != null) {
+            const keyCacheIndex = this.keyCache.indexOf(event.detail.disregardAfterKey);
+            if (keyCacheIndex !== -1) {
+                detail = { disregardAfterRowOffset: keyCacheIndex };
+                this.keyCache.length = keyCacheIndex + 1;
+                this.totalRowCount = this.totalRowCount === -1 ? -1 : keyCacheIndex + 1;
+                this.lastRowKeyCached = false;
+                fullRefresh = false;
+            }
+            else if (!isSparse) {
+                return;
+            }
+        }
+        if (fullRefresh) {
+            this.resetInternal();
+        }
+        const refreshEvent = new DataGridProviderRefreshEvent(detail);
+        this.dispatchEvent(refreshEvent);
     }
     resetInternal() {
         this._clearKeyCache();

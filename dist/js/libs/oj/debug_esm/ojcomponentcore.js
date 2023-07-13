@@ -2090,6 +2090,8 @@ function _applyHideShowToComponents(subtreeRoot, jqCallback, activateDefer) {
     return true; // Didn't find document, so it must be detached and therefore hidden.
   }
 
+  const deferTag = 'oj-defer';
+
   /**
    * Both node lists must be in document order.
    * Return new array containing nodes in 'allNodes' that are not in 'hiddenNodes'
@@ -2127,7 +2129,7 @@ function _applyHideShowToComponents(subtreeRoot, jqCallback, activateDefer) {
       }
     }
 
-    if (activateDefer && element.tagName.toLowerCase() === 'oj-defer') {
+    if (activateDefer && element.tagName.toLowerCase() === deferTag) {
       if (element._activate) {
         element._activate();
       } else {
@@ -2140,17 +2142,23 @@ function _applyHideShowToComponents(subtreeRoot, jqCallback, activateDefer) {
     processFunc(subtreeRoot);
 
     // Create selectors for jquery components and oj-defer as needed.
-    var selectors = ['.' + _OJ_COMPONENT_NODE_CLASS];
+    var selectors = [`.${_OJ_COMPONENT_NODE_CLASS}`];
 
     if (activateDefer) {
-      selectors.push('oj-defer');
+      selectors.push(deferTag);
     }
 
     var hiddenSelectors = [];
     selectors.forEach(function (s) {
-      hiddenSelectors.push('.' + _OJ_SUBTREE_HIDDEN_CLASS + ' ' + s);
-      hiddenSelectors.push('.' + _OJ_PENDING_SUBTREE_HIDDEN_CLASS + ' ' + s);
+      hiddenSelectors.push(`.${_OJ_SUBTREE_HIDDEN_CLASS} ${s}`);
+      hiddenSelectors.push(`.${_OJ_PENDING_SUBTREE_HIDDEN_CLASS} ${s}`);
     });
+
+    if (activateDefer) {
+      // treat oj-defer nodes with the _OJ_SUBTREE_HIDDEN_CLASS class on them
+      // the same way as the oj-defer nodes contained by an element with that class
+      hiddenSelectors.push(`${deferTag}.${_OJ_SUBTREE_HIDDEN_CLASS}`);
+    }
 
     // Create assemble a selector that gets all matches and the subset that are hidden
     var selector = selectors.join(',');

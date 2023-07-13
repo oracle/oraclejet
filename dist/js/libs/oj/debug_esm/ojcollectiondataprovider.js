@@ -6,6 +6,7 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
+import { FilterUtils } from 'ojs/ojdataprovider';
 import { CollectionTableDataSource } from 'ojs/ojcollectiontabledatasource';
 import 'ojs/ojdataprovideradapter';
 
@@ -173,6 +174,7 @@ class CollectionDataProvider {
         this._dataProviderAdapter.destroy();
     }
     fetchFirst(parameters) {
+        FilterUtils.validateFilterCapabilities(this.getCapability('filter'), parameters?.filterCriterion);
         return this._dataProviderAdapter.fetchFirst(parameters);
     }
     fetchByKeys(parameters) {
@@ -182,6 +184,7 @@ class CollectionDataProvider {
         return this._dataProviderAdapter.containsKeys(parameters);
     }
     fetchByOffset(parameters) {
+        FilterUtils.validateFilterCapabilities(this.getCapability('filter'), parameters?.filterCriterion);
         return this._dataProviderAdapter.fetchByOffset(parameters);
     }
     getCapability(capabilityName) {

@@ -27,35 +27,29 @@ function tagNameToElementClassName(tagName) {
         .replace(/-(.)/g, (match, group1) => group1.toUpperCase()) + 'Element');
 }
 function isComposite(tagName) {
-    var _a, _b;
-    return (_b = (_a = getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.composite) !== null && _b !== void 0 ? _b : false;
+    return getElementRegistration(tagName)?.composite ?? false;
 }
 function isVComponent(tagName) {
-    var _a, _b;
-    return (_b = (_a = getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.vcomp) !== null && _b !== void 0 ? _b : false;
+    return getElementRegistration(tagName)?.vcomp ?? false;
 }
 function isElementRegistered(tagName) {
     return _CUSTOM_ELEMENT_REGISTRY[tagName] != null;
 }
 function getElementRegistration(tagName) {
-    var _a;
-    return (_a = _CUSTOM_ELEMENT_REGISTRY[tagName]) !== null && _a !== void 0 ? _a : null;
+    return _CUSTOM_ELEMENT_REGISTRY[tagName] ?? null;
 }
 function getElementDescriptor(tagName) {
-    var _a;
-    return ((_a = getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.descriptor) || {};
+    return getElementRegistration(tagName)?.descriptor || {};
 }
 function getElementProperties(element) {
     return getPropertiesForElementTag(element.tagName);
 }
 function getMetadata(tagName) {
-    var _a, _b;
     const descriptor = getElementDescriptor(tagName);
-    return (_b = (_a = descriptor['_metadata']) !== null && _a !== void 0 ? _a : descriptor.metadata) !== null && _b !== void 0 ? _b : {};
+    return descriptor['_metadata'] ?? descriptor.metadata ?? {};
 }
 function getPropertiesForElementTag(tagName) {
-    var _a;
-    return (_a = getMetadata(tagName).properties) !== null && _a !== void 0 ? _a : {};
+    return getMetadata(tagName).properties ?? {};
 }
 
 export { getElementDescriptor, getElementProperties, getElementRegistration, getMetadata, getPropertiesForElementTag, isComposite, isElementRegistered, isVComponent, registerElement, tagNameToElementClassName };

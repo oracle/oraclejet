@@ -1,11 +1,11 @@
 import * as ts from 'typescript';
 import * as MetadataTypes from 'ojs/ojmetadata';
 import * as MetaTypes from './utils/MetadataTypes';
-declare type CompileOptions = {
+type CompileOptions = {
     tsconfigJson: ts.TsConfigSourceFile;
     buildOptions?: BuildOptions;
 };
-export declare type BuildOptions = {
+export type BuildOptions = {
     dtDir: string;
     apiDocDir?: string;
     isolationMode: boolean;
@@ -15,6 +15,7 @@ export declare type BuildOptions = {
         enableLegacyElement?: number;
     };
     debug?: boolean;
+    followImports?: boolean;
     importMaps?: {
         exportToAlias?: Record<string, string>;
         aliasToExport?: Record<string, string>;
@@ -27,6 +28,7 @@ export declare type BuildOptions = {
     typesDir: string;
     translationBundleIds?: Array<string>;
     parentDirToPackInfo?: Record<string, MetaTypes.VCompPack | null>;
+    dependencyPackMap?: Map<string, MetaTypes.VCompPack>;
     disabledExceptionKeys?: Array<string>;
 };
 export default function compile({ tsconfigJson, buildOptions }: CompileOptions): {

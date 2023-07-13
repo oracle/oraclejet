@@ -20,9 +20,9 @@ define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojcustomelement-utils',
                 __Observable: ko.observable
             };
         }
-        execute(componentElement, templateElement, properties, alias, reportBusy) {
+        execute(componentElement, templateElement, properties, alias, reportBusy, provided) {
             const templateAlias = templateElement.getAttribute('data-oj-as');
-            const context = ojtemplateengineUtils.TemplateEngineUtils.getContext(this._bindingProvider, componentElement, templateElement, properties, alias, templateAlias);
+            const context = ojtemplateengineUtils.TemplateEngineUtils.getContext(this._bindingProvider, componentElement, templateElement, properties, alias, templateAlias, provided);
             if (templateElement.render) {
                 throw new Error(`The render property is not expected on the template for component ${componentElement.id}`);
             }
@@ -35,7 +35,7 @@ define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojcustomelement-utils',
             ko.applyBindingsToDescendants(context, tmpContainer);
             return Array.prototype.slice.call(stampedNodes, 0);
         }
-        clean(node) {
+        clean(node, componentElement) {
             return ko.cleanNode(node);
         }
         resolveProperties(componentElement, templateElement, elementTagName, propertySet, data, alias, propertyValidator, alternateParent) {

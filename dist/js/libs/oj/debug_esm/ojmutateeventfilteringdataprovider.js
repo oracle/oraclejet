@@ -170,9 +170,8 @@ class MutateEventFilteringDataProvider {
                 this.cache = cache;
             }
             ['next']() {
-                var _b;
                 let self = this;
-                const signal = (_b = this.params) === null || _b === void 0 ? void 0 : _b.signal;
+                const signal = this.params?.signal;
                 if (signal && signal.aborted) {
                     const reason = signal.reason;
                     return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -250,7 +249,7 @@ class MutateEventFilteringDataProvider {
         return this.dataProvider.containsKeys(params);
     }
     fetchByKeys(params) {
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -266,7 +265,7 @@ class MutateEventFilteringDataProvider {
         });
     }
     fetchByOffset(params) {
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));

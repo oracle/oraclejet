@@ -6,7 +6,7 @@
  * @ignore
  */
 import BindingProviderImpl from 'ojs/ojkoshared';
-import { AttributeUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
+import { OJ_BIND_CONVERTED_NODE, AttributeUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
 import { bindingHandlers, virtualElements, applyBindingsToDescendants, computed, utils } from 'knockout';
 import oj from 'ojs/ojcore-base';
 import { error } from 'ojs/ojlogger';
@@ -119,6 +119,8 @@ import Context from 'ojs/ojcontext';
 
     var parent = node.parentNode;
     parent.insertBefore(openComment, node); // @HTMLUpdateOK
+    // eslint-disable-next-line no-param-reassign
+    node[OJ_BIND_CONVERTED_NODE] = openComment;
 
     // Copy children into the comment node
     while (node.childNodes.length > 0) {

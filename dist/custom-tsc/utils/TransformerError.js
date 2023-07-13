@@ -76,7 +76,7 @@ class TransformerError extends Error {
     }
     static getMsgHeader(vcompName, errNode) {
         let rtnString;
-        const sourceFile = errNode === null || errNode === void 0 ? void 0 : errNode.getSourceFile();
+        const sourceFile = errNode?.getSourceFile();
         if (sourceFile) {
             const { line, character } = sourceFile.getLineAndCharacterOfPosition(errNode.getStart());
             rtnString = `${sourceFile.fileName}:${line + 1}:${character + 1} - ${vcompName}:`;
@@ -101,6 +101,6 @@ class TransformerError extends Error {
         }
     }
 }
-exports.TransformerError = TransformerError;
 TransformerError._disabledList = null;
+exports.TransformerError = TransformerError;
 //# sourceMappingURL=TransformerError.js.map

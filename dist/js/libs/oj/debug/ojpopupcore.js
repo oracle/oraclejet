@@ -671,8 +671,12 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     var _finalize = function () {
       try {
         popup.hide();
-        // reset position units
-        popup.css({ top: 'auto', bottom: 'auto', left: 'auto', right: 'auto' });
+        // If 'null' value was provided as the position option, do not reset it.
+        // Consumer handles positioning by his own (DrawerPopup)
+        if (options[PopupService.OPTION.POSITION] !== null) {
+          // reset position units
+          popup.css({ top: 'auto', bottom: 'auto', left: 'auto', right: 'auto' });
+        }
 
         ZOrderUtils.removeFromAncestorLayer(popup);
 
@@ -1546,7 +1550,39 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     const body = document.body;
     const popup = layer.children()[0];
     if ($(popup).width() <= window.innerWidth && $(popup).height() <= window.innerHeight) {
-      body.classList.add('oj-component-modal-open');
+      // JET-44685: setting 'overflow:hidden' on body is not enough to lock background scrolling on iOS.
+      // There is the address bar which gets hidden/revealed when swiping the screen vertically and
+      // iOS seems to ignore 'overflow:hidden' until the address bar is visible.
+      // The generally recommended workaround is setting 'position: fixed' on body while preserving
+      // the current scroll position.
+      if (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS) {
+        if (this._iosScrollLockBackup) {
+          return;
+        }
+        const offsetLeft = window.visualViewport.offsetLeft;
+        const offsetTop = window.visualViewport.offsetTop;
+        const windowScrollX = window.pageXOffset;
+        const windowScrollY = window.pageYOffset;
+
+        this._iosScrollLockBackup = {
+          windowScrollX: windowScrollX,
+          windowScrollY: windowScrollY,
+          bodyPosition: body.style.position,
+          bodyOverflow: body.style.overflow,
+          bodyTop: body.style.top,
+          bodyLeft: body.style.left,
+          bodyRight: body.style.right
+        };
+
+        body.style.position = 'fixed';
+        body.style.overflow = 'hidden';
+        body.style.top = `${-(windowScrollY - Math.floor(offsetTop))}px`;
+        body.style.left = `${-(windowScrollX - Math.floor(offsetLeft))}px`;
+        body.style.right = '0';
+      } else {
+        // JET-44685: anywhere else but iOS, setting body.style.overflow='hidden' is sufficient
+        body.classList.add('oj-component-modal-open');
+      }
     }
   };
 
@@ -1554,7 +1590,27 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     // if there are no more modals left, enable scrolling on body
     if (!ZOrderUtils.hasModalDialogOpen()) {
       const body = document.body;
-      body.classList.remove('oj-component-modal-open');
+
+      // JET-44685: if on iOS, revert the previously applied scroll lock patch
+      if (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS) {
+        if (!this._iosScrollLockBackup) {
+          return;
+        }
+
+        const backup = this._iosScrollLockBackup;
+
+        body.style.position = backup.bodyPosition;
+        body.style.overflow = backup.bodyOverflow;
+        body.style.top = backup.bodyTop;
+        body.style.left = backup.bodyLeft;
+        body.style.right = backup.bodyRight;
+
+        window.scrollTo(backup.windowScrollX, backup.windowScrollY);
+
+        delete this._iosScrollLockBackup;
+      } else {
+        body.classList.remove('oj-component-modal-open');
+      }
     }
   };
 
@@ -1588,26 +1644,29 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
         ZOrderUtils._addOverlayToAncestorLayer(layer);
         ZOrderUtils._disableBodyOverflow(layer);
         ZOrderUtils._removeFocusWithinFromOverlayedContent();
+        ZOrderUtils._setAriaHiddenOnBackround(layer);
       } else {
+        // Note: Calling this is probably not necessary as this is initial opening of a popup
         ZOrderUtils._removeOverlayFromAncestorLayer(layer);
       }
     } else if (currModality !== modality) {
-      if (modality !== currModality && modality === PopupService.MODALITY.MODAL) {
+      if (modality === PopupService.MODALITY.MODAL) {
         ZOrderUtils._addOverlayToAncestorLayer(layer);
         ZOrderUtils._disableBodyOverflow(layer);
         ZOrderUtils._removeFocusWithinFromOverlayedContent();
+        ZOrderUtils._setAriaHiddenOnBackround(layer);
       } else {
         ZOrderUtils._removeOverlayFromAncestorLayer(layer);
+        ZOrderUtils._restoreBodyOverflow();
+        ZOrderUtils._resetAriaHiddenOnBackround(layer);
       }
     }
     if (modality === PopupService.MODALITY.MODAL) {
       layer.attr('aria-modal', 'true');
-      ZOrderUtils._setAriaHiddenOnBackround(layer);
     } else {
       // saw a tech note that a "false" value doesn't convey the same information as
       // if the attribute wasn’t present at all screen readers.
       layer.removeAttr('aria-modal');
-      ZOrderUtils._resetAriaHiddenOnBackround(layer);
     }
   };
 
@@ -3723,6 +3782,15 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
           // factor in half the width of the popup
           posLeft -= dirFactor * (data.elemWidth / 2);
 
+          // JET-53426: need to check if the popup element fits the screen after centering
+          // otherwise it could cause text reflow and popup resize which might result
+          // in another positioning cycle with a potential endless loop.
+          // If the element does not fit, apply the 'fit' collision to avoid the resize.
+          if (posLeft < withinOffset || posLeft + data.elemWidth > outerWidth - withinOffset) {
+            $.ui.position.fit.left.call(this, position, data);
+            posLeft = position.left;
+          }
+
           // Force the popup start to be within the viewport.
           // This collision rule is only used by input components internally. The notewindow will auto dismiss when
           // what it is aligned to is hidden in a scroll container.
@@ -4288,7 +4356,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
           };
       }
       render(props) {
-          return (jsxRuntime.jsx("div", Object.assign({ style: { display: 'none' }, ref: this._setRootRef }, { children: props.children })));
+          return (jsxRuntime.jsx("div", { style: { display: 'none' }, ref: this._setRootRef, children: props.children }));
       }
       componentDidMount() {
           this._popup = $(this._rootRef.firstChild);

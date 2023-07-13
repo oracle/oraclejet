@@ -74,7 +74,6 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
 }
 exports.generateEventsMetadata = generateEventsMetadata;
 function getDtMetadataForEvent(propDeclaration, typeName, typeNode, metaUtilObj) {
-    var _a, _b;
     const checker = metaUtilObj.typeChecker;
     const dt = MetaUtils.getDtMetadata(propDeclaration, MetaTypes.MDFlags.EVENT, null, metaUtilObj);
     const typeRefNode = typeNode;
@@ -89,7 +88,7 @@ function getDtMetadataForEvent(propDeclaration, typeName, typeNode, metaUtilObj)
             }
         };
     }
-    if ((typeRefNode === null || typeRefNode === void 0 ? void 0 : typeRefNode.typeArguments) && typeRefNode.typeArguments.length) {
+    if (typeRefNode?.typeArguments && typeRefNode.typeArguments.length) {
         const detailNode = typeRefNode.typeArguments[0];
         if (detailNode.kind == ts.SyntaxKind.TypeReference) {
             const typeObject = checker.getTypeAtLocation(detailNode);
@@ -99,17 +98,19 @@ function getDtMetadataForEvent(propDeclaration, typeName, typeNode, metaUtilObj)
                 const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(innerTypeObject, metaUtilObj);
                 if (genericsInfo) {
                     dt['evnDetailTypeParamsDeclaration'] = genericsInfo.genericsDeclaration;
+                    dt['evnDetailTypeParams'] = getDetailTypeParams(genericsInfo.genericsTypeParamsArray, metaUtilObj.propsTypeParamsArray);
                     dt['evnDetailNameTypeParams'] = MetaUtils.constructMappedTypeName(mappedTypesInfo, genericsInfo.genericsTypeParams);
                 }
             }
             else {
-                const declaration = ((_a = typeObject.aliasSymbol) === null || _a === void 0 ? void 0 : _a.getDeclarations()[0]) || ((_b = typeObject.symbol) === null || _b === void 0 ? void 0 : _b.getDeclarations()[0]);
+                const declaration = typeObject.aliasSymbol?.getDeclarations()[0] || typeObject.symbol?.getDeclarations()[0];
                 if (ts.isTypeAliasDeclaration(declaration) || ts.isClassDeclaration(declaration)) {
                     const eventDetailType = declaration;
                     const eventDetailName = eventDetailType.name.getText();
                     const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(typeObject, metaUtilObj);
                     if (genericsInfo) {
                         dt['evnDetailTypeParamsDeclaration'] = genericsInfo.genericsDeclaration;
+                        dt['evnDetailTypeParams'] = getDetailTypeParams(genericsInfo.genericsTypeParamsArray, metaUtilObj.propsTypeParamsArray);
                         dt['evnDetailNameTypeParams'] = `${eventDetailName}${genericsInfo.genericsTypeParams}`;
                     }
                     else {
@@ -135,7 +136,7 @@ function getDtMetadataForEvent(propDeclaration, typeName, typeNode, metaUtilObj)
 exports.getDtMetadataForEvent = getDtMetadataForEvent;
 function getEventDetails(detailNode, metaUtilObj) {
     let details;
-    if ((detailNode === null || detailNode === void 0 ? void 0 : detailNode.kind) !== ts.SyntaxKind.NullKeyword) {
+    if (detailNode?.kind !== ts.SyntaxKind.NullKeyword) {
         let detailName;
         if (ts.isTypeReferenceNode(detailNode)) {
             detailName = TypeUtils.getTypeNameFromTypeReference(detailNode);
@@ -152,36 +153,48 @@ function getEventDetails(detailNode, metaUtilObj) {
                 const eventDetailMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.EVENT | MetaTypes.MDFlags.EVENT_DETAIL, propertyPath, symbol, metaUtilObj);
                 details = details || {};
                 details[property] = eventDetailMetadata;
-                if (TypeUtils.possibleComplexProperty(symbolType, eventDetailMetadata.type, MetaTypes.MetadataScope.DT)) {
-                    let nestedArrayStack = [];
-                    if (eventDetailMetadata.type === 'Array<object>') {
-                        nestedArrayStack.push(key);
+                let nestedArrayStack = [];
+                if (eventDetailMetadata.type === 'Array<object>') {
+                    nestedArrayStack.push(key);
+                }
+                const subprops = TypeUtils.getComplexPropertyMetadata(symbol, eventDetailMetadata.type, detailName, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.EVENT | MetaTypes.MDFlags.EVENT_DETAIL, propertyPath, nestedArrayStack, metaUtilObj);
+                if (subprops) {
+                    if (subprops.circRefDetected) {
+                        details[property].type =
+                            TypeUtils.getSubstituteTypeForCircularReference(eventDetailMetadata);
                     }
-                    const subprops = TypeUtils.getComplexPropertyMetadata(symbol, eventDetailMetadata.type, detailName, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.EVENT | MetaTypes.MDFlags.EVENT_DETAIL, propertyPath, nestedArrayStack, metaUtilObj);
-                    if (subprops) {
-                        if (subprops.circRefDetected) {
-                            details[property].type =
-                                TypeUtils.getSubstituteTypeForCircularReference(eventDetailMetadata);
-                        }
-                        else if (eventDetailMetadata.type === 'Array<object>') {
-                            details[property].extension = {};
-                            details[property].extension.vbdt = {};
-                            details[property].extension.vbdt.itemProperties = subprops;
-                        }
-                        else {
-                            details[property].type = 'object';
-                            details[property].properties = subprops;
-                        }
-                        const typeDef = TypeUtils.getPossibleTypeDef(property, symbol, eventDetailMetadata, metaUtilObj);
-                        if (typeDef && typeDef.name) {
-                            details[property]['jsdoc'] = details[property]['jsdoc'] || {};
-                            details[property]['jsdoc']['typedef'] = typeDef;
-                        }
+                    else if (eventDetailMetadata.type === 'Array<object>') {
+                        details[property].extension = {};
+                        details[property].extension.vbdt = {};
+                        details[property].extension.vbdt.itemProperties = subprops;
+                    }
+                    else {
+                        details[property].type = 'object';
+                        details[property].properties = subprops;
+                    }
+                    const typeDef = TypeUtils.getPossibleTypeDef(property, symbol, eventDetailMetadata, metaUtilObj);
+                    if (typeDef && (typeDef.name || typeDef.coreJetModule)) {
+                        details[property]['jsdoc'] = details[property]['jsdoc'] || {};
+                        details[property]['jsdoc']['typedef'] = typeDef;
                     }
                 }
             }
         });
     }
     return details;
+}
+function getDetailTypeParams(genericsTypeParamsArray, propsTypeParamsArray) {
+    let detailTypeParams = '';
+    if (propsTypeParamsArray) {
+        const genericsTypeParamsLength = genericsTypeParamsArray.length;
+        const propsTypeParamsLength = propsTypeParamsArray.length;
+        if (genericsTypeParamsLength >= propsTypeParamsLength) {
+            detailTypeParams = `<${propsTypeParamsArray.join(', ')}>`;
+        }
+        else {
+            detailTypeParams = `<${genericsTypeParamsArray.join(', ')}>`;
+        }
+    }
+    return detailTypeParams;
 }
 //# sourceMappingURL=MetadataEventUtils.js.map

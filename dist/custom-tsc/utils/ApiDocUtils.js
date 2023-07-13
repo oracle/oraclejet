@@ -17,6 +17,7 @@ function generateDoclets(metaUtilObj) {
         ...getEventDoclets(metaUtilObj, classDoclet),
         ...getSlotDoclets(metaUtilObj, classDoclet),
         ...getGestureFragments(classDoclet),
+        ...getObservedGlobalProps(metaUtilObj, classDoclet),
         ...result
     ];
 }
@@ -67,7 +68,7 @@ function getClassDoclet(metaUtilObj) {
     vcompdoclet['ojsignature'] = [signExpr];
     vcompdoclet['since'] = metaUtilObj.fullMetadata['since'];
     if (metaUtilObj.fullMetadata.status) {
-        vcompdoclet['tsdeprecated'] = [...metaUtilObj.fullMetadata.status];
+        vcompdoclet['tsdeprecated'] = metaUtilObj.fullMetadata.status.filter((statObj) => statObj.type !== 'antiPattern');
     }
     if (metaUtilObj.fullMetadata.extension && metaUtilObj.fullMetadata.extension['themes']) {
         vcompdoclet['ojunsupportedthemes'] =
@@ -80,7 +81,50 @@ function getClassDoclet(metaUtilObj) {
     if (!pack && arrDirs[arrDirs.length - 1] === metaUtilObj.fullMetadata.version) {
         vcompdoclet['ojmodule'] = arrDirs[arrDirs.length - 2];
     }
+    if (metaUtilObj.fullMetadata.subcomponentType) {
+        vcompdoclet['ojslotcomponent'] = true;
+    }
     return vcompdoclet;
+}
+function getObservedGlobalProps(metaUtilObj, classDoclet) {
+    let doclets = [];
+    const properties = metaUtilObj.fullMetadata['observedGlobalProps'];
+    for (const key in properties) {
+        let doclet = { observedGlobalProp: true };
+        doclet['memberof'] = classDoclet.longname;
+        const prop = properties[key];
+        const propName = key.toLowerCase();
+        const propLongName = `${doclet['memberof']}#${propName}`;
+        doclet['id'] = propLongName;
+        doclet['name'] = propName;
+        doclet['kind'] = 'member';
+        doclet['longname'] = propLongName;
+        doclet['optional'] = prop['optional'];
+        doclet['scope'] = 'instance';
+        doclet['description'] = prop.description || '';
+        if (prop['jsdoc']) {
+            doclet['description'] = prop['jsdoc']['description'] || doclet['description'];
+            if (prop['jsdoc']['ignore']) {
+                doclet['ojhidden'] = true;
+            }
+        }
+        doclet['meta'] = metaUtilObj.fullMetadata['jsdoc']['meta'];
+        if (prop.propertyEditorValues) {
+            doclet['ojvalues'] = [];
+            for (const enumKey in prop.propertyEditorValues) {
+                doclet['ojvalues'].push({
+                    name: enumKey,
+                    description: prop.propertyEditorValues[enumKey].description,
+                    displayName: prop.propertyEditorValues[enumKey].displayName,
+                    type: { names: ['string'] }
+                });
+            }
+        }
+        doclet['type'] = { names: [prop['type']] };
+        handleEnumValues(prop, doclet);
+        doclets.push(doclet);
+    }
+    return doclets;
 }
 function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased = false) {
     let doclets = [];
@@ -147,46 +191,14 @@ function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased 
             }
             doclet['defaultvalue'] = prop['type'] === 'string' ? `"${defaultValue}"` : defaultValue;
         }
-        doclet['type'] = { names: [prop['type']] };
-        if (prop['reftype']) {
-            if (!prop.properties) {
-                doclet['tstype'] = [{ target: 'Type', value: prop['reftype'], jsdocOverride: true }];
-                if (prop['type'] === 'function' && prop['jsdoc'] && prop['jsdoc']['params']) {
-                    let parameters = prop['jsdoc']['params'];
-                    parameters.forEach((param) => {
-                        if (isPotentialTypeDef(param)) {
-                            createTypedef(param, metaUtilObj);
-                        }
-                    });
-                }
-            }
-            else {
-                doclet['type'] = { names: ['Object'] };
-            }
-        }
-        if (isPotentialTypeDef(prop)) {
-            const typeDefDoclet = createTypedef(prop, metaUtilObj);
-            doclet['tstype'] = [
-                { target: 'Type', value: typeDefDoclet['longname'], jsdocOverride: true }
-            ];
-            typeIsTypedef = true;
-        }
-        if (prop.enumValues) {
-            doclet['type'] = { names: prop.enumValues.map((x) => `"${x}"`) };
-            delete doclet['tstype'];
-        }
+        typeIsTypedef = handlePropertyType(prop, doclet, metaUtilObj, null);
+        handleEnumValues(prop, doclet);
         doclets.push(doclet);
         if (typeIsTypedef) {
             continue;
         }
-        let currArrayBased = false;
-        if (prop.type === 'Array<object>') {
-            if ((prop.extension && prop.extension['vbdt'] && prop.extension['vbdt'].itemProperties) ||
-                prop.properties) {
-                currArrayBased = true;
-            }
-        }
-        if (prop.properties || currArrayBased) {
+        let currArrayBased = isObjectBasedArrayType(prop);
+        if ((prop.properties && !isCoreJetTypeReference(prop)) || currArrayBased) {
             const subprops = prop.properties ? prop.properties : prop.extension['vbdt'].itemProperties;
             doclets = [...doclets, ...getPropertyDoclets(subprops, doclet, metaUtilObj, currArrayBased)];
         }
@@ -315,27 +327,8 @@ function processComplexProperties(properties, metaUtilObj) {
             }
         }
         mappedProp['optional'] = prop['optional'];
-        mappedProp['type'] = { names: [prop['type']] };
-        if (prop['reftype']) {
-            if (!prop.properties) {
-                mappedProp['tstype'] = [
-                    { target: 'Type', value: prop['reftype'], for: key, jsdocOverride: true }
-                ];
-            }
-            else {
-                mappedProp['type'] = { names: ['Object'] };
-            }
-        }
-        if (isPotentialTypeDef(prop)) {
-            const typeDefDoclet = createTypedef(prop, metaUtilObj);
-            mappedProp['tstype'] = [
-                { target: 'Type', value: typeDefDoclet['longname'], jsdocOverride: true }
-            ];
-            typeIsTypedef = true;
-        }
-        if (prop.enumValues) {
-            mappedProp['type'] = { names: prop.enumValues };
-        }
+        typeIsTypedef = handlePropertyType(prop, mappedProp, metaUtilObj, key);
+        handleEnumValues(prop, mappedProp);
         if (prop.value) {
             let defaultValue = prop.value;
             if (typeof defaultValue === 'string') {
@@ -428,7 +421,7 @@ function isArrayOfObjects(prop) {
         prop.type == 'Array<object>');
 }
 function isPotentialTypeDef(prop) {
-    return prop['jsdoc'] && prop['jsdoc']['typedef'] && (isArrayOfObjects(prop) || prop.properties);
+    return prop?.jsdoc?.typedef?.name && (isArrayOfObjects(prop) || prop.properties);
 }
 function getExistingDefinition(id) {
     return result.find((doclet) => doclet['id'] === id);
@@ -482,5 +475,105 @@ function getPackNameFrom(main) {
         }
     }
     return pack;
+}
+function isCoreJetTypeReference(prop) {
+    return prop?.jsdoc?.typedef?.coreJetModule;
+}
+function isObjectBasedArrayType(prop) {
+    let bRetVal = false;
+    if (prop && prop.type === 'Array<object>') {
+        if ((prop.extension && prop.extension['vbdt'] && prop.extension['vbdt'].itemProperties) ||
+            prop.properties) {
+            bRetVal = true;
+        }
+    }
+    return bRetVal;
+}
+function handlePropertyType(prop, doclet, metaUtilObj, propName) {
+    let typeIsTypedef = false;
+    doclet['type'] = { names: [prop['type']] };
+    if (prop['reftype']) {
+        if (isPotentialTypeDef(prop)) {
+            typeIsTypedef = true;
+            const typeDefDoclet = createTypedef(prop, metaUtilObj);
+            if (propName) {
+                doclet['tstype'] = [
+                    {
+                        target: 'Type',
+                        value: isObjectBasedArrayType(prop)
+                            ? `Array<${typeDefDoclet['longname']}>`
+                            : typeDefDoclet['longname'],
+                        for: propName,
+                        jsdocOverride: true
+                    }
+                ];
+            }
+            else {
+                doclet['tstype'] = [
+                    {
+                        target: 'Type',
+                        value: isObjectBasedArrayType(prop)
+                            ? `Array<${typeDefDoclet['longname']}>`
+                            : typeDefDoclet['longname'],
+                        jsdocOverride: true
+                    }
+                ];
+            }
+        }
+        else if (isCoreJetTypeReference(prop)) {
+            if (propName) {
+                doclet['tstype'] = [
+                    {
+                        target: 'Type',
+                        value: prop['reftype'],
+                        for: propName,
+                        jsdocOverride: true,
+                        module: prop['jsdoc']['typedef']['coreJetModule']
+                    }
+                ];
+            }
+            else {
+                doclet['tstype'] = [
+                    {
+                        target: 'Type',
+                        value: prop['reftype'],
+                        jsdocOverride: true,
+                        module: prop['jsdoc']['typedef']['coreJetModule']
+                    }
+                ];
+            }
+        }
+        else {
+            if (prop['type'] !== 'string' && prop['type'] !== 'number' && prop['type'] !== 'boolean') {
+                if (propName) {
+                    doclet['tstype'] = [
+                        { target: 'Type', value: prop['reftype'], for: propName, jsdocOverride: true }
+                    ];
+                }
+                else {
+                    doclet['tstype'] = [{ target: 'Type', value: prop['reftype'], jsdocOverride: true }];
+                }
+            }
+            if (prop['type'].indexOf('function') > -1 && prop['jsdoc'] && prop['jsdoc']['params']) {
+                let parameters = prop['jsdoc']['params'];
+                parameters.forEach((param) => {
+                    if (isPotentialTypeDef(param)) {
+                        createTypedef(param, metaUtilObj);
+                    }
+                    else if (isCoreJetTypeReference(param)) {
+                        const module = doclet['tstype'][0].module;
+                        doclet['tstype'][0].module = { ...module, ...param.jsdoc.typedef.coreJetModule };
+                    }
+                });
+            }
+        }
+    }
+    return typeIsTypedef;
+}
+function handleEnumValues(prop, doclet) {
+    if (prop.enumValues) {
+        doclet['type'] = { names: prop.enumValues.map((x) => `"${x}"`) };
+        delete doclet['tstype'];
+    }
 }
 //# sourceMappingURL=ApiDocUtils.js.map

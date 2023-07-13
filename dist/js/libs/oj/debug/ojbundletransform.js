@@ -7,7 +7,7 @@
  */
 define(['exports'], function (exports) { 'use strict';
 
-    /*! *****************************************************************************
+    /******************************************************************************
     Copyright (c) Microsoft Corporation.
 
     Permission to use, copy, modify, and/or distribute this software for any
@@ -72,6 +72,51 @@ define(['exports'], function (exports) { 'use strict';
         return function (target, key) { decorator(target, key, paramIndex); }
     }
 
+    function __esDecorate(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
+        function accept(f) { if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected"); return f; }
+        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
+        var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
+        var _, done = false;
+        for (var i = decorators.length - 1; i >= 0; i--) {
+            var context = {};
+            for (var p in contextIn) context[p] = p === "access" ? {} : contextIn[p];
+            for (var p in contextIn.access) context.access[p] = contextIn.access[p];
+            context.addInitializer = function (f) { if (done) throw new TypeError("Cannot add initializers after decoration has completed"); extraInitializers.push(accept(f || null)); };
+            var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context);
+            if (kind === "accessor") {
+                if (result === void 0) continue;
+                if (result === null || typeof result !== "object") throw new TypeError("Object expected");
+                if (_ = accept(result.get)) descriptor.get = _;
+                if (_ = accept(result.set)) descriptor.set = _;
+                if (_ = accept(result.init)) initializers.push(_);
+            }
+            else if (_ = accept(result)) {
+                if (kind === "field") initializers.push(_);
+                else descriptor[key] = _;
+            }
+        }
+        if (target) Object.defineProperty(target, contextIn.name, descriptor);
+        done = true;
+    };
+
+    function __runInitializers(thisArg, initializers, value) {
+        var useValue = arguments.length > 2;
+        for (var i = 0; i < initializers.length; i++) {
+            value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+        }
+        return useValue ? value : void 0;
+    };
+
+    function __propKey(x) {
+        return typeof x === "symbol" ? x : "".concat(x);
+    };
+
+    function __setFunctionName(f, name, prefix) {
+        if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
+        return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
+    };
+
     function __metadata(metadataKey, metadataValue) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
     }
@@ -92,7 +137,7 @@ define(['exports'], function (exports) { 'use strict';
         function verb(n) { return function (v) { return step([n, v]); }; }
         function step(op) {
             if (f) throw new TypeError("Generator is already executing.");
-            while (_) try {
+            while (g && (g = 0, op[0] && (_ = 0)), _) try {
                 if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
                 if (y = 0, t) op = [op[0] & 2, t.value];
                 switch (op[0]) {
@@ -116,7 +161,11 @@ define(['exports'], function (exports) { 'use strict';
 
     var __createBinding = Object.create ? (function(o, m, k, k2) {
         if (k2 === undefined) k2 = k;
-        Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+        var desc = Object.getOwnPropertyDescriptor(m, k);
+        if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+            desc = { enumerable: true, get: function() { return m[k]; } };
+        }
+        Object.defineProperty(o, k2, desc);
     }) : (function(o, m, k, k2) {
         if (k2 === undefined) k2 = k;
         o[k2] = m[k];
@@ -200,7 +249,7 @@ define(['exports'], function (exports) { 'use strict';
     function __asyncDelegator(o) {
         var i, p;
         return i = {}, verb("next"), verb("throw", function (e) { throw e; }), verb("return"), i[Symbol.iterator] = function () { return this; }, i;
-        function verb(n, f) { i[n] = o[n] ? function (v) { return (p = !p) ? { value: __await(o[n](v)), done: n === "return" } : f ? f(v) : v; } : f; }
+        function verb(n, f) { i[n] = o[n] ? function (v) { return (p = !p) ? { value: __await(o[n](v)), done: false } : f ? f(v) : v; } : f; }
     }
 
     function __asyncValues(o) {
@@ -245,6 +294,11 @@ define(['exports'], function (exports) { 'use strict';
         if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
         if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
         return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+    }
+
+    function __classPrivateFieldIn(state, receiver) {
+        if (receiver === null || (typeof receiver !== "object" && typeof receiver !== "function")) throw new TypeError("Cannot use 'in' operator on non-object");
+        return typeof state === "function" ? receiver === state : state.has(receiver);
     }
 
     var ErrorKind;
@@ -829,6 +883,1429 @@ define(['exports'], function (exports) { 'use strict';
         return result;
     }
 
+    // @generated from time-data-gen.ts
+    // prettier-ignore  
+    var timeData = {
+        "AX": [
+            "H"
+        ],
+        "BQ": [
+            "H"
+        ],
+        "CP": [
+            "H"
+        ],
+        "CZ": [
+            "H"
+        ],
+        "DK": [
+            "H"
+        ],
+        "FI": [
+            "H"
+        ],
+        "ID": [
+            "H"
+        ],
+        "IS": [
+            "H"
+        ],
+        "ML": [
+            "H"
+        ],
+        "NE": [
+            "H"
+        ],
+        "RU": [
+            "H"
+        ],
+        "SE": [
+            "H"
+        ],
+        "SJ": [
+            "H"
+        ],
+        "SK": [
+            "H"
+        ],
+        "AS": [
+            "h",
+            "H"
+        ],
+        "BT": [
+            "h",
+            "H"
+        ],
+        "DJ": [
+            "h",
+            "H"
+        ],
+        "ER": [
+            "h",
+            "H"
+        ],
+        "GH": [
+            "h",
+            "H"
+        ],
+        "IN": [
+            "h",
+            "H"
+        ],
+        "LS": [
+            "h",
+            "H"
+        ],
+        "PG": [
+            "h",
+            "H"
+        ],
+        "PW": [
+            "h",
+            "H"
+        ],
+        "SO": [
+            "h",
+            "H"
+        ],
+        "TO": [
+            "h",
+            "H"
+        ],
+        "VU": [
+            "h",
+            "H"
+        ],
+        "WS": [
+            "h",
+            "H"
+        ],
+        "001": [
+            "H",
+            "h"
+        ],
+        "AL": [
+            "h",
+            "H",
+            "hB"
+        ],
+        "TD": [
+            "h",
+            "H",
+            "hB"
+        ],
+        "ca-ES": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "CF": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "CM": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "fr-CA": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "gl-ES": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "it-CH": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "it-IT": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "LU": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "NP": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "PF": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "SC": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "SM": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "SN": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "TF": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "VA": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "CY": [
+            "h",
+            "H",
+            "hb",
+            "hB"
+        ],
+        "GR": [
+            "h",
+            "H",
+            "hb",
+            "hB"
+        ],
+        "CO": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "DO": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "KP": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "KR": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "NA": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "PA": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "PR": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "VE": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "AC": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "AI": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "BW": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "BZ": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "CC": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "CK": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "CX": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "DG": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "FK": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "GB": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "GG": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "GI": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "IE": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "IM": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "IO": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "JE": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "LT": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "MK": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "MN": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "MS": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "NF": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "NG": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "NR": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "NU": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "PN": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "SH": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "SX": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "TA": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "ZA": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "af-ZA": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "AR": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "CL": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "CR": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "CU": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "EA": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-BO": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-BR": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-EC": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-ES": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-GQ": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-PE": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "GT": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "HN": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "IC": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "KG": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "KM": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "LK": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "MA": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "MX": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "NI": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "PY": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "SV": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "UY": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "JP": [
+            "H",
+            "h",
+            "K"
+        ],
+        "AD": [
+            "H",
+            "hB"
+        ],
+        "AM": [
+            "H",
+            "hB"
+        ],
+        "AO": [
+            "H",
+            "hB"
+        ],
+        "AT": [
+            "H",
+            "hB"
+        ],
+        "AW": [
+            "H",
+            "hB"
+        ],
+        "BE": [
+            "H",
+            "hB"
+        ],
+        "BF": [
+            "H",
+            "hB"
+        ],
+        "BJ": [
+            "H",
+            "hB"
+        ],
+        "BL": [
+            "H",
+            "hB"
+        ],
+        "BR": [
+            "H",
+            "hB"
+        ],
+        "CG": [
+            "H",
+            "hB"
+        ],
+        "CI": [
+            "H",
+            "hB"
+        ],
+        "CV": [
+            "H",
+            "hB"
+        ],
+        "DE": [
+            "H",
+            "hB"
+        ],
+        "EE": [
+            "H",
+            "hB"
+        ],
+        "FR": [
+            "H",
+            "hB"
+        ],
+        "GA": [
+            "H",
+            "hB"
+        ],
+        "GF": [
+            "H",
+            "hB"
+        ],
+        "GN": [
+            "H",
+            "hB"
+        ],
+        "GP": [
+            "H",
+            "hB"
+        ],
+        "GW": [
+            "H",
+            "hB"
+        ],
+        "HR": [
+            "H",
+            "hB"
+        ],
+        "IL": [
+            "H",
+            "hB"
+        ],
+        "IT": [
+            "H",
+            "hB"
+        ],
+        "KZ": [
+            "H",
+            "hB"
+        ],
+        "MC": [
+            "H",
+            "hB"
+        ],
+        "MD": [
+            "H",
+            "hB"
+        ],
+        "MF": [
+            "H",
+            "hB"
+        ],
+        "MQ": [
+            "H",
+            "hB"
+        ],
+        "MZ": [
+            "H",
+            "hB"
+        ],
+        "NC": [
+            "H",
+            "hB"
+        ],
+        "NL": [
+            "H",
+            "hB"
+        ],
+        "PM": [
+            "H",
+            "hB"
+        ],
+        "PT": [
+            "H",
+            "hB"
+        ],
+        "RE": [
+            "H",
+            "hB"
+        ],
+        "RO": [
+            "H",
+            "hB"
+        ],
+        "SI": [
+            "H",
+            "hB"
+        ],
+        "SR": [
+            "H",
+            "hB"
+        ],
+        "ST": [
+            "H",
+            "hB"
+        ],
+        "TG": [
+            "H",
+            "hB"
+        ],
+        "TR": [
+            "H",
+            "hB"
+        ],
+        "WF": [
+            "H",
+            "hB"
+        ],
+        "YT": [
+            "H",
+            "hB"
+        ],
+        "BD": [
+            "h",
+            "hB",
+            "H"
+        ],
+        "PK": [
+            "h",
+            "hB",
+            "H"
+        ],
+        "AZ": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "BA": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "BG": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "CH": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "GE": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "LI": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "ME": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "RS": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "UA": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "UZ": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "XK": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "AG": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "AU": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "BB": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "BM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "BS": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "CA": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "DM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "en-001": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "FJ": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "FM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "GD": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "GM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "GU": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "GY": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "JM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "KI": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "KN": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "KY": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "LC": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "LR": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "MH": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "MP": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "MW": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "NZ": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SB": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SG": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SL": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SS": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SZ": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "TC": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "TT": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "UM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "US": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "VC": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "VG": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "VI": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "ZM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "BO": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "EC": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "ES": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "GQ": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "PE": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "AE": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "ar-001": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "BH": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "DZ": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "EG": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "EH": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "HK": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "IQ": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "JO": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "KW": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "LB": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "LY": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "MO": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "MR": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "OM": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "PH": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "PS": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "QA": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "SA": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "SD": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "SY": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "TN": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "YE": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "AF": [
+            "H",
+            "hb",
+            "hB",
+            "h"
+        ],
+        "LA": [
+            "H",
+            "hb",
+            "hB",
+            "h"
+        ],
+        "CN": [
+            "H",
+            "hB",
+            "hb",
+            "h"
+        ],
+        "LV": [
+            "H",
+            "hB",
+            "hb",
+            "h"
+        ],
+        "TL": [
+            "H",
+            "hB",
+            "hb",
+            "h"
+        ],
+        "zu-ZA": [
+            "H",
+            "hB",
+            "hb",
+            "h"
+        ],
+        "CD": [
+            "hB",
+            "H"
+        ],
+        "IR": [
+            "hB",
+            "H"
+        ],
+        "hi-IN": [
+            "hB",
+            "h",
+            "H"
+        ],
+        "kn-IN": [
+            "hB",
+            "h",
+            "H"
+        ],
+        "ml-IN": [
+            "hB",
+            "h",
+            "H"
+        ],
+        "te-IN": [
+            "hB",
+            "h",
+            "H"
+        ],
+        "KH": [
+            "hB",
+            "h",
+            "H",
+            "hb"
+        ],
+        "ta-IN": [
+            "hB",
+            "h",
+            "hb",
+            "H"
+        ],
+        "BN": [
+            "hb",
+            "hB",
+            "h",
+            "H"
+        ],
+        "MY": [
+            "hb",
+            "hB",
+            "h",
+            "H"
+        ],
+        "ET": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "gu-IN": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "mr-IN": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "pa-IN": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "TW": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "KE": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ],
+        "MM": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ],
+        "TZ": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ],
+        "UG": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ]
+    };
+
+    /**
+     * Returns the best matching date time pattern if a date time skeleton
+     * pattern is provided with a locale. Follows the Unicode specification:
+     * https://www.unicode.org/reports/tr35/tr35-dates.html#table-mapping-requested-time-skeletons-to-patterns
+     * @param skeleton date time skeleton pattern that possibly includes j, J or C
+     * @param locale
+     */
+    function getBestPattern(skeleton, locale) {
+        var skeletonCopy = '';
+        for (var patternPos = 0; patternPos < skeleton.length; patternPos++) {
+            var patternChar = skeleton.charAt(patternPos);
+            if (patternChar === 'j') {
+                var extraLength = 0;
+                while (patternPos + 1 < skeleton.length &&
+                    skeleton.charAt(patternPos + 1) === patternChar) {
+                    extraLength++;
+                    patternPos++;
+                }
+                var hourLen = 1 + (extraLength & 1);
+                var dayPeriodLen = extraLength < 2 ? 1 : 3 + (extraLength >> 1);
+                var dayPeriodChar = 'a';
+                var hourChar = getDefaultHourSymbolFromLocale(locale);
+                if (hourChar == 'H' || hourChar == 'k') {
+                    dayPeriodLen = 0;
+                }
+                while (dayPeriodLen-- > 0) {
+                    skeletonCopy += dayPeriodChar;
+                }
+                while (hourLen-- > 0) {
+                    skeletonCopy = hourChar + skeletonCopy;
+                }
+            }
+            else if (patternChar === 'J') {
+                skeletonCopy += 'H';
+            }
+            else {
+                skeletonCopy += patternChar;
+            }
+        }
+        return skeletonCopy;
+    }
+    /**
+     * Maps the [hour cycle type](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/hourCycle)
+     * of the given `locale` to the corresponding time pattern.
+     * @param locale
+     */
+    function getDefaultHourSymbolFromLocale(locale) {
+        var hourCycle = locale.hourCycle;
+        if (hourCycle === undefined &&
+            // @ts-ignore hourCycle(s) is not identified yet
+            locale.hourCycles &&
+            // @ts-ignore
+            locale.hourCycles.length) {
+            // @ts-ignore
+            hourCycle = locale.hourCycles[0];
+        }
+        if (hourCycle) {
+            switch (hourCycle) {
+                case 'h24':
+                    return 'k';
+                case 'h23':
+                    return 'H';
+                case 'h12':
+                    return 'h';
+                case 'h11':
+                    return 'K';
+                default:
+                    throw new Error('Invalid hourCycle');
+            }
+        }
+        // TODO: Once hourCycle is fully supported remove the following with data generation
+        var languageTag = locale.language;
+        var regionTag;
+        if (languageTag !== 'root') {
+            regionTag = locale.maximize().region;
+        }
+        var hourCycles = timeData[regionTag || ''] ||
+            timeData[languageTag || ''] ||
+            timeData["".concat(languageTag, "-001")] ||
+            timeData['001'];
+        return hourCycles[0];
+    }
+
     var _a;
     var SPACE_SEPARATOR_START_REGEX = new RegExp("^".concat(SPACE_SEPARATOR_REGEX.source, "*"));
     var SPACE_SEPARATOR_END_REGEX = new RegExp("".concat(SPACE_SEPARATOR_REGEX.source, "*$"));
@@ -988,6 +2465,7 @@ define(['exports'], function (exports) { 'use strict';
             this.message = message;
             this.position = { offset: 0, line: 1, column: 1 };
             this.ignoreTag = !!options.ignoreTag;
+            this.locale = options.locale;
             this.requiresOtherClause = !!options.requiresOtherClause;
             this.shouldParseSkeletons = !!options.shouldParseSkeletons;
         }
@@ -1363,12 +2841,19 @@ define(['exports'], function (exports) { 'use strict';
                             if (skeleton.length === 0) {
                                 return this.error(ErrorKind.EXPECT_DATE_TIME_SKELETON, location_1);
                             }
+                            var dateTimePattern = skeleton;
+                            // Get "best match" pattern only if locale is passed, if not, let it
+                            // pass as-is where `parseDateTimeSkeleton()` will throw an error
+                            // for unsupported patterns.
+                            if (this.locale) {
+                                dateTimePattern = getBestPattern(skeleton, this.locale);
+                            }
                             var style = {
                                 type: SKELETON_TYPE.dateTime,
-                                pattern: skeleton,
+                                pattern: dateTimePattern,
                                 location: styleAndLocation.styleLocation,
                                 parsedOptions: this.shouldParseSkeletons
-                                    ? parseDateTimeSkeleton(skeleton)
+                                    ? parseDateTimeSkeleton(dateTimePattern)
                                     : {},
                             };
                             var type = argType === 'date' ? TYPE.date : TYPE.time;
@@ -2129,6 +3614,8 @@ define(['exports'], function (exports) { 'use strict';
         }
         return result.val;
     }
+    // only for testing
+    var _Parser = Parser;
 
     //
     // Main
@@ -2354,7 +3841,7 @@ define(['exports'], function (exports) { 'use strict';
                     ? formats.time[el.style]
                     : isDateTimeSkeleton(el.style)
                         ? el.style.parsedOptions
-                        : undefined;
+                        : formats.time.medium;
                 result.push({
                     type: PART_TYPE.literal,
                     value: formatters
@@ -2511,8 +3998,8 @@ define(['exports'], function (exports) { 'use strict';
     }
     var IntlMessageFormat = /** @class */ (function () {
         function IntlMessageFormat(message, locales, overrideFormats, opts) {
-            var _this = this;
             if (locales === void 0) { locales = IntlMessageFormat.defaultLocale; }
+            var _this = this;
             this.formatterCache = {
                 number: {},
                 dateTime: {},
@@ -2543,19 +4030,25 @@ define(['exports'], function (exports) { 'use strict';
             this.formatToParts = function (values) {
                 return formatToParts(_this.ast, _this.locales, _this.formatters, _this.formats, values, undefined, _this.message);
             };
-            this.resolvedOptions = function () { return ({
-                locale: Intl.NumberFormat.supportedLocalesOf(_this.locales)[0],
-            }); };
+            this.resolvedOptions = function () {
+                var _a;
+                return ({
+                    locale: ((_a = _this.resolvedLocale) === null || _a === void 0 ? void 0 : _a.toString()) ||
+                        Intl.NumberFormat.supportedLocalesOf(_this.locales)[0],
+                });
+            };
             this.getAst = function () { return _this.ast; };
+            // Defined first because it's used to build the format pattern.
+            this.locales = locales;
+            this.resolvedLocale = IntlMessageFormat.resolveLocale(locales);
             if (typeof message === 'string') {
                 this.message = message;
                 if (!IntlMessageFormat.__parse) {
                     throw new TypeError('IntlMessageFormat.__parse must be set to process `message` of type `string`');
                 }
+                var _a = opts || {}, formatters = _a.formatters, parseOpts = __rest(_a, ["formatters"]);
                 // Parse string messages into an AST.
-                this.ast = IntlMessageFormat.__parse(message, {
-                    ignoreTag: opts === null || opts === void 0 ? void 0 : opts.ignoreTag,
-                });
+                this.ast = IntlMessageFormat.__parse(message, __assign(__assign({}, parseOpts), { locale: this.resolvedLocale }));
             }
             else {
                 this.ast = message;
@@ -2566,8 +4059,6 @@ define(['exports'], function (exports) { 'use strict';
             // Creates a new object with the specified `formats` merged with the default
             // formats.
             this.formats = mergeConfigs(IntlMessageFormat.formats, overrideFormats);
-            // Defined first because it's used to build the format pattern.
-            this.locales = locales;
             this.formatters =
                 (opts && opts.formatters) || createDefaultFormatters(this.formatterCache);
         }
@@ -2583,6 +4074,16 @@ define(['exports'], function (exports) { 'use strict';
             configurable: true
         });
         IntlMessageFormat.memoizedDefaultLocale = null;
+        IntlMessageFormat.resolveLocale = function (locales) {
+            if (typeof Intl.Locale === 'undefined') {
+                return;
+            }
+            var supportedLocales = Intl.NumberFormat.supportedLocalesOf(locales);
+            if (supportedLocales.length > 0) {
+                return new Intl.Locale(supportedLocales[0]);
+            }
+            return new Intl.Locale(typeof locales === 'string' ? locales : locales[0]);
+        };
         IntlMessageFormat.__parse = parse;
         // Default format options used as the prototype of the `formats` provided to the
         // constructor. These are used when constructing the internal Intl.NumberFormat
@@ -2818,423 +4319,1427 @@ define(['exports'], function (exports) { 'use strict';
     var SPACE_SEPARATOR_REGEX$1 = /[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/;
     var WHITE_SPACE_REGEX$2 = /[\t-\r \x85\u200E\u200F\u2028\u2029]/;
 
-    /**
-     * https://unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
-     * Credit: https://github.com/caridy/intl-datetimeformat-pattern/blob/master/index.js
-     * with some tweaks
-     */
-    var DATE_TIME_REGEX$1 = /(?:[Eec]{1,6}|G{1,5}|[Qq]{1,5}|(?:[yYur]+|U{1,5})|[ML]{1,5}|d{1,2}|D{1,3}|F{1}|[abB]{1,5}|[hkHK]{1,2}|w{1,2}|W{1}|m{1,2}|s{1,2}|[zZOvVxX]{1,4})(?=([^']*'[^']*')*[^']*$)/g;
-    /**
-     * Parse Date time skeleton into Intl.DateTimeFormatOptions
-     * Ref: https://unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
-     * @public
-     * @param skeleton skeleton string
-     */
-    function parseDateTimeSkeleton$1(skeleton) {
-        var result = {};
-        skeleton.replace(DATE_TIME_REGEX$1, function (match) {
-            var len = match.length;
-            switch (match[0]) {
-                // Era
-                case 'G':
-                    result.era = len === 4 ? 'long' : len === 5 ? 'narrow' : 'short';
-                    break;
-                // Year
-                case 'y':
-                    result.year = len === 2 ? '2-digit' : 'numeric';
-                    break;
-                case 'Y':
-                case 'u':
-                case 'U':
-                case 'r':
-                    throw new RangeError('`Y/u/U/r` (year) patterns are not supported, use `y` instead');
-                // Quarter
-                case 'q':
-                case 'Q':
-                    throw new RangeError('`q/Q` (quarter) patterns are not supported');
-                // Month
-                case 'M':
-                case 'L':
-                    result.month = ['numeric', '2-digit', 'short', 'long', 'narrow'][len - 1];
-                    break;
-                // Week
-                case 'w':
-                case 'W':
-                    throw new RangeError('`w/W` (week) patterns are not supported');
-                case 'd':
-                    result.day = ['numeric', '2-digit'][len - 1];
-                    break;
-                case 'D':
-                case 'F':
-                case 'g':
-                    throw new RangeError('`D/F/g` (day) patterns are not supported, use `d` instead');
-                // Weekday
-                case 'E':
-                    result.weekday = len === 4 ? 'short' : len === 5 ? 'narrow' : 'short';
-                    break;
-                case 'e':
-                    if (len < 4) {
-                        throw new RangeError('`e..eee` (weekday) patterns are not supported');
-                    }
-                    result.weekday = ['short', 'long', 'narrow', 'short'][len - 4];
-                    break;
-                case 'c':
-                    if (len < 4) {
-                        throw new RangeError('`c..ccc` (weekday) patterns are not supported');
-                    }
-                    result.weekday = ['short', 'long', 'narrow', 'short'][len - 4];
-                    break;
-                // Period
-                case 'a': // AM, PM
-                    result.hour12 = true;
-                    break;
-                case 'b': // am, pm, noon, midnight
-                case 'B': // flexible day periods
-                    throw new RangeError('`b/B` (period) patterns are not supported, use `a` instead');
-                // Hour
-                case 'h':
-                    result.hourCycle = 'h12';
-                    result.hour = ['numeric', '2-digit'][len - 1];
-                    break;
-                case 'H':
-                    result.hourCycle = 'h23';
-                    result.hour = ['numeric', '2-digit'][len - 1];
-                    break;
-                case 'K':
-                    result.hourCycle = 'h11';
-                    result.hour = ['numeric', '2-digit'][len - 1];
-                    break;
-                case 'k':
-                    result.hourCycle = 'h24';
-                    result.hour = ['numeric', '2-digit'][len - 1];
-                    break;
-                case 'j':
-                case 'J':
-                case 'C':
-                    throw new RangeError('`j/J/C` (hour) patterns are not supported, use `h/H/K/k` instead');
-                // Minute
-                case 'm':
-                    result.minute = ['numeric', '2-digit'][len - 1];
-                    break;
-                // Second
-                case 's':
-                    result.second = ['numeric', '2-digit'][len - 1];
-                    break;
-                case 'S':
-                case 'A':
-                    throw new RangeError('`S/A` (second) patterns are not supported, use `s` instead');
-                // Zone
-                case 'z': // 1..3, 4: specific non-location format
-                    result.timeZoneName = len < 4 ? 'short' : 'long';
-                    break;
-                case 'Z': // 1..3, 4, 5: The ISO8601 varios formats
-                case 'O': // 1, 4: miliseconds in day short, long
-                case 'v': // 1, 4: generic non-location format
-                case 'V': // 1, 2, 3, 4: time zone ID or city
-                case 'X': // 1, 2, 3, 4: The ISO8601 varios formats
-                case 'x': // 1, 2, 3, 4: The ISO8601 varios formats
-                    throw new RangeError('`Z/O/v/V/X/x` (timeZone) patterns are not supported, use `z` instead');
-            }
-            return '';
-        });
-        return result;
-    }
+    // @generated from time-data-gen.ts
+    // prettier-ignore  
+    var timeData$1 = {
+        "AX": [
+            "H"
+        ],
+        "BQ": [
+            "H"
+        ],
+        "CP": [
+            "H"
+        ],
+        "CZ": [
+            "H"
+        ],
+        "DK": [
+            "H"
+        ],
+        "FI": [
+            "H"
+        ],
+        "ID": [
+            "H"
+        ],
+        "IS": [
+            "H"
+        ],
+        "ML": [
+            "H"
+        ],
+        "NE": [
+            "H"
+        ],
+        "RU": [
+            "H"
+        ],
+        "SE": [
+            "H"
+        ],
+        "SJ": [
+            "H"
+        ],
+        "SK": [
+            "H"
+        ],
+        "AS": [
+            "h",
+            "H"
+        ],
+        "BT": [
+            "h",
+            "H"
+        ],
+        "DJ": [
+            "h",
+            "H"
+        ],
+        "ER": [
+            "h",
+            "H"
+        ],
+        "GH": [
+            "h",
+            "H"
+        ],
+        "IN": [
+            "h",
+            "H"
+        ],
+        "LS": [
+            "h",
+            "H"
+        ],
+        "PG": [
+            "h",
+            "H"
+        ],
+        "PW": [
+            "h",
+            "H"
+        ],
+        "SO": [
+            "h",
+            "H"
+        ],
+        "TO": [
+            "h",
+            "H"
+        ],
+        "VU": [
+            "h",
+            "H"
+        ],
+        "WS": [
+            "h",
+            "H"
+        ],
+        "001": [
+            "H",
+            "h"
+        ],
+        "AL": [
+            "h",
+            "H",
+            "hB"
+        ],
+        "TD": [
+            "h",
+            "H",
+            "hB"
+        ],
+        "ca-ES": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "CF": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "CM": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "fr-CA": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "gl-ES": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "it-CH": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "it-IT": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "LU": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "NP": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "PF": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "SC": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "SM": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "SN": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "TF": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "VA": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "CY": [
+            "h",
+            "H",
+            "hb",
+            "hB"
+        ],
+        "GR": [
+            "h",
+            "H",
+            "hb",
+            "hB"
+        ],
+        "CO": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "DO": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "KP": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "KR": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "NA": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "PA": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "PR": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "VE": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "AC": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "AI": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "BW": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "BZ": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "CC": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "CK": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "CX": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "DG": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "FK": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "GB": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "GG": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "GI": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "IE": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "IM": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "IO": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "JE": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "LT": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "MK": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "MN": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "MS": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "NF": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "NG": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "NR": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "NU": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "PN": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "SH": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "SX": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "TA": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "ZA": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "af-ZA": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "AR": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "CL": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "CR": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "CU": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "EA": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-BO": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-BR": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-EC": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-ES": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-GQ": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "es-PE": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "GT": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "HN": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "IC": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "KG": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "KM": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "LK": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "MA": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "MX": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "NI": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "PY": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "SV": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "UY": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "JP": [
+            "H",
+            "h",
+            "K"
+        ],
+        "AD": [
+            "H",
+            "hB"
+        ],
+        "AM": [
+            "H",
+            "hB"
+        ],
+        "AO": [
+            "H",
+            "hB"
+        ],
+        "AT": [
+            "H",
+            "hB"
+        ],
+        "AW": [
+            "H",
+            "hB"
+        ],
+        "BE": [
+            "H",
+            "hB"
+        ],
+        "BF": [
+            "H",
+            "hB"
+        ],
+        "BJ": [
+            "H",
+            "hB"
+        ],
+        "BL": [
+            "H",
+            "hB"
+        ],
+        "BR": [
+            "H",
+            "hB"
+        ],
+        "CG": [
+            "H",
+            "hB"
+        ],
+        "CI": [
+            "H",
+            "hB"
+        ],
+        "CV": [
+            "H",
+            "hB"
+        ],
+        "DE": [
+            "H",
+            "hB"
+        ],
+        "EE": [
+            "H",
+            "hB"
+        ],
+        "FR": [
+            "H",
+            "hB"
+        ],
+        "GA": [
+            "H",
+            "hB"
+        ],
+        "GF": [
+            "H",
+            "hB"
+        ],
+        "GN": [
+            "H",
+            "hB"
+        ],
+        "GP": [
+            "H",
+            "hB"
+        ],
+        "GW": [
+            "H",
+            "hB"
+        ],
+        "HR": [
+            "H",
+            "hB"
+        ],
+        "IL": [
+            "H",
+            "hB"
+        ],
+        "IT": [
+            "H",
+            "hB"
+        ],
+        "KZ": [
+            "H",
+            "hB"
+        ],
+        "MC": [
+            "H",
+            "hB"
+        ],
+        "MD": [
+            "H",
+            "hB"
+        ],
+        "MF": [
+            "H",
+            "hB"
+        ],
+        "MQ": [
+            "H",
+            "hB"
+        ],
+        "MZ": [
+            "H",
+            "hB"
+        ],
+        "NC": [
+            "H",
+            "hB"
+        ],
+        "NL": [
+            "H",
+            "hB"
+        ],
+        "PM": [
+            "H",
+            "hB"
+        ],
+        "PT": [
+            "H",
+            "hB"
+        ],
+        "RE": [
+            "H",
+            "hB"
+        ],
+        "RO": [
+            "H",
+            "hB"
+        ],
+        "SI": [
+            "H",
+            "hB"
+        ],
+        "SR": [
+            "H",
+            "hB"
+        ],
+        "ST": [
+            "H",
+            "hB"
+        ],
+        "TG": [
+            "H",
+            "hB"
+        ],
+        "TR": [
+            "H",
+            "hB"
+        ],
+        "WF": [
+            "H",
+            "hB"
+        ],
+        "YT": [
+            "H",
+            "hB"
+        ],
+        "BD": [
+            "h",
+            "hB",
+            "H"
+        ],
+        "PK": [
+            "h",
+            "hB",
+            "H"
+        ],
+        "AZ": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "BA": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "BG": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "CH": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "GE": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "LI": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "ME": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "RS": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "UA": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "UZ": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "XK": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "AG": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "AU": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "BB": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "BM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "BS": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "CA": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "DM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "en-001": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "FJ": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "FM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "GD": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "GM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "GU": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "GY": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "JM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "KI": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "KN": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "KY": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "LC": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "LR": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "MH": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "MP": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "MW": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "NZ": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SB": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SG": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SL": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SS": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SZ": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "TC": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "TT": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "UM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "US": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "VC": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "VG": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "VI": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "ZM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "BO": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "EC": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "ES": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "GQ": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "PE": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "AE": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "ar-001": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "BH": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "DZ": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "EG": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "EH": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "HK": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "IQ": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "JO": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "KW": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "LB": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "LY": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "MO": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "MR": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "OM": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "PH": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "PS": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "QA": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "SA": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "SD": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "SY": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "TN": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "YE": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "AF": [
+            "H",
+            "hb",
+            "hB",
+            "h"
+        ],
+        "LA": [
+            "H",
+            "hb",
+            "hB",
+            "h"
+        ],
+        "CN": [
+            "H",
+            "hB",
+            "hb",
+            "h"
+        ],
+        "LV": [
+            "H",
+            "hB",
+            "hb",
+            "h"
+        ],
+        "TL": [
+            "H",
+            "hB",
+            "hb",
+            "h"
+        ],
+        "zu-ZA": [
+            "H",
+            "hB",
+            "hb",
+            "h"
+        ],
+        "CD": [
+            "hB",
+            "H"
+        ],
+        "IR": [
+            "hB",
+            "H"
+        ],
+        "hi-IN": [
+            "hB",
+            "h",
+            "H"
+        ],
+        "kn-IN": [
+            "hB",
+            "h",
+            "H"
+        ],
+        "ml-IN": [
+            "hB",
+            "h",
+            "H"
+        ],
+        "te-IN": [
+            "hB",
+            "h",
+            "H"
+        ],
+        "KH": [
+            "hB",
+            "h",
+            "H",
+            "hb"
+        ],
+        "ta-IN": [
+            "hB",
+            "h",
+            "hb",
+            "H"
+        ],
+        "BN": [
+            "hb",
+            "hB",
+            "h",
+            "H"
+        ],
+        "MY": [
+            "hb",
+            "hB",
+            "h",
+            "H"
+        ],
+        "ET": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "gu-IN": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "mr-IN": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "pa-IN": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "TW": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "KE": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ],
+        "MM": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ],
+        "TZ": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ],
+        "UG": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ]
+    };
 
-    // @generated from regex-gen.ts
-    var WHITE_SPACE_REGEX$3 = /[\t-\r \x85\u200E\u200F\u2028\u2029]/i;
-
-    function parseNumberSkeletonFromString$1(skeleton) {
-        if (skeleton.length === 0) {
-            throw new Error('Number skeleton cannot be empty');
-        }
-        // Parse the skeleton
-        var stringTokens = skeleton
-            .split(WHITE_SPACE_REGEX$3)
-            .filter(function (x) { return x.length > 0; });
-        var tokens = [];
-        for (var _i = 0, stringTokens_1 = stringTokens; _i < stringTokens_1.length; _i++) {
-            var stringToken = stringTokens_1[_i];
-            var stemAndOptions = stringToken.split('/');
-            if (stemAndOptions.length === 0) {
-                throw new Error('Invalid number skeleton');
-            }
-            var stem = stemAndOptions[0], options = stemAndOptions.slice(1);
-            for (var _a = 0, options_1 = options; _a < options_1.length; _a++) {
-                var option = options_1[_a];
-                if (option.length === 0) {
-                    throw new Error('Invalid number skeleton');
+    /**
+     * Returns the best matching date time pattern if a date time skeleton
+     * pattern is provided with a locale. Follows the Unicode specification:
+     * https://www.unicode.org/reports/tr35/tr35-dates.html#table-mapping-requested-time-skeletons-to-patterns
+     * @param skeleton date time skeleton pattern that possibly includes j, J or C
+     * @param locale
+     */
+    function getBestPattern$1(skeleton, locale) {
+        var skeletonCopy = '';
+        for (var patternPos = 0; patternPos < skeleton.length; patternPos++) {
+            var patternChar = skeleton.charAt(patternPos);
+            if (patternChar === 'j') {
+                var extraLength = 0;
+                while (patternPos + 1 < skeleton.length &&
+                    skeleton.charAt(patternPos + 1) === patternChar) {
+                    extraLength++;
+                    patternPos++;
+                }
+                var hourLen = 1 + (extraLength & 1);
+                var dayPeriodLen = extraLength < 2 ? 1 : 3 + (extraLength >> 1);
+                var dayPeriodChar = 'a';
+                var hourChar = getDefaultHourSymbolFromLocale$1(locale);
+                if (hourChar == 'H' || hourChar == 'k') {
+                    dayPeriodLen = 0;
+                }
+                while (dayPeriodLen-- > 0) {
+                    skeletonCopy += dayPeriodChar;
+                }
+                while (hourLen-- > 0) {
+                    skeletonCopy = hourChar + skeletonCopy;
                 }
             }
-            tokens.push({ stem: stem, options: options });
-        }
-        return tokens;
-    }
-    function icuUnitToEcma$1(unit) {
-        return unit.replace(/^(.*?)-/, '');
-    }
-    var FRACTION_PRECISION_REGEX$1 = /^\.(?:(0+)(\*)?|(#+)|(0+)(#+))$/g;
-    var SIGNIFICANT_PRECISION_REGEX$1 = /^(@+)?(\+|#+)?[rs]?$/g;
-    var INTEGER_WIDTH_REGEX$1 = /(\*)(0+)|(#+)(0+)|(0+)/g;
-    var CONCISE_INTEGER_WIDTH_REGEX$1 = /^(0+)$/;
-    function parseSignificantPrecision$1(str) {
-        var result = {};
-        if (str[str.length - 1] === 'r') {
-            result.roundingPriority = 'morePrecision';
-        }
-        else if (str[str.length - 1] === 's') {
-            result.roundingPriority = 'lessPrecision';
-        }
-        str.replace(SIGNIFICANT_PRECISION_REGEX$1, function (_, g1, g2) {
-            // @@@ case
-            if (typeof g2 !== 'string') {
-                result.minimumSignificantDigits = g1.length;
-                result.maximumSignificantDigits = g1.length;
+            else if (patternChar === 'J') {
+                skeletonCopy += 'H';
             }
-            // @@@+ case
-            else if (g2 === '+') {
-                result.minimumSignificantDigits = g1.length;
-            }
-            // .### case
-            else if (g1[0] === '#') {
-                result.maximumSignificantDigits = g1.length;
-            }
-            // .@@## or .@@@ case
             else {
-                result.minimumSignificantDigits = g1.length;
-                result.maximumSignificantDigits =
-                    g1.length + (typeof g2 === 'string' ? g2.length : 0);
+                skeletonCopy += patternChar;
             }
-            return '';
-        });
-        return result;
-    }
-    function parseSign$1(str) {
-        switch (str) {
-            case 'sign-auto':
-                return {
-                    signDisplay: 'auto',
-                };
-            case 'sign-accounting':
-            case '()':
-                return {
-                    currencySign: 'accounting',
-                };
-            case 'sign-always':
-            case '+!':
-                return {
-                    signDisplay: 'always',
-                };
-            case 'sign-accounting-always':
-            case '()!':
-                return {
-                    signDisplay: 'always',
-                    currencySign: 'accounting',
-                };
-            case 'sign-except-zero':
-            case '+?':
-                return {
-                    signDisplay: 'exceptZero',
-                };
-            case 'sign-accounting-except-zero':
-            case '()?':
-                return {
-                    signDisplay: 'exceptZero',
-                    currencySign: 'accounting',
-                };
-            case 'sign-never':
-            case '+_':
-                return {
-                    signDisplay: 'never',
-                };
         }
-    }
-    function parseConciseScientificAndEngineeringStem$1(stem) {
-        // Engineering
-        var result;
-        if (stem[0] === 'E' && stem[1] === 'E') {
-            result = {
-                notation: 'engineering',
-            };
-            stem = stem.slice(2);
-        }
-        else if (stem[0] === 'E') {
-            result = {
-                notation: 'scientific',
-            };
-            stem = stem.slice(1);
-        }
-        if (result) {
-            var signDisplay = stem.slice(0, 2);
-            if (signDisplay === '+!') {
-                result.signDisplay = 'always';
-                stem = stem.slice(2);
-            }
-            else if (signDisplay === '+?') {
-                result.signDisplay = 'exceptZero';
-                stem = stem.slice(2);
-            }
-            if (!CONCISE_INTEGER_WIDTH_REGEX$1.test(stem)) {
-                throw new Error('Malformed concise eng/scientific notation');
-            }
-            result.minimumIntegerDigits = stem.length;
-        }
-        return result;
-    }
-    function parseNotationOptions$1(opt) {
-        var result = {};
-        var signOpts = parseSign$1(opt);
-        if (signOpts) {
-            return signOpts;
-        }
-        return result;
+        return skeletonCopy;
     }
     /**
-     * https://github.com/unicode-org/icu/blob/master/docs/userguide/format_parse/numbers/skeletons.md#skeleton-stems-and-options
+     * Maps the [hour cycle type](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/hourCycle)
+     * of the given `locale` to the corresponding time pattern.
+     * @param locale
      */
-    function parseNumberSkeleton$1(tokens) {
-        var result = {};
-        for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
-            var token = tokens_1[_i];
-            switch (token.stem) {
-                case 'percent':
-                case '%':
-                    result.style = 'percent';
-                    continue;
-                case '%x100':
-                    result.style = 'percent';
-                    result.scale = 100;
-                    continue;
-                case 'currency':
-                    result.style = 'currency';
-                    result.currency = token.options[0];
-                    continue;
-                case 'group-off':
-                case ',_':
-                    result.useGrouping = false;
-                    continue;
-                case 'precision-integer':
-                case '.':
-                    result.maximumFractionDigits = 0;
-                    continue;
-                case 'measure-unit':
-                case 'unit':
-                    result.style = 'unit';
-                    result.unit = icuUnitToEcma$1(token.options[0]);
-                    continue;
-                case 'compact-short':
-                case 'K':
-                    result.notation = 'compact';
-                    result.compactDisplay = 'short';
-                    continue;
-                case 'compact-long':
-                case 'KK':
-                    result.notation = 'compact';
-                    result.compactDisplay = 'long';
-                    continue;
-                case 'scientific':
-                    result = __assign(__assign(__assign({}, result), { notation: 'scientific' }), token.options.reduce(function (all, opt) { return (__assign(__assign({}, all), parseNotationOptions$1(opt))); }, {}));
-                    continue;
-                case 'engineering':
-                    result = __assign(__assign(__assign({}, result), { notation: 'engineering' }), token.options.reduce(function (all, opt) { return (__assign(__assign({}, all), parseNotationOptions$1(opt))); }, {}));
-                    continue;
-                case 'notation-simple':
-                    result.notation = 'standard';
-                    continue;
-                // https://github.com/unicode-org/icu/blob/master/icu4c/source/i18n/unicode/unumberformatter.h
-                case 'unit-width-narrow':
-                    result.currencyDisplay = 'narrowSymbol';
-                    result.unitDisplay = 'narrow';
-                    continue;
-                case 'unit-width-short':
-                    result.currencyDisplay = 'code';
-                    result.unitDisplay = 'short';
-                    continue;
-                case 'unit-width-full-name':
-                    result.currencyDisplay = 'name';
-                    result.unitDisplay = 'long';
-                    continue;
-                case 'unit-width-iso-code':
-                    result.currencyDisplay = 'symbol';
-                    continue;
-                case 'scale':
-                    result.scale = parseFloat(token.options[0]);
-                    continue;
-                // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#integer-width
-                case 'integer-width':
-                    if (token.options.length > 1) {
-                        throw new RangeError('integer-width stems only accept a single optional option');
-                    }
-                    token.options[0].replace(INTEGER_WIDTH_REGEX$1, function (_, g1, g2, g3, g4, g5) {
-                        if (g1) {
-                            result.minimumIntegerDigits = g2.length;
-                        }
-                        else if (g3 && g4) {
-                            throw new Error('We currently do not support maximum integer digits');
-                        }
-                        else if (g5) {
-                            throw new Error('We currently do not support exact integer digits');
-                        }
-                        return '';
-                    });
-                    continue;
-            }
-            // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#integer-width
-            if (CONCISE_INTEGER_WIDTH_REGEX$1.test(token.stem)) {
-                result.minimumIntegerDigits = token.stem.length;
-                continue;
-            }
-            if (FRACTION_PRECISION_REGEX$1.test(token.stem)) {
-                // Precision
-                // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#fraction-precision
-                // precision-integer case
-                if (token.options.length > 1) {
-                    throw new RangeError('Fraction-precision stems only accept a single optional option');
-                }
-                token.stem.replace(FRACTION_PRECISION_REGEX$1, function (_, g1, g2, g3, g4, g5) {
-                    // .000* case (before ICU67 it was .000+)
-                    if (g2 === '*') {
-                        result.minimumFractionDigits = g1.length;
-                    }
-                    // .### case
-                    else if (g3 && g3[0] === '#') {
-                        result.maximumFractionDigits = g3.length;
-                    }
-                    // .00## case
-                    else if (g4 && g5) {
-                        result.minimumFractionDigits = g4.length;
-                        result.maximumFractionDigits = g4.length + g5.length;
-                    }
-                    else {
-                        result.minimumFractionDigits = g1.length;
-                        result.maximumFractionDigits = g1.length;
-                    }
-                    return '';
-                });
-                var opt = token.options[0];
-                // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#trailing-zero-display
-                if (opt === 'w') {
-                    result = __assign(__assign({}, result), { trailingZeroDisplay: 'stripIfInteger' });
-                }
-                else if (opt) {
-                    result = __assign(__assign({}, result), parseSignificantPrecision$1(opt));
-                }
-                continue;
-            }
-            // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#significant-digits-precision
-            if (SIGNIFICANT_PRECISION_REGEX$1.test(token.stem)) {
-                result = __assign(__assign({}, result), parseSignificantPrecision$1(token.stem));
-                continue;
-            }
-            var signOpts = parseSign$1(token.stem);
-            if (signOpts) {
-                result = __assign(__assign({}, result), signOpts);
-            }
-            var conciseScientificAndEngineeringOpts = parseConciseScientificAndEngineeringStem$1(token.stem);
-            if (conciseScientificAndEngineeringOpts) {
-                result = __assign(__assign({}, result), conciseScientificAndEngineeringOpts);
+    function getDefaultHourSymbolFromLocale$1(locale) {
+        var hourCycle = locale.hourCycle;
+        if (hourCycle === undefined &&
+            // @ts-ignore hourCycle(s) is not identified yet
+            locale.hourCycles &&
+            // @ts-ignore
+            locale.hourCycles.length) {
+            // @ts-ignore
+            hourCycle = locale.hourCycles[0];
+        }
+        if (hourCycle) {
+            switch (hourCycle) {
+                case 'h24':
+                    return 'k';
+                case 'h23':
+                    return 'H';
+                case 'h12':
+                    return 'h';
+                case 'h11':
+                    return 'K';
+                default:
+                    throw new Error('Invalid hourCycle');
             }
         }
-        return result;
+        // TODO: Once hourCycle is fully supported remove the following with data generation
+        var languageTag = locale.language;
+        var regionTag;
+        if (languageTag !== 'root') {
+            regionTag = locale.maximize().region;
+        }
+        var hourCycles = timeData$1[regionTag || ''] ||
+            timeData$1[languageTag || ''] ||
+            timeData$1["".concat(languageTag, "-001")] ||
+            timeData$1['001'];
+        return hourCycles[0];
     }
 
     var _a$1;
@@ -3396,6 +5901,7 @@ define(['exports'], function (exports) { 'use strict';
             this.message = message;
             this.position = { offset: 0, line: 1, column: 1 };
             this.ignoreTag = !!options.ignoreTag;
+            this.locale = options.locale;
             this.requiresOtherClause = !!options.requiresOtherClause;
             this.shouldParseSkeletons = !!options.shouldParseSkeletons;
         }
@@ -3771,12 +6277,19 @@ define(['exports'], function (exports) { 'use strict';
                             if (skeleton.length === 0) {
                                 return this.error(ErrorKind$1.EXPECT_DATE_TIME_SKELETON, location_1);
                             }
+                            var dateTimePattern = skeleton;
+                            // Get "best match" pattern only if locale is passed, if not, let it
+                            // pass as-is where `parseDateTimeSkeleton()` will throw an error
+                            // for unsupported patterns.
+                            if (this.locale) {
+                                dateTimePattern = getBestPattern$1(skeleton, this.locale);
+                            }
                             var style = {
                                 type: SKELETON_TYPE$1.dateTime,
-                                pattern: skeleton,
+                                pattern: dateTimePattern,
                                 location: styleAndLocation.styleLocation,
                                 parsedOptions: this.shouldParseSkeletons
-                                    ? parseDateTimeSkeleton$1(skeleton)
+                                    ? parseDateTimeSkeleton(dateTimePattern)
                                     : {},
                             };
                             var type = argType === 'date' ? TYPE$1.date : TYPE$1.time;
@@ -3934,7 +6447,7 @@ define(['exports'], function (exports) { 'use strict';
         Parser.prototype.parseNumberSkeletonFromString = function (skeleton, location) {
             var tokens = [];
             try {
-                tokens = parseNumberSkeletonFromString$1(skeleton);
+                tokens = parseNumberSkeletonFromString(skeleton);
             }
             catch (e) {
                 return this.error(ErrorKind$1.INVALID_NUMBER_SKELETON, location);
@@ -3945,7 +6458,7 @@ define(['exports'], function (exports) { 'use strict';
                     tokens: tokens,
                     location: location,
                     parsedOptions: this.shouldParseSkeletons
-                        ? parseNumberSkeleton$1(tokens)
+                        ? parseNumberSkeleton(tokens)
                         : {},
                 },
                 err: null,
@@ -4537,6 +7050,8 @@ define(['exports'], function (exports) { 'use strict';
         }
         return result.val;
     }
+    // only for testing
+    var _Parser$1 = Parser$1;
 
     function _getFormatter(pattern, locale) {
         return (values) => new IntlMessageFormat(_parsePattern(pattern), locale).format(values);

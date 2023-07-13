@@ -547,6 +547,37 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/
     // end of jsdoc
 
     class MutableArrayTreeDataProvider {
+        set data(value) {
+            const oldData = this._data == undefined ? [] : this._data;
+            this._data = value;
+            if (this._getRootDataProvider() !== this) {
+                return;
+            }
+            if (((oldData == undefined || oldData.length === 0) &&
+                this._data != undefined &&
+                this._data.length > 0) ||
+                ((this._data == undefined || this._data.length === 0) &&
+                    oldData != undefined &&
+                    oldData.length > 0) ||
+                this._data.length !== oldData.length) {
+                this._keys = null;
+                this._baseDataProvider = new ArrayDataProvider(this._data, this._baseDPOptions);
+                this._dataRefreshed(null, null);
+            }
+            else {
+                const changes = this.findDiffNodes(this._data, oldData, [], '', {}, {});
+                const updates = changes.add;
+                const { refresh } = changes;
+                this._baseDataProvider = new ArrayDataProvider(this._data, this._baseDPOptions);
+                if (updates.length > 0 || refresh.length > 0) {
+                    const { mutationEvent, refreshEvent } = this._dataMutated(updates, changes.refresh);
+                    this._dataRefreshed(mutationEvent, refreshEvent);
+                }
+            }
+        }
+        get data() {
+            return this._data;
+        }
         constructor(data, keyAttribute, options, _rootDataProvider) {
             var _a;
             this.keyAttribute = keyAttribute;
@@ -608,37 +639,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/
                 this._processTreeArray(data, []);
             }
             this.data = data;
-        }
-        set data(value) {
-            const oldData = this._data == undefined ? [] : this._data;
-            this._data = value;
-            if (this._getRootDataProvider() !== this) {
-                return;
-            }
-            if (((oldData == undefined || oldData.length === 0) &&
-                this._data != undefined &&
-                this._data.length > 0) ||
-                ((this._data == undefined || this._data.length === 0) &&
-                    oldData != undefined &&
-                    oldData.length > 0) ||
-                this._data.length !== oldData.length) {
-                this._keys = null;
-                this._baseDataProvider = new ArrayDataProvider(this._data, this._baseDPOptions);
-                this._dataRefreshed(null, null);
-            }
-            else {
-                const changes = this.findDiffNodes(this._data, oldData, [], '', {}, {});
-                const updates = changes.add;
-                const { refresh } = changes;
-                this._baseDataProvider = new ArrayDataProvider(this._data, this._baseDPOptions);
-                if (updates.length > 0 || refresh.length > 0) {
-                    const { mutationEvent, refreshEvent } = this._dataMutated(updates, changes.refresh);
-                    this._dataRefreshed(mutationEvent, refreshEvent);
-                }
-            }
-        }
-        get data() {
-            return this._data;
         }
         getChildDataProvider(parentKey, options) {
             const node = this._getNodeForKey(parentKey);

@@ -59,6 +59,8 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         };
     };
     editMode: 'none' | 'cellNavigation' | 'cellEdit';
+    frozenColumnCount: number;
+    frozenRowCount: number;
     gridlines: {
         horizontal?: 'visible' | 'hidden';
         vertical?: 'visible' | 'hidden';
@@ -66,6 +68,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
     header: {
         column?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
+            freezable: string;
             label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
@@ -103,6 +106,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         };
         row?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
+            freezable: string;
             label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
@@ -215,6 +219,8 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         labelDisableNonContiguous?: string;
         labelEnableNonContiguous?: string;
         labelFillCells?: string;
+        labelFreezeCol?: string;
+        labelFreezeRow?: string;
         labelPaste?: string;
         labelPasteCells?: string;
         labelResize?: string;
@@ -235,6 +241,8 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         labelSortRow?: string;
         labelSortRowAsc?: string;
         labelSortRowDsc?: string;
+        labelUnfreezeCol?: string;
+        labelUnfreezeRow?: string;
         msgFetchingData?: string;
         msgNoData?: string;
         resizeColumnDialog?: string;
@@ -358,6 +366,10 @@ export namespace ojDataGrid {
     type dndChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>;
     // tslint:disable-next-line interface-over-type-literal
     type editModeChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["editMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type frozenColumnCountChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["frozenColumnCount"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type frozenRowCountChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["frozenRowCount"]>;
     // tslint:disable-next-line interface-over-type-literal
     type gridlinesChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["gridlines"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -523,6 +535,8 @@ export interface ojDataGridEventMap<K, D> extends baseComponentEventMap<ojDataGr
     'dataTransferOptionsChanged': JetElementCustomEvent<ojDataGrid<K, D>["dataTransferOptions"]>;
     'dndChanged': JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>;
     'editModeChanged': JetElementCustomEvent<ojDataGrid<K, D>["editMode"]>;
+    'frozenColumnCountChanged': JetElementCustomEvent<ojDataGrid<K, D>["frozenColumnCount"]>;
+    'frozenRowCountChanged': JetElementCustomEvent<ojDataGrid<K, D>["frozenRowCount"]>;
     'gridlinesChanged': JetElementCustomEvent<ojDataGrid<K, D>["gridlines"]>;
     'headerChanged': JetElementCustomEvent<ojDataGrid<K, D>["header"]>;
     'scrollPolicyChanged': JetElementCustomEvent<ojDataGrid<K, D>["scrollPolicy"]>;
@@ -588,6 +602,8 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         };
     };
     editMode: 'none' | 'cellNavigation' | 'cellEdit';
+    frozenColumnCount: number;
+    frozenRowCount: number;
     gridlines: {
         horizontal?: 'visible' | 'hidden';
         vertical?: 'visible' | 'hidden';
@@ -595,6 +611,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
     header: {
         column?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
+            freezable: string;
             label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
@@ -632,6 +649,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         };
         row?: {
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
+            freezable: string;
             label?: {
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
@@ -744,6 +762,8 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         labelDisableNonContiguous?: string;
         labelEnableNonContiguous?: string;
         labelFillCells?: string;
+        labelFreezeCol?: string;
+        labelFreezeRow?: string;
         labelPaste?: string;
         labelPasteCells?: string;
         labelResize?: string;
@@ -764,6 +784,8 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         labelSortRow?: string;
         labelSortRowAsc?: string;
         labelSortRowDsc?: string;
+        labelUnfreezeCol?: string;
+        labelUnfreezeRow?: string;
         msgFetchingData?: string;
         msgNoData?: string;
         resizeColumnDialog?: string;
@@ -876,6 +898,10 @@ export namespace DataGridElement {
     type dndChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>;
     // tslint:disable-next-line interface-over-type-literal
     type editModeChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["editMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type frozenColumnCountChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["frozenColumnCount"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type frozenRowCountChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["frozenRowCount"]>;
     // tslint:disable-next-line interface-over-type-literal
     type gridlinesChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["gridlines"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -991,6 +1017,8 @@ export interface DataGridIntrinsicProps extends Partial<Readonly<ojDataGridSetta
     ondataTransferOptionsChanged?: (value: ojDataGridEventMap<any, any>['dataTransferOptionsChanged']) => void;
     ondndChanged?: (value: ojDataGridEventMap<any, any>['dndChanged']) => void;
     oneditModeChanged?: (value: ojDataGridEventMap<any, any>['editModeChanged']) => void;
+    onfrozenColumnCountChanged?: (value: ojDataGridEventMap<any, any>['frozenColumnCountChanged']) => void;
+    onfrozenRowCountChanged?: (value: ojDataGridEventMap<any, any>['frozenRowCountChanged']) => void;
     ongridlinesChanged?: (value: ojDataGridEventMap<any, any>['gridlinesChanged']) => void;
     onheaderChanged?: (value: ojDataGridEventMap<any, any>['headerChanged']) => void;
     onscrollPolicyChanged?: (value: ojDataGridEventMap<any, any>['scrollPolicyChanged']) => void;

@@ -58,7 +58,7 @@ var __oj_progress_metadata =
 
   /**
    * @ojcomponent oj.ojProgress
-   *
+   * @ojdeprecated {since: '15.0.0', description: 'oj-progress has been deprecated, please use oj-progress-bar or oj-progress-circle instead.'}
    * @since 1.0.0
    * @augments oj.baseComponent
    * @ojshortdesc A progress allows the user to visualize the progression of an extended computer operation.

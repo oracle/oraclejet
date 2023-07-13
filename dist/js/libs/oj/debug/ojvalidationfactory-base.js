@@ -817,7 +817,7 @@ Validation._CONTRACTS = {
  * {@link oj.ColorConverter}.
  *
  * @name oj.ColorConverterFactory
- * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of ColorConverter instead.'}
+ * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of {@link oj.ColorConverter} instead.'}
  * @public
  * @class
  * @ojtsnoexport

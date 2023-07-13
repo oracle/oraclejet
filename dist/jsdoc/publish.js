@@ -43,8 +43,16 @@
 
  env.opts.destination = env.opts.query.destination || env.opts.destination;
  var outdir = path.normalize(env.opts.destination);
- logger.setLevel(logger.LEVELS.INFO);
- // [csaba] whitelist for global members
+ const LOGGING_LEVELS = {
+  INFO: logger.LEVELS.INFO,
+  ERROR: logger.LEVELS.ERROR,
+  WARNING: logger.LEVELS.WARN,
+  DEBUG: logger.LEVELS.DEBUG
+}
+
+env.opts.loggingLevel = env.opts.query.loggingLevel || env.opts.loggingLevel;
+logger.setLevel(LOGGING_LEVELS[env.opts.loggingLevel]);
+logger.info(`Logger set to ${env.opts.loggingLevel}`);
  const GLOBAL_APIS = ["ajax", "sync", "version", "revision"];
  var ALL_VIOLATIONS = {
    MISSING_LINKS: {
@@ -801,10 +809,10 @@
    })
    // [csaba]: Bug 27832562
    // as a last step, search and replace the type 'any' with a link to the generic section in
-   // our API Doc: CustomElementOverview.html#ce-attrs-any-section
+   // our API Doc: https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview#ce-attrs-any-section
    let regexp = new RegExp('(?<![\\w])any(?![\\w])', 'g');
    if (regexp.test(types[0])) {
-     let anyLink = `<a href="CustomElementOverview.html#ce-attrs-any-section">any</a>`;
+     let anyLink = `<a href="https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview#ce-attrs-any-section">any</a>`;
      types[0] = types[0].replace(regexp, anyLink);
    }
 
@@ -1050,12 +1058,12 @@
    }
    // [csaba]: Bug 27832562
    // search and replace the type 'any' with a link to the generic section in
-   // our API Doc: CustomElementOverview.html#ce-attrs-any-section
+   // our API Doc: https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview#ce-attrs-any-section
    // if we had an ojsignature, type any was already processed
    if (returnTypesString.indexOf('CustomElementOverview') < 0) {
      let regexp = new RegExp('(?<![\\w])any(?![\\w])', 'g');
      if (regexp.test(returnTypesString)) {
-       let anyLink = `<a href="CustomElementOverview.html#ce-attrs-any-section">any</a>`;
+       let anyLink = `<a href="https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview#ce-attrs-any-section">any</a>`;
        returnTypesString = returnTypesString.replace(regexp, anyLink);
      }
    }
@@ -1958,6 +1966,35 @@
        path.basename(conf.default.layoutFile)) :
      'layout.tmpl';
 
+    // set up templating for external apps
+    // save the current env.pwd
+    const tmp_pwd = env.pwd;
+    try{
+      env.pwd = env.opts.query.docletSource;
+      if (opts.main){
+        view.main = path.getResourcePath(path.dirname(opts.main), path.basename(opts.main));
+        if (view.main){
+          view.mainContent = fs.readFileSync(view.main, "utf-8");
+        }
+      }
+      if (opts.footer){
+        view.footer = path.getResourcePath(path.dirname(opts.footer), path.basename(opts.footer));
+        if (view.footer){
+          view.footerContent = fs.readFileSync(view.footer, "utf-8");
+        }
+      }
+      if (opts.header){
+        view.header = path.getResourcePath(path.dirname(opts.header), path.basename(opts.header));
+        if (view.header){
+          view.headerContent = fs.readFileSync(view.header, "utf-8");
+        }
+      }
+    }
+    finally{
+      //restore
+      env.pwd = tmp_pwd;
+    }
+
    // set up tutorials for helper
    helper.setTutorials(tutorials);
    data = helper.prune(data);
@@ -2198,10 +2235,7 @@
 
    if (members.globals.length) { generate('Global', [{ kind: 'globalobj' }], globalUrl); }
 
-   // index page displays information from package.json and lists files
-   var files = find({ kind: 'file' }),
-     packages = find({ kind: 'package' });
-   var mainPageDoc = [{ kind: 'mainpage', readme: opts.readme, longname: (opts.mainpagetitle) ? opts.mainpagetitle : 'Main Page' }];
+   const mainPageDoc = [{ kind: 'mainpage', readme: opts.readme, longname: (opts.mainpagetitle) ? opts.mainpagetitle : 'Main Page' }];
 
    // generate the jet module files
    if (Object.getOwnPropertyNames(moduleNav[MODULES]).length > 0) {
@@ -2294,9 +2328,7 @@
      logger.error(new Error("JSDOC build failed. Check the log for more information"));
    }
 
-   generate('Introduction',
-     packages.concat(mainPageDoc).concat(files),
-     indexUrl, true, classes);
+   generate('Introduction', mainPageDoc, indexUrl, true, classes);
 
    var searchMdFilePath = path.join(outdir, 'jsDocMd.json');
    fs.writeFileSync(searchMdFilePath, JSON.stringify(searchMetadata), 'utf8');

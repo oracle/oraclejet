@@ -20,7 +20,7 @@ import 'ojs/ojpopupcore';
 /**
  * @namespace
  * @since 1.1.0
- * @ojdeprecated {since: '12.0.0', description: 'Please use &lt;oj-drawer-layout> or &lt;oj-drawer-layout> components instead.'}
+ * @ojdeprecated {since: '12.0.0', value:['oj-drawer-layout']}
  * @ojtsmodule
  * @hideconstructor
  * @ojimportmembers Offcanvas

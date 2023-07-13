@@ -73,8 +73,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      * <p>
      * Updated rows are staying in their current position.
      * <p>
-     * When uncommitted rows are sorted in current row set, their position may not correspond to server side position once they are committed.
-     * Therefore a 'remove' event may be fired when new row sets are fetched and it determines that the rows are not in current positions.
+     * When uncommitted rows are sorted in current row set, their positions will correspond to server side position once they are committed.
      * Uncommitted rows will be sorted according to updated row set.
      * </p>
      * </p>
@@ -84,7 +83,6 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      * <pre class="prettyprint"><code>
      * // ex: added and committed a new row with id 85
      *{
-     *  notSorted:{},
      *  add: {
      *    metadata: [{key: 85}],
      *    addBeforeKeys:[0],
@@ -96,7 +94,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      * Subsequent to a new/updated row but before the commit, the row can be sorted or filtered.
      * The sorted/filtered position of the row stays after the commit until a subsequent re-order/refresh.
      *
-     * When uncommitted rows are sorted in current row set, their position may not correspond to server side position once they are committed.
+     * When uncommitted rows are sorted in current row set, their positions will correspond to server side position once they are committed.
      * Uncommitted rows will be sorted according to updated row set.
      * </p>
      *
@@ -674,15 +672,6 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         }
     }
 
-    var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    };
     class BufferingDataProvider {
         constructor(dataProvider, options) {
             var _a;
@@ -727,8 +716,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     }
                 }
                 _fetchNext() {
-                    var _a;
-                    const signal = (_a = this._params) === null || _a === void 0 ? void 0 : _a.signal;
+                    const signal = this._params?.signal;
                     if (signal && signal.aborted) {
                         const reason = signal.reason;
                         return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -740,8 +728,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                                 return reject(new DOMException(reason, 'AbortError'));
                             });
                         }
-                        resolve(this._baseIterator.next().then((result) => __awaiter(this, void 0, void 0, function* () {
-                            var _a;
+                        return resolve(this._baseIterator.next().then(async (result) => {
                             if (!this.firstBaseKey && result.value.metadata.length) {
                                 this.firstBaseKey = result.value.metadata[0].key;
                             }
@@ -752,7 +739,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                                 return { data: result.value.data[index], metadata: result.value.metadata[index] };
                             });
                             this._parent.totalFilteredRowCount = result.value.totalFilteredRowCount;
-                            yield this._parent._mergeEdits(baseItemArray, this.mergedItemArray, this._params.filterCriterion, this._parent.lastSortCriteria, true, this.mergedAddKeySet, result.done);
+                            await this._parent._mergeEdits(baseItemArray, this.mergedItemArray, this._params.filterCriterion, this._parent.lastSortCriteria, this.mergedAddKeySet, result.done);
                             if (this.nextOffset === 0) {
                                 for (let i = 0; i < this.mergedItemArray.length; i++) {
                                     const key = this.mergedItemArray[i].metadata.key;
@@ -802,12 +789,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                                     fetchParameters: this._params,
                                     data: newDataArray,
                                     metadata: newMetaArray,
-                                    totalFilteredRowCount: ((_a = this._params) === null || _a === void 0 ? void 0 : _a.includeFilteredRowCount) === 'enabled'
+                                    totalFilteredRowCount: this._params?.includeFilteredRowCount === 'enabled'
                                         ? this._parent.totalFilteredRowCount
                                         : null
                                 }
                             };
-                        })));
+                        }));
                     });
                 }
                 ['next']() {
@@ -818,7 +805,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             this.editBuffer = new EditBuffer();
             this.lastSortCriteria = null;
             this.lastIterator = null;
-            this.customKeyGenerator = options === null || options === void 0 ? void 0 : options.keyGenerator;
+            this.customKeyGenerator = options?.keyGenerator;
             this.generatedKeyMap = new Map();
             this.totalFilteredRowCount = 0;
             this.dataBeforeUpdated = new Map();
@@ -856,30 +843,32 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             return 0;
         }
         _insertAddEdits(editItems, filterObj, sortCriteria, itemArray, mergedAddKeySet, lastBlock) {
-            editItems.forEach((editItem, key) => __awaiter(this, void 0, void 0, function* () {
+            editItems.forEach(async (editItem, key) => {
                 if (editItem.operation === 'add') {
                     if (!filterObj || filterObj.filter(editItem.item.data)) {
                         this.totalFilteredRowCount++;
                     }
                 }
-                else if (editItem.operation === 'remove') {
-                    if (!filterObj || filterObj.filter(editItem.item.data)) {
-                        this.totalFilteredRowCount--;
-                    }
-                }
-                else if (editItem.operation === 'update') {
+                else {
+                    let oldData = null;
                     if (filterObj) {
-                        let oldData = null;
                         if (this.dataBeforeUpdated.has(key)) {
                             oldData = this.dataBeforeUpdated.get(key);
                         }
                         else {
                             let keySet = new Set();
                             keySet.add(key);
-                            let value = yield this.dataProvider.fetchByKeys({ keys: keySet });
+                            let value = await this.dataProvider.fetchByKeys({ keys: keySet });
                             oldData = value.results.get(key).data;
                             this.dataBeforeUpdated.set(key, oldData);
                         }
+                    }
+                    if (editItem.operation === 'remove') {
+                        if (!filterObj || filterObj.filter(oldData)) {
+                            this.totalFilteredRowCount--;
+                        }
+                    }
+                    else if (editItem.operation === 'update' && filterObj) {
                         if (filterObj.filter(oldData) && !filterObj.filter(editItem.item.data)) {
                             this.totalFilteredRowCount--;
                         }
@@ -894,6 +883,11 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                         if (sortCriteria && sortCriteria.length) {
                             let inserted = false;
                             for (let i = 0; i < itemArray.length; i++) {
+                                if (editItem.operation === 'update' &&
+                                    !this.editBuffer.isUpdateTransformed(key) &&
+                                    key === itemArray[i].metadata.key) {
+                                    itemArray.splice(i, 1);
+                                }
                                 if (this._compareItem(editItem.item.data, itemArray[i].data, sortCriteria) < 0) {
                                     itemArray.splice(i, 0, editItem.item);
                                     mergedAddKeySet.add(key);
@@ -906,7 +900,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                                 mergedAddKeySet.add(key);
                             }
                         }
-                        else {
+                        else if (editItem.operation === 'add' ||
+                            (editItem.operation === 'update' && this.editBuffer.isUpdateTransformed(key))) {
                             let allItemsRemoved = true;
                             itemArray.forEach((item) => {
                                 if (key !== item.metadata.key &&
@@ -926,13 +921,13 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                         }
                     }
                 }
-            }));
+            });
         }
         _mergeAddEdits(filterObj, sortCriteria, newItemArray, mergedAddKeySet, lastBlock) {
             this._insertAddEdits(this.editBuffer.getUnsubmittedItems(), filterObj, sortCriteria, newItemArray, mergedAddKeySet, lastBlock);
             this._insertAddEdits(this.editBuffer.getSubmittingItems(), filterObj, sortCriteria, newItemArray, mergedAddKeySet, lastBlock);
         }
-        _mergeEdits(baseItemArray, newItemArray, filterCriterion, sortCriteria, addToBeginning, mergedAddKeySet, lastBlock) {
+        _mergeEdits(baseItemArray, newItemArray, filterCriterion, sortCriteria, mergedAddKeySet, lastBlock) {
             let filterObj;
             if (filterCriterion) {
                 if (!filterCriterion.filter) {
@@ -945,9 +940,6 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     filterObj = filterCriterion;
                 }
             }
-            if (addToBeginning && !(sortCriteria && sortCriteria.length)) {
-                this._mergeAddEdits(filterObj, sortCriteria, newItemArray, mergedAddKeySet, lastBlock);
-            }
             for (const baseItem of baseItemArray) {
                 const editItem = this.editBuffer.getItem(baseItem.metadata.key);
                 if (!editItem) {
@@ -957,14 +949,20 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     if (editItem.operation === 'remove') {
                         newItemArray.push(baseItem);
                     }
+                    else if (editItem.operation === 'update' &&
+                        !this.editBuffer.isUpdateTransformed(editItem.item.metadata.key)) {
+                        if (!filterObj || filterObj.filter(editItem.item.data)) {
+                            if (!sortCriteria || sortCriteria.length === 0) {
+                                newItemArray.push(editItem.item);
+                            }
+                        }
+                    }
                 }
             }
-            if (sortCriteria && sortCriteria.length) {
-                this._mergeAddEdits(filterObj, sortCriteria, newItemArray, mergedAddKeySet, lastBlock);
-            }
+            this._mergeAddEdits(filterObj, sortCriteria, newItemArray, mergedAddKeySet, lastBlock);
         }
         _fetchFromOffset(params, newItemArray) {
-            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            const signal = params?.signal;
             if (signal && signal.aborted) {
                 const reason = signal.reason;
                 return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -976,7 +974,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                         return reject(new DOMException(reason, 'AbortError'));
                     });
                 }
-                resolve(this.dataProvider.fetchByOffset(params).then((baseResults) => {
+                return resolve(this.dataProvider.fetchByOffset(params).then((baseResults) => {
                     const editBuffer = this.editBuffer;
                     if (!editBuffer.isEmpty()) {
                         const baseItemArray = baseResults.results;
@@ -987,7 +985,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                         else {
                             sortCriteria = params.sortCriteria;
                         }
-                        this._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, params.offset === 0, new Set(), baseResults.done);
+                        this._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, new Set(), baseResults.done);
                         let actualReturnSize = newItemArray.length;
                         for (const newItem of newItemArray) {
                             if (this._isItemRemoved(newItem.metadata.key)) {
@@ -1049,7 +1047,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             const bufferResult = this._fetchByKeysFromBuffer(params);
             const unresolvedKeys = bufferResult.unresolvedKeys;
             const results = bufferResult.results;
-            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            const signal = params?.signal;
             if (signal && signal.aborted) {
                 const reason = signal.reason;
                 return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -1062,9 +1060,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     });
                 }
                 if (unresolvedKeys.size === 0) {
-                    resolve({ fetchParameters: params, results });
+                    return resolve({ fetchParameters: params, results });
                 }
-                resolve(this.dataProvider
+                return resolve(this.dataProvider
                     .fetchByKeys({
                     attributes: params.attributes,
                     keys: unresolvedKeys,
@@ -1202,7 +1200,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     data: [addItem.data],
                     keys: new Set().add(addItem.metadata.key),
                     metadata: [addItem.metadata],
-                    addBeforeKeys: [addBeforeKey]
+                    addBeforeKeys: [addBeforeKey],
+                    indexes: [0]
                 }
             };
             const event = new ojdataprovider.DataProviderMutationEvent(detail);
@@ -1631,18 +1630,16 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             this.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(newDetails));
         }
         _checkGeneratedKeys(eventDetail) {
-            var _a;
             const checkKeyMap = (key, eventAddDetail, index) => {
-                var _a, _b, _c, _d, _e;
                 if (this.generatedKeyMap.has(key)) {
                     const transientKey = this.generatedKeyMap.get(key);
-                    if (!eventDetail.remove || !((_a = eventDetail.remove.keys) === null || _a === void 0 ? void 0 : _a.has(key))) {
+                    if (!eventDetail.remove || !eventDetail.remove.keys?.has(key)) {
                         if (!eventDetail.remove) {
                             eventDetail.remove = { keys: new Set() };
                         }
                         eventDetail.remove.keys.add(transientKey);
                         if (eventAddDetail) {
-                            const firstKey = (_e = (_d = (_c = (_b = this.lastIterator) === null || _b === void 0 ? void 0 : _b.mergedItemArray) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.metadata) === null || _e === void 0 ? void 0 : _e.key;
+                            const firstKey = this.lastIterator?.mergedItemArray?.[0]?.metadata?.key;
                             if (firstKey !== null) {
                                 if (!eventAddDetail.addBeforeKeys) {
                                     eventAddDetail.addBeforeKeys = [];
@@ -1653,7 +1650,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     }
                 }
             };
-            if ((_a = eventDetail.add) === null || _a === void 0 ? void 0 : _a.keys) {
+            if (eventDetail.add?.keys) {
                 let i = 0;
                 eventDetail.add.keys.forEach((key) => {
                     checkKeyMap(key, eventDetail.add, i);

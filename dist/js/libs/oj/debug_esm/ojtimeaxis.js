@@ -178,7 +178,7 @@ var __oj_time_axis_metadata =
  */
 
 /**
- * <p>The Time Axis supports a simplified version of the ISO 8601 extended date/time format. The format is as follows: <font color="#4B8A08">YYYY-MM-DDTHH:mm:ss.sssZ</font></p>
+ * <p>The Time Axis supports a simplified version of the ISO 8601 extended date/time format. The format is as follows: YYYY-MM-DDTHH:mm:ss.sssZ</p>
  * <table  class="keyboard-table">
  * <thead>
  * <tr>
@@ -190,31 +190,31 @@ var __oj_time_axis_metadata =
  * </thead>
  * <tbody>
  * <tr>
- * <td><font color="#4B8A08">-, :, .,T</font></td><td>Characters actually in the string. T specifies the start of a time.</td><td></td><td></td>
+ * <td>-, :, .,T</td><td>Characters actually in the string. T specifies the start of a time.</td><td></td><td></td>
  * </tr>
  * <tr>
- * <td><font color="#4B8A08">YYYY</font></td><td>Year</td><td></td><td rowspan="3">2013-03-22<br>2014-02</td>
+ * <td>YYYY</td><td>Year</td><td></td><td rowspan="3">2013-03-22<br>2014-02</td>
  * </tr>
  * <tr>
- * <td><font color="#4B8A08">MM</font></td><td>Month</td><td>01 to 12</td>
+ * <td>MM</td><td>Month</td><td>01 to 12</td>
  * </tr>
  * <tr>
- * <td><font color="#4B8A08">DD</font></td><td>Day of the month</td><td>01 to 31</td>
+ * <td>DD</td><td>Day of the month</td><td>01 to 31</td>
  * </tr>
  * <tr>
- * <td><font color="#4B8A08">HH</font></td><td>Hours</td><td>00 to 24</td><td rowspan="3">2013-02-04T15:20Z<br>2013-02-10T15:20:45.300Z</td>
+ * <td>HH</td><td>Hours</td><td>00 to 24</td><td rowspan="3">2013-02-04T15:20Z<br>2013-02-10T15:20:45.300Z</td>
  * </tr>
  * <tr>
- * <td><font color="#4B8A08">mm</font></td><td>Minutes</td><td>00 to 59</td>
+ * <td>mm</td><td>Minutes</td><td>00 to 59</td>
  * </tr>
  * <tr>
- * <td><font color="#4B8A08">ss</font></td><td>Seconds. The seconds and milliseconds are optional if a time is specified.</td><td>00 to 59</td>
+ * <td>ss</td><td>Seconds. The seconds and milliseconds are optional if a time is specified.</td><td>00 to 59</td>
  * </tr>
  * <tr>
- * <td><font color="#4B8A08">sss</font></td><td>Milliseconds</td><td>00 to 999</td><td></td>
+ * <td>sss</td><td>Milliseconds</td><td>00 to 999</td><td></td>
  * </tr>
  * <tr>
- * <td><font color="#4B8A08">Z</font></td>
+ * <td>Z</td>
  * <td>The value in this position can be one of the following.
  *    If the value is omitted, character 'Z' should be used to specify UTC time.
  *    <br>
@@ -305,7 +305,7 @@ function _getDateDefaultConverter() {
 
 /**
  * @ojcomponent oj.ojTimeAxis
- * @ojdeprecated {since: '12.0.0', description: 'Use the Gantt or Timeline components instead.'}
+ * @ojdeprecated {since: '12.0.0', value:['oj-gantt', 'oj-timeline']}
  * @augments oj.dvtBaseComponent
  * @since 2.1.0
  *

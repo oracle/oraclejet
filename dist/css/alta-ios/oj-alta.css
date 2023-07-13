@@ -270,7 +270,7 @@ template {
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"alta","targetPlatform":"ios","behavior":"alta","jetReleaseVersion":"v14.1.0"}'; }
+  font-family: '{"name":"alta","targetPlatform":"ios","behavior":"alta","jetReleaseVersion":"v15.0.0"}'; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -9685,7 +9685,8 @@ html[dir="rtl"] .oj-table-vgrid-lines:last-child, html[dir="rtl"]
 
 /* Styling for the status message. */
 .oj-table-status-message {
-  position: absolute; }
+  position: absolute;
+  pointer-events: none; }
 
 /* Styling for the status message text. */
 .oj-table-status-message-text {
@@ -13020,7 +13021,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for all row labels */
 .oj-gantt-row-label {
-  fill: rgba(0, 0, 0, 0.85);
+  color: rgba(0, 0, 0, 0.85);
   font-size: 1rem;
   padding-left: 0.5714rem;
   padding-right: 0.5714rem; }
@@ -13135,7 +13136,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the major time axis labels */
 .oj-gantt-major-axis-label {
-  fill: rgba(0, 0, 0, 0.85);
+  color: rgba(0, 0, 0, 0.85);
   font-size: 1rem;
   font-weight: 500; }
 
@@ -13151,7 +13152,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the minor time axis labels */
 .oj-gantt-minor-axis-label {
-  fill: black;
+  color: black;
   font-size: 0.875rem;
   font-weight: normal; }
 

@@ -20,16 +20,16 @@ class PreactTemplateEngineKo {
             __Observable: observable
         };
     }
-    execute(componentElement, templateElement, properties, alias, reportBusy) {
+    execute(componentElement, templateElement, properties, alias, reportBusy, provided) {
         const templateAlias = templateElement.getAttribute('data-oj-as');
-        const context = TemplateEngineUtils.getContext(this._bindingProvider, componentElement, templateElement, properties, alias, templateAlias);
+        const context = TemplateEngineUtils.getContext(this._bindingProvider, componentElement, templateElement, properties, alias, templateAlias, provided);
         if (templateElement.render) {
-            return this._executeVDomTemplate(templateElement, context);
+            return this._executeVDomTemplate(componentElement, templateElement, context, provided);
         }
         throw new Error(`The render property is expected on the template for component ${componentElement.id}`);
     }
-    clean(node) {
-        let vdomTemplateRoots = PreactTemplate.findTemplateRoots(node);
+    clean(node, componentElement) {
+        let vdomTemplateRoots = PreactTemplate.findTemplateRoots(node, componentElement);
         vdomTemplateRoots.forEach((root) => {
             PreactTemplate.clean(root);
         });
@@ -46,7 +46,7 @@ class PreactTemplateEngineKo {
     defineTrackableProperty(target, name, value, changeListener) {
         TemplateEngineUtils.createPropertyBackedByObservable(this._bindingProvider, target, name, value, changeListener);
     }
-    _executeVDomTemplate(templateElement, context) {
+    _executeVDomTemplate(componentElement, templateElement, context, provided) {
         const busyContext = Context.getContext(templateElement).getBusyContext();
         const customThrottle = (callback, timeout) => {
             let timeoutInstance;
@@ -65,15 +65,15 @@ class PreactTemplateEngineKo {
         };
         const computedVNode = pureComputed({
             read: () => {
-                return templateElement.render(context.$current);
+                return templateElement.render(context.$current, provided);
             }
         })
             .extend({ rateLimit: { timeout: 0, method: customThrottle } });
         const vNode = computedVNode();
         PreactTemplate.extendTemplate(templateElement, PreactTemplate._ROW_CACHE_FACTORY, (renderer) => {
             templateElement._cachedRows.forEach((rowItem) => {
-                let newVNode = renderer(rowItem.currentContext);
-                PreactTemplate.renderNodes(newVNode, rowItem);
+                let newVNode = renderer(rowItem.currentContext, provided);
+                PreactTemplate.renderNodes(componentElement, newVNode, rowItem, provided);
             });
         });
         const parentStub = document.createElement('div');
@@ -85,12 +85,12 @@ class PreactTemplateEngineKo {
             vnode: undefined,
             nodes: undefined
         };
-        PreactTemplate.renderNodes(vNode, cachedRow);
+        PreactTemplate.renderNodes(componentElement, vNode, cachedRow, provided);
         templateElement._cachedRows.push(cachedRow);
         computedVNode.subscribe((newVNode) => {
             const currRow = templateElement._cachedRows.find((row) => row.computedVNode === computedVNode);
             if (currRow) {
-                PreactTemplate.renderNodes(newVNode, currRow);
+                PreactTemplate.renderNodes(componentElement, newVNode, currRow, provided);
             }
         });
         return cachedRow.nodes;

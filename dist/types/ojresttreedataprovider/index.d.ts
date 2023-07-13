@@ -1,3 +1,4 @@
+import { RESTDataProvider } from '../ojrestdataprovider';
 import TreeDataProvider = require('../ojtreedataprovider');
 import { FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, FetchListResult, FetchListParameters, DataProviderMutationEventDetail, Item,
    FetchByKeysCapability, FetchByOffsetCapability, FilterCapability, SortCapability, ItemMetadata, SortCriterion, DataProvider } from '../ojdataprovider';
@@ -57,6 +58,20 @@ export namespace RESTTreeDataProvider {
         response?: FetchResponseTransform<K, D>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type FetchErrorDetail<K, D> = {
+        error: TypeError;
+        fetchOptions: Options<K, D>;
+        fetchParameters: FetchListParameters<D> | FetchByKeysParameters<K> | FetchByOffsetParameters<D>;
+        fetchType: 'fetchFirst' | 'fetchByKeys' | 'fetchByOffset';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type FetchResponseErrorDetail<K, D> = {
+        fetchOptions: Options<K, D>;
+        fetchParameters: FetchListParameters<D> | FetchByKeysParameters<K> | FetchByOffsetParameters<D>;
+        fetchType: 'fetchFirst' | 'fetchByKeys' | 'fetchByOffset';
+        response: RESTDataProvider.FetchResponseOptions;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type FetchResponseTransform<K, D> = (options: FetchResponseTransformOptions) => Promise<FetchResponseTransformResult<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type FetchResponseTransformOptions = {
@@ -75,6 +90,7 @@ export namespace RESTTreeDataProvider {
     // tslint:disable-next-line interface-over-type-literal
     type Options<K, D> = {
         capabilities?: Capabilities;
+        error?: ((response: FetchErrorDetail<K, D> | FetchResponseErrorDetail<K, D>) => void);
         getChildDataProvider: (item: Item<K, D>) => DataProvider<K, D> | null;
         implicitSort?: Array<SortCriterion<D>>;
         iterationLimit?: number;

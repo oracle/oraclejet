@@ -397,7 +397,7 @@ LovDropdownSingle.prototype._GetDefaultCollectionRendererSelectionMode = functio
  * @ojrole combobox
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "ItemMetadata"]}
  * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet"]}
- * @ojtsimport {module: "ojcommontypes", type: "AMD", importName: ["CommonTypes"]}
+ * @ojtsimport {module: "ojcommontypes", type: "AMD", importName: ["ojcommontypes"]}
  * @ojsignature [{
  *                target: "Type",
  *                value: "class ojSelectSingle<V, D> extends ojSelectBase<V, D, ojSelectSingleSettableProperties<V, D>>",
@@ -638,7 +638,7 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
     /**
      * The <code class="prettyprint">valueItem</code> is similar to the
      * <code class="prettyprint">value</code>, but is a
-     * <a href="CommonTypes.html#ItemContext">CommonTypes.ItemContext&lt;V, D></a> object which
+     * <a href="ojcommontypes.html#ItemContext">ItemContext&lt;V, D></a> object which
      * contains both a key and data, and optional metadata.
      * The key will be set as the <code class="prettyprint">value</code> of the element.
      * The <code class="prettyprint">value</code> and <code class="prettyprint">valueItem</code>
@@ -658,7 +658,7 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
      * @expose
      * @instance
      * @type {null | Object}
-     * @ojsignature {target:"Type", value:"CommonTypes.ItemContext<V,D>", jsdocOverride:true}
+     * @ojsignature {target:"Type", value:"ojcommontypes.ItemContext<V,D>", jsdocOverride:true}
      * @default { key: null, data: null, metadata: null }
      * @ojwriteback
      *
@@ -729,7 +729,7 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
      *   {target: "Type", value:"<V, D>", for:"genericTypeParameters" },
      *   {target: "Type", value: "V | null", for: "value"},
      *   {target: "Type", value: "V | null", for: "previousValue"},
-     *   {target: "Type", value: "CommonTypes.ItemContext<V, D>", for: "itemContext"}
+     *   {target: "Type", value: "ojcommontypes.ItemContext<V, D>", for: "itemContext"}
      * ]
      */
   },
@@ -1074,6 +1074,13 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
 
     // returns Promise that resolves to true|false or boolean
     var returnValue = this._SetValue(displayValueForSetValue, null, this._VALIDATE_METHOD_OPTIONS);
+
+    if (returnValue === false && !this._CanSetValue()) {
+      // FIX JET-45885, validate() returns 'invalid' for readonly or disabled on valid value.
+      // In _SetValue/_AsyncValidate, validation is skipped when !this._CanSetValue(), and _SetValue returns false.
+      // We want validate() to return 'valid' when validation is skipped.
+      returnValue = true;
+    }
 
     if (!(returnValue instanceof Promise)) {
       returnValue = Promise.resolve(returnValue ? 'valid' : 'invalid');
@@ -1902,10 +1909,10 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    * @ojsignature [{target: "Type", value: "DataProvider<V, D>", for: "data",
    *                jsdocOverride:true},
    *               {target:"Type", value:"KeySet<V>", for: "selected", jsdocOverride:true},
-   *               {target:"Type", value:"CommonTypes.ItemContext<V, D>", for: "selectedItem",
+   *               {target:"Type", value:"ojcommontypes.ItemContext<V, D>", for: "selectedItem",
    *                jsdocOverride:true},
    *               {target:"Type", value:"V", for: "currentRow.rowKey", jsdocOverride: true},
-   *               {target:"Type", value:"((event: Event, context: CommonTypes.ItemContext<V, D>) => void)",
+   *               {target:"Type", value:"((event: Event, context: ojcommontypes.ItemContext<V, D>) => void)",
    *                for: "handleRowAction", jsdocOverride: true},
    *               {target: "Type", value: "<V, D>", for: "genericTypeParameters"}]
    * @ojdeprecated {target: "property", for: "selectedItem", since: "9.0.0",
@@ -2072,6 +2079,19 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
    * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
    * attribute to the corresponding value.
+   * </p>
+   *
+   * <h5>MessagesCustom attribute</h5>
+   * <p>
+   * The type of the <code class="prettyprint">severity</code> property of the messages in the
+   * array has changed from
+   * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+   * essentially <code class="prettyprint">string | number</code>, to simply
+   * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+   * values are the same as the previously supported string values.
+   * The application can no longer specify severity as a number, including hardcoded numbers,
+   * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+   * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
    * </p>
    *
    * <h5>TextAlign attribute</h5>

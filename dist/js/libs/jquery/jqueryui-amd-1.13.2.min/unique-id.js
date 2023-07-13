@@ -6,4 +6,4 @@
  * Released under the MIT license.
  * http://jquery.org/license
  */
-(function(factory){"use strict";if(typeof define==="function"&&define.amd){define(["jquery","./version"],factory)}else if(typeof module==="object"&&module.exports){require("./version");module.exports=factory(require("jquery"))}else{factory(jQuery)}})((function($){"use strict";return $.fn.extend({uniqueId:function(){var uuid=0;return function(){return this.each((function(){if(!this.id){this.id="ui-id-"+ ++uuid}}))}}(),removeUniqueId:function(){return this.each((function(){if(/^ui-id-\d+$/.test(this.id)){$(this).removeAttr("id")}}))}})}));
+!function(e){"use strict";"function"==typeof define&&define.amd?define(["jquery","./version"],e):"object"==typeof module&&module.exports?(require("./version"),module.exports=e(require("jquery"))):e(jQuery)}((function(e){"use strict";return e.fn.extend({uniqueId:(i=0,function(){return this.each((function(){this.id||(this.id="ui-id-"+ ++i)}))}),removeUniqueId:function(){return this.each((function(){/^ui-id-\d+$/.test(this.id)&&e(this).removeAttr("id")}))}});var i}));

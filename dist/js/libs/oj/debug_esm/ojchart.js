@@ -298,7 +298,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @default null
  */
 /**
- * Specifies the start group of the current viewport. Only applies to charts with group or time axis. If not specified, the default start group is the first group in the data set.
+ * Specifies the start group of the current viewport. Only applies to charts with group or time axis. If not specified, the default start group is the first group in the data set. The application should set either the viewportMin or viewportStartGroup and not both at the same time. If both viewportStartGroup and viewportMin are specified, viewportMin takes precedence.
  * @expose
  * @name viewportStartGroup
  * @ojtypedefmember
@@ -308,7 +308,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @default null
  */
 /**
- * Specifies the end group of the current viewport. Only applies to charts with group or time axis. If not specified, the default end group is the last group in the data set.
+ * Specifies the end group of the current viewport. Only applies to charts with group or time axis. If not specified, the default end group is the last group in the data set. The application should set either the viewportMax or viewportEndGroup and not both at the same time. If both viewportEndGroup and viewportMax are specified, viewportMax takes precedence.
  * @expose
  * @name viewportEndGroup
  * @ojtypedefmember
@@ -8013,7 +8013,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent, {
   /**
    * Returns an object that contains sizing information for the chart X-Axis.
    *
-   * @property {Object} bounds An object containing the bounds of the legend.
+   * @property {Object} bounds An object containing the bounds of the x axis.
    * @property {number} bounds.x
    * @property {number} bounds.y
    * @property {number} bounds.width
@@ -8038,7 +8038,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent, {
   /**
    * Returns an object that contains sizing information for the chart Y-Axis.
    *
-   * @property {Object} bounds An object containing the bounds of the legend.
+   * @property {Object} bounds An object containing the bounds of the y axis.
    * @property {number} bounds.x
    * @property {number} bounds.y
    * @property {number} bounds.width
@@ -8063,7 +8063,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent, {
   /**
    * Returns an object that contains sizing information for the chart Y2-Axis.
    *
-   * @property {Object} bounds An object containing the bounds of the legend.
+   * @property {Object} bounds An object containing the bounds of the y2 axis.
    * @property {number} bounds.x
    * @property {number} bounds.y
    * @property {number} bounds.width

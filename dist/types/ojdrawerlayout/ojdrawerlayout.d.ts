@@ -5,10 +5,10 @@ import { CancelableAction, ExtendGlobalProps, ObservedGlobalProps, PropertyChang
 import { Component, ComponentChild, ComponentChildren } from 'preact';
 import 'ojs/ojcore-base';
 import 'ojs/ojpopup';
-declare type DisplayMode = 'reflow' | 'overlay' | 'auto';
-declare type ResolvedDisplayMode = 'reflow' | 'overlay' | 'full-overlay';
-declare type EdgeLayout = 'start' | 'end' | 'bottom';
-declare type State = {
+type DisplayMode = 'reflow' | 'overlay' | 'auto';
+type ResolvedDisplayMode = 'reflow' | 'overlay' | 'full-overlay';
+type EdgeLayout = 'start' | 'end' | 'bottom';
+type State = {
     startOpened: boolean;
     endOpened: boolean;
     bottomOpened: boolean;
@@ -25,13 +25,13 @@ declare type State = {
     endStateToChangeTo: GenericObject;
     bottomStateToChangeTo: GenericObject;
 };
-declare type GenericObject = {
+type GenericObject = {
     [key: string]: any;
 };
-declare type ToggleDetail = {
+type ToggleDetail = {
     edge: EdgeLayout;
 };
-declare type Props = ObservedGlobalProps<'role'> & {
+type Props = ObservedGlobalProps<'role'> & {
     children?: ComponentChildren;
     start?: Slot;
     end?: Slot;

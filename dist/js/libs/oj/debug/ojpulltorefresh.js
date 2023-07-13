@@ -19,7 +19,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
    *
    * @ojtsmodule
    *
-   * @ojdeprecated {since: '7.0.0', description: 'Use ojRefresher instead.'}
+   * @ojdeprecated {since: '7.0.0', value:['oj-refresher']}
    * @classdesc
    * This class provides functions for adding pull to refresh functionality to any container element which hosts refreshable content.
    * By default this class will generate a default panel, which consists of a refresh icon, a primary text, and a secondary text.  The application

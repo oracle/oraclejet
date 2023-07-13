@@ -44,10 +44,23 @@ name will be the key to the formatter function.
 ### Ex. app-strings.ts
 
 ```javascript
-export default {
+const bundle = {
   "greeting": function(p) { ... },
   "invitation": function(p) { ... }
 };
+export default bundle;
+```
+
+The AMD output would be
+
+```javascript
+define(["require", "exports"], function (require, exports) {
+  const bundle = {
+    "greeting": function(p) { ... },
+    "invitation": function(p) { ... }
+  };
+  exports.default = bundle;
+});
 ```
 
 In addition to the root bundle, the parser will traverse all directories at the
@@ -164,11 +177,49 @@ The directory where the resource bundles will be written
 
 ### **module** _(optional)_
 
-The type of module to produce for the bundles. Supported values are `esm` or `amd`.
+The type of module to produce for the bundles. Supported values are `esm`, `amd`, or `legacy-amd`.
 If not specified, only the original Typescript source files will be produced, and
 no transpilation is performed.
 
 > ex. `--module=esm`
+
+> For backwards compatibility with previous forms of the bundle in AMD, the `legacy-amd` format
+> will produce a bundle with all keys at the root, similar to using named exports. There will also be no
+> TypeScript or type definitions present for the bundle.
+> This option overrides the `--exportType` argument.
+
+### **exportType** _(optional)_
+
+The type of export to be used. Possible values `named` or `default`. If not given,
+`default` is used.
+
+> ex. `--exportType=named`
+>
+> Note that in v2.0.0 of the builder, default exports are used, causing TypeScript
+> to place all of the keys into an object named "default" at the top level. If
+> you want all of the bundle keys at the top-level, use `--exportType=named` to
+> produce
+>
+> ```javascript
+> export greeting = bundle.greeting;
+> export invitation = bundle.invitation;
+> ```
+>
+> and the resulting AMD output
+
+```javascript
+define(['require', 'exports'], function (require, exports) {
+  exports.greeting = bundle.greeting;
+  exports.invitation = bundle.invitation;
+});
+```
+
+### **override** _(optional)_
+
+Indicates the bundle is an override, and only the root locale and those explicitly stated in
+`--supportedLocales` will be built. All other NLS directories will not be processed.
+
+> ex. `--optional --supportedLocales=en`
 
 ### **supportedLocales** _(optional)_
 
@@ -195,7 +246,7 @@ Default exports now follow ES module format, and contents are underneath the
 define(["require", "exports"], function (require, exports) {
     "use strict";
     exports.__esModule = true;
-    exports["default"] = {
+    exports.default = {
       ...bundle contents...
     };
 });
@@ -232,3 +283,8 @@ import supportedLocales from './&lt;rootDir>/supportedLocales';
 ## Changes in 2.2.0
 
 Custom hooks implemented. See [Custom Hooks](#custom-hooks) above.
+
+## Changes in 2.3.0
+
+Add the option to declare `--exportType=named` to generate keys at the top level
+of the exports instead of the `default` export type.

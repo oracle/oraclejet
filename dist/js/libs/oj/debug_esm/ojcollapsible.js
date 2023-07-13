@@ -37,9 +37,7 @@ var __oj_collapsible_metadata =
         "webelement": {
           "exceptionStatus": [
             {
-              "type": "deprecated",
-              "since": "13.0.0",
-              "description": "Use doCollapse/doExpand instead"
+              "type": "getterOnly"
             }
           ]
         }
@@ -318,11 +316,8 @@ var __oj_collapsible_metadata =
        * @ojwriteback
        * @ojeventgroup common
        * @ojwebelementstatus {
-       *   type: "deprecated",
-       *   since: "13.0.0",
-       *   description: "Use doCollapse/doExpand instead"
+       *   type: "getterOnly"
        * }
-       *
        * @example <caption>Initialize the collapsible with the <code class="prettyprint">expanded</code> attribute specified:</caption>
        * &lt;oj-collapsible expanded='true'>&lt;/oj-collapsible>
        *
@@ -680,6 +675,12 @@ var __oj_collapsible_metadata =
       if (event.altKey || event.ctrlKey) {
         return;
       }
+      // JET-58821: ignore the key event if it does not come from the icon or header wrapper itself
+      var target = event.target;
+      if (target !== this._getCollapsibleIcon()[0] && target !== this.headerWrapper[0]) {
+        return;
+      }
+
       var keyCode = $.ui.keyCode;
 
       switch (event.keyCode) {

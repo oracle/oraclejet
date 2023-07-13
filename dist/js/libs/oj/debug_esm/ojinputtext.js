@@ -2997,6 +2997,19 @@ oj.__registerWidget(
  * The default value of the mask-icon attribute is changed from 'hidden' to 'visible'.
  * </p>
  *
+ * <h5>MessagesCustom attribute</h5>
+ * <p>
+ * The type of the <code class="prettyprint">severity</code> property of the messages in the
+ * array has changed from
+ * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+ * essentially <code class="prettyprint">string | number</code>, to simply
+ * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+ * values are the same as the previously supported string values.
+ * The application can no longer specify severity as a number, including hardcoded numbers,
+ * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+ * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+ * </p>
+ *
  * <h5>TextAlign attribute</h5>
  * <p>
  * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start and oj-form-control-text-align-end is now
@@ -3651,7 +3664,16 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
  * </p>
  * <p>
  * The converter is no longer applied when the value is <code>null</code>, <code>undefined</code>, or <code>''</code>.
+ * When the field is empty, the value gets normalized to <code>null</code>, so the converter does not run on an empty field.
  * <p>
+ *
+ * <h5>Validators</h5>
+ * <p>
+ * Only the required validator is run for an empty field, and only if required is true. The component's other validators
+ * are no longer run when the field is empty.
+ * If you created your own validator to check that the field was filled in, it will not run if the
+ * field is empty. Set the required attribute to true instead which conforms to the Redwood UX design.
+ * </p>
  *
  * <h5>LabelEdge attribute</h5>
  * <p>
@@ -3664,6 +3686,19 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
  * <h5>List attribute</h5>
  * <p>
  * The list attribute is no longer supported.
+ * </p>
+ *
+ * <h5>MessagesCustom attribute</h5>
+ * <p>
+ * The type of the <code class="prettyprint">severity</code> property of the messages in the
+ * array has changed from
+ * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+ * essentially <code class="prettyprint">string | number</code>, to simply
+ * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+ * values are the same as the previously supported string values.
+ * The application can no longer specify severity as a number, including hardcoded numbers,
+ * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+ * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
  * </p>
  *
  * <h5>TextAlign attribute</h5>
@@ -4651,7 +4686,16 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
  * </p>
  * <p>
  * The converter is no longer applied when the value is <code>null</code>, <code>undefined</code>, or <code>''</code>.
+ * When the field is empty, the value gets normalized to <code>null</code>, so the converter does not run on an empty field.
  * <p>
+ *
+ * <h5>Validators</h5>
+ * <p>
+ * Only the required validator is run for an empty field, and only if required is true. The component's other validators
+ * are no longer run when the field is empty.
+ * If you created your own validator to check that the field was filled in, it will not run if the
+ * field is empty. Set the required attribute to true instead which conforms to the Redwood UX design.
+ * </p>
  *
  * <h5>LabelEdge attribute</h5>
  * <p>
@@ -4659,6 +4703,19 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
  * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
  * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
  * attribute to the corresponding value.
+ * </p>
+ *
+ * <h5>MessagesCustom attribute</h5>
+ * <p>
+ * The type of the <code class="prettyprint">severity</code> property of the messages in the
+ * array has changed from
+ * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+ * essentially <code class="prettyprint">string | number</code>, to simply
+ * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+ * values are the same as the previously supported string values.
+ * The application can no longer specify severity as a number, including hardcoded numbers,
+ * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+ * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
  * </p>
  *
  * <h5>TextAlign attribute</h5>

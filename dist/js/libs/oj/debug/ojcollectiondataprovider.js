@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojcollectiontabledatasource', 'ojs/ojdataprovideradapter'], function (oj, ojcollectiontabledatasource, ojdataprovideradapter) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcollectiontabledatasource', 'ojs/ojdataprovideradapter'], function (oj, ojdataprovider, ojcollectiontabledatasource, ojdataprovideradapter) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
@@ -173,6 +173,7 @@ define(['ojs/ojcore-base', 'ojs/ojcollectiontabledatasource', 'ojs/ojdataprovide
             this._dataProviderAdapter.destroy();
         }
         fetchFirst(parameters) {
+            ojdataprovider.FilterUtils.validateFilterCapabilities(this.getCapability('filter'), parameters?.filterCriterion);
             return this._dataProviderAdapter.fetchFirst(parameters);
         }
         fetchByKeys(parameters) {
@@ -182,6 +183,7 @@ define(['ojs/ojcore-base', 'ojs/ojcollectiontabledatasource', 'ojs/ojdataprovide
             return this._dataProviderAdapter.containsKeys(parameters);
         }
         fetchByOffset(parameters) {
+            ojdataprovider.FilterUtils.validateFilterCapabilities(this.getCapability('filter'), parameters?.filterCriterion);
             return this._dataProviderAdapter.fetchByOffset(parameters);
         }
         getCapability(capabilityName) {

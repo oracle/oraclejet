@@ -39,15 +39,16 @@ const TransformerError_1 = require("./utils/TransformerError");
 let _BUILD_OPTIONS;
 let _CHECKER;
 let _COMPILER_OPTIONS;
+let _CORE_JET_MODULE_MAPPING;
 function transformer(program, buildOptions) {
     _BUILD_OPTIONS = buildOptions;
     _CHECKER = program.getTypeChecker();
     _COMPILER_OPTIONS = program.getCompilerOptions();
+    _CORE_JET_MODULE_MAPPING = new Map();
     function visitor(ctx, sf) {
-        var _a;
         const vexportToAlias = {};
         const aliasToVExport = {};
-        TransformerError_1.TransformerError.setDisabledList(!(((_a = _BUILD_OPTIONS.disabledExceptionKeys) === null || _a === void 0 ? void 0 : _a.length) > 0)
+        TransformerError_1.TransformerError.setDisabledList(!(_BUILD_OPTIONS.disabledExceptionKeys?.length > 0)
             ? null
             : _BUILD_OPTIONS.disabledExceptionKeys);
         _BUILD_OPTIONS.componentToMetadata = null;
@@ -75,7 +76,7 @@ function transformer(program, buildOptions) {
         return visitor;
     }
     return (ctx) => {
-        return (sf) => ts.visitNode(sf, visitor(ctx, sf));
+        return ((sf) => ts.visitNode(sf, visitor(ctx, sf)));
     };
 }
 exports.default = transformer;
@@ -93,8 +94,14 @@ function generateClassElementMetadata(classNode, vexportToAlias, aliasToVExport)
         return classNode;
     }
     const metaUtilObj = getNewMetaUtilObj(_CHECKER, _BUILD_OPTIONS, vcompClassInfo, vexportToAlias, aliasToVExport);
-    MetaUtils.updateCompilerCompMetadata(vcompClassInfo, metaUtilObj);
     ComponentUtils.getDtMetadataForComponent(vcompClassInfo, metaUtilObj);
+    const { loaderImports, bundleMapExpression } = ComponentUtils.getTranslationBundleInfo(vcompClassInfo, _COMPILER_OPTIONS, _BUILD_OPTIONS) ||
+        {};
+    if (loaderImports && bundleMapExpression) {
+        vcompClassInfo.additionalImports = loaderImports;
+        vcompClassInfo.translationBundleMapExpression = bundleMapExpression;
+    }
+    MetaUtils.updateCompilerCompMetadata(vcompClassInfo, metaUtilObj);
     const propsInfo = vcompClassInfo.propsInfo;
     if (ts.isSourceFile(classNode.parent)) {
         const fileName = classNode.parent.fileName;
@@ -114,7 +121,7 @@ Instead, declare individual properties of the 'Props' object with Conditional ty
         }
         PropertyUtils.checkReservedProps(propsInfo, metaUtilObj);
         let { readOnlyPropNameNodes, writebackPropNameNodes } = PropertyUtils.generatePropertiesMetadata(propsInfo, metaUtilObj);
-        PropertyUtils.generatePropertiesRtExtensionMetadata(writebackPropNameNodes, readOnlyPropNameNodes, propsInfo.propsObservedGlobalProps, metaUtilObj);
+        PropertyUtils.generatePropertiesRtExtensionMetadata(writebackPropNameNodes, readOnlyPropNameNodes, propsInfo.propsRtObservedGlobalPropsSet, metaUtilObj);
         MetaUtils.updateCompilerPropsMetadata(propsInfo, readOnlyPropNameNodes, metaUtilObj);
     }
     storeImportsInBuildOptions(vexportToAlias, aliasToVExport);
@@ -131,8 +138,13 @@ function generateFunctionalElementMetadata(functionalCompNode, vexportToAlias, a
     let vcompFunctionInfo = ComponentUtils.getVCompFunctionInfo(functionalCompNode, vexportToAlias, _CHECKER, _COMPILER_OPTIONS, _BUILD_OPTIONS);
     if (vcompFunctionInfo) {
         const metaUtilObj = getNewMetaUtilObj(_CHECKER, _BUILD_OPTIONS, vcompFunctionInfo, vexportToAlias, aliasToVExport);
-        MetaUtils.updateCompilerCompMetadata(vcompFunctionInfo, metaUtilObj);
         ComponentUtils.getDtMetadataForComponent(vcompFunctionInfo, metaUtilObj);
+        const { loaderImports, bundleMapExpression } = ComponentUtils.getTranslationBundleInfo(vcompFunctionInfo, _COMPILER_OPTIONS, _BUILD_OPTIONS) || {};
+        if (loaderImports && bundleMapExpression) {
+            vcompFunctionInfo.additionalImports = loaderImports;
+            vcompFunctionInfo.translationBundleMapExpression = bundleMapExpression;
+        }
+        MetaUtils.updateCompilerCompMetadata(vcompFunctionInfo, metaUtilObj);
         if (ts.isSourceFile(functionalCompNode.parent)) {
             const fileName = functionalCompNode.parent.fileName;
             metaUtilObj.fullMetadata['jsdoc'] = metaUtilObj.fullMetadata['jsdoc'] || {};
@@ -148,7 +160,7 @@ function generateFunctionalElementMetadata(functionalCompNode, vexportToAlias, a
             }
             PropertyUtils.checkReservedProps(propsInfo, metaUtilObj);
             let { readOnlyPropNameNodes, writebackPropNameNodes } = PropertyUtils.generatePropertiesMetadata(propsInfo, metaUtilObj);
-            PropertyUtils.generatePropertiesRtExtensionMetadata(writebackPropNameNodes, readOnlyPropNameNodes, propsInfo.propsObservedGlobalProps, metaUtilObj);
+            PropertyUtils.generatePropertiesRtExtensionMetadata(writebackPropNameNodes, readOnlyPropNameNodes, propsInfo.propsRtObservedGlobalPropsSet, metaUtilObj);
             MetaUtils.updateCompilerPropsMetadata(propsInfo, readOnlyPropNameNodes, metaUtilObj);
         }
         storeImportsInBuildOptions(vexportToAlias, aliasToVExport);
@@ -243,7 +255,6 @@ function storeImportsInBuildOptions(vexportToAlias, aliasToVExport) {
 }
 const _EXCLUDED_NAMED_EXPORT_TYPES = ['ObservedGlobalProps'];
 function getNewMetaUtilObj(typeChecker, buildOptions, componentInfo, namedExportToAlias, aliasToNamedExport) {
-    var _a, _b, _c, _d, _e, _f;
     if (!buildOptions['reservedGlobalProps']) {
         const RGPSet = generateReservedGlobalPropsSet(componentInfo, typeChecker);
         if (RGPSet) {
@@ -252,8 +263,8 @@ function getNewMetaUtilObj(typeChecker, buildOptions, componentInfo, namedExport
     }
     const componentName = MetaTypes.isClassInfo(componentInfo)
         ? componentInfo.className
-        : (_b = (_a = componentInfo.componentName) !== null && _a !== void 0 ? _a : componentInfo.functionName) !== null && _b !== void 0 ? _b : componentInfo.elementName;
-    const isInMonoPack = (_c = componentInfo.packInfo) === null || _c === void 0 ? void 0 : _c.isMonoPack();
+        : componentInfo.componentName ?? componentInfo.functionName ?? componentInfo.elementName;
+    const isInMonoPack = componentInfo.packInfo?.isMonoPack();
     let rtnObj = {
         componentName,
         componentInfo,
@@ -267,10 +278,12 @@ function getNewMetaUtilObj(typeChecker, buildOptions, componentInfo, namedExport
             jetVersion: isInMonoPack && componentInfo.packInfo.jetVersion
                 ? componentInfo.packInfo.jetVersion
                 : buildOptions['jetVersion'],
-            type: (_e = (_d = buildOptions['coreJetBuildOptions']) === null || _d === void 0 ? void 0 : _d.defaultCompType) !== null && _e !== void 0 ? _e : 'composite'
+            type: buildOptions['coreJetBuildOptions']?.defaultCompType ?? 'composite'
         },
         dynamicSlotsInUse: 0b0000,
-        dynamicSlotNameNodes: []
+        dynamicSlotNameNodes: [],
+        followImports: buildOptions['followImports'],
+        coreJetModuleMapping: _CORE_JET_MODULE_MAPPING
     };
     if (componentInfo.packInfo) {
         rtnObj.fullMetadata.pack = componentInfo.packInfo.name;
@@ -278,7 +291,7 @@ function getNewMetaUtilObj(typeChecker, buildOptions, componentInfo, namedExport
             rtnObj.fullMetadata.license = componentInfo.packInfo.license;
         }
     }
-    if ((_f = componentInfo.propsInfo) === null || _f === void 0 ? void 0 : _f.propsName) {
+    if (componentInfo.propsInfo?.propsName) {
         rtnObj.propsName = componentInfo.propsInfo.propsName;
     }
     if (buildOptions['reservedGlobalProps']) {
@@ -300,10 +313,9 @@ function getNewMetaUtilObj(typeChecker, buildOptions, componentInfo, namedExport
     return rtnObj;
 }
 function generateReservedGlobalPropsSet(componentInfo, checker) {
-    var _a, _b, _c;
     let rtnReservedGlobalProps;
     let GPType;
-    let EGPRef = (_a = componentInfo.propsInfo) === null || _a === void 0 ? void 0 : _a.propsExtendGlobalPropsRef;
+    let EGPRef = componentInfo.propsInfo?.propsExtendGlobalPropsRef;
     if (EGPRef) {
         const EGPtypeArg = EGPRef.typeArguments[0];
         if (EGPtypeArg) {
@@ -324,9 +336,9 @@ function generateReservedGlobalPropsSet(componentInfo, checker) {
     }
     else if (MetaTypes.isFunctionInfo(componentInfo) && componentInfo.propsInfo) {
         const regCustElemType = checker.getTypeAtLocation(componentInfo.compRegisterCall);
-        const EGPType = (_b = regCustElemType.aliasTypeArguments) === null || _b === void 0 ? void 0 : _b[0];
+        const EGPType = regCustElemType.aliasTypeArguments?.[0];
         if (EGPType &&
-            ((_c = EGPType.aliasSymbol) === null || _c === void 0 ? void 0 : _c.getName()) === 'ExtendGlobalProps' &&
+            EGPType.aliasSymbol?.getName() === 'ExtendGlobalProps' &&
             EGPType.isIntersection() &&
             EGPType.types.length === 2) {
             GPType = EGPType.types[1];
@@ -369,8 +381,7 @@ const _VCOMPONENT_EXPORTS = new Set([
 ]);
 const _VCOMPONENT_BINDING_EXPORTS = new Set(['consumedBindings', 'providedBindings']);
 function storeImport(node, vexportToAlias, aliasToVExport) {
-    var _a;
-    const bindings = (_a = node.importClause) === null || _a === void 0 ? void 0 : _a.namedBindings;
+    const bindings = node.importClause?.namedBindings;
     if (bindings && ts.isNamedImports(bindings)) {
         for (let binding of bindings.elements) {
             const namedImport = binding.name.text;
@@ -380,6 +391,12 @@ function storeImport(node, vexportToAlias, aliasToVExport) {
                 (_VCOMPONENT_EXPORTS.has(decrName) || _VCOMPONENT_BINDING_EXPORTS.has(decrName))) {
                 vexportToAlias[decrName] = binding.name.text;
                 aliasToVExport[namedImport] = decrName;
+            }
+            if (isCoreJetModule(module) && !_CORE_JET_MODULE_MAPPING.has(namedImport)) {
+                _CORE_JET_MODULE_MAPPING.set(namedImport, {
+                    binding: decrName,
+                    module: module.split('/')[1]
+                });
             }
         }
     }
@@ -392,6 +409,9 @@ function isVComponentModule(module) {
         module === 'preact' ||
         module === 'preact/compat' ||
         module === 'ojs/ojvcomponent-binding');
+}
+function isCoreJetModule(module) {
+    return module.startsWith('ojs/oj');
 }
 function generateApiDocMetadata(metaUtilObj) {
     if (_BUILD_OPTIONS.apiDocDir) {

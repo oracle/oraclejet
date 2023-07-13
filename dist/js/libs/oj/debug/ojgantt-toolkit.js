@@ -2113,7 +2113,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     _getCustomContent(rowObj, availableWidth) {
       var rowData = rowObj['data'];
       var content = new dvt.Container(this._gantt.getCtx());
-      content.setClassName(this._gantt.GetStyleClass('rowLabel'));
       var labelStyle = rowData['labelStyle'];
       if (labelStyle != null) {
         content.setStyle(labelStyle);
@@ -2167,7 +2166,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     _getTextContent(rowObj) {
       var rowData = rowObj['data'];
       var content = new dvt.OutputText(this._gantt.getCtx(), this._labelString, 0, 0);
-      content.setClassName(this._gantt.GetStyleClass('rowLabel'));
 
       // sets the style if specified in options
       var labelStyle = rowData['labelStyle'];
@@ -3128,10 +3126,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * "Highights" the task, i.e. for when selection-behavior is "highlightDependencies".
      */
     highlight() {
-      // Note this._elem needs to be used instead of this.getElem()
-      // to reference the Path shape element--in touch device, this.getElem() returns
-      // a <g> child group element rather than the shape element.
-      dvt.ToolkitUtils.addClassName(this._elem, this._task.getGantt().GetStyleClass('taskHighlight'));
+      if (!this._isHighlighted) {
+        // Note this._elem needs to be used instead of this.getElem()
+        // to reference the Path shape element--in touch device, this.getElem() returns
+        // a <g> child group element rather than the shape element.
+        dvt.ToolkitUtils.addClassName(
+          this._elem,
+          this._task.getGantt().GetStyleClass('taskHighlight')
+        );
+      }
       this._isHighlighted = true;
     }
 
@@ -3139,11 +3142,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * "Un-Highights" the task, i.e. for when selection-behavior is "highlightDependencies".
      */
     unhighlight() {
-      // See note in hightlight() method regarding this._elem vs this.getElem()
-      dvt.ToolkitUtils.removeClassName(
-        this._elem,
-        this._task.getGantt().GetStyleClass('taskHighlight')
-      );
+      if (this._isHighlighted) {
+        // See note in hightlight() method regarding this._elem vs this.getElem()
+        dvt.ToolkitUtils.removeClassName(
+          this._elem,
+          this._task.getGantt().GetStyleClass('taskHighlight')
+        );
+      }
       this._isHighlighted = false;
     }
 
@@ -4309,6 +4314,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           this._initSelection = event.ctrlKey ? selectionHandler.getSelectedIds() : [];
           this._initSelectionTargets = event.ctrlKey ? selectionHandler.getSelection() : [];
         } else if (event.subtype === 'move') {
+          this._isMarqueeDragging = true;
           var localPos = this._comp.getMarqueeArtifactsContainer().stageToLocal(event._relPos);
           this._comp.autoPanOnEdgeDrag(
             localPos,
@@ -4326,10 +4332,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
           selectionHandler.processInitialSelections(this._initSelection, this._initSelectionTargets);
           selectionHandler.processGroupSelection(targets, true);
+          this._isMarqueeDragging = false;
         } else if (event.subtype === 'end') {
           this.fireSelectionEvent();
         }
       }
+    }
+
+    isMarqueeDragging() {
+      return this._isMarqueeDragging;
     }
 
     /**
@@ -9211,24 +9222,26 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * "Highights" the task label, i.e. for when selection-behavior is "highlightDependencies".
      */
     highlight() {
-      if (this._labelOutputText) {
+      if (this._labelOutputText && !this._isHighlighted) {
         dvt.ToolkitUtils.addClassName(
           this._labelOutputText.getElem(),
           this._gantt.GetStyleClass('taskHighlight')
         );
       }
+      this._isHighlighted = true;
     }
 
     /**
      * "Un-Highights" the task label, i.e. for when selection-behavior is "highlightDependencies".
      */
     unhighlight() {
-      if (this._labelOutputText) {
+      if (this._labelOutputText && this._isHighlighted) {
         dvt.ToolkitUtils.removeClassName(
           this._labelOutputText.getElem(),
           this._gantt.GetStyleClass('taskHighlight')
         );
       }
+      this._isHighlighted = false;
     }
 
     /**
@@ -10882,9 +10895,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       // In the animation case, we want to skip the logic below, rely on the condition below to perform renderViewportDependencyLines(),
       // which effectively clears the dependency lines, and allow the viewport to refresh properly on animation end
       // via DvtGanttAnimationManager._onAnimationEnd().
+      // One exception is when we're in the middle of a marquee selection drag--in that case we need to perform this update
+      // and do less work in the subsequent renderViewportDependencyLines for performance reasons (refer to the comments in that method).
+      const isMarqueeDragging = this._gantt.getEventManager().isMarqueeDragging();
       if (
         options.dependencyLineShape === 'straight' &&
-        options.selectionBehavior !== 'highlightDependencies'
+        (options.selectionBehavior !== 'highlightDependencies' || isMarqueeDragging)
       ) {
         var dependenciesContainer = this._gantt.getDependenciesContainer();
         var predecessorLines = this.getPredecessorDependencies();
@@ -10898,8 +10914,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       }
 
       // When selection is triggered by user gesture, highlight the relevant dependencies
-      // See also Bug JIRA JET-49382
-      if (!isInitial && options.selectionBehavior === 'highlightDependencies') {
+      // See also Bug JIRA JET-49382, and JET-59109
+      if (
+        (!isInitial || isMarqueeDragging) &&
+        options.selectionBehavior === 'highlightDependencies'
+      ) {
         var viewport = this._gantt.getViewPort();
         var dataLayoutManager = this._gantt.getDataLayoutManager();
         dataLayoutManager.renderViewportDependencyLines(viewport, 'vpc_translate', {
@@ -11821,7 +11840,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._rowObjs = [];
       this._dependencyObjs = [];
       this._contentHeight = 0;
-      this._prevHighlightedTaskObjs = [];
+      this._prevHighlightedTaskObjs = new Set();
+      this._prevDependencyObjs = new Set();
     }
 
     /**
@@ -13663,7 +13683,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {Object=} targetTask The target selected (or de-selected) task, of the shape { taskObj: taskObj, isSelected: boolean }.
      *    This should only be specified if the target task is not in the selectionHandler's current selection (yet),
      *    i.e. this rendering is triggered by a task selection/deselection gesture.
-     * @returns {Object} { taskObjs: Array(taskObjs), dependencyObjs: Set(depObjs) }
+     * @returns {Object} { taskObjs: Set(taskObjs), dependencyObjs: Set(depObjs) }
      * @private
      */
     _getSelectionDependencies(action, targetTask) {
@@ -13724,12 +13744,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       // merge upstream and downstream tasks objs
       visitedDownstreamTaskObjs.forEach((t) => visitedTaskObjs.add(t));
 
-      return { taskObjs: Array.from(visitedTaskObjs), dependencyObjs: visitedDependencyObjs };
+      return { taskObjs: visitedTaskObjs, dependencyObjs: visitedDependencyObjs };
     }
 
     /**
      * Highlights given tasks and dim out all others
-     * @param {Array} taskObjs The task layout objects associated with the tasks to be highlighted
+     * @param {Set} taskObjs The task layout objects associated with the tasks to be highlighted
      */
     highlightTasks(taskObjs) {
       if (this._gantt.getEventManager().isDnDDragging()) {
@@ -13742,22 +13762,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       }
 
       // Dim databody, or undim databody if there are not tasks to highlight
-      if (taskObjs.length === 0) {
+      if (taskObjs.size === 0) {
         this._gantt.undimDatabody();
       } else {
         this._gantt.dimDatabody();
       }
 
-      // un-highlight previous set
+      // un-highlight anything not in current set that's in the previous set
       this._prevHighlightedTaskObjs.forEach((taskObj) => {
-        if (taskObj.node) {
+        if (taskObj.node && !taskObjs.has(taskObj)) {
           taskObj.node.unhighlight();
         }
       });
 
-      // highlight current set
+      // highlight anything in current set that's not in the previous set
       taskObjs.forEach((taskObj) => {
-        if (taskObj.node) {
+        if (taskObj.node && !this._prevHighlightedTaskObjs.has(taskObj)) {
           taskObj.node.highlight();
         }
       });
@@ -13773,13 +13793,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      *     This should be of the shape { taskObj: taskObj, isSelected: boolean }
      */
     renderViewportDependencyLines(viewport, action, targetTask) {
-      var dependenciesContainer = this._gantt.getDependenciesContainer();
-      if (dependenciesContainer) {
-        dependenciesContainer.removeChildren();
-      }
-
       var dependencyObjs;
-      if (this._gantt.getOptions()['selectionBehavior'] === 'highlightDependencies') {
+      var selectionBehavior = this._gantt.getOptions().selectionBehavior;
+      if (selectionBehavior === 'highlightDependencies') {
         // "highlightDependencies" selection behavior: only dependencies related to the selected tasks are shown
         // and dim all other tasks
         var selectionDeps = this._getSelectionDependencies(action, targetTask);
@@ -13789,8 +13805,27 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         // normal selection behavior, just render all the dependencies
         dependencyObjs = new Set(this._dependencyObjs);
         // Clear any previously "highlightDependencies" artifacts
-        this.highlightTasks([]);
+        this.highlightTasks(new Set());
       }
+
+      var dependenciesContainer = this._gantt.getDependenciesContainer();
+      if (dependenciesContainer) {
+        // During marquee dragging with highlightDependencies selectionBehavior, only remove the dependency lines that are not relevant
+        // to the selection, for improved performance (see JET-55859).
+        // TODO: See if we can safely selectively remove dependency lines in all cases
+        var isMarqueeDragging = this._gantt.getEventManager().isMarqueeDragging();
+        if (!(isMarqueeDragging && selectionBehavior === 'highlightDependencies')) {
+          dependenciesContainer.removeChildren();
+        } else {
+          // Remove dependency lines from DOM that are not part of the current set
+          this._prevDependencyObjs.forEach((depObj) => {
+            if (!dependencyObjs.has(depObj) && depObj.node) {
+              dependenciesContainer.removeChild(depObj.node);
+            }
+          });
+        }
+      }
+      this._prevDependencyObjs = dependencyObjs;
 
       // Render viewport related dependencies
       // O(N) search for dependencies overlapping the viewport (more precisely, O(lgN) search + O(2k) iterations),
@@ -17238,7 +17273,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             defaultStyleClass: gantt.GetStyleClass('referenceObjectLine'),
             defaultStroke: null
           },
-          _throttle: throttle
+          _throttle: throttle,
+          _eventManager: gantt.getEventManager()
         },
         gantt.getContentLength(),
         axisSize
@@ -17938,7 +17974,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var _resources = this._resources;
       _resources['axisClass'] = this.GetStyleClass(axis);
       _resources['axisSeparatorClass'] = this.GetStyleClass(axis + 'Ticks');
-      _resources['axisLabelClass'] = this.GetStyleClass(axis + 'Labels');
 
       var retOptions = {
         start: options['start'],
@@ -18757,18 +18792,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * Dim databody, i.e. to dim tasks for "highlightDependencies" selection behavior
      */
     dimDatabody() {
-      if (this._databody) {
+      if (this._databody && !this._isDatabodyDimmed) {
         dvt.ToolkitUtils.addClassName(this._databody.getElem(), this.GetStyleClass('databodyDim'));
       }
+      this._isDatabodyDimmed = true;
     }
 
     /**
      * Undim databody, i.e. to undim tasks for "highlightDependencies" selection behavior
      */
     undimDatabody() {
-      if (this._databody) {
+      if (this._databody && this._isDatabodyDimmed) {
         dvt.ToolkitUtils.removeClassName(this._databody.getElem(), this.GetStyleClass('databodyDim'));
       }
+      this._isDatabodyDimmed = false;
     }
 
     /**

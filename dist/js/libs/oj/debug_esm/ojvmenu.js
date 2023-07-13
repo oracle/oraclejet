@@ -15,7 +15,7 @@ class VMenu extends Component {
         this._rootRef = null;
     }
     render(props) {
-        return (jsx("div", Object.assign({ style: { display: 'none' }, ref: (elem) => (this._rootRef = elem) }, { children: props.children })));
+        return (jsx("div", { style: { display: 'none' }, ref: (elem) => (this._rootRef = elem), children: props.children }));
     }
     componentDidMount() {
         if (!this._menuElement) {
@@ -53,7 +53,10 @@ class VMenu extends Component {
         const eventType = this.props.eventObj.eventType || 'keyboard';
         const openOption = {
             launcher: this.props.launcherElement,
-            position: Object.assign(Object.assign({}, VMenu._MENU_POSITION[eventType]), { of: eventType === 'keyboard' ? this.props.launcherElement : this.props.eventObj.event }),
+            position: {
+                ...VMenu._MENU_POSITION[eventType],
+                of: eventType === 'keyboard' ? this.props.launcherElement : this.props.eventObj.event
+            },
             initialFocus: 'menu'
         };
         return openOption;

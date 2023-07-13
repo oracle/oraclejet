@@ -795,6 +795,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
             dvt.TextUtils.fitText(label, adjustedMaxLength, maxLabelHeight, container);
           }
         }
+        if (label.isTruncated() && timeAxis.parentCompEventManager) {
+          const untruncatedTextString = label.getUntruncatedTextString();
+          timeAxis.parentCompEventManager.associate(
+            label,
+            new dvt.SimpleObjPeer(untruncatedTextString)
+          );
+        }
       }
       return labelOutputTexts;
     },
@@ -1052,7 +1059,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Whether this is a standalone component render/resize
       var isComponentRender = options && options._viewStartTime == null;
       var isResizeRender = options == null;
-
+      this.parentCompEventManager = isResizeRender ? null : options._eventManager;
       this.Width = width;
       this.Height = height;
       this._prepareCanvasViewport();

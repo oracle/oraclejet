@@ -6,4 +6,4 @@
  * Released under the MIT license.
  * http://jquery.org/license
  */
-(function(factory){"use strict";if(typeof define==="function"&&define.amd){define(["jquery","./version","./focusable"],factory)}else if(typeof module==="object"&&module.exports){require("./version");require("./focusable");module.exports=factory(require("jquery"))}else{factory(jQuery)}})((function($){"use strict";return $.extend($.expr.pseudos,{tabbable:function(element){var tabIndex=$.attr(element,"tabindex"),hasTabindex=tabIndex!=null;return(!hasTabindex||tabIndex>=0)&&$.ui.focusable(element,hasTabindex)}})}));
+!function(e){"use strict";"function"==typeof define&&define.amd?define(["jquery","./version","./focusable"],e):"object"==typeof module&&module.exports?(require("./version"),require("./focusable"),module.exports=e(require("jquery"))):e(jQuery)}((function(e){"use strict";return e.extend(e.expr.pseudos,{tabbable:function(u){var r=e.attr(u,"tabindex"),t=null!=r;return(!t||r>=0)&&e.ui.focusable(u,t)}})}));

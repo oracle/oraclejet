@@ -98,9 +98,9 @@ import MutateEventFilteringDataProvider from 'ojs/ojmutateeventfilteringdataprov
  */
 
 function getEnhancedDataProvider(dataProvider, capabilityConfigurations) {
-    const fetchCapability = capabilityConfigurations === null || capabilityConfigurations === void 0 ? void 0 : capabilityConfigurations.fetchFirst;
-    const dedupCapability = capabilityConfigurations === null || capabilityConfigurations === void 0 ? void 0 : capabilityConfigurations.dedup;
-    const eventFilteringCapability = capabilityConfigurations === null || capabilityConfigurations === void 0 ? void 0 : capabilityConfigurations.eventFiltering;
+    const fetchCapability = capabilityConfigurations?.fetchFirst;
+    const dedupCapability = capabilityConfigurations?.dedup;
+    const eventFilteringCapability = capabilityConfigurations?.eventFiltering;
     const dataProviderFetchCapability = dataProvider.getCapability('fetchFirst') || dataProvider.getCapability('fetchCapability');
     const dataProviderDedupCapability = dataProvider.getCapability('dedup');
     const dataProviderEventFilteringCapability = dataProvider.getCapability('eventFiltering');
@@ -108,25 +108,25 @@ function getEnhancedDataProvider(dataProvider, capabilityConfigurations) {
     let needsRowCount = false;
     let needsDedup = false;
     let needsEventFiltering = false;
-    const dataProviderFetchCapabilityCaching = dataProviderFetchCapability === null || dataProviderFetchCapability === void 0 ? void 0 : dataProviderFetchCapability.caching;
-    if ((fetchCapability === null || fetchCapability === void 0 ? void 0 : fetchCapability.caching) === 'visitedByCurrentIterator' &&
+    const dataProviderFetchCapabilityCaching = dataProviderFetchCapability?.caching;
+    if (fetchCapability?.caching === 'visitedByCurrentIterator' &&
         dataProviderFetchCapabilityCaching !== 'all' &&
         dataProviderFetchCapabilityCaching !== 'visitedByCurrentIterator') {
         needsCaching = true;
     }
-    const dataProviderFetchCapabilityRowCount = dataProviderFetchCapability === null || dataProviderFetchCapability === void 0 ? void 0 : dataProviderFetchCapability.totalFilteredRowCount;
-    if ((fetchCapability === null || fetchCapability === void 0 ? void 0 : fetchCapability.totalFilteredRowCount) === 'exact' &&
+    const dataProviderFetchCapabilityRowCount = dataProviderFetchCapability?.totalFilteredRowCount;
+    if (fetchCapability?.totalFilteredRowCount === 'exact' &&
         dataProviderFetchCapabilityRowCount !== 'exact') {
         needsRowCount = true;
     }
-    const dataProviderDedupCapabilityType = dataProviderDedupCapability === null || dataProviderDedupCapability === void 0 ? void 0 : dataProviderDedupCapability.type;
-    if ((dedupCapability === null || dedupCapability === void 0 ? void 0 : dedupCapability.type) === 'iterator' &&
+    const dataProviderDedupCapabilityType = dataProviderDedupCapability?.type;
+    if (dedupCapability?.type === 'iterator' &&
         dataProviderDedupCapabilityType !== 'global' &&
         dataProviderDedupCapabilityType !== 'iterator') {
         needsDedup = true;
     }
-    const dataProviderEventFilteringCapabilityType = dataProviderEventFilteringCapability === null || dataProviderEventFilteringCapability === void 0 ? void 0 : dataProviderEventFilteringCapability.type;
-    if ((eventFilteringCapability === null || eventFilteringCapability === void 0 ? void 0 : eventFilteringCapability.type) === 'iterator' &&
+    const dataProviderEventFilteringCapabilityType = dataProviderEventFilteringCapability?.type;
+    if (eventFilteringCapability?.type === 'iterator' &&
         dataProviderEventFilteringCapabilityType !== 'global' &&
         dataProviderEventFilteringCapabilityType !== 'iterator') {
         needsEventFiltering = true;

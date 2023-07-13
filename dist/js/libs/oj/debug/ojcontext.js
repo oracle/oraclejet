@@ -281,9 +281,10 @@ define(['ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojcustomelement-registry'], func
     this._statesMap = new Map();
 
     /**
+     * The set of pending Preact Promises - debounce or requestAnimationFrame - that already have a busy state associated with them.
+     *
      * @ignore
      * @private
-     * The set of pending Preact Promises - debounce or requestAnimationFrame - that already have a busy state associated with them.
      */
     this._preactSet = new Set();
 

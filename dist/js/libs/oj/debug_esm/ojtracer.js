@@ -106,9 +106,8 @@ class NoOpTracerProvider {
 }
 
 function getDescriptiveText(element) {
-    var _a;
     const state = CustomElementUtils.getElementState(element);
-    return (_a = state === null || state === void 0 ? void 0 : state.getDescriptiveText()) !== null && _a !== void 0 ? _a : '';
+    return state?.getDescriptiveText() ?? '';
 }
 let tracerProvider;
 function setTracerProvider(provider) {

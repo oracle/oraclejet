@@ -3394,9 +3394,9 @@ oj.__registerWidget(
       var nodes = templateEngine.execute(this.element[0], templateElement, context);
       if (nodes && nodes.length > 0) {
         Object.defineProperty(context, '_templateCleanup', {
-          value: function () {
-            nodes.forEach(function (node) {
-              templateEngine.clean(node);
+          value: () => {
+            nodes.forEach((node) => {
+              templateEngine.clean(node, this.element[0]);
             });
           },
           enumerable: false

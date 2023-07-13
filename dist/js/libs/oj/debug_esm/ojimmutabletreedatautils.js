@@ -479,7 +479,7 @@ function addNode(baseArray, path, newData, childrenAttribute = 'children') {
                 pointer[currAttributeName] = [...pointer[currAttributeName]];
             }
             else {
-                pointer[currAttributeName] = Object.assign({}, pointer[currAttributeName]);
+                pointer[currAttributeName] = { ...pointer[currAttributeName] };
             }
             pointer = pointer[currAttributeName];
         }
@@ -501,14 +501,14 @@ function replaceNode(baseArray, path, newData, childrenAttribute = 'children') {
             if (currAttributeName === -1) {
                 currAttributeName = pointer.length - 1;
             }
-            pointer[currAttributeName] = Object.assign({}, newData);
+            pointer[currAttributeName] = { ...newData };
         }
         else {
             if (Array.isArray(pointer[currAttributeName])) {
                 pointer[currAttributeName] = [...pointer[currAttributeName]];
             }
             else {
-                pointer[currAttributeName] = Object.assign({}, pointer[currAttributeName]);
+                pointer[currAttributeName] = { ...pointer[currAttributeName] };
             }
             pointer = pointer[currAttributeName];
         }
@@ -554,7 +554,7 @@ function removeNode(baseArray, path, childrenAttribute = 'children') {
                 pointer[currAttributeName] = [...pointer[currAttributeName]];
             }
             else {
-                pointer[currAttributeName] = Object.assign({}, pointer[currAttributeName]);
+                pointer[currAttributeName] = { ...pointer[currAttributeName] };
             }
             pointer = pointer[currAttributeName];
         }

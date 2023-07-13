@@ -15,21 +15,25 @@ const argsMap = Array.from(process.argv)
 if ('rootDir' in argsMap && 'bundleName' in argsMap && 'locale' in argsMap && 'outDir' in argsMap) {
   require('./Bundler').build({
     ...argsMap,
+    override: 'override' in argsMap,
     additionalLocales: argsMap.supportedLocales && argsMap.supportedLocales.split(',')
   });
 } else {
   const procName = path.basename(process.argv[1]);
   console.warn(
-    `Usage: ${procName} --rootDir=</path/to/bundle-dir> --bundleName=<message-bundle-name.json> --locale=<bundle-locale> --outDir=<output-dir> [--module=amd|esm|ts] [--hooks=<path-to-hooks-file>]
+    `Usage: ${procName} --rootDir=</path/to/bundle-dir> --bundleName=<message-bundle-name.json> --locale=<bundle-locale> --outDir=<output-dir> [--module=amd|esm|ts] [--export=named|default] [--hooks=<path-to-hooks-file>] [--suportedLocales=..,..]
 
     Required:
       --rootDir\tThe root directory where the bundle files are contained
       --bundleName\tThe bundle's filename (basename, without the directory path)
-      --locale\tThe bundle's locale (not required for override bundles)
+      --locale\tThe root bundle's locale
       --outDir\tThe output directory where the built bundle will be written
     Optional:
-      --module\tProduce bundles as 'amd' or 'esm' modules
+      --module\tProduce bundles as 'esm', 'amd', or 'legacy-amd' modules
+      --exportType\tThe type of export, either 'named' or 'default' (default='default')
       --hooks\tThe hooks file to use (see example)
+      --override\tIndicates the bundle is an override, and only the root locale and
+      \tthose explicitly stated in [--supportedLocales] will be built.
       --supportedLocales\tA list of comma-separated additional locales to build. If
       \ta locale is specified but doesn't have a directory and translation file
       \tin the rootDir, it will be built using the root translations.
@@ -40,7 +44,7 @@ if ('rootDir' in argsMap && 'bundleName' in argsMap && 'locale' in argsMap && 'o
     ${procName} --rootDir=resources/nls --bundleName=bundle-i18n.json --locale=en-US --outDir=dist --module=amd
 
     Example for override bundle:
-    ${procName} --rootDir=resources/nls --bundleName=bundle-i18n-x.json --locale=en-US --outDir=dist --module=amd
+    ${procName} --rootDir=resources/nls --bundleName=bundle-i18n-x.json --override --locale=en-US --outDir=dist --module=amd --supportedLocales=en
 
     The rootDir should be the root directory where your root resource bundles and
     NLS directories reside. This directory would contain entries such as:

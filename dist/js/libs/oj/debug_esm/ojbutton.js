@@ -316,6 +316,13 @@ if (oj.ButtonLegacy) {
    * @ojcomponent oj.ojButton
    * @augments oj.baseComponent
    * @since 0.6.0
+   * @ojdeprecated [
+   *  {
+   *    type: "maintenance",
+   *    since: "15.0.0",
+   *    value: ["oj-c-button"]
+   *  }
+   * ]
    *
    * @ojshortdesc Buttons direct users to initiate or take actions and work with a single tap, click, or keystroke.
    * @ojrole button

@@ -23,7 +23,7 @@ let ProgressCircle = class ProgressCircle extends Component {
             : this._renderDeterminateCircle(props);
     }
     _renderIndeterminateCircle(props) {
-        return (jsx(Root, Object.assign({ class: 'oj-progress-circle oj-progress-circle-' + props.size, role: "progressbar", "aria-valuetext": getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText') }, { children: jsx("div", Object.assign({ class: "oj-progress-circle-indeterminate" }, { children: jsx("div", { class: "oj-progress-circle-indeterminate-inner" }) })) })));
+        return (jsx(Root, { class: 'oj-progress-circle oj-progress-circle-' + props.size, role: "progressbar", "aria-valuetext": getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText'), children: jsx("div", { class: "oj-progress-circle-indeterminate", children: jsx("div", { class: "oj-progress-circle-indeterminate-inner" }) }) }));
     }
     _renderDeterminateCircle(props) {
         let max = props.max;
@@ -36,7 +36,7 @@ let ProgressCircle = class ProgressCircle extends Component {
         }
         const percentage = max === 0 ? 0 : value > max ? 1 : value / max;
         const clipPath = this._getClipPath(percentage);
-        return (jsxs(Root, Object.assign({ class: 'oj-progress-circle oj-progress-circle-' + props.size, role: "progressbar", "aria-valuemin": "0", "aria-valuemax": max, "aria-valuenow": value }, { children: [jsx("div", { class: "oj-progress-circle-tracker" }), jsx("div", { class: "oj-progress-circle-value", style: { clipPath } })] })));
+        return (jsxs(Root, { class: 'oj-progress-circle oj-progress-circle-' + props.size, role: "progressbar", "aria-valuemin": 0, "aria-valuemax": max, "aria-valuenow": value, children: [jsx("div", { class: "oj-progress-circle-tracker" }), jsx("div", { class: "oj-progress-circle-value", style: { clipPath } })] }));
     }
     _getClipPath(percentage) {
         let tangent;
@@ -83,7 +83,7 @@ ProgressCircle.defaultProps = {
     value: 0,
     size: 'md'
 };
-ProgressCircle._metadata = { "properties": { "max": { "type": "number" }, "value": { "type": "number" }, "size": { "type": "string", "enumValues": ["lg", "md", "sm"] } } };
+ProgressCircle._metadata = { "properties": { "max": { "type": "number" }, "value": { "type": "number" }, "size": { "type": "string", "enumValues": ["sm", "md", "lg"] } } };
 ProgressCircle = __decorate([
     customElement('oj-progress-circle')
 ], ProgressCircle);
