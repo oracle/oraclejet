@@ -587,6 +587,14 @@ DvtStyleProcessor.populateOptions = function (options, childClasses) {
 };
 
 /**
+ * Clears the cached value of the given key.
+ * @param {string} styleClass The key to clear.
+ */
+DvtStyleProcessor.prototype.clearCache = function (styleClass) {
+  this._styleCache[styleClass] = undefined;
+};
+
+/**
  * Handler for DataProvider generated content for chart
  * @constructor
  * @ignore
@@ -2180,6 +2188,16 @@ oj.__registerWidget(
     },
 
     /**
+     * Called before a component render due to resize.
+     * @protected
+     * @instance
+     * @memberof oj.dvtBaseComponent
+     */
+    _BeforeResizeRender: function () {
+      // subclasses override
+    },
+
+    /**
      * Adds a resize listener for this component.
      * @private
      * @instance
@@ -3002,6 +3020,9 @@ oj.__registerWidget(
           this._removeResizeListener();
         }
 
+        if (isResize) {
+          this._BeforeResizeRender();
+        }
         this._component.render(isResize ? null : options, this._width, this._height);
 
         if (bRemoveResizeListener) {

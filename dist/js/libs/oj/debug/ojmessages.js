@@ -1128,17 +1128,23 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   };
 
   MessagesViewModel.prototype._updateLiveRegionAndContainer = function (message) {
-    var translations = Translations.getComponentTranslations('oj-ojMessage').categories;
+    const translations = Translations.getComponentTranslations('oj-ojMessage').categories;
 
     // oj.Message has 'fatal' severity which is no different from 'error', oj-message does not support
     //  'fatal' for this reason. Map 'fatal' to 'error' just to be compatible with cases where the
     //  message stream could come from existing oj.Message sources.
-    var severity = message.severity === 'fatal' ? 'error' : message.severity;
-    var category = !message.category ? translations[severity] : message.category;
-    var options = { category: category, summary: message.summary, detail: message.detail };
+    const severity = (message.severity === 'fatal' ? 'error' : message.severity) || 'none';
+    const category = !message.category ? translations[severity] : message.category;
+    // check if the message has detail text or not (as it is an optional property)
+    // and determine which translation resource needs to be used.
+    const options = {
+      category: category,
+      summary: message.summary,
+      detail: message.detail || this._getTranslationsDefault('ariaLiveRegion.noDetail')
+    };
 
-    var liveRegion = this._getLiveRegion();
-    var text = this._getTranslationsDefault('ariaLiveRegion.newMessage', options);
+    const liveRegion = this._getLiveRegion();
+    const text = this._getTranslationsDefault('ariaLiveRegion.newMessage', options);
     liveRegion.announce(text);
 
     this._refresh(); // re-evaluate the position as the overlay size can change.
@@ -2044,6 +2050,9 @@ var __oj_messages_metadata =
               "type": "string"
             },
             "newMessage": {
+              "type": "string"
+            },
+            "noDetail": {
               "type": "string"
             }
           }

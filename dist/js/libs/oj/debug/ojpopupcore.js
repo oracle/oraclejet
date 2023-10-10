@@ -1495,9 +1495,9 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
 
     ZOrderUtils.preOrderVisit(layer, ZOrderUtils._closeDescendantPopupsCallback);
 
+    ZOrderUtils._removeOverlayFromAncestorLayer(layer);
     ZOrderUtils._resetAriaHiddenOnBackround(layer);
     ZOrderUtils._restoreBodyOverflow();
-    ZOrderUtils._removeOverlayFromAncestorLayer(layer);
 
     layer.removeData(ZOrderUtils._EVENTS_DATA);
     layer.removeData(ZOrderUtils._MODALITY_DATA);
@@ -1551,8 +1551,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
   };
 
   ZOrderUtils._restoreBodyOverflow = function () {
-    const body = document.body;
-    body.classList.remove('oj-component-modal-open');
+    // if there are no more modals left, enable scrolling on body
+    if (!ZOrderUtils.hasModalDialogOpen()) {
+      const body = document.body;
+      body.classList.remove('oj-component-modal-open');
+    }
   };
 
   ZOrderUtils._removeFocusWithinFromOverlayedContent = function () {
@@ -3405,6 +3408,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
             });
           }
         });
+
+        // JET-56620: normalize position left/top to integer values to avoid unnecessary
+        // repositioning caused by potential floating number oscillations
+        position.left = Math.round(position.left);
+        position.top = Math.round(position.top);
 
         if (options.using) {
           // Adds feedback as second argument to using callback, if present

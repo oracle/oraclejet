@@ -14,6 +14,7 @@ export interface ojMessages extends JetElement<ojMessagesSettableProperties> {
             navigationToKeyboard?: string;
             navigationToTouch?: string;
             newMessage?: string;
+            noDetail?: string;
         };
         labelLandmark?: string;
     };
@@ -80,6 +81,7 @@ export interface ojMessagesSettableProperties extends JetSettableProperties {
             navigationToKeyboard?: string;
             navigationToTouch?: string;
             newMessage?: string;
+            noDetail?: string;
         };
         labelLandmark?: string;
     };

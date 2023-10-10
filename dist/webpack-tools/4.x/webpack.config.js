@@ -50,8 +50,8 @@ module.exports = {
       'jqueryui-amd': path.resolve(__dirname, './web/js/libs/jquery/jqueryui-amd-1.13.2'),
       'hammerjs': path.resolve(__dirname, './web/js/libs/hammer/hammer-2.0.8'),
       'ojdnd': path.resolve(__dirname, './web/js/libs/dnd-polyfill/dnd-polyfill-1.0.2'),
-      'ojs': path.resolve(__dirname, './web/js/libs/oj/14.0.0/debug'),
-      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/14.0.0/resources'),
+      'ojs': path.resolve(__dirname, './web/js/libs/oj/14.1.0/debug'),
+      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/14.1.0/resources'),
       'oj-c': '@oracle/oraclejet-core-pack/oj-c',
       // Webpack 4 doesn't read oraclejet-preact's package exports, so point it
       // to the AMD distribution. For projects also using oj-c, the imports start
@@ -96,7 +96,7 @@ module.exports = {
           }
         },
         // Point this setting to the root folder for the associated JET distribution (could be a CDN). Used by the oj.Config.getResourceUri() call
-        baseResourceUrl: "./web/js/libs/oj/14.0.0"
+        baseResourceUrl: "./web/js/libs/oj/14.1.0"
       }
     )
 

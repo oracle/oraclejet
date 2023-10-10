@@ -44,6 +44,7 @@ var ExceptionKey;
     ExceptionKey["RESERVED_CUSTOM_EVENT_PREFIX"] = "reserved_custom_event_prefix";
     ExceptionKey["PROP_DEFAULT_UNKNOWN_PROP"] = "prop_default_unknown_prop";
     ExceptionKey["MISSING_DYNAMIC_SLOT_DEF"] = "missing_dynamic_slot_def";
+    ExceptionKey["UNSUPPORTED_IMPLICITBUSYCONTEXT"] = "unsupported_implicitbusycontext";
     ExceptionKey["UNEXPECTED_APIDOC_EXCEPTION"] = "unexpected_apidoc_exception";
     ExceptionKey["MISSING_METHOD_SIGNATURES"] = "missing_method_signatures";
     ExceptionKey["IGNORED_OJMETADATA_NAME"] = "ignored_ojmetadata_name";

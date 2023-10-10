@@ -111,13 +111,23 @@ function getGenericsAndTypeParametersFromType(typeObj, metaUtilObj) {
     return retVal;
 }
 exports.getGenericsAndTypeParametersFromType = getGenericsAndTypeParametersFromType;
-function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
+function getSignatureFromType(type, isPropSignatureType, seenUnionTypeAliases, metaUtilObj) {
     var _a, _b;
     let typeObj;
     let unionWithNull = false;
     let unionTypes = [];
     const checker = metaUtilObj.typeChecker;
     if (type.isUnion()) {
+        const unionTypeName = getTypeNameFromType(type);
+        if (unionTypeName) {
+            if (seenUnionTypeAliases === null || seenUnionTypeAliases === void 0 ? void 0 : seenUnionTypeAliases.has(unionTypeName)) {
+                return { type: 'unknown', reftype: unionTypeName };
+            }
+            else {
+                seenUnionTypeAliases = seenUnionTypeAliases !== null && seenUnionTypeAliases !== void 0 ? seenUnionTypeAliases : new Set();
+                seenUnionTypeAliases.add(unionTypeName);
+            }
+        }
         unionTypes = type.types.filter(undefinedTypeFilter);
         let unionLength = unionTypes.length;
         if (unionLength == 1) {
@@ -134,12 +144,12 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
         }
     }
     if (MetaUtils.isConditionalType(type)) {
-        typeObj = getSignatureFromType(checker.getApparentType(type), isPropSignatureType, metaUtilObj);
+        typeObj = getSignatureFromType(checker.getApparentType(type), isPropSignatureType, seenUnionTypeAliases, metaUtilObj);
     }
     else {
         const strType = checker.typeToString(type);
         if (type.isUnion()) {
-            typeObj = getSignatureFromUnionTypes(unionTypes, metaUtilObj);
+            typeObj = getSignatureFromUnionTypes(unionTypes, seenUnionTypeAliases, metaUtilObj);
         }
         else if (type.isIntersection()) {
             typeObj = { type: 'object', reftype: getTypeNameFromType(type) };
@@ -181,7 +191,7 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
             let typeObjTypeParams = MetaUtils.getTypeParametersFromType(type, checker);
             typeObj.reftype = typeObjTypeParams ? typeObj.type + typeObjTypeParams : typeObj.type;
             if (typeObj.type === 'Array') {
-                typeObj = getSignatureFromArrayType(type, strType, metaUtilObj);
+                typeObj = getSignatureFromArrayType(type, strType, seenUnionTypeAliases, metaUtilObj);
             }
             else if (typeObj.type === 'Number') {
                 typeObj = { type: 'number', reftype: 'Number' };
@@ -251,7 +261,7 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
                             break;
                         case ts.SyntaxKind.InterfaceDeclaration:
                             if (typeSymbol.name === 'Array') {
-                                typeObj = getSignatureFromArrayType(type, strType, metaUtilObj);
+                                typeObj = getSignatureFromArrayType(type, strType, seenUnionTypeAliases, metaUtilObj);
                                 break;
                             }
                             else if (typeSymbol.name === 'Promise') {
@@ -285,13 +295,13 @@ function getSignatureFromType(type, isPropSignatureType, metaUtilObj) {
     return typeObj;
 }
 exports.getSignatureFromType = getSignatureFromType;
-function getSignatureFromArrayType(type, fallbackType, metaUtilObj) {
+function getSignatureFromArrayType(type, fallbackType, seenUnionTypeAliases, metaUtilObj) {
     var _a;
     let typeObj;
     const elementTypes = metaUtilObj.typeChecker.getTypeArguments(type);
     const arrayItemType = elementTypes === null || elementTypes === void 0 ? void 0 : elementTypes[0];
     if (arrayItemType) {
-        const arrayItemTypeObj = getSignatureFromType(arrayItemType, false, metaUtilObj);
+        const arrayItemTypeObj = getSignatureFromType(arrayItemType, false, seenUnionTypeAliases, metaUtilObj);
         typeObj = {
             type: `Array<${arrayItemTypeObj.type}>`,
             reftype: `Array<${(_a = arrayItemTypeObj.reftype) !== null && _a !== void 0 ? _a : arrayItemTypeObj.type}>`
@@ -306,7 +316,7 @@ function getSignatureFromArrayType(type, fallbackType, metaUtilObj) {
     }
     return typeObj;
 }
-function getSignatureFromUnionTypes(unionTypes, metaUtilObj) {
+function getSignatureFromUnionTypes(unionTypes, seenUnionTypeAliases, metaUtilObj) {
     let typeObj;
     let types = new Set();
     let reftypes = new Set();
@@ -318,7 +328,7 @@ function getSignatureFromUnionTypes(unionTypes, metaUtilObj) {
         if (MetaUtils.isConditionalType(type)) {
             type = checker.getApparentType(type);
             if (type.isUnion()) {
-                const unionTypeObj = getSignatureFromUnionTypes(type.types, metaUtilObj);
+                const unionTypeObj = getSignatureFromUnionTypes(type.types, seenUnionTypeAliases !== null ? new Set(seenUnionTypeAliases) : null, metaUtilObj);
                 const unionTypeArray = unionTypeObj.type.split(MetaUtils._UNION_SPLITTER);
                 unionTypeArray.forEach((typeName) => types.add(typeName));
                 if (unionTypeObj.reftype) {
@@ -371,7 +381,7 @@ function getSignatureFromUnionTypes(unionTypes, metaUtilObj) {
             reftypes.add(checker.typeToString(type));
         }
         else if (tFlags & ts.TypeFlags.Object) {
-            const objtypeObj = getSignatureFromType(type, false, metaUtilObj);
+            const objtypeObj = getSignatureFromType(type, false, seenUnionTypeAliases !== null ? new Set(seenUnionTypeAliases) : null, metaUtilObj);
             types.add(objtypeObj.type);
             reftypes.add(objtypeObj.reftype);
         }
@@ -385,7 +395,7 @@ function getSignatureFromUnionTypes(unionTypes, metaUtilObj) {
                 }
             }
             else {
-                const objtypeObj = getSignatureFromType(type, false, metaUtilObj);
+                const objtypeObj = getSignatureFromType(type, false, seenUnionTypeAliases !== null ? new Set(seenUnionTypeAliases) : null, metaUtilObj);
                 types.add(objtypeObj.type);
                 reftypes.add(objtypeObj.reftype);
             }
@@ -607,7 +617,7 @@ function getAllMetadataForDeclaration(declarationWithType, scope, flags, propert
         if (MetaUtils.isConditionalTypeNodeDetected(declTypeNode, seen, metaUtilObj)) {
             const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(declSymbol, declarationWithType);
             if (symbolType) {
-                typeObj = getSignatureFromType(symbolType, true, metaUtilObj);
+                typeObj = getSignatureFromType(symbolType, true, null, metaUtilObj);
             }
         }
     }
@@ -624,7 +634,7 @@ function getAllMetadataForDeclaration(declarationWithType, scope, flags, propert
         }
         let isPropSignature = ts.isPropertySignature(declarationWithType) || ts.isPropertyDeclaration(declarationWithType);
         const type = metaUtilObj.typeChecker.getTypeAtLocation(declTypeNode);
-        typeObj = getSignatureFromType(type, isPropSignature, metaUtilObj);
+        typeObj = getSignatureFromType(type, isPropSignature, null, metaUtilObj);
         if (refNodeTypeName) {
             if (MetaUtils.isMappedType(type)) {
                 const strType = metaUtilObj.typeChecker.typeToString(type);

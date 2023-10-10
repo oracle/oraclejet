@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils'], function (exports, oj, Context, Logger, ThemeUtils) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils'], function (exports, oj, ojcustomelementRegistry, Context, Logger, ThemeUtils) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -246,57 +246,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
 
     const EMPTY_SET = new Set();
     class CustomElementUtils {
-        static registerElement(tagName, regObj, constructor) {
-            const tagNameUpper = tagName.toUpperCase();
-            if (!CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagNameUpper]) {
-                if (!regObj.descriptor) {
-                    throw new Error(`Custom element ${tagName} must be registered with a descriptor.`);
-                }
-                CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagName] = regObj;
-                CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagNameUpper] = regObj;
-                Object.defineProperty(constructor, 'name', {
-                    value: CustomElementUtils.tagNameToElementClassName(tagName)
-                });
-                customElements.define(tagName, constructor);
-            }
-        }
-        static tagNameToElementClassName(tagName) {
-            return (tagName
-                .toLowerCase()
-                .match(/-(?<match>.*)/)[0]
-                .replace(/-(.)/g, (match, group1) => group1.toUpperCase()) + 'Element');
-        }
-        static isComposite(tagName) {
-            var _a, _b;
-            return (_b = (_a = CustomElementUtils.getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.composite) !== null && _b !== void 0 ? _b : false;
-        }
-        static isVComponent(tagName) {
-            var _a, _b;
-            return (_b = (_a = CustomElementUtils.getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.vcomp) !== null && _b !== void 0 ? _b : false;
-        }
-        static isElementRegistered(tagName) {
-            return CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagName] != null;
-        }
-        static getElementRegistration(tagName) {
-            var _a;
-            return (_a = CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagName]) !== null && _a !== void 0 ? _a : null;
-        }
-        static getElementDescriptor(tagName) {
-            var _a;
-            return ((_a = CustomElementUtils.getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.descriptor) || {};
-        }
-        static getElementProperties(element) {
-            return CustomElementUtils.getPropertiesForElementTag(element.tagName);
-        }
-        static getMetadata(tagName) {
-            var _a, _b;
-            const descriptor = CustomElementUtils.getElementDescriptor(tagName);
-            return (_b = (_a = descriptor['_metadata']) !== null && _a !== void 0 ? _a : descriptor.metadata) !== null && _b !== void 0 ? _b : {};
-        }
-        static getPropertiesForElementTag(tagName) {
-            var _a;
-            return (_a = CustomElementUtils.getMetadata(tagName).properties) !== null && _a !== void 0 ? _a : {};
-        }
         static getElementInfo(element) {
             if (element) {
                 return `${element.tagName.toLowerCase()} with id '${element.id}'`;
@@ -305,8 +254,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
         }
         static getElementState(element) {
             let state = element[CustomElementUtils._ELEMENT_STATE_KEY];
-            if (!state && CustomElementUtils.isElementRegistered(element.tagName)) {
-                const StateClass = CustomElementUtils.getElementRegistration(element.tagName).stateClass;
+            if (!state && ojcustomelementRegistry.isElementRegistered(element.tagName)) {
+                const StateClass = ojcustomelementRegistry.getElementRegistration(element.tagName).stateClass;
                 state = new StateClass(element);
                 Object.defineProperty(element, CustomElementUtils._ELEMENT_STATE_KEY, { value: state });
             }
@@ -314,12 +263,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
         }
         static getElementBridge(element) {
             let bridge = element[CustomElementUtils._ELEMENT_BRIDGE_KEY];
-            if (bridge === undefined && CustomElementUtils.isElementRegistered(element.tagName)) {
+            if (bridge === undefined && ojcustomelementRegistry.isElementRegistered(element.tagName)) {
                 bridge = null;
-                const bridgeProto = CustomElementUtils.getElementRegistration(element.tagName).bridgeProto;
+                const bridgeProto = ojcustomelementRegistry.getElementRegistration(element.tagName).bridgeProto;
                 if (bridgeProto !== undefined) {
                     bridge = Object.create(bridgeProto);
-                    const descriptor = CustomElementUtils.getElementDescriptor(element.tagName);
+                    const descriptor = ojcustomelementRegistry.getElementDescriptor(element.tagName);
                     bridge.initializeBridge(element, descriptor);
                 }
                 Object.defineProperty(element, CustomElementUtils._ELEMENT_BRIDGE_KEY, { value: bridge });
@@ -329,6 +278,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
         static getSlotMap(element) {
             const slotMap = {};
             const childNodeList = element.childNodes;
+            const metadata = childNodeList.length > 0 ? ojcustomelementRegistry.getMetadata(element.localName) : null;
             for (let i = 0; i < childNodeList.length; i++) {
                 const child = childNodeList[i];
                 if (CustomElementUtils.isSlotable(child)) {
@@ -336,6 +286,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
                     if (!slotMap[slot]) {
                         slotMap[slot] = [];
                     }
+                    CustomElementUtils._possiblyApplyImplicitContext(child, slot, metadata);
                     slotMap[slot].push(child);
                 }
             }
@@ -353,7 +304,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
             return node.nodeType === 1 || (node.nodeType === 3 && !!node.nodeValue.trim());
         }
         static getElementProperty(element, property) {
-            if (CustomElementUtils.isElementRegistered(element.tagName)) {
+            if (ojcustomelementRegistry.isElementRegistered(element.tagName)) {
                 let vInst = element['_vcomp'];
                 if (vInst && !vInst.isCustomElementFirst()) {
                     return CustomElementUtils.getPropertyValue(vInst.props, property);
@@ -405,8 +356,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
             }
             return EMPTY_SET;
         }
+        static _possiblyApplyImplicitContext(child, slot, metadata) {
+            var _a, _b;
+            if ((child === null || child === void 0 ? void 0 : child.nodeType) === Node.ELEMENT_NODE) {
+                if ((_b = (_a = metadata.slots) === null || _a === void 0 ? void 0 : _a[slot]) === null || _b === void 0 ? void 0 : _b.implicitBusyContext) {
+                    child.setAttribute('data-oj-context', '');
+                }
+            }
+        }
     }
-    CustomElementUtils._CUSTOM_ELEMENT_REGISTRY = {};
     CustomElementUtils._ELEMENT_STATE_KEY = '_ojElementState';
     CustomElementUtils._ELEMENT_BRIDGE_KEY = '_ojBridge';
     CustomElementUtils._ALLOW_RELOCATION_COUNT = 0;
@@ -414,7 +372,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
 
     const CHILD_BINDING_PROVIDER = Symbol('childBindingProvider');
     const CACHED_BINDING_PROVIDER = Symbol('cachedBindingProvider');
-    const CACHED_USE_KO_FLAG = Symbol('cachedUseKoFlag');
     class ElementState {
         constructor(element) {
             this.dirtyProps = new Set();
@@ -472,7 +429,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
         }
         getTrackChildrenOption() {
             var _a, _b;
-            const metadata = CustomElementUtils.getElementDescriptor(this.Element.tagName).metadata;
+            const metadata = ojcustomelementRegistry.getElementDescriptor(this.Element.tagName).metadata;
             return (_b = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_TRACK_CHILDREN']) !== null && _b !== void 0 ? _b : 'none';
         }
         setCreateCallback(createComponentCallback) {
@@ -638,7 +595,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
         }
         GetDescriptiveValue(attrName) {
             const propName = AttributeUtils.attributeToPropertyName(attrName);
-            const properties = CustomElementUtils.getElementProperties(this.Element);
+            const properties = ojcustomelementRegistry.getElementProperties(this.Element);
             let value;
             if (properties && properties[propName]) {
                 value = this.Element[propName];
@@ -706,25 +663,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
                 this._resolveCreatedBusyState = null;
             }
         }
-        static _findKoUseFlag(element, startElement = element) {
-            let useKoFlag = element[CACHED_USE_KO_FLAG];
-            if (useKoFlag !== undefined) {
-                return useKoFlag;
-            }
-            const parent = element.parentElement;
-            if (!parent) {
-                if (element === document.documentElement) {
-                    useKoFlag = false;
-                }
-                else {
-                    throw new JetElementError(startElement, 'Cannot determine knockout use for a disconnected subtree.');
-                }
-            }
-            else {
-                useKoFlag = ElementState._findKoUseFlag(parent, startElement);
-            }
-            element[CACHED_USE_KO_FLAG] = useKoFlag;
-            return useKoFlag;
+        static _findKoUseFlag(element) {
+            const template = element.querySelector(':scope > template[data-oj-use-ko]');
+            return !!template;
         }
         static _walkBindingProviders(element, startElement = element) {
             var _a;
@@ -769,7 +710,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
                         .then(() => {
                         resolveElementDefinedBusyState();
                         clearInterval(timer);
-                        if (CustomElementUtils.isElementRegistered(trackedElement.tagName)) {
+                        if (ojcustomelementRegistry.isElementRegistered(trackedElement.tagName)) {
                             return CustomElementUtils.getElementState(trackedElement).GetCreatedPromise();
                         }
                         return null;
@@ -780,7 +721,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
                         throw new Error(`Error defining element ${trackedElement.localName} : ${error}`);
                     });
                 }
-                else if (CustomElementUtils.isElementRegistered(trackedElement.tagName)) {
+                else if (ojcustomelementRegistry.isElementRegistered(trackedElement.tagName)) {
                     return CustomElementUtils.getElementState(trackedElement).GetCreatedPromise();
                 }
                 return null;
@@ -859,7 +800,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
 
     exports.AttributeUtils = AttributeUtils;
     exports.CACHED_BINDING_PROVIDER = CACHED_BINDING_PROVIDER;
-    exports.CACHED_USE_KO_FLAG = CACHED_USE_KO_FLAG;
     exports.CHILD_BINDING_PROVIDER = CHILD_BINDING_PROVIDER;
     exports.CustomElementUtils = CustomElementUtils;
     exports.ElementState = ElementState;

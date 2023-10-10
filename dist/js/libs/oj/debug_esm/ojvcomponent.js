@@ -8,7 +8,8 @@
 import { forwardRef } from 'preact/compat';
 import { jsx } from 'preact/jsx-runtime';
 import { Fragment, options, cloneElement, h, createRef, render, createContext, Component } from 'preact';
-import { CustomElementUtils, toSymbolizedValue, JetElementError, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, ElementState } from 'ojs/ojcustomelement-utils';
+import { toSymbolizedValue, JetElementError, CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, ElementState } from 'ojs/ojcustomelement-utils';
+import { getElementRegistration, isElementRegistered, isVComponent, getElementDescriptor, registerElement as registerElement$1 } from 'ojs/ojcustomelement-registry';
 import { useContext, useMemo, useLayoutEffect } from 'preact/hooks';
 import { EnvironmentContext, RootEnvironmentProvider } from '@oracle/oraclejet-preact/UNSAFE_Environment';
 import Context from 'ojs/ojcontext';
@@ -24,7 +25,7 @@ import { warn } from 'ojs/ojlogger';
 
 function EnvironmentWrapper(props) {
     const child = props.children;
-    const contexts = CustomElementUtils.getElementRegistration(child.type).cache.contexts;
+    const contexts = getElementRegistration(child.type).cache.contexts;
     const allContexts = [EnvironmentContext, ...(contexts !== null && contexts !== void 0 ? contexts : [])];
     const allValues = allContexts.map((context) => {
         var _a;
@@ -53,12 +54,12 @@ const oldVNodeHook = options.vnode;
 let isCloningElement = false;
 options.vnode = (vnode) => {
     const type = vnode.type;
-    if (typeof type === 'string' && CustomElementUtils.isElementRegistered(type)) {
+    if (typeof type === 'string' && isElementRegistered(type)) {
         const props = vnode.props;
         injectSymbols(props, 'value');
         injectSymbols(props, 'checked');
     }
-    if (typeof type === 'string' && !isCloningElement && CustomElementUtils.isVComponent(type)) {
+    if (typeof type === 'string' && !isCloningElement && isVComponent(type)) {
         isCloningElement = true;
         try {
             const origVNode = cloneElement(vnode);
@@ -455,6 +456,13 @@ options.requestAnimationFrame = _requestAnimationFrame;
  *   )
  * }
  * </code></pre>
+ * <p>
+ *   In some scenarios, JET application developers may require access to a
+ *   <a href="oj.BusyContext.html">BusyContext</a> scoped to a VComponent's children
+ *   or to a particular named slot's contents. See the
+ *   <a href="#ImplicitBusyContext">ImplicitBusyContext</a> type for info on
+ *   how to declare the need for a scoped BusyContext instance.
+ * </p>
  * <h3 id="template-slots">
  *  Template Slots
  *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#template-slots"></a>
@@ -1322,6 +1330,33 @@ options.requestAnimationFrame = _requestAnimationFrame;
 
 /**
  * <p>
+ *   As discussed in <a href="#children">Children and Slots</a>, JET application developers
+ *   may require runtime access to a <a href="oj.BusyContext.html">BusyContext</a>
+ *   scoped to a VComponent's children or to a particular named slot's contents.
+ *   The ImplicitBusyContext marker type can be combined with Preact's ComponentChildren type
+ *   or with the <a href="#Slot">Slot</a> type to indicate that a scoped BusyContext instance
+ *   should be injected by the VComponent framework.
+ * </p>
+ * <pre class="prettyprint"><code>import { Component, ComponentChildren } from 'preact';
+ * import { customElement, ExtendGlobalProps, ImplicitBusyContext, Slot } from 'ojs/ojvcomponent';
+ *
+ * type Props = {
+ *   // This indicates that the VComponent accepts arbitrary (non-slot) children,
+ *   // and that a BusyContext scoped to this child content is expected at runtime
+ *   children?: ComponentChildren & ImplicitBusyContext;
+ *
+ *   // This indicates that the VComponent accepts a slot named "end",
+ *   // and that a BusyContext scoped to the slot's content is expected at runtime
+ *   end?: Slot & ImplicitBusyContext;
+ * }
+ * </code></pre>
+ * @typedef {unknown} ImplicitBusyContext
+ * @ojexports
+ * @memberof ojvcomponent
+ */
+
+/**
+ * <p>
  *  The Methods type specifies optional design-time method metadata that can be passed in the
  *  <code>options</code> argument when calling <a href=#registerCustomElement>registerCustomElement</a>
  *  to register a functional VComponent that exposes custom element methods.
@@ -1947,6 +1982,11 @@ const _CAPTURE_LISTENERS = Symbol();
 const _SUBPROP = 'subproperty';
 const _PROP_CHANGE = 'propChange';
 const _ACTION = 'action';
+let _stub;
+function _getStubElement() {
+    _stub = _stub !== null && _stub !== void 0 ? _stub : document.createElement('div');
+    return _stub;
+}
 class IntrinsicElement {
     constructor(element, component, metadata, rootAttributes, rootProperties, defaultProps) {
         this.ref = createRef();
@@ -2346,6 +2386,7 @@ class IntrinsicElement {
             this._disconnectSlots();
             this._state.resetCreationCycle();
             render(null, this._element);
+            render(null, _getStubElement());
             this._applyRef(this._oldRootRef, null);
             this._oldRootRef = undefined;
             this._vdom = null;
@@ -2808,7 +2849,7 @@ class VComponentState extends ElementState {
         var _a;
         const slotMap = this.getSlotMap();
         const slots = Object.keys(slotMap);
-        const metadata = CustomElementUtils.getElementDescriptor(this.Element.tagName).metadata;
+        const metadata = getElementDescriptor(this.Element.tagName).metadata;
         const dynamicSlotMetadata = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a._DYNAMIC_SLOT;
         const hasDynamicTemplateSlots = !!(dynamicSlotMetadata === null || dynamicSlotMetadata === void 0 ? void 0 : dynamicSlotMetadata.isTemplate);
         const templateSlots = slots.filter((slot) => {
@@ -2983,7 +3024,7 @@ function registerElement(tagName, metadata, constructor, observedProps, observed
     HTMLPreactElement.translationBundleMap = translationBundleMap;
     addPropGetterSetters(HTMLPreactElement.prototype, metadata === null || metadata === void 0 ? void 0 : metadata.properties);
     addMethods(HTMLPreactElement.prototype, metadata === null || metadata === void 0 ? void 0 : metadata.methods);
-    CustomElementUtils.registerElement(tagName, {
+    registerElement$1(tagName, {
         descriptor: { metadata },
         stateClass: VComponentState,
         vcomp: true,

@@ -577,12 +577,6 @@ var __oj_collapsible_metadata =
 
       this._destroyIcons();
 
-      // remove header wrapper
-      if (this.header && this.headerWrapper) {
-        unwrap(this.header);
-        this.headerWrapper = null;
-      }
-
       // clean up content panels
       this.content
         .css('display', '')
@@ -599,6 +593,12 @@ var __oj_collapsible_metadata =
     _cleanup: function () {
       // remove listeners
       this._tearDownEvents();
+
+      // remove header wrapper
+      if (this.header && this.headerWrapper) {
+        unwrap(this.header);
+        this.headerWrapper = null;
+      }
 
       // remove wrapper
       if (this.content) {
@@ -705,9 +705,9 @@ var __oj_collapsible_metadata =
      */
     refresh: function () {
       this._super();
+      this._destroyIcons();
       this._cleanup();
       this._processPanels();
-      this._destroyIcons();
       this._refresh();
     },
 

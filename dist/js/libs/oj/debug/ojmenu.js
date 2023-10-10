@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs/ojcore-base', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojcustomelement-utils'], function ($, ojjqueryHammer, ojpopupcore, ojoption, oj, Hammer, Context, ThemeUtils, Components, AnimationUtils, Logger, Config, ojcustomelementUtils) { 'use strict';
+define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs/ojcore-base', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry'], function ($, ojjqueryHammer, ojpopupcore, ojoption, oj, Hammer, Context, ThemeUtils, Components, AnimationUtils, Logger, Config, ojcustomelementUtils, ojcustomelementRegistry) { 'use strict';
 
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
@@ -4319,7 +4319,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
       ojMenu: {
         openOptions: Components.createDynamicPropertyGetter(function (context) {
           var position;
-          if (ojcustomelementUtils.CustomElementUtils.isElementRegistered(context.element.tagName)) {
+          if (ojcustomelementRegistry.isElementRegistered(context.element.tagName)) {
             if (context.containers.indexOf('ojMenu') >= 0) {
               position = {
                 my: { horizontal: 'start', vertical: 'top' },

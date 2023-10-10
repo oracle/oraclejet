@@ -1396,6 +1396,13 @@ var __oj_tab_bar_metadata =
           return;
         }
         if ($target.hasClass(this.getNavListRemoveIcon()) && this.isTabBar()) {
+          // click on the 'X' should not change selection, but it should still change currentItem
+          this.HandleClickActive(item, event);
+          var contentElement = this.getItemContentElement(item);
+          if (contentElement.length > 0) {
+            // make sure it gets focus otherwise focus goes to the body as 'X' is no longer in DOM
+            contentElement[0].focus();
+          }
           this._handleRemove(event, item);
           return;
         }

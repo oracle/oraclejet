@@ -182,8 +182,8 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      *   <li>"alertdialog" defines type of dialog that contains an alert message, where initial focus
      *       goes to an element within the dialog.</li>
      * </ul>
-     * The popup also adds the <code class="prettyprint">aria-describedby="popup-id"</code> attribute
-     * to the assocaited launcher while the popup is open.
+     * The non-modal (modeless) popup also adds the <code class="prettyprint">aria-describedby="popup-id"</code>
+     * attribute to the assocaited launcher while the popup is open.
      * </p>
      *
      * On platforms that support voice over mode (VO), the popup injects anchor tags "skip links"
@@ -192,12 +192,12 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      *  <ul>
      *    <li>A close link, {@link oj.ojPopup#translations.ariaCloseSkipLink}, is injected as a
      *        sibling to the popup's content. Activation of this link will close the popup.</li>
-     *    <li>For cases where the popup doesn't steal focus when it's open, a content navigation
+     *    <li>For cases where the non-modal popup doesn't steal focus when it's open, a content navigation
      *        skip link, {@link oj.ojPopup#translations.ariaFocusSkipLink}, is injected as a
      *        sibling to the launcher (first required argument of the open method). If the launcher
      *        selector targets a sub-element of the launcher, the skip link could be injected under
      *        the launcher, which can be problematic for oj-button as skip link activation will
-     *        also activate the associated launcher.</li>
+     *        also activate the associated launcher. The focus skip link is not injected for modal popups.</li>
      *  </ul>
      *
      * <p>One point often overlooked is making the gestures that launch a popup accessible.
@@ -1043,7 +1043,9 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         this._setPosition(position);
 
         this._setAutoDismiss(options.autoDismiss);
-        this._addDescribedBy();
+        if (options.modality !== 'modal') {
+          this._addDescribedBy();
+        }
 
         if (!this._IsCustomElement() || !element[0].hasAttribute('role')) {
           element.attr('role', options.role);
@@ -2239,38 +2241,46 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * @private
        */
       _initVoiceOverAssist: function () {
+        var isModal = this.options.modality === 'modal';
         var isVOSupported =
           oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS ||
           oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.ANDROID;
-        var liveRegion = this._liveRegion;
-        if (!liveRegion) {
-          liveRegion = new ojpopupcore.PopupLiveRegion();
-          this._liveRegion = liveRegion;
-        }
-
         var message;
-        var initialFocus = this._deriveInitialFocus();
-        if (isVOSupported) {
-          message = this.getTranslatedString(
-            initialFocus === 'none'
-              ? 'ariaLiveRegionInitialFocusNoneTouch'
-              : 'ariaLiveRegionInitialFocusFirstFocusableTouch'
-          );
-        } else {
-          message = this.getTranslatedString(
-            initialFocus === 'none'
-              ? 'ariaLiveRegionInitialFocusNone'
-              : 'ariaLiveRegionInitialFocusFirstFocusable'
-          );
+
+        if (!isModal) {
+          // for non-modal popups install the live region for keybard/VO navigation
+          var liveRegion = this._liveRegion;
+          if (!liveRegion) {
+            liveRegion = new ojpopupcore.PopupLiveRegion();
+            this._liveRegion = liveRegion;
+          }
+          var initialFocus = this._deriveInitialFocus();
+          if (isVOSupported) {
+            message = this.getTranslatedString(
+              initialFocus === 'none'
+                ? 'ariaLiveRegionInitialFocusNoneTouch'
+                : 'ariaLiveRegionInitialFocusFirstFocusableTouch'
+            );
+          } else {
+            message = this.getTranslatedString(
+              initialFocus === 'none'
+                ? 'ariaLiveRegionInitialFocusNone'
+                : 'ariaLiveRegionInitialFocusFirstFocusable'
+            );
+          }
+          liveRegion.announce(message);
         }
-        liveRegion.announce(message);
 
         if (isVOSupported) {
-          var focusSkipLinkId = this._getSubId('focusSkipLink');
-          var launcher = this._launcher;
-          var callback = this._intialFocus.bind(this, true);
-          message = this.getTranslatedString('ariaFocusSkipLink');
-          this._focusSkipLink = new ojpopupcore.PopupSkipLink(launcher, message, callback, focusSkipLinkId);
+          var callback;
+
+          if (!isModal) {
+            var focusSkipLinkId = this._getSubId('focusSkipLink');
+            var launcher = this._launcher;
+            callback = this._intialFocus.bind(this, true);
+            message = this.getTranslatedString('ariaFocusSkipLink');
+            this._focusSkipLink = new ojpopupcore.PopupSkipLink(launcher, message, callback, focusSkipLinkId);
+          }
 
           var content = this._content;
           var closeSkipLinkId = this._getSubId('closeSkipLink');
@@ -2286,8 +2296,10 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        */
       _destroyVoiceOverAssist: function () {
         var liveRegion = this._liveRegion;
-        liveRegion.destroy();
-        delete this._liveRegion;
+        if (liveRegion) {
+          liveRegion.destroy();
+          delete this._liveRegion;
+        }
 
         var focusSkipLink = this._focusSkipLink;
         if (focusSkipLink) {

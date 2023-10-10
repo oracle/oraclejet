@@ -48,18 +48,18 @@ js/libs/jquery/jqueryui-amd-1.13.2/widgets/mouse.js                           MI
 js/libs/jquery/jqueryui-amd-1.13.2/vendor/jquery-color/jquery.color.js        MIT
 js/libs/jquery/jqueryui-amd-1.13.2/position.js                                MIT
 js/libs/knockout/knockout-3.5.1.js                                            MIT
-js/libs/oj/v14.0.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
-js/libs/oj/v14.0.0/min/ojexpparser.js (expparser.js)                    MIT
-js/libs/oj/v14.0.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
-js/libs/oj/v14.0.0/min/ojmessagebanner.js (Ramda)                       MIT
-js/libs/oj/v14.0.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
-js/libs/oj/v14.0.0/min/ojtree.js (jsTree.js)                            MIT
-js/libs/oj/v14.0.0/ojL10n.js (requireJS i18n)                           MIT
+js/libs/oj/v14.1.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
+js/libs/oj/v14.1.0/min/ojexpparser.js (expparser.js)                    MIT
+js/libs/oj/v14.1.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
+js/libs/oj/v14.1.0/min/ojmessagebanner.js (Ramda)                       MIT
+js/libs/oj/v14.1.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
+js/libs/oj/v14.1.0/min/ojtree.js (jsTree.js)                            MIT
+js/libs/oj/v14.1.0/ojL10n.js (requireJS i18n)                           MIT
 js/libs/proj4js/dist/proj4.js                                                 Proj4js
 js/libs/require/require.js                                                    MIT
 js/libs/require/text.js                                                       MIT
 js/libs/require-css/css.min.js (require-css)                                  MIT
-scss/oj/v14.0.0/3rdparty/normalize/normalize.scss                       MIT
+scss/oj/v14.1.0/3rdparty/normalize/normalize.scss                       MIT
 js/libs/touchr/touchr.js                                                      MIT
 js/libs/preact/dist/preact.umd.js                                             MIT
 

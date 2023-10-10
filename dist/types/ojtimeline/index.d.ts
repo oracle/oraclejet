@@ -283,6 +283,7 @@ export namespace ojTimeline {
         data: SeriesItem<K>;
         durationWidth: number;
         itemData: D;
+        maxAvailableWidth: number;
         previousState: {
             focused: boolean;
             hovered: boolean;

@@ -7,6 +7,7 @@
  */
 import oj from 'ojs/ojcore-base';
 import { option, LEVEL_LOG, log, info, error } from 'ojs/ojlogger';
+import { getMetadata } from 'ojs/ojcustomelement-registry';
 
 /**
  * Internally used by the {@link oj.BusyContext} to track a components state
@@ -1102,6 +1103,8 @@ BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */ (function () {
   };
 })();
 
+const _OJ_CONTEXT_INSTANCE = Symbol();
+
 /**
  * <b>The constructor should never be invoked by an application directly</b>. Use
  * {@link oj.Context.getPageContext} and {@link oj.Context.getContext} APIs to
@@ -1176,19 +1179,37 @@ Context.prototype.getParentContext = function () {
   * @export
   */
 Context.getContext = function (node) {
-  while (node) {
-    var context = node[Context._OJ_CONTEXT_INSTANCE];
+  let n = node;
+  while (n) {
+    let context = n[_OJ_CONTEXT_INSTANCE];
     if (context) {
       return context;
     }
-    if (node.hasAttribute(Context._OJ_CONTEXT_ATTRIBUTE)) {
-      context = new Context(node);
-      Object.defineProperty(node, Context._OJ_CONTEXT_INSTANCE, { value: context });
-      return context;
+    if (n.hasAttribute(Context._OJ_CONTEXT_ATTRIBUTE)) {
+      return Context._createContext(n);
     }
 
-    // eslint-disable-next-line no-param-reassign
-    node = Context.getParentElement(node);
+    const parent = Context.getParentElement(n);
+
+    // This code is related to the implicit busy context feature for custom
+    // element slots. If a slot has the 'implicitBusyContext' metadata, then any
+    // busy state reported from within the slot's subtree should be accumulated
+    // on the Context instance associated with the slot node, i.e. slots with the
+    // 'implicitBusyContext' metadata behave as if they were explicitly marked with
+    // the data-oj-context attribute. This feature allows telemetry code to detect
+    // when the slot content is ready without requiring that the application mark
+    // the slot with the data-oj-context attribute.
+    //
+    // This check is meant to handle the case where a busy state
+    // is being added within a slot before that slot has been distriubuted into the View.
+    //
+    // The opposite case is handled in the custom element code by placing data-oj-context
+    // on each 'implicit context' slot at the time when the slot map is created.
+    if (Context._hasImplicitSlotContext(parent, n)) {
+      return Context._createContext(n);
+    }
+
+    n = parent;
   }
 
   return Context.getPageContext();
@@ -1256,15 +1277,6 @@ Context._OJ_CONTEXT_ATTRIBUTE = 'data-oj-context';
  * @ignore
  * @private
  * @constant
- * Element property name for a context
- * @type {string}
- */
-Context._OJ_CONTEXT_INSTANCE = '__ojContextInstance';
-
-/**
- * @ignore
- * @private
- * @constant
  * attribute identifying an open popup
  * @type {string}
  */
@@ -1292,6 +1304,39 @@ Context.getParentElement = function (element) {
   // _ojReportBusy expando will be set by the TemplateEngine if busy states need to bubble
   // up to an alternate parent
   return element._ojReportBusy || element.parentElement;
+};
+
+/**
+ * Determines whether slot metadata instructs us to create an implicit context
+ * for the slot node
+ * @param {Element} parent
+ * @param {Node} slot
+ */
+Context._hasImplicitSlotContext = function (parent, slot) {
+  // We won't be creating context for a text node since it cannot ever have busy states
+  if (slot && slot.nodeType === Node.ELEMENT_NODE) {
+    // Bail out if the parent element is in 'complete' state because the slot would
+    // have already got the data-oj-context attribute set by the parent element itself.
+    // Doing otherswise would result in creation of an implicit Context for any top element
+    // of an already-created component
+    const meta =
+      parent && !parent.classList.contains('oj-complete') ? getMetadata(parent.localName) : null;
+
+    if (meta) {
+      const slotName = slot.getAttribute('slot') || '';
+      const slotsMeta = meta.slots;
+      const slotMeta = slotsMeta ? slotsMeta[slotName] : null;
+      return slotMeta && slotMeta.implicitBusyContext;
+    }
+  }
+  return false;
+};
+
+Context._createContext = function (n) {
+  const ctx = new Context(n);
+  // eslint-disable-next-line no-param-reassign
+  n[_OJ_CONTEXT_INSTANCE] = ctx;
+  return ctx;
 };
 
 /**

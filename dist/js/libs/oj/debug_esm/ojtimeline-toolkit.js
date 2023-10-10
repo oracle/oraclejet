@@ -1230,6 +1230,14 @@ const DvtTimelineStyleUtils = {
   },
 
   /**
+   * Returns minimum gap between items horizontally
+   * @return {number} The minimum gap
+   */
+  getMinHorizontalBubbleSpacing: () => {
+    return 16;
+  },
+
+  /**
    * Returns size for content bubble arrow
    * @return {number} The size of the content bubble arrow
    */
@@ -1259,6 +1267,14 @@ const DvtTimelineStyleUtils = {
    */
   getNavButtonWidth: () => {
     return 36;
+  },
+
+  /**
+   * Returns the padding for the nav arrow button
+   * @returns {number} The padding of the nav arrow button
+   */
+  getNavButtonPadding: () => {
+    return 8;
   },
 
   /**
@@ -1694,16 +1710,6 @@ class DvtTimelineSeriesNode {
   hideKeyboardFocusEffect() {
     this._isShowingKeyboardFocusEffect = false;
     this.hideHoverEffect();
-
-    // turn off actionable mode if it is enabled
-    /* TODO https://jira.oraclecorp.com/jira/browse/JET-48114
-    if (this._timeline.activeInnerElems) {
-      this._timeline.activeInnerElems = null;
-      this._disableAllTabElements();
-      this._timeline._context._parentDiv.focus();
-      this.hasActiveInnerElems = false;
-      this._timeline.getEventManager().ShowFocusEffect(null, this);
-    }*/
   }
 
   /**
@@ -1825,7 +1831,8 @@ class DvtTimelineSeriesNode {
       previousState: this._previousState,
       state: this._state,
       durationWidth: durationWidth,
-      contentWidth: this.getAvailableContentWidth()
+      contentWidth: this.getAvailableContentWidth(),
+      maxAvailableWidth: this.getMaxAvailableWidth()
     };
   }
 
@@ -1845,9 +1852,53 @@ class DvtTimelineSeriesNode {
       : 0;
     var contentWidth =
       this.getItemType() === DvtTimelineSeriesNode.DURATION_EVENT
-        ? bubbleWidth - artifactWidth
+        ? Math.floor(bubbleWidth - artifactWidth)
         : null;
-    return Math.floor(contentWidth);
+    return contentWidth;
+  }
+
+  /**
+   * Gets the largest available width on the right, left or within the bubble in a duration event.
+   * This is only for discrete viewport navigation mode.
+   * @return {number|null} The largest available width in pixels, or null if not duration event.
+   */
+  getMaxAvailableWidth() {
+    var durationEvent = this.getItemType() === DvtTimelineSeriesNode.DURATION_EVENT;
+    if (!durationEvent) return null;
+
+    var timeline = this._timeline;
+    var itemStartTime = this.getStartTime();
+    var itemEndTime = this.getEndTime();
+    var discreteNavMode = timeline.isDiscreteNavigationMode();
+    var padding = DvtTimelineStyleUtils.getNavButtonPadding();
+    var edgeOffset;
+    var startTime;
+    var endTime;
+    if (discreteNavMode) {
+      var navButtonBackgroundWidth = DvtTimelineStyleUtils.getNavButtonBackgroundWidth();
+      edgeOffset = navButtonBackgroundWidth - padding;
+      var viewportIndexScroll = Math.floor(
+        (itemStartTime - timeline._viewStartTime) / timeline._initialViewportTimeDuration
+      );
+      var discreteViewportOffsetPos =
+        timeline.getDiscreteViewportDateOffsetPos(viewportIndexScroll);
+      startTime = discreteViewportOffsetPos.startDate;
+      endTime = discreteViewportOffsetPos.endDate;
+    } else {
+      edgeOffset = -padding;
+      startTime = timeline._start;
+      endTime = timeline._end;
+    }
+    var startLoc = timeline.getDatePos(startTime);
+    var endLoc = timeline.getDatePos(endTime);
+    var availableWidthInside =
+      timeline.getDatePos(itemEndTime) - timeline.getDatePos(itemStartTime);
+    var contentBubbleSpacing = DvtTimelineStyleUtils.getContentBubbleSpacing();
+    var availableWidthLeft =
+      timeline.getDatePos(itemStartTime) - contentBubbleSpacing - startLoc + edgeOffset;
+    var availableWidthRight =
+      endLoc - timeline.getDatePos(itemEndTime) - contentBubbleSpacing + edgeOffset;
+    return Math.floor(Math.max(availableWidthInside, availableWidthLeft, availableWidthRight));
   }
 
   /**
@@ -2038,8 +2089,6 @@ class DvtTimelineSeriesNode {
   setDraggedObj(draggedObj) {
     this._draggedObj = draggedObj;
   }
-
-  ///
 
   /**
    * Show the drag feedbacks accordingly; called by DnD handlers.
@@ -2652,7 +2701,6 @@ const DvtTimelineSeriesItemRenderer = {
 
     // check viewport collision
     DvtTimelineSeriesItemRenderer.checkEndViewportCollision(item, series, isRTL, width);
-
     // for collision, need the start position to be -contentWidth
     if (item.getEndViewportCollision() && durationWidth === null) {
       width = 2 * width + DvtTimelineStyleUtils.getContentBubbleSpacing();
@@ -3754,6 +3802,7 @@ const DvtTimelineSeriesItemRenderer = {
       item._content = DvtTimelineSeriesItemRenderer._getBubbleContent(item, series);
       contentContainer.addChild(item._content);
     }
+
     DvtTimelineSeriesItemRenderer._setupBubble(item, item._content, series);
 
     var nodeWidth, content, contentBubbleArray;
@@ -4180,11 +4229,13 @@ const DvtTimelineSeriesItemRenderer = {
     var navButtonBackgroundWidth = DvtTimelineStyleUtils.getNavButtonBackgroundWidth();
     var startTime = item.getDragStartTime();
     var loc = item._timeline.getDatePos(startTime);
-    var navMode = item._timeline.isDiscreteNavigationMode();
-    var length = navMode ? item._timeline._discreteContentLength : series._length;
+    var discreteNavMode = item._timeline.isDiscreteNavigationMode();
+    var length = discreteNavMode ? item._timeline._discreteContentLength : series._length;
     // use viewport end time vs timeline end time if in discrete navigation mode
     var endViewportDate = item._timeline.getDiscreteViewportEndDate();
-    var endViewportPos = item._timeline.getDatePos(item._timeline._viewEndTime);
+    var endViewportPos = item._timeline.getDatePos(
+      discreteNavMode ? endViewportDate : item._timeline._end
+    );
     item.setEndViewportCollision(false);
 
     // no collision behavior if not duration-event
@@ -4192,22 +4243,21 @@ const DvtTimelineSeriesItemRenderer = {
       return;
     }
 
-    // add half the preview wings to make it look more natural if it would be slightly too long
-    var collisionAdjustment = navButtonBackgroundWidth / 2;
+    // Allow content to extend up to the end edge (the viewport end in discrete nav mode, the time axis end in continuous) minus some padding.
+    // The same padding is used for both discrete and continuous nav mode, and it's equivalent to the padding around the nav button in discrete nav mode.
+    var padding = DvtTimelineStyleUtils.getNavButtonPadding();
+    var collisionAdjustment = discreteNavMode ? navButtonBackgroundWidth - padding : -padding;
     if (!isRTL) {
-      renderEnd = loc + DvtTimelineStyleUtils.getContentBubbleSpacing() + width;
+      renderEnd = loc + width;
 
       if (renderEnd > endViewportPos + collisionAdjustment) {
         // need to use overflow
         item.setEndViewportCollision(true);
       }
     } else {
-      renderEnd = length - loc - width - DvtTimelineStyleUtils.getContentBubbleSpacing();
+      renderEnd = length - loc - width;
       var startViewportPos = length - endViewportPos;
-      if (navMode) {
-        startViewportPos = startViewportPos - navButtonBackgroundWidth;
-      }
-      if (startViewportPos + collisionAdjustment > renderEnd) {
+      if (startViewportPos - collisionAdjustment > renderEnd) {
         item.setEndViewportCollision(true);
       }
     }
@@ -7636,6 +7686,7 @@ const DvtTimelineRenderer = {
     var axisVisibleSize = timeline.getTimeAxisVisibleSize(seriesCount);
     var navButtonBackgroundWidth = DvtTimelineStyleUtils.getNavButtonBackgroundWidth();
     var navButtonWidth = DvtTimelineStyleUtils.getNavButtonWidth();
+    var navButtonPadding = DvtTimelineStyleUtils.getNavButtonPadding();
     var axisStart =
       seriesCount === 1
         ? timeline._canvasSize - axisVisibleSize
@@ -7679,7 +7730,7 @@ const DvtTimelineRenderer = {
         'prevNavContainer_i'
       );
       prevArrowButton.setCornerRadius(4);
-      prevArrowButton.setTranslate(8, 8);
+      prevArrowButton.setTranslate(navButtonPadding, navButtonPadding);
       prevContainerBackground.addChild(prevArrowButton);
       prevArrowContainer.addChild(prevContainerBackground);
       prevArrowContainer.setTranslate(timeAxisOffset, axisStart - navButtonWidth);
@@ -7728,7 +7779,7 @@ const DvtTimelineRenderer = {
         'nextNavContainer_i'
       );
       nextArrowButton.setCornerRadius(4);
-      nextArrowButton.setTranslate(16, 8);
+      nextArrowButton.setTranslate(16, navButtonPadding);
       nextContainerBackground.addChild(nextArrowButton);
       nextArrowContainer.addChild(nextContainerBackground);
       nextArrowContainer.setTranslate(nextTimeAxisOffset, axisStart - navButtonWidth);
@@ -9841,12 +9892,12 @@ class DvtTimelineSeries extends BaseComponent {
     if (!this._isVertical) {
       var endViewportCollisionOffset = item.getEndViewportCollision() ? item.getContentWidth() : 0;
       var x = item.getLoc() - endViewportCollisionOffset;
-      var width = item.getWidth() + 16;
+      var width = item.getWidth() + DvtTimelineStyleUtils.getMinHorizontalBubbleSpacing();
       var hOffset = DvtTimelineStyleUtils.getBubbleSpacing();
       var overlappingItems = [];
       for (i = 0; i < index; i++) {
         currItem = this._items[i];
-        currWidth = currItem.getWidth() + 16;
+        currWidth = currItem.getWidth() + DvtTimelineStyleUtils.getMinHorizontalBubbleSpacing();
         endViewportCollisionOffset = currItem.getEndViewportCollision()
           ? currItem.getContentWidth()
           : 0;

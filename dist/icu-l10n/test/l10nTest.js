@@ -36,6 +36,7 @@ function runTestCases(extractBundle) {
       assert.equal(bundle.beta(), 'Beta');
       assert.equal(bundle.delta(), 'Delta');
       assert.equal(bundle.epsilon(), 'Epsilon');
+      assert.equal(bundle.blank(), '');
     });
 
     it('creates the azb bundle in Azerbaijani', () => {
@@ -129,24 +130,44 @@ function runTestCases(extractBundle) {
     });
 
     it('uses plural select rules for buckets', () => {
-      const bundle = extractBundle(`ru-RU/app-strings.js`);
+      const enBundle = extractBundle(`app-strings.js`);
       assert.equal(
-        bundle.plural({
+        enBundle.plural({
           total_rows: 0
         }),
-        'нет строк'
+        'No rows'
       );
       assert.equal(
-        bundle.plural({
+        enBundle.plural({
           total_rows: 1
         }),
         '1 row'
       );
       assert.equal(
-        bundle.plural({
+        enBundle.plural({
           total_rows: 2
         }),
-        'несколько рядов'
+        '2 rows'
+      );
+
+      const ruBundle = extractBundle(`ru-RU/app-strings.js`);
+      assert.equal(
+        ruBundle.plural({
+          total_rows: 0
+        }),
+        'нет строк'
+      );
+      assert.equal(
+        ruBundle.plural({
+          total_rows: 1
+        }),
+        '1 ряд'
+      );
+      assert.equal(
+        ruBundle.plural({
+          total_rows: 2
+        }),
+        '2 ряда'
       );
     });
   });
@@ -212,26 +233,58 @@ describe('TS output', () => {
   });
 });
 
+describe('Custom hooks', () => {
+
+  it('can produce custom return types', () => {
+    const outDir = path.resolve(outputRoot, 'custom-hooks');
+    fsx.removeSync(outDir);
+    build({
+      rootDir,
+      bundleName: 'app-strings.json',
+      locale: 'en-US',
+      outDir,
+      hooks: require.resolve('./custom-hooks.js'),
+      module: 'cjs'
+    });
+
+    const bundle = extractCjsBundle(outDir, 'app-strings.js').default;
+    expect(bundle.welcome().bundle).toEqual('app-strings.json');
+    expect(bundle.welcome().key).toEqual('welcome');
+    expect(bundle.welcome().params).toBeUndefined();
+    expect(bundle.welcome().value).toEqual('Welcome');
+  });
+
+  it('can produce custom return types without definition', () => {
+    const outDir = path.resolve(outputRoot, 'custom-hooks-no-def');
+    fsx.removeSync(outDir);
+    build({
+      rootDir,
+      bundleName: 'app-strings.json',
+      locale: 'en-US',
+      outDir,
+      hooks: require.resolve('./custom-hooks-no-def.js'),
+      module: 'cjs'
+    });
+
+    const bundle = extractCjsBundle(outDir, 'app-strings.js').default;
+    expect(bundle.welcome().bundleId).toEqual('app-strings.json');
+    expect(bundle.welcome().id).toEqual('welcome');
+    expect(bundle.welcome().params).toBeUndefined();
+    expect(bundle.welcome().translation).toEqual('Welcome');
+  });
+});
+
 /**
- * Read contents of ESM file and convert to CommonJS export for Node testing
+ * Read contents of CJS bundle
  * @param {string} outDir
  * @param {string} filePath
  */
-function extractEsmBundle(outDir, filepath) {
-  const bundleContents = fsx.readFileSync(path.join(outDir, filepath)).toString();
-  const script = new vm.Script(
-    bundleContents.replace(/export default/g, '_default =').replace(/export const/, '')
-  );
-  const context = vm.createContext({});
-  script.runInContext(context);
-  return {
-    default: context._default,
-    ...context
-  };
+function extractCjsBundle(outDir, filepath) {
+  return require(path.join(outDir, filepath));
 }
 
-describe('ESM default export', () => {
-  const outDir = path.resolve(outputRoot, 'esm');
+describe('CJS default export', () => {
+  const outDir = path.resolve(outputRoot, 'cjs');
 
   fsx.removeSync(outDir);
   build({
@@ -239,17 +292,17 @@ describe('ESM default export', () => {
     bundleName: 'app-strings.json',
     locale: 'en-US',
     outDir,
-    module: 'esm'
+    module: 'cjs'
   });
   build({
     rootDir,
     bundleName: 'app-strings-x.json',
     locale: 'en-US',
     outDir,
-    module: 'esm'
+    module: 'cjs'
   });
 
-  runTestCases((fp) => extractEsmBundle(outDir, fp).default);
+  runTestCases((fp) => extractCjsBundle(outDir, fp).default);
 });
 
 describe('AMD default export', () => {
@@ -314,7 +367,7 @@ describe('Extra locales', () => {
     bundleName: 'app-strings.json',
     locale: 'en-US',
     outDir,
-    module: 'esm',
+    module: 'cjs',
     additionalLocales
   });
   build({
@@ -322,11 +375,11 @@ describe('Extra locales', () => {
     bundleName: 'app-strings-x.json',
     locale: 'en-US',
     outDir,
-    module: 'esm',
+    module: 'cjs',
     additionalLocales
   });
 
-  const extractBundle = (fp) => extractEsmBundle(outDir, fp).default;
+  const extractBundle = (fp) => extractCjsBundle(outDir, fp).default;
   runTestCases(extractBundle);
 
   it('creates the de bundle in English', () => {

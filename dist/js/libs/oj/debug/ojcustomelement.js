@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojmetadatautils', 'ojs/ojbootstrap', 'ojs/ojcore-base'], function (oj, Logger, ojcustomelementUtils, MetadataUtils, Bootstrap, oj$1) { 'use strict';
+define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'ojs/ojmetadatautils', 'ojs/ojbootstrap', 'ojs/ojcore-base'], function (oj, Logger, ojcustomelementUtils, ojcustomelementRegistry, MetadataUtils, Bootstrap, oj$1) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
@@ -192,10 +192,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojmetada
 
           var expression = ojcustomelementUtils.AttributeUtils.getExpressionInfo(newValue).expr;
           if (!expression) {
-            const propMeta = MetadataUtils.getPropertyMetadata(
-              prop,
-              ojcustomelementUtils.CustomElementUtils.getElementProperties(this)
-            );
+            const propMeta = MetadataUtils.getPropertyMetadata(prop, ojcustomelementRegistry.getElementProperties(this));
             if (propMeta) {
               this.setProperty(
                 prop,
@@ -295,10 +292,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojmetada
     },
 
     GetProperty: function (element, prop, props) {
-      var meta = MetadataUtils.getPropertyMetadata(
-        prop,
-        ojcustomelementUtils.CustomElementUtils.getElementProperties(element)
-      );
+      var meta = MetadataUtils.getPropertyMetadata(prop, ojcustomelementRegistry.getElementProperties(element));
 
       // For event listener and non component properties, retrieve the value directly stored on the element.
       // For top level properties, this will delegate to our 'set' methods so we can handle default values.
@@ -327,7 +321,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojmetada
       // to render the component, we no longer need to track early
       // property sets to avoid overriding data bound DOM attributes
       if (this._earlySets) {
-        const descriptor = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(element.tagName);
+        const descriptor = ojcustomelementRegistry.getElementDescriptor(element.tagName);
         const propertyMeta = this.GetMetadata(descriptor);
         while (this._earlySets.length) {
           const setObj = this._earlySets.shift();
@@ -385,10 +379,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojmetada
 
     SetProperty: function (element, prop, value, props, bOuter) {
       // Check value against any defined enums
-      var meta = MetadataUtils.getPropertyMetadata(
-        prop,
-        ojcustomelementUtils.CustomElementUtils.getElementProperties(element)
-      );
+      var meta = MetadataUtils.getPropertyMetadata(prop, ojcustomelementRegistry.getElementProperties(element));
       if (ojcustomelementUtils.AttributeUtils.isEventListenerProperty(prop) || !meta) {
         // eslint-disable-next-line no-param-reassign
         element[prop] = value;
@@ -473,7 +464,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojmetada
     },
 
     ValidatePropertySet: function (element, property, value) {
-      var propsMeta = ojcustomelementUtils.CustomElementUtils.getElementProperties(element);
+      var propsMeta = ojcustomelementRegistry.getElementProperties(element);
       var propMeta = MetadataUtils.getPropertyMetadata(property, propsMeta);
       var propAr = property.split('.');
 
@@ -727,7 +718,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojmetada
    */
   BaseCustomElementBridge.__InitProperties = function (element, componentProps) {
     const bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(element);
-    var metaProps = ojcustomelementUtils.CustomElementUtils.getElementProperties(element);
+    var metaProps = ojcustomelementRegistry.getElementProperties(element);
     if (metaProps) {
       var attrs = element.attributes; // attrs is a NodeList
       for (var i = 0; i < attrs.length; i++) {
@@ -815,7 +806,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojmetada
       return ojcustomelementUtils.AttributeUtils.attributeToPropertyValue(elem, attr, value, metadata);
     }
 
-    var parseFunction = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(elem.tagName).parseFunction;
+    var parseFunction = ojcustomelementRegistry.getElementDescriptor(elem.tagName).parseFunction;
     if (parseFunction) {
       return parseFunction(val, prop, metadata, function (value) {
         return _coerceVal(value);

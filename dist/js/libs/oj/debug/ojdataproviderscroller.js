@@ -2968,11 +2968,13 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
       initialRowCount: this.m_root.childElementCount,
       success: function (result) {
         self.signalTaskEnd(); // for beforeFetch
-        self.handleDomScrollerFetchedData(result);
+        if (self.m_widget != null) {
+          self.handleDomScrollerFetchedData(result);
+        }
         if (self.m_root == null || result.value == null) {
           // in this case fetchEnd will not be called so we will need to clean up for signalTaskStart in scrollFetch callback
           self.signalTaskEnd();
-          if (self.m_root != null) {
+          if (self.m_root != null && self.m_widget != null) {
             // this is called as part of fetchEnd, see 
             self.m_widget.renderComplete(true);
           }

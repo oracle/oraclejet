@@ -73,7 +73,7 @@ class PreactTemplateEngineKo {
         PreactTemplate.extendTemplate(templateElement, PreactTemplate._ROW_CACHE_FACTORY, (renderer) => {
             templateElement._cachedRows.forEach((rowItem) => {
                 let newVNode = renderer(rowItem.currentContext);
-                PreactTemplate.renderNodes(newVNode, rowItem, true);
+                PreactTemplate.renderNodes(newVNode, rowItem);
             });
         });
         const parentStub = document.createElement('div');
@@ -85,12 +85,12 @@ class PreactTemplateEngineKo {
             vnode: undefined,
             nodes: undefined
         };
-        PreactTemplate.renderNodes(vNode, cachedRow, true);
+        PreactTemplate.renderNodes(vNode, cachedRow);
         templateElement._cachedRows.push(cachedRow);
         computedVNode.subscribe((newVNode) => {
             const currRow = templateElement._cachedRows.find((row) => row.computedVNode === computedVNode);
             if (currRow) {
-                PreactTemplate.renderNodes(newVNode, currRow, true);
+                PreactTemplate.renderNodes(newVNode, currRow);
             }
         });
         return cachedRow.nodes;

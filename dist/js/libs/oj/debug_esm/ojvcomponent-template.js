@@ -7,7 +7,8 @@
  */
 import { info } from 'ojs/ojlogger';
 import { getTemplateContent } from 'ojs/ojhtmlutils';
-import { CustomElementUtils, CACHED_USE_KO_FLAG, AttributeUtils } from 'ojs/ojcustomelement-utils';
+import { CustomElementUtils, AttributeUtils } from 'ojs/ojcustomelement-utils';
+import { getMetadata, getPropertiesForElementTag } from 'ojs/ojcustomelement-registry';
 import { Component, Fragment, h, render } from 'preact';
 import { jsx } from 'preact/jsx-runtime';
 import Context from 'ojs/ojcontext';
@@ -303,6 +304,9 @@ class VTemplateEngine {
         };
         let props = this._getElementProps(engineContext, node);
         props.push(renderProp);
+        if (engineContext[BINDING_PROVIDER]) {
+            props.push({ key: 'data-oj-use-ko', value: { type: 3, value: '' } });
+        }
         return this._createHFunctionCallNode('template', [{ type: 10, properties: props }]);
     }
     _createDeferContent(engineContext, nodes, context) {
@@ -324,7 +328,6 @@ class VTemplateEngine {
                     type: 3,
                     value: (refObj) => {
                         if (refObj) {
-                            refObj[CACHED_USE_KO_FLAG] = !!engineContext[BINDING_PROVIDER];
                             deferNode = refObj;
                             render(deferContent, deferNode);
                         }
@@ -412,7 +415,7 @@ class VTemplateEngine {
         var props = this._getElementProps(engineContext, node);
         const tagName = node.tagName;
         const localName = tagName.toLowerCase();
-        const compMetadata = CustomElementUtils.getMetadata(tagName);
+        const compMetadata = getMetadata(tagName);
         return this._createHFunctionCallNode(localName, [
             this._createPossiblyProvidedAndConsumedProperties(localName, engineContext, compMetadata, props),
             this._createAst(engineContext, Array.from(node.childNodes))
@@ -608,7 +611,7 @@ class VTemplateEngine {
                     if (expValue.expr) {
                         const propName = AttributeUtils.attributeToPropertyName(name);
                         const propNamePath = propName.split('.');
-                        const propMeta = getPropertyMetadata(propNamePath[0], CustomElementUtils.getPropertiesForElementTag(node.tagName));
+                        const propMeta = getPropertyMetadata(propNamePath[0], getPropertiesForElementTag(node.tagName));
                         if (!(propMeta === null || propMeta === void 0 ? void 0 : propMeta.readOnly)) {
                             if (propNamePath.length > 1) {
                                 dottedExpressions.push({ subProps: propName, expr: expValue.expr });
@@ -668,19 +671,6 @@ class VTemplateEngine {
         if (dottedExpressions.length > 0) {
             attrNodes.push(this._createRefPropertyNodeForNestedProps(engineContext, dottedExpressions));
         }
-        else if (engineContext[BINDING_PROVIDER] &&
-            CustomElementUtils.isElementRegistered(node.tagName)) {
-            attrNodes.push({
-                key: 'ref',
-                value: {
-                    type: 3,
-                    value: (refObj) => {
-                        if (refObj)
-                            refObj[CACHED_USE_KO_FLAG] = true;
-                    }
-                }
-            });
-        }
         writebacks.forEach((valuesArray, name) => {
             var _a;
             const propName = `on${name}Changed`;
@@ -717,7 +707,6 @@ class VTemplateEngine {
         if (refObj && refObj.setProperties) {
             const updatedProps = Object.assign({}, ...resolvedSubPropValues);
             refObj.setProperties(updatedProps);
-            refObj[CACHED_USE_KO_FLAG] = !!bindingProvider;
         }
     }
     _createWritebackPropertyNode(engineContext, propName, valuesArray, existingCallbackExpr) {

@@ -1955,7 +1955,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
     OnMouseDown(event) {
       // Want to directly call the OnMouseDown from dvt.EventManager, so we don't go through the
       // default gauge behavior since it's already covered in OnMouseOver
-      DvtGaugeEventManager.prototype.OnMouseDown.call(this, event);
+      dvt.EventManager.prototype.OnMouseDown.call(this, event);
     }
 
     /**

@@ -29,7 +29,7 @@ const MetaTypes = __importStar(require("./MetadataTypes"));
 const TypeUtils = __importStar(require("./MetadataTypeUtils"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
-const SlotUtils = __importStar(require("./MetadataSlotUtils"));
+const MetadataSlotUtils_1 = require("./MetadataSlotUtils");
 const MetadataEventUtils_1 = require("./MetadataEventUtils");
 const TransformerError_1 = require("./TransformerError");
 function generatePropertiesMetadata(propsInfo, metaUtilObj) {
@@ -75,7 +75,7 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
                     metaUtilObj.fullMetadata.properties[readOnlyWritebackProp] = dt;
                 }
             }
-            else if (!SlotUtils.generateSlotsMetadata(prop, propDeclaration, typeName, metaUtilObj) &&
+            else if (!(0, MetadataSlotUtils_1.generateSlotsMetadata)(prop, propDeclaration, metaUtilObj) &&
                 !(0, MetadataEventUtils_1.generateEventsMetadata)(prop, propDeclaration, metaUtilObj)) {
                 if (readOnlyPropNameNodes.find((item) => item.name === prop)) {
                     if (typeName === `${metaUtilObj.namedExportToAlias.ElementReadOnly}`) {

@@ -280,8 +280,6 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var StreamList_1;
-    class Props {
-    }
     exports.StreamList = StreamList_1 = class StreamList extends preact.Component {
         constructor(props) {
             super(props);
@@ -490,7 +488,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this.setRootElement }, { children: jsxRuntime.jsx("div", Object.assign({ role: "list", "data-oj-context": true, tabIndex: 0, "aria-label": Translations.getTranslatedString('oj-ojStreamList.msgFetchingData') }, { children: content })) })));
             }
             else {
-                return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this.setRootElement }, { children: jsxRuntime.jsx("div", Object.assign({ role: this._isTreeData() ? 'tree' : 'list', "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, { children: content })) })));
+                return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this.setRootElement }, { children: jsxRuntime.jsx("div", Object.assign({ role: this._isTreeData() ? 'tree' : 'list', "data-oj-context": true, "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, { children: content })) })));
             }
         }
         _doBlur() {
@@ -694,14 +692,16 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             return this.root;
         }
         componentDidUpdate(oldProps, oldState) {
-            if (this._isTreeData() && this.contentHandler.collapse) {
-                this.contentHandler.collapse(this.state.toCollapse);
+            var _a, _b;
+            if (this._isTreeData() && ((_a = this.contentHandler) === null || _a === void 0 ? void 0 : _a.collapse)) {
+                (_b = this.contentHandler) === null || _b === void 0 ? void 0 : _b.collapse(this.state.toCollapse);
             }
             const oldExpandingKeys = oldState.expandingKeys;
             const expandingKeys = this.state.expandingKeys;
             expandingKeys.values().forEach(function (key) {
+                var _a;
                 if (!oldExpandingKeys.has(key)) {
-                    this.contentHandler.expand(key);
+                    (_a = this.contentHandler) === null || _a === void 0 ? void 0 : _a.expand(key);
                 }
             }.bind(this));
             if (this.props.data != oldProps.data) {
@@ -1156,7 +1156,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             done: currentData.done
         };
     };
-    exports.StreamList._metadata = { "properties": { "data": { "type": "object" }, "expanded": { "type": "object", "writeback": true }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "string|Element" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "any" }, "offsetY": { "type": "number" }, "parentKey": { "type": "any" } }, "writeback": true } }, "slots": { "groupTemplate": { "data": {} }, "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["expanded", "scrollPosition"], "_READ_ONLY_PROPS": [] } };
+    exports.StreamList._metadata = { "properties": { "data": { "type": "object" }, "expanded": { "type": "object", "writeback": true }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "string|Element" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "any" }, "offsetY": { "type": "number" }, "parentKey": { "type": "any" } }, "writeback": true } }, "slots": { "groupTemplate": { "data": {} }, "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["expanded", "scrollPosition"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "aria-labelledby"] } };
     exports.StreamList = StreamList_1 = __decorate([
         ojvcomponent.customElement('oj-stream-list')
     ], exports.StreamList);

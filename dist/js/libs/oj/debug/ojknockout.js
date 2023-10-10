@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', 'knockout', 'ojs/ojdomutils', 'jquery', 'ojs/ojcustomelement-utils', 'ojs/ojbindpropagation', 'ojs/ojkeysetimpl', 'ojs/ojcontext', 'ojs/ojtemplateengine-ko', 'ojs/ojcore-base', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils'], function (widget, BindingProviderImpl, oj$1, Logger, ko, DomUtils, $, ojcustomelementUtils, ojbindpropagation, KeySetImpl, Context, templateEngine, oj$2, KnockoutTemplateUtils, ResponsiveKnockoutUtils) { 'use strict';
+define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', 'knockout', 'ojs/ojdomutils', 'jquery', 'ojs/ojcustomelement-registry', 'ojs/ojcustomelement-utils', 'ojs/ojbindpropagation', 'ojs/ojkeysetimpl', 'ojs/ojcontext', 'ojs/ojtemplateengine-ko', 'ojs/ojcore-base', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils'], function (widget, BindingProviderImpl, oj$1, Logger, ko, DomUtils, $, ojcustomelementRegistry, ojcustomelementUtils, ojbindpropagation, KeySetImpl, Context, templateEngine, oj$2, KnockoutTemplateUtils, ResponsiveKnockoutUtils) { 'use strict';
 
   BindingProviderImpl = BindingProviderImpl && Object.prototype.hasOwnProperty.call(BindingProviderImpl, 'default') ? BindingProviderImpl['default'] : BindingProviderImpl;
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
@@ -1331,24 +1331,21 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       if (!oj$1.BaseCustomElementBridge) {
         return wrappedReturn;
       }
-      return (
-        wrappedReturn ||
-        (node.nodeType === 1 && ojcustomelementUtils.CustomElementUtils.isElementRegistered(node.nodeName))
-      );
+      return wrappedReturn || (node.nodeType === 1 && ojcustomelementRegistry.isElementRegistered(node.nodeName));
     },
 
     getBindingAccessors: function (node, bindingContext, wrappedReturn) {
       if (node.nodeType === 1) {
         var name = node.nodeName;
 
-        if (ojcustomelementUtils.CustomElementUtils.isElementRegistered(name)) {
+        if (ojcustomelementRegistry.isElementRegistered(name)) {
           // eslint-disable-next-line no-param-reassign
           wrappedReturn = wrappedReturn || {};
 
           // eslint-disable-next-line no-param-reassign
           wrappedReturn._ojCustomElement = function () {
-            const isComposite = ojcustomelementUtils.CustomElementUtils.isComposite(name);
-            const isVComponent = ojcustomelementUtils.CustomElementUtils.isVComponent(name);
+            const isComposite = ojcustomelementRegistry.isComposite(name);
+            const isVComponent = ojcustomelementRegistry.isVComponent(name);
             return { skipThrottling: isComposite || isVComponent };
           };
         }
@@ -2180,7 +2177,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
         var attribute = ojcustomelementUtils.AttributeUtils.propertyNameToAttribute(property);
         var message = `Invalid type '${typeof listener}' found for attribute '${attribute}'.\
  Expected value of type 'function'."`;
-        if (ojcustomelementUtils.CustomElementUtils.isElementRegistered(element.tagName)) {
+        if (ojcustomelementRegistry.isElementRegistered(element.tagName)) {
           const elementState = ojcustomelementUtils.CustomElementUtils.getElementState(element);
           elementState.rejectBindingProvider(message);
         }
@@ -2512,7 +2509,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
         var _expressionHandler;
         var attributeListener;
 
-        const compMetadata = ojcustomelementUtils.CustomElementUtils.getMetadata(element.tagName);
+        const compMetadata = ojcustomelementRegistry.getMetadata(element.tagName);
         const metadataProps = compMetadata.properties || {};
 
         // Compute data about the provided and consumed properties.
@@ -3412,10 +3409,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
 
           // Handle event binding for native HTML elements.
           // The event binding for custom elements is handled by the bridge.
-          if (
-            !ojcustomelementUtils.CustomElementUtils.isElementRegistered(node.nodeName) &&
-            attr.name.substring(0, 3) === 'on-'
-          ) {
+          if (!ojcustomelementRegistry.isElementRegistered(node.nodeName) && attr.name.substring(0, 3) === 'on-') {
             boundEvents.push(attr);
           }
         }

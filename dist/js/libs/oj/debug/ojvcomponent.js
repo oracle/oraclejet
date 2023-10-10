@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', 'ojs/ojcustomelement-utils', 'preact/hooks', '@oracle/oraclejet-preact/UNSAFE_Environment', 'ojs/ojcontext', 'ojs/ojmetadatautils', 'ojs/ojcore-base', 'ojs/ojpreact-patch', 'ojs/ojconfig', 'ojs/ojpopupcore', '@oracle/oraclejet-preact/UNSAFE_Layer', '@oracle/oraclejet-preact/utils/UNSAFE_matchTranslationBundle', '@oracle/oraclejet-preact/resources/nls/supportedLocales', 'ojs/ojlogger'], function (require, exports, compat, jsxRuntime, preact, ojcustomelementUtils, hooks, UNSAFE_Environment, Context, MetadataUtils, oj, ojpreactPatch, ojconfig, ojpopupcore, UNSAFE_Layer, UNSAFE_matchTranslationBundle, supportedLocales, Logger) { 'use strict';
+define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'preact/hooks', '@oracle/oraclejet-preact/UNSAFE_Environment', 'ojs/ojcontext', 'ojs/ojmetadatautils', 'ojs/ojcore-base', 'ojs/ojpreact-patch', 'ojs/ojconfig', 'ojs/ojpopupcore', '@oracle/oraclejet-preact/UNSAFE_Layer', '@oracle/oraclejet-preact/utils/UNSAFE_matchTranslationBundle', '@oracle/oraclejet-preact/resources/nls/supportedLocales', 'ojs/ojlogger'], function (require, exports, compat, jsxRuntime, preact, ojcustomelementUtils, ojcustomelementRegistry, hooks, UNSAFE_Environment, Context, MetadataUtils, oj, ojpreactPatch, ojconfig, ojpopupcore, UNSAFE_Layer, UNSAFE_matchTranslationBundle, supportedLocales, Logger) { 'use strict';
 
     function _interopNamespace(e) {
         if (e && e.__esModule) { return e; } else {
@@ -32,7 +32,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
 
     function EnvironmentWrapper(props) {
         const child = props.children;
-        const contexts = ojcustomelementUtils.CustomElementUtils.getElementRegistration(child.type).cache.contexts;
+        const contexts = ojcustomelementRegistry.getElementRegistration(child.type).cache.contexts;
         const allContexts = [UNSAFE_Environment.EnvironmentContext, ...(contexts !== null && contexts !== void 0 ? contexts : [])];
         const allValues = allContexts.map((context) => {
             var _a;
@@ -61,12 +61,12 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
     let isCloningElement = false;
     preact.options.vnode = (vnode) => {
         const type = vnode.type;
-        if (typeof type === 'string' && ojcustomelementUtils.CustomElementUtils.isElementRegistered(type)) {
+        if (typeof type === 'string' && ojcustomelementRegistry.isElementRegistered(type)) {
             const props = vnode.props;
             injectSymbols(props, 'value');
             injectSymbols(props, 'checked');
         }
-        if (typeof type === 'string' && !isCloningElement && ojcustomelementUtils.CustomElementUtils.isVComponent(type)) {
+        if (typeof type === 'string' && !isCloningElement && ojcustomelementRegistry.isVComponent(type)) {
             isCloningElement = true;
             try {
                 const origVNode = preact.cloneElement(vnode);
@@ -463,6 +463,13 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
      *   )
      * }
      * </code></pre>
+     * <p>
+     *   In some scenarios, JET application developers may require access to a
+     *   <a href="oj.BusyContext.html">BusyContext</a> scoped to a VComponent's children
+     *   or to a particular named slot's contents. See the
+     *   <a href="#ImplicitBusyContext">ImplicitBusyContext</a> type for info on
+     *   how to declare the need for a scoped BusyContext instance.
+     * </p>
      * <h3 id="template-slots">
      *  Template Slots
      *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#template-slots"></a>
@@ -1330,6 +1337,33 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
 
     /**
      * <p>
+     *   As discussed in <a href="#children">Children and Slots</a>, JET application developers
+     *   may require runtime access to a <a href="oj.BusyContext.html">BusyContext</a>
+     *   scoped to a VComponent's children or to a particular named slot's contents.
+     *   The ImplicitBusyContext marker type can be combined with Preact's ComponentChildren type
+     *   or with the <a href="#Slot">Slot</a> type to indicate that a scoped BusyContext instance
+     *   should be injected by the VComponent framework.
+     * </p>
+     * <pre class="prettyprint"><code>import { Component, ComponentChildren } from 'preact';
+     * import { customElement, ExtendGlobalProps, ImplicitBusyContext, Slot } from 'ojs/ojvcomponent';
+     *
+     * type Props = {
+     *   // This indicates that the VComponent accepts arbitrary (non-slot) children,
+     *   // and that a BusyContext scoped to this child content is expected at runtime
+     *   children?: ComponentChildren & ImplicitBusyContext;
+     *
+     *   // This indicates that the VComponent accepts a slot named "end",
+     *   // and that a BusyContext scoped to the slot's content is expected at runtime
+     *   end?: Slot & ImplicitBusyContext;
+     * }
+     * </code></pre>
+     * @typedef {unknown} ImplicitBusyContext
+     * @ojexports
+     * @memberof ojvcomponent
+     */
+
+    /**
+     * <p>
      *  The Methods type specifies optional design-time method metadata that can be passed in the
      *  <code>options</code> argument when calling <a href=#registerCustomElement>registerCustomElement</a>
      *  to register a functional VComponent that exposes custom element methods.
@@ -1955,6 +1989,11 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
     const _SUBPROP = 'subproperty';
     const _PROP_CHANGE = 'propChange';
     const _ACTION = 'action';
+    let _stub;
+    function _getStubElement() {
+        _stub = _stub !== null && _stub !== void 0 ? _stub : document.createElement('div');
+        return _stub;
+    }
     class IntrinsicElement {
         constructor(element, component, metadata, rootAttributes, rootProperties, defaultProps) {
             this.ref = preact.createRef();
@@ -2354,6 +2393,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
                 this._disconnectSlots();
                 this._state.resetCreationCycle();
                 preact.render(null, this._element);
+                preact.render(null, _getStubElement());
                 this._applyRef(this._oldRootRef, null);
                 this._oldRootRef = undefined;
                 this._vdom = null;
@@ -2816,7 +2856,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             var _a;
             const slotMap = this.getSlotMap();
             const slots = Object.keys(slotMap);
-            const metadata = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(this.Element.tagName).metadata;
+            const metadata = ojcustomelementRegistry.getElementDescriptor(this.Element.tagName).metadata;
             const dynamicSlotMetadata = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a._DYNAMIC_SLOT;
             const hasDynamicTemplateSlots = !!(dynamicSlotMetadata === null || dynamicSlotMetadata === void 0 ? void 0 : dynamicSlotMetadata.isTemplate);
             const templateSlots = slots.filter((slot) => {
@@ -2991,7 +3031,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         HTMLPreactElement.translationBundleMap = translationBundleMap;
         addPropGetterSetters(HTMLPreactElement.prototype, metadata === null || metadata === void 0 ? void 0 : metadata.properties);
         addMethods(HTMLPreactElement.prototype, metadata === null || metadata === void 0 ? void 0 : metadata.methods);
-        ojcustomelementUtils.CustomElementUtils.registerElement(tagName, {
+        ojcustomelementRegistry.registerElement(tagName, {
             descriptor: { metadata },
             stateClass: VComponentState,
             vcomp: true,

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils', 'preact', 'preact/jsx-runtime', 'ojs/ojcontext', 'ojs/ojdataproviderhandler', 'ojs/ojbindpropagation', 'ojs/ojconfig', 'ojs/ojmetadatautils', 'ojs/ojcspexpressionevaluator-internal'], function (exports, Logger, HtmlUtils, ojcustomelementUtils, preact, jsxRuntime, Context, ojdataproviderhandler, ojbindpropagation, ojconfig, ojmetadatautils, ojcspexpressionevaluatorInternal) { 'use strict';
+define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'preact', 'preact/jsx-runtime', 'ojs/ojcontext', 'ojs/ojdataproviderhandler', 'ojs/ojbindpropagation', 'ojs/ojconfig', 'ojs/ojmetadatautils', 'ojs/ojcspexpressionevaluator-internal'], function (exports, Logger, HtmlUtils, ojcustomelementUtils, ojcustomelementRegistry, preact, jsxRuntime, Context, ojdataproviderhandler, ojbindpropagation, ojconfig, ojmetadatautils, ojcspexpressionevaluatorInternal) { 'use strict';
 
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
@@ -295,6 +295,9 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             };
             let props = this._getElementProps(engineContext, node);
             props.push(renderProp);
+            if (engineContext[BINDING_PROVIDER]) {
+                props.push({ key: 'data-oj-use-ko', value: { type: 3, value: '' } });
+            }
             return this._createHFunctionCallNode('template', [{ type: 10, properties: props }]);
         }
         _createDeferContent(engineContext, nodes, context) {
@@ -316,7 +319,6 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                         type: 3,
                         value: (refObj) => {
                             if (refObj) {
-                                refObj[ojcustomelementUtils.CACHED_USE_KO_FLAG] = !!engineContext[BINDING_PROVIDER];
                                 deferNode = refObj;
                                 preact.render(deferContent, deferNode);
                             }
@@ -404,7 +406,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             var props = this._getElementProps(engineContext, node);
             const tagName = node.tagName;
             const localName = tagName.toLowerCase();
-            const compMetadata = ojcustomelementUtils.CustomElementUtils.getMetadata(tagName);
+            const compMetadata = ojcustomelementRegistry.getMetadata(tagName);
             return this._createHFunctionCallNode(localName, [
                 this._createPossiblyProvidedAndConsumedProperties(localName, engineContext, compMetadata, props),
                 this._createAst(engineContext, Array.from(node.childNodes))
@@ -600,7 +602,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                         if (expValue.expr) {
                             const propName = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(name);
                             const propNamePath = propName.split('.');
-                            const propMeta = ojmetadatautils.getPropertyMetadata(propNamePath[0], ojcustomelementUtils.CustomElementUtils.getPropertiesForElementTag(node.tagName));
+                            const propMeta = ojmetadatautils.getPropertyMetadata(propNamePath[0], ojcustomelementRegistry.getPropertiesForElementTag(node.tagName));
                             if (!(propMeta === null || propMeta === void 0 ? void 0 : propMeta.readOnly)) {
                                 if (propNamePath.length > 1) {
                                     dottedExpressions.push({ subProps: propName, expr: expValue.expr });
@@ -660,19 +662,6 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             if (dottedExpressions.length > 0) {
                 attrNodes.push(this._createRefPropertyNodeForNestedProps(engineContext, dottedExpressions));
             }
-            else if (engineContext[BINDING_PROVIDER] &&
-                ojcustomelementUtils.CustomElementUtils.isElementRegistered(node.tagName)) {
-                attrNodes.push({
-                    key: 'ref',
-                    value: {
-                        type: 3,
-                        value: (refObj) => {
-                            if (refObj)
-                                refObj[ojcustomelementUtils.CACHED_USE_KO_FLAG] = true;
-                        }
-                    }
-                });
-            }
             writebacks.forEach((valuesArray, name) => {
                 var _a;
                 const propName = `on${name}Changed`;
@@ -709,7 +698,6 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             if (refObj && refObj.setProperties) {
                 const updatedProps = Object.assign({}, ...resolvedSubPropValues);
                 refObj.setProperties(updatedProps);
-                refObj[ojcustomelementUtils.CACHED_USE_KO_FLAG] = !!bindingProvider;
             }
         }
         _createWritebackPropertyNode(engineContext, propName, valuesArray, existingCallbackExpr) {

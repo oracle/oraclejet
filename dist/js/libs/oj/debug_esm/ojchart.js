@@ -2282,6 +2282,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @property {string=} source The URI of the image of the legend symbol.
  * @property {"image"|"line"|"lineWithMarker"|"marker"} [symbolType="marker"] The type of legend symbol to display.
  * @property {string} text The legend item text.
+ * @ojdeprecated {since: '14.1.0', description: 'This attribute is deprecated. Use hidden-categories on oj-chart instead', for:'categoryVisibility', target: 'property' }
  */
 
 /**

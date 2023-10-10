@@ -8,6 +8,7 @@
 import oj from 'ojs/ojcore';
 import { warn } from 'ojs/ojlogger';
 import { CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, JetElementError } from 'ojs/ojcustomelement-utils';
+import { getElementProperties, getElementDescriptor } from 'ojs/ojcustomelement-registry';
 import { getPropertyMetadata, getFlattenedAttributes, checkEnumValues } from 'ojs/ojmetadatautils';
 import { whenDocumentReady } from 'ojs/ojbootstrap';
 import oj$1 from 'ojs/ojcore-base';
@@ -194,10 +195,7 @@ BaseCustomElementBridge.proto = {
 
         var expression = AttributeUtils.getExpressionInfo(newValue).expr;
         if (!expression) {
-          const propMeta = getPropertyMetadata(
-            prop,
-            CustomElementUtils.getElementProperties(this)
-          );
+          const propMeta = getPropertyMetadata(prop, getElementProperties(this));
           if (propMeta) {
             this.setProperty(
               prop,
@@ -297,10 +295,7 @@ BaseCustomElementBridge.proto = {
   },
 
   GetProperty: function (element, prop, props) {
-    var meta = getPropertyMetadata(
-      prop,
-      CustomElementUtils.getElementProperties(element)
-    );
+    var meta = getPropertyMetadata(prop, getElementProperties(element));
 
     // For event listener and non component properties, retrieve the value directly stored on the element.
     // For top level properties, this will delegate to our 'set' methods so we can handle default values.
@@ -329,7 +324,7 @@ BaseCustomElementBridge.proto = {
     // to render the component, we no longer need to track early
     // property sets to avoid overriding data bound DOM attributes
     if (this._earlySets) {
-      const descriptor = CustomElementUtils.getElementDescriptor(element.tagName);
+      const descriptor = getElementDescriptor(element.tagName);
       const propertyMeta = this.GetMetadata(descriptor);
       while (this._earlySets.length) {
         const setObj = this._earlySets.shift();
@@ -387,10 +382,7 @@ BaseCustomElementBridge.proto = {
 
   SetProperty: function (element, prop, value, props, bOuter) {
     // Check value against any defined enums
-    var meta = getPropertyMetadata(
-      prop,
-      CustomElementUtils.getElementProperties(element)
-    );
+    var meta = getPropertyMetadata(prop, getElementProperties(element));
     if (AttributeUtils.isEventListenerProperty(prop) || !meta) {
       // eslint-disable-next-line no-param-reassign
       element[prop] = value;
@@ -475,7 +467,7 @@ BaseCustomElementBridge.proto = {
   },
 
   ValidatePropertySet: function (element, property, value) {
-    var propsMeta = CustomElementUtils.getElementProperties(element);
+    var propsMeta = getElementProperties(element);
     var propMeta = getPropertyMetadata(property, propsMeta);
     var propAr = property.split('.');
 
@@ -729,7 +721,7 @@ BaseCustomElementBridge.__CheckOverlappingAttribute = function (element, attr) {
  */
 BaseCustomElementBridge.__InitProperties = function (element, componentProps) {
   const bridge = CustomElementUtils.getElementBridge(element);
-  var metaProps = CustomElementUtils.getElementProperties(element);
+  var metaProps = getElementProperties(element);
   if (metaProps) {
     var attrs = element.attributes; // attrs is a NodeList
     for (var i = 0; i < attrs.length; i++) {
@@ -817,7 +809,7 @@ BaseCustomElementBridge.__ParseAttrValue = function (elem, attr, prop, val, meta
     return AttributeUtils.attributeToPropertyValue(elem, attr, value, metadata);
   }
 
-  var parseFunction = CustomElementUtils.getElementDescriptor(elem.tagName).parseFunction;
+  var parseFunction = getElementDescriptor(elem.tagName).parseFunction;
   if (parseFunction) {
     return parseFunction(val, prop, metadata, function (value) {
       return _coerceVal(value);

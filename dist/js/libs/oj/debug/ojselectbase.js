@@ -919,6 +919,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     this._isValueItemForPlaceholderFunc = options.isValueItemForPlaceholderFunc;
 
     this._currentFirstItem = null;
+    this._firstResultForKeyboardFocus = null;
     this._templateEngine = null;
     this._resultsCount = null;
     this._NO_RESULTS_FOUND_CLASSNAME = 'oj-listbox-searchselect-no-results';
@@ -1336,11 +1337,9 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     this._SetCurrentFirstItem(null);
 
     // JET-38215 - SELECT SINGLE - KEYBOARD NAVIGATION FOR COLLECTION TEMPLATE USAGE
-    // remove an existing focusin listener before deciding whether we need to add a new one
-    if (this._focusinListener) {
-      this._containerElem[0].removeEventListener('focusin', this._focusinListener);
-      this._focusListener = null;
-    }
+    // Original logic updated for JET-49906 - IN ACCESSIBILITY MODE, THE FIRST DROPDOWN VALUE IS READ TWICE
+    // remove the existing first result for keyboard focus
+    this._firstResultForKeyboardFocus = null;
 
     // This method is called only after the collection fetched the data
     // get the result count and store them
@@ -1826,11 +1825,9 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     this._ClearSelection();
 
     // JET-38215 - SELECT SINGLE - KEYBOARD NAVIGATION FOR COLLECTION TEMPLATE USAGE
-    // remove the focusin listener now that we don't need it anymore
-    if (this._focusinListener) {
-      this._containerElem[0].removeEventListener('focusin', this._focusinListener);
-      this._focusListener = null;
-    }
+    // Original logic updated for JET-49906 - IN ACCESSIBILITY MODE, THE FIRST DROPDOWN VALUE IS READ TWICE
+    // remove the first result as we do not need it anymore
+    this._firstResultForKeyboardFocus = null;
 
     /** @type {!Object.<oj.PopupService.OPTION, ?>} */
     var psOptions = {};
@@ -2218,6 +2215,26 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
   };
 
   /**
+   * Focuses the collection component.
+   *
+   * @return {Promise} A promise indicating that focus has been set on the collection component
+   *
+   * @memberof LovDropdown
+   * @instance
+   * @public
+   * @ignore
+   */
+  LovDropdown.prototype.focus = function () {
+    const resolveBusyState = this._addBusyStateFunc('LovDropdown focusing the collection component');
+    return this._handleCollectionFocus().then(
+      function () {
+        FocusUtils.focusFirstTabStop(this.getElement());
+        resolveBusyState();
+      }.bind(this)
+    );
+  };
+
+  /**
    * Sets the current first value item
    *
    * @param {Object=} valueItem The current value item
@@ -2254,6 +2271,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
   };
 
   // JET-38215 - SELECT SINGLE - KEYBOARD NAVIGATION FOR COLLECTION TEMPLATE USAGE
+  // Original logic updated for JET-49906 - IN ACCESSIBILITY MODE, THE FIRST DROPDOWN VALUE IS READ TWICE
   /**
    * Fetches the first result from the data provider and sets it as the current row if the
    * collection gets keyboard focus.
@@ -2266,13 +2284,13 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
    */
   LovDropdown.prototype._FetchFirstResultForKeyboardFocus = function () {
     var busyContext = Context.getContext(this._containerElem[0]).getBusyContext();
+    this._firstResultForKeyboardFocus = null;
     return this._FetchFirstResult().then(
       function (data) {
         if (data != null) {
-          // if there are results, listen on focusin in order to set the first result as current so that
-          // the table header doesn't get focus
-          this._focusinListener = this._handleCollectionFocusinOnce.bind(this, data);
-          this._containerElem[0].addEventListener('focusin', this._focusinListener);
+          // if there are results, save the data so that it can be used for setting the
+          // current row when we need to focus the collection element.
+          this._firstResultForKeyboardFocus = data;
         }
         return busyContext.whenReady();
       }.bind(this)
@@ -2280,36 +2298,41 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
   };
 
   // JET-38215 - SELECT SINGLE - KEYBOARD NAVIGATION FOR COLLECTION TEMPLATE USAGE
+  // Original logic updated for JET-49906 - IN ACCESSIBILITY MODE, THE FIRST DROPDOWN VALUE IS READ TWICE
   /**
-   * Handle focusin on the collection in order to set the first result as the current row when
-   * the collection receives focus via the keyboard.
+   * Setup collection component before focusing it. This sets the first result as the current row when
+   * the LovDropdown.focus is called.
    *
    * @memberof LovDropdown
    * @instance
    * @private
    */
-  LovDropdown.prototype._handleCollectionFocusinOnce = function (data) {
-    this._containerElem[0].removeEventListener('focusin', this._focusinListener);
-    this._focusinListener = null;
-    // only focus the first row if focus was transferred via the keyboard
-    if (!DomUtils.recentPointer()) {
-      var resolveBusyState = this._addBusyStateFunc('LovDropdown setting selected KeySet on focusin');
+  LovDropdown.prototype._handleCollectionFocus = function () {
+    var resolveBusyState = this._addBusyStateFunc('LovDropdown setting selected KeySet on focusin');
 
-      // JET-39993 - Select2 options qunit tests fail using chrome and safari on Mac for master branch
-      // set flag while we're setting the collection current row and selected key set because we don't
-      // need to react to changes that we're pushing
-      this._handlingCollectionFocusinOnce = true;
-
-      this._SetCollectionCurrentRow({ rowKey: data.key });
-
-      var busyContext = Context.getContext(this._containerElem[0]).getBusyContext();
-      busyContext.whenReady().then(
-        function () {
-          this._handlingCollectionFocusinOnce = false;
-          resolveBusyState();
-        }.bind(this)
-      );
+    // ignore if we do not have first row data
+    if (!this._firstResultForKeyboardFocus) {
+      // Return a Promise to be consistent with the else path. Make sure to set and resolve the busy context.
+      return Promise.resolve().then(function () {
+        resolveBusyState();
+      });
     }
+
+    // JET-39993 - Select2 options qunit tests fail using chrome and safari on Mac for master branch
+    // set flag while we're setting the collection current row and selected key set because we don't
+    // need to react to changes that we're pushing
+    this._handlingCollectionFocusinOnce = true;
+
+    this._SetCollectionCurrentRow({ rowKey: this._firstResultForKeyboardFocus.key });
+
+    var busyContext = Context.getContext(this._containerElem[0]).getBusyContext();
+    return busyContext.whenReady().then(
+      function () {
+        this._handlingCollectionFocusinOnce = false;
+        this._firstResultForKeyboardFocus = null;
+        resolveBusyState();
+      }.bind(this)
+    );
   };
 
   /**
@@ -3764,17 +3787,23 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
       var abstractLovBase = this._abstractLovBase;
       var lovDropdown = this._lovDropdown;
+      var outerWrapper = this.OuterWrapper;
 
       switch (keyCode) {
         case LovUtils.KEYS.UP:
         case LovUtils.KEYS.DOWN:
           if (abstractLovBase.isDropdownOpen()) {
             // lovDropdown.transferHighlight((keyCode === LovUtils.KEYS.UP) ? -1 : 1);
-            FocusUtils.focusFirstTabStop(lovDropdown.getElement());
-
-            // keep oj-focus on root so that inside label is still shifted up and field looks focused
-            // while dropdown is open
-            this.OuterWrapper.classList.add('oj-focus');
+            lovDropdown.focus().then(function () {
+              // keep oj-focus on root so that inside label is still shifted up and field looks focused
+              // while dropdown is open.
+              // And since we are dealing with asynchronism here, make sure if the focus is still in the
+              // dropdown.
+              const dropdownElement = lovDropdown.getElement();
+              if (dropdownElement && dropdownElement.contains(document.activeElement)) {
+                outerWrapper.classList.add('oj-focus');
+              }
+            });
 
             // if tabbing into dropdown, continue showing filter field as it was before tabbing
             //  - ie11: filter field hidden when you arrow into dropdown
@@ -4911,6 +4940,18 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         }
       }
 
+      // JET-55775 - oj-select-single initiates fetch even when valueItem is provided in preact wrapper
+      // If we get a value update, while we are waiting for the valueItem update microtask, we can safely
+      // ignore the value update, if and only if the value is the same as the valueItem that we are currently
+      // processing.
+      if (
+        key === 'value' &&
+        this._currentProcessingValueItem &&
+        this._currentProcessingValueItem.key === value
+      ) {
+        return;
+      }
+
       this._super(key, value, flags);
 
       var processSetOptions;
@@ -4937,9 +4978,16 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         // value prop back down on us.
         const elemState = ojcustomelementUtils.CustomElementUtils.getElementState(this.OuterWrapper);
         if (elemState.getBindingProviderType() === 'preact') {
+          // JET-55775 - oj-select-single initiates fetch even when valueItem is provided in preact wrapper
+          // In preact, when value & valueItem are set at the same time, we will receive them one after the other.
+          // Also, we get the valueItem update before the value update. So, we need to treat it as a single update
+          // and ignore the value update when we are waiting for the following microtask to run.
+          this._currentProcessingValueItem = value;
           window.queueMicrotask(
             function () {
               this._SyncValueWithValueItem(value, this.options.value);
+              // as we processed the valueItem, delete the flag
+              this._currentProcessingValueItem = undefined;
             }.bind(this)
           );
         } else {

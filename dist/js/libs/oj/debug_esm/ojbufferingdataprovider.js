@@ -6,7 +6,7 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import { DataProviderMutationEvent, FilterFactory, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
+import { SortUtils, FilterFactory, DataProviderMutationEvent, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 import ojMap from 'ojs/ojmap';
 import { BufferingDataProviderSubmittableChangeEvent } from 'ojs/ojbufferingdataproviderevents';
@@ -97,22 +97,10 @@ import 'ojs/ojcomponentcore';
  * <p>
  * Subsequent to a new/updated row but before the commit, the row can be sorted or filtered.
  * The sorted/filtered position of the row stays after the commit until a subsequent re-order/refresh.
- * Will dispatch remove event for rows which are not in correct position because the sorting is based on fetched row sets.
  *
  * When uncommitted rows are sorted in current row set, their position may not correspond to server side position once they are committed.
- * Therefore a 'remove' event may be fired when new row sets are fetched and it determines that the rows are not in current positions.
  * Uncommitted rows will be sorted according to updated row set.
  * </p>
- * <pre class="prettyprint"><code>
- * // dispatch a remove event for rows in wrong position.
- * // ie row with id 40 is in wrong position
- *{
- *  remove: {
- *    metadata: [{key: 40}],
- *    ...
- *  }
- *}
- * </code></pre>
  *
  * <p>BufferingDataProvider does not validate the item key and data.  It is up to the application to perform any validation
  * prior to creating edit items in the buffer.
@@ -557,6 +545,7 @@ class EditBuffer {
             throw new Error('Cannot add item with same key as an item being added or updated');
         }
         else if (unsubmitted && unsubmitted.operation === 'remove') {
+            this.unsubmittedItems.delete(item.metadata.key);
             const editItem = { operation: 'update', item };
             this.unsubmittedItems.set(item.metadata.key, editItem);
             this.mapOpTransform.set(item.metadata.key, editItem);
@@ -580,6 +569,7 @@ class EditBuffer {
                 operation: 'remove',
                 item
             });
+            this.mapOpTransform.delete(item.metadata.key);
             return;
         }
         this.unsubmittedItems.set(item.metadata.key, { operation: 'remove', item });
@@ -731,6 +721,7 @@ class BufferingDataProvider {
                 this._params = _params;
                 this.firstBaseKey = null;
                 this.mergedAddKeySet = new Set();
+                this.unFetchedAddItemSet = new Set();
                 this.mergedItemArray = [];
                 this.nextOffset = 0;
                 if (this._params == null) {
@@ -764,6 +755,15 @@ class BufferingDataProvider {
                         });
                         this._parent.totalFilteredRowCount = result.value.totalFilteredRowCount;
                         yield this._parent._mergeEdits(baseItemArray, this.mergedItemArray, this._params.filterCriterion, this._parent.lastSortCriteria, true, this.mergedAddKeySet, result.done);
+                        if (this.nextOffset === 0) {
+                            for (let i = 0; i < this.mergedItemArray.length; i++) {
+                                const key = this.mergedItemArray[i].metadata.key;
+                                if (!this._parent._isItemRemoved(key)) {
+                                    this.firstBaseKey = key;
+                                    break;
+                                }
+                            }
+                        }
                         let actualReturnSize = this.mergedItemArray.length - this.nextOffset;
                         for (let i = this.nextOffset; i < this.mergedItemArray.length; i++) {
                             const item = this.mergedItemArray[i];
@@ -780,6 +780,11 @@ class BufferingDataProvider {
                         }
                         const newDataArray = [];
                         const newMetaArray = [];
+                        this.unFetchedAddItemSet.forEach((item) => {
+                            newDataArray.push(item.data);
+                            newMetaArray.push(item.metadata);
+                        });
+                        this.unFetchedAddItemSet.clear();
                         let idx;
                         for (idx = this.nextOffset; idx < this.mergedItemArray.length; idx++) {
                             ++this.nextOffset;
@@ -791,22 +796,6 @@ class BufferingDataProvider {
                                     break;
                                 }
                             }
-                        }
-                        if (this._parent.itemsInWrongPosition.size > 0) {
-                            const detail = {
-                                remove: {
-                                    data: [],
-                                    keys: new Set(),
-                                    metadata: []
-                                }
-                            };
-                            this._parent.itemsInWrongPosition.forEach((item) => {
-                                detail.remove.data.push(item.data);
-                                detail.remove.keys.add(item.metadata.key);
-                                detail.remove.metadata.push(item.metadata);
-                            });
-                            const event = new DataProviderMutationEvent(detail);
-                            this._parent.dispatchEvent(event);
                         }
                         const done = result.done && newDataArray.length === 0;
                         return {
@@ -833,8 +822,6 @@ class BufferingDataProvider {
         this.lastIterator = null;
         this.customKeyGenerator = options === null || options === void 0 ? void 0 : options.keyGenerator;
         this.generatedKeyMap = new Map();
-        this.lastSortIndex = new Map();
-        this.itemsInWrongPosition = new Set();
         this.totalFilteredRowCount = 0;
         this.dataBeforeUpdated = new Map();
     }
@@ -861,11 +848,11 @@ class BufferingDataProvider {
     }
     _compareItem(d1, d2, sortCriteria) {
         for (const sortCrt of sortCriteria) {
-            if (d1[sortCrt.attribute] > d2[sortCrt.attribute]) {
-                return sortCrt.direction === 'ascending' ? 1 : -1;
-            }
-            else if (d1[sortCrt.attribute] < d2[sortCrt.attribute]) {
-                return sortCrt.direction === 'ascending' ? -1 : 1;
+            let comparator = SortUtils.getNaturalSortComparator();
+            const descendingResult = sortCrt.direction === 'descending' ? -1 : 1;
+            const comparatorResult = comparator(d1[sortCrt.attribute], d2[sortCrt.attribute]) * descendingResult;
+            if (comparatorResult !== 0) {
+                return comparatorResult;
             }
         }
         return 0;
@@ -903,44 +890,45 @@ class BufferingDataProvider {
                     }
                 }
             }
-            if (editItem.operation === 'add' && !mergedAddKeySet.has(key)) {
+            if ((editItem.operation === 'add' || editItem.operation === 'update') &&
+                !mergedAddKeySet.has(key)) {
                 if (!filterObj || filterObj.filter(editItem.item.data)) {
-                    itemArray.push(editItem.item);
-                    mergedAddKeySet.add(key);
-                }
-            }
-            else if (editItem.operation === 'update' &&
-                !mergedAddKeySet.has(key) &&
-                this.editBuffer.isUpdateTransformed(key)) {
-                for (let i = 0; i < itemArray.length; i++) {
-                    if (itemArray[i].metadata.key === key) {
-                        itemArray.splice(i, 1);
-                        break;
+                    if (sortCriteria && sortCriteria.length) {
+                        let inserted = false;
+                        for (let i = 0; i < itemArray.length; i++) {
+                            if (this._compareItem(editItem.item.data, itemArray[i].data, sortCriteria) < 0) {
+                                itemArray.splice(i, 0, editItem.item);
+                                mergedAddKeySet.add(key);
+                                inserted = true;
+                                break;
+                            }
+                        }
+                        if (!inserted && lastBlock) {
+                            itemArray.push(editItem.item);
+                            mergedAddKeySet.add(key);
+                        }
+                    }
+                    else {
+                        let allItemsRemoved = true;
+                        itemArray.forEach((item) => {
+                            if (key !== item.metadata.key &&
+                                !mergedAddKeySet.has(key) &&
+                                !this._isItemRemoved(item.metadata.key)) {
+                                allItemsRemoved = false;
+                                return;
+                            }
+                        });
+                        if (allItemsRemoved) {
+                            itemArray.push(editItem.item);
+                        }
+                        else {
+                            itemArray.splice(0, 0, editItem.item);
+                        }
+                        mergedAddKeySet.add(key);
                     }
                 }
-                itemArray.push(editItem.item);
             }
         }));
-        if (sortCriteria && sortCriteria.length) {
-            itemArray.sort((a, b) => {
-                return this._compareItem(a.data, b.data, sortCriteria);
-            });
-            itemArray.forEach((item, index) => {
-                const key = item.metadata.key;
-                if (editItems.has(key)) {
-                    if (this.lastSortIndex.get(key) === undefined) {
-                        this.lastSortIndex.set(key, index);
-                    }
-                    else if (this.lastSortIndex.get(key) !== index) {
-                        this.itemsInWrongPosition.add(item);
-                        this.lastSortIndex.set(key, index);
-                    }
-                    else if (this.lastSortIndex.get(key) === index) {
-                        this.itemsInWrongPosition.delete(item);
-                    }
-                }
-            });
-        }
     }
     _mergeAddEdits(filterObj, sortCriteria, newItemArray, mergedAddKeySet, lastBlock) {
         this._insertAddEdits(this.editBuffer.getUnsubmittedItems(), filterObj, sortCriteria, newItemArray, mergedAddKeySet, lastBlock);
@@ -970,12 +958,6 @@ class BufferingDataProvider {
             else {
                 if (editItem.operation === 'remove') {
                     newItemArray.push(baseItem);
-                }
-                else if (editItem.operation === 'update' &&
-                    !this.editBuffer.isUpdateTransformed(editItem.item.metadata.key)) {
-                    if (!filterObj || filterObj.filter(editItem.item.data)) {
-                        newItemArray.push(editItem.item);
-                    }
                 }
             }
         }
@@ -1170,16 +1152,34 @@ class BufferingDataProvider {
             }
             else {
                 addBeforeKey = this.lastIterator.firstBaseKey;
+                if (this.editBuffer.isUpdateTransformed(item.metadata.key)) {
+                    for (let i = 0; i < this.lastIterator.mergedItemArray.length; i++) {
+                        if (this.lastIterator.mergedItemArray[i].metadata.key === item.metadata.key) {
+                            this.lastIterator.mergedItemArray.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+                this.lastIterator.mergedItemArray.splice(0, 0, item);
+                this.lastIterator.mergedAddKeySet.add(item.metadata.key);
+                if (addBeforeKey === null) {
+                    this.lastIterator.unFetchedAddItemSet.add(item);
+                }
+                this.lastIterator.firstBaseKey = item.metadata.key;
+                this.lastIterator.nextOffset++;
             }
         }
         return addBeforeKey;
     }
-    _getNextKey(key) {
+    _getNextKey(key, bRemoved = false) {
         let nextKey = key;
         if (this.lastIterator) {
             const mergedItemArray = this.lastIterator.mergedItemArray;
             let keyIdx = this._findKeyInItems(key, mergedItemArray);
-            while (nextKey && this._isItemRemoved(nextKey)) {
+            while (nextKey !== null && (bRemoved || this._isItemRemoved(nextKey))) {
+                if (bRemoved) {
+                    bRemoved = false;
+                }
                 nextKey =
                     keyIdx === -1
                         ? null
@@ -1199,9 +1199,6 @@ class BufferingDataProvider {
         }
         this.editBuffer.addItem(addItem);
         const addBeforeKey = this._addToMergedArrays(addItem, false);
-        if (this.lastIterator) {
-            this.lastIterator.firstBaseKey = addItem.metadata.key;
-        }
         const detail = {
             add: {
                 data: [addItem.data],
@@ -1220,7 +1217,7 @@ class BufferingDataProvider {
             const mergedAddKeySet = this.lastIterator.mergedAddKeySet;
             const keyIdx = this._findKeyInItems(key, mergedItemArray);
             if (keyIdx !== -1) {
-                if (fromBaseDP || mergedAddKeySet.has(key) || this.editBuffer.isUpdateTransformed(key)) {
+                if (fromBaseDP || mergedAddKeySet.has(key)) {
                     mergedItemArray.splice(keyIdx, 1);
                     mergedAddKeySet.delete(key);
                     if (keyIdx < this.lastIterator.nextOffset) {
@@ -1248,6 +1245,12 @@ class BufferingDataProvider {
         }
     }
     removeItem(item) {
+        const removeKey = item.metadata.key;
+        if (this.lastIterator &&
+            this.lastIterator.firstBaseKey !== null &&
+            this.lastIterator.firstBaseKey === removeKey) {
+            this.lastIterator.firstBaseKey = this._getNextKey(item.metadata.key, true);
+        }
         this.editBuffer.removeItem(item);
         this._removeFromMergedArrays(item.metadata.key, false);
         const detail = {

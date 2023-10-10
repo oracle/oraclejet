@@ -1209,6 +1209,12 @@ define(['require', 'exports', 'ojs/ojcore', 'ojs/ojknockout', 'ojs/ojbutton', 'o
     }
 
     var severity = this._computeSeverity();
+
+    // If severity is none, return undefined as we do not want to show the category
+    if (severity === 'none') {
+      return undefined;
+    }
+
     var translations = this._properties.translations;
 
     var translatedCategory =
@@ -1932,6 +1938,9 @@ var __oj_message_metadata =
               "type": "string"
             },
             "info": {
+              "type": "string"
+            },
+            "none": {
               "type": "string"
             },
             "warning": {

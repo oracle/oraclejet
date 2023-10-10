@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/ojmetadatautils', 'ojs/ojcomposite-knockout', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils'], function (exports, oj, HtmlUtils, Logger, MetadataUtils, ojcompositeKnockout, ojcustomelement, ojcustomelementUtils) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/ojmetadatautils', 'ojs/ojcomposite-knockout', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry'], function (exports, oj, HtmlUtils, Logger, MetadataUtils, ojcompositeKnockout, ojcustomelement, ojcustomelementUtils, ojcustomelementRegistry) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
@@ -175,9 +175,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
       vmContext.uniqueId = element.id ? element.id : unique;
       this._VM_CONTEXT = vmContext;
 
-      var model = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(element.tagName)[
-        CompositeElementBridge.DESC_KEY_VIEW_MODEL
-      ];
+      var model = ojcustomelementRegistry.getElementDescriptor(element.tagName)[CompositeElementBridge.DESC_KEY_VIEW_MODEL];
       if (typeof model === 'function') {
         // eslint-disable-next-line new-cap
         model = new model(vmContext);
@@ -218,7 +216,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
           oj.Components.unmarkPendingSubtreeHidden(element);
         }
 
-        var cache = ojcustomelementUtils.CustomElementUtils.getElementRegistration(element.tagName).cache;
+        var cache = ojcustomelementRegistry.getElementRegistration(element.tagName).cache;
         // Need to clone nodes first
         var view = CompositeElementBridge._getDomNodes(cache.view, element);
         oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
@@ -369,9 +367,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
       var descriptor;
 
       // Cache the View
-      var cache = ojcustomelementUtils.CustomElementUtils.getElementRegistration(element.tagName).cache;
+      var cache = ojcustomelementRegistry.getElementRegistration(element.tagName).cache;
       if (!cache.view) {
-        descriptor = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(element.tagName);
+        descriptor = ojcustomelementRegistry.getElementDescriptor(element.tagName);
 
         var view = descriptor[CompositeElementBridge.DESC_KEY_VIEW];
         // when multiple instances of the same CCA are on the same page, because of the async
@@ -391,7 +389,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
       // Cache the CSS
       if (!cache.css) {
         if (!descriptor) {
-          descriptor = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(element.tagName);
+          descriptor = ojcustomelementRegistry.getElementDescriptor(element.tagName);
         }
         // The CSS Promise will be null if loaded by the require-css plugin
         var css = descriptor[CompositeElementBridge.DESC_KEY_CSS];
@@ -618,11 +616,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
 
     // __ProcessEventListeners returns a copy of the metadata so we're not updating the original here.
     descrip._metadata = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, false);
-    ojcustomelementUtils.CustomElementUtils.registerElement(
-      tagName,
-      registration,
-      CompositeElementBridge.proto.getClass(descrip)
-    );
+    ojcustomelementRegistry.registerElement(tagName, registration, CompositeElementBridge.proto.getClass(descrip));
   };
 
   /** ***************************/
@@ -690,10 +684,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
     if (!node.hasAttribute('slot')) {
       CompositeElementBridge._addNodeToSubIdMap(subIdMap, nodeMap, node);
       // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-      if (
-        !ojcustomelementUtils.CustomElementUtils.isElementRegistered(node.tagName) &&
-        !oj.Components.__GetWidgetConstructor(node)
-      ) {
+      if (!ojcustomelementRegistry.isElementRegistered(node.tagName) && !oj.Components.__GetWidgetConstructor(node)) {
         var children = node.children;
         for (var i = 0; i < children.length; i++) {
           CompositeElementBridge._walkSubtree(subIdMap, nodeMap, children[i]);
@@ -861,10 +852,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
   Composite.getComponentMetadata = function (name) {
     // We have one registry where custom elements, definitional elements, and composites are all stored with
     // the JET framework so we need to check to see if the element is a composite before returning its metadata
-    if (ojcustomelementUtils.CustomElementUtils.isComposite(name)) {
+    if (ojcustomelementRegistry.isComposite(name)) {
       // Descriptor is guaranteed to be there for registered elements because we throw an error at registration
       // time if none is given
-      var descriptor = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(name);
+      var descriptor = ojcustomelementRegistry.getElementDescriptor(name);
       return descriptor[oj.BaseCustomElementBridge.DESC_KEY_META];
     }
     return null;

@@ -18,6 +18,7 @@ import oj$1 from 'ojs/ojcore-base';
 import { fixResizeListeners, dispatchEvent, recentTouchEnd, isTouchSupported, makeFocusable, getReadingDirection } from 'ojs/ojdomutils';
 import 'ojs/ojcustomelement';
 import { CustomElementUtils, ElementUtils, transformPreactValue, ElementState, AttributeUtils, JetElementError } from 'ojs/ojcustomelement-utils';
+import { isElementRegistered, getElementProperties, registerElement } from 'ojs/ojcustomelement-registry';
 import { info, error } from 'ojs/ojlogger';
 import { DefaultsUtils } from 'ojs/ojdefaultsutils';
 import { applyParameters, getComponentTranslations } from 'ojs/ojtranslation';
@@ -1626,7 +1627,7 @@ Components.createDynamicPropertyGetter = function (callback) {
  * @ojtsignore
  */
 Components.getWidgetConstructor = function (element, widgetName) {
-  if (element && !CustomElementUtils.isElementRegistered(element.tagName)) {
+  if (element && !isElementRegistered(element.tagName)) {
     return Components.__GetWidgetConstructor(element, widgetName);
   }
   return null;
@@ -2202,7 +2203,7 @@ function _accumulateValues(target, source, valueInArray) {
  * @ignore
  */
 function _isCompositeOrCustom(node) {
-  return CustomElementUtils.isElementRegistered(node.tagName);
+  return isElementRegistered(node.tagName);
 }
 
 /**
@@ -2573,10 +2574,7 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
           !bridge._validateAndSetCopyProperty(this, prop, value, null)
         ) {
           // If not an event or copy property, check to see if it's a component specific property
-          var meta = getPropertyMetadata(
-            prop,
-            CustomElementUtils.getElementProperties(this)
-          );
+          var meta = getPropertyMetadata(prop, getElementProperties(this));
           // For non component specific properties, just set directly on the element instead.
           if (!meta) {
             this[prop] = value;
@@ -2590,10 +2588,7 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
     // eslint-disable-next-line no-param-reassign
     proto.getProperty = function (prop) {
       var bridge = CustomElementUtils.getElementBridge(this);
-      var meta = getPropertyMetadata(
-        prop,
-        CustomElementUtils.getElementProperties(this)
-      );
+      var meta = getPropertyMetadata(prop, getElementProperties(this));
 
       // For event listeners and non component specific properties, return the property from the element.
       // Otherwise, return the widget property and let the widget handle dot notation for subproperties.
@@ -2943,7 +2938,7 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
   },
 
   _processProperties: function (element) {
-    var props = CustomElementUtils.getElementProperties(element);
+    var props = getElementProperties(element);
     if (props) {
       var propKeys = Object.keys(props);
       for (var i = 0; i < propKeys.length; i++) {
@@ -3012,10 +3007,7 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
       if (this._WIDGET_ELEM) {
         if (!propMeta) {
           // eslint-disable-next-line no-param-reassign
-          propMeta = getPropertyMetadata(
-            prop,
-            CustomElementUtils.getElementProperties(elem)
-          );
+          propMeta = getPropertyMetadata(prop, getElementProperties(elem));
         }
 
         var previousValue = this._getCopyProperty(elem, prop, propMeta);
@@ -3172,7 +3164,7 @@ CustomElementBridge.register = function (tagName, descriptor) {
   }
 
   const registration = { descriptor, bridgeProto, stateClass };
-  CustomElementUtils.registerElement(tagName, registration, bridgeProto.getClass(descriptor));
+  registerElement(tagName, registration, bridgeProto.getClass(descriptor));
 };
 
 /** ***************************/
@@ -5928,7 +5920,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      * @protected
      */
     _IsCustomElement: function () {
-      return CustomElementUtils.isElementRegistered(this._getRootElement().tagName);
+      return isElementRegistered(this._getRootElement().tagName);
     },
 
     /**
@@ -6612,7 +6604,7 @@ $.cleanData = (function (orig) {
         bSkip = constr('instance')._IsCustomElement();
         if (!bSkip) {
           var parent = Components.getComponentElementByNode(elem);
-          bSkip = parent && CustomElementUtils.isElementRegistered(parent.tagName);
+          bSkip = parent && isElementRegistered(parent.tagName);
         }
       }
       if (!bSkip) {

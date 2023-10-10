@@ -23,22 +23,33 @@
  *
  * <p>If the logging options are changed at a later point, the Logger will use the modified options for the subsequent log operations.
  *
+ * <p>The logging level can be overridden via sessionStorage.setItem() call for the current browser session.
+ * Use 'ojet.logLevel' as the key with one of the following values: 'none' (least verbose), 'error', 'warning', 'info', 'log' (most verbose).
+ * Set the value in the browser console and refresh the browser in order for the value to take effect.
+ * </p>
+ * <h3> Session storage usage : </h3>
+ * <pre class="prettyprint">
+ * <code>
+ * // override logging level for the current session
+ * sessionStorage.setItem('ojet.logLevel', 'log');
+ * </code></pre>
+ *
  * <p>All the logging methods support string formatting, accept variable number of arguments and accept a function as a parameter.
  * When a callback function is specified as a parameter the function will be called if the log level is sufficient.
  *
- * <h3> Usage : </h3>
+ * <h3> Logger usage : </h3>
  * <pre class="prettyprint">
  * <code>
  * //optional calls, see defaults
- * oj.Logger.option("level",  oj.Logger.LEVEL_INFO);
- * oj.Logger.option("writer",  customWriter);  //an object that implements the following methods: log(), info(), warn(), error()
+ * Logger.option("level",  Logger.LEVEL_INFO);
+ * Logger.option("writer",  customWriter);  //an object that implements the following methods: log(), info(), warn(), error()
  *
  * // logging a message
- * oj.Logger.info("My log level is %d", oj.Logger.option("level"));  // string formatting
- * oj.Logger.warn("Beware of bugs", "in the above code");            // multiple parameters
+ * Logger.info("My log level is %d", Logger.option("level"));  // string formatting
+ * Logger.warn("Beware of bugs", "in the above code");            // multiple parameters
  *
  * // using a callback function as a parameter
- * oj.Logger.info(function(){
+ * Logger.info(function(){
  *    var foo = "This ";
  *    var bar = "is ";
  *    var zing = "a function";
@@ -104,6 +115,47 @@ Logger._METHOD_INFO = 'info';
 Logger._METHOD_LOG = 'log';
 Logger._defaultOptions = { level: Logger.LEVEL_ERROR, writer: null };
 Logger._options = Logger._defaultOptions;
+
+/*
+ * Helper method that retrieves and parses session storage setting
+ */
+const _getSessionStorage = () => {
+  const sessionValue =
+    typeof window !== 'undefined' && window.sessionStorage !== undefined
+      ? sessionStorage.getItem('ojet.logLevel')
+      : undefined;
+  let logLevel;
+  switch (sessionValue) {
+    case 'none':
+      logLevel = Logger.LEVEL_NONE;
+      break;
+    case 'error':
+      logLevel = Logger.LEVEL_ERROR;
+      break;
+    case 'warning':
+      logLevel = Logger.LEVEL_WARN;
+      break;
+    case 'info':
+      logLevel = Logger.LEVEL_INFO;
+      break;
+    case 'log':
+      logLevel = Logger.LEVEL_LOG;
+      break;
+    default:
+      logLevel = undefined;
+  }
+  return logLevel;
+};
+
+/* SessionStorage setting */
+const _sessionStorage = _getSessionStorage();
+
+/*
+ * Helper method - returns current log level from session storage or options
+ */
+const _getLogLevel = () => {
+  return _sessionStorage || Logger._options.level;
+};
 
 /* public members*/
 /**
@@ -208,12 +260,23 @@ Logger.option = function (key, value) {
   if (arguments.length === 0) {
     keys = Object.keys(Logger._options);
     for (i = 0; i < keys.length; i++) {
-      ret[keys[i]] = Logger._options[keys[i]];
+      ret[keys[i]] = key === 'level' ? _getLogLevel() : Logger._options[keys[i]];
     }
     return ret;
   }
   if (typeof key === 'string' && value === undefined) {
-    return Logger._options[key] === undefined ? null : Logger._options[key];
+    let optValue;
+    switch (key) {
+      case 'level':
+        optValue = _getLogLevel();
+        break;
+      case 'writer':
+        optValue = Logger._options.writer;
+        break;
+      default:
+        optValue = null;
+    }
+    return optValue;
   }
 
   // setters

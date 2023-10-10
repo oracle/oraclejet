@@ -73,7 +73,7 @@ define(['knockout', 'ojs/ojkoshared', 'ojs/ojcontext', 'ojs/ojtemplateengine-uti
             ojtemplateengineUtils.PreactTemplate.extendTemplate(templateElement, ojtemplateengineUtils.PreactTemplate._ROW_CACHE_FACTORY, (renderer) => {
                 templateElement._cachedRows.forEach((rowItem) => {
                     let newVNode = renderer(rowItem.currentContext);
-                    ojtemplateengineUtils.PreactTemplate.renderNodes(newVNode, rowItem, true);
+                    ojtemplateengineUtils.PreactTemplate.renderNodes(newVNode, rowItem);
                 });
             });
             const parentStub = document.createElement('div');
@@ -85,12 +85,12 @@ define(['knockout', 'ojs/ojkoshared', 'ojs/ojcontext', 'ojs/ojtemplateengine-uti
                 vnode: undefined,
                 nodes: undefined
             };
-            ojtemplateengineUtils.PreactTemplate.renderNodes(vNode, cachedRow, true);
+            ojtemplateengineUtils.PreactTemplate.renderNodes(vNode, cachedRow);
             templateElement._cachedRows.push(cachedRow);
             computedVNode.subscribe((newVNode) => {
                 const currRow = templateElement._cachedRows.find((row) => row.computedVNode === computedVNode);
                 if (currRow) {
-                    ojtemplateengineUtils.PreactTemplate.renderNodes(newVNode, currRow, true);
+                    ojtemplateengineUtils.PreactTemplate.renderNodes(newVNode, currRow);
                 }
             });
             return cachedRow.nodes;

@@ -1,0 +1,422 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example form-layout/themes/redwood/oj-form-layout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.formlayout.element") {
+  // default custom element to block
+  oj-form-layout {
+    display: block;
+  }
+
+  // Css FormLayout utility selectors
+  // The technique used in these column classes use css multi column layout.
+  // http://dev.w3.org/csswg/css-multicol/
+  // With this layout the columns should automatically be
+  // approximately the same heights.
+  .oj-form-cols-labels-inline {
+    column-width: var(--oj-form-layout-start-edge-column-min-width);
+    column-gap: var(--oj-form-layout-column-gutter);
+  }
+
+  .oj-form-cols {
+    column-width: var(--oj-form-layout-column-min-width);
+    column-gap: var(--oj-form-layout-column-gutter);
+  }
+
+  // if columns attribute is specified, we want the exact number of columns specified
+  // so we need to remove the minimum column width setting. THis affects direction='column'.
+  .oj-form-layout-no-min-column-width .oj-form-cols,
+  .oj-form-layout-no-min-column-width .oj-form-cols-labels-inline {
+    column-width: auto;
+  }
+
+  // without controlling breaking then in some cases a label will
+  // show up in the first column but its associated field will show
+  // up in the second column.
+  // Due to a FF bug for break-inside, we are also adding this to
+  // the .oj-flex-item div as a work around.
+  .oj-form-cols > .oj-flex,
+  .oj-form-cols-labels-inline > .oj-flex,
+  .oj-form-cols > .oj-flex > .oj-flex-item,
+  .oj-form-cols-labels-inline > .oj-flex > .oj-flex-item {
+    // -moz-column-break-inside doesn't work on FF 24 on windows
+    // try adding page-break-inside as well
+    -moz-column-break-inside: avoid;
+    -ms-column-break-inside: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  // Due to a difference of implementation with Safari and how they deal with
+  // fragmentainers that aren't direct children of the multi-column layout element,
+  // this work around was found to work with Safari and not cause any issues with
+  // other browsers. See JET-42692
+  // I'm limiting this to direction="column" and column="1" to minimize any
+  // potential regression, but I think it is very unlikely to cause any issues.
+  // Due to a change in Chrome 98 (see bug JET-49143), we need to make these specific only to
+  // the affected browsers.  Firefox needs both work arounds, Safari just needs this one.
+  .oj-agent-browser-safari .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across),
+  .oj-agent-browser-firefox .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across) {
+    display: inline;
+  }
+  // Unfortunately, the safari work around does nothing to help Firefox and this fix
+  // can't be limited to one column but is limited to direction="column". See JET-42692
+  .oj-agent-browser-firefox .oj-form-layout > .oj-form:not(.oj-formlayout-form-across) > .oj-flex {
+    display: inline;
+  }
+
+  // headers inside a form layout have different margins than regular headers
+  .oj-form > hr,
+  .oj-form > h1,
+  .oj-form > h2,
+  .oj-form > h3,
+  .oj-form > h4 {
+    // the margins above and below are 15px, but there's
+    // already the formlayout margin bottom above, so subtract that
+    // from the top
+
+    margin: calc(15px - var(--oj-form-layout-margin-bottom)) 0 15px 0;
+  }
+
+  //
+  // Stacked (non-responsive) form layout
+  //
+
+  .oj-form > .oj-form-control,
+  .oj-form > .oj-form-non-control {
+    margin-bottom: var(--oj-form-layout-margin-bottom);
+  }
+
+  // when a form is nested reset the text align to start, otherwise the field's
+  // text-align property will be inherited
+  .oj-form > .oj-flex > .oj-flex-item > .oj-form {
+    text-align: left;
+    html[dir="rtl"] & {
+      text-align: right;
+    }
+  }
+
+  // Originally the margin was on .oj-form .oj-flex. However there was a problem.
+  // In the "across" form layout there's 4 grid cells in a row.
+  // On large screens these 4 cells are all on one line.
+  // But on medium screens the first 2 cells stay on the
+  // first line and the second 2 cells wrap to a new line
+  // to create a second "row". However there's no actual row
+  // class in this case, so the margins need to be on the field columns.
+  //
+  // The :last-child is to handle cases where there is a colspan
+  // across all the cells.
+  //
+  // See the form layout demo titled "inline responsive across"
+  // before checking in any changes to where the margin is placed.
+  // Chrome v108 bug fix (see JET-54962 for details), changed margin to padding
+  .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):not(.oj-formlayout-nested-labelvalue) {
+    padding: 0 0 calc(var(--oj-form-layout-margin-bottom) - var(--oj-private-core-wrappable-margin-bottom)) 0;
+  }
+
+  // oj-label-value still has an oj-label in its own div, which should never have a margin bottom
+  // For oj-label-value, the first-child is the label and the last-child is the value
+  // Chrome v108 bug fix (see JET-54962 for details), margin changed to padding here too.
+  .oj-form.oj-label-value > .oj-flex > .oj-flex-item:first-child {
+    padding: 0;
+  }
+
+  .oj-form > .oj-flex > .oj-flex-item > .oj-form-non-control {
+    margin-bottom: var(--oj-private-core-wrappable-margin-bottom);
+  }
+
+  // dividers between rows
+
+  .oj-form > .oj-flex {
+    border-style: solid;
+    border-color: var(--oj-core-divider-color);
+    border-width: 0 0 var(--oj-form-layout-divider-width) 0;
+    padding: var(--oj-form-layout-divider-margin) 0 0;
+  }
+
+  .oj-form-layout > .oj-form[class*="oj-form-cols-"] > .oj-flex:last-child {
+    border-width: 0 0 var(--oj-form-layout-divider-width) 0;
+  }
+
+  // no border on the last row
+  .oj-form > .oj-flex:last-child {
+    border-width: 0;
+  }
+
+  // nowrap label support
+  .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label,
+  .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label,
+  .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label,
+  .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label-value .oj-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // inline label suport
+  .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label, // oj-label-value needs this
+  .oj-formlayout-inline-label > .oj-label {
+    // we're using width of 100% and so on for the case where
+    // the label-nowrap classes are used.
+    // See the form layout demo titled "label wrapping"
+    // before checking the values in here
+
+    width: 100%;
+    box-sizing: border-box; 
+    text-align: var(--oj-form-layout-start-edge-label-text-align);
+  }
+
+  // inline field suport
+  .oj-formlayout-inline-value {
+    text-align: var(--oj-form-layout-start-edge-value-text-align);
+  }
+
+  // without this, the required icon is chopped off at top in Chrome.
+  .oj-formlayout-inline-label .oj-label-required-icon {
+    margin-top: 1px;
+  }
+
+  // when labels are inline we don't float.
+  .oj-formlayout-inline-label .oj-label-required-icon,
+  .oj-formlayout-inline-label .oj-label-help-icon,
+  .oj-formlayout-inline-label label,
+  .oj-formlayout-inline-label .oj-label-help-icon-anchor {
+    float: none;
+  }
+
+  // when labels are inline we don't float so we need to add spacing.
+  .oj-formlayout-inline-label .oj-label-required-icon,
+  .oj-formlayout-inline-label .oj-label-help-icon {
+    html:not([dir="rtl"]) & {
+      margin-left: 0;
+      margin-right: 6px;
+    }
+    html[dir="rtl"] & {
+      margin-right: 0;
+      margin-left: 6px;
+    }
+  }
+
+  // TODO: Not certain when this first selector is used.  It seems like it could mess up nested cases.
+  .oj-formlayout .oj-form.oj-enabled.oj-form-cols-labels-inline .oj-label,
+    .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label, // oj-label-value needs this
+    .oj-formlayout-inline-label > .oj-label {
+    display: inline-flex;
+    align-items: center;
+
+    html:not([dir="rtl"]) & {
+      padding-right: var(--oj-form-layout-start-edge-label-to-value-padding);
+    }
+    html[dir="rtl"] & {
+      padding-left: var(--oj-form-layout-start-edge-label-to-value-padding);
+    }
+  }
+
+  .oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label,
+  oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label:not(.oj-read-only) {
+    &.oj-inputtext-label,
+    &.oj-inputpassword-label,
+    &.oj-inputnumber-label,
+    &.oj-inputdate-label,
+    &.oj-inputtime-label,
+    &.oj-inputdatetime-label,
+    &.oj-select-label,
+    &.oj-combobox-label,
+    &.oj-searchselect-label,
+    &.oj-textarea-label {
+      min-height: var(--oj-text-field-height);
+    }
+  }
+
+  // when the label should be top aligned
+  .oj-formlayout-inline-label > .oj-label-inline-top {
+    margin-top: 0;
+  }
+
+  // center a start aligned label with the center of the switch
+  .oj-formlayout .oj-form.oj-enabled.oj-form-cols-labels-inline .oj-label.oj-switch-label,
+  .oj-formlayout-inline-label > .oj-switch-label:not(.oj-read-only),
+  .oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-switch-label:not(.oj-read-only) {
+    min-height: var(--oj-core-touch-target-min-size);
+  }
+
+  // center a start aligned label with the center of the slider,
+  // slider doesn't support readonly so leave off the oj-enabled
+  .oj-formlayout .oj-form.oj-form-cols-labels-inline .oj-label.oj-slider-label,
+  .oj-formlayout-inline-label > .oj-slider-label:not(.oj-read-only),
+  .oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-slider-label:not(.oj-read-only) {
+    min-height: var(--oj-core-touch-target-min-size);
+    align-items: center; // needed for all readonly form
+  }
+
+  .oj-formlayout .oj-form.oj-enabled.oj-form-cols-labels-inline .oj-label.oj-radioset-label,
+  .oj-formlayout .oj-form.oj-enabled.oj-form-cols-labels-inline .oj-label.oj-checkboxset-label,
+  .oj-formlayout-inline-label > .oj-radioset-label:not(.oj-read-only),
+  .oj-formlayout-inline-label > .oj-checkboxset-label:not(.oj-read-only),
+  .oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-radioset-label:not(.oj-read-only),
+  .oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label:not(.oj-read-only) {
+    margin-top: calc(
+      (var(--oj-radio-checkbox-row-height) - (var(--oj-typography-body-md-font-size) * var(--oj-typography-body-md-line-height) + 1px)) / 2 +
+        var(--oj-typography-body-md-font-size) - var(--oj-label-font-size)
+    );
+  }
+  
+  // This is for cases where there are label modifiers (required, etc), in which case
+  // the properties below need to be inherited by oj-label-group
+  // otherwise the ellipsis doesn't show when the label-nowrap classes are used.
+  // See the form layout demo titled "label wrapping"
+  // before checking the values in here
+  // line-height is needed so that the label has enough height to show borders.
+  // line-height on label itself has no effect.
+  .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label > .oj-label-group, // oj-label-value
+    .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label > .oj-label-group {
+    width: inherit;
+    overflow: inherit;
+    text-overflow: inherit;
+  }
+
+  // This is for cases where there are label modifiers (required, etc), in which case
+  // the properties below need to be inherited by oj-label-group
+  // otherwise the ellipsis doesn't show when the label-nowrap classes are used.
+  // See the form layout demo titled "label wrapping"
+  // before checking the values in here
+  .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label > .oj-label-group, // This is for oj-label-value
+    .oj-formlayout-inline-label > .oj-label > .oj-label-group {
+    width: inherit;
+    overflow: inherit;
+    text-overflow: inherit;
+  }
+
+  // For the form across, we need to remove the left/right padding from the .oj-flex div as the padding is
+  // on the even/odd .oj-flex-item divs (see above)
+  .oj-form.oj-formlayout-form-across > .oj-flex {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .oj-formlayout-max-cols-1:not(.oj-formlayout-full-width) {
+    max-width: var(--oj-form-layout-column-max-width);
+  }
+
+  .oj-formlayout-max-cols-2:not(.oj-formlayout-full-width) {
+    max-width: calc(2 * var(--oj-form-layout-column-max-width));
+  }
+
+  .oj-formlayout-max-cols-3:not(.oj-formlayout-full-width) {
+    max-width: calc(3 * var(--oj-form-layout-column-max-width));
+  }
+
+  .oj-formlayout-max-cols-4:not(.oj-formlayout-full-width) {
+    max-width: calc(4 * var(--oj-form-layout-column-max-width));
+  }
+
+  .oj-formlayout-max-cols-5:not(.oj-formlayout-full-width) {
+    max-width: calc(5 * var(--oj-form-layout-column-max-width));
+  }
+
+  .oj-formlayout-max-cols-6:not(.oj-formlayout-full-width) {
+    max-width: calc(6 * var(--oj-form-layout-column-max-width));
+  }
+
+  .oj-formlayout-max-cols-1.oj-formlayout-labels-inline:not(.oj-formlayout-full-width) {
+    max-width: var(--oj-form-layout-start-edge-column-max-width);
+  }
+
+  .oj-formlayout-max-cols-2.oj-formlayout-labels-inline:not(.oj-formlayout-full-width) {
+    max-width: calc(2 * var(--oj-form-layout-start-edge-column-max-width));
+  }
+
+  .oj-formlayout-max-cols-3.oj-formlayout-labels-inline:not(.oj-formlayout-full-width) {
+    max-width: calc(3 * var(--oj-form-layout-start-edge-column-max-width));
+  }
+
+  .oj-formlayout-max-cols-4.oj-formlayout-labels-inline:not(.oj-formlayout-full-width) {
+    max-width: calc(4 * var(--oj-form-layout-start-edge-column-max-width));
+  }
+
+  .oj-formlayout-max-cols-5.oj-formlayout-labels-inline:not(.oj-formlayout-full-width) {
+    max-width: calc(5 * var(--oj-form-layout-start-edge-column-max-width));
+  }
+
+  .oj-formlayout-max-cols-6.oj-formlayout-labels-inline:not(.oj-formlayout-full-width) {
+    max-width: calc(6 * var(--oj-form-layout-start-edge-column-max-width));
+  }
+
+  .oj-form-layout > .oj-form {
+    padding-left: var(--oj-form-layout-horizontal-margin);
+    padding-right: var(--oj-form-layout-horizontal-margin);
+  }
+  // Nested forms layouts need no horizontal margin
+  .oj-form-layout > .oj-form > .oj-flex > .oj-flex-item > .oj-form-layout > .oj-form {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
+  // in direction row, things are a little more complex, so we need to apply spacing
+  // to the flex-item divs.
+  .oj-form-layout.oj-formlayout-form-across > .oj-form {
+    padding-left: 0px;
+    padding-right: 0px;
+    column-gap: 0px;
+  }
+
+  // When labels are inline, we shouldn't ever wrap as it produces difficult
+  // to understand layouts.
+  .oj-formlayout-labels-inline > .oj-form > .oj-flex {
+    flex-wrap: nowrap;
+  }
+
+  .oj-formlayout-column-gutter {
+    flex: 0 1 var(--oj-form-layout-column-gutter);
+  }
+
+  // oj-label-value doesn't need the row divider margin, as it isn't a true row, so remove the padding
+  .oj-label-value.oj-form > .oj-flex {
+    padding-top: 0;
+  }
+
+  $formLayoutDefaultOptions: ();
+
+  @if ($privateFormLayoutLabelEdgeDefault != null) {
+    $formLayoutDefaultOptions: map-merge(
+      $formLayoutDefaultOptions,
+      (
+        labelEdge: $privateFormLayoutLabelEdgeDefault
+      )
+    );
+  }
+    $formLayoutDefaultOptions: map-merge(
+      $formLayoutDefaultOptions,
+      (
+        colspanWrap: 'wrap'
+      )
+    );
+  
+    $formLayoutDefaultOptions: map-merge(
+      $formLayoutDefaultOptions,
+      (
+        "direction": 'row'
+      )
+    );
+
+  // using the oj-form-layout-option-defaults to pass the column gap even though it's not really a default
+  $formLayoutDefaultOptions: map-merge(
+    $formLayoutDefaultOptions,
+    (
+      "columnGap": var(--oj-form-layout-column-gutter)
+    )
+  );
+
+  .oj-form-layout-option-defaults {
+    font-family: oj-json-from-map($formLayoutDefaultOptions) !important;
+  }
+}
+
+// This is to prevent the flash of unstyled content before the html becomes JET components.
+oj-form-layout:not(.oj-complete) {
+  visibility: hidden;
+}

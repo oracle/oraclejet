@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-amd/keycode', 'jqueryui-amd/focusable', 'jqueryui-amd/tabbable', 'ojs/ojcore', 'jquery', 'ojs/ojmessaging', 'ojs/ojmetadatautils', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojlogger', 'ojs/ojdefaultsutils', 'ojs/ojtranslation', 'ojs/ojfocusutils', 'ojs/ojgestureutils'], function (exports, widget, uniqueId, keycode, focusable, tabbable, oj, $, Message, MetadataUtils, oj$1, DomUtils, ojcustomelement, ojcustomelementUtils, Logger, ojdefaultsutils, Translations, ojfocusutils, GestureUtils) { 'use strict';
+define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-amd/keycode', 'jqueryui-amd/focusable', 'jqueryui-amd/tabbable', 'ojs/ojcore', 'jquery', 'ojs/ojmessaging', 'ojs/ojmetadatautils', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'ojs/ojlogger', 'ojs/ojdefaultsutils', 'ojs/ojtranslation', 'ojs/ojfocusutils', 'ojs/ojgestureutils'], function (exports, widget, uniqueId, keycode, focusable, tabbable, oj, $, Message, MetadataUtils, oj$1, DomUtils, ojcustomelement, ojcustomelementUtils, ojcustomelementRegistry, Logger, ojdefaultsutils, Translations, ojfocusutils, GestureUtils) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -1614,7 +1614,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    * @ojtsignore
    */
   Components.getWidgetConstructor = function (element, widgetName) {
-    if (element && !ojcustomelementUtils.CustomElementUtils.isElementRegistered(element.tagName)) {
+    if (element && !ojcustomelementRegistry.isElementRegistered(element.tagName)) {
       return Components.__GetWidgetConstructor(element, widgetName);
     }
     return null;
@@ -2190,7 +2190,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    * @ignore
    */
   function _isCompositeOrCustom(node) {
-    return ojcustomelementUtils.CustomElementUtils.isElementRegistered(node.tagName);
+    return ojcustomelementRegistry.isElementRegistered(node.tagName);
   }
 
   /**
@@ -2561,10 +2561,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
             !bridge._validateAndSetCopyProperty(this, prop, value, null)
           ) {
             // If not an event or copy property, check to see if it's a component specific property
-            var meta = MetadataUtils.getPropertyMetadata(
-              prop,
-              ojcustomelementUtils.CustomElementUtils.getElementProperties(this)
-            );
+            var meta = MetadataUtils.getPropertyMetadata(prop, ojcustomelementRegistry.getElementProperties(this));
             // For non component specific properties, just set directly on the element instead.
             if (!meta) {
               this[prop] = value;
@@ -2578,10 +2575,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       // eslint-disable-next-line no-param-reassign
       proto.getProperty = function (prop) {
         var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
-        var meta = MetadataUtils.getPropertyMetadata(
-          prop,
-          ojcustomelementUtils.CustomElementUtils.getElementProperties(this)
-        );
+        var meta = MetadataUtils.getPropertyMetadata(prop, ojcustomelementRegistry.getElementProperties(this));
 
         // For event listeners and non component specific properties, return the property from the element.
         // Otherwise, return the widget property and let the widget handle dot notation for subproperties.
@@ -2931,7 +2925,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     },
 
     _processProperties: function (element) {
-      var props = ojcustomelementUtils.CustomElementUtils.getElementProperties(element);
+      var props = ojcustomelementRegistry.getElementProperties(element);
       if (props) {
         var propKeys = Object.keys(props);
         for (var i = 0; i < propKeys.length; i++) {
@@ -3000,10 +2994,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         if (this._WIDGET_ELEM) {
           if (!propMeta) {
             // eslint-disable-next-line no-param-reassign
-            propMeta = MetadataUtils.getPropertyMetadata(
-              prop,
-              ojcustomelementUtils.CustomElementUtils.getElementProperties(elem)
-            );
+            propMeta = MetadataUtils.getPropertyMetadata(prop, ojcustomelementRegistry.getElementProperties(elem));
           }
 
           var previousValue = this._getCopyProperty(elem, prop, propMeta);
@@ -3160,7 +3151,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     }
 
     const registration = { descriptor, bridgeProto, stateClass };
-    ojcustomelementUtils.CustomElementUtils.registerElement(tagName, registration, bridgeProto.getClass(descriptor));
+    ojcustomelementRegistry.registerElement(tagName, registration, bridgeProto.getClass(descriptor));
   };
 
   /** ***************************/
@@ -5916,7 +5907,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
        * @protected
        */
       _IsCustomElement: function () {
-        return ojcustomelementUtils.CustomElementUtils.isElementRegistered(this._getRootElement().tagName);
+        return ojcustomelementRegistry.isElementRegistered(this._getRootElement().tagName);
       },
 
       /**
@@ -6600,7 +6591,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
           bSkip = constr('instance')._IsCustomElement();
           if (!bSkip) {
             var parent = Components.getComponentElementByNode(elem);
-            bSkip = parent && ojcustomelementUtils.CustomElementUtils.isElementRegistered(parent.tagName);
+            bSkip = parent && ojcustomelementRegistry.isElementRegistered(parent.tagName);
           }
         }
         if (!bSkip) {

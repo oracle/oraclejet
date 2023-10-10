@@ -742,6 +742,7 @@ CoreRouter.prototype.go = function (...transitions) {
     }
     goP = this.sync().catch((ex) => {
       // Rollback transitions if navigation rejected
+      pendingTransitions = [];
       if (this._noHistory) {
         noHistorySegments = prevNoHistorySegments;
       } else {

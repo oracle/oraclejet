@@ -2101,6 +2101,10 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent, {
       path: 'styleDefaults/nodeDefaults/iconDefaults/backgroundSize',
       property: 'width'
     };
+    styleClasses['oj-nbox-node-initials-background oj-nbox-ios'] = {
+      path: 'styleDefaults/nodeDefaults/iconDefaults/backgroundIosSize',
+      property: 'width'
+    };
     styleClasses['oj-nbox-node-categorylabel'] = {
       path: 'styleDefaults/_categoryNodeDefaults/labelStyle',
       property: 'TEXT'
