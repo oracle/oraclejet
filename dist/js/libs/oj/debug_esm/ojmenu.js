@@ -2310,8 +2310,9 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
         createInitializedSubmenus(this);
         this._setup();
       }
-
-      this._reposition();
+      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        this._reposition();
+      }
     },
 
     _reposition: function () {
@@ -2947,7 +2948,16 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
 
       // just in case it's possible for __dismiss() to get called when menu is already closed, avoid firing spurious event:
       if (isOpen) {
-        this._trigger('close', event, {});
+        var busyContext = Context.getContext(this.element[0]).getBusyContext();
+        var resolveBusyState = busyContext.addBusyState({
+          description: 'close event about to be triggered'
+        });
+        // JET-28150: popupservice is calling _afterCloseHandler when the popup is still open
+        // using requestAnimationFrame to trigger close event asynchronously once current repaint is done
+        requestAnimationFrame(() => {
+          resolveBusyState();
+          this._trigger('close', event, {});
+        });
       }
 
       this._currentOpenOptions = null;
@@ -3349,6 +3359,11 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       }
       this._updateMenuMaxHeight();
       rootElement.position(position);
+
+      // note the initial menu width/height
+      this.initialWidth = rootElement.width();
+      this.initialHeight = rootElement.height();
+
       // establish this._focusSkipLink, if iOS or Android
       this._initVoiceOverAssist(initialFocus);
       if (initialFocus === 'firstItem') {
@@ -3420,6 +3435,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
      * @return {Promise|void}
      */
     _afterOpenHandler: function (psOptions) {
+      var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
       // From the context passed from the open restore local variable state.
       var context = psOptions[oj.PopupService.OPTION.CONTEXT];
       var event = context.event;
@@ -3434,6 +3450,18 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
 
       // Add current menu to openPopupMenus so that it will be closed on focus lost/click away.
       _openPopupMenus.push(this);
+
+      // JET-44685: iOS may reveal address bar during open animation, need to make sure the position is set
+      // properly after the animation completes. Also if the menu width/height changed during opening, re-apply position constraints
+      if (
+        this.initialWidth !== rootElement.width() ||
+        this.initialHeight !== rootElement.height() ||
+        oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS
+      ) {
+        this._reposition();
+      }
+      delete this.initialWidth;
+      delete this.initialHeight;
 
       if (initialFocus === 'firstItem' || initialFocus === 'menu') {
         var focusElement;

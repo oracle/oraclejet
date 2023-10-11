@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
+define(['exports', 'ojs/ojconfig', 'ojs/ojconverter-preferences'], function (exports, ojconfig, ojconverterPreferences) { 'use strict';
 
     const _DECIMAL_SEP = '.';
     const _MINUS = '-';
@@ -17,7 +17,7 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
         let parts = value.match(_DECIMAL_EXPR);
         if (parts) {
             const negative = parts[1] === _MINUS;
-            return Object.assign({ negative }, _splitDecimal(parts[2]));
+            return { negative, ..._splitDecimal(parts[2]) };
         }
         parts = value.match(_EXPONENTIAL_EXPR);
         if (parts) {
@@ -25,7 +25,7 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
             const coefficient = _splitDecimal(parts[2]);
             let exponentVal = parseInt(parts[4]);
             exponentVal = parts[3] === _MINUS ? -exponentVal : exponentVal;
-            return Object.assign({ negative }, multiplyCoefficient(coefficient, exponentVal));
+            return { negative, ...multiplyCoefficient(coefficient, exponentVal) };
         }
         throw new Error('Not a valid number');
     }
@@ -129,9 +129,8 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
         return _getPart(locale, { notation: 'scientific' }, 100, 'exponentSeparator', 'E');
     }
     function _getPart(locale, opts, value, type, backup) {
-        var _a, _b;
         const parts = new Intl.NumberFormat(locale, opts).formatToParts(value);
-        return (_b = (_a = parts.find((part) => part.type === type)) === null || _a === void 0 ? void 0 : _a.value) !== null && _b !== void 0 ? _b : backup;
+        return parts.find((part) => part.type === type)?.value ?? backup;
     }
     const _cache = new Map();
 
@@ -191,8 +190,7 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
         return { whole, decimal };
     }
     function getNativeRoundingMode(options) {
-        var _a;
-        const mode = (_a = options.roundingMode) !== null && _a !== void 0 ? _a : 'HALF_UP';
+        const mode = options.roundingMode ?? 'HALF_UP';
         const native = _ROUNDING_MODE_TO_NATIVE.get(mode);
         if (!native) {
             throw new Error('Invalid rounding mode');
@@ -273,10 +271,16 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
             _throwUserInputError();
         }
         if (exponent !== 0) {
-            parseResult = Object.assign({ negative: parseResult.negative }, multiplyCoefficient(parseResult, exponent));
+            parseResult = {
+                negative: parseResult.negative,
+                ...multiplyCoefficient(parseResult, exponent)
+            };
         }
         if (resolvedOptions.roundDuringParse) {
-            parseResult = Object.assign({ negative: parseResult.negative }, round(parseResult, resolvedOptions.maximumFractionDigits, resolvedOptions.roundingMode));
+            parseResult = {
+                negative: parseResult.negative,
+                ...round(parseResult, resolvedOptions.maximumFractionDigits, resolvedOptions.roundingMode)
+            };
         }
         const whole = parseResult.whole || '0';
         const hasDecimal = parseResult.decimal !== '';
@@ -294,42 +298,52 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
     }
 
     function getResolvedAndNativeOptions(options, locale) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
         const native = _getNativeOptions(options);
         const { defaultMinFractionDigits, defaultMaxFractionDigits } = _getDefaultFractionDigits(native, locale);
-        const minimumFractionDigits = (_a = options.minimumFractionDigits) !== null && _a !== void 0 ? _a : Math.min(defaultMinFractionDigits, (_b = options.maximumFractionDigits) !== null && _b !== void 0 ? _b : Number.MAX_SAFE_INTEGER);
-        const maximumFractionDigits = (_c = options.maximumFractionDigits) !== null && _c !== void 0 ? _c : Math.max(minimumFractionDigits, defaultMaxFractionDigits);
+        const minimumFractionDigits = options.minimumFractionDigits ??
+            Math.min(defaultMinFractionDigits, options.maximumFractionDigits ?? Number.MAX_SAFE_INTEGER);
+        const maximumFractionDigits = options.maximumFractionDigits ?? Math.max(minimumFractionDigits, defaultMaxFractionDigits);
         if (minimumFractionDigits > maximumFractionDigits) {
             throw new Error('maximumFractionDigits value is out of range');
         }
         const common = {
             locale: locale,
-            minimumIntegerDigits: (_d = options.minimumIntegerDigits) !== null && _d !== void 0 ? _d : 0,
+            minimumIntegerDigits: options.minimumIntegerDigits ?? 0,
             minimumFractionDigits,
             maximumFractionDigits,
-            useGrouping: (_e = options.useGrouping) !== null && _e !== void 0 ? _e : _getDefaultGroupingSeparator(native, locale, false) !== undefined,
-            lenientParse: (_f = options.lenientParse) !== null && _f !== void 0 ? _f : 'full',
-            roundDuringParse: (_g = options.roundDuringParse) !== null && _g !== void 0 ? _g : false,
-            roundingMode: (_h = options.roundingMode) !== null && _h !== void 0 ? _h : 'HALF_UP',
+            useGrouping: options.useGrouping ?? _getDefaultGroupingSeparator(native, locale, false) !== undefined,
+            lenientParse: options.lenientParse ?? 'full',
+            roundDuringParse: options.roundDuringParse ?? false,
+            roundingMode: options.roundingMode ?? 'HALF_UP',
             separators: {
-                decimal: (_k = (_j = options.separators) === null || _j === void 0 ? void 0 : _j.decimal) !== null && _k !== void 0 ? _k : getLocaleData(locale).decimalSeparator,
-                group: (_m = (_l = options.separators) === null || _l === void 0 ? void 0 : _l.group) !== null && _m !== void 0 ? _m : _getDefaultGroupingSeparator(native, locale)
+                decimal: options.separators?.decimal ?? getLocaleData(locale).decimalSeparator,
+                group: options.separators?.group ?? _getDefaultGroupingSeparator(native, locale)
             }
         };
         let resolved;
         switch (options.style) {
             case 'decimal':
             case undefined:
-                resolved = Object.assign({ style: 'decimal', decimalFormat: (_o = options.decimalFormat) !== null && _o !== void 0 ? _o : 'standard' }, common);
+                resolved = {
+                    style: 'decimal',
+                    decimalFormat: options.decimalFormat ?? 'standard',
+                    ...common
+                };
                 break;
             case 'currency':
-                resolved = Object.assign({ style: 'currency', currency: options.currency, currencyFormat: (_p = options.currencyFormat) !== null && _p !== void 0 ? _p : 'standard', currencyDisplay: (_q = options.currencyDisplay) !== null && _q !== void 0 ? _q : 'symbol' }, common);
+                resolved = {
+                    style: 'currency',
+                    currency: options.currency,
+                    currencyFormat: options.currencyFormat ?? 'standard',
+                    currencyDisplay: options.currencyDisplay ?? 'symbol',
+                    ...common
+                };
                 break;
             case 'percent':
-                resolved = Object.assign({ style: 'percent' }, common);
+                resolved = { style: 'percent', ...common };
                 break;
             case 'unit':
-                resolved = Object.assign({ style: 'unit', unit: options.unit }, common);
+                resolved = { style: 'unit', unit: options.unit, ...common };
         }
         return { resolved, native };
     }
@@ -359,14 +373,12 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
         return nativeOpts;
     }
     function _getDefaultFractionDigits(options, locale) {
-        var _a, _b;
-        const defaultMinFractionDigits = (_a = new Intl.NumberFormat(locale, options).resolvedOptions().minimumFractionDigits) !== null && _a !== void 0 ? _a : 0;
-        const defaultMaxFractionDigits = (_b = new Intl.NumberFormat(locale, options).resolvedOptions().maximumFractionDigits) !== null && _b !== void 0 ? _b : 0;
+        const defaultMinFractionDigits = new Intl.NumberFormat(locale, options).resolvedOptions().minimumFractionDigits ?? 0;
+        const defaultMaxFractionDigits = new Intl.NumberFormat(locale, options).resolvedOptions().maximumFractionDigits ?? 0;
         return { defaultMinFractionDigits, defaultMaxFractionDigits };
     }
     function _getDecimalNativeOptions(options) {
-        var _a;
-        const decimalFormat = (_a = options.decimalFormat) !== null && _a !== void 0 ? _a : 'standard';
+        const decimalFormat = options.decimalFormat ?? 'standard';
         const nativeOpts = { style: 'decimal' };
         switch (decimalFormat) {
             case 'short':
@@ -385,8 +397,7 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
         return nativeOpts;
     }
     function _getCurrencyNativeOptions(options) {
-        var _a, _b;
-        const currencyFormat = (_a = options.currencyFormat) !== null && _a !== void 0 ? _a : 'standard';
+        const currencyFormat = options.currencyFormat ?? 'standard';
         const currency = options.currency;
         if (!currency) {
             throw new Error('Currency option is required for currency style');
@@ -394,7 +405,7 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
         const nativeOpts = {
             style: 'currency',
             currency,
-            currencyDisplay: (_b = options.currencyDisplay) !== null && _b !== void 0 ? _b : 'symbol'
+            currencyDisplay: options.currencyDisplay ?? 'symbol'
         };
         switch (currencyFormat) {
             case 'short':
@@ -409,15 +420,14 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
         return nativeOpts;
     }
     function _getDefaultGroupingSeparator(options, locale, forceGrouping = true) {
-        var _a;
-        const formatOpts = forceGrouping ? Object.assign(Object.assign({}, options), { useGrouping: true }) : options;
+        const formatOpts = forceGrouping ? { ...options, useGrouping: true } : options;
         const parts = new Intl.NumberFormat(locale, formatOpts).formatToParts(1000000);
-        return (_a = parts.find((part) => part.type === 'group')) === null || _a === void 0 ? void 0 : _a.value;
+        return parts.find((part) => part.type === 'group')?.value;
     }
 
-    const _BYTE_SCALE_THRESHOLDS = [Math.pow(10, 3), Math.pow(10, 6), Math.pow(10, 9), Math.pow(10, 12), Math.pow(10, 15)];
-    const _BIT_SCALE_THRESHOLDS = [Math.pow(10, 3), Math.pow(10, 6), Math.pow(10, 9), Math.pow(10, 12)];
-    const _DECIMAL_SCALE_THRESHOLDS = [Math.pow(10, 3), Math.pow(10, 6), Math.pow(10, 9), Math.pow(10, 12)];
+    const _BYTE_SCALE_THRESHOLDS = [10 ** 3, 10 ** 6, 10 ** 9, 10 ** 12, 10 ** 15];
+    const _BIT_SCALE_THRESHOLDS = [10 ** 3, 10 ** 6, 10 ** 9, 10 ** 12];
+    const _DECIMAL_SCALE_THRESHOLDS = [10 ** 3, 10 ** 6, 10 ** 9, 10 ** 12];
     const _BYTE_UNITS = ['byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte'];
     const _BIT_UNITS = ['bit', 'kilobit', 'megabit', 'gigabit', 'terabit'];
     function scaleCompact(parseResult, getDisplayedFractionDigits, resolvedOptions) {
@@ -462,7 +472,7 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
         }
         scaled = {
             whole: unscaleWhole
-                ? (BigInt(rounded.whole) * BigInt(Math.pow(10, exponent))).toString()
+                ? (BigInt(rounded.whole) * BigInt(10 ** exponent)).toString()
                 : rounded.whole,
             decimal: rounded.decimal
         };
@@ -480,21 +490,22 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
         for (let i = 0; i < scaleCount && value >= thresholds[i]; i++, scaleIndex++)
             ;
         let exponent = -3 * (scaleIndex + 1);
-        let scaled = value * Math.pow(10, exponent);
+        let scaled = value * 10 ** exponent;
         let rounded = parseFloat(format.format(scaled));
         if (scaleIndex < scaleCount - 1 && rounded === thresholds[scaleIndex]) {
             scaleIndex++;
             exponent -= 3;
-            scaled = value * Math.pow(10, exponent);
+            scaled = value * 10 ** exponent;
         }
         return { scaled, scaleIndex: scaleIndex + 1 };
     }
 
     class BigDecimalStringConverter {
         constructor(options) {
-            var _a;
-            this.locale = (_a = options.locale) !== null && _a !== void 0 ? _a : ojconfig.getLocale();
-            this.options = options !== null && options !== void 0 ? options : { style: 'decimal' };
+            const defaultOptions = options ?? { style: 'decimal' };
+            const mo = ojconverterPreferences.getMergedNumberPreferencesWithOptions(defaultOptions);
+            this.options = mo;
+            this.locale = this.options.locale ?? ojconfig.getLocale();
         }
         format(value) {
             if (typeof value !== 'string') {
@@ -545,7 +556,7 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
                 const { scaled, unit } = scaler(parseResult, getDisplayedFractionDigits, resolvedOptions);
                 whole = scaled.whole;
                 decimal = scaled.decimal;
-                derivedOptions = Object.assign(Object.assign({}, derivedOptions), { unit });
+                derivedOptions = { ...derivedOptions, unit };
             }
             else {
                 const displayedFractionDigits = getDisplayedFractionDigits(decimal.length);
@@ -563,7 +574,11 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
         }
         _stitchFractionOnly(whole, decimal, negative, minimumFractionDigits, baseOptions = {}) {
             const options = this.options;
-            const opts = Object.assign(Object.assign({}, baseOptions), { minimumIntegerDigits: options.minimumIntegerDigits, minimumFractionDigits: minimumFractionDigits });
+            const opts = {
+                ...baseOptions,
+                minimumIntegerDigits: options.minimumIntegerDigits,
+                minimumFractionDigits: minimumFractionDigits
+            };
             opts.useGrouping = options.useGrouping;
             const isWholeZero = whole === '0';
             let wholeNum = isWholeZero ? 0 : BigInt(whole);
@@ -598,7 +613,11 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
             const options = this.options;
             const decLength = decimal.length;
             const hasFraction = decLength > 0 || minimumFractionDigits > 0;
-            const patternOpts = Object.assign(Object.assign({}, baseOptions), { useGrouping: false, minimumFractionDigits: hasFraction ? Math.max(minimumFractionDigits, 1) : 0 });
+            const patternOpts = {
+                ...baseOptions,
+                useGrouping: false,
+                minimumFractionDigits: hasFraction ? Math.max(minimumFractionDigits, 1) : 0
+            };
             const pattern = this._formatToPartsWithCustomSeparators(new Intl.NumberFormat(this.locale, patternOpts), negative ? -1 : 1);
             const intPartOpts = {
                 minimumIntegerDigits: options.minimumIntegerDigits
@@ -618,7 +637,7 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
             for (let part of pattern) {
                 const type = part.type;
                 if (type === 'fraction') {
-                    formatted += formattedFraction !== null && formattedFraction !== void 0 ? formattedFraction : part.value;
+                    formatted += formattedFraction ?? part.value;
                 }
                 else if (type === 'integer') {
                     formatted += formattedInt;
@@ -630,9 +649,8 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
             return formatted;
         }
         _formatWithCustomSeparators(formatInstance, value) {
-            var _a, _b, _c, _d;
-            const decimal = (_b = (_a = this.options) === null || _a === void 0 ? void 0 : _a.separators) === null || _b === void 0 ? void 0 : _b.decimal;
-            const group = (_d = (_c = this.options) === null || _c === void 0 ? void 0 : _c.separators) === null || _d === void 0 ? void 0 : _d.group;
+            const decimal = this.options?.separators?.decimal;
+            const group = this.options?.separators?.group;
             if (decimal === undefined && group === undefined) {
                 return formatInstance.format(value);
             }
@@ -640,10 +658,10 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
             let formatted = '';
             for (let part of parts) {
                 if (part.type === 'group') {
-                    formatted += group !== null && group !== void 0 ? group : part.value;
+                    formatted += group ?? part.value;
                 }
                 else if (part.type === 'decimal') {
-                    formatted += decimal !== null && decimal !== void 0 ? decimal : part.value;
+                    formatted += decimal ?? part.value;
                 }
                 else {
                     formatted += part.value;
@@ -652,19 +670,18 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
             return formatted;
         }
         _formatToPartsWithCustomSeparators(formatInstance, value) {
-            var _a, _b, _c, _d;
-            const decimal = (_b = (_a = this.options) === null || _a === void 0 ? void 0 : _a.separators) === null || _b === void 0 ? void 0 : _b.decimal;
-            const group = (_d = (_c = this.options) === null || _c === void 0 ? void 0 : _c.separators) === null || _d === void 0 ? void 0 : _d.group;
+            const decimal = this.options?.separators?.decimal;
+            const group = this.options?.separators?.group;
             if (decimal === undefined && group === undefined) {
                 return formatInstance.formatToParts(value);
             }
             const parts = formatInstance.formatToParts(value);
             return parts.map((part) => {
                 if (part.type === 'group') {
-                    return Object.assign(Object.assign({}, part), { value: group !== null && group !== void 0 ? group : part.value });
+                    return { ...part, value: group ?? part.value };
                 }
                 else if (part.type === 'decimal') {
-                    return Object.assign(Object.assign({}, part), { value: decimal !== null && decimal !== void 0 ? decimal : part.value });
+                    return { ...part, value: decimal ?? part.value };
                 }
                 else {
                     return part;
@@ -685,19 +702,26 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
 
     class NumberConverter {
         constructor(options) {
-            var _a;
-            this.options = options !== null && options !== void 0 ? options : { style: 'decimal' };
-            this.locale = (_a = this.options.locale) !== null && _a !== void 0 ? _a : ojconfig.getLocale();
+            const defaultOptions = options ?? { style: 'decimal' };
+            const mo = ojconverterPreferences.getMergedNumberPreferencesWithOptions(defaultOptions);
+            this.options = mo;
+            this.locale = this.options.locale ?? ojconfig.getLocale();
         }
         format(value) {
-            var _a, _b;
             let valueToFormat = value;
             if (typeof valueToFormat !== 'number') {
                 throw new Error('the value must be a number');
             }
             const { resolved, native } = this._getResolvedAndNativeOptions();
             const options = this.options;
-            const numberNativeOpts = Object.assign(Object.assign({}, native), { minimumIntegerDigits: options.minimumIntegerDigits, minimumFractionDigits: options.minimumFractionDigits, maximumFractionDigits: options.maximumFractionDigits, useGrouping: options.useGrouping, roundingMode: getNativeRoundingMode(resolved) });
+            const numberNativeOpts = {
+                ...native,
+                minimumIntegerDigits: options.minimumIntegerDigits,
+                minimumFractionDigits: options.minimumFractionDigits,
+                maximumFractionDigits: options.maximumFractionDigits,
+                useGrouping: options.useGrouping,
+                roundingMode: getNativeRoundingMode(resolved)
+            };
             if (resolved.style === 'unit') {
                 const scaler = resolved.unit === 'bit' ? scaleBitsNumber : scaleBytesNumber;
                 const { scaled, unit } = scaler(value, options);
@@ -706,18 +730,18 @@ define(['exports', 'ojs/ojconfig'], function (exports, ojconfig) { 'use strict';
             }
             const format = new Intl.NumberFormat(this.locale, numberNativeOpts);
             if (options.separators) {
-                const decimal = (_a = options === null || options === void 0 ? void 0 : options.separators) === null || _a === void 0 ? void 0 : _a.decimal;
-                const group = (_b = options === null || options === void 0 ? void 0 : options.separators) === null || _b === void 0 ? void 0 : _b.group;
+                const decimal = options?.separators?.decimal;
+                const group = options?.separators?.group;
                 if (decimal === undefined && group === undefined) {
                     return format.format(valueToFormat);
                 }
                 const parts = format.formatToParts(valueToFormat);
                 return parts.reduce((acc, part) => {
                     if (part.type === 'group') {
-                        return acc + (group !== null && group !== void 0 ? group : part.value);
+                        return acc + (group ?? part.value);
                     }
                     else if (part.type === 'decimal') {
-                        return acc + (decimal !== null && decimal !== void 0 ? decimal : part.value);
+                        return acc + (decimal ?? part.value);
                     }
                     else {
                         return acc + part.value;

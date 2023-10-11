@@ -22,9 +22,9 @@ class JetTemplateEngine {
             __Observable: observable
         };
     }
-    execute(componentElement, templateElement, properties, alias, reportBusy) {
+    execute(componentElement, templateElement, properties, alias, reportBusy, provided) {
         const templateAlias = templateElement.getAttribute('data-oj-as');
-        const context = TemplateEngineUtils.getContext(this._bindingProvider, componentElement, templateElement, properties, alias, templateAlias);
+        const context = TemplateEngineUtils.getContext(this._bindingProvider, componentElement, templateElement, properties, alias, templateAlias, provided);
         if (templateElement.render) {
             throw new Error(`The render property is not expected on the template for component ${componentElement.id}`);
         }
@@ -37,7 +37,7 @@ class JetTemplateEngine {
         applyBindingsToDescendants(context, tmpContainer);
         return Array.prototype.slice.call(stampedNodes, 0);
     }
-    clean(node) {
+    clean(node, componentElement) {
         return cleanNode(node);
     }
     resolveProperties(componentElement, templateElement, elementTagName, propertySet, data, alias, propertyValidator, alternateParent) {

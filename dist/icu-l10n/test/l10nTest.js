@@ -14,15 +14,15 @@ function runTestCases(extractBundle) {
     it('ignores unsupported types', () => {
       const bundle = extractBundle(`app-strings.js`);
       assert(Object.keys(bundle).indexOf('@count') === -1, '@count should not be in bundle');
-      assert(Object.keys(bundle).indexOf('@another_button') === -1, '@another_button should not be in bundle');
+      assert(
+        Object.keys(bundle).indexOf('@another_button') === -1,
+        '@another_button should not be in bundle'
+      );
       assert(
         Object.keys(bundle).indexOf('@@x-base-bundle') === -1,
         '@@x-base-bundle should not be in bundle'
       );
-      assert(
-        Object.keys(bundle).indexOf('@@locale') === -1,
-        '@@locale should not be in bundle'
-      );
+      assert(Object.keys(bundle).indexOf('@@locale') === -1, '@@locale should not be in bundle');
     });
 
     it('creates the root bundle in English', () => {
@@ -192,49 +192,9 @@ function runTestCases(extractBundle) {
     });
   });
 
-  describe('Override files', () => {
-    it('creates the ru override bundle in Russian', () => {
-      const bundle = extractBundle(`ru/app-strings-x.js`);
-      assert.equal(bundle.contentArea({ name: 'Dashboard' }), 'Dashboard область содержимого');
-    });
-
-    it('creates the ru-RU override bundle in Russian', () => {
-      const bundle = extractBundle(`ru-RU/app-strings-x.js`);
-      assert.equal(Object.keys(bundle).length, 3, "override shouldn't have root keys");
-      assert.equal(bundle.contentArea({ name: 'Dashboard' }), 'Dashboard область содержимого');
-      assert.equal(
-        bundle.pageIntro({ name: 'Dashboard' }),
-        'Чтобы изменить содержимое этого раздела, вы внесете изменения в файл Dashboard, расположенный в папке /js/views.'
-      );
-    });
-  });
 }
 
-describe('TS output', () => {
-  const outDir = path.resolve(outputRoot, 'ts');
-  beforeAll(() => {
-    fsx.removeSync(outDir);
-    build({
-      rootDir,
-      bundleName: 'app-strings.json',
-      locale: 'en-US',
-      outDir
-    });
-    build({
-      rootDir,
-      bundleName: 'app-strings-x.json',
-      locale: 'en-US',
-      outDir
-    });
-  });
-
-  it('does not produce JS', () => {
-    assert(glob.sync(`${outDir}/**/*.js`).length === 0, 'should not have JS');
-  });
-});
-
 describe('Custom hooks', () => {
-
   it('can produce custom return types', () => {
     const outDir = path.resolve(outputRoot, 'custom-hooks');
     fsx.removeSync(outDir);
@@ -243,7 +203,7 @@ describe('Custom hooks', () => {
       bundleName: 'app-strings.json',
       locale: 'en-US',
       outDir,
-      hooks: require.resolve('./custom-hooks.js'),
+      hooks: require.resolve('./resources/custom-hooks.js'),
       module: 'cjs'
     });
 
@@ -262,7 +222,7 @@ describe('Custom hooks', () => {
       bundleName: 'app-strings.json',
       locale: 'en-US',
       outDir,
-      hooks: require.resolve('./custom-hooks-no-def.js'),
+      hooks: require.resolve('./resources/custom-hooks-no-def.js'),
       module: 'cjs'
     });
 
@@ -294,25 +254,17 @@ describe('CJS default export', () => {
     outDir,
     module: 'cjs'
   });
-  build({
-    rootDir,
-    bundleName: 'app-strings-x.json',
-    locale: 'en-US',
-    outDir,
-    module: 'cjs'
-  });
 
   runTestCases((fp) => extractCjsBundle(outDir, fp).default);
 });
 
-describe('AMD default export', () => {
-  const outDir = path.resolve(outputRoot, 'amd');
+describe('AMD', () => {
   /**
    * Read contents of ES6 file and convert to CommonJS export for Node testing
-   * @param {string} filePath
+   * @param {string} filepath
    */
-  function extractBundle(filepath) {
-    const bundleContents = fsx.readFileSync(path.join(outDir, filepath)).toString();
+  function extractBundle(filepath, exportType) {
+    const bundleContents = fsx.readFileSync(filepath).toString();
     // Create a 'define' method in the context which returns the object passed in
     const script = new vm.Script(bundleContents, '');
     const context = vm.createContext({
@@ -328,30 +280,65 @@ describe('AMD default export', () => {
         const ret = arguments[1](...args.fill(exp));
         // AMD may return the value or assign to 'exports'
         const resource = ret || exp;
-        return resource.default;
+        return exportType === 'default' ? resource.default : resource;
       }
     });
     const rb = script.runInContext(context);
     return rb;
   }
 
-  fsx.removeSync(outDir);
-  build({
-    rootDir,
-    bundleName: 'app-strings.json',
-    locale: 'en-US',
-    outDir,
-    module: 'amd'
-  });
-  build({
-    rootDir,
-    bundleName: 'app-strings-x.json',
-    locale: 'en-US',
-    outDir,
-    module: 'amd'
+  function testAmd(exportType) {
+    const outDir = path.resolve(outputRoot, `amd-${exportType}`);
+
+    fsx.removeSync(outDir);
+    build({
+      rootDir,
+      bundleName: 'app-strings.json',
+      locale: 'en-US',
+      outDir,
+      module: 'amd',
+      exportType
+    });
+
+    runTestCases((fp) => extractBundle(path.join(outDir, fp), exportType));
+  }
+
+  describe('default output', () => {
+    testAmd('default');
   });
 
-  runTestCases(extractBundle);
+  describe('named output', () => {
+    testAmd('named');
+  });
+
+  describe('legacy-amd', () => {
+    const outDir = path.resolve(outputRoot, 'legacy-amd');
+
+    beforeAll(() => {
+      fsx.removeSync(outDir);
+      build({
+        rootDir,
+        bundleName: 'app-strings-legacy-keys.json',
+        locale: 'en-US',
+        outDir,
+        module: 'legacy-amd'
+      });
+    });
+
+    it('does not contain ts output', () => {
+      expect(glob.sync(path.join(outDir, '**', '*.ts'))).toEqual([]);
+    });
+
+    it('creates non-standard keys', () => {
+      const bundle = extractBundle(
+        path.join(outDir, 'app-strings-legacy-keys.js'),
+        'named'
+      );
+      expect(bundle['dot.key']()).toEqual('Dot key');
+      expect(bundle['.leading.dot.key']()).toEqual('Leading dot key');
+      expect(bundle['dash-key']()).toEqual('Dash key');
+    });
+  });
 });
 
 describe('Extra locales', () => {
@@ -365,14 +352,6 @@ describe('Extra locales', () => {
   build({
     rootDir,
     bundleName: 'app-strings.json',
-    locale: 'en-US',
-    outDir,
-    module: 'cjs',
-    additionalLocales
-  });
-  build({
-    rootDir,
-    bundleName: 'app-strings-x.json',
     locale: 'en-US',
     outDir,
     module: 'cjs',
@@ -402,3 +381,75 @@ describe('Extra locales', () => {
     assert.deepEqual(supportedLocales, allLocales);
   });
 });
+
+describe('Override files', () => {
+  const outDir = path.resolve(outputRoot, 'override');
+  const extractBundle = (fp) => extractCjsBundle(outDir, fp).default;
+
+  describe('with root overrides', () => {
+    build({
+      rootDir,
+      bundleName: 'app-strings-x.json',
+      locale: 'en-US',
+      override: true,
+      additionalLocales: ['en', 'ru-RU'],
+      outDir,
+      module: 'cjs'
+    });
+
+    it('creates the root override bundle in English', () => {
+      const bundle = extractBundle(`app-strings-x.js`);
+      assert.equal(bundle.pageIntro(), 'root pageIntro');
+      assert.equal(bundle.contentArea({ name: 'Dashboard' }), 'Dashboard root contentArea');
+    });
+
+    it('creates the en override bundle from root', () => {
+      const bundle = extractBundle(`en/app-strings-x.js`);
+      assert.equal(bundle.pageIntro(), 'root pageIntro');
+      assert.equal(bundle.contentArea({ name: 'Dashboard' }), 'Dashboard root contentArea');
+    });
+
+    it('creates the ru-RU override bundle in Russian', () => {
+      const bundle = extractBundle(`ru-RU/app-strings-x.js`);
+      assert.equal(Object.keys(bundle).length, 2, "override should have root keys");
+      assert.equal(
+        bundle.contentArea({ name: 'Dashboard' }), 'Dashboard ru-RU contentArea override');
+      assert.equal(bundle.pageIntro(), 'root pageIntro');
+    });
+
+    it('should not create overrides in any other locales', () => {
+      let exists = false;
+      try {
+        extractBundle('ru/app-strings-x.js');
+        exists = true;
+      } catch (ex) {}
+      try {
+        extractBundle('fr/app-strings-x.js');
+        exists = true;
+      } catch (ex) {}
+      expect(exists).toBeFalsy();
+    });
+  });
+
+  describe('without root overrides', () => {
+    build({
+      rootDir,
+      bundleName: 'extra-app-strings-x.json',
+      override: true,
+      additionalLocales: ['zh-Hans'],
+      outDir,
+      module: 'cjs'
+    });
+
+    it('creates only zh-Hans overrides', () => {
+      const generatedFiles = glob.sync(`${outDir}/**/extra-app-strings-x.js`);
+      expect(generatedFiles.length).toEqual(1);
+
+      const bundle = extractBundle('zh-Hans/extra-app-strings-x.js');
+      assert.equal(Object.keys(bundle).length, 1, "override should not have root keys");
+      assert.equal(
+        bundle.contentArea({ name: 'Dashboard' }), 'Dashboard zh-Hans contentArea override');
+    })
+  })
+
+})

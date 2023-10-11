@@ -4,7 +4,7 @@ import 'ojs/oj-jsx-interfaces';
 import { Component } from 'preact';
 import { ExtendGlobalProps, ObservedGlobalProps, TemplateSlot, PropertyChanged } from 'ojs/ojvcomponent';
 import { DataProvider } from 'ojs/ojdataprovider';
-declare type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'aria-labelledby'> & {
+type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'aria-labelledby'> & {
     data?: DataProvider<Key, Data> | null;
     itemTemplate?: TemplateSlot<ItemTemplateContext<Key, Data>>;
     scrollPolicy?: 'loadAll' | 'loadMoreOnScroll';
@@ -24,8 +24,8 @@ declare type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'aria-labelle
         offsetY?: number;
     }>;
 };
-declare type QuerySelector = keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
-declare type State = {
+type QuerySelector = keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
+type State = {
     renderedData: any;
     positions: any;
     skeletonPositions: any;

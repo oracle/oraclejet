@@ -27,10 +27,9 @@ exports.getDecoratorParamValue = exports.getDecoratorArguments = exports.getDeco
 const ts = __importStar(require("typescript"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
 function getDecorator(node, name) {
-    var _a;
     let rtnDecorator;
     if (ts.canHaveDecorators(node)) {
-        rtnDecorator = (_a = ts.getDecorators(node)) === null || _a === void 0 ? void 0 : _a.find((decorator) => {
+        rtnDecorator = ts.getDecorators(node)?.find((decorator) => {
             return getDecoratorName(decorator) === name;
         });
     }
@@ -38,10 +37,9 @@ function getDecorator(node, name) {
 }
 exports.getDecorator = getDecorator;
 function getDecorators(node, aliasToExport) {
-    var _a;
     const decoratorMap = {};
     if (ts.canHaveDecorators(node)) {
-        (_a = ts.getDecorators(node)) === null || _a === void 0 ? void 0 : _a.forEach((decorator) => {
+        ts.getDecorators(node)?.forEach((decorator) => {
             decoratorMap[getDecoratorName(decorator)] = decorator;
         });
     }
@@ -69,7 +67,7 @@ exports.getDecoratorArguments = getDecoratorArguments;
 function getDecoratorParamValue(decorator, paramName) {
     let param = undefined;
     const args = getDecoratorArguments(decorator);
-    args === null || args === void 0 ? void 0 : args.forEach((arg) => {
+    args?.forEach((arg) => {
         if (ts.isObjectLiteralExpression(arg)) {
             arg.properties.forEach((prop) => {
                 if (ts.isPropertyAssignment(prop)) {

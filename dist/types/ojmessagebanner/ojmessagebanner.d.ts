@@ -1,13 +1,13 @@
 import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
-import { ItemContext } from 'ojs/ojcommontypes';
+import * as ojcommontypes from 'ojs/ojcommontypes';
 import { DataProvider, ItemMetadata } from 'ojs/ojdataprovider';
 import { Action, DynamicTemplateSlots, ExtendGlobalProps } from 'ojs/ojvcomponent';
 import { Component, ComponentChild } from 'preact';
 import 'ojs/ojbutton';
-declare type MessageBannerSeverity = 'error' | 'warning' | 'confirmation' | 'info' | 'none';
-export declare type MessageBannerItem = {
+type MessageBannerSeverity = 'error' | 'warning' | 'confirmation' | 'info' | 'none';
+export type MessageBannerItem = {
     closeAffordance?: 'on' | 'off';
     detail?: string;
     severity?: MessageBannerSeverity;
@@ -15,25 +15,25 @@ export declare type MessageBannerItem = {
     summary?: string;
     timestamp?: string;
 };
-export declare type MessageBannerTemplateContext<K, D> = {
+export type MessageBannerTemplateContext<K, D> = {
     data: D;
     index: number;
     key: K;
     metadata?: ItemMetadata<K>;
 };
-declare type CloseActionDetail<K, D> = {
+type CloseActionDetail<K, D> = {
     data: D;
     key: K;
     metadata?: ItemMetadata<K>;
 };
-declare type Props<Key, Data> = {
+type Props<Key, Data> = {
     data: DataProvider<Key, Data>;
     type?: 'page' | 'section';
-    detailTemplateValue?: string | ((itemContext: ItemContext<Key, Data>) => string | null);
+    detailTemplateValue?: string | ((itemContext: ojcommontypes.ItemContext<Key, Data>) => string | null);
     messageTemplates?: DynamicTemplateSlots<MessageBannerTemplateContext<Key, Data>>;
     onOjClose?: Action<CloseActionDetail<Key, Data>>;
 };
-declare type State<K, D> = {
+type State<K, D> = {
     dataProviderCount: number;
     previousDataProvider: DataProvider<K, D>;
 };

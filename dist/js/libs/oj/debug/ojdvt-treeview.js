@@ -2044,6 +2044,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       // Create the shape object
       this._shape = this._createShapeNode();
+      if (!this._shape) {
+        return;
+      }
       container.addChild(this._shape);
 
       if (!(this.isRootNode() && this._createRootNodeContent())) {
@@ -3421,6 +3424,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       // Create the shape object
       this._shape = this._createShapeNode();
+      if (!this._shape) {
+        return;
+      }
       container.addChild(this._shape);
 
       if (this.hasChildren()) {
@@ -3455,7 +3461,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           }
         }
       }
-
       // WAI-ARIA
       if (this.hasChildren()) this._shape.setAriaRole('group');
       else this._shape.setAriaRole('img');

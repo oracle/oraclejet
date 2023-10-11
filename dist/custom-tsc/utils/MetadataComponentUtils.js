@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isVCompBaseClassFound = exports.getDtMetadataForComponent = exports.getVCompFunctionInfo = exports.getVCompClassInfo = void 0;
+exports.getTranslationBundleInfo = exports.getDtMetadataForComponent = exports.getVCompFunctionInfo = exports.getVCompClassInfo = void 0;
 const ts = __importStar(require("typescript"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
@@ -31,7 +31,6 @@ const TypeUtils = __importStar(require("./MetadataTypeUtils"));
 const FileUtils = __importStar(require("./MetadataFileUtils"));
 const TransformerError_1 = require("./TransformerError");
 function getVCompClassInfo(elementName, classNode, vexportToAlias, checker, compilerOptions, buildOptions) {
-    var _a, _b;
     let rtnInfo = null;
     let className = classNode.name.getText();
     let translationBundleInfo;
@@ -40,7 +39,7 @@ function getVCompClassInfo(elementName, classNode, vexportToAlias, checker, comp
     for (let clause of heritageClauses) {
         for (let typeNode of clause.types) {
             if (isVCompBaseClassFound(typeNode, vexportToAlias, checker)) {
-                if (((_a = typeNode.typeArguments) === null || _a === void 0 ? void 0 : _a[0]) && ts.isTypeReferenceNode((_b = typeNode.typeArguments) === null || _b === void 0 ? void 0 : _b[0])) {
+                if (typeNode.typeArguments?.[0] && ts.isTypeReferenceNode(typeNode.typeArguments?.[0])) {
                     let propsTypeNode = typeNode.typeArguments[0];
                     rtnInfo = {
                         elementName,
@@ -61,11 +60,6 @@ function getVCompClassInfo(elementName, classNode, vexportToAlias, checker, comp
         }
     }
     if (rtnInfo) {
-        if (buildOptions.translationBundleIds) {
-            translationBundleInfo = getTranslationBundleInfo(buildOptions.translationBundleIds, compilerOptions);
-            rtnInfo.additionalImports = translationBundleInfo.additionalImports;
-            rtnInfo.translationBundleMapExpression = translationBundleInfo.bundleMapExpression;
-        }
         packInfo = getPackInfo(elementName, classNode, buildOptions);
         if (packInfo) {
             rtnInfo.packInfo = packInfo;
@@ -75,7 +69,6 @@ function getVCompClassInfo(elementName, classNode, vexportToAlias, checker, comp
 }
 exports.getVCompClassInfo = getVCompClassInfo;
 function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compilerOptions, buildOptions) {
-    var _a, _b, _c;
     let rtnInfo = null;
     let propsInfo = null;
     let isForwarded = false;
@@ -92,14 +85,13 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compi
     let propsTypeNode;
     let translationBundleInfo;
     const findFunctionalComp = function (expression) {
-        var _a, _b, _c, _d, _e;
         if (ts.isFunctionExpression(expression) || ts.isArrowFunction(expression)) {
             componentNode = expression;
             const propsParam = expression.parameters[0];
             if (propsParam) {
                 if (propsParam.type && ts.isTypeReferenceNode(propsParam.type)) {
                     propsTypeNode = propsParam.type;
-                    propsInfo = MetaUtils.getPropsInfo(MetaTypes.VCompType.FUNCTION, (_a = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _a !== void 0 ? _a : elementName, propsTypeNode, vexportToAlias, checker);
+                    propsInfo = MetaUtils.getPropsInfo(MetaTypes.VCompType.FUNCTION, componentName ?? functionName ?? elementName, propsTypeNode, vexportToAlias, checker);
                     if (ts.isObjectBindingPattern(propsParam.name)) {
                         defaultProps = propsParam.name.elements;
                     }
@@ -118,7 +110,7 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compi
                     findFunctionalComp(firstArg);
                     break;
                 default:
-                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNRECOGNIZED_FUNCTION_WRAPPER, TransformerError_1.ExceptionType.WARN_IF_DISABLED, (_b = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _b !== void 0 ? _b : elementName, `Unrecognized '${callName}' wrapper to Preact functional component.`, expression);
+                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNRECOGNIZED_FUNCTION_WRAPPER, TransformerError_1.ExceptionType.WARN_IF_DISABLED, componentName ?? functionName ?? elementName, `Unrecognized '${callName}' wrapper to Preact functional component.`, expression);
                     if (expression.arguments[0]) {
                         findFunctionalComp(expression.arguments[0]);
                     }
@@ -161,7 +153,7 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compi
                             const binExpressionNode = left.parent;
                             if (ts.isBinaryExpression(binExpressionNode) &&
                                 ts.isObjectLiteralExpression(binExpressionNode.right)) {
-                                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.STATIC_DEFAULTPROPS_ON_FUNCTION, TransformerError_1.ExceptionType.WARN_IF_DISABLED, (_c = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _c !== void 0 ? _c : elementName, `Static defaultProps for functional VComponents are not supported.
+                                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.STATIC_DEFAULTPROPS_ON_FUNCTION, TransformerError_1.ExceptionType.WARN_IF_DISABLED, componentName ?? functionName ?? elementName, `Static defaultProps for functional VComponents are not supported.
 As an alternative, specify default values using ES6 destructuring assignment syntax.`, binExpressionNode);
                                 defaultProps = binExpressionNode.right.properties;
                             }
@@ -169,9 +161,9 @@ As an alternative, specify default values using ES6 destructuring assignment syn
                     }
                 }
                 if (functionalCompDecl) {
-                    propsTypeNode = (_d = functionalCompDecl.parameters[0]) === null || _d === void 0 ? void 0 : _d.type;
+                    propsTypeNode = functionalCompDecl.parameters[0]?.type;
                     if (propsTypeNode) {
-                        propsInfo = MetaUtils.getPropsInfo(MetaTypes.VCompType.FUNCTION, (_e = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _e !== void 0 ? _e : elementName, propsTypeNode, vexportToAlias, checker);
+                        propsInfo = MetaUtils.getPropsInfo(MetaTypes.VCompType.FUNCTION, componentName ?? functionName ?? elementName, propsTypeNode, vexportToAlias, checker);
                     }
                 }
             }
@@ -213,13 +205,13 @@ As an alternative, specify default values using ES6 destructuring assignment syn
         if (secondArg) {
             findFunctionalComp(secondArg);
         }
-        regOptions = getRegistrationOptions(callExpression.arguments.length > 2 ? callExpression.arguments[2] : null, (_a = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _a !== void 0 ? _a : elementName, compRegisterCall, secondArg, isForwarded, checker);
+        regOptions = getRegistrationOptions(callExpression.arguments.length > 2 ? callExpression.arguments[2] : null, componentName ?? functionName ?? elementName, compRegisterCall, secondArg, isForwarded, checker);
     }
     if (!propsInfo && propsTypeNode) {
-        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_PROPS_TYPE, TransformerError_1.ExceptionType.THROW_ERROR, (_b = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _b !== void 0 ? _b : elementName, "Invalid Component 'Props' argument type -- must be a Class, Interface, or Type reference.", propsTypeNode);
+        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_PROPS_TYPE, TransformerError_1.ExceptionType.THROW_ERROR, componentName ?? functionName ?? elementName, "Invalid Component 'Props' argument type -- must be a Class, Interface, or Type reference.", propsTypeNode);
     }
     else if (propsInfo) {
-        isTypeDefintionAdjustmentRequired = checkForTypeDefinitionAdjustment((_c = componentName !== null && componentName !== void 0 ? componentName : functionName) !== null && _c !== void 0 ? _c : elementName, functionalCompNode, varDecl, propsInfo);
+        isTypeDefintionAdjustmentRequired = checkForTypeDefinitionAdjustment(componentName ?? functionName ?? elementName, functionalCompNode, varDecl, propsInfo);
     }
     if (compRegisterCall && componentNode) {
         rtnInfo = {
@@ -246,11 +238,6 @@ As an alternative, specify default values using ES6 destructuring assignment syn
         if (regOptions.contexts) {
             rtnInfo.contextsExpression = regOptions.contexts;
         }
-        if (buildOptions.translationBundleIds) {
-            translationBundleInfo = getTranslationBundleInfo(buildOptions.translationBundleIds, compilerOptions);
-            rtnInfo.additionalImports = translationBundleInfo.additionalImports;
-            rtnInfo.translationBundleMapExpression = translationBundleInfo.bundleMapExpression;
-        }
         if (isTypeDefintionAdjustmentRequired) {
             rtnInfo.useComponentPropsForSettableProperties = true;
         }
@@ -263,12 +250,11 @@ As an alternative, specify default values using ES6 destructuring assignment syn
 }
 exports.getVCompFunctionInfo = getVCompFunctionInfo;
 function getDtMetadataForComponent(vcompInfo, metaUtilObj) {
-    var _a;
     const compNode = MetaTypes.isClassInfo(vcompInfo) ? vcompInfo.classNode : vcompInfo.componentNode;
     const vcompInterfaceName = MetaUtils.tagNameToElementInterfaceName(metaUtilObj.fullMetadata['name']);
     metaUtilObj.fullMetadata['implements'] = new Array(vcompInterfaceName);
     let dtMetadata = MetaUtils.getDtMetadata(compNode, MetaTypes.MDFlags.COMP, null, metaUtilObj);
-    checkComponentMetadataConsistency(compNode, (_a = vcompInfo.packInfo) === null || _a === void 0 ? void 0 : _a.isMonoPack(), dtMetadata, metaUtilObj);
+    checkComponentMetadataConsistency(compNode, vcompInfo.packInfo?.isMonoPack(), dtMetadata, metaUtilObj);
     if (dtMetadata['implements']) {
         metaUtilObj.fullMetadata['implements'] = metaUtilObj.fullMetadata['implements'].concat(dtMetadata['implements']);
         delete dtMetadata['implements'];
@@ -276,6 +262,33 @@ function getDtMetadataForComponent(vcompInfo, metaUtilObj) {
     Object.assign(metaUtilObj.fullMetadata, dtMetadata);
 }
 exports.getDtMetadataForComponent = getDtMetadataForComponent;
+function getTranslationBundleInfo(vcompInfo, compilerOptions, buildOptions) {
+    let rtnTranslationBundleInfo;
+    const bundleIds = buildOptions.translationBundleIds ??
+        getTranslationBundleIdsFromDependencies(vcompInfo, buildOptions);
+    if (bundleIds) {
+        let loaderImports;
+        const loaderNames = [];
+        for (let i = 0; i < bundleIds.length; i++) {
+            loaderNames.push(`translationBundle_${i + 1}`);
+        }
+        loaderImports = bundleIds.map((bundle, index) => {
+            return `import ${loaderNames[index]} from '${bundle}/translationBundle';`;
+        });
+        const propsArray = bundleIds.map((bundle, index) => {
+            return ts.factory.createPropertyAssignment(ts.factory.createStringLiteral(bundle, true), ts.factory.createIdentifier(compilerOptions.module === ts.ModuleKind.AMD
+                ? `${loaderNames[index]}.default`
+                : loaderNames[index]));
+        });
+        const bundleMapExpression = ts.factory.createObjectLiteralExpression(ts.factory.createNodeArray(propsArray, false), true);
+        rtnTranslationBundleInfo = {
+            loaderImports,
+            bundleMapExpression
+        };
+    }
+    return rtnTranslationBundleInfo;
+}
+exports.getTranslationBundleInfo = getTranslationBundleInfo;
 function isVCompBaseClassFound(typeRef, vexportToAlias, checker) {
     let rtn = false;
     const baseClassName = TypeUtils.getTypeNameFromTypeReference(typeRef);
@@ -302,14 +315,51 @@ function isVCompBaseClassFound(typeRef, vexportToAlias, checker) {
     }
     return rtn;
 }
-exports.isVCompBaseClassFound = isVCompBaseClassFound;
+function getTranslationBundleIdsFromDependencies(vcompInfo, buildOptions) {
+    let bundleIds;
+    const bundleIdSet = new Set();
+    const visitedDependencies = new Set();
+    if (buildOptions.dependencyPackMap?.size > 0) {
+        if (vcompInfo.packInfo?.dependencies &&
+            vcompInfo.packInfo.dependencies !== MetaTypes.DEPENDENCIES_TOKEN) {
+            const depIds = getTranslationBundleIds(vcompInfo.packInfo.dependencies, buildOptions.dependencyPackMap, visitedDependencies);
+            for (const id of depIds) {
+                bundleIdSet.add(id);
+            }
+        }
+    }
+    if (bundleIdSet.size > 0) {
+        bundleIds = [...bundleIdSet];
+    }
+    return bundleIds;
+}
+function getTranslationBundleIds(dependencies, packMap, visited) {
+    const rtnIds = [];
+    for (const depName of Object.keys(dependencies)) {
+        if (!visited.has(depName)) {
+            visited.add(depName);
+            if (packMap.has(depName)) {
+                const packDep = packMap.get(depName);
+                if (packDep.translationBundle) {
+                    rtnIds.push(packDep.translationBundle);
+                }
+                if (packDep.dependencies && packDep.dependencies !== MetaTypes.DEPENDENCIES_TOKEN) {
+                    const subIds = getTranslationBundleIds(packDep.dependencies, packMap, visited);
+                    for (const id of subIds) {
+                        rtnIds.push(id);
+                    }
+                }
+            }
+        }
+    }
+    return rtnIds;
+}
 function getRegistrationOptions(metadataNode, vcompName, compRegisterCall, fcomp, isForwarded, checker) {
-    var _a;
     const rtnRegisteredOptions = {};
     let methodsInfo;
     let signaturesTypeNode;
     let regMetadata;
-    if (((_a = compRegisterCall.typeArguments) === null || _a === void 0 ? void 0 : _a.length) > 1) {
+    if (compRegisterCall.typeArguments?.length > 1) {
         signaturesTypeNode = compRegisterCall.typeArguments[1];
         if (isForwarded) {
             methodsInfo = {
@@ -388,30 +438,7 @@ function getRegisteredMetadataFromNode(node, checker) {
     }
     return rtnRegMetadata;
 }
-function getTranslationBundleInfo(bundleIds, compilerOptions) {
-    let rtnBundleInfo;
-    let loaderImports;
-    const loaderNames = [];
-    for (let i = 0; i < bundleIds.length; i++) {
-        loaderNames.push(`translationBundle_${i + 1}`);
-    }
-    loaderImports = bundleIds.map((bundle, index) => {
-        return `import ${loaderNames[index]} from '${bundle}/translationBundle';`;
-    });
-    const propsArray = bundleIds.map((bundle, index) => {
-        return ts.factory.createPropertyAssignment(ts.factory.createStringLiteral(bundle, true), ts.factory.createIdentifier(compilerOptions.module === ts.ModuleKind.AMD
-            ? `${loaderNames[index]}.default`
-            : loaderNames[index]));
-    });
-    const bundleMap = ts.factory.createObjectLiteralExpression(ts.factory.createNodeArray(propsArray, false), true);
-    rtnBundleInfo = {
-        additionalImports: loaderImports,
-        bundleMapExpression: bundleMap
-    };
-    return rtnBundleInfo;
-}
 function checkComponentMetadataConsistency(compNode, isInMonoPack, docletTagMetadata, metaUtilObj) {
-    var _a;
     const componentMetadata = metaUtilObj.fullMetadata;
     if (docletTagMetadata['name']) {
         TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_OJMETADATA_NAME, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'@ojmetadata name' annotations are ignored, and should be removed.`, compNode);
@@ -434,7 +461,7 @@ function checkComponentMetadataConsistency(compNode, isInMonoPack, docletTagMeta
             delete docletTagMetadata['license'];
         }
     }
-    const packName = (_a = componentMetadata['pack']) !== null && _a !== void 0 ? _a : docletTagMetadata['pack'];
+    const packName = componentMetadata['pack'] ?? docletTagMetadata['pack'];
     if (packName) {
         if (docletTagMetadata['pack'] && packName !== docletTagMetadata['pack']) {
             TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INCONSISTENT_PACK_PACKNAME, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Inconsistent '@ojmetadata pack "${docletTagMetadata['pack']}"' annotation will be ignored, and should be removed.`, compNode);
@@ -489,7 +516,6 @@ function checkForTypeDefinitionAdjustment(compName, functionalCompNode, varDecl,
     return rtnNeedsAdjustment;
 }
 function getPackInfo(elementName, vcompNode, buildOptions) {
-    var _a;
     let rtnPackInfo = null;
     let node = vcompNode;
     while (!ts.isSourceFile(node)) {
@@ -498,9 +524,9 @@ function getPackInfo(elementName, vcompNode, buildOptions) {
     const filename = node.fileName;
     const parentDirPath = FileUtils.getParentDirPath(filename);
     if (parentDirPath) {
-        if ((_a = buildOptions.parentDirToPackInfo) === null || _a === void 0 ? void 0 : _a.hasOwnProperty(parentDirPath)) {
+        if (buildOptions.parentDirToPackInfo?.hasOwnProperty(parentDirPath)) {
             const vcompPack = buildOptions.parentDirToPackInfo[parentDirPath];
-            if (vcompPack === null || vcompPack === void 0 ? void 0 : vcompPack.isVCompInPack(elementName)) {
+            if (vcompPack?.isVCompInPack(elementName)) {
                 rtnPackInfo = vcompPack;
             }
         }

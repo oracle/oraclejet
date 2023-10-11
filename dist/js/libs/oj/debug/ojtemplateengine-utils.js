@@ -5,13 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'ojs/ojmetadatautils', 'ojs/ojlogger'], function (exports, preact, oj, ojcustomelementUtils, ojcustomelementRegistry, ojmetadatautils, Logger) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'ojs/ojmetadatautils', 'ojs/ojlogger'], function (exports, jsxRuntime, preact, oj, ojcustomelementUtils, ojcustomelementRegistry, ojmetadatautils, Logger) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
     const ROW = Symbol('row');
     class PreactTemplate {
-        static renderNodes(vnode, row) {
+        static renderNodes(componentElement, vnode, row, provided) {
             const parentStub = row.parentStub;
             let retrieveNodes = () => Array.from(parentStub.childNodes);
             if (row.nodes) {
@@ -24,15 +24,22 @@ define(['exports', 'preact', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'oj
                 }
             };
             try {
-                preact.render(vnode, parentStub);
+                const contextWrappers = provided
+                    ? Array.from(provided).reduce((acc, [context, value]) => {
+                        return jsxRuntime.jsx(context.Provider, { value: value, children: acc });
+                    }, vnode)
+                    : vnode;
+                preact.render(contextWrappers, parentStub);
             }
             finally {
                 console.error = oldConsole;
             }
+            let textNodesOnly = true;
             const nodes = retrieveNodes();
             nodes.forEach((node) => {
                 if (node.setAttribute) {
                     node.setAttribute('data-oj-vdom-template-root', '');
+                    textNodesOnly = false;
                 }
                 else {
                     node['_oj_vdom_template_root'] = true;
@@ -42,29 +49,38 @@ define(['exports', 'preact', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'oj
             });
             row.vnode = vnode;
             row.nodes = nodes;
+            if (textNodesOnly) {
+                componentElement.setAttribute('data-oj-vdom-template-text-roots', '');
+            }
         }
         static clean(node) {
-            var _a;
             const row = node[ROW];
             if (!row.cleaned) {
                 row.cleaned = true;
                 const reconnectNodes = PreactTemplate._getInsertNodesFunction(row.nodes);
                 preact.render(null, row.parentStub);
                 reconnectNodes(row.nodes);
-                (_a = row.computedVNode) === null || _a === void 0 ? void 0 : _a.dispose();
+                row.computedVNode?.dispose();
                 const template = row.template;
                 const index = template._cachedRows.indexOf(row);
                 template._cachedRows.splice(index, 1);
             }
         }
-        static findTemplateRoots(node) {
+        static findTemplateRoots(node, componentElement) {
             let vdomTemplateRoots = node && node.querySelectorAll
                 ? Array.from(node.querySelectorAll('[data-oj-vdom-template-root=""]'))
                 : [];
             if (node && node.hasAttribute && node.hasAttribute('data-oj-vdom-template-root')) {
                 vdomTemplateRoots.push(node);
             }
-            if (vdomTemplateRoots.length === 0) {
+            let findTextNodes = componentElement?.hasAttribute('data-oj-vdom-template-text-roots');
+            if (!findTextNodes) {
+                let containTextNodesOnly = node && node.querySelectorAll
+                    ? node.querySelectorAll('[data-oj-vdom-template-text-roots=""]')
+                    : [];
+                findTextNodes = containTextNodesOnly.length > 0;
+            }
+            if (findTextNodes) {
                 const treeWalker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
                 let currentNode = treeWalker.currentNode;
                 while (currentNode) {
@@ -189,7 +205,7 @@ define(['exports', 'preact', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'oj
     }
 
     class TemplateEngineUtils {
-        static getContext(bindingProvider, componentElement, templateElement, properties, alias, templateAlias) {
+        static getContext(bindingProvider, componentElement, templateElement, properties, alias, templateAlias, provided) {
             if (bindingProvider) {
                 let bindingContext = templateElement.__ojBindingContext
                     ? templateElement.__ojBindingContext
@@ -200,7 +216,15 @@ define(['exports', 'preact', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'oj
                         '. Using binding context for element instead.');
                     bindingContext = bindingProvider.__ContextFor(componentElement);
                 }
-                return bindingProvider.__ExtendBindingContext(bindingContext, properties, alias, templateAlias, componentElement);
+                const extendedBindingContext = bindingProvider.__ExtendBindingContext(bindingContext, properties, alias, templateAlias, componentElement);
+                if (extendedBindingContext['$provided'] && provided) {
+                    const merged = new Map([...extendedBindingContext['$provided'], ...provided]);
+                    extendedBindingContext['$provided'] = merged;
+                }
+                else if (provided) {
+                    extendedBindingContext['$provided'] = provided;
+                }
+                return extendedBindingContext;
             }
             const context = {
                 $current: properties

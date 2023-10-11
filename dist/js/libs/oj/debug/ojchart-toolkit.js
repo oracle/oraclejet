@@ -2755,7 +2755,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   const DvtChartStyleUtils = {
     /** @const */
     MARKER_DATA_LABEL_GAP: 4, // space separating the data label from the marker
-
+    SERIES_PATTERN_BG_COLOR: '#FFFFFF',
     /**
      * Returns the series effect for the specified chart.
      * @param {Chart} chart
@@ -3687,15 +3687,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       var styleDefaults = chart.getOptions().styleDefaults;
       var labelStyleArray = [styleDefaults._dataLabelStyle, styleDefaults.dataLabelStyle];
       var contrastingColor;
+      const seriesType = DvtChartDataUtils.getSeriesType(chart, seriesIndex);
       if (
-        dataColor &&
-        (DvtChartDataUtils.getSeriesType(chart, seriesIndex) == 'bar' ||
-          DvtChartTypeUtils.isBubble(chart)) &&
-        (position == 'center' ||
-          position == 'inBottom' ||
-          position == 'inTop' ||
-          position == 'inRight' ||
-          position == 'inLeft')
+        (dataColor &&
+          (seriesType == 'bar' || DvtChartTypeUtils.isBubble(chart)) &&
+          (position == 'center' ||
+            position == 'inBottom' ||
+            position == 'inTop' ||
+            position == 'inRight' ||
+            position == 'inLeft')) ||
+        (seriesType == 'area' &&
+          !DvtChartDataUtils.isRangeSeries(chart, seriesIndex) &&
+          position == 'bottom' &&
+          DvtChartTypeUtils.isVertical(chart)) // issue identified by JET-56558, JET-59519, JET-59520
       ) {
         contrastingColor =
           DvtChartStyleUtils.getPattern(chart, seriesIndex, groupIndex, itemIndex) != null
@@ -10734,22 +10738,25 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
             }
           }
 
-          var nestedDataCount = DvtChartDataUtils.getNestedDataItemCount(
-            chart,
-            seriesIndex,
-            groupIndex
-          );
-          if (nestedDataCount > 0) {
-            for (var itemIndex = 0; itemIndex < nestedDataCount; itemIndex++) {
-              var item = DvtChartDataUtils.getNestedDataItem(
-                chart,
-                seriesIndex,
-                groupIndex,
-                itemIndex
-              );
-              var isItemNumeric = typeof item === 'number';
-              maxValue = isItemNumeric ? Math.max(maxValue, item) : Math.max(maxValue, item.value);
-              minValue = isItemNumeric ? Math.min(minValue, item) : Math.min(minValue, item.value);
+          // Only include nested item when type is not x.
+          if (type != 'x') {
+            var nestedDataCount = DvtChartDataUtils.getNestedDataItemCount(
+              chart,
+              seriesIndex,
+              groupIndex
+            );
+            if (nestedDataCount > 0) {
+              for (var itemIndex = 0; itemIndex < nestedDataCount; itemIndex++) {
+                var item = DvtChartDataUtils.getNestedDataItem(
+                  chart,
+                  seriesIndex,
+                  groupIndex,
+                  itemIndex
+                );
+                var isItemNumeric = typeof item === 'number';
+                maxValue = isItemNumeric ? Math.max(maxValue, item) : Math.max(maxValue, item.value);
+                minValue = isItemNumeric ? Math.min(minValue, item) : Math.min(minValue, item.value);
+              }
             }
           }
         }
@@ -11771,13 +11778,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
           2
         );
         var bbox = new dvt.Path(this.getCtx(), cmd);
-        bbox.setSolidFill('#FFFFFF', 0.9);
+        bbox.setSolidFill(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR, 0.9);
         pos = pos.translate(displacement * textDim.h, -displacement * textDim.w);
         bbox.setMatrix(pos);
         this.addChild(bbox);
       }
       var labelColor = isPatternBg
-        ? '#000000'
+        ? dvt.ColorUtils.getContrastingTextColor(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR)
         : barBounds.containsPoint(sliceBounds.x, sliceBounds.y + (sliceBounds.h - textDim.w) / 2)
         ? dvt.ColorUtils.getContrastingTextColor(this._dataColor)
         : dvt.ColorUtils.getContrastingTextColor(this._backgroundColor);
@@ -13098,13 +13105,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
           2
         );
         var bbox = new dvt.Path(this.getCtx(), cmd);
-        bbox.setSolidFill('#FFFFFF', 0.9);
+        bbox.setSolidFill(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR, 0.9);
         pos = pos.translate(-0.5 * textDim.w, -0.5 * textDim.h);
         bbox.setMatrix(pos);
         this.addChild(bbox);
       }
       var labelColor = isPatternBg
-        ? '#000000'
+        ? dvt.ColorUtils.getContrastingTextColor(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR)
         : sliceBounds.containsPoint(sliceBounds.x + (sliceBounds.w - textDim.w) / 2, sliceBounds.y)
         ? dvt.ColorUtils.getContrastingTextColor(this._dataColor)
         : dvt.ColorUtils.getContrastingTextColor(null);
@@ -14737,10 +14744,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       var pieChart = slice.getPieChart();
 
       var context = pieChart.getCtx();
-      var sliceLabel = isInside ? new dvt.OutputText(context) : new dvt.MultilineText(context);
+      var isOtherSlice = slice.getId().series === DvtChartPieUtils.OTHER_ID;
+      var hasPattern =
+        DvtChartStyleUtils.getPattern(pieChart.chart, slice.getSeriesIndex(), 0) != null ||
+        (isOtherSlice && DvtChartStyleUtils.getSeriesEffect(pieChart) == 'pattern');
+      var needsPatternBg = isInside && hasPattern;
+      var sliceLabel;
+      if (needsPatternBg) {
+        sliceLabel = new dvt.BackgroundOutputText(context);
+      } else {
+        sliceLabel = isInside ? new dvt.OutputText(context) : new dvt.MultilineText(context);
+      }
 
       // Apply the label color- read all applicable styles and merge them.
-      var contrastColor = isInside
+      var contrastColor = needsPatternBg
+        ? dvt.ColorUtils.getContrastingTextColor(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR)
+        : isInside
         ? dvt.ColorUtils.getContrastingTextColor(slice.getFillColor())
         : dvt.ColorUtils.getContrastingTextColor(dvt.ColorUtils.getColorFromName('black'));
       var contrastColorStyle = new dvt.CSSStyle({ color: contrastColor });
@@ -14757,6 +14776,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
       if (isHighContrast) {
         labelStyleArray.push(contrastColorStyle);
+      }
+      if (needsPatternBg) {
+        var backgroundColorStyle = new dvt.CSSStyle({
+          'background-color': 'rgba(255, 255, 255, 0.9)',
+          'border-radius': '2px'
+        });
+        labelStyleArray.push(backgroundColorStyle);
       }
       var style = dvt.CSSStyle.mergeStyles(labelStyleArray);
       sliceLabel.setCSSStyle(style);
@@ -25361,7 +25387,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         // TODO: change to formal location for displayed data
         chart._currentMarkers = [];
         chart._currentAreas = [];
-
         DvtChartPlotAreaRenderer._renderBackgroundObjs(chart, container, availSpace);
         DvtChartPlotAreaRenderer._renderTicks(chart, container, availSpace);
         DvtChartPlotAreaRenderer._renderForegroundObjs(chart, container, availSpace);
@@ -25406,8 +25431,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         var areaContainer = new dvt.Container(chart.getCtx());
         container.addChild(areaContainer);
         chart.__setAreaContainer(areaContainer);
+        const comboSeriesOrder = options['comboSeriesOrder'];
 
-        if (DvtChartDataUtils.hasAreaSeries(chart))
+        if (
+          DvtChartDataUtils.hasAreaSeries(chart) &&
+          (comboSeriesOrder === 'seriesType' || !DvtChartTypeUtils.isCombo(chart))
+        )
           DvtChartPlotAreaRenderer._renderAreas(chart, areaContainer, availSpace, false);
       }
     },
@@ -25724,8 +25753,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       // the axis lines.
       var options = chart.getOptions();
 
-      // Get container for clipping
-      var clipGroup = DvtChartPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
+      const hasLayering = options['comboSeriesOrder'] === 'data' && DvtChartTypeUtils.isCombo(chart);
+      var clipGroup = hasLayering
+        ? null
+        : DvtChartPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
 
       // Render axis lines after the clipGroup
       DvtChartPlotAreaRenderer._renderAxisLines(chart, container, availSpace);
@@ -25743,21 +25774,43 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
       // Data Objects for BLAC
       if (DvtChartTypeUtils.isBLAC(chart)) {
-        // Areas were drawn in the background. Draw lineWithAreas, bars, and lines
-        if (DvtChartDataUtils.hasLineWithAreaSeries(chart))
-          DvtChartPlotAreaRenderer._renderAreas(chart, container, availSpace, true);
+        const seriesCount = options['series'].length;
+        if (hasLayering) {
+         for(let index = seriesCount - 1; index >= 0; index--){
+            const seriesType = DvtChartDataUtils.getSeriesType(chart, index);
+            if (seriesType !== 'area' && seriesType !== 'lineWithArea')
+              clipGroup = DvtChartPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
 
-        if (DvtChartDataUtils.hasBarSeries(chart))
-          DvtChartPlotAreaRenderer._renderBars(chart, clipGroup, availSpace);
+            if (seriesType === 'area')
+              DvtChartPlotAreaRenderer._renderAreas(chart, container, availSpace, false, index);
+            else if (seriesType === 'lineWithArea')
+              DvtChartPlotAreaRenderer._renderAreas(chart, container, availSpace, true, index);
+            else if (seriesType === 'bar')
+              DvtChartPlotAreaRenderer._renderBars(chart, clipGroup, availSpace, index);
+            else if (seriesType === 'stock')
+              DvtChartPlotAreaRenderer._renderStock(chart, clipGroup, index);
+            else if (seriesType === 'boxPlot')
+              DvtChartPlotAreaRenderer._renderBoxPlot(chart, clipGroup, availSpace, index);
+            else if (seriesType === 'line')
+              DvtChartPlotAreaRenderer._renderLines(chart, container, clipGroup, availSpace, index);
+         }
+        } else {
+          // Areas were drawn in the background. Draw lineWithAreas, bars, and lines
+          if (DvtChartDataUtils.hasLineWithAreaSeries(chart))
+            DvtChartPlotAreaRenderer._renderAreas(chart, container, availSpace, true);
 
-        if (DvtChartDataUtils.hasCandlestickSeries(chart))
-          DvtChartPlotAreaRenderer._renderStock(chart, clipGroup);
+          if (DvtChartDataUtils.hasBarSeries(chart))
+            DvtChartPlotAreaRenderer._renderBars(chart, clipGroup, availSpace);
 
-        if (DvtChartDataUtils.hasBoxPlotSeries(chart))
-          DvtChartPlotAreaRenderer._renderBoxPlot(chart, clipGroup, availSpace);
+          if (DvtChartDataUtils.hasCandlestickSeries(chart))
+            DvtChartPlotAreaRenderer._renderStock(chart, clipGroup);
 
-        if (DvtChartDataUtils.hasLineSeries(chart))
-          DvtChartPlotAreaRenderer._renderLines(chart, container, clipGroup, availSpace);
+          if (DvtChartDataUtils.hasBoxPlotSeries(chart))
+            DvtChartPlotAreaRenderer._renderBoxPlot(chart, clipGroup, availSpace);
+
+          if (DvtChartDataUtils.hasLineSeries(chart))
+            DvtChartPlotAreaRenderer._renderLines(chart, container, clipGroup, availSpace);
+        }
       } else if (DvtChartTypeUtils.isScatterBubble(chart)) {
         DvtChartPlotAreaRenderer._renderScatterBubble(chart, container, clipGroup, true, availSpace);
       }
@@ -26819,7 +26872,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @param {dvt.Rectangle} availSpace
      * @private
      */
-    _renderBars: (chart, container, availSpace) => {
+    _renderBars: (chart, container, availSpace, barSeriesIndex) => {
       var bHoriz = DvtChartTypeUtils.isHorizontal(chart);
       var bPolar = DvtChartTypeUtils.isPolar(chart);
       var bStock = DvtChartTypeUtils.isStock(chart);
@@ -26844,7 +26897,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         seriesIndex < DvtChartDataUtils.getSeriesCount(chart);
         seriesIndex++
       ) {
-        if (DvtChartDataUtils.getSeriesType(chart, seriesIndex) != 'bar') continue;
+        if (
+          DvtChartDataUtils.getSeriesType(chart, seriesIndex) != 'bar' ||
+          (barSeriesIndex !== undefined && barSeriesIndex !== seriesIndex)
+        )
+          continue;
 
         DvtChartPlotAreaRenderer._filterPointsForSeries(chart, seriesIndex);
 
@@ -27151,7 +27208,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @param {dvt.Rectangle} availSpace
      * @private
      */
-    _renderBoxPlot: (chart, container, availSpace) => {
+    _renderBoxPlot: (chart, container, availSpace, boxPlotSeriesIndex) => {
       var xAxis = chart.xAxis;
 
       for (
@@ -27159,6 +27216,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         seriesIndex < DvtChartDataUtils.getSeriesCount(chart);
         seriesIndex++
       ) {
+        if (boxPlotSeriesIndex !== undefined && boxPlotSeriesIndex !== seriesIndex) continue;
         var minMaxGroupIndex = DvtChartAxisUtils.getViewportMinMaxGroupIdx(chart, seriesIndex);
 
         for (
@@ -27318,7 +27376,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @param {dvt.Rectangle} availSpace
      * @private
      */
-    _renderLines: (chart, container, clipGroup, availSpace) => {
+    _renderLines: (chart, container, clipGroup, availSpace, lineSeriesIndex) => {
       // Find all series that are lines
       var lineSeries = [],
         seriesIndex;
@@ -27327,7 +27385,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         // Skip the series if it shouldn't be rendered or if the series type is not line.
         if (
           !DvtChartDataUtils.isSeriesRendered(chart, seriesIndex) ||
-          DvtChartDataUtils.getSeriesType(chart, seriesIndex) != 'line'
+          DvtChartDataUtils.getSeriesType(chart, seriesIndex) != 'line' ||
+          (lineSeriesIndex !== undefined && lineSeriesIndex !== seriesIndex)
         )
           continue;
         else lineSeries.push(seriesIndex);
@@ -27363,7 +27422,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @param {boolean} isLineWithArea True if rendering lineWithArea.
      * @private
      */
-    _renderAreas: (chart, container, availSpace, isLineWithArea) => {
+    _renderAreas: (chart, container, availSpace, isLineWithArea, areaSeriesIndex) => {
       // Find all series that are areas
       var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
       var seriesType = isLineWithArea ? 'lineWithArea' : 'area';
@@ -27374,7 +27433,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         // Skip the series if it shouldn't be rendered or if the series type is not area.
         if (
           !DvtChartDataUtils.isSeriesRendered(chart, seriesIndex) ||
-          DvtChartDataUtils.getSeriesType(chart, seriesIndex) != seriesType
+          DvtChartDataUtils.getSeriesType(chart, seriesIndex) != seriesType ||
+          (areaSeriesIndex !== undefined && areaSeriesIndex !== seriesIndex)
         )
           continue;
 
@@ -29471,6 +29531,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       legendOptions['dnd'] = options['dnd'];
       legendOptions['_dropColor'] = options['_dropColor'];
       legendOptions['translations'] = options['translations'];
+
+      // Moving over to non deprecated api
+      legendOptions['sectionTitleStyle'] = {
+        ...legendOptions.sectionTitleStyle,
+        ...legendOptions.titleStyle
+      };
+      legendOptions['sectionTitleHalign'] =
+        legendOptions['titleHalign'] || legendOptions['sectionTitleHalign'];
+      delete legendOptions['titleStyle'];
+      delete legendOptions['titleHalign'];
 
       // Evaluate the automatic position
       // Position the legend to occupy the larger dimension so that the plot area is more square

@@ -21,8 +21,8 @@ export declare class GenericEvent implements Event {
     stopPropagation: () => void;
     deepPath: () => EventTarget[];
     composedPath: () => EventTarget[];
-    readonly AT_TARGET: number;
-    readonly BUBBLING_PHASE: number;
-    readonly CAPTURING_PHASE: number;
-    readonly NONE: number;
+    readonly NONE: 0;
+    readonly CAPTURING_PHASE: 1;
+    readonly AT_TARGET: 2;
+    readonly BUBBLING_PHASE: 3;
 }

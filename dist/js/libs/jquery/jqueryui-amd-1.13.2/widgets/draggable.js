@@ -31,7 +31,7 @@
 			"../version",
 			"../widget"
 		], factory );
-	} else if (typeof module === 'object' && module.exports) {
+  } else if (typeof module === 'object' && module.exports) {
     require("./mouse");
     require("../data");
     require("../plugin");
@@ -40,7 +40,7 @@
     require("../scroll-parent");
     require("../version");
     require("../widget");
-		module.exports = factory( require( "jquery" ) );
+    module.exports = factory( require( "jquery" ) );
 	} else {
 
 		// Browser globals

@@ -1,10 +1,10 @@
-import CommonTypes = require('../ojcommontypes');
+import ojcommontypes = require('../ojcommontypes');
 import { DataProvider } from '../ojdataprovider';
 import { editableValue, editableValueEventMap, editableValueSettableProperties } from '../ojeditablevalue';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojSelectBase<V, D, SP extends ojSelectBaseSettableProperties<V, D>> extends editableValue<V, SP> {
     data: DataProvider<V, D>;
-    itemText: keyof D | ((itemContext: CommonTypes.ItemContext<V, D>) => string);
+    itemText: keyof D | ((itemContext: ojcommontypes.ItemContext<V, D>) => string);
     labelledBy: string | null;
     placeholder: string;
     readonly: boolean;
@@ -99,7 +99,7 @@ export interface ojSelectBaseEventMap<V, D, SP extends ojSelectBaseSettablePrope
 }
 export interface ojSelectBaseSettableProperties<V, D> extends editableValueSettableProperties<V> {
     data: DataProvider<V, D>;
-    itemText: keyof D | ((itemContext: CommonTypes.ItemContext<V, D>) => string);
+    itemText: keyof D | ((itemContext: ojcommontypes.ItemContext<V, D>) => string);
     labelledBy: string | null;
     placeholder: string;
     readonly: boolean;

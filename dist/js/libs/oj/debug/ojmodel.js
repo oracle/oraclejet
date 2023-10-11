@@ -8521,7 +8521,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    * @export
    */
   OAuth.prototype.setAccessTokenResponse = function (data) {
-    this.accessTokenResopnse = OAuth._initAccessToken(this.accessTokenResponse, data);
+    this.accessTokenResponse = OAuth._initAccessToken(this.accessTokenResponse, data);
   };
 
   /**

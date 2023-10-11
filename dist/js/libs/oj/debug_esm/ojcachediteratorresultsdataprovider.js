@@ -168,21 +168,20 @@ class CachedIteratorResultsDataProvider {
             _b);
         this.CacheAsyncIterator = class {
             constructor(_parent, asyncIterator, params, cache) {
-                var _b, _c;
                 this._parent = _parent;
                 this.asyncIterator = asyncIterator;
                 this.params = params;
                 this.cache = cache;
                 this._cachedOffset = 0;
                 this._needLocalRowCount =
-                    ((_b = _parent.options) === null || _b === void 0 ? void 0 : _b.includeFilteredRowCount) === 'enabled' &&
-                        (params === null || params === void 0 ? void 0 : params.includeFilteredRowCount) === 'enabled' &&
-                        ((_c = _parent._baseFetchFirstCapability) === null || _c === void 0 ? void 0 : _c.totalFilteredRowCount) !== 'exact';
+                    _parent.options?.includeFilteredRowCount === 'enabled' &&
+                        params?.includeFilteredRowCount === 'enabled' &&
+                        _parent._baseFetchFirstCapability?.totalFilteredRowCount !== 'exact';
             }
             ['next']() {
                 const params = this.params;
-                const size = (params === null || params === void 0 ? void 0 : params.size) ? params.size : -1;
-                const signal = params === null || params === void 0 ? void 0 : params.signal;
+                const size = params?.size ? params.size : -1;
+                const signal = params?.signal;
                 if (signal && signal.aborted) {
                     const reason = signal.reason;
                     return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -252,8 +251,7 @@ class CachedIteratorResultsDataProvider {
                 });
             }
             _getFinalResult(result, totalFilteredRowCount) {
-                var _b;
-                return ((_b = result === null || result === void 0 ? void 0 : result.data) === null || _b === void 0 ? void 0 : _b.length) > 0
+                return result?.data?.length > 0
                     ? new this._parent.CacheAsyncIteratorYieldResult(result, totalFilteredRowCount)
                     : new this._parent.CacheAsyncIteratorReturnResult(result, totalFilteredRowCount);
             }
@@ -367,7 +365,7 @@ class CachedIteratorResultsDataProvider {
     fetchByKeys(params) {
         const finalResults = new Map();
         const neededKeys = new Set();
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -409,7 +407,7 @@ class CachedIteratorResultsDataProvider {
     }
     fetchByOffset(params) {
         const size = params.size ? params.size : CachedIteratorResultsDataProvider._DEFAULT_SIZE;
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -456,7 +454,7 @@ class CachedIteratorResultsDataProvider {
     getCapability(capabilityName) {
         const capability = this.dataProvider.getCapability(capabilityName);
         if (capabilityName === 'fetchCapability') {
-            return { attributeFilter: capability === null || capability === void 0 ? void 0 : capability.attributeFilter, caching: 'visitedByCurrentIterator' };
+            return { attributeFilter: capability?.attributeFilter, caching: 'visitedByCurrentIterator' };
         }
         return capability;
     }

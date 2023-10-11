@@ -19,7 +19,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
    *
    * @ojtsmodule
    *
-   * @ojdeprecated {since: '7.0.0', description: 'Use ojRefresher instead.'}
+   * @ojdeprecated {since: '7.0.0', value:['oj-refresher']}
    * @classdesc
    * This class provides functions for adding pull to refresh functionality to any container element which hosts refreshable content.
    * By default this class will generate a default panel, which consists of a refresh icon, a primary text, and a secondary text.  The application
@@ -65,7 +65,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
    * @param {Element=} options.refresherElement the refresher component that the PullToRefreshUtils are hooked into. If specified, the busyState will be attached to the refresher element. Otherwise, will use the scroller elmeent instead.
    * @return {void}
    *
-   * @see #tearDownPullToRefresh
+   * @see #.tearDownPullToRefresh
    */
   PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options) {
     var outer;
@@ -432,7 +432,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
    * @param {Element} element the DOM element that hosts the content to refresh
    * @return {void}
    *
-   * @see #setupPullToRefresh
+   * @see #.setupPullToRefresh
    */
   PullToRefreshUtils.tearDownPullToRefresh = function (element) {
     // remove the content panel

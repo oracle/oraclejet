@@ -53,6 +53,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         section['expanded'] == false ||
         (options.expanded && options.expanded.has(section.id) == false)
       );
+    },
+
+    isEmpty: (inputObject) => {
+      return inputObject ? Object.keys(inputObject).length === 0 : true;
     }
   };
 
@@ -84,7 +88,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._displayables = displayables;
       this._item = item;
       this._category = DvtLegendUtils.getItemCategory(this._item, this._legend); // section title is not category
-      this._id = this._category ? this._category : item['title'];
+      this._id = this._category ? this._category : item['title'] ? item['title'] : item.id; // checking id last mainly due to backwards compatibility issues
       this._drillable = drillable;
       this._tooltip = tooltip;
       this._datatip = datatip;
@@ -644,7 +648,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         _sectionTitleStyle: new dvt.CSSStyle(
           dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11 + 'color: #737373;'
         ),
-        titleHalign: 'start',
+        titleHalign: '',
         hiddenCategories: [],
         hideAndShowBehavior: 'off',
         hoverBehavior: 'none',
@@ -1334,9 +1338,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Create the title object and add to legend
       var title = new dvt.OutputText(context, titleStr, availSpace.x, availSpace.y);
       var titleStyle = options['titleStyle'];
+      const isEmptySectionTitleStyle = DvtLegendUtils.isEmpty(options.sectionTitleStyle);
+
+      if (!isEmptySectionTitleStyle) titleStyle = new dvt.CSSStyle(options.sectionTitleStyle); // titleStyle is deprecated
 
       if (section) {
         var defaultStyle = options['_sectionTitleStyle'].clone();
+        if (!isEmptySectionTitleStyle) defaultStyle = defaultStyle.merge(titleStyle);
         titleStyle = section['titleStyle']
           ? defaultStyle.merge(new dvt.CSSStyle(section['titleStyle']))
           : defaultStyle;
@@ -1366,7 +1374,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           if (isAligned) {
             // title alignment will be deferred until we know the total width of the legend content
             var titleHalign =
-              section && section['titleHalign'] ? section['titleHalign'] : options['titleHalign'];
+              section && section['titleHalign']
+                ? section['titleHalign']
+                : options['titleHalign'] || options.sectionTitleHalign;
             legend.__registerTitle({ text: title, halign: titleHalign });
           }
         } else container.removeChild(title);
@@ -2646,6 +2656,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     _processData(sections) {
       let hasCollapsible = false;
+      let hasDrillableItem = false;
       if (!sections || sections.length <= 0) return;
 
       var hiddenCategories = this.getOptions()['hiddenCategories'];
@@ -2662,6 +2673,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         // Transfer the category visibility properties to the hiddenCategories.
         for (var j = 0; j < items.length; j++) {
           var item = items[j];
+          hasDrillableItem = hasDrillableItem || item.drilling === 'on';
           var itemCategory = DvtLegendUtils.getItemCategory(item, this);
 
           if (item['categoryVisibility'] == 'hidden' && hiddenCategories.indexOf(itemCategory) < 0)
@@ -2671,6 +2683,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         }
       }
       this.getCache().putToCache('hasCollapsible', hasCollapsible);
+      this.getCache().putToCache('hasDrillableItem', hasDrillableItem);
     }
 
     /**
@@ -2681,11 +2694,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         var options = this.getOptions();
         var translations = options.translations;
         var hideAndShow = options['hideAndShowBehavior'];
+        const hasDrillableItem =
+          options['drilling'] === 'on' || this.getCache().getFromCache('hasDrillableItem');
         const hasCollapsible = this.getCache().getFromCache('hasCollapsible');
         if (
           (hideAndShow != 'off' && hideAndShow != 'none') ||
           options['hoverBehavior'] == 'dim' ||
-          hasCollapsible
+          hasCollapsible ||
+          hasDrillableItem
         ) {
           this.getCtx().setAriaRole('application');
           this.getCtx().setAriaLabel(

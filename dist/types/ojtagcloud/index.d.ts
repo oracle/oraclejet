@@ -28,6 +28,7 @@ export interface ojTagCloud<K, D extends ojTagCloud.Item<K> | any> extends dvtBa
         }));
     };
     touchResponse?: 'touchStart' | 'auto';
+    trackResize: 'on' | 'off';
     translations: {
         accessibleContainsControls?: string;
         componentName?: string;
@@ -86,11 +87,8 @@ export namespace ojTagCloud {
     type tooltipChanged<K, D extends Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["tooltip"]>;
     // tslint:disable-next-line interface-over-type-literal
     type touchResponseChanged<K, D extends Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["touchResponse"]>;
-    //------------------------------------------------------------
-    // Start: generated events for inherited properties
-    //------------------------------------------------------------
     // tslint:disable-next-line interface-over-type-literal
-    type trackResizeChanged<K, D extends Item<K> | any> = dvtBaseComponent.trackResizeChanged<ojTagCloudSettableProperties<K, D>>;
+    type trackResizeChanged<K, D extends Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["trackResize"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         categories?: string[];
@@ -181,6 +179,7 @@ export interface ojTagCloudSettableProperties<K, D extends ojTagCloud.Item<K> | 
         }));
     };
     touchResponse?: 'touchStart' | 'auto';
+    trackResize: 'on' | 'off';
     translations: {
         accessibleContainsControls?: string;
         componentName?: string;
@@ -294,11 +293,8 @@ export namespace TagCloudElement {
     type tooltipChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["tooltip"]>;
     // tslint:disable-next-line interface-over-type-literal
     type touchResponseChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["touchResponse"]>;
-    //------------------------------------------------------------
-    // Start: generated events for inherited properties
-    //------------------------------------------------------------
     // tslint:disable-next-line interface-over-type-literal
-    type trackResizeChanged<K, D extends ojTagCloud.Item<K> | any> = dvtBaseComponent.trackResizeChanged<ojTagCloudSettableProperties<K, D>>;
+    type trackResizeChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["trackResize"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         categories?: string[];

@@ -91,14 +91,14 @@ function processRegisteredMethodsInfo(methodsInfo, metaUtilObj) {
             dtMethods[methodName] = {};
             const rtMethod = rtMethods[methodName];
             const dtMethod = dtMethods[methodName];
-            const regMethodMD = regMetadata === null || regMetadata === void 0 ? void 0 : regMetadata[methodName];
+            const regMethodMD = regMetadata?.[methodName];
             if (regMethodMD) {
                 for (const regKey in regMethodMD) {
                     switch (regKey) {
                         case 'params':
                             break;
                         case 'extension':
-                            dtMethod.extension = Object.assign({}, regMethodMD.extension);
+                            dtMethod.extension = { ...regMethodMD.extension };
                             break;
                         case 'status':
                             dtMethod.status = [...regMethodMD.status];
@@ -120,7 +120,7 @@ function processRegisteredMethodsInfo(methodsInfo, metaUtilObj) {
                     }
                 }
             }
-            const findRegMethodParam = (pname) => { var _a; return (_a = regMethodMD === null || regMethodMD === void 0 ? void 0 : regMethodMD.params) === null || _a === void 0 ? void 0 : _a.find((param) => param.name === pname); };
+            const findRegMethodParam = (pname) => regMethodMD?.params?.find((param) => param.name === pname);
             const funcNode = signatureDecl.type;
             const dtParams = funcNode.parameters.map((param) => {
                 const name = param.name.getText();
@@ -128,7 +128,7 @@ function processRegisteredMethodsInfo(methodsInfo, metaUtilObj) {
                 let dtParamObj = { name, type: typeObj.type };
                 const regParamObj = findRegMethodParam(name);
                 if (regParamObj) {
-                    dtParamObj = Object.assign(Object.assign({}, dtParamObj), regParamObj);
+                    dtParamObj = { ...dtParamObj, ...regParamObj };
                 }
                 return dtParamObj;
             });

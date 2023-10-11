@@ -61,8 +61,9 @@ export interface <?js= data.eventMapInterface ?><?js= this.classTypeParamsDeclar
 for (let event in data.events) {
   let eventPropEvent = `'${event}': ${data.vcomponentName}.${event}`;
   const eventDetailType = data.events[event]['evnDetailTypeParamsDeclaration'];
+  const eventDetailTypeParams = data.events[event]['evnDetailTypeParams'] ?? '';
   if (eventDetailType && eventDetailType.indexOf('<') > -1 && eventDetailType.indexOf('>') > 1) {
-    eventPropEvent = `'${event}': ${data.vcomponentName}.${event}${this.propsTypeParams};`
+    eventPropEvent = `'${event}': ${data.vcomponentName}.${event}${eventDetailTypeParams};`
   } ?>
   <?js= eventPropEvent ?>
 <?js

@@ -11,7 +11,7 @@ import { info, warn } from 'ojs/ojlogger';
 import { getDefaultValue } from 'ojs/ojmetadatautils';
 import 'ojs/ojcomposite-knockout';
 import 'ojs/ojcustomelement';
-import { ElementState, CustomElementUtils, ElementUtils, CHILD_BINDING_PROVIDER, transformPreactValue, JetElementError } from 'ojs/ojcustomelement-utils';
+import { ElementState, CustomElementUtils, ElementUtils, transformPreactValue, JetElementError, CHILD_BINDING_PROVIDER } from 'ojs/ojcustomelement-utils';
 import { getElementDescriptor, getElementRegistration, registerElement, isElementRegistered, isComposite } from 'ojs/ojcustomelement-registry';
 
 const CompositeInternal = {};
@@ -199,33 +199,7 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
         vmContext
       ]) || Promise.resolve(true);
 
-    var bridge = this;
-    return activatedPromise.then(function () {
-      var params = {
-        props: bridge._PROPS,
-        slotMap: slotMap,
-        slotNodeCounts: slotNodeCounts,
-        unique: bridge._VM_CONTEXT.unique,
-        uniqueId: bridge._VM_CONTEXT.uniqueId,
-        viewModel: bridge._VIEW_MODEL,
-        viewModelContext: bridge._VM_CONTEXT
-      };
-
-      // Store the name of the binding provider on the element when we are about
-      // to insert the view. This will allow custom elements within the view to look
-      // up the binding provider used by the composite (currently only KO).
-      // eslint-disable-next-line no-param-reassign
-      element[CHILD_BINDING_PROVIDER] = 'knockout';
-      // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-      if (oj.Components) {
-        oj.Components.unmarkPendingSubtreeHidden(element);
-      }
-
-      var cache = getElementRegistration(element.tagName).cache;
-      // Need to clone nodes first
-      var view = CompositeElementBridge._getDomNodes(cache.view, element);
-      oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
-    });
+    return activatedPromise.then(() => this._processCompositeTemplate(element));
   },
 
   DefineMethodCallback: function (proto, method, methodMeta) {
@@ -355,9 +329,16 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
     // Invoke callback on the superclass
     oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
 
-    oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL, 'connected', [
-      this._VM_CONTEXT
-    ]);
+    // Check if the template was not rendered and render it if it is the case.
+    // The connected callback will be called by CompositeTemplateRenderer.renderTemplate().
+    if (this._delayedTemplateRender) {
+      this._delayedTemplateRender = false;
+      this._processCompositeTemplate(element);
+    } else {
+      oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL, 'connected', [
+        this._VM_CONTEXT
+      ]);
+    }
   },
 
   InitializeElement: function (element) {
@@ -564,6 +545,43 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
       throw new JetElementError(this._ELEMENT, 'Cannot access methods before element is upgraded.');
     }
     return this._VIEW_MODEL;
+  },
+
+  _processCompositeTemplate: function (element) {
+    // Skip rendering the composite template since the it is not attached to the DOM.
+    // The template will be rendered if and when the component will be reattached.
+    // See HandleReattached().
+    if (!element.isConnected) {
+      this._delayedTemplateRender = true;
+      return;
+    }
+
+    const state = CustomElementUtils.getElementState(element);
+    const slotMap = state.getSlotMap();
+    const params = {
+      props: this._PROPS,
+      slotMap: slotMap,
+      slotNodeCounts: this._VM_CONTEXT.slotCounts,
+      unique: this._VM_CONTEXT.unique,
+      uniqueId: this._VM_CONTEXT.uniqueId,
+      viewModel: this._VIEW_MODEL,
+      viewModelContext: this._VM_CONTEXT
+    };
+
+    // Store the name of the binding provider on the element when we are about
+    // to insert the view. This will allow custom elements within the view to look
+    // up the binding provider used by the composite (currently only KO).
+    // eslint-disable-next-line no-param-reassign
+    element[CHILD_BINDING_PROVIDER] = 'knockout';
+    // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
+    if (oj.Components) {
+      oj.Components.unmarkPendingSubtreeHidden(element);
+    }
+
+    const cache = getElementRegistration(element.tagName).cache;
+    // Need to clone nodes first
+    const view = CompositeElementBridge._getDomNodes(cache.view, element);
+    oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
   }
 });
 
@@ -1017,7 +1035,7 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  *       <td>yes</td>
  *       <td>{string}</td>
  *       <td>The component version (following <a href="http://semver.org/">semantic version</a> rules). Note that changes to the metadata even for minor updates
- *         like updating the jetVersion should result in at least a minor component version change, e.g. 1.0.0 -> 1.0.1.</td>
+ *         like updating the jetVersion should result in at least a patch component version change, e.g. 1.0.0 -> 1.0.1.</td>
  *     </tr>
  *     <tr>
  *       <td class="name">jetVersion</td>
@@ -1539,7 +1557,7 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  * <p>
  * All composite modules should contain a loader.js file which will handle registering and specifying the dependencies for a composite component.
  * We recommend using RequireJS to define your composite module with relative file dependencies.
- * Registration is done via the <a href="Composite.html#register">Composite.register</a> API.
+ * Registration is done via the <a href="Composite.html#.register">Composite.register</a> API.
  * By registering a composite component, an application links an HTML tag with provided
  * Metadata, View, ViewModel and CSS which will be used to render the composite. These optional
  * pieces can be provided via a descriptor object passed into the register API. See below for sample loader.js file configurations.
@@ -2314,7 +2332,7 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  *  bindings are applied and are resolved in the application's binding context extended with additional
  *  properties provided by the composite. These additional properties are available on the $current
  *  variable in the application provided template node and should be documented in the composite's
- *  <a href="MetadataOverview.html#slots">slot metadata</a>.
+ *  <a href="MetadataTypes.html#ComponentMetadataSlots">slot metadata</a>.
  * </p>
  *
  * <h3 id="example1-section">
@@ -2337,7 +2355,7 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  *
  * <h4>View</h4>
  * Note that if you want to build an HTML table using &lt;oj-bind-for-each&gt; element the html content must be parsed
- * by <a href="HtmlUtils.html#stringToNodeArray">HtmlUtils.stringToNodeArray()</a> method. Keep in mind that the composite
+ * by <a href="HtmlUtils.html#.stringToNodeArray">HtmlUtils.stringToNodeArray()</a> method. Keep in mind that the composite
  * views and the oj-module views that are loaded via ModuleElementUtils are already using that method. Thus to create
  * a table you can either place the content into a view or call HtmlUtils.stringToNodeArray() explicitly to process the content.
  *

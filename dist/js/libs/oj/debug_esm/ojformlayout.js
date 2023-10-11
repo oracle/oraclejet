@@ -1139,12 +1139,7 @@ function ojFormLayout(context) {
    * Return true if the label is handled by the child element; false otherwise.
    */
   function _isLabelByChild(child) {
-    return (
-      element.labelEdge === 'inside' ||
-      child.labelEdge === 'inside' ||
-      child.labelEdge === 'none' ||
-      child.tagName.toLowerCase().startsWith('oj-c-')
-    );
+    return element.labelEdge === 'inside' || child.labelEdge !== 'provided';
   }
 
   /**
@@ -2166,12 +2161,7 @@ ojFormLayout.getDynamicDefaults = function () {
   __oj_form_layout_metadata.extension._CONSTRUCTOR = ojFormLayout;
   __oj_form_layout_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
   __oj_form_layout_metadata.extension._BINDING = {
-    provide: [
-      {
-        name: '__oj_private_contexts',
-        default: new Map([[FormVariantContext, 'default']])
-      }
-    ]
+    provide: new Map([[FormVariantContext, 'default']])
   };
   oj.CustomElementBridge.register('oj-form-layout', {
     metadata: oj.CollectionUtils.mergeDeep(__oj_form_layout_metadata, {

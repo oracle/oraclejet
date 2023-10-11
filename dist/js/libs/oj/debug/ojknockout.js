@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', 'knockout', 'ojs/ojdomutils', 'jquery', 'ojs/ojcustomelement-registry', 'ojs/ojcustomelement-utils', 'ojs/ojbindpropagation', 'ojs/ojkeysetimpl', 'ojs/ojcontext', 'ojs/ojtemplateengine-ko', 'ojs/ojcore-base', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils'], function (widget, BindingProviderImpl, oj$1, Logger, ko, DomUtils, $, ojcustomelementRegistry, ojcustomelementUtils, ojbindpropagation, KeySetImpl, Context, templateEngine, oj$2, KnockoutTemplateUtils, ResponsiveKnockoutUtils) { 'use strict';
+define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', 'knockout', 'ojs/ojdomutils', 'jquery', 'ojs/ojcustomelement-registry', 'ojs/ojcustomelement-utils', 'ojs/ojmonitoring', 'ojs/ojbindpropagation', 'ojs/ojkeysetimpl', 'ojs/ojcontext', 'ojs/ojtemplateengine-ko', 'ojs/ojcore-base', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils'], function (widget, BindingProviderImpl, oj$1, Logger, ko, DomUtils, $, ojcustomelementRegistry, ojcustomelementUtils, ojmonitoring, ojbindpropagation, KeySetImpl, Context, templateEngine, oj$2, KnockoutTemplateUtils, ResponsiveKnockoutUtils) { 'use strict';
 
   BindingProviderImpl = BindingProviderImpl && Object.prototype.hasOwnProperty.call(BindingProviderImpl, 'default') ? BindingProviderImpl['default'] : BindingProviderImpl;
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
@@ -2031,12 +2031,16 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
         // Implicit bindings are used only when the corresponding attribute is not set
 
         // Get an observable for the provided value if we have metadata for its name
-        const observable =
-          providedPropName === undefined ? null : (bindingContext.$provided || {})[providedPropName];
+        let observable;
+        if (!providedPropName) {
+          observable = null;
+        } else if (bindingContext.$provided) {
+          observable = bindingContext.$provided.get(providedPropName);
+        }
 
         // If the observable is present, we set up the implicit binding
         if (observable) {
-          evaluator = () => observable(); // evaluator is using an implicit binding to a property provided by a container component
+          evaluator = () => ko.unwrap(observable); // evaluator is using an implicit binding to a property provided by a container component
         }
       } else {
         const info = ojcustomelementUtils.AttributeUtils.getExpressionInfo(attrVal);
@@ -2190,8 +2194,8 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       var topProp = splitProps[0];
       var listener = function (evt) {
         if (!_isSettingProperty(topProp)) {
-          var written = false;
-          var reason;
+          let failure;
+          let writer;
           ko.ignoreDependencies(function () {
             var value = evt.detail.value;
             // If the propName has '.' we need to walk the top level value and writeback
@@ -2205,34 +2209,40 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
 
             if (ko.isObservable(target)) {
               if (ko.isWriteableObservable(target)) {
-                target(ComponentBinding.__cloneIfArray(value));
-                written = true;
+                writer = target;
               } else {
-                reason = 'the observable is not writeable';
+                failure = 'the observable is not writeable';
               }
             } else {
               var writerExpr = __ExpressionUtils.getPropertyWriterExpression(expr);
               if (writerExpr != null) {
-                var wrirerEvaluator = BindingProviderImpl.createEvaluator(writerExpr, bindingContext);
-                var func = __ExpressionUtils.getWriter(wrirerEvaluator(bindingContext));
-                func(ComponentBinding.__cloneIfArray(value));
-                written = true;
+                const writerEvaluator = BindingProviderImpl.createEvaluator(
+                  writerExpr,
+                  bindingContext
+                );
+                writer = __ExpressionUtils.getWriter(writerEvaluator(bindingContext));
               } else {
-                reason = 'the expression is not a valid update target';
+                failure = 'the expression is not a valid update target';
               }
             }
-          });
-
-          if (!written) {
-            if (reason) {
-              Logger.info(
-                "The expression '%s' for property '%s' was not updated because %s.",
-                expr,
+            if (!writer) {
+              if (failure) {
+                Logger.info(
+                  "The expression '%s' for property '%s' was not updated because %s.",
+                  expr,
+                  propName,
+                  failure
+                );
+              }
+            } else {
+              ojmonitoring.performMonitoredWriteback(
                 propName,
-                reason
+                writer,
+                evt,
+                ComponentBinding.__cloneIfArray(value)
               );
             }
-          }
+          });
         }
       };
 
@@ -2509,6 +2519,16 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
         var _expressionHandler;
         var attributeListener;
 
+        // TODO: this code is a workaround for JET-57399. It should be removed when the issue is fixed.
+        if (
+          bindingContext &&
+          bindingContext.$provided &&
+          !(bindingContext.$provided instanceof Map)
+        ) {
+          // eslint-disable-next-line no-param-reassign
+          bindingContext.$provided = new Map(Object.entries(bindingContext.$provided));
+        }
+
         const compMetadata = ojcustomelementRegistry.getMetadata(element.tagName);
         const metadataProps = compMetadata.properties || {};
 
@@ -2565,7 +2585,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
 
             if (!isDomEvent) {
               topPropName = propName.split('.')[0];
-              const info = provideMap[topPropName];
+              const info = provideMap.get(topPropName);
               // Initial value for provided properties needs to be set only when setup() is called for the very first time.
               // After that, we will be using property change listeners to update the values
               initialValueSetter = isInitial && info ? info.set : undefined;
@@ -2583,10 +2603,12 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
 
           // Now set up implicit consumption of bindings for properties whose attributes are not set and whose
           // metadata is set up to consume provided properties
-          const consumingProps = Object.keys(consumeMap);
-          consumingProps.forEach((consumingProp) => {
-            if (!element.hasAttribute(ojcustomelementUtils.AttributeUtils.propertyNameToAttribute(consumingProp))) {
-              const provideInfo = provideMap[consumingProp];
+          consumeMap.forEach((consumingPropValue, consumingProp) => {
+            if (
+              typeof consumingProp === 'string' &&
+              !element.hasAttribute(ojcustomelementUtils.AttributeUtils.propertyNameToAttribute(consumingProp))
+            ) {
+              const provideInfo = provideMap.get(consumingProp);
               // Initial value for provided properties needs to be set only when setup() is called for the very first time.
               // After that, we will be using property change listeners to update the values
               const initialValueSetter = isInitial && provideInfo ? provideInfo.set : undefined;
@@ -2595,8 +2617,19 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
                 consumingProp,
                 metadataProps[consumingProp],
                 initialValueSetter,
-                consumeMap[consumingProp]
+                consumingPropValue
               );
+            } else if (consumingProp === ojbindpropagation.CONSUMED_CONTEXT) {
+              // Pass context values via __oj_private_contexts property since component properties are available to the
+              // EnvironmentWrapper class.
+              const provided = bindingContext.$provided;
+              const providedValues = new Map();
+              consumingPropValue.forEach((context) => {
+                if (provided && provided.has(context)) {
+                  providedValues.set(context, ko.unwrap(provided.get(context)));
+                }
+              });
+              element.setProperty('__oj_private_contexts', providedValues);
             }
           });
 
@@ -2613,7 +2646,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
               _propName,
               metadata,
               undefined /* no need to get initial value on attribute change */,
-              consumeMap[_propName]
+              consumeMap.get(_propName)
             );
           };
 
@@ -2660,10 +2693,10 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       // under different names), the 'vars' key representing an array of records with a 'name' key
       // being the provided name, the 'obs' key being the associated observable, and the 'transform' key being an optional
       // transform map
-      const provide = Object.create(null); // null prototype for object being used as a map
+      const provide = new Map();
 
       // A map of a property name to a name of a provided property that should be consumed via an implicit binding
-      const consume = Object.create(null);
+      const consume = new Map();
 
       // Example 'provide binding' metadata:
       // binding: {provide: [{name: "containerLabelEdge", default: "inside"}, {name: "labelEdge", transform: {top: "provided", start: "provided"}}]}
@@ -2687,59 +2720,68 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
             // or if the default value is provided via metadata
             const observables = [];
             const vars = [];
-            // iterate over provided bindings (there may be more than one!) that a single attribute produces
-            provideMeta.forEach((info) => {
-              const name = info.name;
-              if (name === undefined) {
-                throw new Error('name attribute for the binding/provide metadata is required!');
-              }
-              const defaultVal = info.default;
-              const obs = _createObservableWithTransform(info.transform, defaultVal);
-              observables.push(obs);
-              vars.push({ name, obs });
-            });
+            if (pName === ojbindpropagation.STATIC_PROPAGATION) {
+              // Populate the map with name => {name,default} values without creating observables
+              // since the values are static.
+              provideMeta.forEach((info) => {
+                provide.set(info.name, info);
+              });
+            } else {
+              // iterate over provided bindings (there may be more than one!) that a single attribute produces
+              provideMeta.forEach((info) => {
+                const name = info.name;
+                if (name === undefined) {
+                  throw new Error('name attribute for the binding/provide metadata is required!');
+                }
+                const defaultVal = info.default;
+                const obs = _createObservableWithTransform(info.transform, defaultVal);
+                observables.push(obs);
+                vars.push({ name, obs });
+              });
+            }
 
             if (vars.length > 0) {
-              const isRootProvide = pName === ojbindpropagation.ROOT_BINDING_PROPAGATION;
               // create a setter function that can update several observables at once
               const set = _getSingleSetter(observables);
-              provide[pName] = { set, vars };
+              provide.set(pName, { set, vars });
 
-              if (!isRootProvide) {
-                // Call the setter function whenever a  proeprty change event is fired
-                const changeListener = _setupChangeListenerForProvidedProperty(set);
-                const evtName = pName + _CHANGE_SUFFIX;
-                element.addEventListener(evtName, changeListener);
-                // Store listener in a map for future cleanup
-                changeListeners[evtName] = changeListener;
+              // Call the setter function whenever a  proeprty change event is fired
+              const changeListener = _setupChangeListenerForProvidedProperty(set);
+              const evtName = pName + _CHANGE_SUFFIX;
+              element.addEventListener(evtName, changeListener);
+              // Store listener in a map for future cleanup
+              changeListeners[evtName] = changeListener;
 
-                // If the attribute is present, and its value is not an expression, we won't be getting the initial value
-                // when the expression is evaluated, so we have to coerce and store the initial value here
-                const attrName = ojcustomelementUtils.AttributeUtils.propertyNameToAttribute(pName);
-                const hasAttribute = element.hasAttribute(attrName);
-                if (hasAttribute) {
-                  const attrVal = element.getAttribute(attrName);
-                  if (!ojcustomelementUtils.AttributeUtils.getExpressionInfo(attrVal).expr) {
-                    set(
-                      ojcustomelementUtils.AttributeUtils.attributeToPropertyValue(
-                        element,
-                        attrName,
-                        attrVal,
-                        metadataProps[pName]
-                      )
-                    );
-                  }
+              // If the attribute is present, and its value is not an expression, we won't be getting the initial value
+              // when the expression is evaluated, so we have to coerce and store the initial value here
+              const attrName = ojcustomelementUtils.AttributeUtils.propertyNameToAttribute(pName);
+              const hasAttribute = element.hasAttribute(attrName);
+              if (hasAttribute) {
+                const attrVal = element.getAttribute(attrName);
+                if (!ojcustomelementUtils.AttributeUtils.getExpressionInfo(attrVal).expr) {
+                  set(
+                    ojcustomelementUtils.AttributeUtils.attributeToPropertyValue(
+                      element,
+                      attrName,
+                      attrVal,
+                      metadataProps[pName]
+                    )
+                  );
                 }
               }
             }
           }
           if (consumeMeta !== undefined) {
             // 2) populate the 'consume' map
-            const name = consumeMeta.name;
-            if (name === undefined) {
-              throw new Error("'name' property on the binding/consume metadata is required!");
+            if (pName === ojbindpropagation.CONSUMED_CONTEXT) {
+              consume.set(pName, consumeMeta);
+            } else {
+              const name = consumeMeta.name;
+              if (name === undefined) {
+                throw new Error("'name' property on the binding/consume metadata is required!");
+              }
+              consume.set(pName, name);
             }
-            consume[pName] = name;
           }
         }
       }
@@ -2757,33 +2799,25 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     }
 
     function _getChildContext(bindingContext, provideMap) {
-      let newContext = bindingContext;
-      // We need to account for ROOT_BINDING_PROPAGATION here
-      const props = Reflect.ownKeys(provideMap);
-      if (props.length > 0) {
-        const oldProvided = bindingContext.$provided;
-        const newProvided = oldProvided === undefined ? {} : Object.assign({}, oldProvided);
-
-        props.forEach((prop) => {
-          const vars = provideMap[prop].vars;
-          vars.forEach((info) => {
-            // JET-54103 - __oj_private_contexts value is a Map. We want to merge the old and new value instead of overwrite
-            // in order to preserve an ancestor context. Also the context always get provided as default values.
-            // The values are not going to change, so they don't need to be remerged.
-            const obs = info.obs;
-            if (info.name === '__oj_private_contexts' && oldProvided && oldProvided[info.name]) {
-              const oldValue = oldProvided[info.name]();
-              const newValue = obs();
-              const merged = new Map([...oldValue, ...newValue]);
-              obs(merged);
-            }
-            newProvided[info.name] = obs;
-          });
-        });
-
-        newContext = bindingContext.extend({ $provided: newProvided });
+      if (provideMap.size === 0) {
+        return bindingContext;
       }
-      return newContext;
+      const oldProvided = bindingContext.$provided;
+      const newProvided = new Map(oldProvided);
+      provideMap.forEach((propValue) => {
+        if (propValue.vars) {
+          // Set dynamically provided values
+          const vars = propValue.vars;
+          vars.forEach((info) => {
+            const obs = info.obs;
+            newProvided.set(info.name, obs);
+          });
+        } else {
+          // Set statically provided values
+          newProvided.set(propValue.name, propValue.default);
+        }
+      });
+      return bindingContext.extend({ $provided: newProvided });
     }
 
     function _createObservableWithTransform(transform, initialVal) {
@@ -3287,6 +3321,8 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       var ojOpenComment = document.createComment(ojcommenttext);
       var ojCloseComment = document.createComment('/' + nodeName);
       parent.insertBefore(ojOpenComment, node); // @HTMLUpdateOK
+      // eslint-disable-next-line no-param-reassign
+      node[ojcustomelementUtils.OJ_BIND_CONVERTED_NODE] = ojOpenComment;
 
       var koOpenComment = document.createComment(binding);
       var koCloseComment = document.createComment('/ko');
@@ -4106,7 +4142,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     OjForEach.prototype._removeNoData = function () {
       if (this._noDataNodes) {
         this._noDataNodes.forEach((node) => {
-          templateEngine.clean(node);
+          templateEngine.clean(node, this.element);
           node.parentNode.removeChild(node);
         });
         this._noDataNodes = null;
@@ -4344,10 +4380,10 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
         return;
       }
 
-      var removeFn = function () {
+      var removeFn = () => {
         var parent = nodes[0].parentNode;
         for (var i = nodes.length - 1; i >= 0; --i) {
-          templateEngine.clean(nodes[i]);
+          templateEngine.clean(nodes[i], this.element);
           parent.removeChild(nodes[i]);
         }
       };
@@ -4712,7 +4748,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
    * For slotting, applications need to wrap the oj-bind-for-each element inside another HTML element (e.g. &lt;span&gt;) with the slot attribute.
    * The oj-bind-for-each element does not support the slot attribute.</p>
    * <p>Also note that if you want to build an HTML table using &lt;oj-bind-for-each&gt; element the html content must be parsed
-   * by <a href="HtmlUtils.html#stringToNodeArray">HtmlUtils.stringToNodeArray()</a> method. Keep in mind that the composite
+   * by <a href="HtmlUtils.html#.stringToNodeArray">HtmlUtils.stringToNodeArray()</a> method. Keep in mind that the composite
    * views and the oj-module views that are loaded via ModuleElementUtils are already using that method. Thus to create
    * a table you can either place the content into a view or call HtmlUtils.stringToNodeArray() explicitly to process the content.</p>
    *

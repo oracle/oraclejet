@@ -21,6 +21,7 @@
         }
     },
     "opts": {
+        "loggingLevel": "INFO",
         "template": ".",
         "destination": ".",
         "recurse": true,

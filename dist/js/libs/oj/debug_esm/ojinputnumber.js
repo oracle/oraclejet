@@ -439,6 +439,7 @@ function _getNumberDefaultConverter() {
    * </p>
    * <p>
    * The converter is no longer applied when the value is <code>null</code>, <code>undefined</code>, or <code>''</code>.
+   * When the field is empty, the value gets normalized to <code>null</code>, so the converter does not run on an empty field.
    * <p>
    *
    * <h5>New converters</h5>
@@ -451,6 +452,14 @@ function _getNumberDefaultConverter() {
    * The default converter used by oj-c-input-number does not currently respect user preferences.
    * </p>
    *
+   * <h5>Validators</h5>
+   * <p>
+   * Only the required validator is run for an empty field, and only if required is true. The component's other validators
+   * are no longer run when the field is empty.
+   * If you created your own validator to check that the field was filled in, it will not run if the
+   * field is empty. Set the required attribute to true instead which conforms to the Redwood UX design.
+   * </p>
+   *
    * <h5>LabelEdge attribute</h5>
    * <p>
    * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
@@ -459,6 +468,18 @@ function _getNumberDefaultConverter() {
    * attribute to the corresponding value.
    * </p>
    *
+   * <h5>MessagesCustom attribute</h5>
+   * <p>
+   * The type of the <code class="prettyprint">severity</code> property of the messages in the
+   * array has changed from
+   * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+   * essentially <code class="prettyprint">string | number</code>, to simply
+   * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+   * values are the same as the previously supported string values.
+   * The application can no longer specify severity as a number, including hardcoded numbers,
+   * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+   * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+   * </p>
    *
    * <h5>TextAlign attribute</h5>
    * <p>
@@ -2714,7 +2735,8 @@ function _getNumberDefaultConverter() {
       var buttons = this.uiInputNumber.querySelectorAll('.oj-inputnumber-button');
       var len = buttons.length;
       for (var i = 0; i < len; i++) {
-        buttons[i].setAttribute('tabIndex', '-1');
+        buttons[i].setAttribute('tabindex', '-1');
+        buttons[i].setAttribute('aria-hidden', 'true');
       }
 
       const buttonChromingDefault =

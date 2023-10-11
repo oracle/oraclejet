@@ -106,9 +106,8 @@ define(['exports', 'ojs/ojcustomelement-utils'], function (exports, ojcustomelem
     }
 
     function getDescriptiveText(element) {
-        var _a;
         const state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
-        return (_a = state === null || state === void 0 ? void 0 : state.getDescriptiveText()) !== null && _a !== void 0 ? _a : '';
+        return state?.getDescriptiveText() ?? '';
     }
     let tracerProvider;
     function setTracerProvider(provider) {

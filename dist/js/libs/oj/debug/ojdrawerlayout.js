@@ -15,15 +15,6 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
-    var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    };
     var DrawerLayout_1;
     const ojet = oj;
     const PopupService = ojet.PopupService;
@@ -94,12 +85,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                         this.handleResize = true;
                         const updatedState = {};
                         if (this.state.viewportResolvedDisplayMode !== this.getViewportResolvedDisplayMode()) {
-                            const updatedState = {};
-                            [ojdrawerutils.DrawerConstants.stringStart, ojdrawerutils.DrawerConstants.stringEnd].forEach((edge) => {
+                            const edges = [ojdrawerutils.DrawerConstants.stringStart, ojdrawerutils.DrawerConstants.stringEnd];
+                            for (let i = 0; i < edges.length; i++) {
+                                const edge = edges[i];
                                 if (this.isDrawerOpened(edge) && this.state[this.edgeToDisplayName(edge)] === 'auto') {
                                     updatedState[this.edgeToShouldChangeDisplayMode(edge)] = true;
                                 }
-                            });
+                            }
                         }
                         if (this.state.viewportResolvedDisplayModeVertical !==
                             this.getViewportResolvedDisplayModeVertical()) {
@@ -142,12 +134,14 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                     if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode ||
                         prevViewportResolvedDisplayModeVertical !== nextViewportResolvedDisplayModeVertical) {
                         this.lockResizeListener();
-                        [ojdrawerutils.DrawerConstants.stringStart, ojdrawerutils.DrawerConstants.stringEnd].forEach((edge) => {
+                        const edges = [ojdrawerutils.DrawerConstants.stringStart, ojdrawerutils.DrawerConstants.stringEnd];
+                        for (let i = 0; i < edges.length; i++) {
+                            const edge = edges[i];
                             if (this.isDrawerOpened(edge) && this.state[this.edgeToDisplayName(edge)] === 'auto') {
                                 atLeastOneOverlayDrawerNeedsToClose = true;
                                 updatedState[this.edgeToShouldChangeDisplayMode(edge)] = true;
                             }
-                        });
+                        }
                         if (this.isDrawerOpened(ojdrawerutils.DrawerConstants.stringBottom) &&
                             this.state[this.edgeToDisplayName(ojdrawerutils.DrawerConstants.stringBottom)] === 'auto') {
                             atLeastOneOverlayDrawerNeedsToClose = true;
@@ -238,7 +232,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             let startDrawer = this.getDrawer(ojdrawerutils.DrawerConstants.stringStart);
             let endDrawer = this.getDrawer(ojdrawerutils.DrawerConstants.stringEnd);
             let bottomDrawer = this.getDrawer(ojdrawerutils.DrawerConstants.stringBottom);
-            return (jsxRuntime.jsxs(ojvcomponent.Root, Object.assign({ ref: this.rootRef }, { children: [startDrawer, jsxRuntime.jsxs("div", Object.assign({ ref: this.middleSectionRef, class: ojdrawerutils.DrawerConstants.middleSectionSelector }, { children: [jsxRuntime.jsx("div", Object.assign({ ref: this.mainSectionRef, class: ojdrawerutils.DrawerConstants.mainContentSelector }, { children: props.children })), bottomDrawer] })), endDrawer] })));
+            return (jsxRuntime.jsxs(ojvcomponent.Root, { ref: this.rootRef, children: [startDrawer, jsxRuntime.jsxs("div", { ref: this.middleSectionRef, class: ojdrawerutils.DrawerConstants.middleSectionSelector, children: [jsxRuntime.jsx("div", { ref: this.mainSectionRef, class: ojdrawerutils.DrawerConstants.mainContentSelector, children: props.children }), bottomDrawer] }), endDrawer] }));
         }
         getDrawer(edge) {
             const resolvedMode = this.getDrawerResolvedDisplayMode(edge);
@@ -249,7 +243,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             if (this.isDrawerOpened(edge) ||
                 this.wasDrawerOpenedInPrevState(edge) ||
                 this.wasDrawerClosedWithEsc(edge)) {
-                return (jsxRuntime.jsx("div", Object.assign({ ref: this.getDrawerWrapperRef(edge), class: this.getDrawerWrapperStyleClasses(edge) }, { children: jsxRuntime.jsx("div", Object.assign({ ref: this.getDrawerRef(edge), role: roleAttr, tabIndex: tabIndexAttr, class: this.getDrawerStyleClasses(edge), onKeyDown: (event) => this.handleKeyDown(edge, event) }, { children: this.getDrawerContent(edge) })) })));
+                return (jsxRuntime.jsx("div", { ref: this.getDrawerWrapperRef(edge), class: this.getDrawerWrapperStyleClasses(edge), children: jsxRuntime.jsx("div", { ref: this.getDrawerRef(edge), role: roleAttr, tabIndex: tabIndexAttr, class: this.getDrawerStyleClasses(edge), onKeyDown: (event) => this.handleKeyDown(edge, event), children: this.getDrawerContent(edge) }) }));
             }
             return null;
         }
@@ -369,25 +363,22 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             }
             return ojdrawerutils.DrawerConstants.stringFullOverlay;
         }
-        selfClose(edge) {
-            var _a, _b, _c, _d, _e, _f, _g, _h;
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    yield ((_b = (_a = this.props).onOjBeforeClose) === null || _b === void 0 ? void 0 : _b.call(_a, { edge }));
-                }
-                catch (_) {
-                    return;
-                }
-                if (edge === ojdrawerutils.DrawerConstants.stringStart) {
-                    (_d = (_c = this.props).onStartOpenedChanged) === null || _d === void 0 ? void 0 : _d.call(_c, false);
-                }
-                if (edge === ojdrawerutils.DrawerConstants.stringEnd) {
-                    (_f = (_e = this.props).onEndOpenedChanged) === null || _f === void 0 ? void 0 : _f.call(_e, false);
-                }
-                if (edge === ojdrawerutils.DrawerConstants.stringBottom) {
-                    (_h = (_g = this.props).onBottomOpenedChanged) === null || _h === void 0 ? void 0 : _h.call(_g, false);
-                }
-            });
+        async selfClose(edge) {
+            try {
+                await this.props.onOjBeforeClose?.({ edge });
+            }
+            catch (_) {
+                return;
+            }
+            if (edge === ojdrawerutils.DrawerConstants.stringStart) {
+                this.props.onStartOpenedChanged?.(false);
+            }
+            if (edge === ojdrawerutils.DrawerConstants.stringEnd) {
+                this.props.onEndOpenedChanged?.(false);
+            }
+            if (edge === ojdrawerutils.DrawerConstants.stringBottom) {
+                this.props.onBottomOpenedChanged?.(false);
+            }
         }
         setDrawerFocus(edge) {
             const drawerRef = this.getDrawerRef(edge);
@@ -464,8 +455,11 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 this.elementWithFocusBeforeDrawerCloses = document.activeElement;
                 this.animateClose(edge)
                     .then(() => {
-                    DomUtils.removeResizeListener(this.getDrawerRef(edge).current, this.reflowDrawerResizeHandler);
-                    this.reflowDrawerResizeHandler === null;
+                    const drawerRef = this.getDrawerRef(edge).current;
+                    if (drawerRef) {
+                        DomUtils.removeResizeListener(drawerRef, this.reflowDrawerResizeHandler);
+                        this.reflowDrawerResizeHandler === null;
+                    }
                     this.returnFocus(edge);
                     if (this.getStateToChangeTo(edge)) {
                         const updatedState = {};
@@ -507,21 +501,23 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                         this.removeHiddenStyle(edge);
                         this.animateOpen(edge).then(() => {
                             this.setBottomOverlayDrawerWidth();
-                            if (this.reflowDrawerResizeHandler === null) {
-                                this.reflowDrawerResizeHandler = this.reflowDrawerResizeCallback.bind(this, edge);
+                            const drawerRef = this.getDrawerRef(edge).current;
+                            if (drawerRef) {
+                                if (this.reflowDrawerResizeHandler === null) {
+                                    this.reflowDrawerResizeHandler = this.reflowDrawerResizeCallback.bind(this, edge);
+                                }
+                                DomUtils.addResizeListener(drawerRef, this.reflowDrawerResizeHandler, 50, true);
                             }
-                            DomUtils.addResizeListener(this.getDrawerRef(edge).current, this.reflowDrawerResizeHandler, 50, true);
                         });
                     }
                 }
             }
         }
         removeHiddenStyle(edge) {
-            var _a;
-            (_a = this.getDrawerWrapperRef(edge).current) === null || _a === void 0 ? void 0 : _a.classList.remove(ojdrawerutils.DrawerConstants.styleDrawerHidden);
+            this.getDrawerWrapperRef(edge).current?.classList.remove(ojdrawerutils.DrawerConstants.styleDrawerHidden);
         }
         addHiddenStyle(edge) {
-            this.getDrawerWrapperRef(edge).current.classList.add(ojdrawerutils.DrawerConstants.styleDrawerHidden);
+            this.getDrawerWrapperRef(edge).current?.classList.add(ojdrawerutils.DrawerConstants.styleDrawerHidden);
         }
         returnFocus(edge) {
             const drawerElem = this.getDrawerRef(edge).current;
@@ -534,7 +530,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 return AnimationUtils.expand(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions('expand', edge));
             }
             else {
-                return AnimationUtils.slideIn(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideIn, edge));
+                return AnimationUtils.slideIn(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideIn, edge)).then(() => {
+                    ojdrawerutils.DrawerUtils.unwrapDrawerClippingArea(this.getDrawerRef(edge).current);
+                });
             }
         }
         animateClose(edge) {
@@ -542,7 +540,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 return AnimationUtils.collapse(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions('collapse', edge));
             }
             else {
-                return AnimationUtils.slideOut(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideOut, edge));
+                return AnimationUtils.slideOut(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideOut, edge)).then(() => {
+                    ojdrawerutils.DrawerUtils.unwrapDrawerClippingArea(this.getDrawerRef(edge).current);
+                });
             }
         }
         edgeToStateOpenedName(edge) {
@@ -599,7 +599,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             PSOptions[PSoption.CUSTOM_ELEMENT] = true;
             const PSEvent = PopupService.EVENT;
             PSOptions[PSoption.EVENTS] = {
-                [PSEvent.POPUP_BEFORE_OPEN]: () => this.beforeOpenHandler(edge, prevState, PSOptions),
+                [PSEvent.POPUP_BEFORE_OPEN]: () => this.beforeOpenHandler(edge, prevState),
                 [PSEvent.POPUP_AFTER_OPEN]: () => this.afterOpenHandler(edge, prevState),
                 [PSEvent.POPUP_BEFORE_CLOSE]: () => this.beforeCloseHandler(edge),
                 [PSEvent.POPUP_AFTER_CLOSE]: () => this.afterCloseHandler(edge, prevState),
@@ -608,19 +608,21 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             };
             return PSOptions;
         }
-        beforeOpenHandler(edge, prevState, PSOptions) {
+        beforeOpenHandler(edge, prevState) {
             ojdrawerutils.DrawerUtils.disableBodyOverflow();
             if (!prevState[this.edgeToShouldChangeDisplayMode(edge)]) {
                 this.drawerOpener = document.activeElement;
             }
-            const $drawerElement = PSOptions[PopupService.OPTION.POPUP];
-            const position = PSOptions[PopupService.OPTION.POSITION];
+            const drawerElement = this.getDrawerRef(edge).current;
+            const $drawerElement = $(drawerElement);
+            const position = this.getDrawerPosition(edge);
             if (edge === ojdrawerutils.DrawerConstants.stringBottom) {
                 this.setBottomOverlayDrawerWidth();
             }
             $drawerElement.show();
             $drawerElement.position(position);
             this.setStartEndOverlayDrawersHeight();
+            ojdrawerutils.DrawerUtils.wrapDrawerWithClippingArea(drawerElement, position);
             return this.animateOpen(edge);
         }
         setBottomOverlayDrawerWidth() {
@@ -662,6 +664,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             this.elementWithFocusBeforeDrawerCloses = document.activeElement;
             DomUtils.removeResizeListener(this.getDrawerRef(edge).current, this.overlayDrawerResizeHandler);
             this.overlayDrawerResizeHandler === null;
+            ojdrawerutils.DrawerUtils.wrapDrawerWithClippingArea(this.getDrawerRef(edge).current, this.getDrawerPosition(edge));
             return this.animateClose(edge);
         }
         afterCloseHandler(edge, prevState) {

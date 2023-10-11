@@ -16,7 +16,7 @@ import 'touchr';
  * @ojtsmodule
  * @since 1.2.0
  * @export
- * @ojdeprecated {since: '7.0.0', description: 'Use ojSwipeActions instead.'}
+ * @ojdeprecated {since: '7.0.0', value: ['oj-swipe-actions']}
  * @hideconstructor
  *
  *
@@ -57,8 +57,8 @@ oj._registerLegacyNamespaceProp('SwipeToRevealUtils', SwipeToRevealUtils);
  *                 An "ojdefaultaction" event will be fired when threshold is exceed upon release.
  * @return {void}
  *
- * @see #tearDownSwipeActions
- * @see OffcanvasUtils.html#setupPanToReveal
+ * @see #.tearDownSwipeActions
+ * @see OffcanvasUtils.html#.setupPanToReveal
  */
 SwipeToRevealUtils.setupSwipeActions = function (elem, options) {
   var drawer;
@@ -226,8 +226,8 @@ SwipeToRevealUtils.setupSwipeActions = function (elem, options) {
  * @param {Element} elem the DOM element (of the offcanvas) that hosts the swipe actions
  * @return {void}
  *
- * @see #setupSwipeActions
- * @see OffcanvasUtils.html#tearDownPanToReveal
+ * @see #.setupSwipeActions
+ * @see OffcanvasUtils.html#.tearDownPanToReveal
  */
 SwipeToRevealUtils.tearDownSwipeActions = function (elem) {
   var drawer;

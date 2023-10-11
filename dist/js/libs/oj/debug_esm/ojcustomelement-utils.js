@@ -133,11 +133,11 @@ class AttributeUtils {
         if (attrValue) {
             const trimmedVal = attrValue.trim();
             let expArr = _ATTR_EXP.exec(trimmedVal);
-            expr = expArr === null || expArr === void 0 ? void 0 : expArr[1];
+            expr = expArr?.[1];
             if (!expr) {
                 downstreamOnly = true;
                 expArr = _ATTR_EXP_RO.exec(trimmedVal);
-                expr = expArr === null || expArr === void 0 ? void 0 : expArr[1];
+                expr = expArr?.[1];
             }
         }
         return { downstreamOnly, expr };
@@ -245,6 +245,8 @@ function cacheHelper(converter, key) {
     return cache.get(key);
 }
 
+const CHILD_BINDING_PROVIDER = Symbol('childBindingProvider');
+const CACHED_BINDING_PROVIDER = Symbol('cachedBindingProvider');
 const EMPTY_SET = new Set();
 class CustomElementUtils {
     static getElementInfo(element) {
@@ -260,7 +262,7 @@ class CustomElementUtils {
             state = new StateClass(element);
             Object.defineProperty(element, CustomElementUtils._ELEMENT_STATE_KEY, { value: state });
         }
-        return state !== null && state !== void 0 ? state : null;
+        return state ?? null;
     }
     static getElementBridge(element) {
         let bridge = element[CustomElementUtils._ELEMENT_BRIDGE_KEY];
@@ -274,7 +276,7 @@ class CustomElementUtils {
             }
             Object.defineProperty(element, CustomElementUtils._ELEMENT_BRIDGE_KEY, { value: bridge });
         }
-        return bridge !== null && bridge !== void 0 ? bridge : null;
+        return bridge ?? null;
     }
     static getSlotMap(element) {
         const slotMap = {};
@@ -289,6 +291,7 @@ class CustomElementUtils {
                 }
                 CustomElementUtils._possiblyApplyImplicitContext(child, slot, metadata);
                 slotMap[slot].push(child);
+                child[CACHED_BINDING_PROVIDER] = CustomElementUtils._getBindingProviderTypeForSlot(element, child);
             }
         }
         return slotMap;
@@ -323,7 +326,7 @@ class CustomElementUtils {
         try {
             propPath.forEach((subprop) => (propObj = propObj[subprop]));
         }
-        catch (_a) {
+        catch {
             return undefined;
         }
         return propObj;
@@ -358,12 +361,16 @@ class CustomElementUtils {
         return EMPTY_SET;
     }
     static _possiblyApplyImplicitContext(child, slot, metadata) {
-        var _a, _b;
-        if ((child === null || child === void 0 ? void 0 : child.nodeType) === Node.ELEMENT_NODE) {
-            if ((_b = (_a = metadata.slots) === null || _a === void 0 ? void 0 : _a[slot]) === null || _b === void 0 ? void 0 : _b.implicitBusyContext) {
+        if (child?.nodeType === Node.ELEMENT_NODE) {
+            if (metadata.slots?.[slot]?.implicitBusyContext) {
                 child.setAttribute('data-oj-context', '');
             }
         }
+    }
+    static _getBindingProviderTypeForSlot(element, child) {
+        return (child[CACHED_BINDING_PROVIDER] ||
+            (child.nodeType === 1 && child.getAttribute('data-oj-binding-provider')) ||
+            CustomElementUtils.getElementState(element)?.getBindingProviderType());
     }
 }
 CustomElementUtils._ELEMENT_STATE_KEY = '_ojElementState';
@@ -371,8 +378,6 @@ CustomElementUtils._ELEMENT_BRIDGE_KEY = '_ojBridge';
 CustomElementUtils._ALLOW_RELOCATION_COUNT = 0;
 CustomElementUtils.VCOMP_INSTANCE = Symbol('vcompInstance');
 
-const CHILD_BINDING_PROVIDER = Symbol('childBindingProvider');
-const CACHED_BINDING_PROVIDER = Symbol('cachedBindingProvider');
 class ElementState {
     constructor(element) {
         this.dirtyProps = new Set();
@@ -429,9 +434,8 @@ class ElementState {
             this._componentState === ComponentState.Complete);
     }
     getTrackChildrenOption() {
-        var _a, _b;
         const metadata = getElementDescriptor(this.Element.tagName).metadata;
-        return (_b = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_TRACK_CHILDREN']) !== null && _b !== void 0 ? _b : 'none';
+        return metadata?.extension?.['_TRACK_CHILDREN'] ?? 'none';
     }
     setCreateCallback(createComponentCallback) {
         if (this._isInErrorState())
@@ -477,13 +481,12 @@ class ElementState {
         }
     }
     disposeBindingProvider() {
-        var _a;
         if (!this.isComplete()) {
             this.rejectBindingProvider();
             this._updateComponentState(ComponentState.BindingsDisposed);
         }
         else {
-            (_a = this._disposedCallback) === null || _a === void 0 ? void 0 : _a.call(this);
+            this._disposedCallback?.();
         }
     }
     setBindingProviderCallback(callback) {
@@ -645,9 +648,8 @@ class ElementState {
         }
     }
     _bindingsApplied() {
-        var _a;
         this._updateComponentState(ComponentState.BindingsApplied);
-        (_a = this._bindingProviderCallback) === null || _a === void 0 ? void 0 : _a.call(this);
+        this._bindingProviderCallback?.();
     }
     _registerBusyState() {
         const busyContext = Context.getContext(this.Element).getBusyContext();
@@ -669,7 +671,6 @@ class ElementState {
         return !!template;
     }
     static _walkBindingProviders(element, startElement = element) {
-        var _a;
         let name = element[CACHED_BINDING_PROVIDER];
         if (name) {
             return name;
@@ -687,7 +688,8 @@ class ElementState {
             }
             else {
                 name =
-                    (_a = parent[CHILD_BINDING_PROVIDER]) !== null && _a !== void 0 ? _a : ElementState._walkBindingProviders(parent, startElement);
+                    parent[CHILD_BINDING_PROVIDER] ??
+                        ElementState._walkBindingProviders(parent, startElement);
             }
         }
         element[CACHED_BINDING_PROVIDER] = name;
@@ -799,4 +801,6 @@ const transformPreactValue = (element, propertyMeta, originalValue) => {
     return value;
 };
 
-export { AttributeUtils, CACHED_BINDING_PROVIDER, CHILD_BINDING_PROVIDER, CustomElementUtils, ElementState, ElementUtils, JetElementError, toSymbolizedValue, transformPreactValue };
+const OJ_BIND_CONVERTED_NODE = Symbol('ojBindConvertedNode');
+
+export { AttributeUtils, CACHED_BINDING_PROVIDER, CHILD_BINDING_PROVIDER, CustomElementUtils, ElementState, ElementUtils, JetElementError, OJ_BIND_CONVERTED_NODE, toSymbolizedValue, transformPreactValue };

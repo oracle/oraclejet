@@ -2115,7 +2115,6 @@ class DvtGanttRowLabelContent {
   _getCustomContent(rowObj, availableWidth) {
     var rowData = rowObj['data'];
     var content = new Container(this._gantt.getCtx());
-    content.setClassName(this._gantt.GetStyleClass('rowLabel'));
     var labelStyle = rowData['labelStyle'];
     if (labelStyle != null) {
       content.setStyle(labelStyle);
@@ -2169,7 +2168,6 @@ class DvtGanttRowLabelContent {
   _getTextContent(rowObj) {
     var rowData = rowObj['data'];
     var content = new OutputText(this._gantt.getCtx(), this._labelString, 0, 0);
-    content.setClassName(this._gantt.GetStyleClass('rowLabel'));
 
     // sets the style if specified in options
     var labelStyle = rowData['labelStyle'];
@@ -3130,10 +3128,15 @@ class DvtGanttTaskShape extends Path {
    * "Highights" the task, i.e. for when selection-behavior is "highlightDependencies".
    */
   highlight() {
-    // Note this._elem needs to be used instead of this.getElem()
-    // to reference the Path shape element--in touch device, this.getElem() returns
-    // a <g> child group element rather than the shape element.
-    ToolkitUtils.addClassName(this._elem, this._task.getGantt().GetStyleClass('taskHighlight'));
+    if (!this._isHighlighted) {
+      // Note this._elem needs to be used instead of this.getElem()
+      // to reference the Path shape element--in touch device, this.getElem() returns
+      // a <g> child group element rather than the shape element.
+      ToolkitUtils.addClassName(
+        this._elem,
+        this._task.getGantt().GetStyleClass('taskHighlight')
+      );
+    }
     this._isHighlighted = true;
   }
 
@@ -3141,11 +3144,13 @@ class DvtGanttTaskShape extends Path {
    * "Un-Highights" the task, i.e. for when selection-behavior is "highlightDependencies".
    */
   unhighlight() {
-    // See note in hightlight() method regarding this._elem vs this.getElem()
-    ToolkitUtils.removeClassName(
-      this._elem,
-      this._task.getGantt().GetStyleClass('taskHighlight')
-    );
+    if (this._isHighlighted) {
+      // See note in hightlight() method regarding this._elem vs this.getElem()
+      ToolkitUtils.removeClassName(
+        this._elem,
+        this._task.getGantt().GetStyleClass('taskHighlight')
+      );
+    }
     this._isHighlighted = false;
   }
 
@@ -4222,9 +4227,16 @@ class DvtGanttEventManager extends TimeComponentEventManager {
    */
   getFocus() {
     var navigable = super.getFocus(this);
+    var isTaskNavigable = navigable && navigable.nodeType === 'task';
+
+    // Task is not in the DOM, e.g. due to a programmatic removal from the data
+    // Related to JET-57646
+    if (isTaskNavigable && navigable.getParent() == null) {
+      return null;
+    }
 
     // If tasks's parent row is collapsed such that the task is no longer visible, the first visible task of the closest ancestor row is focused and returned
-    if (navigable && navigable.nodeType === 'task' && navigable.getRowNode().getParent() == null) {
+    if (isTaskNavigable && navigable.getRowNode().getParent() == null) {
       var navigableObj = navigable.getLayoutObject();
       var rowObj = navigableObj['rowObj'];
       var dataLayoutManager = this._comp.getDataLayoutManager();
@@ -4311,6 +4323,7 @@ class DvtGanttEventManager extends TimeComponentEventManager {
         this._initSelection = event.ctrlKey ? selectionHandler.getSelectedIds() : [];
         this._initSelectionTargets = event.ctrlKey ? selectionHandler.getSelection() : [];
       } else if (event.subtype === 'move') {
+        this._isMarqueeDragging = true;
         var localPos = this._comp.getMarqueeArtifactsContainer().stageToLocal(event._relPos);
         this._comp.autoPanOnEdgeDrag(
           localPos,
@@ -4328,10 +4341,15 @@ class DvtGanttEventManager extends TimeComponentEventManager {
 
         selectionHandler.processInitialSelections(this._initSelection, this._initSelectionTargets);
         selectionHandler.processGroupSelection(targets, true);
+        this._isMarqueeDragging = false;
       } else if (event.subtype === 'end') {
         this.fireSelectionEvent();
       }
     }
+  }
+
+  isMarqueeDragging() {
+    return this._isMarqueeDragging;
   }
 
   /**
@@ -6710,6 +6728,30 @@ class DvtGanttTaskContent extends Container {
     }
     this._content = new Container(this._gantt.getCtx());
     this._content.setClassName(this._gantt.GetStyleClass('taskCustom'));
+
+    var isRTL = Agent.isRightToLeft(this._gantt.getCtx());
+    var clipPathCoordSystem = this._getClipPathCoordSystem();
+
+    // for CSS clip-path to work as expected, this._content's bounding box need to match the mainShape's bounding box.
+    // To ensure this for, render a hidden rect that matches the expected bounding box dimension
+    if (clipPathCoordSystem === 'css') {
+      var mainShape = this._task.getShape('main');
+      var width =
+        mainShape.getWidth() +
+        mainShape.getPhysicalStartOffset() +
+        mainShape.getPhysicalEndOffset();
+      var height = mainShape.getHeight();
+      var containerSupport = new Rect(
+        this._gantt.getCtx(),
+        isRTL ? -width : 0,
+        0,
+        width,
+        height
+      );
+      containerSupport.setVisible(false);
+      this._content.addChild(containerSupport);
+    }
+
     this.addChild(this._content);
     const parentElem = this._content.getContainerElem();
     const renderer = options.taskContent.renderer; // must have been defined if reached here
@@ -6725,10 +6767,8 @@ class DvtGanttTaskContent extends Container {
       }
     }
 
-    const cp = new ClipPath();
     const cpDim = this._getClipPathDim();
-    cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
-    this.setClipPath(cp);
+    this._applyClipPath(cpDim);
 
     // render is triggered again upon interactions e.g. on hover/focus
     // which clears highlighted classname, so ensure content shows up highlighted
@@ -6812,6 +6852,17 @@ class DvtGanttTaskContent extends Container {
   }
 
   /**
+   * Gets the clippath coordinate system. If clippath is to be applied via CSS, then
+   * 'css' is returned. Otherwise 'svg' if SVG clippath is to be applied.
+   * @returns {string} 'css' | 'svg'
+   * @private
+   */
+  _getClipPathCoordSystem() {
+    const isRTL = Agent.isRightToLeft(this._gantt.getCtx());
+    return !isRTL ? 'css' : 'svg';
+  }
+
+  /**
    * Returns the clippath rect dimension around the content
    * @param {object} refDim Any dimensions to be merged and processed
    * @return {object} The rect x,y,w,h,r dimensions
@@ -6821,22 +6872,50 @@ class DvtGanttTaskContent extends Container {
     const dim = refDim || {};
     const mainShape = this._task.getShape('main');
     const isRTL = Agent.isRightToLeft(this._gantt.getCtx());
+    const coordSystem = this._getClipPathCoordSystem();
 
     const refX = 0;
     const refW = dim.w != null ? dim.w : mainShape.getWidth();
-    return {
-      x: isRTL
-        ? refX - refW - mainShape.getPhysicalEndOffset()
-        : refX - mainShape.getPhysicalStartOffset(),
-      translateX: isRTL
-        ? refX + mainShape.getPhysicalStartOffset()
-        : refX - mainShape.getPhysicalStartOffset(),
+
+    const result = {
       y: 0,
       translateY: 0,
       w: refW + mainShape.getPhysicalStartOffset() + mainShape.getPhysicalEndOffset(),
       h: dim.h != null ? dim.h : mainShape.getHeight(),
-      r: dim.r != null ? dim.r : mainShape.getBorderRadius()
+      r: dim.r != null ? dim.r : mainShape.getBorderRadius(),
+      _coordSystem: coordSystem
     };
+    if (coordSystem === 'svg') {
+      result.x = isRTL
+        ? refX - refW - mainShape.getPhysicalEndOffset()
+        : refX - mainShape.getPhysicalStartOffset();
+      result.translateX = isRTL
+        ? refX + mainShape.getPhysicalStartOffset()
+        : refX - mainShape.getPhysicalStartOffset();
+    } else {
+      result.x = 0;
+      result.translateX = refX - mainShape.getPhysicalStartOffset();
+    }
+    return result;
+  }
+
+  /**
+   * Applies the clippath rect around the content
+   * @param {object} cpDim Of shape { x: number, y: number, w: number, h: number, r: string }
+   * @private
+   */
+  _applyClipPath(cpDim) {
+    const { x, y, w, h, r } = cpDim;
+    const pathCmd = PathUtils.rectangleWithBorderRadius(x, y, w, h, r, Math.min(w, h), '0');
+
+    if (cpDim._coordSystem === 'css') {
+      // this.setStyle() triggers a CSP violation on Safari (16.0 at the time of writing)
+      this.getElem().style.clipPath = `path('${pathCmd}')`;
+    } else {
+      const cp = new ClipPath();
+      cp.addPath(pathCmd);
+      this.setClipPath(cp);
+    }
   }
 
   /**
@@ -6844,10 +6923,8 @@ class DvtGanttTaskContent extends Container {
    * @param {number} width The new width.
    */
   setWidth(width) {
-    const cp = new ClipPath();
     const cpDim = this._getClipPathDim({ w: width });
-    cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
-    this.setClipPath(cp);
+    this._applyClipPath(cpDim);
   }
 
   /**
@@ -6855,10 +6932,8 @@ class DvtGanttTaskContent extends Container {
    * @param {number} height The new height.
    */
   setHeight(height) {
-    const cp = new ClipPath();
     const cpDim = this._getClipPathDim({ h: height });
-    cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
-    this.setClipPath(cp);
+    this._applyClipPath(cpDim);
   }
 
   /**
@@ -6868,10 +6943,7 @@ class DvtGanttTaskContent extends Container {
   setX(x) {
     const cpDim = this._getClipPathDim({ x: x });
     this.setTranslateX(cpDim.translateX);
-
-    const cp = new ClipPath();
-    cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
-    this.setClipPath(cp);
+    this._applyClipPath(cpDim);
   }
 
   /**
@@ -6881,10 +6953,7 @@ class DvtGanttTaskContent extends Container {
   setY(y) {
     const cpDim = this._getClipPathDim({ y: y });
     this.setTranslateY(cpDim.translateY);
-
-    const cp = new ClipPath();
-    cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
-    this.setClipPath(cp);
+    this._applyClipPath(cpDim);
   }
 
   /**
@@ -6892,10 +6961,8 @@ class DvtGanttTaskContent extends Container {
    * @param {number} r The new border radius.
    */
   setBorderRadius(r) {
-    const cp = new ClipPath();
     const cpDim = this._getClipPathDim({ r: r });
-    cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
-    this.setClipPath(cp);
+    this._applyClipPath(cpDim);
   }
 
   /**
@@ -6909,10 +6976,7 @@ class DvtGanttTaskContent extends Container {
   setDimensions(x, y, w, h, r) {
     const cpDim = this._getClipPathDim({ x: x, y: y, w: w, h: h, r: r });
     this.setTranslate(cpDim.translateX, cpDim.translateY);
-
-    const cp = new ClipPath();
-    cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
-    this.setClipPath(cp);
+    this._applyClipPath(cpDim);
   }
 }
 
@@ -7470,15 +7534,6 @@ class DvtGanttTask {
           );
           this._container.addChild(this._mainShape);
           this._mainShape.setRenderState('add');
-
-          // render any custom content
-          if (this.isMainCustomContent()) {
-            if (this._mainCustomContent) {
-              this._mainCustomContent.destroy();
-            }
-            this._mainCustomContent = new DvtGanttTaskContent(this._gantt, this);
-            this._mainCustomContent.render(false);
-          }
         } else {
           this._mainShape.setRenderState('exist');
           if (theme !== 'alta') {
@@ -7506,6 +7561,22 @@ class DvtGanttTask {
               );
             }
           }
+        }
+
+        // Since final dimensions are not applied until after animations (if any), store
+        // them so that they can be retrieved for calculating final dimensions for other elements
+        this._mainShape.setFinalWidth(width);
+        this._mainShape.setFinalHeight(height);
+        this._mainShape.setFinalX(x);
+        this._mainShape.setFinalY(y);
+
+        // render any custom content
+        if (this.isMainCustomContent() && this._mainShape.getRenderState() === 'add') {
+          if (this._mainCustomContent) {
+            this._mainCustomContent.destroy();
+          }
+          this._mainCustomContent = new DvtGanttTaskContent(this._gantt, this);
+          this._mainCustomContent.render(false);
         }
 
         // Construct container for task elements such as progress, downtime, overtime, attribute bar, etc.
@@ -7546,13 +7617,6 @@ class DvtGanttTask {
           this._mainContainer = null;
           this._mainContainerSupport = null;
         }
-
-        // Since final dimensions are not applied until after animations (if any), store
-        // them so that they can be retrieved for calculating final dimensions for other elements
-        this._mainShape.setFinalWidth(width);
-        this._mainShape.setFinalHeight(height);
-        this._mainShape.setFinalX(x);
-        this._mainShape.setFinalY(y);
 
         // Called at the end of animation (if any)
         onRenderEnd = () => {
@@ -7759,6 +7823,19 @@ class DvtGanttTask {
   }
 
   /**
+   * Sets the width of the main container clippath support bar.
+   * @param {number} width The new width.
+   * @private
+   */
+  _setMainContainerSupportWidth(width) {
+    const isRTL = Agent.isRightToLeft(this._gantt.getCtx());
+    if (isRTL) {
+      this._mainContainerSupport.setX(-width);
+    }
+    this._mainContainerSupport.setWidth(width);
+  }
+
+  /**
    * Sets the width of the main shape
    * @param {number} width The width of the main shape
    */
@@ -7778,6 +7855,9 @@ class DvtGanttTask {
     }
     if (this._mainContainer) {
       this._applyMainContainerClippath();
+    }
+    if (this._mainContainerSupport) {
+      this._setMainContainerSupportWidth(width);
     }
   }
 
@@ -7809,6 +7889,9 @@ class DvtGanttTask {
     }
     if (this._mainContainer) {
       this._applyMainContainerClippath();
+    }
+    if (this._mainContainerSupport) {
+      this._mainContainerSupport.setHeight(height);
     }
   }
 
@@ -7929,6 +8012,10 @@ class DvtGanttTask {
     }
     if (this._mainContainer) {
       this._applyMainContainerClippath();
+    }
+    if (this._mainContainerSupport) {
+      this._setMainContainerSupportWidth(w);
+      this._mainContainerSupport.setHeight(h);
     }
   }
 
@@ -9213,24 +9300,26 @@ class DvtGanttTaskLabel {
    * "Highights" the task label, i.e. for when selection-behavior is "highlightDependencies".
    */
   highlight() {
-    if (this._labelOutputText) {
+    if (this._labelOutputText && !this._isHighlighted) {
       ToolkitUtils.addClassName(
         this._labelOutputText.getElem(),
         this._gantt.GetStyleClass('taskHighlight')
       );
     }
+    this._isHighlighted = true;
   }
 
   /**
    * "Un-Highights" the task label, i.e. for when selection-behavior is "highlightDependencies".
    */
   unhighlight() {
-    if (this._labelOutputText) {
+    if (this._labelOutputText && this._isHighlighted) {
       ToolkitUtils.removeClassName(
         this._labelOutputText.getElem(),
         this._gantt.GetStyleClass('taskHighlight')
       );
     }
+    this._isHighlighted = false;
   }
 
   /**
@@ -10884,9 +10973,12 @@ class DvtGanttTaskNode extends Container {
     // In the animation case, we want to skip the logic below, rely on the condition below to perform renderViewportDependencyLines(),
     // which effectively clears the dependency lines, and allow the viewport to refresh properly on animation end
     // via DvtGanttAnimationManager._onAnimationEnd().
+    // One exception is when we're in the middle of a marquee selection drag--in that case we need to perform this update
+    // and do less work in the subsequent renderViewportDependencyLines for performance reasons (refer to the comments in that method).
+    const isMarqueeDragging = this._gantt.getEventManager().isMarqueeDragging();
     if (
       options.dependencyLineShape === 'straight' &&
-      options.selectionBehavior !== 'highlightDependencies'
+      (options.selectionBehavior !== 'highlightDependencies' || isMarqueeDragging)
     ) {
       var dependenciesContainer = this._gantt.getDependenciesContainer();
       var predecessorLines = this.getPredecessorDependencies();
@@ -10900,8 +10992,11 @@ class DvtGanttTaskNode extends Container {
     }
 
     // When selection is triggered by user gesture, highlight the relevant dependencies
-    // See also Bug JIRA JET-49382
-    if (!isInitial && options.selectionBehavior === 'highlightDependencies') {
+    // See also Bug JIRA JET-49382, and JET-59109
+    if (
+      (!isInitial || isMarqueeDragging) &&
+      options.selectionBehavior === 'highlightDependencies'
+    ) {
       var viewport = this._gantt.getViewPort();
       var dataLayoutManager = this._gantt.getDataLayoutManager();
       dataLayoutManager.renderViewportDependencyLines(viewport, 'vpc_translate', {
@@ -11417,6 +11512,11 @@ class DvtGanttRowNode extends Container {
       }
       container.addChild(this);
     }
+
+    // If there are no selected tasks in the row, remove any row selection effects
+    if (!this.getTaskObjs().some((taskObj) => taskObj.node && taskObj.node.isSelected())) {
+      this.removeEffect('selected');
+    };
   }
 
   /**
@@ -11823,7 +11923,8 @@ class DvtGanttDataLayoutManager {
     this._rowObjs = [];
     this._dependencyObjs = [];
     this._contentHeight = 0;
-    this._prevHighlightedTaskObjs = [];
+    this._prevHighlightedTaskObjs = new Set();
+    this._prevDependencyObjs = new Set();
   }
 
   /**
@@ -13665,7 +13766,7 @@ class DvtGanttDataLayoutManager {
    * @param {Object=} targetTask The target selected (or de-selected) task, of the shape { taskObj: taskObj, isSelected: boolean }.
    *    This should only be specified if the target task is not in the selectionHandler's current selection (yet),
    *    i.e. this rendering is triggered by a task selection/deselection gesture.
-   * @returns {Object} { taskObjs: Array(taskObjs), dependencyObjs: Set(depObjs) }
+   * @returns {Object} { taskObjs: Set(taskObjs), dependencyObjs: Set(depObjs) }
    * @private
    */
   _getSelectionDependencies(action, targetTask) {
@@ -13726,12 +13827,12 @@ class DvtGanttDataLayoutManager {
     // merge upstream and downstream tasks objs
     visitedDownstreamTaskObjs.forEach((t) => visitedTaskObjs.add(t));
 
-    return { taskObjs: Array.from(visitedTaskObjs), dependencyObjs: visitedDependencyObjs };
+    return { taskObjs: visitedTaskObjs, dependencyObjs: visitedDependencyObjs };
   }
 
   /**
    * Highlights given tasks and dim out all others
-   * @param {Array} taskObjs The task layout objects associated with the tasks to be highlighted
+   * @param {Set} taskObjs The task layout objects associated with the tasks to be highlighted
    */
   highlightTasks(taskObjs) {
     if (this._gantt.getEventManager().isDnDDragging()) {
@@ -13744,22 +13845,22 @@ class DvtGanttDataLayoutManager {
     }
 
     // Dim databody, or undim databody if there are not tasks to highlight
-    if (taskObjs.length === 0) {
+    if (taskObjs.size === 0) {
       this._gantt.undimDatabody();
     } else {
       this._gantt.dimDatabody();
     }
 
-    // un-highlight previous set
+    // un-highlight anything not in current set that's in the previous set
     this._prevHighlightedTaskObjs.forEach((taskObj) => {
-      if (taskObj.node) {
+      if (taskObj.node && !taskObjs.has(taskObj)) {
         taskObj.node.unhighlight();
       }
     });
 
-    // highlight current set
+    // highlight anything in current set that's not in the previous set
     taskObjs.forEach((taskObj) => {
-      if (taskObj.node) {
+      if (taskObj.node && !this._prevHighlightedTaskObjs.has(taskObj)) {
         taskObj.node.highlight();
       }
     });
@@ -13775,13 +13876,9 @@ class DvtGanttDataLayoutManager {
    *     This should be of the shape { taskObj: taskObj, isSelected: boolean }
    */
   renderViewportDependencyLines(viewport, action, targetTask) {
-    var dependenciesContainer = this._gantt.getDependenciesContainer();
-    if (dependenciesContainer) {
-      dependenciesContainer.removeChildren();
-    }
-
     var dependencyObjs;
-    if (this._gantt.getOptions()['selectionBehavior'] === 'highlightDependencies') {
+    var selectionBehavior = this._gantt.getOptions().selectionBehavior;
+    if (selectionBehavior === 'highlightDependencies') {
       // "highlightDependencies" selection behavior: only dependencies related to the selected tasks are shown
       // and dim all other tasks
       var selectionDeps = this._getSelectionDependencies(action, targetTask);
@@ -13791,8 +13888,27 @@ class DvtGanttDataLayoutManager {
       // normal selection behavior, just render all the dependencies
       dependencyObjs = new Set(this._dependencyObjs);
       // Clear any previously "highlightDependencies" artifacts
-      this.highlightTasks([]);
+      this.highlightTasks(new Set());
     }
+
+    var dependenciesContainer = this._gantt.getDependenciesContainer();
+    if (dependenciesContainer) {
+      // During marquee dragging with highlightDependencies selectionBehavior, only remove the dependency lines that are not relevant
+      // to the selection, for improved performance (see JET-55859).
+      // TODO: See if we can safely selectively remove dependency lines in all cases
+      var isMarqueeDragging = this._gantt.getEventManager().isMarqueeDragging();
+      if (!(isMarqueeDragging && selectionBehavior === 'highlightDependencies')) {
+        dependenciesContainer.removeChildren();
+      } else {
+        // Remove dependency lines from DOM that are not part of the current set
+        this._prevDependencyObjs.forEach((depObj) => {
+          if (!dependencyObjs.has(depObj) && depObj.node) {
+            dependenciesContainer.removeChild(depObj.node);
+          }
+        });
+      }
+    }
+    this._prevDependencyObjs = dependencyObjs;
 
     // Render viewport related dependencies
     // O(N) search for dependencies overlapping the viewport (more precisely, O(lgN) search + O(2k) iterations),
@@ -17240,7 +17356,8 @@ const DvtGanttRenderer = {
           defaultStyleClass: gantt.GetStyleClass('referenceObjectLine'),
           defaultStroke: null
         },
-        _throttle: throttle
+        _throttle: throttle,
+        _eventManager: gantt.getEventManager()
       },
       gantt.getContentLength(),
       axisSize
@@ -17940,7 +18057,6 @@ class Gantt extends TimeComponent {
     var _resources = this._resources;
     _resources['axisClass'] = this.GetStyleClass(axis);
     _resources['axisSeparatorClass'] = this.GetStyleClass(axis + 'Ticks');
-    _resources['axisLabelClass'] = this.GetStyleClass(axis + 'Labels');
 
     var retOptions = {
       start: options['start'],
@@ -18759,18 +18875,20 @@ class Gantt extends TimeComponent {
    * Dim databody, i.e. to dim tasks for "highlightDependencies" selection behavior
    */
   dimDatabody() {
-    if (this._databody) {
+    if (this._databody && !this._isDatabodyDimmed) {
       ToolkitUtils.addClassName(this._databody.getElem(), this.GetStyleClass('databodyDim'));
     }
+    this._isDatabodyDimmed = true;
   }
 
   /**
    * Undim databody, i.e. to undim tasks for "highlightDependencies" selection behavior
    */
   undimDatabody() {
-    if (this._databody) {
+    if (this._databody && this._isDatabodyDimmed) {
       ToolkitUtils.removeClassName(this._databody.getElem(), this.GetStyleClass('databodyDim'));
     }
+    this._isDatabodyDimmed = false;
   }
 
   /**

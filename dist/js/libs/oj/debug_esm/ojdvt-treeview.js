@@ -2044,6 +2044,9 @@ class DvtSunburstNode extends DvtTreeNode {
 
     // Create the shape object
     this._shape = this._createShapeNode();
+    if (!this._shape) {
+      return;
+    }
     container.addChild(this._shape);
 
     if (!(this.isRootNode() && this._createRootNodeContent())) {
@@ -3421,6 +3424,9 @@ class DvtTreemapNode extends DvtTreeNode {
 
     // Create the shape object
     this._shape = this._createShapeNode();
+    if (!this._shape) {
+      return;
+    }
     container.addChild(this._shape);
 
     if (this.hasChildren()) {
@@ -3455,7 +3461,6 @@ class DvtTreemapNode extends DvtTreeNode {
         }
       }
     }
-
     // WAI-ARIA
     if (this.hasChildren()) this._shape.setAriaRole('group');
     else this._shape.setAriaRole('img');

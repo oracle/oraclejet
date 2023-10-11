@@ -7,7 +7,7 @@
  */
 import oj from 'ojs/ojcore-base';
 import { getNoJQFocusHandlers as getNoJQFocusHandlers$1 } from 'ojs/ojdomutils';
-import { error } from 'ojs/ojlogger';
+import { error, warn } from 'ojs/ojlogger';
 import { getFocusableElementsInNode as getFocusableElementsInNode$1, checkVisibility, disableElement as disableElement$1, disableAllFocusableElements as disableAllFocusableElements$1, enableAllFocusableElements as enableAllFocusableElements$1, getActionableElementsInNode as getActionableElementsInNode$1, getLogicalChildPopup as getLogicalChildPopup$1 } from 'ojs/ojkeyboardfocus-utils';
 
 /**
@@ -37,6 +37,47 @@ DataCollectionUtils._FOCUSABLE_ELEMENTS_TAG = [
  * Number of times checkViewport occured during initial fetch before log a warning
  */
 DataCollectionUtils.CHECKVIEWPORT_THRESHOLD = 3;
+
+/** ********************** custom renderer callback methods *********************/
+
+/**
+ * Applies the renderer content provided to the element specified
+ * @param {Element} element
+ * @param {string | Element} content
+ * @param {boolean=} wrapText
+ * @param {function=} subtreeCallback
+ * @returns true if content was appended, false otherwise
+ */
+DataCollectionUtils.applyRendererContent = function (element, content, wrapText, subtreeCallback) {
+  // if an element is returned from the renderer and the parent of that element is null, we will append
+  // the returned element to the parentElement.  If non-null, we won't do anything, assuming that the
+  // rendered content has already added into the DOM somewhere.
+  if (content != null) {
+    // allow return of document fragment from jquery create/js document.createDocumentFragment
+    if (content.parentNode === null || content.parentNode instanceof DocumentFragment) {
+      element.appendChild(content); // @HTMLUpdateOK
+      if (subtreeCallback) {
+        subtreeCallback(content);
+      }
+      return true;
+    }
+    if (content.parentNode != null) {
+      // parent node exists, do nothing
+      return false;
+    }
+    if (content.toString) {
+      if (wrapText) {
+        var textWrapper = document.createElement('span');
+        textWrapper.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
+        element.appendChild(textWrapper); // @HTMLUpdateOK
+      } else {
+        element.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
+      }
+      return true;
+    }
+  }
+  return false;
+};
 
 /** ******************* focusable/editable element related methods *****************/
 
@@ -816,6 +857,21 @@ DataCollectionUtils.isRequestIdleCallbackSupported = function () {
 };
 
 /**
+ * Returns whether or not the fetch result value signals that an abort was triggered
+ * @private
+ */
+DataCollectionUtils.isFetchAborted = function (fetchResult) {
+  var signal = fetchResult.value.fetchParameters.signal;
+  if (signal == null) {
+    warn(
+      'Signal is missing from fetch parameters, which is set by collection component and should be present'
+    );
+    return false;
+  }
+  return signal.aborted;
+};
+
+/**
  * Helper function which returns true if the browser is Chrome
  * @private
  */
@@ -912,6 +968,7 @@ DataCollectionUtils.getBrowserVersion = function () {
 };
 
 const applyMergedInlineStyles = DataCollectionUtils.applyMergedInlineStyles;
+const applyRendererContent = DataCollectionUtils.applyRendererContent;
 const applyStyleObj = DataCollectionUtils.applyStyleObj;
 const areKeySetsEqual = DataCollectionUtils.areKeySetsEqual;
 const containsKey = DataCollectionUtils.containsKey;
@@ -939,6 +996,7 @@ const isEndKeyEvent = DataCollectionUtils.isEndKeyEvent;
 const isEnterKeyEvent = DataCollectionUtils.isEnterKeyEvent;
 const isEscapeKeyEvent = DataCollectionUtils.isEscapeKeyEvent;
 const isEventClickthroughDisabled = DataCollectionUtils.isEventClickthroughDisabled;
+const isFetchAborted = DataCollectionUtils.isFetchAborted;
 const isFromDefaultSelector = DataCollectionUtils.isFromDefaultSelector;
 const isF2KeyEvent = DataCollectionUtils.isF2KeyEvent;
 const isHomeKeyEvent = DataCollectionUtils.isHomeKeyEvent;
@@ -967,4 +1025,4 @@ const isWebkit = DataCollectionUtils.isWebkit;
 const isBlink = DataCollectionUtils.isBlink;
 const getBrowserVersion = DataCollectionUtils.getBrowserVersion;
 
-export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, applyMergedInlineStyles, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, enableAllFocusableElements, getActionableElementsInNode, getAddEventKeysResult, getBrowserVersion, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getLogicalChildPopup, getNoJQFocusHandlers, handleActionablePrevTab, handleActionableTab, isAndroid, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isBlink, isChrome, isClickthroughDisabled, isEdge, isElementIntersectingScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFirefox, isFromDefaultSelector, isHomeKeyEvent, isIE, isIos, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMac, isMetaKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSafari, isSpaceBarKeyEvent, isTabKeyEvent, isWebkit, isWindows };
+export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, applyMergedInlineStyles, applyRendererContent, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, enableAllFocusableElements, getActionableElementsInNode, getAddEventKeysResult, getBrowserVersion, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getLogicalChildPopup, getNoJQFocusHandlers, handleActionablePrevTab, handleActionableTab, isAndroid, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isBlink, isChrome, isClickthroughDisabled, isEdge, isElementIntersectingScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFetchAborted, isFirefox, isFromDefaultSelector, isHomeKeyEvent, isIE, isIos, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMac, isMetaKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSafari, isSpaceBarKeyEvent, isTabKeyEvent, isWebkit, isWindows };

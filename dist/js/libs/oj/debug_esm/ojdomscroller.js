@@ -40,6 +40,7 @@ const DomScroller = function (element, dataprovider, options) {
   this._maxCount = options.maxCount;
   this._maxCount = this._maxCount > 0 ? this._maxCount : 500;
   this._rowCount = options.initialRowCount > 0 ? options.initialRowCount : 0;
+  this._controller = options.controller;
   this._successCallback = options.success;
   this._requestCallback = options.request;
   this._errorCallback = options.error;
@@ -60,6 +61,10 @@ const DomScroller = function (element, dataprovider, options) {
 
   var elem = this._getScrollEventElement();
   this._scrollEventListener = function () {
+    if (this._isScrollTrackingPaused) {
+      // do not trigger any scroll notifications if scroll tracking is paused
+      return;
+    }
     if (this._beforeScrollCallback) {
       this._beforeScrollCallback();
     }
@@ -93,6 +98,20 @@ const DomScroller = function (element, dataprovider, options) {
  */
 DomScroller.prototype.setAsyncIterator = function (asyncIterator) {
   this._asyncIterator = asyncIterator;
+};
+
+/**
+ * Pause scroll tracking for this DomScroller instance
+ */
+DomScroller.prototype.pauseScrollTracking = function () {
+  this._isScrollTrackingPaused = true;
+};
+
+/**
+ * Resume scroll tracking for this DomScroller instance
+ */
+DomScroller.prototype.resumeScrollTracking = function () {
+  this._isScrollTrackingPaused = false;
 };
 
 /**
@@ -189,7 +208,8 @@ DomScroller.prototype._doFetch = function (scrollTop) {
       },
       function (reason) {
         if (self._errorCallback) {
-          self._errorCallback(reason);
+          var isAbort = self._controller != null ? self._controller.signal.aborted : false;
+          self._errorCallback(reason, isAbort);
           self._fetchPromise = null;
           self._nextFetchTrigger = undefined;
         }

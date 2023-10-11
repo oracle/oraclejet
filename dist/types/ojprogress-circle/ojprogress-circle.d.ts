@@ -3,7 +3,7 @@ import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
 import { ExtendGlobalProps } from 'ojs/ojvcomponent';
 import { Component, ComponentChild } from 'preact';
-declare type Props = {
+type Props = {
     max?: number;
     value?: number;
     size?: 'sm' | 'md' | 'lg';

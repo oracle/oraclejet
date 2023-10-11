@@ -9,6 +9,7 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
     animationOnDataChange?: 'slideToLeft' | 'slideToRight' | 'auto' | 'none';
     animationOnDisplay?: 'alphaFade' | 'zoom' | 'auto' | 'none';
     as?: string;
+    comboSeriesOrder?: 'data' | 'seriesType';
     coordinateSystem?: 'polar' | 'cartesian';
     data: DataProvider<K, D> | null;
     dataCursor?: 'off' | 'on' | 'auto';
@@ -260,6 +261,9 @@ export namespace ojChart {
        C>["animationOnDisplay"]>;
     // tslint:disable-next-line interface-over-type-literal
     type asChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I, C>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type comboSeriesOrderChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I,
+       C>["comboSeriesOrder"]>;
     // tslint:disable-next-line interface-over-type-literal
     type coordinateSystemChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I,
        C>["coordinateSystem"]>;
@@ -714,6 +718,8 @@ export namespace ojChart {
         referenceObjectSection?: LegendReferenceObjectSection;
         rendered?: 'on' | 'off' | 'auto';
         scrolling?: 'off' | 'asNeeded';
+        sectionTitleHalign?: 'center' | 'end' | 'start';
+        sectionTitleStyle?: Partial<CSSStyleDeclaration>;
         sections?: LegendSection[];
         seriesSection?: LegendSeriesSection;
         size?: string;
@@ -1156,6 +1162,7 @@ export interface ojChartEventMap<K, D extends ojChart.DataItem<I> | any, I exten
     'animationOnDataChangeChanged': JetElementCustomEvent<ojChart<K, D, I, C>["animationOnDataChange"]>;
     'animationOnDisplayChanged': JetElementCustomEvent<ojChart<K, D, I, C>["animationOnDisplay"]>;
     'asChanged': JetElementCustomEvent<ojChart<K, D, I, C>["as"]>;
+    'comboSeriesOrderChanged': JetElementCustomEvent<ojChart<K, D, I, C>["comboSeriesOrder"]>;
     'coordinateSystemChanged': JetElementCustomEvent<ojChart<K, D, I, C>["coordinateSystem"]>;
     'dataChanged': JetElementCustomEvent<ojChart<K, D, I, C>["data"]>;
     'dataCursorChanged': JetElementCustomEvent<ojChart<K, D, I, C>["dataCursor"]>;
@@ -1207,6 +1214,7 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
     animationOnDataChange?: 'slideToLeft' | 'slideToRight' | 'auto' | 'none';
     animationOnDisplay?: 'alphaFade' | 'zoom' | 'auto' | 'none';
     as?: string;
+    comboSeriesOrder?: 'data' | 'seriesType';
     coordinateSystem?: 'polar' | 'cartesian';
     data: DataProvider<K, D> | null;
     dataCursor?: 'off' | 'on' | 'auto';
@@ -2183,6 +2191,9 @@ export namespace ChartElement {
     type asChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I,
        C>["as"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type comboSeriesOrderChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["comboSeriesOrder"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type coordinateSystemChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
        null> = JetElementCustomEvent<ojChart<K, D, I, C>["coordinateSystem"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -3029,6 +3040,7 @@ export interface ChartIntrinsicProps extends Partial<Readonly<ojChartSettablePro
     onanimationOnDataChangeChanged?: (value: ojChartEventMap<any, any, any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojChartEventMap<any, any, any, any>['animationOnDisplayChanged']) => void;
     onasChanged?: (value: ojChartEventMap<any, any, any, any>['asChanged']) => void;
+    oncomboSeriesOrderChanged?: (value: ojChartEventMap<any, any, any, any>['comboSeriesOrderChanged']) => void;
     oncoordinateSystemChanged?: (value: ojChartEventMap<any, any, any, any>['coordinateSystemChanged']) => void;
     ondataChanged?: (value: ojChartEventMap<any, any, any, any>['dataChanged']) => void;
     ondataCursorChanged?: (value: ojChartEventMap<any, any, any, any>['dataCursorChanged']) => void;

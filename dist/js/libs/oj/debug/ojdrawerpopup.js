@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'ojs/ojdomutils', 'ojs/ojcore-base', 'ojs/ojpopup', 'ojs/ojdrawerutils', 'hammerjs'], function (exports, jsxRuntime, ojvcomponent, preact, $, AnimationUtils, DomUtils, ojcoreBase, ojpopup, ojdrawerutils, Hammer) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'ojs/ojcore-base', 'ojs/ojpopup', 'ojs/ojdrawerutils', 'hammerjs'], function (exports, jsxRuntime, ojvcomponent, preact, $, AnimationUtils, ojcoreBase, ojpopup, ojdrawerutils, Hammer) { 'use strict';
 
     $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
     Hammer = Hammer && Object.prototype.hasOwnProperty.call(Hammer, 'default') ? Hammer['default'] : Hammer;
@@ -15,15 +15,6 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
         else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
         return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
     };
     var DrawerPopup_1;
     const ojet = oj;
@@ -40,7 +31,6 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             };
             this.rootRef = preact.createRef();
             this.isShiftKeyActive = false;
-            this.drawerResizeHandler = null;
             this.windowResizeHandler = null;
             this.handleKeyDown = (event) => {
                 if (event.key === ojdrawerutils.DrawerConstants.keys.ESC) {
@@ -68,6 +58,32 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                             event.preventDefault();
                             firstItem.focus();
                             return;
+                        }
+                    }
+                }
+            };
+            this.handleOnBlur = (event) => {
+                if (this.props.modality === 'modal') {
+                    const zorderLayer = this.rootRef.current.parentNode;
+                    let isTargetWithin = false;
+                    if (event.relatedTarget) {
+                        if (this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings(zorderLayer, event.relatedTarget)) {
+                            isTargetWithin = true;
+                        }
+                    }
+                    else {
+                        if (this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings(zorderLayer, document.activeElement)) {
+                            isTargetWithin = true;
+                        }
+                    }
+                    if (!isTargetWithin && this.props.opened) {
+                        const focusables = ojdrawerutils.DrawerUtils.getFocusables(this.rootRef.current);
+                        event.preventDefault();
+                        if (focusables.length) {
+                            focusables[0].focus();
+                        }
+                        else {
+                            this.rootRef.current.focus();
                         }
                     }
                 }
@@ -101,9 +117,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 }
             };
             this.refreshHandler = (edge) => {
-                const $drawerElement = $(this.rootRef.current);
-                $drawerElement.position(this.getDrawerPosition(edge));
-                PopupService.getInstance().triggerOnDescendents($drawerElement, PopupService.EVENT.POPUP_REFRESH);
+                PopupService.getInstance().triggerOnDescendents($(this.rootRef.current), PopupService.EVENT.POPUP_REFRESH);
             };
             this.destroyHandler = () => {
                 const $drawerElement = $(this.rootRef.current);
@@ -135,6 +149,26 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 if (prevViewportResolvedDisplayModeVertical !== nextViewportResolvedDisplayModeVertical) {
                     updatedState['viewportResolvedDisplayModeVertical'] = nextViewportResolvedDisplayModeVertical;
                 }
+                if (this.isDrawerOpened() &&
+                    prevViewportResolvedDisplayMode === ojdrawerutils.DrawerConstants.stringFullOverlay &&
+                    nextViewportResolvedDisplayMode === ojdrawerutils.DrawerConstants.stringOverlay) {
+                    if (this.isIOSspecificScrollCase()) {
+                        this.applyPopupServiceModalChanges('modeless');
+                    }
+                    else if (this.isAndroidSpecificScrollCase()) {
+                        ojdrawerutils.DrawerUtils.enableBodyOverflow();
+                    }
+                }
+                if (this.isDrawerOpened() &&
+                    prevViewportResolvedDisplayMode === ojdrawerutils.DrawerConstants.stringOverlay &&
+                    nextViewportResolvedDisplayMode === ojdrawerutils.DrawerConstants.stringFullOverlay) {
+                    if (this.isIOSspecificScrollCase()) {
+                        this.applyPopupServiceModalChanges('modal');
+                    }
+                    else if (this.isAndroidSpecificScrollCase()) {
+                        ojdrawerutils.DrawerUtils.disableBodyOverflow();
+                    }
+                }
                 if (Object.keys(updatedState).length > 0) {
                     this.setState(updatedState);
                 }
@@ -151,7 +185,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         }
         render(props) {
             if (this.isDrawerOpened() || this.wasDrawerOpenedInPrevState()) {
-                return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this.rootRef, class: this.getPopupStyleClasses(this.props.edge), tabIndex: -1, role: this.props.role || 'dialog', onKeyDown: this.handleKeyDown }, { children: jsxRuntime.jsx("div", Object.assign({ class: "oj-drawer-full-height" }, { children: props.children })) })));
+                return (jsxRuntime.jsx(ojvcomponent.Root, { ref: this.rootRef, class: this.getPopupStyleClasses(this.props.edge), tabIndex: -1, role: this.props.role || 'dialog', onKeyDown: this.handleKeyDown, onBlur: this.handleOnBlur, children: jsxRuntime.jsx("div", { class: "oj-drawer-full-height", children: props.children }) }));
             }
             return jsxRuntime.jsx(ojvcomponent.Root, {});
         }
@@ -161,17 +195,14 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         wasDrawerOpenedInPrevState() {
             return this.openedPrevState;
         }
-        selfClose() {
-            var _a, _b, _c, _d;
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    yield ((_b = (_a = this.props).onOjBeforeClose) === null || _b === void 0 ? void 0 : _b.call(_a));
-                }
-                catch (_) {
-                    return;
-                }
-                (_d = (_c = this.props).onOpenedChanged) === null || _d === void 0 ? void 0 : _d.call(_c, false);
-            });
+        async selfClose() {
+            try {
+                await this.props.onOjBeforeClose?.();
+            }
+            catch (_) {
+                return;
+            }
+            this.props.onOpenedChanged?.(false);
         }
         openOrCloseDrawer(prevState) {
             if (this.isDrawerOpened() != prevState.opened) {
@@ -187,6 +218,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             }
             else {
                 if (ZOrderUtils.getStatus($drawerElement) === ZOrderUtils.STATUS.OPEN) {
+                    if (this.isIOSspecificScrollCase() &&
+                        this.getViewportResolvedDisplayMode() === ojdrawerutils.DrawerConstants.stringFullOverlay) {
+                        this.applyPopupServiceModalChanges('modeless');
+                    }
                     popupServiceInstance.close(popupServiceOptions);
                 }
             }
@@ -201,7 +236,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             PSOptions[PSoption.MODALITY] = this.props.modality;
             PSOptions[PSoption.LAYER_SELECTORS] = this.getDrawerSurrogateLayerSelectors();
             PSOptions[PSoption.LAYER_LEVEL] = PopupService.LAYER_LEVEL.TOP_LEVEL;
-            PSOptions[PSoption.POSITION] = this.getDrawerPosition(edge);
+            PSOptions[PSoption.POSITION] = null;
             PSOptions[PSoption.CUSTOM_ELEMENT] = true;
             const PSEvent = PopupService.EVENT;
             PSOptions[PSoption.EVENTS] = {
@@ -218,10 +253,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         beforeOpenHandler(edge, PSOptions) {
             ojdrawerutils.DrawerUtils.disableBodyOverflow();
             this.drawerOpener = document.activeElement;
-            const $drawerElement = PSOptions[PopupService.OPTION.POPUP];
-            const position = PSOptions[PopupService.OPTION.POSITION];
-            $drawerElement.show();
-            $drawerElement.position(position);
+            PSOptions[PopupService.OPTION.POPUP].show();
             const busyContext = ojet.Context.getContext(this.rootRef.current).getBusyContext();
             const resolveFunc = busyContext.addBusyState({ description: 'Animation in progress' });
             const animationPromise = AnimationUtils.slideIn(this.rootRef.current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideIn, edge));
@@ -230,21 +262,22 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         }
         afterOpenHandler(edge, prevState) {
             ojdrawerutils.DrawerUtils.enableBodyOverflow();
+            if (this.isIOSspecificScrollCase() &&
+                this.getViewportResolvedDisplayMode() === ojdrawerutils.DrawerConstants.stringFullOverlay) {
+                this.applyPopupServiceModalChanges('modal');
+            }
+            if (this.isAndroidSpecificScrollCase() &&
+                this.getViewportResolvedDisplayMode() === ojdrawerutils.DrawerConstants.stringFullOverlay) {
+                ojdrawerutils.DrawerUtils.disableBodyOverflow();
+            }
             this.handleFocus(prevState);
             const $drawerElement = $(this.rootRef.current);
             const status = ZOrderUtils.getStatus($drawerElement);
-            if (this.drawerResizeHandler === null) {
-                this.drawerResizeHandler = this.drawerResizeCallback.bind(this, $drawerElement, edge);
-            }
-            DomUtils.addResizeListener(this.rootRef.current, this.drawerResizeHandler, 0, true);
             if (status === ZOrderUtils.STATUS.OPEN && !this.isDrawerOpened()) {
                 const popupServiceInstance = PopupService.getInstance();
                 const popupServiceOptions = this.getPopupServiceOptions(prevState);
                 popupServiceInstance.close(popupServiceOptions);
             }
-        }
-        drawerResizeCallback($drawerElement, edge) {
-            $drawerElement.position(this.getDrawerPosition(edge));
         }
         handleFocus(prevState) {
             if (this.state.opened && prevState.opened !== this.state.opened) {
@@ -265,8 +298,6 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         beforeCloseHandler(edge) {
             ojdrawerutils.DrawerUtils.disableBodyOverflow();
             this.elementWithFocusBeforeDrawerCloses = document.activeElement;
-            DomUtils.removeResizeListener(this.rootRef.current, this.drawerResizeHandler);
-            this.drawerResizeHandler = null;
             const busyContext = ojet.Context.getContext(this.rootRef.current).getBusyContext();
             const resolveFunc = busyContext.addBusyState({ description: 'Animation in progress' });
             const animationPromise = AnimationUtils.slideOut(this.rootRef.current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideOut, edge));
@@ -286,7 +317,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 popupServiceInstance.open(popupServiceOptions);
             }
             else if (!this.wasDrawerOpenedInPrevState()) {
-                this.forceUpdate();
+                window.queueMicrotask(() => {
+                    this.forceUpdate();
+                });
             }
         }
         getDrawerSurrogateLayerSelectors() {
@@ -296,16 +329,6 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 surrogateLayerStyles += ` ${ojdrawerutils.DrawerConstants.stringOjDrawer}${ojdrawerutils.DrawerConstants.charDash}${stringModal}`;
             }
             return surrogateLayerStyles;
-        }
-        getDrawerPosition(edge) {
-            let pos = `${edge} ${edge === 'bottom' ? 'bottom' : 'top'}`;
-            let position = {
-                my: pos,
-                at: pos,
-                of: window,
-                collision: 'none'
-            };
-            return oj.PositionUtils.normalizeHorizontalAlignment(position, ojdrawerutils.DrawerUtils.isRTL());
         }
         getPopupStyleClasses(edge) {
             const customStyleClassMap = {};
@@ -392,6 +415,21 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             if (this.hammerInstance) {
                 this.hammerInstance.off(this.getSwipeCloseDirection(this.props.edge), this.handleSwipeAction);
             }
+        }
+        isIOSspecificScrollCase() {
+            return (ojet.AgentUtils.getAgentInfo().os === ojet.AgentUtils.OS.IOS &&
+                this.props.modality === 'modeless');
+        }
+        isAndroidSpecificScrollCase() {
+            return (ojet.AgentUtils.getAgentInfo().os === ojet.AgentUtils.OS.ANDROID &&
+                this.props.modality === 'modeless');
+        }
+        applyPopupServiceModalChanges(modalValue) {
+            const PSOptions = {};
+            const PSoption = PopupService.OPTION;
+            PSOptions[PSoption.POPUP] = $(this.rootRef.current);
+            PSOptions[PSoption.MODALITY] = modalValue;
+            PopupService.getInstance().changeOptions(PSOptions);
         }
     };
     exports.DrawerPopup.defaultProps = {

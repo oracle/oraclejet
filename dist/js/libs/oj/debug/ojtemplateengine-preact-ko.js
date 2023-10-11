@@ -20,16 +20,16 @@ define(['knockout', 'ojs/ojkoshared', 'ojs/ojcontext', 'ojs/ojtemplateengine-uti
                 __Observable: ko.observable
             };
         }
-        execute(componentElement, templateElement, properties, alias, reportBusy) {
+        execute(componentElement, templateElement, properties, alias, reportBusy, provided) {
             const templateAlias = templateElement.getAttribute('data-oj-as');
-            const context = ojtemplateengineUtils.TemplateEngineUtils.getContext(this._bindingProvider, componentElement, templateElement, properties, alias, templateAlias);
+            const context = ojtemplateengineUtils.TemplateEngineUtils.getContext(this._bindingProvider, componentElement, templateElement, properties, alias, templateAlias, provided);
             if (templateElement.render) {
-                return this._executeVDomTemplate(templateElement, context);
+                return this._executeVDomTemplate(componentElement, templateElement, context, provided);
             }
             throw new Error(`The render property is expected on the template for component ${componentElement.id}`);
         }
-        clean(node) {
-            let vdomTemplateRoots = ojtemplateengineUtils.PreactTemplate.findTemplateRoots(node);
+        clean(node, componentElement) {
+            let vdomTemplateRoots = ojtemplateengineUtils.PreactTemplate.findTemplateRoots(node, componentElement);
             vdomTemplateRoots.forEach((root) => {
                 ojtemplateengineUtils.PreactTemplate.clean(root);
             });
@@ -46,7 +46,7 @@ define(['knockout', 'ojs/ojkoshared', 'ojs/ojcontext', 'ojs/ojtemplateengine-uti
         defineTrackableProperty(target, name, value, changeListener) {
             ojtemplateengineUtils.TemplateEngineUtils.createPropertyBackedByObservable(this._bindingProvider, target, name, value, changeListener);
         }
-        _executeVDomTemplate(templateElement, context) {
+        _executeVDomTemplate(componentElement, templateElement, context, provided) {
             const busyContext = Context.getContext(templateElement).getBusyContext();
             const customThrottle = (callback, timeout) => {
                 let timeoutInstance;
@@ -65,15 +65,15 @@ define(['knockout', 'ojs/ojkoshared', 'ojs/ojcontext', 'ojs/ojtemplateengine-uti
             };
             const computedVNode = ko.pureComputed({
                 read: () => {
-                    return templateElement.render(context.$current);
+                    return templateElement.render(context.$current, provided);
                 }
             })
                 .extend({ rateLimit: { timeout: 0, method: customThrottle } });
             const vNode = computedVNode();
             ojtemplateengineUtils.PreactTemplate.extendTemplate(templateElement, ojtemplateengineUtils.PreactTemplate._ROW_CACHE_FACTORY, (renderer) => {
                 templateElement._cachedRows.forEach((rowItem) => {
-                    let newVNode = renderer(rowItem.currentContext);
-                    ojtemplateengineUtils.PreactTemplate.renderNodes(newVNode, rowItem);
+                    let newVNode = renderer(rowItem.currentContext, provided);
+                    ojtemplateengineUtils.PreactTemplate.renderNodes(componentElement, newVNode, rowItem, provided);
                 });
             });
             const parentStub = document.createElement('div');
@@ -85,12 +85,12 @@ define(['knockout', 'ojs/ojkoshared', 'ojs/ojcontext', 'ojs/ojtemplateengine-uti
                 vnode: undefined,
                 nodes: undefined
             };
-            ojtemplateengineUtils.PreactTemplate.renderNodes(vNode, cachedRow);
+            ojtemplateengineUtils.PreactTemplate.renderNodes(componentElement, vNode, cachedRow, provided);
             templateElement._cachedRows.push(cachedRow);
             computedVNode.subscribe((newVNode) => {
                 const currRow = templateElement._cachedRows.find((row) => row.computedVNode === computedVNode);
                 if (currRow) {
-                    ojtemplateengineUtils.PreactTemplate.renderNodes(newVNode, currRow);
+                    ojtemplateengineUtils.PreactTemplate.renderNodes(componentElement, newVNode, currRow, provided);
                 }
             });
             return cachedRow.nodes;

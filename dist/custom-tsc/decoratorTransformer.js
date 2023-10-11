@@ -33,7 +33,6 @@ const _DT_DECORATORS = new Set([
 ]);
 function decoratorTransformer(buildOptions) {
     function visitor(ctx, sf) {
-        var _a;
         if (!buildOptions.componentToMetadata) {
             return (node) => {
                 return node;
@@ -41,10 +40,9 @@ function decoratorTransformer(buildOptions) {
         }
         if (buildOptions['debug'])
             console.log(`${sf.fileName}: processing decorators...`);
-        const aliasToExport = (_a = buildOptions.importMaps) === null || _a === void 0 ? void 0 : _a.aliasToExport;
+        const aliasToExport = buildOptions.importMaps?.aliasToExport;
         const visitor = (node) => {
-            var _a;
-            if (aliasToExport && ts.canHaveDecorators(node) && ((_a = ts.getDecorators(node)) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+            if (aliasToExport && ts.canHaveDecorators(node) && ts.getDecorators(node)?.length > 0) {
                 let updatedModifiers = removeDtDecoratorsFromModifiers(node, aliasToExport);
                 if (updatedModifiers.length === 0) {
                     updatedModifiers = undefined;
@@ -63,13 +61,12 @@ function decoratorTransformer(buildOptions) {
         return visitor;
     }
     return (ctx) => {
-        return (sf) => ts.visitNode(sf, visitor(ctx, sf));
+        return ((sf) => ts.visitNode(sf, visitor(ctx, sf)));
     };
 }
 exports.default = decoratorTransformer;
 function removeDtDecoratorsFromModifiers(node, aliasToExport) {
-    var _a;
-    return (_a = node.modifiers) === null || _a === void 0 ? void 0 : _a.filter((modLike) => {
+    return node.modifiers?.filter((modLike) => {
         if (ts.isModifier(modLike)) {
             return true;
         }

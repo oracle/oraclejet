@@ -914,20 +914,22 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
   };
 
   /**
-   * @private
-   * @ignore
    * Gets the active routes for all antecedent routes, from the root down to, but
    * excluding, this router.
+   *
+   * @private
+   * @ignore
    * @returns An array of the active parent routes
    */
   CoreRouter.prototype._getParentRoutes = function () {
     return getActiveRoutes().slice(0, this._urlOffset);
   };
   /**
-   * @private
-   * @ignore
    * Gets the active routes for this router. Active routes are all of the routes
    * from the current router down to its last active descendant router.
+   *
+   * @private
+   * @ignore
    * @returns An array of the active routes for this router
    */
   CoreRouter.prototype._getActiveRoutes = function () {

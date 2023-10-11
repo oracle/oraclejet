@@ -22,13 +22,12 @@ define(['exports', 'ojs/ojmetadatautils'], function (exports, MetadataUtils) { '
         return defaults;
     }
     function getStaticDefaults(constr, metadata, shouldFreeze) {
-        var _a;
         let defaults = constr['_staticDefaults'];
         if (defaults === undefined) {
             defaults = null;
             if (metadata) {
                 const propertiesMetadata = metadata.properties;
-                const PropDefaults = (_a = metadata.extension) === null || _a === void 0 ? void 0 : _a._DEFAULTS;
+                const PropDefaults = metadata.extension?._DEFAULTS;
                 if (PropDefaults) {
                     const defaultsInstance = new PropDefaults();
                     defaults = Object.create(defaultsInstance);

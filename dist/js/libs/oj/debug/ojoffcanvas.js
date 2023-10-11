@@ -15,7 +15,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
   /**
    * @namespace
    * @since 1.1.0
-   * @ojdeprecated {since: '12.0.0', description: 'Please use &lt;oj-drawer-layout> or &lt;oj-drawer-layout> components instead.'}
+   * @ojdeprecated {since: '12.0.0', value:['oj-drawer-layout']}
    * @ojtsmodule
    * @hideconstructor
    * @ojimportmembers Offcanvas
@@ -947,7 +947,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
    * @return {void}
    * @memberof OffcanvasUtils
    *
-   * @see #tearDownResponsive
+   * @see #.tearDownResponsive
    *
    * @example <caption>Setup the offcanvas:</caption>
    *    var offcanvas = {
@@ -992,7 +992,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
    * @return {void}
    * @memberof OffcanvasUtils
    *
-   * @see #setupResponsive
+   * @see #.setupResponsive
    *
    * @example <caption>TearDown the offcanvas:</caption>
    *    var offcanvas = {
@@ -1481,8 +1481,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
    * @property {string=} offcanvas.size size width or height of the offcanvas: width if edge is start or end and height if edge is to and bottom. Default to the computed width or height of the offcanvas.
    * @property {('modal'|'modeless')=} offcanvas.modality The modality of the offcanvas. Valid values are modal and modeless. Default: modeless. If the offcanvas is modal, interaction with the main content area is disabled like in a modal dialog.
    * @return {Promise.<boolean>} A promise that is resolved to boolean true when all transitions have completed. The promise is rejected if the ojbeforeopen event is vetoed.
-   * @see #close
-   * @see #toggle
+   * @see #.close
+   * @see #.toggle
    *
    * @memberof OffcanvasUtils
    *
@@ -1609,8 +1609,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
    * @param {Object} offcanvas An Object contains the properties in the following table.
    * @property {string} offcanvas.selector Document selector identifying the offcanvas element
    * @return {Promise.<boolean>} A promise that is resolved to boolean true when all transitions have completed. The promise is rejected if the ojbeforeclose event is vetoed.
-   * @see #open
-   * @see #toggle
+   * @see #.open
+   * @see #.toggle
    *
    * @memberof OffcanvasUtils
    *
@@ -1741,8 +1741,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
    * @property {string=} offcanvas.size size width or height of the offcanvas: width if edge is start or end and height if edge is to and bottom. Default to the computed width or height of the offcanvas.
    * @property {('modal'|'modeless')=} offcanvas.modality The modality of the offcanvas. Valid values are modal and modeless. Default: modeless. If the offcanvas is modal, interaction with the main content area is disabled like in a modal dialog.
    * @return {Promise.<boolean>} A promise that is resolved to boolean true when all transitions have completed
-   * @see #open
-   * @see #close
+   * @see #.open
+   * @see #.close
    *
    * @memberof OffcanvasUtils
    *
@@ -1919,7 +1919,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
    * @memberof OffcanvasUtils
    * @ojtsignore
    *
-   * @see #tearDownPanToReveal
+   * @see #.tearDownPanToReveal
    *
    * @example <caption>Setup the offcanvas:</caption>
    *    var offcanvas = {
@@ -2245,7 +2245,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
    * @param {Object} offcanvas An Object contains the properties in the following table.
    * @property {string} offcanvas.selector Document selector identifying the offcanvas element
    * @return {void}
-   * @see #setupPanToReveal
+   * @see #.setupPanToReveal
    *
    * @memberof OffcanvasUtils
    * @ojtsignore

@@ -1,6 +1,6 @@
 import { GlobalProps } from 'ojs/ojvcomponent';
 import { ComponentChildren } from 'preact';
-import CommonTypes = require('../ojcommontypes');
+import ojcommontypes = require('../ojcommontypes');
 import { KeySet } from '../ojkeyset';
 import { DataProvider, ItemMetadata } from '../ojdataprovider';
 import { ojSelectBase, ojSelectBaseEventMap, ojSelectBaseSettableProperties } from '../ojselectbase';
@@ -11,7 +11,7 @@ export interface ojSelectSingle<V, D> extends ojSelectBase<V, D, ojSelectSingleS
         messages: 'display' | 'none';
     };
     value: V | null;
-    valueItem: CommonTypes.ItemContext<V, D>;
+    valueItem: ojcommontypes.ItemContext<V, D>;
     translations: {
         cancel?: string;
         labelAccClearValue?: string;
@@ -52,7 +52,7 @@ export namespace ojSelectSingle {
     }> {
     }
     interface ojValueAction<V, D> extends CustomEvent<{
-        itemContext: CommonTypes.ItemContext<V, D>;
+        itemContext: ojcommontypes.ItemContext<V, D>;
         previousValue: V | null;
         value: V | null;
         [propName: string]: any;
@@ -105,10 +105,10 @@ export namespace ojSelectSingle {
             rowKey: V;
         };
         data: DataProvider<V, D>;
-        handleRowAction: ((event: Event, context: CommonTypes.ItemContext<V, D>) => void);
+        handleRowAction: ((event: Event, context: ojcommontypes.ItemContext<V, D>) => void);
         searchText: string;
         selected: KeySet<V>;
-        selectedItem: CommonTypes.ItemContext<V, D>;
+        selectedItem: ojcommontypes.ItemContext<V, D>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<V, D> = {
@@ -153,7 +153,7 @@ export interface ojSelectSingleSettableProperties<V, D> extends ojSelectBaseSett
         messages: 'display' | 'none';
     };
     value: V | null;
-    valueItem: CommonTypes.ItemContext<V, D>;
+    valueItem: ojcommontypes.ItemContext<V, D>;
     translations: {
         cancel?: string;
         labelAccClearValue?: string;
@@ -190,7 +190,7 @@ export namespace SelectSingleElement {
     }> {
     }
     interface ojValueAction<V, D> extends CustomEvent<{
-        itemContext: CommonTypes.ItemContext<V, D>;
+        itemContext: ojcommontypes.ItemContext<V, D>;
         previousValue: V | null;
         value: V | null;
         [propName: string]: any;
@@ -243,10 +243,10 @@ export namespace SelectSingleElement {
             rowKey: V;
         };
         data: DataProvider<V, D>;
-        handleRowAction: ((event: Event, context: CommonTypes.ItemContext<V, D>) => void);
+        handleRowAction: ((event: Event, context: ojcommontypes.ItemContext<V, D>) => void);
         searchText: string;
         selected: KeySet<V>;
-        selectedItem: CommonTypes.ItemContext<V, D>;
+        selectedItem: ojcommontypes.ItemContext<V, D>;
     };
 }
 export interface SelectSingleIntrinsicProps extends Partial<Readonly<ojSelectSingleSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {

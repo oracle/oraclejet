@@ -37,6 +37,47 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
    */
   DataCollectionUtils.CHECKVIEWPORT_THRESHOLD = 3;
 
+  /** ********************** custom renderer callback methods *********************/
+
+  /**
+   * Applies the renderer content provided to the element specified
+   * @param {Element} element
+   * @param {string | Element} content
+   * @param {boolean=} wrapText
+   * @param {function=} subtreeCallback
+   * @returns true if content was appended, false otherwise
+   */
+  DataCollectionUtils.applyRendererContent = function (element, content, wrapText, subtreeCallback) {
+    // if an element is returned from the renderer and the parent of that element is null, we will append
+    // the returned element to the parentElement.  If non-null, we won't do anything, assuming that the
+    // rendered content has already added into the DOM somewhere.
+    if (content != null) {
+      // allow return of document fragment from jquery create/js document.createDocumentFragment
+      if (content.parentNode === null || content.parentNode instanceof DocumentFragment) {
+        element.appendChild(content); // @HTMLUpdateOK
+        if (subtreeCallback) {
+          subtreeCallback(content);
+        }
+        return true;
+      }
+      if (content.parentNode != null) {
+        // parent node exists, do nothing
+        return false;
+      }
+      if (content.toString) {
+        if (wrapText) {
+          var textWrapper = document.createElement('span');
+          textWrapper.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
+          element.appendChild(textWrapper); // @HTMLUpdateOK
+        } else {
+          element.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
+        }
+        return true;
+      }
+    }
+    return false;
+  };
+
   /** ******************* focusable/editable element related methods *****************/
 
   /**
@@ -815,6 +856,21 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   };
 
   /**
+   * Returns whether or not the fetch result value signals that an abort was triggered
+   * @private
+   */
+  DataCollectionUtils.isFetchAborted = function (fetchResult) {
+    var signal = fetchResult.value.fetchParameters.signal;
+    if (signal == null) {
+      Logger.warn(
+        'Signal is missing from fetch parameters, which is set by collection component and should be present'
+      );
+      return false;
+    }
+    return signal.aborted;
+  };
+
+  /**
    * Helper function which returns true if the browser is Chrome
    * @private
    */
@@ -911,6 +967,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   };
 
   const applyMergedInlineStyles = DataCollectionUtils.applyMergedInlineStyles;
+  const applyRendererContent = DataCollectionUtils.applyRendererContent;
   const applyStyleObj = DataCollectionUtils.applyStyleObj;
   const areKeySetsEqual = DataCollectionUtils.areKeySetsEqual;
   const containsKey = DataCollectionUtils.containsKey;
@@ -938,6 +995,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   const isEnterKeyEvent = DataCollectionUtils.isEnterKeyEvent;
   const isEscapeKeyEvent = DataCollectionUtils.isEscapeKeyEvent;
   const isEventClickthroughDisabled = DataCollectionUtils.isEventClickthroughDisabled;
+  const isFetchAborted = DataCollectionUtils.isFetchAborted;
   const isFromDefaultSelector = DataCollectionUtils.isFromDefaultSelector;
   const isF2KeyEvent = DataCollectionUtils.isF2KeyEvent;
   const isHomeKeyEvent = DataCollectionUtils.isHomeKeyEvent;
@@ -969,6 +1027,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   exports.CHECKVIEWPORT_THRESHOLD = CHECKVIEWPORT_THRESHOLD;
   exports.KEYBOARD_KEYS = KEYBOARD_KEYS;
   exports.applyMergedInlineStyles = applyMergedInlineStyles;
+  exports.applyRendererContent = applyRendererContent;
   exports.applyStyleObj = applyStyleObj;
   exports.areKeySetsEqual = areKeySetsEqual;
   exports.calculateOffsetTop = calculateOffsetTop;
@@ -1004,6 +1063,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   exports.isEscapeKeyEvent = isEscapeKeyEvent;
   exports.isEventClickthroughDisabled = isEventClickthroughDisabled;
   exports.isF2KeyEvent = isF2KeyEvent;
+  exports.isFetchAborted = isFetchAborted;
   exports.isFirefox = isFirefox;
   exports.isFromDefaultSelector = isFromDefaultSelector;
   exports.isHomeKeyEvent = isHomeKeyEvent;

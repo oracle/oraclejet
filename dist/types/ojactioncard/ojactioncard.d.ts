@@ -3,15 +3,15 @@ import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
 import { Action, Bubbles, ExtendGlobalProps, ObservedGlobalProps } from 'ojs/ojvcomponent';
 import { Component, ComponentChildren } from 'preact';
-declare type Props = ObservedGlobalProps<'tabIndex' | 'role'> & {
+type Props = ObservedGlobalProps<'tabIndex' | 'role'> & {
     children?: ComponentChildren;
     onOjAction?: Action<ActionDetail> & Bubbles;
 };
-declare type State = {
+type State = {
     active?: boolean;
     focus?: boolean;
 };
-declare type ActionDetail = {
+type ActionDetail = {
     originalEvent: Event;
 };
 export declare class ActionCard extends Component<ExtendGlobalProps<Props>, State> {

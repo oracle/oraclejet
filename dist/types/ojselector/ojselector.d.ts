@@ -4,7 +4,7 @@ import 'ojs/oj-jsx-interfaces';
 import { ExtendGlobalProps, ObservedGlobalProps, PropertyChanged } from 'ojs/ojvcomponent';
 import { Component } from 'preact';
 import { KeySet } from 'ojs/ojkeyset';
-declare type Props<Key> = ObservedGlobalProps<'aria-label' | 'aria-labelledby'> & {
+type Props<Key> = ObservedGlobalProps<'aria-label' | 'aria-labelledby'> & {
     rowKey?: Key | null;
     indeterminate?: boolean;
     selectedKeys: KeySet<Key> | null;
@@ -12,7 +12,7 @@ declare type Props<Key> = ObservedGlobalProps<'aria-label' | 'aria-labelledby'> 
     onIndeterminateChanged?: PropertyChanged<boolean>;
     selectionMode?: 'all' | 'multiple' | 'single';
 };
-declare type State = {
+type State = {
     focus?: boolean;
 };
 export declare class Selector<K> extends Component<ExtendGlobalProps<Props<K>>, State> {

@@ -481,7 +481,7 @@ define(['exports'], function (exports) { 'use strict';
                    pointer[currAttributeName] = [...pointer[currAttributeName]];
                }
                else {
-                   pointer[currAttributeName] = Object.assign({}, pointer[currAttributeName]);
+                   pointer[currAttributeName] = { ...pointer[currAttributeName] };
                }
                pointer = pointer[currAttributeName];
            }
@@ -503,14 +503,14 @@ define(['exports'], function (exports) { 'use strict';
                if (currAttributeName === -1) {
                    currAttributeName = pointer.length - 1;
                }
-               pointer[currAttributeName] = Object.assign({}, newData);
+               pointer[currAttributeName] = { ...newData };
            }
            else {
                if (Array.isArray(pointer[currAttributeName])) {
                    pointer[currAttributeName] = [...pointer[currAttributeName]];
                }
                else {
-                   pointer[currAttributeName] = Object.assign({}, pointer[currAttributeName]);
+                   pointer[currAttributeName] = { ...pointer[currAttributeName] };
                }
                pointer = pointer[currAttributeName];
            }
@@ -556,7 +556,7 @@ define(['exports'], function (exports) { 'use strict';
                    pointer[currAttributeName] = [...pointer[currAttributeName]];
                }
                else {
-                   pointer[currAttributeName] = Object.assign({}, pointer[currAttributeName]);
+                   pointer[currAttributeName] = { ...pointer[currAttributeName] };
                }
                pointer = pointer[currAttributeName];
            }

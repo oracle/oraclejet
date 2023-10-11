@@ -3,7 +3,7 @@ import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
 import { Component, ComponentChild } from 'preact';
 import { ExtendGlobalProps } from 'ojs/ojvcomponent';
-declare type Props = {
+type Props = {
     text?: string;
     matchText?: string;
 };

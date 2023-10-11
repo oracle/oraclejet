@@ -1,6 +1,6 @@
 import { GlobalProps } from 'ojs/ojvcomponent';
 import { ComponentChildren } from 'preact';
-import CommonTypes = require('../ojcommontypes');
+import ojcommontypes = require('../ojcommontypes');
 import { KeySet } from '../ojkeyset';
 import { DataProvider, Item } from '../ojdataprovider';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
@@ -46,7 +46,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     };
     editMode: 'none' | 'rowEdit';
     editRow: ojTable.EditRow<K> | null;
-    readonly firstSelectedRow: CommonTypes.ItemContext<K, D>;
+    readonly firstSelectedRow: ojcommontypes.ItemContext<K, D>;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
     layout: 'contents' | 'fixed';
     row: {
@@ -54,7 +54,9 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         selectable?: ((item: Item<K, D>) => 'on' | 'off') | null;
         sticky?: ((item: Item<K, D>) => 'on' | 'off') | null;
     };
-    rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
+    rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => {
+        insert: HTMLElement;
+    } | void) | null;
     scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
         fetchSize?: number;
@@ -103,6 +105,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         accessibleStateUnselected?: string;
         accessibleSummaryEstimate?: string;
         accessibleSummaryExact?: string;
+        editableSummary?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;
         labelColumnWidth?: string;
@@ -207,11 +210,14 @@ export namespace ojTable {
             parentElement: Element;
             status: ContextStatus<K>;
         };
+        setUpdatedItem: (param: Promise<{
+            updatedItem: Item<K, D>;
+        }>) => void;
         [propName: string]: any;
     }> {
     }
     interface ojRowAction<K, D> extends CustomEvent<{
-        context: CommonTypes.ItemContext<K, D>;
+        context: ojcommontypes.ItemContext<K, D>;
         originalEvent: Event;
         [propName: string]: any;
     }> {
@@ -618,7 +624,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     };
     editMode: 'none' | 'rowEdit';
     editRow: ojTable.EditRow<K> | null;
-    readonly firstSelectedRow: CommonTypes.ItemContext<K, D>;
+    readonly firstSelectedRow: ojcommontypes.ItemContext<K, D>;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
     layout: 'contents' | 'fixed';
     row: {
@@ -626,7 +632,9 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         selectable?: ((item: Item<K, D>) => 'on' | 'off') | null;
         sticky?: ((item: Item<K, D>) => 'on' | 'off') | null;
     };
-    rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
+    rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => {
+        insert: HTMLElement;
+    } | void) | null;
     scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
         fetchSize?: number;
@@ -675,6 +683,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         accessibleStateUnselected?: string;
         accessibleSummaryEstimate?: string;
         accessibleSummaryExact?: string;
+        editableSummary?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;
         labelColumnWidth?: string;
@@ -760,11 +769,14 @@ export namespace TableElement {
             parentElement: Element;
             status: ojTable.ContextStatus<K>;
         };
+        setUpdatedItem: (param: Promise<{
+            updatedItem: Item<K, D>;
+        }>) => void;
         [propName: string]: any;
     }> {
     }
     interface ojRowAction<K, D> extends CustomEvent<{
-        context: CommonTypes.ItemContext<K, D>;
+        context: ojcommontypes.ItemContext<K, D>;
         originalEvent: Event;
         [propName: string]: any;
     }> {

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'preact/hooks', '@oracle/oraclejet-preact/UNSAFE_Environment', 'ojs/ojcontext', 'ojs/ojmetadatautils', 'ojs/ojcore-base', 'ojs/ojpreact-patch', 'ojs/ojconfig', 'ojs/ojpopupcore', '@oracle/oraclejet-preact/UNSAFE_Layer', '@oracle/oraclejet-preact/utils/UNSAFE_matchTranslationBundle', '@oracle/oraclejet-preact/resources/nls/supportedLocales', 'ojs/ojlogger'], function (require, exports, compat, jsxRuntime, preact, ojcustomelementUtils, ojcustomelementRegistry, hooks, UNSAFE_Environment, Context, MetadataUtils, oj, ojpreactPatch, ojconfig, ojpopupcore, UNSAFE_Layer, UNSAFE_matchTranslationBundle, supportedLocales, Logger) { 'use strict';
+define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'preact/hooks', '@oracle/oraclejet-preact/UNSAFE_Environment', 'ojs/ojcore-base', 'ojs/ojpreact-patch', 'ojs/ojmetadatautils', '@oracle/oraclejet-preact/UNSAFE_Layer', 'ojs/ojpopupcore', 'ojs/ojconfig', 'ojs/ojcontext', '@oracle/oraclejet-preact/utils/UNSAFE_matchTranslationBundle', '@oracle/oraclejet-preact/resources/nls/supportedLocales', 'ojs/ojlogger'], function (require, exports, compat, jsxRuntime, preact, ojcustomelementUtils, ojcustomelementRegistry, hooks, UNSAFE_Environment, oj, ojpreactPatch, MetadataUtils, UNSAFE_Layer, ojpopupcore, ojconfig, Context, UNSAFE_matchTranslationBundle, supportedLocales, Logger) { 'use strict';
 
     function _interopNamespace(e) {
         if (e && e.__esModule) { return e; } else {
@@ -26,18 +26,985 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         }
     }
 
-    Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
+    Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
     supportedLocales = supportedLocales && Object.prototype.hasOwnProperty.call(supportedLocales, 'default') ? supportedLocales['default'] : supportedLocales;
 
-    function EnvironmentWrapper(props) {
+    let _slotIdCount = 0;
+    let _originalCreateElement;
+    const _ACTIVE_SLOTS = new Map();
+    const _OJ_SLOT_ID = Symbol();
+    const _OJ_SLOT_PREFIX = '@oj_s';
+    function convertToVNode(hostElement, node, handleSlotMount, handleSlotUnmount) {
+        const key = _getSlotKey(node);
+        const ref = _getRef(hostElement, handleSlotMount, handleSlotUnmount);
+        return preact.h(() => {
+            _registerSlot(key, node);
+            hooks.useLayoutEffect(() => _unregisterSlot(key));
+            return preact.h(key, { ref, key });
+        }, null);
+    }
+    function _registerSlot(id, node) {
+        if (_ACTIVE_SLOTS.size === 0) {
+            _patchCreateElement();
+        }
+        _ACTIVE_SLOTS.set(id, node);
+    }
+    function _unregisterSlot(id) {
+        _ACTIVE_SLOTS.delete(id);
+        if (_ACTIVE_SLOTS.size === 0) {
+            _restoreCreateElement();
+        }
+    }
+    function _getSlotKey(node) {
+        let key = node[_OJ_SLOT_ID];
+        if (key === undefined) {
+            key = _OJ_SLOT_PREFIX + _slotIdCount++;
+            node[_OJ_SLOT_ID] = key;
+        }
+        return key;
+    }
+    function _getRef(hostElement, handleSlotMount, handleSlotUnmount) {
+        let _count = 0;
+        let slotNode;
+        const slotRemoveHandler = () => {
+            if (_count === 0) {
+                slotNode.remove();
+            }
+        };
+        return (node) => {
+            if (node != null) {
+                _count++;
+                slotNode = node;
+                slotNode[ojpreactPatch.OJ_SLOT_REMOVE] = slotRemoveHandler;
+                const parent = node.parentElement;
+                ojpreactPatch.patchSlotParent(parent);
+                handleSlotMount(node);
+            }
+            else {
+                _count--;
+                if (_count < 0) {
+                    throw new ojcustomelementUtils.JetElementError(hostElement, 'Slot replacer count underflow');
+                }
+                if (_count === 0) {
+                    window.queueMicrotask(() => {
+                        if (_count === 0)
+                            handleSlotUnmount(slotNode);
+                    });
+                }
+            }
+        };
+    }
+    function _patchCreateElement() {
+        _originalCreateElement = document.createElement;
+        document.createElement = _createElementOverride;
+    }
+    function _restoreCreateElement() {
+        document.createElement = _originalCreateElement;
+    }
+    function _createElementOverride(tagName, opts) {
+        if (tagName.startsWith(_OJ_SLOT_PREFIX)) {
+            return _ACTIVE_SLOTS.get(tagName);
+        }
+        return _originalCreateElement.call(document, tagName, opts);
+    }
+
+    class Parking {
+        parkNode(node) {
+            this._getLot().appendChild(node);
+            if (oj.Components) {
+                oj.Components.subtreeHidden(node);
+            }
+        }
+        disposeNodes(nodeMap, cleanFunc) {
+            Parking._iterateSlots(nodeMap, (node) => {
+                const parent = node.parentElement;
+                if (this._lot === parent) {
+                    cleanFunc(node);
+                    this._lot.removeChild(node);
+                }
+                else if (!parent) {
+                    cleanFunc(node);
+                }
+            });
+        }
+        disconnectNodes(nodeMap) {
+            Parking._iterateSlots(nodeMap, (node) => {
+                if (this._lot === node.parentElement) {
+                    this._lot.removeChild(node);
+                }
+            });
+        }
+        reconnectNodes(nodeMap) {
+            Parking._iterateSlots(nodeMap, (node) => {
+                if (!node.parentElement) {
+                    this._lot.appendChild(node);
+                }
+            });
+        }
+        isParked(n) {
+            return n?.parentElement === this._lot;
+        }
+        _getLot() {
+            if (!this._lot) {
+                const div = document.createElement('div');
+                div.style.display = 'none';
+                document.body.appendChild(div);
+                this._lot = div;
+            }
+            return this._lot;
+        }
+        static _iterateSlots(nodeMap, callback) {
+            const keys = Object.keys(nodeMap);
+            keys.forEach((key) => {
+                const nodes = nodeMap[key];
+                nodes.forEach((node) => {
+                    callback(node);
+                });
+            });
+        }
+    }
+    const ParkingLot = new Parking();
+
+    const IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;
+    function diffProps(dom, newProps, oldProps, isSvg, hydrate, setPropertyOverrides) {
+        let i;
+        for (i in oldProps) {
+            if (i !== 'children' && i !== 'key' && !(i in newProps)) {
+                setPropertyOverrides(dom, i, null, oldProps[i], isSvg) ||
+                    setProperty(dom, i, null, oldProps[i], isSvg);
+            }
+        }
+        for (i in newProps) {
+            if ((!hydrate || typeof newProps[i] == 'function') &&
+                i !== 'children' &&
+                i !== 'key' &&
+                i !== 'value' &&
+                i !== 'checked' &&
+                oldProps[i] !== newProps[i]) {
+                setPropertyOverrides(dom, i, newProps[i], oldProps[i], isSvg) ||
+                    setProperty(dom, i, newProps[i], oldProps[i], isSvg);
+            }
+        }
+    }
+    function setStyle(style, key, value) {
+        if (key[0] === '-') {
+            style.setProperty(key, value);
+        }
+        else if (value == null) {
+            style[key] = '';
+        }
+        else if (typeof value != 'number' || IS_NON_DIMENSIONAL.test(key)) {
+            style[key] = value;
+        }
+        else {
+            style[key] = value + 'px';
+        }
+    }
+    function setProperty(dom, name, value, oldValue, isSvg) {
+        let useCapture;
+        o: if (name === 'style') {
+            if (typeof value == 'string') {
+                dom.style.cssText = value;
+            }
+            else {
+                if (typeof oldValue == 'string') {
+                    dom.style.cssText = oldValue = '';
+                }
+                if (oldValue) {
+                    for (name in oldValue) {
+                        if (!(value && name in value)) {
+                            setStyle(dom.style, name, '');
+                        }
+                    }
+                }
+                if (value) {
+                    for (name in value) {
+                        if (!oldValue || value[name] !== oldValue[name]) {
+                            setStyle(dom.style, name, value[name]);
+                        }
+                    }
+                }
+            }
+        }
+        else if (name[0] === 'o' && name[1] === 'n') {
+            useCapture = name !== (name = name.replace(/Capture$/, ''));
+            if (name.toLowerCase() in dom)
+                name = name.toLowerCase().slice(2);
+            else
+                name = name.slice(2);
+            if (!dom._listeners)
+                dom._listeners = {};
+            dom._listeners[name + useCapture] = value;
+            if (value) {
+                if (!oldValue) {
+                    const handler = useCapture ? eventProxyCapture : eventProxy;
+                    dom.addEventListener(name, handler, useCapture);
+                }
+            }
+            else {
+                const handler = useCapture ? eventProxyCapture : eventProxy;
+                dom.removeEventListener(name, handler, useCapture);
+            }
+        }
+        else if (name !== 'dangerouslySetInnerHTML') {
+            if (isSvg) {
+                name = name.replace(/xlink[H:h]/, 'h').replace(/sName$/, 's');
+            }
+            else if (name !== 'href' &&
+                name !== 'list' &&
+                name !== 'form' &&
+                name !== 'tabIndex' &&
+                name !== 'download' &&
+                name in dom) {
+                try {
+                    dom[name] = value == null ? '' : value;
+                    break o;
+                }
+                catch (e) { }
+            }
+            if (typeof value === 'function') {
+            }
+            else if (value != null && (value !== false || (name[0] === 'a' && name[1] === 'r'))) {
+                dom.setAttribute(name, value);
+            }
+            else {
+                dom.removeAttribute(name);
+            }
+        }
+    }
+    function eventProxy(e) {
+        this._listeners[e.type + false](preact.options.event ? preact.options.event(e) : e);
+    }
+    function eventProxyCapture(e) {
+        this._listeners[e.type + true](preact.options.event ? preact.options.event(e) : e);
+    }
+
+    const ELEMENT_REF = Symbol();
+    const ROOT_VNODE_PATCH = Symbol();
+    class ComponentWithContexts extends preact.Component {
+        constructor(props) {
+            super(props);
+            this.getEnvironmentContextObj = (currentEnv, env, colorScheme, scale, translationBundleMap) => {
+                let newEnv = currentEnv;
+                if (!newEnv) {
+                    newEnv = env || {
+                        colorScheme: colorScheme,
+                        scale: scale,
+                        user: { locale: ojconfig.getLocale() }
+                    };
+                    this.extendTranslationBundleMap(newEnv, translationBundleMap);
+                }
+                else if (env && env !== newEnv) {
+                    newEnv = env;
+                    this.extendTranslationBundleMap(newEnv, translationBundleMap);
+                }
+                else if ((colorScheme && colorScheme !== newEnv.colorScheme) ||
+                    (scale && scale !== newEnv.scale)) {
+                    newEnv = Object.assign({}, newEnv, colorScheme && { colorScheme }, scale && { scale });
+                }
+                return newEnv;
+            };
+            this.extendTranslationBundleMap = (env, translationBundleMap) => {
+                if (!env.translations) {
+                    env.translations = translationBundleMap;
+                }
+                else if (env.translations !== translationBundleMap) {
+                    Object.keys(translationBundleMap).forEach((key) => {
+                        if (!env.translations[key]) {
+                            env.translations[key] = translationBundleMap[key];
+                        }
+                    });
+                }
+            };
+            this.state = { compProps: props.initialCompProps };
+            this._layerContext = { getHost: ojpopupcore.getLayerHost.bind(null, props.baseElem) };
+        }
+        render(props) {
+            const compProps = this.state.compProps;
+            const BaseComponent = props.baseComp;
+            const componentVDom = jsxRuntime.jsx(BaseComponent, { ...compProps });
+            const rootEnv = customMemo(this.getEnvironmentContextObj, [
+                props.baseElem['__oj_private_contexts']?.get(UNSAFE_Environment.EnvironmentContext),
+                props.baseElem['__oj_private_color_scheme'],
+                props.baseElem['__oj_private_scale'],
+                props.translationBundleMap
+            ]);
+            const contexts = props.baseElem['__oj_private_contexts'];
+            const contextWrappers = contexts
+                ? Array.from(contexts).reduce((acc, [context, value]) => {
+                    if (context === UNSAFE_Environment.EnvironmentContext) {
+                        return acc;
+                    }
+                    const provider = jsxRuntime.jsx(context.Provider, { value: value, children: acc });
+                    return provider;
+                }, componentVDom)
+                : componentVDom;
+            const vdomProps = componentVDom.props;
+            vdomProps[ELEMENT_REF] = props.baseElem;
+            vdomProps[ROOT_VNODE_PATCH] = props.rootPatchCallback;
+            return (jsxRuntime.jsx(UNSAFE_Layer.LayerContext.Provider, { value: this._layerContext, children: jsxRuntime.jsx(UNSAFE_Environment.RootEnvironmentProvider, { environment: rootEnv, children: contextWrappers }) }));
+        }
+    }
+    const customMemo = (fn, args) => {
+        if (!fn.memoState) {
+            fn.memoState = {
+                value: undefined,
+                prevArgs: undefined
+            };
+        }
+        if (argsChanged(fn.memoState.prevArgs, args)) {
+            fn.memoState.value = fn(fn.memoState.value, ...args);
+            fn.memoState.prevArgs = args;
+        }
+        return fn.memoState.value;
+    };
+    const argsChanged = (oldArgs, newArgs) => {
+        return (!oldArgs ||
+            oldArgs.length !== newArgs.length ||
+            newArgs.some((arg, index) => arg !== oldArgs[index]));
+    };
+
+    const applyRef = (ref, value) => {
+        if (ref) {
+            if (typeof ref == 'function') {
+                ref(value);
+            }
+            else {
+                ref.current = value;
+            }
+        }
+    };
+    const _EMPTY_SET = new Set();
+    const _LISTENERS = Symbol();
+    const _CAPTURE_LISTENERS = Symbol();
+    const _SUBPROP = 'subproperty';
+    const _PROP_CHANGE = 'propChange';
+    const _ACTION = 'action';
+    class IntrinsicElement {
+        constructor(element, component, metadata, rootAttributes, rootProperties, defaultProps) {
+            this.ref = preact.createRef();
+            this._compWithContextsRef = preact.createRef();
+            this._initialized = false;
+            this._isPatching = false;
+            this._props = { ref: this.ref };
+            this._verifyingState = ConnectionState.Unset;
+            this._earlySets = [];
+            this._eventQueue = [];
+            this._isRenderQueued = false;
+            this._state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
+            this._element = element;
+            this._metadata = metadata;
+            this._component = component;
+            this._controlledProps = rootProperties?.length > 0 ? new Set(rootProperties) : _EMPTY_SET;
+            this._controlledAttrs = rootAttributes?.length > 0 ? new Set(rootAttributes) : _EMPTY_SET;
+            this._defaultProps = defaultProps;
+            this._rootPatchCallback = this._patchRootElement.bind(this);
+        }
+        connectedCallback() {
+            this._verifyConnectDisconnect(ConnectionState.Connect);
+        }
+        disconnectedCallback() {
+            this._verifyConnectDisconnect(ConnectionState.Disconnect);
+        }
+        attributeChangedCallback(name, oldValue, newValue) {
+            if (!this._isPatching && this._state.canHandleAttributes()) {
+                const propName = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(name);
+                const topProp = propName.split('.')[0];
+                if (this._state.dirtyProps.has(topProp)) {
+                    this._state.dirtyProps.delete(topProp);
+                }
+                else if (oldValue === newValue) {
+                    return;
+                }
+                if (newValue === null) {
+                    newValue = undefined;
+                }
+                if ('knockout' === this._state.getBindingProviderType()) {
+                    if (!ojcustomelementUtils.AttributeUtils.isGlobalOrData(propName)) {
+                        this._element.dispatchEvent(new CustomEvent('attribute-changed', {
+                            detail: { attribute: name, value: newValue, previousValue: oldValue }
+                        }));
+                    }
+                }
+                const { propPath, propValue, propMeta, subPropMeta } = this._getPropValueInfo(name, newValue);
+                if (propPath) {
+                    this._updatePropsAndQueueRenderAsNeeded(propPath, propValue, propMeta, subPropMeta);
+                }
+            }
+        }
+        getProperty(name) {
+            const meta = MetadataUtils.getPropertyMetadata(name, this._metadata?.properties);
+            if (!meta) {
+                return this._element[name];
+            }
+            else {
+                let value = ojcustomelementUtils.CustomElementUtils.getPropertyValue(this._props, name);
+                if (value === undefined && this._defaultProps) {
+                    value = ojcustomelementUtils.CustomElementUtils.getPropertyValue(this._defaultProps, name);
+                }
+                return value;
+            }
+        }
+        setProperty(name, value) {
+            if (this._isPatching)
+                return;
+            const { prop: propMeta, subProp: subPropMeta } = MetadataUtils.getComplexPropertyMetadata(name, this._metadata?.properties);
+            if (!propMeta) {
+                this._element[name] = value;
+            }
+            else {
+                if (this._state.allowPropertySets()) {
+                    value = ojcustomelementUtils.transformPreactValue(this._element, subPropMeta, value);
+                    this._updatePropsAndQueueRenderAsNeeded(name, value, propMeta, subPropMeta);
+                }
+                else {
+                    this._earlySets.push({ property: name, value });
+                }
+            }
+        }
+        setProperties(properties) {
+            if (this._isPatching) {
+                return;
+            }
+            Object.keys(properties).forEach((prop) => {
+                this.setProperty(prop, properties[prop]);
+            });
+        }
+        getProps() {
+            return this._props;
+        }
+        isInitialized() {
+            return !!this._vdom;
+        }
+        appendChildHelper(element, newNode) {
+            if (ojcustomelementUtils.CustomElementUtils.canRelocateNode(element, newNode)) {
+                return HTMLElement.prototype.appendChild.call(element, newNode);
+            }
+            return newNode;
+        }
+        insertBeforeHelper(element, newNode, refNode) {
+            if (ojcustomelementUtils.CustomElementUtils.canRelocateNode(element, newNode)) {
+                return HTMLElement.prototype.insertBefore.call(element, newNode, refNode);
+            }
+            return newNode;
+        }
+        _render() {
+            if (!this._initialized) {
+                this._initialized = true;
+                this._initializePropsFromDom();
+                const eventsMeta = this._metadata.events;
+                if (eventsMeta) {
+                    this._initializeActionCallbacks(eventsMeta);
+                }
+                const writebackProps = this._metadata.extension?.['_WRITEBACK_PROPS'];
+                if (writebackProps) {
+                    this._initializeWritebackCallbacks(writebackProps);
+                }
+                this._playbackEarlyPropertySets();
+            }
+            if (!this._vdom) {
+                this._vdom = (jsxRuntime.jsx(ComponentWithContexts, { ref: this._compWithContextsRef, baseComp: this._component, baseElem: this._element, initialCompProps: this._props, rootPatchCallback: this._rootPatchCallback, translationBundleMap: this._state.getTranslationBundleMap() }));
+                preact.render(this._vdom, this._element);
+            }
+            else {
+                throw new Error(`Unexpected render call for already rendered component ${this._element.tagName}`);
+            }
+        }
+        _getPropValueInfo(attrName, attrValue) {
+            if ('knockout' !== this._state.getBindingProviderType() ||
+                !ojcustomelementUtils.AttributeUtils.getExpressionInfo(attrValue).expr) {
+                const propPath = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(attrName);
+                const { prop: propMeta, subProp: subPropMeta } = MetadataUtils.getComplexPropertyMetadata(propPath, this._metadata?.properties);
+                if (propMeta) {
+                    if (propMeta.readOnly) {
+                        return {};
+                    }
+                    return {
+                        propPath,
+                        propValue: ojcustomelementUtils.AttributeUtils.attributeToPropertyValue(this._element, attrName, attrValue, subPropMeta),
+                        propMeta,
+                        subPropMeta
+                    };
+                }
+                const globalPropName = ojcustomelementUtils.AttributeUtils.getGlobalPropForAttr(attrName);
+                if (this._controlledProps.has(globalPropName)) {
+                    return {
+                        propPath: globalPropName,
+                        propValue: this._element[ojcustomelementUtils.AttributeUtils.getGlobalValuePropForAttr(attrName)] ?? attrValue
+                    };
+                }
+            }
+            return {};
+        }
+        _updatePropsAndQueueRenderAsNeeded(propPath, value, propMeta, subPropMeta, isOuter = true) {
+            const previousValue = this.getProperty(propPath);
+            const newValue = value === undefined
+                ? ojcustomelementUtils.CustomElementUtils.getPropertyValue(this._defaultProps, propPath)
+                : value;
+            if (propMeta &&
+                ojcustomelementUtils.ElementUtils.comparePropertyValues(propMeta.writeback, newValue, previousValue)) {
+                return;
+            }
+            const propArray = propPath.split('.');
+            const topProp = propArray[0];
+            const isSubprop = propArray.length > 1;
+            let topPropPrevValue = this.getProperty(topProp);
+            if (oj.CollectionUtils.isPlainObject(topPropPrevValue)) {
+                topPropPrevValue = oj.CollectionUtils.copyInto({}, topPropPrevValue, undefined, true);
+            }
+            if (isOuter) {
+                this._verifyProps(propPath, value, propMeta, subPropMeta);
+            }
+            this._updateProps(propArray, value);
+            if (!isOuter ||
+                (this._state.allowPropertyChangedEvents() && !ojcustomelementUtils.AttributeUtils.isGlobalOrData(propPath))) {
+                this._state.dirtyProps.add(topProp);
+                const updatedFrom = isOuter ? 'external' : 'internal';
+                const detail = {
+                    value: this.getProperty(topProp),
+                    previousValue: topPropPrevValue,
+                    updatedFrom
+                };
+                if (isSubprop) {
+                    detail[_SUBPROP] = {
+                        path: propPath,
+                        value,
+                        previousValue
+                    };
+                }
+                const type = topProp + 'Changed';
+                const collapseFunc = isSubprop
+                    ? null
+                    : (oldDef) => {
+                        if (oldDef.kind !== _PROP_CHANGE || oldDef.type !== type || oldDef.detail[_SUBPROP]) {
+                            return null;
+                        }
+                        const mergedDetail = Object.assign({}, detail, {
+                            previousValue: oldDef.detail.previousValue
+                        });
+                        return { type, detail: mergedDetail, collapse: collapseFunc, kind: _PROP_CHANGE };
+                    };
+                this._queueFireEventsTask({ type, detail, collapse: collapseFunc, kind: _PROP_CHANGE });
+            }
+            const oldProps = this._oldRootProps;
+            if (oldProps && this._controlledProps.has(propPath)) {
+                oldProps[propPath] = value;
+            }
+            if (this._vdom && !propMeta?.readOnly) {
+                if (!this._compWithContextsRef?.current) {
+                    window.queueMicrotask(() => {
+                        this._queueRender();
+                    });
+                }
+                else {
+                    this._queueRender();
+                }
+            }
+        }
+        _queueRender() {
+            if (this._compWithContextsRef?.current) {
+                this._compWithContextsRef.current.setState({ compProps: this._props });
+            }
+            else {
+                throw new Error(`Render requested for a disconnected component ${this._element.tagName}`);
+            }
+        }
+        _verifyProps(prop, value, propMeta, subPropMeta) {
+            if (!propMeta) {
+                return;
+            }
+            if (propMeta.readOnly) {
+                throw new ojcustomelementUtils.JetElementError(this._element, `Read-only property '${prop}' cannot be set.`);
+            }
+            try {
+                MetadataUtils.checkEnumValues(this._element, prop, value, subPropMeta);
+            }
+            catch (error) {
+                throw new ojcustomelementUtils.JetElementError(this._element, error.message);
+            }
+        }
+        _updateProps(propPath, value) {
+            const topProp = propPath[0];
+            let propsObj = this._props;
+            if (propPath.length > 1) {
+                const currentValue = this._props[topProp] ?? this._defaultProps?.[topProp];
+                if (currentValue && oj.CollectionUtils.isPlainObject(currentValue)) {
+                    propsObj[topProp] = oj.CollectionUtils.copyInto({}, currentValue, undefined, true);
+                }
+                else {
+                    propsObj[topProp] = {};
+                }
+            }
+            while (propPath.length) {
+                const subprop = propPath.shift();
+                if (propPath.length === 0) {
+                    propsObj[subprop] = value;
+                }
+                else if (!propsObj[subprop]) {
+                    propsObj[subprop] = {};
+                }
+                propsObj = propsObj[subprop];
+            }
+        }
+        _queueFireEventsTask(eventDef) {
+            let newDef = eventDef;
+            const collapseInfo = this._getEventCollapseInfo(eventDef, this._eventQueue);
+            if (collapseInfo) {
+                const [removeIndex, def] = collapseInfo;
+                this._eventQueue.splice(removeIndex, 1);
+                newDef = def;
+            }
+            this._eventQueue.push(newDef);
+            if (!this._queuedEvents) {
+                this._queuedEvents = new Promise((resolve) => {
+                    window.queueMicrotask(() => {
+                        try {
+                            while (this._eventQueue.length) {
+                                const def = this._eventQueue.shift();
+                                const evt = def.kind === _PROP_CHANGE
+                                    ? new CustomEvent(def.type, { detail: def.detail })
+                                    : def.event;
+                                this._element.dispatchEvent(evt);
+                            }
+                        }
+                        finally {
+                            resolve();
+                            this._queuedEvents = null;
+                        }
+                    });
+                });
+            }
+            return this._queuedEvents;
+        }
+        _getEventCollapseInfo(newDef, queue) {
+            if (newDef.kind !== _PROP_CHANGE) {
+                return null;
+            }
+            for (let i = 0; i < queue.length; i++) {
+                const combined = newDef.collapse?.(queue[i]);
+                if (combined) {
+                    return [i, combined];
+                }
+            }
+            return null;
+        }
+        _verifyConnectDisconnect(state) {
+            if (this._verifyingState === ConnectionState.Unset) {
+                window.queueMicrotask(() => {
+                    if (this._verifyingState === state) {
+                        if (this._verifyingState === ConnectionState.Connect) {
+                            this._verifiedConnect();
+                        }
+                        else {
+                            this._verifiedDisconnect();
+                        }
+                    }
+                    this._verifyingState = ConnectionState.Unset;
+                });
+            }
+            this._verifyingState = state;
+        }
+        _verifiedConnect() {
+            if (this._state.isComplete()) {
+                this._reconnectSlots();
+            }
+            else {
+                this._state.startCreationCycle();
+                if (this._state.isCreating()) {
+                    const createComponentCallback = () => {
+                        this._element[ojcustomelementUtils.CHILD_BINDING_PROVIDER] = 'preact';
+                        let slotMap = this._state.getSlotMap();
+                        if (!slotMap) {
+                            slotMap = this._state.getSlotMap(true);
+                            const slotProps = this._removeAndConvertSlotsToProps(slotMap);
+                            Object.assign(this._props, slotProps);
+                        }
+                        else {
+                            this._reconnectSlots();
+                        }
+                        this._render();
+                    };
+                    this._state.setCreateCallback(createComponentCallback);
+                    this._state.setBindingsDisposedCallback(() => this._handleBindingsDisposed());
+                }
+            }
+        }
+        _verifiedDisconnect() {
+            if (this._state.isComplete()) {
+                this._disconnectSlots();
+                this._state.resetCreationCycle();
+                preact.render(null, this._element);
+                applyRef(this.ref, null);
+                applyRef(this._compWithContextsRef, null);
+                applyRef(this._oldRootRef, null);
+                this._oldRootRef = undefined;
+                this._vdom = null;
+            }
+            else {
+                this._state.pauseCreationCycle();
+            }
+        }
+        _initializePropsFromDom() {
+            const attrs = this._element.attributes;
+            for (let i = 0; i < attrs.length; i++) {
+                const { name, value } = attrs[i];
+                const { propPath, propValue, propMeta, subPropMeta } = this._getPropValueInfo(name, value);
+                if (propPath) {
+                    this._verifyProps(propPath, propValue, propMeta, subPropMeta);
+                    this._updateProps(propPath.split('.'), propValue);
+                }
+            }
+        }
+        _playbackEarlyPropertySets() {
+            while (this._earlySets.length) {
+                const setObj = this._earlySets.shift();
+                const meta = MetadataUtils.getPropertyMetadata(setObj.property, this._metadata?.properties);
+                const updatedValue = ojcustomelementUtils.transformPreactValue(this._element, meta, setObj.value);
+                this.setProperty(setObj.property, updatedValue);
+            }
+        }
+        _patchRootElement(newVNode) {
+            const oldProps = this._oldRootProps || this._getInitialRootProps();
+            const newProps = newVNode.props;
+            this._isPatching = true;
+            try {
+                diffProps(this._element, newProps, oldProps, false, false, IntrinsicElement._setPropertyOverrides);
+            }
+            finally {
+                this._isPatching = false;
+            }
+            const newRef = newVNode.ref;
+            if (this._oldRootRef !== newRef) {
+                applyRef(newRef, this._element);
+                if (newRef) {
+                    this._oldRootRef?.(null);
+                }
+            }
+            this._oldRootProps = newProps;
+            this._oldRootRef = newRef;
+        }
+        static _setPropertyOverrides(dom, name, value, oldValue) {
+            if (name === 'style' && typeof value == 'string') {
+                throw new Error('CSS style must be an object. CSS text is not supported');
+            }
+            if (name === 'class' || name === 'className') {
+                const oldClasses = oldValue == null ? _EMPTY_SET : ojcustomelementUtils.CustomElementUtils.getClassSet(oldValue);
+                const newClasses = value == null ? _EMPTY_SET : ojcustomelementUtils.CustomElementUtils.getClassSet(value);
+                for (const cl of oldClasses.values()) {
+                    if (!newClasses.has(cl)) {
+                        dom.classList.remove(cl);
+                    }
+                }
+                for (const cl of newClasses.values()) {
+                    if (!oldClasses.has(cl)) {
+                        dom.classList.add(cl);
+                    }
+                }
+                return true;
+            }
+            else if (name[0] === 'o' && name[1] === 'n') {
+                const useCapture = name !== (name = name.replace(/Capture$/, ''));
+                const nameLower = name.toLowerCase();
+                if (nameLower in dom)
+                    name = nameLower;
+                name = name.slice(2);
+                IntrinsicElement._getRootListeners(dom, useCapture)[name] = value;
+                const proxy = useCapture ? IntrinsicElement._eventProxyCapture : IntrinsicElement._eventProxy;
+                if (value) {
+                    if (!oldValue)
+                        dom.addEventListener(name, proxy, useCapture);
+                }
+                else {
+                    dom.removeEventListener(name, proxy, useCapture);
+                }
+                return true;
+            }
+            else if (name === 'role') {
+                if (value) {
+                    dom.setAttribute(name, value);
+                }
+                else {
+                    dom.removeAttribute(name);
+                }
+                return true;
+            }
+            return false;
+        }
+        static _getRootListeners(dom, useCapture) {
+            const key = useCapture ? _CAPTURE_LISTENERS : _LISTENERS;
+            let listeners = dom[key];
+            if (!listeners) {
+                listeners = dom[key] = {};
+            }
+            return listeners;
+        }
+        _getInitialRootProps() {
+            const props = {};
+            for (const name of this._controlledProps.values()) {
+                if (name in this._props) {
+                    props[name] = this._props[name];
+                }
+            }
+            return props;
+        }
+        _removeAndConvertSlotsToProps(slotMap) {
+            const dynamicSlotMetadata = this._metadata.extension?._DYNAMIC_SLOT;
+            const dynamicSlotProp = dynamicSlotMetadata?.prop;
+            const slotsMetadata = this._metadata?.slots;
+            const slots = Object.keys(slotMap);
+            const slotProps = {};
+            if (slots.length > 0) {
+                slots.forEach((slot) => {
+                    const slotNodes = slotMap[slot];
+                    slotNodes.forEach((node) => {
+                        ParkingLot.parkNode(node);
+                    });
+                    const slotMetadata = MetadataUtils.getPropertyMetadata(slot, slotsMetadata);
+                    if (slotMetadata) {
+                        const isTemplateSlot = !!slotMetadata?.data;
+                        const slotProperty = !isTemplateSlot && slot === '' ? 'children' : slot;
+                        this._assignSlotProperty(slotProps, slotProperty, undefined, slot, isTemplateSlot, slotNodes);
+                    }
+                    else {
+                        if (!dynamicSlotProp) {
+                            return;
+                        }
+                        if (!slotProps[dynamicSlotProp]) {
+                            slotProps[dynamicSlotProp] = {};
+                        }
+                        const isTemplateSlot = dynamicSlotMetadata.isTemplate;
+                        this._assignSlotProperty(slotProps, slot, dynamicSlotProp, slot, isTemplateSlot, slotNodes);
+                    }
+                });
+            }
+            if (this._state.getBindingProviderType() === 'knockout') {
+                let child;
+                while ((child = this._element.firstChild)) {
+                    this._state.getBindingProviderCleanNode()(child);
+                    child.remove();
+                }
+            }
+            return slotProps;
+        }
+        _assignSlotProperty(slotProps, propName, containerPropName, slotName, isTemplateSlot, slotNodes) {
+            const propContainer = containerPropName ? slotProps[containerPropName] : slotProps;
+            if (isTemplateSlot) {
+                if (slotNodes[0]?.nodeName === 'TEMPLATE') {
+                    const templateNode = slotNodes[0];
+                    propContainer[propName] =
+                        templateNode['render'] ??
+                            this._getSlotRenderer(templateNode, propName, containerPropName);
+                }
+                else {
+                    throw new ojcustomelementUtils.JetElementError(this._element, `Slot content for template slot ${slotName} must be a template element.`);
+                }
+            }
+            else {
+                const vnodes = slotNodes.map((node, index) => convertToVNode(this._element, node, this._handleSlotMount.bind(this), this._handleSlotUnmount.bind(this)));
+                propContainer[propName] = vnodes;
+            }
+        }
+        _getSlotRenderer(templateNode, slotProp, containerProp) {
+            const bindingProvider = this._state.getBindingProvider();
+            const mutationCallback = bindingProvider
+                ? () => {
+                    const propContainer = containerProp ? this._props[containerProp] : this._props;
+                    propContainer[slotProp] = this._getSlotRenderer(templateNode, slotProp, containerProp);
+                    this._queueRender();
+                }
+                : null;
+            return (context) => {
+                const cachedTemplateEngine = this._state.getTemplateEngine();
+                if (!cachedTemplateEngine) {
+                    throw new ojcustomelementUtils.JetElementError(this._element, 'Unexpected call to render a template slot');
+                }
+                return cachedTemplateEngine.execute(this._element, templateNode, context, bindingProvider, mutationCallback);
+            };
+        }
+        _handleBindingsDisposed() {
+            ParkingLot.disposeNodes(this._state.getSlotMap(), this._state.getBindingProviderCleanNode());
+            this._state.disposeTemplateCache();
+        }
+        _disconnectSlots() {
+            ParkingLot.disconnectNodes(this._state.getSlotMap());
+        }
+        _reconnectSlots() {
+            ParkingLot.reconnectNodes(this._state.getSlotMap());
+        }
+        _handleSlotUnmount(node) {
+            if (this._state.isComplete()) {
+                ParkingLot.parkNode(node);
+            }
+        }
+        _handleSlotMount(node) {
+            const handleMount = oj.Components?.subtreeShown;
+            if (handleMount) {
+                if (node.isConnected) {
+                    handleMount(node);
+                }
+                else {
+                    window.queueMicrotask(() => handleMount(node));
+                }
+            }
+        }
+        static _eventProxy(e) {
+            this[_LISTENERS][e.type](preact.options.event ? preact.options.event(e) : e);
+        }
+        static _eventProxyCapture(e) {
+            this[_CAPTURE_LISTENERS][e.type](preact.options.event ? preact.options.event(e) : e);
+        }
+        _initializeActionCallbacks(eventsMeta) {
+            Object.keys(eventsMeta).forEach((event) => {
+                const eventMeta = eventsMeta[event];
+                const eventProp = ojcustomelementUtils.AttributeUtils.eventTypeToEventListenerProperty(event);
+                this._props[eventProp] = (detailObj) => {
+                    const detail = Object.assign({}, detailObj);
+                    const cancelable = !!eventMeta.cancelable;
+                    const acceptPromises = [];
+                    if (cancelable) {
+                        detail.accept = (promise) => {
+                            acceptPromises.push(promise);
+                        };
+                    }
+                    const eventDescriptor = { detail, bubbles: !!eventMeta.bubbles, cancelable };
+                    const customEvent = new CustomEvent(event, eventDescriptor);
+                    const eventPromise = this._queueFireEventsTask({ event: customEvent, kind: _ACTION });
+                    if (cancelable) {
+                        return eventPromise.then(() => {
+                            return customEvent.defaultPrevented
+                                ? Promise.reject()
+                                : Promise.all(acceptPromises).then(() => Promise.resolve(), (reason) => Promise.reject(reason));
+                        });
+                    }
+                    return undefined;
+                };
+            });
+        }
+        _initializeWritebackCallbacks(writebackProps) {
+            writebackProps.forEach((propPath) => {
+                const callbackProp = ojcustomelementUtils.AttributeUtils.propertyNameToChangedCallback(propPath);
+                const { prop: propMeta, subProp: subPropMeta } = MetadataUtils.getComplexPropertyMetadata(propPath, this._metadata?.properties);
+                this._props[callbackProp] = (value) => {
+                    this._updatePropsAndQueueRenderAsNeeded(propPath, value, propMeta, subPropMeta, false);
+                };
+            });
+        }
+    }
+    var ConnectionState;
+    (function (ConnectionState) {
+        ConnectionState[ConnectionState["Connect"] = 0] = "Connect";
+        ConnectionState[ConnectionState["Disconnect"] = 1] = "Disconnect";
+        ConnectionState[ConnectionState["Unset"] = 2] = "Unset";
+    })(ConnectionState || (ConnectionState = {}));
+
+    const EnvironmentWrapper = compat.forwardRef((props, ref) => {
         const child = props.children;
         const contexts = ojcustomelementRegistry.getElementRegistration(child.type).cache.contexts;
-        const allContexts = [UNSAFE_Environment.EnvironmentContext, ...(contexts !== null && contexts !== void 0 ? contexts : [])];
+        const allContexts = [UNSAFE_Environment.EnvironmentContext, ...(contexts ?? [])];
         const allValues = allContexts.map((context) => {
-            var _a;
             const ctxValue = hooks.useContext(context);
-            const providedValue = (_a = child.props.__oj_private_contexts) === null || _a === void 0 ? void 0 : _a.get(context);
+            const providedValue = child.props.__oj_private_contexts?.get(context);
             return providedValue === undefined ? ctxValue : providedValue;
         });
         const contextMap = hooks.useMemo(() => {
@@ -48,9 +1015,21 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             return map;
         }, allValues);
         child.props.__oj_private_contexts = contextMap;
+        if (ref) {
+            if (child.ref) {
+                const originalRef = child.ref;
+                child.ref = (el) => {
+                    applyRef(originalRef, el);
+                    applyRef(ref, el);
+                };
+            }
+            else {
+                child.ref = ref;
+            }
+        }
         return jsxRuntime.jsx(preact.Fragment, { children: child });
-    }
-    EnvironmentWrapper.__ojIsEnvironmentWrapper = true;
+    });
+    EnvironmentWrapper['__ojIsEnvironmentWrapper'] = true;
 
     const injectSymbols = (props, property) => {
         if (Object.prototype.hasOwnProperty.call(props, property)) {
@@ -77,26 +1056,8 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
                 isCloningElement = false;
             }
         }
-        oldVNodeHook === null || oldVNodeHook === void 0 ? void 0 : oldVNodeHook(vnode);
+        oldVNodeHook?.(vnode);
     };
-    const originalDebounce = preact.options.debounceRendering;
-    function _debounce(task) {
-        const debouncePromise = new Promise((res) => {
-            const callback = () => {
-                res();
-                Context.__removePreactPromise(debouncePromise);
-                task();
-            };
-            if (originalDebounce) {
-                originalDebounce(callback);
-            }
-            else {
-                setTimeout(callback);
-            }
-        });
-        Context.__addPreactPromise(debouncePromise, 'Preact debounce');
-    }
-    preact.options.debounceRendering = _debounce;
     const RAF_TIMEOUT = 100;
     const originalRAF = preact.options.requestAnimationFrame;
     function _requestAnimationFrame(task) {
@@ -464,11 +1425,13 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
      * }
      * </code></pre>
      * <p>
-     *   In some scenarios, JET application developers may require access to a
+     *   In some scenarios, JET application developers may require runtime access to a
      *   <a href="oj.BusyContext.html">BusyContext</a> scoped to a VComponent's children
-     *   or to a particular named slot's contents. See the
-     *   <a href="#ImplicitBusyContext">ImplicitBusyContext</a> type for info on
-     *   how to declare the need for a scoped BusyContext instance.
+     *   or to a particular named slot's contents. For example, application developers may
+     *   require a mechanism for waiting until all of a slot's component contents have been created
+     *   and initialized before programmatically interacting with the contents. For these scenarios,
+     *   the VComponent API provides a <a href="#ImplicitBusyContext">ImplicitBusyContext</a> marker type
+     *   that can be included via intersection with the ComponentChildren or Slot property declaration.
      * </p>
      * <h3 id="template-slots">
      *  Template Slots
@@ -522,6 +1485,18 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
      * }
      * &lt;/li&gt;
      * </code></pre>
+     * <p>Note that while component consumers specify the contents for a template slot using a
+     * &lt;template> element and standard HTML markup, the component implementation sees template slots as functions
+     * that return virtual DOM nodes.  This transformation between live DOM and virtual DOM is performed
+     * through the use of a <a href="oj.CspExpressionEvaluator.html">CSPExpressionEvaluator</a> instance.  This has
+     * two consequences:
+     * <ul><li>expressions used within VComponent template slots are subject to the syntax
+     * <a href="oj.CspExpressionEvaluator.html#invalidExpressions">limitations</a> documented by
+     * CSPExpressionEvaluator;</li>
+     * <li>globally-scoped variables are not available within expressions unless the
+     * application has registered a CSPExpressionEvaluator with a
+     * <a href="oj.CspExpressionEvaluator.html#CspExpressionEvaluator">global scope</a> that exposes
+     * these variables.</li></ul></p>
      * <h3 id="actions">
      *  Actions and Events
      *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#actions"></a>
@@ -750,6 +1725,28 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
      *   element will automatically trigger a re-render of the VComponent with
      *   the new values.
      * </p>
+     * <p>
+     *   Global attributes referenced with the ObservedGlobalProps utility type do not appear in the
+     *   VComponent's generated API Doc. If any observed global properties require context-specific
+     *   documentation in the generated API Doc, then an alternate syntax is also supported:  simply include
+     *   the global prop in the VComponent's Props definition, specifying as its declaration a GlobalProps
+     *   indexed access type reference to the same global prop. Note that the following variation of the
+     *   previous example is functionally equivalent:
+     * </p>
+     * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, GlobalProps, ObservedGlobalProps } from 'ojs/ojvcomponent';
+     *
+     * type Props = {
+     *   greeting?: string;
+     *   name?: string;
+     *
+     *   /&#42;&#42;
+     *    &#42; Specifies this custom element's focusable behavior during sequential keyboard navigation.
+     *    &#42; A value of -1 indicates that this component is not reachable through keyboard navigation.
+     *    &#42;/
+     *   tabIndex?: GlobalProps['tabIndex'];  // include 'tabIndex' in the observed attribute set AND the API Doc
+     *
+     * } & ObservedGlobalProps&lt;'id'&gt;    // include 'id' in the observed attribute set
+     * </code></pre>
      * <h3 id="root-element">
      *  Root Element
      *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#root-element"></a>
@@ -1116,7 +2113,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
      *   Global HTML attributes</a></li>
      *   <li><a href="https://www.w3.org/TR/wai-aria-1.1/#state_prop_def">ARIA
      *     attributes</a></li>
-     *   <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers">
+     *   <li><a href="https://html.spec.whatwg.org/#event-handlers-on-elements,-document-objects,-and-window-objects">
      *     Global event listeners</a></li>
      * </ol>
      * <p>
@@ -1338,22 +2335,23 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
     /**
      * <p>
      *   As discussed in <a href="#children">Children and Slots</a>, JET application developers
-     *   may require runtime access to a <a href="oj.BusyContext.html">BusyContext</a>
-     *   scoped to a VComponent's children or to a particular named slot's contents.
-     *   The ImplicitBusyContext marker type can be combined with Preact's ComponentChildren type
-     *   or with the <a href="#Slot">Slot</a> type to indicate that a scoped BusyContext instance
-     *   should be injected by the VComponent framework.
+     *   may require a mechanism for waiting at runtime until all of a slot's component contents
+     *   have been created and initialized before programmatically interacting with the contents.
+     *   VComponent developers can request that a <a href="oj.BusyContext.html">BusyContext</a> instance,
+     *   scoped to a VComponent's children or to a particular named slot's contents, be created
+     *   at runtime by using the ImplicitBusyContext marker type. This marker type can be combined
+     *   with Preact's ComponentChildren type or with the <a href="#Slot">Slot</a> type as needed:
      * </p>
      * <pre class="prettyprint"><code>import { Component, ComponentChildren } from 'preact';
      * import { customElement, ExtendGlobalProps, ImplicitBusyContext, Slot } from 'ojs/ojvcomponent';
      *
      * type Props = {
      *   // This indicates that the VComponent accepts arbitrary (non-slot) children,
-     *   // and that a BusyContext scoped to this child content is expected at runtime
+     *   // and that a BusyContext scoped to this child content should be created at runtime
      *   children?: ComponentChildren & ImplicitBusyContext;
      *
      *   // This indicates that the VComponent accepts a slot named "end",
-     *   // and that a BusyContext scoped to the slot's content is expected at runtime
+     *   // and that a BusyContext scoped to the slot's content should be created at runtime
      *   end?: Slot & ImplicitBusyContext;
      * }
      * </code></pre>
@@ -1731,939 +2729,6 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
      * @ojexports
      */
 
-    let _slotIdCount = 0;
-    let _originalCreateElement;
-    const _ACTIVE_SLOTS = new Map();
-    const _OJ_SLOT_ID = Symbol();
-    const _OJ_SLOT_PREFIX = '@oj_s';
-    function convertToVNode(hostElement, node, handleSlotMount, handleSlotUnmount) {
-        const key = _getSlotKey(node);
-        const ref = _getRef(hostElement, handleSlotMount, handleSlotUnmount);
-        return preact.h(() => {
-            _registerSlot(key, node);
-            hooks.useLayoutEffect(() => _unregisterSlot(key));
-            return preact.h(key, { ref, key });
-        }, null);
-    }
-    function _registerSlot(id, node) {
-        if (_ACTIVE_SLOTS.size === 0) {
-            _patchCreateElement();
-        }
-        _ACTIVE_SLOTS.set(id, node);
-    }
-    function _unregisterSlot(id) {
-        _ACTIVE_SLOTS.delete(id);
-        if (_ACTIVE_SLOTS.size === 0) {
-            _restoreCreateElement();
-        }
-    }
-    function _getSlotKey(node) {
-        let key = node[_OJ_SLOT_ID];
-        if (key === undefined) {
-            key = _OJ_SLOT_PREFIX + _slotIdCount++;
-            node[_OJ_SLOT_ID] = key;
-        }
-        return key;
-    }
-    function _getRef(hostElement, handleSlotMount, handleSlotUnmount) {
-        let _count = 0;
-        let slotNode;
-        const slotRemoveHandler = () => {
-            if (_count === 0) {
-                slotNode.remove();
-            }
-        };
-        return (node) => {
-            if (node != null) {
-                _count++;
-                slotNode = node;
-                slotNode[ojpreactPatch.OJ_SLOT_REMOVE] = slotRemoveHandler;
-                const parent = node.parentElement;
-                ojpreactPatch.patchSlotParent(parent);
-                handleSlotMount(node);
-            }
-            else {
-                _count--;
-                if (_count < 0) {
-                    throw new ojcustomelementUtils.JetElementError(hostElement, 'Slot replacer count underflow');
-                }
-                if (_count === 0) {
-                    window.queueMicrotask(() => {
-                        if (_count === 0)
-                            handleSlotUnmount(slotNode);
-                    });
-                }
-            }
-        };
-    }
-    function _patchCreateElement() {
-        _originalCreateElement = document.createElement;
-        document.createElement = _createElementOverride;
-    }
-    function _restoreCreateElement() {
-        document.createElement = _originalCreateElement;
-    }
-    function _createElementOverride(tagName, opts) {
-        if (tagName.startsWith(_OJ_SLOT_PREFIX)) {
-            return _ACTIVE_SLOTS.get(tagName);
-        }
-        return _originalCreateElement.call(document, tagName, opts);
-    }
-
-    class Parking {
-        parkNode(node) {
-            this._getLot().appendChild(node);
-            if (oj.Components) {
-                oj.Components.subtreeHidden(node);
-            }
-        }
-        disposeNodes(nodeMap, cleanFunc) {
-            Parking._iterateSlots(nodeMap, (node) => {
-                const parent = node.parentElement;
-                if (this._lot === parent) {
-                    cleanFunc(node);
-                    this._lot.removeChild(node);
-                }
-                else if (!parent) {
-                    cleanFunc(node);
-                }
-            });
-        }
-        disconnectNodes(nodeMap) {
-            Parking._iterateSlots(nodeMap, (node) => {
-                if (this._lot === node.parentElement) {
-                    this._lot.removeChild(node);
-                }
-            });
-        }
-        reconnectNodes(nodeMap) {
-            Parking._iterateSlots(nodeMap, (node) => {
-                if (!node.parentElement) {
-                    this._lot.appendChild(node);
-                }
-            });
-        }
-        isParked(n) {
-            return (n === null || n === void 0 ? void 0 : n.parentElement) === this._lot;
-        }
-        _getLot() {
-            if (!this._lot) {
-                const div = document.createElement('div');
-                div.style.display = 'none';
-                document.body.appendChild(div);
-                this._lot = div;
-            }
-            return this._lot;
-        }
-        static _iterateSlots(nodeMap, callback) {
-            const keys = Object.keys(nodeMap);
-            keys.forEach((key) => {
-                const nodes = nodeMap[key];
-                nodes.forEach((node) => {
-                    callback(node);
-                });
-            });
-        }
-    }
-    const ParkingLot = new Parking();
-
-    const IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;
-    function diffProps(dom, newProps, oldProps, isSvg, hydrate, setPropertyOverrides) {
-        let i;
-        for (i in oldProps) {
-            if (i !== 'children' && i !== 'key' && !(i in newProps)) {
-                setPropertyOverrides(dom, i, null, oldProps[i], isSvg) ||
-                    setProperty(dom, i, null, oldProps[i], isSvg);
-            }
-        }
-        for (i in newProps) {
-            if ((!hydrate || typeof newProps[i] == 'function') &&
-                i !== 'children' &&
-                i !== 'key' &&
-                i !== 'value' &&
-                i !== 'checked' &&
-                oldProps[i] !== newProps[i]) {
-                setPropertyOverrides(dom, i, newProps[i], oldProps[i], isSvg) ||
-                    setProperty(dom, i, newProps[i], oldProps[i], isSvg);
-            }
-        }
-    }
-    function setStyle(style, key, value) {
-        if (key[0] === '-') {
-            style.setProperty(key, value);
-        }
-        else if (value == null) {
-            style[key] = '';
-        }
-        else if (typeof value != 'number' || IS_NON_DIMENSIONAL.test(key)) {
-            style[key] = value;
-        }
-        else {
-            style[key] = value + 'px';
-        }
-    }
-    function setProperty(dom, name, value, oldValue, isSvg) {
-        let useCapture;
-        o: if (name === 'style') {
-            if (typeof value == 'string') {
-                dom.style.cssText = value;
-            }
-            else {
-                if (typeof oldValue == 'string') {
-                    dom.style.cssText = oldValue = '';
-                }
-                if (oldValue) {
-                    for (name in oldValue) {
-                        if (!(value && name in value)) {
-                            setStyle(dom.style, name, '');
-                        }
-                    }
-                }
-                if (value) {
-                    for (name in value) {
-                        if (!oldValue || value[name] !== oldValue[name]) {
-                            setStyle(dom.style, name, value[name]);
-                        }
-                    }
-                }
-            }
-        }
-        else if (name[0] === 'o' && name[1] === 'n') {
-            useCapture = name !== (name = name.replace(/Capture$/, ''));
-            if (name.toLowerCase() in dom)
-                name = name.toLowerCase().slice(2);
-            else
-                name = name.slice(2);
-            if (!dom._listeners)
-                dom._listeners = {};
-            dom._listeners[name + useCapture] = value;
-            if (value) {
-                if (!oldValue) {
-                    const handler = useCapture ? eventProxyCapture : eventProxy;
-                    dom.addEventListener(name, handler, useCapture);
-                }
-            }
-            else {
-                const handler = useCapture ? eventProxyCapture : eventProxy;
-                dom.removeEventListener(name, handler, useCapture);
-            }
-        }
-        else if (name !== 'dangerouslySetInnerHTML') {
-            if (isSvg) {
-                name = name.replace(/xlink[H:h]/, 'h').replace(/sName$/, 's');
-            }
-            else if (name !== 'href' &&
-                name !== 'list' &&
-                name !== 'form' &&
-                name !== 'tabIndex' &&
-                name !== 'download' &&
-                name in dom) {
-                try {
-                    dom[name] = value == null ? '' : value;
-                    break o;
-                }
-                catch (e) { }
-            }
-            if (typeof value === 'function') {
-            }
-            else if (value != null && (value !== false || (name[0] === 'a' && name[1] === 'r'))) {
-                dom.setAttribute(name, value);
-            }
-            else {
-                dom.removeAttribute(name);
-            }
-        }
-    }
-    function eventProxy(e) {
-        this._listeners[e.type + false](preact.options.event ? preact.options.event(e) : e);
-    }
-    function eventProxyCapture(e) {
-        this._listeners[e.type + true](preact.options.event ? preact.options.event(e) : e);
-    }
-
-    const ELEMENT_REF = Symbol();
-    const ROOT_VNODE_PATCH = Symbol();
-    const _EMPTY_SET = new Set();
-    const _LISTENERS = Symbol();
-    const _CAPTURE_LISTENERS = Symbol();
-    const _SUBPROP = 'subproperty';
-    const _PROP_CHANGE = 'propChange';
-    const _ACTION = 'action';
-    let _stub;
-    function _getStubElement() {
-        _stub = _stub !== null && _stub !== void 0 ? _stub : document.createElement('div');
-        return _stub;
-    }
-    class IntrinsicElement {
-        constructor(element, component, metadata, rootAttributes, rootProperties, defaultProps) {
-            this.ref = preact.createRef();
-            this._isPatching = false;
-            this._props = { ref: this.ref };
-            this._verifyingState = ConnectionState.Unset;
-            this._earlySets = [];
-            this._eventQueue = [];
-            this._isRenderQueued = false;
-            this._state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
-            this._element = element;
-            this._metadata = metadata;
-            this._component = component;
-            this._controlledProps = (rootProperties === null || rootProperties === void 0 ? void 0 : rootProperties.length) > 0 ? new Set(rootProperties) : _EMPTY_SET;
-            this._controlledAttrs = (rootAttributes === null || rootAttributes === void 0 ? void 0 : rootAttributes.length) > 0 ? new Set(rootAttributes) : _EMPTY_SET;
-            this._defaultProps = defaultProps;
-            this._rootPatchCallback = this._patchRootElement.bind(this);
-        }
-        connectedCallback() {
-            this._verifyConnectDisconnect(ConnectionState.Connect);
-        }
-        disconnectedCallback() {
-            this._verifyConnectDisconnect(ConnectionState.Disconnect);
-        }
-        attributeChangedCallback(name, oldValue, newValue) {
-            if (!this._isPatching && this._state.canHandleAttributes()) {
-                const propName = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(name);
-                const topProp = propName.split('.')[0];
-                if (this._state.dirtyProps.has(topProp)) {
-                    this._state.dirtyProps.delete(topProp);
-                }
-                else if (oldValue === newValue) {
-                    return;
-                }
-                if (newValue === null) {
-                    newValue = undefined;
-                }
-                if ('knockout' === this._state.getBindingProviderType()) {
-                    if (!ojcustomelementUtils.AttributeUtils.isGlobalOrData(propName)) {
-                        this._element.dispatchEvent(new CustomEvent('attribute-changed', {
-                            detail: { attribute: name, value: newValue, previousValue: oldValue }
-                        }));
-                    }
-                }
-                const { propPath, propValue, propMeta, subPropMeta } = this._getPropValueInfo(name, newValue);
-                if (propPath) {
-                    this._updatePropsAndQueueRenderAsNeeded(propPath, propValue, propMeta, subPropMeta);
-                }
-            }
-        }
-        getProperty(name) {
-            var _a;
-            const meta = MetadataUtils.getPropertyMetadata(name, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
-            if (!meta) {
-                return this._element[name];
-            }
-            else {
-                let value = ojcustomelementUtils.CustomElementUtils.getPropertyValue(this._props, name);
-                if (value === undefined && this._defaultProps) {
-                    value = ojcustomelementUtils.CustomElementUtils.getPropertyValue(this._defaultProps, name);
-                }
-                return value;
-            }
-        }
-        setProperty(name, value) {
-            var _a;
-            if (this._isPatching)
-                return;
-            const { prop: propMeta, subProp: subPropMeta } = MetadataUtils.getComplexPropertyMetadata(name, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
-            if (!propMeta) {
-                this._element[name] = value;
-            }
-            else {
-                if (this._state.allowPropertySets()) {
-                    value = ojcustomelementUtils.transformPreactValue(this._element, subPropMeta, value);
-                    this._updatePropsAndQueueRenderAsNeeded(name, value, propMeta, subPropMeta);
-                }
-                else {
-                    this._earlySets.push({ property: name, value });
-                }
-            }
-        }
-        setProperties(properties) {
-            if (this._isPatching) {
-                return;
-            }
-            Object.keys(properties).forEach((prop) => {
-                this.setProperty(prop, properties[prop]);
-            });
-        }
-        getProps() {
-            return this._props;
-        }
-        isInitialized() {
-            return !!this._vdom;
-        }
-        appendChildHelper(element, newNode) {
-            if (ojcustomelementUtils.CustomElementUtils.canRelocateNode(element, newNode)) {
-                return HTMLElement.prototype.appendChild.call(element, newNode);
-            }
-            return newNode;
-        }
-        insertBeforeHelper(element, newNode, refNode) {
-            if (ojcustomelementUtils.CustomElementUtils.canRelocateNode(element, newNode)) {
-                return HTMLElement.prototype.insertBefore.call(element, newNode, refNode);
-            }
-            return newNode;
-        }
-        _render() {
-            var _a;
-            if (!this._vdom) {
-                this._initializePropsFromDom();
-                const eventsMeta = this._metadata.events;
-                if (eventsMeta) {
-                    this._initializeActionCallbacks(eventsMeta);
-                }
-                const writebackProps = (_a = this._metadata.extension) === null || _a === void 0 ? void 0 : _a['_WRITEBACK_PROPS'];
-                if (writebackProps) {
-                    this._initializeWritebackCallbacks(writebackProps);
-                }
-                this._playbackEarlyPropertySets();
-            }
-            this._setupEnvironmentContextObj();
-            if (!this._layerContext) {
-                this._layerContext = { getHost: ojpopupcore.getLayerHost.bind(null, this._element) };
-            }
-            const componentVDom = jsxRuntime.jsx(this._component, Object.assign({}, this._props));
-            const contexts = this._element['__oj_private_contexts'];
-            const contextWrappers = contexts
-                ? Array.from(contexts).reduce((acc, [context, value]) => {
-                    if (context === UNSAFE_Environment.EnvironmentContext) {
-                        return acc;
-                    }
-                    return jsxRuntime.jsx(context.Provider, Object.assign({ value: value }, { children: acc }));
-                }, componentVDom)
-                : componentVDom;
-            this._vdom = (jsxRuntime.jsx(UNSAFE_Layer.LayerContext.Provider, Object.assign({ value: this._layerContext }, { children: jsxRuntime.jsx(UNSAFE_Environment.RootEnvironmentProvider, Object.assign({ environment: this._rootEnvironment }, { children: contextWrappers })) })));
-            const props = componentVDom.props;
-            props[ELEMENT_REF] = this._element;
-            props[ROOT_VNODE_PATCH] = this._rootPatchCallback;
-            this._isPatching = true;
-            preact.render(this._vdom, this._element);
-            this._isPatching = false;
-        }
-        _setupEnvironmentContextObj() {
-            var _a;
-            const colorScheme = this._element['__oj_private_color_scheme'];
-            const scale = this._element['__oj_private_scale'];
-            const env = (_a = this._element['__oj_private_contexts']) === null || _a === void 0 ? void 0 : _a.get(UNSAFE_Environment.EnvironmentContext);
-            if (!this._rootEnvironment) {
-                this._rootEnvironment = env || {
-                    colorScheme: colorScheme,
-                    scale: scale,
-                    user: { locale: ojconfig.getLocale() }
-                };
-                this.extendTranslationBundleMap();
-            }
-            else if (env && env !== this._rootEnvironment) {
-                this._rootEnvironment = env;
-                this.extendTranslationBundleMap();
-            }
-            else if ((colorScheme && colorScheme !== this._rootEnvironment.colorScheme) ||
-                (scale && scale !== this._rootEnvironment.scale)) {
-                this._rootEnvironment = Object.assign({}, this._rootEnvironment, colorScheme && { colorScheme }, scale && { scale });
-            }
-        }
-        extendTranslationBundleMap() {
-            const translationBundleMap = this._state.getTranslationBundleMap();
-            const env = this._rootEnvironment;
-            if (!env.translations) {
-                env.translations = translationBundleMap;
-            }
-            else if (env.translations !== translationBundleMap) {
-                Object.keys(translationBundleMap).forEach((key) => {
-                    if (!env.translations[key]) {
-                        env.translations[key] = translationBundleMap[key];
-                    }
-                });
-            }
-        }
-        _getPropValueInfo(attrName, attrValue) {
-            var _a, _b;
-            if ('knockout' !== this._state.getBindingProviderType() ||
-                !ojcustomelementUtils.AttributeUtils.getExpressionInfo(attrValue).expr) {
-                const propPath = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(attrName);
-                const { prop: propMeta, subProp: subPropMeta } = MetadataUtils.getComplexPropertyMetadata(propPath, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
-                if (propMeta) {
-                    if (propMeta.readOnly) {
-                        return {};
-                    }
-                    return {
-                        propPath,
-                        propValue: ojcustomelementUtils.AttributeUtils.attributeToPropertyValue(this._element, attrName, attrValue, subPropMeta),
-                        propMeta,
-                        subPropMeta
-                    };
-                }
-                const globalPropName = ojcustomelementUtils.AttributeUtils.getGlobalPropForAttr(attrName);
-                if (this._controlledProps.has(globalPropName)) {
-                    return {
-                        propPath: globalPropName,
-                        propValue: (_b = this._element[ojcustomelementUtils.AttributeUtils.getGlobalValuePropForAttr(attrName)]) !== null && _b !== void 0 ? _b : attrValue
-                    };
-                }
-            }
-            return {};
-        }
-        _updatePropsAndQueueRenderAsNeeded(propPath, value, propMeta, subPropMeta, isOuter = true) {
-            const previousValue = this.getProperty(propPath);
-            const newValue = value === undefined
-                ? ojcustomelementUtils.CustomElementUtils.getPropertyValue(this._defaultProps, propPath)
-                : value;
-            if (propMeta &&
-                ojcustomelementUtils.ElementUtils.comparePropertyValues(propMeta.writeback, newValue, previousValue)) {
-                return;
-            }
-            const propArray = propPath.split('.');
-            const topProp = propArray[0];
-            const isSubprop = propArray.length > 1;
-            let topPropPrevValue = this.getProperty(topProp);
-            if (oj.CollectionUtils.isPlainObject(topPropPrevValue)) {
-                topPropPrevValue = oj.CollectionUtils.copyInto({}, topPropPrevValue, undefined, true);
-            }
-            if (isOuter) {
-                this._verifyProps(propPath, value, propMeta, subPropMeta);
-            }
-            this._updateProps(propArray, value);
-            if (!isOuter ||
-                (this._state.allowPropertyChangedEvents() && !ojcustomelementUtils.AttributeUtils.isGlobalOrData(propPath))) {
-                this._state.dirtyProps.add(topProp);
-                const updatedFrom = isOuter ? 'external' : 'internal';
-                const detail = {
-                    value: this.getProperty(topProp),
-                    previousValue: topPropPrevValue,
-                    updatedFrom
-                };
-                if (isSubprop) {
-                    detail[_SUBPROP] = {
-                        path: propPath,
-                        value,
-                        previousValue
-                    };
-                }
-                const type = topProp + 'Changed';
-                const collapseFunc = isSubprop
-                    ? null
-                    : (oldDef) => {
-                        if (oldDef.kind !== _PROP_CHANGE || oldDef.type !== type || oldDef.detail[_SUBPROP]) {
-                            return null;
-                        }
-                        const mergedDetail = Object.assign({}, detail, {
-                            previousValue: oldDef.detail.previousValue
-                        });
-                        return { type, detail: mergedDetail, collapse: collapseFunc, kind: _PROP_CHANGE };
-                    };
-                this._queueFireEventsTask({ type, detail, collapse: collapseFunc, kind: _PROP_CHANGE });
-            }
-            const oldProps = this._oldRootProps;
-            if (oldProps && this._controlledProps.has(propPath)) {
-                oldProps[propPath] = value;
-            }
-            this._queueRender(this._vdom && !(propMeta === null || propMeta === void 0 ? void 0 : propMeta.readOnly));
-        }
-        _queueRender(needRendering) {
-            if (needRendering && !this._isRenderQueued) {
-                this._isRenderQueued = true;
-                window.queueMicrotask(() => {
-                    this._isRenderQueued = false;
-                    this._render();
-                });
-            }
-        }
-        _verifyProps(prop, value, propMeta, subPropMeta) {
-            if (!propMeta) {
-                return;
-            }
-            if (propMeta.readOnly) {
-                throw new ojcustomelementUtils.JetElementError(this._element, `Read-only property '${prop}' cannot be set.`);
-            }
-            try {
-                MetadataUtils.checkEnumValues(this._element, prop, value, subPropMeta);
-            }
-            catch (error) {
-                throw new ojcustomelementUtils.JetElementError(this._element, error.message);
-            }
-        }
-        _updateProps(propPath, value) {
-            var _a, _b;
-            const topProp = propPath[0];
-            let propsObj = this._props;
-            if (propPath.length > 1) {
-                const currentValue = (_a = this._props[topProp]) !== null && _a !== void 0 ? _a : (_b = this._defaultProps) === null || _b === void 0 ? void 0 : _b[topProp];
-                if (currentValue && oj.CollectionUtils.isPlainObject(currentValue)) {
-                    propsObj[topProp] = oj.CollectionUtils.copyInto({}, currentValue, undefined, true);
-                }
-                else {
-                    propsObj[topProp] = {};
-                }
-            }
-            while (propPath.length) {
-                const subprop = propPath.shift();
-                if (propPath.length === 0) {
-                    propsObj[subprop] = value;
-                }
-                else if (!propsObj[subprop]) {
-                    propsObj[subprop] = {};
-                }
-                propsObj = propsObj[subprop];
-            }
-        }
-        _queueFireEventsTask(eventDef) {
-            let newDef = eventDef;
-            const collapseInfo = this._getEventCollapseInfo(eventDef, this._eventQueue);
-            if (collapseInfo) {
-                const [removeIndex, def] = collapseInfo;
-                this._eventQueue.splice(removeIndex, 1);
-                newDef = def;
-            }
-            this._eventQueue.push(newDef);
-            if (!this._queuedEvents) {
-                this._queuedEvents = new Promise((resolve) => {
-                    window.queueMicrotask(() => {
-                        try {
-                            while (this._eventQueue.length) {
-                                const def = this._eventQueue.shift();
-                                const evt = def.kind === _PROP_CHANGE
-                                    ? new CustomEvent(def.type, { detail: def.detail })
-                                    : def.event;
-                                this._element.dispatchEvent(evt);
-                            }
-                        }
-                        finally {
-                            resolve();
-                            this._queuedEvents = null;
-                        }
-                    });
-                });
-            }
-            return this._queuedEvents;
-        }
-        _getEventCollapseInfo(newDef, queue) {
-            var _a;
-            if (newDef.kind !== _PROP_CHANGE) {
-                return null;
-            }
-            for (let i = 0; i < queue.length; i++) {
-                const combined = (_a = newDef.collapse) === null || _a === void 0 ? void 0 : _a.call(newDef, queue[i]);
-                if (combined) {
-                    return [i, combined];
-                }
-            }
-            return null;
-        }
-        _verifyConnectDisconnect(state) {
-            if (this._verifyingState === ConnectionState.Unset) {
-                window.queueMicrotask(() => {
-                    if (this._verifyingState === state) {
-                        if (this._verifyingState === ConnectionState.Connect) {
-                            this._verifiedConnect();
-                        }
-                        else {
-                            this._verifiedDisconnect();
-                        }
-                    }
-                    this._verifyingState = ConnectionState.Unset;
-                });
-            }
-            this._verifyingState = state;
-        }
-        _verifiedConnect() {
-            if (this._state.isComplete()) {
-                this._reconnectSlots();
-            }
-            else {
-                this._state.startCreationCycle();
-                if (this._state.isCreating()) {
-                    const createComponentCallback = () => {
-                        this._element[ojcustomelementUtils.CHILD_BINDING_PROVIDER] = 'preact';
-                        let slotMap = this._state.getSlotMap();
-                        if (!slotMap) {
-                            slotMap = this._state.getSlotMap(true);
-                            const slotProps = this._removeAndConvertSlotsToProps(slotMap);
-                            Object.assign(this._props, slotProps);
-                        }
-                        else {
-                            this._reconnectSlots();
-                        }
-                        this._render();
-                    };
-                    this._state.setCreateCallback(createComponentCallback);
-                    this._state.setBindingsDisposedCallback(() => this._handleBindingsDisposed());
-                }
-            }
-        }
-        _verifiedDisconnect() {
-            if (this._state.isComplete()) {
-                this._disconnectSlots();
-                this._state.resetCreationCycle();
-                preact.render(null, this._element);
-                preact.render(null, _getStubElement());
-                this._applyRef(this._oldRootRef, null);
-                this._oldRootRef = undefined;
-                this._vdom = null;
-            }
-            else {
-                this._state.pauseCreationCycle();
-            }
-        }
-        _initializePropsFromDom() {
-            const attrs = this._element.attributes;
-            for (let i = 0; i < attrs.length; i++) {
-                const { name, value } = attrs[i];
-                const { propPath, propValue, propMeta, subPropMeta } = this._getPropValueInfo(name, value);
-                if (propPath) {
-                    this._verifyProps(propPath, propValue, propMeta, subPropMeta);
-                    this._updateProps(propPath.split('.'), propValue);
-                }
-            }
-        }
-        _playbackEarlyPropertySets() {
-            var _a;
-            while (this._earlySets.length) {
-                const setObj = this._earlySets.shift();
-                const meta = MetadataUtils.getPropertyMetadata(setObj.property, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
-                const updatedValue = ojcustomelementUtils.transformPreactValue(this._element, meta, setObj.value);
-                this.setProperty(setObj.property, updatedValue);
-            }
-        }
-        _patchRootElement(newVNode) {
-            var _a;
-            const oldProps = this._oldRootProps || this._getInitialRootProps();
-            const newProps = newVNode.props;
-            diffProps(this._element, newProps, oldProps, false, false, IntrinsicElement._setPropertyOverrides);
-            const newRef = newVNode.ref;
-            if (this._oldRootRef !== newRef) {
-                this._applyRef(newRef, this._element);
-                if (newRef) {
-                    (_a = this._oldRootRef) === null || _a === void 0 ? void 0 : _a.call(this, null);
-                }
-            }
-            this._oldRootProps = newProps;
-            this._oldRootRef = newRef;
-        }
-        _applyRef(ref, value) {
-            if (ref) {
-                if (typeof ref == 'function') {
-                    ref(value);
-                }
-                else {
-                    ref.current = value;
-                }
-            }
-        }
-        static _setPropertyOverrides(dom, name, value, oldValue) {
-            if (name === 'style' && typeof value == 'string') {
-                throw new Error('CSS style must be an object. CSS text is not supported');
-            }
-            if (name === 'class' || name === 'className') {
-                const oldClasses = oldValue == null ? _EMPTY_SET : ojcustomelementUtils.CustomElementUtils.getClassSet(oldValue);
-                const newClasses = value == null ? _EMPTY_SET : ojcustomelementUtils.CustomElementUtils.getClassSet(value);
-                for (const cl of oldClasses.values()) {
-                    if (!newClasses.has(cl)) {
-                        dom.classList.remove(cl);
-                    }
-                }
-                for (const cl of newClasses.values()) {
-                    if (!oldClasses.has(cl)) {
-                        dom.classList.add(cl);
-                    }
-                }
-                return true;
-            }
-            else if (name[0] === 'o' && name[1] === 'n') {
-                const useCapture = name !== (name = name.replace(/Capture$/, ''));
-                const nameLower = name.toLowerCase();
-                if (nameLower in dom)
-                    name = nameLower;
-                name = name.slice(2);
-                IntrinsicElement._getRootListeners(dom, useCapture)[name] = value;
-                const proxy = useCapture ? IntrinsicElement._eventProxyCapture : IntrinsicElement._eventProxy;
-                if (value) {
-                    if (!oldValue)
-                        dom.addEventListener(name, proxy, useCapture);
-                }
-                else {
-                    dom.removeEventListener(name, proxy, useCapture);
-                }
-                return true;
-            }
-            else if (name === 'role') {
-                if (value) {
-                    dom.setAttribute(name, value);
-                }
-                else {
-                    dom.removeAttribute(name);
-                }
-                return true;
-            }
-            return false;
-        }
-        static _getRootListeners(dom, useCapture) {
-            const key = useCapture ? _CAPTURE_LISTENERS : _LISTENERS;
-            let listeners = dom[key];
-            if (!listeners) {
-                listeners = dom[key] = {};
-            }
-            return listeners;
-        }
-        _getInitialRootProps() {
-            const props = {};
-            for (const name of this._controlledProps.values()) {
-                if (name in this._props) {
-                    props[name] = this._props[name];
-                }
-            }
-            return props;
-        }
-        _removeAndConvertSlotsToProps(slotMap) {
-            var _a, _b;
-            const dynamicSlotMetadata = (_a = this._metadata.extension) === null || _a === void 0 ? void 0 : _a._DYNAMIC_SLOT;
-            const dynamicSlotProp = dynamicSlotMetadata === null || dynamicSlotMetadata === void 0 ? void 0 : dynamicSlotMetadata.prop;
-            const slotsMetadata = (_b = this._metadata) === null || _b === void 0 ? void 0 : _b.slots;
-            const slots = Object.keys(slotMap);
-            const slotProps = {};
-            if (slots.length > 0) {
-                slots.forEach((slot) => {
-                    const slotNodes = slotMap[slot];
-                    slotNodes.forEach((node) => {
-                        ParkingLot.parkNode(node);
-                    });
-                    const slotMetadata = MetadataUtils.getPropertyMetadata(slot, slotsMetadata);
-                    if (slotMetadata) {
-                        const isTemplateSlot = !!(slotMetadata === null || slotMetadata === void 0 ? void 0 : slotMetadata.data);
-                        const slotProperty = !isTemplateSlot && slot === '' ? 'children' : slot;
-                        this._assignSlotProperty(slotProps, slotProperty, undefined, slot, isTemplateSlot, slotNodes);
-                    }
-                    else {
-                        if (!dynamicSlotProp) {
-                            return;
-                        }
-                        if (!slotProps[dynamicSlotProp]) {
-                            slotProps[dynamicSlotProp] = {};
-                        }
-                        const isTemplateSlot = dynamicSlotMetadata.isTemplate;
-                        this._assignSlotProperty(slotProps, slot, dynamicSlotProp, slot, isTemplateSlot, slotNodes);
-                    }
-                });
-            }
-            if (this._state.getBindingProviderType() === 'knockout') {
-                let child;
-                while ((child = this._element.firstChild)) {
-                    this._state.getBindingProviderCleanNode()(child);
-                    child.remove();
-                }
-            }
-            return slotProps;
-        }
-        _assignSlotProperty(slotProps, propName, containerPropName, slotName, isTemplateSlot, slotNodes) {
-            var _a, _b;
-            const propContainer = containerPropName ? slotProps[containerPropName] : slotProps;
-            if (isTemplateSlot) {
-                if (((_a = slotNodes[0]) === null || _a === void 0 ? void 0 : _a.nodeName) === 'TEMPLATE') {
-                    const templateNode = slotNodes[0];
-                    propContainer[propName] =
-                        (_b = templateNode['render']) !== null && _b !== void 0 ? _b : this._getSlotRenderer(templateNode, propName, containerPropName);
-                }
-                else {
-                    throw new ojcustomelementUtils.JetElementError(this._element, `Slot content for template slot ${slotName} must be a template element.`);
-                }
-            }
-            else {
-                const vnodes = slotNodes.map((node, index) => convertToVNode(this._element, node, this._handleSlotMount.bind(this), this._handleSlotUnmount.bind(this)));
-                propContainer[propName] = vnodes;
-            }
-        }
-        _getSlotRenderer(templateNode, slotProp, containerProp) {
-            const bindingProvider = this._state.getBindingProvider();
-            const mutationCallback = bindingProvider
-                ? () => {
-                    const propContainer = containerProp ? this._props[containerProp] : this._props;
-                    propContainer[slotProp] = this._getSlotRenderer(templateNode, slotProp, containerProp);
-                    this._queueRender(true);
-                }
-                : null;
-            return (context) => {
-                const cachedTemplateEngine = this._state.getTemplateEngine();
-                if (!cachedTemplateEngine) {
-                    throw new ojcustomelementUtils.JetElementError(this._element, 'Unexpected call to render a template slot');
-                }
-                return cachedTemplateEngine.execute(this._element, templateNode, context, bindingProvider, mutationCallback);
-            };
-        }
-        _handleBindingsDisposed() {
-            ParkingLot.disposeNodes(this._state.getSlotMap(), this._state.getBindingProviderCleanNode());
-            this._state.disposeTemplateCache();
-        }
-        _disconnectSlots() {
-            ParkingLot.disconnectNodes(this._state.getSlotMap());
-        }
-        _reconnectSlots() {
-            ParkingLot.reconnectNodes(this._state.getSlotMap());
-        }
-        _handleSlotUnmount(node) {
-            if (this._state.isComplete()) {
-                ParkingLot.parkNode(node);
-            }
-        }
-        _handleSlotMount(node) {
-            var _a;
-            const handleMount = (_a = oj.Components) === null || _a === void 0 ? void 0 : _a.subtreeShown;
-            if (handleMount) {
-                if (node.isConnected) {
-                    handleMount(node);
-                }
-                else {
-                    window.queueMicrotask(() => handleMount(node));
-                }
-            }
-        }
-        static _eventProxy(e) {
-            this[_LISTENERS][e.type](preact.options.event ? preact.options.event(e) : e);
-        }
-        static _eventProxyCapture(e) {
-            this[_CAPTURE_LISTENERS][e.type](preact.options.event ? preact.options.event(e) : e);
-        }
-        _initializeActionCallbacks(eventsMeta) {
-            Object.keys(eventsMeta).forEach((event) => {
-                const eventMeta = eventsMeta[event];
-                const eventProp = ojcustomelementUtils.AttributeUtils.eventTypeToEventListenerProperty(event);
-                this._props[eventProp] = (detailObj) => {
-                    const detail = Object.assign({}, detailObj);
-                    const cancelable = !!eventMeta.cancelable;
-                    const acceptPromises = [];
-                    if (cancelable) {
-                        detail.accept = (promise) => {
-                            acceptPromises.push(promise);
-                        };
-                    }
-                    const eventDescriptor = { detail, bubbles: !!eventMeta.bubbles, cancelable };
-                    const customEvent = new CustomEvent(event, eventDescriptor);
-                    const eventPromise = this._queueFireEventsTask({ event: customEvent, kind: _ACTION });
-                    if (cancelable) {
-                        return eventPromise.then(() => {
-                            return customEvent.defaultPrevented
-                                ? Promise.reject()
-                                : Promise.all(acceptPromises).then(() => Promise.resolve(), (reason) => Promise.reject(reason));
-                        });
-                    }
-                    return undefined;
-                };
-            });
-        }
-        _initializeWritebackCallbacks(writebackProps) {
-            writebackProps.forEach((propPath) => {
-                var _a;
-                const callbackProp = ojcustomelementUtils.AttributeUtils.propertyNameToChangedCallback(propPath);
-                const { prop: propMeta, subProp: subPropMeta } = MetadataUtils.getComplexPropertyMetadata(propPath, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
-                this._props[callbackProp] = (value) => {
-                    this._updatePropsAndQueueRenderAsNeeded(propPath, value, propMeta, subPropMeta, false);
-                };
-            });
-        }
-    }
-    var ConnectionState;
-    (function (ConnectionState) {
-        ConnectionState[ConnectionState["Connect"] = 0] = "Connect";
-        ConnectionState[ConnectionState["Disconnect"] = 1] = "Disconnect";
-        ConnectionState[ConnectionState["Unset"] = 2] = "Unset";
-    })(ConnectionState || (ConnectionState = {}));
-
     class ValueBasedElement {
         constructor() {
             this.appendChildHelper = (element, newNode) => HTMLElement.prototype.appendChild.call(element, newNode);
@@ -2695,12 +2760,10 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             this._getHelper().connectedCallback();
         }
         disconnectedCallback() {
-            var _a;
-            (_a = this._helper) === null || _a === void 0 ? void 0 : _a.disconnectedCallback();
+            this._helper?.disconnectedCallback();
         }
         attributeChangedCallback(name, oldValue, newValue) {
-            var _a;
-            (_a = this._helper) === null || _a === void 0 ? void 0 : _a.attributeChangedCallback(name, oldValue, newValue);
+            this._helper?.attributeChangedCallback(name, oldValue, newValue);
         }
         getProperty(name) {
             return this._getHelper().getProperty(name);
@@ -2749,19 +2812,17 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         }
     }
     const getDescriptiveTransferAttributeValue = (element, attrName) => {
-        var _a;
         const elementVal = element.getAttribute(attrName);
         if (elementVal) {
             return elementVal;
         }
         const helper = element._getHelper();
-        const vprops = ((_a = helper.getProps) === null || _a === void 0 ? void 0 : _a.call(helper)) || {};
+        const vprops = helper.getProps?.() || {};
         return vprops[attrName];
     };
     const isInitialized = (element) => {
-        var _a;
         const helper = element._getHelper();
-        return !!((_a = helper.isInitialized) === null || _a === void 0 ? void 0 : _a.call(helper));
+        return !!helper.isInitialized?.();
     };
 
     const RootContext = preact.createContext(null);
@@ -2772,14 +2833,13 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
     }
     const _GLOBAL_EVENT_MATCH_EXP = /^on(?!.*Changed$)([A-Za-z])([A-Za-z]*)$/;
     function isGlobalEventListenerProperty(prop, metadata) {
-        var _a, _b;
-        if ((_a = metadata === null || metadata === void 0 ? void 0 : metadata.properties) === null || _a === void 0 ? void 0 : _a[prop]) {
+        if (metadata?.properties?.[prop]) {
             return false;
         }
         const match = prop.match(_GLOBAL_EVENT_MATCH_EXP);
         if (match) {
             const eventType = match[1].toLowerCase() + match[2];
-            return !((_b = metadata === null || metadata === void 0 ? void 0 : metadata.events) === null || _b === void 0 ? void 0 : _b[eventType]);
+            return !metadata?.events?.[eventType];
         }
         return false;
     }
@@ -2801,7 +2861,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             acc[cur] = vcompProps[cur];
             return acc;
         }, {});
-        const elem = (jsxRuntime.jsx("div", Object.assign({ ref: refFunc, "data-oj-jsx": "" }, globalProps, { children: children })));
+        const elem = (jsxRuntime.jsx("div", { ref: refFunc, "data-oj-jsx": "", ...globalProps, children: children }));
         elem.type = tagName;
         return elem;
     };
@@ -2810,7 +2870,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
     const Root = compat.forwardRef((props, ref) => {
         const { tagName, metadata, isElementFirst, vcompProps, observedPropsSet } = hooks.useContext(RootContext);
         if (isElementFirst) {
-            const artificialRoot = jsxRuntime.jsx("div", Object.assign({}, props, { ref: ref }));
+            const artificialRoot = jsxRuntime.jsx("div", { ...props, ref: ref });
             artificialRoot.type = tagName;
             vcompProps[ROOT_VNODE_PATCH](artificialRoot);
             return jsxRuntime.jsx(preact.Fragment, { children: props.children });
@@ -2829,7 +2889,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             acc[cur] = vcompProps[cur];
             return acc;
         }, {});
-        const elem = (jsxRuntime.jsx("div", Object.assign({}, props, propFixups, parentGlobals, { ref: ref, "data-oj-jsx": "" })));
+        const elem = (jsxRuntime.jsx("div", { ...props, ...propFixups, ...parentGlobals, ref: ref, "data-oj-jsx": "" }));
         elem.type = tagName;
         return elem;
     });
@@ -2852,15 +2912,21 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         allowPropertyChangedEvents() {
             return super.allowPropertyChangedEvents() && isInitialized(this.Element);
         }
+        allowPropertySets() {
+            return this._allowPropertySets || super.allowPropertySets();
+        }
+        resetCreationCycle() {
+            this._allowPropertySets = super.allowPropertySets();
+            super.resetCreationCycle();
+        }
         disposeTemplateCache() {
-            var _a;
             const slotMap = this.getSlotMap();
             const slots = Object.keys(slotMap);
             const metadata = ojcustomelementRegistry.getElementDescriptor(this.Element.tagName).metadata;
-            const dynamicSlotMetadata = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a._DYNAMIC_SLOT;
-            const hasDynamicTemplateSlots = !!(dynamicSlotMetadata === null || dynamicSlotMetadata === void 0 ? void 0 : dynamicSlotMetadata.isTemplate);
+            const dynamicSlotMetadata = metadata?.extension?._DYNAMIC_SLOT;
+            const hasDynamicTemplateSlots = !!dynamicSlotMetadata?.isTemplate;
             const templateSlots = slots.filter((slot) => {
-                const slotMetadata = MetadataUtils.getPropertyMetadata(slot, metadata === null || metadata === void 0 ? void 0 : metadata.slots);
+                const slotMetadata = MetadataUtils.getPropertyMetadata(slot, metadata?.slots);
                 if (slotMetadata) {
                     if (slotMetadata.data) {
                         return true;
@@ -2874,9 +2940,8 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
                 return false;
             });
             templateSlots.forEach((slot) => {
-                var _a;
                 const slotNodes = slotMap[slot];
-                if (((_a = slotNodes[0]) === null || _a === void 0 ? void 0 : _a.nodeName) === 'TEMPLATE') {
+                if (slotNodes[0]?.nodeName === 'TEMPLATE') {
                     this.getTemplateEngine().cleanupTemplateCache(slotNodes[0]);
                 }
             });
@@ -2938,10 +3003,9 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
     const FUNCTIONAL_COMPONENT = Symbol('functional component');
     function customElement(tagName) {
         return function (constructor) {
-            var _a;
             const metadata = constructor['_metadata'] || constructor['metadata'] || {};
             extendMetadata(metadata);
-            const observedProps = ((_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_OBSERVED_GLOBAL_PROPS']) || [];
+            const observedProps = metadata?.extension?.['_OBSERVED_GLOBAL_PROPS'] || [];
             const observedAttrs = observedProps.map((prop) => ojcustomelementUtils.AttributeUtils.getGlobalAttrForProp(prop));
             overrideRender(tagName, constructor, metadata, new Set(observedProps));
             registerElement(tagName, metadata, constructor, observedProps, observedAttrs, constructor['_translationBundleMap'] || constructor['translationBundleMap']);
@@ -2953,28 +3017,20 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
     function registerCustomElement(tagName, fcomp, options) {
         class VCompWrapper extends preact.Component {
             constructor() {
-                var _a;
                 super();
                 this.__refCallback = (instance) => {
                     if (this.__vcompRef) {
                         this.__vcompRef.current = instance;
                     }
                     const innerRef = this.props['innerRef'];
-                    if (innerRef) {
-                        if (typeof innerRef === 'function') {
-                            innerRef(instance);
-                        }
-                        else {
-                            innerRef.current = instance;
-                        }
-                    }
+                    applyRef(innerRef, instance);
                 };
-                if ((_a = VCompWrapper._metadata) === null || _a === void 0 ? void 0 : _a['methods']) {
+                if (VCompWrapper._metadata?.['methods']) {
                     this.__vcompRef = preact.createRef();
                     const rtMethodMD = VCompWrapper._metadata['methods'];
                     const extendableInstance = this;
                     for (let mName in rtMethodMD) {
-                        extendableInstance[mName] = (...args) => { var _a; return (_a = this.__vcompRef.current) === null || _a === void 0 ? void 0 : _a[mName].apply(this.__vcompRef.current, args); };
+                        extendableInstance[mName] = (...args) => this.__vcompRef.current?.[mName].apply(this.__vcompRef.current, args);
                     }
                 }
             }
@@ -2998,7 +3054,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         }
         VCompWrapper[FUNCTIONAL_COMPONENT] = true;
         customElement(tagName)(VCompWrapper);
-        return compat.forwardRef((props, ref) => jsxRuntime.jsx(VCompWrapper, Object.assign({}, props, { innerRef: ref })));
+        return compat.forwardRef((props, ref) => jsxRuntime.jsx(VCompWrapper, { ...props, innerRef: ref }));
     }
     function extendMetadata(metadata) {
         if (!metadata.properties) {
@@ -3013,8 +3069,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             binding: { consume: { name: 'scale' } }
         };
         metadata.properties.__oj_private_contexts = {
-            type: 'object',
-            binding: { consume: { name: '__oj_private_contexts' } }
+            type: 'object'
         };
     }
     function registerElement(tagName, metadata, constructor, observedProps, observedAttrs, translationBundleMap) {
@@ -3029,8 +3084,8 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             ? MetadataUtils.deepFreeze(constructor['defaultProps'])
             : null;
         HTMLPreactElement.translationBundleMap = translationBundleMap;
-        addPropGetterSetters(HTMLPreactElement.prototype, metadata === null || metadata === void 0 ? void 0 : metadata.properties);
-        addMethods(HTMLPreactElement.prototype, metadata === null || metadata === void 0 ? void 0 : metadata.methods);
+        addPropGetterSetters(HTMLPreactElement.prototype, metadata?.properties);
+        addMethods(HTMLPreactElement.prototype, metadata?.methods);
         ojcustomelementRegistry.registerElement(tagName, {
             descriptor: { metadata },
             stateClass: VComponentState,
@@ -3041,8 +3096,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
     function overrideRender(tagName, constructor, metadata, observedPropsSet) {
         const componentRender = constructor.prototype.render;
         constructor.prototype.render = function (props, state, context) {
-            var _a, _b;
-            const readOnlyProps = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_READ_ONLY_PROPS'];
+            const readOnlyProps = metadata?.extension?.['_READ_ONLY_PROPS'];
             if (readOnlyProps) {
                 readOnlyProps.forEach((prop) => delete props[prop]);
             }
@@ -3052,7 +3106,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
                 ojcustomelementUtils.CustomElementUtils.getElementState(element).disposeTemplateCache();
             }
             let vdom = componentRender.call(this, props, state, context);
-            if (((_b = vdom === null || vdom === void 0 ? void 0 : vdom.type) === null || _b === void 0 ? void 0 : _b['__ojIsEnvironmentWrapper']) &&
+            if (vdom?.type?.['__ojIsEnvironmentWrapper'] &&
                 vdom.props.children.type === tagName) {
                 const customElementNode = vdom.props.children;
                 customElementNode.type = Root;
@@ -3063,7 +3117,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
                     customElementNode.type = tagName;
                 }
             }
-            const vdomType = vdom === null || vdom === void 0 ? void 0 : vdom.type;
+            const vdomType = vdom?.type;
             if (vdomType !== Root) {
                 if (!isForwardRef(vdomType) ||
                     !vdomType[FUNCTIONAL_COMPONENT] ||
@@ -3071,7 +3125,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
                     vdom = jsxRuntime.jsx(InternalRoot, { children: vdom });
                 }
             }
-            return (jsxRuntime.jsx(RootContext.Provider, Object.assign({ value: { tagName, metadata, isElementFirst, vcompProps: props, observedPropsSet } }, { children: vdom })));
+            return (jsxRuntime.jsx(RootContext.Provider, { value: { tagName, metadata, isElementFirst, vcompProps: props, observedPropsSet }, children: vdom }));
         };
     }
     function addPropGetterSetters(proto, properties) {
@@ -3108,7 +3162,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         return get$$typeof(type) === getForwardRef$$typeof();
     }
     function get$$typeof(type) {
-        return type === null || type === void 0 ? void 0 : type['$$typeof'];
+        return type?.['$$typeof'];
     }
     let forwardRefSymbol;
     function getForwardRef$$typeof() {

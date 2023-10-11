@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateStatementsFromText = exports.getValueFromNode = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isTypeTreatedAsAny = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.updateFunctionalVCompNode = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.stringToJS = exports.writebackCallbackToProperty = exports.tagNameToElementName = exports.tagNameToElementInterfaceName = void 0;
+exports.removeQuotes = exports.generateStatementsFromText = exports.getValueFromNode = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isTypeTreatedAsAny = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.updateFunctionalVCompNode = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.stringToJS = exports.writebackCallbackToProperty = exports.tagNameToElementName = exports.tagNameToElementInterfaceName = void 0;
 const ts = __importStar(require("typescript"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
@@ -73,30 +73,35 @@ function stringToJS(memberName, type, value, metaUtilObj) {
 exports.stringToJS = stringToJS;
 function getGenericTypeParameters(propsTypeNode) {
     let genericSignature = '<';
+    const genericTypeParamsArray = [];
     for (let i = 0; i < propsTypeNode.typeArguments.length; i++) {
         const typeRefNode = propsTypeNode.typeArguments[i];
-        const typeName = typeRefNode.typeName && ts.isIdentifier(typeRefNode.typeName)
+        let typeName = typeRefNode.typeName && ts.isIdentifier(typeRefNode.typeName)
             ? ts.idText(typeRefNode.typeName)
             : typeRefNode.typeName && ts.isQualifiedName(typeRefNode.typeName)
                 ? ts.idText(typeRefNode.typeName.right)
                 : ts.isTypeLiteralNode(typeRefNode)
                     ? 'object'
                     : typeRefNode.getText();
-        genericSignature += typeName;
         const typeNode = typeRefNode;
         if (typeNode.typeArguments && typeNode.typeArguments.length) {
-            genericSignature += getGenericTypeParameters(typeNode);
+            const subGenerics = getGenericTypeParameters(typeNode);
+            typeName += subGenerics.genericSignature;
         }
+        genericTypeParamsArray.push(typeName);
+        genericSignature += typeName;
         if (i < propsTypeNode.typeArguments.length - 1) {
             genericSignature += ', ';
         }
     }
     genericSignature += '>';
-    return genericSignature;
+    return {
+        genericSignature,
+        genericTypeParamsArray
+    };
 }
 exports.getGenericTypeParameters = getGenericTypeParameters;
 function getTypeParametersFromType(type, checker) {
-    var _a, _b;
     let typeParamsSignature;
     let typeArgs;
     if (type.aliasSymbol) {
@@ -109,11 +114,11 @@ function getTypeParametersFromType(type, checker) {
         typeParamsSignature = '<';
         for (let i = 0; i < typeArgs.length; i++) {
             const typeArg = typeArgs[i];
-            const typeArgName = (_a = TypeUtils.getTypeNameFromType(typeArg)) !== null && _a !== void 0 ? _a : checker.typeToString(typeArg);
+            const typeArgName = TypeUtils.getTypeNameFromType(typeArg) ?? checker.typeToString(typeArg);
             typeParamsSignature += typeArgName;
             if ((typeArg.typeArguments && typeArg.typeArguments.length) ||
                 (typeArg.aliasTypeArguments && typeArg.aliasTypeArguments.length)) {
-                typeParamsSignature += (_b = getTypeParametersFromType(typeArg, checker)) !== null && _b !== void 0 ? _b : '';
+                typeParamsSignature += getTypeParametersFromType(typeArg, checker) ?? '';
             }
             if (i < typeArgs.length - 1) {
                 typeParamsSignature += ', ';
@@ -252,10 +257,10 @@ function addMetadataToClassNode(vcompClassInfo, metadata) {
 }
 exports.addMetadataToClassNode = addMetadataToClassNode;
 function updateFunctionalVCompNode(functionalCompNode, vcompFunctionInfo, metaUtilObj) {
-    var _a, _b;
     const rtMetadata = metaUtilObj.rtMetadata;
     const needPlaceholderArgs = !!vcompFunctionInfo.translationBundleMapExpression || !!vcompFunctionInfo.contextsExpression;
-    const defDisplayNameExpression = ts.factory.createStringLiteral((_a = vcompFunctionInfo.componentName) !== null && _a !== void 0 ? _a : `VComponent(${(_b = vcompFunctionInfo.functionName) !== null && _b !== void 0 ? _b : vcompFunctionInfo.elementName})`);
+    const defDisplayNameExpression = ts.factory.createStringLiteral(vcompFunctionInfo.componentName ??
+        `VComponent(${vcompFunctionInfo.functionName ?? vcompFunctionInfo.elementName})`);
     const compRegisterCall = vcompFunctionInfo.compRegisterCall;
     const updatedCallArgs = [
         compRegisterCall.arguments[0],
@@ -302,7 +307,6 @@ function updateFunctionalVCompNode(functionalCompNode, vcompFunctionInfo, metaUt
 }
 exports.updateFunctionalVCompNode = updateFunctionalVCompNode;
 function getPropsInfo(compType, componentName, typeRef, vexportToAlias, checker) {
-    var _a, _b, _c;
     let rtnInfo = null;
     let rtnObservedGlobalProps = new Set();
     let rtnMappedTypes = [];
@@ -320,7 +324,7 @@ function getPropsInfo(compType, componentName, typeRef, vexportToAlias, checker)
         let typeRefName = TypeUtils.getTypeNameFromTypeReference(typeRef);
         if (typeRefName === vexportToAlias.ExtendGlobalProps) {
             rtnEGPRef = typeRef;
-            rtnTypeNode = (_a = typeRef.typeArguments) === null || _a === void 0 ? void 0 : _a[0];
+            rtnTypeNode = typeRef.typeArguments?.[0];
             propsTypeParamsNode = rtnTypeNode;
         }
         else {
@@ -335,12 +339,12 @@ function getPropsInfo(compType, componentName, typeRef, vexportToAlias, checker)
                     if (ts.isTypeReferenceNode(aliasType) &&
                         TypeUtils.getTypeNameFromTypeReference(aliasType) === vexportToAlias.ExtendGlobalProps) {
                         rtnEGPRef = aliasType;
-                        rtnTypeNode = (_b = aliasType.typeArguments) === null || _b === void 0 ? void 0 : _b[0];
+                        rtnTypeNode = aliasType.typeArguments?.[0];
                     }
                 }
             }
             else {
-                const symbolDeclaration = (_c = typeRefType.symbol) === null || _c === void 0 ? void 0 : _c.declarations[0];
+                const symbolDeclaration = typeRefType.symbol?.declarations[0];
                 if (ts.isInterfaceDeclaration(symbolDeclaration) ||
                     ts.isClassDeclaration(symbolDeclaration)) {
                     const heritageClauses = symbolDeclaration.heritageClauses;
@@ -458,11 +462,13 @@ function getPropsInfo(compType, componentName, typeRef, vexportToAlias, checker)
                         : TypeUtils.getNodeDeclaration(propsTypeParamsNode, checker);
                 }
                 if (propsTypeParamsNode.typeArguments) {
-                    rtnInfo.propsTypeParams = getGenericTypeParameters(propsTypeParamsNode);
+                    const typeParamsInfo = getGenericTypeParameters(propsTypeParamsNode);
+                    rtnInfo.propsTypeParams = typeParamsInfo.genericSignature;
+                    rtnInfo.propsTypeParamsArray = typeParamsInfo.genericTypeParamsArray;
                 }
             }
             if (rtnObservedGlobalProps.size > 0) {
-                rtnInfo.propsObservedGlobalProps = [...rtnObservedGlobalProps];
+                rtnInfo.propsRtObservedGlobalPropsSet = rtnObservedGlobalProps;
             }
         }
     }
@@ -517,7 +523,6 @@ function getIntersectionTypeNodeInfo(intersectionTypeNode, vexportToAlias, isInl
 exports.getIntersectionTypeNodeInfo = getIntersectionTypeNodeInfo;
 const _MAPPED_TYPENAMES = new Set(['Partial', 'Required', 'Readonly', 'Pick', 'Omit']);
 function getMappedTypesInfo(outerType, checker, isPropsInfo, outerTypeNode) {
-    var _a;
     let rtnInfo = null;
     let mappedTypes = [];
     let wrappedType = outerType;
@@ -540,7 +545,7 @@ function getMappedTypesInfo(outerType, checker, isPropsInfo, outerTypeNode) {
             }
             mappedTypes.push(mappedEntry);
             if (wrappedTypeNode) {
-                wrappedTypeNode = (_a = wrappedTypeNode.typeArguments) === null || _a === void 0 ? void 0 : _a[0];
+                wrappedTypeNode = wrappedTypeNode.typeArguments?.[0];
                 wrappedType = wrappedTypeNode ? checker.getTypeAtLocation(wrappedTypeNode) : null;
             }
             else {
@@ -576,11 +581,10 @@ function isAliasToMappedType(type, typeNode) {
 }
 exports.isAliasToMappedType = isAliasToMappedType;
 function getWrappedReadonlyType(type, typeNode, componentName, checker) {
-    var _a, _b, _c, _d;
     let rtnType = null;
-    if (((_a = type.aliasSymbol) === null || _a === void 0 ? void 0 : _a.name) === 'Readonly') {
-        const typeArg = (_b = type.aliasTypeArguments) === null || _b === void 0 ? void 0 : _b[0];
-        const typeArgName = (_c = typeArg === null || typeArg === void 0 ? void 0 : typeArg.aliasSymbol) === null || _c === void 0 ? void 0 : _c.name;
+    if (type.aliasSymbol?.name === 'Readonly') {
+        const typeArg = type.aliasTypeArguments?.[0];
+        const typeArgName = typeArg?.aliasSymbol?.name;
         if (!typeArgName || !_MAPPED_TYPENAMES.has(typeArgName)) {
             if (typeArg.symbol) {
                 const unwrappedNode = typeArg.symbol.declarations[0];
@@ -591,7 +595,7 @@ function getWrappedReadonlyType(type, typeNode, componentName, checker) {
                     const foundOGP = typeArg.types.find((subtype) => TypeUtils.getTypeNameFromType(subtype) === 'ObservedGlobalProps');
                     if (foundOGP) {
                         const aliasDecl = _getScopedSymbolDeclaration(typeNode, checker);
-                        const errNode = (_d = aliasDecl.name) !== null && _d !== void 0 ? _d : typeNode;
+                        const errNode = aliasDecl.name ?? typeNode;
                         TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_OBSERVEDGLOBALPROPS_INSTANCE, TransformerError_1.ExceptionType.THROW_ERROR, componentName, `An unsupported ObservedGlobalProps instance was detected within a Readonly Props intersection type.
 Remove the ObservedGlobalProps instance from the intersection type, and instead have it intersect with the Readonly Props type.`, errNode);
                     }
@@ -636,8 +640,7 @@ function constructMappedTypeName(mappedTypesInfo, wrappedTypeGenerics) {
 }
 exports.constructMappedTypeName = constructMappedTypeName;
 function isMappedType(type) {
-    var _a, _b;
-    let decl = (_b = (_a = type.symbol) === null || _a === void 0 ? void 0 : _a.declarations) === null || _b === void 0 ? void 0 : _b[0];
+    let decl = type.symbol?.declarations?.[0];
     return decl && ts.isMappedTypeNode(decl);
 }
 exports.isMappedType = isMappedType;
@@ -655,20 +658,19 @@ function isTypeTreatedAsAny(type) {
 exports.isTypeTreatedAsAny = isTypeTreatedAsAny;
 exports._UNION_SPLITTER = /\s*\|\s*/;
 function isConditionalTypeNodeDetected(typeNode, seen, metaUtilObj) {
-    var _a;
     let foundIt = false;
     if (ts.isConditionalTypeNode(typeNode)) {
         foundIt = true;
     }
     else if (ts.isTypeReferenceNode(typeNode)) {
         const typeName = TypeUtils.getTypeNameFromTypeReference(typeNode);
-        if (typeName === 'Array' && ((_a = typeNode.typeArguments) === null || _a === void 0 ? void 0 : _a[0])) {
+        if (typeName === 'Array' && typeNode.typeArguments?.[0]) {
             foundIt = isConditionalTypeNodeDetected(typeNode.typeArguments[0], seen, metaUtilObj);
         }
         else if (!seen.has(typeName)) {
             seen.add(typeName);
             const typeDecl = TypeUtils.getNodeDeclaration(typeNode, metaUtilObj.typeChecker);
-            const aliasTypeNode = typeDecl === null || typeDecl === void 0 ? void 0 : typeDecl.type;
+            const aliasTypeNode = typeDecl?.type;
             if (aliasTypeNode) {
                 foundIt = isConditionalTypeNodeDetected(aliasTypeNode, seen, metaUtilObj);
             }
@@ -693,18 +695,17 @@ function isConditionalTypeNodeDetected(typeNode, seen, metaUtilObj) {
 exports.isConditionalTypeNodeDetected = isConditionalTypeNodeDetected;
 function walkTypeMembers(type, metaUtilObj, callback) {
     const isExcludedType = function (type, metaUtilObj) {
-        var _a, _b, _c, _d, _e;
         let rtnValue = false;
-        const tname = (_a = type.aliasSymbol) === null || _a === void 0 ? void 0 : _a.name;
-        if (tname && ((_b = metaUtilObj.excludedTypes) === null || _b === void 0 ? void 0 : _b.has(tname))) {
+        const tname = type.aliasSymbol?.name;
+        if (tname && metaUtilObj.excludedTypes?.has(tname)) {
             rtnValue = true;
         }
         else {
-            const decl = (_d = (_c = type.aliasSymbol) === null || _c === void 0 ? void 0 : _c.declarations) === null || _d === void 0 ? void 0 : _d[0];
+            const decl = type.aliasSymbol?.declarations?.[0];
             if (decl &&
                 ts.isTypeAliasDeclaration(decl) &&
                 ts.isTypeReferenceNode(decl.type) &&
-                ((_e = metaUtilObj.excludedTypeAliases) === null || _e === void 0 ? void 0 : _e.has(TypeUtils.getTypeNameFromTypeReference(decl.type)))) {
+                metaUtilObj.excludedTypeAliases?.has(TypeUtils.getTypeNameFromTypeReference(decl.type))) {
                 rtnValue = true;
             }
         }
@@ -749,9 +750,8 @@ function walkTypeMembers(type, metaUtilObj, callback) {
         }
     };
     const processMembers = function (type, checker, callback) {
-        var _a;
         if (!isMappedType(type) && !isConditionalType(type)) {
-            const members = (_a = type.getSymbol()) === null || _a === void 0 ? void 0 : _a.members;
+            const members = type.getSymbol()?.members;
             if (members) {
                 members.forEach((memberSymbol, memberKey) => {
                     callback(memberSymbol, memberKey);
@@ -765,12 +765,11 @@ function walkTypeMembers(type, metaUtilObj, callback) {
                 let rootSymbols;
                 if (isMappedType(type)) {
                     rootSymbols = propSymbols.map((sym) => {
-                        var _a;
-                        return (_a = checker.getRootSymbols(sym)) === null || _a === void 0 ? void 0 : _a[0];
+                        return checker.getRootSymbols(sym)?.[0];
                     });
                 }
                 for (let symbol, i = 0; i < propCount; i++) {
-                    if (rootSymbols === null || rootSymbols === void 0 ? void 0 : rootSymbols[i]) {
+                    if (rootSymbols?.[i]) {
                         symbol = rootSymbols[i];
                         callback(symbol, symbol.getEscapedName(), propSymbols[i]);
                     }
@@ -796,37 +795,18 @@ function walkTypeNodeMembers(typeNode, metaUtilObj, callback) {
     walkTypeMembers(typeAtLoc, metaUtilObj, callback);
 }
 exports.walkTypeNodeMembers = walkTypeNodeMembers;
-function updateCompilerPropsMetadata(propsInfo, readOnlyPropNameNodes, metaUtilObj) {
-    if (propsInfo.propsTypeParams) {
-        metaUtilObj.fullMetadata['propsTypeParams'] = propsInfo.propsTypeParams;
-    }
-    if (propsInfo.propsMappedTypes.length > 0) {
-        metaUtilObj.fullMetadata['propsMappedTypes'] = propsInfo.propsMappedTypes.slice();
-    }
-    let declaration = propsInfo.propsGenericsDeclaration;
-    if (declaration &&
-        (ts.isClassDeclaration(declaration) ||
-            ts.isTypeAliasDeclaration(declaration) ||
-            ts.isInterfaceDeclaration(declaration))) {
-        const propsNode = declaration;
-        const genericsInfo = TypeUtils.getGenericsAndTypeParameters(propsNode, true);
-        metaUtilObj.fullMetadata['propsClassTypeParamsDeclaration'] = genericsInfo === null || genericsInfo === void 0 ? void 0 : genericsInfo.genericsDeclaration;
-        metaUtilObj.fullMetadata['propsClassTypeParams'] = genericsInfo === null || genericsInfo === void 0 ? void 0 : genericsInfo.genericsTypeParams;
-        metaUtilObj.fullMetadata['propsTypeParamsAny'] = genericsInfo === null || genericsInfo === void 0 ? void 0 : genericsInfo.genericsTypeParamsAny;
-    }
-    metaUtilObj.fullMetadata['propsClassName'] = propsInfo.propsName;
+function updateCompilerPropsMetadata(readOnlyPropNameNodes, metaUtilObj) {
     metaUtilObj.fullMetadata['readOnlyProps'] =
-        (readOnlyPropNameNodes === null || readOnlyPropNameNodes === void 0 ? void 0 : readOnlyPropNameNodes.length) > 0 ? readOnlyPropNameNodes.map((item) => item.name) : [];
+        readOnlyPropNameNodes?.length > 0 ? readOnlyPropNameNodes.map((item) => item.name) : [];
 }
 exports.updateCompilerPropsMetadata = updateCompilerPropsMetadata;
 function updateCompilerCompMetadata(vcompInfo, metaUtilObj) {
-    var _a, _b, _c;
     if (MetaTypes.isClassInfo(vcompInfo)) {
         const classNode = vcompInfo.classNode;
         if (classNode.typeParameters) {
             const genericsInfo = TypeUtils.getGenericsAndTypeParameters(classNode);
-            metaUtilObj.fullMetadata['classTypeParamsDeclaration'] = genericsInfo === null || genericsInfo === void 0 ? void 0 : genericsInfo.genericsDeclaration;
-            metaUtilObj.fullMetadata['classTypeParams'] = genericsInfo === null || genericsInfo === void 0 ? void 0 : genericsInfo.genericsTypeParams;
+            metaUtilObj.fullMetadata['classTypeParamsDeclaration'] = genericsInfo?.genericsDeclaration;
+            metaUtilObj.fullMetadata['classTypeParams'] = genericsInfo?.genericsTypeParams;
         }
         const classDecorators = DecoratorUtils.getDecorators(classNode, metaUtilObj.aliasToNamedExport);
         const consumedBindingsDecorator = classDecorators[metaUtilObj.namedExportToAlias.consumedBindings];
@@ -848,24 +828,47 @@ function updateCompilerCompMetadata(vcompInfo, metaUtilObj) {
     else {
         if (vcompInfo.componentNode['typeParameters']) {
             const genericsInfo = TypeUtils.getGenericsAndTypeParameters(vcompInfo.componentNode);
-            metaUtilObj.fullMetadata['classTypeParamsDeclaration'] = genericsInfo === null || genericsInfo === void 0 ? void 0 : genericsInfo.genericsDeclaration;
-            metaUtilObj.fullMetadata['classTypeParams'] = genericsInfo === null || genericsInfo === void 0 ? void 0 : genericsInfo.genericsTypeParams;
+            metaUtilObj.fullMetadata['classTypeParamsDeclaration'] = genericsInfo?.genericsDeclaration;
+            metaUtilObj.fullMetadata['classTypeParams'] = genericsInfo?.genericsTypeParams;
         }
         if (vcompInfo.propBindings) {
             metaUtilObj.functionPropBindings = vcompInfo.propBindings;
-        }
-        if ((_a = vcompInfo.additionalImports) === null || _a === void 0 ? void 0 : _a.length) {
-            metaUtilObj.fullMetadata['additionalImports'] = [...vcompInfo.additionalImports];
         }
         if (vcompInfo.useComponentPropsForSettableProperties) {
             metaUtilObj.fullMetadata['useComponentPropsForSettableProperties'] = true;
         }
     }
-    if ((_b = vcompInfo.additionalImports) === null || _b === void 0 ? void 0 : _b.length) {
+    if (vcompInfo.additionalImports?.length) {
         metaUtilObj.fullMetadata['additionalImports'] = [...vcompInfo.additionalImports];
     }
-    if ((_c = vcompInfo.propsInfo) === null || _c === void 0 ? void 0 : _c.propsType.aliasTypeArguments) {
-        metaUtilObj.classPropsAliasTypeArgs = vcompInfo.propsInfo.propsType.aliasTypeArguments;
+    const propsInfo = vcompInfo.propsInfo;
+    if (propsInfo) {
+        if (propsInfo.propsTypeParams) {
+            metaUtilObj.fullMetadata['propsTypeParams'] = propsInfo.propsTypeParams;
+        }
+        if (propsInfo.propsTypeParamsArray) {
+            metaUtilObj.propsTypeParamsArray = propsInfo.propsTypeParamsArray;
+        }
+        if (propsInfo.propsMappedTypes.length > 0) {
+            metaUtilObj.fullMetadata['propsMappedTypes'] = propsInfo.propsMappedTypes.slice();
+        }
+        let declaration = propsInfo.propsGenericsDeclaration;
+        if (declaration &&
+            (ts.isClassDeclaration(declaration) ||
+                ts.isTypeAliasDeclaration(declaration) ||
+                ts.isInterfaceDeclaration(declaration))) {
+            const propsNode = declaration;
+            const genericsInfo = TypeUtils.getGenericsAndTypeParameters(propsNode, true);
+            metaUtilObj.fullMetadata['propsClassTypeParamsDeclaration'] =
+                genericsInfo?.genericsDeclaration;
+            metaUtilObj.fullMetadata['propsClassTypeParams'] = genericsInfo?.genericsTypeParams;
+            metaUtilObj.fullMetadata['propsTypeParamsAny'] = genericsInfo?.genericsTypeParamsAny;
+            metaUtilObj.propsClassTypeParamsArray = genericsInfo?.genericsTypeParamsArray;
+        }
+        metaUtilObj.fullMetadata['propsClassName'] = propsInfo.propsName;
+        if (propsInfo.propsType.aliasTypeArguments) {
+            metaUtilObj.classPropsAliasTypeArgs = propsInfo.propsType.aliasTypeArguments;
+        }
     }
 }
 exports.updateCompilerCompMetadata = updateCompilerCompMetadata;
@@ -906,6 +909,7 @@ function pruneCompilerMetadata(metaUtilObj) {
     delete metaUtilObj.fullMetadata['additionalImports'];
     delete metaUtilObj.fullMetadata['useComponentPropsForSettableProperties'];
     delete metaUtilObj.fullMetadata['funcVCompMethodSignatures'];
+    delete metaUtilObj.fullMetadata['observedGlobalProps'];
     pruneMetadata(metaUtilObj.fullMetadata.properties);
     pruneMetadata(metaUtilObj.fullMetadata.methods);
     pruneMetadata(metaUtilObj.fullMetadata.events);
@@ -927,8 +931,9 @@ function pruneMetadata(metadata) {
         delete metadata['reftype'];
         delete metadata['optional'];
         delete metadata['isArrayOfObject'];
-        delete metadata['isStringTypeExplicit'];
+        delete metadata['isEnumValuesForDTOnly'];
         delete metadata['evnDetailTypeParamsDeclaration'];
+        delete metadata['evnDetailTypeParams'];
         delete metadata['evnDetailNameTypeParams'];
         delete metadata['jsdoc'];
         for (let prop in metadata) {
@@ -979,6 +984,13 @@ function generateStatementsFromText(text) {
     return tmpNode.statements;
 }
 exports.generateStatementsFromText = generateStatementsFromText;
+function removeQuotes(str) {
+    if (str) {
+        return str.replace(/^['"]/g, '').replace(/['"]$/g, '');
+    }
+    return str;
+}
+exports.removeQuotes = removeQuotes;
 function _fixSingleQuoteAndNodeFlagsRecursively(node) {
     if (node.kind == ts.SyntaxKind.StringLiteral && !node['singleQuote']) {
         node['singleQuote'] = true;
@@ -988,7 +1000,7 @@ function _fixSingleQuoteAndNodeFlagsRecursively(node) {
 }
 function _generateDefaultValueWarning(componentInfo, propertyPath) {
     let msg;
-    const propPath = (propertyPath === null || propertyPath === void 0 ? void 0 : propertyPath.length) ? propertyPath.join('.') : '<unknown>';
+    const propPath = propertyPath?.length ? propertyPath.join('.') : '<unknown>';
     msg = `Property '${propPath}' - ignored JSDoc annotation specifying a default value.`;
     if (MetaTypes.isFunctionInfo(componentInfo)) {
         msg +=
@@ -1004,12 +1016,19 @@ function _pruneSubPropMetadata(metaelement, validSubPropMap) {
         const validSubPropSet = validSubPropMap[metaprop];
         if (validSubPropSet) {
             const metadata = metaelement[metaprop];
-            for (let prop in metadata) {
-                for (let subprop in metadata[prop]) {
-                    if (!validSubPropSet.has(subprop)) {
-                        delete metadata[prop][subprop];
-                    }
-                }
+            _pruneSubPropsNotInSet(metadata, validSubPropSet);
+        }
+    }
+}
+function _pruneSubPropsNotInSet(metadata, validSet) {
+    for (let prop in metadata) {
+        for (let subprop in metadata[prop]) {
+            if (!validSet.has(subprop)) {
+                delete metadata[prop][subprop];
+            }
+            else if (subprop === 'properties') {
+                const subpropMetadata = metadata[prop][subprop];
+                _pruneSubPropsNotInSet(subpropMetadata, validSet);
             }
         }
     }
@@ -1047,9 +1066,8 @@ function _getScopedSymbolDeclaration(typeNode, checker) {
     return scopedSymbolDeclaration;
 }
 function _getObservedGlobalPropsArray(refNode) {
-    var _a;
     let observedProps = [];
-    const node = (_a = refNode.typeArguments) === null || _a === void 0 ? void 0 : _a[0];
+    const node = refNode.typeArguments?.[0];
     if (ts.isLiteralTypeNode(node)) {
         const literal = node.literal;
         if (ts.isStringLiteral(literal)) {
@@ -1159,11 +1177,5 @@ function _execBundle(src) {
         }
     }));
     return result;
-}
-function removeQuotes(str) {
-    if (str) {
-        return str.replace(/^['"]/g, '').replace(/['"]$/g, '');
-    }
-    return str;
 }
 //# sourceMappingURL=MetadataUtils.js.map

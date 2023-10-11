@@ -118,6 +118,8 @@ define(['ojs/ojkoshared', 'ojs/ojcustomelement-utils', 'knockout', 'ojs/ojcore-b
 
       var parent = node.parentNode;
       parent.insertBefore(openComment, node); // @HTMLUpdateOK
+      // eslint-disable-next-line no-param-reassign
+      node[ojcustomelementUtils.OJ_BIND_CONVERTED_NODE] = openComment;
 
       // Copy children into the comment node
       while (node.childNodes.length > 0) {

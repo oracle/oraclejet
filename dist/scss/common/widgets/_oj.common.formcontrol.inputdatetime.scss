@@ -383,6 +383,38 @@
       }
     }
 
+    // clear icon styles
+    .oj-inputdatetime-clear-icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      height: $formControlInputHeight;
+
+      width: 1.5625rem;
+      text-decoration: none;
+      cursor: default;
+    }
+
+    // override background color set in a:active (mobile)
+    a.oj-inputdatetime-clear-icon-btn:active {
+      background-color: transparent;
+    }
+
+    .oj-inputdatetime-clear-icon {
+      @extend .oj-fwk-icon-cross03;
+      margin-top: 1px;
+      color: inherit;
+    }
+    // No focus ring
+    .oj-inputdatetime .oj-inputtext-clear-icon-btn:focus {
+      outline:none;
+    }
+
+  // we don't display the icon when there is no value
+  .oj-text-field-container.oj-form-control-empty-clearicon .oj-inputdatetime-clear-icon-btn {
+    display: none;
+  }
 
     //**************************
     // PICKER

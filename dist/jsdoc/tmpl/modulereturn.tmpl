@@ -57,11 +57,11 @@
     <ul>
       <?js
       if (!self.isStylingOrOverview && self.isCustomElement && !self.virtual && !self.isBindingElement) {?>
-        <li><a href="<?js= env.opts.query.apidocLink ?>CustomElementOverview.html" target="_blank">Using JET Custom Elements</a></li>
+        <li><a href="https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview" target="_blank">Using JET Custom Elements</a></li>
       <?js
       }?>
-      <li><a href="<?js= env.opts.query.apidocLink ?>TypescriptOverview.html" target="_blank">Using JET with TypeScript</a></li>
-      <li><a href="<?js= env.opts.query.apidocLink ?>ModuleLoadingOverview.html" target="_blank">JET Module Loading</a></li>
+      <li><a href="https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=typescriptoverview" target="_blank">Using JET with TypeScript</a></li>
+      <li><a href="https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=moduleloadingoverview" target="_blank">JET Module Loading</a></li>
     </ul>
     <?js
     if (data.readonly){?>
@@ -73,7 +73,7 @@
     }
     if (self.isCustomElement && !self.isBindingElement && !data.virtual) { ?> 
       <p class="important">Note: Application logic should not interact with the component's properties or invoke its methods 
-          until the <a href="<?js= env.opts.query.apidocLink ?>oj.BusyContext.html" target="_blank">BusyContext</a> indicates that the component is ready for interaction.</p>
+          until the <a href="https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=ojbusycontext" target="_blank">BusyContext</a> indicates that the component is ready for interaction.</p>
     <?js
     } ?>
   </div>

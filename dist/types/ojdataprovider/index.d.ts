@@ -90,10 +90,10 @@ export interface DataProviderAddOperationEventDetail<K, D> extends DataProviderO
     parentKeys?: K[];
 }
 export class DataProviderMutationEvent<K, D> implements Event {
-    AT_TARGET: number;
-    BUBBLING_PHASE: number;
-    CAPTURING_PHASE: number;
-    NONE: number;
+    AT_TARGET: 2;
+    BUBBLING_PHASE: 3;
+    CAPTURING_PHASE: 1;
+    NONE: 0;
     bubbles: boolean;
     cancelBubble: boolean;
     cancelable: boolean;
@@ -130,10 +130,10 @@ export interface DataProviderOperationEventDetail<K, D> {
     transient?: boolean;
 }
 export class DataProviderRefreshEvent<K> {
-    AT_TARGET: number;
-    BUBBLING_PHASE: number;
-    CAPTURING_PHASE: number;
-    NONE: number;
+    AT_TARGET: 2;
+    BUBBLING_PHASE: 3;
+    CAPTURING_PHASE: 1;
+    NONE: 0;
     bubbles: boolean;
     cancelBubble: boolean;
     cancelable: boolean;
@@ -213,6 +213,7 @@ export namespace FetchByOffsetMixin {
 }
 export interface FetchByOffsetParameters<D> extends FetchListParameters<D> {
     attributes?: Array<string | FetchAttribute>;
+    includeFilteredRowCount?: 'enabled' | 'disabled';
     offset: number;
     signal?: AbortSignal;
 }
@@ -255,6 +256,9 @@ export interface FilterCapability {
     nestedFilter?: any;
     operators?: Array<AttributeFilterDef.AttributeOperator | CompoundFilterDef.CompoundOperator | NestedFilterDef.NestedOperator>;
     textFilter?: any;
+    textFilterMatching?: {
+        matchBy?: Array<'phrase' | 'startsWith' | 'contains' | 'fuzzy'>;
+    };
 }
 export class FilterFactory<D> {
     static getFilter(options: {
@@ -319,5 +323,6 @@ export interface SuggestionMetadata {
 export interface TextFilter<D> extends TextFilterDef, BaseDataFilter<D> {
 }
 export interface TextFilterDef {
+    matchBy?: 'phrase' | 'startsWith' | 'contains' | 'fuzzy' | 'unknown';
     text: string;
 }

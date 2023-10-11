@@ -223,6 +223,9 @@ DvtStyleProcessor.styleTypes = {
       } else if (cssDiv.hasClass('oj-treemap-node-header')) {
         // Ignored because the weight is automatically determined based on the layer of the header.
         ignoreProperties[DvtStyleProcessor._FONT_WEIGHT] = true;
+      } else if (cssDiv.hasClass('oj-legend-title')) {
+        // JET-58104: Ignored in order to determine the user set font family from default font family. Legend title will inherit font family from sectionTitleStyle.
+        ignoreProperties[DvtStyleProcessor._FONT_FAMILY] = true;
       }
     }
     return DvtStyleProcessor._buildTextCssPropertiesObject(cssDiv, ignoreProperties);
@@ -3394,9 +3397,9 @@ oj.__registerWidget(
       var nodes = templateEngine.execute(this.element[0], templateElement, context);
       if (nodes && nodes.length > 0) {
         Object.defineProperty(context, '_templateCleanup', {
-          value: function () {
-            nodes.forEach(function (node) {
-              templateEngine.clean(node);
+          value: () => {
+            nodes.forEach((node) => {
+              templateEngine.clean(node, this.element[0]);
             });
           },
           enumerable: false

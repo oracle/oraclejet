@@ -169,12 +169,12 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
     //                   Slots
     //-----------------------------------------------------
     /**
-     * <p>The &lt;oj-toolbar> element accepts <code class="prettyprint">oj-button</code>, <code class="prettyprint">oj-buttonset-many</code>,
+     * <p>The &lt;oj-toolbar> element accepts <code class="prettyprint">oj-button</code>, <code class="prettyprint">oj-c-button</code>, <code class="prettyprint">oj-buttonset-many</code>,
      * <code class="prettyprint">oj-buttonset-one</code>, <code class="prettyprint">oj-menu-button</code> and non-focusable content such as separator icon elements as children.</p>
      *
      * @ojchild Default
      * @memberof oj.ojToolbar
-     * @ojpreferredcontent ["ButtonElement","ButtonsetManyElement","ButtonsetOneElement","MenuButtonElement"]
+     * @ojpreferredcontent ["ButtonElement", "CButtonElement", "ButtonsetManyElement","ButtonsetOneElement","MenuButtonElement"]
      *
      * @example <caption>Initialize the Toolbar with child content specified:</caption>
      * &lt;oj-toolbar>
@@ -296,6 +296,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
       const _OJ_TOOLBAR = 'oj-toolbar';
       const _OJ_MENU_BUTTON = 'OJ-MENU-BUTTON';
       const _OJ_BUTTON = 'OJ-BUTTON';
+      const _OJ_C_BUTTON = 'OJ-C-BUTTON';
+      const _ELEM_LIST =
+        'oj-button, oj-menu-button, oj-buttonset-one, oj-buttonset-many, oj-c-button';
+      const _BUTTON_LIST =
+        'oj-button, oj-menu-button, oj-buttonset-one .oj-button, oj-buttonset-many .oj-button, oj-c-button, oj-buttonset-one .oj-c-button, oj-buttonset-many .oj-c-button';
 
       oj.__registerWidget('oj.ojToolbar', $.oj.baseComponent, {
         widgetEventPrefix: 'oj',
@@ -493,9 +498,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
             }
 
             // find any current supported children to refresh in case they were already initialized and need to update their 'chroming' values
-            this.topLevelChildren = elem.querySelectorAll(
-              'oj-button, oj-menu-button, oj-buttonset-one, oj-buttonset-many'
-            );
+            this.topLevelChildren = elem.querySelectorAll(_ELEM_LIST);
 
             // refresh the top-level buttons, and refresh the buttonsets to make them refresh their buttons, so that all toolbar buttons are refreshed.
             // Reason: to make them re-fetch their chroming option, in case it's still set to the default dynamic getter,
@@ -553,12 +556,16 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
         },
 
         // For custom element only, return if a button with oj-button class is disabled.
-        // This can either be an oj-button, oj-menu-button, or a span inside oj-buttonset-*.
+        // This can either be an oj-button, oj-c-button, oj-menu-button, or a span inside oj-buttonset-*.
         // We check the disabled property on custom elements instead of oj-disabled class because
         // there is delay between setting the property and having the class updated.
         _isButtonDisabled: function (button) {
           var disabled;
-          if (button.tagName === _OJ_BUTTON || button.tagName === _OJ_MENU_BUTTON) {
+          if (
+            button.tagName === _OJ_BUTTON ||
+            button.tagName === _OJ_C_BUTTON ||
+            button.tagName === _OJ_MENU_BUTTON
+          ) {
             disabled = button.disabled;
           } else {
             // "button" is a span around an oj-option that represents a button in oj-buttonset-one or oj-buttonset-many
@@ -583,14 +590,13 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
           elem.removeEventListener('focusin', this._focusinListener, true);
           this._hasInitialFocusHandler = false;
 
-          this.topLevelChildren = elem.querySelectorAll(
-            'oj-button, oj-menu-button, oj-buttonset-one, oj-buttonset-many'
-          );
+          this.topLevelChildren = elem.querySelectorAll(_ELEM_LIST);
 
           // Add a MutationObserver to handle add and remove of descendants
           if (!this._mutationObserver) {
             var ojElementNames = [
               _OJ_BUTTON,
+              _OJ_C_BUTTON,
               _OJ_MENU_BUTTON,
               'OJ-BUTTONSET-ONE',
               'OJ-BUTTONSET-MANY',
@@ -630,18 +636,14 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
           }
 
           // Toolbar custom element can listen to disabledChanged event on descendants to refresh itself
-          var ojElements = elem.querySelectorAll(
-            'oj-button, oj-menu-button, oj-buttonset-one, oj-buttonset-many, oj-option'
-          );
+          var ojElements = elem.querySelectorAll(_ELEM_LIST);
           ojElements.forEach(function (ojElement) {
             // This can be called on the same element more than once, so try to remove any listener first
             ojElement.removeEventListener(disabledChangedEventType, self._disabledChangedListener);
             ojElement.addEventListener(disabledChangedEventType, self._disabledChangedListener);
           });
 
-          var buttons = elem.querySelectorAll(
-            'oj-button, oj-menu-button, oj-buttonset-one .oj-button, oj-buttonset-many .oj-button'
-          );
+          var buttons = elem.querySelectorAll(_BUTTON_LIST);
           this.$buttons = $(buttons)
             .off('keydown' + this.eventNamespace)
             .on('keydown' + this.eventNamespace, function (event) {
@@ -698,11 +700,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
           var self = this;
           // We need to re-select buttons because with refresh buttons in toolbar may be added/deleted.
           if (this._IsCustomElement()) {
-            this.$buttons = $(
-              this.element[0].querySelectorAll(
-                'oj-button, oj-menu-button, oj-buttonset-one .oj-button, oj-buttonset-many .oj-button'
-              )
-            );
+            this.$buttons = $(this.element[0].querySelectorAll(_BUTTON_LIST));
           } else {
             this.$buttons = this.element.find(':oj-button');
           }
@@ -867,6 +865,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
 
         // No return value.
         _handleKeyDown: function (event, $button) {
+          var self = this;
           // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
           switch (event.which) {
             case $.ui.keyCode.UP: // up arrow
@@ -882,7 +881,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
               // reselect enabled buttons
               if (this._IsCustomElement()) {
                 this.$enabledButtons = this.$buttons.filter(function () {
-                  return !$(this).hasClass('oj-disabled') && $(this).is(':visible');
+                  return !self._isButtonDisabled(this) && $(this).is(':visible');
                 });
               } else {
                 this.$enabledButtons = this.$buttons.filter(function () {
@@ -956,7 +955,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
             // This relies on the button and buttonset components being implemented with JQUI - this will need to be revisited once that is no longer the case
             for (var i = 0; i < this.topLevelChildren.length; i++) {
               var child = this.topLevelChildren[i];
-              if (child.tagName === _OJ_BUTTON || child.tagName === _OJ_MENU_BUTTON) {
+              if (
+                child.tagName === _OJ_BUTTON ||
+                child.tagName === _OJ_C_BUTTON ||
+                child.tagName === _OJ_MENU_BUTTON
+              ) {
                 // must check to make sure the child button element has been initialized
                 if (Components.__GetWidgetConstructor(this._getButtonFocusElem(child), 'ojButton')) {
                   child.refresh();

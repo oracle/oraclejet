@@ -1409,6 +1409,7 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
           // make sure it gets focus otherwise focus goes to the body as 'X' is no longer in DOM
           contentElement[0].focus();
         }
+
         this._handleRemove(event, item);
         return;
       }
@@ -4582,6 +4583,7 @@ _ojNavigationListView._CSS_Vars = {
  * @ojstyleclass oj-tabbar-item-text-wrap
  * @ojdisplayname Text Wrap
  * @memberof oj.ojTabBar
+ * @ojdeprecated {since: '15.0.0', description: 'Since vertical layout of TabBar is deprecated, this should not be used anymore. Use NavigationList instead.'}
  * @ojtsexample
  * &lt;oj-tab-bar class="oj-tabbar-item-text-wrap" >
  *   &lt;ul>
@@ -4890,7 +4892,8 @@ _ojNavigationListView._CSS_Vars = {
  */
 
 /**
- * The position of the Tab Bar. Valid Values: top, bottom, start and end.
+ *
+ *  The position of the Tab Bar. Valid Values: top and bottom.
  * @expose
  * @name edge
  * @memberof oj.ojTabBar
@@ -4902,6 +4905,7 @@ _ojNavigationListView._CSS_Vars = {
  * @ojvalue {string} "end" This renders list items vertically. Generally used when tab bar placed on right/end of content section.
  * @default start
  * @ojshortdesc Specifies the edge position of the Tab Bar.
+ * @ojdeprecated [{target:'propertyValue', for:"end", since: "15.0.0", description: "Use NavigationList instead."}]
  * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">edge</code> attribute specified:</caption>
  *  &lt;oj-tab-bar edge='top'> ... &lt;/oj-tab-bar>
  * @example <caption>Get the edge:</caption>
@@ -5023,8 +5027,8 @@ _ojNavigationListView._CSS_Vars = {
 /**
  * Whether to display both the label and icons (<code class="prettyprint">"all"</code>) or just the icons (<code class="prettyprint">"icons"</code>).
  * In the latter case, the label is displayed in a tooltip instead, unless a tooltip was already supplied at create time.
- * Note: <code class="prettyprint">display="icons"</code> is valid only when <code class="prettyprint">drillMode=none</code> and tab bar is a flat list,
- * <code class="prettyprint">display="stacked"</code> is not supported in vertical tabbar layout where the edge is end or start.
+ * Note: If <code class="prettyprint"> display="icons" </code> is used with oj-tabbar-item-end then it is supoorted only for badge and not for icon or metadata.
+ * If <code class="prettyprint"> display="stacked" </code> is used with oj-tabbar-item-end then it is supoorted only for badge and not for icon or metadata.
  * It is also mandatory to provide icons for each item as stated in <a href="#icons-section">icons section</a>.
  *
  * @expose
@@ -6254,10 +6258,17 @@ HorizontalNavListHandler.prototype.IsOptionUpdateAllowed = function (key, value,
  * @ignore
  * @private
  */
-var _HorizontalNavListOverflowHandler = function (items, overflow, truncation, navlistHandler) {
+var _HorizontalNavListOverflowHandler = function (
+  items,
+  overflow,
+  truncation,
+  display,
+  navlistHandler
+) {
   this._overflow = overflow;
   this._truncation = truncation;
   this._items = items;
+  this._display = display;
   this._navlistHandler = navlistHandler;
 };
 
@@ -6275,6 +6286,8 @@ HorizontalNavListHandler.prototype._handleOverflow = function (overflow, truncat
     return;
   }
 
+  var display = this.m_widget.GetOption('display');
+
   if (!overflow) {
     // eslint-disable-next-line no-param-reassign
     overflow = this.m_widget.GetOption('overflow');
@@ -6284,7 +6297,13 @@ HorizontalNavListHandler.prototype._handleOverflow = function (overflow, truncat
     truncation = this.m_widget.GetOption('truncation');
   }
 
-  var overflowHandler = new _HorizontalNavListOverflowHandler(items, overflow, truncation, this);
+  var overflowHandler = new _HorizontalNavListOverflowHandler(
+    items,
+    overflow,
+    truncation,
+    display,
+    this
+  );
 
   // Return if there is no truncation or overflow handling needed
   if (!overflowHandler.shouldHandleOverflow()) {
@@ -6719,7 +6738,7 @@ _HorizontalNavListOverflowHandler.prototype.applyTruncation = function () {
 _HorizontalNavListOverflowHandler.prototype.getOverflowThreshold = function () {
   var threshold = -1;
   if (this._overflow === 'popup') {
-    threshold = this._calculateThreshold(this._overflowData) - 1;
+    threshold = this._calculateThreshold(this._overflowData);
   }
   return threshold;
 };
@@ -6727,7 +6746,8 @@ _HorizontalNavListOverflowHandler.prototype.getOverflowThreshold = function () {
 _HorizontalNavListOverflowHandler.prototype._collectOverflowData = function () {
   var itemNonTextWidth;
   var overflowItemWidth;
-  var edge = getReadingDirection() === 'ltr' ? 'right' : 'left';
+  var readingDirection = getReadingDirection();
+  var edge = readingDirection === 'ltr' ? 'right' : 'left';
   var container = this._getWidget().ojContext.element;
 
   var item = this._items.last();
@@ -6742,14 +6762,24 @@ _HorizontalNavListOverflowHandler.prototype._collectOverflowData = function () {
   if (this._overflow === 'popup') {
     var overFlowMenuButton = this._getOverflowMenuButton()[0];
     var rect = overFlowMenuButton.getBoundingClientRect();
+    const overFlowMenuButtonComputedStyle = window.getComputedStyle(overFlowMenuButton);
     let margin = 0;
-    if (getReadingDirection() === 'ltr') {
-      margin = window.getComputedStyle(overFlowMenuButton).marginRight;
-    } else {
-      margin = window.getComputedStyle(overFlowMenuButton).marginLeft;
+    // NavigationList overflow icon has a left margin in ltr and right margin in rtl
+    // NavigationList overflow "more" item has no margin in any case so this calculated margin= 0px.
+    if (!this._navlistHandler._isTabBar() && this._display === 'icons') {
+      margin =
+        readingDirection === 'ltr'
+          ? overFlowMenuButtonComputedStyle.marginLeft
+          : overFlowMenuButtonComputedStyle.marginRight;
     }
+    // TabBar overflow menu cases (icon and "more" item) has a right margin only in rtl
+    if (this._navlistHandler._isTabBar() && readingDirection === 'rtl') {
+      margin = overFlowMenuButtonComputedStyle.marginRight;
+    }
+
     overflowItemWidth = rect.width + parseInt(margin, 10);
   }
+  // Since this is last item it does not have a margin added to item edge
   var itemEdge = item[0].getBoundingClientRect()[edge];
 
   return {
@@ -6813,7 +6843,8 @@ _HorizontalNavListOverflowHandler.prototype._isOverflowed = function (
 
 _HorizontalNavListOverflowHandler.prototype._calculateThreshold = function (overflowData) {
   var items = this._items;
-  var edge = getReadingDirection() === 'ltr' ? 'right' : 'left';
+  var readingDirection = getReadingDirection();
+  var edge = readingDirection === 'ltr' ? 'right' : 'left';
   var index = items.length - 1;
   var itemEdge = items[index].getBoundingClientRect()[edge];
 
@@ -6823,7 +6854,22 @@ _HorizontalNavListOverflowHandler.prototype._calculateThreshold = function (over
     index > 0
   ) {
     index -= 1;
-    itemEdge = items[index].getBoundingClientRect()[edge];
+    // NavigationList item icons have a left margin hence for icon-only cases item edge is sufficient
+    if (!this._navlistHandler._isTabBar() && this._display === 'icons') {
+      itemEdge = items[index].getBoundingClientRect()[edge];
+    } else {
+      // Non icon-only case items have a right margin except for the last one.
+      const itemComputedStyle = window.getComputedStyle(items[index]);
+      let itemMargin = 0;
+      // TabBar has right margin for all items in ltr and rtl mode.
+      if (this._navlistHandler._isTabBar() || readingDirection === 'ltr') {
+        itemMargin = itemComputedStyle.marginRight;
+      } else {
+        // Navigationlist non icon-only case items have a right margin (covered by if above) in ltr and left margin in rtl
+        itemMargin = itemComputedStyle.marginLeft;
+      }
+      itemEdge = items[index].getBoundingClientRect()[edge] + parseInt(itemMargin, 10);
+    }
   }
 
   return index + 1;
@@ -7234,13 +7280,6 @@ SlidingNavListHandler.prototype.IsSelectable = function (item) {
   // Slider items don't have Aria-selected tag, overrding selction for slider navlist
 
   var itemSelectionMarkerAttr = 'aria-selected';
-  var prevAnchorTag;
-  var anchor = this.m_widget.getFocusItem($(item))[0];
-  var collapseClass = this.m_widget.getCollapseIconStyleClass();
-  prevAnchorTag = anchor.previousElementSibling;
-  if (prevAnchorTag && prevAnchorTag.classList.contains(collapseClass)) {
-    return false;
-  }
   return (
     this.m_widget.getFocusItem($(item))[0].getAttribute('role') === 'menuitem' &&
     !this.m_widget.getFocusItem($(item))[0].hasAttribute(itemSelectionMarkerAttr)

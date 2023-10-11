@@ -1,1 +1,1 @@
-{"version":3,"sources":["../debug/ojprogressbar.js"],"names":["define","ojprogress"],"mappings":";;;;;;;AAOAA,OAAO,CAAC,kBAAmB,SAAUC"}
+{"version":3,"names":["define","ojprogress"],"sources":["../debug/ojprogressbar.js"],"mappings":";;;;;;;AAOAA,OAAO,CAAC,kBAAmB,SAAUC,GAIrC"}

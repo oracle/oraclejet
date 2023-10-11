@@ -993,6 +993,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     // _SetValue returns boolean or Promise that resolves to a Boolean.
     returnValue = this._SetValue(this._GetDisplayValue(), null, this._VALIDATE_METHOD_OPTIONS);
 
+    if (returnValue === false && !this._CanSetValue()) {
+      // FIX JET-45885, validate() returns 'invalid' for readonly or disabled on valid value.
+      // In _SetValue/_AsyncValidate, validation is skipped when !this._CanSetValue(), and _SetValue returns false.
+      // We want validate() to return 'valid' when validation is skipped.
+      returnValue = true;
+    }
+
     if (this._IsCustomElement()) {
       if (!(returnValue instanceof Promise)) {
         returnValue = Promise.resolve(returnValue ? 'valid' : 'invalid');

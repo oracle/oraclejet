@@ -2,13 +2,13 @@ import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetP
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
 import 'ojs/ojlistdataproviderview';
-import * as CommonTypes from 'ojs/ojcommontypes';
+import * as ojcommontypes from 'ojs/ojcommontypes';
 import { DataProvider, ItemMetadata } from 'ojs/ojdataprovider';
 import { Component, ComponentChild } from 'preact';
 import { ExtendGlobalProps, ObservedGlobalProps, Action, PropertyChanged, ReadOnlyPropertyChanged, TemplateSlot } from 'ojs/ojvcomponent';
-declare type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'id'> & {
+type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'id'> & {
     suggestions?: DataProvider<Key, Data> | null;
-    suggestionItemText?: keyof Data | ((itemContext: CommonTypes.ItemContext<Key, Data>) => string);
+    suggestionItemText?: keyof Data | ((itemContext: ojcommontypes.ItemContext<Key, Data>) => string);
     placeholder?: string;
     onRawValueChanged?: ReadOnlyPropertyChanged<string | null>;
     value?: string | null;
@@ -16,7 +16,7 @@ declare type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'id'> & {
     onOjValueAction?: Action<ValueDetail<Key, Data>>;
     suggestionItemTemplate?: TemplateSlot<SuggestionItemTemplateContext<Key, Data>>;
 };
-declare type State<Key, Data> = {
+type State<Key, Data> = {
     dropdownOpen: boolean;
     dropdownAbove: boolean;
     focus: boolean;
@@ -24,7 +24,7 @@ declare type State<Key, Data> = {
     active: boolean;
     displayValue: string;
     lastFetchedFilterText: string;
-    fetchedData: Array<CommonTypes.ItemContext<Key, Data>>;
+    fetchedData: Array<ojcommontypes.ItemContext<Key, Data>>;
     labelIds: Array<string>;
     fetchedInitial: boolean;
     fetching: boolean;
@@ -33,7 +33,7 @@ declare type State<Key, Data> = {
     activeDescendantId: string;
     scrollFocusedSuggestionIntoView: string;
     filterText: string;
-    actionDetail: CommonTypes.ItemContext<Key, Data>;
+    actionDetail: ojcommontypes.ItemContext<Key, Data>;
     valueSubmitted: boolean;
     lastEventType: string;
     showAutocompleteText: boolean;
@@ -46,9 +46,9 @@ declare type State<Key, Data> = {
     mobileFilterInputActive: boolean;
     resetFilterInputSelectionRange: boolean;
 };
-declare type ValueDetail<Key, Data> = {
+type ValueDetail<Key, Data> = {
     value?: string;
-    itemContext?: CommonTypes.ItemContext<Key, Data>;
+    itemContext?: ojcommontypes.ItemContext<Key, Data>;
     previousValue?: string;
 };
 interface SuggestionItemTemplateContext<Key, Data> {

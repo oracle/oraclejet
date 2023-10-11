@@ -55,6 +55,27 @@ export namespace RESTDataProvider {
         response?: FetchResponseTransform<K, D>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type FetchErrorDetail<K, D> = {
+        err: TypeError;
+        error: TypeError;
+        fetchParameters: FetchListParameters<D> | FetchByKeysParameters<K> | FetchByOffsetParameters<D>;
+        fetchType: 'fetchFirst' | 'fetchByKeys' | 'fetchByOffset';
+        options: Options<K, D>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type FetchResponseErrorDetail<K, D> = {
+        fetchParameters: FetchListParameters<D> | FetchByKeysParameters<K> | FetchByOffsetParameters<D>;
+        fetchType: 'fetchFirst' | 'fetchByKeys' | 'fetchByOffset';
+        options: Options<K, D>;
+        response: FetchResponseOptions;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type FetchResponseOptions = {
+        body: any;
+        headers: Headers;
+        status: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type FetchResponseTransform<K, D> = (options: FetchResponseTransformOptions) => Promise<FetchResponseTransformResult<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type FetchResponseTransformOptions = {
@@ -73,6 +94,7 @@ export namespace RESTDataProvider {
     // tslint:disable-next-line interface-over-type-literal
     type Options<K, D> = {
         capabilities?: Capabilities;
+        error?: ((response: FetchErrorDetail<K, D> | FetchResponseErrorDetail<K, D>) => void);
         implicitSort?: Array<SortCriterion<D>>;
         iterationLimit?: number;
         keyAttributes: string | string[];

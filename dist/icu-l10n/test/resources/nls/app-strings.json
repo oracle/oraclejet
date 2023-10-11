@@ -19,5 +19,6 @@
   },
   "delta": "Delta",
   "epsilon": "Epsilon",
-  "blank": ""
+  "blank": "",
+  "testPlural": "You have {itemCount, plural, =0 {no items} one {item} other {{itemCount} items}}"
 }

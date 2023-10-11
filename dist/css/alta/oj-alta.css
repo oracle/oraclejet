@@ -270,7 +270,7 @@ template {
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"alta","targetPlatform":"web","behavior":"alta","jetReleaseVersion":"v14.1.0"}'; }
+  font-family: '{"name":"alta","targetPlatform":"web","behavior":"alta","jetReleaseVersion":"v15.1.0"}'; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -1321,7 +1321,7 @@ html[dir="rtl"] .oj-divider-end.oj-divider-margin {
 .oj-fwk-icon-cross02:before, .oj-menu-option-start-icon .oj-menu-cancel-icon:before {
   content: "\f12d"; }
 
-.oj-fwk-icon-cross03:before, .oj-tabs-close-icon:before, .oj-inputtext-clear-icon:before, .oj-searchselect-clear-value-icon:before {
+.oj-fwk-icon-cross03:before, .oj-tabs-close-icon:before, .oj-inputtext-clear-icon:before, .oj-inputdatetime-clear-icon:before, .oj-searchselect-clear-value-icon:before {
   content: "\f12e"; }
 
 .oj-fwk-icon-dots-horizontal:before, .oj-navigationlist-overflow-item-icon:before, .oj-tabbar-overflow-item-icon:before {
@@ -9822,7 +9822,8 @@ html[dir="rtl"] .oj-table-vgrid-lines:last-child, html[dir="rtl"]
 
 /* Styling for the status message. */
 .oj-table-status-message {
-  position: absolute; }
+  position: absolute;
+  pointer-events: none; }
 
 /* Styling for the status message text. */
 .oj-table-status-message-text {
@@ -13065,7 +13066,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for all row labels */
 .oj-gantt-row-label {
-  fill: rgba(0, 0, 0, 0.85);
+  color: rgba(0, 0, 0, 0.85);
   font-size: 1rem;
   padding-left: 0.5714rem;
   padding-right: 0.5714rem; }
@@ -13180,7 +13181,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the major time axis labels */
 .oj-gantt-major-axis-label {
-  fill: rgba(0, 0, 0, 0.85);
+  color: rgba(0, 0, 0, 0.85);
   font-size: 1rem;
   font-weight: 500; }
 
@@ -13196,7 +13197,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the minor time axis labels */
 .oj-gantt-minor-axis-label {
-  fill: rgba(0, 0, 0, 0.8);
+  color: rgba(0, 0, 0, 0.8);
   font-size: 0.85714rem;
   font-weight: normal; }
 
@@ -14199,7 +14200,7 @@ oj-text-area:not(.oj-complete) {
   align-items: center;
   justify-content: center;
   height: 2.28571rem;
-  width: 25px;
+  width: 1.5625rem;
   text-decoration: none;
   cursor: default; }
 
@@ -15192,6 +15193,28 @@ html[dir="rtl"] .oj-inputdatetime.oj-invalid .oj-inputdatetime-input-trigger, ht
 .oj-inputdatetime-time-icon.oj-disabled {
   background-color: #ededee;
   cursor: default; }
+
+.oj-inputdatetime-clear-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.28571rem;
+  width: 1.5625rem;
+  text-decoration: none;
+  cursor: default; }
+
+a.oj-inputdatetime-clear-icon-btn:active {
+  background-color: transparent; }
+
+.oj-inputdatetime-clear-icon {
+  margin-top: 1px;
+  color: inherit; }
+
+.oj-inputdatetime .oj-inputtext-clear-icon-btn:focus {
+  outline: none; }
+
+.oj-text-field-container.oj-form-control-empty-clearicon .oj-inputdatetime-clear-icon-btn {
+  display: none; }
 
 .oj-datepicker-popup .oj-popup-content {
   padding: 0; }

@@ -37,12 +37,12 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
      * @global
      * @member {string} version JET version numberr
      */
-    version: '14.1.0',
+    version: '15.1.0',
     /**
      * @global
      * @member {string} revision JET source code revision number
      */
-    revision: '2023-04-06_12-30-15',
+    revision: '2023-10-06_04-39-53',
 
     // This function is only meant to be used outside the library, so quoting the name
     // to avoid renaming is appropriate
@@ -1801,24 +1801,29 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
       return false;
     }
 
-    // now check for constructor since I think by here one has ruled out primitive values and if the constructors
-    // aren't equal then return false
-    if (obj1.constructor === obj2.constructor) {
-      // these are special cases and will need to be modded on a need to have basis
-      if (Array.isArray(obj1)) {
-        return OjObject._compareArrayValues(obj1, obj2);
-      } else if (obj1.constructor === Object) {
-        // create new Set for cyclic detection. This may also be passed in from
-        // __innerEquals
-        const set = arguments[2] || new Set();
-        // for now invoke innerEquals and in the future if there are issues then resolve them
-        return OjObject.__innerEquals(obj1, obj2, set);
-      } else if (obj1.valueOf && typeof obj1.valueOf === 'function') {
-        // test cases for Boolean, String, Number, Date
-        // Note if some future JavaScript constructors
-        // do not impl it then it's their fault
-        return obj1.valueOf() === obj2.valueOf();
+    // Wrap compare into try/catch to support custom data types. See JET-52967.
+    try {
+      // now check for constructor since I think by here one has ruled out primitive values and if the constructors
+      // aren't equal then return false
+      if (obj1.constructor === obj2.constructor) {
+        // these are special cases and will need to be modded on a need to have basis
+        if (Array.isArray(obj1)) {
+          return OjObject._compareArrayValues(obj1, obj2);
+        } else if (obj1.constructor === Object) {
+          // create new Set for cyclic detection. This may also be passed in from
+          // __innerEquals
+          const set = arguments[2] || new Set();
+          // for now invoke innerEquals and in the future if there are issues then resolve them
+          return OjObject.__innerEquals(obj1, obj2, set);
+        } else if (obj1.valueOf && typeof obj1.valueOf === 'function') {
+          // test cases for Boolean, String, Number, Date
+          // Note if some future JavaScript constructors
+          // do not impl it then it's their fault
+          return obj1.valueOf() === obj2.valueOf();
+        }
       }
+    } catch (e) {
+      Logger.log('Object.compareValues() exception', e);
     }
 
     return false;

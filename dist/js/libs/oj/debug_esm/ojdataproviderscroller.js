@@ -8,7 +8,7 @@
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
 import Context from 'ojs/ojcontext';
-import { getEventDetail, isRequestIdleCallbackSupported, calculateOffsetTop, getDefaultScrollBarWidth, isElementIntersectingScrollerBounds, isIterateAfterDoneNotAllowed } from 'ojs/ojdatacollection-common';
+import { applyRendererContent, getEventDetail, isRequestIdleCallbackSupported, calculateOffsetTop, getDefaultScrollBarWidth, isFetchAborted, isElementIntersectingScrollerBounds, isIterateAfterDoneNotAllowed } from 'ojs/ojdatacollection-common';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { fadeOut, fadeIn } from 'ojs/ojanimation';
 import { info, log, error } from 'ojs/ojlogger';
@@ -73,7 +73,7 @@ DataProviderContentHandler.prototype.cleanItems = function (templateEngine, pare
   if (templateEngine && parent) {
     var children = parent.childNodes;
     for (var i = 0; i < children.length; i++) {
-      templateEngine.clean(children[i]);
+      templateEngine.clean(children[i], this.m_widget.GetRootElement()[0]);
     }
   }
 };
@@ -350,7 +350,7 @@ DataProviderContentHandler.prototype.replaceItem = function (
 
   // explicit clean when inline template is used
   if (templateEngine) {
-    templateEngine.clean(item);
+    templateEngine.clean(item, this.m_widget.GetRootElement()[0]);
   }
 
   // this should trigger ko.cleanNode if applicable
@@ -394,26 +394,10 @@ DataProviderContentHandler.prototype._addOrReplaceItem = function (
   var context = this.createContext(position, data, metadata, item, itemMetaData);
   var renderer = this.m_widget._getItemRenderer();
   var templateElement = this.m_widget.getItemTemplate();
-  var textWrapper;
   var isCustomizeItem = false;
 
   if (renderer != null) {
-    // if an element is returned from the renderer and the parent of that element is null, we will append
-    // the returned element to the parentElement.  If non-null, we won't do anything, assuming that the
-    // rendered content has already added into the DOM somewhere.
-    var content = renderer.call(this, context);
-    if (content != null) {
-      // allow return of document fragment from jquery create/js document.createDocumentFragment
-      if (content.parentNode === null || content.parentNode instanceof DocumentFragment) {
-        item.appendChild(content); // @HTMLUpdateOK
-      } else if (content.parentNode != null) {
-        // parent node exists, do nothing
-      } else if (content.toString) {
-        textWrapper = document.createElement('span');
-        textWrapper.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
-        item.appendChild(textWrapper); // @HTMLUpdateOK
-      }
-    }
+    applyRendererContent(item, renderer.call(this, context), true);
   } else if (templateElement != null && templateEngine != null) {
     var componentElement = this.m_widget.GetRootElement()[0];
     var bindingContext = this.GetBindingContext(context);
@@ -436,9 +420,14 @@ DataProviderContentHandler.prototype._addOrReplaceItem = function (
       }
     }
   } else {
-    textWrapper = document.createElement('span');
+    var textWrapper = document.createElement('span');
     textWrapper.appendChild(document.createTextNode(data == null ? '' : data.toString())); // @HTMLUpdateOK
     item.appendChild(textWrapper); // @HTMLUpdateOK
+  }
+
+  // inject suggestion info for accessiblity
+  if (itemMetaData && itemMetaData.suggestion) {
+    item.appendChild(this._createAccInfoForSuggestion());
   }
 
   // get the item from root again as template replaces the item element
@@ -453,6 +442,17 @@ DataProviderContentHandler.prototype._addOrReplaceItem = function (
 
   // do any post processing
   return callback(parentItem, context, isCustomizeItem, restoreFocus);
+};
+
+/**
+ * @private
+ */
+DataProviderContentHandler.prototype._createAccInfoForSuggestion = function () {
+  const span = document.createElement('span');
+  span.classList.add('oj-helper-hidden-accessible');
+  span.classList.add('oj-listview-acc-suggestion');
+  span.textContent = this.m_widget.ojContext.getTranslatedString('accessibleSuggestion');
+  return span;
 };
 
 /**
@@ -764,7 +764,7 @@ DataProviderContentHandler.prototype.handleModelAddEvent = function (event) {
 
   // in card layout mode, the root is an additional element created by ListView, and that will be disassociated by ListView when
   // it is empty, re-append it to the root ul (the superRoot)
-  if (this.m_superRoot && this.m_root.childNodes.length === 0) {
+  if (this.m_superRoot && this.m_root.childElementCount === 0) {
     this.m_superRoot.appendChild(this.m_root.parentNode);
   }
 
@@ -1170,7 +1170,7 @@ DataProviderContentHandler.prototype.handleRemoveTransitionEnd = function (
   // template engine should have already been loaded
   var templateEngine = this.getTemplateEngine();
   if (templateEngine) {
-    templateEngine.clean($elem.get(0));
+    templateEngine.clean($elem.get(0), this.m_widget.GetRootElement()[0]);
   }
 
   $elem.remove();
@@ -1509,17 +1509,19 @@ DataProviderContentHandler.prototype.animateShowContent = function (
         // wait for all content to be ready first before fade in the content
         Promise.all(promises).then(
           function () {
-            // component could have been destroyed
-            if (this.m_widget == null) {
-              resolve(false);
+            // component could have been destroyed or skeletonContainer no longer valid due to refresh
+            // before promises are resolved
+            if (this.m_widget == null || !root.contains(skeletonContainer)) {
+              resolve(null);
               return;
             }
 
             fadeOut(skeletonContainer, { duration: '100ms' }).then(
               function () {
-                // component could have been destroyed
-                if (this.m_widget == null) {
-                  resolve(false);
+                // component could have been destroyed or skeletonContainer no longer valid due to refresh
+                // before promises are resolved
+                if (this.m_widget == null || !root.contains(skeletonContainer)) {
+                  resolve(null);
                   return;
                 }
 
@@ -1780,6 +1782,8 @@ IteratingDataProviderContentHandler.prototype.Destroy = function (completelyDest
   this.m_loadingIndicator = null;
   this.m_viewportCheckPromise = null;
   this.m_checkViewportPromise = null;
+  this.m_controller = null;
+  this.m_lastFetchPromise = null;
 };
 
 /**
@@ -2098,6 +2102,10 @@ IteratingDataProviderContentHandler.prototype.renderInitialSkeletons = function 
   if (this.m_superRoot) {
     this.m_root = this.m_superRoot;
     this.m_superRoot = null;
+  }
+  if (this.m_engine && this.m_root.querySelector('.oj-listview-item-element') != null) {
+    // we need to clean the items before emptying them
+    this.cleanItems(this.m_engine);
   }
   $(this.m_root).empty();
 
@@ -2418,7 +2426,7 @@ IteratingDataProviderContentHandler.prototype._prepareRootElement = function () 
     this.m_root = this.m_superRoot;
     this.m_superRoot = null;
   } else {
-    var skeletonContainer = this.m_root.querySelector('.oj-listview-skeleton-container');
+    var skeletonContainer = this.m_root.querySelector('.oj-listview-initial-skeletons');
     if (skeletonContainer == null) {
       // empty the root content if skeleton is not supported or not present.
       // if skeleton is supported, the root will be empty out when animation to hide skeletons is completed.
@@ -2439,6 +2447,12 @@ IteratingDataProviderContentHandler.prototype._prepareRootElement = function () 
     this.m_root.appendChild(presentation); // @HTMLUpdateOK
     this.m_superRoot = this.m_root;
     this.m_root = row;
+  }
+
+  // this should not happen, there should not be any load more indicator at this point
+  if (this.m_loadingIndicator) {
+    log('prepareRootElement: load more indicator detected');
+    this.m_loadingIndicator = null;
   }
 };
 
@@ -2497,7 +2511,12 @@ IteratingDataProviderContentHandler.prototype.fetchRows = function (forceFetch) 
     // DataProvider which supports it can optimize resources
     this._clientId = this._clientId || Symbol();
 
-    var options = { clientId: this._clientId };
+    // Create a controller to support aborting request
+    var controller = new AbortController();
+    this.m_controller = controller;
+
+    var options = { clientId: this._clientId, signal: this.m_controller.signal };
+
     // use fetch size if loadMoreOnScroll, otherwise specify -1 to fetch all rows
     options.size = this._isLoadMoreOnScroll() ? this._getFetchSize() : -1;
 
@@ -2505,6 +2524,7 @@ IteratingDataProviderContentHandler.prototype.fetchRows = function (forceFetch) 
       .fetchFirst(options)
       [Symbol.asyncIterator]();
     var promise = this.m_dataProviderAsyncIterator.next();
+    this.m_lastFetchPromise = promise;
     self.fetchSize = options.size;
 
     // new helper function to be called in recursion to fetch all data.
@@ -2536,7 +2556,7 @@ IteratingDataProviderContentHandler.prototype.fetchRows = function (forceFetch) 
           return helperFunction(values, value.value.metadata, updatedScrollToKey);
         },
         function (reason) {
-          self._handleFetchError(reason);
+          self._handleFetchError(reason, controller.signal.aborted);
           self.signalTaskEnd(); // signal fetch stopped. Started above.
         }
       );
@@ -2547,10 +2567,20 @@ IteratingDataProviderContentHandler.prototype.fetchRows = function (forceFetch) 
     Promise.all([promise, enginePromise, scrollToKeyPromise])
       .then(
         function (values) {
+          // check if fetch is outdated and skip if that is the case
+          if (self.m_lastFetchPromise !== promise) {
+            self.signalTaskEnd();
+            return Promise.resolve(null);
+          }
           return helperFunction(values, values[0].value.metadata, values[2]);
         },
         function (reason) {
-          self._handleFetchError(reason);
+          // check if fetch is outdated and skip if that is the case
+          if (self.m_lastFetchPromise !== promise) {
+            self.signalTaskEnd(); // signal fetch stopped. Started above.
+            return Promise.resolve(null);
+          }
+          self._handleFetchError(reason, controller.signal.aborted);
           self.signalTaskEnd(); // signal fetch stopped. Started above.
           return Promise.reject(reason);
         }
@@ -2566,6 +2596,15 @@ IteratingDataProviderContentHandler.prototype.fetchRows = function (forceFetch) 
 
             var value = values[0];
             var templateEngine = values[1];
+
+            // check if the request was already aborted
+            // ignore to prevent collision with results from the other incoming request
+            if (isFetchAborted(value)) {
+              // since we won't be calling fetchEnd, we'll need to make sure the readiness stack
+              // is updated
+              self.signalTaskEnd();
+              return;
+            }
 
             var dataProvider = self.getDataProvider();
             if (oj.TableDataSourceAdapter && dataProvider instanceof oj.TableDataSourceAdapter) {
@@ -2600,9 +2639,15 @@ IteratingDataProviderContentHandler.prototype.fetchRows = function (forceFetch) 
   this.signalTaskEnd(); // signal method task end
 };
 
-IteratingDataProviderContentHandler.prototype._handleFetchError = function (msg) {
+IteratingDataProviderContentHandler.prototype._handleFetchError = function (msg, isAbort) {
   // TableDataSource aren't giving me any error message
   error(msg);
+
+  // if the fetch errors out due to abort, we don't want to do any cleanup
+  // as there is another fetch started and we don't want to show no data
+  if (this.m_widget && isAbort) {
+    return;
+  }
 
   // turn off fetching if there is an error
   this._setFetching(false);
@@ -2861,6 +2906,7 @@ IteratingDataProviderContentHandler.prototype._handleFetchSuccess = function (
 
   var index = this.m_root.querySelectorAll('.' + this.m_widget.getItemElementStyleClass()).length;
   if (
+    !isInitialFetch &&
     index > 0 &&
     !doneOrMaxLimitReached &&
     this._isLastItemNotInViewport() &&
@@ -2902,7 +2948,17 @@ IteratingDataProviderContentHandler.prototype._handleFetchSuccess = function (
     index += 1;
   }
 
-  return this.animateShowContent(this.m_root, parent, isInitialFetch);
+  const animateShowContentPromise = this.animateShowContent(this.m_root, parent, isInitialFetch);
+  if (doneOrMaxLimitReached) {
+    animateShowContentPromise.then(() => {
+      if (this.m_root && this.m_widget && this.shouldUseGridRole() && this._isLoadMoreOnScroll()) {
+        // update aria rowcount once all data is loaded
+        this.m_root.setAttribute('aria-rowcount', this.getItems(this.m_root).length);
+      }
+    });
+  }
+
+  return animateShowContentPromise;
 };
 
 /**
@@ -2925,7 +2981,7 @@ IteratingDataProviderContentHandler.prototype.handleDomScrollerFetchedData = fun
     if (
       this.isCardLayout() &&
       this.m_superRoot &&
-      this.m_root.childNodes.length === 0 &&
+      this.m_root.childElementCount === 0 &&
       this.m_root.parentNode
     ) {
       this.m_superRoot.appendChild(this.m_root.parentNode);
@@ -2966,8 +3022,10 @@ IteratingDataProviderContentHandler.prototype._registerDomScroller = function ()
     fetchSize: this._getFetchSize(),
     fetchTrigger: this._getFetchTrigger(),
     maxCount: this._getMaxCount(),
+    controller: this.m_controller,
     asyncIterator: this.m_dataProviderAsyncIterator,
-    initialRowCount: this.m_root.childElementCount,
+    initialRowCount: this.m_root.querySelectorAll('.' + this.m_widget.getItemElementStyleClass())
+      .length,
     success: function (result) {
       self.signalTaskEnd(); // for beforeFetch
       if (self.m_widget != null) {
@@ -2982,9 +3040,13 @@ IteratingDataProviderContentHandler.prototype._registerDomScroller = function ()
         }
       }
     },
-    error: function () {
+    error: function (reason, isAbort) {
       self.signalTaskEnd(); // for beforeFetch
       self.signalTaskEnd(); // for dummy task
+      error(reason);
+      if (!isAbort) {
+        self._removeLoadingIndicator();
+      }
     },
     localKeyValidator: function (key) {
       if (self.m_widget) {
@@ -3270,7 +3332,7 @@ IteratingDataProviderContentHandler.prototype.handleRemoveItemsPromises = functi
  * @param {Object} event the model refresh event
  * @protected
  */
-IteratingDataProviderContentHandler.prototype.handleModelRefreshEvent = function (event) {
+IteratingDataProviderContentHandler.prototype.handleModelRefreshEvent = function () {
   if (this.m_root == null) {
     return;
   }
@@ -3278,11 +3340,10 @@ IteratingDataProviderContentHandler.prototype.handleModelRefreshEvent = function
   // any outstanding idle-time rendering should immediately be stopped
   this._cancelIdleCallback();
 
-  // if listview is busy, hold that off until later, the refresh must be handled in order
-  // since we don't know when the results are coming back in
-  if (!this.IsReady()) {
-    this._pushToEventQueue({ type: event.type, event: event });
-    return;
+  // if listview is busy, abort the current request so that we can start a new one
+  if (!this.IsReady() && this.m_controller) {
+    this.m_controller.abort();
+    this._setFetching(false);
   }
 
   this.signalTaskStart('handling model reset event'); // signal method task start
@@ -3320,6 +3381,10 @@ IteratingDataProviderContentHandler.prototype._handleFetchedData = function (
 ) {
   // this could happen if destroy comes before fetch completes (note a refresh also causes destroy)
   if (this.m_root == null || dataObj.value == null) {
+    // cleanup DomScroller if max count has been reached as no more fetching will happen
+    if (dataObj.maxCountLimit) {
+      this._destroyDomScroller();
+    }
     return;
   }
 
@@ -3344,8 +3409,16 @@ IteratingDataProviderContentHandler.prototype._handleFetchedData = function (
       isInitialFetch
     ).then(
       function (skipPostProcessing) {
-        // component could have been destroyed
-        if (this.m_widget == null) {
+        // component could have been destroyed or another refresh already happened
+        if (this.m_widget == null || skipPostProcessing === null) {
+          if (this.m_widget) {
+            // for refresh case, we'll still need to reduce readiness stack, which is usually done in fetchEnd
+            this.m_widget.signalTaskEnd();
+          }
+          info(
+            'handleFetchedData: exit due to either component destroyed or another refresh underway: ' +
+              (this.m_widget == null)
+          );
           return;
         }
 
@@ -3372,6 +3445,9 @@ IteratingDataProviderContentHandler.prototype._handleFetchedData = function (
               if (!nothingInserted || this.m_domScroller.isOverflow()) {
                 this._appendLoadingIndicator();
               }
+            } else if (dataObj.maxCountLimit) {
+              // max count reached, DomScroller will stop fetching
+              this._destroyDomScroller();
             }
           } else if (this.m_domScroller) {
             // no more data, but DomScroller still active from before

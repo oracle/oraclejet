@@ -42,7 +42,7 @@ function dtsTransformWrapper(program, buildOptions) {
     view = new template_1.Template(templatePath);
     _COMPILER_OPTIONS = program.getCompilerOptions();
     const dtsTransformer = (context) => {
-        return (sf) => {
+        return ((sf) => {
             function visit(node) {
                 if (buildOptions.componentToMetadata) {
                     return generateCustomElementTypes(context, node);
@@ -54,7 +54,7 @@ function dtsTransformWrapper(program, buildOptions) {
             if (_BUILD_OPTIONS['debug'])
                 console.log(`${sf.fileName}: processing afterDeclaration`);
             return ts.visitNode(sf, visit);
-        };
+        });
     };
     return dtsTransformer;
 }
@@ -140,9 +140,8 @@ function generateCustomElementTypeContent(fileName) {
     return content;
 }
 function getImportStatements(rootNode, context) {
-    var _a, _b;
     let typeImports = '';
-    if ('GlobalProps' in ((_a = _BUILD_OPTIONS.importMaps) === null || _a === void 0 ? void 0 : _a.exportToAlias)) {
+    if ('GlobalProps' in _BUILD_OPTIONS.importMaps?.exportToAlias) {
         typeImports =
             "import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';\n" +
                 "import 'ojs/oj-jsx-interfaces';\n";
@@ -159,7 +158,7 @@ function getImportStatements(rootNode, context) {
     for (let vcomponentName in vcomponents) {
         let metadata = vcomponents[vcomponentName];
         if (metadata['useComponentPropsForSettableProperties']) {
-            if (!((_b = importMaps === null || importMaps === void 0 ? void 0 : importMaps.exportToAlias) === null || _b === void 0 ? void 0 : _b.ComponentProps)) {
+            if (!importMaps?.exportToAlias?.ComponentProps) {
                 isComponentPropsImportNeeded = true;
                 break;
             }
@@ -171,21 +170,20 @@ function getImportStatements(rootNode, context) {
     return typeImports;
 }
 function getComponentTemplateData(metadata, buildOptions, customElementName, vcomponentName) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
     const legacyComponentName = getLegacyComponentName(metadata, buildOptions, vcomponentName);
     const vcomponentElementName = MetaUtils.tagNameToElementInterfaceName(customElementName);
-    const classDataParam = (_a = metadata['classTypeParams']) !== null && _a !== void 0 ? _a : '';
+    const classDataParam = metadata['classTypeParams'] ?? '';
     const classDataParamsAny = getTypeParamsAny(classDataParam);
-    const classDataParamsDeclaration = (_b = metadata['classTypeParamsDeclaration']) !== null && _b !== void 0 ? _b : '';
-    const propsDataParam = (_c = metadata['propsTypeParams']) !== null && _c !== void 0 ? _c : '';
-    const propsClassDataParams = (_d = metadata['propsClassTypeParams']) !== null && _d !== void 0 ? _d : '';
-    const propsClassDataParamsDeclaration = (_e = metadata['propsClassTypeParamsDeclaration']) !== null && _e !== void 0 ? _e : '';
+    const classDataParamsDeclaration = metadata['classTypeParamsDeclaration'] ?? '';
+    const propsDataParam = metadata['propsTypeParams'] ?? '';
+    const propsClassDataParams = metadata['propsClassTypeParams'] ?? '';
+    const propsClassDataParamsDeclaration = metadata['propsClassTypeParamsDeclaration'] ?? '';
     const propsClassName = metadata['propsClassName'];
     let propsComponentPropsAlternateName = '';
     let propsMappedTypesClassName = '';
     let propsReadonlyMappedTypesClassName = '';
     if (metadata['useComponentPropsForSettableProperties']) {
-        const componentPropsAlias = ((_g = (_f = buildOptions.importMaps) === null || _f === void 0 ? void 0 : _f.exportToAlias) === null || _g === void 0 ? void 0 : _g.ComponentProps) || 'ComponentProps';
+        const componentPropsAlias = buildOptions.importMaps?.exportToAlias?.ComponentProps || 'ComponentProps';
         propsComponentPropsAlternateName = `${componentPropsAlias}<typeof ${vcomponentName}>`;
     }
     else if (metadata['propsMappedTypes']) {
@@ -203,13 +201,14 @@ function getComponentTemplateData(metadata, buildOptions, customElementName, vco
         propsClassTypeParams: propsClassDataParams,
         propsClassTypeParamsDeclaration: propsClassDataParamsDeclaration,
         propsTypeParams: propsDataParam,
-        propsTypeParamsAny: (_h = metadata['propsTypeParamsAny']) !== null && _h !== void 0 ? _h : '',
+        propsTypeParamsAny: metadata['propsTypeParamsAny'] ?? '',
         propsClassName: propsClassName,
         propsComponentPropsAlternateName: propsComponentPropsAlternateName,
         propsMappedTypesClassName: propsMappedTypesClassName,
         propsReadonlyMappedTypesClassName: propsReadonlyMappedTypesClassName,
         componentPropertyInterface: `${vcomponentName}IntrinsicProps`,
         customElementName: customElementName,
+        globalPropsName: buildOptions.importMaps?.exportToAlias?.GlobalProps ?? 'GlobalProps',
         vcomponentClassName: vcomponentName,
         vcomponentName: vcomponentElementName,
         eventMapInterface: `${vcomponentElementName}EventMap`,
@@ -233,8 +232,7 @@ function getComponentTemplateData(metadata, buildOptions, customElementName, vco
     return data;
 }
 function getLegacyComponentName(metadata, buildOptions, vcomponentName) {
-    var _a;
-    const legacyVersion = (_a = buildOptions.coreJetBuildOptions) === null || _a === void 0 ? void 0 : _a.enableLegacyElement;
+    const legacyVersion = buildOptions.coreJetBuildOptions?.enableLegacyElement;
     const sinceJetVersionStr = metadata['since'];
     let legacyComponentName = '';
     if (legacyVersion != null && sinceJetVersionStr != null) {
@@ -307,9 +305,8 @@ function fixCreateImportExportSpecifierCalls(text) {
 }
 exports.fixCreateImportExportSpecifierCalls = fixCreateImportExportSpecifierCalls;
 function assembleTypes(buildOptions) {
-    var _a;
     const coreJET = !!buildOptions.coreJetBuildOptions;
-    const EXCLUDED_MODULES = ((_a = buildOptions.coreJetBuildOptions) === null || _a === void 0 ? void 0 : _a.exclude) || [];
+    const EXCLUDED_MODULES = buildOptions.coreJetBuildOptions?.exclude || [];
     function processImportedDependencies(typeDeclarName, seen) {
         const typeDeclarCont = fs.readFileSync(typeDeclarName, 'utf-8');
         let matches;

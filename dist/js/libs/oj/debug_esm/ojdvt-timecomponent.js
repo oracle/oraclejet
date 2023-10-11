@@ -187,16 +187,22 @@ class TimeComponent extends BaseComponent {
       if (item._itemData.taskId) {
         // Specifically for Gantt with row data supplied and no task template,
         // _itemData does not have the task's id prop (it has the taskId prop)
-        const itemCopy = Object.assign({}, item._itemData);
+        // Note that the spread operation below is much faster than using Object.assign,
+        // and much faster than a simple rest operation "const { taskId, ...itemCopy } = item._itemData"
+        // delete is also much slower than just setting value to undefined
+        const itemCopy = { ...item._itemData };
         itemCopy.id = itemCopy.taskId;
-        delete itemCopy.taskId;
+        itemCopy.taskId = undefined;
         return itemCopy;
       }
       return item._itemData;
     };
     const sanitizeItemData = (item) => {
-      const itemCopy = Object.assign({}, item);
-      delete itemCopy._itemData;
+      // Note that the spread operation below is much faster than using Object.assign,
+      // and much faster than a simple rest operation "const { _itemData, ...itemCopy } = item"
+      // delete is also much slower than just setting value to undefined
+      const itemCopy = { ...item };
+      itemCopy._itemData = undefined;
       return itemCopy;
     };
     const isSeriesData = type === 'series' || type === 'row';

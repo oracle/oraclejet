@@ -37,7 +37,7 @@ define(['exports', 'knockout', 'ojs/ojkeyset'], function (exports, ko, ojkeyset)
      * and therefore applications must update the associated attribute with the new KeySet.  The ObservableExpandedKeySet
      * provides a convenient way for applications to mutate the KeySet directly without the need to update the associated
      * attribute.
-     * @ojdeprecated {since: '7.0.0', description: 'Use ObservableKeySet instead.'}
+     * @ojdeprecated {since: '7.0.0', value:['ObservableKeySet']}
      * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["ExpandedKeySet", "ExpandAllKeySet", "KeySetImpl", "AllKeySetImpl"]}
      * @ojsignature [{target: "Type", value: "class ObservableExpandedKeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]},
      *               {target: "Type", value: "ExpandedKeySet<K>|ExpandAllKeySet<K>", for:"initialValue"}]

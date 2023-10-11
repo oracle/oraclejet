@@ -91,7 +91,7 @@
     /* Styling for all row labels */
     .oj-gantt-row-label {
 
-        fill: $headerTextColor;
+        color: $headerTextColor;
         font-size: $fontSize;
         padding-left: 0.5714rem;
         padding-right: 0.5714rem;
@@ -251,7 +251,7 @@
     /* Styling for the major time axis labels */
     .oj-gantt-major-axis-label {
 
-          fill: $dvtGanttMajorAxisLabelColor;
+          color: $dvtGanttMajorAxisLabelColor;
           font-size: $fontSize;
 
       font-weight: 500;
@@ -276,7 +276,7 @@
     /* Styling for the minor time axis labels */
     .oj-gantt-minor-axis-label {
 
-          fill: $dvtGanttMinorAxisLabelColor;
+          color: $dvtGanttMinorAxisLabelColor;
           font-size: $smallFontSize;
 
       font-weight: normal;

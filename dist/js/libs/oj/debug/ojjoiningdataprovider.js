@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojlogger'], function (ojMap, ojSet, ojeventtarget, Logger) { 'use strict';
+define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojlogger'], function (ojMap, ojSet, ojdataprovider, ojeventtarget, Logger) { 'use strict';
 
     ojMap = ojMap && Object.prototype.hasOwnProperty.call(ojMap, 'default') ? ojMap['default'] : ojMap;
     ojSet = ojSet && Object.prototype.hasOwnProperty.call(ojSet, 'default') ? ojSet['default'] : ojSet;
@@ -270,8 +270,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojlogger'], function
                     this._params = _params;
                 }
                 _fetchNext() {
-                    var _b;
-                    const signal = (_b = this._params) === null || _b === void 0 ? void 0 : _b.signal;
+                    const signal = this._params?.signal;
                     if (signal && signal.aborted) {
                         const reason = signal.reason;
                         return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -347,6 +346,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojlogger'], function
         }
         fetchFirst(params) {
             const baseParams = params;
+            ojdataprovider.FilterUtils.validateFilterCapabilities(this.getCapability('filter'), params?.filterCriterion);
             if (params && params.attributes) {
                 baseParams.attributes = this._seperateBaseJoinAttributes(params);
             }
@@ -369,7 +369,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojlogger'], function
             else {
                 this._mapJoinAttributes = null;
             }
-            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            const signal = params?.signal;
             if (signal && signal.aborted) {
                 const reason = signal.reason;
                 return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -381,7 +381,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojlogger'], function
                         return reject(new DOMException(reason, 'AbortError'));
                     });
                 }
-                resolve(this.baseDataProvider.fetchByKeys(baseParams).then((baseResults) => {
+                return resolve(this.baseDataProvider.fetchByKeys(baseParams).then((baseResults) => {
                     const results = new ojMap();
                     if (baseResults != undefined && baseResults.results != undefined) {
                         const data = [];
@@ -396,7 +396,9 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojlogger'], function
                         return this._joiningData(data, this.options).then((joinData) => {
                             i = 0;
                             params.keys.forEach((key) => {
-                                results.set(key, new this.Item(this, metaData[i], joinData[i]));
+                                if (joinData[i] !== null) {
+                                    results.set(key, new this.Item(this, metaData[i], joinData[i]));
+                                }
                                 i++;
                             });
                             return new this.FetchByKeysResults(this, params, results);
@@ -407,6 +409,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojlogger'], function
         }
         fetchByOffset(params) {
             let baseParams = params;
+            ojdataprovider.FilterUtils.validateFilterCapabilities(this.getCapability('filter'), params?.filterCriterion);
             if (params && params.attributes) {
                 const baseAttributes = this._seperateBaseJoinAttributes(params);
                 baseParams = {
@@ -421,7 +424,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojlogger'], function
             else {
                 this._mapJoinAttributes = null;
             }
-            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            const signal = params?.signal;
             if (signal && signal.aborted) {
                 const reason = signal.reason;
                 return Promise.reject(new DOMException(reason, 'AbortError'));

@@ -95,7 +95,7 @@ module.exports = class PatternCompiler {
     const num = this._getParameterExpression(node, paramAccumulator, 'number');
 
     const pluralMatch = opts.length === 0 ? 'undefined' :
-      `{${opts.join(',')}}[new Intl.PluralRules('${this._locale}').select(${num}${offset})]`;
+      `({${opts.join(',')}} as Partial<Record<Intl.LDMLPluralRule, string>>)[new Intl.PluralRules('${this._locale}').select(${num}${offset})]`;
     const exactMatch =
       exactPlurals.length > 0 ? `{${exactPlurals.join(',')}}[${num}]||` : '';
 

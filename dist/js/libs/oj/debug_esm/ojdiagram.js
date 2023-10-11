@@ -1220,6 +1220,9 @@ ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (nod
  *
  * {@ojinclude "name":"a11yKeyboard"}
  *
+ * <p>When selection is toggled through CTRL-SPACE, the screenreader may not read out the selection state.
+ * We recommend the user to press 'Insert + 8(Numpad)' to read the selection state of the node.</p>
+ *
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -4533,7 +4536,7 @@ setDefaultOptions({
  *     </tr>
  *     <tr>
  *       <td><kbd>Alt + &lt; or Alt + &gt;</kbd></td>
- *       <td>Move focus from the node to a link.</td>
+ *       <td>When focus is on a node, move focus and selection to nearest link left/right.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>UpArrow or DownArrow</kbd></td>

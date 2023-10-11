@@ -1120,7 +1120,7 @@ oj.__registerWidget(
 
 /**
  * @ojcomponent oj.ojLedGauge
- * @ojdeprecated {since: '13.1.0', description: 'Use oj-badge classes or icons instead.'}
+ * @ojdeprecated {since: '13.1.0', description: 'Use <a href="Badge.html">Badge</a> classes or icons instead.'}
  * @augments oj.dvtBaseGauge
  * @since 0.7.0
  *
@@ -1591,6 +1591,13 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge, {
  *
  * @ojoracleicon 'oj-ux-ico-gauge-rating'
  * @ojuxspecs ['gauge']
+ * @ojdeprecated [
+ *  {
+ *    type: "maintenance",
+ *    since: "15.0.0",
+ *    value: ["oj-c-rating-gauge"]
+ *  }
+ * ]
  *
  * @classdesc
  * <h3 id="ratingGaugeOverview-section">
@@ -2408,6 +2415,14 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge, {
  * @ojshortdesc A status meter gauge displays information graphically, highlighting a specific metric value's progress in relation to its thresholds.  Horizontal, vertical, and circular formats are supported.
  * @ojrole img
  * @ojrole application
+ *
+ * @ojdeprecated [
+ *  {
+ *    type: "maintenance",
+ *    since: "15.0.0",
+ *    value: ["oj-c-meter-bar", "oj-c-meter-circle"]
+ *  }
+ * ]
  *
  * @ojpropertylayout [ {propertyGroup: "common", items: ["orientation", "metricLabel.rendered", "metricLabel.textType", "metricLabel.text", "thresholdDisplay",
  *                                                       "animationOnDataChange", "animationOnDisplay", "plotArea.rendered", "color", "style"]},
@@ -3397,11 +3412,12 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <h5>track-resize attribute</h5>
  * <p>track-resize attribute is no longer supported. Rating gauges now have fixed sizes. Since we are not supporting the 'fit' enum value for the 'size' api, we no longer need 'track-resize'. </p>
  * <h5>tooltip attribute and tooltipTemplate slot </h5>
- * <p> The support for this feature has been split into two attributes, tooltip and datatip. The datatip will be used for interactive gauges only and it will be a function that takes datatipDetail as argument.
+ * <p> The support for this feature has been split into two attributes, tooltip and datatip. The datatip will be used for interactive gauges only and it will be a function that takes DatatipContext as argument.
  * Tooltip attribute, which will be a string instead of a function, will be used for readonly rating gauge.
  * </p>
  * <h5>title support</h5>
- * <p>title will no longer be required to make your rating gauge accessible. Use the datatip or tooltip APIs or the aria-label attribute instead.
+ * <p>title will no longer be required to make your rating gauge accessible. Use aria-label attribute instead for text to be used by screen readers, and datatip or tooltip for text to be shown on hover or focus.
+ * The tooltip attribute is for readonly rating gauge only. If aria-label is not present for readonly rating gauge, tooltip will be used as aria-label. Note the datatip should be used for interactive gauges only and it takes a function.
  * </p>
  * @ojfragment migrationDoc
  * @memberof oj.ojRatingGauge
@@ -3678,6 +3694,14 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <p>track-resize attribute is no longer supported. oj-c-meter-bar and oj-c-meter-circle now have fixed sizes. Since we are not supporting the 'fit' enum value for the 'size' api, we no longer need 'track-resize'. </p>
  * <h5>tooltip attribute and tooltipTemplate slot</h5>
  * <p> tooltip attribute and the tooltipTemplate slot are no longer supported. datatip attribute has been introduced to support this feature. The datatip attribute takes a function that provides datatipContext as argument.
+ * </p>
+ * <h5>indicator-size attribute </h5>
+ * <p>
+ * indicator-size attribute will no longer support values greater than 1 in oj-c-meter-bar and oj-c-meter-circle.
+ * </p>
+ * <h5>min height for vertical meter bar</h5>
+ * <p>
+ * The vertical oj-c-meter-bar now has a default min-height which is theme driven.
  * </p>
  * @ojfragment migrationDoc
  * @memberof oj.ojStatusMeterGauge

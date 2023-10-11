@@ -122,30 +122,34 @@ define(['exports'], function (exports) { 'use strict';
    * Helper method that retrieves and parses session storage setting
    */
   const _getSessionStorage = () => {
-    const sessionValue =
-      typeof window !== 'undefined' && window.sessionStorage !== undefined
-        ? sessionStorage.getItem('ojet.logLevel')
-        : undefined;
     let logLevel;
-    switch (sessionValue) {
-      case 'none':
-        logLevel = Logger.LEVEL_NONE;
-        break;
-      case 'error':
-        logLevel = Logger.LEVEL_ERROR;
-        break;
-      case 'warning':
-        logLevel = Logger.LEVEL_WARN;
-        break;
-      case 'info':
-        logLevel = Logger.LEVEL_INFO;
-        break;
-      case 'log':
-        logLevel = Logger.LEVEL_LOG;
-        break;
-      default:
-        logLevel = undefined;
-    }
+    try {
+      const sessionValue =
+        typeof window !== 'undefined' && window.sessionStorage !== undefined
+          ? sessionStorage.getItem('ojet.logLevel')
+          : undefined;
+      switch (sessionValue) {
+        case 'none':
+          logLevel = Logger.LEVEL_NONE;
+          break;
+        case 'error':
+          logLevel = Logger.LEVEL_ERROR;
+          break;
+        case 'warning':
+          logLevel = Logger.LEVEL_WARN;
+          break;
+        case 'info':
+          logLevel = Logger.LEVEL_INFO;
+          break;
+        case 'log':
+          logLevel = Logger.LEVEL_LOG;
+          break;
+        default:
+          logLevel = undefined;
+      }
+      // eslint-disable-next-line no-empty
+    } catch (e) {}
+
     return logLevel;
   };
 
