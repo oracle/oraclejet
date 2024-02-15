@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -161,10 +161,14 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojthemeutils', '@oracle/oraclejet-preact
     };
     const _getPreferencesPattern = (preferenceOptions, cnvOptions) => {
         const noCnvOptions = !cnvOptions || Object.keys(cnvOptions).length === 0;
-        if (noCnvOptions) {
+        const timeZoneOptionOnly = cnvOptions && cnvOptions.timeZone && Object.keys(cnvOptions).length === 1;
+        if (noCnvOptions || timeZoneOptionOnly) {
             return _getNoCvtrOptionsPrefPattern(preferenceOptions);
         }
-        if (cnvOptions.dateStyle !== 'short' && cnvOptions.timeStyle !== 'short') {
+        const applyPreferences = (cnvOptions.dateStyle === 'short' && cnvOptions.timeStyle === undefined) ||
+            (cnvOptions.timeStyle === 'short' && cnvOptions.dateStyle === undefined) ||
+            (cnvOptions.dateStyle === 'short' && cnvOptions.timeStyle === 'short');
+        if (!applyPreferences) {
             return undefined;
         }
         let datePattern;

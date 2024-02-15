@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2136,18 +2136,6 @@ var __oj_select_single_metadata =
      * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
      * </p>
      *
-     * <h5>Reset method</h5>
-     * <p>
-     * This method does not synchronously reset the component. The application should wait on the busy context of the component after
-     * invoking this method for the changes to appear.
-     * </p>
-     *
-     * <h5>ShowMessages method</h5>
-     * <p>
-     * This method does not synchronously shows the hidden messages of the component. The application should wait on the busy context
-     * of the component after invoking this method for the changes to appear.
-     * </p>
-     *
      * <h5>Animation Events</h5>
      * <p>
      * ojAnimateStart and ojAnimateEnd events are no longer supported.
@@ -2168,9 +2156,10 @@ var __oj_select_single_metadata =
      * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
      * </p>
      *
-     * <h5>User Assistance Density - Compact mode</h5>
+     * <h5>DescribedBy attribute</h5>
      * <p>
-     * Rendering the component in compact userAssistanceDensity mode is not supported in this release. Please use 'reflow' or 'efficient' instead.
+     * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+     * This attribute is not carried forward to the core pack component.
      * </p>
      *
      * <h5>Usage in Dynamic Form</h5>
@@ -2180,13 +2169,11 @@ var __oj_select_single_metadata =
      *
      * <h5>Limitations</h5>
      * <p>
-     * Note that oj-c-select-single supports a limited feature set in JET 14. It does not support:
+     * Note that oj-c-select-single supports a limited feature set in JET 16. It does not support:
      * </p>
      * <ul>
-     * <li>a mobile specific dropdown</li>
      * <li>hierarchical data</li>
-     * <li>customizing dropdown collection rendering beyond the text of each item (no itemTemplate or collectionTemplate)</li>
-     * <li>rendering in collection components like oj-data-grid and oj-table</li>
+     * <li>customizing dropdown content by providing a customized collection component (no collectionTemplate)</li>
      * </ul>
      * @ojfragment migrationDoc
      * @memberof oj.ojSelectSingle

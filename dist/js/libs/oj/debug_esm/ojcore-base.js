@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -37,12 +37,12 @@ const oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '15.1.0',
+  version: '16.0.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2023-10-06_04-39-53',
+  revision: '2024-02-10_08-15-32',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -274,7 +274,8 @@ AgentUtils.getAgentInfo = function (userAgent) {
   if (
     userAgent.indexOf('iphone') > -1 ||
     userAgent.indexOf('ipad') > -1 ||
-    (navigator.platform === 'MacIntel' && typeof navigator.standalone !== 'undefined')
+    // handle iPad/iPhone safari requesting desktop version of site
+    (userAgent.indexOf('macintosh') > -1 && navigator.maxTouchPoints > 0)
   ) {
     os = AgentUtils.OS.IOS;
   } else if (userAgent.indexOf('mac') > -1) {

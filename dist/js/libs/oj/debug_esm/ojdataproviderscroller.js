@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1100,6 +1100,10 @@ DataProviderContentHandler.prototype.removeItem = function (elem, isReinsert) {
   // got to do this before wrapAll since that changes activeElement
   var active = document.activeElement;
   var restoreFocus = elem.contains(active);
+  if (restoreFocus) {
+    // temporarily shift focus since wrapAll will cause the item to lose focus
+    this.m_widget._tempShiftFocus();
+  }
 
   var item = $(elem).get(0);
   var itemStyleClass = item.className;
@@ -1181,6 +1185,10 @@ DataProviderContentHandler.prototype.handleRemoveTransitionEnd = function (
   // if it's the last item, show empty text
   if (parent.get(0).childElementCount === 0) {
     this.m_widget.renderComplete(true);
+    if (restoreFocus) {
+      // make sure focus is restore to no data content
+      this.m_widget._focusEmptyContent();
+    }
   }
 
   // ensure something is selected if the removed item is the last selected item
@@ -1239,7 +1247,10 @@ DataProviderContentHandler.prototype.handleModelChangeEvent = function (event) {
 
       var elem = this.FindElementByKey(keys[i]);
       if (elem != null) {
-        if (restoreFocusElem === undefined && elem.contains(document.activeElement)) {
+        if (
+          restoreFocusElem === undefined &&
+          (elem.contains(document.activeElement) || this.m_widget.isInShiftingFocus())
+        ) {
           restoreFocusElem = elem;
         }
         this.signalTaskStart('handling model update event for item: ' + keys[i]); // signal replace item start
@@ -1857,7 +1868,9 @@ IteratingDataProviderContentHandler.prototype.notifyShown = function () {
   }
 
   // for loadMoreOnScroll case, we will have to make sure the viewport is satisfied
-  this.checkViewport();
+  if (this.m_root.clientHeight > 0) {
+    this.checkViewport();
+  }
 };
 
 /**
@@ -1876,7 +1889,9 @@ IteratingDataProviderContentHandler.prototype.notifyAttached = function () {
       }
 
       // check again whether the viewport is satisfied
-      this.checkViewport();
+      if (this.m_root.clientHeight > 0) {
+        this.checkViewport();
+      }
     }
   }
 };
@@ -2901,6 +2916,8 @@ IteratingDataProviderContentHandler.prototype._handleFetchSuccess = function (
     return Promise.resolve(true);
   }
 
+  this.m_lastFetchedData = data;
+
   // remove any existing items with the same key first
   this._removeDuplicateItems(keys);
 
@@ -2948,17 +2965,52 @@ IteratingDataProviderContentHandler.prototype._handleFetchSuccess = function (
     index += 1;
   }
 
-  const animateShowContentPromise = this.animateShowContent(this.m_root, parent, isInitialFetch);
-  if (doneOrMaxLimitReached) {
-    animateShowContentPromise.then(() => {
-      if (this.m_root && this.m_widget && this.shouldUseGridRole() && this._isLoadMoreOnScroll()) {
-        // update aria rowcount once all data is loaded
-        this.m_root.setAttribute('aria-rowcount', this.getItems(this.m_root).length);
+  if (this.m_animateShowContentPromise) {
+    return this.m_animateShowContentPromise.then(() => {
+      if (this.m_widget == null) {
+        this.m_animateShowContentPromise = null;
+        return Promise.resolve(null);
       }
+
+      const animateShowContentPromise = this.animateShowContent(
+        this.m_root,
+        parent,
+        isInitialFetch
+      );
+      return this._getAnimateShowContentPromise(animateShowContentPromise, doneOrMaxLimitReached);
     });
   }
 
-  return animateShowContentPromise;
+  const animateShowContentPromise = this.animateShowContent(this.m_root, parent, isInitialFetch);
+  this.m_animateShowContentPromise = animateShowContentPromise;
+  return this._getAnimateShowContentPromise(animateShowContentPromise, doneOrMaxLimitReached);
+};
+
+/**
+ * @private
+ */
+IteratingDataProviderContentHandler.prototype._getAnimateShowContentPromise = function (
+  animateShowContentPromise,
+  doneOrMaxLimitReached
+) {
+  return animateShowContentPromise
+    .then((skipPostProcessing) => {
+      if (
+        doneOrMaxLimitReached &&
+        this.m_root &&
+        this.m_widget &&
+        this.shouldUseGridRole() &&
+        this._isLoadMoreOnScroll()
+      ) {
+        // update aria rowcount once all data is loaded
+        const root = this.m_superRoot ? this.m_superRoot : this.m_root;
+        root.setAttribute('aria-rowcount', this.getItems(this.m_root).length);
+      }
+      return skipPostProcessing;
+    })
+    .finally(() => {
+      this.m_animateShowContentPromise = null;
+    });
 };
 
 /**
@@ -3410,7 +3462,11 @@ IteratingDataProviderContentHandler.prototype._handleFetchedData = function (
     ).then(
       function (skipPostProcessing) {
         // component could have been destroyed or another refresh already happened
-        if (this.m_widget == null || skipPostProcessing === null) {
+        if (
+          this.m_widget == null ||
+          skipPostProcessing === null ||
+          this.m_lastFetchedData !== data
+        ) {
           if (this.m_widget) {
             // for refresh case, we'll still need to reduce readiness stack, which is usually done in fetchEnd
             this.m_widget.signalTaskEnd();

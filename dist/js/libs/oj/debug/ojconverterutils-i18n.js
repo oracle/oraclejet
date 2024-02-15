@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconverterutils', 'ojs/ojvalidation-error'], function (exports, oj, Translations, $, ConverterUtils, ojvalidationError) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime', 'ojs/ojconverterutils', 'ojs/ojvalidation-error'], function (exports, oj, Translations, $, UNSAFE_IntlDateTime, ConverterUtils, ojvalidationError) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -47,8 +47,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
   // -time only with timezone: any of the time values above followed by any of the following:
   // Z or +/-hh:mm or +/-hhmm or +/-hh
   // -date time: any of the date values followed by any of the time values
-  OraI18nUtils._ISO_DATE_REGEXP =
-    /^[+-]?\d{4}(?:-\d{2}(?:-\d{2})?)?(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}(?::?\d{2})?)?)?$|^T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}(?::?\d{2})?)?$/;
+  OraI18nUtils._ISO_DATE_REGEXP = UNSAFE_IntlDateTime.DateTimeUtils._ISO_DATE_REGEXP;
   /**
    * Returns the timezone offset between UTC and the local time in Etc/GMT[+-]h syntax.
    * <p>

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -230,7 +230,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
       }
     }
     // also search VDOM popups
-    var newPopups = ojpopupcore.findOpenVPopups();
+    var newPopups = ojpopupcore.VLayerUtils.findOpenVPopups();
     for (var j = 0; j < newPopups.length; j++) {
       var layerElem = newPopups[j];
       var launcherElem = layerElem[_LOGICAL_PARENT];

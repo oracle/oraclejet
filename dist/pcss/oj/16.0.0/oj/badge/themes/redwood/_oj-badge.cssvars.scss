@@ -1,0 +1,25 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.badge") {
+
+  :root {
+
+    --oj-badge-bg-color: var(--oj-core-neutral-1);
+    --oj-badge-text-color: var(--oj-core-neutral-contrast);
+
+    --oj-badge-font-size: var(--oj-typography-body-sm-font-size);
+    --oj-badge-font-weight: normal;
+    --oj-badge-font-stretch: normal;
+
+    --oj-badge-height: 1.5rem;
+    --oj-badge-border-radius: 0.75rem;
+
+    --oj-badge-padding: 0 var(--oj-core-spacing-3x);
+
+  }
+
+}

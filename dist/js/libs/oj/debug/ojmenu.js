@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -64,14 +64,6 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
         }
       }
     };
-    // Used to suppress focus ring for Mac Safari due to platform repainting bug.
-    // This returns true for Mac Safari, but not for desktop Chrome, FF, IE11, Edge;
-    // Mac Chrome, FF; iOS Safari; or Android Chrome.
-    // Using "Mac" instead of "Macintosh" in this check would return true for Mac
-    // Safari and iOS Safari, but none of the others.
-    var _IS_MAC_SAFARI =
-      oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.MAC &&
-      oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI;
 
     var _SHEETS_HAVE_CANCEL_ITEM =
       ThemeUtils.getCachedCSSVarValues(['--oj-private-menu-global-sheet-cancel-affordance'])[0] ===
@@ -1519,9 +1511,6 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
                 // Invoke _select() only for leaf menu items
                 this._select(event);
                 if (!this.element.is(':focus')) {
-                  // Redirect focus to the menu
-                  this.element.trigger('focus', [true]);
-
                   // If the active item is on the top level, let it stay active.
                   // Otherwise, blur the active item since it is no longer visible.
                   if (this.active && this.active.parents('.oj-menu').length === 1) {
@@ -1559,8 +1548,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
         });
 
         this._focusable({
-          // suppress focus ring for Mac Safari due to platform repainting bug in which previous item's outline is not fully erased
-          applyHighlight: !_IS_MAC_SAFARI,
+          applyHighlight: true,
           recentPointer: function () {
             return self._focusIsFromPointer;
           },
@@ -2309,7 +2297,12 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
       _reposition: function () {
         function isMenuLargerThanViewport(domElement) {
           var rect = domElement.getBoundingClientRect();
-          return rect.width > document.documentElement.clientWidth;
+          return (
+            rect.width > document.documentElement.clientWidth ||
+            /* Submenus don't change their maxHeight since we don't support scrolling on menus that have submenus
+            For those case where we don't want menu to keep "shifting" we add this logic */
+            rect.height > document.documentElement.clientHeight
+          );
         }
 
         var element = this.element;

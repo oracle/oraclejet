@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -243,6 +243,15 @@ var __oj_radioset_metadata =
    * @ojoracleicon 'oj-ux-ico-radio-button-set'
    * @ojuxspecs ['radioset']
    *
+   * @ojdeprecated [
+   *   {
+   *     type: "maintenance",
+   *     since: "16.0.0",
+   *     value: ["oj-c-radioset"]
+   *   }
+   * ]
+   *
+   *
    * @classdesc
    * <h3 id="radiosetOverview-section">
    *   JET Radioset
@@ -316,6 +325,141 @@ var __oj_radioset_metadata =
    * {@ojinclude "name":"accessibilityDisabledEditableValue"}
    * </p>
    *
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   *
+   * <p>
+   * To migrate from oj-radioset to oj-c-radioset, you need to revise the import statement
+   * and references from oj-radioset to oj-c-radioset in your app. For instance if your application imported <code>ojs/ojradioset</code> this needs to be
+   * updated to <code>oj-c/radioset</code>.
+   * Please note the following changes between the two components below.
+   * </p>
+   *
+   * <h5>options attribute</h5>
+   * <p>
+   * The <code>options</code> attribute is the only way to provide data to the new oj-c-radioset component. Adding <code>oj-option</code>
+   * child elements inline is not supported anymore.
+   * Besides maintaining its support for DataProvider, the <code>options</code> attribute also accepts an Array of data items.
+   * Regardless of the type used for this attribute (whether it's a DataProvider implementation or an Array of data items)
+   * the "label" property is required. In the DataProvider case, the "key" of the DataProvider will be used as
+   * the radio item value. The "label" property will provide the text for the radio item.
+   * </p>
+   * <h5>label-edge attribute</h5>
+   * <p>
+   * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
+   * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+   * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+   * attribute to the corresponding value.
+   * </p>
+   *
+   * <h5>option-renderer attribute</h5>
+   * <p>
+   * The <code>option-renderer</code> attribute is not supported anymore and was removed from <code>oj-c-radioset</code>.
+   * The item label text must be provided directly through the <code>options</code> data.
+   * </p>
+   * <h5>options-keys attribute</h5>
+   * <p>
+   * The <code>options-keys</code> attribute is no longer supported and was removed from <code>oj-c-radioset</code>.
+   * This attribute was used to map an arbitrary DataProvider data item signature to a label and value. The application can instead wrap their
+   * DataProvider implementation in a <a href="ListDataProviderView.html">ListDataProviderView</a> with data mapping to match
+   * the data shape required by <code>oj-c-radioset</code>.
+   * </p>
+   * <h5>readonly radioset visual appearance</h5>
+   * <p>
+   * A readonly oj-c-radioset will render all radio items, with an OK check mark for the selected item. This is
+   * different from oj-radioset where only the selected radio item was rendered.
+   * </p>
+   *
+   * <h5>messages-custom attribute</h5>
+   * <p>
+   * The type of the <code class="prettyprint">severity</code> property of the messages in the
+   * array has changed from
+   * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+   * (essentially <code class="prettyprint">string | number</code>), to simply
+   * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+   * values are the same as the previously supported string values.
+   * The application can no longer specify severity as a number, including hardcoded numbers,
+   * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+   * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+   * </p>
+   *
+   * <h5>Removed style classes</h5>
+   * <p>
+   * The usage of the style classes: oj-choice-direction-column, oj-choice-direction-row that would affect the row or column
+   * orientation of the radioset are now replaced with the <code>direction</code> attribute. The value of this attribute
+   * maps to these style classes as shown below:
+   * <ul>
+   * <li>
+   * .oj-choice-direction-column maps to 'column'
+   * </li>
+   * <li>
+   * .oj-choice-direction-row maps to 'row'
+   * </li>
+   * </ul>
+   * </p>
+   * <p>
+   * The following style classes were removed from oj-c-radioset without having a mapping to a new attribute:
+   * <ul>
+   * <li>
+   * .oj-radioset-input-end
+   * </li>
+   * <li>
+   * .oj-radioset-input-start
+   * </li>
+   * <li>
+   * .oj-radioset-no-chrome
+   * </li>
+   * </ul>
+   * </p>
+   * <h5>translations attribute</h5>
+   * <p>
+   * The translations.required.message-detail attribute has changed to required-message-detail.
+   * </p>
+   *
+   * <h5>refresh method</h5>
+   * <p>
+   * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+   * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+   * </p>
+   *
+   * <h5>reset method</h5>
+   * <p>
+   * This method does not synchronously reset the component. The application should wait on the busy context of the component after
+   * invoking this method for the changes to appear.
+   * </p>
+   *
+   * <h5>showMessages method</h5>
+   * <p>
+   * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
+   * of the component after invoking this method for the changes to appear.
+   * </p>
+   *
+   * <h5>Custom Label</h5>
+   * <p>
+   * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+   * label-hint attribute to add a label for the form component.
+   * </p>
+   * <p>
+   * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
+   * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+   * </p>
+   *
+   * <h5>DescribedBy attribute</h5>
+   * <p>
+   * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+   * This attribute is not carried forward to the core pack component.
+   * </p>
+   *
+   * <h5>display-options attribute</h5>
+   * <p>
+   * The <code>display-options</code> attribute only supports the messages sub-property, <code>converter-hint</code> and <code>validator-hint</code> sub-properties were removed.
+   * </p>
+   * <h5>Usage in Dynamic Form</h5>
+   * <p>
+   * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+   * </p>
    *
    * @example <caption>Initialize the radioset with no options specified:</caption>
    * &lt;oj-radioset id="colorRadio" value="{{currentColor}}">

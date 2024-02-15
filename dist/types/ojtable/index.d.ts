@@ -61,7 +61,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     scrollPolicyOptions: {
         fetchSize?: number;
         maxCount?: number;
-        scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
+        scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string | null;
         scrollerOffsetBottom?: number | null;
         scrollerOffsetEnd?: number | null;
         scrollerOffsetStart?: number | null;
@@ -69,7 +69,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     };
     scrollPosition: {
         columnIndex?: number;
-        columnKey?: any;
+        columnKey?: string;
         offsetX?: number;
         offsetY?: number;
         rowIndex?: number;
@@ -81,9 +81,9 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     selectAllControl: 'visible' | 'hidden';
     selected: {
         row?: KeySet<K>;
-        column?: KeySet<K>;
+        column?: KeySet<string>;
     };
-    selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart<K> & ojTable.ColumnSelectionEnd<K>>;
+    selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart & ojTable.ColumnSelectionEnd>;
     selectionMode: {
         column?: 'none' | 'single' | 'multiple';
         row?: 'none' | 'single' | 'multiple';
@@ -371,35 +371,35 @@ export namespace ojTable {
         width?: string | number | null;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ColumnSelectionEnd<K> = {
+    type ColumnSelectionEnd = {
         endIndex: {
             column: number;
         };
         endKey?: {
-            column: K;
+            column: string;
         };
     } | {
         endIndex?: {
             column: number;
         };
         endKey: {
-            column: K;
+            column: string;
         };
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ColumnSelectionStart<K> = {
+    type ColumnSelectionStart = {
         startIndex: {
             column: number;
         };
         startKey?: {
-            column: K;
+            column: string;
         };
     } | {
         startIndex?: {
             column: number;
         };
         startKey: {
-            column: K;
+            column: string;
         };
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -639,7 +639,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     scrollPolicyOptions: {
         fetchSize?: number;
         maxCount?: number;
-        scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
+        scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string | null;
         scrollerOffsetBottom?: number | null;
         scrollerOffsetEnd?: number | null;
         scrollerOffsetStart?: number | null;
@@ -647,7 +647,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     };
     scrollPosition: {
         columnIndex?: number;
-        columnKey?: any;
+        columnKey?: string;
         offsetX?: number;
         offsetY?: number;
         rowIndex?: number;
@@ -659,9 +659,9 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     selectAllControl: 'visible' | 'hidden';
     selected: {
         row?: KeySet<K>;
-        column?: KeySet<K>;
+        column?: KeySet<string>;
     };
-    selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart<K> & ojTable.ColumnSelectionEnd<K>>;
+    selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart & ojTable.ColumnSelectionEnd>;
     selectionMode: {
         column?: 'none' | 'single' | 'multiple';
         row?: 'none' | 'single' | 'multiple';
@@ -892,19 +892,19 @@ export namespace TableElement {
         width?: string | number | null;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ColumnSelectionStart<K> = {
+    type ColumnSelectionStart = {
         startIndex: {
             column: number;
         };
         startKey?: {
-            column: K;
+            column: string;
         };
     } | {
         startIndex?: {
             column: number;
         };
         startKey: {
-            column: K;
+            column: string;
         };
     };
     // tslint:disable-next-line interface-over-type-literal

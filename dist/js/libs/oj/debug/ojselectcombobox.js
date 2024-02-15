@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -7223,10 +7223,12 @@ var __oj_select_many_metadata =
 
       // add aria associations
       selection.find('.' + this._classNm + '-input').attr('id', this._classNm + '-input-' + idSuffix);
-      if (!this.results.attr('id')) {
-        this.results.attr('id', 'oj-listbox-results-' + idSuffix);
+
+      let resultId = this.results.attr('id');
+      if (!resultId) {
+        resultId = 'oj-listbox-results-' + idSuffix;
+        this.results.attr('id', resultId);
       }
-      this._contentElement.attr('aria-owns', this.results.attr('id'));
 
       if (!this.ojContext._IsCustomElement()) {
         elementLabel = $("label[for='" + this._getAttribute('id') + "']");
@@ -7244,9 +7246,8 @@ var __oj_select_many_metadata =
         this._contentElement.attr('aria-label', ariaLabel);
       }
 
-      if (ariaControls) {
-        this._contentElement.attr('aria-controls', ariaControls);
-      }
+      const contentElementAriaControls = ariaControls ? resultId + ' ' + ariaControls : resultId;
+      this._contentElement.attr('aria-controls', contentElementAriaControls);
 
       if (this.elementTabIndex) {
         this._contentElement.attr('tabindex', this.elementTabIndex);
@@ -8863,8 +8864,11 @@ var __oj_select_many_metadata =
 
       // add aria associations
       selection.find('.' + this._classNm + '-input').attr('id', this._classNm + '-input-' + idSuffix);
-      if (!this.results.attr('id')) {
-        this.results.attr('id', 'oj-listbox-results-' + idSuffix);
+
+      let resultId = this.results.attr('id');
+      if (!resultId) {
+        resultId = 'oj-listbox-results-' + idSuffix;
+        this.results.attr('id', resultId);
       }
 
       var liveRegion = container.find('.oj-listbox-liveregion');
@@ -8873,7 +8877,7 @@ var __oj_select_many_metadata =
       }
       //  - Accessibility : JAWS does not read aria-controls attribute set on ojselect
       if (this._classNm !== 'oj-select') {
-        this.search.attr('aria-owns', this.results.attr('id'));
+        this.search.attr('aria-controls', this.results.attr('id'));
       }
 
       if (!this.ojContext._IsCustomElement()) {
@@ -8892,9 +8896,8 @@ var __oj_select_many_metadata =
         this._contentElement.attr('aria-label', ariaLabel);
       }
 
-      if (ariaControls) {
-        this._contentElement.attr('aria-controls', ariaControls);
-      }
+      const contentElementAriaControls = ariaControls ? resultId + ' ' + ariaControls : resultId;
+      this._contentElement.attr('aria-controls', contentElementAriaControls);
 
       selection.on('keydown', this._bind(this._containerKeydownHandler));
 
@@ -9033,7 +9036,7 @@ var __oj_select_many_metadata =
             if (
               (!selectionData && value !== '') ||
               (selectionData && selectionData.label !== value) ||
-              (!this.ojContext.isValid() && value !== this._previousDisplayValue)
+              (!this.ojContext.isValid() && value !== this.ojContext._GetDisplayValue())
             ) {
               var onSelectReturn = this._onSelect(valopt, options, e);
               optionalCleanupPromise = onSelectReturn;
@@ -12967,6 +12970,11 @@ var __oj_select_many_metadata =
     _setupComboboxResources: function () {
       if (!this._isComboboxInstantiated()) {
         this._initComboboxInstance();
+        // JET-60973 - Combo box label hint is not displayed when the drawer is opened for the second time
+        // If we are creating a new instance of combobox, then
+        // we need to reactivate the component messaging which includes
+        // label
+        this._initComponentMessaging();
       }
       // Check if the dp is already wrapped
       if (!_ComboUtils.isDataProviderWrapped(this)) {
@@ -16972,18 +16980,6 @@ var __oj_select_many_metadata =
    * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
    * </p>
    *
-   * <h5>Reset method</h5>
-   * <p>
-   * This method does not synchronously reset the component. The application should wait on the busy context of the component after
-   * invoking this method for the changes to appear.
-   * </p>
-   *
-   * <h5>ShowMessages method</h5>
-   * <p>
-   * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
-   * of the component after invoking this method for the changes to appear.
-   * </p>
-   *
    * <h5>Animation Events</h5>
    * <p>
    * ojAnimateStart and ojAnimateEnd events are no longer supported.
@@ -16997,6 +16993,12 @@ var __oj_select_many_metadata =
    * <p>
    * The application should no longer need to use the &lt;oj-label-value> component to layout the form component. The application
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+   * </p>
+   *
+   * <h5>DescribedBy attribute</h5>
+   * <p>
+   * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+   * This attribute is not carried forward to the core pack component.
    * </p>
    *
    * <h5>Usage in Dynamic Form</h5>
@@ -17293,18 +17295,6 @@ var __oj_select_many_metadata =
    * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
    * </p>
    *
-   * <h5>Reset method</h5>
-   * <p>
-   * This method does not synchronously reset the component. The application should wait on the busy context of the component after
-   * invoking this method for the changes to appear.
-   * </p>
-   *
-   * <h5>ShowMessages method</h5>
-   * <p>
-   * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
-   * of the component after invoking this method for the changes to appear.
-   * </p>
-   *
    * <h5>Animation Events</h5>
    * <p>
    * ojAnimateStart and ojAnimateEnd events are no longer supported.
@@ -17319,6 +17309,13 @@ var __oj_select_many_metadata =
    * The application should no longer need to use the &lt;oj-label-value> component to layout the form component. The application
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
+   *
+   * <h5>DescribedBy attribute</h5>
+   * <p>
+   * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+   * This attribute is not carried forward to the core pack component.
+   * </p>
+   *
    * @ojfragment selectCommon
    * @memberof oj.ojSelect
    */

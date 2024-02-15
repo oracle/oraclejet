@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -31,6 +31,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
     'textarea',
     'object'
   ];
+
+  /**
+   * Warning message to log when duplicate keys are detected.
+   */
+  DataCollectionUtils.WARN_DUPLICATE_KEYS_DETAIL =
+    'Duplicate keys detected. Though this can occur due to race conditions, it is likely an indication that the underlying data set contains non-unique keys.';
 
   /**
    * Number of times checkViewport occured during initial fetch before log a warning
@@ -185,6 +191,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
    */
   DataCollectionUtils.handleActionableTab = function (event, element) {
     var focusElems = DataCollectionUtils.getFocusableElementsInNode(element);
+    if (focusElems.length === 1) {
+      return true;
+    }
     if (focusElems.length > 0 && event.target === focusElems[focusElems.length - 1]) {
       // recycle to first focusable element in the cell
       focusElems[0].focus();
@@ -203,6 +212,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
    */
   DataCollectionUtils.handleActionablePrevTab = function (event, element) {
     var focusElems = DataCollectionUtils.getFocusableElementsInNode(element);
+    if (focusElems.length === 1) {
+      return true;
+    }
     if (focusElems.length > 0 && event.target === focusElems[0]) {
       // recycle to last focusable element in the cell
       focusElems[focusElems.length - 1].focus();
@@ -215,7 +227,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   /**
    * Determines whether or not clickthrough is disabled for the given event
    * @param {Event} event the event to check
-   * @param {Element} element the root element
+   * @param {Element} rootElement the root element
    * @returns {boolean} true if clickthrough is disabled for the given event. false otherwise
    * @private
    */
@@ -631,36 +643,55 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
       });
     }
 
+    var foundDuplicate = false;
     var eventIndexes = addEventDetail.indexes;
 
     // if beforeKeys are specified, they take precedence over index values.
     if (eventBeforeKeys.length === eventKeys.length) {
       // loop through the beforeKeys, and perform insertions as we find them.
       // some beforeKeys may be in our list of keys to add, so we need to continuously loop through our adds until no insertions are made.
-      // at that point, any left over rows are out of our rendered viewport, and we can safely ignore them.
+      // at that point, any left over rows are out of our rendered viewport, and we can safely ignore them in not isLoadAll.
       var leftOverLength = 0;
-      while (eventKeys.length !== leftOverLength) {
-        leftOverLength = eventKeys.length;
-        // loop through in reverse order as most DP impls have an increasing global index order in their events.
-        for (i = eventKeys.length - 1; i >= 0; i--) {
-          eventKey = eventKeys[i];
-          // ensure the key does not already exist in the data set.
-          if (!DataCollectionUtils.containsKey(returnKeys, eventKey)) {
-            beforeKey = eventBeforeKeys[i];
-            if (beforeKey != null) {
-              beforeIndex = DataCollectionUtils._indexOfKey(returnKeys, beforeKey);
-              if (beforeIndex !== -1) {
-                returnKeys.splice(beforeIndex, 0, eventKey);
+      var requiresAdditionalLooping = true;
+      while (requiresAdditionalLooping) {
+        while (eventKeys.length !== leftOverLength) {
+          leftOverLength = eventKeys.length;
+          // loop through in reverse order as most DP impls have an increasing global index order in their events.
+          for (i = eventKeys.length - 1; i >= 0; i--) {
+            eventKey = eventKeys[i];
+            // ensure the key does not already exist in the data set.
+            if (!DataCollectionUtils.containsKey(returnKeys, eventKey)) {
+              beforeKey = eventBeforeKeys[i];
+              if (beforeKey != null) {
+                beforeIndex = DataCollectionUtils._indexOfKey(returnKeys, beforeKey);
+                if (beforeIndex !== -1) {
+                  returnKeys.splice(beforeIndex, 0, eventKey);
+                  eventBeforeKeys.splice(i, 1);
+                  eventKeys.splice(i, 1);
+                }
+              } else if (isLoadAll) {
+                // null beforeKey is at the end of the data set, only add if isLoadAll
+                returnKeys.push(eventKey);
                 eventBeforeKeys.splice(i, 1);
                 eventKeys.splice(i, 1);
               }
-            } else if (isLoadAll) {
-              // null beforeKey is at the end of the data set, only add if isLoadAll
-              returnKeys.push(eventKey);
+            } else {
+              // if duplicate key detected, just remove that key from the set to be added
               eventBeforeKeys.splice(i, 1);
               eventKeys.splice(i, 1);
+              foundDuplicate = true;
             }
           }
+        }
+        // if before keys were not continuous, just do our best to add the remaining ones at the end when isLoadAll
+        if (isLoadAll && eventKeys.length !== 0) {
+          Logger.error('Invalid "beforeKey" value detected in "add" event.');
+          returnKeys.push(eventKeys[0]);
+          eventBeforeKeys.splice(0, 1);
+          eventKeys.splice(0, 1);
+          requiresAdditionalLooping = eventKeys.length !== 0;
+        } else {
+          requiresAdditionalLooping = false;
         }
       }
     } else if (eventIndexes != null && eventIndexes.length === eventKeys.length) {
@@ -689,6 +720,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
             // null index is at the end of the data set, only add if isLoadAll
             returnKeys.push(eventKey);
           }
+        } else {
+          foundDuplicate = true;
         }
       }
       // add the sorted items by index to ensure final index values are correct
@@ -696,8 +729,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
         var indexItem = indexItems[i];
         if (indexItem.index < returnKeys.length) {
           returnKeys.splice(indexItem.index, 0, indexItem.key);
-        } else if (indexItem.index === returnKeys.length && isLoadAll) {
-          // only add at the end if isLoadAll
+        } else if (isLoadAll) {
+          if (indexItem.index !== returnKeys.length) {
+            // log error if index values are not correct
+            Logger.error('Invalid "index" value detected in "add" event.');
+          }
+          // add remaining rows to the end when isLoadAll
           returnKeys.push(indexItem.key);
         }
       }
@@ -706,6 +743,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
       eventKeys.forEach(function (key) {
         returnKeys.push(key);
       });
+    }
+    if (foundDuplicate) {
+      Logger.warn(DataCollectionUtils.WARN_DUPLICATE_KEYS_DETAIL);
     }
 
     // return updated keys since any remaining beforeKey rows and index rows are not connected to the viewport
@@ -790,6 +830,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
     return (
       bounds.top <= bottom && bounds.bottom >= top && bounds.left <= right && bounds.right >= left
     );
+  };
+
+  /**
+   * Helper method to return the element that 'scroll' event listeners should be registered on based on the given
+   * scroller element. Specifically handles cases of document.body and document.documentElement
+   */
+  DataCollectionUtils.getScrollEventElement = function (scrollerElement) {
+    // listening on the window for 'scroll' events is the only way that works consistently across all browsers.
+    if (scrollerElement === document.body || scrollerElement === document.documentElement) {
+      return window;
+    }
+
+    return scrollerElement;
   };
 
   /**
@@ -966,6 +1019,44 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
     return parseInt(oj.AgentUtils.getAgentInfo().browserVersion, 10);
   };
 
+  DataCollectionUtils.doesAttributeExistInFilterCriterion = function (
+    attributeName,
+    filterCriterion
+  ) {
+    // handle text filter
+    if (filterCriterion.text) {
+      return true;
+    }
+    // handle Nested Filter
+    if (filterCriterion.attribute && filterCriterion.op && filterCriterion.op === '$exists') {
+      if (this.doesAttributeExistInFilterCriterion(attributeName, filterCriterion.criterion)) {
+        return true;
+      }
+    }
+    // handle AttributeExpression filter
+    else if (filterCriterion.attribute) {
+      if (filterCriterion.attribute === '*') {
+        return true;
+      } else if (filterCriterion.attribute === attributeName) {
+        return true;
+      }
+    }
+    // handle Attribute filter
+    // eslint-disable-next-line no-prototype-builtins
+    else if (filterCriterion.value && filterCriterion.value.hasOwnProperty(attributeName)) {
+      return true;
+    }
+    // handle Compound Filter
+    else if (filterCriterion.criteria && filterCriterion.criteria.length > 0) {
+      for (let i = 0; i < filterCriterion.criteria.length; i++) {
+        if (this.doesAttributeExistInFilterCriterion(attributeName, filterCriterion.criteria[i])) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
   const applyMergedInlineStyles = DataCollectionUtils.applyMergedInlineStyles;
   const applyRendererContent = DataCollectionUtils.applyRendererContent;
   const applyStyleObj = DataCollectionUtils.applyStyleObj;
@@ -1007,8 +1098,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   const isMetaKeyEvent = DataCollectionUtils.isMetaKeyEvent;
   const KEYBOARD_KEYS = DataCollectionUtils.KEYBOARD_KEYS;
   const CHECKVIEWPORT_THRESHOLD = DataCollectionUtils.CHECKVIEWPORT_THRESHOLD;
+  const WARN_DUPLICATE_KEYS_DETAIL = DataCollectionUtils.WARN_DUPLICATE_KEYS_DETAIL;
   const calculateOffsetTop = DataCollectionUtils.calculateOffsetTop;
   const isElementIntersectingScrollerBounds = DataCollectionUtils.isElementIntersectingScrollerBounds;
+  const getScrollEventElement = DataCollectionUtils.getScrollEventElement;
   const getEventDetail = DataCollectionUtils.getEventDetail;
   const isRequestIdleCallbackSupported = DataCollectionUtils.isRequestIdleCallbackSupported;
   const isChrome = DataCollectionUtils.isChrome;
@@ -1023,9 +1116,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   const isWebkit = DataCollectionUtils.isWebkit;
   const isBlink = DataCollectionUtils.isBlink;
   const getBrowserVersion = DataCollectionUtils.getBrowserVersion;
+  const doesAttributeExistInFilterCriterion = DataCollectionUtils.doesAttributeExistInFilterCriterion;
 
   exports.CHECKVIEWPORT_THRESHOLD = CHECKVIEWPORT_THRESHOLD;
   exports.KEYBOARD_KEYS = KEYBOARD_KEYS;
+  exports.WARN_DUPLICATE_KEYS_DETAIL = WARN_DUPLICATE_KEYS_DETAIL;
   exports.applyMergedInlineStyles = applyMergedInlineStyles;
   exports.applyRendererContent = applyRendererContent;
   exports.applyStyleObj = applyStyleObj;
@@ -1036,6 +1131,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   exports.disableAllFocusableElements = disableAllFocusableElements;
   exports.disableDefaultBrowserStyling = disableDefaultBrowserStyling;
   exports.disableElement = disableElement;
+  exports.doesAttributeExistInFilterCriterion = doesAttributeExistInFilterCriterion;
   exports.enableAllFocusableElements = enableAllFocusableElements;
   exports.getActionableElementsInNode = getActionableElementsInNode;
   exports.getAddEventKeysResult = getAddEventKeysResult;
@@ -1045,6 +1141,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   exports.getFocusableElementsInNode = getFocusableElementsInNode;
   exports.getLogicalChildPopup = getLogicalChildPopup;
   exports.getNoJQFocusHandlers = getNoJQFocusHandlers;
+  exports.getScrollEventElement = getScrollEventElement;
   exports.handleActionablePrevTab = handleActionablePrevTab;
   exports.handleActionableTab = handleActionableTab;
   exports.isAndroid = isAndroid;

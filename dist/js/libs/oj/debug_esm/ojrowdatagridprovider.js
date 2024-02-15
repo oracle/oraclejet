@@ -1,14 +1,14 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import { DataGridProviderRefreshEvent, DataGridProviderRemoveEvent, DataGridProviderAddEvent, DataGridProviderUpdateEvent } from 'ojs/ojdatagridprovider';
+import { DataGridProviderUpdateEvent, DataGridProviderRefreshEvent, DataGridProviderRemoveEvent, DataGridProviderAddEvent } from 'ojs/ojdatagridprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { getAddEventKeysResult } from 'ojs/ojdatacollection-common';
+import { doesAttributeExistInFilterCriterion, getAddEventKeysResult } from 'ojs/ojdatacollection-common';
 
 class RowDataGridProvider {
     constructor(dataProvider, options) {
@@ -44,8 +44,9 @@ class RowDataGridProvider {
             }
         };
         this.GridHeaderMetadata = class {
-            constructor(sortDirection, expanded, treeDepth, showRequired) {
+            constructor(sortDirection, filter, expanded, treeDepth, showRequired) {
                 this.sortDirection = sortDirection;
+                this.filter = filter;
                 this.expanded = expanded;
                 this.treeDepth = treeDepth;
                 this.showRequired = showRequired;
@@ -69,6 +70,8 @@ class RowDataGridProvider {
         };
         this.sortable = options?.sortable;
         this.sortCriteria = null;
+        this.filterable = options?.filterable;
+        this.filterCriteria = null;
         this.supportsFilteredRowCount =
             dataProvider.getCapability('fetchFirst')?.totalFilteredRowCount === 'exact';
         if (options?.expandedObservable) {
@@ -78,6 +81,9 @@ class RowDataGridProvider {
         }
         dataProvider.addEventListener('mutate', this._handleUnderlyingMutation.bind(this));
         dataProvider.addEventListener('refresh', this._handleUnderlyingRefresh.bind(this));
+        if (options?.itemMetadata) {
+            this.itemMetadata = options?.itemMetadata;
+        }
     }
     async fetchByOffset(parameters) {
         const rowOffset = parameters.rowOffset;
@@ -105,6 +111,7 @@ class RowDataGridProvider {
         this.updateKeyCache(fetchResult, rowOffset);
         this.setupLayout(fetchResult.results);
         this.sortCriteria = fetchResult.fetchParameters?.sortCriteria;
+        this.filterCriteria = fetchResult.fetchParameters?.filterCriterion;
         const columnOffset = parameters.columnOffset;
         const columnDone = columnOffset + parameters.columnCount >= this.columns.databody.length;
         const columnCount = Math.max(Math.min(parameters.columnCount, this.columns.databody.length - columnOffset), 0);
@@ -315,6 +322,13 @@ class RowDataGridProvider {
     setDataProvider(dataProvider) {
         this.dataProvider = dataProvider;
     }
+    updateItemMetadata(ranges) {
+        let updateEventDetail = {
+            ranges: ranges,
+            version: this.version
+        };
+        this.dispatchEvent(new DataGridProviderUpdateEvent(updateEventDetail));
+    }
     getDatabodyResults(data, rowStart, rowCount, columnStart, columnCount) {
         if (data?.length > 0) {
             const databody = [];
@@ -325,6 +339,12 @@ class RowDataGridProvider {
                     const value = { data: rowItem.data[columnKey] };
                     let metadata = { rowItem };
                     const item = new this.GridBodyItem(1, 1, rowStart + i, columnStart + j, metadata, value);
+                    if (this.itemMetadata && typeof this.itemMetadata.databody === 'function') {
+                        let itemMetadata = this.itemMetadata.databody(item);
+                        if (itemMetadata) {
+                            Object.assign(item.metadata, itemMetadata);
+                        }
+                    }
                     databody.push(item);
                 }
             }
@@ -364,6 +384,15 @@ class RowDataGridProvider {
         }
         return 'unsorted';
     }
+    getFilterState(index) {
+        let columnAttribute = this.columns.databody[index];
+        if (this.filterCriteria && columnAttribute) {
+            if (doesAttributeExistInFilterCriterion(columnAttribute, this.filterCriteria)) {
+                return 'filtered';
+            }
+        }
+        return 'filterable';
+    }
     getColumnHeaderResults(axis, offset, count) {
         if (this.columnHeaders?.[axis]) {
             const headers = [];
@@ -382,8 +411,16 @@ class RowDataGridProvider {
                     const startLevel = columnHeader.level;
                     const depth = columnHeader.depth;
                     let metadata;
-                    if (this.sortable && axis === 'column' && level + depth === levelCount) {
-                        metadata = new this.GridHeaderMetadata(this.getSortState(startIndex));
+                    let sortState;
+                    let filterState;
+                    if (axis === 'column' && level + depth === levelCount) {
+                        if (this.sortable) {
+                            sortState = this.getSortState(startIndex);
+                        }
+                        if (this.filterable) {
+                            filterState = this.getFilterState(startIndex);
+                        }
+                        metadata = new this.GridHeaderMetadata(sortState, filterState);
                     }
                     else {
                         metadata = {};

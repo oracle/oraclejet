@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1330,7 +1330,7 @@ TreeDataProviderContentHandler.prototype.afterRenderItem = function (
     ) {
       item.addClass('oj-collapsed');
 
-      var icon = document.createElement('a');
+      var icon = document.createElement('div');
       $(icon).addClass('oj-component-icon oj-clickable-icon-nocontext').addClass(collapseClass);
 
       content.prepend(icon); // @HTMLUpdateOK
@@ -1467,7 +1467,7 @@ TreeDataProviderContentHandler.prototype.Collapse = function (item) {
   // template engine should have already been loaded
   var templateEngine = this.getTemplateEngine();
   if (templateEngine) {
-    templateEngine.clean(item.get(0), this.m_widget.GetRootElement());
+    templateEngine.clean(item.get(0), this.m_widget.GetRootElement().get(0));
   }
 
   // remove all children nodes
@@ -1607,7 +1607,7 @@ TreeDataProviderContentHandler.prototype._replaceGroupItem = function (
     if (contentNode) {
       // explicit clean when inline template is used
       if (templateEngine) {
-        templateEngine.clean(groupItem, this.m_widget.GetRootElement());
+        templateEngine.clean(groupItem, this.m_widget.GetRootElement().get(0));
       }
       cellNode.removeChild(contentNode);
 
@@ -1692,7 +1692,7 @@ TreeDataProviderContentHandler.prototype._handleChildRefresh = function (keys) {
         var groupItem = elem.querySelector('.' + groupItemStyleClass);
         if (group != null && groupItem != null) {
           if (templateEngine != null) {
-            templateEngine.clean(group, this.m_widget.GetRootElement());
+            templateEngine.clean(group, this.m_widget.GetRootElement().get(0));
           }
           group.innerHTML = ''; // @HTMLUpdateOK
 
@@ -1972,13 +1972,23 @@ const _ojListView = _ListViewUtils.clazz(
       }
       this.ojContext._on(this.element[0].parentElement, {
         mousedown: function (event) {
-          // set this flag only when mousedown on oj-list-view padding
-          if (event.target === event.currentTarget) {
+          // set this flag when mousedown inside listview but except listview item
+          if (event.currentTarget.contains(event.target) && !self.FindItem(event.target)?.length) {
             self.isPaddingClicked = true;
-            setTimeout(() => {
-              self.isPaddingClicked = false;
-            }, 100);
           }
+        },
+        mouseup: function () {
+          // programmatically focus current active element when the flag is set and focus is lost
+          if (
+            self.isPaddingClicked &&
+            self.m_active &&
+            !self.element[0].parentElement.contains(document.activeElement)
+          ) {
+            self._makeFocusable(self.m_active.elem);
+            self.HighlightActive();
+            self._focusItem(self.m_active.elem);
+          }
+          self.isPaddingClicked = false;
         }
       });
       this.ojContext._on(this.element, {
@@ -2854,6 +2864,10 @@ const _ojListView = _ListViewUtils.clazz(
     setOptions: function (options, flags) {
       if (this.ShouldRefresh(options)) {
         // data updated, need to refresh
+        // we still need to handle conversion of legacy selection value
+        if (options.selection != null && options.selected == null) {
+          this.HandleSelectionOption(options);
+        }
         return true;
       }
 
@@ -2901,7 +2915,7 @@ const _ojListView = _ListViewUtils.clazz(
       }
 
       if (options.currentItem != null) {
-        var elem = this.FindElementByKey(options.currentItem);
+        var elem = this.FindElementByKey(options.currentItem, true);
         if (elem != null) {
           elem = $(elem);
           if (!this.SkipFocus(elem)) {
@@ -3076,17 +3090,8 @@ const _ojListView = _ListViewUtils.clazz(
 
           // selects each key
           for (var i = 0; i < newSelection.length; i++) {
-            var elem = this.FindElementByKey(newSelection[i]);
+            var elem = this.FindElementByKey(newSelection[i], true);
             if (elem != null) {
-              // check if the selected item is in the process of animation
-              if (
-                elem.tagName !== 'LI' &&
-                elem.parentElement &&
-                elem.parentElement.classList.contains('oj-listview-temp-item')
-              ) {
-                // eslint-disable-next-line no-param-reassign
-                elem = elem.parentElement;
-              }
               this._applySelection(elem, newSelection[i]);
             }
           }
@@ -3402,16 +3407,18 @@ const _ojListView = _ListViewUtils.clazz(
       container.append(status); // @HTMLUpdateOK
       this.m_status = status;
 
-      var accInfo = this._buildAccInfo();
-      container.append(accInfo); // @HTMLUpdateOK
-      this.m_accInfo = accInfo;
+      if (this.ShouldUseGridRole()) {
+        var accInfo = this._buildAccInfo();
+        container.append(accInfo); // @HTMLUpdateOK
+        this.m_accInfo = accInfo;
+
+        this._buildFocusCaptureDiv(container[0]);
+      }
 
       if (this.isExpandable()) {
         const accInfoExpandCollapse = this._buildAccExpdesc();
         container.append(accInfoExpandCollapse); // @HTMLUpdateOK
       }
-
-      this._buildFocusCaptureDiv(container[0]);
     },
 
     /**
@@ -3429,7 +3436,7 @@ const _ojListView = _ListViewUtils.clazz(
         .addClass(this.getStatusStyleClass())
         .attr({
           id: this._createSubId('status'),
-          role: 'status'
+          role: this.ShouldUseGridRole() ? 'status' : 'presentation'
         });
       root.append(icon); // @HTMLUpdateOK
 
@@ -3443,9 +3450,11 @@ const _ojListView = _ListViewUtils.clazz(
      */
     _buildAccInfo: function () {
       var root = $(document.createElement('div'));
+      // Due to JET-61285, changed role=status to aria-live=polite as suggested by apo
+      // It would fix the issue on iOS, but not MacOS
       root.addClass('oj-helper-hidden-accessible').attr({
         id: this._createSubId('info'),
-        role: 'status'
+        'aria-live': 'polite'
       });
       root.attr({ tabIndex: -1 });
 
@@ -3495,6 +3504,9 @@ const _ojListView = _ListViewUtils.clazz(
      * @private
      */
     _setAccInfoText: function (text) {
+      if (this.m_accInfo == null) {
+        return;
+      }
       if (this.m_clearAccInfoTimeout) {
         clearTimeout(this.m_clearAccInfoTimeout);
       }
@@ -3512,7 +3524,9 @@ const _ojListView = _ListViewUtils.clazz(
      * @private
      */
     _clearAccInfoText: function () {
-      this.m_accInfo.text('');
+      if (this.m_accInfo) {
+        this.m_accInfo.text('');
+      }
     },
 
     /**
@@ -4128,7 +4142,7 @@ const _ojListView = _ListViewUtils.clazz(
       var elem = document.getElementById(this._createSubId('empty'));
       if (elem) {
         if (this.m_engine) {
-          this.m_engine.clean(elem, this.GetRootElement());
+          this.m_engine.clean(elem, this.GetRootElement().get(0));
         }
         elem.parentNode.removeChild(elem);
       }
@@ -4177,11 +4191,14 @@ const _ojListView = _ListViewUtils.clazz(
       // check if current is specified
       var current = this.GetOption('currentItem');
       if (current != null) {
-        var elem = this.FindElementByKey(current);
+        var elem = this.FindElementByKey(current, true);
         if (elem == null) {
           // it's not valid anymore, reset current
           this.SetOption('currentItem', null);
-        } else if (this.m_active == null && !this.SkipFocus($(elem))) {
+        } else if (
+          (this.m_active == null || !oj.KeyUtils.equals(this.m_active.key, current)) &&
+          !this.SkipFocus($(elem))
+        ) {
           var active = document.activeElement;
           // update tab index and focus only if listview currently has focus
           if (active && this.element.get(0).contains(active)) {
@@ -4696,6 +4713,19 @@ const _ojListView = _ListViewUtils.clazz(
           // if _validateKeys returns null it means either 1) the key is not fetched yet and the DataProvider
           // is not capable of supporting fast (immediate) iteration speed on fetchFirst or 2) scrollToKey
           // behavior is set to 'never'
+          return;
+        }
+
+        // if the scroll to key is one that is to be fetched due to insert at the end
+        // we'll scroll to the bottom and kept it so that it will sync up after fetch
+        if (
+          this.m_contentHandler._isFetchFromInsert &&
+          position.key != null &&
+          this.m_contentHandler._isFetchFromInsert(position.key)
+        ) {
+          this._setScrollY(this._getScroller(), this._getScrollHeight());
+          this.m_scrollAndFetch = true;
+          this.m_scrollPosition = position;
           return;
         }
 
@@ -5290,18 +5320,43 @@ const _ojListView = _ListViewUtils.clazz(
 
       if (items.length === 0) {
         // we need to focus on empty text
-        var emptyText = this.element.children('.' + this.getEmptyTextStyleClass()).first();
-        if (emptyText.length === 0) {
-          emptyText = this.element.find('.oj-listview-no-data-container[role="row"]').first();
-        }
-        if (emptyText.length > 0) {
-          emptyText.children().first().attr('tabIndex', 0);
-          this._highlightElem(emptyText, 'oj-focus');
-          emptyText.children().first().focus();
-
-          this.RemoveRootElementTabIndex();
-        }
+        this._focusEmptyContent();
       }
+    },
+
+    /**
+     * Handles focusing on no data content
+     * @private
+     */
+    _focusEmptyContent: function () {
+      // we need to focus on empty text
+      var emptyText = this.element.children('.' + this.getEmptyTextStyleClass()).first();
+      if (emptyText.length === 0) {
+        emptyText = this.element.find('.oj-listview-no-data-container[role="row"]').first();
+      }
+      if (emptyText.length > 0) {
+        emptyText.children().first().attr('tabIndex', 0);
+        this._highlightElem(emptyText, 'oj-focus');
+        emptyText.children().first().focus();
+
+        this.RemoveRootElementTabIndex();
+      }
+    },
+
+    /**
+     * temporarily shift focus to an internal div inside listview
+     * @private
+     */
+    _tempShiftFocus: function () {
+      var container = this.getListContainer()[0];
+      var tempFocusDiv = container.querySelector('.oj-listview-temp-focus');
+      if (tempFocusDiv == null) {
+        tempFocusDiv = document.createElement('div');
+        tempFocusDiv.classList.add('oj-listview-temp-focus');
+        tempFocusDiv.setAttribute('tabindex', '-1');
+        container.appendChild(tempFocusDiv);
+      }
+      tempFocusDiv.focus();
     },
 
     /**
@@ -5423,14 +5478,6 @@ const _ojListView = _ListViewUtils.clazz(
      */
     HandleBlur: function (event) {
       this._clearFocusoutTimeout();
-
-      // focus on active element if oj-list-view padding is clicked
-      if (this.isPaddingClicked && this.m_active) {
-        this._makeFocusable(this.m_active.elem);
-        this.HighlightActive();
-        this._focusItem(this.m_active.elem);
-        return;
-      }
 
       // remove focus class on blur of expand/collapse icon
       if (this._isExpandCollapseIcon(event.target)) {
@@ -6184,7 +6231,7 @@ const _ojListView = _ListViewUtils.clazz(
      * @return {Element|null} the item element associated with the key
      * @protected
      */
-    FindElementByKey: function (key) {
+    FindElementByKey: function (key, checkIfAnimating) {
       if (this.m_keyElemMap != null) {
         var id = this.m_keyElemMap.get(key);
         if (id != null) {
@@ -6194,7 +6241,19 @@ const _ojListView = _ListViewUtils.clazz(
 
       // ask the content handler
       if (this.m_contentHandler) {
-        return this.m_contentHandler.FindElementByKey(key);
+        var elem = this.m_contentHandler.FindElementByKey(key);
+        // checkIfAnimating should always be set to true, but since this
+        // method is called a lot so making this optional to lower potential risk
+        // of regression
+        if (
+          checkIfAnimating &&
+          elem &&
+          elem.parentNode &&
+          elem.parentNode.classList.contains('oj-listview-temp-item')
+        ) {
+          elem = elem.parentNode;
+        }
+        return elem;
       }
       // this should not happen
       return null;
@@ -6958,13 +7017,25 @@ const _ojListView = _ListViewUtils.clazz(
     },
 
     /**
+     * Whether focus is in the process of shifting to item
+     */
+    isInShiftingFocus: function () {
+      return this.m_inShiftingFocus === undefined ? false : this.m_inShiftingFocus;
+    },
+
+    /**
      * Put browser focus on item (or children of item)
      * @private
      */
     _focusItem: function (item) {
       var elem = this.getFocusItem(item).get(0);
       if (elem) {
-        elem.focus();
+        try {
+          this.m_inShiftingFocus = true;
+          elem.focus();
+        } finally {
+          this.m_inShiftingFocus = false;
+        }
       }
     },
 
@@ -7174,8 +7245,6 @@ const _ojListView = _ListViewUtils.clazz(
      * @private
      */
     _setSelectionOption: function (newValue, event, selectedElems, firstSelectedItemData) {
-      var value = { key: null, data: null };
-
       var selection = KeySetUtils.toArray(newValue);
 
       // check if the value has actually changed, based on key
@@ -7184,46 +7253,10 @@ const _ojListView = _ListViewUtils.clazz(
 
       // NavList firstSelectedItem would be undefined
       if (firstSelectedItem != null) {
-        // first condition is if new value is empty and existing item is non null
-        // second condition is if new value is not empty and does not match the existing item
-        if (
-          (selection.length === 0 && firstSelectedItem.key != null) ||
-          !(
-            selection[0] === firstSelectedItem.key ||
-            oj.Object.compareValues(selection[0], firstSelectedItem.key)
-          )
-        ) {
-          // update firstSelectedItem also
-          if (selection.length > 0) {
-            value = {
-              key: selection[0],
-              data:
-                firstSelectedItemData != null
-                  ? firstSelectedItemData
-                  : this._getLocalData(selection[0])
-            };
-          }
-
-          this.SetOption('firstSelectedItem', value, {
-            _context: {
-              originalEvent: event,
-              internalSet: true
-            },
-            changed: true
-          });
-        } else if (firstSelectedItem.data === undefined) {
-          if (firstSelectedItemData == null) {
-            // eslint-disable-next-line no-param-reassign
-            firstSelectedItemData = this._getLocalData(selection[0]);
-          }
-          value = { key: firstSelectedItem.key, data: firstSelectedItemData };
-          this.SetOption('firstSelectedItem', value, {
-            _context: {
-              originalEvent: null,
-              internalSet: true
-            },
-            changed: true
-          });
+        if (newValue.isAddAll()) {
+          this._updateFirstSelectedItem(newValue);
+        } else {
+          this._handleFirstSelectedItem(firstSelectedItem, selection, event, firstSelectedItemData);
         }
       }
 
@@ -7256,6 +7289,58 @@ const _ojListView = _ListViewUtils.clazz(
         },
         changed: true
       });
+    },
+
+    // used by _setSelectionOption
+    _handleFirstSelectedItem: function (
+      firstSelectedItem,
+      selection,
+      event,
+      firstSelectedItemData
+    ) {
+      var value = { key: null, data: null };
+
+      // first condition is if new value is empty and existing item is non null
+      // second condition is if new value is not empty and does not match the existing item
+      if (
+        (selection.length === 0 && firstSelectedItem.key != null) ||
+        !(
+          selection[0] === firstSelectedItem.key ||
+          oj.Object.compareValues(selection[0], firstSelectedItem.key)
+        )
+      ) {
+        // update firstSelectedItem also
+        if (selection.length > 0) {
+          value = {
+            key: selection[0],
+            data:
+              firstSelectedItemData != null
+                ? firstSelectedItemData
+                : this._getLocalData(selection[0])
+          };
+        }
+
+        this.SetOption('firstSelectedItem', value, {
+          _context: {
+            originalEvent: event,
+            internalSet: true
+          },
+          changed: true
+        });
+      } else if (firstSelectedItem.data === undefined) {
+        if (firstSelectedItemData == null) {
+          // eslint-disable-next-line no-param-reassign
+          firstSelectedItemData = this._getLocalData(selection[0]);
+        }
+        value = { key: firstSelectedItem.key, data: firstSelectedItemData };
+        this.SetOption('firstSelectedItem', value, {
+          _context: {
+            originalEvent: null,
+            internalSet: true
+          },
+          changed: true
+        });
+      }
     },
 
     /**
@@ -7642,9 +7727,13 @@ const _ojListView = _ListViewUtils.clazz(
       var item = this.m_active.elem;
       var key = this.m_active.key;
 
+      var isAll = selected.isAddAll();
       if (selected.has(key)) {
         // do not deselect the item if it's the last selected item and selection is required
-        if (skipIfNotSelected || (selected.values().size === 1 && this._isSelectionRequired())) {
+        if (
+          skipIfNotSelected ||
+          (!isAll && selected.values().size === 1 && this._isSelectionRequired())
+        ) {
           return;
         }
 
@@ -7652,7 +7741,7 @@ const _ojListView = _ListViewUtils.clazz(
         this._unhighlightElem(item, 'oj-selected');
         selected = selected.delete([key]);
 
-        if (selected.values().size === 0) {
+        if (!isAll && selected.values().size === 0) {
           this.m_selectionFrontier = null;
         }
       } else if (this.IsSelectable(item[0])) {
@@ -7670,9 +7759,11 @@ const _ojListView = _ListViewUtils.clazz(
       }
 
       var selectedItems = [];
-      selected.values().forEach(function (aKey) {
-        selectedItems.push(this.FindElementByKey(aKey));
-      }, this);
+      if (!isAll) {
+        selected.values().forEach(function (aKey) {
+          selectedItems.push(this.FindElementByKey(aKey));
+        }, this);
+      }
 
       // trigger option change
       this._setSelectionOption(selected, event, selectedItems);
@@ -7724,11 +7815,14 @@ const _ojListView = _ListViewUtils.clazz(
           key === 'F2' ||
           key === this.F2_KEY
         ) {
+          // force focus back on the active cell
+          this._focusItem(current);
+
+          // exit actionable mode should be done after focusItem due to JET-63051
           this._exitActionableMode();
 
-          // force focus back on the active cell
+          // set focus style after exit actioinable due to JET-63292
           this.HighlightActive();
-          this._focusItem(current);
 
           // make sure active item has tabindex set
           this._setTabIndex(current);
@@ -10650,8 +10744,8 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * @default "auto"
      * @ojvalue {string} "auto" The behavior is determined by the component.  By default the behavior is the same as "capability" except
      *                          when legacy TableDataSource/TreeDataSource is used, in which case the behavior is the same as "always".
-     * @ojvalue {string} "capability" ListView will only scroll to a position based on an item key if either the item has already been fetched
-     *                                or if the associated DataProvider supports 'immediate' iterationSpeed for 'fetchFirst' capability.
+     * @ojvalue {string} "capability" ListView will only scroll to a position based on an item key if associated DataProvider
+     *                                supports 'immediate' iterationSpeed for 'fetchFirst' capability.
      * @ojvalue {string} "always" ListView will scroll to a position based on an item key as long as the key is valid.
      * @ojvalue {string} "never" ListView will not change the scroll position if the request is based on an item key.
      *
@@ -12070,7 +12164,6 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  * @memberof! oj.ojListView
  * @instance
  * @type {Element|string}
- * @default null
  * @ojsignature {target:"Type", value:"? | Element | keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string"}
  */
 

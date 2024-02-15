@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2874,6 +2874,8 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
 
       this._unregisterResizeListener(rootElement[0]);
 
+      this.element[0].classList.remove('oj-dialog-small-screen');
+
       this._destroyResizable();
       if (isSheet) {
         // turn off body overflow for animation duration in 'sheet' mode
@@ -3045,6 +3047,11 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       if (!isSheetDisplay && this.options.dragAffordance === 'title-bar' && $.fn.draggable) {
         this._makeDraggable();
       }
+
+      if (!isSheetDisplay && this._isSmallScreen()) {
+        this.element[0].classList.add('oj-dialog-small-screen');
+      }
+
       // normalize alignments, so that start and end keywords work as expected.
       var isRtl = this._GetReadingDirection() === 'rtl';
       var position = this.options.position;
@@ -3689,7 +3696,7 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
     },
     _isFullDisplay: function () {
       if (!this._isSheetDisplay()) {
-        // full display supported on Reddwood mobile only
+        // full display supported on Redwood mobile only
         return false;
       }
       var height = window.innerHeight;
@@ -3697,6 +3704,13 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       var elemHeight = this.element[0].offsetHeight;
       var elemWidth = this.element[0].offsetWidth;
       if (elemHeight >= height * 0.95 && elemWidth >= width * 0.95) {
+        return true;
+      }
+      return false;
+    },
+    /* need to override max-height/width on small screens */
+    _isSmallScreen: function () {
+      if (window.innerHeight < 450 || window.innerWidth < 300) {
         return true;
       }
       return false;

@@ -104,7 +104,7 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
     };
     timeCursor: 'on' | 'off';
     tooltip: {
-        renderer: ((context: ojGantt.TooltipContext<K2, D2, K3, D3>) => ({
+        renderer: ((context: ojGantt.TooltipRendererContext<K2, D2, K3, D3>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
@@ -517,6 +517,19 @@ export namespace ojGantt {
         rowData: Row<K2, D2, K3, D3>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type RowAxisLabelTemplateContext<K2 = any, D2 = any, K3 = any, D3 = any> = {
+        componentElement: Element;
+        data: D3 | null;
+        depth: number;
+        itemData: D2[];
+        leaf: boolean;
+        maxHeight: number;
+        maxWidth: number;
+        parentElement: Element;
+        parentKey: any;
+        rowData: Row<K2, D2, K3, D3>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type RowMappingTemplateContext<K3, D3> = {
         data: D3;
         depth: number;
@@ -633,6 +646,15 @@ export namespace ojGantt {
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K2 = any, D2 = any, K3 = any, D3 = any> = {
+        color: string;
+        componentElement: Element;
+        data: RowTask<K2, D2>;
+        itemData: D2;
+        parentElement: Element;
+        rowData: Row<K2, D2, K3, D3>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipRendererContext<K2 = any, D2 = any, K3 = any, D3 = any> = {
         color: string;
         componentElement: Element;
         data: RowTask<K2, D2>;
@@ -776,7 +798,7 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
     };
     timeCursor: 'on' | 'off';
     tooltip: {
-        renderer: ((context: ojGantt.TooltipContext<K2, D2, K3, D3>) => ({
+        renderer: ((context: ojGantt.TooltipRendererContext<K2, D2, K3, D3>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
@@ -1415,37 +1437,95 @@ export namespace GanttElement {
         rowData: ojGantt.Row<K2, D2, K3, D3>;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type RowShortDescContext<K3, D3> = {
-        data: ojGantt.Row<any, any, K3, D3>;
-        itemData: D3;
+    type RowMappingTemplateContext<K3, D3> = {
+        data: D3;
+        depth: number;
+        index: number;
+        key: K3;
+        leaf: boolean;
+        parentKey: K3;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type RowTemplateContext = {
+    type RowTask<K2 = any, D2 = any> = {
+        attribute?: {
+            rendered?: 'on' | 'off';
+            shortDesc?: (string | ((context: ojGantt.TaskShortDescContext<K2, D2>) => string));
+            svgClassName?: string;
+            svgStyle?: Partial<CSSStyleDeclaration>;
+        };
+        baseline?: {
+            borderRadius?: string;
+            end?: string;
+            height?: number;
+            start?: string;
+            svgClassName?: string;
+            svgStyle?: Partial<CSSStyleDeclaration>;
+        };
+        borderRadius?: string;
+        downtime?: {
+            end?: string;
+            start?: string;
+            svgClassName?: string;
+            svgStyle?: Partial<CSSStyleDeclaration>;
+        };
+        end?: string;
+        height?: number;
+        id: K2;
+        label?: string;
+        labelPosition?: 'start' | 'innerCenter' | 'innerStart' | 'innerEnd' | 'end' | 'none';
+        labelStyle?: Partial<CSSStyleDeclaration>;
+        overlap?: {
+            behavior?: 'stack' | 'stagger' | 'overlay' | 'auto';
+        };
+        overtime?: {
+            end?: string;
+            start?: string;
+            svgClassName?: string;
+            svgStyle?: Partial<CSSStyleDeclaration>;
+        };
+        progress?: {
+            borderRadius?: string;
+            height?: string;
+            svgClassName?: string;
+            svgStyle?: Partial<CSSStyleDeclaration>;
+            value?: number;
+        };
+        shortDesc?: (string | ((context: ojGantt.TaskShortDescContext<K2, D2>) => string));
+        start?: string;
+        svgClassName?: string;
+        svgStyle?: Partial<CSSStyleDeclaration>;
+        type?: 'normal' | 'milestone' | 'summary' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TaskContentTemplateContext<K2 = any, D2 = any, K3 = any, D3 = any> = {
+        content: {
+            height: number;
+            width: number;
+        };
+        data: ojGantt.RowTask<K2, D2>;
+        itemData: D2;
+        rowData: ojGantt.Row<K2, D2, K3, D3>;
+        state: {
+            expanded: boolean;
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+        };
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TaskShortDescContext<K2 = any, D2 = any, K3 = any, D3 = any> = {
+        data: ojGantt.RowTask<K2, D2>;
+        itemData: D2;
+        rowData: ojGantt.Row<K2, D2, K3, D3>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K2 = any, D2 = any, K3 = any, D3 = any> = {
+        color: string;
         componentElement: Element;
-        id: any;
-        index: number;
-        tasks: Array<{
-            data: object;
-            index: number;
-            key: any;
-            parentData: object[];
-            parentKey: any;
-        }>;
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type TaskMappingTemplateContext<D2, D3> = {
-        data: D2;
-        index: number;
-        rowData: D3;
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type TaskTemplateContext = {
-        componentElement: Element;
-        data: object;
-        index: number;
-        key: any;
-        parentData: object[];
-        parentKey: any;
+        data: ojGantt.RowTask<K2, D2>;
+        itemData: D2;
+        parentElement: Element;
+        rowData: ojGantt.Row<K2, D2, K3, D3>;
     };
 }
 export namespace GanttDependencyElement {

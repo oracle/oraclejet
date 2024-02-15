@@ -6,7 +6,7 @@ var ExceptionType;
     ExceptionType["THROW_ERROR"] = "error";
     ExceptionType["WARN_IF_DISABLED"] = "warn_if_disabled";
     ExceptionType["LOG_WARNING"] = "warning";
-})(ExceptionType = exports.ExceptionType || (exports.ExceptionType = {}));
+})(ExceptionType || (exports.ExceptionType = ExceptionType = {}));
 var ExceptionKey;
 (function (ExceptionKey) {
     ExceptionKey["INVALID_PROPS_TYPE"] = "invalid_props_type";
@@ -24,6 +24,7 @@ var ExceptionKey;
     ExceptionKey["RESERVED_HTMLFOR_PROP"] = "reserved_htmlfor_prop";
     ExceptionKey["RESERVED_CLASS_PROP"] = "reserved_class_prop";
     ExceptionKey["RESERVED_STYLE_PROP"] = "reserved_style_prop";
+    ExceptionKey["INVALID_OBSERVED_EVENT_HANDLER"] = "invalid_observed_event_handler";
     ExceptionKey["DUPLICATE_ROWRITEBACK_PROP"] = "duplicate_rowriteback_prop";
     ExceptionKey["DUPLICATE_PROP_ROWRITEBACK"] = "duplicate_prop_rowriteback";
     ExceptionKey["WRITEBACK_NO_PROP_MATCH"] = "writeback_no_prop_match";
@@ -47,9 +48,12 @@ var ExceptionKey;
     ExceptionKey["UNSUPPORTED_IMPLICITBUSYCONTEXT"] = "unsupported_implicitbusycontext";
     ExceptionKey["UNEXPECTED_APIDOC_EXCEPTION"] = "unexpected_apidoc_exception";
     ExceptionKey["MISSING_METHOD_SIGNATURES"] = "missing_method_signatures";
+    ExceptionKey["DEPRECATED_METHODS_METADATA"] = "deprecated_methods_metadata";
     ExceptionKey["IGNORED_OJMETADATA_NAME"] = "ignored_ojmetadata_name";
+    ExceptionKey["IGNORED_OJMETADATA_MAIN"] = "ignored_ojmetadata_main";
     ExceptionKey["INCONSISTENT_PACK_VERSION"] = "inconsistent_pack_version";
     ExceptionKey["INCONSISTENT_PACK_JETVERSION"] = "inconsistent_pack_jetversion";
+    ExceptionKey["INCONSISTENT_PACK_DEPENDENCYSCOPE"] = "inconsistent_pack_dependencyscope";
     ExceptionKey["INCONSISTENT_PACK_LICENSE"] = "inconsistent_pack_license";
     ExceptionKey["INCONSISTENT_PACK_PACKNAME"] = "inconsistent_pack_packname";
     ExceptionKey["IGNORED_OJMETADATA_INTERNALNAME"] = "ignored_ojmetadata_internalname";
@@ -64,7 +68,10 @@ var ExceptionKey;
     ExceptionKey["INVALID_STYLEVARIABLESET"] = "invalid_stylevariableset";
     ExceptionKey["MALFORMED_METADATA_VALUE"] = "malformed_metadata_value";
     ExceptionKey["TRIMMED_METADATA_STRING"] = "trimmed_metadata_string";
-})(ExceptionKey = exports.ExceptionKey || (exports.ExceptionKey = {}));
+    ExceptionKey["UNRECOGNIZED_OJMETADATA_KEY"] = "unrecognized_ojmetadata_key";
+    ExceptionKey["INCORRECT_METADATA_VALUE_TYPE"] = "incorrect_metadata_value_type";
+    ExceptionKey["DT_REQUIRED_HAS_DEFAULT_VALUE"] = "dt_required_has_default_value";
+})(ExceptionKey || (exports.ExceptionKey = ExceptionKey = {}));
 class TransformerError extends Error {
     constructor(vcompName, message, errNode) {
         const header = TransformerError.getMsgHeader(vcompName, errNode);
@@ -101,6 +108,6 @@ class TransformerError extends Error {
         }
     }
 }
-TransformerError._disabledList = null;
 exports.TransformerError = TransformerError;
+TransformerError._disabledList = null;
 //# sourceMappingURL=TransformerError.js.map

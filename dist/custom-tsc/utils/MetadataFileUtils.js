@@ -26,7 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getInstalledDependenciesPackMap = exports.getComponentJSONObj = exports.getParentDirPath = void 0;
 const ts = __importStar(require("typescript"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
-const path_1 = require("path");
+const path = __importStar(require("path"));
 function getParentDirPath(tsFileName) {
     let rtnParentDirPath = null;
     const pathSegments = tsFileName.split('/');
@@ -49,7 +49,7 @@ function getInstalledDependenciesPackMap(program) {
             const jsonObj = getComponentJSONObj(`${installedDependenciesDir}/${depName}`);
             if (jsonObj) {
                 const depPack = new MetaTypes.VCompPack(jsonObj);
-                if (depPack.isJETPack()) {
+                if (depPack.isJETPack() || depPack.isReferenceComponent()) {
                     rtnInstalledDependenciesMap.set(depName, depPack);
                 }
             }
@@ -73,11 +73,11 @@ function _getJSONObj(jsonFileName) {
 }
 function _getInstalledDependenciesDirPath(program) {
     let rtnInstalledDependenciesDirPath = null;
-    const relLookupDirs = program.getCompilerOptions().rootDirs ?? [
-        program.getCompilerOptions().rootDir
-    ];
-    const lookupDirs = relLookupDirs.map((dir) => path_1.posix.resolve(dir));
-    lookupDirs.push(path_1.posix.resolve());
+    const relLookupDirs = program.getCompilerOptions().rootDirs ?? program.getCompilerOptions().rootDir
+        ? [program.getCompilerOptions().rootDir]
+        : [];
+    const lookupDirs = relLookupDirs.map((dir) => path.posix.resolve(dir));
+    lookupDirs.push(path.posix.resolve());
     for (const dir of lookupDirs) {
         const ojetConfigFileName = `${dir}/oraclejetconfig.json`;
         const ojetConfig = _getJSONObj(ojetConfigFileName);

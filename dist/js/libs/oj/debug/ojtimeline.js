@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1282,7 +1282,7 @@ var __oj_timeline_series_metadata =
   /**
    * <p>The <code class="prettyprint">itemBubbleContentTemplate</code> slot is used to specify custom item bubble content.
    *    The slot content must be a single &lt;template> element.
-   * The item bubble is defined as the content within the bubble container of a timeline item. This template is restricted to non-duration timeline items.</p>
+   * The item bubble is defined as the content within the bubble container of a timeline item.</p>
    * <p>Note that the (0,0) point is at the top left corner of the item bubble container in left-to-right reading direction,
    *    and at the top right corner in right-to-left reading direction.
    * Depending on the custom content, the developer will need to adjust the positioning based on use case.

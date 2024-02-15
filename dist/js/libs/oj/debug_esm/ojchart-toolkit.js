@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -3229,8 +3229,9 @@ const DvtChartStyleUtils = {
       }
     }
 
-    if (displayed == 'on') return true;
-    else if (displayed == 'off') return false;
+    if (displayed === 'on') return true;
+    else if (displayed === 'off') return false;
+    else if (DvtChartTypeUtils.isCombo(chart) && displayed === 'auto') return true;
     else
       return (
         DvtChartTypeUtils.isScatterBubble(chart) ||
@@ -4537,13 +4538,27 @@ class DvtChartDataCursor extends Container {
     var bRtl = Agent.isRightToLeft(this.getCtx());
     var tooltipBounds;
 
+    // convert local coords to scaled stage coord for tooltip positioning
+    // however datacursor and marker position are in local coords for svg rendering.
+
+    var scaledPlotXY = this._parent.localToStage(new Point(plotAreaBounds.x, plotAreaBounds.y));
+    var scaledPlotX2Y2 = this._parent.localToStage(
+      new Point(plotAreaBounds.x + plotAreaBounds.w, plotAreaBounds.y + plotAreaBounds.h)
+    );
+    var scaledDataXY = this._parent.localToStage(new Point(dataX, dataY));
+    var scaledCoord = this._parent.localToStage(
+      new Point(bHoriz ? 0 : lineCoord, bHoriz ? lineCoord : 0)
+    );
+
+    var scaledLineCoord = bHoriz ? scaledCoord.y : scaledCoord.x;
+
     if (text != null && text != '') {
       // First render the datatip to retrieve its size.
       var stagePageCoords = this.getCtx().getStageAbsolutePosition();
       var tooltipManager = this.getCtx().getTooltipManager(DvtChartDataCursor.TOOLTIP_ID);
       tooltipManager.showDatatip(
-        dataX + stagePageCoords.x,
-        dataY + stagePageCoords.y,
+        scaledDataXY.x + stagePageCoords.x,
+        scaledDataXY.y + stagePageCoords.y,
         text,
         dataColor,
         false
@@ -4555,28 +4570,38 @@ class DvtChartDataCursor extends Container {
       var tooltipX, tooltipY; // tooltipX and tooltipY in the stage coordinate space
       if (bHoriz) {
         tooltipX = bRtl
-          ? plotAreaBounds.x - 0.75 * tooltipBounds.w
-          : plotAreaBounds.x + plotAreaBounds.w - tooltipBounds.w / 4;
-        tooltipY = lineCoord - tooltipBounds.h / 2;
+          ? scaledPlotXY.x - 0.75 * tooltipBounds.w
+          : scaledPlotXY.x + Math.abs(scaledPlotXY.x - scaledPlotX2Y2.x) - tooltipBounds.w / 4;
+        tooltipY = scaledLineCoord - tooltipBounds.h / 2;
 
         // Add a buffer between the tooltip and data point. This may be rejected in positionTip due to viewport location.
-        if (!bRtl && tooltipX - dataX < markerSizeOuter) tooltipX = dataX + markerSizeOuter;
-        else if (bRtl && dataX - (tooltipX + tooltipBounds.w) < markerSizeOuter)
-          tooltipX = dataX - markerSizeOuter - tooltipBounds.w;
+        if (!bRtl && tooltipX - scaledDataXY.x < markerSizeOuter)
+          tooltipX = scaledDataXY.x + markerSizeOuter;
+        else if (bRtl && scaledDataXY.x - (tooltipX + tooltipBounds.w) < markerSizeOuter)
+          tooltipX = scaledDataXY.x - markerSizeOuter - tooltipBounds.w;
       } else {
-        tooltipX = lineCoord - tooltipBounds.w / 2;
-        tooltipY = plotAreaBounds.y - 0.75 * tooltipBounds.h;
+        tooltipX = scaledLineCoord - tooltipBounds.w / 2;
+        tooltipY = scaledPlotXY.y - 0.75 * tooltipBounds.h;
 
         // Add a buffer between the tooltip and data point. This may be rejected in positionTip due to viewport location.
         if (dataY - (tooltipY + tooltipBounds.h) < markerSizeOuter)
           tooltipY = dataY - markerSizeOuter - tooltipBounds.h;
       }
       tooltipManager.positionTip(tooltipX + stagePageCoords.x, tooltipY + stagePageCoords.y);
-
       // Finally retrieve the rendered bounds to calculate the attachment point for the cursor line.
       tooltipBounds = tooltipManager.getTooltipBounds(); // tooltipBounds is in the page coordinate space
       tooltipBounds.x -= stagePageCoords.x;
       tooltipBounds.y -= stagePageCoords.y;
+
+      // adjust the tooltipBounds according to the scale so that data cursor length is correct.
+      var x1y1 = this._parent.stageToLocal(new Point(tooltipBounds.x, tooltipBounds.y));
+      var x2y2 = this._parent.stageToLocal(
+        new Point(tooltipBounds.x + tooltipBounds.w, tooltipBounds.y + tooltipBounds.h)
+      );
+      tooltipBounds.x = x1y1.x;
+      tooltipBounds.y = x1y1.y;
+      tooltipBounds.w = Math.abs(x2y2.x - x1y1.x);
+      tooltipBounds.h = Math.abs(x2y2.y - x1y1.y);
     }
 
     // Position the cursor line. Use 1px fudge factor to ensure that the line connects to the tooltip.
@@ -4591,7 +4616,8 @@ class DvtChartDataCursor extends Container {
         x2Pos = plotAreaBounds.x + plotAreaBounds.w;
       } else {
         x1Pos = plotAreaBounds.x;
-        x2Pos = tooltipBounds ? tooltipBounds.x + 1 : plotAreaBounds.x + plotAreaBounds.w;
+        const plotAreaEnd = plotAreaBounds.x + plotAreaBounds.w;
+        x2Pos = Math.min(tooltipBounds ? tooltipBounds.x + 1 : plotAreaEnd, plotAreaEnd);
       }
       this._cursorLine.setX1(x1Pos);
       this._cursorLine.setX2(x2Pos);
@@ -12115,7 +12141,14 @@ const DvtChartEventUtils = {
       var dataPos = peer.getDataPosition();
 
       if (dataPos) {
-        dataPos = chart.getPlotArea().localToStage(dataPos);
+        // since marquee coords are converted from (possibly scaled) stage to local (unscaled svg) coords,
+        // we want to get the unscaled stage coord here.
+        dataPos = chart
+          .getPlotArea()
+          .ConvertCoordSpaceRect(
+            { x: dataPos.x, y: dataPos.y, h: 0, w: 0 },
+            chart.getCtx().getStage()
+          );
         var withinX = event.x == null || (dataPos.x >= event.x && dataPos.x <= event.x + event.w);
         var withinY = event.y == null || (dataPos.y >= event.y && dataPos.y <= event.y + event.h);
         if (withinX && withinY) boundedPeers.push(peer);
@@ -17959,7 +17992,10 @@ class DvtChartEventManager extends EventManager {
       if (this.GetLogicalObjectAndDisplayable(event.target).displayable instanceof IconButton)
         // don't show DC over buttons
         this._dataCursorHandler.processEnd();
-      else this._dataCursorHandler.processMove(relPos);
+      else {
+        relPos = this._component.stageToLocal(relPos);
+        this._dataCursorHandler.processMove(relPos);
+      }
     }
 
     // Update the cursor
@@ -17979,7 +18015,10 @@ class DvtChartEventManager extends EventManager {
     var axisSpace = this._chart.__getAxisSpace();
     if (axisSpace) this.setDragButtonsVisible(axisSpace.containsPoint(relPos.x, relPos.y));
 
-    if (this._dataCursorHandler) this._dataCursorHandler.processOut(relPos);
+    if (this._dataCursorHandler) {
+      relPos = this._component.stageToLocal(relPos);
+      this._dataCursorHandler.processMove(relPos);
+    }
 
     var obj = this.GetLogicalObject(event.target);
     if (!obj) return;
@@ -18002,7 +18041,10 @@ class DvtChartEventManager extends EventManager {
         this._callback.call(this._callbackObj, panZoomEvent);
 
         // Update the data cursor since the viewport has changed
-        if (this._dataCursorHandler) this._dataCursorHandler.processMove(relPos);
+        if (this._dataCursorHandler) {
+          relPos = this._component.stageToLocal(relPos);
+          this._dataCursorHandler.processMove(relPos);
+        }
       }
     }
   }

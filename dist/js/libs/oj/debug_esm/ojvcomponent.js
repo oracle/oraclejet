@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,85 +8,101 @@
 import { forwardRef } from 'preact/compat';
 import { jsx } from 'preact/jsx-runtime';
 import { h, options, Component, createRef, render, Fragment, cloneElement, createContext } from 'preact';
-import { JetElementError, CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, toSymbolizedValue, ElementState } from 'ojs/ojcustomelement-utils';
+import { JetElementError, CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, toSymbolizedValue, LifecycleElementState } from 'ojs/ojcustomelement-utils';
 import { getElementRegistration, isElementRegistered, isVComponent, getElementDescriptor, registerElement as registerElement$1 } from 'ojs/ojcustomelement-registry';
 import { useLayoutEffect, useContext, useMemo } from 'preact/hooks';
 import { EnvironmentContext, RootEnvironmentProvider } from '@oracle/oraclejet-preact/UNSAFE_Environment';
 import oj from 'ojs/ojcore-base';
-import { OJ_SLOT_REMOVE, patchSlotParent } from 'ojs/ojpreact-patch';
+import { patchSlotParent, OJ_SLOT_REMOVE } from 'ojs/ojpreact-patch';
 import { getPropertyMetadata, getComplexPropertyMetadata, checkEnumValues, getFlattenedAttributes, deepFreeze } from 'ojs/ojmetadatautils';
 import { LayerContext } from '@oracle/oraclejet-preact/UNSAFE_Layer';
-import { getLayerHost } from 'ojs/ojpopupcore';
 import { getLocale } from 'ojs/ojconfig';
 import Context from 'ojs/ojcontext';
-import { matchTranslationBundle } from '@oracle/oraclejet-preact/utils/UNSAFE_matchTranslationBundle';
-import supportedLocales from '@oracle/oraclejet-preact/resources/nls/supportedLocales';
+import { getTranslationBundlePromiseFromLoader } from 'ojs/ojtranslationbundleutils';
 import { warn } from 'ojs/ojlogger';
 
 let _slotIdCount = 0;
 let _originalCreateElement;
+const _ACTIVE_SLOTS_PER_ELEMENT = new Map();
 const _ACTIVE_SLOTS = new Map();
 const _OJ_SLOT_ID = Symbol();
 const _OJ_SLOT_PREFIX = '@oj_s';
 function convertToVNode(hostElement, node, handleSlotMount, handleSlotUnmount) {
     const key = _getSlotKey(node);
-    const ref = _getRef(hostElement, handleSlotMount, handleSlotUnmount);
-    return h(() => {
-        _registerSlot(key, node);
-        useLayoutEffect(() => _unregisterSlot(key));
-        return h(key, { ref, key });
-    }, null);
-}
-function _registerSlot(id, node) {
-    if (_ACTIVE_SLOTS.size === 0) {
-        _patchCreateElement();
+    let _refCount = 0;
+    function _incrementRefCount() {
+        _refCount++;
     }
-    _ACTIVE_SLOTS.set(id, node);
-}
-function _unregisterSlot(id) {
-    _ACTIVE_SLOTS.delete(id);
-    if (_ACTIVE_SLOTS.size === 0) {
-        _restoreCreateElement();
-    }
-}
-function _getSlotKey(node) {
-    let key = node[_OJ_SLOT_ID];
-    if (key === undefined) {
-        key = _OJ_SLOT_PREFIX + _slotIdCount++;
-        node[_OJ_SLOT_ID] = key;
-    }
-    return key;
-}
-function _getRef(hostElement, handleSlotMount, handleSlotUnmount) {
-    let _count = 0;
-    let slotNode;
-    const slotRemoveHandler = () => {
-        if (_count === 0) {
-            slotNode.remove();
+    function _decrementRefCount() {
+        _refCount--;
+        if (_refCount < 0) {
+            throw new JetElementError(hostElement, 'Slot reference count underflow');
         }
-    };
-    return (node) => {
-        if (node != null) {
-            _count++;
-            slotNode = node;
-            slotNode[OJ_SLOT_REMOVE] = slotRemoveHandler;
+        if (_refCount === 0) {
+            handleSlotUnmount(node);
+        }
+        else {
             const parent = node.parentElement;
-            patchSlotParent(parent);
+            if (parent) {
+                patchSlotParent(parent);
+            }
+        }
+    }
+    const slotRemoveHandler = () => {
+        return null;
+    };
+    node[OJ_SLOT_REMOVE] = slotRemoveHandler;
+    const ref = function (n) {
+        if (n) {
+            _incrementRefCount();
+            patchSlotParent(node.parentElement);
             handleSlotMount(node);
         }
         else {
-            _count--;
-            if (_count < 0) {
-                throw new JetElementError(hostElement, 'Slot replacer count underflow');
-            }
-            if (_count === 0) {
-                window.queueMicrotask(() => {
-                    if (_count === 0)
-                        handleSlotUnmount(slotNode);
-                });
-            }
+            _decrementRefCount();
         }
     };
+    return h(() => {
+        _registerSlot(hostElement, key, node);
+        _incrementRefCount();
+        useLayoutEffect(() => {
+            _unregisterSlot(hostElement, key);
+            _decrementRefCount();
+        });
+        return h(key, { ref, key });
+    }, null);
+}
+function _registerSlot(hostElement, id, node) {
+    let activeSlots = _ACTIVE_SLOTS_PER_ELEMENT.get(hostElement);
+    const wasEmpty = _ACTIVE_SLOTS_PER_ELEMENT.size === 0;
+    if (!activeSlots) {
+        activeSlots = new Set();
+        _ACTIVE_SLOTS_PER_ELEMENT.set(hostElement, activeSlots);
+    }
+    activeSlots.add(id);
+    _ACTIVE_SLOTS.set(id, node);
+    if (wasEmpty) {
+        _patchCreateElement();
+    }
+}
+function _unregisterSlot(hostElement, id) {
+    const activeSlots = _ACTIVE_SLOTS_PER_ELEMENT.get(hostElement);
+    activeSlots.delete(id);
+    if (activeSlots.size === 0) {
+        _ACTIVE_SLOTS_PER_ELEMENT.delete(hostElement);
+    }
+    if (_ACTIVE_SLOTS_PER_ELEMENT.size === 0) {
+        _ACTIVE_SLOTS.clear();
+        _restoreCreateElement();
+    }
+}
+function _getSlotKey(n) {
+    let key = n[_OJ_SLOT_ID];
+    if (key === undefined) {
+        key = _OJ_SLOT_PREFIX + _slotIdCount++;
+        n[_OJ_SLOT_ID] = key;
+    }
+    return key;
 }
 function _patchCreateElement() {
     _originalCreateElement = document.createElement;
@@ -105,16 +121,13 @@ function _createElementOverride(tagName, opts) {
 class Parking {
     parkNode(node) {
         this._getLot().appendChild(node);
-        if (oj.Components) {
-            oj.Components.subtreeHidden(node);
-        }
     }
     disposeNodes(nodeMap, cleanFunc) {
         Parking._iterateSlots(nodeMap, (node) => {
             const parent = node.parentElement;
             if (this._lot === parent) {
                 cleanFunc(node);
-                this._lot.removeChild(node);
+                this._lot.__removeChild(node);
             }
             else if (!parent) {
                 cleanFunc(node);
@@ -124,7 +137,7 @@ class Parking {
     disconnectNodes(nodeMap) {
         Parking._iterateSlots(nodeMap, (node) => {
             if (this._lot === node.parentElement) {
-                this._lot.removeChild(node);
+                this._lot.__removeChild(node);
             }
         });
     }
@@ -141,6 +154,8 @@ class Parking {
     _getLot() {
         if (!this._lot) {
             const div = document.createElement('div');
+            div.__removeChild = div.removeChild;
+            (div.removeChild) = (n) => n;
             div.style.display = 'none';
             document.body.appendChild(div);
             this._lot = div;
@@ -311,7 +326,10 @@ class ComponentWithContexts extends Component {
             }
         };
         this.state = { compProps: props.initialCompProps };
-        this._layerContext = { getHost: getLayerHost.bind(null, props.baseElem) };
+        const layerHostResolver = oj.VLayerUtils ? oj.VLayerUtils.getLayerHost : getLayerHost;
+        this._layerContext = {
+            getHost: layerHostResolver.bind(null, props.baseElem)
+        };
     }
     render(props) {
         const compProps = this.state.compProps;
@@ -356,6 +374,41 @@ const argsChanged = (oldArgs, newArgs) => {
     return (!oldArgs ||
         oldArgs.length !== newArgs.length ||
         newArgs.some((arg, index) => arg !== oldArgs[index]));
+};
+const NEW_DEFAULT_LAYER_ID = '__root_layer_host';
+const NEW_DEFAULT_TOP_LAYER_ID = '__top_layer_host';
+const getLayerHost = (element, priority) => {
+    const parentLayerHost = element.closest(`#${NEW_DEFAULT_TOP_LAYER_ID}`);
+    if (parentLayerHost) {
+        return parentLayerHost;
+    }
+    let rootLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
+    let topLayerHost = document.getElementById(NEW_DEFAULT_TOP_LAYER_ID);
+    if (priority === 'top') {
+        if (!topLayerHost) {
+            topLayerHost = document.createElement('div');
+            topLayerHost.setAttribute('id', NEW_DEFAULT_TOP_LAYER_ID);
+            topLayerHost.setAttribute('data-oj-binding-provider', 'preact');
+            topLayerHost.style.position = 'relative';
+            topLayerHost.style.zIndex = '2000';
+            if (rootLayerHost) {
+                rootLayerHost.after(topLayerHost);
+            }
+            else {
+                document.body.prepend(topLayerHost);
+            }
+        }
+        return topLayerHost;
+    }
+    if (!rootLayerHost) {
+        rootLayerHost = document.createElement('div');
+        rootLayerHost.setAttribute('id', NEW_DEFAULT_LAYER_ID);
+        rootLayerHost.setAttribute('data-oj-binding-provider', 'preact');
+        rootLayerHost.style.position = 'relative';
+        rootLayerHost.style.zIndex = '999';
+        document.body.prepend(rootLayerHost);
+    }
+    return rootLayerHost;
 };
 
 const applyRef = (ref, value) => {
@@ -722,8 +775,10 @@ class IntrinsicElement {
                 this._state.setBindingsDisposedCallback(() => this._handleBindingsDisposed());
             }
         }
+        this._state.executeLifecycleCallbacks(true);
     }
     _verifiedDisconnect() {
+        this._state.executeLifecycleCallbacks(false);
         if (this._state.isComplete()) {
             this._disconnectSlots();
             this._state.resetCreationCycle();
@@ -852,6 +907,7 @@ class IntrinsicElement {
                 const slotNodes = slotMap[slot];
                 slotNodes.forEach((node) => {
                     ParkingLot.parkNode(node);
+                    this._propagateSubtreeHidden(node);
                 });
                 const slotMetadata = getPropertyMetadata(slot, slotsMetadata);
                 if (slotMetadata) {
@@ -885,9 +941,28 @@ class IntrinsicElement {
         if (isTemplateSlot) {
             if (slotNodes[0]?.nodeName === 'TEMPLATE') {
                 const templateNode = slotNodes[0];
-                propContainer[propName] =
-                    templateNode['render'] ??
-                        this._getSlotRenderer(templateNode, propName, containerPropName);
+                let renderer = templateNode['render'];
+                if (renderer) {
+                    propContainer[propName] = renderer;
+                    Object.defineProperties(templateNode, {
+                        render: {
+                            enumerable: true,
+                            get: () => {
+                                return renderer;
+                            },
+                            set: (newRenderer) => {
+                                renderer = newRenderer;
+                                if (newRenderer) {
+                                    this._updateProps([propName], newRenderer);
+                                    this._queueRender();
+                                }
+                            }
+                        }
+                    });
+                }
+                else {
+                    propContainer[propName] = this._getSlotRenderer(templateNode, propName, containerPropName);
+                }
             }
             else {
                 throw new JetElementError(this._element, `Slot content for template slot ${slotName} must be a template element.`);
@@ -925,9 +1000,19 @@ class IntrinsicElement {
     _reconnectSlots() {
         ParkingLot.reconnectNodes(this._state.getSlotMap());
     }
+    _propagateSubtreeHidden(node) {
+        if (oj.Components) {
+            oj.Components.subtreeHidden(node);
+        }
+    }
     _handleSlotUnmount(node) {
         if (this._state.isComplete()) {
             ParkingLot.parkNode(node);
+            window.queueMicrotask(() => {
+                if (ParkingLot.isParked(node)) {
+                    this._propagateSubtreeHidden(node);
+                }
+            });
         }
     }
     _handleSlotMount(node) {
@@ -1716,7 +1801,8 @@ options.requestAnimationFrame = _requestAnimationFrame;
  *   included in the custom element's observed attributes set.  As a
  *   result, any mutations to the one of these attributes on the custom
  *   element will automatically trigger a re-render of the VComponent with
- *   the new values.
+ *   the new values. Note that event listener props are <i>not</i> eligible
+ *   for inclusion in the observed attributes set.
  * </p>
  * <p>
  *   Global attributes referenced with the ObservedGlobalProps utility type do not appear in the
@@ -1831,10 +1917,11 @@ options.requestAnimationFrame = _requestAnimationFrame;
  *  invoked directly and no CustomEvent is produced.
  * </<p>
  * <p>
- *  Actions have an optional detail type.  If specified, the detail value
- *  is either passed to the consumer via the CustomEvent detail payload
- *  for the custom element case, or directly into the callback for the
- *  Preact component case.
+ *  Actions have an optional detail type, specified by an optional generic
+ *  type parameter to the Action type.  If the type parameter is supplied when the
+ *  the action callback property is defined, then a detail value of that specified type
+ *  is either passed to the consumer via the CustomEvent detail payload for the custom element case,
+ *  or is directly passed as an argument of the callback function for the Preact component case.
  * </p>
  * <p>
  *  Note that Action properties must adhere to a specific naming
@@ -1850,8 +1937,10 @@ options.requestAnimationFrame = _requestAnimationFrame;
  * @typedef {Function} Action
  * @ojexports
  * @memberof ojvcomponent
- * @ojsignature [{target:"Type", value:"<Detail extends object = {}>", for:"genericTypeParameters"},
- *               {target: "Type", value: "(detail?: Detail) => void"}]
+ * @ojsignature [
+ *   {target:"Type", value:"<Detail extends object = {}>", for:"genericTypeParameters"},
+ *   {target: "Type", value: "[keyof Detail] extends [never] ? (detail?: Detail) => void : (detail: Detail) => void"}
+ * ]
  */
 
 /**
@@ -1907,14 +1996,16 @@ options.requestAnimationFrame = _requestAnimationFrame;
  * </p>
  * <p>
  *   When consumed via the Preact Component class, no custom event is
- *   dispatched.  Instead, the callback returns the cancelation promise
+ *   dispatched.  Instead, the callback function returns the cancelation promise
  *   directly.
  * </p>
  * @typedef {Function} CancelableAction
  * @ojexports
  * @memberof ojvcomponent
- * @ojsignature [{target:"Type", value:"<Detail extends object = {}>", for:"genericTypeParameters"},
- *               {target: "Type", value: "(detail?: Detail) => Promise<void>"}]
+ * @ojsignature [
+ *   {target:"Type", value:"<Detail extends object = {}>", for:"genericTypeParameters"},
+ *   {target: "Type", value: "[keyof Detail] extends [never] ? (detail?: Detail) => Promise<void> : (detail: Detail) => Promise<void>"}
+ * ]
  */
 
 /**
@@ -1953,7 +2044,7 @@ options.requestAnimationFrame = _requestAnimationFrame;
  * @typedef {Object} DynamicSlots
  * @ojexports
  * @memberof ojvcomponent
- * @ojsignature [{target: "Type", value: "Record<string, VComponent.Slot>" }]
+ * @ojsignature [{target: "Type", value: "Record<string, Slot>" }]
  */
 
 /**
@@ -1977,7 +2068,7 @@ options.requestAnimationFrame = _requestAnimationFrame;
  * @ojexports
  * @memberof ojvcomponent
  * @ojsignature [{target:"Type", value:"<Data>", for:"genericTypeParameters"},
- *               {target: "Type", value: "Record<string, VComponent.TemplateSlot<Data>>" }]
+ *               {target: "Type", value: "Record<string, TemplateSlot<Data>>" }]
  */
 
 /**
@@ -2064,7 +2155,6 @@ options.requestAnimationFrame = _requestAnimationFrame;
  * @ojdeprecated {since: '12.0.0', description: 'Use the ReadOnlyPropertyChanged type instead.'}
  * @ojsignature [{target:"Type", value:"<T>", for:"genericTypeParameters"},
  *               {target: "Type", value: "T"}]
-
  */
 
 /**
@@ -2225,17 +2315,13 @@ options.requestAnimationFrame = _requestAnimationFrame;
  *   <li>onTouchMove</li>
  *   <li>onTouchStart</li>
  *   <li>onWheel</li>
+ *   <li>onfocusin</li>
+ *   <li>onfocusout</li>
  * </ul>
  * <p>
  *   The above event listener properties can also be specified with
  *   the "Capture" suffix (e.g., "onClickCapture") to indicate that the
  *   listener should be registered as a capture listener.
- * </p>
- * <p>
- *   Finally, onfocusin and onfocusout properties are also available,
- *   though technically speaking these are
- *   <a href="https://github.com/preactjs/preact/issues/1611">not global
- *   events</a>.
  * </p>
  * @typedef {Object} GlobalProps
  * @ojexports
@@ -2270,7 +2356,7 @@ options.requestAnimationFrame = _requestAnimationFrame;
 
 /**
  * <p>
- *   The PropertyBindings type maps functional VComponent property names to their corresponding
+ *   The PropertyBindings type maps function-based VComponent property names to their corresponding
  *   <a href="MetadataTypes.html#PropertyBinding">PropertyBinding</a> metadata.
  * </p>
  * @typedef {Object} PropertyBindings
@@ -2357,7 +2443,7 @@ options.requestAnimationFrame = _requestAnimationFrame;
  * <p>
  *  The Methods type specifies optional design-time method metadata that can be passed in the
  *  <code>options</code> argument when calling <a href=#registerCustomElement>registerCustomElement</a>
- *  to register a functional VComponent that exposes custom element methods.
+ *  to register a function-based VComponent that exposes custom element methods.
  * </p>
  * <p>
  *  The Methods type makes several adjustments to the
@@ -2386,13 +2472,14 @@ options.requestAnimationFrame = _requestAnimationFrame;
  * @memberof ojvcomponent
  * @ojsignature [
  *   {target:"Type", value:"<M>", for:"genericTypeParameters"},
- *   {target:"Type", value: "{Partial<Record<keyof M, Omit<Metadata.ComponentMetadataMethods, 'internalName' | 'params' | 'return'> & { params?: Array<Omit<Metadata.MethodParam, 'type'>>; apidocDescription?: string; apidocRtnDescription?: string; }>>}"}
+ *   {target:"Type", value: "{Partial<Record<keyof M, Omit<MetadataTypes.ComponentMetadataMethods, 'internalName' | 'params' | 'return'> & { params?: Array<Omit<MetadataTypes.MethodParam, 'type'>>; apidocDescription?: string; apidocRtnDescription?: string; }>>}"}
  * ]
+ * @ojdeprecated {since: "16.0.0", description: "Use doclet metadata within the type alias that maps method names to function signatures instead."}
  */
 
 /**
  * <p>
- *  The Contexts type allows a functional VComponent to specify a list of Preact Contexts
+ *  The Contexts type allows a function-based VComponent to specify a list of Preact Contexts
  *  whose values should be made available to the inner virtual dom tree of the VComponent when
  *  rendered as an intrinsic element.  This allows the inner virtual dom tree to have access to
  *  the Context values from the parent component when rendered either directly as part of the parent
@@ -2411,8 +2498,8 @@ options.requestAnimationFrame = _requestAnimationFrame;
 /**
  * <p>
  *   The Options type specifies additional options that can be passed when calling
- *   <a href=#registerCustomElement>registerCustomElement</a> to register a functional VComponent
- *   with the JET framework.
+ *   <a href=#registerCustomElement>registerCustomElement</a> to register a function-based
+ *   VComponent with the JET framework.
  * </p>
  * <p>
  *   These additional options come into play under certain circumstances:
@@ -2426,13 +2513,6 @@ options.requestAnimationFrame = _requestAnimationFrame;
  *      Optional <code>contexts</code> metadata (see <a href="#Contexts">Contexts</a>
  *      for further details) are only honored when the VComponent is rendered as an intrinsic element
  *      in a virtual dom tree.
- *    </li>
- *    <li>
- *      Optional <code>methods</code> metadata (see <a href="#Methods">Methods</a> for further details)
- *      are only honored if a type parameter mapping public method names to their function signatures is
- *      specified in the <a href=#registerCustomElement>registerCustomElement</a> call, and if the Preact
- *      functional component implementation is wrapped in a call to
- *      <a href="https://preactjs.com/guide/v10/switching-to-preact/#forwardref">forwardRef</a>.
  *    </li>
  *   </ul>
  * </p>
@@ -2462,6 +2542,12 @@ options.requestAnimationFrame = _requestAnimationFrame;
  * }>;
  *
  * type FormHandle = {
+ *   // The doclet description appears in the generated API Doc, whereas the
+ *   // @ojmetadata description appears in the generated component.json file.
+ *   /&#42;&#42;
+ *    * Sets the focus on the initial &lt;code&gt;FormInput&lt;/code&gt; control in this form.
+ *    * @ojmetadata description 'Sets the focus on this form.'
+ *    *&#47;
  *   focusInitialInput: () => void;
  * };
  *
@@ -2510,22 +2596,38 @@ options.requestAnimationFrame = _requestAnimationFrame;
  *             { name: 'readonly' }
  *           ]
  *         }
- *       },
- *       methods: {
- *         focusInitialInput: {
- *           description: 'Sets the focus on this form.',
- *           apidocDescription: 'Sets the focus on the initial &#38lt;code&#38gt;FormInput&#38lt;/code&#38gt; control in this form.'
- *         }
  *       }
  *     }
  *   );
  * </code>
  * </pre>
- * @typedef {Object} Options
- * @ojexports
- * @memberof ojvcomponent
- * @ojsignature [{target:"Type", value:"<P, M extends Record<string, (...args) => any> = {}>", for:"genericTypeParameters"},
- *               {target:"Type", value:"{ bindings?: VComponent.PropertyBindings<P>, contexts?: VComponent.Contexts, methods?: VComponent.Methods<M> }"}]
+ * @ojtypedef ojvcomponent.Options
+ * @ojsignature {target:"Type", value:"<P, M extends Record<string, (...args) => any> = {}>", for:"genericTypeParameters"}
+ */
+/**
+ * @expose
+ * @name bindings
+ * @ojtypedefmember
+ * @memberof! ojvcomponent.Options
+ * @type {object=}
+ * @ojsignature {target:"Type", value:"PropertyBindings<P>", jsdocOverride: true}
+ */
+/**
+ * @expose
+ * @name contexts
+ * @ojtypedefmember
+ * @memberof! ojvcomponent.Options
+ * @type {object=}
+ * @ojsignature {target:"Type", value:"Contexts", jsdocOverride: true}
+ */
+/**
+ * @expose
+ * @name methods
+ * @ojtypedefmember
+ * @memberof! ojvcomponent.Options
+ * @type {object=}
+ * @ojsignature {target:"Type", value:"Methods<M>", jsdocOverride: true}
+ * @ojdeprecated {since: "16.0.0", description: "Use doclet metadata within the type alias that maps method names to function signatures instead."}
  */
 
 /**
@@ -2542,7 +2644,7 @@ options.requestAnimationFrame = _requestAnimationFrame;
  * @ojexports
  * @memberof ojvcomponent
  * @ojsignature [{target:"Type", value:"<Data extends object>", for:"genericTypeParameters"},
- *               {target: "Type", value: "(data: Data) => VComponent.Slot"}]
+ *               {target: "Type", value: "(data: Data) => Slot"}]
  */
 
 // STATIC METHODS
@@ -2642,11 +2744,11 @@ options.requestAnimationFrame = _requestAnimationFrame;
  *   approach because decorators are only supported for classes and their constituent fields.
  * </p>
  * <p>
- *   JET provides an alternate mechanism for registering a functional VComponent and specifying its
+ *   JET provides an alternate mechanism for registering a function-based VComponent and specifying its
  *   custom element tag name. The registerCustomElement method accepts three arguments:  the custom element
  *   tag name to be associated with the VComponent, a reference to the Preact functional component that
  *   supplies the VComponent implementation, and a reference to additional options that can be specified
- *   when registering the functional VComponent (see <a href="#Options">Options</a>
+ *   when registering the function-based VComponent (see <a href="#Options">Options</a>
  *   for futher details).  It returns a higher-order VComponent that is registered with the
  *   framework using the specified custom element tag name.
  * </p>
@@ -2660,18 +2762,18 @@ options.requestAnimationFrame = _requestAnimationFrame;
  *   message?: string;
  * }>;
  *
- * export const DemoFunctionalVComp = registerCustomElement(
- *   'oj-demo-functional-vcomp',
- *   ({ message='This is a functional VComponent!' }: Props) => {
+ * export const DemoFunctionBasedVComp = registerCustomElement(
+ *   'oj-demo-based-vcomp',
+ *   ({ message='This is a function-based VComponent!' }: Props) => {
  *     return &lt;div&gt;{message}&lt;/div&gt;;
  *   }
  * );
  * </code></pre>
  * <p>
- *   There are some other considerations to keep in mind when implementing functional VComponents:
+ *   There are some other considerations to keep in mind when implementing function-based VComponents:
  *   <ul>
- *    <li>Function-based VComponents will typically use an anonymous function to implement their Preact functional
- *        component, and expose the returned higher-order VComponent as their public API.</li>
+ *    <li>Function-based VComponents can use an anonymous function to implement their Preact
+ *        functional component, and expose the returned higher-order VComponent as their public API.</li>
  *    <li>The registration call ensures that the returned higher-order VComponent extends the Preact functional
  *        component's custom properties with the required global HTML attributes defined by <a href="#GlobalProps">GlobalProps</a>.</li>
  *    <li>Default custom property values are specified using destructuring assignment syntax in the function implementation.</li>
@@ -2691,9 +2793,9 @@ options.requestAnimationFrame = _requestAnimationFrame;
  * </p>
  *
  * @function registerCustomElement
- * @param {string} tagName The custom element tag name for the registered functional VComponent.
+ * @param {string} tagName The custom element tag name for the registered function-based VComponent.
  * @param {function} functionalComponent The Preact functional component that supplies the VComponent implementation.
- * @param {VComponent.Options<P, M>=} options Additional options for the functional VComponent.
+ * @param {Options<P, M>=} options Additional options for the function-based VComponent.
  * @returns {VComponent} Higher-order VComponent that wraps the Preact functional component.
  * @ojsignature [{target:"Type", value:"<P, M extends Record<string, (...args) => any> = {}>", for:"genericTypeParameters"}]
  *
@@ -2882,13 +2984,22 @@ const Root = forwardRef((props, ref) => {
         acc[cur] = vcompProps[cur];
         return acc;
     }, {});
-    const elem = (jsx("div", { ...props, ...propFixups, ...parentGlobals, ref: ref, "data-oj-jsx": "" }));
+    const refFunc = (el) => {
+        if (ref) {
+            applyRef(ref, el);
+        }
+        if (el) {
+            el[CustomElementUtils.VCOMP_INSTANCE] = {
+                props: vcompProps
+            };
+        }
+    };
+    const elem = jsx("div", { ...props, ...propFixups, ...parentGlobals, ref: refFunc, "data-oj-jsx": "" });
     elem.type = tagName;
     return elem;
 });
 
-const SUPPORTED_LOCALES = new Set(supportedLocales);
-class VComponentState extends ElementState {
+class VComponentState extends LifecycleElementState {
     constructor(element) {
         super(element);
         this._translationBundleMap = {};
@@ -2956,16 +3067,13 @@ class VComponentState extends ElementState {
         return getDescriptiveTransferAttributeValue(this.Element, attrName);
     }
     _getTranslationBundlesPromise() {
-        if (VComponentState._translationBundleLocale === undefined) {
-            VComponentState._translationBundleLocale = matchTranslationBundle([getLocale()], SUPPORTED_LOCALES);
-        }
         const translationBundleMap = this.Element.constructor.translationBundleMap;
         const bundleKeys = Object.keys(translationBundleMap);
         const translationBundlePromises = [];
         bundleKeys.forEach((key) => {
             if (!VComponentState._bundlePromiseCache[key]) {
                 const loader = translationBundleMap[key];
-                VComponentState._bundlePromiseCache[key] = loader(VComponentState._translationBundleLocale);
+                VComponentState._bundlePromiseCache[key] = getTranslationBundlePromiseFromLoader(loader);
             }
             translationBundlePromises.push(VComponentState._bundlePromiseCache[key]);
         });

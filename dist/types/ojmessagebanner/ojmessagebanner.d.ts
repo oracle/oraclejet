@@ -46,9 +46,7 @@ export declare class MessageBanner<K extends string | number = string | number, 
     private readonly _rootRef?;
     private readonly WrapperMessagesContainer;
     private readonly _addBusyState;
-    private readonly _detailRendererKeyProxy;
     private readonly _handleCloseMessage;
-    private readonly _renderCloseButton;
     constructor(props: ExtendGlobalProps<Props<K, D>>);
     render(props?: ExtendGlobalProps<Props<K, D>>): ComponentChild;
 }

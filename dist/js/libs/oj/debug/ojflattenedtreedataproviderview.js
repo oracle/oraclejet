@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -278,6 +278,38 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojobservable',
             this.dataProvider = dataProvider;
             this.options = options;
             this._cacheInstantiated = false;
+            this._createAddItem = (event, insertIndex) => {
+                const key = event.key;
+                const parentKey = event.parentKey;
+                const isLeaf = this.getChildDataProvider(key) === null;
+                let treeDepth = 0;
+                if (parentKey != null) {
+                    const parentItem = this._getItemByKey(parentKey);
+                    treeDepth = parentItem.metadata.treeDepth + 1;
+                }
+                const indexFromParent = this._getInsertIndexFromParent(treeDepth, insertIndex);
+                return this._updateItemMetadata(new this.Item(this, event.metadata, event.data), parentKey, treeDepth, indexFromParent, isLeaf);
+            };
+            this._unshiftAddToCache = (event) => {
+                let item = this._createAddItem(event, 0);
+                this._cache.unshift(item);
+                this._incrementIndexFromParent(1, item.metadata.treeDepth);
+                this._incrementIteratorOffset(0);
+                return item;
+            };
+            this._pushAddToCache = (event) => {
+                let item = this._createAddItem(event, this._cache.length);
+                this._cache.push(item);
+                this._incrementIteratorOffset(this._cache.length - 1);
+                return item;
+            };
+            this._spliceAddToCache = (event, newIndex) => {
+                let item = this._createAddItem(event, newIndex);
+                this._cache.splice(newIndex, 0, item);
+                this._incrementIndexFromParent(newIndex + 1, item.metadata.treeDepth);
+                this._incrementIteratorOffset(newIndex);
+                return item;
+            };
             this.AsyncIterable = (_a = class {
                     constructor(_parent, _asyncIterator) {
                         this._parent = _parent;
@@ -454,50 +486,197 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojobservable',
         _getChildrenFromCacheByParentKey(parentKey) {
             return this._cache.filter((item) => item.metadata.parentKey === parentKey);
         }
-        _calculateItemIndex(parentKey, addEvent, index) {
-            if (this._cacheSortCriteria) {
-                const children = this._getChildrenFromCacheByParentKey(parentKey);
-                const sortComparator = ojdataprovider.SortUtils.getNaturalSortCriteriaComparator(this._cacheSortCriteria);
-                for (let i = 0; i < children.length; i++) {
-                    if (sortComparator(addEvent.data[index], children[i].data) < 0) {
-                        return this._getItemIndexByKey(children[i].metadata.key);
-                    }
-                }
-                return this._getOOBInsertIndex(parentKey);
+        sortedIndex(array, value) {
+            var low = 0, high = array.length;
+            if (value.index === null) {
+                return high;
             }
-            else {
-                if (addEvent?.addBeforeKeys?.length > 0) {
-                    const beforeKey = addEvent.addBeforeKeys[index];
-                    const beforeKeyItemIndex = beforeKey === null ? -1 : this._getItemIndexByKey(beforeKey);
-                    if (beforeKeyItemIndex === -1) {
-                        return this._getOOBInsertIndex(parentKey);
-                    }
-                    return beforeKeyItemIndex;
-                }
-                else if (addEvent?.indexes?.length > 0) {
-                    const indexFromParent = addEvent.indexes[index];
-                    const children = this._getChildrenFromCacheByParentKey(parentKey);
-                    if (indexFromParent === null || indexFromParent > children.length) {
-                        return this._getOOBInsertIndex(parentKey);
-                    }
-                    if (indexFromParent === 0) {
-                        return this._getItemIndexByKey(parentKey) + 1;
-                    }
-                    return (this._getItemIndexByKey(children[indexFromParent - 1].metadata.key) +
-                        this._getLocalDescendentCount(children[indexFromParent - 1].metadata.key) +
-                        1);
-                }
-                else {
-                    return this._getOOBInsertIndex(parentKey);
-                }
+            while (low < high) {
+                var mid = (low + high) >>> 1;
+                if (array[mid].index !== null && array[mid].index < value.index)
+                    low = mid + 1;
+                else
+                    high = mid;
             }
+            return low;
         }
-        _getOOBInsertIndex(parentKey) {
-            if (this._isKeyDone(parentKey)) {
-                return this._getItemIndexByKey(parentKey) + this._getLocalDescendentCount(parentKey) + 1;
+        _processAddEvent(addEventDetail) {
+            let events = [];
+            let indexInDetail = 0;
+            addEventDetail.keys.forEach(function (key) {
+                events.push({
+                    key,
+                    parentKey: addEventDetail.parentKeys[indexInDetail],
+                    beforeKey: addEventDetail.addBeforeKeys?.[indexInDetail],
+                    index: addEventDetail.indexes?.[indexInDetail],
+                    data: addEventDetail.data?.[indexInDetail],
+                    metadata: addEventDetail.metadata?.[indexInDetail]
+                });
+                indexInDetail++;
+            });
+            if (this._cacheSortCriteria) {
+                let leftOverLength = 0;
+                while (events.length !== leftOverLength) {
+                    leftOverLength = events.length;
+                    for (let i = events.length - 1; i >= 0; i--) {
+                        const event = events[i];
+                        const key = event.key;
+                        const parentKey = event.parentKey;
+                        if ((parentKey === null || (this._isExpanded(parentKey) && this._containsKey(parentKey))) &&
+                            !this._containsKey(key) &&
+                            (!this._currentFilterCriteria ||
+                                (this._currentFilterCriteria && this._currentFilterCriteria.filter(event.data)))) {
+                            const children = this._getChildrenFromCacheByParentKey(parentKey);
+                            const sortComparator = ojdataprovider.SortUtils.getNaturalSortCriteriaComparator(this._cacheSortCriteria);
+                            let added = false;
+                            for (let j = 0; j < children.length; j++) {
+                                if (sortComparator(event.data, children[j].data) < 0) {
+                                    this._spliceAddToCache(event, this._getItemIndexByKey(children[j].metadata.key));
+                                    added = true;
+                                    events.splice(i, 1);
+                                    break;
+                                }
+                            }
+                            if (!added && this._isKeyDone(parentKey)) {
+                                if (parentKey === null) {
+                                    this._pushAddToCache(event);
+                                    events.splice(i, 1);
+                                }
+                                else {
+                                    const beforeIndex = this._getItemIndexByKey(parentKey) + this._getLocalDescendentCount(parentKey) + 1;
+                                    this._spliceAddToCache(event, beforeIndex);
+                                    events.splice(i, 1);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else if (addEventDetail?.addBeforeKeys?.length > 0) {
+                let leftOverLength = 0;
+                while (events.length !== leftOverLength) {
+                    leftOverLength = events.length;
+                    for (let i = events.length - 1; i >= 0; i--) {
+                        const event = events[i];
+                        const key = event.key;
+                        const parentKey = event.parentKey;
+                        const parentIndex = this._getItemIndexByKey(parentKey);
+                        if ((parentKey === null || (this._isExpanded(parentKey) && parentIndex !== -1)) &&
+                            !this._containsKey(key) &&
+                            (!this._currentFilterCriteria ||
+                                (this._currentFilterCriteria && this._currentFilterCriteria.filter(event.data)))) {
+                            const beforeKey = event.beforeKey;
+                            if (beforeKey != null) {
+                                const beforeIndex = this._getItemIndexByKey(beforeKey);
+                                if (beforeIndex !== -1) {
+                                    this._spliceAddToCache(event, beforeIndex);
+                                    events.splice(i, 1);
+                                }
+                            }
+                            else if (this._isKeyDone(parentKey)) {
+                                if (parentKey === null) {
+                                    this._pushAddToCache(event);
+                                    events.splice(i, 1);
+                                }
+                                else {
+                                    const beforeIndex = parentIndex + this._getLocalDescendentCount(parentKey) + 1;
+                                    this._spliceAddToCache(event, beforeIndex);
+                                    events.splice(i, 1);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else if (addEventDetail?.indexes?.length > 0) {
+                let eventBuckets = Array.from(events
+                    .reduce((buckets, event) => {
+                    const parentKey = event.parentKey;
+                    if (!buckets.has(parentKey)) {
+                        buckets.set(parentKey, [event]);
+                    }
+                    else {
+                        let bucket = buckets.get(parentKey);
+                        bucket.splice(this.sortedIndex(bucket, event), 0, event);
+                    }
+                    return buckets;
+                }, new Map())
+                    .entries());
+                let leftOverLength = 0;
+                while (eventBuckets.length !== leftOverLength) {
+                    leftOverLength = eventBuckets.length;
+                    for (let i = 0; i < eventBuckets.length;) {
+                        const eventBucket = eventBuckets[i];
+                        const parentKey = eventBucket[0];
+                        const parentKeyIndex = this._getItemIndexByKey(parentKey);
+                        if (parentKey === null || (this._isExpanded(parentKey) && parentKeyIndex !== -1)) {
+                            const children = this._getChildrenFromCacheByParentKey(parentKey);
+                            const eventsInBucket = eventBucket[1];
+                            eventsInBucket.forEach((eventInBucket) => {
+                                const key = eventInBucket.key;
+                                if (!this._containsKey(key) &&
+                                    (!this._currentFilterCriteria ||
+                                        (this._currentFilterCriteria &&
+                                            this._currentFilterCriteria.filter(eventInBucket.data)))) {
+                                    const indexFromParent = eventInBucket.index;
+                                    let item;
+                                    if (indexFromParent === 0) {
+                                        if (parentKey === null) {
+                                            item = this._unshiftAddToCache(eventInBucket);
+                                        }
+                                        else {
+                                            item = this._spliceAddToCache(eventInBucket, parentKeyIndex + 1);
+                                        }
+                                        children.unshift(item);
+                                    }
+                                    else if (indexFromParent === null || indexFromParent > children.length) {
+                                        if (this._isKeyDone(parentKey)) {
+                                            if (parentKey === null) {
+                                                item = this._pushAddToCache(eventInBucket);
+                                            }
+                                            else {
+                                                const insertIndex = parentKeyIndex + this._getLocalDescendentCount(parentKey) + 1;
+                                                item = this._spliceAddToCache(eventInBucket, insertIndex);
+                                            }
+                                            children.push(item);
+                                        }
+                                    }
+                                    else {
+                                        const insertIndex = this._getItemIndexByKey(children[indexFromParent - 1].metadata.key) +
+                                            this._getLocalDescendentCount(children[indexFromParent - 1].metadata.key) +
+                                            1;
+                                        item = this._spliceAddToCache(eventInBucket, insertIndex);
+                                        children.splice(indexFromParent, 0, item);
+                                    }
+                                }
+                            });
+                            eventBuckets.splice(i, 1);
+                        }
+                        else {
+                            i++;
+                        }
+                    }
+                }
             }
             else {
-                return null;
+                events.forEach((event) => {
+                    const parentKey = event.parentKey;
+                    const key = event.key;
+                    if ((parentKey === null || (this._isExpanded(parentKey) && this._containsKey(parentKey))) &&
+                        !this._containsKey(key) &&
+                        (!this._currentFilterCriteria ||
+                            (this._currentFilterCriteria &&
+                                this._currentFilterCriteria.filter(event.data) &&
+                                this._isKeyDone(parentKey)))) {
+                        if (parentKey === null) {
+                            this._pushAddToCache(event);
+                        }
+                        else {
+                            const beforeIndex = this._getItemIndexByKey(parentKey) + this._getLocalDescendentCount(parentKey) + 1;
+                            this._spliceAddToCache(event, beforeIndex);
+                        }
+                    }
+                });
             }
         }
         _incrementIndexFromParent(newIndex, depth) {
@@ -543,35 +722,16 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojobservable',
                 const addParentKeys = [];
                 const addAfterKeySet = new Set();
                 const addKeySet = new Set();
-                addEvent.parentKeys.forEach((parentKey, index) => {
-                    if ((parentKey === null || (this._isExpanded(parentKey) && this._getItemByKey(parentKey))) &&
-                        (!this._currentFilterCriteria ||
-                            (this._currentFilterCriteria &&
-                                this._currentFilterCriteria.filter(addEvent.data[index])))) {
-                        const newIndex = this._calculateItemIndex(parentKey, addEvent, index);
-                        if (newIndex != null) {
-                            const key = addEvent.metadata[index].key;
-                            const indexFromParent = addEvent?.indexes ? addEvent.indexes[index] : null;
-                            const isLeaf = this.getChildDataProvider(key) === null;
-                            let treeDepth = 0;
-                            if (parentKey != null) {
-                                const parentItem = this._getItemByKey(parentKey);
-                                treeDepth = parentItem.metadata.treeDepth + 1;
-                            }
-                            const item = this._updateItemMetadata(new this.Item(this, addEvent.metadata[index], addEvent.data[index]), parentKey, treeDepth, indexFromParent, isLeaf);
-                            this._cache.splice(newIndex, 0, item);
-                            this._incrementIndexFromParent(newIndex + 1, treeDepth);
-                            addDataArray.push(item.data);
-                            addMetadataArray.push(item.metadata);
-                            addIndexArray.push(newIndex);
-                            addParentKeys.push(parentKey);
-                            addKeySet.add(key);
-                            addBeforeKeys.push(this._getKeyByIndex(newIndex + 1));
-                            this._incrementIteratorOffset(newIndex);
-                        }
-                    }
-                    else {
-                        this._notDoneKeyMap.set(parentKey, true);
+                this._processAddEvent(addEvent);
+                addEvent.keys.forEach((key) => {
+                    const { index, item } = this._getItemAndIndexByKey(key);
+                    if (item != null) {
+                        addDataArray.push(item.data);
+                        addMetadataArray.push(item.metadata);
+                        addIndexArray.push(index);
+                        addParentKeys.push(item.metadata.parentKey);
+                        addKeySet.add(key);
+                        addBeforeKeys.push(this._getKeyByIndex(index + 1));
                     }
                 });
                 if (addKeySet.size > 0) {
@@ -1046,6 +1206,11 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojobservable',
         _updateItemMetadata(item, parentKey, treeDepth, indexFromParent, isLeaf) {
             return new this.Item(this, new this.FlattenedTreeItemMetadata(this, item.metadata.key, parentKey, indexFromParent, treeDepth, isLeaf), item.data);
         }
+        _containsKey(key) {
+            return this._cache.some((item) => {
+                return oj.Object.compareValues(item.metadata.key, key);
+            });
+        }
         _getItemByKey(key) {
             return this._cache.find((item) => {
                 return oj.Object.compareValues(item.metadata.key, key);
@@ -1055,6 +1220,20 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojobservable',
             return this._cache.findIndex((item) => {
                 return oj.Object.compareValues(item.metadata.key, key);
             });
+        }
+        _getItemAndIndexByKey(key) {
+            let index = -1;
+            let item = this._cache.find((item, i) => {
+                index = i;
+                return oj.Object.compareValues(item.metadata.key, key);
+            });
+            if (item == null) {
+                index = -1;
+            }
+            return { item, index };
+        }
+        _getPreviousSibling(item) {
+            return this._cache[this._getLastItemIndex()];
         }
         _getLastItem() {
             return this._cache[this._getLastItemIndex()];
@@ -1087,6 +1266,19 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojobservable',
                 }
             }
             return count;
+        }
+        _getInsertIndexFromParent(depth, insertIndex) {
+            for (let i = insertIndex - 1; i >= 0; i--) {
+                const newItem = this._getItem(i);
+                const newDepth = newItem.metadata.treeDepth;
+                if (newDepth === depth) {
+                    return newItem.metadata.indexFromParent + 1;
+                }
+                else if (newDepth < depth) {
+                    return 0;
+                }
+            }
+            return 0;
         }
         async _expand(keys) {
             const orderedKeys = this._filterAndSortKeysByIndex(keys);

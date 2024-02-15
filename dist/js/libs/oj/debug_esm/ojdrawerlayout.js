@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -62,6 +62,9 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             lastlyOpenedDrawer: DrawerConstants.stringStart
         };
         this.handleKeyDown = (edge, event) => {
+            if (event.defaultPrevented) {
+                return;
+            }
             const drawerDisplayMode = this.getDrawerResolvedDisplayMode(edge);
             if (event.key === DrawerConstants.keys.ESC &&
                 (drawerDisplayMode === DrawerConstants.stringOverlay ||
@@ -137,8 +140,14 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                 this.setBottomOverlayDrawerWidth();
                 let atLeastOneOverlayDrawerNeedsToClose = false;
                 const updatedState = {};
-                if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode ||
-                    prevViewportResolvedDisplayModeVertical !== nextViewportResolvedDisplayModeVertical) {
+                const checkBottomDrawerDisplayModeChange = () => {
+                    if (this.isDrawerOpened(DrawerConstants.stringBottom) &&
+                        this.state[this.edgeToDisplayName(DrawerConstants.stringBottom)] === 'auto') {
+                        atLeastOneOverlayDrawerNeedsToClose = true;
+                        updatedState[this.edgeToShouldChangeDisplayMode(DrawerConstants.stringBottom)] = true;
+                    }
+                };
+                if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode) {
                     this.lockResizeListener();
                     const edges = [DrawerConstants.stringStart, DrawerConstants.stringEnd];
                     for (let i = 0; i < edges.length; i++) {
@@ -148,16 +157,19 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                             updatedState[this.edgeToShouldChangeDisplayMode(edge)] = true;
                         }
                     }
-                    if (this.isDrawerOpened(DrawerConstants.stringBottom) &&
-                        this.state[this.edgeToDisplayName(DrawerConstants.stringBottom)] === 'auto') {
-                        atLeastOneOverlayDrawerNeedsToClose = true;
-                        updatedState[this.edgeToShouldChangeDisplayMode(DrawerConstants.stringBottom)] = true;
+                    const reflowOverlay = [DrawerConstants.stringReflow, DrawerConstants.stringOverlay];
+                    if (reflowOverlay.indexOf(prevViewportResolvedDisplayMode) > -1 &&
+                        reflowOverlay.indexOf(nextViewportResolvedDisplayMode) > -1) {
+                        checkBottomDrawerDisplayModeChange();
                     }
-                    if (atLeastOneOverlayDrawerNeedsToClose === false) {
-                        updatedState.viewportResolvedDisplayMode = nextViewportResolvedDisplayMode;
-                        updatedState.viewportResolvedDisplayModeVertical =
-                            nextViewportResolvedDisplayModeVertical;
-                    }
+                }
+                if (prevViewportResolvedDisplayModeVertical !== nextViewportResolvedDisplayModeVertical &&
+                    prevViewportResolvedDisplayMode === DrawerConstants.stringReflow) {
+                    checkBottomDrawerDisplayModeChange();
+                }
+                if (atLeastOneOverlayDrawerNeedsToClose === false) {
+                    updatedState.viewportResolvedDisplayMode = nextViewportResolvedDisplayMode;
+                    updatedState.viewportResolvedDisplayModeVertical = nextViewportResolvedDisplayModeVertical;
                 }
                 if (Object.keys(updatedState).length > 0) {
                     this.setState(updatedState);
@@ -244,12 +256,11 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         const resolvedMode = this.getDrawerResolvedDisplayMode(edge);
         const isOverlay = resolvedMode === DrawerConstants.stringOverlay ||
             resolvedMode === DrawerConstants.stringFullOverlay;
-        const roleAttr = this.props.role || (isOverlay ? 'dialog' : undefined);
         const tabIndexAttr = isOverlay ? -1 : undefined;
         if (this.isDrawerOpened(edge) ||
             this.wasDrawerOpenedInPrevState(edge) ||
             this.wasDrawerClosedWithEsc(edge)) {
-            return (jsx("div", { ref: this.getDrawerWrapperRef(edge), class: this.getDrawerWrapperStyleClasses(edge), children: jsx("div", { ref: this.getDrawerRef(edge), role: roleAttr, tabIndex: tabIndexAttr, class: this.getDrawerStyleClasses(edge), onKeyDown: (event) => this.handleKeyDown(edge, event), children: this.getDrawerContent(edge) }) }));
+            return (jsx("div", { ref: this.getDrawerWrapperRef(edge), class: this.getDrawerWrapperStyleClasses(edge), children: jsx("div", { ref: this.getDrawerRef(edge), tabIndex: tabIndexAttr, class: this.getDrawerStyleClasses(edge), onKeyDown: (event) => this.handleKeyDown(edge, event), children: this.getDrawerContent(edge) }) }));
         }
         return null;
     }
@@ -388,7 +399,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
     }
     setDrawerFocus(edge) {
         const drawerRef = this.getDrawerRef(edge);
-        const autofocusItems = drawerRef.current.querySelectorAll('[autofocus]');
+        const autofocusItems = DrawerUtils.getAutofocusFocusables(drawerRef.current);
         const { length: autofocusLength, 0: autofocusFirstItem } = autofocusItems;
         if (autofocusLength > 0) {
             autofocusFirstItem.focus({ preventScroll: true });
@@ -729,7 +740,7 @@ DrawerLayout.defaultProps = {
     endDisplay: 'auto',
     bottomDisplay: 'auto'
 };
-DrawerLayout._metadata = { "slots": { "": {}, "start": {}, "end": {}, "bottom": {} }, "properties": { "startOpened": { "type": "boolean", "writeback": true }, "endOpened": { "type": "boolean", "writeback": true }, "bottomOpened": { "type": "boolean", "writeback": true }, "startDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] }, "endDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] }, "bottomDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] } }, "events": { "ojBeforeClose": { "cancelable": true } }, "extension": { "_WRITEBACK_PROPS": ["startOpened", "endOpened", "bottomOpened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
+DrawerLayout._metadata = { "slots": { "": {}, "start": {}, "end": {}, "bottom": {} }, "properties": { "startOpened": { "type": "boolean", "writeback": true }, "endOpened": { "type": "boolean", "writeback": true }, "bottomOpened": { "type": "boolean", "writeback": true }, "startDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] }, "endDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] }, "bottomDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] } }, "events": { "ojBeforeClose": { "cancelable": true } }, "extension": { "_WRITEBACK_PROPS": ["startOpened", "endOpened", "bottomOpened"], "_READ_ONLY_PROPS": [] } };
 DrawerLayout = DrawerLayout_1 = __decorate([
     customElement('oj-drawer-layout')
 ], DrawerLayout);

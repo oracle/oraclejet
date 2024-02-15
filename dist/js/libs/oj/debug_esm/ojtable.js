@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,13 +20,13 @@ import 'ojs/ojselector';
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
 import { unwrap, getCSSTimeUnitAsMillis, addResizeListener, removeResizeListener, getReadingDirection, setScrollLeft, isMetaKeyPressed } from 'ojs/ojdomutils';
-import { error, info, warn } from 'ojs/ojlogger';
+import { error, warn, info } from 'ojs/ojlogger';
 import Context from 'ojs/ojcontext';
 import { __getTemplateEngine, getDeviceRenderMode } from 'ojs/ojconfig';
 import { applyParameters } from 'ojs/ojtranslation';
 import { getCachedCSSVarValues, parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import { _OJ_CONTAINER_ATTR, subtreeAttached, subtreeDetached, __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { applyRendererContent, disableAllFocusableElements, isMobileTouchDevice, isFetchAborted, isRequestIdleCallbackSupported, isBlink, isFirefox, isIE, getDefaultScrollBarWidth, isSafari, isIos, getActionableElementsInNode, containsKey, isIterateAfterDoneNotAllowed, getAddEventKeysResult, applyMergedInlineStyles, isEscapeKeyEvent, isEnterKeyEvent, isF2KeyEvent, isTabKeyEvent, isArrowUpKeyEvent, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isHomeKeyEvent, isEndKeyEvent, isSpaceBarKeyEvent, isMac, isMetaKeyEvent, isEventClickthroughDisabled, isFromDefaultSelector, isEdge, getFocusableElementsInNode, enableAllFocusableElements, KEYBOARD_KEYS, areKeySetsEqual, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
+import { applyRendererContent, disableAllFocusableElements, isMobileTouchDevice, isFetchAborted, WARN_DUPLICATE_KEYS_DETAIL, isRequestIdleCallbackSupported, isBlink, isFirefox, getScrollEventElement, getDefaultScrollBarWidth, isSafari, isIos, getActionableElementsInNode, containsKey, isIterateAfterDoneNotAllowed, getAddEventKeysResult, applyMergedInlineStyles, isEscapeKeyEvent, isEnterKeyEvent, isF2KeyEvent, isTabKeyEvent, isArrowUpKeyEvent, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isHomeKeyEvent, isEndKeyEvent, isSpaceBarKeyEvent, isMac, isMetaKeyEvent, isEventClickthroughDisabled, isFromDefaultSelector, isEdge, getFocusableElementsInNode, enableAllFocusableElements, KEYBOARD_KEYS, areKeySetsEqual, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
 import { startAnimation } from 'ojs/ojanimation';
 import DomScroller from 'ojs/ojdomscroller';
 import { CustomElementUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
@@ -376,7 +376,7 @@ var __oj_table_metadata =
           "type": "number"
         },
         "columnKey": {
-          "type": "any"
+          "type": "string"
         },
         "offsetX": {
           "type": "number"
@@ -1025,6 +1025,36 @@ var __oj_table_metadata =
  */
 
 /**
+ * <p>The supported commands:</p>
+ * <table class="keyboard-table">
+ *  <thead>
+ *     <tr>
+ *       <th>Default Function</th>
+ *       <th>data-oj-command value</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td><kbd>Resize Column</kbd></td>
+ *       <td>oj-table-resize</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Sort Ascending</kbd></td>
+ *       <td>oj-table-sortAsc</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Sort Descending</kbd></td>
+ *       <td>oj-table-sortDsc</td>
+ *     </tr>
+ *   </tbody>
+ *
+ * </table>
+ *
+ * @ojfragment contextMenuDoc - Used in context menu section of classdesc
+ * @memberof oj.ojTable
+ */
+
+/**
  * <p>Table supports the following custom data attributes.
  * <table class="keyboard-table">
  *   <thead>
@@ -1375,7 +1405,7 @@ var __oj_table_metadata =
  * @instance
  * @type {KeySet}
  * @default new oj.KeySetImpl();
- * @ojsignature {target:"Type", value:"oj.KeySet<K>"}
+ * @ojsignature {target:"Type", value:"oj.KeySet<string>"}
  * @ojwriteback
  */
 
@@ -2198,6 +2228,7 @@ Table.prototype._cleanComponent = function (isDestroy) {
   // cleanup needed for both, 'destroy()' and 'ReleaseResources()' calls
   this._animateOnFetch = null;
   this._isEditPending = null;
+  this._skipScrollOnFocus = null;
   this._active = null;
   this._isTableTab = null;
   this._dataFetching = null;
@@ -2205,6 +2236,8 @@ Table.prototype._cleanComponent = function (isDestroy) {
   this._isAddRowRendered = false;
   this._isRowRemovalRequired = null;
   this._renderedTableHeaderColumns = false;
+  this._currentPointerTarget = null;
+  this._previousPointerTarget = null;
 
   // clear any pending timeouts
   this._clearAllComponentTimeouts();
@@ -2513,7 +2546,10 @@ Table.prototype._refresh = function () {
   this._clearCachedDom();
   this._clearCachedStyling();
   this._refreshContextMenu();
-  this._refreshTableStatusMessage();
+  // if status message skeletons are already shown, do not reset them
+  if (!this._statusMessageShown || !this._isSkeletonSupport()) {
+    this._refreshTableStatusMessage();
+  }
   this._clearIdleCallback();
 
   // update edit state based on row removals before rows are removed to ensure row context is available
@@ -2585,6 +2621,16 @@ Table.prototype._refreshTableHeader = function () {
     // replace existing col elements
     var tableColGroup = this._getTableColGroup();
     if (tableColGroup != null) {
+      // ensure body and footer are hidden before modifying / removing existing col elements
+      var tableBody = this._getTableBody();
+      if (tableBody != null) {
+        tableBody.style[Table.CSS_PROP._VISIBILITY] = Table.CSS_VAL._HIDDEN;
+      }
+      var tableFooter = this._getTableFooter();
+      if (tableFooter != null) {
+        tableFooter.style[Table.CSS_PROP._VISIBILITY] = Table.CSS_VAL._HIDDEN;
+      }
+
       $(tableColGroup).empty();
       if (this._isGutterStartColumnEnabled()) {
         let tableGutterCol = this._createTableGutterCol();
@@ -2642,7 +2688,7 @@ Table.prototype._refreshTableHeader = function () {
       var column = columns[i];
       var headerRenderer = this._getColumnRenderer(i, 'header');
       if (headerRenderer) {
-        headerColumn = this._createTableHeaderColumn(i, true);
+        headerColumn = this._createTableHeaderColumn(i);
         // if headerRenderer is defined then call that
         var headerContext = this._getRendererContextObject(headerColumn, {});
         // Copy additional properties to top-level context to work with custom element
@@ -2664,7 +2710,12 @@ Table.prototype._refreshTableHeader = function () {
             self._columnHeaderDefaultRenderer(this, delegateRenderer);
           };
         }
-        if (!applyRendererContent(headerColumn, headerRenderer(context))) {
+        var rendererContent = headerRenderer(context);
+        if (rendererContent != null) {
+          // if the renderer returned a value then we clear the default content
+          $(headerColumn).empty();
+        }
+        if (!applyRendererContent(headerColumn, rendererContent)) {
           // if the renderer didn't append content then the existing
           // headerColumn was manipulated. So get it and set the required
           // attributes just in case it was replaced or the attributes
@@ -2733,6 +2784,10 @@ Table.prototype._refreshTableHeader = function () {
       );
     }
     this._renderedTableHeaderColumns = true;
+
+    // optimize initial sizing for state between fetch start and refreshTableDimensions call
+    this._getLayoutManager().optimizeInitialColumnWidths();
+
     return this._finalizeNonBodyRowRendering([tableHeaderRow]);
   } catch (renderError) {
     return Promise.reject(renderError);
@@ -3479,14 +3534,13 @@ Table.prototype._waitForAllElementsToResolve = function (elements) {
 /**
  * Internal method for refreshRow
  * @param {number} rowIdx  Index of the row to refresh.
- * @param {boolean} resetFocus  true to reset focus if needed; false to ignore focus.
  * @param {boolean=} skipDataChecks true if the data checks can safely be skipped.
  * @param {boolean=} useCache true if this should use previously cached row data.
  * @param {Object} rowItem The oj-item data.
  * @return {Promise.<boolean>} Promise resolves when done to true if refreshed, false if not
  * @private
  */
-Table.prototype._refreshRow = function (rowIdx, resetFocus, skipDataChecks, useCache, rowItem) {
+Table.prototype._refreshRow = function (rowIdx, skipDataChecks, useCache, rowItem) {
   var dataprovider = this._getData();
   var tableBodyRow = this._getTableBodyRow(rowIdx);
 
@@ -3511,18 +3565,19 @@ Table.prototype._refreshRow = function (rowIdx, resetFocus, skipDataChecks, useC
   this._getLayoutManager().notifyTableUpdate(Table._UPDATE._ROW_REFRESH);
 
   var dataPromise;
-  if (useCache) {
-    // use existing row data cache
+  if (rowItem != null) {
     var resultsMap = new Map();
-    if (rowItem == null) {
-      // eslint-disable-next-line no-param-reassign
-      rowItem = {
-        data: tableBodyRow[Table._ROW_ITEM_EXPANDO].data,
-        metadata: tableBodyRow[Table._ROW_ITEM_EXPANDO].metadata
-      };
-    }
     resultsMap.set(rowKey, rowItem);
     dataPromise = Promise.resolve({ results: resultsMap });
+  } else if (useCache) {
+    // use existing row data cache
+    var cachedResultsMap = new Map();
+    var cachedRowItem = {
+      data: tableBodyRow[Table._ROW_ITEM_EXPANDO].data,
+      metadata: tableBodyRow[Table._ROW_ITEM_EXPANDO].metadata
+    };
+    cachedResultsMap.set(rowKey, cachedRowItem);
+    dataPromise = Promise.resolve({ results: cachedResultsMap });
   } else {
     // trigger fetchByKeys to get the new row data instead
     dataPromise = dataprovider.fetchByKeys({ keys: new Set([rowKey]) });
@@ -3534,8 +3589,7 @@ Table.prototype._refreshRow = function (rowIdx, resetFocus, skipDataChecks, useC
       }
 
       // Find out if the row contains the focus element.  Focus will be lost to the document body after refresh.
-      // eslint-disable-next-line no-param-reassign
-      resetFocus = resetFocus && tableBodyRow.contains(document.activeElement);
+      var resetFocus = tableBodyRow.contains(document.activeElement);
 
       var rowResults = keyResult.results.get(rowKey);
       return this._refreshTableBodyRow(
@@ -4529,9 +4583,8 @@ Table.prototype._refreshSortTableHeaderColumn = function (key, ascending) {
  */
 Table.prototype._getSortedTableHeaderColumnIdx = function () {
   var tableHeaderColumns = this._getTableHeaderColumns();
-  var tableHeaderColumnsCount = tableHeaderColumns ? tableHeaderColumns.length : 0;
 
-  for (var i = 0; i < tableHeaderColumnsCount; i++) {
+  for (var i = 0; i < tableHeaderColumns.length; i++) {
     // sorted column will have the sorted data attr
     var sorted = $(tableHeaderColumns[i]).data('sorted');
     if (sorted != null) {
@@ -4719,13 +4772,28 @@ Table.prototype._registerDomScroller = function () {
           this._queueTask(
             function () {
               var i;
+              var foundDuplicate = false;
               // remove any duplicate rows that are already in the DOM
               for (i = keys.length - 1; i >= 0; i--) {
                 if (this._getRowIdxForRowKey(keys[i]) !== null) {
                   data.splice(i, 1);
                   keys.splice(i, 1);
                   metadataArray.splice(i, 1);
+                  foundDuplicate = true;
+                } else {
+                  // remove any duplicate rows from the fetch results
+                  for (var j = 0; j < i; j++) {
+                    if (oj.KeyUtils.equals(keys[i], keys[j])) {
+                      data.splice(i, 1);
+                      keys.splice(i, 1);
+                      metadataArray.splice(i, 1);
+                      foundDuplicate = true;
+                    }
+                  }
                 }
+              }
+              if (foundDuplicate) {
+                warn(WARN_DUPLICATE_KEYS_DETAIL);
               }
               if (data.length > 0) {
                 layoutManager.notifyTableUpdate(Table._UPDATE._ROWS_ADDED);
@@ -4752,9 +4820,6 @@ Table.prototype._registerDomScroller = function () {
                       this._domScroller.resumeScrollTracking();
                     }
                     this._hideStatusMessage();
-                    // cached dimensions are cleared on refreshTableDimension, but since
-                    // we are skipping that, we'll need to explicitly clear them
-                    layoutManager.clearCachedDimensions();
                     if (result.done) {
                       this._noMoreData = true;
                       this._syncScrollPosition();
@@ -4862,10 +4927,8 @@ Table.prototype._updateHeaderTop = function (top) {
     }
   }
   var tableHeaderColumns = this._getTableHeaderColumns();
-  if (tableHeaderColumns != null) {
-    for (var i = 0; i < tableHeaderColumns.length; i++) {
-      tableHeaderColumns[i].style[Table.CSS_PROP._TOP] = top + 'px';
-    }
+  for (var i = 0; i < tableHeaderColumns.length; i++) {
+    tableHeaderColumns[i].style[Table.CSS_PROP._TOP] = top + 'px';
   }
 };
 
@@ -5424,6 +5487,7 @@ Table.prototype._getVisibleRowIdxs = function () {
   var i;
   var visibleRowIdxArray = [];
 
+  var table = this._getTable();
   var tableBody = this._getTableBody();
   var tableBodyRows = this._getTableBodyRows();
   if (tableBodyRows.length > 0 && tableBody.offsetHeight > 0) {
@@ -5441,14 +5505,15 @@ Table.prototype._getVisibleRowIdxs = function () {
     var tableElemX = scrollerRect.left >= 0 ? scrollerRect.left + 1 : scrollerRect.right - 1;
 
     // check the first visible row
-    var viewportTop = scrollerRect.top >= 0 ? scrollerRect.top : 0;
-    var tableTopElems = this._filterTableOwnedElements(
-      document.elementsFromPoint(tableElemX, viewportTop)
-    );
     var startRowIdx;
+    var viewportTop = scrollerRect.top >= 0 ? scrollerRect.top : 0;
+    var tableTopElems = document.elementsFromPoint(tableElemX, viewportTop);
     for (i = 0; i < tableTopElems.length; i++) {
-      if (tableTopElems[i].nodeName === Table.DOM_ELEMENT._TD) {
-        startRowIdx = this._getElementRowIdx(tableTopElems[i]);
+      var topElem = tableTopElems[i];
+      if (topElem.nodeName === Table.DOM_ELEMENT._TD && this._isTableOwned(topElem)) {
+        startRowIdx = this._getElementRowIdx(topElem);
+        break;
+      } else if (topElem === table) {
         break;
       }
     }
@@ -5470,8 +5535,11 @@ Table.prototype._getVisibleRowIdxs = function () {
     var lastRowIdx;
     var tableBottomElems = document.elementsFromPoint(tableElemX, viewportBottom);
     for (i = 0; i < tableBottomElems.length; i++) {
-      if (tableBottomElems[i].nodeName === Table.DOM_ELEMENT._TD) {
-        lastRowIdx = this._getElementRowIdx(tableBottomElems[i]);
+      var bottomElem = tableBottomElems[i];
+      if (bottomElem.nodeName === Table.DOM_ELEMENT._TD && this._isTableOwned(bottomElem)) {
+        lastRowIdx = this._getElementRowIdx(bottomElem);
+        break;
+      } else if (bottomElem === table) {
         break;
       }
     }
@@ -5741,12 +5809,28 @@ Table.prototype._invokeDataFetchRows = function (options) {
           )
           .then(
             function (result) {
+              var i;
               var value = result[Table._CONST_VALUE];
               var data = value[Table._CONST_DATA];
+              var metadataArray = value[Table._CONST_METADATA];
               var keys = value.metadata.map(function (_value) {
                 return _value[Table._CONST_KEY];
               });
-
+              var foundDuplicate = false;
+              // remove any duplicate rows from the fetch results
+              for (i = keys.length - 1; i >= 0; i--) {
+                for (var j = 0; j < i; j++) {
+                  if (oj.KeyUtils.equals(keys[i], keys[j])) {
+                    data.splice(i, 1);
+                    keys.splice(i, 1);
+                    metadataArray.splice(i, 1);
+                    foundDuplicate = true;
+                  }
+                }
+              }
+              if (foundDuplicate) {
+                warn(WARN_DUPLICATE_KEYS_DETAIL);
+              }
               var offset = 0;
               if (dataprovider instanceof oj.TableDataSourceAdapter) {
                 offset = dataprovider[Table._CONST_OFFSET];
@@ -5758,10 +5842,9 @@ Table.prototype._invokeDataFetchRows = function (options) {
               var indexArray = [];
               var resultDataCount = data.length;
 
-              for (var i = 0; i < resultDataCount; i++) {
+              for (i = 0; i < resultDataCount; i++) {
                 indexArray[i] = offset + startIndex + i;
               }
-              var metadataArray = value[Table._CONST_METADATA];
 
               // Need to clear DOM scroller before refreshAll potentially triggers
               // additional data fetches when syncing scroll position
@@ -5811,7 +5894,7 @@ Table.prototype._invokeDataFetchRows = function (options) {
             // eslint-disable-next-line no-unused-vars
             function (reason) {
               if (controller && controller.signal.aborted) {
-                this._clearDataWaitingState();
+                this._clearDataWaitingState(true);
                 resolve(null);
               } else {
                 // eventually fire error event here along with reason for rejection
@@ -6445,7 +6528,10 @@ TableDndContext.prototype._getOverRowIndex = function (event) {
   // this.component._getElementRowIdx to use cached elements so it's not accurate for dnd purpose.
   var cell = this.component._getFirstAncestor(
     event.target,
-    '.' + Table.CSS_CLASSES._TABLE_DATA_CELL_CLASS + ', .' + Table.CSS_CLASSES._TABLE_SELECTOR_CELL,
+    '.' +
+      Table.CSS_CLASSES._TABLE_DATA_CELL_CLASS +
+      ', .' +
+      Table.CSS_CLASSES._TABLE_SELECTOR_CELL_CLASS,
     true
   );
   if (cell != null) {
@@ -6559,19 +6645,22 @@ TableDndContext.prototype.handleColumnReorderDragOver = function (event) {
   if (
     columnIdx != null &&
     this._dragStartColumnIdxs != null &&
-    this._dragStartColumnIdxs.length > 0 &&
-    this._dragStartColumnIdxs.indexOf(columnIdx) === -1
+    this._dragStartColumnIdxs.length > 0
   ) {
-    this._currentDropColumnBefore = this._isDragOverBeforeColumn(event, columnIdx);
-    // Check the current before/after column position against indicator position
-    // to see if we need to move the indicator
-    if (
-      !(this._currentDropColumnBefore && this._dragStartColumnIdxs.indexOf(columnIdx - 1) > -1) &&
-      !(!this._currentDropColumnBefore && this._dragStartColumnIdxs.indexOf(columnIdx + 1) > -1)
-    ) {
-      this.component._displayDragOverIndicatorColumn(columnIdx, this._currentDropColumnBefore);
+    if (this._dragStartColumnIdxs.indexOf(columnIdx) === -1) {
+      this._currentDropColumnBefore = this._isDragOverBeforeColumn(event, columnIdx);
+      // Check the current before/after column position against indicator position
+      // to see if we need to move the indicator
+      if (
+        !(this._currentDropColumnBefore && this._dragStartColumnIdxs.indexOf(columnIdx - 1) > -1) &&
+        !(!this._currentDropColumnBefore && this._dragStartColumnIdxs.indexOf(columnIdx + 1) > -1)
+      ) {
+        this.component._displayDragOverIndicatorColumn(columnIdx, this._currentDropColumnBefore);
+        event.preventDefault();
+        return;
+      }
     }
-    event.preventDefault();
+    this.component._removeDragOverIndicatorColumn();
   }
 };
 
@@ -7252,7 +7341,8 @@ TableLayoutManager.prototype.isSizingRefreshRequired = function (width, height) 
     return (
       width > 0 &&
       height > 0 &&
-      (width !== sizingState.outerWidth || height !== sizingState.outerHeight)
+      (width !== sizingState.outerWidth ||
+        (height !== sizingState.outerHeight && !this._table._isExternalScrollEnabled()))
     );
   }
   //  Otherwise, we only need to ensure the tableContainer's size is non-zero.
@@ -7290,13 +7380,28 @@ TableLayoutManager.prototype._enableTableVisibility = function () {
 TableLayoutManager.prototype.refreshTableDimensions = function () {};
 
 /**
+ * Refresh the table dimensions
+ * @private
+ */
+TableLayoutManager.prototype.optimizeInitialColumnWidths = function () {};
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype._updateScrollPositionCache = function () {
+  var scroller = this.getScroller();
+  this._cachedScrollTop = scroller.scrollTop;
+  this._cachedScrollLeft = this._table._getElementScrollLeft(scroller);
+};
+
+/**
  * @private
  */
 TableLayoutManager.prototype._restoreCachedScrollPos = function () {
   var scrollTop =
-    this._table._scrollTop != null && this._table._scrollTop > 0 ? this._table._scrollTop : null;
+    this._cachedScrollTop != null && this._cachedScrollTop > 0 ? this._cachedScrollTop : null;
   var scrollLeft =
-    this._table._scrollLeft != null && this._table._scrollLeft > 0 ? this._table._scrollLeft : null;
+    this._cachedScrollLeft != null && this._cachedScrollLeft > 0 ? this._cachedScrollLeft : null;
 
   if (scrollTop != null) {
     var maxScrollTop = this.getScroller().scrollHeight - this.getScroller().clientHeight;
@@ -7386,8 +7491,8 @@ TableLayoutManager.prototype._handleScrollerScrollTop = function (scrollTop) {
  * @private
  */
 TableLayoutManager.prototype.registerScrollListeners = function () {
-  var scroller = this.getScroller();
-  if (scroller != null) {
+  var scrollEventElement = getScrollEventElement(this.getScroller());
+  if (scrollEventElement != null) {
     // if width or height is defined then we can have scrollbars so register scroll event listeners
     if (this._scrollEventListener == null) {
       this._scrollEventListener = function (event) {
@@ -7427,8 +7532,8 @@ TableLayoutManager.prototype.registerScrollListeners = function () {
       }.bind(this);
     }
     // remove the event listener before adding to make sure only one is active at a time
-    scroller.removeEventListener('scroll', this._scrollEventListener);
-    scroller.addEventListener('scroll', this._scrollEventListener, false);
+    scrollEventElement.removeEventListener('scroll', this._scrollEventListener);
+    scrollEventElement.addEventListener('scroll', this._scrollEventListener, false);
   }
 };
 
@@ -7456,9 +7561,9 @@ TableLayoutManager.prototype.updateCurrentScrollState = function () {
  * @private
  */
 TableLayoutManager.prototype.unregisterScrollListeners = function () {
-  var scroller = this.getScroller();
-  if (scroller != null && this._scrollEventListener != null) {
-    scroller.removeEventListener('scroll', this._scrollEventListener);
+  var scrollEventElement = getScrollEventElement(this.getScroller());
+  if (scrollEventElement != null && this._scrollEventListener != null) {
+    scrollEventElement.removeEventListener('scroll', this._scrollEventListener);
   }
 };
 
@@ -7476,10 +7581,6 @@ TableLayoutManager.prototype._restoreScrollLeft = function (scrollLeft) {
 TableLayoutManager.prototype.getColumnWidthProperty = function (cell) {
   var computedStyle = window.getComputedStyle(cell);
   var boxStyle = this._getBoxStyle(computedStyle);
-  if (isIE()) {
-    // IE 11 has an issue where border-box still returns just the inner content-box width
-    return parseFloat(computedStyle.width) + boxStyle.paddingWidth;
-  }
   return (
     parseFloat(computedStyle.width) +
     (boxStyle.boxSizing === Table.CSS_VAL._BORDER_BOX
@@ -7606,9 +7707,6 @@ TableLayoutManager.prototype._getForcedColumnWidth = function (cell, cellCompSty
         ? cellBoxStyle.borderWidth
         : -cellBoxStyle.paddingWidth)
     );
-  } else if (isIE() && cellBoxStyle.boxSizing === Table.CSS_VAL._BORDER_BOX) {
-    // IE 11 has an issue where border-box still returns just the inner content-box width
-    return parseFloat(cellCompStyle.width) + cellBoxStyle.paddingWidth + cellBoxStyle.borderWidth;
   }
   // else, this is the actual width of the column, and we need a width value that will match
   return parseFloat(cellCompStyle.width);
@@ -7701,16 +7799,6 @@ TableLayoutManager.prototype._getDefaultScrollBarSize = function () {
 /**
  * @private
  */
-TableLayoutManager.prototype.clearCachedDimensions = function () {
-  this._clientWidth = null;
-  this._clientHeight = null;
-  this._scrollWidth = null;
-  this._scrollHeight = null;
-};
-
-/**
- * @private
- */
 TableLayoutManager.prototype._clearColumnSizingCache = function () {
   this._table._columnOffsets = null;
 };
@@ -7729,40 +7817,28 @@ TableLayoutManager.prototype.getRowScrollTop = function () {};
  * @private
  */
 TableLayoutManager.prototype.getScrollWidth = function () {
-  if (this._scrollWidth == null) {
-    this._scrollWidth = this.getScroller().scrollWidth;
-  }
-  return this._scrollWidth;
+  return this.getScroller().scrollWidth;
 };
 
 /**
  * @private
  */
 TableLayoutManager.prototype.getScrollHeight = function () {
-  if (this._scrollHeight == null) {
-    this._scrollHeight = this.getScroller().scrollHeight;
-  }
-  return this._scrollHeight;
+  return this.getScroller().scrollHeight;
 };
 
 /**
  * @private
  */
 TableLayoutManager.prototype.getClientWidth = function () {
-  if (this._clientWidth == null) {
-    this._clientWidth = this.getScroller().clientWidth;
-  }
-  return this._clientWidth;
+  return this.getScroller().clientWidth;
 };
 
 /**
  * @private
  */
 TableLayoutManager.prototype.getClientHeight = function () {
-  if (this._clientHeight == null) {
-    this._clientHeight = this.getScroller().clientHeight;
-  }
-  return this._clientHeight;
+  return this.getScroller().clientHeight;
 };
 
 /**
@@ -7775,11 +7851,11 @@ TableLayoutManager.prototype._removeTableDimensionsStyling = function () {
   var tableElem = this._table._getTable();
   var tableHeader = this._table._getTableHeader();
   var tableHeaderRow = this._table._getTableHeaderRow();
-  var tableHeaderColumns = this._table._getTableHeaderColumns();
   var tableFooter = this._table._getTableFooter();
   var tableFooterRow = this._table._getTableFooterRow();
   var tableBody = this._table._getTableBody();
   var tableBottomSlot = this._table._getTableBottomSlot();
+  var tableScroller = this.getScroller();
 
   var tableContainer = this._table._getTableContainer();
   tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS);
@@ -7802,11 +7878,6 @@ TableLayoutManager.prototype._removeTableDimensionsStyling = function () {
     for (var i = 0; i < headerColumnTextDivsCount; i++) {
       headerColumnTextDivs[i].style[Table.CSS_PROP._WIDTH] = '';
     }
-    if (tableHeaderColumns != null) {
-      for (let k = 0; k < tableHeaderColumns.length; k++) {
-        tableHeaderColumns[k].classList.remove(Table.CSS_CLASSES._TABLE_HEADER_WRAP_TEXT_CLASS);
-      }
-    }
   }
   if (tableFooter != null) {
     tableFooter.removeAttribute(Table.DOM_ATTR._STYLE);
@@ -7814,6 +7885,9 @@ TableLayoutManager.prototype._removeTableDimensionsStyling = function () {
   }
   if (tableBottomSlot != null) {
     tableBottomSlot.removeAttribute(Table.DOM_ATTR._STYLE);
+  }
+  if (tableScroller != null) {
+    tableScroller.removeAttribute(Table.DOM_ATTR._STYLE);
   }
 
   this._removeHeaderColumnAndCellColumnWidths();
@@ -7890,278 +7964,34 @@ TableLayoutManager.prototype._getTableContainerScrollableState = function (botto
 };
 
 /**
- * Iterate through the columns and set any column widths that are defined by the columns[].width attribute
  * @private
  */
-TableLayoutManager.prototype._setForcedColumnWidths = function () {
-  var headerCell;
-  var tableBodyCell;
-  var footerCell;
-
-  var columns = this._table._getColumnDefs();
-  var columnsCount = columns.length;
-  var tableBodyRows = this._table._getTableBodyRows();
-
-  // find and set the widths of the forced width columns, cells, and footers first
-  // this allows the browser to adjust the remaining column widths automatically
-  this._forcedWidthColumns = [];
-  for (var i = 0; i < columnsCount; i++) {
-    var columnWidth = this._getPixelStyleEquivalent(columns[i].width);
-    if (columnWidth != null) {
-      // reset the default styling and width at the start of each column loop
-      var columnCellCompStyle = null;
-      var forcedColumnCellWidth = null;
-      // update column header cell width
-      headerCell = this._table._getTableHeaderColumn(i);
-      if (headerCell != null) {
-        var forcedColumnWidth = this._getForcedColumnWidth(
-          headerCell,
-          window.getComputedStyle(headerCell),
-          columnWidth
-        );
-        this._applyForcedColumnWidth(headerCell, forcedColumnWidth);
-        // store forced column width in case it is needed for scrollbar adjustments later
-        this._forcedWidthColumns[i] = forcedColumnWidth;
-      } else {
-        this._forcedWidthColumns[i] = true;
-      }
-
-      // update column table body cell widths
-      var legacyWidthBuffer = this._table._getTableBodyLegacyWidthBuffer();
-      // check for width buffer row for legacy rendering
-      if (legacyWidthBuffer != null) {
-        var bufferCell = legacyWidthBuffer.childNodes[i];
-        var bufferCellWidth = this._getForcedColumnWidth(
-          bufferCell,
-          window.getComputedStyle(bufferCell),
-          columnWidth
-        );
-        this._applyForcedColumnWidth(bufferCell, bufferCellWidth);
-      }
-
-      // update 'add row' cell widths
-      var addRowRow = this._table._getPlaceHolderRow();
-      if (addRowRow != null) {
-        var addRowCell = this._table._getColspanLogicalElements(
-          this._table._getPlaceHolderRowCells(addRowRow)
-        )[i];
-        if (addRowCell != null) {
-          var addRowCellWidth = this._getForcedColumnWidth(
-            addRowCell,
-            window.getComputedStyle(addRowCell),
-            columnWidth
-          );
-          this._applyForcedColumnWidth(addRowCell, addRowCellWidth);
-        }
-      }
-
-      if (!this._table._hasRowOrCellRendererOrTemplate(i)) {
-        tableBodyCell = this._table._getTableBodyCell(0, i);
-        if (tableBodyCell != null) {
-          columnCellCompStyle = window.getComputedStyle(tableBodyCell);
-          forcedColumnCellWidth = this._getForcedColumnWidth(
-            tableBodyCell,
-            columnCellCompStyle,
-            columnWidth
-          );
-        }
-      }
-      for (var j = 0; j < tableBodyRows.length; j++) {
-        tableBodyCell = this._table._getTableBodyLogicalCells(j)[i];
-        if (tableBodyCell != null) {
-          if (columnCellCompStyle == null) {
-            var cellCompStyle = window.getComputedStyle(tableBodyCell);
-            var forcedCellWidth = this._getForcedColumnWidth(
-              tableBodyCell,
-              cellCompStyle,
-              columnWidth
-            );
-            this._applyForcedColumnWidth(tableBodyCell, forcedCellWidth);
-          } else {
-            this._applyForcedColumnWidth(tableBodyCell, forcedColumnCellWidth);
-          }
-        }
-      }
-
-      // update column footer cell width
-      footerCell = this._table._getTableFooterCell(i);
-      if (footerCell != null) {
-        this._applyForcedColumnWidth(
-          footerCell,
-          this._getForcedColumnWidth(footerCell, window.getComputedStyle(footerCell), columnWidth)
-        );
-      }
-    } else {
-      this._forcedWidthColumns[i] = false;
-    }
-  }
-};
-
-/**
- * @private
- */
-TableLayoutManager.prototype._verifyMinAndMaxWidths = function () {
-  var columns = this._table._getColumnDefs();
-  var columnsCount = columns.length;
-  var rowsCount = this._table._getTableBodyRows().length;
-
-  var continueSizing = true;
-  // flag to check track whether full sizing run was successfull
-  while (continueSizing) {
-    continueSizing = false;
-    for (var i = 0; i < columnsCount; i++) {
-      // only verify min and max widths for non-forced column widths
-      if (this._forcedWidthColumns[i] === false) {
-        var minApplied = this._applyColMinMax(columns, i, rowsCount, true);
-        if (minApplied) {
-          continueSizing = true;
-          break;
-        }
-        var maxApplied = this._applyColMinMax(columns, i, rowsCount, false);
-        if (maxApplied) {
-          continueSizing = true;
-          break;
-        }
-      }
-    }
-  }
-};
-
-/**
- * @private
- */
-TableLayoutManager.prototype._applyColMinMax = function (columns, columnIndex, rowsCount, isMin) {
-  var headerCell;
-  var tableBodyCell;
-  var footerCell;
-  var colWidth = 0;
-
-  var valueApplied = false;
-  var columnCellCompStyle = null;
-  var forcedColumnCellWidth = null;
-
-  var colTestWidth = isMin
-    ? this._getPixelStyleEquivalent(columns[columnIndex].minWidth)
-    : this._getPixelStyleEquivalent(columns[columnIndex].maxWidth);
-  if (colTestWidth != null) {
-    headerCell = this._table._getTableHeaderColumn(columnIndex);
-    tableBodyCell = this._table._getTableBodyLogicalCells(0)[columnIndex];
-    footerCell = this._table._getTableFooterCell(columnIndex);
-
-    if (headerCell != null) {
-      colWidth = headerCell.offsetWidth;
-    } else if (tableBodyCell != null) {
-      colWidth = tableBodyCell.offsetWidth;
-    } else if (footerCell != null) {
-      colWidth = footerCell.offsetWidth;
-    }
-
-    if (colWidth > 0 && (isMin ? colWidth < colTestWidth : colWidth > colTestWidth)) {
-      valueApplied = true;
-      this._forcedWidthColumns[columnIndex] = colTestWidth;
-      // update column header cell width
-      if (headerCell != null) {
-        var forcedColumnWidth = this._getForcedColumnWidth(
-          headerCell,
-          window.getComputedStyle(headerCell),
-          colTestWidth
-        );
-        this._applyForcedColumnWidth(headerCell, forcedColumnWidth);
-      }
-
-      // update width buffer row for legacy rendering
-      var legacyWidthBuffer = this._table._getTableBodyLegacyWidthBuffer();
-      if (legacyWidthBuffer != null) {
-        var bufferCell = legacyWidthBuffer.childNodes[columnIndex];
-        var bufferCellWidth = this._getForcedColumnWidth(
-          bufferCell,
-          window.getComputedStyle(bufferCell),
-          colTestWidth
-        );
-        this._applyForcedColumnWidth(bufferCell, bufferCellWidth);
-      }
-
-      // update 'add row' cell widths
-      var addRowRow = this._table._getPlaceHolderRow();
-      if (addRowRow != null) {
-        var addRowCell = this._table._getColspanLogicalElements(
-          this._table._getPlaceHolderRowCells(addRowRow)
-        )[columnIndex];
-        if (addRowCell != null) {
-          var addRowCellWidth = this._getForcedColumnWidth(
-            addRowCell,
-            window.getComputedStyle(addRowCell),
-            colTestWidth
-          );
-          this._applyForcedColumnWidth(addRowCell, addRowCellWidth);
-        }
-      }
-
-      if (!this._table._hasRowOrCellRendererOrTemplate(columnIndex) && tableBodyCell != null) {
-        columnCellCompStyle = window.getComputedStyle(tableBodyCell);
-        forcedColumnCellWidth = this._getForcedColumnWidth(
-          tableBodyCell,
-          columnCellCompStyle,
-          colTestWidth
-        );
-      }
-      for (var i = 0; i < rowsCount; i++) {
-        tableBodyCell = this._table._getTableBodyLogicalCells(i)[columnIndex];
-        if (tableBodyCell != null) {
-          if (columnCellCompStyle == null) {
-            var cellCompStyle = window.getComputedStyle(tableBodyCell);
-            var forcedCellWidth = this._getForcedColumnWidth(
-              tableBodyCell,
-              cellCompStyle,
-              colTestWidth
-            );
-            this._applyForcedColumnWidth(tableBodyCell, forcedCellWidth);
-          } else {
-            this._applyForcedColumnWidth(tableBodyCell, forcedColumnCellWidth);
-          }
-        }
-      }
-
-      // update column footer cell width
-      if (footerCell != null) {
-        this._applyForcedColumnWidth(
-          footerCell,
-          this._getForcedColumnWidth(footerCell, window.getComputedStyle(footerCell), colTestWidth)
-        );
-      }
-    }
-  }
-  return valueApplied;
-};
-
-/**
- * @private
- */
-TableLayoutManager.prototype._getPixelStyleEquivalent = function (styleVal) {
+TableLayoutManager.prototype._getPixelStyleEquivalent = function (styleVal, isAddBorder) {
   if (typeof styleVal === 'string') {
     // empty string is equivalent to the style not being set
     if (styleVal === '') {
       return null;
     }
     if (styleVal === 'auto') {
-      return this._getMinWidthAutoEquivalent();
+      return this._getMinWidthAutoEquivalent(isAddBorder);
     }
     // must calculate equivalent size if non-digits are present, and px are not specified
     var units = styleVal.match(/\D/g);
     if (units != null && styleVal.indexOf('px') === -1) {
       this._table._tableWidthContainer.style.width = styleVal;
-      return this._table._tableWidthContainer.offsetWidth;
+      return this._table._tableWidthContainer.offsetWidth + (isAddBorder ? 1 : 0);
     }
     // otherwise continue to parse the numeric value from the string provided
-    return parseFloat(styleVal);
+    return parseFloat(styleVal) + (isAddBorder ? 1 : 0);
   }
-  return styleVal;
+  return styleVal != null ? styleVal + (isAddBorder ? 1 : 0) : null;
 };
 
 /**
  * @private
  */
-TableLayoutManager.prototype._getMinWidthAutoEquivalent = function () {
+// eslint-disable-next-line no-unused-vars
+TableLayoutManager.prototype._getMinWidthAutoEquivalent = function (isAddBorder) {
   return null;
 };
 
@@ -8724,6 +8554,256 @@ TableLegacyLayoutManager.prototype._setColumnWidths = function (scrollBarWidth) 
 };
 
 /**
+ * Iterate through the columns and set any column widths that are defined by the columns[].width attribute
+ * @private
+ */
+TableLegacyLayoutManager.prototype._setForcedColumnWidths = function () {
+  var headerCell;
+  var tableBodyCell;
+  var footerCell;
+
+  var columns = this._table._getColumnDefs();
+  var columnsCount = columns.length;
+  var tableBodyRows = this._table._getTableBodyRows();
+
+  // find and set the widths of the forced width columns, cells, and footers first
+  // this allows the browser to adjust the remaining column widths automatically
+  this._forcedWidthColumns = [];
+  for (var i = 0; i < columnsCount; i++) {
+    var columnWidth = this._getPixelStyleEquivalent(columns[i].width);
+    if (columnWidth != null) {
+      // reset the default styling and width at the start of each column loop
+      var columnCellCompStyle = null;
+      var forcedColumnCellWidth = null;
+      // update column header cell width
+      headerCell = this._table._getTableHeaderColumn(i);
+      if (headerCell != null) {
+        var forcedColumnWidth = this._getForcedColumnWidth(
+          headerCell,
+          window.getComputedStyle(headerCell),
+          columnWidth
+        );
+        this._applyForcedColumnWidth(headerCell, forcedColumnWidth);
+        // store forced column width in case it is needed for scrollbar adjustments later
+        this._forcedWidthColumns[i] = forcedColumnWidth;
+      } else {
+        this._forcedWidthColumns[i] = true;
+      }
+
+      // update column table body cell widths
+      var legacyWidthBuffer = this._table._getTableBodyLegacyWidthBuffer();
+      // check for width buffer row for legacy rendering
+      if (legacyWidthBuffer != null) {
+        var bufferCell = legacyWidthBuffer.childNodes[i];
+        var bufferCellWidth = this._getForcedColumnWidth(
+          bufferCell,
+          window.getComputedStyle(bufferCell),
+          columnWidth
+        );
+        this._applyForcedColumnWidth(bufferCell, bufferCellWidth);
+      }
+
+      // update 'add row' cell widths
+      var addRowRow = this._table._getPlaceHolderRow();
+      if (addRowRow != null) {
+        var addRowCell = this._table._getColspanLogicalElements(
+          this._table._getPlaceHolderRowCells(addRowRow)
+        )[i];
+        if (addRowCell != null) {
+          var addRowCellWidth = this._getForcedColumnWidth(
+            addRowCell,
+            window.getComputedStyle(addRowCell),
+            columnWidth
+          );
+          this._applyForcedColumnWidth(addRowCell, addRowCellWidth);
+        }
+      }
+
+      if (!this._table._hasRowOrCellRendererOrTemplate(i)) {
+        tableBodyCell = this._table._getTableBodyCell(0, i);
+        if (tableBodyCell != null) {
+          columnCellCompStyle = window.getComputedStyle(tableBodyCell);
+          forcedColumnCellWidth = this._getForcedColumnWidth(
+            tableBodyCell,
+            columnCellCompStyle,
+            columnWidth
+          );
+        }
+      }
+      for (var j = 0; j < tableBodyRows.length; j++) {
+        tableBodyCell = this._table._getTableBodyLogicalCells(j)[i];
+        if (tableBodyCell != null) {
+          if (columnCellCompStyle == null) {
+            var cellCompStyle = window.getComputedStyle(tableBodyCell);
+            var forcedCellWidth = this._getForcedColumnWidth(
+              tableBodyCell,
+              cellCompStyle,
+              columnWidth
+            );
+            this._applyForcedColumnWidth(tableBodyCell, forcedCellWidth);
+          } else {
+            this._applyForcedColumnWidth(tableBodyCell, forcedColumnCellWidth);
+          }
+        }
+      }
+
+      // update column footer cell width
+      footerCell = this._table._getTableFooterCell(i);
+      if (footerCell != null) {
+        this._applyForcedColumnWidth(
+          footerCell,
+          this._getForcedColumnWidth(footerCell, window.getComputedStyle(footerCell), columnWidth)
+        );
+      }
+    } else {
+      this._forcedWidthColumns[i] = false;
+    }
+  }
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype._verifyMinAndMaxWidths = function () {
+  var columns = this._table._getColumnDefs();
+  var columnsCount = columns.length;
+  var rowsCount = this._table._getTableBodyRows().length;
+
+  var continueSizing = true;
+  // flag to check track whether full sizing run was successfull
+  while (continueSizing) {
+    continueSizing = false;
+    for (var i = 0; i < columnsCount; i++) {
+      // only verify min and max widths for non-forced column widths
+      if (this._forcedWidthColumns[i] === false) {
+        var minApplied = this._applyColMinMax(columns, i, rowsCount, true);
+        if (minApplied) {
+          continueSizing = true;
+          break;
+        }
+        var maxApplied = this._applyColMinMax(columns, i, rowsCount, false);
+        if (maxApplied) {
+          continueSizing = true;
+          break;
+        }
+      }
+    }
+  }
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype._applyColMinMax = function (
+  columns,
+  columnIndex,
+  rowsCount,
+  isMin
+) {
+  var headerCell;
+  var tableBodyCell;
+  var footerCell;
+  var colWidth = 0;
+
+  var valueApplied = false;
+  var columnCellCompStyle = null;
+  var forcedColumnCellWidth = null;
+
+  var colTestWidth = isMin
+    ? this._getPixelStyleEquivalent(columns[columnIndex].minWidth)
+    : this._getPixelStyleEquivalent(columns[columnIndex].maxWidth);
+  if (colTestWidth != null) {
+    headerCell = this._table._getTableHeaderColumn(columnIndex);
+    tableBodyCell = this._table._getTableBodyLogicalCells(0)[columnIndex];
+    footerCell = this._table._getTableFooterCell(columnIndex);
+
+    if (headerCell != null) {
+      colWidth = headerCell.offsetWidth;
+    } else if (tableBodyCell != null) {
+      colWidth = tableBodyCell.offsetWidth;
+    } else if (footerCell != null) {
+      colWidth = footerCell.offsetWidth;
+    }
+
+    if (colWidth > 0 && (isMin ? colWidth < colTestWidth : colWidth > colTestWidth)) {
+      valueApplied = true;
+      this._forcedWidthColumns[columnIndex] = colTestWidth;
+      // update column header cell width
+      if (headerCell != null) {
+        var forcedColumnWidth = this._getForcedColumnWidth(
+          headerCell,
+          window.getComputedStyle(headerCell),
+          colTestWidth
+        );
+        this._applyForcedColumnWidth(headerCell, forcedColumnWidth);
+      }
+
+      // update width buffer row for legacy rendering
+      var legacyWidthBuffer = this._table._getTableBodyLegacyWidthBuffer();
+      if (legacyWidthBuffer != null) {
+        var bufferCell = legacyWidthBuffer.childNodes[columnIndex];
+        var bufferCellWidth = this._getForcedColumnWidth(
+          bufferCell,
+          window.getComputedStyle(bufferCell),
+          colTestWidth
+        );
+        this._applyForcedColumnWidth(bufferCell, bufferCellWidth);
+      }
+
+      // update 'add row' cell widths
+      var addRowRow = this._table._getPlaceHolderRow();
+      if (addRowRow != null) {
+        var addRowCell = this._table._getColspanLogicalElements(
+          this._table._getPlaceHolderRowCells(addRowRow)
+        )[columnIndex];
+        if (addRowCell != null) {
+          var addRowCellWidth = this._getForcedColumnWidth(
+            addRowCell,
+            window.getComputedStyle(addRowCell),
+            colTestWidth
+          );
+          this._applyForcedColumnWidth(addRowCell, addRowCellWidth);
+        }
+      }
+
+      if (!this._table._hasRowOrCellRendererOrTemplate(columnIndex) && tableBodyCell != null) {
+        columnCellCompStyle = window.getComputedStyle(tableBodyCell);
+        forcedColumnCellWidth = this._getForcedColumnWidth(
+          tableBodyCell,
+          columnCellCompStyle,
+          colTestWidth
+        );
+      }
+      for (var i = 0; i < rowsCount; i++) {
+        tableBodyCell = this._table._getTableBodyLogicalCells(i)[columnIndex];
+        if (tableBodyCell != null) {
+          if (columnCellCompStyle == null) {
+            var cellCompStyle = window.getComputedStyle(tableBodyCell);
+            var forcedCellWidth = this._getForcedColumnWidth(
+              tableBodyCell,
+              cellCompStyle,
+              colTestWidth
+            );
+            this._applyForcedColumnWidth(tableBodyCell, forcedCellWidth);
+          } else {
+            this._applyForcedColumnWidth(tableBodyCell, forcedColumnCellWidth);
+          }
+        }
+      }
+
+      // update column footer cell width
+      if (footerCell != null) {
+        this._applyForcedColumnWidth(
+          footerCell,
+          this._getForcedColumnWidth(footerCell, window.getComputedStyle(footerCell), colTestWidth)
+        );
+      }
+    }
+  }
+  return valueApplied;
+};
+
+/**
  * Returns whether any of the table columns have width specified
  * @return {boolean} true if any column widths are set, false otherwise
  * @private
@@ -8739,27 +8819,13 @@ TableLegacyLayoutManager.prototype._isTableColumnsWidthSet = function () {
 };
 
 /**
- * Returns whether all of the table columns have width specified
- * @return {boolean} true if all column widths are set, false otherwise
- * @private
- */
-TableLegacyLayoutManager.prototype._isAllTableColumnsWidthSet = function () {
-  var columnsCount = this._table._getColumnDefs().length;
-  for (var i = 0; i < columnsCount; i++) {
-    if (this._forcedWidthColumns[i] === false) {
-      return false;
-    }
-  }
-  return true;
-};
-
-/**
  * Refresh the table dimensions
  * @private
  */
 TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
   var sizingState = this._getSizingState();
   var tableUpdates = this._getTableUpdates();
+  this._updateScrollPositionCache();
   if (
     !tableUpdates.has(Table._UPDATE._DATA_REFRESH) &&
     !tableUpdates.has(Table._UPDATE._DATA_SORT) &&
@@ -8789,7 +8855,6 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
   var tableBottomSlot = this._table._getTableBottomSlot();
 
   // first remove any styling so that the browser sizes the table
-  this.clearCachedDimensions();
   this._removeTableDimensionsStyling();
   this._table._styleTableContainer(tableContainer);
 
@@ -9125,8 +9190,7 @@ TableLegacyLayoutManager.prototype._setResizeCursor = function (event) {
     return false;
   }
 
-  var headerColumns = this._table._getTableHeaderColumns();
-  if (!headerColumns) {
+  if (this._table._getTableHeaderColumns().length === 0) {
     return false;
   }
 
@@ -9375,10 +9439,8 @@ TableLegacyLayoutManager.prototype._setTableHeaderColumnsResizeStyling = functio
  */
 TableLegacyLayoutManager.prototype._clearTableHeaderColumnsResizeStyling = function () {
   var headerColumns = this._table._getTableHeaderColumns();
-  if (headerColumns) {
-    for (var i = 0; i < headerColumns.length; i++) {
-      headerColumns[i].style.cursor = '';
-    }
+  for (var i = 0; i < headerColumns.length; i++) {
+    headerColumns[i].style.cursor = '';
   }
   var table = this._table._getTable();
   table.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_RESIZING_CLASS);
@@ -9636,7 +9698,7 @@ TableStickyLayoutManager.prototype._handleScrollerScrollTop = function (scrollTo
     var stickyRows = this._table._getTableBodyStickyRows();
     for (var i = 0; i < stickyRows.length; i++) {
       var stickyRow = stickyRows[i];
-      if (this.getVerticalOverflowDiff(stickyRow).top > 0) {
+      if (this.getVerticalOverflowDiff(stickyRow).top >= 0) {
         stickyRow.classList.add(Table.CSS_CLASSES._TABLE_STUCK_ROW_CLASS);
       } else {
         stickyRow.classList.remove(Table.CSS_CLASSES._TABLE_STUCK_ROW_CLASS);
@@ -9746,7 +9808,7 @@ TableStickyLayoutManager.prototype.getHorizontalOverflowDiff = function (columnC
     frozenStartOffset = 0;
     frozenEndOffset = 0;
   }
-  if (this._table._isDefaultSelectorEnabled()) {
+  if (this._table._isDefaultSelectorEnabled() && columnIndex !== -1) {
     frozenStartOffset += this._selectorColWidth;
   }
   if (this._table._isGutterStartColumnEnabled()) {
@@ -9793,6 +9855,9 @@ TableStickyLayoutManager.prototype.getHorizontalOverflowDiff = function (columnC
  */
 TableStickyLayoutManager.prototype._clearAllCache = function () {
   this._clearColumnSizingCache();
+  this._columnMinWidths = null;
+  this._columnMaxWidths = null;
+  this._selectorColWidth = null;
 };
 
 /**
@@ -9801,8 +9866,6 @@ TableStickyLayoutManager.prototype._clearAllCache = function () {
 TableStickyLayoutManager.prototype._clearColumnSizingCache = function () {
   TableStickyLayoutManager.superclass._clearColumnSizingCache.call(this);
   this._appliedColumnWidths = null;
-  this._columnInitWidths = null;
-  this._selectorColWidth = null;
   this._table._gutterStartWidth = null;
   this._table._gutterEndWidth = null;
 };
@@ -9815,13 +9878,18 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
   var tableContainer = this._table._getTableContainer();
   var sizingState = this._getSizingState();
   var tableUpdates = this._getTableUpdates();
+  this._updateScrollPositionCache();
   if (tableUpdates.has(Table._UPDATE._REFRESH)) {
     this._clearAllCache();
   } else if (
-    tableUpdates.has(Table._UPDATE._DATA_REFRESH) ||
-    tableUpdates.has(Table._UPDATE._ATTACHED) ||
-    tableUpdates.has(Table._UPDATE._SHOWN) ||
     tableUpdates.has(Table._UPDATE._RESIZE) ||
+    tableUpdates.has(Table._UPDATE._ATTACHED) ||
+    tableUpdates.has(Table._UPDATE._SHOWN)
+  ) {
+    // for a change is visibility / resize, this is needed in case responsive columns were added or dropped
+    this._clearColumnSizingCache(true);
+  } else if (
+    tableUpdates.has(Table._UPDATE._DATA_REFRESH) ||
     tableUpdates.has(Table._UPDATE._COL_RESIZE) ||
     tableUpdates.has(Table._UPDATE._COL_REORDER) ||
     (tableUpdates.has(Table._UPDATE._ROWS_ADDED) && !sizingState.hasVerticalOverflow) ||
@@ -9837,8 +9905,7 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
       tableUpdates.has(Table._UPDATE._ADD_ROW_DISPLAY)
     ) {
       this.unregisterScrollListeners();
-      this.clearCachedDimensions();
-      this._setupTableHeight(this._getBottomSlotHeight());
+      this._setupTableHeight(this._table._getTableScroller(), this._getBottomSlotHeight());
       this._table._styleTableContainer(tableContainer);
       this._restoreCachedScrollPos();
       this.registerScrollListeners();
@@ -9861,58 +9928,62 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
     this._enableTableVisibility();
     return;
   }
-
+  var tableScroller = this._table._getTableScroller();
   var bottomSlotHeight = this._getBottomSlotHeight();
   var tableElem = this._table._getTable();
 
-  this.clearCachedDimensions();
   this._removeTableDimensionsStyling();
 
-  var overallWidth;
   // this shouldn't be necessary, but safari has a bug where it does not recalculate the table column widths
   // correctly when the DOM surrounding it is cleaned up without doing something to force a reflow on the table
   if (isSafari()) {
     tableElem.classList.remove(Table.CSS_CLASSES._TABLE_ELEMENT_CLASS);
-    overallWidth = tableElem.offsetWidth;
+    // eslint-disable-next-line no-unused-vars
+    var overallWidth = tableElem.offsetWidth;
     tableElem.classList.add(Table.CSS_CLASSES._TABLE_ELEMENT_CLASS);
   }
 
   this._table._styleTableContainer(tableContainer);
+  this._setupTableHeight(tableScroller, bottomSlotHeight);
 
-  this._initializeColumnLayouts();
-  this._setupTableHeight(bottomSlotHeight);
+  this._applyColumnWidths(tableElem);
+  var initTableContainerScrollableState = this._getTableContainerScrollableState(bottomSlotHeight);
 
-  overallWidth = this._determineColumnWidths();
-  if (overallWidth > 0) {
-    tableElem.style[Table.CSS_PROP._WIDTH] = overallWidth + Table.CSS_VAL._PX;
-    tableElem.style['table-layout'] = 'fixed';
+  // re-apply table scroller height as it may have changed due to column sizing/wrapping
+  this._setupTableScrollerHeight(tableScroller, bottomSlotHeight);
+
+  var tableContainerScrollableState = this._getTableContainerScrollableState(bottomSlotHeight);
+  if (
+    initTableContainerScrollableState[0] === 0 &&
+    tableContainerScrollableState[0] === 1 &&
+    this._getDefaultScrollBarSize() > 0 &&
+    !this._isVerticalScrollBarHidden()
+  ) {
+    // actual vertical scrollbar width changed due to column sizing/wrapping and height setting,
+    // so we need to recalculate the column sizes with that scrollbar width taken into account
+    this._clearColumnSizingCache();
+    tableContainer.classList.add(Table.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS);
+    this._applyColumnWidths(tableElem);
+    this._setupTableScrollerHeight(tableScroller, bottomSlotHeight);
+    tableContainerScrollableState = this._getTableContainerScrollableState(bottomSlotHeight);
   }
-  let gutterWidth = 0;
-  if (this._table._isGutterStartColumnEnabled()) {
-    gutterWidth += this._table._getTableGutterWidth('start');
-  }
-  if (this._table._isGutterEndColumnEnabled()) {
-    gutterWidth += this._table._getTableGutterWidth('end');
-  }
-  if (gutterWidth > 0) {
-    tableElem.style[Table.CSS_PROP._WIDTH] = overallWidth + gutterWidth + Table.CSS_VAL._PX;
-  }
-  this._applyHeaderWrapperClass();
+
   this._initializeFrozenColumns(true);
   this._updateStickyRowTops();
 
-  var tableContainerScrollableState = this._getTableContainerScrollableState(bottomSlotHeight);
   if (tableContainerScrollableState[0] === 1) {
     sizingState.hasVerticalOverflow = true;
     tableContainer.classList.add(Table.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS);
   } else {
     sizingState.hasVerticalOverflow = false;
+    tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS);
   }
   if (tableContainerScrollableState[1] === 1) {
     sizingState.hasHorizontalOverflow = true;
     tableContainer.classList.add(Table.CSS_CLASSES._TABLE_SCROLL_HORIZONTAL_CLASS);
   } else {
     sizingState.hasHorizontalOverflow = false;
+    tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_SCROLL_HORIZONTAL_CLASS);
   }
 
   if (this._table._isStatusMessageShown()) {
@@ -9985,34 +10056,84 @@ TableStickyLayoutManager.prototype._updateStickyRowTops = function () {
 };
 
 /**
+ * Ensures the preferred column width variables are populated. Also resets the inner Table element's styling
+ * if required. Returns true iff the inner Table element's styling was reset. Returns false otherwise.
  * @private
  */
 TableStickyLayoutManager.prototype._initializeColumnLayouts = function () {
-  // set the forced column widths before checking for scroll state, otherwise we
-  // may miss cases where the columns[].width attribute values cause overflow
-  this._setForcedColumnWidths();
-  this._verifyMinAndMaxWidths();
+  var isResetTableElemStyle = false;
+
+  // determine selector min width if needed
+  if (this._table._isDefaultSelectorEnabled()) {
+    if (this._selectorColWidth == null) {
+      isResetTableElemStyle = true;
+      this._selectorColWidth = this._getPixelStyleEquivalent('2.75rem');
+    }
+  } else if (this._selectorColWidth != null) {
+    isResetTableElemStyle = true;
+    this._selectorColWidth = null;
+  }
+
+  return isResetTableElemStyle;
+};
+
+/**
+ * Helper function to enforce the weights / min width rules on the Table's columns.
+ */
+TableStickyLayoutManager.prototype._enforceWeightedMinRules = function (
+  availableWidth,
+  initTotalWeight,
+  initForcedTotalWidth,
+  forcedColumnWidths,
+  columnWeights,
+  newColumnWidths
+) {
+  var totalWeight = initTotalWeight;
+  var forcedTotalWidth = initForcedTotalWidth;
+
+  const pendingForcedColumnWidths = [];
+  let isMinRuleApplied = true;
+  while (isMinRuleApplied) {
+    isMinRuleApplied = false;
+    let currentWeightTotal = totalWeight;
+    let widthDiff = availableWidth - forcedTotalWidth;
+    if (widthDiff > 0) {
+      for (let i = 0; i < this._table._getColumnDefs().length; i++) {
+        if (
+          currentWeightTotal > 0 &&
+          forcedColumnWidths[i] == null &&
+          pendingForcedColumnWidths[i] == null
+        ) {
+          const currentWeight = columnWeights[i];
+          const newWidth = (currentWeight / currentWeightTotal) * widthDiff;
+
+          // if calculated width breaks min width requirement, force min width as needed
+          const minWidth = this._appliedColumnWidths[i];
+          if (newWidth < minWidth) {
+            // the preferred weighted size conflicts with the min size, so set pending to min size
+            pendingForcedColumnWidths[i] = minWidth;
+            // eslint-disable-next-line no-param-reassign
+            newColumnWidths[i] = minWidth;
+            forcedTotalWidth += minWidth;
+            isMinRuleApplied = true;
+            totalWeight -= currentWeight;
+            break;
+          }
+          // eslint-disable-next-line no-param-reassign
+          newColumnWidths[i] = newWidth;
+          widthDiff -= newWidth;
+          currentWeightTotal -= currentWeight;
+        }
+      }
+    }
+  }
 };
 
 /**
  * @private
  */
-TableStickyLayoutManager.prototype._setupTableHeight = function (bottomSlotHeight) {
-  var tableScroller = this._table._getTableScroller();
-
-  // clear any previous table scroller styling
-  tableScroller.removeAttribute(Table.DOM_ATTR._STYLE);
-
-  // Size the table scroller to fit in the container height
-  var containerStyle = window.getComputedStyle(this._table._getTableContainer());
-  var containerClientHeight = this.getExactClientHeight(containerStyle);
-  var tableScrollerHeight = containerClientHeight - bottomSlotHeight;
-
-  var scrollerStyle = window.getComputedStyle(tableScroller);
-  var scrollerOffsetHeight = this.getExactOffsetHeight(scrollerStyle);
-  if (Math.abs(scrollerOffsetHeight - tableScrollerHeight) > Table.SIZING_ERROR_MARGIN) {
-    tableScroller.style[Table.CSS_PROP._HEIGHT] = tableScrollerHeight + Table.CSS_VAL._PX;
-  }
+TableStickyLayoutManager.prototype._setupTableHeight = function (tableScroller, bottomSlotHeight) {
+  this._setupTableScrollerHeight(tableScroller, bottomSlotHeight);
 
   var tableBottomSlot = this._table._getTableBottomSlot();
   if (tableBottomSlot != null) {
@@ -10028,13 +10149,36 @@ TableStickyLayoutManager.prototype._setupTableHeight = function (bottomSlotHeigh
 };
 
 /**
+ * @private
+ */
+TableStickyLayoutManager.prototype._setupTableScrollerHeight = function (
+  tableScroller,
+  bottomSlotHeight
+) {
+  // clear any previous table scroller styling
+  tableScroller.removeAttribute(Table.DOM_ATTR._STYLE);
+
+  // Size the table scroller to fit in the container height
+  var containerStyle = window.getComputedStyle(this._table._getTableContainer());
+  var containerClientHeight = this.getExactClientHeight(containerStyle);
+  var tableScrollerHeight = containerClientHeight - bottomSlotHeight;
+
+  var scrollerStyle = window.getComputedStyle(tableScroller);
+  var scrollerOffsetHeight = this.getExactOffsetHeight(scrollerStyle);
+  if (Math.abs(scrollerOffsetHeight - tableScrollerHeight) > Table.SIZING_ERROR_MARGIN) {
+    // eslint-disable-next-line no-param-reassign
+    tableScroller.style[Table.CSS_PROP._HEIGHT] = tableScrollerHeight + Table.CSS_VAL._PX;
+  }
+};
+
+/**
  * Iterate through the columns and remove the widths
  * @private
  */
 TableStickyLayoutManager.prototype._removeHeaderColumnAndCellColumnWidths = function () {
-  var columnsCount = this._table._getColumnDefs().length;
-  for (var i = 0; i < columnsCount; i++) {
-    var tableCol = this._table._getTableCol(i);
+  var colElements = this._table._getTableCols();
+  for (var i = 0; i < colElements.length; i++) {
+    var tableCol = colElements[i];
     tableCol.style[Table.CSS_PROP._WIDTH] = '';
     tableCol.style[Table.CSS_PROP._DISPLAY] = '';
   }
@@ -10044,42 +10188,14 @@ TableStickyLayoutManager.prototype._removeHeaderColumnAndCellColumnWidths = func
 /**
  * @private
  */
-TableStickyLayoutManager.prototype._determineColumnWidths = function () {
-  // save the column widths at this stage as the preferred content sizes
-  this._savePreferredColWidths();
-
-  // set column widths on the actual column elements, and save the final inner table elem width
-  var overallWidth = this._setAllColumnWidths();
-
-  // remove any forced column width values from the initial fetch as they are no longer needed
-  this._clearForcedColumnWidths();
-
-  return overallWidth;
+TableStickyLayoutManager.prototype._applyColumnWidths = function () {
+  this._initializeColumnLayouts();
 };
 
 /**
  * @private
  */
-TableStickyLayoutManager.prototype._setAllColumnWidths = function () {
-  var columns = this._table._getColumnDefs();
-  var columnsCount = columns.length;
-
-  var totalWidth = this._selectorColWidth != null ? this._selectorColWidth : 0;
-  this._appliedColumnWidths = [];
-
-  for (var i = 0; i < columnsCount; i++) {
-    var tableCol = this._table._getTableCol(i);
-    var colWidth = this._columnInitWidths[i];
-    tableCol.style[Table.CSS_PROP._WIDTH] = colWidth + Table.CSS_VAL._PX;
-    if (colWidth === 0) {
-      // set the display value to none or else the following column will not be shown
-      tableCol.style[Table.CSS_PROP._DISPLAY] = Table.CSS_VAL._NONE;
-    }
-    this._appliedColumnWidths[i] = colWidth;
-    totalWidth += colWidth;
-  }
-  return totalWidth;
-};
+TableStickyLayoutManager.prototype._setAllColumnWidths = function () {};
 
 /**
  * @private
@@ -10089,81 +10205,6 @@ TableStickyLayoutManager.prototype._getAppliedColumnWidth = function (colIndex) 
     return this._appliedColumnWidths[colIndex];
   }
   return 0;
-};
-
-/**
- * @private
- */
-TableStickyLayoutManager.prototype._clearForcedColumnWidths = function () {
-  var tableBodyRows = this._table._getTableBodyRows();
-
-  for (var i = 0; i < this._forcedWidthColumns.length; i++) {
-    if (this._forcedWidthColumns[i] !== false) {
-      // update column header cell width
-      var headerCell = this._table._getTableHeaderColumn(i);
-      if (headerCell != null) {
-        this._applyForcedColumnWidth(headerCell, '');
-      }
-
-      // update table body cell widths
-      for (var j = 0; j < tableBodyRows.length; j++) {
-        var tableBodyCell = this._table._getTableBodyCell(j, i, null);
-        if (tableBodyCell != null) {
-          this._applyForcedColumnWidth(tableBodyCell, '');
-        }
-      }
-
-      // update column footer cell width
-      var footerCell = this._table._getTableFooterCell(i);
-      if (footerCell != null) {
-        this._applyForcedColumnWidth(footerCell, '');
-      }
-    }
-  }
-};
-
-/**
- * @private
- */
-TableStickyLayoutManager.prototype._savePreferredColWidths = function () {
-  // determine selector min width if needed
-  if (this._selectorColWidth == null && this._table._isDefaultSelectorEnabled()) {
-    var headerSelector = this._table._getTableSelectorColumn();
-    if (headerSelector != null) {
-      // offsetWidth does not include partial px values, so bounding rect should be used
-      this._selectorColWidth = headerSelector.getBoundingClientRect().width;
-    } else {
-      var tableBodyRow = this._table._getTableBodyRow(0);
-      var selectorCell = this._table._getTableBodySelectorCell(tableBodyRow);
-      if (selectorCell != null) {
-        // offsetWidth does not include partial px values, so bounding rect should be used
-        this._selectorColWidth = selectorCell.getBoundingClientRect().width;
-      }
-    }
-  }
-
-  // determine column init widths if needed
-  if (this._columnInitWidths == null) {
-    this._columnInitWidths = [];
-    var columnsCount = this._table._getColumnDefs().length;
-
-    // loop through columns to get the remaining column widths
-    for (var i = 0; i < columnsCount; i++) {
-      // find column header cell width
-      var headerCell = this._table._getTableHeaderColumn(i);
-      if (headerCell != null) {
-        // offsetWidth does not include partial px values, so bounding rect should be used
-        this._columnInitWidths[i] = headerCell.getBoundingClientRect().width;
-      } else {
-        // find column table body cell widths
-        var tableBodyCell = this._table._getTableBodyCell(0, i, null);
-        if (tableBodyCell != null) {
-          // offsetWidth does not include partial px values, so bounding rect should be used
-          this._columnInitWidths[i] = tableBodyCell.getBoundingClientRect().width;
-        }
-      }
-    }
-  }
 };
 
 /**
@@ -11015,13 +11056,406 @@ TableStickyLayoutManager.prototype._getTableColumnDropIndicator = function () {
   );
 };
 
-TableStickyLayoutManager.prototype._applyHeaderWrapperClass = function () {
-  const headerColumns = this._table._getTableHeaderColumns();
-  if (headerColumns != null) {
-    for (let i = 0; i < headerColumns.length; i++) {
-      headerColumns[i].classList.add(Table.CSS_CLASSES._TABLE_HEADER_WRAP_TEXT_CLASS);
+/**
+ * @private
+ */
+const TableContentsLayoutManager = function (table) {
+  TableContentsLayoutManager.superclass.constructor.call(this, table);
+};
+
+// Subclass from oj.Object
+oj.Object.createSubclass(
+  TableContentsLayoutManager,
+  TableStickyLayoutManager,
+  'TableContentsLayoutManager'
+);
+
+/**
+ * @private
+ */
+TableContentsLayoutManager.prototype._clearAllCache = function () {
+  TableContentsLayoutManager.superclass._clearAllCache.call(this);
+  this._columnPreferredWidths = null;
+  this._columnSampledMinWidths = null;
+};
+
+/**
+ * @private
+ */
+TableContentsLayoutManager.prototype._clearColumnSizingCache = function (includeSamplingCache) {
+  TableContentsLayoutManager.superclass._clearColumnSizingCache.call(this, includeSamplingCache);
+  if (includeSamplingCache) {
+    this._columnSampledMinWidths = null;
+    this._columnPreferredWidths = null;
+  }
+};
+
+/**
+ * Remove table dimensions styling
+ * @private
+ */
+TableContentsLayoutManager.prototype._removeTableDimensionsStyling = function () {
+  TableContentsLayoutManager.superclass._removeTableDimensionsStyling.call(this);
+
+  if (this._columnPreferredWidths == null || this._columnSampledMinWidths == null) {
+    this._removeHeaderWrapperClass();
+
+    // for sticky layout, start with 1px wide table to ensure accurate column weights are retreived
+    var tableElem = this._table._getTable();
+    tableElem.style[Table.CSS_PROP._WIDTH] = 1 + Table.CSS_VAL._PX;
+
+    // TODO: hopefully remove at some point, but seems risky to remove in big JET
+    // to support contents with non-intrinisic widths, fallback to using auto width
+    if (Math.abs(this._table._getTableContainer().clientWidth - tableElem.offsetWidth) <= 1) {
+      tableElem.style[Table.CSS_PROP._WIDTH] = '';
+    } else {
+      this._isExternalSizing = true;
     }
   }
+};
+
+/**
+ * Ensures the preferred column width variables are populated. Also resets the inner Table element's styling
+ * if required. Returns true iff the inner Table element's styling was reset. Returns false otherwise.
+ * @private
+ */
+TableContentsLayoutManager.prototype._initializeColumnLayouts = function () {
+  var i;
+  var isResetTableElemStyle =
+    TableContentsLayoutManager.superclass._initializeColumnLayouts.call(this);
+
+  var columns = this._table._getColumnDefs();
+  var columnsCount = columns.length;
+
+  // determine column min and max widths if needed
+  if (this._columnMinWidths == null || this._columnMaxWidths == null) {
+    isResetTableElemStyle = true;
+    this._columnMinWidths = [];
+    this._columnMaxWidths = [];
+    // loop through columns to get the remaining column widths
+    for (i = 0; i < columnsCount; i++) {
+      var isAddBorder =
+        this._table._isVerticalGridEnabled() && (i > 0 || this._table._isDefaultSelectorEnabled());
+      var minWidth = this._getPixelStyleEquivalent(columns[i].minWidth, isAddBorder);
+      // minWidth MUST be null OR a non-negative value
+      // TODO: throw a warning when it is invalid
+      if (minWidth == null || minWidth <= 0) {
+        this._columnMinWidths[i] = null;
+      } else {
+        this._columnMinWidths[i] = minWidth;
+      }
+      var maxWidth = this._getPixelStyleEquivalent(columns[i].maxWidth, isAddBorder);
+      // maxWidth MUST be null OR a non-negative value greater than any valid minWidth provided
+      // TODO: throw a warning when it is invalid
+      if (
+        maxWidth != null && maxWidth < this._columnMinWidths[i] != null
+          ? this._columnMinWidths[i]
+          : 0
+      ) {
+        this._columnMaxWidths[i] = null;
+      } else {
+        this._columnMaxWidths[i] = maxWidth;
+      }
+    }
+  }
+
+  var headerCell;
+  var tableBodyCell;
+  if (this._columnPreferredWidths == null || this._columnSampledMinWidths == null) {
+    // determine column weights if needed
+    isResetTableElemStyle = true;
+
+    this._columnPreferredWidths = [];
+    this._columnSampledMinWidths = [];
+    // loop through columns to get the remaining column widths
+    for (i = 0; i < columnsCount; i++) {
+      var sampledWidth;
+      // find column header cell width
+      headerCell = this._table._getTableHeaderColumn(i);
+      if (headerCell != null) {
+        // offsetWidth does not include partial px values, so bounding rect should be used
+        sampledWidth = headerCell.getBoundingClientRect().width;
+      } else {
+        // find column table body cell widths
+        tableBodyCell = this._table._getTableBodyCell(0, i, null);
+        if (tableBodyCell != null) {
+          // offsetWidth does not include partial px values, so bounding rect should be used
+          sampledWidth = tableBodyCell.getBoundingClientRect().width;
+        }
+      }
+      // the preferred width should just be set directly to match the min width since that
+      // will be the starting width when _setAllColumnWidths is triggered
+      if (this._columnMinWidths[i] != null && this._columnMinWidths[i] > sampledWidth) {
+        this._columnPreferredWidths[i] = this._columnMinWidths[i];
+      } else {
+        this._columnPreferredWidths[i] = sampledWidth;
+      }
+    }
+
+    // apply header wrapping to determine the minimum column widths
+    this._applyHeaderWrapperClass();
+
+    // loop through columns to get the remaining column widths
+    for (i = 0; i < columnsCount; i++) {
+      // find column header cell width
+      headerCell = this._table._getTableHeaderColumn(i);
+      if (headerCell != null) {
+        // offsetWidth does not include partial px values, so bounding rect should be used
+        this._columnSampledMinWidths[i] = headerCell.getBoundingClientRect().width;
+      } else {
+        // find column table body cell widths
+        tableBodyCell = this._table._getTableBodyCell(0, i, null);
+        if (tableBodyCell != null) {
+          // offsetWidth does not include partial px values, so bounding rect should be used
+          this._columnSampledMinWidths[i] = tableBodyCell.getBoundingClientRect().width;
+        }
+      }
+    }
+  }
+
+  return isResetTableElemStyle;
+};
+
+/**
+ * @private
+ */
+TableContentsLayoutManager.prototype._applyColumnWidths = function () {
+  TableContentsLayoutManager.superclass._applyColumnWidths.call(this);
+
+  var tableElem = this._table._getTable();
+  var tableScroller = this._table._getTableScroller();
+  // only provide the available space if we know this is an externally sized table
+  var initScrollerWidth = this._isExternalSizing ? tableScroller.clientWidth : undefined;
+  var overallWidth = this._setAllColumnWidths(initScrollerWidth);
+  if (overallWidth > 0) {
+    tableElem.style[Table.CSS_PROP._WIDTH] = overallWidth + Table.CSS_VAL._PX;
+    tableElem.style['table-layout'] = 'fixed';
+    if (this._isExternalSizing !== true) {
+      // if this may not be externally sized, check to make sure final sizing is valid
+      var scrollerWidth = tableScroller.clientWidth;
+      if (scrollerWidth - overallWidth > 1) {
+        overallWidth = this._setAllColumnWidths(scrollerWidth);
+        if (overallWidth > 0) {
+          tableElem.style[Table.CSS_PROP._WIDTH] = overallWidth + Table.CSS_VAL._PX;
+        }
+      }
+    }
+  }
+  return overallWidth;
+};
+
+/**
+ * @private
+ */
+TableContentsLayoutManager.prototype._setAllColumnWidths = function (availableWidth) {
+  var i;
+  var columns = this._table._getColumnDefs();
+  var columnsCount = columns.length;
+
+  var totalPreferredWidth = 0; // total of all data column widths if set to their preferred or forced values
+  var totalWorkingWeight = 0; // total weight of all non-forced data columns
+  var totalRemainingWeight = 0; // total weight of all non-forced data columns minus their starting min widths
+  var forcedTotalWidth = 0; // total width of all forced data columns
+  var pendingTotalWidth = 0; // total starting point width of all data columns (forced + min widths of non-forced)
+  var forcedColumnWidths = []; // columns-based array with values for forced columns
+  var newColumnWidths = []; // pending widths of all data columns
+  this._appliedColumnWidths = []; // pending (and eventually applied) widths of all data columns
+
+  var totalWidth = this._selectorColWidth != null ? this._selectorColWidth : 0;
+  if (this._table._isGutterStartColumnEnabled()) {
+    const gutterStartWidth = this._table._getTableGutterWidth('start');
+    totalWidth += gutterStartWidth;
+  }
+  if (this._table._isGutterEndColumnEnabled()) {
+    const gutterEndWidth = this._table._getTableGutterWidth('end');
+    totalWidth += gutterEndWidth;
+  }
+
+  var minMaxRulesRequired = false;
+  for (i = 0; i < columnsCount; i++) {
+    var sampledMinWidth = this._columnSampledMinWidths[i];
+    if (sampledMinWidth > 0) {
+      var isAddBorder =
+        this._table._isVerticalGridEnabled() && (i > 0 || this._table._isDefaultSelectorEnabled());
+      var forcedWidth = this._getPixelStyleEquivalent(columns[i].width, isAddBorder);
+      if (forcedWidth != null) {
+        forcedColumnWidths[i] = forcedWidth;
+        forcedTotalWidth += forcedWidth;
+        pendingTotalWidth += forcedWidth;
+        totalPreferredWidth += forcedWidth;
+        newColumnWidths[i] = forcedWidth;
+        this._appliedColumnWidths[i] = forcedWidth;
+      } else {
+        var columnWidth;
+        minMaxRulesRequired = true;
+        forcedColumnWidths[i] = undefined;
+        var minWidth = this._columnMinWidths[i];
+        var maxWidth = this._columnMaxWidths[i];
+        if (minWidth != null && minWidth >= sampledMinWidth) {
+          columnWidth = minWidth;
+        } else if (maxWidth != null && sampledMinWidth >= maxWidth) {
+          columnWidth = maxWidth;
+        } else {
+          columnWidth = sampledMinWidth;
+        }
+        pendingTotalWidth += columnWidth;
+        totalPreferredWidth +=
+          maxWidth != null && maxWidth <= this._columnPreferredWidths[i]
+            ? maxWidth
+            : this._columnPreferredWidths[i];
+        totalWorkingWeight += this._columnPreferredWidths[i];
+        totalRemainingWeight += this._columnPreferredWidths[i] - columnWidth;
+        newColumnWidths[i] = columnWidth;
+        this._appliedColumnWidths[i] = columnWidth;
+      }
+    } else {
+      newColumnWidths[i] = 0;
+      this._appliedColumnWidths[i] = 0;
+      forcedColumnWidths[i] = 0;
+    }
+  }
+
+  if (minMaxRulesRequired) {
+    var remainingWidth = availableWidth != null ? availableWidth - totalWidth : totalPreferredWidth;
+    if (pendingTotalWidth < remainingWidth) {
+      this._enforceMinMaxRules(
+        remainingWidth,
+        totalPreferredWidth,
+        totalRemainingWeight,
+        totalWorkingWeight,
+        pendingTotalWidth,
+        forcedTotalWidth,
+        forcedColumnWidths,
+        newColumnWidths
+      );
+    }
+  }
+
+  for (i = 0; i < columnsCount; i++) {
+    var colWidth = newColumnWidths[i];
+    var tableCol = this._table._getTableCol(i);
+    if (tableCol != null) {
+      tableCol.style[Table.CSS_PROP._WIDTH] = colWidth + Table.CSS_VAL._PX;
+      if (colWidth === 0) {
+        // set the display value to none or else the following column will not be shown
+        tableCol.style[Table.CSS_PROP._DISPLAY] = Table.CSS_VAL._NONE;
+      }
+    }
+    totalWidth += colWidth;
+    this._appliedColumnWidths[i] = colWidth;
+  }
+  return totalWidth;
+};
+
+/**
+ * @private
+ */
+TableContentsLayoutManager.prototype._enforceMinMaxRules = function (
+  availableWidth,
+  totalPreferredWidth,
+  totalRemainingWeight,
+  initialTotalWorkingWeight,
+  initialPendingTotalWidth,
+  initialForcedTotalWidth,
+  forcedColumnWidths,
+  newColumnWidths
+) {
+  var forcedTotalWidth = initialForcedTotalWidth;
+  var totalWorkingWeight = initialTotalWorkingWeight;
+  var appliedPendingTotalWidth = initialPendingTotalWidth;
+
+  // try and honor the weights of each column using the minWidth as a base, and then check that against
+  // any max widths once completed. if the final result doesn't fill the space AND at least 1 max width
+  // rule was enforced, repeat the process until no max rules are enforced OR the space is filled.
+  var isMaxRuleApplied = true;
+  while (isMaxRuleApplied) {
+    isMaxRuleApplied = false;
+    if (totalPreferredWidth > availableWidth) {
+      this._enforceConstrainedWeightRules(
+        availableWidth - appliedPendingTotalWidth,
+        totalRemainingWeight,
+        forcedColumnWidths,
+        newColumnWidths
+      );
+    } else {
+      this._enforceWeightedMinRules(
+        availableWidth,
+        totalWorkingWeight,
+        forcedTotalWidth,
+        forcedColumnWidths,
+        this._columnPreferredWidths,
+        newColumnWidths
+      );
+    }
+
+    var pendingTotalWidth = 0;
+    for (var i = 0; i < this._table._getColumnDefs().length; i++) {
+      if (forcedColumnWidths[i] == null) {
+        var maxWidth = this._columnMaxWidths[i];
+        if (maxWidth != null && newColumnWidths[i] > maxWidth) {
+          isMaxRuleApplied = true;
+          // eslint-disable-next-line no-param-reassign
+          forcedColumnWidths[i] = maxWidth;
+          forcedTotalWidth += maxWidth;
+          appliedPendingTotalWidth += maxWidth - this._appliedColumnWidths[i];
+          totalWorkingWeight -= this._columnPreferredWidths[i];
+          // eslint-disable-next-line no-param-reassign
+          newColumnWidths[i] = maxWidth;
+          this._appliedColumnWidths[i] = maxWidth;
+        }
+      }
+      pendingTotalWidth += newColumnWidths[i];
+    }
+    isMaxRuleApplied = isMaxRuleApplied && pendingTotalWidth < availableWidth;
+  }
+};
+
+/**
+ * Helper function to enforce the weights on the Table's columns.
+ */
+TableContentsLayoutManager.prototype._enforceConstrainedWeightRules = function (
+  initialExtraWidth,
+  totalRemainingWeight,
+  forcedColumnWidths,
+  newColumnWidths
+) {
+  if (initialExtraWidth > 0) {
+    let availableWidth = initialExtraWidth;
+    let currentWeightTotal = totalRemainingWeight;
+    for (let i = 0; i < this._table._getColumnDefs().length; i++) {
+      if (currentWeightTotal > 0 && forcedColumnWidths[i] == null) {
+        const currentWeight = this._columnPreferredWidths[i] - this._appliedColumnWidths[i];
+        const weightWidth = (currentWeight / currentWeightTotal) * availableWidth;
+
+        // eslint-disable-next-line no-param-reassign
+        newColumnWidths[i] = weightWidth + this._appliedColumnWidths[i];
+        availableWidth -= weightWidth;
+        currentWeightTotal -= currentWeight;
+      }
+    }
+  }
+};
+
+/**
+ * @private
+ */
+TableContentsLayoutManager.prototype._applyHeaderWrapperClass = function () {
+  var headerColumns = this._table._getTableHeaderColumns();
+  for (let i = 0; i < headerColumns.length; i++) {
+    headerColumns[i].classList.add(Table.CSS_CLASSES._TABLE_HEADER_WRAP_TEXT_CLASS);
+  }
+  this._table._getTable().classList.remove(Table.CSS_CLASSES._TABLE_DISABLE_WRAPPING_CLASS);
+};
+
+/**
+ * @private
+ */
+TableContentsLayoutManager.prototype._removeHeaderWrapperClass = function () {
+  var headerColumns = this._table._getTableHeaderColumns();
+  for (let i = 0; i < headerColumns.length; i++) {
+    headerColumns[i].classList.remove(Table.CSS_CLASSES._TABLE_HEADER_WRAP_TEXT_CLASS);
+  }
+  this._table._getTable().classList.add(Table.CSS_CLASSES._TABLE_DISABLE_WRAPPING_CLASS);
 };
 
 /**
@@ -11044,8 +11478,48 @@ oj.Object.createSubclass(
 TableFixedLayoutManager.prototype._clearAllCache = function () {
   TableFixedLayoutManager.superclass._clearAllCache.call(this);
   this._columnWeights = null;
-  this._columnMinWidths = null;
-  this._columnMaxWidths = null;
+  this._columnSampledMinWidths = null;
+};
+
+/**
+ * @private
+ */
+TableFixedLayoutManager.prototype._clearColumnSizingCache = function (includeSamplingCache) {
+  TableFixedLayoutManager.superclass._clearColumnSizingCache.call(this, includeSamplingCache);
+  if (includeSamplingCache) {
+    this._columnSampledMinWidths = null;
+  }
+};
+
+/**
+ * Refresh the table dimensions
+ * @private
+ */
+TableFixedLayoutManager.prototype.optimizeInitialColumnWidths = function () {
+  var tableContainer = this._table._getTableContainer();
+  this._clearAllCache();
+
+  var tableElem = this._table._getTable();
+
+  this._removeTableDimensionsStyling();
+
+  // this shouldn't be necessary, but safari has a bug where it does not recalculate the table column widths
+  // correctly when the DOM surrounding it is cleaned up without doing something to force a reflow on the table
+  if (isSafari()) {
+    tableElem.classList.remove(Table.CSS_CLASSES._TABLE_ELEMENT_CLASS);
+    // eslint-disable-next-line no-unused-vars
+    var overallWidth = tableElem.offsetWidth;
+    tableElem.classList.add(Table.CSS_CLASSES._TABLE_ELEMENT_CLASS);
+  }
+  this._table._styleTableContainer(tableContainer);
+  this._applyColumnWidths(tableElem);
+};
+
+/**
+ * @private
+ */
+TableFixedLayoutManager.prototype._removeTableDimensionsStyling = function () {
+  this.unregisterScrollListeners();
 };
 
 /**
@@ -11055,41 +11529,45 @@ TableFixedLayoutManager.prototype._clearAllCache = function () {
  */
 TableFixedLayoutManager.prototype._initializeColumnLayouts = function () {
   var i;
-  var isResetTableElemStyle = false;
-
-  // determine selector min width if needed
-  if (this._table._isDefaultSelectorEnabled()) {
-    if (this._selectorColWidth == null) {
-      isResetTableElemStyle = true;
-      var headerSelector = this._table._getTableSelectorColumn();
-      if (headerSelector != null) {
-        // offsetWidth does not include partial px values, so bounding rect should be used
-        this._selectorColWidth = headerSelector.getBoundingClientRect().width;
-      } else {
-        var tableBodyRow = this._table._getTableBodyRow(0);
-        var selectorCell = this._table._getTableBodySelectorCell(tableBodyRow);
-        if (selectorCell != null) {
-          // offsetWidth does not include partial px values, so bounding rect should be used
-          this._selectorColWidth = selectorCell.getBoundingClientRect().width;
-        }
-      }
-    }
-  } else if (this._selectorColWidth != null) {
-    isResetTableElemStyle = true;
-    this._selectorColWidth = null;
-  }
+  var isResetTableElemStyle =
+    TableFixedLayoutManager.superclass._initializeColumnLayouts.call(this);
 
   var columns = this._table._getColumnDefs();
   var columnsCount = columns.length;
 
-  // determine column weights if needed
-  if (this._columnWeights == null) {
+  // determine column min and max widths and weights if needed
+  if (
+    this._columnMinWidths == null ||
+    this._columnMaxWidths == null ||
+    this._columnWeights == null
+  ) {
     isResetTableElemStyle = true;
+    this._columnMinWidths = [];
+    this._columnMaxWidths = [];
     this._columnWeights = [];
+
     // loop through columns to get the remaining column widths
     for (i = 0; i < columnsCount; i++) {
+      var isAddBorder =
+        this._table._isVerticalGridEnabled() && (i > 0 || this._table._isDefaultSelectorEnabled());
+      var minWidth = this._getPixelStyleEquivalent(columns[i].minWidth, isAddBorder);
+      // minWidth MUST be set and greater than 0
+      // TODO: throw a warning when it is invalid
+      if (minWidth == null || minWidth <= 0) {
+        this._columnMinWidths[i] = 1;
+      } else {
+        this._columnMinWidths[i] = minWidth;
+      }
+      var maxWidth = this._getPixelStyleEquivalent(columns[i].maxWidth, isAddBorder);
+      // maxWidth MUST be null OR a non-negative value greater than any valid minWidth provided
+      // TODO: throw a warning when it is invalid
+      if (maxWidth != null && maxWidth < this._columnMinWidths[i]) {
+        this._columnMaxWidths[i] = null;
+      } else {
+        this._columnMaxWidths[i] = maxWidth;
+      }
       var columnWeight = parseFloat(columns[i].weight);
-      // TODO: throw a warning here when weight is less than 1
+      // TODO: throw a warning here when weight is invalid
       if (columnWeight <= 1) {
         columnWeight = 1;
       }
@@ -11097,46 +11575,11 @@ TableFixedLayoutManager.prototype._initializeColumnLayouts = function () {
     }
   }
 
-  // determine column min widths if needed
-  if (this._columnMinWidths == null) {
-    isResetTableElemStyle = true;
-    this._columnMinWidths = [];
-    // loop through columns to get the remaining column widths
-    for (i = 0; i < columnsCount; i++) {
-      var minWidth = this._getPixelStyleEquivalent(columns[i].minWidth);
-      // minWidth MUST be set and greater than 0 when fixed layout is specified
-      // TODO: throw a warning when it is not set or invalid
-      if (minWidth == null || minWidth <= 0) {
-        this._columnMinWidths[i] = 1;
-      } else {
-        this._columnMinWidths[i] = minWidth;
-      }
-    }
-  }
-
-  // determine column max widths if needed
-  if (this._columnMaxWidths == null) {
-    isResetTableElemStyle = true;
-    this._columnMaxWidths = [];
-    // loop through columns to get the remaining column widths
-    for (i = 0; i < columnsCount; i++) {
-      var maxWidth = this._getPixelStyleEquivalent(columns[i].maxWidth);
-      // maxWidth MUST be null or greater than 0
-      // TODO: throw a warning when it is nvalid
-      if (maxWidth != null && maxWidth <= 0) {
-        this._columnMaxWidths[i] = null;
-      } else {
-        this._columnMaxWidths[i] = maxWidth;
-      }
-    }
-  }
-
   // determine column init widths if needed
-  if (this._columnInitWidths == null) {
+  if (this._columnSampledMinWidths == null) {
     isResetTableElemStyle = true;
     this._resetTableElementStyling();
-
-    this._columnInitWidths = [];
+    this._columnSampledMinWidths = [];
 
     // loop through columns to get the remaining column widths
     for (i = 0; i < columnsCount; i++) {
@@ -11144,19 +11587,20 @@ TableFixedLayoutManager.prototype._initializeColumnLayouts = function () {
       var headerCell = this._table._getTableHeaderColumn(i);
       if (headerCell != null) {
         // offsetWidth does not include partial px values, so bounding rect should be used
-        this._columnInitWidths[i] = headerCell.getBoundingClientRect().width;
+        this._columnSampledMinWidths[i] = headerCell.getBoundingClientRect().width;
       } else {
         // find column table body cell widths
         var tableBodyCell = this._table._getTableBodyCell(0, i, null);
         if (tableBodyCell != null) {
           // offsetWidth does not include partial px values, so bounding rect should be used
-          this._columnInitWidths[i] = tableBodyCell.getBoundingClientRect().width;
+          this._columnSampledMinWidths[i] = tableBodyCell.getBoundingClientRect().width;
         }
       }
     }
   } else if (isResetTableElemStyle) {
     this._resetTableElementStyling();
   }
+
   return isResetTableElemStyle;
 };
 
@@ -11175,106 +11619,97 @@ TableFixedLayoutManager.prototype._resetTableElementStyling = function () {
 /**
  * @private
  */
-TableFixedLayoutManager.prototype._removeTableDimensionsStyling = function () {
-  this.unregisterScrollListeners();
-};
+TableFixedLayoutManager.prototype._applyColumnWidths = function () {
+  TableFixedLayoutManager.superclass._applyColumnWidths.call(this);
 
-/**
- * @private
- */
-TableFixedLayoutManager.prototype._determineColumnWidths = function () {
+  var tableElem = this._table._getTable();
   var tableScroller = this._table._getTableScroller();
   var initScrollerWidth = tableScroller.clientWidth;
-  return this._setAllColumnWidths(initScrollerWidth);
+  var overallWidth = this._setAllColumnWidths(initScrollerWidth);
+  if (overallWidth > 0) {
+    tableElem.style[Table.CSS_PROP._WIDTH] = overallWidth + Table.CSS_VAL._PX;
+    tableElem.style['table-layout'] = 'fixed';
+  }
 };
 
 /**
  * @private
  */
-TableFixedLayoutManager.prototype._setAllColumnWidths = function (scrollerWidth) {
+TableFixedLayoutManager.prototype._setAllColumnWidths = function (availableWidth) {
+  var i = 0;
   var columns = this._table._getColumnDefs();
   var columnsCount = columns.length;
 
+  var totalWorkingWeight = 0; // total weight of all non-forced data columns
+  var forcedTotalWidth = 0; // total width of all forced data columns
+  var pendingTotalWidth = 0; // total starting point width of all data columns (forced + min widths of non-forced)
+  var forcedColumnWidths = []; // columns-based array with values for forced columns
+  var newColumnWidths = []; // pending widths of all data columns
+  this._appliedColumnWidths = []; // pending (and eventually applied) widths of all data columns
+
   var totalWidth = this._selectorColWidth != null ? this._selectorColWidth : 0;
-  var forcedTotal = totalWidth;
-  var freeWeightTotal = 0;
-  var columnWidths = [];
-  this._appliedColumnWidths = [];
+  if (this._table._isGutterStartColumnEnabled()) {
+    const gutterStartWidth = this._table._getTableGutterWidth('start');
+    totalWidth += gutterStartWidth;
+  }
+  if (this._table._isGutterEndColumnEnabled()) {
+    const gutterEndWidth = this._table._getTableGutterWidth('end');
+    totalWidth += gutterEndWidth;
+  }
 
-  var i;
-  var forcedColumnWidths = [];
+  var minMaxRulesRequired = false;
   for (i = 0; i < columnsCount; i++) {
-    var columnWidth = this._getPixelStyleEquivalent(columns[i].width);
-    if (columnWidth != null) {
-      forcedColumnWidths[i] = columnWidth;
-      forcedTotal += columnWidth;
-    } else {
-      if (this._columnInitWidths[i] > 0) {
-        columnWidth = this._columnMinWidths[i];
-        freeWeightTotal += this._columnWeights[i];
+    if (this._columnSampledMinWidths[i] > 0) {
+      var isAddBorder =
+        this._table._isVerticalGridEnabled() && (i > 0 || this._table._isDefaultSelectorEnabled());
+      var columnWidth = this._getPixelStyleEquivalent(columns[i].width, isAddBorder);
+      if (columnWidth != null) {
+        forcedTotalWidth += columnWidth;
+        pendingTotalWidth += columnWidth;
+        forcedColumnWidths[i] = columnWidth;
+        newColumnWidths[i] = columnWidth;
+        this._appliedColumnWidths[i] = columnWidth;
       } else {
-        columnWidth = 0;
+        minMaxRulesRequired = true;
+        var columnMinWidth = this._columnMinWidths[i];
+        pendingTotalWidth += columnMinWidth;
+        forcedColumnWidths[i] = undefined;
+        totalWorkingWeight += this._columnWeights[i];
+        newColumnWidths[i] = columnMinWidth;
+        this._appliedColumnWidths[i] = columnMinWidth;
       }
-      forcedColumnWidths[i] = false;
+    } else {
+      newColumnWidths[i] = 0;
+      this._appliedColumnWidths[i] = 0;
+      forcedColumnWidths[i] = 0;
     }
-    columnWidths[i] = columnWidth;
-    totalWidth += columnWidth;
   }
 
-  // handle case where forced widths do not fill viewport
-  if (forcedTotal < scrollerWidth) {
-    var continueSizing = true;
-    // flag to check track whether full sizing run was successfull
-    while (continueSizing) {
-      var currentFreeWeightTotal = freeWeightTotal;
-      continueSizing = false;
-      var widthDiff = scrollerWidth - forcedTotal;
-      for (i = 0; i < columnsCount; i++) {
-        if (forcedColumnWidths[i] === false) {
-          var currentWidth = columnWidths[i];
-          // only adjust widths for columns that are visible
-          if (currentWidth > 0) {
-            // round width percentage update to nearest int, and subtract that from adjustable info
-            var currentWeight = this._columnWeights[i];
-            var newWidth = Math.floor((currentWeight / currentFreeWeightTotal) * widthDiff);
-
-            // if calculated width breaks min or max width requirement, force width as needed, and restart weight distribution logic
-            var minWidth = this._columnMinWidths[i];
-            var maxWidth = this._columnMaxWidths[i];
-            if (minWidth != null && newWidth < minWidth) {
-              forcedColumnWidths[i] = minWidth;
-              forcedTotal += minWidth;
-              freeWeightTotal -= currentWeight;
-              columnWidths[i] = minWidth;
-              continueSizing = true;
-              break;
-            } else if (maxWidth != null && newWidth > maxWidth) {
-              forcedColumnWidths[i] = maxWidth;
-              forcedTotal += maxWidth;
-              freeWeightTotal -= currentWeight;
-              columnWidths[i] = maxWidth;
-              continueSizing = true;
-              break;
-            }
-            columnWidths[i] = newWidth;
-            currentFreeWeightTotal -= currentWeight;
-            widthDiff -= newWidth;
-          }
-        }
-      }
-      totalWidth = scrollerWidth;
+  if (minMaxRulesRequired) {
+    var remainingWidth = availableWidth - totalWidth;
+    if (pendingTotalWidth < remainingWidth) {
+      this._enforceMinMaxRules(
+        remainingWidth,
+        totalWorkingWeight,
+        forcedTotalWidth,
+        forcedColumnWidths,
+        newColumnWidths
+      );
     }
   }
 
   for (i = 0; i < columnsCount; i++) {
+    var colWidth = newColumnWidths[i];
     var tableCol = this._table._getTableCol(i);
-    var colWidth = columnWidths[i];
-    tableCol.style[Table.CSS_PROP._WIDTH] = colWidth + Table.CSS_VAL._PX;
-    if (colWidth === 0) {
-      // set the display value to none or else the following column will not be shown
-      tableCol.style[Table.CSS_PROP._DISPLAY] = Table.CSS_VAL._NONE;
+    if (tableCol != null) {
+      tableCol.style[Table.CSS_PROP._WIDTH] = colWidth + Table.CSS_VAL._PX;
+      if (colWidth === 0) {
+        // set the display value to none or else the following column will not be shown
+        tableCol.style[Table.CSS_PROP._DISPLAY] = Table.CSS_VAL._NONE;
+      }
     }
     this._appliedColumnWidths[i] = colWidth;
+    totalWidth += colWidth;
   }
   return totalWidth;
 };
@@ -11282,8 +11717,57 @@ TableFixedLayoutManager.prototype._setAllColumnWidths = function (scrollerWidth)
 /**
  * @private
  */
-TableFixedLayoutManager.prototype._getMinWidthAutoEquivalent = function () {
-  return 100;
+TableFixedLayoutManager.prototype._enforceMinMaxRules = function (
+  availableWidth,
+  initialTotalWorkingWeight,
+  initialForcedTotalWidth,
+  forcedColumnWidths,
+  newColumnWidths
+) {
+  var forcedTotalWidth = initialForcedTotalWidth;
+  var totalWorkingWeight = initialTotalWorkingWeight;
+
+  // try and honor the weights of each column combined with the min widths, and then check that against
+  // any max widths once completed. if the final result doesn't fill the space AND at least 1 max width
+  // rule was enforced, repeat the process until no max rules are enforced OR the space is filled.
+  var isMaxRuleApplied = true;
+  while (isMaxRuleApplied) {
+    isMaxRuleApplied = false;
+    this._enforceWeightedMinRules(
+      availableWidth,
+      totalWorkingWeight,
+      forcedTotalWidth,
+      forcedColumnWidths,
+      this._columnWeights,
+      newColumnWidths
+    );
+
+    var pendingTotalWidth = 0;
+    for (var i = 0; i < this._table._getColumnDefs().length; i++) {
+      if (forcedColumnWidths[i] == null) {
+        const maxWidth = this._columnMaxWidths[i];
+        if (maxWidth != null && newColumnWidths[i] > maxWidth) {
+          isMaxRuleApplied = true;
+          // eslint-disable-next-line no-param-reassign
+          forcedColumnWidths[i] = maxWidth;
+          forcedTotalWidth += maxWidth;
+          totalWorkingWeight -= this._columnWeights[i];
+          // eslint-disable-next-line no-param-reassign
+          newColumnWidths[i] = maxWidth;
+          this._appliedColumnWidths[i] = maxWidth;
+        }
+      }
+      pendingTotalWidth += newColumnWidths[i];
+    }
+    isMaxRuleApplied = isMaxRuleApplied && pendingTotalWidth < availableWidth;
+  }
+};
+
+/**
+ * @private
+ */
+TableFixedLayoutManager.prototype._getMinWidthAutoEquivalent = function (isAddBorder) {
+  return 100 + (isAddBorder ? 1 : 0);
 };
 
 /**
@@ -11466,10 +11950,16 @@ Table.prototype._updateAccStatusInfo = function (columnHint) {
     if (activeIndex === -1) {
       // handle select all column header case
       tableHeaderColumn = this._getTableSelectorColumn();
+      if (tableHeaderColumn == null) {
+        return;
+      }
     } else {
       // handle normal column header case
       var headerSelected = false;
       tableHeaderColumn = this._getTableHeaderColumn(activeIndex);
+      if (tableHeaderColumn == null) {
+        return;
+      }
       var selectedHeaderIdxs = this._getSelectedHeaderColumnIdxs();
       for (i = 0; i < selectedHeaderIdxs.length; i++) {
         if (selectedHeaderIdxs[i] === activeIndex) {
@@ -11489,7 +11979,7 @@ Table.prototype._updateAccStatusInfo = function (columnHint) {
         } else {
           stateInfo += this.getTranslatedString('accessibleSortDescending', { id: '' }) + ' ';
         }
-      } else if (column.sortable === Table._OPTION_ENABLED) {
+      } else if (column != null && column.sortable === Table._OPTION_ENABLED) {
         stateInfo += this.getTranslatedString('accessibleSortable', { id: '' }) + ' ';
       }
     }
@@ -11512,10 +12002,16 @@ Table.prototype._updateAccStatusInfo = function (columnHint) {
     if (activeIndex === -1) {
       // handle select all column footer case
       tableFooterCell = this._getTableFooterSelectorCell();
+      if (tableFooterCell == null) {
+        return;
+      }
     } else {
       // handle normal column footer case
       var footerSelected = false;
       tableFooterCell = this._getTableFooterCell(activeIndex);
+      if (tableFooterCell == null) {
+        return;
+      }
       var selectedFooterIdxs = this._getSelectedFooterColumnIdxs();
       for (i = 0; i < selectedFooterIdxs.length; i++) {
         if (selectedFooterIdxs[i] === activeIndex) {
@@ -11544,11 +12040,17 @@ Table.prototype._updateAccStatusInfo = function (columnHint) {
       columnIndex = 0;
     }
     var activeRowElem = this._getTableBodyRow(activeIndex);
+    if (activeRowElem == null) {
+      return;
+    }
     // get 'active' cell in Table
     if (columnIndex === -1) {
       tableCell = this._getTableBodySelectorCell(activeRowElem);
     } else {
       tableCell = this._getTableBodyLogicalCells(null, activeRowElem)[columnIndex];
+    }
+    if (tableCell == null) {
+      return;
     }
 
     // update row context information if changed
@@ -11601,9 +12103,7 @@ Table.prototype._updateAccStatusInfo = function (columnHint) {
     // populate cell information
     if (columnIndex === -1) {
       // handle row selector cell
-      if (tableCell != null) {
-        label += this._getAccSelectorString(activeRowElem) + ' ';
-      }
+      label += this._getAccSelectorString(activeRowElem) + ' ';
     } else {
       tableHeaderColumn = this._getTableHeaderColumn(columnIndex);
       if (tableHeaderColumn != null) {
@@ -11661,10 +12161,9 @@ Table.prototype._announceAccSelectionUpdate = function (isSelected) {
     stateInfo = this.getTranslatedString('accessibleStateUnselected');
   }
   this._stateInfo.textContent = stateInfo;
-  var label = this._stateInfo.id;
 
   // apply new label
-  this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, label); // @HTMLUpdateOK
+  this._applyAccStatusLabel(this._stateInfo.id);
 };
 
 /**
@@ -11678,7 +12177,6 @@ Table.prototype._getAccSelectorString = function (tableBodyRow) {
  * @private
  */
 Table.prototype._clearAccStatusInfo = function () {
-  this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
   this._getTable().setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
 };
 
@@ -11690,8 +12188,6 @@ Table.prototype._applyAccStatusLabel = function (label) {
     this._accFirstFocus = false;
   } else if (this._accActionFocus) {
     this._accActionFocus = false;
-  } else {
-    this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, label); // @HTMLUpdateOK
   }
   this._getTable().setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, label); // @HTMLUpdateOK
 };
@@ -11764,7 +12260,6 @@ Table.prototype._getNoDataId = function () {
 Table.prototype._cleanAccStatus = function () {
   this._accFirstFocus = true;
   this._accActionFocus = false;
-  this._accStatus.removeAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY);
   this._getTable().removeAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY);
 };
 
@@ -12395,7 +12890,8 @@ Table.prototype._getRowsFromEventDetailAdd = function (eventDetail) {
   var rowArray = [];
   var dataprovider = this._getData();
   var isLoadAll =
-    !this._isLoadMoreOnScroll() || isIterateAfterDoneNotAllowed(dataprovider);
+    !this._isLoadMoreOnScroll() ||
+    (isIterateAfterDoneNotAllowed(dataprovider) && !this._hasMoreToFetch());
   var initialKeys = this._getLocalRowKeys();
   var initialKeyLength = initialKeys.length;
   // don't add rows if the component is empty and loadMoreOnScroll is set
@@ -13342,7 +13838,7 @@ Table.prototype._createTableBodyDefaultSelector = function (rowKey, tableBodyRow
   var selectorCell = null;
 
   selectorCell = document.createElement(Table.DOM_ELEMENT._TD); // @HTMLUpdateOK
-  selectorCell.classList.add(Table.CSS_CLASSES._TABLE_SELECTOR_CELL);
+  selectorCell.classList.add(Table.CSS_CLASSES._TABLE_SELECTOR_CELL_CLASS);
   if (this._isStickyLayoutEnabled()) {
     selectorCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
   }
@@ -13920,50 +14416,64 @@ Table.prototype._displayDragOverIndicatorRow = function (
   indicatorStyle,
   isReorder
 ) {
-  this._removeDragOverIndicatorRow();
-  var tableBodyRowDragIndicator = document.createElement(Table.DOM_ELEMENT._TR); // @HTMLUpdateOK
+  var dragIndicator = this._getDragOverIndicatorRow(true, modelRow, indicatorStyle, isReorder);
 
-  tableBodyRowDragIndicator.classList.add(Table.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_CLASS);
-
-  if (indicatorStyle === 'line') {
-    tableBodyRowDragIndicator.classList.add('oj-table-body-row-drop-target');
-  } else if (modelRow != null) {
-    $(tableBodyRowDragIndicator).height(parseInt($(modelRow).height(), 10));
-    if (isReorder) {
-      this._rowsDragged.forEach(
-        function (row) {
-          row.classList.add('oj-table-row-drag-source-hide');
-          row.classList.remove(Table.MARKER_STYLE_CLASSES._SELECTED);
-          this._updateRowStateCellsClass(null, row, { selected: false });
-        }.bind(this)
-      );
-    }
-  }
-
-  var tableBodyDragIndicatorCell = document.createElement(Table.DOM_ELEMENT._TD); // @HTMLUpdateOK
-  var columnCount = this._getColumnDefs().length;
-  if (this._isDefaultSelectorEnabled()) {
-    columnCount += 1;
-  }
-  if (this._isGutterStartColumnEnabled()) {
-    columnCount += 1;
-  }
-  if (this._isGutterEndColumnEnabled()) {
-    columnCount += 1;
-  }
-  tableBodyDragIndicatorCell.setAttribute(Table.DOM_ATTR._COLSPAN, columnCount); // @HTMLUpdateOK
-  tableBodyRowDragIndicator.appendChild(tableBodyDragIndicatorCell); // @HTMLUpdateOK
   var tableBodyRow = this._getTableBodyRow(rowIdx);
-
   if (tableBodyRow != null) {
-    tableBodyRow.parentNode.insertBefore(tableBodyRowDragIndicator, tableBodyRow); // @HTMLUpdateOK
+    tableBodyRow.parentNode.insertBefore(dragIndicator, tableBodyRow); // @HTMLUpdateOK
   } else {
     var tableBodyRows = this._getTableBodyRows();
     if (tableBodyRows.length === 0) {
       this._hideNoDataMessage();
     }
-    this._getTableBody().appendChild(tableBodyRowDragIndicator); // @HTMLUpdateOK
+    this._getTableBody().appendChild(dragIndicator); // @HTMLUpdateOK
   }
+};
+
+Table.prototype._getDragOverIndicatorRow = function (isCreate, modelRow, style, isReorder) {
+  var tableBodyRowDragIndicator;
+  var children = this._getTableBody().children;
+  for (var i = 0; i < children.length; i++) {
+    if (children[i].classList.contains(Table.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_CLASS)) {
+      tableBodyRowDragIndicator = children[i];
+      break;
+    }
+  }
+
+  if (isCreate && tableBodyRowDragIndicator == null) {
+    tableBodyRowDragIndicator = document.createElement(Table.DOM_ELEMENT._TR); // @HTMLUpdateOK
+    tableBodyRowDragIndicator.classList.add(Table.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_CLASS);
+    if (style === 'line') {
+      tableBodyRowDragIndicator.classList.add('oj-table-body-row-drop-target');
+    } else if (modelRow != null) {
+      $(tableBodyRowDragIndicator).height(parseInt($(modelRow).height(), 10));
+      if (isReorder) {
+        this._rowsDragged.forEach(
+          function (row) {
+            row.classList.add('oj-table-row-drag-source-hide');
+            row.classList.remove(Table.MARKER_STYLE_CLASSES._SELECTED);
+            this._updateRowStateCellsClass(null, row, { selected: false });
+          }.bind(this)
+        );
+      }
+    }
+
+    var tableBodyDragIndicatorCell = document.createElement(Table.DOM_ELEMENT._TD); // @HTMLUpdateOK
+    var columnCount = this._getColumnDefs().length;
+    if (this._isDefaultSelectorEnabled()) {
+      columnCount += 1;
+    }
+    if (this._isGutterStartColumnEnabled()) {
+      columnCount += 1;
+    }
+    if (this._isGutterEndColumnEnabled()) {
+      columnCount += 1;
+    }
+    tableBodyDragIndicatorCell.setAttribute(Table.DOM_ATTR._COLSPAN, columnCount); // @HTMLUpdateOK
+    tableBodyRowDragIndicator.appendChild(tableBodyDragIndicatorCell); // @HTMLUpdateOK
+  }
+
+  return tableBodyRowDragIndicator;
 };
 
 /**
@@ -14081,12 +14591,7 @@ Table.prototype._getFirstAncestor = function (element, selector, tableOwnedOnly)
     return null;
   }
 
-  var elementMatches =
-    isIE() && !Element.prototype.matches
-      ? element.msMatchesSelector(selector)
-      : element.matches(selector);
-
-  if (elementMatches) {
+  if (element.matches(selector)) {
     if (tableOwnedOnly) {
       if (!this._isTableOwned(element)) {
         return this._getFirstAncestor(element.parentNode, selector, tableOwnedOnly);
@@ -14197,14 +14702,20 @@ Table.prototype._getTableBodyLogicalCells = function (rowIdx, tableBodyRow) {
  * @private
  */
 Table.prototype._getTableBodyCells = function (rowIdx, tableBodyRow) {
+  var cells = [];
   if (!tableBodyRow) {
     // eslint-disable-next-line no-param-reassign
     tableBodyRow = this._getTableBodyRow(rowIdx);
-    if (!tableBodyRow) {
-      return [];
+  }
+  if (tableBodyRow != null) {
+    var children = tableBodyRow.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].classList.contains(Table.CSS_CLASSES._TABLE_DATA_CELL_CLASS)) {
+        cells.push(children[i]);
+      }
     }
   }
-  return this._getTableElementsByClassName(tableBodyRow, Table.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
+  return cells;
 };
 
 /**
@@ -14443,10 +14954,17 @@ Table.prototype._getTableFooterCell = function (columnIdx) {
  * @private
  */
 Table.prototype._getTableFooterCells = function () {
+  var columns = [];
   var tableFooterRow = this._getTableFooterRow();
-  return tableFooterRow != null
-    ? this._getTableElementsByClassName(tableFooterRow, Table.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS)
-    : [];
+  if (tableFooterRow != null) {
+    var children = tableFooterRow.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].classList.contains(Table.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS)) {
+        columns.push(children[i]);
+      }
+    }
+  }
+  return columns;
 };
 
 /**
@@ -14484,7 +15002,7 @@ Table.prototype._getTableHeader = function () {
  */
 Table.prototype._getTableHeaderColumn = function (columnIdx) {
   var headerColumns = this._getTableHeaderColumns();
-  if (headerColumns && headerColumns.length > columnIdx && columnIdx >= 0) {
+  if (headerColumns.length > columnIdx && columnIdx >= 0) {
     return headerColumns[columnIdx];
   }
   return null;
@@ -14493,16 +15011,27 @@ Table.prototype._getTableHeaderColumn = function (columnIdx) {
 /**
  * @private
  */
-Table.prototype._getTableCol = function (columnIdx) {
+Table.prototype._getTableCols = function () {
+  var cols = [];
   var tableColGroup = this._getTableColGroup();
   if (tableColGroup != null) {
-    var tableColElements = this._getTableElementsByClassName(
-      tableColGroup,
-      Table.CSS_CLASSES._TABLE_COL_CLASS
-    );
-    if (tableColElements.length > 0) {
-      return tableColElements[columnIdx];
+    var children = tableColGroup.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].classList.contains(Table.CSS_CLASSES._TABLE_COL_CLASS)) {
+        cols.push(children[i]);
+      }
     }
+  }
+  return cols;
+};
+
+/**
+ * @private
+ */
+Table.prototype._getTableCol = function (columnIdx) {
+  var tableColElements = this._getTableCols();
+  if (tableColElements.length > 0) {
+    return tableColElements[columnIdx];
   }
   return null;
 };
@@ -14513,17 +15042,17 @@ Table.prototype._getTableCol = function (columnIdx) {
  * @private
  */
 Table.prototype._getTableHeaderColumns = function () {
+  var columns = [];
   var tableHeaderRow = this._getTableHeaderRow();
   if (tableHeaderRow != null) {
-    var headerColumnElements = this._getTableElementsByClassName(
-      tableHeaderRow,
-      Table.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS
-    );
-    if (headerColumnElements.length > 0) {
-      return headerColumnElements;
+    var children = tableHeaderRow.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].classList.contains(Table.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS)) {
+        columns.push(children[i]);
+      }
     }
   }
-  return null;
+  return columns;
 };
 
 /**
@@ -14532,11 +15061,7 @@ Table.prototype._getTableHeaderColumns = function () {
  * @private
  */
 Table.prototype._getTableHeaderLogicalColumns = function () {
-  var tableHeaderColumns = this._getTableHeaderColumns();
-  if (!tableHeaderColumns) {
-    return null;
-  }
-  return this._getColspanLogicalElements(tableHeaderColumns);
+  return this._getColspanLogicalElements(this._getTableHeaderColumns());
 };
 
 /**
@@ -14560,11 +15085,15 @@ Table.prototype._getPlaceHolderRow = function () {
  * Return table add row cells
  */
 Table.prototype._getPlaceHolderRowCells = function (placeHolderRow) {
+  var cells = [];
   var addRow = placeHolderRow != null ? placeHolderRow : this._getPlaceHolderRow();
   if (addRow != null) {
-    return this._getTableElementsByTagName(addRow, Table.DOM_ELEMENT._TD);
+    var children = addRow.children;
+    for (var i = 0; i < children.length; i++) {
+      cells.push(children[i]);
+    }
   }
-  return [];
+  return cells;
 };
 
 /**
@@ -14774,7 +15303,7 @@ Table.prototype._insertTableHeaderColumn = function (columnIdx, tableHeaderColum
   var oldTableHeaderColumn = this._getTableHeaderColumn(columnIdx);
   if (oldTableHeaderColumn) {
     $(oldTableHeaderColumn).replaceWith($(tableHeaderColumn)); // @HTMLUpdateOK
-  } else if (columnIdx !== 0 && tableHeaderColumns && tableHeaderColumns.length >= columnIdx) {
+  } else if (columnIdx !== 0 && tableHeaderColumns.length >= columnIdx) {
     var previousColumn = tableHeaderColumns[columnIdx - 1];
     previousColumn.parentNode.insertBefore(tableHeaderColumn, previousColumn.nextSibling); // @HTMLUpdateOK
   } else {
@@ -14799,15 +15328,17 @@ Table.prototype._moveTableBodyRowTouchSelectionAffordanceTop = function (rowIdx)
     }
     var scroller = this._getLayoutManager().getScroller();
     var tableBodyRow = this._getTableBodyRow(rowIdx);
-    var tableBodyRowRect = tableBodyRow.getBoundingClientRect();
     var touchAffordanceGlassPane = this._getTouchAffordanceGlassPane();
-    var touchAffordanceGlassPaneRect = touchAffordanceGlassPane.getBoundingClientRect();
-    topAffordance.style[Table.CSS_PROP._TOP] =
-      tableBodyRowRect.top -
-      touchAffordanceGlassPaneRect.top -
-      topAffordance.clientHeight / 2 +
-      Table.CSS_VAL._PX;
-    topAffordance.style[Table.CSS_PROP._LEFT] = scroller.clientWidth / 2 + Table.CSS_VAL._PX;
+    if (tableBodyRow != null && touchAffordanceGlassPane != null) {
+      var tableBodyRowRect = tableBodyRow.getBoundingClientRect();
+      var touchAffordanceGlassPaneRect = touchAffordanceGlassPane.getBoundingClientRect();
+      topAffordance.style[Table.CSS_PROP._TOP] =
+        tableBodyRowRect.top -
+        touchAffordanceGlassPaneRect.top -
+        topAffordance.clientHeight / 2 +
+        Table.CSS_VAL._PX;
+      topAffordance.style[Table.CSS_PROP._LEFT] = scroller.clientWidth / 2 + Table.CSS_VAL._PX;
+    }
   }
 };
 
@@ -14828,16 +15359,18 @@ Table.prototype._moveTableBodyRowTouchSelectionAffordanceBottom = function (rowI
     }
     var scroller = this._getLayoutManager().getScroller();
     var tableBodyRow = this._getTableBodyRow(rowIdx);
-    var tableBodyRowRect = tableBodyRow.getBoundingClientRect();
     var touchAffordanceGlassPane = this._getTouchAffordanceGlassPane();
-    var touchAffordanceGlassPaneRect = touchAffordanceGlassPane.getBoundingClientRect();
-    bottomAffordance.style[Table.CSS_PROP._TOP] =
-      tableBodyRowRect.top -
-      touchAffordanceGlassPaneRect.top +
-      tableBodyRowRect.height -
-      bottomAffordance.clientHeight / 2 +
-      Table.CSS_VAL._PX;
-    bottomAffordance.style[Table.CSS_PROP._LEFT] = scroller.clientWidth / 2 + Table.CSS_VAL._PX;
+    if (tableBodyRow != null && touchAffordanceGlassPane != null) {
+      var tableBodyRowRect = tableBodyRow.getBoundingClientRect();
+      var touchAffordanceGlassPaneRect = touchAffordanceGlassPane.getBoundingClientRect();
+      bottomAffordance.style[Table.CSS_PROP._TOP] =
+        tableBodyRowRect.top -
+        touchAffordanceGlassPaneRect.top +
+        tableBodyRowRect.height -
+        bottomAffordance.clientHeight / 2 +
+        Table.CSS_VAL._PX;
+      bottomAffordance.style[Table.CSS_PROP._LEFT] = scroller.clientWidth / 2 + Table.CSS_VAL._PX;
+    }
   }
 };
 
@@ -15055,16 +15588,9 @@ Table.prototype._removeDragOverIndicatorColumn = function () {
  * @private
  */
 Table.prototype._removeDragOverIndicatorRow = function () {
-  var tableBody = this._getTableBody();
-  var indicatorRowBeforeElements = this._getTableElementsByClassName(
-    tableBody,
-    Table.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_CLASS
-  );
-
-  var i;
-  var indicatorRowBeforeElementsCount = indicatorRowBeforeElements.length;
-  for (i = 0; i < indicatorRowBeforeElementsCount; i++) {
-    $(indicatorRowBeforeElements[i]).remove();
+  var dragIndicator = this._getDragOverIndicatorRow(false);
+  if (dragIndicator != null) {
+    $(dragIndicator).remove();
   }
 
   var tableBodyRows = this._getTableBodyRows();
@@ -15431,6 +15957,11 @@ Table.prototype._styleTableContainer = function (tableContainer) {
     tableContainer.classList.add(Table.CSS_CLASSES._TABLE_STICKY_CLASS);
   } else {
     tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_STICKY_CLASS);
+  }
+  if (this._isFixedLayoutEnabled()) {
+    tableContainer.classList.add(Table.CSS_CLASSES._TABLE_FIXED_CLASS);
+  } else {
+    tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_FIXED_CLASS);
   }
   if (this._isAddNewRowEnabled()) {
     tableContainer.classList.add(Table.CSS_CLASSES._TABLE_ADD_ROW_CLASS);
@@ -16072,13 +16603,11 @@ Table.prototype._getSortIcon = function (header) {
  */
 Table.prototype._getTableBodySelectorCell = function (tableBodyRow) {
   if (tableBodyRow != null) {
-    var selectorCell = this._getTableElementsByClassName(
-      tableBodyRow,
-      Table.CSS_CLASSES._TABLE_SELECTOR_CELL
-    );
-
-    if (selectorCell.length > 0) {
-      return selectorCell[0];
+    var children = tableBodyRow.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].classList.contains(Table.CSS_CLASSES._TABLE_SELECTOR_CELL_CLASS)) {
+        return children[i];
+      }
     }
   }
   return null;
@@ -16092,13 +16621,11 @@ Table.prototype._getTableBodySelectorCell = function (tableBodyRow) {
 Table.prototype._getTableSelectorColumn = function () {
   var tableHeaderRow = this._getTableHeaderRow();
   if (tableHeaderRow != null) {
-    var selectorHeader = this._getTableElementsByClassName(
-      tableHeaderRow,
-      Table.CSS_CLASSES._COLUMN_HEADER_SELECTOR_CELL_CLASS
-    );
-
-    if (selectorHeader.length > 0) {
-      return selectorHeader[0];
+    var children = tableHeaderRow.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].classList.contains(Table.CSS_CLASSES._COLUMN_HEADER_SELECTOR_CELL_CLASS)) {
+        return children[i];
+      }
     }
   }
   return null;
@@ -16112,13 +16639,11 @@ Table.prototype._getTableSelectorColumn = function () {
 Table.prototype._getTableFooterSelectorCell = function () {
   var tableFooterRow = this._getTableFooterRow();
   if (tableFooterRow != null) {
-    var selectorCell = this._getTableElementsByClassName(
-      tableFooterRow,
-      Table.CSS_CLASSES._TABLE_FOOTER_SELECTOR_CELL_CLASS
-    );
-
-    if (selectorCell.length > 0) {
-      return selectorCell[0];
+    var children = tableFooterRow.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].classList.contains(Table.CSS_CLASSES._TABLE_FOOTER_SELECTOR_CELL_CLASS)) {
+        return children[i];
+      }
     }
   }
   return null;
@@ -16256,9 +16781,11 @@ Table.prototype._getTableGutterCell = function (tablePart, edge, targetRow) {
         : Table.CSS_CLASSES._TABLE_GUTTER_END_BODY_CELL;
   }
   if (targetRow != null) {
-    let gutterCell = this._getTableElementsByClassName(targetRow, className);
-    if (gutterCell.length > 0) {
-      return gutterCell[0];
+    var children = targetRow.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].classList.contains(className)) {
+        return children[i];
+      }
     }
   }
   return null;
@@ -16274,6 +16801,7 @@ Table.CSS_CLASSES = {
   _TABLE_EXTERNAL_SCROLL_CLASS: 'oj-table-external-scroll',
   _TABLE_CLASS: 'oj-table',
   _TABLE_STICKY_CLASS: 'oj-table-sticky',
+  _TABLE_FIXED_CLASS: 'oj-table-fixed',
   _TABLE_STRETCH_CLASS: 'oj-table-stretch',
   _TABLE_COMPACT_CLASS: 'oj-table-grid-display',
   _TABLE_HGRID_CLASS: 'oj-table-horizontal-grid',
@@ -16296,6 +16824,7 @@ Table.CSS_CLASSES = {
   _TABLE_BOTTOM_SLOT_CLASS: 'oj-table-slot-bottom',
   _TABLE_SORT_ICON_CONTAINER_CLASS: 'oj-table-sort-icon-container',
   _COLUMN_HEADER_CELL_CLASS: 'oj-table-column-header-cell',
+  _TABLE_DISABLE_WRAPPING_CLASS: 'oj-table-disable-wrapping',
   _TABLE_HEADER_WRAP_TEXT_CLASS: 'oj-table-header-cell-wrap-text',
   _COLUMN_HEADER_SELECTOR_CELL_CLASS: 'oj-table-column-header-selector-cell',
   _COLUMN_HEADER_DROP_EMPTY_CELL_CLASS: 'oj-table-column-header-drop-empty-cell',
@@ -16334,7 +16863,7 @@ Table.CSS_CLASSES = {
     'oj-table-body-row-touch-selection-affordance-touch-area',
   _TABLE_DATA_ROW_EDIT_CLASS: 'oj-table-body-row-edit',
   _TABLE_DATA_ROW_SELECTOR_CLASS: 'oj-table-body-row-selector',
-  _TABLE_SELECTOR_CELL: 'oj-table-selector-cell',
+  _TABLE_SELECTOR_CELL_CLASS: 'oj-table-selector-cell',
   _TABLE_DATA_CURRENT_ROW_CLASS: 'oj-table-body-current-row',
   _TABLE_ACTIVE_ELEMENT_CLASS: 'oj-table-active-element',
   _TABLE_DATA_CELL_CLASS: 'oj-table-data-cell',
@@ -16577,7 +17106,7 @@ Table.prototype._handleFocusout = function (event, isPopupFocusout) {
       this._clearKeyboardKeys();
       this._unhighlightActive();
       this._getLayoutManager().handleFocusout();
-      this._setTableEditable(false, false, 0, true, event, true);
+      this._setTableEditable(false, false, 0, true, event);
       this._cleanAccStatus();
 
       // clear styling on previous editable data cell if necessary
@@ -16697,6 +17226,24 @@ Table.prototype._handleFocusin = function (event, isPopupFocusin) {
   this._isTableTab = null;
 };
 
+Table.prototype._handleEditCellFocusEvent = function (event) {
+  var eventTarget = this._getEventTargetElement(event);
+  var rowIdx = this._getElementRowIdx(eventTarget);
+  if (rowIdx === this._getEditableRowIdx()) {
+    // clear styling on previous editable data cell if necessary
+    if (
+      this._focusEditCell &&
+      this._focusEditCell !== eventTarget &&
+      this._focusEditCell.classList.contains(Table.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS)
+    ) {
+      this._focusEditCell.classList.remove(Table.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS);
+    }
+    // add styling on new editable data cell
+    eventTarget.classList.add(Table.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS);
+    this._focusEditCell = eventTarget;
+  }
+};
+
 /**
  * @override
  * @private
@@ -16726,7 +17273,12 @@ Table.prototype._events = {
       );
     }
     // ensure active element is setup
-    this._syncActiveElement(event, true);
+    this._syncActiveElement(event, true, this._isSkipScrollOnFocus);
+
+    // reset skip scroll on focus flag if scrolling was skipped on this focus
+    if (this._isSkipScrollOnFocus) {
+      this._isSkipScrollOnFocus = false;
+    }
   },
 
   /*
@@ -16740,21 +17292,11 @@ Table.prototype._events = {
    * Set the cell edit class on cell focus when row is editable.
    */
   'focus .oj-table-data-cell': function (event) {
-    var eventTarget = this._getEventTargetElement(event);
-    var rowIdx = this._getElementRowIdx(eventTarget);
-    if (rowIdx === this._getEditableRowIdx()) {
-      // clear styling on previous editable data cell if necessary
-      if (
-        this._focusEditCell &&
-        this._focusEditCell !== eventTarget &&
-        this._focusEditCell.classList.contains(Table.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS)
-      ) {
-        this._focusEditCell.classList.remove(Table.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS);
-      }
-      // add styling on new editable data cell
-      eventTarget.classList.add(Table.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS);
-      this._focusEditCell = eventTarget;
-    }
+    this._handleEditCellFocusEvent(event);
+  },
+
+  'focus .oj-table-selector-cell': function (event) {
+    this._handleEditCellFocusEvent(event);
   },
 
   /*
@@ -16773,9 +17315,7 @@ Table.prototype._events = {
         !isEnterKeyEvent(keyboardCode1) &&
         !isF2KeyEvent(keyboardCode1) &&
         !isTabKeyEvent(keyboardCode1) &&
-        (this._isNodeEditable(event.target) ||
-          (this._getTableFooter() != null &&
-            $(this._getTableFooter()).has(event.target).length > 0)))
+        this._isNodeEditable(event.target))
     ) {
       return;
     }
@@ -17168,23 +17708,37 @@ Table.prototype._events = {
   },
 
   /*
+   * Save the two most recent pointer down targets for use in dblclick handling.
+   */
+  'pointerdown .oj-table-data-cell, .oj-table-gutter-start-body-cell, .oj-table-gutter-end-body-cell':
+    function (event) {
+      this._previousPointerTarget = this._currentPointerTarget;
+      this._currentPointerTarget = event.target;
+    },
+
+  /*
    * Set row to editable.
    */
   'dblclick .oj-table-data-cell, .oj-table-gutter-start-body-cell, .oj-table-gutter-end-body-cell':
     function (event) {
-      if (isEventClickthroughDisabled(event, this._getTable())) {
-        return;
+      if (
+        !isEventClickthroughDisabled(event, this._getTable()) &&
+        (this._currentPointerTarget == null || event.target === this._currentPointerTarget) &&
+        (this._previousPointerTarget == null || event.target === this._previousPointerTarget)
+      ) {
+        let columnIdx;
+        if (event.target.classList.contains(Table.CSS_CLASSES._TABLE_GUTTER_START_BODY_CELL)) {
+          columnIdx = 0;
+        } else if (event.target.classList.contains(Table.CSS_CLASSES._TABLE_GUTTER_END_BODY_CELL)) {
+          columnIdx = this._getColumnDefs().length - 1; // last column Idx
+        } else {
+          columnIdx = this._getElementColumnIdx(event.target);
+        }
+        const rowIdx = this._getElementRowIdx(event.target);
+        this._setEditRow({ rowIndex: rowIdx }, columnIdx);
       }
-      let columnIdx;
-      if (event.target.classList.contains(Table.CSS_CLASSES._TABLE_GUTTER_START_BODY_CELL)) {
-        columnIdx = 0;
-      } else if (event.target.classList.contains(Table.CSS_CLASSES._TABLE_GUTTER_END_BODY_CELL)) {
-        columnIdx = this._getColumnDefs().length - 1; // last column Idx
-      } else {
-        columnIdx = this._getElementColumnIdx(event.target);
-      }
-      const rowIdx = this._getElementRowIdx(event.target);
-      this._setEditRow({ rowIndex: rowIdx }, columnIdx);
+      this._currentPointerTarget = null;
+      this._previousPointerTarget = null;
     },
 
   /*
@@ -17294,6 +17848,16 @@ Table.prototype._events = {
     } else if (this._getKeyboardKeys().length === 0) {
       this._handleSelectionGesture(columnIdx, false, false);
     }
+  },
+
+  'click .oj-table-add-row-placeholder': function (event) {
+    if (
+      isEventClickthroughDisabled(event, this._getTable()) ||
+      this._isEditPending
+    ) {
+      return;
+    }
+    this._setActiveAddRow();
   },
 
   /*
@@ -17898,8 +18462,8 @@ Table.prototype._hasFocus = function () {
 /**
  * @private
  */
-Table.prototype._syncActiveElement = function (event, updateAccStatus) {
-  var hasFocus = this._hasFocus();
+Table.prototype._syncActiveElement = function (event, updateAccStatus, skipScroll) {
+  var shouldScroll = this._hasFocus() && !skipScroll;
   var rowCount = this._getTableBodyRows().length;
   if (this._active != null) {
     if (this._hasActiveHeader() || this._hasActiveFooter()) {
@@ -17908,12 +18472,12 @@ Table.prototype._syncActiveElement = function (event, updateAccStatus) {
       if (visibleIndex !== this._active.index) {
         var activeIndex = this._getFirstVisibleColumnIndex(0, true);
         if (this._hasActiveHeader()) {
-          this._setActiveHeader(activeIndex, event, !hasFocus);
+          this._setActiveHeader(activeIndex, event, !shouldScroll);
         } else {
-          this._setActiveFooter(activeIndex, event, !hasFocus);
+          this._setActiveFooter(activeIndex, event, !shouldScroll);
         }
       } else {
-        if (hasFocus) {
+        if (shouldScroll) {
           this._scrollColumnIntoViewport(this._active.index);
         }
         this._highlightActive();
@@ -17925,7 +18489,7 @@ Table.prototype._syncActiveElement = function (event, updateAccStatus) {
     }
     if (this._hasActiveRow()) {
       if (oj.KeyUtils.equals(this._active.key, this._getRowKeyForRowIdx(this._active.index))) {
-        if (hasFocus) {
+        if (shouldScroll) {
           this._scrollRowIntoViewport(this._active.index);
         }
         if (updateAccStatus) {
@@ -17940,14 +18504,14 @@ Table.prototype._syncActiveElement = function (event, updateAccStatus) {
         if (rowCount > 0) {
           var focusRowIndex = this._getRowIdxForRowKey(currentRowKey);
           if (focusRowIndex != null) {
-            this._setActiveRow(focusRowIndex, event, true, !hasFocus);
+            this._setActiveRow(focusRowIndex, event, true, !shouldScroll);
           } else {
             // if current row is not found, make new active row the one closest to the previous index
             focusRowIndex = Math.min(
               currentRow.rowIndex != null ? currentRow.rowIndex : 0,
               rowCount - 1
             );
-            this._setActiveRow(focusRowIndex, event, true, !hasFocus);
+            this._setActiveRow(focusRowIndex, event, true, !shouldScroll);
           }
           return;
         }
@@ -17973,11 +18537,11 @@ Table.prototype._syncActiveElement = function (event, updateAccStatus) {
     }
   }
   if (!this._isTableHeaderless()) {
-    this._setActiveHeader(this._getFirstVisibleColumnIndex(0, true), event, !hasFocus);
+    this._setActiveHeader(this._getFirstVisibleColumnIndex(0, true), event, !shouldScroll);
   } else if (this._getPlaceHolderRow() != null) {
     this._setActiveAddRow();
   } else if (rowCount > 0) {
-    this._setActiveRow(0, event, true, !hasFocus);
+    this._setActiveRow(0, event, true, !shouldScroll);
   } else {
     this._setActiveNoData();
   }
@@ -18018,6 +18582,9 @@ Table.prototype._getFirstVisibleColumnIndex = function (currentIndex, isForward)
       }
       nextIndex -= 1;
     }
+    if (this._isDefaultSelectorEnabled()) {
+      return -1;
+    }
   }
   return null;
 };
@@ -18030,9 +18597,6 @@ Table.prototype._getFirstVisibleColumnIndex = function (currentIndex, isForward)
  */
 Table.prototype._getNextVisibleColumnIndex = function (currentIndex, isForward) {
   var startIndex = isForward ? currentIndex + 1 : currentIndex - 1;
-  if (startIndex === -1) {
-    return this._isDefaultSelectorEnabled() ? startIndex : currentIndex;
-  }
   var firstVisibleIndex = this._getFirstVisibleColumnIndex(startIndex, isForward);
   return firstVisibleIndex !== null ? firstVisibleIndex : currentIndex;
 };
@@ -18355,39 +18919,45 @@ Table.prototype._setCurrentRow = function (currentRow, event, optionChange) {
       existingCurrentRow == null ||
       (existingCurrentRow.rowKey == null && existingCurrentRow.rowIndex == null);
     if (!isExistingCurrentRowClear) {
-      var existingCurrentRowIndex = existingCurrentRow.rowIndex;
-      var existingCurrentRowKey = this._getRowKeyForDataSourceRowIndex(existingCurrentRowIndex);
+      var existingCurrentRowKey = existingCurrentRow.rowKey;
       var existingCurrentRowIdx = this._getRowIdxForRowKey(existingCurrentRowKey);
 
-      var updateEditable = this._setTableEditable(false, false, 0, true, event);
-      if (updateEditable instanceof Promise) {
-        return updateEditable.then(
-          function (value) {
-            if (value === false) {
-              this._resetCurrentRow(existingCurrentRow, existingCurrentRowIdx, event);
-              return Table._CURRENT_ROW_STATUS._IGNORED;
-            }
-            var existingBodyRow = this._getTableBodyRow(existingCurrentRowIdx);
-            if (existingBodyRow != null) {
-              existingBodyRow.classList.remove(Table.CSS_CLASSES._TABLE_DATA_CURRENT_ROW_CLASS);
-            }
-            this._currentRow = updatedCurrentRow;
+      // end editing if the currently editable rowKey doesn't match the new current rowKey
+      if (
+        this._hasEditableRow() &&
+        (updatedCurrentRow == null ||
+          !oj.KeyUtils.equals(existingCurrentRowKey, updatedCurrentRow.rowKey))
+      ) {
+        var updateEditable = this._setTableEditable(false, false, 0, true, event);
+        if (updateEditable instanceof Promise) {
+          return updateEditable.then(
+            function (value) {
+              if (value === false) {
+                this._resetCurrentRow(existingCurrentRow, existingCurrentRowIdx, event);
+                return Table._CURRENT_ROW_STATUS._IGNORED;
+              }
+              var existingBodyRow = this._getTableBodyRow(existingCurrentRowIdx);
+              if (existingBodyRow != null) {
+                existingBodyRow.classList.remove(Table.CSS_CLASSES._TABLE_DATA_CURRENT_ROW_CLASS);
+              }
+              this._currentRow = updatedCurrentRow;
 
-            this._updateCurrentRow(isClearCurrentRow, localRowIndex, event);
-            if (event == null) {
-              // only scroll to the new current row and highlight it if the Table has focus
-              this._setActiveRow(localRowIndex, event, false, !this._hasFocus());
-            }
-            return Table._CURRENT_ROW_STATUS._UPDATED;
-          }.bind(this),
-          function () {
-            this._resetCurrentRow(existingCurrentRow, existingCurrentRowIdx, event);
-            return Table._CURRENT_ROW_STATUS._VETOED;
-          }.bind(this)
-        );
-      } else if (updateEditable === false) {
-        this._resetCurrentRow(existingCurrentRow, existingCurrentRowIdx, event);
-        return Table._CURRENT_ROW_STATUS._VETOED;
+              this._updateCurrentRow(isClearCurrentRow, localRowIndex, event);
+              if (event == null) {
+                // only scroll to the new current row and highlight it if the Table has focus
+                this._setActiveRow(localRowIndex, event, false, !this._hasFocus());
+              }
+              return Table._CURRENT_ROW_STATUS._UPDATED;
+            }.bind(this),
+            function () {
+              this._resetCurrentRow(existingCurrentRow, existingCurrentRowIdx, event);
+              return Table._CURRENT_ROW_STATUS._VETOED;
+            }.bind(this)
+          );
+        } else if (updateEditable === false) {
+          this._resetCurrentRow(existingCurrentRow, existingCurrentRowIdx, event);
+          return Table._CURRENT_ROW_STATUS._VETOED;
+        }
       }
       var existingBodyRow = this._getTableBodyRow(existingCurrentRowIdx);
       if (existingBodyRow != null) {
@@ -18499,17 +19069,26 @@ Table.prototype._compareCurrentRowValues = function (currentRowValue1, currentRo
  * @private
  */
 Table.prototype._setCellFocus = function (rowIdx, columnIdx) {
-  var tableBodyCell = this._getTableBodyCell(rowIdx, columnIdx);
-  if (tableBodyCell) {
-    var elements = getFocusableElementsInNode(tableBodyCell);
-    if (elements.length > 0) {
-      var firstElem = elements[0];
-      firstElem.focus();
-      if (typeof firstElem.select === 'function') {
-        firstElem.select();
+  var tableBodyRow = this._getTableBodyRow(rowIdx);
+  if (tableBodyRow != null) {
+    var cellElem;
+    if (columnIdx === -1) {
+      cellElem = this._getTableBodySelectorCell(tableBodyRow);
+    } else {
+      cellElem = this._getTableBodyCell(rowIdx, columnIdx, tableBodyRow);
+    }
+    if (cellElem != null) {
+      var elements = getFocusableElementsInNode(cellElem);
+      if (elements.length > 0) {
+        var firstElem = elements[0];
+        firstElem.focus();
+        if (typeof firstElem.select === 'function') {
+          firstElem.select();
+        }
+        this._scrollColumnIntoViewport(columnIdx, cellElem);
+        this._scrollRowIntoViewport(rowIdx);
+        return true;
       }
-      this._scrollColumnIntoViewport(columnIdx, tableBodyCell);
-      return true;
     }
   }
   return false;
@@ -18538,6 +19117,10 @@ Table.prototype._setCellInRowFocus = function (rowIdx, columnIdx, forwardSearch)
     if (this._setCellFocus(rowIdx, tableBodyCellIndex)) {
       return;
     }
+  }
+  // no cell has been focused by now, check the selector cell if present
+  if (this._isDefaultSelectorEnabled()) {
+    this._setCellFocus(rowIdx, -1);
   }
 };
 
@@ -18917,6 +19500,7 @@ Table.prototype._adjustScrollPositionOnFetch = function (isSort) {
     return;
   }
 
+  var layoutManager = this._getLayoutManager();
   var selectedRowIdxs = this._getSelectedRowIdxs();
   if (
     selectedRowIdxs != null &&
@@ -18937,8 +19521,10 @@ Table.prototype._adjustScrollPositionOnFetch = function (isSort) {
     delete scrollPosition.rowIndex;
   } else {
     if (!this._isExternalScrollEnabled()) {
-      // remain at the top
+      // reset to the top
       scrollPosition.y = 0;
+      this._scrollTop = 0;
+      layoutManager.getScroller().scrollTop = 0;
     }
     delete scrollPosition.rowIndex;
     // row key gets re-computed after refresh
@@ -18947,9 +19533,14 @@ Table.prototype._adjustScrollPositionOnFetch = function (isSort) {
 
   // don't reset horizontal scroll position while sorting
   if (!isSort) {
-    scrollPosition.x = 0;
-    scrollPosition.columnKey = null;
-    scrollPosition.columnIndex = 0;
+    if (!this._isExternalScrollEnabled()) {
+      // reset to the start
+      scrollPosition.x = 0;
+      this._scrollLeft = 0;
+      layoutManager.getScroller().scrollLeft = 0;
+    }
+    delete scrollPosition.columnIndex;
+    delete scrollPosition.columnKey;
     scrollPosition.offsetX = 0;
   }
   scrollPosition.offsetY = 0;
@@ -19390,14 +19981,17 @@ Table.prototype._getScrollCoordinates = function (scrollPosition) {
   if (isNaN(x) && !isNaN(scrollPosition.x)) {
     x = Math.max(0, scrollPosition.x);
   }
-  if (isNaN(y) && !isNaN(scrollPosition.y)) {
-    if (scrollPosition.y > layoutManager.getScrollHeight()) {
-      // if there's more data to fetch, returns -1, otherwise returns the max scrollTop
-      y = this._hasMoreToFetch()
-        ? -1
-        : layoutManager.getScrollHeight() - layoutManager.getClientHeight();
-    } else {
-      y = Math.max(0, scrollPosition.y);
+  // return -1 for y if it can't be reached yet and there is more data to fetch
+  if (y !== -1) {
+    var exactY = isNaN(y) ? scrollPosition.y : y;
+    if (!isNaN(exactY)) {
+      var maxScrollTop = layoutManager.getScrollHeight() - layoutManager.getClientHeight();
+      if (exactY > maxScrollTop) {
+        // if there's more data to fetch, returns -1, otherwise returns the max scrollTop
+        y = this._hasMoreToFetch() ? -1 : maxScrollTop;
+      } else {
+        y = Math.max(0, exactY);
+      }
     }
   }
   return { x: x, y: y };
@@ -19478,7 +20072,7 @@ Table.prototype._getColumnLocations = function () {
   if (this._columnOffsets == null) {
     this._columnOffsets = [];
     var headerColumns = this._getTableHeaderColumns();
-    if (headerColumns && headerColumns.length > 0) {
+    if (headerColumns.length > 0) {
       // depending on browser, offsetLeft of first column might not be 0
       var initOffset = this._getScrollLeftByIndex(0);
       this._columnOffsets.push(0);
@@ -19908,14 +20502,12 @@ Table.prototype._fireEditRowChangeEvent = function (newValue, event) {
  * @param {boolean=} skipFocusReset whether to skip resetting focus on the table
  * @private
  */
-
 Table.prototype._setTableEditable = function (
   editable,
   cancelled,
   columnIdx,
   forwardSearch,
-  event,
-  skipFocusReset
+  event
 ) {
   if (!this._isTableEditMode() || this._isEditPending) {
     return undefined;
@@ -20000,53 +20592,67 @@ Table.prototype._setTableEditable = function (
         this._syncActiveElement();
         return false;
       }
+      var table = this._getTable();
 
-      const tableElement = this._getTable();
-      if (tableElement.contains(document.activeElement)) {
-        this._getTable().focus();
+      // shift focus to the overall table if the target row contains focus - otherwise, the overall
+      // focusout handler may kick in, or tooltips or other ihteractive elements may cause issues
+      if (tableBodyRow.contains(document.activeElement)) {
+        // flag used to skip scrolling 'focused' things while the Table
+        // is actively updating focus due to editing requirements
+        this._isSkipScrollOnFocus = !cancelled;
+        table.focus();
       }
 
-      if (editAcceptPromiseArray.length !== 0) {
-        this._isEditPending = true;
-        this._insertSkeletonRow(tableBodyRow);
+      var _handleAsyncEdit = function (updatedItemObj) {
+        this._removeSkeletonRow(tableBodyRow);
+        // recalculate the row index as it could have changed due to other tasks
+        var editableRowIndex = this._getRowIdxForRowKey(rowKey);
+        if (editable && rowIdx !== editableRowIndex) {
+          newEditRowValue.rowIndex = editableRowIndex;
+        }
+        // update editRow option
+        this._fireEditRowChangeEvent(newEditRowValue, event);
 
+        if (editable) {
+          // set the editable row index
+          this._setTableActionableMode(false, true);
+          this._setEditableRowIdx(editableRowIndex);
+          table.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
+          // re-render the newly editable row
+          return this._refreshRow(editableRowIndex, false, !isLegacyDataSource).then(
+            function () {
+              this._setCellInRowFocus(editableRowIndex, columnIdx, forwardSearch);
+              // clear out the old editable row
+              return this._refreshPrevEditableRow(prevEditableRowKey, updatedItemObj, false);
+            }.bind(this)
+          );
+        }
+        this._focusEditCell = null;
+        this._setEditableRowIdx(null);
+
+        // clear out the old editable row
+        return this._refreshPrevEditableRow(prevEditableRowKey, updatedItemObj, cancelled);
+      }.bind(this);
+
+      // handle asynchronous editing if an accept promise was provided
+      if (editAcceptPromiseArray.length !== 0) {
+        this._prepareAsyncRowEdit(tableBodyRow);
         return this._queueTask(
           function () {
             this._editPromise = Promise.all(editAcceptPromiseArray).then(
               function () {
-                this._removeSkeletonRow(tableBodyRow);
-                // recalculate the row index as it could have changed due to other tasks
-                var editableRowIndex = this._getRowIdxForRowKey(rowKey);
-                if (editable && rowIdx !== editableRowIndex) {
-                  newEditRowValue.rowIndex = editableRowIndex;
-                }
-                // update editRow option
-                this._fireEditRowChangeEvent(newEditRowValue, event);
-
-                if (editable) {
-                  // set the editable row index
-                  this._setTableActionableMode(false, true);
-                  this._setEditableRowIdx(editableRowIndex);
-                  this._getTable().setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
-                  this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
-                  // re-render the newly editable row
-                  return this._refreshRow(editableRowIndex, true, false, !isLegacyDataSource).then(
+                if (updatedItemPromise != null) {
+                  return updatedItemPromise.then(
+                    function (updatedItemObj) {
+                      return _handleAsyncEdit(updatedItemObj);
+                    },
                     function () {
-                      this._setCellInRowFocus(editableRowIndex, columnIdx, forwardSearch);
-                      // clear out the old editable row
-                      return this._refreshPrevEditableRow(prevEditableRowKey, updatedItemPromise);
-                    }.bind(this)
+                      return _handleAsyncEdit();
+                    }
                   );
                 }
-                this._focusEditCell = null;
-                this._setEditableRowIdx(null);
-                if (!skipFocusReset) {
-                  this._getTable().focus();
-                }
-
-                // clear out the old editable row
-                return this._refreshPrevEditableRow(prevEditableRowKey, updatedItemPromise);
-              }.bind(this),
+                return _handleAsyncEdit();
+              },
               function () {
                 this._removeSkeletonRow(tableBodyRow);
                 if (editable && prevEditableRowKey == null) {
@@ -20060,6 +20666,26 @@ Table.prototype._setTableEditable = function (
           }.bind(this)
         );
       }
+
+      // check if an updated item promise was provided for otherwise synchronous editing
+      if (updatedItemPromise != null) {
+        this._prepareAsyncRowEdit(tableBodyRow);
+        return this._queueTask(
+          function () {
+            this._editPromise = updatedItemPromise.then(
+              function (updatedItemObj) {
+                return _handleAsyncEdit(updatedItemObj);
+              },
+              function () {
+                return _handleAsyncEdit();
+              }
+            );
+            return this._editPromise;
+          }.bind(this)
+        );
+      }
+
+      // otherwise, handle fully synchronous editing
       // update editRow option
       this._fireEditRowChangeEvent(newEditRowValue, event);
 
@@ -20067,14 +20693,13 @@ Table.prototype._setTableEditable = function (
         // set the editable row index
         this._setTableActionableMode(false, true);
         this._setEditableRowIdx(rowIdx);
-        this._getTable().setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
-        this._accStatus.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
+        table.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
         // re-render the newly editable row
         this._queueTask(
           function () {
             // recalculate the row index as it could have changed due to other tasks
             var editableRowIndex = this._getRowIdxForRowKey(rowKey);
-            return this._refreshRow(editableRowIndex, true, false, !isLegacyDataSource).then(
+            return this._refreshRow(editableRowIndex, false, !isLegacyDataSource).then(
               function () {
                 // set focus on the column in the row
                 this._setCellInRowFocus(editableRowIndex, columnIdx, forwardSearch);
@@ -20085,35 +20710,10 @@ Table.prototype._setTableEditable = function (
       } else {
         this._focusEditCell = null;
         this._setEditableRowIdx(null);
-        if (!skipFocusReset) {
-          this._getTable().focus();
-        }
       }
       this._queueTask(
         function () {
-          // clear out the old editable row
-          // make sure the row still exists before we refresh it
-          var prevEditableRowIdx = this._getRowIdxForRowKey(prevEditableRowKey);
-          if (prevEditableRowIdx != null) {
-            // re-render the previously editable row, which will be read-only now
-            if (updatedItemPromise != null) {
-              updatedItemPromise.then(
-                (updatedItemObj) => {
-                  let rowItem;
-                  if (updatedItemObj != null && updatedItemObj.updatedItem) {
-                    rowItem = updatedItemObj.updatedItem;
-                  }
-                  return this._refreshRow(prevEditableRowIdx, false, false, true, rowItem);
-                },
-                () => {
-                  return this._refreshRow(prevEditableRowIdx, false, false, cancelled);
-                }
-              );
-            } else {
-              return this._refreshRow(prevEditableRowIdx, false, false, cancelled);
-            }
-          }
-          return Promise.resolve();
+          return this._refreshPrevEditableRow(prevEditableRowKey, null, cancelled);
         }.bind(this)
       );
     }
@@ -20121,8 +20721,15 @@ Table.prototype._setTableEditable = function (
   return undefined;
 };
 
+Table.prototype._prepareAsyncRowEdit = function (tableBodyRow) {
+  this._isEditPending = true;
+  this._insertSkeletonRow(tableBodyRow);
+  this._syncScrollPosition();
+};
+
 Table.prototype._clearEditPending = function () {
   this._isEditPending = false;
+  this._isSkipScrollOnFocus = false;
   this._editPromise = null;
   if (this._delayed_edit != null) {
     this._queueTask(() => {
@@ -20131,33 +20738,18 @@ Table.prototype._clearEditPending = function () {
   }
 };
 
-Table.prototype._refreshPrevEditableRow = function (prevEditableRowKey, updatedItemPromise) {
+Table.prototype._refreshPrevEditableRow = function (prevEditableRowKey, updatedItemObj, cancelled) {
   // make sure the row still exists before we refresh it
   const prevEditableRowIdx = this._getRowIdxForRowKey(prevEditableRowKey);
   if (prevEditableRowIdx != null) {
-    if (updatedItemPromise != null) {
-      updatedItemPromise.then(
-        (updatedItemObj) => {
-          let rowItem;
-          if (updatedItemObj != null && updatedItemObj.updatedItem) {
-            rowItem = updatedItemObj.updatedItem;
-          }
-          // re-render the previously editable row, which will be read-only now
-          return this._refreshRow(prevEditableRowIdx, false, false, true, rowItem).then(() => {
-            this._clearEditPending();
-          });
-        },
-        () => {
-          return this._refreshRow(prevEditableRowIdx, false).then(() => {
-            this._clearEditPending();
-          });
-        }
-      );
-    } else {
-      return this._refreshRow(prevEditableRowIdx, false).then(() => {
-        this._clearEditPending();
-      });
+    let rowItem;
+    if (updatedItemObj != null && updatedItemObj.updatedItem) {
+      rowItem = updatedItemObj.updatedItem;
     }
+    // re-render the previously editable row, which will be read-only now
+    return this._refreshRow(prevEditableRowIdx, false, cancelled, rowItem).then(() => {
+      this._clearEditPending();
+    });
   }
   this._clearEditPending();
   return Promise.resolve();
@@ -20508,14 +21100,13 @@ Table.prototype._handleKeydownTab = function (event) {
     var tabbableElementsInRowCount = tabbableElementsInRow.length;
     var rowElementTabIndex = $(tabbableElementsInRow).index(currentFocusElement);
 
-    var tableHeaderColumns = this._getTableHeaderColumns();
-    var maxIndex = tableHeaderColumns ? tableHeaderColumns.length - 1 : 0;
+    var maxIndex = Math.max(this._getColumnDefs().length - 1, 0);
     if (
       rowElementTabIndex === tabbableElementsInRowCount - 1 &&
       !event[Table._KEYBOARD_CODES._MODIFIER_SHIFT]
     ) {
       // last tabbable element in row so go to the next row
-      this._setAdjacentRowEditable(0, maxIndex, true, event);
+      this._setAdjacentRowEditable(-1, maxIndex, true, event);
       event.preventDefault();
       event.stopPropagation();
     } else if (rowElementTabIndex === 0 && event[Table._KEYBOARD_CODES._MODIFIER_SHIFT]) {
@@ -20643,7 +21234,7 @@ Table.prototype._handleKeydownEnter = function (event) {
     if (currentRowIdx >= 0) {
       if (this._isTableEditMode()) {
         if (!this._hasEditableRow()) {
-          this._setTableEditable(true, false, 0, true, event);
+          this._setTableEditable(true, false, -1, true, event);
           return;
         }
         var columnIdx = this._getElementColumnIdx(event.target);
@@ -22782,6 +23373,20 @@ Table.prototype._updateSelectors = function (selected) {
  * <p>Depending on the Theme, the Table may have a solid default background color. If a different background color is desired, it can be changed by adding a background color class on the Table.
  * See table background color demo for examples.</p>
  *
+ * <h3 id="data-oj-section">
+ *   Context Menu
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#data-oj-section"></a>
+ * </h3>
+ * <p>The Table has a context menu for accessibly performing operations such as column resize and sort.
+ * When defining a context menu, Table allows the app to use the built-in behavior for operations such as column resize and sort by specifying menu list items as follows.
+ * <pre class="prettyprint">
+ * <code>
+ *     &lt;oj-option data-oj-command="oj-table-['commandname']"&gt;&lt;/oj-option>
+ * </code>
+ * </pre>
+ *
+ * {@ojinclude "name":"contextMenuDoc"}
+ *
  * <h3 id="data-attributes-section">
  *   Custom Data Attributes
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#data-attributes-section"></a>
@@ -23585,8 +24190,8 @@ Table.prototype.options = {
    * @default "auto"
    * @ojvalue {string} "auto" The behavior is determined by the component.  By default the behavior is the same as "capability" except
    *                          when legacy TableDataSource is used, in which case the behavior is the same as "always".
-   * @ojvalue {string} "capability" Table will only scroll to a position based on a row key if either the row has already been fetched
-   *                                or if the associated DataProvider supports 'immediate' iterationSpeed for 'fetchFirst' capability.
+   * @ojvalue {string} "capability" Table will only scroll to a position based on a row key if the associated DataProvider
+   *                                supports 'immediate' iterationSpeed for 'fetchFirst' capability.
    * @ojvalue {string} "always" Table will scroll to a position based on a row key as long as the key is valid.
    * @ojvalue {string} "never" Table will not change the scroll position if the request is based on a row key.
    *
@@ -23722,7 +24327,7 @@ Table.prototype.options = {
      * @memberof! oj.ojTable
      * @instance
      * @type {string|null}
-     * @ojsignature {target:"Type", value:"? | keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string"}
+     * @ojsignature {target:"Type", value:"? | keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string | null"}
      * @default null
      * @ojunsupportedthemes ["Alta"]
      */
@@ -23828,7 +24433,7 @@ Table.prototype.options = {
    * @property {number=} rowIndex The zero-based index of the cell at the origin of the table.  If <a href="#scrollPolicy">scrollPolicy</a>
    * is set to 'loadMoreOnScroll and the row index is greater than maxCount set in <a href="#scrollPolicyOptions">scrollPolicyOptions</a>,
    * then it will scroll and fetch until the end of the table is reached and there are no more rows to fetch.
-   * @property {any=} columnKey The key of the column.  This corresponds to the identifier of the column specified in <a href="#columns">columns</a>.
+   * @property {string=} columnKey The key of the column.  This corresponds to the identifier of the column specified in <a href="#columns">columns</a>.
    * If the column does not exists then the value is ignored.
    * @property {any=} rowKey The key of the row.  If DataProvider is used for <a href="#data">data</a> and the key does not exists in the
    * DataProvider, then the value is ignored.  If DataProvider is not used then Table will fetch and scroll until the item is found
@@ -23875,14 +24480,12 @@ Table.prototype.options = {
 
   /**
    * @typedef {Object} oj.ojTable.ColumnSelectionStart start of one column selection, can be on index or key or both.
-   * @ojsignature [{target:"Type", value:"{startIndex:{column:number}, startKey?:{column:K}}|{startIndex?:{column:number}, startKey:{column:K}}"},
-   *               {target:"Type", value:"<K>", for:"genericTypeParameters"}]
+   * @ojsignature [{target:"Type", value:"{startIndex:{column:number}, startKey?:{column:string}}|{startIndex?:{column:number}, startKey:{column:string}}"}]
    */
 
   /**
    * @typedef {Object} oj.ojTable.ColumnSelectionEnd end of one column selection, can be on index or key or both.
-   * @ojsignature [{target:"Type", value:"{endIndex:{column:number},endKey?:{column:K}}|{endIndex?:{column:number}, endKey:{column:K}}"},
-   *               {target:"Type", value:"<K>", for:"genericTypeParameters"}]
+   * @ojsignature [{target:"Type", value:"{endIndex:{column:number},endKey?:{column:string}}|{endIndex?:{column:number}, endKey:{column:string}}"}]
    */
 
   /**
@@ -23968,7 +24571,7 @@ Table.prototype.options = {
    * @memberof! oj.ojTable
    * @ojshortdesc Specifies the current selections in the table. See the Help documentation for more information.
    * @type {Array.<Object>}
-   * @ojsignature {target: "Type", value: "Array<oj.ojTable.RowSelectionStart<K> & oj.ojTable.RowSelectionEnd<K>> | Array<oj.ojTable.ColumnSelectionStart<K> & oj.ojTable.ColumnSelectionEnd<K>>"}
+   * @ojsignature {target: "Type", value: "Array<oj.ojTable.RowSelectionStart<K> & oj.ojTable.RowSelectionEnd<K>> | Array<oj.ojTable.ColumnSelectionStart & oj.ojTable.ColumnSelectionEnd>"}
    * @default []
    * @ojwriteback
    * @ojdeprecated {since: '7.0.0', description: 'Use selected attribute instead.'}
@@ -24014,7 +24617,7 @@ Table.prototype.options = {
    * @memberof! oj.ojTable
    * @ojshortdesc Specifies the current selected rows and/or columns in the table. See the Help documentation for more information.
    * @type {Object}
-   * @ojsignature {target:"Type", value:"{row?: oj.KeySet<K>, column?: oj.KeySet<K>}"}
+   * @ojsignature {target:"Type", value:"{row?: oj.KeySet<K>, column?: oj.KeySet<string>}"}
    * @default {row: new KeySetImpl(), column: new KeySetImpl()};
    * @ojwriteback
    * @ojeventgroup common
@@ -24917,7 +25520,7 @@ Table.prototype.refreshRow = function (rowIdx) {
   }
   return this._queueTask(
     function () {
-      return this._refreshRow(rowIdx, true, true);
+      return this._refreshRow(rowIdx, true);
     }.bind(this)
   );
 };
@@ -25092,15 +25695,6 @@ Table.prototype._clearNotifyAttachedTimeout = function () {
     clearTimeout(this._notifyAttachedTimeout);
     this._notifyAttachedTimeout = null;
   }
-};
-
-/**
- * <p>Notifies the component that its subtree has been made hidden programmatically after the component has
- * been created.
- */
-Table.prototype._NotifyHidden = function () {
-  this._super();
-  this._getLayoutManager().clearCachedDimensions();
 };
 
 /**
@@ -25279,7 +25873,6 @@ Table.prototype._NotifyContextMenuGesture = function (contextMenu, event, eventT
  * @override
  * @private
  */
-// eslint-disable-next-line no-unused-vars
 Table.prototype._setOptions = function (options, flags) {
   var requiresRefresh = false;
   var requiresDataRefresh = false;
@@ -25378,6 +25971,7 @@ Table.prototype._CompareOptionValues = function (option, value1, value2) {
   switch (option) {
     case 'columns':
     case 'currentRow':
+    case 'scrollPolicyOptions':
       return oj.Object.compareValues(value1, value2);
     case 'selection':
       if (value1 && value1.inverted === undefined) {
@@ -25429,7 +26023,7 @@ Table.prototype._getLayoutManager = function () {
       if (this._isFixedLayoutEnabled()) {
         this._layoutManager = new TableFixedLayoutManager(this);
       } else {
-        this._layoutManager = new TableStickyLayoutManager(this);
+        this._layoutManager = new TableContentsLayoutManager(this);
       }
     } else {
       this._layoutManager = new TableLegacyLayoutManager(this);

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -752,26 +752,36 @@ const IntlConverterUtils = IntlConverterUtils$1;
  * @classdesc Constructs an immutable instance and initializes it with the options provided.
  * <p>
  *  The converter instance uses locale symbols for the locale set on the page (returned by
- *  {@link oj.Config.getLocale}.
+ *  {@link oj.Config.getLocale}).
  *  </p>
- * There are several ways to initialize the converter.
- * <ul>
- * <li>Using the standard date, datetime and time format lengths defined by Unicode CLDR, these
- * would include the properties formatType, dateFormat, timeFormat.</li>
- * <li>Using options defined by the ECMA 402 Specification, these would be the properties year,
- * month, day, hour, minute, second, weekday, era, timeZoneName, hour12</li>
- * <li>Using a custom date and/or time format pattern using the pattern property.
- * This way is deprecated and not recommended; Applications should not use pattern
- * because it is not locale sensitive.</li>
- * </ul>
- *
  * <p>
- * The options when specified take precedence in the following order:<br>
- * 1. pattern (deprecated). If pattern is set, the ECMA options and formatType/dateFormat/timeFormat are ignored.<br>
- * 2. ECMA options. If pattern is not set, and ECMA options are set, ECMA options are used, and formatType/dateFormat/timeFormat are ignored.<br>
- * 3. formatType/dateFormat/timeFormat (recommended).
+ * There are several ways to initialize the converter. However, the recommended method involves utilizing the formatType, dateFormat, and timeFormat options.
+ * This approach ensures automatic formatting of the date and/or time in a locale-specific manner.
  * </p>
- * <p>If no options are provided, they default to day:"numeric", month:"numeric", year:"numeric".
+ * <p>
+ * The following initialization methods are available:
+ * <ul>
+ * <li>Using the standard date, datetime and time format lengths such as 'short', 'medium', etc., as defined by Unicode CLDR.
+ * For example: formatType: 'date', dateFormat: 'short'.
+ * </li>
+ * <li>Using options defined by the ECMA 402 Specification, which are year,
+ * month, day, hour, minute, second, weekday, era, timeZoneName, hour12.
+ * This method is suitable when a specific format is desired irrespective of the locale.
+ * However, it's not recommended as it lacks locale sensitivity.</li>
+ * <li>Using a custom date and/or time format pattern using the pattern property.
+ * This way is deprecated and discouraged since it is not locale sensitive. Applications should not use pattern.</li>
+ * </ul>
+ * </p>
+ * <p>
+ * The options when specified take precedence in the following order:
+ * <ol>
+ * <li>pattern (deprecated). If pattern is set, the ECMA options and formatType/dateFormat/timeFormat are ignored.</li>
+ * <li>ECMA options (not locale sensitive). If pattern is not set, and ECMA options are set, ECMA options are used, and formatType/dateFormat/timeFormat are ignored.</li>
+ * <li>formatType/dateFormat/timeFormat (recommended).</li>
+ * </ol>
+ * </p>
+ * <p>If no options are provided, they default to day:"numeric", month:"numeric", year:"numeric". As this formatting remains consistent across locales and is not sensitive to locale variations,
+ * it is not recommended. The recommended approach is to create the converter using the options formatType: "date", dateFormat: "short" to ensure locale sensitivity.
  * </p>
  * The converter provides great leniency when parsing a user input value to a date in the following
  * ways: <br/>

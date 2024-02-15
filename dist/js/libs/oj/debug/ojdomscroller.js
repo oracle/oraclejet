@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -59,7 +59,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
     this._checkViewportCount = 0;
     this._fetchThreshold = 0.25;
 
-    var elem = this._getScrollEventElement();
+    var elem = DataCollectionUtils.getScrollEventElement(this._element);
     this._scrollEventListener = function () {
       if (this._isScrollTrackingPaused) {
         // do not trigger any scroll notifications if scroll tracking is paused
@@ -124,19 +124,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
   };
 
   /**
-   * Retrieve the element where the scroll listener is registered on.
-   * @private
-   */
-  DomScroller.prototype._getScrollEventElement = function () {
-    // if scroller is the body, listen for window scroll event.  This is the only way that works consistently across all browsers.
-    if (this._element === document.body || this._element === document.documentElement) {
-      return window;
-    }
-
-    return this._element;
-  };
-
-  /**
    * Destroys the dom scroller, unregister any event handlers.
    * @export
    * @expose
@@ -145,7 +132,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
    */
   DomScroller.prototype.destroy = function () {
     this._unregisterDataSourceEventListeners();
-    var elem = this._getScrollEventElement();
+    var elem = DataCollectionUtils.getScrollEventElement(this._element);
     if (elem) {
       elem.removeEventListener('scroll', this._scrollEventListener);
       elem.removeEventListener('wheel', this._wheelEventListener, { passive: true });
@@ -223,9 +210,13 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
 
   DomScroller.prototype._handleExternalScrollerScrollTop = function (scrollTop, scrollerHeight) {
     if (!this._fetchPromise && this._asyncIterator) {
-      var bounds = this._contentElement.getBoundingClientRect();
-      var bottom = bounds.bottom - this._fetchTrigger - bounds.height * this._fetchThreshold;
-      if (bottom <= scrollerHeight) {
+      var contentBounds = this._contentElement.getBoundingClientRect();
+      var scrollerBottom =
+        this._element === document.body || this._element === document.documentElement
+          ? scrollerHeight
+          : this._element.getBoundingClientRect().bottom;
+      var scrollDiff = contentBounds.bottom - scrollerBottom;
+      if (scrollDiff <= this._fetchTrigger + contentBounds.height * this._fetchThreshold) {
         this._doFetch(scrollTop);
       }
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2023, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2024, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -1086,11 +1086,15 @@
         }
 
         .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
-
-            padding: $tabBarHorizontalStackedItemPadding;
-
+            flex-direction: column;
+            padding: $tabBarHorizontalItemPadding;
         }
 
+        .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-element.oj-removable .oj-tabbar-item-content {
+            flex-direction: row;
+            padding: 0;
+        }
+                
             //Add Space between icon and text
         .oj-tabbar-horizontal:not(.oj-tabbar-stack-icon-label):not(.oj-tabbar-icon-only) .oj-tabbar-item-icon {
             align-self: center;
@@ -1118,13 +1122,24 @@
              height: 2.714rem;//38px
         }
 
+        .oj-tabbar-horizontal .oj-tabbar-icon-label-container {
+            display: flex;
+            flex: 1 1 auto;
+            justify-content: center;
+        }
+        
         .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item {
             padding-bottom: 2px;
-        }
-        .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
+        }        
+        .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-icon-label-container {
             flex-direction: column;
+            align-items: center;
+            padding: $tabBarHorizontalItemPadding;        
         }
-
+        .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-remove-icon {
+            align-self: start;
+        }
+        
         /*End of  horizontal stacked icon label navigationtabs styles */
 
         .oj-tabbar-horizontal .oj-tabbar-item-label {

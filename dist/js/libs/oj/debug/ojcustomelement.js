@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -46,7 +46,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
       this.AddComponentMethods(proto);
 
       proto.setProperties = function (props) {
-        ojcustomelementUtils.CustomElementUtils.getElementBridge(this)._setProperties(this, props);
+        ojcustomelementUtils.CustomElementUtils.getElementBridge(this).SetProperties(this, props);
       };
 
       // The set/unset methods are used for TypeScript only so we should define these as non enumerated properties
@@ -262,6 +262,9 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
 
     // eslint-disable-next-line no-unused-vars
     HandleDetached: function (element) {},
+
+    // eslint-disable-next-line no-unused-vars
+    HandleAttached: function (element) {},
 
     // eslint-disable-next-line no-unused-vars
     HandleReattached: function (element) {},
@@ -544,6 +547,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
           };
 
           state.setCreateCallback(createComponentCallback);
+          this.HandleAttached(element);
         }
       } else {
         this.HandleReattached(element);
@@ -583,7 +587,11 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
       return domListener;
     },
 
-    _setProperties: function (elem, props) {
+    // Not using default values in case of undefined is an oversight
+    // but we also don't want to change the existing behavior of this popular method.
+    // Adding useDefaultsWhenUndefined flag for default values, that will be set to true in CustomElementBridge
+    // property setter, when the setter is used by Preact.
+    SetProperties: function (elem, props, useDefaultsWhenUndefined) {
       var mutationKeys = []; // keys for the 'dot mutation' properties
       var regularProps = {}; // the rest of the properties
       var hasRegularProps = false;
@@ -594,7 +602,12 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
         if (key.indexOf('.') >= 0) {
           mutationKeys.push(key);
         } else {
-          regularProps[key] = props[key];
+          let value = props[key];
+          if (useDefaultsWhenUndefined && value === undefined) {
+            const meta = MetadataUtils.getPropertyMetadata(key, ojcustomelementRegistry.getElementProperties(elem));
+            value = MetadataUtils.getDefaultValue(meta);
+          }
+          regularProps[key] = value;
           hasRegularProps = true;
         }
       }

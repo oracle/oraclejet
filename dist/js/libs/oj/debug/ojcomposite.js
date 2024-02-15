@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -43,9 +43,22 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
     return composite;
   };
 
-  class CompositeState extends ojcustomelementUtils.ElementState {
+  class CompositeState extends ojcustomelementUtils.LifecycleElementState {
+      constructor() {
+          super(...arguments);
+          this._templateCleanCallbacks = [];
+      }
       getTrackChildrenOption() {
           return 'immediate';
+      }
+      addTemplateCleanCallback(callback) {
+          this._templateCleanCallbacks.push(callback);
+      }
+      cleanTemplates() {
+          this._templateCleanCallbacks.forEach((callback) => {
+              callback();
+          });
+          this._templateCleanCallbacks = [];
       }
   }
 
@@ -79,6 +92,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
   CompositeElementBridge.DESC_KEY_VIEW_MODEL = 'viewModel';
   /** @ignore */
   CompositeElementBridge.SUBID_MAP = 'data-oj-subid-map';
+
+  CompositeElementBridge.DisconnectedState = 0;
+  CompositeElementBridge.ConnectedState = 1;
 
   oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
     beforePropertyChangedEvent: function (element, property, detail) {
@@ -318,6 +334,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
       oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL, 'disconnected', [
         element
       ]);
+      this._verifyConnectDisconnect(element, CompositeElementBridge.DisconnectedState);
+    },
+
+    HandleAttached: function (element) {
+      this._verifyConnectDisconnect(element, CompositeElementBridge.ConnectedState);
     },
 
     HandleReattached: function (element) {
@@ -334,6 +355,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
           this._VM_CONTEXT
         ]);
       }
+
+      this._verifyConnectDisconnect(element, CompositeElementBridge.ConnectedState);
     },
 
     InitializeElement: function (element) {
@@ -540,6 +563,35 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
         throw new ojcustomelementUtils.JetElementError(this._ELEMENT, 'Cannot access methods before element is upgraded.');
       }
       return this._VIEW_MODEL;
+    },
+
+    // Called from HandleAttached, HandleReattached, HandleDetached in order
+    // to cleanup a composite on a true disconnect.
+    _verifyConnectDisconnect: function (element, state) {
+      if (this._verifyingState === undefined) {
+        window.queueMicrotask(() => {
+          if (this._verifyingState === state) {
+            if (this._verifyingState === CompositeElementBridge.ConnectedState) {
+              this._verifiedConnect(element);
+            } else {
+              this._verifiedDisconnect(element);
+            }
+            this._verifyingState = undefined;
+          }
+        });
+      }
+      this._verifyingState = state;
+    },
+
+    _verifiedConnect: function (element) {
+      const state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
+      state.executeLifecycleCallbacks(true);
+    },
+
+    _verifiedDisconnect: function (element) {
+      const state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
+      state.cleanTemplates();
+      state.executeLifecycleCallbacks(false);
     },
 
     _processCompositeTemplate: function (element) {
@@ -903,7 +955,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    * </ul>
    * @ojsignature [
    *               {target: "Type",
-   *                value: "<P extends PropertiesType= PropertiesType>(name: string, descriptor: {
+   *                value: "<P extends PropertiesType = PropertiesType>(name: string, descriptor: {
    *                metadata: MetadataTypes.ComponentMetadata;
    *                view: string;
    *                viewModel?: {new(context: ViewModelContext<P>): ViewModel<P>};

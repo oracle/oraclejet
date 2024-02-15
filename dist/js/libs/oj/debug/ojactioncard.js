@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -80,9 +80,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdo
                 classString += ' oj-focus-highlight';
             }
             const tabIndex = props.tabIndex ?? 0;
-            return (jsxRuntime.jsx(ojvcomponent.Root, { tabIndex: tabIndex, class: classString, role: "button", onKeyUp: this._handleKeyup, onMouseUp: this._handleUpEnd, onKeyDown: this._handleKeydown, onMouseDown: this._handleStart, onTouchStart: this._handleStart, onTouchEnd: this._handleUpEnd, onTouchCancel: this._handleTouchcancel, onTouchMove: this._handleMove, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._handleClick, ...{
-                    onojAction: this._handleOjAction
-                }, ref: this._rootRef, children: this.props.children }));
+            return (jsxRuntime.jsx(ojvcomponent.Root, { tabIndex: tabIndex, class: classString, role: "button", onKeyUp: this._handleKeyup, onMouseUp: this._handleUpEnd, onKeyDown: this._handleKeydown, onMouseDown: this._handleStart, onTouchStart: this._handleStart, onTouchEnd: this._handleUpEnd, onTouchCancel: this._handleTouchcancel, onTouchMove: this._handleMove, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._handleClick, onojAction: this._handleOjAction, ref: this._rootRef, children: this.props.children }));
         }
         componentDidMount() {
             this._rootRef.current.addEventListener('touchstart', this._handleStart, { passive: true });

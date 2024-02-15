@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports'], function (exports) { 'use strict';
+define(['exports', '@oracle/oraclejet-preact/utils/UNSAFE_logger'], function (exports, PreactLogger) { 'use strict';
 
   /**
    * @namespace
@@ -111,57 +111,8 @@ define(['exports'], function (exports) { 'use strict';
   Logger.LEVEL_LOG = 4;
 
   /* private constants*/
-  Logger._METHOD_ERROR = 'error';
-  Logger._METHOD_WARN = 'warn';
-  Logger._METHOD_INFO = 'info';
-  Logger._METHOD_LOG = 'log';
   Logger._defaultOptions = { level: Logger.LEVEL_ERROR, writer: null };
   Logger._options = Logger._defaultOptions;
-
-  /*
-   * Helper method that retrieves and parses session storage setting
-   */
-  const _getSessionStorage = () => {
-    let logLevel;
-    try {
-      const sessionValue =
-        typeof window !== 'undefined' && window.sessionStorage !== undefined
-          ? sessionStorage.getItem('ojet.logLevel')
-          : undefined;
-      switch (sessionValue) {
-        case 'none':
-          logLevel = Logger.LEVEL_NONE;
-          break;
-        case 'error':
-          logLevel = Logger.LEVEL_ERROR;
-          break;
-        case 'warning':
-          logLevel = Logger.LEVEL_WARN;
-          break;
-        case 'info':
-          logLevel = Logger.LEVEL_INFO;
-          break;
-        case 'log':
-          logLevel = Logger.LEVEL_LOG;
-          break;
-        default:
-          logLevel = undefined;
-      }
-      // eslint-disable-next-line no-empty
-    } catch (e) {}
-
-    return logLevel;
-  };
-
-  /* SessionStorage setting */
-  const _sessionStorage = _getSessionStorage();
-
-  /*
-   * Helper method - returns current log level from session storage or options
-   */
-  const _getLogLevel = () => {
-    return _sessionStorage || Logger._options.level;
-  };
 
   /* public members*/
   /**
@@ -176,10 +127,7 @@ define(['exports'], function (exports) { 'use strict';
    * @since 1.0.0
    * @ojsignature {target: "Type", for: "optionalParams", value: "any[]"}
    */
-  // eslint-disable-next-line no-unused-vars
-  Logger.error = function (message, optionalParams) {
-    Logger._write(Logger.LEVEL_ERROR, Logger._METHOD_ERROR, arguments);
-  };
+  Logger.error = PreactLogger.error.bind(PreactLogger);
 
   /**
    * Writes an informational  message.
@@ -193,10 +141,7 @@ define(['exports'], function (exports) { 'use strict';
    * @since 1.0.0
    * @ojsignature {target: "Type", for: "optionalParams", value: "any[]"}
    */
-  // eslint-disable-next-line no-unused-vars
-  Logger.info = function (message, optionalParams) {
-    Logger._write(Logger.LEVEL_INFO, Logger._METHOD_INFO, arguments);
-  };
+  Logger.info = PreactLogger.info.bind(PreactLogger);
 
   /**
    * Writes a warning message.
@@ -210,10 +155,7 @@ define(['exports'], function (exports) { 'use strict';
    * @since 1.0.0
    * @ojsignature {target: "Type", for: "optionalParams", value: "any[]"}
    */
-  // eslint-disable-next-line no-unused-vars
-  Logger.warn = function (message, optionalParams) {
-    Logger._write(Logger.LEVEL_WARN, Logger._METHOD_WARN, arguments);
-  };
+  Logger.warn = PreactLogger.warn.bind(PreactLogger);
 
   /**
    * Writes a general message.
@@ -227,10 +169,7 @@ define(['exports'], function (exports) { 'use strict';
    * @since 1.0.0
    * @ojsignature {target: "Type", for: "optionalParams", value: "any[]"}
    */
-  // eslint-disable-next-line no-unused-vars
-  Logger.log = function (message, optionalParams) {
-    Logger._write(Logger.LEVEL_LOG, Logger._METHOD_LOG, arguments);
-  };
+  Logger.log = PreactLogger.log.bind(PreactLogger);
 
   /**
    * Method for setting and getting logger option/options
@@ -266,7 +205,7 @@ define(['exports'], function (exports) { 'use strict';
     if (arguments.length === 0) {
       keys = Object.keys(Logger._options);
       for (i = 0; i < keys.length; i++) {
-        ret[keys[i]] = key === 'level' ? _getLogLevel() : Logger._options[keys[i]];
+        ret[keys[i]] = keys[i] === 'level' ? PreactLogger.getLogLevel() : Logger._options[keys[i]];
       }
       return ret;
     }
@@ -274,7 +213,7 @@ define(['exports'], function (exports) { 'use strict';
       let optValue;
       switch (key) {
         case 'level':
-          optValue = _getLogLevel();
+          optValue = PreactLogger.getLogLevel();
           break;
         case 'writer':
           optValue = Logger._options.writer;
@@ -287,7 +226,13 @@ define(['exports'], function (exports) { 'use strict';
 
     // setters
     if (typeof key === 'string') {
-      Logger._options[key] = value;
+      if (key === 'level') {
+        PreactLogger.setLogLevel(value);
+      } else if (key === 'writer') {
+        PreactLogger.setLogWriter(value);
+        // Keep the writer since PreactLogger does not have getLogWriter() method
+        Logger._options[key] = value;
+      }
     } else {
       // case when all options are set in one call
       var options = key;
@@ -298,45 +243,6 @@ define(['exports'], function (exports) { 'use strict';
     }
 
     return undefined;
-  };
-
-  /* private members*/
-  /*
-   * Helper method - calls a specified method on the available writer (console or custom)
-   * if the logging level is sufficient
-   */
-  Logger._write = function (level, method, args) {
-    if (Logger.option('level') < level) {
-      return;
-    }
-
-    var writer = Logger._getWriter();
-    if (writer != null) {
-      if (args.length === 1 && args[0] instanceof Function) {
-        var msg = args[0]();
-        // eslint-disable-next-line no-param-reassign
-        args = [msg];
-      }
-      if (writer[method] && writer[method].apply) {
-        writer[method].apply(writer, args);
-      } else if (writer[method]) {
-        writer[method] = Function.prototype.bind.call(writer[method], writer);
-        Logger._write(level, method, args);
-      }
-    }
-  };
-
-  /*
-   * Helper method - returns available writer (console or custom)
-   */
-  Logger._getWriter = function () {
-    var writer = null;
-    if (Logger.option('writer')) {
-      writer = Logger.option('writer');
-    } else if (typeof window !== 'undefined' && window.console !== undefined) {
-      writer = window.console;
-    }
-    return writer;
   };
 
   const info = Logger.info;

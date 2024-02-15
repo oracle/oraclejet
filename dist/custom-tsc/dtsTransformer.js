@@ -305,95 +305,102 @@ function fixCreateImportExportSpecifierCalls(text) {
 }
 exports.fixCreateImportExportSpecifierCalls = fixCreateImportExportSpecifierCalls;
 function assembleTypes(buildOptions) {
-    const coreJET = !!buildOptions.coreJetBuildOptions;
-    const EXCLUDED_MODULES = buildOptions.coreJetBuildOptions?.exclude || [];
-    function processImportedDependencies(typeDeclarName, seen) {
-        const typeDeclarCont = fs.readFileSync(typeDeclarName, 'utf-8');
-        let matches;
-        while ((matches = regexImportDep.exec(typeDeclarCont)) !== null) {
-            const importTypeFile = matches.groups.localdep;
-            const typeDeclarFile = path.join(path.dirname(typeDeclarName), `${importTypeFile}.d.ts`);
-            if (!seen.has(`${path.basename(typeDeclarFile)}`)) {
-                seen.add(`${path.basename(typeDeclarFile)}`);
-                processImportedDependencies(typeDeclarFile, seen);
-            }
-        }
-    }
-    const typeDefinitionFile = buildOptions.mainEntryFile;
-    const pathToCompiledTsCode = buildOptions.tsBuiltDir;
-    const regexExportDep = new RegExp(/^\s*export\s+[\w ,]*{\s*(?<exports>[\w ,]+)\s*}[\w ,]*(\s+from\s+)['"](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
-    const regexImportDep = new RegExp(/^[\s]*import\s+[\w\s\{\}\*,]*["'](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
-    let moduleTypeDependencies = {};
-    let destFilePath;
-    const moduleEntryFiles = glob.sync(`${pathToCompiledTsCode}/**/${typeDefinitionFile}`);
-    moduleEntryFiles.forEach((entryFile) => {
-        const moduleDir = path.dirname(entryFile);
-        const moduleName = moduleDir.substring(pathToCompiledTsCode.length + 1);
-        if (EXCLUDED_MODULES.indexOf(moduleName) > -1) {
-            return;
-        }
-        const exports_files = glob.sync(`${moduleDir}/exports_*.d.ts`);
-        if (exports_files.length == 0) {
-            return;
-        }
-        const sourceFileContent = fs.readFileSync(entryFile, 'utf-8');
-        const finalExports = [];
-        if (!coreJET) {
-            finalExports.push(sourceFileContent.replace(regexImportDep, '').trim());
-        }
-        moduleTypeDependencies[moduleName] = new Set();
-        exports_files.forEach((expfile) => {
-            const expFileContent = fs.readFileSync(expfile, 'utf-8');
-            finalExports.push(expFileContent);
-        });
-        let matches;
-        while ((matches = regexExportDep.exec(sourceFileContent)) !== null) {
-            const exportTypeFile = matches.groups.localdep;
-            const exports = matches.groups.exports;
-            if (coreJET) {
-                let inject = true;
-                let statementToInject = matches[0];
-                if (exports && allComponents[moduleName]) {
-                    let namedExports = exports.split(',').map((comp) => comp.trim());
-                    namedExports = namedExports.filter((comp) => allComponents[moduleName].indexOf(comp) < 0);
-                    if (namedExports.length > 0) {
-                        statementToInject = statementToInject.replace(matches[1], namedExports.join(','));
-                    }
-                    else {
-                        inject = false;
-                    }
-                }
-                if (inject) {
-                    finalExports.unshift(statementToInject);
+    if (buildOptions.typesDir !== undefined) {
+        const coreJET = !!buildOptions.coreJetBuildOptions;
+        const EXCLUDED_MODULES = buildOptions.coreJetBuildOptions?.exclude || [];
+        function processImportedDependencies(typeDeclarName, seen) {
+            const typeDeclarCont = fs.readFileSync(typeDeclarName, 'utf-8');
+            let matches;
+            while ((matches = regexImportDep.exec(typeDeclarCont)) !== null) {
+                const importTypeFile = matches.groups.localdep;
+                const typeDeclarFile = path.join(path.dirname(typeDeclarName), `${importTypeFile}.d.ts`);
+                if (!seen.has(`${path.basename(typeDeclarFile)}`)) {
+                    seen.add(`${path.basename(typeDeclarFile)}`);
+                    processImportedDependencies(typeDeclarFile, seen);
                 }
             }
-            const typeDeclarFile = path.join(moduleDir, `${exportTypeFile}.d.ts`);
-            if (!moduleTypeDependencies[moduleName].has(`${path.basename(typeDeclarFile)}`)) {
-                moduleTypeDependencies[moduleName].add(`${path.basename(typeDeclarFile)}`);
-                processImportedDependencies(typeDeclarFile, moduleTypeDependencies[moduleName]);
+        }
+        const pathToCompiledTsCode = buildOptions.tsBuiltDir;
+        const regexExportDep = new RegExp(/^\s*export\s+[\w ,]*{\s*(?<exports>[\w ,]+)\s*}[\w ,]*(\s+from\s+)['"](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
+        const regexImportDep = new RegExp(/^[\s]*import\s+[\w\s\{\}\*,]*["'](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
+        const moduleTypeDependencies = {};
+        const processedModuleNames = new Set();
+        let destFilePath;
+        const moduleEntryFiles = glob.sync(`${pathToCompiledTsCode}/**/*(index.d.ts|loader.d.ts)`);
+        moduleEntryFiles.forEach((entryFile) => {
+            const moduleDir = path.dirname(entryFile);
+            const typeDefinitionFile = path.basename(entryFile);
+            const moduleName = moduleDir.substring(pathToCompiledTsCode.length + 1);
+            if (EXCLUDED_MODULES.indexOf(moduleName) > -1) {
+                return;
             }
-        }
-        const destDir = buildOptions.coreJetBuildOptions
-            ? `${buildOptions.typesDir}/${moduleName}`
-            : `${buildOptions.typesDir}/${moduleName}/types/`;
-        if (buildOptions.debug) {
-            console.log(`empty ${destDir}`);
-        }
-        fs.emptyDirSync(destDir);
-        destFilePath = path.join(destDir, typeDefinitionFile);
-        if (buildOptions.debug) {
-            console.log(`create file ${destFilePath}`);
-        }
-        fs.writeFileSync(destFilePath, finalExports.join('\n'), {
-            encoding: 'utf-8'
-        });
-        moduleTypeDependencies[moduleName].forEach((dtsFile) => {
+            const exports_files = glob.sync(`${moduleDir}/exports_*.d.ts`);
+            if (exports_files.length == 0) {
+                return;
+            }
+            else if (processedModuleNames.has(moduleName)) {
+                return;
+            }
+            else {
+                processedModuleNames.add(moduleName);
+            }
+            const sourceFileContent = fs.readFileSync(entryFile, 'utf-8');
+            const finalExports = [];
+            if (!coreJET) {
+                finalExports.push(sourceFileContent.replace(regexImportDep, '').trim());
+            }
+            moduleTypeDependencies[moduleName] = new Set();
+            exports_files.forEach((expfile) => {
+                const expFileContent = fs.readFileSync(expfile, 'utf-8');
+                finalExports.push(expFileContent);
+            });
+            let matches;
+            while ((matches = regexExportDep.exec(sourceFileContent)) !== null) {
+                const exportTypeFile = matches.groups.localdep;
+                const exports = matches.groups.exports;
+                if (coreJET) {
+                    let inject = true;
+                    let statementToInject = matches[0];
+                    if (exports && allComponents[moduleName]) {
+                        let namedExports = exports.split(',').map((comp) => comp.trim());
+                        namedExports = namedExports.filter((comp) => allComponents[moduleName].indexOf(comp) < 0);
+                        if (namedExports.length > 0) {
+                            statementToInject = statementToInject.replace(matches[1], namedExports.join(','));
+                        }
+                        else {
+                            inject = false;
+                        }
+                    }
+                    if (inject) {
+                        finalExports.unshift(statementToInject);
+                    }
+                }
+                const typeDeclarFile = path.join(moduleDir, `${exportTypeFile}.d.ts`);
+                if (!moduleTypeDependencies[moduleName].has(`${path.basename(typeDeclarFile)}`)) {
+                    moduleTypeDependencies[moduleName].add(`${path.basename(typeDeclarFile)}`);
+                    processImportedDependencies(typeDeclarFile, moduleTypeDependencies[moduleName]);
+                }
+            }
+            const destDir = buildOptions.coreJetBuildOptions
+                ? `${buildOptions.typesDir}/${moduleName}`
+                : `${buildOptions.typesDir}/${moduleName}/types/`;
             if (buildOptions.debug) {
-                console.log(`copy file ${path.join(moduleDir, dtsFile)} to ${path.join(destDir, dtsFile)}`);
+                console.log(`empty ${destDir}`);
             }
-            fs.copyFileSync(path.join(moduleDir, dtsFile), path.join(destDir, dtsFile));
+            fs.emptyDirSync(destDir);
+            destFilePath = path.join(destDir, typeDefinitionFile);
+            if (buildOptions.debug) {
+                console.log(`create file ${destFilePath}`);
+            }
+            fs.writeFileSync(destFilePath, finalExports.join('\n'), { encoding: 'utf-8' });
+            moduleTypeDependencies[moduleName].forEach((dtsFile) => {
+                if (buildOptions.debug) {
+                    console.log(`copy file ${path.join(moduleDir, dtsFile)} to ${path.join(destDir, dtsFile)}`);
+                }
+                fs.copyFileSync(path.join(moduleDir, dtsFile), path.join(destDir, dtsFile));
+            });
         });
-    });
+    }
 }
 exports.assembleTypes = assembleTypes;
 //# sourceMappingURL=dtsTransformer.js.map

@@ -30,25 +30,25 @@ const MetaTypes = __importStar(require("./MetadataTypes"));
 const TypeUtils = __importStar(require("./MetadataTypeUtils"));
 const FileUtils = __importStar(require("./MetadataFileUtils"));
 const TransformerError_1 = require("./TransformerError");
-function getVCompClassInfo(elementName, classNode, vexportToAlias, checker, compilerOptions, buildOptions) {
+function getVCompClassInfo(elementName, classNode, progImportMaps, checker, buildOptions) {
     let rtnInfo = null;
     let className = classNode.name.getText();
-    let translationBundleInfo;
     let packInfo;
     let heritageClauses = classNode.heritageClauses;
     for (let clause of heritageClauses) {
         for (let typeNode of clause.types) {
-            if (isVCompBaseClassFound(typeNode, vexportToAlias, checker)) {
+            if (isVCompBaseClassFound(typeNode, progImportMaps, checker)) {
                 if (typeNode.typeArguments?.[0] && ts.isTypeReferenceNode(typeNode.typeArguments?.[0])) {
                     let propsTypeNode = typeNode.typeArguments[0];
                     rtnInfo = {
                         elementName,
                         className,
                         classNode,
-                        propsInfo: MetaUtils.getPropsInfo(MetaTypes.VCompType.CLASS, className, propsTypeNode, vexportToAlias, checker)
+                        propsInfo: MetaUtils.getPropsInfo(MetaTypes.VCompType.CLASS, className, propsTypeNode, progImportMaps, checker)
                     };
                     if (!rtnInfo.propsInfo &&
-                        TypeUtils.getTypeNameFromTypeReference(propsTypeNode) !== vexportToAlias.GlobalProps) {
+                        TypeUtils.getTypeNameFromTypeReference(propsTypeNode) !==
+                            progImportMaps.getMap(MetaTypes.IMAP.exportToAlias, propsTypeNode).GlobalProps) {
                         TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.MISSING_PROPS_OBJECT, TransformerError_1.ExceptionType.THROW_ERROR, className, 'All custom elements at a minimum support global properties. Properties should use the ExtendGlobalProps utility type, e.g. Component<ExtendGlobalProps<Props>>.', propsTypeNode);
                     }
                     break;
@@ -68,7 +68,7 @@ function getVCompClassInfo(elementName, classNode, vexportToAlias, checker, comp
     return rtnInfo;
 }
 exports.getVCompClassInfo = getVCompClassInfo;
-function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compilerOptions, buildOptions) {
+function getVCompFunctionInfo(functionalCompNode, progImportMaps, checker, buildOptions) {
     let rtnInfo = null;
     let propsInfo = null;
     let isForwarded = false;
@@ -83,7 +83,7 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compi
     let functionName;
     let defaultProps;
     let propsTypeNode;
-    let translationBundleInfo;
+    const exportToAlias = progImportMaps.getMap(MetaTypes.IMAP.exportToAlias, functionalCompNode);
     const findFunctionalComp = function (expression) {
         if (ts.isFunctionExpression(expression) || ts.isArrowFunction(expression)) {
             componentNode = expression;
@@ -91,7 +91,7 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compi
             if (propsParam) {
                 if (propsParam.type && ts.isTypeReferenceNode(propsParam.type)) {
                     propsTypeNode = propsParam.type;
-                    propsInfo = MetaUtils.getPropsInfo(MetaTypes.VCompType.FUNCTION, componentName ?? functionName ?? elementName, propsTypeNode, vexportToAlias, checker);
+                    propsInfo = MetaUtils.getPropsInfo(MetaTypes.VCompType.FUNCTION, componentName ?? functionName ?? elementName, propsTypeNode, progImportMaps, checker);
                     if (ts.isObjectBindingPattern(propsParam.name)) {
                         defaultProps = propsParam.name.elements;
                     }
@@ -103,9 +103,9 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compi
                 ? ts.idText(expression.expression)
                 : null;
             switch (callName) {
-                case vexportToAlias.forwardRef:
+                case exportToAlias.forwardRef:
                     isForwarded = true;
-                case vexportToAlias.memo:
+                case exportToAlias.memo:
                     const firstArg = expression.arguments[0];
                     findFunctionalComp(firstArg);
                     break;
@@ -154,7 +154,7 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker, compi
                             if (ts.isBinaryExpression(binExpressionNode) &&
                                 ts.isObjectLiteralExpression(binExpressionNode.right)) {
                                 TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.STATIC_DEFAULTPROPS_ON_FUNCTION, TransformerError_1.ExceptionType.WARN_IF_DISABLED, componentName ?? functionName ?? elementName, `Static defaultProps for functional VComponents are not supported.
-As an alternative, specify default values using ES6 destructuring assignment syntax.`, binExpressionNode);
+  As an alternative, specify default values using ES6 destructuring assignment syntax.`, binExpressionNode);
                                 defaultProps = binExpressionNode.right.properties;
                             }
                         }
@@ -163,7 +163,7 @@ As an alternative, specify default values using ES6 destructuring assignment syn
                 if (functionalCompDecl) {
                     propsTypeNode = functionalCompDecl.parameters[0]?.type;
                     if (propsTypeNode) {
-                        propsInfo = MetaUtils.getPropsInfo(MetaTypes.VCompType.FUNCTION, componentName ?? functionName ?? elementName, propsTypeNode, vexportToAlias, checker);
+                        propsInfo = MetaUtils.getPropsInfo(MetaTypes.VCompType.FUNCTION, componentName ?? functionName ?? elementName, propsTypeNode, progImportMaps, checker);
                     }
                 }
             }
@@ -187,7 +187,7 @@ As an alternative, specify default values using ES6 destructuring assignment syn
         callExpression = functionalCompNode.expression;
     }
     if (callExpression &&
-        callExpression.expression.getText() === vexportToAlias.registerCustomElement) {
+        callExpression.expression.getText() === exportToAlias.registerCustomElement) {
         compRegisterCall = callExpression;
         const firstArg = callExpression.arguments[0];
         if (firstArg) {
@@ -253,8 +253,11 @@ function getDtMetadataForComponent(vcompInfo, metaUtilObj) {
     const compNode = MetaTypes.isClassInfo(vcompInfo) ? vcompInfo.classNode : vcompInfo.componentNode;
     const vcompInterfaceName = MetaUtils.tagNameToElementInterfaceName(metaUtilObj.fullMetadata['name']);
     metaUtilObj.fullMetadata['implements'] = new Array(vcompInterfaceName);
-    let dtMetadata = MetaUtils.getDtMetadata(compNode, MetaTypes.MDFlags.COMP, null, metaUtilObj);
+    let dtMetadata = MetaUtils.getDtMetadata(compNode, MetaTypes.MDContext.COMP, null, metaUtilObj);
     checkComponentMetadataConsistency(compNode, vcompInfo.packInfo?.isMonoPack(), dtMetadata, metaUtilObj);
+    if (vcompInfo.packInfo?.isMonoPack()) {
+        dtMetadata['main'] ??= `${vcompInfo.packInfo.name}/${metaUtilObj.fullMetadata['name'].substring(vcompInfo.packInfo.name.length + 1)}`;
+    }
     if (dtMetadata['implements']) {
         metaUtilObj.fullMetadata['implements'] = metaUtilObj.fullMetadata['implements'].concat(dtMetadata['implements']);
         delete dtMetadata['implements'];
@@ -262,10 +265,9 @@ function getDtMetadataForComponent(vcompInfo, metaUtilObj) {
     Object.assign(metaUtilObj.fullMetadata, dtMetadata);
 }
 exports.getDtMetadataForComponent = getDtMetadataForComponent;
-function getTranslationBundleInfo(vcompInfo, compilerOptions, buildOptions) {
+function getTranslationBundleInfo(vcompInfo, compilerOptions, buildOptions, metaUtilObj) {
     let rtnTranslationBundleInfo;
-    const bundleIds = buildOptions.translationBundleIds ??
-        getTranslationBundleIdsFromDependencies(vcompInfo, buildOptions);
+    const bundleIds = getTranslationBundleIdsFromDependencies(vcompInfo, buildOptions, metaUtilObj);
     if (bundleIds) {
         let loaderImports;
         const loaderNames = [];
@@ -289,11 +291,11 @@ function getTranslationBundleInfo(vcompInfo, compilerOptions, buildOptions) {
     return rtnTranslationBundleInfo;
 }
 exports.getTranslationBundleInfo = getTranslationBundleInfo;
-function isVCompBaseClassFound(typeRef, vexportToAlias, checker) {
+function isVCompBaseClassFound(typeRef, progImportMaps, checker) {
     let rtn = false;
+    const exportToAlias = progImportMaps.getMap(MetaTypes.IMAP.exportToAlias, typeRef);
     const baseClassName = TypeUtils.getTypeNameFromTypeReference(typeRef);
-    if (baseClassName === vexportToAlias.Component ||
-        baseClassName === vexportToAlias.PureComponent) {
+    if (baseClassName === exportToAlias.Component || baseClassName === exportToAlias.PureComponent) {
         rtn = true;
     }
     else {
@@ -302,7 +304,7 @@ function isVCompBaseClassFound(typeRef, vexportToAlias, checker) {
             let heritageClauses = baseClassDecl.heritageClauses;
             for (let clause of heritageClauses) {
                 for (let typeNode of clause.types) {
-                    if (isVCompBaseClassFound(typeNode, vexportToAlias, checker)) {
+                    if (isVCompBaseClassFound(typeNode, progImportMaps, checker)) {
                         rtn = true;
                         break;
                     }
@@ -315,17 +317,21 @@ function isVCompBaseClassFound(typeRef, vexportToAlias, checker) {
     }
     return rtn;
 }
-function getTranslationBundleIdsFromDependencies(vcompInfo, buildOptions) {
+function getTranslationBundleIdsFromDependencies(vcompInfo, buildOptions, metaUtilObj) {
     let bundleIds;
     const bundleIdSet = new Set();
     const visitedDependencies = new Set();
-    if (buildOptions.dependencyPackMap?.size > 0) {
-        if (vcompInfo.packInfo?.dependencies &&
-            vcompInfo.packInfo.dependencies !== MetaTypes.DEPENDENCIES_TOKEN) {
-            const depIds = getTranslationBundleIds(vcompInfo.packInfo.dependencies, buildOptions.dependencyPackMap, visitedDependencies);
-            for (const id of depIds) {
-                bundleIdSet.add(id);
-            }
+    if (vcompInfo.packInfo?.dependencies &&
+        vcompInfo.packInfo.dependencies !== MetaTypes.DEPENDENCIES_TOKEN) {
+        const depIds = getTranslationBundleIds(vcompInfo.packInfo.dependencies, buildOptions.dependencyPackMap, visitedDependencies);
+        for (const id of depIds) {
+            bundleIdSet.add(id);
+        }
+    }
+    if (metaUtilObj.fullMetadata.dependencies) {
+        const depIds = getTranslationBundleIds(metaUtilObj.fullMetadata.dependencies, buildOptions.dependencyPackMap, visitedDependencies);
+        for (const id of depIds) {
+            bundleIdSet.add(id);
         }
     }
     if (bundleIdSet.size > 0) {
@@ -333,6 +339,9 @@ function getTranslationBundleIdsFromDependencies(vcompInfo, buildOptions) {
     }
     return bundleIds;
 }
+const _CORE_BUNDLE_TO_T9N_ID_MAP = new Map([
+    ['oj-ref-oraclejet-preact', '@oracle/oraclejet-preact']
+]);
 function getTranslationBundleIds(dependencies, packMap, visited) {
     const rtnIds = [];
     for (const depName of Object.keys(dependencies)) {
@@ -349,6 +358,9 @@ function getTranslationBundleIds(dependencies, packMap, visited) {
                         rtnIds.push(id);
                     }
                 }
+            }
+            else if (_CORE_BUNDLE_TO_T9N_ID_MAP.has(depName)) {
+                rtnIds.push(_CORE_BUNDLE_TO_T9N_ID_MAP.get(depName));
             }
         }
     }
@@ -376,9 +388,12 @@ function getRegistrationOptions(metadataNode, vcompName, compRegisterCall, fcomp
             if (methodsInfo) {
                 methodsInfo.metadata = regMetadata.methods;
                 methodsInfo.metadataNode = metadataNode;
+                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.DEPRECATED_METHODS_METADATA, TransformerError_1.ExceptionType.LOG_WARNING, vcompName, `Passing 'methods' design-time metadata through the 'options' argument of the 'registerCustomElement' call is deprecated.
+  Instead use standard doclets and @ojmetadata tags on individual properties of the type parameter referenced to map public method names to their function signatures.
+  Metadata from standard doclets will take precedence over any 'methods' metadata passed in through the 'options' argument.`, metadataNode);
             }
             else {
-                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.MISSING_METHOD_SIGNATURES, TransformerError_1.ExceptionType.LOG_WARNING, vcompName, `The 'registerCustomElement' call is missing the generic type paramether with method signatures, so the optional 'methods' metadata will be ignored.`, metadataNode);
+                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.MISSING_METHOD_SIGNATURES, TransformerError_1.ExceptionType.LOG_WARNING, vcompName, `The 'registerCustomElement' call is missing the generic type paramether with method signatures, so deprecated 'methods' metadata will be ignored.`, metadataNode);
             }
         }
         if (regMetadata.bindings) {
@@ -455,6 +470,11 @@ function checkComponentMetadataConsistency(compNode, isInMonoPack, docletTagMeta
             TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INCONSISTENT_PACK_JETVERSION, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Inconsistent '@ojmetadata jetVersion "${docletTagMetadata['jetVersion']}"' annotation will be ignored, and should be removed.`, compNode);
             delete docletTagMetadata['jetVersion'];
         }
+        if (docletTagMetadata['dependencyScope'] &&
+            componentMetadata['dependencyScope'] !== docletTagMetadata['dependencyScope']) {
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INCONSISTENT_PACK_DEPENDENCYSCOPE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Inconsistent '@ojmetadata dependencyScope "${docletTagMetadata['dependencyScope']}"' annotation will be ignored, and should be removed.`, compNode);
+            delete docletTagMetadata['dependencyScope'];
+        }
         if (docletTagMetadata['license'] &&
             componentMetadata.license !== docletTagMetadata['license']) {
             TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INCONSISTENT_PACK_LICENSE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Inconsistent '@ojmetadata license "${docletTagMetadata['license']}"' annotation will be ignored, and should be removed.`, compNode);
@@ -470,6 +490,14 @@ function checkComponentMetadataConsistency(compNode, isInMonoPack, docletTagMeta
         if (componentMetadata['name'].indexOf(packName) !== 0) {
             TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_ELEMENTNAME_IN_PACK, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Illegal custom element "${componentMetadata['name']}" included in JET Pack "${packName}".
   The custom element name must begin with the JET Pack name.`, compNode);
+        }
+        if (isInMonoPack && docletTagMetadata['main']) {
+            const vcompName = componentMetadata['name'].substring(packName.length + 1);
+            const mainRegex = new RegExp(`^${packName}\\/${vcompName}(\\/loader)?$`);
+            if (docletTagMetadata['main'].match(mainRegex) === null) {
+                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_OJMETADATA_MAIN, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Invalid 'main' metadata value will be ignored: ${docletTagMetadata['main']}`, compNode);
+                delete docletTagMetadata['main'];
+            }
         }
     }
 }
@@ -504,8 +532,8 @@ function checkForTypeDefinitionAdjustment(compName, functionalCompNode, varDecl,
     if (dtsGenStatus & D_TS_GEN_NO_VARIABLE) {
         if (dtsGenStatus & D_TS_GEN_PROPS_ALIAS_NOT_EXPORTED) {
             TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.YIELDS_INVALID_FUNC_VCOMP_D_TS, TransformerError_1.ExceptionType.THROW_ERROR, compName, `Generation of a valid VComponent type definition file requires either:
-1) the return value of the registerCustomElement call must be assigned to a variable, or
-2) the VComponent's Props type alias must be exported.`, functionalCompNode);
+  1) the return value of the registerCustomElement call must be assigned to a variable, or
+  2) the VComponent's Props type alias must be exported.`, functionalCompNode);
         }
     }
     else if (dtsGenStatus & D_TS_GEN_VARIABLE_IMPLICIT_TYPE) {

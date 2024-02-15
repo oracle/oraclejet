@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -15,9 +15,9 @@
   requirejs.config({
     // Path mappings for the logical module names
     paths: {
-      'ojs': 'libs/oj/15.1.0/min@insertESLevelPath@',
-      'ojL10n': 'libs/oj/15.1.0/ojL10n',
-      'ojtranslations': 'libs/oj/15.1.0/resources',
+      'ojs': 'libs/oj/16.0.0/min@insertESLevelPath@',
+      'ojL10n': 'libs/oj/16.0.0/ojL10n',
+      'ojtranslations': 'libs/oj/16.0.0/resources',
       
   'knockout': 'libs/knockout/knockout-3.5.1',
   'jquery': 'libs/jquery/jquery-3.6.4.min',

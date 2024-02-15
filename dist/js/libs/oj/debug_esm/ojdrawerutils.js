@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -110,6 +110,14 @@ class DrawerUtils {
     static getElementWidth(element) {
         return Math.round(element.getBoundingClientRect().width);
     }
+    static getAutofocusFocusables(element) {
+        const selector = '[autofocus]:not([tabindex="-1"]):not([disabled]):not([hidden])';
+        const focusableCandidates = Array.from(element.querySelectorAll(selector));
+        const focusables = focusableCandidates.filter((item) => {
+            return !this.isHidden(item);
+        });
+        return focusables;
+    }
     static getFocusables(element) {
         const defaultFocusableElements = [
             'button',
@@ -136,6 +144,11 @@ class DrawerUtils {
     static isHidden(element) {
         if (element.offsetParent === null) {
             return true;
+        }
+        if (ojet.AgentUtils.getAgentInfo().browser === ojet.AgentUtils.BROWSER.FIREFOX) {
+            if (element.offsetParent === document.body) {
+                return true;
+            }
         }
         const style = window.getComputedStyle(element);
         return style.visibility === 'hidden';

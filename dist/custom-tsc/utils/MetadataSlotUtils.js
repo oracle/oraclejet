@@ -36,21 +36,22 @@ const _INVALID_MIXED_DYNAMIC_SLOT_PROPS_MSG = 'Components cannot have properties
 const _UNSUPPORTED_IMPLICIT_BUSY_CONTEXT_MSG = 'The ImplicitBusyContext marker type does not apply to Template Slots nor to Dynamic Slots, and should be removed.';
 function generateSlotsMetadata(memberKey, slotPropDeclaration, metaUtilObj) {
     let isSlot = false;
-    const slotTypeInfo = getSlotTypeInfo(slotPropDeclaration, metaUtilObj);
+    const exportToAlias = metaUtilObj.progImportMaps.getMap(MetaTypes.IMAP.exportToAlias, slotPropDeclaration);
+    const slotTypeInfo = getSlotTypeInfo(slotPropDeclaration, exportToAlias, metaUtilObj);
     if (slotTypeInfo) {
-        checkDefaultSlotType(memberKey, slotTypeInfo.typeName, slotPropDeclaration, metaUtilObj);
+        checkDefaultSlotType(memberKey, slotTypeInfo.typeName, slotPropDeclaration, exportToAlias, metaUtilObj);
         isSlot = true;
         switch (slotTypeInfo.typeName) {
-            case `${metaUtilObj.namedExportToAlias.ComponentChildren}`:
+            case `${exportToAlias.ComponentChildren}`:
                 updateSlotMetadata('', slotPropDeclaration, slotTypeInfo, false, false, metaUtilObj);
                 break;
-            case `${metaUtilObj.namedExportToAlias.TemplateSlot}`:
+            case `${exportToAlias.TemplateSlot}`:
                 updateSlotMetadata(memberKey, slotPropDeclaration, slotTypeInfo, true, false, metaUtilObj);
                 break;
-            case `${metaUtilObj.namedExportToAlias.Slot}`:
+            case `${exportToAlias.Slot}`:
                 updateSlotMetadata(memberKey, slotPropDeclaration, slotTypeInfo, false, false, metaUtilObj);
                 break;
-            case `${metaUtilObj.namedExportToAlias.DynamicTemplateSlots}`:
+            case `${exportToAlias.DynamicTemplateSlots}`:
                 if (metaUtilObj.dynamicSlotsInUse & _DYNAMIC_TEMPLATE_SLOT_DETECTED) {
                     TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.MULTIPLE_DYNAMIC_TEMPLATE_SLOTS, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Components cannot have multiple properties for dynamic template slots. Only a single Property is allowed to specify support for dynamic slots.`, slotPropDeclaration);
                 }
@@ -65,7 +66,7 @@ function generateSlotsMetadata(memberKey, slotPropDeclaration, metaUtilObj) {
                 }, metaUtilObj);
                 updateSlotMetadata(memberKey, slotPropDeclaration, slotTypeInfo, true, true, metaUtilObj);
                 break;
-            case `${metaUtilObj.namedExportToAlias.DynamicSlots}`:
+            case `${exportToAlias.DynamicSlots}`:
                 if (metaUtilObj.dynamicSlotsInUse & _DYNAMIC_SLOT_DETECTED) {
                     TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.MULTIPLE_DYNAMIC_SLOTS, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Components cannot have multiple properties for dynamic slots. Only a single Property is allowed to specify support for dynamic slots.`, slotPropDeclaration);
                 }
@@ -123,7 +124,7 @@ function updateSlotMetadata(slotName, propDeclaration, slotTypeInfo, isTemplateS
                     const typeParamsArr = detailNode.types;
                     let k = 0;
                     typeParamsArr.forEach((detailData) => {
-                        let dt = MetaUtils.getDtMetadata(propDeclaration, MetaTypes.MDFlags.SLOT, null, metaUtilObj);
+                        let dt = MetaUtils.getDtMetadata(propDeclaration, MetaTypes.MDContext.SLOT, null, metaUtilObj);
                         const dataObj = getSlotData(detailData, metaUtilObj);
                         if (dataObj) {
                             dt['data'] = dataObj;
@@ -158,7 +159,7 @@ function updateSlotMetadata(slotName, propDeclaration, slotTypeInfo, isTemplateS
 }
 function getDtMetadataForSlot(propDeclaration, slotTypeInfo, metaUtilObj) {
     const declaration = propDeclaration;
-    const dt = MetaUtils.getDtMetadata(declaration, MetaTypes.MDFlags.SLOT, null, metaUtilObj);
+    const dt = MetaUtils.getDtMetadata(declaration, MetaTypes.MDContext.SLOT, null, metaUtilObj);
     const typeRefNode = slotTypeInfo.typeRefNode;
     if (typeRefNode.typeArguments && typeRefNode.typeArguments.length) {
         const detailNode = typeRefNode.typeArguments[0];
@@ -188,14 +189,16 @@ function getSlotData(detailNode, metaUtilObj) {
         if (ts.isPropertySignature(propSignature) || ts.isPropertyDeclaration(propSignature)) {
             const property = key.toString();
             const propertyPath = [property];
-            const slotDataMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.SLOT | MetaTypes.MDFlags.SLOT_DATA, propertyPath, symbol, metaUtilObj);
+            const slotDataMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MDScope.DT, MetaTypes.MDContext.SLOT | MetaTypes.MDContext.SLOT_DATA, propertyPath, symbol, metaUtilObj);
+            const propSym = mappedTypeSymbol ?? symbol;
+            slotDataMetadata['optional'] = propSym.flags & ts.SymbolFlags.Optional ? true : false;
             data = data || {};
             data[property] = slotDataMetadata;
             let nestedArrayStack = [];
             if (slotDataMetadata.type === 'Array<object>') {
                 nestedArrayStack.push(key);
             }
-            const subprops = TypeUtils.getComplexPropertyMetadata(symbol, slotDataMetadata.type, detailName, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.SLOT | MetaTypes.MDFlags.SLOT_DATA, propertyPath, nestedArrayStack, metaUtilObj);
+            const subprops = TypeUtils.getComplexPropertyMetadata(symbol, slotDataMetadata.type, detailName, MetaTypes.MDScope.DT, MetaTypes.MDContext.SLOT | MetaTypes.MDContext.SLOT_DATA, propertyPath, nestedArrayStack, metaUtilObj);
             if (subprops) {
                 if (subprops.circRefDetected) {
                     data[property].type = TypeUtils.getSubstituteTypeForCircularReference(slotDataMetadata);
@@ -241,17 +244,17 @@ function validateDynamicSlots(metaUtilObj) {
     }
 }
 exports.validateDynamicSlots = validateDynamicSlots;
-function checkDefaultSlotType(propName, typeName, propDecl, metaUtilObj) {
+function checkDefaultSlotType(propName, typeName, propDecl, exportToAlias, metaUtilObj) {
     if (propName === MetaTypes.DEFAULT_SLOT_PROP &&
-        typeName !== `${metaUtilObj.namedExportToAlias.ComponentChildren}`) {
+        typeName !== `${exportToAlias.ComponentChildren}`) {
         TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNSUPPORTED_DEFAULT_SLOT_TYPE, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Unsupported type '${typeName}' for reserved default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'.`, propDecl.type ?? propDecl);
     }
-    else if (typeName === `${metaUtilObj.namedExportToAlias.ComponentChildren}` &&
+    else if (typeName === `${exportToAlias.ComponentChildren}` &&
         propName !== MetaTypes.DEFAULT_SLOT_PROP) {
         TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.COMPONENT_CHILDREN_NOT_DEFAULT_SLOT, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `'${typeName}' is reserved for default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'. Did you mean to declare this property as type '${MetaTypes.SLOT_TYPE}'?`, propDecl.type ?? propDecl);
     }
 }
-function getSlotTypeInfo(slotPropDeclaration, metaUtilObj) {
+function getSlotTypeInfo(slotPropDeclaration, exportToAlias, metaUtilObj) {
     let rtnSlotTypeInfo;
     let hasImplicitBusyContext = false;
     let isSinglePossibleSlotType = true;
@@ -260,7 +263,7 @@ function getSlotTypeInfo(slotPropDeclaration, metaUtilObj) {
     if (typeNames.length > 0) {
         let possibleSlotTypeName;
         for (const name of typeNames) {
-            if (name === metaUtilObj.namedExportToAlias.ImplicitBusyContext) {
+            if (name === exportToAlias.ImplicitBusyContext) {
                 hasImplicitBusyContext = true;
             }
             else if (possibleSlotTypeName === undefined) {

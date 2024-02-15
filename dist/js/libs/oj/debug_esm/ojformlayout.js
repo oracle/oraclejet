@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -98,6 +98,34 @@ import { FormVariantContext } from '@oracle/oraclejet-preact/hooks/UNSAFE_useFor
  * If a form control has label-edge=“none” and a label-hint attribute but no
  * labelled-by, aria-label, or aria-labelledby attribute, the label-hint value will be used as the aria-label.
  * </p>
+ * <h3 id="migration-section">
+ *   Migration
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+ * </h3>
+ *
+ * <p>
+ * To migrate from oj-form-layout to oj-c-form-layout, you need to revise the import statement
+ * and references to oj-c-form-layout in your app. Please note the changes between the two components below.
+ * </p>
+ * <p>
+ * The oj-c-form-layout is not compatible with legacy form components, only core pack form components.  If you are using a mix of legacy and core pack components, you will need to use legacy oj-form-layout.
+ * 
+ * <h5>ColspanWrap attribute</h5>
+ * <p>
+ * The colspan-wrap attribute was removed because oj-c-form-layout only supports wrap for components spanning more than one column.
+ * </p>
+ * 
+ * <h5>LabelWidth attribute</h5>
+ * <p>
+ * The LabelWidth attribute has been renamed to LabelStartWidth but has the same functionality.
+ * </p>
+ * 
+ * <h5>ColumnSpan attribute</h5>
+ * <p>
+ * A nested oj-c-form-layout can use column-span to span multiple columns in the parent oj-c-form-layout.  This is a new attribute
+ * and replaces the column spanning functionality of the legacy oj-label-value component.  All Core Pack form components now have
+ * this attribute so oj-label-value is not needed for core pack form components to span columns.
+ * </p> 
  */
 
 // --------------------------------------------------- oj.ojFormLayout Styling Start ------------------------------------------------------------

@@ -17,6 +17,39 @@
       }
     },
 
+    "propNameRestrictionsDef": {
+      "$comment": "web component property names cannot conflict with HTML global attribute names",
+      "propertyNames": {
+        "not": {
+          "enum": ["accesskey", "accessKey", "accessKeyLabel", "autocapitalize", "autoCapitalize",
+                   "class", "className", "contenteditable", "contentEditable", "dir", "draggable",
+                   "enterkeyhint", "enterKeyHint", "hidden", "id", "inputmode", "inputMode", "is",
+                   "itemid", "itemprop", "itemref", "itemscope", "itemtype", "lang", "nonce", "role",
+                   "slot", "spellcheck", "style", "tabindex", "tabIndex", "title", "translate"]
+        }
+      }
+    },
+
+    "eventNameRestrictionsDef": {
+      "$comment": "web component event names, which become 'on<name>' attributes at runtime, cannot conflict with HTML GlobalEventHandlers",
+      "propertyNames": {
+        "not": {
+          "enum": ["abort", "animationcancel", "animationend", "animationiteration", "animationstart",
+                   "auxclick", "blur", "cancel", "canplay", "canplaythrough", "change", "click", "close",
+                   "contextmenu", "copy", "cuechange", "cut", "dblclick", "drag", "dragend", "dragenter",
+                   "dragexit", "dragleave", "dragover", "dragstart", "drop", "durationchange", "emptied",
+                   "ended", "error", "focus", "gotpointercapture", "input", "invalid", "keydown", "keypress", "keyup",
+                   "load", "loadeddata", "loadedmetadata", "loadstart", "lostpointercapture", "mousedown", "mouseenter",
+                   "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup", "paste", "pause", "play", "playing",
+                   "pointercancel", "pointerdown", "pointerenter", "pointerleave", "pointermove", "pointerout",
+                   "pointerover", "pointerup", "progress", "ratechange", "reset", "resize", "scroll",
+                   "securitypolicyviolation", "seeked", "seeking", "select", "slotchange", "stalled", "submit",
+                   "suspend", "timeupdate", "toggle", "touchcancel", "touchend", "touchmove", "touchstart",
+                   "volumechange", "waiting", "wheel"]
+        }
+      }
+    },
+
     "extensionApiDecorationDef": {
       "type": "object",
       "properties": {
@@ -704,24 +737,6 @@
           "additionalProperties": false
         }
       },
-      "propertyNames": {
-
-        "$comment": "event names, which become 'on<name>' attributes at runtime, also cannot conflict with HTML GlobalEventHandlers",
-        "not": {
-          "enum": ["abort", "animationcancel", "animationend", "animationiteration", "animationstart",
-                   "auxclick", "blur", "cancel", "canplay", "canplaythrough", "change", "click", "close",
-                   "contextmenu", "copy", "cuechange", "cut", "dblclick", "drag", "dragend", "dragenter",
-                   "dragexit", "dragleave", "dragover", "dragstart", "drop", "durationchange", "emptied",
-                   "ended", "error", "focus", "gotpointercapture", "input", "invalid", "keydown", "keypress", "keyup",
-                   "load", "loadeddata", "loadedmetadata", "loadstart", "lostpointercapture", "mousedown", "mouseenter",
-                   "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup", "paste", "pause", "play", "playing",
-                   "pointercancel", "pointerdown", "pointerenter", "pointerleave", "pointermove", "pointerout",
-                   "pointerover", "pointerup", "progress", "ratechange", "reset", "resize", "scroll",
-                   "securitypolicyviolation", "seeked", "seeking", "select", "slotchange", "stalled", "submit",
-                   "suspend", "timeupdate", "toggle", "touchcancel", "touchend", "touchmove", "touchstart",
-                   "volumechange", "waiting", "wheel"]
-        }
-      },
       "additionalProperties": false
     },
 
@@ -1274,7 +1289,7 @@
         },
         "type": {
           "type": "string",
-          "enum": ["component", "resource", "vdom", "hook", "util", "vbcs-pattern"]
+          "enum": ["component", "resource", "vdom", "hook", "util", "vbcs-pattern", "vbcs-fragment"]
         },
         "metadata": {
           "type": "string"
@@ -1284,14 +1299,14 @@
       "allOf": [
 
         {
-          "$comment": "if the content type is 'component' (default), 'resource', 'vdom', 'hook', or 'vbcs-pattern' then 'defaultExport' is invalid",
+          "$comment": "if the content type is 'component' (default), 'resource', 'vdom', 'hook', 'vbcs-pattern', or 'vbcs-fragment' then 'defaultExport' is invalid",
           "if": {
             "oneOf": [
               { "not": { "required": ["type"] } },
               {
                 "properties": {
                   "type": {
-                    "enum": ["component", "resource", "vdom", "hook", "vbcs-pattern"]
+                    "enum": ["component", "resource", "vdom", "hook", "vbcs-pattern", "vbcs-fragment"]
                   }
                 },
                 "required": ["type"]
@@ -1308,12 +1323,12 @@
         },
 
         {
-          "$comment": "if the content type is not explicitly set to 'vdom', 'hook', or 'vbcs-pattern', then 'metadata' is invalid",
+          "$comment": "if the content type is not explicitly set to 'vdom', 'hook', 'vbcs-pattern', or 'vbcs-fragment' then 'metadata' is invalid",
           "if": {
             "properties": {
               "type": {
                 "not": {
-                  "enum": ["vdom", "hook", "vbcs-pattern"]
+                  "enum": ["vdom", "hook", "vbcs-pattern", "vbcs-fragment"]
                 }
               }
             },
@@ -1329,11 +1344,11 @@
         },
 
         {
-          "$comment": "if the content type is explicitly set to 'resource' or 'vbcs-pattern', then 'export' is invalid",
+          "$comment": "if the content type is explicitly set to 'resource', 'vbcs-pattern', or 'vbcs-fragment' then 'export' is invalid",
           "if": {
             "properties": {
               "type": {
-                "enum": ["resource", "vbcs-pattern"]
+                "enum": ["resource", "vbcs-pattern", "vbcs-fragment"]
               }
             },
             "required": ["type"]
@@ -1426,6 +1441,12 @@
     "contents": {
       "$ref": "#/definitions/contentsDef"
     },
+    "demoFor": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "dependencies": {
       "$comment": "either an @dependencies@ token string OR an object with key-value pairs",
       "oneOf": [
@@ -1439,11 +1460,9 @@
         }
       ]
     },
-    "demoFor": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+    "dependencyScope": {
+      "type": "string",
+      "enum": ["installable", "provided", "runtime"]
     },
     "description": {
       "type": "string"
@@ -1452,21 +1471,7 @@
       "type": "string"
     },
     "properties": {
-      "allOf": [
-        { "$ref": "#/definitions/propsDef" },
-        {
-          "propertyNames": {
-            "$comment": "top-level property names cannot conflict with HTML global attribute names",
-            "not": {
-              "enum": ["accesskey", "accessKey", "accessKeyLabel", "autocapitalize", "autoCapitalize",
-                       "class", "className", "contenteditable", "contentEditable", "dir", "draggable",
-                       "enterkeyhint", "enterKeyHint", "hidden", "id", "inputmode", "inputMode", "is",
-                       "itemid", "itemprop", "itemref", "itemscope", "itemtype", "lang", "nonce", "role",
-                       "slot", "spellcheck", "style", "tabindex", "tabIndex", "title", "translate"]
-            }
-          }
-        }
-      ]
+      "$ref": "#/definitions/propsDef"
     },
     "methods": {
       "$ref": "#/definitions/methodsDef"
@@ -1572,8 +1577,9 @@
     "type": {
       "type": "string",
       "enum": ["composite", "core", "pack", "mono-pack", "reference", "resource",
-                "demo", "stripe", "vbcs-pattern", "vbcs-template", "vbcs-action",
-                "vdom", "hook"]
+                "demo", "stripe", "vdom", "hook",
+                "vbcs-pattern", "vbcs-template", "vbcs-action", "vbcs-fragment"
+              ]
     },
     "typesRoot": {
       "type": "string"
@@ -1806,10 +1812,10 @@
         }
       },
       "else": {
-        "$comment": "otherwise, the 'contents', 'translationBundle', and 'typesRoot' properties are invalid (reserved for mono-packs)",
+        "$comment": "otherwise, the 'contents' and 'typesRoot' properties are invalid (reserved for mono-packs)",
         "propertyNames": {
           "not": {
-            "enum": ["contents", "translationBundle", "typesRoot"]
+            "enum": ["contents", "typesRoot"]
           }
         }
       }
@@ -1829,6 +1835,27 @@
         "propertyNames": {
           "not": {
             "enum": ["jetVersion"]
+          }
+        }
+      }
+    },
+
+    {
+      "$comment": "if the component type is explicitly neither 'mono-pack' nor 'reference', then the 'translationBundle' property is invalid",
+      "if": {
+        "properties": {
+          "type": {
+            "not": {
+              "enum": ["mono-pack", "reference"]
+            }
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "propertyNames": {
+          "not": {
+            "enum": ["translationBundle"]
           }
         }
       }
@@ -1960,6 +1987,40 @@
         "propertyNames": {
           "not": {
             "enum": ["actionParams", "actionResult"]
+          }
+        }
+      }
+    },
+
+    {
+      "$comment": "if the component type is NOT 'vbcs-fragment', then apply additional restrictions to property, event names; otherwise 'methods' is invalid",
+      "if": {
+        "oneOf": [
+          {"not": { "required": ["type"] }},
+          {
+            "properties": {
+              "type": {
+                "not": { "const": "vbcs-fragment" }
+              }
+            },
+            "required": ["type"]
+          }
+        ]
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/definitions/propNameRestrictionsDef"
+          },
+          "events": {
+            "$ref": "#/definitions/eventNameRestrictionsDef"
+          }
+        }
+      },
+      "else": {
+        "propertyNames": {
+          "not": {
+            "enum": ["methods"]
           }
         }
       }

@@ -11,60 +11,60 @@ unspecified.
 THIRD-PARTY COMPONENT FILE                                               LICENSE
 (path in the installation)                   (see license text reproduced below)
 --------------------------------------------------------------------------------
-js/libs/chai/chai-4.2.0.js                                                    MIT
-js/libs/hammer/hammer-2.0.8.js                                                MIT
-js/libs/js-signals/signals.js                                                 MIT
-js/libs/jquery/jquery-3.6.1.js                                                MIT
-js/libs/jquery/jquery-ui-1.13.2.custom.js                                     MIT
-js/libs/jquery/jqueryui-amd-1.13.2/core.js                                    MIT
-js/libs/jquery/jqueryui-amd-1.13.2/draggable.js                               MIT
-js/libs/jquery/jqueryui-amd-1.13.2/mouse.js                                   MIT
-js/libs/jquery/jqueryui-amd-1.13.2/position.js                                MIT
-js/libs/jquery/jqueryui-amd-1.13.2/sortable.js                                MIT
-js/libs/jquery/jqueryui-amd-1.13.2/widget.js                                  MIT
-js/libs/jquery/jqueryui-amd-1.13.2/disable-selection.js                       MIT
-js/libs/jquery/jqueryui-amd-1.13.2/jquery-var-for-color.js                    MIT
-js/libs/jquery/jqueryui-amd-1.13.2/core.js                                    MIT
-js/libs/jquery/jqueryui-amd-1.13.2/ie.js                                      MIT
-js/libs/jquery/jqueryui-amd-1.13.2/keycode.js                                 MIT
-js/libs/jquery/jqueryui-amd-1.13.2/jquery-patch.js                            MIT
-js/libs/jquery/jqueryui-amd-1.13.2/labels.js                                  MIT
-js/libs/jquery/jqueryui-amd-1.13.2/form-reset-mixin.js                        MIT
-js/libs/jquery/jqueryui-amd-1.13.2/unique-id.js                               MIT
-js/libs/jquery/jqueryui-amd-1.13.2/scroll-parent.js                           MIT
-js/libs/jquery/jqueryui-amd-1.13.2/tabbable.js                                MIT
-js/libs/jquery/jqueryui-amd-1.13.2/widget.js                                  MIT
-js/libs/jquery/jqueryui-amd-1.13.2/version.js                                 MIT
-js/libs/jquery/jqueryui-amd-1.13.2/focusable.js                               MIT
-js/libs/jquery/jqueryui-amd-1.13.2/data.js                                    MIT
-js/libs/jquery/jqueryui-amd-1.13.2/effect.js                                  MIT
-js/libs/jquery/jqueryui-amd-1.13.2/safe-blur.js                               MIT
-js/libs/jquery/jqueryui-amd-1.13.2/form.js                                    MIT
-js/libs/jquery/jqueryui-amd-1.13.2/safe-active-element.js                     MIT
-js/libs/jquery/jqueryui-amd-1.13.2/plugin.js                                  MIT
-js/libs/jquery/jqueryui-amd-1.13.2/widgets/sortable.js                        MIT
-js/libs/jquery/jqueryui-amd-1.13.2/widgets/draggable.js                       MIT
-js/libs/jquery/jqueryui-amd-1.13.2/widgets/mouse.js                           MIT
-js/libs/jquery/jqueryui-amd-1.13.2/vendor/jquery-color/jquery.color.js        MIT
-js/libs/jquery/jqueryui-amd-1.13.2/position.js                                MIT
-js/libs/knockout/knockout-3.5.1.js                                            MIT
-js/libs/oj/v15.1.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
-js/libs/oj/v15.1.0/min/ojexpparser.js (expparser.js)                    MIT
-js/libs/oj/v15.1.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
-js/libs/oj/v15.1.0/min/ojmessagebanner.js (Ramda)                       MIT
-js/libs/oj/v15.1.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
-js/libs/oj/v15.1.0/min/ojtree.js (jsTree.js)                            MIT
-js/libs/oj/v15.1.0/ojL10n.js (requireJS i18n)                           MIT
-js/libs/proj4js/dist/proj4.js                                                 Proj4js
+js/libs/chai/chai.js                                                   MIT
+js/libs/hammer/hammer.js                                               MIT
+js/libs/js-signals/signals.js                                          MIT
+js/libs/jquery/jquery.js                                               MIT
+js/libs/jquery/jquery-ui-.custom.js                                    MIT
+js/libs/jquery/jqueryui-amd/core.js                                    MIT
+js/libs/jquery/jqueryui-amd/draggable.js                               MIT
+js/libs/jquery/jqueryui-amd/mouse.js                                   MIT
+js/libs/jquery/jqueryui-amd/position.js                                MIT
+js/libs/jquery/jqueryui-amd/sortable.js                                MIT
+js/libs/jquery/jqueryui-amd/widget.js                                  MIT
+js/libs/jquery/jqueryui-amd/disable-selection.js                       MIT
+js/libs/jquery/jqueryui-amd/jquery-var-for-color.js                    MIT
+js/libs/jquery/jqueryui-amd/core.js                                    MIT
+js/libs/jquery/jqueryui-amd/ie.js                                      MIT
+js/libs/jquery/jqueryui-amd/keycode.js                                 MIT
+js/libs/jquery/jqueryui-amd/jquery-patch.js                            MIT
+js/libs/jquery/jqueryui-amd/labels.js                                  MIT
+js/libs/jquery/jqueryui-amd/form-reset-mixin.js                        MIT
+js/libs/jquery/jqueryui-amd/unique-id.js                               MIT
+js/libs/jquery/jqueryui-amd/scroll-parent.js                           MIT
+js/libs/jquery/jqueryui-amd/tabbable.js                                MIT
+js/libs/jquery/jqueryui-amd/widget.js                                  MIT
+js/libs/jquery/jqueryui-amd/version.js                                 MIT
+js/libs/jquery/jqueryui-amd/focusable.js                               MIT
+js/libs/jquery/jqueryui-amd/data.js                                    MIT
+js/libs/jquery/jqueryui-amd/effect.js                                  MIT
+js/libs/jquery/jqueryui-amd/safe-blur.js                               MIT
+js/libs/jquery/jqueryui-amd/form.js                                    MIT
+js/libs/jquery/jqueryui-amd/safe-active-element.js                     MIT
+js/libs/jquery/jqueryui-amd/plugin.js                                  MIT
+js/libs/jquery/jqueryui-amd/widgets/sortable.js                        MIT
+js/libs/jquery/jqueryui-amd/widgets/draggable.js                       MIT
+js/libs/jquery/jqueryui-amd/widgets/mouse.js                           MIT
+js/libs/jquery/jqueryui-amd/vendor/jquery-color/jquery.color.js        MIT
+js/libs/jquery/jqueryui-amd/position.js                                MIT
+js/libs/knockout/knockout.js                                           MIT
+js/libs/oj/v16.0.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
+js/libs/oj/v16.0.0/min/ojexpparser.js (expparser.js)                    MIT
+js/libs/oj/v16.0.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
+js/libs/oj/v16.0.0/min/ojmessagebanner.js (Ramda)                       MIT
+js/libs/oj/v16.0.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
+js/libs/oj/v16.0.0/min/ojtree.js (jsTree.js)                            MIT
+js/libs/oj/v16.0.0/ojL10n.js (requireJS i18n)                           MIT
+js/libs/proj4js/dist/proj4.js                                                 MIT
 js/libs/require/require.js                                                    MIT
 js/libs/require/text.js                                                       MIT
 js/libs/require-css/css.min.js (require-css)                                  MIT
-scss/oj/v15.1.0/3rdparty/normalize/normalize.scss                       MIT
+scss/oj/v16.0.0/3rdparty/normalize/normalize.scss                       MIT
 js/libs/touchr/touchr.js                                                      MIT
 js/libs/preact/dist/preact.umd.js                                             MIT
 
 
-Chai - v4.2.0
+Chai
 https://github.com/chaijs/chai
 Copyright (c) 2017 Chai.js Assertion Library
 
@@ -88,7 +88,7 @@ SOFTWARE.
 
 
 
-expression-eval - v2.0.0
+expression-eval
 https://github.com/donmccurdy/expression-eval
 Copyright (c) 2017 Don McCurdy
 
@@ -113,7 +113,7 @@ SOFTWARE.
 
 
 
-jsep - v0.3.4
+jsep
 https://github.com/soney/jsep
 Copyright (c) 2013 Stephen Oney, https://ericsmekens.github.io/jsep/
 
@@ -161,13 +161,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 
-proj4js - v2.5.0
+proj4js
 http://proj4js.org/
 Copyright (C) 2014 Mike Adair, Richard Greenwood, Didier Richard, Stephen Irons, Olivier Terral and Calvin Metcalf;
-Licensed under the Proj4js license
+Licensed under the MIT license
 
 
-require-css - v0.1.10
+require-css
 https://github.com/guybedford/require-css
 Copyright (C) 2013 Guy Bedford
 
@@ -179,7 +179,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 
-Hammer.JS - v2.0.8 - 2016-04-22
+Hammer.JS
 http://hammerjs.github.io/
 Copyright (C) 2011-2017 by Jorik Tangelder (Eight Media)
 
@@ -222,7 +222,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-RequireJS i18n 2.0.2
+RequireJS i18n
 http://github.com/requirejs/i18n for details
 Copyright (c) 2010-2011, The Dojo Foundation
 
@@ -245,7 +245,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-jsTree 1.0-rc3   http://jstree.com/
+jsTree   http://jstree.com/
 Copyright (c) 2012 Ivan Bozhanov (http://vakata.com)
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -308,7 +308,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-jQuery JavaScript Library v3.6.1
+jQuery JavaScript Library
 http://jquery.com/
 Copyright OpenJS Foundation and other contributors, https://openjsf.org/
 
@@ -334,7 +334,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 JS Signals <http://millermedeiros.github.com/js-signals/>
 Author: Miller Medeiros
-Version: 1.0.0 - Build: 268 (2012/11/29 05:48 PM)
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -357,7 +356,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 
-RequireJS text 2.0.16
+RequireJS text
 http://github.com/requirejs/text
 Copyright jQuery Foundation and other contributors, https://jquery.org/
 
@@ -381,7 +380,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-RequireJS 2.3.6
+RequireJS
 http://github.com/jrburke/requirejs
 Copyright jQuery Foundation and other contributors, https://jquery.org/
 
@@ -405,7 +404,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-Knockout JavaScript library v3.5.1
+Knockout JavaScript library
 Copyright (c) 2010 Steven Sanderson, the Knockout.js team, and other contributors
 http://knockoutjs.com/
 
@@ -427,7 +426,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-Preact - v10.5.15
+Preact
 
 The MIT License (MIT)
 Copyright (c) 2015-present Jason Miller
@@ -451,7 +450,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-Ramda v0.27.1
+Ramda
 https://github.com/ramda/ramda
 
 The MIT License (MIT)

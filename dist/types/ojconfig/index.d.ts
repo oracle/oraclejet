@@ -1,5 +1,6 @@
 import CspExpressionEvaluator = require('../ojcspexpressionevaluator');
 export function getAutomationMode(): string;
+export function getDeploymentMode(): 'production' | 'development';
 export function getDeviceRenderMode(): 'phone' | 'tablet' | 'others';
 export function getDeviceType(): 'phone' | 'tablet' | 'others';
 export function getLocale(): string;
@@ -7,6 +8,7 @@ export function getResourceUrl(relativePath: string): string;
 export function getVersionInfo(): string;
 export function logVersionInfo(): undefined;
 export function setAutomationMode(mode: string): undefined;
+export function setDeploymentMode(mode: 'production' | 'development'): undefined;
 export function setExpressionEvaluator(expressionEvaluator: CspExpressionEvaluator): undefined;
 export function setLocale(locale: string, callback?: (() => void)): undefined;
 export function setResourceBaseUrl(baseUrl: string): undefined;

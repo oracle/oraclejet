@@ -20,6 +20,7 @@ export declare enum ExceptionKey {
     RESERVED_HTMLFOR_PROP = "reserved_htmlfor_prop",
     RESERVED_CLASS_PROP = "reserved_class_prop",
     RESERVED_STYLE_PROP = "reserved_style_prop",
+    INVALID_OBSERVED_EVENT_HANDLER = "invalid_observed_event_handler",
     DUPLICATE_ROWRITEBACK_PROP = "duplicate_rowriteback_prop",
     DUPLICATE_PROP_ROWRITEBACK = "duplicate_prop_rowriteback",
     WRITEBACK_NO_PROP_MATCH = "writeback_no_prop_match",
@@ -43,9 +44,12 @@ export declare enum ExceptionKey {
     UNSUPPORTED_IMPLICITBUSYCONTEXT = "unsupported_implicitbusycontext",
     UNEXPECTED_APIDOC_EXCEPTION = "unexpected_apidoc_exception",
     MISSING_METHOD_SIGNATURES = "missing_method_signatures",
+    DEPRECATED_METHODS_METADATA = "deprecated_methods_metadata",
     IGNORED_OJMETADATA_NAME = "ignored_ojmetadata_name",
+    IGNORED_OJMETADATA_MAIN = "ignored_ojmetadata_main",
     INCONSISTENT_PACK_VERSION = "inconsistent_pack_version",
     INCONSISTENT_PACK_JETVERSION = "inconsistent_pack_jetversion",
+    INCONSISTENT_PACK_DEPENDENCYSCOPE = "inconsistent_pack_dependencyscope",
     INCONSISTENT_PACK_LICENSE = "inconsistent_pack_license",
     INCONSISTENT_PACK_PACKNAME = "inconsistent_pack_packname",
     IGNORED_OJMETADATA_INTERNALNAME = "ignored_ojmetadata_internalname",
@@ -59,7 +63,10 @@ export declare enum ExceptionKey {
     IGNORED_OJMETADATA_VALUE = "ignored_ojmetadata_value",
     INVALID_STYLEVARIABLESET = "invalid_stylevariableset",
     MALFORMED_METADATA_VALUE = "malformed_metadata_value",
-    TRIMMED_METADATA_STRING = "trimmed_metadata_string"
+    TRIMMED_METADATA_STRING = "trimmed_metadata_string",
+    UNRECOGNIZED_OJMETADATA_KEY = "unrecognized_ojmetadata_key",
+    INCORRECT_METADATA_VALUE_TYPE = "incorrect_metadata_value_type",
+    DT_REQUIRED_HAS_DEFAULT_VALUE = "dt_required_has_default_value"
 }
 export declare class TransformerError extends Error {
     private constructor();

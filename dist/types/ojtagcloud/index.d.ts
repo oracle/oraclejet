@@ -21,7 +21,7 @@ export interface ojTagCloud<K, D extends ojTagCloud.Item<K> | any> extends dvtBa
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     tooltip?: {
-        renderer: ((context: ojTagCloud.TooltipContext<K>) => ({
+        renderer: ((context: ojTagCloud.TooltipRendererContext<K>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
@@ -136,6 +136,15 @@ export namespace ojTagCloud {
         parentElement: Element;
         value: number;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipRendererContext<K> = {
+        color: string;
+        componentElement: Element;
+        id: K;
+        label: string;
+        parentElement: Element;
+        value: number;
+    };
 }
 export interface ojTagCloudEventMap<K, D extends ojTagCloud.Item<K> | any> extends dvtBaseComponentEventMap<ojTagCloudSettableProperties<K, D>> {
     'animationOnDataChangeChanged': JetElementCustomEvent<ojTagCloud<K, D>["animationOnDataChange"]>;
@@ -172,7 +181,7 @@ export interface ojTagCloudSettableProperties<K, D extends ojTagCloud.Item<K> | 
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     tooltip?: {
-        renderer: ((context: ojTagCloud.TooltipContext<K>) => ({
+        renderer: ((context: ojTagCloud.TooltipRendererContext<K>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
@@ -317,6 +326,15 @@ export namespace TagCloudElement {
     type NodeContext = {
         index: number;
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipRendererContext<K> = {
+        color: string;
+        componentElement: Element;
+        id: K;
+        label: string;
+        parentElement: Element;
+        value: number;
     };
 }
 export namespace TagCloudItemElement {

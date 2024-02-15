@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -171,11 +171,11 @@ import { warn } from 'ojs/ojlogger';
   //-----------------------------------------------------
   /**
    * <p>The &lt;oj-toolbar> element accepts <code class="prettyprint">oj-button</code>, <code class="prettyprint">oj-c-button</code>, <code class="prettyprint">oj-buttonset-many</code>,
-   * <code class="prettyprint">oj-buttonset-one</code>, <code class="prettyprint">oj-menu-button</code> and non-focusable content such as separator icon elements as children.</p>
+   * <code class="prettyprint">oj-buttonset-one</code>, <code class="prettyprint">oj-menu-button</code>, <code class="prettyprint">oj-c-menu-button</code>, <code class="prettyprint">oj-c-split-menu-button</code> and non-focusable content such as separator icon elements as children.</p>
    *
    * @ojchild Default
    * @memberof oj.ojToolbar
-   * @ojpreferredcontent ["ButtonElement", "CButtonElement", "ButtonsetManyElement","ButtonsetOneElement","MenuButtonElement"]
+   * @ojpreferredcontent ["ButtonElement", "CButtonElement", "ButtonsetManyElement","ButtonsetOneElement","MenuButtonElement", "CMenuButtonElement", "CSplitMenuButtonElement"]
    *
    * @example <caption>Initialize the Toolbar with child content specified:</caption>
    * &lt;oj-toolbar>
@@ -298,10 +298,12 @@ import { warn } from 'ojs/ojlogger';
     const _OJ_MENU_BUTTON = 'OJ-MENU-BUTTON';
     const _OJ_BUTTON = 'OJ-BUTTON';
     const _OJ_C_BUTTON = 'OJ-C-BUTTON';
+    const _OJ_C_MENU_BUTTON = 'OJ-C-MENU-BUTTON';
+    const _OJ_C_SPLIT_MENU_BUTTON = 'OJ-C-SPLIT-MENU-BUTTON';
     const _ELEM_LIST =
-      'oj-button, oj-menu-button, oj-buttonset-one, oj-buttonset-many, oj-c-button';
+      'oj-button, oj-menu-button, oj-buttonset-one, oj-buttonset-many, oj-c-button, oj-c-menu-button, oj-c-split-menu-button';
     const _BUTTON_LIST =
-      'oj-button, oj-menu-button, oj-buttonset-one .oj-button, oj-buttonset-many .oj-button, oj-c-button, oj-buttonset-one .oj-c-button, oj-buttonset-many .oj-c-button';
+      'oj-button, oj-menu-button, oj-buttonset-one .oj-button, oj-buttonset-many .oj-button, oj-c-button, oj-buttonset-one .oj-c-button, oj-buttonset-many .oj-c-button, oj-c-menu-button, oj-c-split-menu-button';
 
     oj.__registerWidget('oj.ojToolbar', $.oj.baseComponent, {
       widgetEventPrefix: 'oj',
@@ -557,7 +559,7 @@ import { warn } from 'ojs/ojlogger';
       },
 
       // For custom element only, return if a button with oj-button class is disabled.
-      // This can either be an oj-button, oj-c-button, oj-menu-button, or a span inside oj-buttonset-*.
+      // This can either be an oj-button, oj-c-button, oj-menu-button, oj-c-menu-button, oj-c-split-menu-button, or a span inside oj-buttonset-*.
       // We check the disabled property on custom elements instead of oj-disabled class because
       // there is delay between setting the property and having the class updated.
       _isButtonDisabled: function (button) {
@@ -565,7 +567,9 @@ import { warn } from 'ojs/ojlogger';
         if (
           button.tagName === _OJ_BUTTON ||
           button.tagName === _OJ_C_BUTTON ||
-          button.tagName === _OJ_MENU_BUTTON
+          button.tagName === _OJ_MENU_BUTTON ||
+          button.tagName === _OJ_C_MENU_BUTTON ||
+          button.tagName === _OJ_C_SPLIT_MENU_BUTTON
         ) {
           disabled = button.disabled;
         } else {
@@ -599,6 +603,8 @@ import { warn } from 'ojs/ojlogger';
             _OJ_BUTTON,
             _OJ_C_BUTTON,
             _OJ_MENU_BUTTON,
+            _OJ_C_MENU_BUTTON,
+            _OJ_C_SPLIT_MENU_BUTTON,
             'OJ-BUTTONSET-ONE',
             'OJ-BUTTONSET-MANY',
             'OJ-OPTION'
@@ -757,6 +763,9 @@ import { warn } from 'ojs/ojlogger';
 
         if (this._IsCustomElement()) {
           for (var i = 0; i < this.$buttons.length; i++) {
+            if (this.$buttons[i].tagName.trim() === _OJ_C_SPLIT_MENU_BUTTON.trim()) {
+              this.$buttons[i].children[0].children[0].setAttribute('tabindex', '-1');
+            }
             this._getButtonFocusElem(this.$buttons[i]).setAttribute('tabindex', '-1');
           }
         } else {
@@ -858,8 +867,16 @@ import { warn } from 'ojs/ojlogger';
         //        last is undefined; button is node X: no existing tabstop; want to make X the tabstop.  This logic does that.
         //        last is node X; button is node Y: X is the tabstop; want to clear it and make Y the tabstop.  This logic does that.
         if (button !== last) {
-          $(last).attr('tabindex', '-1'); // no-op iff $(last) is empty iff (see comment above)
-          $button.attr('tabindex', '0'); // no-op iff $button is empty iff (see comment above)
+          if (last && last.tagName.trim() === _OJ_C_SPLIT_MENU_BUTTON.trim()) {
+            last.children[0].children[0].setAttribute('tabindex', '-1');
+          } else {
+            $(last).attr('tabindex', '-1'); // no-op iff $(last) is empty iff (see comment above)
+          }
+          if ($button[0].tagName.trim() === _OJ_C_SPLIT_MENU_BUTTON.trim()) {
+            $button[0].children[0].children[0].setAttribute('tabindex', '0');
+          } else {
+            $button.attr('tabindex', '0'); // no-op iff $button is empty iff (see comment above)
+          }
           this._lastTabStop = button;
         }
       },
@@ -959,7 +976,9 @@ import { warn } from 'ojs/ojlogger';
             if (
               child.tagName === _OJ_BUTTON ||
               child.tagName === _OJ_C_BUTTON ||
-              child.tagName === _OJ_MENU_BUTTON
+              child.tagName === _OJ_MENU_BUTTON ||
+              child.tagName === _OJ_C_MENU_BUTTON ||
+              child.tagName === _OJ_C_SPLIT_MENU_BUTTON
             ) {
               // must check to make sure the child button element has been initialized
               if (__GetWidgetConstructor(this._getButtonFocusElem(child), 'ojButton')) {

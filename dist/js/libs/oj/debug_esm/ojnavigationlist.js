@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -12,7 +12,7 @@ import $ from 'jquery';
 import { isTouchSupported, getReadingDirection } from 'ojs/ojdomutils';
 import { NavigationListDndContext } from 'ojs/ojnavigationlistdnd';
 import 'ojs/ojlistview';
-import { isElementIntersectingScrollerBounds, disableElement } from 'ojs/ojdatacollection-common';
+import { disableElement } from 'ojs/ojdatacollection-common';
 import 'ojs/ojmenu';
 import 'ojs/ojbutton';
 
@@ -108,6 +108,9 @@ var __oj_navigation_list_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "accessibleExpandCollapseInstructionText": {
+          "type": "string"
+        },
         "defaultRootLabel": {
           "type": "string"
         },
@@ -542,7 +545,10 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
       var itemContent = this.getItemContentElement(target);
       if (itemContent.is('a')) {
         // When using simple <a> markup
-        return $.trim(itemContent.text()).replace('CORE PACK', '');
+        var itemLabelClass = this.getItemLabelStyleClass();
+        var itemLabelElement = itemContent[0].querySelector('.' + itemLabelClass);
+        // Only the label's textContent is required.
+        return $.trim(itemLabelElement.textContent).replace('CORE PACK', '');
       }
       // When using arbitrary content, extract item title from element having marker class .oj-navigationlist-item-title.
       return $.trim(itemContent.find('.' + this.getItemTitleStyleClass()).text());
@@ -1389,6 +1395,31 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
     },
 
     /**
+     * Handle clicking the 'X' inside the anchor representing the tab
+     * see JET-63881
+     * @private
+     */
+    _handleRemovableLink: function (event) {
+      var $target = $(event.target);
+      var item = this.FindItem($target);
+      if (item == null || item.length === 0) {
+        // this should not happen as the listener is register on the item
+        return;
+      }
+
+      // click on the 'X' should not change selection, but it should still change currentItem
+      this.HandleClickActive(item, event);
+      var contentElement = this.getItemContentElement(item);
+      if (contentElement.length > 0) {
+        // make sure it gets focus otherwise focus goes to the body as 'X' is no longer in DOM
+        contentElement[0].focus();
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      this._handleRemove(event, item);
+    },
+
+    /**
      * Override to expand and collapse events on clicking item instead of icon. Also avoids expand/collapse when user click on arbitrary clickable elements.
      * @override
      * @protected
@@ -1401,18 +1432,7 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
         // can't find item or if item cannot be focus
         return;
       }
-      if ($target.hasClass(this.getNavListRemoveIcon()) && this.isTabBar()) {
-        // click on the 'X' should not change selection, but it should still change currentItem
-        this.HandleClickActive(item, event);
-        var contentElement = this.getItemContentElement(item);
-        if (contentElement.length > 0) {
-          // make sure it gets focus otherwise focus goes to the body as 'X' is no longer in DOM
-          contentElement[0].focus();
-        }
 
-        this._handleRemove(event, item);
-        return;
-      }
       if (this.SkipFocus(item)) {
         event.preventDefault();
         return;
@@ -1711,15 +1731,17 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
       if (options.navigationLevel !== undefined) {
         this._setNavigationLevel(options.navigationLevel);
       }
-      if (options.selection !== undefined) {
+      const hasSelectionProperty = Object.hasOwn(options, 'selection');
+      if (hasSelectionProperty) {
         newSelectionValue = options.selection;
       }
       result.needRefresh = _ojNavigationListView.superclass.setOptions.call(this, options, flags);
-      if (newSelectionValue !== undefined && options.selection === undefined) {
+      // if previously selection propery existed but it does not exist now then skip it
+      if (hasSelectionProperty && !Object.hasOwn(options, 'selection')) {
         result.skipOptions.push('selection');
       }
       // Restore original user provided selection value
-      if (newSelectionValue !== undefined) {
+      if (hasSelectionProperty) {
         // eslint-disable-next-line no-param-reassign
         options.selection = newSelectionValue;
       }
@@ -1736,44 +1758,47 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
      * @override
      */
     HandleSelectionOption: function (options) {
-      if (options.selection !== undefined) {
-        var newSelectionValue = options.selection;
-        if (newSelectionValue !== null) {
-          var selection = this.GetOption('selection');
-          if (
-            !selection ||
-            selection.length === 0 ||
-            !this.compareValues(selection[0], newSelectionValue)
-          ) {
-            var item = this.FindElementByKey(newSelectionValue);
-            if (!item || this.IsSelectable(item)) {
-              var shouldSelect = this._fireBeforeSelectEvent(null, $(item), newSelectionValue);
-              if (shouldSelect) {
-                this._fireDeselectEvent(null, item, newSelectionValue);
-                // eslint-disable-next-line no-param-reassign
-                options.selection = [newSelectionValue];
-                this.m_listHandler.HandleSelectionChange(item);
-                if (item) {
-                  this._initiateNavigation($(item));
-                }
-              } else {
-                // eslint-disable-next-line no-param-reassign
-                delete options.selection;
+      if (!Object.hasOwn(options, 'selection')) {
+        return;
+      }
+
+      var newSelectionValue = options.selection;
+      if (newSelectionValue !== null && newSelectionValue !== undefined) {
+        var selection = this.GetOption('selection');
+        if (
+          !selection ||
+          selection.length === 0 ||
+          !this.compareValues(selection[0], newSelectionValue)
+        ) {
+          var item = this.FindElementByKey(newSelectionValue);
+          if (!item || this.IsSelectable(item)) {
+            var shouldSelect = this._fireBeforeSelectEvent(null, $(item), newSelectionValue);
+            if (shouldSelect) {
+              this._fireDeselectEvent(null, item, newSelectionValue);
+              // eslint-disable-next-line no-param-reassign
+              options.selection = [newSelectionValue];
+              this.m_listHandler.HandleSelectionChange(item);
+              if (item) {
+                this._initiateNavigation($(item));
               }
             } else {
               // eslint-disable-next-line no-param-reassign
               delete options.selection;
             }
           } else {
-            // When new value is same as existing one, no need to update it on listview.
             // eslint-disable-next-line no-param-reassign
             delete options.selection;
           }
         } else {
+          // When new value is same as existing one, no need to update it on listview.
           // eslint-disable-next-line no-param-reassign
-          options.selection = [];
+          delete options.selection;
         }
+      } else {
+        // eslint-disable-next-line no-param-reassign
+        options.selection = [];
       }
+
       _ojNavigationListView.superclass.HandleSelectionOption.call(this, options);
     },
 
@@ -1983,7 +2008,12 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
 
       if (
         childElements.length === 1 && // check for only one focusbale child
-        childElements.first().find(selector).length === 0
+        childElements
+          .first()
+          .find(selector)
+          .filter(function () {
+            return !$(this).hasClass(self.getNavListRemoveIcon());
+          }).length === 0
       ) {
         // check to ensure no nested focusable elements.
         return childElements.first();
@@ -2007,12 +2037,12 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
       if (item.hasClass(this.getRemovableStyleClass()) && contextMenu) {
         if (this.m_contextMenu !== contextMenu) {
           this.m_contextMenu = contextMenu;
-          contextMenu.addEventListener(
-            'ojBeforeOpen',
-            this._handleContextMenuBeforeOpen.bind(this)
-          );
           contextMenu.addEventListener('ojAction', this._handleContextMenuSelect.bind(this));
         }
+
+        // Element that is going to be removed from the tab bar
+        this.m_contextMenuItem = item;
+
         var removeItem = $(contextMenu).find(
           '[data-oj-command=' + this.getNavListRemoveCommand() + ']'
         );
@@ -2031,10 +2061,6 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
       if (item.attr('data-oj-command') === this.getNavListRemoveCommand()) {
         this._handleRemove(event, this.m_contextMenuItem);
       }
-    },
-
-    _handleContextMenuBeforeOpen: function (event) {
-      this.m_contextMenuItem = event.detail.openOptions.launcher;
     },
 
     _handleRemove: function (event, item) {
@@ -2089,8 +2115,6 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
         if (groupIcon.length === 0) {
           groupIcon = groupItem.children('.' + collapseIconClass);
         }
-        groupIcon.attr('role', 'presentation');
-        groupIcon.attr('tabindex', '-1'); // @HTMLUpdateOK
         groupIcon.removeAttr('aria-labelledby');
         if ($item.hasClass(_OJ_DISABLED)) {
           groupItem.addClass(_OJ_DISABLED);
@@ -2104,6 +2128,7 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
         var itemLabelClass = this.getItemLabelStyleClass();
         var itemLabelElement = itemContent[0].querySelector('.' + itemLabelClass);
         var icon = itemContent.find('.' + itemIconClass);
+        var badge = itemContent.find('.' + itemBadgeClass);
         // if element with label style class already exists, no need to create wrapper
         // or rearrange the icon/badge
         if (itemLabelElement == null) {
@@ -2111,7 +2136,6 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
           itemLabelElement.classList.add(itemLabelClass);
           this._wrapInner(itemContent[0], itemLabelElement);
 
-          var badge = itemContent.find('.' + itemBadgeClass);
           if (badge.length > 0) {
             badge.insertAfter(itemLabelElement); // @HTMLUpdateOK
           }
@@ -2139,14 +2163,46 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
               this.ojContext.element.addClass(this.getStackedIconStyleClass());
               this.isStackedIconClassAdded = true;
             }
-            var iconLabel = this.getItemLabel($item);
-            icon.attr(_ARIA_LABEL, iconLabel); // @HTMLUpdateOK
             icon.attr('role', 'img');
-            this._setToolTipOnIcon(icon, iconLabel);
           }
           this.element.closest('ul').addClass(self.getHasIconsStyleClass());
         } else {
           itemContent.addClass(this.getHasNoIconStyleClass());
+        }
+
+        if ($item.hasClass(this.getRemovableStyleClass()) && this.isTabBar()) {
+          // we'll need to move icon/label into its own layout since the
+          // removable icon cannot be in the same layout as this
+          var labelIconContainer = document.createElement('div');
+          labelIconContainer.classList.add('oj-tabbar-icon-label-container');
+          if (icon.length > 0) {
+            labelIconContainer.appendChild(icon[0]);
+          }
+          labelIconContainer.appendChild(itemLabelElement);
+          if (badge.length > 0) {
+            labelIconContainer.appendChild(badge[0]);
+          }
+          itemContent[0].appendChild(labelIconContainer);
+
+          if (this.m_handleRemovableLink == null) {
+            this.m_handleRemovableLink = this._handleRemovableLink.bind(this);
+          }
+
+          var removableLink = $('<a>');
+          removableLink
+            .addClass(this.getNavListRemoveIcon())
+            .addClass('oj-clickable-icon-nocontext oj-component-icon')
+            .attr(_ARIA_LABEL, this.ojContext.getTranslatedString('removeCueText')) // @HTMLUpdateOK
+            .attr('role', 'img'); // @HTMLUpdateOK
+          removableLink[0].addEventListener('click', this.m_handleRemovableLink);
+          // Touch devices, the trailing icon will be always visible
+          if (isTouchSupported() || $item.hasClass(_OJ_DISABLED)) {
+            removableLink.css('visibility', 'visible');
+          } else {
+            removableLink.css('visibility', 'hidden');
+          }
+          itemContent.append(removableLink); // @HTMLUpdateOK
+          itemContent.attr('aria-describedby', removableLink.uniqueId().attr('id'));
         }
       }
 
@@ -2156,24 +2212,6 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
         groupItem.addClass(_OJ_DEFAULT);
       } else {
         $item.addClass(_OJ_DEFAULT);
-      }
-
-      if ($item.hasClass(this.getRemovableStyleClass()) && this.isTabBar()) {
-        var removableLink = $('<a>');
-        removableLink
-          .addClass(this.getNavListRemoveIcon())
-          .addClass('oj-clickable-icon-nocontext oj-component-icon')
-          .attr(_ARIA_LABEL, this.ojContext.getTranslatedString('removeCueText')) // @HTMLUpdateOK
-          .attr('role', 'presentation')
-          .attr(_ARIA_HIDDEN, 'true'); // @HTMLUpdateOK
-        // Touch devices, the trailing icon will be always visible
-        if (isTouchSupported() || $item.hasClass(_OJ_DISABLED)) {
-          removableLink.css('visibility', 'visible');
-        } else {
-          removableLink.css('visibility', 'hidden');
-        }
-        $item.append(removableLink); // @HTMLUpdateOK
-        itemContent.attr('aria-describedby', removableLink.uniqueId().attr('id'));
       }
 
       this.m_listHandler.ModifyListItem($item, itemContent);
@@ -2312,6 +2350,7 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
       this.ojContext._off(this.element, 'mousein');
       this.ojContext._off(this.element, 'mouseout');
       this.ojContext._off(this.element, 'keydown');
+      this.m_handleRemovableLink = null;
     }
   }
 );
@@ -4333,8 +4372,6 @@ _ojNavigationListView._CSS_Vars = {
  *  &lt;/ul>
  * &lt;/oj-tab-bar>
  * </code></pre>
- * <p>Any list item can be disabled by adding the <code class="prettyprint">oj-disabled</code> class to that element.  As with any DOM change, doing so post-init
- * requires a <code class="prettyprint">refresh()</code> of the element.
  *
  * <h3 id="key-section">
  *   Key
@@ -4747,6 +4784,7 @@ _ojNavigationListView._CSS_Vars = {
 // ---------------- oj-disabled --------------
 /**
  * Any list item can be disabled by adding the oj-disabled class to that element
+ * @ojdeprecated {since: "16.0.0", description: "Disabled Tab Bar items are not recommended in the Redwood design system, tabs should be removed, not disabled."}
  * @ojstyleclass oj-disabled
  * @ojdisplayname Disabled Item
  * @ojstyleselector "oj-tab-bar li"
@@ -4946,7 +4984,7 @@ _ojNavigationListView._CSS_Vars = {
  * @since 4.1.0
  * @type {string}
  * @ojvalue {string} "none" tabs always take up the space needed by the title texts.
- * @ojvalue {string} "progressive"  If not enough space is available to display all of the tabs, then the width of each tab title is restricted just enough to allow all tabs to fit. All tab titles that are truncated are displayed with ellipses. However the width of each tab title will not be truncated below $tabBarTruncatedLabelMinWidth.
+ * @ojvalue {string} "progressive"  If not enough space is available to display all of the tabs, then the width of each tab title is restricted just enough to allow all tabs to fit. All tab titles that are truncated are displayed with ellipses. However the width of each tab title will not be truncated below a specific threshold defined by the theme.
  * @default none
  * @example <caption>Initialize the Tab Bar with the <code class="prettyprint">truncation</code> attribute specified:</caption>
  *  &lt;oj-tab-bar truncation='progressive'> ... &lt;/oj-tab-bar>
@@ -5594,7 +5632,9 @@ DefaultNavListHandler.prototype.HandleExpandAndCollapseKeys =
  */
 // eslint-disable-next-line no-unused-vars
 DefaultNavListHandler.prototype.ModifyListItem = function ($item, itemContent) {
-  if (this.m_widget.isTabBar()) {
+  var isHierarchical = this.m_widget.m_contentHandler.IsHierarchical();
+  // Except for collapsible/sliding/ group navlist items everything else should have role tab
+  if (!isHierarchical || this.m_widget.isTabBar()) {
     var focusableElement = this.m_widget.getSingleFocusableElement($item);
     focusableElement.attr('role', 'tab');
   }
@@ -5616,9 +5656,15 @@ DefaultNavListHandler.prototype.BeforeRenderComplete = function () {
   var role = this.m_widget.element.attr('role');
   if (role && role !== 'presentation') {
     this.m_widget.element.attr('role', 'presentation');
-    if (!this.m_widget.isTabBar()) {
+    var isHierarchical = this.m_widget.m_contentHandler.IsHierarchical();
+    // If it is a collapsible/sliding/ group navlist role should be inherited from data provider.
+    if (!this.m_widget.isTabBar() && isHierarchical) {
       this.m_root.attr('role', role);
     } else {
+      // If it is a vertical navlist it should have aria-orientation
+      if (this.m_root.hasClass(this.m_widget.getNavListVerticalStyleClass())) {
+        this.m_root.attr('aria-orientation', 'vertical');
+      }
       this.m_root.attr('role', 'tablist');
     }
   }
@@ -5963,6 +6009,46 @@ HorizontalNavListHandler.prototype._isTabBar = function () {
   return this.m_widget.isTabBar();
 };
 
+HorizontalNavListHandler.prototype._getScrollableParent = function (node, includeHidden) {
+  var nodePosition =  window.getComputedStyle(node).position;
+  var excludeStaticParent = nodePosition === "absolute";
+  var overflowRegex = includeHidden ? /(auto|scroll|hidden)/ : /(auto|scroll)/;
+  var found = false;
+  var scrollParent;
+  var parent = node.parentElement;
+  while (parent && !found) {
+    const { overflow, overflowY, overflowX, position } = window.getComputedStyle(parent);
+    if (!(excludeStaticParent && position === "static")
+      && (overflowRegex.test(overflow + overflowY + overflowX))) {
+      scrollParent = parent;
+      found = true;
+    }
+    parent = parent.parentElement;
+  }
+
+  return nodePosition === "fixed" || !scrollParent ?
+    node.ownerDocument.documentElement || document.documentElement  :
+    scrollParent;
+};
+
+HorizontalNavListHandler.prototype._isElementInsideHorizontalScrollerBounds = function (elem, scroller) {
+  var left;
+  var right;
+  if (scroller === document.documentElement) {
+    left = 0;
+    right = document.documentElement.clientWidth;
+  } else {
+    var scrollerBounds = scroller.getBoundingClientRect();
+    left = scrollerBounds.left;
+    right = scrollerBounds.right;
+  }
+  var bounds = elem.getBoundingClientRect();
+  return (
+    bounds.left <= right && bounds.right <= right &&
+    bounds.left >= left && bounds.right >= left
+  );
+};
+
 /**
  * Handles arrow keys navigation on item
  * @param {number} keyCode description
@@ -5987,13 +6073,17 @@ HorizontalNavListHandler.prototype.HandleArrowKeys = function (keyCode, isExtend
     event
   );
   var current = this.m_widget.m_active.elem;
+
+  if (!this._scrollableParent) {// caching
+   this._scrollableParent = this._getScrollableParent(this.m_root[0], true);
+  }
   if (
-    !isElementIntersectingScrollerBounds(
-      this.m_root[0],
-      document.documentElement
+    ! this._isElementInsideHorizontalScrollerBounds(
+      current[0],
+      this._scrollableParent
     )
   ) {
-    current[0].scrollIntoView(false);
+    current[0].scrollIntoView({block:"nearest", inline:"nearest"});
   }
   return processed;
 };
@@ -6068,7 +6158,7 @@ HorizontalNavListHandler.prototype._addSeparator = function (elem, index) {
   ) {
     // prettier-ignore
     $elem.before( // @HTMLUpdateOK
-      '<li role="separator" class="' + this.m_widget.getDividerStyleClass() + '"></li>'
+      '<li role="presentation" class="' + this.m_widget.getDividerStyleClass() + '"></li>'
     );
   }
 };
@@ -6514,7 +6604,7 @@ HorizontalNavListHandler.prototype._getOverflowMenuButton = function () {
       .addClass(this.m_widget.getFocusedElementStyleClass())
       .addClass(this.m_widget.getItemContentStyleClass());
     anchorElement
-      .attr('role', 'button')
+      .attr('role', 'tab')
       .attr('aria-haspopup', 'true')
       .attr(_ARIA_SELECTED, 'false') // @HTMLUpdateOK
       .attr('tabindex', '-1')
@@ -6776,7 +6866,6 @@ _HorizontalNavListOverflowHandler.prototype._collectOverflowData = function () {
     if (this._navlistHandler._isTabBar() && readingDirection === 'rtl') {
       margin = overFlowMenuButtonComputedStyle.marginRight;
     }
-
     overflowItemWidth = rect.width + parseInt(margin, 10);
   }
   // Since this is last item it does not have a margin added to item edge
@@ -6858,14 +6947,14 @@ _HorizontalNavListOverflowHandler.prototype._calculateThreshold = function (over
     if (!this._navlistHandler._isTabBar() && this._display === 'icons') {
       itemEdge = items[index].getBoundingClientRect()[edge];
     } else {
-      // Non icon-only case items have a right margin except for the last one.
       const itemComputedStyle = window.getComputedStyle(items[index]);
       let itemMargin = 0;
       // TabBar has right margin for all items in ltr and rtl mode.
       if (this._navlistHandler._isTabBar() || readingDirection === 'ltr') {
         itemMargin = itemComputedStyle.marginRight;
       } else {
-        // Navigationlist non icon-only case items have a right margin (covered by if above) in ltr and left margin in rtl
+        // Navigationlist non icon-only case items have a right margin (covered by if above) in
+        // ltr and left margin in rtl
         itemMargin = itemComputedStyle.marginLeft;
       }
       itemEdge = items[index].getBoundingClientRect()[edge] + parseInt(itemMargin, 10);
@@ -6924,6 +7013,7 @@ _HorizontalNavListOverflowHandler.prototype._getMinLabelWidth = function (items)
 const _OJ_FOCUS_ANCESTOR = 'oj-focus-ancestor';
 const _ARIA_HIDDEN$1 = 'aria-hidden';
 const _ARIA_DESCRIBEDBY = 'aria-describedby';
+const _ARIA_LABELLEDBY = 'aria-labelledby';
 const _ARIA_EXPANDED = 'aria-expanded';
 const _OJ_NAV_HIER_BUTTON = 'oj-navigationlist-hierarchical-button';
 const _OJ_NAV_HIER_MENU = 'oj-navigationlist-hierarchical-menu';
@@ -7254,8 +7344,9 @@ SlidingNavListHandler.prototype.ModifyListItem = function ($item, itemContent) {
 };
 
 SlidingNavListHandler.prototype.BeforeRenderComplete = function () {
-  this.m_root.attr('role', 'menu');
-  this.m_widget.element.attr('role', 'presentation');
+  this.m_root.attr('role', 'group');
+  this.m_widget.element.attr('role', 'menu');
+  this.m_widget.element.attr(_ARIA_LABELLEDBY, this._headerLabel.attr('id')); // @HTMLUpdateOK
 };
 
 SlidingNavListHandler.prototype.Init = function (opts) {
@@ -7317,6 +7408,7 @@ SlidingNavListHandler.prototype._buildSlidingNavListHeader = function (opts) {
   this._prevButton.css('visibility', 'hidden').attr('tabindex', '-1'); // @HTMLUpdateOK
   this._previousLink.addClass(_OJ_NAV_PREV_LINK).attr('tabindex', '-1'); // @HTMLUpdateOK
   this._headerLabel = $(document.createElement('label'));
+  this._headerLabel.uniqueId();
   this._headerLabel.addClass('oj-navigationlist-current-header').text(this.m_widget.getRootLabel());
   this._vSeparator = $(document.createElement('span'));
   this._vSeparator

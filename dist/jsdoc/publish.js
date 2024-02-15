@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -543,7 +543,8 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
      }
      name = cleanUpClassSignatureFromAbstractSuperClasses(name);
      if (item.ojcomponent && item.domInterface) {
-       name = name.replace(new RegExp("\\b" + item.name + "\\b", "g"), item.domInterface);
+       // make sure we are not capturing everything in the word boundary, dots are not considered as wb here
+      name = name.replace(new RegExp("\\b(?<!\\.)" + item.name + "\\b(?!\\.)", "g"), item.domInterface);
      }
      types = tryToFindAllPossibleLinks(name, item);
    }
@@ -653,8 +654,8 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
  function tryToFindAllPossibleLinks(name, doc) {
    var parseSuccess = tryTypeParsing(name);
    //Parse succeeds for something like FilterOperator<D>
-   //But it wont generate any link. Becuase linkto('FilterOperator<D>', htmlsafe('FilterOperator<D>'))
-   //wont link to the type. The first paraqmeter will need to be qualified name like
+   //But it wont generate any link. Because linkto('FilterOperator<D>', htmlsafe('FilterOperator<D>'))
+   //wont link to the type. The first parameter will need to be qualified name like
    //linkto('oj.FilterOperator', htmlsafe('FilterOperator<D>'))
 
    //To handle this, we would need to do this.
@@ -669,10 +670,10 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
      linked = linkto(name, htmlsafe(name));
      if (linked.indexOf('<a href=') < 0) {
        // no link created. We need to see if we have any possible types inside
-       // No link is created could be of 2 reasons. 1 -> it is a prmitive type
+       // No link is created could be of 2 reasons. 1 -> it is a primitive type
        // or we are dealing with a type like myType<K,D> or Array<myType> or myType= and things like that
        // we need to run the second case through our advanced algorithm to find all links.
-       // we dont need the other one to go through it as it might just be a performance issue.
+       // we don't need the other one to go through it as it might just be a performance issue.
 
        if (name.indexOf('<') > -1 || name.indexOf('=') > -1 || name.indexOf('.') > -1) {
          // TODO -> optimize this somehow to exclude string= or Array<String>
@@ -708,7 +709,7 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
    }
    else {
      //we need to parse the string. The string my contain reference to other classes/interfaces/typedefs.
-     //we find all those and parse to them and then convert those in to links.
+     //we try to find all those, and then convert those into links.
 
      var tdused = [];
      var tdlongName = [];
@@ -753,14 +754,22 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
        }
        //this is when oj.ArrayDataprovider is referring some thing from oj with only the name and not long name
        else if (name.indexOf(td.name) >= 0 && isPossibleTypeReference(name, td.name)) {
-         if (doc.memberof && doc.memberof.startsWith(td.memberof + '.')) {
+        if (doc.memberof && doc.memberof.startsWith(td.memberof + '.')) {
            let regex = new RegExp("\\b" + td.name + "(?!\\.)\\b");
            if (regex.test(name) && tdused.indexOf(td.name) == -1) {
              //logger.info(name);
              tdused.push(td.name);
              tdlongName.push(td.longname);
            }
-         }
+        }
+        else if(td.memberof.startsWith(doc.memberof + '.')){
+          let regex = new RegExp("\\b" + td.name + "(?!\\.)\\b");
+          if (regex.test(name) && tdused.indexOf(td.name) == -1) {
+             logger.info(`Discovered that ${doc.name}: ${name} has a linkable type ${td.name}`);
+             tdused.push(td.name);
+             tdlongName.push(td.longname);
+          }
+        }
        }
      }
      //we found a type that's being used by the type of this member doclet

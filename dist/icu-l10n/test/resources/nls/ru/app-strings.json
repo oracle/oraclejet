@@ -1,4 +1,0 @@
-{
-  "contentArea": "{name} область содержимого",
-  "plural": "{total_rows, plural, offset:0 =0 {нет строк} one {# ряд} other {# ряда}}"
-}

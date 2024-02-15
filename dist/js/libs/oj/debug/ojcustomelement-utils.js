@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -308,11 +308,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
         }
         static getElementProperty(element, property) {
             if (ojcustomelementRegistry.isElementRegistered(element.tagName)) {
-                let vInst = element['_vcomp'];
-                if (vInst && !vInst.isCustomElementFirst()) {
-                    return CustomElementUtils.getPropertyValue(vInst.props, property);
-                }
-                else if ((vInst = element[CustomElementUtils.VCOMP_INSTANCE])) {
+                let vInst = element[CustomElementUtils.VCOMP_INSTANCE];
+                if (vInst) {
                     return CustomElementUtils.getPropertyValue(vInst.props, property);
                 }
                 return element.getProperty(property);
@@ -762,6 +759,34 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
         ComponentState[ComponentState["BindingsDisposed"] = 8] = "BindingsDisposed";
     })(ComponentState || (ComponentState = {}));
 
+    class LifecycleElementState extends ElementState {
+        constructor() {
+            super(...arguments);
+            this._connectCallbacks = [];
+            this._disconnectCallbacks = [];
+        }
+        addLifecycleCallbacks(connectFunc, disconnectFunc) {
+            if (connectFunc) {
+                this._connectCallbacks.push(connectFunc);
+            }
+            if (disconnectFunc) {
+                this._disconnectCallbacks.push(disconnectFunc);
+            }
+        }
+        removeLifecycleCallbacks(connectFunc, disconnectFunc) {
+            if (connectFunc) {
+                this._connectCallbacks = this._connectCallbacks.filter((item) => item != connectFunc);
+            }
+            if (disconnectFunc) {
+                this._disconnectCallbacks = this._disconnectCallbacks.filter((item) => item != disconnectFunc);
+            }
+        }
+        executeLifecycleCallbacks(isConnected) {
+            const callbacks = isConnected ? this._connectCallbacks : this._disconnectCallbacks;
+            callbacks.forEach((callback) => callback());
+        }
+    }
+
     const NULL_SYMBOL = Symbol('custom element null');
     const EMPTY_STRING_SYMBOL = Symbol('custom element empty string');
     const toSymbolizedValue = (value) => {
@@ -809,6 +834,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
     exports.ElementState = ElementState;
     exports.ElementUtils = ElementUtils;
     exports.JetElementError = JetElementError;
+    exports.LifecycleElementState = LifecycleElementState;
     exports.OJ_BIND_CONVERTED_NODE = OJ_BIND_CONVERTED_NODE;
     exports.toSymbolizedValue = toSymbolizedValue;
     exports.transformPreactValue = transformPreactValue;

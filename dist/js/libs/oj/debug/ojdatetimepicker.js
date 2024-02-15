@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1424,6 +1424,17 @@ var __oj_input_date_time_metadata =
   }
 
   /**
+   * This is needed only for zoom % 400 or above. Without if condition, it makes the page move when
+   * we change date with no zoom.
+   * @private
+   */
+  function _scrollIntoViewFor400PercentZoom(elem) {
+    if (window.devicePixelRatio >= 4) {
+      elem.scrollIntoView();
+    }
+  }
+
+  /**
    * Bind hover events for datepicker elements.
    * Done via delegate so the binding only occurs once in the lifetime of the parent div.
    * Global instActive, set by _updateDatepicker allows the handlers to find their way back to the active picker.
@@ -1625,15 +1636,18 @@ var __oj_input_date_time_metadata =
      *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
      * </h3>
      * <p>
-     * To migrate from oj-input-date to oj-c-input-date-text, you need to revise the import statement
-     * and references to oj-c-input-date-text in your app. Please note the changes between the two components below.
+     * Currently there are two oj-c date components, oj-c-input-date-text and oj-c-input-date-mask. oj-c-input-date-text is similar to oj-input-date, but without the picker.
+     * With oj-c-input-date-mask a user can individually edit, step, or spin the values of the month, day, and year fields of a calendar date.
+     * You can migrate to either component depending upon which better fits your needs.
+     * To migrate from oj-input-date to oj-c-input-date-text or oj-c-input-date-mask, you need to revise the import statement
+     * and references to oj-c-input-date-text or oj-c-input-date-mask in your app. Please note the changes between the components below.
      * </p>
-     * <strong>oj-c-input-date-text does not include a picker. The picker will be coming in a later release.
-     * Migrate to oj-c-input-date-text only if you do not need a picker.</strong>
-
+     * <strong>oj-c-input-date-text and oj-c-input-date-mask do not include a picker. The picker will be coming in a later release.
+     * Migrate only if you do not need a picker.</strong>
      * <h5>Date Picker Specific Attributes and Methods</h5>
-     * <p>oj-c-input-date-text does not have a datepicker calendar, so oj-input-date's picker-specific attributes and methods do not exist in the oj-c-input-date-text component.
-     * The following date picker specific attributes and methods do not exist on oj-c-input-date-text.
+     * <p>oj-c-input-date-text and oj-c-input-date-mask do not have a datepicker calendar, so oj-input-date's picker-specific attributes and methods do not exist in the oj-c-input-date-text
+     * or oj-c-input-date-mask component.
+     * The following date picker specific attributes and methods do not exist on oj-c-input-date-text or oj-input-date-mask.
      * </p>
      *
      * <ul>
@@ -1673,9 +1687,10 @@ var __oj_input_date_time_metadata =
      * </li>
      * </ul>
      * <h5>Date Restriction Attributes</h5>
-     * <p>The oj-c-input-date-text does not have a datepicker calendar, so oj-input-date's date restriction attributes do not exist in the oj-c-input-date-text component.
+     * <p>The oj-c-input-date-text or oj-c-input-date-mask do not have a datepicker calendar, so oj-input-date's date restriction attributes do not exist in the oj-c-input-date-text
+     * or oj-c-input-date-mask component.
      * You need to write your own validators to restrict the date and throw an error if the date the user types in is a restricted date.
-     * The following date restriction specific attributes do not exist on oj-c-input-date-text.
+     * The following date restriction specific attributes do not exist on oj-c-input-date-text or oj-c-input-date-mask.
      * </p>
      * <ul>
      * <li>date-restriction</li>
@@ -1693,6 +1708,7 @@ var __oj_input_date_time_metadata =
      * The converter attribute no longer supports a Promise that resolves to a converter instance.
      * The application should resolve the promise and then update the
      * converter attribute with the resolved converter instance.
+     * oj-c-input-date-mask does not have a converter.
      * </p>
      * <p>
      * The converter is no longer applied when the value is <code>null</code>, <code>undefined</code>, or <code>''</code>.
@@ -1770,7 +1786,7 @@ var __oj_input_date_time_metadata =
      * <ul>
      * <li>The translations.date-time-range.message-summary attribute is no longer supported. Redwood apps do not show a summary on the date component.</li>
      * <li>The translations.date-time-range.hint attribute is no longer supported. Redwood apps do not show a hint on the date component.</li>
-     * <li>The translations.date-restriction attributes are no longer supported in oj-c-input-date-text because oj-c-input-date-text does not have date restrictions apis.</li>
+     * <li>The translations.date-restriction attributes are no longer supported in oj-c-input-date-text or oj-c-input-date-mask because neither have the date restrictions apis.</li>
      * <li>The translations.accessible-max-length attributes are no longer supported because they never did anything on oj-input-date.</li>
      * <li>The translations.regexp.messageDetail attribute is no longer supported because it never did anything on oj-input-date</li>
      * </ul>
@@ -1784,11 +1800,18 @@ var __oj_input_date_time_metadata =
      * <p>
      * In oj-input-date the value should be a date-only iso string but it was not enforced.
      * It was coerced to a date-only iso string once the user interacted with the component.
-     * In oj-c-input-date-text the value must be a date-only iso string or the component will not render. A date-only iso string looks like "2023-04-26"; it has no time.
+     * For oj-c-input-date-text and oj-c-input-date-mask the value must be a date-only iso string or the component will not render. A date-only iso string looks like "2023-04-26"; it has no time.
      * </p>
      * <p>
-     * If the value is not a date-only iso string, then you will need to transform it to a date-only iso string to use with oj-c-input-date-text.
+     * If the value is not a date-only iso string, then you will need to transform it to a date-only iso string to use with oj-c-input-date-text or oj-c-input-date-mask.
      * For example, you can use the utility method:  IntlConverterUtils.dateToLocalIsoDateString(new Date(2023, 1, 1)).
+     * </p>
+     *
+     * <h5>Raw Value</h5>
+     * <p>
+     * oj-input-date and oj-c-input-date-text's rawValue properties are the same (both strings) and there are no steps needed to migrate.
+     * oj-input-date-mask's rawValue property is an Object of type CalendarDate, that is, {year?: number, month?: number, day?: number},
+     * so if you have code that handles onRawValueChanged, it will need to be updated.
      * </p>
      *
      * <h5>Refresh method</h5>
@@ -1796,19 +1819,6 @@ var __oj_input_date_time_metadata =
      * The refresh method is no longer supported. The application should no longer need to use this method. If the application
      * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
      * </p>
-     *
-     * <h5>Reset method</h5>
-     * <p>
-     * This method does not synchronously reset the component. The application should wait on the busy context of the component after
-     * invoking this method for the changes to appear.
-     * </p>
-     *
-     * <h5>ShowMessages method</h5>
-     * <p>
-     * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
-     * of the component after invoking this method for the changes to appear.
-     * </p>
-     *
      *
      * <h5>Animation Events</h5>
      * <p>
@@ -1823,6 +1833,12 @@ var __oj_input_date_time_metadata =
      * <p>
      * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
      * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+     * </p>
+     *
+     * <h5>DescribedBy attribute</h5>
+     * <p>
+     * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+     * This attribute is not carried forward to the core pack component.
      * </p>
      *
      * <h5>Usage in Dynamic Form</h5>
@@ -2208,7 +2224,8 @@ var __oj_input_date_time_metadata =
          *   clicked. When the picker is closed, the field regains focus and is editable.
          * @ojvalue {string} 'userFocus' when the element receives focus from a user action (such as tab key press)
          *   or the calendar image is clicked.  Programmatic calls to .focus() do not show the picker.
-         * @ojvalue {string} 'image' when the trigger calendar image is clicked
+         * @ojvalue {string} 'image' when the trigger calendar image is clicked.
+         * Keyboard users must use the Up or Down Arrow key to open the datepicker when show-on is 'image'.
          * @default "focus"
          * @ojsignature { target: "Type", value: "?string"}
          *
@@ -3020,6 +3037,9 @@ var __oj_input_date_time_metadata =
               self._dpDiv.find('.oj-datepicker-calendar').focus();
             }
           },
+          close: function () {
+            self.element.attr({ 'aria-expanded': 'false', 'aria-controls': null });
+          },
           animation: animation
         })
         .attr('data-oj-internal', ''); // mark internal component, used in Components.getComponentElementByNode;
@@ -3638,7 +3658,15 @@ var __oj_input_date_time_metadata =
     _CreateContainerWrapper: function () {
       this._inputContainer = $(this._superApply(arguments));
       this._inputContainer.attr({ role: 'presentation', tabindex: '-1' });
-      this.element.attr({ role: 'combobox', 'aria-haspopup': 'true' });
+
+      // Having role be combobox on the input element will make the screen reader tell the user
+      // that there is a dialog and to open it they can use the Up or Down Arrow key.
+      // This is useful when the show-on attribute is set to 'image' because in that mode the
+      // datepicker does not show up automatically
+      // only way to open the datepicker with a keyboard is to use the Up or Down Arrow.
+      // It is also useful when the user closes the datepicker with the Esc key and then wants to reopen
+      // the datepicker with the keyboard.
+      this.element.attr({ role: 'combobox', 'aria-haspopup': 'dialog', 'aria-expanded': 'false' });
       return this._inputContainer[0];
     },
     /**
@@ -3805,7 +3833,10 @@ var __oj_input_date_time_metadata =
     },
     /**
      * This function will create the necessary calendar trigger container [i.e. image to launch the calendar]
-     * and perform any attachment to events
+     * and perform any attachment to events.
+     * Since the user cannot tab to this icon, it does not need the aria attributes on it.
+     * If showOn is image, then a keyboard or screenreader user would use the up or down arrow key
+     * on the input to open the picker.
      *
      * @private
      */
@@ -3861,6 +3892,7 @@ var __oj_input_date_time_metadata =
         } else {
           self.show();
           self._dpDiv.find('.oj-datepicker-calendar').focus();
+          _scrollIntoViewFor400PercentZoom(self._dpDiv[0]);
         }
         event.preventDefault();
         event.stopPropagation();
@@ -4029,11 +4061,7 @@ var __oj_input_date_time_metadata =
         datePickerCalendar.addClass('oj-focus-highlight');
         datePickerCalendar.attr('aria-activedescendant', cParent.attr('id') + '');
         cParent.addClass(this._DAYOVER_CLASS);
-        // This is needed only for zoom % 400 or above. Without if condition, it makes the page move when
-        // we change date with no zoom.
-        if (window.devicePixelRatio >= 4) {
-          cParent[0].scrollIntoView();
-        }
+        _scrollIntoViewFor400PercentZoom(cParent[0]);
       }
     },
 
@@ -4294,15 +4322,12 @@ var __oj_input_date_time_metadata =
           self._setupNewView(focusOnCalendar, view, generatedHtmlContent.dayOverId);
           self._animationResolve();
           self._animationResolve = null;
+          _scrollIntoViewFor400PercentZoom(self._dpDiv[0]);
         });
       } else {
         dpContentDiv.empty().append(generatedHtmlContent.html); // @HTMLUpdateOK
         this._setupNewView(focusOnCalendar, view, generatedHtmlContent.dayOverId);
-      }
-      // This is needed only for zoom % 400 or above. Without if condition, it makes the page move when
-      // we change date with no zoom.
-      if (window.devicePixelRatio >= 4) {
-        this._dpDiv[0].scrollIntoView();
+        _scrollIntoViewFor400PercentZoom(this._dpDiv[0]);
       }
       let selectors =
         '.oj-datepicker-prev-icon.oj-enabled, .oj-datepicker-next-icon.oj-enabled,' +
@@ -4489,8 +4514,8 @@ var __oj_input_date_time_metadata =
       // prettier-ignore
       $('#' + this._GetSubId(subId + this._CALENDAR_DESCRIPTION_ID)).html( // @HTMLUpdateOK
         this._EscapeXSS(this.options.monthWide[this._drawMonth]) +
-          ' ' +
-          formatYear(this._drawYear, this._drawMonth)
+        ' ' +
+        formatYear(this._drawYear, this._drawMonth)
       );
 
       this._adjustDate(0, 0, true, period === 'M' ? 'day' : this._toYearFromView);
@@ -5179,6 +5204,7 @@ var __oj_input_date_time_metadata =
     ) {
       var dayNames = this.options.dayWide;
       var dayNamesMin = this.options.dayNarrow;
+      // firstDay is locale dependent. en-US the first day is a Sunday. en-GB it is a Monday.
       var firstDay = this.options.firstDayOfWeek;
       var dow;
       var dayOverId = '';
@@ -5254,6 +5280,8 @@ var __oj_input_date_time_metadata =
                 this._EscapeXSS(this.getTranslatedString('weekHeader')) +
                 '</th>'
               : '';
+          // Render the days of the week header
+          // ----------------------------------
           for (dow = 0; dow < 7; dow++) {
             // days of the week
             var day = (dow + parseInt(firstDay, 10)) % 7;
@@ -5272,20 +5300,34 @@ var __oj_input_date_time_metadata =
 
           calender += thead + "</tr></thead><tbody role='presentation'>";
           var daysInMonth = this._getDaysInMonth(drawYear, drawMonth);
+          // This changes the selectedDay to make sure it is within the days in the month.
+          // If the app developer chooses the correct day
           if (drawYear === selectedYear && drawMonth === selectedMonth) {
             // eslint-disable-next-line no-param-reassign
             selectedDay = Math.min(selectedDay, daysInMonth);
           }
+
+          // You need leadDays to figure out the number of rows in the month. Also, leadDays are the
+          // days in the day view that are in the previous month. Even if we do not render the
+          // day number (e.g., daysOutsideMonth is 'hidden'), we need to provide an empty cell
+          // for the lead days.
           var leadDays = (this._getFirstDayOfMonth(drawYear, drawMonth) - firstDay + 7) % 7;
           var curRows = Math.ceil((leadDays + daysInMonth) / 7); // calculate the number of rows to generate
           var numRows = isMultiMonth && this._maxRows > curRows ? this._maxRows : curRows; // If multiple months, use the higher number of rows (see #7043)
           this._maxRows = numRows;
-          var printDate = new Date(drawYear, drawMonth, 1 - leadDays); // first Sunday
+          // The printDate is the first day of in the calendar we are going to render. If the first day of the month
+          // is a Wednesday, then printDate will be the first day of the week before that Wednesday, so it would
+          // be the last days of the previous month. Whether or not we render the day number is determined
+          // by the daysOutsideMonth component option.
+          // The printDate uses leadDays, and leadDays uses firstDay and firstDay is based on the locale's region.
+          // So the printDate would be the first Sunday for en-US, and the first Monday for en-GB
+          var printDate = new Date(drawYear, drawMonth, 1 - leadDays);
           let mondayDateForWeekDisplay;
           for (var dRow = 0; dRow < numRows; dRow++) {
             // create date picker rows
             calender += "<tr role='row'>";
             var calculatedWeek = ' ';
+            // Figure out the week number if the weekDisplay option is not none.
             if (weekDisplay !== 'none') {
               try {
                 // The week number calculation follows the ISO 8601 definition:
@@ -5304,6 +5346,8 @@ var __oj_input_date_time_metadata =
               }
             }
 
+            // Render the week number if the weekDisplay option is not none.
+            // -------------------------------------------------------------
             var tbody =
               weekDisplay === 'none'
                 ? ''
@@ -5314,6 +5358,8 @@ var __oj_input_date_time_metadata =
                   "'>" +
                   calculatedWeek +
                   '</td>';
+            // Render the week
+            // ---------------
             for (dow = 0; dow < 7; dow++) {
               // create date picker days
               var otherMonth = printDate.getMonth() !== drawMonth;
@@ -5344,6 +5390,11 @@ var __oj_input_date_time_metadata =
                   }
                 }
               }
+              // selectedDate is a boolean. Is the component's value the day about to be rendered.
+              // The value is a date-only iso string,
+              // and it is broken apart into parts, and then a date is created, and the time portion
+              // is cleared out, so then it can be compared with the print date. Possibly this can
+              // be done in a simpler manner.
               var selectedDate = printDate.getTime() === valueDate.getTime();
 
               var unselectable =
@@ -5351,6 +5402,8 @@ var __oj_input_date_time_metadata =
                 !daySettings[0] ||
                 this._outSideMinMaxRange(printDate, minDateParams, maxDateParams);
 
+              // Render a day cell. printDate.getDate() is the day number.
+              // ---------------------------------------------------------
               tbody +=
                 "<td role='gridcell' aria-disabled='" +
                 !!unselectable +
@@ -5864,7 +5917,7 @@ var __oj_input_date_time_metadata =
      * Find the day of the week of the first of a month.
      * Returns the day of the week for the specified date according to local time,
      * where 0 represents Sunday, and 6 represents Saturday.
-     * For example, Jan 1, 2021 is a Friday, and it returns 5.
+     * For example, Jan 1, 2021 is a Friday no matter what timezone in the world your system is in, and it returns 5.
      * @return {number} 0-6
      * @private
      */
@@ -6831,6 +6884,7 @@ var __oj_input_date_time_metadata =
         const position = this._getDropdownPosition(defPosition, rtl);
         this._popUpDpDiv.ojPopup('open', this._labelValueWrapper.parentNode, position);
       }
+      this.element.attr({ 'aria-expanded': 'true', 'aria-controls': this._popUpDpDiv.attr('id') });
 
       return this;
     },
@@ -6977,7 +7031,7 @@ var __oj_input_date_time_metadata =
    *     <tr>
    *       <td>Input element</td>
    *       <td><kbd>DownArrow or UpArrow</kbd></td>
-   *       <td>Shows the calender grid and moves the focus into the expanded grid</td>
+   *       <td>Shows the calender grid and moves the focus into the expanded grid.</td>
    *     </tr>
    *     <tr>
    *       <td>Input element</td>
@@ -7161,7 +7215,7 @@ var __oj_input_date_time_metadata =
    * </table>
    *
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojInputDate
+   * @memberof oj.ojDatePicker
    */
 
   // ////////////////     SUB-IDS     //////////////////
@@ -10262,6 +10316,8 @@ var __oj_input_date_time_metadata =
       this._inputContainer = $(this._superApply(arguments));
       this._inputContainer.attr({ role: 'presentation', tabindex: '-1' });
       if (this._isTimePickerSupported()) {
+        // ideally this would have aria-expanded and aria-controls like input-date and input-date-time do
+        // but since this code is only for the alta theme that has been deprecated since v10, we are not going to modify it.
         this.element.attr({ role: 'combobox', 'aria-haspopup': 'true' });
       }
       return this._inputContainer[0];

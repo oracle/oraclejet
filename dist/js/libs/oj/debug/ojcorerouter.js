@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -576,18 +576,24 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
       route = this._getRouteSegment();
     }
     // Transition to the new route, or a default one if no current one exists
-    return this._execute(route || { path: '', params: {} }).then((state) => {
-      // Synchronize the next child router
-      var p = state;
-      var childRouter = this.childRouter;
-      if (childRouter) {
-        p = childRouter.sync();
-      } else if (!this._noHistory) {
-        // Cleanup noHistorySegments after navigating any history-tracking routers
-        noHistorySegments = [];
-      }
-      return p;
-    });
+    return this._execute(route || { path: '', params: {} })
+      .then((state) => {
+        // Synchronize the next child router
+        var p = state;
+        var childRouter = this.childRouter;
+        if (childRouter) {
+          p = childRouter.sync();
+        } else if (!this._noHistory) {
+          // Cleanup noHistorySegments after navigating any history-tracking routers
+          noHistorySegments = [];
+        }
+        return p;
+      })
+      .catch((ex) => {
+        // Clear transitions if transition rejected
+        pendingTransitions = [];
+        throw ex;
+      });
   };
 
   /**
@@ -741,7 +747,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
         window.history.pushState(null, 'path', newPath);
       }
       goP = this.sync().catch((ex) => {
-        // Rollback transitions if navigation rejected
+        // Clear transitions if transition rejected
         pendingTransitions = [];
         if (this._noHistory) {
           noHistorySegments = prevNoHistorySegments;

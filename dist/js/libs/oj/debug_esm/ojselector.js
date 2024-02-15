@@ -1,12 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import { jsx } from 'preact/jsx-runtime';
-import { getTranslatedString } from 'ojs/ojtranslation';
 import { Root, customElement } from 'ojs/ojvcomponent';
 import { Component } from 'preact';
 import { recentPointer } from 'ojs/ojdomutils';
@@ -71,12 +70,7 @@ let Selector = class Selector extends Component {
             spanClass += ' oj-focus-highlight';
         }
         const ariaLabelledby = props['aria-labelledby'] || null;
-        const ariaLabel = props['aria-label'] == null || props['aria-label']?.trim() == ''
-            ? null
-            : props['aria-label'] +
-                (isSelected
-                    ? getTranslatedString('oj-ojSelector.checkboxAriaLabelSelected')
-                    : getTranslatedString('oj-ojSelector.checkboxAriaLabelUnselected'));
+        const ariaLabel = props['aria-label'] || null;
         return (jsx(Root, { class: "oj-selector", children: jsx("span", { class: spanClass, children: jsx("input", { type: "checkbox", class: "oj-selectorbox", "data-oj-clickthrough": "disabled", "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._checkboxListener }) }) }));
     }
     _isSelected(rowKey) {

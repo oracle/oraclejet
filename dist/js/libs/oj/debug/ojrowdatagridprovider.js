@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -43,8 +43,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
                 }
             };
             this.GridHeaderMetadata = class {
-                constructor(sortDirection, expanded, treeDepth, showRequired) {
+                constructor(sortDirection, filter, expanded, treeDepth, showRequired) {
                     this.sortDirection = sortDirection;
+                    this.filter = filter;
                     this.expanded = expanded;
                     this.treeDepth = treeDepth;
                     this.showRequired = showRequired;
@@ -68,6 +69,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             };
             this.sortable = options?.sortable;
             this.sortCriteria = null;
+            this.filterable = options?.filterable;
+            this.filterCriteria = null;
             this.supportsFilteredRowCount =
                 dataProvider.getCapability('fetchFirst')?.totalFilteredRowCount === 'exact';
             if (options?.expandedObservable) {
@@ -77,6 +80,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             }
             dataProvider.addEventListener('mutate', this._handleUnderlyingMutation.bind(this));
             dataProvider.addEventListener('refresh', this._handleUnderlyingRefresh.bind(this));
+            if (options?.itemMetadata) {
+                this.itemMetadata = options?.itemMetadata;
+            }
         }
         async fetchByOffset(parameters) {
             const rowOffset = parameters.rowOffset;
@@ -104,6 +110,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             this.updateKeyCache(fetchResult, rowOffset);
             this.setupLayout(fetchResult.results);
             this.sortCriteria = fetchResult.fetchParameters?.sortCriteria;
+            this.filterCriteria = fetchResult.fetchParameters?.filterCriterion;
             const columnOffset = parameters.columnOffset;
             const columnDone = columnOffset + parameters.columnCount >= this.columns.databody.length;
             const columnCount = Math.max(Math.min(parameters.columnCount, this.columns.databody.length - columnOffset), 0);
@@ -314,6 +321,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
         setDataProvider(dataProvider) {
             this.dataProvider = dataProvider;
         }
+        updateItemMetadata(ranges) {
+            let updateEventDetail = {
+                ranges: ranges,
+                version: this.version
+            };
+            this.dispatchEvent(new ojdatagridprovider.DataGridProviderUpdateEvent(updateEventDetail));
+        }
         getDatabodyResults(data, rowStart, rowCount, columnStart, columnCount) {
             if (data?.length > 0) {
                 const databody = [];
@@ -324,6 +338,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
                         const value = { data: rowItem.data[columnKey] };
                         let metadata = { rowItem };
                         const item = new this.GridBodyItem(1, 1, rowStart + i, columnStart + j, metadata, value);
+                        if (this.itemMetadata && typeof this.itemMetadata.databody === 'function') {
+                            let itemMetadata = this.itemMetadata.databody(item);
+                            if (itemMetadata) {
+                                Object.assign(item.metadata, itemMetadata);
+                            }
+                        }
                         databody.push(item);
                     }
                 }
@@ -363,6 +383,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             }
             return 'unsorted';
         }
+        getFilterState(index) {
+            let columnAttribute = this.columns.databody[index];
+            if (this.filterCriteria && columnAttribute) {
+                if (DataCollectionUtils.doesAttributeExistInFilterCriterion(columnAttribute, this.filterCriteria)) {
+                    return 'filtered';
+                }
+            }
+            return 'filterable';
+        }
         getColumnHeaderResults(axis, offset, count) {
             if (this.columnHeaders?.[axis]) {
                 const headers = [];
@@ -381,8 +410,16 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
                         const startLevel = columnHeader.level;
                         const depth = columnHeader.depth;
                         let metadata;
-                        if (this.sortable && axis === 'column' && level + depth === levelCount) {
-                            metadata = new this.GridHeaderMetadata(this.getSortState(startIndex));
+                        let sortState;
+                        let filterState;
+                        if (axis === 'column' && level + depth === levelCount) {
+                            if (this.sortable) {
+                                sortState = this.getSortState(startIndex);
+                            }
+                            if (this.filterable) {
+                                filterState = this.getFilterState(startIndex);
+                            }
+                            metadata = new this.GridHeaderMetadata(sortState, filterState);
                         }
                         else {
                             metadata = {};

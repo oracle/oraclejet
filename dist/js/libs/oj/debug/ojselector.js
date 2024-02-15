@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact/jsx-runtime', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'preact', 'ojs/ojdomutils'], function (exports, jsxRuntime, Translations, ojvcomponent, preact, DomUtils) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdomutils'], function (exports, jsxRuntime, ojvcomponent, preact, DomUtils) { 'use strict';
 
     var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -67,12 +67,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojtranslation', 'ojs/ojvcomponent'
                 spanClass += ' oj-focus-highlight';
             }
             const ariaLabelledby = props['aria-labelledby'] || null;
-            const ariaLabel = props['aria-label'] == null || props['aria-label']?.trim() == ''
-                ? null
-                : props['aria-label'] +
-                    (isSelected
-                        ? Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabelSelected')
-                        : Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabelUnselected'));
+            const ariaLabel = props['aria-label'] || null;
             return (jsxRuntime.jsx(ojvcomponent.Root, { class: "oj-selector", children: jsxRuntime.jsx("span", { class: spanClass, children: jsxRuntime.jsx("input", { type: "checkbox", class: "oj-selectorbox", "data-oj-clickthrough": "disabled", "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._checkboxListener }) }) }));
         }
         _isSelected(rowKey) {

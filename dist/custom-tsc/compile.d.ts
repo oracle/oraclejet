@@ -8,7 +8,7 @@ type CompileOptions = {
 export type BuildOptions = {
     dtDir: string;
     apiDocDir?: string;
-    isolationMode: boolean;
+    isolationMode?: boolean;
     coreJetBuildOptions?: {
         defaultCompType?: MetadataTypes.ComponentMetadata['type'];
         exclude?: Array<string>;
@@ -20,13 +20,12 @@ export type BuildOptions = {
         exportToAlias?: Record<string, string>;
         aliasToExport?: Record<string, string>;
     };
+    programImportMaps?: MetaTypes.VCompImportMaps;
     componentToMetadata?: Record<string, MetadataTypes.ComponentMetadata>;
     templatePath?: string;
     reservedGlobalProps?: Set<string>;
     tsBuiltDir: string;
-    mainEntryFile: string;
-    typesDir: string;
-    translationBundleIds?: Array<string>;
+    typesDir?: string;
     parentDirToPackInfo?: Record<string, MetaTypes.VCompPack | null>;
     dependencyPackMap?: Map<string, MetaTypes.VCompPack>;
     disabledExceptionKeys?: Array<string>;

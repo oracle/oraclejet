@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { KeyboardEvent, Agent, EventManager, ResourceUtils, HtmlTooltipManager, CSSStyle, PathUtils, Rect, MouseEvent, Displayable, Automation, BaseComponentDefaults, Container, Stroke, Polygon, Path, ToolkitUtils, Animator, Image, OutputText, TextUtils, Line, Timer, Point, AriaUtils, EventFactory, SimpleMarker, ColorUtils, SolidFill, LinearGradientFill, Obj, IconButton, ClipPath, Matrix, TransientButton, Rectangle, SimpleScrollbar, LayoutUtils, Dimension, Easing, SelectionEffectUtils, BaseComponent, ParallelPlayable, AnimFadeOut, Playable, AnimFadeIn, SelectionHandler, JsonUtils } from 'ojs/ojdvt-toolkit';
+import { KeyboardEvent, Agent, EventManager, ResourceUtils, HtmlTooltipManager, CSSStyle, PathUtils, Rect, MouseEvent, Displayable, Point, Automation, BaseComponentDefaults, Container, Stroke, Polygon, Path, ToolkitUtils, Animator, Image, OutputText, TextUtils, Line, Timer, AriaUtils, EventFactory, SimpleMarker, ColorUtils, SolidFill, LinearGradientFill, Obj, IconButton, ClipPath, Matrix, TransientButton, Rectangle, SimpleScrollbar, LayoutUtils, Dimension, Easing, SelectionEffectUtils, BaseComponent, ParallelPlayable, AnimFadeOut, Playable, AnimFadeIn, SelectionHandler, JsonUtils } from 'ojs/ojdvt-toolkit';
 import { TimeComponentKeyboardHandler, TimeComponent, TimeComponentEventManager } from 'ojs/ojdvt-timecomponent';
 import { TimeAxisUtils, TimeAxis } from 'ojs/ojtimeaxis-toolkit';
 import { getLogicalChildPopup } from 'ojs/ojkeyboardfocus-utils';
@@ -2358,28 +2358,32 @@ class DvtTimelineSeriesNode {
    * @private
    */
   _showDragFeedbackTooltip(event, feedbackObj, position) {
-    var isRTL = Agent.isRightToLeft(this._timeline.getCtx());
+    var ctx = this._timeline.getCtx();
+    var isRTL = Agent.isRightToLeft(ctx);
 
-    var feedbackDimensions = feedbackObj.getDimensions();
-    var durationBubbleCenter = feedbackObj.getChildAt(0).getDimensions().getCenter();
-    var timelineViewportCanvasHeight = this._timeline.Height - this._timeline._overviewSize;
-    var discreteOffset = this._timeline.getDiscreteOffset();
-    var tooltipX =
-      feedbackObj.getTranslateX() +
-      feedbackDimensions.x +
-      this._timeline._startPos +
-      discreteOffset +
-      (isRTL ? 28 : feedbackDimensions.w);
-    var tooltipY =
-      feedbackObj.getTranslateY() -
-      durationBubbleCenter.y +
-      feedbackObj._node._series.getTranslateY() +
-      feedbackObj._node._series._canvas.getTranslateY() +
-      timelineViewportCanvasHeight -
-      feedbackDimensions.h;
+    var durationBubbleContainer = feedbackObj.getChildAt(0);
+    var feedbackDimensions = (durationBubbleContainer || feedbackObj).getDimensions(ctx.getStage());
+    var coords;
+    switch (position) {
+      case 'start':
+        coords = new Point(
+          feedbackDimensions.x + isRTL * feedbackDimensions.w,
+          feedbackDimensions.y
+        );
+        break;
+      case 'end':
+        coords = new Point(
+          feedbackDimensions.x + !isRTL * feedbackDimensions.w,
+          feedbackDimensions.y
+        );
+        break;
+      default:
+        coords = feedbackDimensions.getCenter();
+    }
+    var pageCoords = ctx.stageToPageCoords(coords.x, coords.y);
     this._timeline
       .getEventManager()
-      .ProcessObjectTooltip(event, tooltipX, tooltipY, this, feedbackObj.getElem());
+      .ProcessObjectTooltip(event, pageCoords.x, pageCoords.y, this, feedbackObj.getElem());
   }
 
   /**
@@ -3590,15 +3594,14 @@ const DvtTimelineSeriesItemRenderer = {
    * @private
    */
   _updateBubble: (item, series, index, mvAnimator) => {
-    // Re-render bubble, e.g. to evaluate whether content should truncate
-    var contentContainer = item._content.getParent();
-    contentContainer.removeChild(item._content);
-    item._content = DvtTimelineSeriesItemRenderer._getBubbleContent(item, series);
-    contentContainer.addChild(item._content);
-    DvtTimelineSeriesItemRenderer._setupBubble(item, item._content);
-
     // Need to update the bubble widths before spacing if applicable
     if (item.getItemType() === DvtTimelineSeriesNode.DURATION_EVENT) {
+      var contentContainer = item._content.getParent();
+      contentContainer.removeChild(item._content);
+      // Re-render bubble, e.g. to evaluate whether content should truncate
+      item._content = DvtTimelineSeriesItemRenderer._getBubbleContent(item, series);
+      contentContainer.addChild(item._content);
+      DvtTimelineSeriesItemRenderer._setupBubble(item, item._content);
       DvtTimelineSeriesItemRenderer._updateDurationEvent(item, series, null, mvAnimator);
     } else {
       var padding = DvtTimelineStyleUtils.getBubblePadding(item);
@@ -10914,6 +10917,7 @@ class Timeline extends TimeComponent {
           for (i = 0; i < this._series.length; i++) {
             if (
               this._series[i]._items &&
+              this._series[i]._items.length > 0 &&
               series[i].items &&
               this._series[i]._items[0]._data.itemType !== series[i].items[0].itemType
             ) {

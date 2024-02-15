@@ -10,7 +10,7 @@ export type Methods<M> = Partial<Record<keyof M, Omit<Metadata.ComponentMetadata
 }>>;
 export type Options<P, M extends Record<string, (...args: any[]) => any> = {}> = {
     bindings?: PropertyBindings<P>;
-    methods?: Methods<M>;
     contexts?: Record<'consume', Array<Context<any>>>;
+    methods?: Methods<M>;
 };
 export declare function registerCustomElement<P, M extends Record<string, (...args: any[]) => any> = {}>(tagName: string, fcomp: (props: RenderableProps<P>) => ComponentChild, options?: Options<P, M>): ComponentType<ExtendGlobalProps<P>>;

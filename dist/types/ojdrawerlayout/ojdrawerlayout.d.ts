@@ -1,7 +1,7 @@
 import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
-import { CancelableAction, ExtendGlobalProps, ObservedGlobalProps, PropertyChanged, Slot } from 'ojs/ojvcomponent';
+import { CancelableAction, ExtendGlobalProps, PropertyChanged, Slot } from 'ojs/ojvcomponent';
 import { Component, ComponentChild, ComponentChildren } from 'preact';
 import 'ojs/ojcore-base';
 import 'ojs/ojpopup';
@@ -31,7 +31,7 @@ type GenericObject = {
 type ToggleDetail = {
     edge: EdgeLayout;
 };
-type Props = ObservedGlobalProps<'role'> & {
+type Props = {
     children?: ComponentChildren;
     start?: Slot;
     end?: Slot;

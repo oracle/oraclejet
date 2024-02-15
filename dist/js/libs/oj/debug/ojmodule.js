@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -865,14 +865,19 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext'], functio
      * @ignore
      */
     function _getKoNodes(container, cacheHolder) {
-      var nodes = [];
-      var firstChild = ko.virtualElements.firstChild(container);
+      const koNodes = [];
+      const childNodes = ko.virtualElements.childNodes(container);
 
-      _koNodesForEach(firstChild, cacheHolder, function (node) {
-        nodes.push(node);
-      });
-
-      return nodes;
+      for (let i = 0; i < childNodes.length; i++) {
+        const node = childNodes[i];
+        if (node !== cacheHolder) {
+          const type = node.nodeType;
+          if (type === 1 || type === 8) {
+            koNodes.push(node);
+          }
+        }
+      }
+      return koNodes;
     }
 
     /**

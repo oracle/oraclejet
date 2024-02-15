@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -10,7 +10,7 @@ import { virtualElements, applyBindingsToDescendants, contextFor, observable, ig
 import 'ojs/ojcustomelement';
 import { CustomElementUtils, AttributeUtils } from 'ojs/ojcustomelement-utils';
 import BindingProviderImpl from 'ojs/ojkoshared';
-import { error } from 'ojs/ojlogger';
+import { warn, error } from 'ojs/ojlogger';
 import TemplateEngine from 'ojs/ojtemplateengine-ko';
 import PreactTemplateEngine from 'ojs/ojtemplateengine-preact-ko';
 
@@ -284,6 +284,22 @@ SlotUtils.cleanup = function (element, bindingContext) {
   }
 };
 
+/**
+ * Cleanup method used by oj-bind-template-slot when the template is rendered by PreactTemplateEngine.
+ * @param {*} engine
+ * @param {*} componentElement
+ * @param {*} nodes
+ */
+SlotUtils.preactTemplateCleanup = function (engine, componentElement, nodes) {
+  nodes.forEach((item) => {
+    try {
+      engine.clean(item, componentElement);
+    } catch (err) {
+      warn('Error during template cleanup ' + err);
+    }
+  });
+};
+
 bindingHandlers._ojBindSlot_ = {
   init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
     // Add callback so we can move slot content to node storage during cleanup
@@ -397,23 +413,42 @@ bindingHandlers._ojBindTemplateSlot_ = {
       // assigned nodes for downstream slotting
       template.__oj_slots = unwrap(values.slot) || '';
       const engine = template.render ? PreactTemplateEngine : TemplateEngine;
+      const componentElement = isDefaultTemplate ? element : composite;
+      let nodes;
 
       // Re-execute the template if the oj-bind-template-slot bound attributes change
       computed(function () {
+        // Clean existing preact nodes on recompute
+        if (template.render && nodes) {
+          SlotUtils.preactTemplateCleanup(engine, componentElement, nodes);
+        }
         // Use the template engine to execute the template
         var data = unwrap(values.data);
         var as = unwrap(values.as);
 
         // Extend the composite's bindingContext for the default template
-        var nodes = engine.execute(
-          isDefaultTemplate ? element : composite,
-          template,
-          data,
-          isDefaultTemplate ? as : null
-        );
+        nodes = engine.execute(componentElement, template, data, isDefaultTemplate ? as : null);
 
         virtualElements.setDomNodeChildren(element, nodes);
       });
+      // Add cleanup methods for the vdom
+      if (template.render) {
+        // Need to execute engine.clean for PreactTemplateEngine to avoid memory leaks
+        // when the composite component is disconnected.
+        // Potentially this clean callback might be called on the nodes that are already cleaned,
+        // but it does not looklike a big concern at moment. We might revork this code in the future
+        // if it becomes an issue.
+        const state = CustomElementUtils.getElementState(composite);
+        if (state.addTemplateCleanCallback) {
+          state.addTemplateCleanCallback(() => {
+            SlotUtils.preactTemplateCleanup(engine, componentElement, nodes);
+          });
+        }
+        // Need to execute cleanup when the element is removed from DOM (conditional template rendering)
+        utils.domNodeDisposal.addDisposeCallback(element, () => {
+          SlotUtils.preactTemplateCleanup(engine, componentElement, nodes);
+        });
+      }
     } else {
       // Clear out any child nodes if no slot children or default template found
       virtualElements.setDomNodeChildren(element, []);

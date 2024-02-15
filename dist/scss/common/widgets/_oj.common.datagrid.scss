@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2023, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2024, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../../utilities/oj.utilities";
 @import "oj.common.formcontrol.mixins";
@@ -127,9 +127,9 @@
         }
 
         /* Style for disabling vertical gridlines */
-        .oj-datagrid-column-header-spacer.oj-datagrid-small-content-border-vertical,
-        .oj-datagrid-bottom-corner.oj-datagrid-small-content-border-vertical,
-        .oj-datagrid-end-header-cell.oj-datagrid-small-content-border-vertical {
+        .oj-datagrid .oj-datagrid-column-header-spacer.oj-datagrid-small-content-border-vertical,
+        .oj-datagrid .oj-datagrid-bottom-corner.oj-datagrid-small-content-border-vertical,
+        .oj-datagrid .oj-datagrid-end-header-cell.oj-datagrid-small-content-border-vertical {
             @include oj-ltr() {
                 border-right-width: 1px;
             }
@@ -787,11 +787,6 @@
             @include oj-rtl() {
               text-align: left;
             }
-        }
-
-        .oj-datagrid-column-header-cell > * {
-            white-space: nowrap;
-            overflow: hidden;
         }
     }
 }

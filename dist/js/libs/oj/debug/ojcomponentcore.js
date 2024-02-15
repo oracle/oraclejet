@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2585,6 +2585,8 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
         var meta = MetadataUtils.getPropertyMetadata(prop, ojcustomelementRegistry.getElementProperties(this));
 
+        bridge._deliverPropertyUpdates(this);
+
         // For event listeners and non component specific properties, return the property from the element.
         // Otherwise, return the widget property and let the widget handle dot notation for subproperties.
         if (ojcustomelementUtils.AttributeUtils.isEventListenerProperty(prop) || !meta) {
@@ -2716,6 +2718,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       proto[method] = function () {
         var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
         var methodName = methodMeta.internalName || method;
+        bridge._deliverPropertyUpdates(this);
         ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(true);
         try {
           // Pass in null as thisArg to apply since the widget constructor is prebound to the jQuery element
@@ -2732,6 +2735,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         enumerable: true,
         get: function () {
           var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
+          bridge._deliverPropertyUpdates(this);
           if (propertyMeta._eventListener) {
             return bridge.GetEventListenerProperty(property);
           } else if (ext && ext._COPY_TO_INNER_ELEM) {
@@ -2741,13 +2745,31 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
           return CustomElementBridge._getPropertyAccessor(this, property)();
         },
         set: function (value) {
-          var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
+          const bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
           // Properties can be set before the component is created. These early
           // sets are actually saved until after component creation and played back.
           if (!bridge.SaveEarlyPropertySet(this, property, value)) {
             // eslint-disable-next-line no-param-reassign
             value = ojcustomelementUtils.transformPreactValue(this, propertyMeta, value);
-            if (propertyMeta._eventListener) {
+            const state = ojcustomelementUtils.CustomElementUtils.getElementState(this);
+            const bpType = state.getBindingProviderType();
+            if (bpType === 'preact') {
+              // Preact sends property updates one by one and
+              // this might slow down collection components
+              // that might fetch data more than once.
+              // We want to accumulate the updates and send them together
+              // as its done in knockout version.
+              if (!this._isUpdateQueued) {
+                this._isUpdateQueued = true;
+                this._propertyUpdates = {};
+                this._propertyUpdates[property] = value;
+                window.queueMicrotask(() => {
+                  bridge._deliverPropertyUpdates(this);
+                });
+              } else {
+                this._propertyUpdates[property] = value;
+              }
+            } else if (propertyMeta._eventListener) {
               bridge.SetEventListenerProperty(this, property, value);
             } else if (!bridge._validateAndSetCopyProperty(this, property, value, propertyMeta)) {
               bridge._setOption(property, value, propertyMeta, this);
@@ -2915,6 +2937,22 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
             // instantiate the widget with
             delete this._PROPS[propName];
           }
+        }
+      }
+    },
+
+    // A method used to flush the queued properties at microtask or
+    // when property getters or a component method is called
+    // (a component method might rely on the updated properties).
+    _deliverPropertyUpdates: function (element) {
+      if (element._isUpdateQueued) {
+        // eslint-disable-next-line no-param-reassign
+        element._isUpdateQueued = false;
+        try {
+          this.SetProperties(element, element._propertyUpdates, true);
+        } finally {
+          // eslint-disable-next-line no-param-reassign
+          element._propertyUpdates = undefined;
         }
       }
     },
@@ -6585,7 +6623,8 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   // override jQuery's cleanData method to bypass cleanup of custom elements and composites
   $.cleanData = (function (orig) {
     return function (elems) {
-      var nonCustomElements = [];
+      const nonCustomElements = [];
+      const customElementsToClean = [];
       for (var i = 0; i < elems.length; i++) {
         var elem = elems[i];
         if (elem == null) {
@@ -6604,11 +6643,14 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         }
         if (!bSkip) {
           nonCustomElements.push(elem);
+        } else if (elem.$$cleanElement) {
+          customElementsToClean.push(elem);
         }
       }
       if (nonCustomElements.length > 0) {
         orig(nonCustomElements);
       }
+      customElementsToClean.forEach((item) => item.$$cleanElement());
     };
   })($.cleanData);
 

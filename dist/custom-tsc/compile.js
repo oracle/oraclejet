@@ -31,9 +31,8 @@ const metadataTransformer_1 = __importDefault(require("./metadataTransformer"));
 const decoratorTransformer_1 = __importDefault(require("./decoratorTransformer"));
 const importTransformer_1 = __importDefault(require("./importTransformer"));
 const dtsTransformer_1 = __importDefault(require("./dtsTransformer"));
-const FileUtils = __importStar(require("./utils/MetadataFileUtils"));
 const dtsTransformer_2 = require("./dtsTransformer");
-const __SUPPORTED_TS_VERSION = '5.0.4';
+const __SUPPORTED_TS_VERSION = '5.3.2';
 const [__SUPPORTED_TS_MAJOR, __SUPPORTED_TS_MINOR] = __SUPPORTED_TS_VERSION
     .split('.', 2)
     .map((str) => Number.parseInt(str));
@@ -58,11 +57,6 @@ Upgrade your JET project to TypeScript version ${__SUPPORTED_TS_VERSION}
         _buildOptions.followImports = true;
     }
     _buildOptions.parentDirToPackInfo = {};
-    if (parsedJsonConfig?.raw?.compilerOptions?.['_JET_translationBundleIds']) {
-        _buildOptions.translationBundleIds = [
-            ...parsedJsonConfig.raw.compilerOptions['_JET_translationBundleIds']
-        ];
-    }
     if (parsedJsonConfig?.raw?.compilerOptions?.['_JET_disabledExceptionKeys']) {
         _buildOptions.disabledExceptionKeys = [
             ...parsedJsonConfig.raw.compilerOptions['_JET_disabledExceptionKeys']
@@ -70,7 +64,6 @@ Upgrade your JET project to TypeScript version ${__SUPPORTED_TS_VERSION}
     }
     const compilerHost = ts.createCompilerHost(parsedTsconfigJson.compilerOptions);
     const program = ts.createProgram(parsedTsconfigJson.files, parsedTsconfigJson.compilerOptions, compilerHost);
-    _buildOptions.dependencyPackMap = FileUtils.getInstalledDependenciesPackMap(program);
     let emitResult;
     const EmitOptions = {
         before: [

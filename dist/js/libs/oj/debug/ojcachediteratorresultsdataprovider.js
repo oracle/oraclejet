@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -11,7 +11,7 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
 
     /**
      * @license
-     * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+     * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
      * Licensed under The Universal Permissive License (UPL), Version 1.0
      * @ignore
      */
@@ -179,8 +179,8 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
                             _parent._baseFetchFirstCapability?.totalFilteredRowCount !== 'exact';
                 }
                 ['next']() {
-                    const params = this.params;
-                    const size = params?.size ? params.size : -1;
+                    const params = this.params || {};
+                    const size = params.size || -1;
                     const signal = params?.signal;
                     if (signal && signal.aborted) {
                         const reason = signal.reason;
@@ -251,6 +251,11 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
                     });
                 }
                 _getFinalResult(result, totalFilteredRowCount) {
+                    if (this._parent._getSharedIteratorState().cachedFetchParams.sortCriteria &&
+                        (!result.fetchParameters || !result.fetchParameters.sortCriteria)) {
+                        result.fetchParameters.sortCriteria =
+                            this._parent._getSharedIteratorState().cachedFetchParams.sortCriteria;
+                    }
                     return result?.data?.length > 0
                         ? new this._parent.CacheAsyncIteratorYieldResult(result, totalFilteredRowCount)
                         : new this._parent.CacheAsyncIteratorReturnResult(result, totalFilteredRowCount);
@@ -271,6 +276,10 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
                         this._parent._getSharedIteratorState().fetchPromise = this.asyncIterator
                             .next()
                             .then((result) => {
+                            if (result.value.fetchParameters?.sortCriteria) {
+                                this._parent._getSharedIteratorState().cachedFetchParams.sortCriteria =
+                                    result.value.fetchParameters?.sortCriteria;
+                            }
                             this._parent._getSharedIteratorState().fetchOffset =
                                 this._parent._getSharedIteratorState().fetchOffset + result.value.data.length;
                             this._parent._getSharedIteratorState().fetchPromise = null;
@@ -332,6 +341,7 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
             dataProvider.addEventListener(CachedIteratorResultsDataProvider._REFRESH, (event) => {
                 this.cache.reset();
                 this._lastFetchParams = null;
+                this._firstIteratorState = null;
                 this.dispatchEvent(event);
             });
             this._baseFetchFirstCapability = dataProvider.getCapability('fetchFirst');
@@ -437,7 +447,15 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
             });
         }
         fetchFirst(params) {
-            if (!CachedIteratorResultsDataProvider._compareCachedFetchParameters(params, this._lastFetchParams)) {
+            if (params?.signal?.aborted) {
+                const asyncIterable = this.dataProvider.fetchFirst(params);
+                const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+                return new this.CacheAsyncIterable(this, asyncIterator, null, null);
+            }
+            if (!this._getSharedIteratorState() ||
+                !CachedIteratorResultsDataProvider._compareCachedFetchParameters(params, params && this._getSharedIteratorState()
+                    ? this._getSharedIteratorState().cachedFetchParams
+                    : this._lastFetchParams)) {
                 this.cache.reset();
                 this._lastFetchParams = CachedIteratorResultsDataProvider._createCachedFetchParams(params);
                 const asyncIterable = this.dataProvider.fetchFirst(params);
@@ -475,6 +493,9 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
         }
         static _compareCachedFetchParameters(params, cachedParams) {
             params = params || {};
+            if (cachedParams != null && cachedParams.signal?.aborted && !params.signal?.aborted) {
+                return false;
+            }
             return (cachedParams != null &&
                 oj.Object.compareValues(cachedParams.attributes, params.attributes || null) &&
                 oj.Object.compareValues(cachedParams.filterDef, CachedIteratorResultsDataProvider._getFilterDef(params.filterCriterion)) &&
@@ -491,6 +512,7 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
             cachedFetchParams.sortCriteria = params.sortCriteria
                 ? JSON.parse(JSON.stringify(params.sortCriteria))
                 : null;
+            cachedFetchParams.signal = params.signal;
             return cachedFetchParams;
         }
         static _getFilterDef(filter) {

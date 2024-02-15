@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -373,6 +373,14 @@ function _getNumberDefaultConverter() {
    * @ojoracleicon 'oj-ux-ico-input-number'
    * @ojuxspecs ['input-number']
    *
+   * @ojdeprecated [
+   *   {
+   *     type: "maintenance",
+   *     since: "16.0.0",
+   *     value: ["oj-c-input-number"]
+   *   }
+   * ]
+   *
    * @classdesc
    * <h3 id="inputNumberOverview-section">
    *   JET InputNumber Component
@@ -520,18 +528,6 @@ function _getNumberDefaultConverter() {
    * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
    * </p>
    *
-   * <h5>Reset method</h5>
-   * <p>
-   * This method does not synchronously reset the component. The application should wait on the busy context of the component after
-   * invoking this method for the changes to appear.
-   * </p>
-   *
-   * <h5>ShowMessages method</h5>
-   * <p>
-   * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
-   * of the component after invoking this method for the changes to appear.
-   * </p>
-   *
    * <h5>StepDown method</h5>
    * <p>
    * The stepDown method is no longer supported. Please programmatically set the value instead.
@@ -557,9 +553,10 @@ function _getNumberDefaultConverter() {
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
    *
-   * <h5>User Assistance Density - Compact mode</h5>
+   * <h5>DescribedBy attribute</h5>
    * <p>
-   * Rendering the component in compact userAssistanceDensity mode is not supported in this release. Please use 'reflow' or 'efficient' instead.
+   * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+   * This attribute is not carried forward to the core pack component.
    * </p>
    *
    * <h5>Usage in Dynamic Form</h5>
@@ -2776,6 +2773,7 @@ function _getNumberDefaultConverter() {
     },
     /**
      * creates or destroys buttonset and adds or removes role=spinbutton.
+     * Called when we toggle readonly or step
      * @private
      * @memberof oj.ojInputNumber
      */
@@ -2790,8 +2788,11 @@ function _getNumberDefaultConverter() {
         this._destroyOjButtonset();
         this.uiInputNumber.classList.remove('oj-has-buttons');
       }
-      // adds or removes role='spinbutton'.
+      // when there is no step, we remove the 'spinbutton' role and aria-value attributes.
+      // when there is a step, we add the 'spinbutton' role and aria-value attributes.
       this._refreshRoleSpinbutton(needsButtonset);
+      this._refreshAriaMinMax();
+      this._toggleAriaValueNowText();
     },
     /**
      * @private
@@ -3396,6 +3397,7 @@ function _getNumberDefaultConverter() {
       }
     },
     /**
+     * This gets called at various times, like on initialization and when you spin.
      * @private
      * @memberof oj.ojInputNumber
      */
@@ -3587,13 +3589,21 @@ function _getNumberDefaultConverter() {
      * @memberof oj.ojInputNumber
      */
     _refreshAriaMinMax: function () {
-      this._setAttr('aria-valuemin', this.options.min);
-      this._setAttr('aria-valuemax', this.options.max);
+      // According to the wai-aria rules you cannot have aria-value
+      // attributes without role='spinbutton', and we only have role='spinbutton'
+      // when we can increment/decrement the number with the spin buttons or arrows.
+      if (this._needsButtonset()) {
+        this._setAttr('aria-valuemin', this.options.min);
+        this._setAttr('aria-valuemax', this.options.max);
+      } else {
+        this._setAttr('aria-valuemin', null);
+        this._setAttr('aria-valuemax', null);
+      }
     },
     /**
      * Update aria-valuenow to valuenow and aria-valuetext to the
      * displayValue if it is different than valuenow.
-     * If valuenow is undefined, then aria-valuenow is skippped; it's not set or removed,
+     * If valuenow is undefined, then aria-valuenow is skipped; it's not set or removed,
      * so it will be the last known valid value.
      * Rules for aria-valuenow/aria-valuetext:
      * if the input value shown to the user can be parsed to a valid non-formatted number,
@@ -3607,9 +3617,30 @@ function _getNumberDefaultConverter() {
      * @memberof oj.ojInputNumber
      */
     _refreshAriaValueNowText: function (valuenow) {
-      this._setAttr('aria-valuenow', valuenow);
-      this._refreshAriaText(valuenow);
+      if (this._needsButtonset()) {
+        this._setAttr('aria-valuenow', valuenow);
+        this._refreshAriaText(valuenow);
+      }
     },
+    /**
+     * Toggles aria-valuenow and aria-valuetext when readonly or step changes.
+     * We do not render aria-value attributes when there are no step buttons and
+     * there are no step buttons when the component is readonly or has no step.
+     * @private
+     * @memberof oj.ojInputNumber
+     */
+    _toggleAriaValueNowText: function () {
+      const valuenow = this.options.value || 0;
+      // aria-value attributes are valid only when role='spinbutton'.
+      if (this._needsButtonset()) {
+        this._setAttr('aria-valuenow', valuenow);
+        this._refreshAriaText(valuenow);
+      } else {
+        this._setAttr('aria-valuenow', null);
+        this._setAttr('aria-valuetext', null);
+      }
+    },
+
     /* updates the aria-text if needed */
     /**
      * @private

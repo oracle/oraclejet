@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,6 +8,7 @@
 import oj from 'ojs/ojcore-base';
 import { getTranslatedString } from 'ojs/ojtranslation';
 import $ from 'jquery';
+import { DateTimeUtils } from '@oracle/oraclejet-preact/UNSAFE_IntlDateTime';
 import ConverterUtils from 'ojs/ojconverterutils';
 import { ConverterError } from 'ojs/ojvalidation-error';
 
@@ -47,8 +48,7 @@ OraI18nUtils.zeros = ['0', '00', '000'];
 // -time only with timezone: any of the time values above followed by any of the following:
 // Z or +/-hh:mm or +/-hhmm or +/-hh
 // -date time: any of the date values followed by any of the time values
-OraI18nUtils._ISO_DATE_REGEXP =
-  /^[+-]?\d{4}(?:-\d{2}(?:-\d{2})?)?(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}(?::?\d{2})?)?)?$|^T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}(?::?\d{2})?)?$/;
+OraI18nUtils._ISO_DATE_REGEXP = DateTimeUtils._ISO_DATE_REGEXP;
 /**
  * Returns the timezone offset between UTC and the local time in Etc/GMT[+-]h syntax.
  * <p>

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1375,6 +1375,16 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           });
         }
 
+        this.element[0].addEventListener('focusin', (event) => {
+          if (
+            this._getParents(
+              event.target,
+              this.constants.PERIOD + this.constants.OJ_TREEVIEW_SELECTOR
+            ).length > 0
+          ) {
+            this._getRoot().focus();
+          }
+        });
         this._dropLine = document.createElement('div');
         this._dropLine.classList.add(this.constants.OJ_TREEVIEW_DROPLINE);
         this.element[0].appendChild(this._dropLine); // HTMLUpdateOk
@@ -1519,6 +1529,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                 self._skeletonTimeout = setTimeout(function () {
                   var rootMap = self._expandedChildrenMap.get(null);
                   if (parentKey === null) {
+                    self._changeStatusMessage(null, false);
                     self._renderInitialSkeletons();
                   } else if (
                     !rootMap &&
@@ -1530,6 +1541,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                       var parentSubtree = self._getSubtree(parentItem);
                       if (!parentSubtree) {
                         self._renderChildSkeletons(parentKey);
+                        self._changeStatusMessage(parentKey, false);
                       }
                     }
                   }
@@ -1689,10 +1701,8 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         return false;
       },
       _getShowStatusDelay: function () {
-        var defaultOptions = this._getOptionDefaults();
-        var delay = parseInt(defaultOptions.showIndicatorDelay, 10);
-
-        return isNaN(delay) ? 0 : delay;
+        const defaultOptions = this._getOptionDefaults();
+        return DomUtils.getCSSTimeUnitAsMillis(defaultOptions.showIndicatorDelay);
       },
       /**
        * Render the TreeView items after the data is fetched.
@@ -2058,7 +2068,6 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
        */
       _decorateTree: function () {
         var self = this;
-
         // Keyboard focus and ARIA attributes
         var root = this._getRoot();
         if (root) {
@@ -2197,6 +2206,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             } else {
               selector.selectedKeys = new ojkeyset.KeySetImpl();
             }
+            selector.setAttribute('aria-hidden', 'true');
             selector.setAttribute('data-oj-binding-provider', 'none');
             selector.setAttribute('selection-mode', 'multiple');
             selector.addEventListener(
@@ -3295,14 +3305,12 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         } else {
           this.m_fetching.set(key, 1);
         }
-        this._changeStatusMessage(key, false);
         return function () {
           if (this.m_fetching.get(key) === 1) {
             this.m_fetching.delete(key);
           } else {
             this.m_fetching.set(key, this.m_fetching.get(key) - 1);
           }
-          this._changeStatusMessage(key, true);
           busyContextPromise();
           Promise.resolve(this._processEventQueue());
         }.bind(this);
@@ -3327,7 +3335,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             nodeText: nodeText
           });
         }
-        status.textContent = statusText;
+        if (status.textContent !== statusText) {
+          status.textContent = statusText;
+        }
       },
       /**
        * Returns node text by key,
@@ -3847,36 +3857,29 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             dragData.push(item.parentElement.innerHTML);
           }
 
-          var itemSpacer = self._getItemSpacer(item);
-          var offset = item.getBoundingClientRect();
+          const offset = item.getBoundingClientRect();
 
           // added in case window has scrolled the treeview down
-          const windowScrollLeft =
-            window.pageXOffset !== undefined
-              ? window.pageXOffset
-              : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
-          const windowScrollTop =
-            window.pageYOffset !== undefined
-              ? window.pageYOffset
-              : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+          const windowScrollLeft = window.scrollX;
+          const windowScrollTop = window.scrollY;
 
-          var offsetTop = offset.top + windowScrollTop;
-          var offsetLeft = itemSpacer === undefined ? 0 : itemSpacer.offsetWidth + windowScrollLeft;
+          const offsetTop = offset.top + windowScrollTop;
+          let offsetLeft = offset.left + windowScrollLeft;
 
-          if (isRTL) {
-            var itemContentChildren = self._getItemContent(item).children;
-            var childrenWidth = 0;
+          const itemContentChildren = self._getItemContent(item).children;
+          let childrenWidth = 0;
 
-            for (var j = 0; j < itemContentChildren.length; j++) {
-              childrenWidth += itemContentChildren[j].offsetWidth;
-            }
-            offsetLeft = self._getTreeviewWidth() + offset.x - childrenWidth - offsetLeft;
+          for (var j = 0; j < itemContentChildren.length; j++) {
+            childrenWidth += itemContentChildren[j].offsetWidth;
           }
 
-          offsetTop += document.body.scrollTop;
-          offsetLeft += document.body.scrollLeft;
+          if (isRTL) {
+            offsetLeft += self._getTreeviewWidth() - childrenWidth;
+          } else {
+            offsetLeft += childrenWidth;
+          }
 
-          var clonedItem = item.cloneNode(true);
+          const clonedItem = item.cloneNode(true);
           clonedItem.style.top = offsetTop + 'px';
           clonedItem.style.left = offsetLeft + 'px';
 
@@ -4049,6 +4052,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           (eventType === 'dragEnter' || eventType === 'dragOver') &&
           event.originalEvent.defaultPrevented
         ) {
+          this.dragLeftTreeview = false;
           var isRTL = this._GetReadingDirection() === 'rtl';
           // Draw the drop target effect on dragEnter and dragOver
           var dropLineTop = targetItem.offsetTop;
@@ -4083,6 +4087,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                 dropLineOffset += disclosureIcon.offsetHeight;
               }
             }
+            if (this._isExpanded(targetItem) && position !== 'before') {
+              dropLineOffset += 8; // line up with children even though dropline is still on parent
+            }
             this._removeDropClass(targetItem);
             var width = this._getTreeviewWidth() - parseInt(dropLineOffset, 10) + 'px';
             var left = isRTL ? '0px' : dropLineOffset + 'px';
@@ -4094,46 +4101,22 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             this._dropLine.style.display = 'none';
             this._addDropClass(targetItem);
           }
-        } else {
-          if (eventType === 'drop') {
-            this._removeGhostElements();
-            this._dropLine.style.display = 'none';
+        } else if (eventType === 'drop') {
+          this._removeGhostElements();
+          this._dropLine.style.display = 'none';
+          this._removeDropClass(targetItem);
+        } else if (eventType === 'dragLeave') {
+          this.dragLeftTreeview = true;
+          if (position !== 'inside') {
             this._removeDropClass(targetItem);
           }
-
-          /* Only remove the dropline on dragLeave if it's leaving treeview or else it will flicker in-between items.
-           *  For X: we only care about the last DragLeave before exiting the treeview witch will be on div itemContent
-           *  and where that drag happens in respect to the itemContent width.
-           *  For Y: only process dragLeave if it gets fired on the appropriate item with the appropriate position.
-           */
-          if (eventType === 'dragLeave') {
-            var targetWidth = targetItem.offsetWidth;
-            if (
-              event.target.nodeName === 'DIV' &&
-              event.target.classList.contains(this.constants.OJ_TREEVIEW_ITEM_CONTENT) &&
-              (event.offsetX >= targetWidth || event.offsetX <= 0)
-            ) {
+          setTimeout(() => {
+            if (this.dragLeftTreeview) {
               this._dropLine.style.display = 'none';
-              this._removeDropClass(targetItem);
-            } else if (event.offsetY >= targetItem.offsetHeight || event.offsetY <= 0) {
-              var treeviewItems = this._getItems();
-              if (treeviewItems.length > 0) {
-                var firstItem = treeviewItems[0];
-                var lastItem = treeviewItems[treeviewItems.length - 1];
-                if (
-                  (targetItem === lastItem && position === 'after') ||
-                  (targetItem === firstItem && position === 'before')
-                ) {
-                  this._dropLine.style.display = 'none';
-                }
-              } else if (treeviewItems.length === 0) {
-                this._dropLine.style.display = 'none';
-              }
+              this.dragLeftTreeview = false;
+              this._removeAllDropZones();
             }
-            if (position !== 'inside') {
-              this._removeDropClass(targetItem);
-            }
-          }
+          }, 50);
         }
       },
       _addDropClass: function (item) {
@@ -4150,6 +4133,14 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         );
         for (var i = ghostElements.length - 1; i >= 0; i--) {
           ghostElements[i].classList.remove(this.constants.OJ_TREEVIEW_DRAG_SOURCE);
+        }
+      },
+      _removeAllDropZones: function () {
+        var dropZones = this.element[0].querySelectorAll(
+          this.constants.PERIOD + this.constants.OJ_TREEVIEW_DROP_ZONE
+        );
+        for (var i = dropZones.length - 1; i >= 0; i--) {
+          dropZones[i].classList.remove(this.constants.OJ_TREEVIEW_DROP_ZONE);
         }
       },
       // @inheritdoc
@@ -4972,6 +4963,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           function (resolve) {
             var self = this;
             var skeletonBusyResolve = self._addBusyState('removing skeleton', parentKey);
+            self._changeStatusMessage(parentKey, true);
             var skeletonContainer;
             if (parentKey === null) {
               skeletonContainer = this._getSkeletonContainer(self.element[0]);

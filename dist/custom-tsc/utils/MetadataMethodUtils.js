@@ -36,43 +36,16 @@ function generateClassMethodMetadata(node, metaUtilObj) {
     }
     const methodName = node.name.getText();
     metaUtilObj.rtMetadata.methods[methodName] = {};
-    metaUtilObj.fullMetadata.methods[methodName] = getDtMetadataForClassMethod(node, metaUtilObj);
+    const dtMetadata = MetaUtils.getDtMetadata(node, MetaTypes.MDContext.METHOD, null, metaUtilObj);
+    metaUtilObj.fullMetadata.methods[methodName] = getMethodDtMetadata(node, dtMetadata, metaUtilObj);
 }
 exports.generateClassMethodMetadata = generateClassMethodMetadata;
-function getDtMetadataForClassMethod(method, metaUtilObj) {
-    const dt = MetaUtils.getDtMetadata(method, MetaTypes.MDFlags.METHOD, null, metaUtilObj);
-    if (dt.internalName) {
-        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_OJMETADATA_INTERNALNAME, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'@ojmetadata internalName' annotations are ignored, and should be removed.`, method);
-        delete dt.internalName;
-    }
-    dt.params = dt.params || [];
-    const findParameter = (pname) => dt.params.find((param) => param.name === pname);
-    const methodParams = [];
-    if (method.parameters) {
-        method.parameters.forEach((parameter) => {
-            const name = parameter.name.getText();
-            const typeObj = TypeUtils.getAllMetadataForDeclaration(parameter, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.METHOD | MetaTypes.MDFlags.METHOD_PARAM, null, null, metaUtilObj);
-            let mParamObj = { name, type: typeObj.type };
-            let dtParamObj = findParameter(name);
-            if (dtParamObj) {
-                mParamObj = Object.assign({}, dtParamObj, mParamObj);
-            }
-            methodParams.push(mParamObj);
-        });
-    }
-    if (methodParams.length > 0) {
-        dt.params = methodParams;
-    }
-    else {
-        delete dt.params;
-    }
-    const returnTypeObj = TypeUtils.getAllMetadataForDeclaration(method, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.METHOD | MetaTypes.MDFlags.METHOD_RETURN, null, null, metaUtilObj);
-    dt.return = returnTypeObj.type;
-    return dt;
-}
 function isCustomElementClassMethod(node, metaUtilObj) {
-    return (ts.isMethodDeclaration(node) &&
-        DecoratorUtils.getDecorator(node, metaUtilObj.namedExportToAlias.method) != null);
+    if (!ts.isMethodDeclaration(node)) {
+        return false;
+    }
+    const exportToAlias = metaUtilObj.progImportMaps.getMap(MetaTypes.IMAP.exportToAlias, node);
+    return DecoratorUtils.getDecorator(node, exportToAlias.method) != null;
 }
 exports.isCustomElementClassMethod = isCustomElementClassMethod;
 function processRegisteredMethodsInfo(methodsInfo, metaUtilObj) {
@@ -87,56 +60,45 @@ function processRegisteredMethodsInfo(methodsInfo, metaUtilObj) {
             signatureDecl.type &&
             ts.isFunctionTypeNode(signatureDecl.type)) {
             const methodName = signatureKey;
+            const funcNode = signatureDecl.type;
             rtMethods[methodName] = {};
-            dtMethods[methodName] = {};
-            const rtMethod = rtMethods[methodName];
-            const dtMethod = dtMethods[methodName];
-            const regMethodMD = regMetadata?.[methodName];
-            if (regMethodMD) {
-                for (const regKey in regMethodMD) {
-                    switch (regKey) {
-                        case 'params':
-                            break;
-                        case 'extension':
-                            dtMethod.extension = { ...regMethodMD.extension };
-                            break;
-                        case 'status':
-                            dtMethod.status = [...regMethodMD.status];
-                            break;
-                        case 'apidocDescription':
-                            dtMethod['jsdoc'] = dtMethod['jsdoc'] || {};
-                            dtMethod['jsdoc']['description'] = regMethodMD.apidocDescription;
-                            break;
-                        case 'apidocRtnDescription':
-                            dtMethod['jsdoc'] = dtMethod['jsdoc'] || {};
-                            dtMethod['jsdoc']['returns'] = regMethodMD.apidocRtnDescription;
-                            break;
-                        case 'internalName':
-                            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_INTERNALNAME_METADATA, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'internalName' method metadata is ignored, and should be removed.`, methodsInfo.metadataNode);
-                            break;
-                        default:
-                            dtMethod[regKey] = regMethodMD[regKey];
-                            break;
+            let dtMethod = MetaUtils.getDtMetadata(signatureDecl, MetaTypes.MDContext.METHOD, null, metaUtilObj);
+            if (Object.keys(dtMethod).length === 0) {
+                const regMethodMD = regMetadata?.[methodName];
+                if (regMethodMD) {
+                    for (const regKey in regMethodMD) {
+                        switch (regKey) {
+                            case 'params':
+                                dtMethod.params = regMethodMD.params.map((param) => {
+                                    param.type = 'any';
+                                    return param;
+                                });
+                                break;
+                            case 'extension':
+                                dtMethod.extension = { ...regMethodMD.extension };
+                                break;
+                            case 'status':
+                                dtMethod.status = [...regMethodMD.status];
+                                break;
+                            case 'apidocDescription':
+                                dtMethod['jsdoc'] = dtMethod['jsdoc'] || {};
+                                dtMethod['jsdoc']['description'] = regMethodMD.apidocDescription;
+                                break;
+                            case 'apidocRtnDescription':
+                                dtMethod['jsdoc'] = dtMethod['jsdoc'] || {};
+                                dtMethod['jsdoc']['returns'] = regMethodMD.apidocRtnDescription;
+                                break;
+                            case 'internalName':
+                                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_INTERNALNAME_METADATA, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'internalName' method metadata is ignored, and should be removed.`, methodsInfo.metadataNode);
+                                break;
+                            default:
+                                dtMethod[regKey] = regMethodMD[regKey];
+                                break;
+                        }
                     }
                 }
             }
-            const findRegMethodParam = (pname) => regMethodMD?.params?.find((param) => param.name === pname);
-            const funcNode = signatureDecl.type;
-            const dtParams = funcNode.parameters.map((param) => {
-                const name = param.name.getText();
-                const typeObj = TypeUtils.getAllMetadataForDeclaration(param, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.METHOD | MetaTypes.MDFlags.METHOD_PARAM, null, null, metaUtilObj);
-                let dtParamObj = { name, type: typeObj.type };
-                const regParamObj = findRegMethodParam(name);
-                if (regParamObj) {
-                    dtParamObj = { ...dtParamObj, ...regParamObj };
-                }
-                return dtParamObj;
-            });
-            if (dtParams.length > 0) {
-                dtMethod.params = dtParams;
-            }
-            const returnTypeObj = TypeUtils.getAllMetadataForDeclaration(funcNode, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.METHOD | MetaTypes.MDFlags.METHOD_RETURN, null, null, metaUtilObj);
-            dtMethod.return = returnTypeObj.type;
+            dtMethods[methodName] = getMethodDtMetadata(funcNode, dtMethod, metaUtilObj);
             const signatureType = metaUtilObj.typeChecker.getTypeAtLocation(funcNode);
             dtsMethodSignatures[methodName] = metaUtilObj.typeChecker.typeToString(signatureType);
         }
@@ -198,4 +160,34 @@ const _ELEMENT_METHODS = {
         return: 'void'
     }
 };
+function getMethodDtMetadata(methodNode, dtMD, metaUtilObj) {
+    let dtMethod = { ...dtMD };
+    if (dtMethod.internalName) {
+        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_OJMETADATA_INTERNALNAME, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'@ojmetadata internalName' annotations are ignored, and should be removed.`, methodNode);
+        delete dtMethod.internalName;
+    }
+    const paramsDtMD = dtMethod.params;
+    const paramsJsdocMD = dtMethod['jsdoc']?.['params'];
+    const findMethodParamMD = (pname) => paramsDtMD?.find((param) => param.name === pname) ??
+        paramsJsdocMD?.find((param) => param.name === pname);
+    const dtParams = methodNode.parameters.map((param) => {
+        const name = param.name.getText();
+        const typeObj = TypeUtils.getAllMetadataForDeclaration(param, MetaTypes.MDScope.DT, MetaTypes.MDContext.METHOD | MetaTypes.MDContext.METHOD_PARAM, null, null, metaUtilObj);
+        let paramObj = { name, type: typeObj.type };
+        const paramMDObj = findMethodParamMD(name);
+        if (paramMDObj) {
+            paramObj = { ...paramMDObj, ...paramObj };
+        }
+        return paramObj;
+    });
+    if (dtParams.length > 0) {
+        dtMethod.params = dtParams;
+    }
+    else {
+        delete dtMethod.params;
+    }
+    const returnTypeObj = TypeUtils.getAllMetadataForDeclaration(methodNode, MetaTypes.MDScope.DT, MetaTypes.MDContext.METHOD | MetaTypes.MDContext.METHOD_RETURN, null, null, metaUtilObj);
+    dtMethod.return = returnTypeObj.type;
+    return dtMethod;
+}
 //# sourceMappingURL=MetadataMethodUtils.js.map

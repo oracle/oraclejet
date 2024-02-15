@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -439,10 +439,6 @@ var __oj_legend_section_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
  * </h3>
  * To migrate from oj-legend to oj-c-legend, you need to revise the import statement and references to oj-legend in your app. Please note the changes between the two components below.
- * <h5>expanded attribute</h5>
- * <p>
- * For the initial version of oj-c-legend, expanded attribute is not supported.
- * </p>
  * <h5>contextMenu slot</h5>
  * <p>
  * For the initial version of oj-c-legend, contextMenu slot is not supported. We plan on supporting this use case in future releases.
@@ -458,10 +454,6 @@ var __oj_legend_section_metadata =
  * <h5>drilling attribute</h5>
  * <p>
  * Drilling on oj-legend-item will not be supported in this release. We plan on supporting it in future releases.
- * </p>
- * <h5>collapsible attribute</h5>
- * <p>
- * For the initial versions of oj-c-legend and oj-c-legend-section, collapsible attribute is not supported.
  * </p>
  * <h5>sectionTemplate</h5>
  * <p>
@@ -531,9 +523,10 @@ var __oj_legend_section_metadata =
  * @property {string=} title The title of the legend section.
  * @property {"center"|"end"|"start"} [titleHalign="start"] The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
  * @property {Object=} titleStyle The CSS style object defining the style of the section title. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
- * @ojdeprecated {since: '14.1.0', description: 'This attribute is deprecated. Applications should use the expanded API on oj-legend instead', target: 'property', for: 'expanded' }
- * @ojdeprecated {since: '15.1.0', description: 'Individual section title alignment is no longer supported. Use section-title-halign in oj-legend to align all section titles', target: 'property', for: 'titleHalign' }
- * @ojdeprecated {since: '15.1.0', description: 'Individual section title style is no longer supported. Use section-title-style in oj-legend to style all section titles', target: 'property', for: 'titleStyle' }
+ * @ojdeprecated {since: '14.1.0', description: 'This attribute is deprecated. Applications should use the expanded API on oj-legend instead.', target: 'property', for: 'expanded' }
+ * @ojdeprecated {since: '15.1.0', description: 'Individual section title alignment is no longer supported. Use section-title-halign in oj-legend to align all section titles.', target: 'property', for: 'titleHalign' }
+ * @ojdeprecated {since: '15.1.0', description: 'Individual section title style is no longer supported. Use section-title-style in oj-legend to style all section titles.', target: 'property', for: 'titleStyle' }
+ * @ojdeprecated {since: '16.0.0', description: 'Use of legend collapsible section is not recommended in Redwood theme. As such, this attribute is deprecated.', target: 'property', for: 'collapsible' }
  * @ojsignature [{target: "Type", value: "K", for: "id"},
  *               {target: "Type", value: "Array.<oj.ojLegend.Item<K>>", for: "items", jsdocOverride: true},
  *               {target: "Type", value: "Array.<oj.ojLegend.Section<K>>", for: "sections", jsdocOverride: true},
@@ -659,6 +652,7 @@ var __oj_legend_section_metadata =
  * {target:"Type", value:"K", for:"key", jsdocOverride: true},
  * {target:"Type", value:"K", for:"parentKey", jsdocOverride: true},
  * {target:"Type", value:"Array<D>", for:"parentData", jsdocOverride: true}]
+ * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
  */
 
 /**
@@ -695,6 +689,7 @@ var __oj_legend_section_metadata =
  * @property {any} key The key of the current node
  * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
  * @property {any} parentKey  The key of the parent node
+ * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the template with access to this context is unique to a component." }
  *
  * @example <caption>Initialize the legend with an inline item template specified:</caption>
  * &lt;oj-legend data='[[dataProvider]]'>
@@ -897,6 +892,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent, {
      * @name expanded
      * @memberof oj.ojLegend
      * @ojshortdesc Specifies the key set containing the ids of sections that should be expanded on initial render. See the Help documentation for more information.
+     * @ojdeprecated {since: '16.0.0', description: 'Use of legend collapsible section is not recommended in Redwood theme. As such, this attribute is deprecated.'}
      * @instance
      * @type {(KeySet|null)=}
      * @ojsignature {target:"Type", value:"oj.KeySet<K>|null"}
@@ -1986,6 +1982,7 @@ setDefaultOptions({
  * @memberof! oj.ojLegendSection
  * @instance
  * @type {string=}
+ * @ojdeprecated {since: '16.0.0', description: 'Use of legend collapsible section is not recommended in Redwood theme. As such, this attribute is deprecated.'}
  * @ojvalue {string} "on" The legend section will be collapsible.
  * @ojvalue {string} "off" The legend section will not be collapsible.
  * @default "off"

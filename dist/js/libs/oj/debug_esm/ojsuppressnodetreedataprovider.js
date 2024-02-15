@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -272,6 +272,7 @@ class SuppressNodeTreeDataProvider {
                 this.data = data;
             }
         };
+        this._addEventListeners(treeDataProvider);
     }
     containsKeys(params) {
         return this.treeDataProvider.containsKeys(params);
@@ -431,6 +432,14 @@ class SuppressNodeTreeDataProvider {
                 return Promise.resolve(false);
             }
         }
+    }
+    _addEventListeners(dataprovider) {
+        dataprovider.addEventListener('refresh', (event) => {
+            this.dispatchEvent(event);
+        });
+        dataprovider.addEventListener('mutate', (event) => {
+            this.dispatchEvent(event);
+        });
     }
 }
 EventTargetMixin.applyMixin(SuppressNodeTreeDataProvider);

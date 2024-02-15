@@ -36,7 +36,7 @@ function getDecorator(node, name) {
     return rtnDecorator;
 }
 exports.getDecorator = getDecorator;
-function getDecorators(node, aliasToExport) {
+function getDecorators(node) {
     const decoratorMap = {};
     if (ts.canHaveDecorators(node)) {
         ts.getDecorators(node)?.forEach((decorator) => {

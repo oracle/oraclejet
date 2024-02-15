@@ -14,16 +14,18 @@ export type PropertiesType = {
 };
 // tslint:disable-next-line interface-over-type-literal
 export type PropertyChangedContext<P extends PropertiesType = PropertiesType> = {
-    previousValue: P[keyof P];
-    property: keyof P;
-    subproperty?: {
-        path: string;
-        previousValue: any;
-        value: any;
+    [K in keyof P]-?: {
+        property: K;
+        value: P[K];
+        previousValue: P[K];
+        updatedFrom: 'external' | 'internal';
+        subproperty?: {
+            path: string;
+            previousValue: any;
+            value: any;
+        };
     };
-    updatedFrom: 'external' | 'internal';
-    value: P[keyof P];
-};
+}[keyof P];
 // tslint:disable-next-line interface-over-type-literal
 export type ViewModel<P extends PropertiesType = PropertiesType> = {
     activated?: ((context: ViewModelContext<P>) => Promise<any> | void);

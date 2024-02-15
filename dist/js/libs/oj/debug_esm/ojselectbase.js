@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -12,7 +12,7 @@ import 'ojs/ojlistview';
 import 'ojs/ojhighlighttext';
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
-import { getReadingDirection, isAncestorOrSelf, isAncestor } from 'ojs/ojdomutils';
+import { getReadingDirection, isAncestorOrSelf, isAncestor, addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
 import { warn, error } from 'ojs/ojlogger';
 import { getDeviceType, getDeviceRenderMode, __getTemplateEngine } from 'ojs/ojconfig';
 import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
@@ -34,7 +34,8 @@ const AbstractLovBase = function (options) {
   // {className, dataProvider, containerElem, fullScreenPopup,
   // idSuffix, lovMainField, filterInputText, lovDropdown, liveRegion, enabled, readOnly, value,
   // getTranslatedStringFunc, addBusyStateFunc, showMainFieldFunc, setFilterFieldTextFunc,
-  // setUiLoadingStateFunc, isValueForPlaceholderFunc, isShowValueInFilterFieldFunc}
+  // setUiLoadingStateFunc, isValueForPlaceholderFunc, isShowValueInFilterFieldFunc,
+  // getFilterInputElemFunc}
   this._minLength = 0;
 
   this._className = options.className;
@@ -57,6 +58,7 @@ const AbstractLovBase = function (options) {
   this._setUiLoadingStateFunc = options.setUiLoadingStateFunc;
   this._isValueForPlaceholderFunc = options.isValueForPlaceholderFunc;
   this._isShowValueInFilterFieldFunc = options.isShowValueInFilterFieldFunc;
+  this._getFilterInputElemFunc = options.getFilterInputElemFunc;
 
   this._lastDataProviderPromise = null;
 
@@ -266,6 +268,16 @@ AbstractLovBase.prototype.closeDropdown = function () {
   this._ariaExpanded = false;
   this._lovMainField.getInputElem().setAttribute('aria-expanded', 'false');
 
+  // We only add aria-expanded to the filter input elem if we're not rendering the full screen
+  // popup on mobile.  On desktop, the filter input is part of the main text field with
+  // role='combobox', so it does need aria-expanded to indicate whether the popup is open.
+  // On mobile, the filter input is part of the full screen popup itself, so it does not have
+  // role='combobox' and it does not control whether the popup is open.
+  var filterInputElem = this._getFilterInputElemFunc();
+  if (filterInputElem && !this._fullScreenPopup) {
+    filterInputElem.setAttribute('aria-expanded', 'false');
+  }
+
   //  - press escape after search in select causes select to become unresponsive
   this._lastSearchTerm = null;
 
@@ -346,6 +358,16 @@ AbstractLovBase.prototype._runQuery = function (term, focusFirstElem, initial) {
       // select: accessibility
       this._ariaExpanded = true;
       this._lovMainField.getInputElem().setAttribute('aria-expanded', 'true');
+
+      // We only add aria-expanded to the filter input elem if we're not rendering the full screen
+      // popup on mobile.  On desktop, the filter input is part of the main text field with
+      // role='combobox', so it does need aria-expanded to indicate whether the popup is open.
+      // On mobile, the filter input is part of the full screen popup itself, so it does not have
+      // role='combobox' and it does not control whether the popup is open.
+      var filterInputElem = this._getFilterInputElemFunc();
+      if (filterInputElem && !this._fullScreenPopup) {
+        filterInputElem.setAttribute('aria-expanded', 'true');
+      }
     }
 
     // if not on mobile, transfer focus into the dropdown now;  otherwise wait until after the
@@ -912,7 +934,7 @@ const LovUtils = {
 const LovDropdown = function () {};
 
 LovDropdown.prototype.init = function (options) {
-  // {dataProvider, className, parentId, idSuffix, fullScreenPopup, inputType,
+  // {dataProvider, className, parentId, idSuffix, dropdownElemId, fullScreenPopup, inputType,
   //  bodyElem, itemTemplate, collectionTemplate,
   //  getTemplateEngineFunc, templateContextComponentElement,
   //  addBusyStateFunc, itemTextRendererFunc, filterInputText, afterDropdownInitFunc,
@@ -1020,6 +1042,14 @@ LovDropdown.prototype.init = function (options) {
 
   containerElem.on('keydown', this._handleKeyDown.bind(this));
 
+  // JET-61331 - Select one choice LOV dropdown flowing out of the browser and adjusting when the
+  // page is scrolled up or down
+  // add a resize listener to the desktop dropdown so that we can reposition it after the content
+  // renders
+  if (!this._fullScreenPopup) {
+    this._addResizeListener(containerElem[0]);
+  }
+
   // if updateLabel was called before now, execute the deferred call
   if (this._updateLabelFunc) {
     var updateLabelFunc = this._updateLabelFunc;
@@ -1046,6 +1076,11 @@ LovDropdown.prototype.destroy = function () {
   }
 
   this._removeDataProviderEventListeners();
+
+  // JET-61331 - Select one choice LOV dropdown flowing out of the browser and adjusting when the
+  // page is scrolled up or down
+  // remove the resize listener from the desktop dropdown
+  this._removeResizeListener(this._containerElem[0]);
 };
 
 LovDropdown.prototype.getElement = function () {
@@ -1057,12 +1092,10 @@ LovDropdown.prototype.getElement = function () {
 };
 
 LovDropdown.prototype._createInnerDom = function (options) {
-  var idSuffix = options.idSuffix;
-
   var outerDiv = document.createElement('div');
   outerDiv.setAttribute('data-oj-containerid', options.parentId);
   outerDiv.setAttribute('data-oj-context', '');
-  outerDiv.setAttribute('id', 'lovDropdown_' + idSuffix);
+  outerDiv.setAttribute('id', options.dropdownElemId);
   outerDiv.setAttribute(
     'class',
     'oj-listbox-drop oj-listbox-searchselect' +
@@ -1851,6 +1884,11 @@ LovDropdown.prototype.close = function () {
 
   this._containerElem.detach();
 
+  // JET-61331 - Select one choice LOV dropdown flowing out of the browser and adjusting when the
+  // page is scrolled up or down
+  // maintain a flag when the dropdown is open so we know when to handle resize events
+  this._dropdownOpen = false;
+
   this._dispatchEvent('dropdownClosed');
 };
 
@@ -1878,39 +1916,20 @@ LovDropdown.prototype.open = function () {
   psEvents[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
   psEvents[oj.PopupService.EVENT.POPUP_AUTODISMISS] = this._clickAwayHandler.bind(this);
   psEvents[oj.PopupService.EVENT.POPUP_REFRESH] = function () {
-    this._dispatchEvent('sizeDropdown');
-
-    // JET-34367 - remove code to update popup position on refresh
-    // Position a proxy element instead of the real dropdown so that we don't have to
-    // change the size of the dropdown before calculating the position, because changing
-    // the size of the dropdown before positioning may reset the results' scroll position and
-    // prevent the user from scrolling down.
-    this._bodyElem.append(this._dropdownPositioningProxyContainer); // @HTMLUpdateOK
-    this._dispatchEvent('adjustDropdownPosition', {
-      popupElem: containerElem[0],
-      positioningProxyElem: this._dropdownPositioningProxyContainer.children()[0]
-    });
-    this._dropdownPositioningProxyContainer.detach();
+    this._sizeAndAdjustPosition(containerElem[0]);
   }.bind(this);
   psEvents[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = function (event) {
     var dropdownElem = event.popup[0];
-    this._dispatchEvent('sizeDropdown');
-
-    // JET-34367 - remove code to update popup position on refresh
-    // Position a proxy element instead of the real dropdown so that we don't have to
-    // change the size of the dropdown before calculating the position, because changing
-    // the size of the dropdown before positioning may reset the results' scroll position and
-    // prevent the user from scrolling down.
-    this._bodyElem.append(this._dropdownPositioningProxyContainer); // @HTMLUpdateOK
-    this._dispatchEvent('adjustDropdownPosition', {
-      popupElem: dropdownElem,
-      positioningProxyElem: this._dropdownPositioningProxyContainer.children()[0]
-    });
-    this._dropdownPositioningProxyContainer.detach();
+    this._sizeAndAdjustPosition(dropdownElem);
 
     if (this._fullScreenPopup) {
       dropdownElem.scrollIntoView();
     }
+
+    // JET-61331 - Select one choice LOV dropdown flowing out of the browser and adjusting when the
+    // page is scrolled up or down
+    // maintain a flag when the dropdown is open so we know when to handle resize events
+    this._dropdownOpen = true;
   }.bind(this);
 
   /** @type {!Object.<oj.PopupService.OPTION, ?>} */
@@ -1924,6 +1943,57 @@ LovDropdown.prototype.open = function () {
   }
 
   this._dispatchEvent('openPopup', { psOptions: psOptions });
+};
+
+// Size the dropdown and adjust its position
+LovDropdown.prototype._sizeAndAdjustPosition = function (dropdownElem) {
+  this._dispatchEvent('sizeDropdown');
+
+  // JET-34367 - remove code to update popup position on refresh
+  // Position a proxy element instead of the real dropdown so that we don't have to
+  // change the size of the dropdown before calculating the position, because changing
+  // the size of the dropdown before positioning may reset the results' scroll position and
+  // prevent the user from scrolling down.
+  this._bodyElem.append(this._dropdownPositioningProxyContainer); // @HTMLUpdateOK
+  this._dispatchEvent('adjustDropdownPosition', {
+    popupElem: dropdownElem,
+    positioningProxyElem: this._dropdownPositioningProxyContainer.children()[0]
+  });
+  this._dropdownPositioningProxyContainer.detach();
+};
+
+// JET-61331 - Select one choice LOV dropdown flowing out of the browser and adjusting when the
+// page is scrolled up or down
+// add a resize listener to the desktop dropdown so that we can reposition it after the content
+// renders
+LovDropdown.prototype._handleResize = function () {
+  // don't handle the resize if the dropdown is no longer open or attached to the DOM
+  if (
+    !this._dropdownOpen ||
+    !this._containerElem ||
+    !this._containerElem[0] ||
+    !this._containerElem[0].parentElement
+  ) {
+    return;
+  }
+
+  this._sizeAndAdjustPosition(this._containerElem[0]);
+};
+
+LovDropdown.prototype._addResizeListener = function (element) {
+  if (element) {
+    if (this._resizeHandler == null) {
+      this._resizeHandler = this._handleResize.bind(this);
+    }
+    addResizeListener(element, this._resizeHandler, 30, true);
+  }
+};
+
+LovDropdown.prototype._removeResizeListener = function (element) {
+  if (element && this._resizeHandler) {
+    removeResizeListener(element, this._resizeHandler);
+    this._resizeHandler = null;
+  }
 };
 
 LovDropdown.prototype._clickAwayHandler = function (event) {
@@ -3094,16 +3164,21 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
     var inputType = element.attr('type');
     var className = 'oj-searchselect';
     this._className = className;
+    this._dropdownElemId = 'lovDropdown_' + idSuffix;
 
     this._initContainer(className, idSuffix, readonly);
 
     // Bug JET-35402 - help.instruction does not display after oj-select-single went from disabled
     // to enabled
     // Pass in the existing main field input element if it already exists.
+    var outerWrapperAriaControls = OuterWrapper.getAttribute('aria-controls');
+    var mainFieldAriaControls = outerWrapperAriaControls
+      ? this._dropdownElemId + ' ' + outerWrapperAriaControls
+      : this._dropdownElemId;
     var lovMainField = new LovMainField({
       className: className,
       ariaLabel: OuterWrapper.getAttribute('aria-label'),
-      ariaControls: OuterWrapper.getAttribute('aria-controls'),
+      ariaControls: mainFieldAriaControls,
       componentId: elemId,
       inputType: inputType,
       enabled: lovEnabled,
@@ -3165,10 +3240,6 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
           }.bind(this)
         );
       }
-
-      //  - Accessibility : JAWS does not read aria-controls attribute set on ojselect
-      var $inputElem = $(lovMainField.getInputElem());
-      $inputElem.attr('aria-owns', dropdownElem.id);
     }.bind(this);
     this._lovDropdown = lovDropdown;
     // this._initLovDropdownOld(lovDropdown, className);
@@ -3192,7 +3263,8 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       setFilterFieldTextFunc: this._SetFilterFieldText.bind(this),
       setUiLoadingStateFunc: this._setUiLoadingState.bind(this),
       isValueForPlaceholderFunc: this._IsValueForPlaceholder.bind(this),
-      isShowValueInFilterFieldFunc: this._IsShowValueInFilterField.bind(this)
+      isShowValueInFilterFieldFunc: this._IsShowValueInFilterField.bind(this),
+      getFilterInputElemFunc: this._getFilterInputElem.bind(this)
     });
     this._abstractLovBase = abstractLovBase;
 
@@ -3701,6 +3773,10 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       var filterInputElem = this._getFilterInputElem();
       if (filterInputElem) {
         filterInputElem.setAttribute('role', 'combobox');
+
+        LovUtils.copyAttribute(mainInputElem, 'aria-controls', filterInputElem, 'aria-controls');
+        LovUtils.copyAttribute(mainInputElem, 'aria-expanded', filterInputElem, 'aria-expanded');
+
         if (!preserveState) {
           LovUtils.copyAttribute(mainInputElem, 'aria-required', filterInputElem, 'aria-required');
           LovUtils.copyAttribute(mainInputElem, 'aria-invalid', filterInputElem, 'aria-invalid');
@@ -4334,7 +4410,6 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
    */
   _createFilterInputText: function (className, idSuffix) {
     var ariaLabel = this.OuterWrapper.getAttribute('aria-label');
-    var ariaControls = this.OuterWrapper.getAttribute('aria-controls');
     var options = this.options;
 
     var filterInputText = document.createElement('oj-input-text');
@@ -4364,9 +4439,6 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
     // }
     if (ariaLabel) {
       filterInputText.setAttribute('aria-label', ariaLabel);
-    }
-    if (!this._fullScreenPopup && ariaControls) {
-      filterInputText.setAttribute('aria-controls', ariaControls);
     }
     // apply virtualKeyboard input type to search field
     filterInputText.setAttribute('virtual-keyboard', options.virtualKeyboard);
@@ -4497,6 +4569,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       className: 'oj-select',
       parentId: containerId,
       idSuffix: idSuffix,
+      dropdownElemId: this._dropdownElemId,
       fullScreenPopup: this._fullScreenPopup,
       inputType: inputType,
       bodyElem: $(this.OuterWrapper).closest('body')[0],
@@ -4953,19 +5026,131 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       }
     }
 
-    // JET-55775 - oj-select-single initiates fetch even when valueItem is provided in preact wrapper
-    // If we get a value update, while we are waiting for the valueItem update microtask, we can safely
-    // ignore the value update, if and only if the value is the same as the valueItem that we are currently
-    // processing.
-    if (
-      key === 'value' &&
-      this._currentProcessingValueItem &&
-      this._currentProcessingValueItem.key === value
-    ) {
-      return;
-    }
-
     this._super(key, value, flags);
+
+    // In vdom architecture, there are multiple issues with value and valueItem property that we need to
+    // handle.
+    //
+    // JET-51307 - Wrapping select single with value item and value integrations going into loop
+    // with multiple instances of LOV in a page
+    // If we're wrapped by a VComponent and there are multiple instances on the page
+    // all bound to the same valueItem, then if the user selects a new value in one instance,
+    // the page can go into an infinite loop.
+    // If we synchronously update the value on our DOM element here, then when the next preact
+    // render compares the stale vcomp value property against the new value in the DOM, preact
+    // determines it must push the stale value property back down onto us, which then causes
+    // the valueItem to get sync'ed again, and the loop goes on.
+    //
+    // JET-55775 - oj-select-single initiates fetch even when valueItem is provided in preact wrapper
+    // In preact, when value & valueItem are set at the same time, we will receive them one after the other.
+    // So, if we process the value when we get it, then we might initiate an unnecessary fetch as we will
+    // later get the data from valueItem.
+    //
+    // JET-64359 - select - single handling of mutation on both value and valueItem properties coming from preact
+    // Also, when either value or valueItem property is ignored when updating props in the wrapper vcomponent,
+    // we will get a setOption call with a null / default value for that property. In these cases, depending on the
+    // order we receive the call, we might incorrectly end up setting the null / default value.
+    //
+    // In order to address all these cases, if we know we are in the vdom land, we will queue a microtask to process
+    // the value and valueItem. Since, preact calls setOptions synchronously for each option, in our microtask callback
+    // we will have access to the latest value for all the properties. We will be setting some flags here to determine
+    // which properties are set by the preact. Then we can use the flags as well as the latest value to determine
+    // how to process the value and valueItem correctly.
+    const elemState = CustomElementUtils.getElementState(this.OuterWrapper);
+    if (elemState.getBindingProviderType() === 'preact') {
+      const processValueAndValueItem = () => {
+        // Get the latest value and valueItem
+        const _valueItem = this.options[this._GetValueItemPropertyName()];
+        const _value = this.options.value;
+        // Determine empty states
+        // Note that _Is*****ForPlaceholder simply checks whether the value/valueItem
+        // represents the empty/null state.
+        const isEmptyValue = this._IsValueForPlaceholder(_value);
+        const isEmptyValueItem = this._IsValueItemForPlaceholder(_valueItem);
+
+        // Cleanup function - things to do when exiting the microtask
+        const cleanup = () => {
+          // reset all the flags
+          this._processingSetOptionsMicroTask = false;
+          this._processingValue = false;
+          this._processingValueItem = false;
+        };
+
+        // This will use the value for updating the component
+        const updateUsingValue = () => {
+          abstractLovBase.setValue(_value);
+
+          //  - placeholder is not displayed after removing selections from select many
+          //  - resetting value when value-item and placeholder are set throws exception
+          if (isEmptyValue) {
+            // Note that _GetDefaultValueItemForPlaceholder is just a getter for the
+            // valueItem representing the empty state.
+            this._SetValueItem(this._GetDefaultValueItemForPlaceholder());
+          } else {
+            // update valueItem
+            this._UpdateValueItem(_value);
+          }
+
+          // need to update display value again after valueItem is set correctly
+          this._SetDisplayValue();
+        };
+        // This will use the valueItem for updating the component
+        const updateUsingValueItem = () => {
+          this._valueItemSetInternally = false;
+          this._SyncValueWithValueItem(_valueItem, _value);
+        };
+
+        // If both value and valueItem are provided, then compare them to decide
+        // what to do
+        if (this._processingValue && this._processingValueItem) {
+          // if valueItem and value are not null, and they are conflicting then
+          // throw an error
+          if (!isEmptyValue && !isEmptyValueItem && _valueItem.key !== _value) {
+            // make sure to clean up before throwing an error
+            cleanup();
+            throw new Error('Select Single: conflicting value-item and value');
+          }
+
+          // At this point, either one of them is empty or they both have the same
+          // key. So, if valueItem is not empty, use it. Otherwise, use the value.
+          if (!isEmptyValueItem) {
+            updateUsingValueItem();
+          } else {
+            updateUsingValue();
+          }
+        }
+        // If only value is provided, then use the value
+        else if (this._processingValue) {
+          updateUsingValue();
+        }
+        // If only valueItem is provided then use the valueItem for updating the value
+        else if (this._processingValueItem) {
+          updateUsingValueItem();
+        }
+
+        // Finally clean things up
+        cleanup();
+      };
+
+      // If we receive a value or valueItem setOption call, set the flag and
+      // defer processing them
+      if (key === 'value') {
+        this._processingValue = true;
+      } else if (key === this._GetValueItemPropertyName()) {
+        this._processingValueItem = true;
+      }
+
+      // if we are processing value or valueItem, then queue a microtask to
+      // process them together. Do this only if it is not already queued. Then
+      // return early without doing anything else.
+      if (this._processingValue || this._processingValueItem) {
+        if (!this._processingSetOptionsMicroTask) {
+          this._processingSetOptionsMicroTask = true;
+          window.queueMicrotask(processValueAndValueItem);
+        }
+        return;
+      }
+    }
 
     var processSetOptions;
     if (this._processSetOptions && this._processSetOptions.length > 0) {
@@ -4976,36 +5161,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
     //  - need to be able to specify the initial value of select components bound to dprv
     if (key === this._GetValueItemPropertyName()) {
       this._valueItemSetInternally = false;
-
-      // JET-51307 - Wrapping select single with value item and value integrations going into loop
-      // with multiple instances of LOV in a page
-      // If we're wrapped by a VComponent and there are multiple instances on the page
-      // all bound to the same valueItem, then if the user selects a new value in one instance,
-      // the page can go into an infinite loop.
-      // If we synchronously update the value on our DOM element here, then when the next preact
-      // render compares the stale vcomp value property against the new value in the DOM, preact
-      // determines it must push the stale value property back down onto us, which then causes
-      // the valueItem to get sync'ed again, and the loop goes on.
-      // By delaying updating the value on the DOM element here, we avoid preact finding a
-      // difference between its properties and the DOM value, so preact does not push the stale
-      // value prop back down on us.
-      const elemState = CustomElementUtils.getElementState(this.OuterWrapper);
-      if (elemState.getBindingProviderType() === 'preact') {
-        // JET-55775 - oj-select-single initiates fetch even when valueItem is provided in preact wrapper
-        // In preact, when value & valueItem are set at the same time, we will receive them one after the other.
-        // Also, we get the valueItem update before the value update. So, we need to treat it as a single update
-        // and ignore the value update when we are waiting for the following microtask to run.
-        this._currentProcessingValueItem = value;
-        window.queueMicrotask(
-          function () {
-            this._SyncValueWithValueItem(value, this.options.value);
-            // as we processed the valueItem, delete the flag
-            this._currentProcessingValueItem = undefined;
-          }.bind(this)
-        );
-      } else {
-        this._SyncValueWithValueItem(value, this.options.value);
-      }
+      this._SyncValueWithValueItem(value, this.options.value);
     } else if (key === 'value') {
       // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
       // save the processing function for execution in _setOptions

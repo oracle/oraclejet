@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -30,85 +30,46 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 viewportResolvedDisplayModeVertical: this.getViewportResolvedDisplayModeVertical()
             };
             this.rootRef = preact.createRef();
-            this.isShiftKeyActive = false;
             this.windowResizeHandler = null;
-            this.handleKeyDown = (event) => {
-                if (event.key === ojdrawerutils.DrawerConstants.keys.ESC) {
-                    this.selfClose();
-                    return;
-                }
-                const focusables = ojdrawerutils.DrawerUtils.getFocusables(this.rootRef.current);
-                if (event.key === ojdrawerutils.DrawerConstants.keys.TAB && this.props.modality === 'modal') {
-                    this.isShiftKeyActive = event.shiftKey;
-                    const { length, 0: firstItem, [length - 1]: lastItem } = focusables;
+            this.ignoreUpdate = false;
+            this.handleGuardFocus = (guardPosition, event) => {
+                if (this.props.modality === 'modal') {
+                    const focusables = ojdrawerutils.DrawerUtils.getFocusables(this.rootRef.current);
+                    const { length, 0: firstFocusableItem, [length - 1]: lastFocusableItem } = focusables;
+                    event.preventDefault();
                     if (!length) {
-                        event.preventDefault();
                         this.rootRef.current.focus();
                         return;
                     }
-                    if (event.shiftKey) {
-                        if (document.activeElement === firstItem) {
-                            event.preventDefault();
-                            lastItem.focus();
-                            return;
-                        }
+                    if (guardPosition === 'start') {
+                        lastFocusableItem.focus();
                     }
                     else {
-                        if (document.activeElement === lastItem) {
-                            event.preventDefault();
-                            firstItem.focus();
-                            return;
-                        }
+                        firstFocusableItem.focus();
                     }
                 }
             };
-            this.handleOnBlur = (event) => {
-                if (this.props.modality === 'modal') {
-                    const zorderLayer = this.rootRef.current.parentNode;
-                    let isTargetWithin = false;
-                    if (event.relatedTarget) {
-                        if (this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings(zorderLayer, event.relatedTarget)) {
-                            isTargetWithin = true;
-                        }
-                    }
-                    else {
-                        if (this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings(zorderLayer, document.activeElement)) {
-                            isTargetWithin = true;
-                        }
-                    }
-                    if (!isTargetWithin && this.props.opened) {
-                        const focusables = ojdrawerutils.DrawerUtils.getFocusables(this.rootRef.current);
-                        event.preventDefault();
-                        if (focusables.length) {
-                            focusables[0].focus();
-                        }
-                        else {
-                            this.rootRef.current.focus();
-                        }
-                    }
+            this.handleOnStartGuardFocus = (event) => {
+                this.handleGuardFocus('start', event);
+            };
+            this.handleOnEndGuardFocus = (event) => {
+                this.handleGuardFocus('end', event);
+            };
+            this.handleKeyDown = (event) => {
+                if (event.defaultPrevented) {
+                    return;
+                }
+                if (event.key === ojdrawerutils.DrawerConstants.keys.ESC) {
+                    this.selfClose();
+                    return;
                 }
             };
             this.autoDismissHandler = (event) => {
                 const focusables = ojdrawerutils.DrawerUtils.getFocusables(this.rootRef.current);
                 const zorderLayer = this.rootRef.current.parentNode;
                 const isTargetWithin = this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings(zorderLayer, event.target);
-                if (this.props.autoDismiss === 'focus-loss') {
-                    if (event.type === 'focus' && this.props.modality === 'modal' && !isTargetWithin) {
-                        event.preventDefault();
-                        const elementLosingFocus = event.relatedTarget;
-                        const firstFocusableElement = focusables[0];
-                        const lastFocusableElement = focusables[focusables.length - 1];
-                        if (elementLosingFocus === firstFocusableElement) {
-                            lastFocusableElement.focus();
-                        }
-                        else {
-                            firstFocusableElement.focus();
-                        }
-                        return;
-                    }
-                    if (!isTargetWithin) {
-                        this.selfClose();
-                    }
+                if (this.props.autoDismiss === 'focus-loss' && !isTargetWithin) {
+                    this.selfClose();
                 }
                 else if (this.props.autoDismiss === 'none' &&
                     this.props.modality === 'modal' &&
@@ -123,7 +84,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 const $drawerElement = $(this.rootRef.current);
                 const status = ZOrderUtils.getStatus($drawerElement);
                 if (status === ZOrderUtils.STATUS.OPEN) {
-                    ZOrderUtils.removeFromAncestorLayer($drawerElement);
+                    const psOptions = {};
+                    psOptions[PopupService.OPTION.POPUP] = $drawerElement;
+                    this.ignoreUpdate = true;
+                    PopupService.getInstance().close(psOptions);
                 }
             };
             this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings = (zorderLayer, target) => {
@@ -184,8 +148,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             return null;
         }
         render(props) {
-            if (this.isDrawerOpened() || this.wasDrawerOpenedInPrevState()) {
-                return (jsxRuntime.jsx(ojvcomponent.Root, { ref: this.rootRef, class: this.getPopupStyleClasses(this.props.edge), tabIndex: -1, role: this.props.role || 'dialog', onKeyDown: this.handleKeyDown, onBlur: this.handleOnBlur, children: jsxRuntime.jsx("div", { class: "oj-drawer-full-height", children: props.children }) }));
+            if (!this.ignoreUpdate && (this.isDrawerOpened() || this.wasDrawerOpenedInPrevState())) {
+                return (jsxRuntime.jsx(ojvcomponent.Root, { ref: this.rootRef, class: this.getPopupStyleClasses(this.props.edge), tabIndex: -1, role: this.props.role || 'dialog', onKeyDown: this.handleKeyDown, children: jsxRuntime.jsxs("div", { class: "oj-drawer-full-height", children: [jsxRuntime.jsx("div", { class: "oj-drawer-focus-guard", onFocus: this.handleOnStartGuardFocus, tabIndex: 0 }), props.children, jsxRuntime.jsx("div", { class: "oj-drawer-focus-guard", onFocus: this.handleOnEndGuardFocus, tabIndex: 0 })] }) }));
             }
             return jsxRuntime.jsx(ojvcomponent.Root, {});
         }
@@ -281,14 +245,15 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         }
         handleFocus(prevState) {
             if (this.state.opened && prevState.opened !== this.state.opened) {
-                const autofocusItems = this.rootRef.current.querySelectorAll('[autofocus]');
+                const rootRef = this.rootRef.current;
+                const autofocusItems = ojdrawerutils.DrawerUtils.getAutofocusFocusables(rootRef);
                 const { length: autofocusLength, 0: autofocusFirstItem } = autofocusItems;
                 if (autofocusLength > 0) {
                     autofocusFirstItem.focus({ preventScroll: true });
                     return;
                 }
-                const focusables = ojdrawerutils.DrawerUtils.getFocusables(this.rootRef.current);
-                let elementToFocus = this.rootRef.current;
+                const focusables = ojdrawerutils.DrawerUtils.getFocusables(rootRef);
+                let elementToFocus = rootRef;
                 if (focusables.length) {
                     elementToFocus = focusables[0];
                 }
@@ -298,19 +263,24 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         beforeCloseHandler(edge) {
             ojdrawerutils.DrawerUtils.disableBodyOverflow();
             this.elementWithFocusBeforeDrawerCloses = document.activeElement;
+            if (this.ignoreUpdate) {
+                return null;
+            }
             const busyContext = ojet.Context.getContext(this.rootRef.current).getBusyContext();
             const resolveFunc = busyContext.addBusyState({ description: 'Animation in progress' });
             const animationPromise = AnimationUtils.slideOut(this.rootRef.current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideOut, edge));
-            animationPromise.then(resolveFunc);
-            return animationPromise;
+            return animationPromise.then(resolveFunc);
         }
         afterCloseHandler(prevState) {
             ojdrawerutils.DrawerUtils.enableBodyOverflow();
-            const $drawerElement = $(this.rootRef.current);
-            const status = ZOrderUtils.getStatus($drawerElement);
             if (this.rootRef.current.contains(this.elementWithFocusBeforeDrawerCloses)) {
                 ojdrawerutils.DrawerUtils.moveFocusToElementOrNearestAncestor(this.drawerOpener);
             }
+            if (this.ignoreUpdate) {
+                return;
+            }
+            const $drawerElement = $(this.rootRef.current);
+            const status = ZOrderUtils.getStatus($drawerElement);
             if (status === ZOrderUtils.STATUS.CLOSE && this.isDrawerOpened()) {
                 const popupServiceInstance = PopupService.getInstance();
                 const popupServiceOptions = this.getPopupServiceOptions(prevState);
@@ -348,7 +318,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             return ojdrawerutils.DrawerUtils.getStyleClassesMapAsString(Object.assign(customStyleClassMap, ojdrawerutils.DrawerUtils.getCommonStyleClasses(edge)));
         }
         componentDidUpdate(prevProps, prevState) {
-            this.handleComponentUpdate(prevState);
+            if (!this.ignoreUpdate) {
+                this.handleComponentUpdate(prevState);
+            }
         }
         componentDidMount() {
             if (this.windowResizeHandler === null) {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -11,7 +11,7 @@ import { info, warn } from 'ojs/ojlogger';
 import { getDefaultValue } from 'ojs/ojmetadatautils';
 import 'ojs/ojcomposite-knockout';
 import 'ojs/ojcustomelement';
-import { ElementState, CustomElementUtils, ElementUtils, transformPreactValue, JetElementError, CHILD_BINDING_PROVIDER } from 'ojs/ojcustomelement-utils';
+import { LifecycleElementState, CustomElementUtils, ElementUtils, transformPreactValue, JetElementError, CHILD_BINDING_PROVIDER } from 'ojs/ojcustomelement-utils';
 import { getElementDescriptor, getElementRegistration, registerElement, isElementRegistered, isComposite } from 'ojs/ojcustomelement-registry';
 
 const CompositeInternal = {};
@@ -48,9 +48,22 @@ CompositeInternal.getContainingComposite = function (node, stopBelow) {
   return composite;
 };
 
-class CompositeState extends ElementState {
+class CompositeState extends LifecycleElementState {
+    constructor() {
+        super(...arguments);
+        this._templateCleanCallbacks = [];
+    }
     getTrackChildrenOption() {
         return 'immediate';
+    }
+    addTemplateCleanCallback(callback) {
+        this._templateCleanCallbacks.push(callback);
+    }
+    cleanTemplates() {
+        this._templateCleanCallbacks.forEach((callback) => {
+            callback();
+        });
+        this._templateCleanCallbacks = [];
     }
 }
 
@@ -84,6 +97,9 @@ CompositeElementBridge.DESC_KEY_VIEW = 'view';
 CompositeElementBridge.DESC_KEY_VIEW_MODEL = 'viewModel';
 /** @ignore */
 CompositeElementBridge.SUBID_MAP = 'data-oj-subid-map';
+
+CompositeElementBridge.DisconnectedState = 0;
+CompositeElementBridge.ConnectedState = 1;
 
 oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
   beforePropertyChangedEvent: function (element, property, detail) {
@@ -323,6 +339,11 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
     oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL, 'disconnected', [
       element
     ]);
+    this._verifyConnectDisconnect(element, CompositeElementBridge.DisconnectedState);
+  },
+
+  HandleAttached: function (element) {
+    this._verifyConnectDisconnect(element, CompositeElementBridge.ConnectedState);
   },
 
   HandleReattached: function (element) {
@@ -339,6 +360,8 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
         this._VM_CONTEXT
       ]);
     }
+
+    this._verifyConnectDisconnect(element, CompositeElementBridge.ConnectedState);
   },
 
   InitializeElement: function (element) {
@@ -545,6 +568,35 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
       throw new JetElementError(this._ELEMENT, 'Cannot access methods before element is upgraded.');
     }
     return this._VIEW_MODEL;
+  },
+
+  // Called from HandleAttached, HandleReattached, HandleDetached in order
+  // to cleanup a composite on a true disconnect.
+  _verifyConnectDisconnect: function (element, state) {
+    if (this._verifyingState === undefined) {
+      window.queueMicrotask(() => {
+        if (this._verifyingState === state) {
+          if (this._verifyingState === CompositeElementBridge.ConnectedState) {
+            this._verifiedConnect(element);
+          } else {
+            this._verifiedDisconnect(element);
+          }
+          this._verifyingState = undefined;
+        }
+      });
+    }
+    this._verifyingState = state;
+  },
+
+  _verifiedConnect: function (element) {
+    const state = CustomElementUtils.getElementState(element);
+    state.executeLifecycleCallbacks(true);
+  },
+
+  _verifiedDisconnect: function (element) {
+    const state = CustomElementUtils.getElementState(element);
+    state.cleanTemplates();
+    state.executeLifecycleCallbacks(false);
   },
 
   _processCompositeTemplate: function (element) {
@@ -908,7 +960,7 @@ Composite.getComponentMetadata = function (name) {
  * </ul>
  * @ojsignature [
  *               {target: "Type",
- *                value: "<P extends PropertiesType= PropertiesType>(name: string, descriptor: {
+ *                value: "<P extends PropertiesType = PropertiesType>(name: string, descriptor: {
  *                metadata: MetadataTypes.ComponentMetadata;
  *                view: string;
  *                viewModel?: {new(context: ViewModelContext<P>): ViewModel<P>};

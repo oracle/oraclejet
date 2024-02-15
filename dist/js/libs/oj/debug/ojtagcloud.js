@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -48,10 +48,6 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
    * </h3>
    * To migrate from oj-tagcloud to oj-c-tagcloud, you need to revise the import statement and references to oj-tagcloud in your app.
-   * <h5>componentElement in ItemTemplateContext</h5>
-   * <p>
-   * componentElement is not support in oj-c-tag-cloud.
-   * </p>
    * <h5>animaton-on-data-change attribute</h5>
    * <p>
    * For the initial version of oj-c-tagcloud, animaton-on-data-change attribute is not supported. We plan on supporting this use case in a future release.
@@ -197,6 +193,19 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @property {number} value The value of the hovered item.
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
+   */
+
+  /**
+   * @typedef {Object} oj.ojTagCloud.TooltipRendererContext
+   * @property {string} color The color of the hovered item.
+   * @property {Element} componentElement The tag cloud element.
+   * @property {any} id The id of the hovered item.
+   * @property {string} label The data label of the hovered item.
+   * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
+   * @property {number} value The value of the hovered item.
+   * @ojsignature [{target: "Type", value: "K", for: "id"},
+   *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
    */
   /**
    * @typedef {Object} oj.ojTagCloud.ItemShortDescContext
@@ -214,6 +223,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @property {any} key The key of the current item.
    * @ojsignature [{target: "Type", value: "K", for: "key"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
 
   // METHOD TYPEDEFS
@@ -1253,7 +1263,7 @@ var __oj_tag_cloud_item_metadata =
          * @instance
          * @type {function(Object):Object|null}
          * @default null
-         * @ojsignature {target: "Type", value: "((context: oj.ojTagCloud.TooltipContext<K>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((context: oj.ojTagCloud.TooltipRendererContext<K>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
          *
          * @example <caption>See the <a href="#tooltip">tooltip</a> attribute for usage examples.</caption>
          */

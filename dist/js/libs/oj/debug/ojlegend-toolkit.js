@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -263,7 +263,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (this._displayables[0]) {
         if (this._displayables[0] instanceof dvt.IconButton)
           this._displayables[0].showKeyboardFocusEffect();
-        else this._displayables[0].setSolidStroke(dvt.Agent.getFocusColor());
+        else this._displayables[0].addClassName('oj-legend-focus');
       }
     }
 
@@ -275,7 +275,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (this._displayables[0]) {
         if (this._displayables[0] instanceof dvt.IconButton)
           this._displayables[0].hideKeyboardFocusEffect();
-        else this._displayables[0].setStroke(null);
+        else this._displayables[0].removeClassName('oj-legend-focus');
       }
     }
 
@@ -342,7 +342,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     showHoverEffect() {
       if (this._displayables[0]) {
         if (this._displayables[0] instanceof dvt.Rect) {
-          this._displayables[0].setClassName('oj-legend-hover');
+          this._displayables[0].addClassName('oj-legend-hover');
           this._displayables[0].setRx(this._hoverBorderRadius);
         }
       }
@@ -354,7 +354,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     hideHoverEffect() {
       if (this._displayables[0]) {
         if (this._displayables[0] instanceof dvt.Rect) {
-          this._displayables[0].setClassName();
+          this._displayables[0].removeClassName('oj-legend-hover');
           this._displayables[0].setRx(0);
         }
       }
@@ -857,6 +857,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Don't continue if not enabled
       var options = this._legend.getOptions();
       if (
+        options['drilling'] === 'off' &&
         options['hoverBehavior'] === 'none' &&
         (options['hideAndShowBehavior'] === 'none' || options['hideAndShowBehavior'] === 'off')
       )
@@ -884,7 +885,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         );
       }
 
-      if (options['hideAndShowBehavior'] !== 'none' && options['hideAndShowBehavior'] !== 'off') {
+      if (
+        options['drilling'] !== 'none' ||
+        (options['hideAndShowBehavior'] !== 'none' && options['hideAndShowBehavior'] !== 'off')
+      ) {
         // Show hover effect
         bOver
           ? obj.showHoverEffect && obj.showHoverEffect()

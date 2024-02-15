@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1819,6 +1819,9 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
 
         // Add the component to the display tree of the rendering context.
         this._context.getStage().addChild(this._component);
+
+        // store reference to base component in the context
+        this._context.setDvtComponent(this._component);
 
         // Load component resources
         this._LoadResources();

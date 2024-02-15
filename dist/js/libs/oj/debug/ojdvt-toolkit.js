@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8768,6 +8768,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     }
   };
 
+  const SCALE_THRESHOLD = 0.025;
+
   /**
    *  Abstract base class for displayable objects.
    *  @extends {dvt.Obj}
@@ -9325,7 +9327,33 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       mat = mat.invert();
       retPoint = mat.transformPoint(retPoint);
     }
+
+    var scale = this.getScale();
+    if (Math.abs(scale - 1) > SCALE_THRESHOLD) {
+      mat = new Matrix(scale, 0, 0, scale);
+      mat = mat.invert();
+      retPoint = mat.transformPoint(retPoint);
+    }
+
     return retPoint;
+  };
+
+  /**
+   * Returns the scale of component.
+   * @returns { number }
+   */
+  Displayable.prototype.getScale = function () {
+    var comp = this.getCtx().getDvtComponent();
+    // comp may not be available in a non-custom elements test environment
+    if (!comp) return 1;
+    var optionsCache = comp.getOptionsCache();
+    var scale = optionsCache.getFromCache('scale');
+
+    if (!scale) {
+      scale = this.getCtx().computeParentScale();
+      optionsCache.putToCache('scale', scale);
+    }
+    return scale;
   };
 
   /**
@@ -9341,6 +9369,13 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       mat = pathToStage[i].getMatrix();
       retPoint = mat.transformPoint(retPoint);
     }
+    var scale = this.getScale();
+
+    if (Math.abs(scale - 1) > SCALE_THRESHOLD) {
+      mat = new Matrix(scale, 0, 0, scale);
+      retPoint = mat.transformPoint(retPoint);
+    }
+
     return retPoint;
   };
 
@@ -18477,6 +18512,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var coords = navigable.getKeyboardTooltipLocation
       ? navigable.getKeyboardTooltipLocation()
       : navigable.getKeyboardBoundingBox(this.getCtx().getStage()).getCenter();
+    coords = this.getCtx().getStage().localToStage(coords);
     var pageCoords = this.getCtx().stageToPageCoords(coords.x, coords.y);
     this.ProcessObjectTooltip(
       event,
@@ -20834,6 +20870,35 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     }
 
     return this._scheduler;
+  };
+
+  /**
+   * Returns the scale if present in the computed style of the parent.
+   * @returns
+   */
+  Context.prototype.computeParentScale = function () {
+    var comp = this.getDvtComponent();
+    if (comp && comp.getWidth) {
+      var boundingWidth = this._root.getBoundingClientRect().width;
+      return boundingWidth / comp.getWidth();
+    }
+    return 1;
+  };
+
+  /**
+   * Returns the dvt component object associated with the context.
+   * @returns
+   */
+  Context.prototype.getDvtComponent = function () {
+    return this._dvtComp;
+  };
+
+  /**
+   * Returns the dvt component object associated with the context.
+   * @returns
+   */
+  Context.prototype.setDvtComponent = function (comp) {
+    this._dvtComp = comp;
   };
 
   /**

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -898,6 +898,7 @@ var __oj_text_area_metadata =
        */
       _INPUT_HELPER_KEY: '',
 
+      _FOCUS_HANDLER_KEY: 'focus',
       _BLUR_HANDLER_KEY: 'blur',
       _KEYDOWN_HANDLER_KEY: 'keydown',
       _KEYUP_HANDLER_KEY: 'keyup',
@@ -2081,6 +2082,7 @@ var __oj_text_area_metadata =
         if (!this.options.readOnly && !this.options.disabled) {
           this._eventHandlers = {};
 
+          var focusHandler = $.proxy(this._onFocusHandler, this);
           var blurHandler = $.proxy(this._onBlurHandler, this);
           var keyDownHandler = $.proxy(this._onKeyDownHandler, this);
           var keyUpHandler = $.proxy(this._onKeyUpHandler, this);
@@ -2091,6 +2093,7 @@ var __oj_text_area_metadata =
             this.focus();
           };
 
+          this.element.on(this._FOCUS_HANDLER_KEY, focusHandler);
           this.element.on(this._BLUR_HANDLER_KEY, blurHandler);
           this.element.on(this._KEYDOWN_HANDLER_KEY, keyDownHandler);
           this.element.on(this._KEYUP_HANDLER_KEY, keyUpHandler);
@@ -2100,9 +2103,10 @@ var __oj_text_area_metadata =
 
           // other than FF when a drop is dispatched focus is placed back on the element
           // this would cause difference in behavior of the observable change [as set within blur], so in order to provide
-          // consisteny placing the focus on the element after the drop
+          // consistency placing the focus on the element after the drop
           this.element.on(this._DROP_HANDLER_KEY, dropHandler);
 
+          this._eventHandlers[this._FOCUS_HANDLER_KEY] = focusHandler;
           this._eventHandlers[this._BLUR_HANDLER_KEY] = blurHandler;
           this._eventHandlers[this._KEYDOWN_HANDLER_KEY] = keyDownHandler;
           this._eventHandlers[this._KEYUP_HANDLER_KEY] = keyUpHandler;
@@ -2113,6 +2117,7 @@ var __oj_text_area_metadata =
         } else if (this._eventHandlers) {
           // meaning either it is readOnly or is disabled, remove the handlers if they were attached previously
           var eventEntries = [
+            this._FOCUS_HANDLER_KEY,
             this._BLUR_HANDLER_KEY,
             this._KEYDOWN_HANDLER_KEY,
             this._KEYUP_HANDLER_KEY,
@@ -2163,6 +2168,21 @@ var __oj_text_area_metadata =
       },
 
       /**
+       * Invoked when focus is triggered of the this.element
+       *
+       * @ignore
+       * @protected
+       * @memberof! oj.inputBase
+       * @param {Event} event
+       */
+      _onFocusHandler: function () {
+        if (this._hasMaxLength()) {
+          // on focus, we add the aria-live remaining chars message if needed.
+          this._processLengthCounterAttr(this.options.length.counter);
+        }  
+      },
+
+      /**
        * Invoked when blur is triggered of the this.element
        *
        * @ignore
@@ -2172,6 +2192,11 @@ var __oj_text_area_metadata =
        */
       _onBlurHandler: function (event) {
         this._SetValue(this._GetDisplayValue(), event);
+
+        if (this._hasMaxLength()) {
+          // on blur, we want to remove the aria-live with the remaining chars message.
+          this._processLengthCounterAttr(this.options.length.counter);
+        }
       },
 
       /**
@@ -2607,6 +2632,7 @@ var __oj_text_area_metadata =
         var textLength = this.lengthFilter ? this.lengthFilter.calcLength(this.options.rawValue) : -1;
         var remainingChars = '';
         var newAriaLiveContent = '';
+        var hasFocus = document.activeElement === this.element[0];
 
         if (
           lengthCounterAttr === 'none' ||
@@ -2629,7 +2655,8 @@ var __oj_text_area_metadata =
             textLength === -1 ||
             this.options.length.max === 0 ||
             this.options.disabled ||
-            this.options.readOnly
+            this.options.readOnly ||
+            !hasFocus
           ) {
             newAriaLiveContent = '';
           } else {
@@ -2670,10 +2697,13 @@ var __oj_text_area_metadata =
           if (textLength !== -1) {
             remainingChars = this.options.length.max - textLength;
 
-            // update aria live
-            newAriaLiveContent = this.getTranslatedString(this._TEXT_FIELD_MAX_LENGTH_REMAINING_KEY, {
-              chars: remainingChars
-            });
+            // Only update when the component has focus.  Otherwise, the aria-live can be announced at times that it's not appropriate.
+            if (hasFocus) {
+              // update aria live
+              newAriaLiveContent = this.getTranslatedString(this._TEXT_FIELD_MAX_LENGTH_REMAINING_KEY, {
+                chars: remainingChars
+              });
+            }
           }
         }
 
@@ -3041,18 +3071,6 @@ var __oj_text_area_metadata =
    * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
    * </p>
    *
-   * <h5>Reset method</h5>
-   * <p>
-   * This method does not synchronously reset the component. The application should wait on the busy context of the component after
-   * invoking this method for the changes to appear.
-   * </p>
-   *
-   * <h5>ShowMessages method</h5>
-   * <p>
-   * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
-   * of the component after invoking this method for the changes to appear.
-   * </p>
-   *
    * <h5>Animation Events</h5>
    * <p>
    * ojAnimateStart and ojAnimateEnd events are no longer supported.
@@ -3068,9 +3086,10 @@ var __oj_text_area_metadata =
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
    *
-   * <h5>User Assistance Density - Compact mode</h5>
+   * <h5>DescribedBy attribute</h5>
    * <p>
-   * Rendering the component in compact userAssistanceDensity mode is not supported in this release. Please use 'reflow' or 'efficient' instead.
+   * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+   * This attribute is not carried forward to the core pack component.
    * </p>
    *
    * <h5>Usage in Dynamic Form</h5>
@@ -3731,18 +3750,6 @@ var __oj_text_area_metadata =
    * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
    * </p>
    *
-   * <h5>Reset method</h5>
-   * <p>
-   * This method does not synchronously reset the component. The application should wait on the busy context of the component after
-   * invoking this method for the changes to appear.
-   * </p>
-   *
-   * <h5>ShowMessages method</h5>
-   * <p>
-   * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
-   * of the component after invoking this method for the changes to appear.
-   * </p>
-   *
    * <h5>Animation Events</h5>
    * <p>
    * ojAnimateStart and ojAnimateEnd events are no longer supported.
@@ -3758,10 +3765,12 @@ var __oj_text_area_metadata =
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
    *
-   * <h5>User Assistance Density - Compact mode</h5>
+   * <h5>DescribedBy attribute</h5>
    * <p>
-   * Rendering the component in compact userAssistanceDensity mode is not supported in this release. Please use 'reflow' or 'efficient' instead.
+   * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+   * This attribute is not carried forward to the core pack component.
    * </p>
+   *
    *
    * <h5>Usage in Dynamic Form</h5>
    * <p>
@@ -4748,18 +4757,6 @@ var __oj_text_area_metadata =
    * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
    * </p>
    *
-   * <h5>Reset method</h5>
-   * <p>
-   * This method does not synchronously reset the component. The application should wait on the busy context of the component after
-   * invoking this method for the changes to appear.
-   * </p>
-   *
-   * <h5>ShowMessages method</h5>
-   * <p>
-   * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
-   * of the component after invoking this method for the changes to appear.
-   * </p>
-   *
    * <h5>Animation Events</h5>
    * <p>
    * ojAnimateStart and ojAnimateEnd events are no longer supported.
@@ -4774,14 +4771,11 @@ var __oj_text_area_metadata =
    * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
-   * <h3 id="binding-section">
-   *   Declarative Binding
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
-   * </h3>
    *
-   * <h5>User Assistance Density - Compact mode</h5>
+   * <h5>DescribedBy attribute</h5>
    * <p>
-   * Rendering the component in compact userAssistanceDensity mode is not supported in this release. Please use 'reflow' or 'efficient' instead.
+   * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+   * This attribute is not carried forward to the core pack component.
    * </p>
    *
    * <h5>Usage in Dynamic Form</h5>

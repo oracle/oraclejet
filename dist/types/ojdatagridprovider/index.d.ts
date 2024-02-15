@@ -19,13 +19,14 @@ export interface DataGridProviderAddOperationEventDetail {
     version: number;
 }
 export class DataGridProviderRefreshEvent extends Event {
-    detail: DataGridProviderRefreshOperationEventDetail | null;
+    detail?: DataGridProviderRefreshOperationEventDetail;
     type: 'refresh';
-    constructor();
+    constructor(detail?: DataGridProviderRefreshOperationEventDetail);
 }
 export interface DataGridProviderRefreshOperationEventDetail {
-    disregardAfterColumnOffset: number | null;
-    disregardAfterRowOffset: number | null;
+    disregardAfterColumnOffset?: number;
+    disregardAfterRowOffset?: number;
+    preserved?: 'rows' | 'columns';
 }
 export class DataGridProviderRemoveEvent extends Event {
     detail: DataGridProviderRemoveOperationEventDetail;
@@ -94,11 +95,14 @@ export interface GridBodyItem<D> {
     columnExtent: number;
     columnIndex: number;
     data: D;
-    metadata: {
+    metadata: GridBodyItemMetadata & {
         [propName: string]: any;
     };
     rowExtent: number;
     rowIndex: number;
+}
+export interface GridBodyItemMetadata {
+    itemMetadata?: object;
 }
 export interface GridHeaderItem<D> {
     data: D;
@@ -112,6 +116,7 @@ export interface GridHeaderItem<D> {
 }
 export interface GridHeaderMetadata {
     expanded?: 'expanded' | 'collapsed';
+    filter?: 'filterable' | 'filtered';
     showRequired?: boolean;
     sortDirection?: 'ascending' | 'descending' | 'unsorted';
     treeDepth?: number;

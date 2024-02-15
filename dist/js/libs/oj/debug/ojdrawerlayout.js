@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -56,6 +56,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 lastlyOpenedDrawer: ojdrawerutils.DrawerConstants.stringStart
             };
             this.handleKeyDown = (edge, event) => {
+                if (event.defaultPrevented) {
+                    return;
+                }
                 const drawerDisplayMode = this.getDrawerResolvedDisplayMode(edge);
                 if (event.key === ojdrawerutils.DrawerConstants.keys.ESC &&
                     (drawerDisplayMode === ojdrawerutils.DrawerConstants.stringOverlay ||
@@ -131,8 +134,14 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                     this.setBottomOverlayDrawerWidth();
                     let atLeastOneOverlayDrawerNeedsToClose = false;
                     const updatedState = {};
-                    if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode ||
-                        prevViewportResolvedDisplayModeVertical !== nextViewportResolvedDisplayModeVertical) {
+                    const checkBottomDrawerDisplayModeChange = () => {
+                        if (this.isDrawerOpened(ojdrawerutils.DrawerConstants.stringBottom) &&
+                            this.state[this.edgeToDisplayName(ojdrawerutils.DrawerConstants.stringBottom)] === 'auto') {
+                            atLeastOneOverlayDrawerNeedsToClose = true;
+                            updatedState[this.edgeToShouldChangeDisplayMode(ojdrawerutils.DrawerConstants.stringBottom)] = true;
+                        }
+                    };
+                    if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode) {
                         this.lockResizeListener();
                         const edges = [ojdrawerutils.DrawerConstants.stringStart, ojdrawerutils.DrawerConstants.stringEnd];
                         for (let i = 0; i < edges.length; i++) {
@@ -142,16 +151,19 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                                 updatedState[this.edgeToShouldChangeDisplayMode(edge)] = true;
                             }
                         }
-                        if (this.isDrawerOpened(ojdrawerutils.DrawerConstants.stringBottom) &&
-                            this.state[this.edgeToDisplayName(ojdrawerutils.DrawerConstants.stringBottom)] === 'auto') {
-                            atLeastOneOverlayDrawerNeedsToClose = true;
-                            updatedState[this.edgeToShouldChangeDisplayMode(ojdrawerutils.DrawerConstants.stringBottom)] = true;
+                        const reflowOverlay = [ojdrawerutils.DrawerConstants.stringReflow, ojdrawerutils.DrawerConstants.stringOverlay];
+                        if (reflowOverlay.indexOf(prevViewportResolvedDisplayMode) > -1 &&
+                            reflowOverlay.indexOf(nextViewportResolvedDisplayMode) > -1) {
+                            checkBottomDrawerDisplayModeChange();
                         }
-                        if (atLeastOneOverlayDrawerNeedsToClose === false) {
-                            updatedState.viewportResolvedDisplayMode = nextViewportResolvedDisplayMode;
-                            updatedState.viewportResolvedDisplayModeVertical =
-                                nextViewportResolvedDisplayModeVertical;
-                        }
+                    }
+                    if (prevViewportResolvedDisplayModeVertical !== nextViewportResolvedDisplayModeVertical &&
+                        prevViewportResolvedDisplayMode === ojdrawerutils.DrawerConstants.stringReflow) {
+                        checkBottomDrawerDisplayModeChange();
+                    }
+                    if (atLeastOneOverlayDrawerNeedsToClose === false) {
+                        updatedState.viewportResolvedDisplayMode = nextViewportResolvedDisplayMode;
+                        updatedState.viewportResolvedDisplayModeVertical = nextViewportResolvedDisplayModeVertical;
                     }
                     if (Object.keys(updatedState).length > 0) {
                         this.setState(updatedState);
@@ -238,12 +250,11 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             const resolvedMode = this.getDrawerResolvedDisplayMode(edge);
             const isOverlay = resolvedMode === ojdrawerutils.DrawerConstants.stringOverlay ||
                 resolvedMode === ojdrawerutils.DrawerConstants.stringFullOverlay;
-            const roleAttr = this.props.role || (isOverlay ? 'dialog' : undefined);
             const tabIndexAttr = isOverlay ? -1 : undefined;
             if (this.isDrawerOpened(edge) ||
                 this.wasDrawerOpenedInPrevState(edge) ||
                 this.wasDrawerClosedWithEsc(edge)) {
-                return (jsxRuntime.jsx("div", { ref: this.getDrawerWrapperRef(edge), class: this.getDrawerWrapperStyleClasses(edge), children: jsxRuntime.jsx("div", { ref: this.getDrawerRef(edge), role: roleAttr, tabIndex: tabIndexAttr, class: this.getDrawerStyleClasses(edge), onKeyDown: (event) => this.handleKeyDown(edge, event), children: this.getDrawerContent(edge) }) }));
+                return (jsxRuntime.jsx("div", { ref: this.getDrawerWrapperRef(edge), class: this.getDrawerWrapperStyleClasses(edge), children: jsxRuntime.jsx("div", { ref: this.getDrawerRef(edge), tabIndex: tabIndexAttr, class: this.getDrawerStyleClasses(edge), onKeyDown: (event) => this.handleKeyDown(edge, event), children: this.getDrawerContent(edge) }) }));
             }
             return null;
         }
@@ -382,7 +393,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         }
         setDrawerFocus(edge) {
             const drawerRef = this.getDrawerRef(edge);
-            const autofocusItems = drawerRef.current.querySelectorAll('[autofocus]');
+            const autofocusItems = ojdrawerutils.DrawerUtils.getAutofocusFocusables(drawerRef.current);
             const { length: autofocusLength, 0: autofocusFirstItem } = autofocusItems;
             if (autofocusLength > 0) {
                 autofocusFirstItem.focus({ preventScroll: true });
@@ -723,7 +734,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         endDisplay: 'auto',
         bottomDisplay: 'auto'
     };
-    exports.DrawerLayout._metadata = { "slots": { "": {}, "start": {}, "end": {}, "bottom": {} }, "properties": { "startOpened": { "type": "boolean", "writeback": true }, "endOpened": { "type": "boolean", "writeback": true }, "bottomOpened": { "type": "boolean", "writeback": true }, "startDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] }, "endDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] }, "bottomDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] } }, "events": { "ojBeforeClose": { "cancelable": true } }, "extension": { "_WRITEBACK_PROPS": ["startOpened", "endOpened", "bottomOpened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
+    exports.DrawerLayout._metadata = { "slots": { "": {}, "start": {}, "end": {}, "bottom": {} }, "properties": { "startOpened": { "type": "boolean", "writeback": true }, "endOpened": { "type": "boolean", "writeback": true }, "bottomOpened": { "type": "boolean", "writeback": true }, "startDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] }, "endDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] }, "bottomDisplay": { "type": "string", "enumValues": ["auto", "overlay", "reflow"] } }, "events": { "ojBeforeClose": { "cancelable": true } }, "extension": { "_WRITEBACK_PROPS": ["startOpened", "endOpened", "bottomOpened"], "_READ_ONLY_PROPS": [] } };
     exports.DrawerLayout = DrawerLayout_1 = __decorate([
         ojvcomponent.customElement('oj-drawer-layout')
     ], exports.DrawerLayout);

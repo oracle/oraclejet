@@ -1,0 +1,1 @@
+export declare const getTranslationBundlePromiseFromLoader: (loader: (locale: string | null) => Promise<any>) => Promise<any>;

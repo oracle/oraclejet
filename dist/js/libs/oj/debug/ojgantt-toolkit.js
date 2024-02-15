@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2062,6 +2062,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           this._contentType === 'custom'
             ? this._getCustomContent(rowObj, availableWidth)
             : this._getTextContent(rowObj);
+        this._content.setAriaRole('rowheader', true);
       }
       if (!this._contentDisplayable) {
         this._contentDisplayable = this._gantt.isRowsHierarchical()
@@ -2100,6 +2101,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._height = contentDimensions.h;
 
       this._contentDisplayable.setAriaProperty('label', this.getAriaLabel());
+      // Note the "true" flag; we don't want deferred aria creation for the role because the parent with role "rowheader"
+      // and the ancestor role "grid" requires role "row" children to be present on initial render. Otherwise an axe-core violation is triggered.
+      // Performance is not really a concern because there are typically far more tasks than rows.
+      this._contentDisplayable.setAriaRole('row', true);
       // DvtOutputText by default sets aria-hidden to true. We need to ensure this is unset for accessibility.
       this._contentDisplayable.setAriaProperty('hidden', null);
     }
@@ -4243,6 +4248,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           (!dataLayoutManager.isRoot(rowObj) && dataLayoutManager.isHiddenCollapsed(rowObj))
         ) {
           rowObj = dataLayoutManager.getParentRowObj(rowObj);
+          // JET-62141: if all ancestor rows are empty, then let null navigableObj be returned, i.e.
+          // signal that no tasks are logically focused. On next component focus the default first task of the data gets logically focused.
+          if (navigableObj == null && rowObj == null) break;
           var taskObjs = rowObj['taskObjs'];
           navigableObj = taskObjs.length > 0 ? taskObjs[0] : null;
         }
@@ -4260,8 +4268,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             if (dvt.Obj.compareValues(this._comp.getCtx(), rowObjs[i].id, rowObj.id)) {
               const activeRowObj = rowObjs[i];
               const activeTaskObjs = activeRowObj.taskObjs;
-              const activeNavigableObj = activeTaskObjs[0];
-              return activeNavigableObj.node;
+              for (let j = 0; j < activeTaskObjs.length; j++) {
+                if (
+                  dvt.Obj.compareValues(this._comp.getCtx(), activeTaskObjs[j].id, navigableObj.id)
+                ) {
+                  return activeTaskObjs[j].node;
+                }
+              }
+              return null;
             }
           }
         }
@@ -6907,7 +6921,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       const pathCmd = dvt.PathUtils.rectangleWithBorderRadius(x, y, w, h, r, Math.min(w, h), '0');
 
       if (cpDim._coordSystem === 'css') {
-        // this.setStyle() triggers a CSP violation on Safari (16.0 at the time of writing)
+        // this.setStyle() triggers a CSP violation on Safari for some reason
         this.getElem().style.clipPath = `path('${pathCmd}')`;
       } else {
         const cp = new dvt.ClipPath();
@@ -10755,6 +10769,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         duration = Math.round((duration / days) * 100) / 100;
         return dvt.ResourceUtils.format(translations.accessibleDurationDays, [duration]);
       }
+    }
+
+    /**
+     * Gets the representative displayable.
+     * @return {dvt.Displayable}
+     */
+    getDisplayable() {
+      return this;
     }
 
     /**
@@ -16308,6 +16330,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {boolean} isResize Whether this render call is due to component resize.
      */
     render(totalAvailWidth, isResize) {
+      if (!isResize) this.setAriaRole('grid', true);
       this._availableWidth = this._getAvailableWidth(totalAvailWidth);
 
       if (isResize) {

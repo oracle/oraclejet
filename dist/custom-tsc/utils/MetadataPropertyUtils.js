@@ -40,8 +40,9 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
         if (!TypeUtils.isGenericTypeParameter(memberSymbol)) {
             const propDeclaration = memberSymbol.valueDeclaration;
             const prop = memberKey;
+            const exportToAlias = metaUtilObj.progImportMaps.getMap(MetaTypes.IMAP.exportToAlias, propDeclaration);
             const typeName = TypeUtils.getPropertyType(propDeclaration.type, propDeclaration.name.getText());
-            const writebackPropInfo = getWritebackPropInfo(prop, propDeclaration, typeName, metaUtilObj);
+            const writebackPropInfo = getWritebackPropInfo(prop, propDeclaration, typeName, exportToAlias, metaUtilObj);
             if (writebackPropInfo.propName) {
                 writebackPropNameNodes.push({
                     name: writebackPropInfo.propName,
@@ -56,8 +57,8 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
                     else if (metaUtilObj.rtMetadata.properties?.[readOnlyWritebackProp]) {
                         TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.DUPLICATE_PROP_ROWRITEBACK, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Duplicate '${readOnlyWritebackProp}' property detected.`, propDeclaration);
                     }
-                    const rt = getMetadataForProperty(readOnlyWritebackProp, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MetadataScope.RT, MetaTypes.MDFlags.PROP | MetaTypes.MDFlags.PROP_RO_WRITEBACK, metaUtilObj);
-                    const dt = getMetadataForProperty(readOnlyWritebackProp, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.PROP | MetaTypes.MDFlags.PROP_RO_WRITEBACK, metaUtilObj);
+                    const rt = getMetadataForProperty(readOnlyWritebackProp, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MDScope.RT, MetaTypes.MDContext.PROP | MetaTypes.MDContext.PROP_RO_WRITEBACK, metaUtilObj);
+                    const dt = getMetadataForProperty(readOnlyWritebackProp, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MDScope.DT, MetaTypes.MDContext.PROP | MetaTypes.MDContext.PROP_RO_WRITEBACK, metaUtilObj);
                     rt.readOnly = true;
                     dt.readOnly = true;
                     readOnlyPropNameNodes.push({
@@ -78,7 +79,7 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
                 !(0, MetadataSlotUtils_1.generateSlotsMetadata)(prop, propDeclaration, metaUtilObj) &&
                 !(0, MetadataEventUtils_1.generateEventsMetadata)(prop, propDeclaration, metaUtilObj)) {
                 if (readOnlyPropNameNodes.find((item) => item.name === prop)) {
-                    if (typeName === `${metaUtilObj.namedExportToAlias.ElementReadOnly}`) {
+                    if (typeName === `${exportToAlias.ElementReadOnly}`) {
                         TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.DUPLICATE_ROWRITEBACK_PROP, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Duplicate read-only writeback property '${prop}' detected. Delete extraneous property of type 'ElementReadOnly'.`, propDeclaration);
                     }
                     else {
@@ -91,11 +92,11 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
                 if (!metaUtilObj.fullMetadata.properties) {
                     metaUtilObj.fullMetadata.properties = {};
                 }
-                const rt = getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MetadataScope.RT, MetaTypes.MDFlags.PROP, metaUtilObj);
-                const dt = getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.PROP, metaUtilObj);
+                const rt = getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MDScope.RT, MetaTypes.MDContext.PROP, metaUtilObj);
+                const dt = getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MDScope.DT, MetaTypes.MDContext.PROP, metaUtilObj);
                 metaUtilObj.rtMetadata.properties[prop] = rt;
                 metaUtilObj.fullMetadata.properties[prop] = dt;
-                if (typeName === `${metaUtilObj.namedExportToAlias.ElementReadOnly}`) {
+                if (typeName === `${exportToAlias.ElementReadOnly}`) {
                     rt.readOnly = true;
                     dt.readOnly = true;
                     const roNameNode = { name: prop, node: propDeclaration };
@@ -103,7 +104,7 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
                     elementReadOnlyPropNameNodes.push(roNameNode);
                     const uppercaseProp = prop.charAt(0).toUpperCase() + prop.slice(1);
                     TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.DEPRECATED_ELEMENTREADONLY, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'${prop}' property is declared to be of deprecated type 'ElementReadOnly'.
-In order to upgrade, delete this '${prop}' field and instead declare a callback property 'on${uppercaseProp}Changed' of type 'ReadOnlyPropertyChanged'.`, propDeclaration);
+  In order to upgrade, delete this '${prop}' field and instead declare a callback property 'on${uppercaseProp}Changed' of type 'ReadOnlyPropertyChanged'.`, propDeclaration);
                 }
             }
         }
@@ -139,15 +140,25 @@ function checkReservedProps(propsInfo, metaUtilObj) {
                 break;
             default:
                 if (metaUtilObj['reservedGlobalProps']?.has(prop)) {
-                    if (isInlineObservedGlobalPropDeclaration(prop, propDecl, metaUtilObj)) {
-                        propsInfo.propsRtObservedGlobalPropsSet =
-                            propsInfo.propsRtObservedGlobalPropsSet || new Set();
-                        propsInfo.propsRtObservedGlobalPropsSet.add(prop);
-                    }
-                    else {
-                        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.RESERVED_GLOBAL_PROP, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'${prop}' property declaration overrides a global HTML property.
-As an alternative, either use the ObservedGlobalProps utility type to specify observable global HTML properties
-or update the property declaration to use the ${metaUtilObj.namedExportToAlias.GlobalProps ?? 'GlobalProps'}['${prop}'] indexed access type.`, propDecl);
+                    const exportToAlias = metaUtilObj.progImportMaps.getMap(MetaTypes.IMAP.exportToAlias, propDecl);
+                    const ogpStatus = checkInlineObservedGlobalPropStatus(prop, propDecl, exportToAlias, metaUtilObj);
+                    switch (ogpStatus) {
+                        case InlineOGP.NONE:
+                            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.RESERVED_GLOBAL_PROP, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `'${prop}' property declaration overrides a global HTML property.
+  As an alternative, either use the ObservedGlobalProps utility type to specify observable global HTML properties
+  or update the property declaration to use the ${exportToAlias.GlobalProps ?? 'GlobalProps'}['${prop}'] indexed access type.`, propDecl);
+                            break;
+                        case InlineOGP.EVENT_HANDLER:
+                            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_OBSERVED_EVENT_HANDLER, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `The '${prop}' declaration is attempting to observe an event handler JSX property, which is not supported.`, propDecl);
+                            break;
+                        case InlineOGP.PROP:
+                            propsInfo.propsRtObservedGlobalPropsSet =
+                                propsInfo.propsRtObservedGlobalPropsSet || new Set();
+                            propsInfo.propsRtObservedGlobalPropsSet.add(prop);
+                            break;
+                        default:
+                            const check = ogpStatus;
+                            break;
                     }
                 }
                 break;
@@ -156,9 +167,11 @@ or update the property declaration to use the ${metaUtilObj.namedExportToAlias.G
 }
 exports.checkReservedProps = checkReservedProps;
 function generateObservedGlobalPropsMetadata(prop, propDecl, metaUtilObj) {
-    const isObservedGlobalProp = isInlineObservedGlobalPropDeclaration(prop, propDecl, metaUtilObj);
+    const exportToAlias = metaUtilObj.progImportMaps.getMap(MetaTypes.IMAP.exportToAlias, propDecl);
+    const isObservedGlobalProp = checkInlineObservedGlobalPropStatus(prop, propDecl, exportToAlias, metaUtilObj) ===
+        InlineOGP.PROP;
     if (isObservedGlobalProp) {
-        const gpDT = TypeUtils.getAllMetadataForDeclaration(propDecl, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.PROP, null, null, metaUtilObj);
+        const gpDT = TypeUtils.getAllMetadataForDeclaration(propDecl, MetaTypes.MDScope.DT, MetaTypes.MDContext.PROP, null, null, metaUtilObj);
         gpDT['optional'] = true;
         metaUtilObj.fullMetadata['observedGlobalProps'] =
             metaUtilObj.fullMetadata['observedGlobalProps'] || {};
@@ -209,6 +222,10 @@ function updateDefaultsFromDefaultProps(defaultProps, metaUtilObj) {
             const propName = prop.name.getText();
             const propMetadata = fullPropsMeta?.[propName];
             if (propMetadata) {
+                if (propMetadata.required) {
+                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.DT_REQUIRED_HAS_DEFAULT_VALUE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `The '${propName}' property has a default value and is flagged as 'required' in the design time environment.
+  Properties with default values typically should not be flagged as 'required'.`, prop.initializer);
+                }
                 updateDefaultValue(propMetadata, propName, prop, metaUtilObj);
             }
             else {
@@ -218,28 +235,34 @@ function updateDefaultsFromDefaultProps(defaultProps, metaUtilObj) {
     });
 }
 exports.updateDefaultsFromDefaultProps = updateDefaultsFromDefaultProps;
-function isInlineObservedGlobalPropDeclaration(prop, propDecl, metaUtilObj) {
-    let isInlineObservedGlobalProp = false;
+var InlineOGP;
+(function (InlineOGP) {
+    InlineOGP[InlineOGP["NONE"] = 0] = "NONE";
+    InlineOGP[InlineOGP["PROP"] = 1] = "PROP";
+    InlineOGP[InlineOGP["EVENT_HANDLER"] = 2] = "EVENT_HANDLER";
+})(InlineOGP || (InlineOGP = {}));
+function checkInlineObservedGlobalPropStatus(prop, propDecl, exportToAlias, metaUtilObj) {
+    let ogpStatus = InlineOGP.NONE;
     const gpTypeNode = propDecl.type;
     if (gpTypeNode && ts.isIndexedAccessTypeNode(gpTypeNode)) {
-        isInlineObservedGlobalProp =
-            ts.isTypeReferenceNode(gpTypeNode.objectType) &&
-                TypeUtils.getTypeNameFromTypeReference(gpTypeNode.objectType) ===
-                    metaUtilObj.namedExportToAlias.GlobalProps &&
-                ts.isLiteralTypeNode(gpTypeNode.indexType) &&
-                ts.isStringLiteralLike(gpTypeNode.indexType.literal) &&
-                gpTypeNode.indexType.literal.text === prop;
+        if (ts.isTypeReferenceNode(gpTypeNode.objectType) &&
+            TypeUtils.getTypeNameFromTypeReference(gpTypeNode.objectType) === exportToAlias.GlobalProps &&
+            ts.isLiteralTypeNode(gpTypeNode.indexType) &&
+            ts.isStringLiteralLike(gpTypeNode.indexType.literal) &&
+            gpTypeNode.indexType.literal.text === prop) {
+            ogpStatus = prop.startsWith('on') ? InlineOGP.EVENT_HANDLER : InlineOGP.PROP;
+        }
     }
-    return isInlineObservedGlobalProp;
+    return ogpStatus;
 }
-function getWritebackPropInfo(prop, propDecl, typeName, metaUtilObj) {
+function getWritebackPropInfo(prop, propDecl, typeName, exportToAlias, metaUtilObj) {
     let rtnInfo = {
         isReadOnly: false
     };
     switch (typeName) {
-        case `${metaUtilObj.namedExportToAlias.ReadOnlyPropertyChanged}`:
+        case `${exportToAlias.ReadOnlyPropertyChanged}`:
             rtnInfo.isReadOnly = true;
-        case `${metaUtilObj.namedExportToAlias.PropertyChanged}`:
+        case `${exportToAlias.PropertyChanged}`:
             rtnInfo.propName = MetaUtils.writebackCallbackToProperty(prop);
             if (!rtnInfo.propName) {
                 TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.WRITEBACK_MISSING_PREFIX, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Writeback property callback found, but property '${prop}' does not meet the 'on[Property]Changed' naming syntax.`, propDecl);
@@ -250,7 +273,7 @@ function getWritebackPropInfo(prop, propDecl, typeName, metaUtilObj) {
     }
     return rtnInfo;
 }
-function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeSymbol, scope, flags, metaUtilObj) {
+function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeSymbol, scope, context, metaUtilObj) {
     let md;
     const propsName = metaUtilObj.propsName;
     const propertyPath = [prop];
@@ -264,7 +287,7 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeS
                 const name = parameter.name.getText();
                 const symbol = parameter['symbol'];
                 if (symbol) {
-                    const typeObj = getMetadataForProperty(name, symbol, parameter, null, MetaTypes.MetadataScope.DT, MetaTypes.MDFlags.METHOD_PARAM, metaUtilObj);
+                    const typeObj = getMetadataForProperty(name, symbol, parameter, null, MetaTypes.MDScope.DT, MetaTypes.MDContext.TYPEDEF, metaUtilObj);
                     const mParamObj = { name, ...typeObj };
                     functionParams.push(mParamObj);
                 }
@@ -275,8 +298,8 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeS
             }
         }
     };
-    const metaObj = TypeUtils.getAllMetadataForDeclaration(propDeclaration, scope, flags, propertyPath, memberSymbol, metaUtilObj);
-    if (scope == MetaTypes.MetadataScope.DT && metaObj.type.indexOf('function') > -1) {
+    const metaObj = TypeUtils.getAllMetadataForDeclaration(propDeclaration, scope, context, propertyPath, memberSymbol, metaUtilObj);
+    if (scope == MetaTypes.MDScope.DT && metaObj.type.indexOf('function') > -1) {
         let declTypeNode = propDeclaration.type;
         if (ts.isUnionTypeNode(declTypeNode)) {
             for (const unionNode of declTypeNode.types) {
@@ -291,12 +314,12 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeS
         }
     }
     let nestedArrayStack = [];
-    if (scope == MetaTypes.MetadataScope.DT && metaObj.isArrayOfObject) {
+    if (scope == MetaTypes.MDScope.DT && metaObj.isArrayOfObject) {
         nestedArrayStack.push(propDeclaration.name.getText());
     }
-    const subprops = TypeUtils.getComplexPropertyMetadata(memberSymbol, metaObj.type, propsName, scope, flags, propertyPath, nestedArrayStack, metaUtilObj);
+    const subprops = TypeUtils.getComplexPropertyMetadata(memberSymbol, metaObj.type, propsName, scope, context, propertyPath, nestedArrayStack, metaUtilObj);
     md = metaObj;
-    if (scope == MetaTypes.MetadataScope.DT) {
+    if (scope == MetaTypes.MDScope.DT) {
         const propSym = mappedTypeSymbol ?? memberSymbol;
         md['optional'] = propSym.flags & ts.SymbolFlags.Optional ? true : false;
     }
@@ -305,7 +328,7 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeS
             md.type = TypeUtils.getSubstituteTypeForCircularReference(metaObj);
         }
         else {
-            if (scope == MetaTypes.MetadataScope.DT) {
+            if (scope == MetaTypes.MDScope.DT) {
                 const typeDef = TypeUtils.getPossibleTypeDef(prop, memberSymbol, metaObj, metaUtilObj);
                 if (typeDef && (typeDef.name || typeDef.coreJetModule)) {
                     md['jsdoc'] = md['jsdoc'] || {};
@@ -313,7 +336,7 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeS
                 }
             }
             if (metaObj.isArrayOfObject) {
-                if (scope == MetaTypes.MetadataScope.DT) {
+                if (scope == MetaTypes.MDScope.DT) {
                     md.extension = md.extension ?? {};
                     md.extension['vbdt'] = md.extension['vbdt'] ?? {};
                     md.extension['vbdt']['itemProperties'] = subprops;
@@ -365,7 +388,7 @@ function updateDefaultValue(md, propertyName, propDeclaration, metaUtilObj) {
     if (defValueExpression) {
         if (ts.isBindingElement(propDeclaration) && ts.isObjectLiteralExpression(defValueExpression)) {
             TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.PROP_DEFAULT_OBJECT_LITERAL, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Default object literal values can cause extra render calls on child components.
-Use a reference to a non-primitive constant instead.`, defValueExpression);
+  Use a reference to a non-primitive constant instead.`, defValueExpression);
         }
         if (ts.isIdentifier(defValueExpression)) {
             const constSymbol = metaUtilObj.typeChecker.getSymbolAtLocation(defValueExpression);

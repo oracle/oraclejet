@@ -4,35 +4,25 @@ export declare const SLOT_TYPE = "Slot";
 export declare const DEFAULT_SLOT_PROP = "children";
 export declare const CONTENTS_TOKEN = "@contents@";
 export declare const DEPENDENCIES_TOKEN = "@dependencies@";
-export declare enum MDFlags {
+export declare enum MDContext {
     COMP = 1,
     PROP = 2,
     EVENT = 4,
     SLOT = 8,
     METHOD = 16,
-    PROP_RO_WRITEBACK = 32,
-    EVENT_DETAIL = 64,
-    SLOT_DATA = 128,
-    METHOD_PARAM = 256,
-    METHOD_RETURN = 512,
-    EXT_ITEMPROPS = 1024
+    TYPEDEF = 32,
+    PROP_RO_WRITEBACK = 64,
+    EVENT_DETAIL = 128,
+    SLOT_DATA = 256,
+    METHOD_PARAM = 512,
+    METHOD_RETURN = 1024,
+    EXT_ITEMPROPS = 2048
 }
-export type ImportAliases = {
-    Component?: string;
-    ComponentProps?: string;
-    PureComponent?: string;
-    forwardRef?: string;
-    memo?: string;
-    customElement?: string;
-    registerCustomElement?: string;
-    method?: string;
-    ElementReadOnly?: string;
-    ExtendGlobalProps?: string;
-    GlobalProps?: string;
-    ObservedGlobalProps?: string;
-    providedBindings?: string;
-    consumedBindings?: string;
-};
+export declare enum MDScope {
+    RT_EXTENDED = -1,
+    RT = 0,
+    DT = 1
+}
 export type RuntimeMetadata = {
     properties?: Record<string, Metadata.ComponentMetadataProperties>;
     events?: Record<string, Metadata.ComponentMetadataEvents>;
@@ -45,6 +35,7 @@ export type RuntimeMetadata = {
         _OBSERVED_GLOBAL_PROPS?: string[];
     };
 };
+export type MethodParameterMetadata = Omit<Metadata.MethodParam, 'type'>;
 export type EventDetailsMetadata = {
     [key: string]: ExtendedEventDetailsMetadata;
 };
@@ -70,11 +61,17 @@ export type ALL_TYPES = {
     isArrayOfObject?: boolean;
     isEnumValuesForDTOnly?: boolean;
 };
-export type NameValuePair = [string, any];
+export type MDValidationInfo = {
+    baseType: 'string' | 'number' | 'boolean' | 'object' | 'string|number' | 'any';
+    isArray: boolean;
+    context: MDContext;
+    schemaRelRef?: `#/${string}`;
+};
+export type TagTuple = [string, string];
+export type MDTuple = [string, any, MDValidationInfo];
 export type PropertyBindingMetadata = Record<string, Metadata.PropertyBinding>;
-export type RegisteredMethodParam = Omit<Metadata.MethodParam, 'type'>;
 export type RegisteredMethodsMetadata = Record<string, Omit<Metadata.ComponentMetadataMethods, 'params' | 'return'> & {
-    params?: Array<RegisteredMethodParam>;
+    params?: Array<MethodParameterMetadata>;
     apidocDescription?: string;
     apidocRtnDescription?: string;
 }>;
@@ -93,11 +90,6 @@ export type RegisteredOptions = {
     methodsInfo?: RegisteredMethodsInfo;
     contexts?: RegisteredMetadata['contexts'];
 };
-export declare enum MetadataScope {
-    RT_EXTENDED = -1,
-    RT = 0,
-    DT = 1
-}
 export type CircularRefInfo = {
     circularType: string;
 };
@@ -106,6 +98,7 @@ export type GenericsTypes = {
     genericsTypeParams: string;
     genericsTypeParamsArray: Array<string>;
     genericsTypeParamsAny?: string;
+    jsdoc?: Array<TypedefObj>;
 };
 export type GenericsTypesFromType = Omit<GenericsTypes, 'genericsTypeParamsArray' | 'genericsTypeParamsAny'> & {
     genericsTypeParamData: Array<TypeParamInfo>;
@@ -163,11 +156,27 @@ export declare class VCompPack {
     get license(): string | undefined;
     get contents(): Array<typeof CONTENTS_TOKEN | Record<string, any>> | undefined;
     get dependencies(): typeof DEPENDENCIES_TOKEN | Record<string, string> | undefined;
+    get dependencyScope(): string | undefined;
     get translationBundle(): string | undefined;
     isStandardPack(): boolean;
     isMonoPack(): boolean;
+    isReferenceComponent(): boolean;
     isJETPack(): boolean;
     isVCompInPack(fullName: string): boolean;
+}
+export declare enum IMAP {
+    exportToAlias = "exportToAlias",
+    aliasToExport = "aliasToExport"
+}
+type IMAP_UNION = keyof typeof IMAP;
+export declare class VCompImportMaps {
+    private _EMPTY_MAP;
+    private _sfMaps;
+    constructor();
+    private _getSfMap;
+    registerMapping(context: ts.Node, importName: string, aliasName: string): void;
+    getMap(type: IMAP, context: ts.Node): Record<string, string>;
+    getComponentImportMaps(componentNode: ts.Node): Record<IMAP_UNION, Record<string, string>>;
 }
 export type VCompClassInfo = {
     elementName: string;
@@ -217,15 +226,13 @@ export type MetaUtilObj = {
     typeChecker: ts.TypeChecker;
     rtMetadata: RuntimeMetadata;
     fullMetadata: Metadata.ComponentMetadata;
-    namedExportToAlias: Record<string, string>;
-    aliasToNamedExport: Record<string, string>;
+    progImportMaps: VCompImportMaps;
     dynamicSlotsInUse: number;
     dynamicSlotNameNodes: Array<NameNodePair>;
+    excludedTypes: Set<string>;
     propsName?: string;
     reservedGlobalProps?: Set<string>;
     defaultProps?: Record<string, any>;
-    excludedTypes?: Set<string>;
-    excludedTypeAliases?: Set<string>;
     propsTypeParamsArray?: Array<string>;
     propsClassTypeParamsArray?: Array<string>;
     classPropsAliasTypeArgs?: readonly ts.Type[];
@@ -245,4 +252,6 @@ export type TypedefObj = {
     genericsDeclaration?: string;
     genericsTypeParams?: string;
     coreJetModule?: Record<string, string>;
+    properties?: Record<string, Metadata.ComponentMetadataProperties>;
 };
+export {};
